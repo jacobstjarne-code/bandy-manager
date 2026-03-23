@@ -146,7 +146,7 @@ interface ClubTemplate {
   preferredStyle: ClubStyle
 }
 
-const CLUB_TEMPLATES: ClubTemplate[] = [
+export const CLUB_TEMPLATES: ClubTemplate[] = [
   {
     id: 'club_sandviken',
     name: 'Storvik BK',

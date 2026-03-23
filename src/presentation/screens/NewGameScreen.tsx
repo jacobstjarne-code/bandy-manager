@@ -2,23 +2,22 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { ArrowLeft, ArrowRight, Star } from 'lucide-react'
+import { CLUB_TEMPLATES } from '../../domain/services/worldGenerator'
 
-// Static display data matching worldGenerator output
-// Club IDs must match exactly: club_soderhamns (not club_soderhamnsaik)
-const CLUBS = [
-  { id: 'club_sandviken', name: 'Sandviken BK', region: 'Gävleborg', reputation: 85, youthQuality: 75, difficulty: 'Lätt', difficultyColor: '#22c55e' },
-  { id: 'club_sirius', name: 'IK Sirius Bandy', region: 'Mälardalen', reputation: 80, youthQuality: 72, difficulty: 'Lätt', difficultyColor: '#22c55e' },
-  { id: 'club_vasteras', name: 'Västerås SK', region: 'Västmanland', reputation: 78, youthQuality: 70, difficulty: 'Lätt', difficultyColor: '#22c55e' },
-  { id: 'club_broberg', name: 'Broberg/Söderhamn', region: 'Gävleborg', reputation: 68, youthQuality: 65, difficulty: 'Normal', difficultyColor: '#f59e0b' },
-  { id: 'club_villa', name: 'Villa Lidköping', region: 'Västra Götaland', reputation: 65, youthQuality: 62, difficulty: 'Normal', difficultyColor: '#f59e0b' },
-  { id: 'club_falun', name: 'Falun Borlänge', region: 'Dalarna', reputation: 63, youthQuality: 60, difficulty: 'Normal', difficultyColor: '#f59e0b' },
-  { id: 'club_ljusdal', name: 'Ljusdal Bandy', region: 'Hälsingland', reputation: 60, youthQuality: 58, difficulty: 'Normal', difficultyColor: '#f59e0b' },
-  { id: 'club_edsbyn', name: 'Edsbyn', region: 'Hälsingland', reputation: 62, youthQuality: 60, difficulty: 'Normal', difficultyColor: '#f59e0b' },
-  { id: 'club_tillberga', name: 'Tillberga IK', region: 'Västmanland', reputation: 50, youthQuality: 50, difficulty: 'Svår', difficultyColor: '#ef4444' },
-  { id: 'club_kungalv', name: 'Kungälv BK', region: 'Västra Götaland', reputation: 48, youthQuality: 48, difficulty: 'Svår', difficultyColor: '#ef4444' },
-  { id: 'club_skutskar', name: 'Skutskär', region: 'Uppland', reputation: 52, youthQuality: 52, difficulty: 'Svår', difficultyColor: '#ef4444' },
-  { id: 'club_soderhamns', name: 'Söderhamns AIK', region: 'Hälsingland', reputation: 45, youthQuality: 45, difficulty: 'Svår', difficultyColor: '#ef4444' },
-]
+function difficultyLabel(reputation: number): { label: string; color: string } {
+  if (reputation >= 75) return { label: 'Lätt', color: '#22c55e' }
+  if (reputation >= 55) return { label: 'Normal', color: '#f59e0b' }
+  return { label: 'Svår', color: '#ef4444' }
+}
+
+const CLUBS = CLUB_TEMPLATES.map(t => ({
+  id: t.id,
+  name: t.name,
+  region: t.region,
+  reputation: t.reputation,
+  youthQuality: t.youthQuality,
+  ...difficultyLabel(t.reputation),
+}))
 
 function ReputationStars({ value }: { value: number }) {
   const stars = Math.round(value / 20) // 0-100 -> 0-5 stars
