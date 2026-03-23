@@ -28,14 +28,14 @@ describe('calculateStandings', () => {
     expect(ids).toEqual([...ids].sort((a, b) => a.localeCompare(b)))
   })
 
-  it('one completed match: winner gets 3 points, loser 0', () => {
+  it('one completed match: winner gets 2 points, loser 0', () => {
     const fixtures: Fixture[] = [
       makeFixture({ id: 'f1', homeClubId: 'club_a', awayClubId: 'club_b', homeScore: 3, awayScore: 1, status: FixtureStatus.Completed }),
     ]
     const standings = calculateStandings(teamIds, fixtures)
     const a = standings.find((r) => r.clubId === 'club_a')!
     const b = standings.find((r) => r.clubId === 'club_b')!
-    expect(a.points).toBe(3)
+    expect(a.points).toBe(2)
     expect(a.wins).toBe(1)
     expect(b.points).toBe(0)
     expect(b.losses).toBe(1)
@@ -89,8 +89,8 @@ describe('calculateStandings', () => {
       makeFixture({ id: 'f2', homeClubId: 'club_c', awayClubId: 'club_d', homeScore: 5, awayScore: 1, status: FixtureStatus.Completed }),
     ]
     const standings = calculateStandings(teamIds, fixtures)
-    // club_c: 3pts, GD+4 → 1st
-    // club_a: 3pts, GD+2 → 2nd
+    // club_c: 2pts, GD+4 → 1st
+    // club_a: 2pts, GD+2 → 2nd
     expect(standings[0].clubId).toBe('club_c')
     expect(standings[1].clubId).toBe('club_a')
   })

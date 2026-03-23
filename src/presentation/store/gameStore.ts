@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import type { Tactic } from '../../domain/entities/Club'
 import type { TrainingFocus } from '../../domain/entities/Training'
+import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entities/Fixture'
 import { FixtureStatus, PlayoffStatus } from '../../domain/enums'
 import { createNewGame } from '../../application/useCases/createNewGame'
 import { advanceToNextEvent, type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
@@ -22,6 +23,7 @@ interface GameState {
   updateTactic: (tactic: Tactic) => void
   setTraining: (focus: TrainingFocus) => void
   markTutorialSeen: () => void
+  saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection) => void
   clearGame: () => void
   listSaves: () => SaveGameSummary[]
   clearSeasonSummary: () => void
@@ -66,6 +68,19 @@ export const useGameStore = create<GameState>()(
           return { success: true }
         }
         return { success: false, error: result.error }
+      },
+
+      saveLiveMatchResult: (fixtureId, homeScore, awayScore, events, report, homeLineup, awayLineup) => {
+        const { game } = get()
+        if (!game) return
+        const updatedFixtures = game.fixtures.map(f =>
+          f.id === fixtureId
+            ? { ...f, homeScore, awayScore, events, report, homeLineup, awayLineup, status: FixtureStatus.Completed }
+            : f
+        )
+        const updatedGame = { ...game, fixtures: updatedFixtures }
+        saveSaveGame(updatedGame)
+        set({ game: updatedGame })
       },
 
       updateTactic: (tactic) => {

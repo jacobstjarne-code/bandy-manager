@@ -75,8 +75,8 @@ interface MatchReportViewProps {
 
 function eventIcon(type: MatchEventType): string {
   if (type === MatchEventType.Goal) return '🔴'
-  if (type === MatchEventType.YellowCard) return '🟨'
-  if (type === MatchEventType.RedCard) return '🟥'
+  if (type === MatchEventType.YellowCard) return '⚠️'
+  if (type === MatchEventType.RedCard) return '🚫'
   if (type === MatchEventType.Save) return '🧤'
   if (type === MatchEventType.Corner) return '📐'
   return ''
@@ -126,8 +126,8 @@ function MatchReportView({ fixture, game, onClose }: MatchReportViewProps) {
   function getEventText(event: MatchEvent): string {
     const name = getPlayerName(event.playerId)
     if (event.type === MatchEventType.Goal) return `${name} 🔴`
-    if (event.type === MatchEventType.YellowCard) return `${name} 🟨`
-    if (event.type === MatchEventType.RedCard) return `${name} 🟥`
+    if (event.type === MatchEventType.YellowCard) return `${name} ⚠️ Varning`
+    if (event.type === MatchEventType.RedCard) return `${name} 🚫 Utvisning 10 min`
     return event.description
   }
 

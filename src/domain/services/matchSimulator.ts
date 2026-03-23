@@ -1353,7 +1353,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       } else {
         commentaryText = fillTemplate(pickCommentary(commentary.kickoff, rand), templateVars)
       }
-    } else if (step === 29) {
+    } else if (step === 30) {
       commentaryText = fillTemplate(pickCommentary(commentary.halfTime, rand), templateVars)
     } else if (cornerGoalScored && scorerPlayerId) {
       templateVars = { ...templateVars, player: findPlayerName(scorerPlayerId) }

@@ -84,6 +84,7 @@ export enum InboxItemType {
   Training = 'training',
   Playoff = 'playoff',
   Derby = 'derby',
+  Recovery = 'recovery',
 }
 
 export enum TrainingType {

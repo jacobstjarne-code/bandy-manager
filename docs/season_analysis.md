@@ -1,6 +1,6 @@
 # Säsongsanalys — Bandy Manager v0.1
 
-Genererad: 2026-03-23 09:34:48
+Genererad: 2026-03-23 16:13:50
 Simulerade säsonger: 5 (seeds: 42, 123, 456, 789, 1337)
 
 ## Före/efter-jämförelse (kalibreringsjusteringar 2026-03-22)
@@ -41,38 +41,38 @@ Simulerade säsonger: 5 (seeds: 42, 123, 456, 789, 1337)
 
 | Snittpos | Lag | Snittpoäng | Snittvinster | Snitt GF | Snitt GA |
 |----------|-----|------------|--------------|----------|----------|
-| 1.8 | Västerås | 51.2 | 16.6 | 96.8 | 44.8 |
-| 2.0 | Sandviken | 50.4 | 15.8 | 90.8 | 45.0 |
-| 2.2 | Sirius | 49.2 | 15.2 | 83.6 | 41.4 |
-| 5.0 | Villa | 33.8 | 10.4 | 65.6 | 62.0 |
-| 6.2 | Broberg | 32.2 | 9.2 | 66.6 | 62.8 |
-| 6.8 | Falun | 30.8 | 9.2 | 61.2 | 66.0 |
-| 7.0 | Ljusdal | 29.2 | 8.4 | 66.6 | 66.6 |
-| 7.2 | Skutskär | 27.0 | 7.6 | 55.8 | 64.2 |
-| 8.6 | Edsbyn | 22.2 | 6.2 | 39.8 | 63.6 |
-| 8.8 | Kungälv | 21.4 | 6.0 | 57.4 | 80.6 |
-| 10.8 | Tillberga | 15.6 | 3.8 | 41.0 | 75.0 |
-| 11.6 | Söderhamn | 12.2 | 2.8 | 34.2 | 87.4 |
+| 1.8 | Hallstahammar | 34.6 | 16.6 | 96.8 | 44.8 |
+| 2.0 | Storvik | 34.6 | 15.8 | 90.8 | 45.0 |
+| 2.2 | Tierp | 34.0 | 15.2 | 83.6 | 41.4 |
+| 5.0 | Lödöse | 23.4 | 10.4 | 65.6 | 62.0 |
+| 6.0 | Norrala | 23.0 | 9.2 | 66.6 | 62.8 |
+| 7.0 | Gagnef | 21.6 | 9.2 | 61.2 | 66.0 |
+| 7.0 | Bergsjö | 20.8 | 8.4 | 66.6 | 66.6 |
+| 7.2 | Skutskär | 19.4 | 7.6 | 55.8 | 64.2 |
+| 8.6 | Alfta | 16.0 | 6.2 | 39.8 | 63.6 |
+| 8.6 | Bohus | 15.4 | 6.0 | 57.4 | 80.6 |
+| 10.8 | Kolbäck | 11.8 | 3.8 | 41.0 | 75.0 |
+| 11.8 | Iggesund | 9.4 | 2.8 | 34.2 | 87.4 |
 
 ## Toppskyttar (bästa säsong — seed 789)
 
 | # | Spelare | Lag | Mål |
 |---|---------|-----|-----|
-| 1 | Mattias Larsson | Västerås | 23 |
-| 2 | Niklas Lund | Sandviken | 22 |
-| 3 | Oscar Wikström | Broberg | 19 |
-| 4 | Mikael Lindgren | Sandviken | 16 |
-| 5 | Linus Jansson | Västerås | 16 |
+| 1 | Mattias Larsson | Hallstahammar | 23 |
+| 2 | Niklas Lund | Storvik | 22 |
+| 3 | Oscar Wikström | Norrala | 19 |
+| 4 | Mikael Lindgren | Storvik | 16 |
+| 5 | Linus Jansson | Hallstahammar | 16 |
 
 ## Spelarbetyg (snitt, bästa säsong — seed 789)
 
 | # | Spelare | Lag | Snittbetyg | Matcher |
 |---|---------|-----|------------|---------|
 | 1 | Ludvig Jonsson | Skutskär | 7.39 | 22 |
-| 2 | Jonas Magnusson | Tillberga | 7.35 | 22 |
-| 3 | Robert Holm | Sirius | 7.32 | 22 |
-| 4 | Linus Berg | Ljusdal | 7.27 | 22 |
-| 5 | Marcus Jansson | Sandviken | 7.22 | 22 |
+| 2 | Jonas Magnusson | Kolbäck | 7.35 | 22 |
+| 3 | Robert Holm | Tierp | 7.32 | 22 |
+| 4 | Linus Berg | Bergsjö | 7.27 | 22 |
+| 5 | Marcus Jansson | Storvik | 7.22 | 22 |
 
 ## Flaggor
 

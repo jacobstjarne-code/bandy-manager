@@ -77,6 +77,21 @@ export function createSuspensionItem(
   }
 }
 
+export function createRecoveryItem(
+  player: Player,
+  currentDate: string,
+): InboxItem {
+  return {
+    id: generateId(InboxItemType.Recovery),
+    date: currentDate,
+    type: InboxItemType.Recovery,
+    title: `Tillbaka: ${player.firstName} ${player.lastName}`,
+    body: `${player.firstName} ${player.lastName} är frisk och tillgänglig igen.`,
+    relatedPlayerId: player.id,
+    isRead: false,
+  }
+}
+
 export function createYouthIntakeItem(
   result: YouthIntakeResult,
   club: Club,

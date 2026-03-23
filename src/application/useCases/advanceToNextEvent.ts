@@ -23,6 +23,7 @@ import {
   createMatchResultItem,
   createInjuryItem,
   createSuspensionItem,
+  createRecoveryItem,
   createYouthIntakeItem,
   createBoardFeedbackItem,
   createTrainingItem,
@@ -129,7 +130,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // Find next round
   const nextRound = Math.min(...scheduledFixtures.map(f => f.roundNumber))
-  const roundFixtures = scheduledFixtures.filter(f => f.roundNumber === nextRound)
+  // Include already-completed (live-played) fixtures so they are not re-simulated
+  const roundFixtures = game.fixtures.filter(f =>
+    f.roundNumber === nextRound &&
+    (f.status === FixtureStatus.Scheduled || f.status === FixtureStatus.Completed)
+  )
 
   const baseSeed = seed ?? (nextRound * 1000 + game.currentSeason * 7)
   const localRand = mulberry32(baseSeed + 9999)
@@ -191,6 +196,20 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   for (let i = 0; i < roundFixtures.length; i++) {
     const fixture = roundFixtures[i]
+
+    // Skip fixtures already played via live mode — track starters for fitness, don't re-simulate
+    if (fixture.status === FixtureStatus.Completed) {
+      simulatedFixtures.push(fixture)
+      if (fixture.homeLineup) {
+        for (const id of fixture.homeLineup.startingPlayerIds) startersThisRound.add(id)
+        for (const id of fixture.homeLineup.benchPlayerIds) benchThisRound.add(id)
+      }
+      if (fixture.awayLineup) {
+        for (const id of fixture.awayLineup.startingPlayerIds) startersThisRound.add(id)
+        for (const id of fixture.awayLineup.benchPlayerIds) benchThisRound.add(id)
+      }
+      continue
+    }
 
     // Determine lineups
     let homeLineup: TeamSelection
@@ -285,9 +304,29 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const completedFixtures = allFixtures.filter(f => f.status === FixtureStatus.Completed)
   const standings = calculateStandings(game.league.teamIds, completedFixtures)
 
+  // Snapshot injury state before updates (for recovery notifications)
+  const injuredBeforeRound = new Set(
+    trainingPlayers.filter(p => p.isInjured && p.clubId === game.managedClubId).map(p => p.id)
+  )
+
   // Player fitness / form / sharpness updates (start from training-updated players)
   const updatedPlayers = trainingPlayers.map(player => {
     let updated = { ...player }
+
+    // ── Injury recovery (every round ≈ 7 days) ──────────────────────────
+    if (updated.isInjured && updated.injuryDaysRemaining > 0) {
+      updated.injuryDaysRemaining = Math.max(0, updated.injuryDaysRemaining - 7)
+      if (updated.injuryDaysRemaining <= 0) {
+        updated.isInjured = false
+        updated.injuryDaysRemaining = 0
+        updated.fitness = Math.max(30, updated.fitness - 15)
+      }
+    }
+
+    // ── Suspension recovery (decrement every round for non-playing suspended players) ──
+    if (updated.suspensionGamesRemaining > 0 && !startersThisRound.has(player.id)) {
+      updated.suspensionGamesRemaining = Math.max(0, updated.suspensionGamesRemaining - 1)
+    }
 
     if (startersThisRound.has(player.id)) {
       // Reduce fitness 15-25
@@ -401,6 +440,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   for (const { player } of newlySuspended) {
     if (player.clubId === game.managedClubId) {
       newInboxItems.push(createSuspensionItem(player, 3, game.currentDate))
+    }
+  }
+
+  // Recovery notifications (players who were injured before this round and are now healed)
+  for (const player of updatedPlayers) {
+    if (player.clubId === game.managedClubId && injuredBeforeRound.has(player.id) && !player.isInjured) {
+      newInboxItems.push(createRecoveryItem(player, game.currentDate))
     }
   }
 

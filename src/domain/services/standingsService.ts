@@ -38,11 +38,11 @@ export function calculateStandings(teamIds: string[], fixtures: Fixture[]): Stan
 
     if (fixture.homeScore > fixture.awayScore) {
       home.wins += 1
-      home.points += 3
+      home.points += 2
       away.losses += 1
     } else if (fixture.homeScore < fixture.awayScore) {
       away.wins += 1
-      away.points += 3
+      away.points += 2
       home.losses += 1
     } else {
       home.draws += 1

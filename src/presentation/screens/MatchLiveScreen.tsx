@@ -51,8 +51,8 @@ function SnowOverlay() {
 
 function eventIcon(type: MatchEventType): string {
   if (type === MatchEventType.Goal) return '🔴'
-  if (type === MatchEventType.YellowCard) return '🟨'
-  if (type === MatchEventType.RedCard) return '🟥'
+  if (type === MatchEventType.YellowCard) return '⚠️'
+  if (type === MatchEventType.RedCard) return '🚫'
   if (type === MatchEventType.Save) return '🧤'
   if (type === MatchEventType.Corner) return '📐'
   return ''
@@ -65,7 +65,7 @@ function truncate(s: string, n: number): string {
 export function MatchLiveScreen() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { game, advance } = useGameStore()
+  const { game, advance, saveLiveMatchResult } = useGameStore()
 
   const state = location.state as LocationState | null
   const fixture = state?.fixture
@@ -120,6 +120,51 @@ export function MatchLiveScreen() {
     setCurrentStep(0)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Save live match result to game state when match is done
+  useEffect(() => {
+    if (!matchDone || !fixture || !homeLineup || !awayLineup || steps.length === 0) return
+    const lastStep = steps[steps.length - 1]
+    const allEvents = steps.flatMap(s => s.events)
+
+    // Build player ratings: starters start at 6.5, adjust for goals/assists/cards
+    const playerRatings: Record<string, number> = {}
+    const allStarters = [
+      ...(homeLineup.startingPlayerIds ?? []),
+      ...(awayLineup.startingPlayerIds ?? []),
+    ]
+    for (const id of allStarters) playerRatings[id] = 6.5
+    for (const e of allEvents) {
+      if (!e.playerId) continue
+      if (e.type === MatchEventType.Goal) playerRatings[e.playerId] = Math.min(10, (playerRatings[e.playerId] ?? 6.5) + 1.5)
+      if (e.type === MatchEventType.YellowCard) playerRatings[e.playerId] = Math.max(1, (playerRatings[e.playerId] ?? 6.5) - 0.5)
+      if (e.type === MatchEventType.RedCard) playerRatings[e.playerId] = Math.max(1, (playerRatings[e.playerId] ?? 6.5) - 1.5)
+    }
+    const potmId = Object.entries(playerRatings).sort((a, b) => b[1] - a[1])[0]?.[0]
+
+    const possession = 50
+    const report = {
+      playerRatings,
+      shotsHome: lastStep.shotsHome,
+      shotsAway: lastStep.shotsAway,
+      cornersHome: lastStep.cornersHome,
+      cornersAway: lastStep.cornersAway,
+      penaltiesHome: 0,
+      penaltiesAway: 0,
+      possessionHome: possession,
+      possessionAway: 100 - possession,
+      playerOfTheMatchId: potmId,
+    }
+    saveLiveMatchResult(
+      fixture.id,
+      lastStep.homeScore,
+      lastStep.awayScore,
+      allEvents,
+      report,
+      homeLineup,
+      awayLineup,
+    )
+  }, [matchDone]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Auto-scroll feed to top (newest events at top)
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -151,18 +196,18 @@ export function MatchLiveScreen() {
     const step = steps[currentStep]
 
     // Check for halftime
-    if (step.step === 29 && !isFastForward) {
+    if (step.step === 30 && !isFastForward) {
       setShowHalftime(true)
       return
     }
 
     const delay = isFastForward
-      ? 30
+      ? 50
       : step.intensity === 'high'
-      ? 1500
+      ? 2200
       : step.intensity === 'medium'
-      ? 600
-      : 900
+      ? 1200
+      : 1400
 
     const timer = setTimeout(() => {
       if (currentStep + 1 >= steps.length) {
@@ -199,7 +244,7 @@ export function MatchLiveScreen() {
   const currentMinute = currentMatchStep?.minute ?? 0
   const homeScore = currentMatchStep?.homeScore ?? 0
   const awayScore = currentMatchStep?.awayScore ?? 0
-  const halftimeStep = steps.find(s => s.step === 29)
+  const halftimeStep = steps.find(s => s.step === 30)
 
   return (
     <div style={{

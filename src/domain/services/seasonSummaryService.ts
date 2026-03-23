@@ -214,7 +214,7 @@ export function generateSeasonSummary(game: SaveGame): SeasonSummary {
     const isHome = f.homeClubId === managedClubId
     const clubScore = isHome ? f.homeScore : f.awayScore
     const oppScore = isHome ? f.awayScore : f.homeScore
-    const pts = clubScore > oppScore ? 3 : clubScore === oppScore ? 1 : 0
+    const pts = clubScore > oppScore ? 2 : clubScore === oppScore ? 1 : 0
     if (f.roundNumber <= 11) firstHalfPoints += pts
     else secondHalfPoints += pts
   }
@@ -233,7 +233,7 @@ export function generateSeasonSummary(game: SaveGame): SeasonSummary {
       const isHome = f.homeClubId === managedClubId
       const clubScore = isHome ? f.homeScore : f.awayScore
       const oppScore = isHome ? f.awayScore : f.homeScore
-      cumulativePoints += clubScore > oppScore ? 3 : clubScore === oppScore ? 1 : 0
+      cumulativePoints += clubScore > oppScore ? 2 : clubScore === oppScore ? 1 : 0
     }
     roundPoints.push(cumulativePoints)
   }
