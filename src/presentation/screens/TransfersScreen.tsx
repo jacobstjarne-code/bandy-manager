@@ -355,7 +355,7 @@ export function TransfersScreen() {
                     {agent.firstName} {agent.lastName}
                   </p>
                   <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
-                    {positionShort(agent.position)} · CA {agent.currentAbility} · {formatCurrency(agent.salary)}/mån
+                    {positionShort(agent.position)} · Styrka {Math.round(agent.currentAbility)} · {formatCurrency(agent.salary)}/mån
                   </p>
                 </div>
                 <button

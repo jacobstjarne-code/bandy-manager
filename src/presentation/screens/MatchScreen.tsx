@@ -877,7 +877,7 @@ export function MatchScreen() {
                           {player.suspensionGamesRemaining > 0 && <span style={{ marginLeft: 4, fontSize: 12 }}>🚫</span>}
                         </p>
                         <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
-                          CA {player.currentAbility} · Form {player.form}
+                          Styrka {Math.round(player.currentAbility)} · Form {Math.round(player.form)}
                         </p>
                       </div>
                       <button onClick={() => togglePlayer(player.id)} disabled={unavailable} style={{

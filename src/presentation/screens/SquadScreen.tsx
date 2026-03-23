@@ -200,7 +200,7 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
                 ? '0 0 8px rgba(239,68,68,0.3)'
                 : undefined,
           }}>
-            {player.currentAbility}
+            {Math.round(player.currentAbility)}
           </span>
           <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>CA</span>
         </div>
