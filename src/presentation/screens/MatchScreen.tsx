@@ -398,7 +398,7 @@ export function MatchScreen() {
   const [completedFixture, setCompletedFixture] = useState<Fixture | null>(() =>
     (location.state as { showReport?: boolean } | null)?.showReport ? lastCompletedFixtureFromStore : null
   )
-  const [tacticOpen, setTacticOpen] = useState(false)
+  const [matchStep, setMatchStep] = useState<'lineup' | 'tactic' | 'start'>('lineup')
   const [useLiveMode, setUseLiveMode] = useState(true)
 
   const managedClubId = game?.managedClubId ?? ''
@@ -696,441 +696,350 @@ export function MatchScreen() {
     )
   }
 
+  // ── Match header data (used in all steps) ──────────────────────────────
+  const isPlayoffRound = nextFixture.roundNumber > 22
+  const playoffBracket = game?.playoffBracket
+  const allSeries = playoffBracket ? [
+    ...playoffBracket.quarterFinals,
+    ...playoffBracket.semiFinals,
+    ...(playoffBracket.final ? [playoffBracket.final] : []),
+  ] : []
+  const playoffSeries = allSeries.find(s => s.fixtures.includes(nextFixture.id)) ?? null
+  const isSeriesHome = playoffSeries ? playoffSeries.homeClubId === managedClubId : false
+  const myWins = playoffSeries ? (isSeriesHome ? playoffSeries.homeWins : playoffSeries.awayWins) : 0
+  const theirWins = playoffSeries ? (isSeriesHome ? playoffSeries.awayWins : playoffSeries.homeWins) : 0
+  const roundLabel = isPlayoffRound && playoffSeries
+    ? `${getPlayoffRoundLabel(playoffSeries.round)} · Serie ${myWins}–${theirWins} (bäst av 3)`
+    : rivalry ? `🔥 ${rivalry.name} ${'🔥'.repeat(rivalry.intensity)}` : `Omgång ${nextFixture.roundNumber}`
+  const matchWeatherData = game?.matchWeathers?.find(w => w.fixtureId === nextFixture.id)
+
+  const tacticRows = [
+    { label: 'Mentalitet', key: 'mentality' as keyof Tactic, options: [
+      { label: 'Defensiv', value: TacticMentality.Defensive },
+      { label: 'Balanserad', value: TacticMentality.Balanced },
+      { label: 'Offensiv', value: TacticMentality.Offensive },
+    ]},
+    { label: 'Tempo', key: 'tempo' as keyof Tactic, options: [
+      { label: 'Lågt', value: TacticTempo.Low },
+      { label: 'Normalt', value: TacticTempo.Normal },
+      { label: 'Högt', value: TacticTempo.High },
+    ]},
+    { label: 'Press', key: 'press' as keyof Tactic, options: [
+      { label: 'Låg', value: TacticPress.Low },
+      { label: 'Medium', value: TacticPress.Medium },
+      { label: 'Hög', value: TacticPress.High },
+    ]},
+    { label: 'Passning', key: 'passingRisk' as keyof Tactic, options: [
+      { label: 'Säker', value: TacticPassingRisk.Safe },
+      { label: 'Blandat', value: TacticPassingRisk.Mixed },
+      { label: 'Direkt', value: TacticPassingRisk.Direct },
+    ]},
+    { label: 'Bredd', key: 'width' as keyof Tactic, options: [
+      { label: 'Smal', value: TacticWidth.Narrow },
+      { label: 'Normal', value: TacticWidth.Normal },
+      { label: 'Bred', value: TacticWidth.Wide },
+    ]},
+    { label: 'Anfallsfokus', key: 'attackingFocus' as keyof Tactic, options: [
+      { label: 'Centralt', value: TacticAttackingFocus.Central },
+      { label: 'Kanter', value: TacticAttackingFocus.Wings },
+      { label: 'Blandat', value: TacticAttackingFocus.Mixed },
+    ]},
+    { label: 'Hörnstrategi', key: 'cornerStrategy' as keyof Tactic, options: [
+      { label: 'Säker', value: CornerStrategy.Safe },
+      { label: 'Standard', value: CornerStrategy.Standard },
+      { label: 'Aggressiv', value: CornerStrategy.Aggressive },
+    ]},
+    { label: 'Utvisningsspel', key: 'penaltyKillStyle' as keyof Tactic, options: [
+      { label: 'Passivt', value: PenaltyKillStyle.Passive },
+      { label: 'Aktivt', value: PenaltyKillStyle.Active },
+      { label: 'Aggressivt', value: PenaltyKillStyle.Aggressive },
+    ]},
+  ]
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
-      <div style={{ padding: '20px 16px 0' }}>
-        {/* First-time hint — shown before any match has been completed */}
-        {lastCompletedFixture === null && (
-          <div style={{
-            background: 'rgba(59,130,246,0.08)',
-            border: '1px solid rgba(59,130,246,0.25)',
-            borderRadius: 'var(--radius)',
-            padding: '12px 14px',
-            fontSize: 13,
-            color: 'var(--text-secondary)',
-            marginBottom: 12,
-          }}>
-            💡 Klicka på spelarnas status-knapp (Ute → Start) för att välja 11 startspelare, sedan tryck Spela Match.
-          </div>
-        )}
-
-        {/* Senaste match */}
+      {/* ── Always visible: header ───────────────────────────────────── */}
+      <div style={{ padding: '16px 16px 0' }}>
         {lastCompletedFixture && (
-          <div style={{ marginBottom: 16 }}>
-            <p style={{
-              fontSize: 11,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.8px',
-              color: 'var(--text-muted)',
-              marginBottom: 8,
-            }}>
-              Senaste match
-            </p>
+          <div style={{ marginBottom: 12 }}>
             <LastMatchCard fixture={lastCompletedFixture} game={game} managedClubId={managedClubId} />
           </div>
         )}
-
-        {/* Next match header */}
-        {(() => {
-          const isPlayoffRound = nextFixture.roundNumber > 22
-          const playoffBracket = game?.playoffBracket
-          const allSeries = playoffBracket ? [
-            ...playoffBracket.quarterFinals,
-            ...playoffBracket.semiFinals,
-            ...(playoffBracket.final ? [playoffBracket.final] : []),
-          ] : []
-          const playoffSeries = allSeries.find(s => s.fixtures.includes(nextFixture.id)) ?? null
-          const isSeriesHome = playoffSeries ? playoffSeries.homeClubId === managedClubId : false
-          const myWins = playoffSeries ? (isSeriesHome ? playoffSeries.homeWins : playoffSeries.awayWins) : 0
-          const theirWins = playoffSeries ? (isSeriesHome ? playoffSeries.awayWins : playoffSeries.homeWins) : 0
-
-          return (
-            <div style={{
-              background: 'var(--bg-surface)',
-              border: isPlayoffRound ? '1px solid rgba(201,168,76,0.3)' : rivalry ? '1px solid rgba(220,80,30,0.3)' : '1px solid var(--border)',
-              borderRadius: 'var(--radius)',
-              padding: '14px 16px',
-              marginBottom: 20,
-            }}>
-              <p style={{ fontSize: 11, color: isPlayoffRound ? '#C9A84C' : rivalry ? '#ff7040' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>
-                {isPlayoffRound && playoffSeries
-                  ? `${getPlayoffRoundLabel(playoffSeries.round)} · Serie ${myWins}–${theirWins} (bäst av 3)`
-                  : rivalry
-                  ? `🔥 ${rivalry.name} ${'🔥'.repeat(rivalry.intensity)}`
-                  : `Omgång ${nextFixture.roundNumber}`
-                }
-              </p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <p style={{ fontSize: 17, fontWeight: 700 }}>vs {opponent?.name ?? 'Okänd'}</p>
-                <span style={{
-                  padding: '3px 10px',
-                  borderRadius: 99,
-                  background: isHome ? 'var(--accent)' : 'var(--bg-elevated)',
-                  border: '1px solid ' + (isHome ? 'var(--accent)' : 'var(--border)'),
-                  color: isHome ? '#fff' : 'var(--text-secondary)',
-                  fontSize: 12,
-                  fontWeight: 600,
-                }}>
-                  {isHome ? 'Hemma' : 'Borta'}
-                </span>
-              </div>
-            </div>
-          )
-        })()}
-
-        {/* Weather card */}
-        {nextFixture && (() => {
-          const mw = game?.matchWeathers?.find(w => w.fixtureId === nextFixture.id)
-          if (!mw) return null
-          return (
-            <div style={{
-              background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)',
-              padding: '10px 12px', marginBottom: 12,
-              border: `1px solid ${mw.effects.cancelled ? 'var(--danger)' : 'var(--border)'}`,
-            }}>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 6 }}>Väder</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 20 }}>{getWeatherEmoji(mw.weather.condition)}</span>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>
-                    {mw.weather.temperature > 0 ? '+' : ''}{mw.weather.temperature}° · {getConditionLabel(mw.weather.condition)}
-                  </div>
-                  <div style={{ fontSize: 12, color: mw.weather.iceQuality === 'poor' ? 'var(--danger)' : 'var(--text-secondary)' }}>
-                    {getIceQualityLabel(mw.weather.iceQuality)}
-                    {mw.effects.ballControlPenalty > 0 && ` · -${mw.effects.ballControlPenalty} bollkontroll`}
-                    {mw.effects.speedModifier < 1 && ` · -${Math.round((1 - mw.effects.speedModifier) * 100)}% fart`}
-                  </div>
-                </div>
-              </div>
-              {mw.effects.cancelled && (
-                <div style={{ color: 'var(--danger)', fontSize: 12, marginTop: 6, fontWeight: 600 }}>
-                  Matchen kan ställas in — dåliga isförhållanden
-                </div>
-              )}
-            </div>
-          )
-        })()}
-
-        {/* Live / Snabbsim toggle */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          <button
-            onClick={() => setUseLiveMode(true)}
-            style={{
-              flex: 1,
-              padding: '10px',
-              background: useLiveMode ? 'var(--accent)' : 'var(--bg-elevated)',
-              border: '1px solid ' + (useLiveMode ? 'var(--accent)' : 'var(--border)'),
-              borderRadius: 'var(--radius)',
-              color: useLiveMode ? '#fff' : 'var(--text-secondary)',
-              fontSize: 14,
-              fontWeight: useLiveMode ? 600 : 400,
-            }}
-          >
-            🎙 Live
-          </button>
-          <button
-            onClick={() => setUseLiveMode(false)}
-            style={{
-              flex: 1,
-              padding: '10px',
-              background: !useLiveMode ? 'var(--accent)' : 'var(--bg-elevated)',
-              border: '1px solid ' + (!useLiveMode ? 'var(--accent)' : 'var(--border)'),
-              borderRadius: 'var(--radius)',
-              color: !useLiveMode ? '#fff' : 'var(--text-secondary)',
-              fontSize: 14,
-              fontWeight: !useLiveMode ? 600 : 400,
-            }}
-          >
-            ⏩ Snabbsim
-          </button>
-        </div>
-
-        {/* Lineup counter + auto-fill */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <p style={{ fontSize: 14, fontWeight: 600 }}>Laguppställning</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <button
-              onClick={handleAutoFill}
-              style={{
-                padding: '4px 10px',
-                borderRadius: 99,
-                background: 'rgba(201,168,76,0.12)',
-                border: '1px solid rgba(201,168,76,0.4)',
-                color: 'var(--accent)',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              Bästa elvan
-            </button>
+        <div style={{
+          background: 'var(--bg-surface)',
+          border: isPlayoffRound ? '1px solid rgba(201,168,76,0.3)' : rivalry ? '1px solid rgba(220,80,30,0.3)' : '1px solid var(--border)',
+          borderRadius: 'var(--radius)',
+          padding: '12px 16px',
+          marginBottom: 16,
+        }}>
+          <p style={{ fontSize: 11, color: isPlayoffRound ? '#C9A84C' : rivalry ? '#ff7040' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
+            {roundLabel}
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <p style={{ fontSize: 17, fontWeight: 700 }}>vs {opponent?.name ?? 'Okänd'}</p>
             <span style={{
-              fontSize: 13,
-              color: startingIds.length === 11 ? 'var(--success)' : 'var(--warning)',
-              fontWeight: 600,
+              padding: '3px 10px', borderRadius: 99,
+              background: isHome ? 'var(--accent)' : 'var(--bg-elevated)',
+              border: '1px solid ' + (isHome ? 'var(--accent)' : 'var(--border)'),
+              color: isHome ? '#fff' : 'var(--text-secondary)',
+              fontSize: 12, fontWeight: 600,
             }}>
-              {startingIds.length}/11 startande
+              {isHome ? 'Hemma' : 'Borta'}
             </span>
           </div>
         </div>
-      </div>
 
-      {/* Player list */}
-      <div style={{ flex: 1, padding: '0 0 0 0' }}>
-        {groupedPlayers.map(group => (
-          <div key={group.position}>
-            <div style={{
-              padding: '6px 16px',
-              background: 'var(--bg)',
-              borderTop: '1px solid var(--border)',
-              borderBottom: '1px solid var(--border)',
-            }}>
-              <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--text-muted)' }}>
-                {positionShort(group.position)}
-              </span>
-            </div>
-            {group.players.map(player => {
-              const status = getPlayerStatus(player.id)
-              const isCaptain = player.id === captainId
-              const unavailable = player.isInjured || player.suspensionGamesRemaining > 0
-              return (
-                <div
-                  key={player.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '10px 16px',
-                    borderBottom: '1px solid var(--border)',
-                    gap: 10,
-                    background: unavailable ? 'rgba(239,68,68,0.04)' : 'transparent',
-                    opacity: unavailable ? 0.55 : 1,
-                  }}
-                >
-                  {/* Captain toggle */}
-                  <button
-                    onClick={() => setCaptainId(player.id)}
-                    disabled={unavailable}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      fontSize: 14,
-                      opacity: isCaptain ? 1 : 0.2,
-                      cursor: unavailable ? 'not-allowed' : 'pointer',
-                      flexShrink: 0,
-                      padding: 0,
-                    }}
-                    title="Kapten"
-                  >
-                    👑
-                  </button>
-
-                  {/* Player info */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {player.firstName} {player.lastName}
-                      {player.isInjured && <span style={{ marginLeft: 4, fontSize: 12 }}>🩹</span>}
-                      {player.suspensionGamesRemaining > 0 && <span style={{ marginLeft: 4, fontSize: 12 }}>🚫</span>}
-                    </p>
-                    <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
-                      CA {player.currentAbility} · Form {player.form}
-                    </p>
+        {/* Step indicator */}
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16, gap: 0 }}>
+          {(['lineup', 'tactic', 'start'] as const).map((s, i) => {
+            const labels = ['Välj trupp', 'Välj taktik', 'Starta']
+            const isActive = matchStep === s
+            const isDone = (matchStep === 'tactic' && s === 'lineup') || (matchStep === 'start' && s !== 'start')
+            return (
+              <div key={s} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: isDone ? 'var(--success)' : isActive ? 'var(--accent)' : 'var(--bg-elevated)',
+                    border: `2px solid ${isDone ? 'var(--success)' : isActive ? 'var(--accent)' : 'var(--border)'}`,
+                    fontSize: 12, fontWeight: 700,
+                    color: isDone || isActive ? '#fff' : 'var(--text-muted)',
+                    cursor: isDone ? 'pointer' : 'default',
+                    transition: 'all 0.2s',
+                  }} onClick={() => isDone && setMatchStep(s)}>
+                    {isDone ? '✓' : i + 1}
                   </div>
-
-                  {/* Status toggle */}
-                  <button
-                    onClick={() => togglePlayer(player.id)}
-                    disabled={unavailable}
-                    style={{
-                      flexShrink: 0,
-                      padding: '4px 10px',
-                      borderRadius: 99,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: unavailable ? 'not-allowed' : 'pointer',
-                      ...(unavailable
-                        ? { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--danger)' }
-                        : status === 'start'
-                        ? { background: 'rgba(201,168,76,0.15)', border: '1px solid var(--accent)', color: 'var(--accent)' }
-                        : status === 'bench'
-                        ? { background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }
-                        : { background: 'transparent', border: '1px solid transparent', color: 'var(--text-muted)' }
-                      ),
-                    }}
-                  >
-                    {unavailable
-                      ? (player.isInjured ? 'Skadad' : 'Avstängd')
-                      : status === 'start' ? 'Start' : status === 'bench' ? 'Bänk' : 'Ute'}
-                  </button>
+                  <span style={{ fontSize: 10, color: isActive ? 'var(--accent)' : 'var(--text-muted)', fontWeight: isActive ? 700 : 400, letterSpacing: '0.3px' }}>
+                    {labels[i]}
+                  </span>
                 </div>
-              )
-            })}
-          </div>
-        ))}
+                {i < 2 && (
+                  <div style={{ width: 24, height: 2, background: isDone ? 'var(--success)' : 'var(--border)', marginBottom: 18, flexShrink: 0 }} />
+                )}
+              </div>
+            )
+          })}
+        </div>
       </div>
 
-      {/* Tactic section (collapsible) */}
-      <div style={{ padding: '0 16px', marginTop: 4 }}>
-        <button
-          onClick={() => setTacticOpen(prev => !prev)}
-          style={{
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '12px 14px',
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border)',
-            borderRadius: tacticOpen ? '10px 10px 0 0' : 'var(--radius)',
-            color: 'var(--text-primary)',
-            fontSize: 14,
-            fontWeight: 600,
-          }}
-        >
-          <span>Taktik</span>
-          <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>{tacticOpen ? '▲' : '▼'}</span>
-        </button>
+      {/* ── Steg 1: Välj trupp ──────────────────────────────────────── */}
+      {matchStep === 'lineup' && (
+        <>
+          <div style={{ padding: '0 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 13, color: startingIds.length === 11 ? 'var(--success)' : 'var(--warning)', fontWeight: 600 }}>
+              {startingIds.length}/11 startande
+            </span>
+            <button
+              onClick={handleAutoFill}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 'var(--radius)',
+                background: 'rgba(201,168,76,0.15)',
+                border: '1px solid rgba(201,168,76,0.5)',
+                color: 'var(--accent)',
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              ⚡ Bästa elvan
+            </button>
+          </div>
 
-        {tacticOpen && (
-          <div style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border)',
-            borderTop: 'none',
-            borderRadius: '0 0 10px 10px',
-            padding: '14px',
-            marginBottom: 4,
-          }}>
-            {[
-              {
-                label: 'Mentalitet',
-                key: 'mentality' as keyof Tactic,
-                options: [
-                  { label: 'Defensiv', value: TacticMentality.Defensive },
-                  { label: 'Balanserad', value: TacticMentality.Balanced },
-                  { label: 'Offensiv', value: TacticMentality.Offensive },
-                ],
-              },
-              {
-                label: 'Tempo',
-                key: 'tempo' as keyof Tactic,
-                options: [
-                  { label: 'Lågt', value: TacticTempo.Low },
-                  { label: 'Normalt', value: TacticTempo.Normal },
-                  { label: 'Högt', value: TacticTempo.High },
-                ],
-              },
-              {
-                label: 'Press',
-                key: 'press' as keyof Tactic,
-                options: [
-                  { label: 'Låg', value: TacticPress.Low },
-                  { label: 'Medium', value: TacticPress.Medium },
-                  { label: 'Hög', value: TacticPress.High },
-                ],
-              },
-              {
-                label: 'Passning',
-                key: 'passingRisk' as keyof Tactic,
-                options: [
-                  { label: 'Säker', value: TacticPassingRisk.Safe },
-                  { label: 'Blandat', value: TacticPassingRisk.Mixed },
-                  { label: 'Direkt', value: TacticPassingRisk.Direct },
-                ],
-              },
-              {
-                label: 'Bredd',
-                key: 'width' as keyof Tactic,
-                options: [
-                  { label: 'Smal', value: TacticWidth.Narrow },
-                  { label: 'Normal', value: TacticWidth.Normal },
-                  { label: 'Bred', value: TacticWidth.Wide },
-                ],
-              },
-              {
-                label: 'Anfallsfokus',
-                key: 'attackingFocus' as keyof Tactic,
-                options: [
-                  { label: 'Centralt', value: TacticAttackingFocus.Central },
-                  { label: 'Kanter', value: TacticAttackingFocus.Wings },
-                  { label: 'Blandat', value: TacticAttackingFocus.Mixed },
-                ],
-              },
-              {
-                label: 'Hörnstrategi',
-                key: 'cornerStrategy' as keyof Tactic,
-                options: [
-                  { label: 'Säker', value: CornerStrategy.Safe },
-                  { label: 'Standard', value: CornerStrategy.Standard },
-                  { label: 'Aggressiv', value: CornerStrategy.Aggressive },
-                ],
-              },
-              {
-                label: 'Utvisningsspel',
-                key: 'penaltyKillStyle' as keyof Tactic,
-                options: [
-                  { label: 'Passivt', value: PenaltyKillStyle.Passive },
-                  { label: 'Aktivt', value: PenaltyKillStyle.Active },
-                  { label: 'Aggressivt', value: PenaltyKillStyle.Aggressive },
-                ],
-              },
-            ].map(({ label, key, options }) => (
-              <div key={key as string} style={{ marginBottom: 14 }}>
-                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{label}</p>
-                <SegmentedControl
-                  options={options}
-                  value={tacticState[key] as string}
-                  onChange={v => handleTacticChange(key, v as Tactic[typeof key])}
-                />
+          <div style={{ flex: 1 }}>
+            {groupedPlayers.map(group => (
+              <div key={group.position}>
+                <div style={{ padding: '6px 16px', background: 'var(--bg)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--text-muted)' }}>
+                    {positionShort(group.position)}
+                  </span>
+                </div>
+                {group.players.map(player => {
+                  const status = getPlayerStatus(player.id)
+                  const isCaptain = player.id === captainId
+                  const unavailable = player.isInjured || player.suspensionGamesRemaining > 0
+                  return (
+                    <div key={player.id} style={{
+                      display: 'flex', alignItems: 'center', padding: '10px 16px',
+                      borderBottom: '1px solid var(--border)', gap: 10,
+                      background: unavailable ? 'rgba(239,68,68,0.04)' : 'transparent',
+                      opacity: unavailable ? 0.55 : 1,
+                    }}>
+                      <button onClick={() => setCaptainId(player.id)} disabled={unavailable} style={{
+                        background: 'none', border: 'none', fontSize: 14,
+                        opacity: isCaptain ? 1 : 0.2,
+                        cursor: unavailable ? 'not-allowed' : 'pointer', flexShrink: 0, padding: 0,
+                      }} title="Kapten">👑</button>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {player.firstName} {player.lastName}
+                          {player.isInjured && <span style={{ marginLeft: 4, fontSize: 12 }}>🩹</span>}
+                          {player.suspensionGamesRemaining > 0 && <span style={{ marginLeft: 4, fontSize: 12 }}>🚫</span>}
+                        </p>
+                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
+                          CA {player.currentAbility} · Form {player.form}
+                        </p>
+                      </div>
+                      <button onClick={() => togglePlayer(player.id)} disabled={unavailable} style={{
+                        flexShrink: 0, padding: '4px 10px', borderRadius: 99, fontSize: 12, fontWeight: 600,
+                        cursor: unavailable ? 'not-allowed' : 'pointer',
+                        ...(unavailable
+                          ? { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--danger)' }
+                          : status === 'start'
+                          ? { background: 'rgba(201,168,76,0.15)', border: '1px solid var(--accent)', color: 'var(--accent)' }
+                          : status === 'bench'
+                          ? { background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }
+                          : { background: 'transparent', border: '1px solid transparent', color: 'var(--text-muted)' }),
+                      }}>
+                        {unavailable ? (player.isInjured ? 'Skadad' : 'Avstängd') : status === 'start' ? 'Start' : status === 'bench' ? 'Bänk' : 'Ute'}
+                      </button>
+                    </div>
+                  )
+                })}
               </div>
             ))}
           </div>
-        )}
-      </div>
 
-      {/* Play button */}
-      <div style={{ padding: '16px 16px 24px' }}>
-        {(!canPlay || lineupError) && (
-          <div style={{
-            background: 'rgba(239,68,68,0.08)',
-            border: '1px solid rgba(239,68,68,0.25)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '10px 12px',
-            fontSize: 12,
-            color: 'var(--danger)',
-            marginBottom: 10,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 4,
-          }}>
-            {startingIds.length !== 11 && (
-              <span>Välj exakt 11 startspelare (du har {startingIds.length})</span>
+          <div style={{ padding: '16px 16px 24px' }}>
+            {!canPlay && (
+              <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', fontSize: 12, color: 'var(--danger)', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {startingIds.length !== 11 && <span>Välj exakt 11 startspelare (du har {startingIds.length})</span>}
+                {injuredInStarting.map(p => (
+                  <span key={p.id}>⚠️ {p.firstName} {p.lastName} {p.isInjured ? 'är skadad' : `är avstängd (${p.suspensionGamesRemaining} matcher kvar)`}</span>
+                ))}
+              </div>
             )}
-            {injuredInStarting.map(p => (
-              <span key={p.id}>
-                ⚠️ {p.firstName} {p.lastName} {p.isInjured ? 'är skadad' : `är avstängd (${p.suspensionGamesRemaining} matcher kvar)`}
-              </span>
-            ))}
-            {lineupError && <span>{lineupError}</span>}
+            <button onClick={() => canPlay && setMatchStep('tactic')} disabled={!canPlay} style={{
+              width: '100%', padding: '15px',
+              background: canPlay ? 'var(--accent)' : 'var(--bg-elevated)',
+              border: '1px solid ' + (canPlay ? 'var(--accent)' : 'var(--border)'),
+              borderRadius: 'var(--radius)', color: canPlay ? '#fff' : 'var(--text-muted)',
+              fontSize: 16, fontWeight: 600, cursor: canPlay ? 'pointer' : 'not-allowed',
+            }}>
+              Välj taktik →
+            </button>
           </div>
-        )}
-        <button
-          onClick={handlePlayMatch}
-          disabled={!canPlay}
-          style={{
-            width: '100%',
-            padding: '15px',
-            background: canPlay ? 'var(--accent)' : 'var(--bg-elevated)',
-            border: '1px solid ' + (canPlay ? 'var(--accent)' : 'var(--border)'),
-            borderRadius: 'var(--radius)',
-            color: canPlay ? '#fff' : 'var(--text-muted)',
-            fontSize: 16,
-            fontWeight: 600,
-            cursor: canPlay ? 'pointer' : 'not-allowed',
-          }}
-        >
-          Spela match →
-        </button>
-      </div>
+        </>
+      )}
+
+      {/* ── Steg 2: Välj taktik ─────────────────────────────────────── */}
+      {matchStep === 'tactic' && (
+        <div style={{ padding: '0 16px 24px' }}>
+          {tacticRows.map(({ label, key, options }) => (
+            <div key={key as string} style={{ marginBottom: 14 }}>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{label}</p>
+              <SegmentedControl
+                options={options}
+                value={tacticState[key] as string}
+                onChange={v => handleTacticChange(key, v as Tactic[typeof key])}
+              />
+            </div>
+          ))}
+          <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+            <button onClick={() => setMatchStep('lineup')} style={{
+              flex: 1, padding: '13px', background: 'var(--bg-elevated)',
+              border: '1px solid var(--border)', borderRadius: 'var(--radius)',
+              color: 'var(--text-secondary)', fontSize: 14, fontWeight: 500, cursor: 'pointer',
+            }}>
+              ← Tillbaka
+            </button>
+            <button onClick={() => setMatchStep('start')} style={{
+              flex: 2, padding: '13px', background: 'var(--accent)',
+              border: 'none', borderRadius: 'var(--radius)',
+              color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+            }}>
+              Nästa →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Steg 3: Starta ──────────────────────────────────────────── */}
+      {matchStep === 'start' && (
+        <div style={{ padding: '0 16px 24px' }}>
+          {/* Summary */}
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '14px', marginBottom: 16 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: 10 }}>Sammanfattning</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Startspelare</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>{startingIds.length} valda ✓</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Mentalitet</span>
+              <span style={{ fontSize: 13, fontWeight: 600 }}>{tacticState.mentality}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Tempo</span>
+              <span style={{ fontSize: 13, fontWeight: 600 }}>{tacticState.tempo}</span>
+            </div>
+          </div>
+
+          {/* Weather */}
+          {matchWeatherData && (
+            <div style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', marginBottom: 16, border: `1px solid ${matchWeatherData.effects.cancelled ? 'var(--danger)' : 'var(--border)'}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 20 }}>{getWeatherEmoji(matchWeatherData.weather.condition)}</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>
+                    {matchWeatherData.weather.temperature > 0 ? '+' : ''}{matchWeatherData.weather.temperature}° · {getConditionLabel(matchWeatherData.weather.condition)}
+                  </div>
+                  <div style={{ fontSize: 12, color: matchWeatherData.weather.iceQuality === 'poor' ? 'var(--danger)' : 'var(--text-secondary)' }}>
+                    {getIceQualityLabel(matchWeatherData.weather.iceQuality)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Live / Snabbsim toggle */}
+          <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: 8 }}>Spelläge</p>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+            <button onClick={() => setUseLiveMode(true)} style={{
+              flex: 1, padding: '12px 8px',
+              background: useLiveMode ? 'rgba(201,168,76,0.12)' : 'var(--bg-elevated)',
+              border: '2px solid ' + (useLiveMode ? 'var(--accent)' : 'var(--border)'),
+              borderRadius: 'var(--radius)', cursor: 'pointer',
+            }}>
+              <div style={{ fontSize: 20, marginBottom: 4 }}>🎙</div>
+              <div style={{ fontSize: 13, fontWeight: useLiveMode ? 700 : 500, color: useLiveMode ? 'var(--accent)' : 'var(--text-secondary)' }}>Live</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Följ händelserna</div>
+            </button>
+            <button onClick={() => setUseLiveMode(false)} style={{
+              flex: 1, padding: '12px 8px',
+              background: !useLiveMode ? 'rgba(201,168,76,0.12)' : 'var(--bg-elevated)',
+              border: '2px solid ' + (!useLiveMode ? 'var(--accent)' : 'var(--border)'),
+              borderRadius: 'var(--radius)', cursor: 'pointer',
+            }}>
+              <div style={{ fontSize: 20, marginBottom: 4 }}>⏩</div>
+              <div style={{ fontSize: 13, fontWeight: !useLiveMode ? 700 : 500, color: !useLiveMode ? 'var(--accent)' : 'var(--text-secondary)' }}>Snabbsim</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Direkt resultat</div>
+            </button>
+          </div>
+
+          {lineupError && (
+            <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', fontSize: 12, color: 'var(--danger)', marginBottom: 12 }}>
+              {lineupError}
+            </div>
+          )}
+
+          <button onClick={() => setMatchStep('tactic')} style={{
+            width: '100%', padding: '12px', background: 'transparent',
+            border: '1px solid var(--border)', borderRadius: 'var(--radius)',
+            color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500, cursor: 'pointer', marginBottom: 10,
+          }}>
+            ← Ändra taktik
+          </button>
+          <button onClick={handlePlayMatch} style={{
+            width: '100%', padding: '16px',
+            background: 'var(--accent)', border: 'none',
+            borderRadius: 'var(--radius)', color: '#fff',
+            fontSize: 17, fontWeight: 700, cursor: 'pointer',
+            letterSpacing: '0.3px',
+          }}>
+            Lycka till! →
+          </button>
+        </div>
+      )}
     </div>
   )
 }

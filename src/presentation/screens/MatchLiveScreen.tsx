@@ -92,7 +92,6 @@ export function MatchLiveScreen() {
   const prevAwayScore = useRef(0)
 
   const feedRef = useRef<HTMLDivElement>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
 
   // Pre-generate all 60 steps on mount
   useEffect(() => {
@@ -121,10 +120,10 @@ export function MatchLiveScreen() {
     setCurrentStep(0)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-scroll feed to bottom
+  // Auto-scroll feed to top (newest events at top)
   useEffect(() => {
     requestAnimationFrame(() => {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+      feedRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
     })
   }, [currentStep])
 
@@ -403,7 +402,7 @@ export function MatchLiveScreen() {
         }}
       >
         {matchWeather?.weather.condition === WeatherCondition.HeavySnow && <SnowOverlay />}
-        {displayedSteps.map((s, idx) => {
+        {[...displayedSteps].reverse().map((s, idx) => {
           const hasGoal = s.events.some(e => e.type === MatchEventType.Goal)
           const hasSuspension = s.events.some(e => e.type === MatchEventType.RedCard)
           const hasCorner = s.events.some(e => e.type === MatchEventType.Corner) && !hasGoal
@@ -483,7 +482,6 @@ export function MatchLiveScreen() {
             </div>
           )
         })}
-        <div ref={bottomRef} />
       </div>
 
       {/* Halftime modal */}
