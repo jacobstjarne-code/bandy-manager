@@ -479,7 +479,9 @@ export function MatchLiveScreen() {
             borderLeft = '3px solid var(--warning)'
             color = 'var(--text-primary)'
           } else if (hasCorner) {
-            borderLeft = '3px solid var(--accent)'
+            borderLeft = '3px solid #60a5fa'
+            color = 'var(--text-primary)'
+            fontWeight = 500
           } else if (isDerby) {
             borderLeft = '3px solid rgba(220,80,30,0.7)'
             paddingLeft = 8
@@ -537,7 +539,8 @@ export function MatchLiveScreen() {
           background: 'rgba(0,0,0,0.85)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'flex-start',
+          paddingTop: '80px',
           zIndex: 100,
         }}>
           <div style={{
@@ -603,7 +606,8 @@ export function MatchLiveScreen() {
           background: 'rgba(0,0,0,0.9)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'flex-start',
+          paddingTop: '60px',
           zIndex: 100,
         }}>
           <div style={{

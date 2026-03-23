@@ -90,12 +90,14 @@ export const commentary = {
   ],
 
   corner: [
-    "Hörna till {team}. Bollen rullas ut till hörnflaggan.",
-    "{team} vinner en hörna. Spelarna placerar sig.",
-    "Hörna! {team} sätter upp varianten.",
-    "Avslutet resulterar i en hörna. {team} har ett bra hörnspel.",
-    "Domaren pekar på hörnan. {team}-supportrarna muttrar hoppfullt.",
-    "Hörna till {team}. Spänningen stiger på läktaren.",
+    "Hörna till {team}. Slås in hårt — nickas undan av försvaret.",
+    "Hörna för {team}. Bollen kurvar in men målvakten boxar ut den i sista stund.",
+    "Hörna till {team}. Kort variant — tillbaka till hörnläggaren som skjuter! Utanför.",
+    "{team} får hörna. Hög boll in framför mål — rensning av {opponent}.",
+    "Hörna {team}. Insvingad direkt mot mål — stolpe! Nära att sitta.",
+    "Ny hörna till {team}. Kort uppspel, passning tillbaka, skott! Blockerat.",
+    "{team} tar hörna. Bollen snurrar in mot bortre stolpen men seglar över.",
+    "Hörna till {team}. Spelarna trängs framför målet — domaren blåser för regelbrott.",
   ],
 
   powerPlayGood: [

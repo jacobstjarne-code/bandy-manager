@@ -251,6 +251,17 @@ export function DashboardScreen() {
 
   const handleAdvance = () => {
     if (!canAdvance) return
+
+    const hasManagedMatch = game!.fixtures.some(
+      f => (f.homeClubId === game!.managedClubId || f.awayClubId === game!.managedClubId) &&
+           f.status === 'scheduled'
+    )
+
+    if (hasManagedMatch) {
+      navigate('/game/match')
+      return
+    }
+
     advance()
   }
 
