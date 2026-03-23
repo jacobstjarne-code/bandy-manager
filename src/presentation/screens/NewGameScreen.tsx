@@ -139,12 +139,12 @@ export function NewGameScreen() {
                     <span style={{
                       fontSize: 11,
                       fontWeight: 600,
-                      color: club.difficultyColor,
+                      color: club.color,
                       padding: '2px 8px',
-                      background: `${club.difficultyColor}20`,
+                      background: `${club.color}20`,
                       borderRadius: 20,
                     }}>
-                      {club.difficulty}
+                      {club.label}
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
