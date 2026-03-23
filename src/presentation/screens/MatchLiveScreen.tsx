@@ -4,7 +4,7 @@ import { useGameStore } from '../store/gameStore'
 import { simulateMatchStepByStep, type MatchStep } from '../../domain/services/matchSimulator'
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
-import { MatchEventType, TacticMentality, TacticTempo, WeatherCondition, IceQuality } from '../../domain/enums'
+import { MatchEventType, WeatherCondition, IceQuality } from '../../domain/enums'
 import { getWeatherEmoji, getIceQualityLabel } from '../../domain/services/weatherService'
 import { getRivalry } from '../../domain/data/rivalries'
 
@@ -85,14 +85,6 @@ export function MatchLiveScreen() {
   const [isFastForward, setIsFastForward] = useState(false)
   const [showHalftime, setShowHalftime] = useState(false)
   const [matchDone, setMatchDone] = useState(false)
-  const [showTacticPanel, setShowTacticPanel] = useState(false)
-  const [tacticMentality, setTacticMentality] = useState<string>(
-    homeLineup?.tactic?.mentality ?? TacticMentality.Balanced
-  )
-  const [tacticTempo, setTacticTempo] = useState<string>(
-    homeLineup?.tactic?.tempo ?? TacticTempo.Normal
-  )
-
   // Score flash state
   const [homeScoreFlash, setHomeScoreFlash] = useState(false)
   const [awayScoreFlash, setAwayScoreFlash] = useState(false)
@@ -100,6 +92,7 @@ export function MatchLiveScreen() {
   const prevAwayScore = useRef(0)
 
   const feedRef = useRef<HTMLDivElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   // Pre-generate all 60 steps on mount
   useEffect(() => {
@@ -130,7 +123,9 @@ export function MatchLiveScreen() {
 
   // Auto-scroll feed to bottom
   useEffect(() => {
-    feedRef.current?.scrollTo({ top: feedRef.current.scrollHeight, behavior: 'smooth' })
+    requestAnimationFrame(() => {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    })
   }, [currentStep])
 
   // Score flash detection
@@ -488,6 +483,7 @@ export function MatchLiveScreen() {
             </div>
           )
         })}
+        <div ref={bottomRef} />
       </div>
 
       {/* Halftime modal */}
@@ -629,125 +625,43 @@ export function MatchLiveScreen() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button
-                onClick={handleSeeReport}
+                onClick={() => {
+                  advance()
+                  navigate('/game')
+                }}
                 style={{
-                  padding: '12px',
+                  padding: '14px',
                   background: 'var(--accent)',
                   border: 'none',
                   borderRadius: 'var(--radius)',
                   color: '#fff',
-                  fontSize: 14,
-                  fontWeight: 600,
+                  fontSize: 15,
+                  fontWeight: 700,
+                  cursor: 'pointer',
                 }}
               >
-                Se matchrapport
+                Dags för nästa match →
               </button>
               <button
-                onClick={() => navigate(-1)}
+                onClick={handleSeeReport}
                 style={{
                   padding: '12px',
                   background: 'var(--bg-elevated)',
                   border: '1px solid var(--border)',
                   borderRadius: 'var(--radius)',
-                  color: 'var(--text-primary)',
-                  fontSize: 14,
+                  color: 'var(--text-secondary)',
+                  fontSize: 13,
                   fontWeight: 500,
+                  cursor: 'pointer',
                 }}
               >
-                Tillbaka
+                Se matchrapport →
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Tactic panel (expandable, bottom) */}
-      <div style={{
-        flexShrink: 0,
-        borderTop: '1px solid var(--border)',
-        background: 'var(--bg-surface)',
-      }}>
-        <button
-          onClick={() => setShowTacticPanel(prev => !prev)}
-          style={{
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '10px 16px',
-            background: 'none',
-            border: 'none',
-            color: 'var(--text-secondary)',
-            fontSize: 13,
-            fontWeight: 500,
-          }}
-        >
-          <span>Taktikpanel</span>
-          <span style={{ fontSize: 11 }}>{showTacticPanel ? '▲' : '▼'}</span>
-        </button>
-
-        {showTacticPanel && (
-          <div style={{ padding: '0 16px 16px', borderTop: '1px solid var(--border)' }}>
-            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10, marginTop: 10 }}>
-              ℹ Taktikjusteringar påverkar nästa match.
-            </p>
-            <div style={{ marginBottom: 12 }}>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>Mentalitet</p>
-              <div style={{ display: 'flex', gap: 4 }}>
-                {[
-                  { label: 'DEF', value: TacticMentality.Defensive },
-                  { label: 'BAL', value: TacticMentality.Balanced },
-                  { label: 'OFF', value: TacticMentality.Offensive },
-                ].map(opt => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setTacticMentality(opt.value)}
-                    style={{
-                      flex: 1,
-                      padding: '6px 4px',
-                      borderRadius: 'var(--radius-sm)',
-                      background: tacticMentality === opt.value ? 'var(--accent)' : 'var(--bg-elevated)',
-                      border: '1px solid ' + (tacticMentality === opt.value ? 'var(--accent)' : 'var(--border)'),
-                      color: tacticMentality === opt.value ? '#fff' : 'var(--text-secondary)',
-                      fontSize: 11,
-                      fontWeight: tacticMentality === opt.value ? 600 : 400,
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>Tempo</p>
-              <div style={{ display: 'flex', gap: 4 }}>
-                {[
-                  { label: 'LÅG', value: TacticTempo.Low },
-                  { label: 'NORM', value: TacticTempo.Normal },
-                  { label: 'HÖG', value: TacticTempo.High },
-                ].map(opt => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setTacticTempo(opt.value)}
-                    style={{
-                      flex: 1,
-                      padding: '6px 4px',
-                      borderRadius: 'var(--radius-sm)',
-                      background: tacticTempo === opt.value ? 'var(--accent)' : 'var(--bg-elevated)',
-                      border: '1px solid ' + (tacticTempo === opt.value ? 'var(--accent)' : 'var(--border)'),
-                      color: tacticTempo === opt.value ? '#fff' : 'var(--text-secondary)',
-                      fontSize: 11,
-                      fontWeight: tacticTempo === opt.value ? 600 : 400,
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { useGameStore } from '../store/gameStore'
 import { PlayerPosition } from '../../domain/enums'
 import type { Player } from '../../domain/entities/Player'
 import { saveSaveGame } from '../../infrastructure/persistence/saveGameStorage'
+import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 
 function formatCurrency(n: number): string {
   return n.toLocaleString('sv-SE') + ' kr'
@@ -171,6 +172,8 @@ export function TransfersScreen() {
     .sort((a, b) => a.contractUntilSeason - b.contractUntilSeason)
 
   const freeAgents = game.transferState.freeAgents
+  const windowInfo = getTransferWindowStatus(game.currentDate)
+  const windowOpen = windowInfo.status !== 'closed'
 
   const renewingPlayer = renewingPlayerId ? game.players.find(p => p.id === renewingPlayerId) ?? null : null
 
@@ -206,17 +209,39 @@ export function TransfersScreen() {
     <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
       <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>Transfers</h2>
 
-      {/* Static info card */}
+      {/* Transfer window status banner */}
       <div style={{
-        background: 'rgba(59,130,246,0.08)',
-        border: '1px solid rgba(59,130,246,0.25)',
+        background: windowInfo.status === 'open'
+          ? 'rgba(34,197,94,0.08)'
+          : windowInfo.status === 'winter'
+          ? 'rgba(59,130,246,0.08)'
+          : 'rgba(239,68,68,0.06)',
+        border: `1px solid ${
+          windowInfo.status === 'open'
+            ? 'rgba(34,197,94,0.3)'
+            : windowInfo.status === 'winter'
+            ? 'rgba(59,130,246,0.3)'
+            : 'rgba(239,68,68,0.2)'
+        }`,
         borderRadius: 'var(--radius)',
         padding: '12px 14px',
-        fontSize: 13,
-        color: 'var(--text-secondary)',
         marginBottom: 20,
       }}>
-        ℹ Transfers öppnar mellan säsonger. Håll koll på vilka kontrakt som löper ut snart.
+        <p style={{
+          fontSize: 13,
+          fontWeight: 700,
+          color: windowInfo.status === 'open'
+            ? 'var(--success)'
+            : windowInfo.status === 'winter'
+            ? '#60a5fa'
+            : 'var(--danger)',
+          marginBottom: 4,
+        }}>
+          {windowInfo.status === 'open' ? '🟢' : windowInfo.status === 'winter' ? '🔵' : '🔴'} {windowInfo.label}
+        </p>
+        <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+          {windowInfo.description}
+        </p>
       </div>
 
       {/* Expiring contracts section */}
@@ -334,16 +359,19 @@ export function TransfersScreen() {
                   </p>
                 </div>
                 <button
-                  onClick={() => handleSignFreeAgent(agent.id)}
+                  onClick={() => windowOpen && handleSignFreeAgent(agent.id)}
+                  disabled={!windowOpen}
                   style={{
                     flexShrink: 0,
                     padding: '6px 12px',
-                    background: 'var(--accent)',
-                    border: 'none',
+                    background: windowOpen ? 'var(--accent)' : 'var(--bg-elevated)',
+                    border: windowOpen ? 'none' : '1px solid var(--border)',
                     borderRadius: 'var(--radius-sm)',
-                    color: '#fff',
+                    color: windowOpen ? '#fff' : 'var(--text-muted)',
                     fontSize: 12,
                     fontWeight: 600,
+                    cursor: windowOpen ? 'pointer' : 'not-allowed',
+                    opacity: windowOpen ? 1 : 0.6,
                   }}
                 >
                   Värva

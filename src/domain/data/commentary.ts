@@ -2,7 +2,7 @@ export type CommentaryTemplate = string
 
 export const commentary = {
   kickoff: [
-    "Domaren blåser av — matchen är igång! {team} tar emot på hemmaplan.",
+    "Domaren blåser igång matchen! {team} tar emot på hemmaplan.",
     "Avspark! {team} möter {opponent} i kvällens match.",
     "Och så drar det igång! {opponent} inleder matchen.",
     "Vissling — matchen börjar. En hel säsong kan avgöras i kväll.",
@@ -11,7 +11,7 @@ export const commentary = {
 
   halfTime: [
     "Halvtid! Spelarna drar mot omklädningsrummet. Ställningen just nu: {score}.",
-    "Domaren blåser av för vila. {score} efter 45 spelade minuter.",
+    "Domaren blåser igång halvtidspausen. {score} efter 45 spelade minuter.",
     "Halvtidsvissling! Det har varit en {intensity} halvlek. {score}.",
     "Paus. Tränarna väntar i omklädningsrummet. {score} och många frågor att besvara.",
     "45 minuter spelade — nu lite andrum. Ställning: {score}.",
@@ -201,7 +201,7 @@ export const commentary = {
 
   final_kickoff: [
     "SM-FINALEN! Det här är vad alla har väntat på. Hela Sverige tittar.",
-    "Domaren blåser av — SM-finalen är igång! Vilken stämning!",
+    "Domaren blåser igång SM-finalen! Vilken stämning!",
     "Det största ögonblicket i svensk bandy. SM-final. Avspark!",
   ],
 

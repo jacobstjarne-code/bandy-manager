@@ -417,7 +417,7 @@ export function DashboardScreen() {
                 color: hasPendingLineup ? '#22c55e' : '#f59e0b',
                 border: `1px solid ${hasPendingLineup ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}`,
               }}>
-                {hasPendingLineup ? 'FÖRBEREDD ✓' : '⚠ EJ KLAR'}
+                {hasPendingLineup ? 'TRUPP KLAR ✓' : '⚠ VÄLJ TRUPP'}
               </span>
             </div>
             {matchWeather && (

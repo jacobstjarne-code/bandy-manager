@@ -132,7 +132,19 @@ function MatchReportView({ fixture, game, onClose }: MatchReportViewProps) {
   }
 
   return (
-    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
+    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%', animation: 'fadeInUp 300ms ease-out both' }}>
+      {/* Header */}
+      <p style={{
+        fontSize: 11,
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        letterSpacing: '2px',
+        color: 'var(--accent)',
+        marginBottom: 16,
+        textAlign: 'center',
+      }}>
+        MATCHSAMMANFATTNING
+      </p>
       {/* Score banner */}
       <div style={{
         background: 'var(--bg-surface)',
@@ -353,22 +365,23 @@ function MatchReportView({ fixture, game, onClose }: MatchReportViewProps) {
         </div>
       )}
 
-      {/* Back button */}
+      {/* Continue button */}
       <button
         onClick={onClose}
         style={{
           width: '100%',
           padding: '14px',
-          background: 'var(--bg-elevated)',
-          border: '1px solid var(--border)',
+          background: 'var(--accent)',
+          border: '1px solid var(--accent)',
           borderRadius: 'var(--radius)',
-          color: 'var(--text-primary)',
+          color: '#fff',
           fontSize: 15,
           fontWeight: 600,
           marginBottom: 20,
+          cursor: 'pointer',
         }}
       >
-        Tillbaka till dashboard
+        Fortsätt →
       </button>
     </div>
   )
@@ -470,6 +483,8 @@ export function MatchScreen() {
   }
 
   function togglePlayer(playerId: string) {
+    const player = squadPlayers.find(p => p.id === playerId)
+    if (!player || player.isInjured || player.suspensionGamesRemaining > 0) return
     if (startingIds.includes(playerId)) {
       // Move to bench
       setStartingIds(prev => prev.filter(id => id !== playerId))
@@ -485,6 +500,29 @@ export function MatchScreen() {
         setBenchIds(prev => [...prev, playerId])
       }
     }
+  }
+
+  function handleAutoFill() {
+    const available = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)
+    const sorted = [...available].sort((a, b) => b.currentAbility - a.currentAbility)
+    const gkPool = sorted.filter(p => p.position === PlayerPosition.Goalkeeper)
+    const outfieldPool = sorted.filter(p => p.position !== PlayerPosition.Goalkeeper)
+    const starters: Player[] = gkPool.length > 0 ? [gkPool[0]] : []
+    for (const p of outfieldPool) {
+      if (starters.length >= 11) break
+      starters.push(p)
+    }
+    for (const p of gkPool.slice(1)) {
+      if (starters.length >= 11) break
+      starters.push(p)
+    }
+    const starterIds = starters.map(p => p.id)
+    const starterSet = new Set(starterIds)
+    const bench = sorted.filter(p => !starterSet.has(p.id)).slice(0, 5)
+    setStartingIds(starterIds)
+    setBenchIds(bench.map(p => p.id))
+    setCaptainId(starterIds[0])
+    setLineupError(null)
   }
 
   function getPlayerStatus(playerId: string): 'start' | 'bench' | 'out' {
@@ -808,16 +846,33 @@ export function MatchScreen() {
           </button>
         </div>
 
-        {/* Lineup counter */}
+        {/* Lineup counter + auto-fill */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <p style={{ fontSize: 14, fontWeight: 600 }}>Laguppställning</p>
-          <span style={{
-            fontSize: 13,
-            color: startingIds.length === 11 ? 'var(--success)' : 'var(--warning)',
-            fontWeight: 600,
-          }}>
-            {startingIds.length}/11 startande
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button
+              onClick={handleAutoFill}
+              style={{
+                padding: '4px 10px',
+                borderRadius: 99,
+                background: 'rgba(201,168,76,0.12)',
+                border: '1px solid rgba(201,168,76,0.4)',
+                color: 'var(--accent)',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Bästa elvan
+            </button>
+            <span style={{
+              fontSize: 13,
+              color: startingIds.length === 11 ? 'var(--success)' : 'var(--warning)',
+              fontWeight: 600,
+            }}>
+              {startingIds.length}/11 startande
+            </span>
+          </div>
         </div>
       </div>
 
@@ -838,6 +893,7 @@ export function MatchScreen() {
             {group.players.map(player => {
               const status = getPlayerStatus(player.id)
               const isCaptain = player.id === captainId
+              const unavailable = player.isInjured || player.suspensionGamesRemaining > 0
               return (
                 <div
                   key={player.id}
@@ -847,18 +903,20 @@ export function MatchScreen() {
                     padding: '10px 16px',
                     borderBottom: '1px solid var(--border)',
                     gap: 10,
-                    background: player.isInjured || player.suspensionGamesRemaining > 0 ? 'rgba(239,68,68,0.04)' : 'transparent',
+                    background: unavailable ? 'rgba(239,68,68,0.04)' : 'transparent',
+                    opacity: unavailable ? 0.55 : 1,
                   }}
                 >
                   {/* Captain toggle */}
                   <button
                     onClick={() => setCaptainId(player.id)}
+                    disabled={unavailable}
                     style={{
                       background: 'none',
                       border: 'none',
                       fontSize: 14,
                       opacity: isCaptain ? 1 : 0.2,
-                      cursor: 'pointer',
+                      cursor: unavailable ? 'not-allowed' : 'pointer',
                       flexShrink: 0,
                       padding: 0,
                     }}
@@ -882,13 +940,17 @@ export function MatchScreen() {
                   {/* Status toggle */}
                   <button
                     onClick={() => togglePlayer(player.id)}
+                    disabled={unavailable}
                     style={{
                       flexShrink: 0,
                       padding: '4px 10px',
                       borderRadius: 99,
                       fontSize: 12,
                       fontWeight: 600,
-                      ...(status === 'start'
+                      cursor: unavailable ? 'not-allowed' : 'pointer',
+                      ...(unavailable
+                        ? { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--danger)' }
+                        : status === 'start'
                         ? { background: 'rgba(201,168,76,0.15)', border: '1px solid var(--accent)', color: 'var(--accent)' }
                         : status === 'bench'
                         ? { background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }
@@ -896,7 +958,9 @@ export function MatchScreen() {
                       ),
                     }}
                   >
-                    {status === 'start' ? 'Start' : status === 'bench' ? 'Bänk' : 'Ute'}
+                    {unavailable
+                      ? (player.isInjured ? 'Skadad' : 'Avstängd')
+                      : status === 'start' ? 'Start' : status === 'bench' ? 'Bänk' : 'Ute'}
                   </button>
                 </div>
               )

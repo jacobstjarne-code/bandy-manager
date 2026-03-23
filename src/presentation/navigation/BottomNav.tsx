@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { Home, Users, Swords, ArrowLeftRight, Building2 } from 'lucide-react'
-import { useInjuredInLineup, useExpiringContracts, useNextRoundNumber, useHasPendingLineup } from '../store/gameStore'
+import { useInjuredInLineup, useExpiringContracts, useNextRoundNumber, useHasPendingLineup, useGameStore } from '../store/gameStore'
+import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 
 const tabs = [
   { to: '/game/dashboard', label: 'Hem', Icon: Home },
@@ -40,6 +41,7 @@ export function BottomNav() {
   const expiringContracts = useExpiringContracts()
   const nextRoundNumber = useNextRoundNumber()
   const hasPendingLineup = useHasPendingLineup()
+  const currentDate = useGameStore(s => s.game?.currentDate ?? '')
   const location = useLocation()
   const [lastActive, setLastActive] = useState<string>(location.pathname)
   const [bounceKey, setBounceKey] = useState<Record<string, number>>({})
@@ -52,6 +54,8 @@ export function BottomNav() {
   }, [location.pathname, lastActive])
 
   const matchBadge = hasPendingLineup && nextRoundNumber !== null ? 1 : 0
+  const windowStatus = currentDate ? getTransferWindowStatus(currentDate).status : 'closed'
+  const transferWindowOpen = windowStatus !== 'closed'
 
   const badges: Record<string, number> = {
     '/game/squad': injuredInLineup,
@@ -105,6 +109,18 @@ export function BottomNav() {
               >
                 <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
                 <Badge count={badges[to] ?? 0} />
+                {to === '/game/transfers' && transferWindowOpen && (badges[to] ?? 0) === 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    width: 7,
+                    height: 7,
+                    borderRadius: '50%',
+                    background: windowStatus === 'winter' ? '#60a5fa' : 'var(--success)',
+                    border: '1.5px solid #0D1B2A',
+                  }} />
+                )}
               </div>
               <span>{label}</span>
             </span>

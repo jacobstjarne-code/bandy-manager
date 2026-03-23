@@ -42,7 +42,7 @@ const STAT_LABELS: Partial<Record<keyof Player['attributes'], string>> = {
   defending: 'Försvar',
   goalkeeping: 'Målvakt',
   vision: 'Speluppfattning',
-  decisions: 'Beslut',
+  decisions: 'Spelsinne',
   positioning: 'Positionering',
   stamina: 'Uthållighet',
   workRate: 'Arbetsvilja',
@@ -306,7 +306,7 @@ export function PlayerCard({ player, clubName, onClick }: PlayerCardProps) {
                 color: statValueColor(stat.value),
                 marginLeft: 4,
               }}>
-                {stat.value}
+                {Math.round(stat.value)}
               </span>
             </div>
           ))}
