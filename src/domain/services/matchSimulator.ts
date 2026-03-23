@@ -377,11 +377,11 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
 
         if (shotResult < goalThreshold) {
           // GOAL
-          if (isHomeAttacking) { homeScore++ } else { awayScore++ }
           const scorer = getGoalScorer(attackingStarters)
           const assister = getAssistProvider(attackingStarters, scorer?.id)
 
           if (scorer) {
+            if (isHomeAttacking) { homeScore++ } else { awayScore++ }
             trackGoal(scorer.id)
             addEvent({
               minute,
@@ -437,11 +437,11 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
         const goalThreshold = chanceQuality * 0.28 * (1 - defGK * 0.4) * 1.15 * weatherGoalMod
 
         if (shotResult < goalThreshold) {
-          if (isHomeAttacking) { homeScore++ } else { awayScore++ }
           const scorer = getGoalScorer(attackingStarters)
           const assister = getAssistProvider(attackingStarters, scorer?.id)
 
           if (scorer) {
+            if (isHomeAttacking) { homeScore++ } else { awayScore++ }
             trackGoal(scorer.id)
             addEvent({
               minute,
@@ -487,18 +487,17 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
       const r = rand()
       if (r < goalThreshold) {
         // Corner goal
-        if (isHomeAttacking) { homeScore++ } else { awayScore++ }
         const scorer = getGoalScorer(attackingStarters)
         const assister = getAssistProvider(attackingStarters, scorer?.id)
 
-        addEvent({
-          minute,
-          type: MatchEventType.Corner,
-          clubId: attackingClubId,
-          description: 'Corner kick leads to goal',
-        })
-
         if (scorer) {
+          if (isHomeAttacking) { homeScore++ } else { awayScore++ }
+          addEvent({
+            minute,
+            type: MatchEventType.Corner,
+            clubId: attackingClubId,
+            description: 'Corner kick leads to goal',
+          })
           trackGoal(scorer.id)
           addEvent({
             minute,
@@ -536,10 +535,10 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
       const goalThreshold = chanceQuality * 0.30 * weatherGoalMod
 
       if (rand() < goalThreshold) {
-        if (isHomeAttacking) { homeScore++ } else { awayScore++ }
         const scorer = getGoalScorer(attackingStarters)
 
         if (scorer) {
+          if (isHomeAttacking) { homeScore++ } else { awayScore++ }
           trackGoal(scorer.id)
           addEvent({
             minute,
@@ -1063,11 +1062,11 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
         const goalThreshold = chanceQuality * 0.45 * (1 - defenderGkStrength * 0.35) * weatherGoalMod
 
         if (shotResult < goalThreshold) {
-          if (isHomeAttacking) { homeScore++ } else { awayScore++ }
           const scorer = getGoalScorer(attackingStarters)
           const assister = getAssistProvider(attackingStarters, scorer?.id)
 
           if (scorer) {
+            if (isHomeAttacking) { homeScore++ } else { awayScore++ }
             scorerPlayerId = scorer.id
             goalScored = true
             trackGoal(scorer.id)
@@ -1134,11 +1133,11 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
         const goalThreshold = chanceQuality * 0.28 * (1 - defGK * 0.4) * 1.15 * weatherGoalMod
 
         if (shotResult < goalThreshold) {
-          if (isHomeAttacking) { homeScore++ } else { awayScore++ }
           const scorer = getGoalScorer(attackingStarters)
           const assister = getAssistProvider(attackingStarters, scorer?.id)
 
           if (scorer) {
+            if (isHomeAttacking) { homeScore++ } else { awayScore++ }
             scorerPlayerId = scorer.id
             goalScored = true
             trackGoal(scorer.id)
@@ -1193,24 +1192,23 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
 
       const r = rand()
       if (r < goalThreshold) {
-        if (isHomeAttacking) { homeScore++ } else { awayScore++ }
         const scorer = getGoalScorer(attackingStarters)
         const assister = getAssistProvider(attackingStarters, scorer?.id)
 
-        cornerOccurred = true
-        const cornerEvent: MatchEvent = {
-          minute,
-          type: MatchEventType.Corner,
-          clubId: attackingClubId,
-          description: 'Corner kick leads to goal',
-        }
-        stepEvents.push(cornerEvent)
-        allEvents.push(cornerEvent)
-
         if (scorer) {
+          if (isHomeAttacking) { homeScore++ } else { awayScore++ }
           scorerPlayerId = scorer.id
           goalScored = true
           cornerGoalScored = true
+          cornerOccurred = true
+          const cornerEvent: MatchEvent = {
+            minute,
+            type: MatchEventType.Corner,
+            clubId: attackingClubId,
+            description: 'Corner kick leads to goal',
+          }
+          stepEvents.push(cornerEvent)
+          allEvents.push(cornerEvent)
           trackGoal(scorer.id)
           const event: MatchEvent = {
             minute,
@@ -1254,10 +1252,10 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       const goalThreshold = chanceQuality * 0.30 * weatherGoalMod
 
       if (rand() < goalThreshold) {
-        if (isHomeAttacking) { homeScore++ } else { awayScore++ }
         const scorer = getGoalScorer(attackingStarters)
 
         if (scorer) {
+          if (isHomeAttacking) { homeScore++ } else { awayScore++ }
           scorerPlayerId = scorer.id
           goalScored = true
           trackGoal(scorer.id)
@@ -1357,14 +1355,16 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       commentaryText = fillTemplate(pickCommentary(commentary.halfTime, rand), templateVars)
     } else if (cornerGoalScored && scorerPlayerId) {
       templateVars = { ...templateVars, player: findPlayerName(scorerPlayerId) }
-      // 20% chance to use weather goal commentary in bad weather
+      const cornerIntro = fillTemplate(pickCommentary(commentary.corner, rand), templateVars)
+      let goalText: string
       if (weather && weather.condition === WeatherCondition.HeavySnow && rand() < 0.20) {
-        commentaryText = fillTemplate(pickCommentary(commentary.weather_goal_heavySnow, rand), templateVars)
+        goalText = fillTemplate(pickCommentary(commentary.weather_goal_heavySnow, rand), templateVars)
       } else if (weather && weather.condition === WeatherCondition.Thaw && rand() < 0.20) {
-        commentaryText = fillTemplate(pickCommentary(commentary.weather_goal_thaw, rand), templateVars)
+        goalText = fillTemplate(pickCommentary(commentary.weather_goal_thaw, rand), templateVars)
       } else {
-        commentaryText = fillTemplate(pickCommentary(commentary.cornerGoal, rand), templateVars)
+        goalText = fillTemplate(pickCommentary(commentary.cornerGoal, rand), templateVars)
       }
+      commentaryText = cornerIntro + ' ' + goalText
     } else if (goalScored && scorerPlayerId) {
       templateVars = { ...templateVars, player: findPlayerName(scorerPlayerId) }
       if (rivalry && rand() < 0.40) {
