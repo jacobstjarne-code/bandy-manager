@@ -457,6 +457,17 @@ export function MatchScreen() {
   })
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
 
+  // Auto-fix invalid lineup on mount (injured/suspended starters, or fewer than 11)
+  useEffect(() => {
+    const hasInvalid = startingIds.some(id => {
+      const p = squadPlayers.find(pl => pl.id === id)
+      return !p || p.isInjured || p.suspensionGamesRemaining > 0
+    })
+    if (startingIds.length < 11 || hasInvalid) {
+      handleAutoFill()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!game || !managedClub) return null
 
   const injuredInStarting = startingIds

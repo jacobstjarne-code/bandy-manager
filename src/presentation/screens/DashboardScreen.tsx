@@ -249,19 +249,18 @@ export function DashboardScreen() {
     return allSeries.find(s => s.fixtures.includes(nextFixture.id)) ?? null
   })() : null
 
+  const hasManagedMatch = game!.fixtures.some(
+    f => (f.homeClubId === game!.managedClubId || f.awayClubId === game!.managedClubId) &&
+         f.status === 'scheduled'
+  )
+
   const handleAdvance = () => {
-    if (!canAdvance) return
-
-    const hasManagedMatch = game!.fixtures.some(
-      f => (f.homeClubId === game!.managedClubId || f.awayClubId === game!.managedClubId) &&
-           f.status === 'scheduled'
-    )
-
     if (hasManagedMatch) {
       navigate('/game/match')
       return
     }
 
+    if (!canAdvance) return
     const result = advance()
     if ((result?.pendingEvents?.length ?? 0) > 0) {
       navigate('/game/events')
@@ -287,7 +286,7 @@ export function DashboardScreen() {
 
   // Determine advance button text
   const advanceButtonText = (() => {
-    if (!canAdvance) {
+    if (!canAdvance && !hasManagedMatch) {
       if (playoffInfo && !nextFixture) return 'Väntar på slutspel'
       return 'Sätt lineup först'
     }
@@ -678,21 +677,21 @@ export function DashboardScreen() {
       }}>
         <button
           onClick={handleAdvance}
-          disabled={!canAdvance}
-          className={canAdvance ? 'btn-pulse' : undefined}
+          disabled={!canAdvance && !hasManagedMatch}
+          className={canAdvance || hasManagedMatch ? 'btn-pulse' : undefined}
           style={{
             width: '100%',
             padding: '17px',
-            background: canAdvance ? '#C9A84C' : '#1a2e47',
-            color: canAdvance ? '#0D1B2A' : '#4A6080',
+            background: canAdvance || hasManagedMatch ? '#C9A84C' : '#1a2e47',
+            color: canAdvance || hasManagedMatch ? '#0D1B2A' : '#4A6080',
             borderRadius: 12,
             fontSize: 16,
             fontWeight: 800,
             letterSpacing: '1.5px',
             textTransform: 'uppercase',
             border: 'none',
-            boxShadow: canAdvance ? '0 4px 20px rgba(201,168,76,0.3)' : 'none',
-            cursor: canAdvance ? 'pointer' : 'not-allowed',
+            boxShadow: canAdvance || hasManagedMatch ? '0 4px 20px rgba(201,168,76,0.3)' : 'none',
+            cursor: canAdvance || hasManagedMatch ? 'pointer' : 'not-allowed',
             fontVariantNumeric: 'tabular-nums',
           }}
         >
