@@ -21,12 +21,14 @@ export interface EventEffect {
     | 'extendContract'
     | 'rejectContract'
     | 'boostMorale'
+    | 'acceptSponsor'
     | 'noOp'
     | 'openNegotiation'
   value?: number
   targetPlayerId?: string
   targetClubId?: string
   bidId?: string
+  sponsorData?: string
 }
 
 export interface GameEvent {

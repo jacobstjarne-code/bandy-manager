@@ -263,7 +263,7 @@ export function generatePostAdvanceEvents(
           {
             id: 'accept',
             label: `Acceptera (${weeklyFmt}/vecka)`,
-            effect: { type: 'noOp' },
+            effect: { type: 'acceptSponsor', sponsorData: JSON.stringify(offer) },
           },
           {
             id: 'reject',
@@ -391,6 +391,21 @@ export function resolveEvent(
             p.id === pid ? { ...p, morale: Math.min(100, p.morale + (effect.value ?? 5)) } : p,
           ),
         }
+      }
+      break
+    }
+    case 'acceptSponsor': {
+      const rawData = effect.sponsorData ?? event.sponsorData
+      if (rawData) {
+        try {
+          const sponsor = JSON.parse(rawData)
+          if (sponsor.id) {
+            updated = {
+              ...updated,
+              sponsors: [...(updated.sponsors ?? []), sponsor],
+            }
+          }
+        } catch {}
       }
       break
     }
