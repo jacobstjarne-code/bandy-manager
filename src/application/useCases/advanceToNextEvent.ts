@@ -740,7 +740,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     activeScoutAssignment: updatedScoutAssignment,
     scoutBudget: game.scoutBudget ?? 10,
     transferBids: allBids,
-    pendingEvents: [...(game.pendingEvents ?? []), ...newEvents],
+    pendingEvents: newEvents,
   }
 
   return { game: updatedGame, roundPlayed: nextRound, seasonEnded: false, pendingEvents: newEvents }
@@ -968,6 +968,8 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     scoutReports: game.scoutReports ?? {},
     activeScoutAssignment: null,
     scoutBudget: 10,
+    transferBids: [],
+    pendingEvents: [],
   }
 
   return { game: updatedGame, roundPlayed: null, seasonEnded: true }

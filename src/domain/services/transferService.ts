@@ -33,7 +33,14 @@ export function generateIncomingBids(
   if (managedPlayers.length === 0) return []
 
   // AI targets: high CA, expiring contracts, not the captain
-  const captainId = game.managedClubPendingLineup?.captainPlayerId
+  // Use last played match lineup since pendingLineup is cleared after each advance
+  const lastPlayedFixture = [...game.fixtures]
+    .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+    .sort((a, b) => b.roundNumber - a.roundNumber)[0]
+  const lastLineup = lastPlayedFixture?.homeClubId === game.managedClubId
+    ? lastPlayedFixture.homeLineup
+    : lastPlayedFixture?.awayLineup
+  const captainId = lastLineup?.captainPlayerId ?? game.managedClubPendingLineup?.captainPlayerId
   const candidates = managedPlayers
     .filter(p => p.id !== captainId)
     .sort((a, b) => b.currentAbility - a.currentAbility)

@@ -958,7 +958,11 @@ export function MatchScreen() {
           {(() => {
             const formationType = tacticState.formation ?? '3-3-4'
             const template = FORMATIONS[formationType]
-            const assignments = tacticState.positionAssignments ?? {}
+            // Filter out stale assignments for players no longer in starting XI
+            const rawAssignments = tacticState.positionAssignments ?? {}
+            const assignments = Object.fromEntries(
+              Object.entries(rawAssignments).filter(([pid]) => startingIds.includes(pid))
+            )
             // Build reverse map: slotId → playerId
             const slotToPlayer: Record<string, string> = {}
             for (const [pid, slot] of Object.entries(assignments)) {
