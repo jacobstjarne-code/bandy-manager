@@ -5,6 +5,8 @@ import { FixtureStatus, TrainingType, TrainingIntensity, PlayerPosition } from '
 import { generateWorld } from '../../domain/services/worldGenerator'
 import { generateSchedule } from '../../domain/services/scheduleGenerator'
 import { calculateStandings } from '../../domain/services/standingsService'
+import { generateMatchWeather } from '../../domain/services/weatherService'
+import type { MatchWeather } from '../../domain/entities/Weather'
 
 export interface CreateNewGameInput {
   managerName: string
@@ -75,6 +77,13 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     tactic: managedClub.activeTactic,
   }
 
+  // Pre-generate weather for round 1 so it's visible before first match
+  const round1Fixtures = fixtures.filter(f => f.roundNumber === 1)
+  const round1Weathers: MatchWeather[] = round1Fixtures.map((f, i) => {
+    const homeClub = clubs.find(c => c.id === f.homeClubId)!
+    return generateMatchWeather(season, 1, homeClub, f.id, (input.seed ?? 42) + 50000 + i * 7919)
+  })
+
   const now = new Date().toISOString()
 
   const game: SaveGame = {
@@ -94,7 +103,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
       pendingOffers: [],
     },
     youthIntakeHistory: [],
-    matchWeathers: [],
+    matchWeathers: round1Weathers,
     managedClubPendingLineup: defaultLineup,
     managedClubTraining: { type: TrainingType.Physical, intensity: TrainingIntensity.Normal },
     trainingHistory: [],

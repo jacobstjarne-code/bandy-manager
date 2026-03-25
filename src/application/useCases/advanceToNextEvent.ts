@@ -743,7 +743,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     b.status === 'pending' || (nextRound - b.createdRound) < 5
   )
 
-  const updatedGame: SaveGame = {
+  let updatedGame: SaveGame = {
     ...game,
     fixtures: finalAllFixtures,
     players: marketUpdatedPlayers,
@@ -760,6 +760,31 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     scoutBudget: game.scoutBudget ?? 10,
     transferBids: trimmedBids,
     pendingEvents: newEvents,
+  }
+
+  // Pre-generate weather for next round so dashboard/matchScreen can show it
+  const nextScheduled = finalAllFixtures.filter(f => f.status === FixtureStatus.Scheduled)
+  if (nextScheduled.length > 0) {
+    const upcomingRound = Math.min(...nextScheduled.map(f => f.roundNumber))
+    const upcomingFixtures = nextScheduled.filter(f => f.roundNumber === upcomingRound)
+    const nextWeathers: MatchWeather[] = []
+    for (let i = 0; i < upcomingFixtures.length; i++) {
+      const f = upcomingFixtures[i]
+      if (updatedGame.matchWeathers.some(mw => mw.fixtureId === f.id)) continue
+      const homeClub = game.clubs.find(c => c.id === f.homeClubId)
+      if (!homeClub) continue
+      const weather = generateMatchWeather(
+        game.currentSeason,
+        upcomingRound,
+        homeClub,
+        f.id,
+        baseSeed + 50000 + i * 7919,
+      )
+      nextWeathers.push(weather)
+    }
+    if (nextWeathers.length > 0) {
+      updatedGame = { ...updatedGame, matchWeathers: [...updatedGame.matchWeathers, ...nextWeathers] }
+    }
   }
 
   return { game: updatedGame, roundPlayed: nextRound, seasonEnded: false, pendingEvents: newEvents }

@@ -606,9 +606,9 @@ export function DashboardScreen() {
             marginBottom: 12,
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>⚠ Du har inte satt en startelva. Gå till Trupp för att välja spelare.</span>
+              <span>⚠ Du har inte satt en startelva. Sätt din trupp inför matchen.</span>
               <button
-                onClick={() => navigate('/game/squad')}
+                onClick={() => navigate('/game/match')}
                 style={{
                   flexShrink: 0,
                   marginLeft: 10,
