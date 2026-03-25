@@ -35,7 +35,7 @@ import { generateIncomingBids, resolveOutgoingBid } from '../../domain/services/
 import { generatePostAdvanceEvents } from '../../domain/services/eventService'
 import type { GameEvent, TransferBid } from '../../domain/entities/GameEvent'
 import type { ScoutReport, ScoutAssignment } from '../../domain/entities/Scouting'
-import { evaluateBoard, generateBoardMessage, generateSeasonVerdict } from '../../domain/services/boardService'
+import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, generatePreSeasonMessage } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
 
 export interface AdvanceResult {
@@ -760,6 +760,27 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   const marketUpdatedPlayers = updateAllMarketValues(finalPlayers, game.currentSeason)
 
+  // Economy: wages, match revenue, sponsorship per round
+  const financiallyUpdatedClubs = game.clubs.map(c => {
+    const clubPlayers = marketUpdatedPlayers.filter(p => p.clubId === c.id)
+    const totalWages = clubPlayers.reduce((sum, p) => sum + p.salary, 0)
+    const weeklyWages = Math.round(totalWages / 4)
+
+    const homeMatch = simulatedFixtures.find(
+      f => f.homeClubId === c.id && f.status === FixtureStatus.Completed
+    )
+    const matchRevenue = homeMatch
+      ? Math.round(c.reputation * 200 + localRand() * 5000)
+      : 0
+
+    const weeklySponsorship = Math.round(c.reputation * 50)
+
+    return {
+      ...c,
+      finances: c.finances + matchRevenue + weeklySponsorship - weeklyWages,
+    }
+  })
+
   // ── Transfer bids ────────────────────────────────────────────────────────
   // Resolve pending outgoing bids (1 round to answer)
   const existingBids: TransferBid[] = game.transferBids ?? []
@@ -812,6 +833,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   let updatedGame: SaveGame = {
     ...game,
+    clubs: financiallyUpdatedClubs,
     fixtures: strippedFixtures,
     players: marketUpdatedPlayers,
     standings,
@@ -998,6 +1020,21 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
+  // Prize money and transfer budget update for all clubs
+  const PRIZE_MONEY = [200000, 150000, 120000, 100000, 80000,
+    60000, 50000, 40000, 30000, 25000, 20000, 15000]
+
+  for (let i = 0; i < updatedClubs.length; i++) {
+    const clubStanding = standings.find(s => s.clubId === updatedClubs[i].id)
+    const position = clubStanding?.position ?? 12
+    const prize = PRIZE_MONEY[position - 1] ?? 10000
+    updatedClubs[i] = {
+      ...updatedClubs[i],
+      finances: updatedClubs[i].finances + prize,
+      transferBudget: Math.round((updatedClubs[i].finances + prize) * 0.15),
+    }
+  }
+
   // Youth intake inbox for managed club
   if (youthIntakeResultForManagedClub !== null) {
     const managedClub = updatedClubs.find(c => c.id === game.managedClubId)!
@@ -1012,6 +1049,33 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   }
 
   const nextSeason = game.currentSeason + 1
+
+  // Board pre-season message for managed club
+  const managedClubAfterPrize = updatedClubs.find(c => c.id === game.managedClubId)
+  if (managedClubAfterPrize) {
+    const clubStanding = standings.find(s => s.clubId === managedClubAfterPrize.id)
+    const lastPos = clubStanding?.position ?? 12
+    const finChange = managedClubAfterPrize.finances - (game.seasonStartFinances ?? managedClubAfterPrize.finances)
+
+    const { title, body, newExpectation } = generatePreSeasonMessage(
+      managedClubAfterPrize, standings, lastPos, finChange
+    )
+
+    // Update club expectation for next season
+    const managedIdx = updatedClubs.findIndex(c => c.id === game.managedClubId)
+    if (managedIdx !== -1) {
+      updatedClubs[managedIdx] = { ...updatedClubs[managedIdx], boardExpectation: newExpectation }
+    }
+
+    newInboxItems.push({
+      id: `inbox_board_preseason_${nextSeason}`,
+      date: `${nextSeason}-09-15`,
+      type: InboxItemType.BoardFeedback,
+      title,
+      body,
+      isRead: false,
+    } as InboxItem)
+  }
 
   // Generate new schedule for next season
   const newScheduleFixtures = generateSchedule(updatedClubs.map(c => c.id), nextSeason)

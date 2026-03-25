@@ -18,6 +18,25 @@ import { getWeatherEmoji, getIceQualityLabel } from '../../domain/services/weath
 import type { PlayoffBracket, PlayoffSeries } from '../../domain/entities/Playoff'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { getRivalry } from '../../domain/data/rivalries'
+import type { Fixture } from '../../domain/entities/Fixture'
+
+function getSeriesScore(series: { fixtures: string[]; homeClubId: string; awayClubId: string }, fixtures: Fixture[]) {
+  const seriesFixtures = fixtures.filter(
+    f => series.fixtures.includes(f.id) && f.status === 'completed'
+  )
+  let homeWins = 0, awayWins = 0
+  for (const f of seriesFixtures) {
+    const homeWon = f.homeScore > f.awayScore
+    if (f.homeClubId === series.homeClubId) {
+      if (homeWon) homeWins++
+      else if (f.awayScore > f.homeScore) awayWins++
+    } else {
+      if (homeWon) awayWins++
+      else if (f.awayScore > f.homeScore) homeWins++
+    }
+  }
+  return { homeWins, awayWins }
+}
 
 function getRoundLabel(round: PlayoffRound): string {
   if (round === PlayoffRound.QuarterFinal) return 'KF'
@@ -44,8 +63,9 @@ function PlayoffSeriesRow({ series, game, managedClubId }: PlayoffSeriesRowProps
   const isManagedAway = series.awayClubId === managedClubId
   const isManaged = isManagedHome || isManagedAway
 
-  const homeWon = series.homeWins > series.awayWins && series.winnerId !== null
-  const awayWon = series.awayWins > series.homeWins && series.winnerId !== null
+  const { homeWins, awayWins } = getSeriesScore(series, game.fixtures)
+  const homeWon = homeWins > awayWins && series.winnerId !== null
+  const awayWon = awayWins > homeWins && series.winnerId !== null
 
   return (
     <div style={{
@@ -75,7 +95,7 @@ function PlayoffSeriesRow({ series, game, managedClubId }: PlayoffSeriesRowProps
         minWidth: 32,
         textAlign: 'center',
       }}>
-        {series.homeWins}–{series.awayWins}
+        {homeWins}–{awayWins}
       </span>
       <span style={{
         fontSize: 12,
@@ -684,6 +704,19 @@ export function DashboardScreen() {
               <BandyStickSVG size={14} color={formColor} />
               <span style={{ fontSize: 13, color: '#8A9BB0' }}>
                 Form: <span style={{ color: formColor, fontWeight: 600 }}>{formLabel}</span>
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 13, color: '#8A9BB0' }}>
+                Klubbkassa:{' '}
+                <span style={{
+                  color: club.finances > 0 ? '#22c55e' : '#ef4444',
+                  fontWeight: 600
+                }}>
+                  {club.finances >= 1000000
+                    ? `${(club.finances / 1000000).toFixed(1)} mkr`
+                    : `${Math.round(club.finances / 1000)} tkr`}
+                </span>
               </span>
             </div>
           </div>

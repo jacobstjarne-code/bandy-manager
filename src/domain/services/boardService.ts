@@ -1,5 +1,6 @@
 import { ClubExpectation } from '../enums'
 import type { StandingRow } from '../entities/SaveGame'
+import type { Club } from '../entities/Club'
 
 export interface BoardEvaluation {
   satisfaction: 'delighted' | 'satisfied' | 'concerned' | 'unhappy'
@@ -205,4 +206,60 @@ export function generateSeasonVerdict(
   }
 
   return { ...ratingTexts[rating], rating }
+}
+
+export function generatePreSeasonMessage(
+  club: Club,
+  standings: StandingRow[],
+  lastSeasonPosition: number,
+  financialChange: number,
+): { title: string; body: string; newExpectation: ClubExpectation } {
+  let newExpectation = club.boardExpectation
+
+  if (lastSeasonPosition <= 2 && club.boardExpectation !== ClubExpectation.WinLeague) {
+    if (club.boardExpectation === ClubExpectation.AvoidBottom) newExpectation = ClubExpectation.MidTable
+    else if (club.boardExpectation === ClubExpectation.MidTable) newExpectation = ClubExpectation.ChallengeTop
+    else if (club.boardExpectation === ClubExpectation.ChallengeTop) newExpectation = ClubExpectation.WinLeague
+  }
+  if (lastSeasonPosition >= 10 && club.boardExpectation !== ClubExpectation.AvoidBottom) {
+    if (club.boardExpectation === ClubExpectation.WinLeague) newExpectation = ClubExpectation.ChallengeTop
+    else if (club.boardExpectation === ClubExpectation.ChallengeTop) newExpectation = ClubExpectation.MidTable
+  }
+
+  const expectationText: Record<ClubExpectation, string> = {
+    [ClubExpectation.AvoidBottom]: 'undvika botten av tabellen',
+    [ClubExpectation.MidTable]: 'hålla oss i mitten av tabellen',
+    [ClubExpectation.ChallengeTop]: 'utmana om topplaceringar',
+    [ClubExpectation.WinLeague]: 'vinna ligan',
+  }
+
+  const expectationChanged = newExpectation !== club.boardExpectation
+
+  let body = `Styrelsen har utvärderat säsongen. `
+  if (lastSeasonPosition <= 3) {
+    body += `Förra säsongens ${lastSeasonPosition}:a plats imponerade. `
+  } else if (lastSeasonPosition >= 10) {
+    body += `Förra säsongens ${lastSeasonPosition}:e plats var under förväntan. `
+  }
+
+  if (expectationChanged) {
+    body += `Förväntningarna har justerats: vi förväntar oss nu att ${expectationText[newExpectation]}. `
+  } else {
+    body += `Målsättningen kvarstår: ${expectationText[newExpectation]}. `
+  }
+
+  if (financialChange > 50000) {
+    body += `Ekonomin är stabil. Transferbudgeten har uppdaterats.`
+  } else if (financialChange < -50000) {
+    body += `Ekonomin är ansträngd. Var försiktig med värvningar.`
+  } else {
+    body += `Ekonomin är i balans.`
+  }
+
+  const title = expectationChanged
+    ? `Styrelsemöte — Nya förväntningar inför säsongen`
+    : `Styrelsemöte — Säsongen ${club.name}`
+
+  void standings
+  return { title, body, newExpectation }
 }
