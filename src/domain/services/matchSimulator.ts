@@ -1033,10 +1033,13 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     const attDiscipline = isHomeAttacking ? homeDisciplineRisk : awayDisciplineRisk
     const defDiscipline = isHomeAttacking ? awayDisciplineRisk : homeDisciplineRisk
 
+    // Steps 0–1 are the opening — force neutral, no goals or cards
+    const isOpeningStep = step <= 1
+
     // Pick sequence type
     const seqWeights = buildSequenceWeights(isHomeAttacking)
     const seqIdx = weightedPick(rand, seqWeights)
-    const seqType = SEQUENCE_TYPES[seqIdx]
+    const seqType = isOpeningStep ? 'neutral' : SEQUENCE_TYPES[seqIdx]
 
     // Track what happened for commentary selection
     let goalScored = false
