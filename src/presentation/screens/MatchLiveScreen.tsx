@@ -65,7 +65,7 @@ function truncate(s: string, n: number): string {
 export function MatchLiveScreen() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { game, advance, saveLiveMatchResult } = useGameStore()
+  const { game, saveLiveMatchResult } = useGameStore()
 
   const state = location.state as LocationState | null
   const fixture = state?.fixture
@@ -227,12 +227,7 @@ export function MatchLiveScreen() {
   }
 
   function handleSeeReport() {
-    const result = advance()
-    if ((result?.pendingEvents?.length ?? 0) > 0) {
-      navigate('/game/events')
-    } else {
-      navigate('/game/match', { state: { showReport: true } })
-    }
+    navigate('/game/match', { state: { showReport: true } })
   }
 
   if (!fixture || !homeLineup || !awayLineup) {
@@ -678,14 +673,7 @@ export function MatchLiveScreen() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button
-                onClick={() => {
-                  const result = advance()
-                  if ((result?.pendingEvents?.length ?? 0) > 0) {
-                    navigate('/game/events')
-                  } else {
-                    navigate('/game')
-                  }
-                }}
+                onClick={() => navigate('/game')}
                 style={{
                   padding: '14px',
                   background: 'var(--accent)',
