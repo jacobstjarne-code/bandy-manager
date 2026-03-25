@@ -397,10 +397,8 @@ export function MatchScreen() {
   const navigate = useNavigate()
   const lastCompletedFixtureFromStore = useLastCompletedFixture()
 
-  const [showReport, setShowReport] = useState(() => !!(location.state as { showReport?: boolean } | null)?.showReport)
-  const [completedFixture, setCompletedFixture] = useState<Fixture | null>(() =>
-    (location.state as { showReport?: boolean } | null)?.showReport ? lastCompletedFixtureFromStore : null
-  )
+  const showReport = !!(location.state as { showReport?: boolean } | null)?.showReport
+  const completedFixture: Fixture | null = showReport ? lastCompletedFixtureFromStore : null
   const [matchStep, setMatchStep] = useState<'lineup' | 'tactic' | 'start'>('lineup')
   const [useLiveMode, setUseLiveMode] = useState(true)
 
@@ -497,10 +495,7 @@ export function MatchScreen() {
       <MatchReportView
         fixture={completedFixture}
         game={game}
-        onClose={() => {
-          setShowReport(false)
-          setCompletedFixture(null)
-        }}
+        onClose={() => navigate('/game')}
       />
     )
   }
