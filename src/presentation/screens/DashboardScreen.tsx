@@ -251,13 +251,22 @@ export function DashboardScreen() {
 
   const handleAdvance = () => {
     const scheduledFixtures = game!.fixtures.filter(f => f.status === 'scheduled')
+
     if (scheduledFixtures.length === 0) {
-      if (canAdvance) {
-        try {
-          advance()
-        } catch (err) {
-          console.error('advance() failed:', err)
+      // No scheduled fixtures → trigger playoff start or season end
+      try {
+        const result = advance()
+        if (result?.playoffStarted) {
+          return
         }
+        if (result?.seasonEnded) {
+          return
+        }
+        if ((result?.pendingEvents?.length ?? 0) > 0) {
+          navigate('/game/events')
+        }
+      } catch (err) {
+        console.error('advance() failed:', err)
       }
       return
     }
@@ -286,6 +295,7 @@ export function DashboardScreen() {
   }
 
   const hasScheduledFixtures = game!.fixtures.some(f => f.status === 'scheduled')
+  const canClickAdvance = canAdvance || hasScheduledFixtures
 
   const cardStyle: React.CSSProperties = {
     background: '#122235',
@@ -539,7 +549,7 @@ export function DashboardScreen() {
           </div>
         )}
 
-        {/* SLUTSPEL card (when active) or SERIELEDNING card */}
+        {/* SLUTSPEL card (when active) or SERIEPLACERING card */}
         {playoffInfo ? (
           <PlayoffBracketCard
             bracket={playoffInfo}
@@ -553,7 +563,7 @@ export function DashboardScreen() {
             style={{ ...cardStyle, cursor: 'pointer' }}
             onClick={() => navigate('/game/tabell')}
           >
-            <p className="section-heading" style={cardLabelStyle}>SERIELEDNING</p>
+            <p className="section-heading" style={cardLabelStyle}>SERIEPLACERING</p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <TrophySVG size={36} />
               <div>
@@ -697,21 +707,21 @@ export function DashboardScreen() {
       }}>
         <button
           onClick={handleAdvance}
-          disabled={!hasScheduledFixtures}
-          className={hasScheduledFixtures ? 'btn-pulse' : undefined}
+          disabled={!canClickAdvance}
+          className={canClickAdvance ? 'btn-pulse' : undefined}
           style={{
             width: '100%',
             padding: '17px',
-            background: hasScheduledFixtures ? '#C9A84C' : '#1a2e47',
-            color: hasScheduledFixtures ? '#0D1B2A' : '#4A6080',
+            background: canClickAdvance ? '#C9A84C' : '#1a2e47',
+            color: canClickAdvance ? '#0D1B2A' : '#4A6080',
             borderRadius: 12,
             fontSize: 16,
             fontWeight: 800,
             letterSpacing: '1.5px',
             textTransform: 'uppercase',
             border: 'none',
-            boxShadow: hasScheduledFixtures ? '0 4px 20px rgba(201,168,76,0.3)' : 'none',
-            cursor: hasScheduledFixtures ? 'pointer' : 'not-allowed',
+            boxShadow: canClickAdvance ? '0 4px 20px rgba(201,168,76,0.3)' : 'none',
+            cursor: canClickAdvance ? 'pointer' : 'not-allowed',
             fontVariantNumeric: 'tabular-nums',
           }}
         >

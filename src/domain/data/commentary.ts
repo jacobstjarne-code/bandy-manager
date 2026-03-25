@@ -29,18 +29,40 @@ export const commentary = {
     "MÅÅÅL! {player} sätter en precis avslutning förbi målvakten! {score}!",
     "MÅÅÅL! Strålande avslut av {player} — {team} jublar! {score}!",
     "IN I NÄTET! {player} var på rätt plats i rätt tid. {score}!",
-    "LEDNING! {player} slår till! Vilket avslut! {score}!",
     "MÅÅÅL! {player} placerar in det med vänsterpinnen! {score}!",
     "Det sitter! {player} nuddar in bollen vid bortre stolpen. {score}!",
     "MÅÅÅL FÖR {team}! {player} är iskall och sätter dit den! {score}!",
-    "{player} dundrar in reducering! Plötsligt liv i matchen! {score}!",
-    "KVITTERING! {player}! Helt galet! {score}!",
-    "1-0! Första målet faller — {player} öppnar målskyttet för {team}!",
     "MÅÅÅL! Vad en match det har blivit! {player} sätter dit {score}!",
     "{player} tar emot, vänder och skjuter — inget som kan stoppa det! {score}!",
     "Avslut — inne! {player} med ett kontrat avslut. {score}.",
     "MÅÅÅL! {team} exploderar i jubel! {player} med en drömmatch! {score}!",
     "Det händer snabbt i bandy — {player} bryter och sätter dit {score}!",
+  ],
+
+  goalOpener: [
+    "1–0! Första målet faller — {player} öppnar målskyttet för {team}!",
+    "Nollan är bruten! {player} sätter dit det första målet! {score}!",
+    "LEDNING! {player} bryter dödläget med ett vasst avslut! {score}!",
+  ],
+  goalLead: [
+    "LEDNING! {player} slår till! Vilket avslut! {score}!",
+    "Nu leder {team}! {player} vänder på steken! {score}!",
+    "{player} ger {team} ledningen! Publiken kokar! {score}!",
+  ],
+  goalEqualizer: [
+    "KVITTERING! {player}! Helt galet! {score}!",
+    "Och där är kvitteringen! {player} jämnar ut! {score}!",
+    "Allt i balans igen! {player} kvitterar för {team}! {score}!",
+  ],
+  goalReducing: [
+    "{player} dundrar in reducering! Plötsligt liv i matchen! {score}!",
+    "Reducering av {player}! {team} lever fortfarande! {score}!",
+    "{player} ger {team} hopp med en reducering! {score}!",
+  ],
+  goalExtend: [
+    "{player} utökar ledningen! {score} — nu är det kontroll!",
+    "MÅÅÅL! {player} gör det bekvämt för {team}! {score}!",
+    "{team} drar ifrån! {player} med {score}!",
   ],
 
   cornerGoal: [

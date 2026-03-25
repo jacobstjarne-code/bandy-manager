@@ -97,6 +97,7 @@ export interface SaveGame {
 
   pendingEvents: GameEvent[]
   transferBids: TransferBid[]
+  handledContractPlayerIds: string[]
 
   version: string
   lastSavedAt: string   // ISO datetime

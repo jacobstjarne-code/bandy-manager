@@ -8,35 +8,33 @@ export interface TransferWindowInfo {
 
 export function getTransferWindowStatus(currentDate: string): TransferWindowInfo {
   const date = new Date(currentDate)
-  const month = date.getMonth() + 1 // 1-12
+  const month = date.getMonth() + 1
 
-  // Winter window: January 1–31
+  // Pre-season + early season: Aug–Oct
+  if (month >= 8 && month <= 10) {
+    return {
+      status: 'open',
+      label: 'Transfermarknad öppen',
+      description: 'Försäsongsfönstret är öppet. Stärk truppen inför säsongen.',
+    }
+  }
+
+  // Winter window: January
   if (month === 1) {
     return {
       status: 'winter',
       label: 'Vintermarknad öppen',
-      description: 'Januarifönstret är öppet. Värva och sälj spelare till och med 31 jan.',
+      description: 'Januarifönstret är öppet. Sista chansen att förstärka inför slutspurten.',
     }
   }
 
-  // Main summer window: May 1 – September 30
-  if (month >= 5 && month <= 9) {
-    return {
-      status: 'open',
-      label: 'Transfermarknad öppen',
-      description: 'Sommarfönstret är öppet. Stärk truppen inför nästa säsong.',
-    }
-  }
-
-  // Closed during season (Oct–Dec, Feb–Apr)
-  const nextOpen = month >= 10
-    ? 'maj nästa år'
-    : month >= 2 && month <= 4
-    ? 'maj'
-    : 'maj'
+  // Closed: Nov–Dec, Feb–Jul
+  const nextOpen = month >= 11 ? 'januari'
+    : month >= 2 && month <= 7 ? 'augusti'
+    : 'augusti'
   return {
     status: 'closed',
     label: 'Transfermarknad stängd',
-    description: `Marknaden öppnar i ${nextOpen}. Kontraktsförlängningar kan alltid göras.`,
+    description: `Marknaden öppnar i ${nextOpen}. Scouting och kontraktsförlängningar kan alltid göras.`,
   }
 }

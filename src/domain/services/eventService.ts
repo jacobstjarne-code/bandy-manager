@@ -148,16 +148,20 @@ export function generatePostAdvanceEvents(
   if (events.length >= 2) return events
 
   // 2. Contract requests (CA > 50, < 1 season left, managed club)
-  const contractCandidates = game.players.filter(
-    p =>
-      p.clubId === game.managedClubId &&
-      p.currentAbility > 50 &&
-      p.contractUntilSeason <= game.currentSeason + 1,
-  )
-  for (const p of contractCandidates) {
-    if (events.length >= 2) break
-    const eid = `event_contract_${p.id}_${game.currentSeason}`
-    if (!alreadyQueued.has(eid)) {
+  const CONTRACT_ROUNDS = [5, 10, 15, 20]
+  if (CONTRACT_ROUNDS.includes(roundPlayed)) {
+    const handledIds = new Set(game.handledContractPlayerIds ?? [])
+    const contractCandidates = game.players
+      .filter(p =>
+        p.clubId === game.managedClubId &&
+        p.currentAbility > 50 &&
+        p.contractUntilSeason <= game.currentSeason + 1 &&
+        !handledIds.has(p.id)
+      )
+      .sort((a, b) => b.currentAbility - a.currentAbility)
+
+    if (contractCandidates.length > 0 && events.length < 2) {
+      const p = contractCandidates[0]
       events.push(contractRequestEvent(game, p.id))
     }
   }
@@ -291,6 +295,7 @@ export function resolveEvent(
                 }
               : p,
           ),
+          handledContractPlayerIds: [...(updated.handledContractPlayerIds ?? []), pid],
         }
         void player
       }
@@ -304,6 +309,7 @@ export function resolveEvent(
           players: updated.players.map(p =>
             p.id === pid ? { ...p, morale: Math.max(0, p.morale - 10) } : p,
           ),
+          handledContractPlayerIds: [...(updated.handledContractPlayerIds ?? []), pid],
         }
       }
       break

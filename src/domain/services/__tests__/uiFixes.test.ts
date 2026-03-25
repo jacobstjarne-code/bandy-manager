@@ -39,13 +39,13 @@ function makePlayer(overrides: Partial<Player> = {}): Player {
 // ── Transfer window tests ─────────────────────────────────────────────────
 
 describe('getTransferWindowStatus', () => {
-  it('returns open during summer (June)', () => {
-    const info = getTransferWindowStatus('2025-06-15')
+  it('returns open during pre-season (August)', () => {
+    const info = getTransferWindowStatus('2025-08-15')
     expect(info.status).toBe('open')
   })
 
-  it('returns open for all summer months (May–Sep)', () => {
-    for (const month of ['05', '06', '07', '08', '09']) {
+  it('returns open for all pre-season months (Aug–Oct)', () => {
+    for (const month of ['08', '09', '10']) {
       expect(getTransferWindowStatus(`2025-${month}-10`).status).toBe('open')
     }
   })
@@ -55,20 +55,20 @@ describe('getTransferWindowStatus', () => {
     expect(info.status).toBe('winter')
   })
 
-  it('returns closed during season (October–December)', () => {
-    for (const month of ['10', '11', '12']) {
+  it('returns closed during season (November–December)', () => {
+    for (const month of ['11', '12']) {
       expect(getTransferWindowStatus(`2025-${month}-01`).status).toBe('closed')
     }
   })
 
-  it('returns closed in February–April', () => {
-    for (const month of ['02', '03', '04']) {
+  it('returns closed in February–July', () => {
+    for (const month of ['02', '03', '04', '05', '06', '07']) {
       expect(getTransferWindowStatus(`2026-${month}-01`).status).toBe('closed')
     }
   })
 
   it('includes a non-empty label and description', () => {
-    const open = getTransferWindowStatus('2025-07-01')
+    const open = getTransferWindowStatus('2025-09-01')
     expect(open.label.length).toBeGreaterThan(0)
     expect(open.description.length).toBeGreaterThan(0)
 

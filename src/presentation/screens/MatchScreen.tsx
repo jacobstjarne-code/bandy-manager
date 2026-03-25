@@ -998,7 +998,12 @@ export function MatchScreen() {
                     value={formationType}
                     onChange={e => {
                       const f = e.target.value as FormationType
-                      const newTactic = { ...tacticState, formation: f, positionAssignments: {} }
+                      const template = FORMATIONS[f]
+                      const currentStarters = startingIds
+                        .map(id => squadPlayers.find(p => p.id === id))
+                        .filter((p): p is Player => !!p)
+                      const newAssignments = autoAssignFormation(template, currentStarters)
+                      const newTactic = { ...tacticState, formation: f, positionAssignments: newAssignments }
                       setTacticState(newTactic)
                       updateTactic(newTactic)
                       setSelectedSlotId(null)

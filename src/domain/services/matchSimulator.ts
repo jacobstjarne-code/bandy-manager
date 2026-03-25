@@ -79,6 +79,28 @@ type SequenceType = 'attack' | 'transition' | 'corner' | 'halfchance' | 'foul' |
 
 const SEQUENCE_TYPES: SequenceType[] = ['attack', 'transition', 'corner', 'halfchance', 'foul', 'lostball']
 
+function pickGoalCommentary(
+  scoringTeamScore: number,
+  otherTeamScore: number,
+  rand: () => number
+): string {
+  const isFirstGoal = scoringTeamScore === 1 && otherTeamScore === 0
+  const wasTied = (scoringTeamScore - 1) === otherTeamScore
+  const wasLosing = (scoringTeamScore - 1) < otherTeamScore
+  const isNowTied = scoringTeamScore === otherTeamScore
+
+  let pool: string[]
+  if (isFirstGoal) pool = commentary.goalOpener
+  else if (wasLosing && isNowTied) pool = commentary.goalEqualizer
+  else if (wasLosing) pool = commentary.goalReducing
+  else if (wasTied) pool = commentary.goalLead
+  else pool = commentary.goalExtend
+
+  return rand() > 0.5
+    ? pickCommentary(pool, rand)
+    : pickCommentary(commentary.goal, rand)
+}
+
 export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   const {
     fixture,
@@ -1378,7 +1400,9 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       } else if (weather && weather.condition === WeatherCondition.Thaw && rand() < 0.20) {
         commentaryText = fillTemplate(pickCommentary(commentary.weather_goal_thaw, rand), templateVars)
       } else {
-        commentaryText = fillTemplate(pickCommentary(commentary.goal, rand), templateVars)
+        const scoringTeamScore = isHomeAttacking ? homeScore : awayScore
+        const otherTeamScore = isHomeAttacking ? awayScore : homeScore
+        commentaryText = fillTemplate(pickGoalCommentary(scoringTeamScore, otherTeamScore, rand), templateVars)
       }
     } else if (saveOccurred && gkPlayerId) {
       templateVars = { ...templateVars, goalkeeper: findPlayerName(gkPlayerId) }

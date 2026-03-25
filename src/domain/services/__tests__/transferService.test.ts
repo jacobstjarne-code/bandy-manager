@@ -54,7 +54,7 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
 
   return {
     id: 'g1', managerName: 'Test', managedClubId: 'c1',
-    currentDate: '2025-06-15',  // summer window open
+    currentDate: '2025-09-15',  // pre-season window open
     currentSeason: 2025,
     clubs: [managedClub, otherClub],
     players: [ownPlayer, otherPlayer],

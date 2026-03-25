@@ -276,20 +276,19 @@ export const useNextRoundNumber = () => {
 export const useCanAdvance = () => {
   const game = useGameStore(s => s.game)
   if (!game) return false
-  // Always allow advance if bracket is complete (will trigger season-end/champion flow)
   if (game.playoffBracket?.status === PlayoffStatus.Completed) return true
-  // Check if managed club has an upcoming scheduled fixture
-  const hasUpcomingManagedFixture = game.fixtures.some(
-    f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && f.status === FixtureStatus.Scheduled
+  const hasScheduled = game.fixtures.some(f => f.status === FixtureStatus.Scheduled)
+  if (!hasScheduled) return true
+  const hasUpcoming = game.fixtures.some(
+    f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
+         f.status === FixtureStatus.Scheduled
   )
-  if (!hasUpcomingManagedFixture) {
-    // No managed club fixture — can advance if there are any scheduled fixtures (AI-only playoff rounds)
-    return game.fixtures.some(f => f.status === FixtureStatus.Scheduled)
-  }
-  // Has upcoming managed fixture — require valid lineup
+  if (!hasUpcoming) return true
   const lineup = game.managedClubPendingLineup
   if (!lineup) return false
-  const starters = lineup.startingPlayerIds.map(id => game.players.find(p => p.id === id)).filter(Boolean)
+  const starters = lineup.startingPlayerIds
+    .map(id => game.players.find(p => p.id === id))
+    .filter(Boolean)
   if (starters.length !== 11) return false
   return !starters.some(p => p!.isInjured || p!.suspensionGamesRemaining > 0)
 }

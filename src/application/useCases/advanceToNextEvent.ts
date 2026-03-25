@@ -1068,6 +1068,7 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     scoutBudget: 10,
     transferBids: [],
     pendingEvents: [],
+    handledContractPlayerIds: [],
   }
 
   return { game: updatedGame, roundPlayed: null, seasonEnded: true }
