@@ -1,0 +1,183 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useGameStore } from '../store/gameStore'
+
+function choiceStyle(choiceId: string): React.CSSProperties {
+  if (choiceId === 'accept' || choiceId === 'extend3') {
+    return {
+      background: 'var(--accent)',
+      color: '#fff',
+      border: 'none',
+    }
+  }
+  if (choiceId === 'reject') {
+    return {
+      background: 'rgba(239,68,68,0.1)',
+      color: '#ef4444',
+      border: '1px solid rgba(239,68,68,0.35)',
+    }
+  }
+  return {
+    background: 'var(--bg-elevated)',
+    color: 'var(--text-primary)',
+    border: '1px solid var(--border)',
+  }
+}
+
+export function EventScreen() {
+  const navigate = useNavigate()
+  const game = useGameStore(s => s.game)
+  const resolveEvent = useGameStore(s => s.resolveEvent)
+  const [idx, setIdx] = useState(0)
+
+  const events = game?.pendingEvents ?? []
+
+  useEffect(() => {
+    if (events.length === 0) {
+      navigate('/game', { replace: true })
+    }
+  }, [events.length, navigate])
+
+  if (!game || events.length === 0) return null
+
+  const event = events[idx]
+  if (!event) return null
+
+  const relatedPlayer = event.relatedPlayerId
+    ? game.players.find(p => p.id === event.relatedPlayerId)
+    : null
+
+  const relatedClub = event.relatedClubId
+    ? game.clubs.find(c => c.id === event.relatedClubId)
+    : null
+
+  function handleChoice(choiceId: string) {
+    resolveEvent(event.id, choiceId)
+    // After resolving, remaining events shift — go to index 0 always
+    setIdx(0)
+  }
+
+  const total = events.length
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(6,14,25,0.97)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px 20px',
+      zIndex: 500,
+      maxWidth: 430,
+      margin: '0 auto',
+    }}>
+      {/* Card */}
+      <div style={{
+        background: '#0e1f33',
+        border: '1px solid #1e3450',
+        borderRadius: 16,
+        padding: '28px 24px',
+        width: '100%',
+        maxWidth: 390,
+      }}>
+        {/* Type badge */}
+        <div style={{ marginBottom: 20 }}>
+          <span style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '1.5px',
+            textTransform: 'uppercase',
+            color: '#4A6080',
+          }}>
+            Händelse
+          </span>
+        </div>
+
+        {/* Title */}
+        <h2 style={{
+          fontSize: 18,
+          fontWeight: 800,
+          color: '#F0F4F8',
+          marginBottom: 14,
+          lineHeight: 1.3,
+        }}>
+          {event.title}
+        </h2>
+
+        {/* Body */}
+        <p style={{
+          fontSize: 14,
+          color: '#8A9BB0',
+          lineHeight: 1.6,
+          marginBottom: relatedPlayer || relatedClub ? 12 : 24,
+          whiteSpace: 'pre-line',
+        }}>
+          {event.body}
+        </p>
+
+        {/* Player / Club info pills */}
+        {(relatedPlayer || relatedClub) && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+            {relatedPlayer && (
+              <span style={{
+                fontSize: 12,
+                background: 'rgba(201,168,76,0.1)',
+                border: '1px solid rgba(201,168,76,0.3)',
+                borderRadius: 20,
+                padding: '4px 10px',
+                color: '#C9A84C',
+                fontWeight: 600,
+              }}>
+                {relatedPlayer.firstName} {relatedPlayer.lastName} · CA {relatedPlayer.currentAbility}
+              </span>
+            )}
+            {relatedClub && (
+              <span style={{
+                fontSize: 12,
+                background: 'rgba(59,130,246,0.08)',
+                border: '1px solid rgba(59,130,246,0.25)',
+                borderRadius: 20,
+                padding: '4px 10px',
+                color: '#60a5fa',
+                fontWeight: 600,
+              }}>
+                {relatedClub.name}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Choices */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {event.choices.map(choice => (
+            <button
+              key={choice.id}
+              onClick={() => handleChoice(choice.id)}
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                borderRadius: 10,
+                fontSize: 14,
+                fontWeight: 600,
+                textAlign: 'left',
+                cursor: 'pointer',
+                ...choiceStyle(choice.id),
+              }}
+            >
+              {choice.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Progress */}
+      {total > 1 && (
+        <p style={{ marginTop: 20, fontSize: 13, color: '#4A6080' }}>
+          {idx + 1} / {total}
+        </p>
+      )}
+    </div>
+  )
+}

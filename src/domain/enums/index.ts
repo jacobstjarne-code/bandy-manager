@@ -86,6 +86,8 @@ export enum InboxItemType {
   Derby = 'derby',
   Recovery = 'recovery',
   ScoutReport = 'scoutReport',
+  TransferBidReceived = 'transferBidReceived',
+  TransferBidResult = 'transferBidResult',
 }
 
 export enum TrainingType {

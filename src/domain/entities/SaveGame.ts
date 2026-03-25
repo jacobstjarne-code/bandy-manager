@@ -8,6 +8,7 @@ import type { TrainingFocus, TrainingSession } from './Training'
 import type { PlayoffBracket } from './Playoff'
 import type { SeasonSummary } from './SeasonSummary'
 import type { ScoutReport, ScoutAssignment } from './Scouting'
+import type { GameEvent, TransferBid } from './GameEvent'
 
 export interface StandingRow {
   clubId: string
@@ -93,6 +94,9 @@ export interface SaveGame {
   scoutReports: Record<string, ScoutReport>    // key = playerId
   activeScoutAssignment: ScoutAssignment | null
   scoutBudget: number
+
+  pendingEvents: GameEvent[]
+  transferBids: TransferBid[]
 
   version: string
   lastSavedAt: string   // ISO datetime

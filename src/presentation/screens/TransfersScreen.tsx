@@ -101,11 +101,78 @@ function RenewContractModal({ player, currentSeason, onClose, onConfirm }: Renew
   )
 }
 
+interface BidModalProps {
+  player: Player
+  managedClub: { transferBudget: number; finances: number }
+  onClose: () => void
+  onConfirm: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => void
+}
+
+function BidModal({ player, managedClub, onClose, onConfirm }: BidModalProps) {
+  const suggestedBid = Math.round((player.marketValue || 50000) / 5000) * 5000
+  const [offerAmount, setOfferAmount] = useState(suggestedBid)
+  const [offeredSalary, setOfferedSalary] = useState(player.salary)
+  const [contractYears, setContractYears] = useState(3)
+  const canAfford = managedClub.transferBudget >= offerAmount
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.85)',
+      display: 'flex', alignItems: 'flex-end', maxWidth: 430, margin: '0 auto',
+    }}>
+      <div style={{
+        background: 'var(--bg-surface)', borderRadius: '16px 16px 0 0',
+        border: '1px solid var(--border)', borderBottom: 'none', padding: '24px 20px', width: '100%',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <div>
+            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Lägg bud</h3>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{player.firstName} {player.lastName}</p>
+          </div>
+          <button onClick={onClose} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)', width: 32, height: 32, fontSize: 16 }}>✕</button>
+        </div>
+        <div style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', marginBottom: 16, border: '1px solid var(--border)', fontSize: 13, color: 'var(--text-secondary)' }}>
+          Marknadsvärde: {formatValue(player.marketValue)} · Transferbudget: {formatValue(managedClub.transferBudget)}
+        </div>
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Budsumma (kr)</label>
+          <input type="number" value={offerAmount} onChange={e => setOfferAmount(Number(e.target.value))} step={5000}
+            style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', fontSize: 15 }} />
+        </div>
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Erbjuden lön (kr/mån)</label>
+          <input type="number" value={offeredSalary} onChange={e => setOfferedSalary(Number(e.target.value))} step={1000}
+            style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', fontSize: 15 }} />
+        </div>
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>Kontraktslängd</label>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {[1, 2, 3].map(y => (
+              <button key={y} onClick={() => setContractYears(y)} style={{ flex: 1, padding: '10px', borderRadius: 'var(--radius-sm)', background: contractYears === y ? 'var(--accent)' : 'var(--bg-elevated)', border: '1px solid ' + (contractYears === y ? 'var(--accent)' : 'var(--border)'), color: contractYears === y ? '#fff' : 'var(--text-secondary)', fontSize: 15, fontWeight: 600 }}>
+                {y} år
+              </button>
+            ))}
+          </div>
+        </div>
+        {!canAfford && <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 8 }}>Otillräcklig transferbudget</p>}
+        <button
+          onClick={() => canAfford && onConfirm(player.id, offerAmount, offeredSalary, contractYears)}
+          disabled={!canAfford}
+          style={{ width: '100%', padding: '14px', background: canAfford ? 'var(--accent)' : 'var(--bg-elevated)', color: canAfford ? '#fff' : 'var(--text-muted)', borderRadius: 'var(--radius)', fontSize: 15, fontWeight: 600, border: 'none', cursor: canAfford ? 'pointer' : 'not-allowed', opacity: canAfford ? 1 : 0.5 }}>
+          Lägg bud
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function TransfersScreen() {
   const game = useGameStore(s => s.game)
   const startScout = useGameStore(s => s.startScout)
+  const placeOutgoingBid = useGameStore(s => s.placeOutgoingBid)
   const [renewingPlayerId, setRenewingPlayerId] = useState<string | null>(null)
   const [scoutMessage, setScoutMessage] = useState<string | null>(null)
+  const [biddingPlayerId, setBiddingPlayerId] = useState<string | null>(null)
 
   if (!game) return null
 
@@ -153,6 +220,18 @@ export function TransfersScreen() {
     const updatedGame = { ...game, players: updatedPlayers, transferState: { ...game.transferState, freeAgents: updatedFreeAgents } }
     useGameStore.setState({ game: updatedGame })
     saveSaveGame(updatedGame)
+  }
+
+  function handleBid(playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) {
+    const result = placeOutgoingBid(playerId, offerAmount, offeredSalary, contractYears)
+    setBiddingPlayerId(null)
+    if (result.success) {
+      setScoutMessage('Bud skickat! Svar om 1 omgång.')
+      setTimeout(() => setScoutMessage(null), 4000)
+    } else {
+      setScoutMessage(result.error ?? 'Kunde inte lägga bud.')
+      setTimeout(() => setScoutMessage(null), 3000)
+    }
   }
 
   function handleScout(player: Player) {
@@ -253,6 +332,25 @@ export function TransfersScreen() {
                     <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>{report!.notes}</p>
                   )}
                 </div>
+                {isScounted && windowOpen && (
+                  <button
+                    onClick={() => setBiddingPlayerId(player.id)}
+                    style={{
+                      flexShrink: 0,
+                      padding: '5px 10px',
+                      borderRadius: 'var(--radius-sm)',
+                      background: 'rgba(34,197,94,0.1)',
+                      border: '1px solid rgba(34,197,94,0.35)',
+                      color: 'var(--success)',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      marginLeft: 4,
+                    }}
+                  >
+                    💰 Bud
+                  </button>
+                )}
                 {!isScounted && (
                   <button
                     onClick={() => canScout && handleScout(player)}
@@ -349,6 +447,19 @@ export function TransfersScreen() {
           onConfirm={handleRenew}
         />
       )}
+
+      {biddingPlayerId && managedClub && (() => {
+        const biddingPlayer = game.players.find(p => p.id === biddingPlayerId)
+        if (!biddingPlayer) return null
+        return (
+          <BidModal
+            player={biddingPlayer}
+            managedClub={managedClub}
+            onClose={() => setBiddingPlayerId(null)}
+            onConfirm={handleBid}
+          />
+        )
+      })()}
     </div>
   )
 }

@@ -227,8 +227,12 @@ export function MatchLiveScreen() {
   }
 
   function handleSeeReport() {
-    advance()
-    navigate('/game/match', { state: { showReport: true } })
+    const result = advance()
+    if ((result?.pendingEvents?.length ?? 0) > 0) {
+      navigate('/game/events')
+    } else {
+      navigate('/game/match', { state: { showReport: true } })
+    }
   }
 
   if (!fixture || !homeLineup || !awayLineup) {
@@ -675,8 +679,12 @@ export function MatchLiveScreen() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button
                 onClick={() => {
-                  advance()
-                  navigate('/game')
+                  const result = advance()
+                  if ((result?.pendingEvents?.length ?? 0) > 0) {
+                    navigate('/game/events')
+                  } else {
+                    navigate('/game')
+                  }
                 }}
                 style={{
                   padding: '14px',

@@ -7,6 +7,8 @@ import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entiti
 import { FixtureStatus, PlayoffStatus } from '../../domain/enums'
 import { createNewGame } from '../../application/useCases/createNewGame'
 import { startScoutAssignment } from '../../domain/services/scoutingService'
+import { createOutgoingBid } from '../../domain/services/transferService'
+import { resolveEvent as resolveEventFn } from '../../domain/services/eventService'
 import { advanceToNextEvent, type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
 import { saveSaveGame, loadSaveGame, listSaveGames, type SaveGameSummary } from '../../infrastructure/persistence/saveGameStorage'
@@ -27,6 +29,8 @@ interface GameState {
   markInboxRead: (itemId: string) => void
   markAllInboxRead: () => void
   startScout: (playerId: string, clubId: string, sameRegion: boolean) => { success: boolean; error?: string }
+  placeOutgoingBid: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => { success: boolean; error?: string }
+  resolveEvent: (eventId: string, choiceId: string) => void
   saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection) => void
   clearGame: () => void
   listSaves: () => SaveGameSummary[]
@@ -150,6 +154,32 @@ export const useGameStore = create<GameState>()(
         saveSaveGame(updatedGame)
         set({ game: updatedGame })
         return { success: true }
+      },
+
+      placeOutgoingBid: (playerId, offerAmount, offeredSalary, contractYears) => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+        const currentRound = game.fixtures
+          .filter(f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+          .filter(f => f.status === 'scheduled')
+          .sort((a, b) => a.roundNumber - b.roundNumber)[0]?.roundNumber ?? 0
+        const result = createOutgoingBid(game, playerId, offerAmount, offeredSalary, contractYears, currentRound)
+        if (!result.success || !result.bid) return { success: false, error: result.error }
+        const updatedGame = {
+          ...game,
+          transferBids: [...(game.transferBids ?? []), result.bid],
+        }
+        saveSaveGame(updatedGame)
+        set({ game: updatedGame })
+        return { success: true }
+      },
+
+      resolveEvent: (eventId, choiceId) => {
+        const { game } = get()
+        if (!game) return
+        const updatedGame = resolveEventFn(game, eventId, choiceId)
+        saveSaveGame(updatedGame)
+        set({ game: updatedGame })
       },
 
       clearGame: () => set({ game: null, lastAdvanceResult: null }),

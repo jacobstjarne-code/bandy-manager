@@ -29,6 +29,9 @@ import {
 } from '../../domain/services/inboxService'
 import { processScoutAssignment } from '../../domain/services/scoutingService'
 import { updateAllMarketValues } from '../../domain/services/marketValueService'
+import { generateIncomingBids, resolveOutgoingBid } from '../../domain/services/transferService'
+import { generatePostAdvanceEvents } from '../../domain/services/eventService'
+import type { GameEvent, TransferBid } from '../../domain/entities/GameEvent'
 import type { ScoutReport, ScoutAssignment } from '../../domain/entities/Scouting'
 import { evaluateBoard, generateBoardMessage, generateSeasonVerdict } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
@@ -38,6 +41,7 @@ export interface AdvanceResult {
   roundPlayed: number | null
   seasonEnded: boolean
   playoffStarted?: boolean
+  pendingEvents?: GameEvent[]
 }
 
 // Simple mulberry32 for local random needs
@@ -683,6 +687,34 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   const marketUpdatedPlayers = updateAllMarketValues(finalPlayers, game.currentSeason)
 
+  // ── Transfer bids ────────────────────────────────────────────────────────
+  // Resolve pending outgoing bids (1 round to answer)
+  const existingBids: TransferBid[] = game.transferBids ?? []
+  const resolvedBids: TransferBid[] = existingBids.map(b => {
+    if (b.direction === 'outgoing' && b.status === 'pending' && nextRound >= b.expiresRound) {
+      const outcome = resolveOutgoingBid(b, game, localRand)
+      return { ...b, status: outcome }
+    }
+    // Expire stale bids
+    if (b.status === 'pending' && nextRound > b.expiresRound) {
+      return { ...b, status: 'expired' as const }
+    }
+    return b
+  })
+
+  // Partially updated game state for bid/event generation (with market-updated players)
+  const preEventGame: SaveGame = {
+    ...game,
+    players: marketUpdatedPlayers,
+    transferBids: resolvedBids,
+  }
+
+  const newBids = generateIncomingBids(preEventGame, nextRound, localRand)
+  const allBids: TransferBid[] = [...resolvedBids, ...newBids]
+
+  // ── Post-advance events ──────────────────────────────────────────────────
+  const newEvents = generatePostAdvanceEvents(preEventGame, newBids, nextRound, localRand)
+
   const updatedGame: SaveGame = {
     ...game,
     fixtures: finalAllFixtures,
@@ -698,9 +730,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     scoutReports: updatedScoutReports,
     activeScoutAssignment: updatedScoutAssignment,
     scoutBudget: game.scoutBudget ?? 10,
+    transferBids: allBids,
+    pendingEvents: [...(game.pendingEvents ?? []), ...newEvents],
   }
 
-  return { game: updatedGame, roundPlayed: nextRound, seasonEnded: false }
+  return { game: updatedGame, roundPlayed: nextRound, seasonEnded: false, pendingEvents: newEvents }
 }
 
 function getPlayerRating(playerId: string, fixtures: Fixture[]): number | null {

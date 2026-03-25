@@ -105,6 +105,8 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     scoutReports: {},
     activeScoutAssignment: null,
     scoutBudget: 10,
+    pendingEvents: [],
+    transferBids: [],
     version: '0.1.0',
     lastSavedAt: now,
   }

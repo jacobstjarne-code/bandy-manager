@@ -262,7 +262,10 @@ export function DashboardScreen() {
       return
     }
 
-    advance()
+    const result = advance()
+    if ((result?.pendingEvents?.length ?? 0) > 0) {
+      navigate('/game/events')
+    }
   }
 
   const cardStyle: React.CSSProperties = {
