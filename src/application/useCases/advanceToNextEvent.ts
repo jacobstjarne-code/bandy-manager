@@ -28,6 +28,7 @@ import {
   createTrainingItem,
 } from '../../domain/services/inboxService'
 import { processScoutAssignment } from '../../domain/services/scoutingService'
+import { updateAllMarketValues } from '../../domain/services/marketValueService'
 import type { ScoutReport, ScoutAssignment } from '../../domain/entities/Scouting'
 import { evaluateBoard, generateBoardMessage, generateSeasonVerdict } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
@@ -680,10 +681,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  const marketUpdatedPlayers = updateAllMarketValues(finalPlayers, game.currentSeason)
+
   const updatedGame: SaveGame = {
     ...game,
     fixtures: finalAllFixtures,
-    players: finalPlayers,
+    players: marketUpdatedPlayers,
     standings,
     inbox: [...game.inbox, ...newInboxItems],
     currentDate: newDate,

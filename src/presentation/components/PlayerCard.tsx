@@ -158,6 +158,12 @@ function PlayerSilhouette({ jerseyNumber }: PlayerSilhouetteProps) {
   )
 }
 
+function formatMarketValue(v: number): string {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
+  if (v >= 1_000) return `${Math.round(v / 1_000)} tkr`
+  return `${v} kr`
+}
+
 export function PlayerCard({ player, clubName, scoutReport, isOwned = true, currentSeason, onClick }: PlayerCardProps) {
   const reportAge = scoutReport && currentSeason
     ? getScoutReportAge(scoutReport, currentSeason, scoutReport.scoutedSeason)
@@ -362,6 +368,9 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
           marginBottom: 6,
         }}>
           SÄSONG
+        </p>
+        <p style={{ fontSize: 11, color: '#4A6080', marginBottom: 6 }}>
+          Marknadsvärde: <span style={{ color: '#8A9BB0', fontWeight: 700 }}>{formatMarketValue(player.marketValue)}</span>
         </p>
         {player.seasonStats.gamesPlayed > 0 ? (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px 6px' }}>

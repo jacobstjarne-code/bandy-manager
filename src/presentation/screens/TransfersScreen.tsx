@@ -10,6 +10,12 @@ function formatCurrency(n: number): string {
   return n.toLocaleString('sv-SE') + ' kr'
 }
 
+function formatValue(v: number): string {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
+  if (v >= 1_000) return `${Math.round(v / 1_000)} tkr`
+  return `${v} kr`
+}
+
 function positionShort(pos: PlayerPosition): string {
   const map: Record<PlayerPosition, string> = {
     [PlayerPosition.Goalkeeper]: 'MV',
@@ -237,7 +243,7 @@ export function TransfersScreen() {
                     {reportAge === 'aging' && !isStale && <span style={{ marginLeft: 6, fontSize: 10, color: '#f59e0b', fontWeight: 400 }}>1 säsong sedan</span>}
                   </p>
                   <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
-                    {positionShort(player.position)} · {club?.name ?? '?'} ·{' '}
+                    {positionShort(player.position)} · {club?.name ?? '?'} · {formatValue(player.marketValue)} ·{' '}
                     {isScounted
                       ? <span>Styrka ~{report!.estimatedCA}</span>
                       : <span style={{ color: 'var(--text-muted)' }}>Styrka ?</span>
@@ -289,7 +295,7 @@ export function TransfersScreen() {
                     {player.firstName} {player.lastName}
                   </p>
                   <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
-                    {positionShort(player.position)} · {formatCurrency(player.salary)}/mån · t.o.m. {player.contractUntilSeason}
+                    {positionShort(player.position)} · {formatValue(player.marketValue)} · {formatCurrency(player.salary)}/mån · t.o.m. {player.contractUntilSeason}
                   </p>
                 </div>
                 <button onClick={() => setRenewingPlayerId(player.id)} style={{ flexShrink: 0, padding: '6px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--accent)', fontSize: 12, fontWeight: 600 }}>
