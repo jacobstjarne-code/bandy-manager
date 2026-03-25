@@ -5,7 +5,6 @@ import {
   useManagedClub,
   useCurrentStanding,
   useHasPendingLineup,
-  useNextRoundNumber,
   useLastCompletedFixture,
   useCanAdvance,
   usePlayoffInfo,
@@ -197,7 +196,6 @@ export function DashboardScreen() {
   const standing = useCurrentStanding()
   const hasPendingLineup = useHasPendingLineup()
   const canAdvance = useCanAdvance()
-  const nextRoundNumber = useNextRoundNumber()
   const lastCompletedFixture = useLastCompletedFixture()
   const playoffInfo = usePlayoffInfo()
   const navigate = useNavigate()
@@ -354,22 +352,42 @@ export function DashboardScreen() {
 
   // Determine advance button text
   const advanceButtonText = (() => {
-    if (!hasScheduledFixtures) {
-      if (playoffInfo && !nextFixture) return 'Väntar på slutspel'
-      return 'Sätt lineup först'
+    if (!game) return 'Laddar...'
+    const hasScheduled = game.fixtures.some(f => f.status === 'scheduled')
+
+    // No scheduled fixtures at all
+    if (!hasScheduled) {
+      if (!game.playoffBracket) return 'Starta slutspel →'
+      if (game.playoffBracket.status === PlayoffStatus.Completed) return 'Avsluta säsongen →'
+      return 'Fortsätt slutspel →'
     }
-    if (playoffInfo?.status === PlayoffStatus.Completed) return 'Se slutresultat →'
-    if (nextRoundNumber) {
-      if (nextRoundNumber > 22) {
-        const roundLabel = playoffInfo?.status === PlayoffStatus.QuarterFinals ? 'KF'
-          : playoffInfo?.status === PlayoffStatus.SemiFinals ? 'SF'
-          : 'Final'
+
+    const nextRound = Math.min(
+      ...game.fixtures
+        .filter(f => f.status === 'scheduled')
+        .map(f => f.roundNumber)
+    )
+
+    const managedInNextRound = game.fixtures.some(
+      f => f.roundNumber === nextRound &&
+           (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
+           f.status === 'scheduled'
+    )
+
+    if (managedInNextRound) {
+      // Playoff round?
+      if (game.playoffBracket) {
+        const roundLabel = nextRound <= 25 ? 'KF' : nextRound <= 28 ? 'SF' : 'Final'
         return `Spela ${roundLabel} →`
       }
-      return `Spela omgång ${nextRoundNumber} →`
+      return `Spela omgång ${nextRound} →`
     }
-    if (playoffInfo) return 'Spela slutspel →'
-    return 'Ny säsong →'
+
+    // AI-only round
+    if (game.playoffBracket) {
+      return 'Fortsätt slutspel →'
+    }
+    return `Simulera omgång ${nextRound} →`
   })()
 
   return (

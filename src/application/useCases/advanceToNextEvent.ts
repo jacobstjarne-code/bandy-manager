@@ -496,6 +496,57 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     finalPlayers = devResult.updatedPlayers
   }
 
+  // Update seasonStats for all players in completed fixtures this round
+  for (const fixture of simulatedFixtures) {
+    if (fixture.status !== FixtureStatus.Completed) continue
+    const allStarters = [
+      ...(fixture.homeLineup?.startingPlayerIds ?? []),
+      ...(fixture.awayLineup?.startingPlayerIds ?? []),
+    ]
+    for (const id of allStarters) {
+      const idx = finalPlayers.findIndex(p => p.id === id)
+      if (idx === -1) continue
+      const p = finalPlayers[idx]
+      const rating = fixture.report?.playerRatings[id]
+      const goals = fixture.events.filter(
+        e => e.type === MatchEventType.Goal && e.playerId === id
+      ).length
+      const assists = fixture.events.filter(
+        e => e.type === MatchEventType.Assist && e.playerId === id
+      ).length
+      const cornerGoals = fixture.events.filter(
+        e => e.type === MatchEventType.Goal && e.playerId === id && e.isCornerGoal
+      ).length
+      const yellows = fixture.events.filter(
+        e => e.type === MatchEventType.YellowCard && e.playerId === id
+      ).length
+      const reds = fixture.events.filter(
+        e => e.type === MatchEventType.RedCard && e.playerId === id
+      ).length
+
+      const prevGames = p.seasonStats.gamesPlayed
+      const prevAvgRating = p.seasonStats.averageRating
+      const newAvgRating = rating !== undefined
+        ? (prevAvgRating * prevGames + rating) / (prevGames + 1)
+        : prevAvgRating
+
+      finalPlayers[idx] = {
+        ...p,
+        seasonStats: {
+          ...p.seasonStats,
+          gamesPlayed: prevGames + 1,
+          goals: p.seasonStats.goals + goals,
+          assists: p.seasonStats.assists + assists,
+          cornerGoals: p.seasonStats.cornerGoals + cornerGoals,
+          yellowCards: p.seasonStats.yellowCards + yellows,
+          redCards: p.seasonStats.redCards + reds,
+          averageRating: Math.round(newAvgRating * 100) / 100,
+          minutesPlayed: p.seasonStats.minutesPlayed + 90,
+        },
+      }
+    }
+  }
+
   // Match results for managed club
   for (const fixture of simulatedFixtures) {
     if (
