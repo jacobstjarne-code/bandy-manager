@@ -704,8 +704,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const outcome = resolveOutgoingBid(b, game, localRand)
       return { ...b, status: outcome }
     }
-    // Expire stale bids
-    if (b.status === 'pending' && nextRound > b.expiresRound) {
+    // Expire stale bids (incoming bids expire at expiresRound, outgoing already resolved above)
+    if (b.status === 'pending' && nextRound >= b.expiresRound) {
       return { ...b, status: 'expired' as const }
     }
     return b

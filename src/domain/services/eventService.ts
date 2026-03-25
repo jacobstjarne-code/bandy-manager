@@ -133,6 +133,18 @@ export function generatePostAdvanceEvents(
     }
   }
 
+  // 1b. Re-surface existing pending incoming bids (e.g. after counter-offer)
+  const existingPendingBids = (game.transferBids ?? []).filter(
+    b => b.direction === 'incoming' && b.status === 'pending',
+  )
+  for (const bid of existingPendingBids) {
+    if (events.length >= 2) break
+    const eid = `event_bid_${bid.id}`
+    if (!alreadyQueued.has(eid)) {
+      events.push(bidReceivedEvent(bid, game))
+    }
+  }
+
   if (events.length >= 2) return events
 
   // 2. Contract requests (CA > 50, < 1 season left, managed club)
