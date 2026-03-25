@@ -46,7 +46,7 @@ export const useGameStore = create<GameState>()(
 
       newGame: (managerName, clubId) => {
         const game = createNewGame({ managerName, clubId })
-        saveSaveGame(game)
+        saveSaveGame(game) // non-throwing after fix in saveGameStorage
         set({ game, lastAdvanceResult: null })
       },
 
@@ -197,6 +197,11 @@ export const useGameStore = create<GameState>()(
     {
       name: 'bandy-game-store',
       partialize: (state) => ({ game: state.game }),
+      onRehydrateStorage: () => (_state, error) => {
+        if (error) {
+          console.warn('persist rehydration misslyckades, återställer till tomt spel', error)
+        }
+      },
     }
   )
 )

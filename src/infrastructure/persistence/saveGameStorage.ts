@@ -18,23 +18,27 @@ function isLocalStorageAvailable(): boolean {
 export function saveSaveGame(game: SaveGame): void {
   if (!isLocalStorageAvailable()) return
 
-  const key = `${SAVE_PREFIX}${game.id}`
-  localStorage.setItem(key, JSON.stringify(game))
+  try {
+    const key = `${SAVE_PREFIX}${game.id}`
+    localStorage.setItem(key, JSON.stringify(game))
 
-  const clubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? ''
+    const clubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? ''
 
-  const summary: SaveGameSummary = {
-    id: game.id,
-    managerName: game.managerName,
-    clubName,
-    season: game.currentSeason,
-    lastSavedAt: game.lastSavedAt,
+    const summary: SaveGameSummary = {
+      id: game.id,
+      managerName: game.managerName,
+      clubName,
+      season: game.currentSeason,
+      lastSavedAt: game.lastSavedAt,
+    }
+
+    const existing = listSaveGames()
+    const filtered = existing.filter(s => s.id !== game.id)
+    filtered.push(summary)
+    localStorage.setItem(INDEX_KEY, JSON.stringify(filtered))
+  } catch (e) {
+    console.warn('saveSaveGame: kunde inte spara till localStorage', e)
   }
-
-  const existing = listSaveGames()
-  const filtered = existing.filter(s => s.id !== game.id)
-  filtered.push(summary)
-  localStorage.setItem(INDEX_KEY, JSON.stringify(filtered))
 }
 
 export function loadSaveGame(id: string): SaveGame | null {

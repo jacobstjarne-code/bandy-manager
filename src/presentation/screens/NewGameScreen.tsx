@@ -47,8 +47,13 @@ export function NewGameScreen() {
     if (!selectedClubId || !managerName.trim()) return
     setIsStarting(true)
     setTimeout(() => {
-      newGame(managerName.trim(), selectedClubId)
-      navigate('/game/dashboard')
+      try {
+        newGame(managerName.trim(), selectedClubId)
+        navigate('/game/dashboard')
+      } catch (e) {
+        console.error('handleStart misslyckades:', e)
+        setIsStarting(false)
+      }
     }, 50)
   }
 
