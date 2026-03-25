@@ -534,14 +534,14 @@ export function MatchLiveScreen() {
       {/* Halftime modal */}
       {showHalftime && !matchDone && (
         <div style={{
-          position: 'absolute',
+          position: 'fixed',
           inset: 0,
           background: 'rgba(0,0,0,0.85)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'flex-start',
           paddingTop: '80px',
-          zIndex: 100,
+          zIndex: 200,
         }}>
           <div style={{
             background: 'var(--bg-surface)',
@@ -601,14 +601,14 @@ export function MatchLiveScreen() {
       {/* Match done overlay */}
       {matchDone && (
         <div style={{
-          position: 'absolute',
+          position: 'fixed',
           inset: 0,
           background: 'rgba(0,0,0,0.9)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'flex-start',
           paddingTop: '60px',
-          zIndex: 100,
+          zIndex: 200,
         }}>
           <div style={{
             background: 'var(--bg-surface)',
