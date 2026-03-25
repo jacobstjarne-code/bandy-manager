@@ -318,11 +318,54 @@ export function PlayerCard({ player, clubName, onClick }: PlayerCardProps) {
 
       {/* Season summary */}
       <div style={{ padding: '8px 14px 12px' }}>
-        <p style={{ fontSize: 11, color: '#4A6080', letterSpacing: '0.3px' }}>
-          Säsong {player.seasonStats.gamesPlayed > 0
-            ? `${player.seasonStats.goals} Mål, ${player.seasonStats.assists} Assist · ${player.seasonStats.gamesPlayed} matcher`
-            : 'Inga matcher spelat'}
+        <p style={{
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: '2px',
+          textTransform: 'uppercase',
+          color: '#4A6080',
+          marginBottom: 6,
+        }}>
+          SÄSONG
         </p>
+        {player.seasonStats.gamesPlayed > 0 ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px 6px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 5, padding: '4px 2px' }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: '#F0F4F8' }}>{player.seasonStats.goals}</span>
+              <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>MÅL</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 5, padding: '4px 2px' }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: '#F0F4F8' }}>{player.seasonStats.assists}</span>
+              <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>ASSIST</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 5, padding: '4px 2px' }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: '#F0F4F8' }}>{player.seasonStats.gamesPlayed}</span>
+              <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>MATCHER</span>
+            </div>
+            {player.seasonStats.averageRating > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 5, padding: '4px 2px' }}>
+                <span style={{ fontSize: 14, fontWeight: 800, color: player.seasonStats.averageRating >= 7 ? '#22c55e' : player.seasonStats.averageRating >= 6 ? '#f59e0b' : '#ef4444' }}>
+                  {player.seasonStats.averageRating.toFixed(1)}
+                </span>
+                <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>BETYG</span>
+              </div>
+            )}
+            {player.seasonStats.yellowCards > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 5, padding: '4px 2px' }}>
+                <span style={{ fontSize: 14, fontWeight: 800, color: '#f59e0b' }}>{player.seasonStats.yellowCards}</span>
+                <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>GULA</span>
+              </div>
+            )}
+            {player.seasonStats.suspensions > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 5, padding: '4px 2px' }}>
+                <span style={{ fontSize: 14, fontWeight: 800, color: '#ef4444' }}>{player.seasonStats.suspensions}</span>
+                <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>UTVISN</span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p style={{ fontSize: 12, color: '#4A6080' }}>Inga matcher spelat</p>
+        )}
       </div>
     </div>
   )

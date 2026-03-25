@@ -23,6 +23,8 @@ interface GameState {
   updateTactic: (tactic: Tactic) => void
   setTraining: (focus: TrainingFocus) => void
   markTutorialSeen: () => void
+  markInboxRead: (itemId: string) => void
+  markAllInboxRead: () => void
   saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection) => void
   clearGame: () => void
   listSaves: () => SaveGameSummary[]
@@ -106,6 +108,28 @@ export const useGameStore = create<GameState>()(
         const { game } = get()
         if (!game) return
         const updatedGame = { ...game, tutorialSeen: true }
+        saveSaveGame(updatedGame)
+        set({ game: updatedGame })
+      },
+
+      markInboxRead: (itemId) => {
+        const { game } = get()
+        if (!game) return
+        const updatedGame = {
+          ...game,
+          inbox: game.inbox.map(i => i.id === itemId ? { ...i, isRead: true } : i),
+        }
+        saveSaveGame(updatedGame)
+        set({ game: updatedGame })
+      },
+
+      markAllInboxRead: () => {
+        const { game } = get()
+        if (!game) return
+        const updatedGame = {
+          ...game,
+          inbox: game.inbox.map(i => ({ ...i, isRead: true })),
+        }
         saveSaveGame(updatedGame)
         set({ game: updatedGame })
       },
@@ -230,6 +254,13 @@ export const useCanAdvance = () => {
   const starters = lineup.startingPlayerIds.map(id => game.players.find(p => p.id === id)).filter(Boolean)
   if (starters.length !== 11) return false
   return !starters.some(p => p!.isInjured || p!.suspensionGamesRemaining > 0)
+}
+
+// Returns count of unread inbox items
+export const useUnreadInboxCount = () => {
+  const game = useGameStore(s => s.game)
+  if (!game) return 0
+  return game.inbox.filter(i => !i.isRead).length
 }
 
 // Returns the current playoff bracket or null

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { Home, Users, Swords, ArrowLeftRight, Building2 } from 'lucide-react'
-import { useInjuredInLineup, useExpiringContracts, useNextRoundNumber, useHasPendingLineup, useGameStore } from '../store/gameStore'
+import { Home, Users, Swords, ArrowLeftRight, Bell } from 'lucide-react'
+import { useInjuredInLineup, useExpiringContracts, useNextRoundNumber, useHasPendingLineup, useGameStore, useUnreadInboxCount } from '../store/gameStore'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 
 const tabs = [
@@ -9,7 +9,7 @@ const tabs = [
   { to: '/game/squad', label: 'Trupp', Icon: Users },
   { to: '/game/match', label: 'Match', Icon: Swords },
   { to: '/game/transfers', label: 'Transfers', Icon: ArrowLeftRight },
-  { to: '/game/club', label: 'Klubb', Icon: Building2 },
+  { to: '/game/inbox', label: 'Inkorg', Icon: Bell },
 ]
 
 function Badge({ count }: { count: number }) {
@@ -41,6 +41,7 @@ export function BottomNav() {
   const expiringContracts = useExpiringContracts()
   const nextRoundNumber = useNextRoundNumber()
   const hasPendingLineup = useHasPendingLineup()
+  const unreadInbox = useUnreadInboxCount()
   const currentDate = useGameStore(s => s.game?.currentDate ?? '')
   const location = useLocation()
   const [lastActive, setLastActive] = useState<string>(location.pathname)
@@ -61,6 +62,7 @@ export function BottomNav() {
     '/game/squad': injuredInLineup,
     '/game/match': matchBadge,
     '/game/transfers': expiringContracts,
+    '/game/inbox': unreadInbox,
   }
 
   return (

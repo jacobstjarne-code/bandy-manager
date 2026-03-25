@@ -11,6 +11,7 @@ import { ClubScreen } from '../screens/ClubScreen'
 import { TabellScreen } from '../screens/TabellScreen'
 import { ChampionScreen } from '../screens/ChampionScreen'
 import { SeasonSummaryScreen } from '../screens/SeasonSummaryScreen'
+import { InboxScreen } from '../screens/InboxScreen'
 
 export function AppRouter() {
   return (
@@ -30,6 +31,7 @@ export function AppRouter() {
           <Route path="champion" element={<ChampionScreen />} />
           <Route path="season-summary" element={<SeasonSummaryScreen />} />
           <Route path="season-summary/:season" element={<SeasonSummaryScreen />} />
+          <Route path="inbox" element={<InboxScreen />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -825,6 +825,58 @@ export function MatchScreen() {
       {/* ── Steg 1: Välj trupp ──────────────────────────────────────── */}
       {matchStep === 'lineup' && (
         <>
+          {/* Opponent info card */}
+          {opponent && (() => {
+            const opponentPlayers = game.players
+              .filter(p => opponent.squadPlayerIds.includes(p.id) && !p.isInjured && p.suspensionGamesRemaining <= 0)
+              .sort((a, b) => b.currentAbility - a.currentAbility)
+            const avgCA = opponentPlayers.length > 0
+              ? Math.round(opponentPlayers.reduce((s, p) => s + p.currentAbility, 0) / opponentPlayers.length)
+              : 0
+            const topPlayers = opponentPlayers.slice(0, 3)
+            const opponentStanding = game.standings.find(s => s.clubId === opponent.id)
+            return (
+              <div style={{
+                margin: '0 16px 12px',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius)',
+                padding: '10px 12px',
+              }}>
+                <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 8 }}>
+                  Motståndaren
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{opponent.name}</p>
+                    {topPlayers.length > 0 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {topPlayers.map(p => (
+                          <span key={p.id} style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                            {p.firstName} {p.lastName}
+                            <span style={{ color: 'var(--text-muted)', marginLeft: 4 }}>{positionShort(p.position)}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{ fontSize: 18, fontWeight: 800, color: avgCA >= 65 ? 'var(--danger)' : avgCA >= 50 ? 'var(--warning)' : 'var(--success)' }}>{avgCA}</p>
+                      <p style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Styrka</p>
+                    </div>
+                    {opponentStanding && (
+                      <div style={{ textAlign: 'center' }}>
+                        <p style={{ fontSize: 18, fontWeight: 800 }}>#{opponentStanding.position}</p>
+                        <p style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tabell</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
+
           <div style={{ padding: '0 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: 13, color: startingIds.length === 11 ? 'var(--success)' : 'var(--warning)', fontWeight: 600 }}>
               {startingIds.length}/11 startande
