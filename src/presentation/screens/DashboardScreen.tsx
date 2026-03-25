@@ -214,6 +214,13 @@ export function DashboardScreen() {
     }
   }, [game?.showSeasonSummary, navigate])
 
+  // Auto-navigate to board meeting when it's ready
+  useEffect(() => {
+    if (game?.showBoardMeeting) {
+      navigate('/game/board-meeting', { replace: true })
+    }
+  }, [game?.showBoardMeeting, navigate])
+
   if (!game || !club) return null
 
   const nextFixture = game.fixtures

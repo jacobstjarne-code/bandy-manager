@@ -110,6 +110,8 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     playoffBracket: null,
     seasonSummaries: [],
     showSeasonSummary: false,
+    showBoardMeeting: true,
+    tutorialSeen: true,
     seasonStartFinances: undefined,
     scoutReports: {},
     activeScoutAssignment: null,

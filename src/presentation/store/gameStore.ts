@@ -37,6 +37,7 @@ interface GameState {
   clearGame: () => void
   listSaves: () => SaveGameSummary[]
   clearSeasonSummary: () => void
+  clearBoardMeeting: () => void
 }
 
 const indexedDBStorage = {
@@ -178,7 +179,13 @@ export const useGameStore = create<GameState>()(
       clearSeasonSummary: () => {
         const { game } = get()
         if (!game) return
-        set({ game: { ...game, showSeasonSummary: false } })
+        set({ game: { ...game, showSeasonSummary: false, showBoardMeeting: true } })
+      },
+
+      clearBoardMeeting: () => {
+        const { game } = get()
+        if (!game) return
+        set({ game: { ...game, showBoardMeeting: false } })
       },
     }),
     {

@@ -97,6 +97,7 @@ export interface SaveGame {
   playoffBracket: PlayoffBracket | null
 
   showSeasonSummary?: boolean
+  showBoardMeeting?: boolean
   seasonSummaries: SeasonSummary[]
   seasonStartFinances?: number  // club finances at season start
 
