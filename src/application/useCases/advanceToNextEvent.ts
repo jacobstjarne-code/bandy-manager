@@ -6,6 +6,7 @@ import type { MatchWeather } from '../../domain/entities/Weather'
 import { FixtureStatus, MatchEventType, PlayerPosition, InboxItemType, TrainingType, TrainingIntensity, PlayoffStatus, ClubStyle } from '../../domain/enums'
 import type { FormationType } from '../../domain/entities/Formation'
 import { simulateMatch } from '../../domain/services/matchSimulator'
+import { getTacticModifiers } from '../../domain/services/tacticModifiers'
 import { getRivalry } from '../../domain/data/rivalries'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import { calculateStandings } from '../../domain/services/standingsService'
@@ -376,6 +377,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     trainingPlayers.filter(p => p.isInjured && p.clubId === game.managedClubId).map(p => p.id)
   )
 
+  const managedClubForTactic = game.clubs.find(c => c.id === game.managedClubId)
+  const managedTacticMods = managedClubForTactic
+    ? getTacticModifiers(managedClubForTactic.activeTactic)
+    : null
+
   // Player fitness / form / sharpness updates (start from training-updated players)
   const updatedPlayers = trainingPlayers.map(player => {
     let updated = { ...player }
@@ -397,7 +403,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
     if (startersThisRound.has(player.id)) {
       // Reduce fitness 15-25
-      const fitnessLoss = 15 + Math.floor(localRand() * 10)
+      const baseFitnessLoss = 15 + Math.floor(localRand() * 10)
+      const tacticFatigue = managedTacticMods && player.clubId === game.managedClubId
+        ? managedTacticMods.fatigueRate
+        : 1.0
+      const fitnessLoss = Math.round(baseFitnessLoss * tacticFatigue)
       updated.fitness = Math.max(0, updated.fitness - fitnessLoss)
 
       // Form update based on match rating
@@ -458,7 +468,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     // base 0.06 → ~6% for average player (proneness 50, fitness 70)
     const proneFactor = player.injuryProneness / 100        // 0–1
     const fatigueFactor = (100 - player.fitness) / 100 + 0.3 // 0.3–1.3
-    const injuryChance = 0.06 * (proneFactor + 0.3) * fatigueFactor
+    const tacticInjuryMod = managedTacticMods && player.clubId === game.managedClubId
+      ? 1.0 + (managedTacticMods.fatigueRate - 1.0) * 0.5
+      : 1.0
+    const injuryChance = 0.06 * (proneFactor + 0.3) * fatigueFactor * tacticInjuryMod
 
     if (localRand() < injuryChance) {
       const days = 7 + Math.floor(localRand() * 28)  // 1–5 weeks

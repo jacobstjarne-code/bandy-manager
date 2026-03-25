@@ -194,6 +194,32 @@ export const commentary = {
     "Flodljusen lyser upp en iskall, klar kväll. Isen glittrar.",
     "Kyligt och klart — precis som det ska vara.",
   ],
+
+  weatherCold: [
+    "Bollen går trögt i kylan. Spelarna stampar för att hålla värmen.",
+    "Minusgraderna biter — fingrarna domnar i handskarna.",
+    "Iskallt ikväll. Spelarna har det inte bättre ute på isen.",
+  ],
+  weatherSnow: [
+    "Snöflingorna yr — sikten börjar bli besvärlig.",
+    "Bollen studsar oberäkneligt i snömodden.",
+    "Snön vräker ner — underhållspersonalen har fullt upp.",
+  ],
+  weatherMild: [
+    "Ovanligt milt för säsongen — isen är blöt och tung.",
+    "Plusgraderna sätter spår. Bollen skär igenom vattnet på ytan.",
+    "Mildvädret gör isen svårspelad — inte de bästa förhållandena.",
+  ],
+  weatherFog: [
+    "Dimman ligger tät. Svårt att se mittplanen härifrån.",
+    "Sikten är begränsad — passningarna blir chansartade.",
+    "Dimman gör spelet oförutsägbart ikväll.",
+  ],
+  weatherGood: [
+    "Perfekta förhållanden ikväll — klar luft och fin is.",
+    "Strålande bandyväder. Isen ligger som ett golv.",
+    "Fint väder, bra is — inga ursäkter idag.",
+  ],
   weather_miss_heavySnow: [
     "Bollen slirar bort i snön — avslutet hamnar helt fel.",
     "Omöjligt att sikta i det här! Skottet flyger iväg.",

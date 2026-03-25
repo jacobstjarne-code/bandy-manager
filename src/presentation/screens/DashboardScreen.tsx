@@ -249,6 +249,24 @@ export function DashboardScreen() {
     return allSeries.find(s => s.fixtures.includes(nextFixture.id)) ?? null
   })() : null
 
+  const seriesFixtures = playoffSeries
+    ? game.fixtures.filter(f => playoffSeries.fixtures.includes(f.id) && f.status === 'completed')
+    : []
+  const dynamicHomeWins = seriesFixtures.filter(f => {
+    const isSeriesHome = f.homeClubId === playoffSeries?.homeClubId
+    return isSeriesHome ? f.homeScore > f.awayScore : f.awayScore > f.homeScore
+  }).length
+  const dynamicAwayWins = seriesFixtures.filter(f => {
+    const isSeriesHome = f.homeClubId === playoffSeries?.homeClubId
+    return isSeriesHome ? f.awayScore > f.homeScore : f.homeScore > f.awayScore
+  }).length
+
+  const isPlayoffJustStarted = playoffInfo &&
+    playoffInfo.status === PlayoffStatus.QuarterFinals &&
+    playoffInfo.quarterFinals.every(s =>
+      game.fixtures.filter(f => s.fixtures.includes(f.id) && f.status === 'completed').length === 0
+    )
+
   const handleAdvance = () => {
     const scheduledFixtures = game!.fixtures.filter(f => f.status === 'scheduled')
 
@@ -370,6 +388,53 @@ export function DashboardScreen() {
       {/* Scrollable content */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px', paddingBottom: '100px' }}>
 
+        {/* PLAYOFF JUST STARTED banner */}
+        {isPlayoffJustStarted && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(201,168,76,0.15), rgba(201,168,76,0.05))',
+            border: '2px solid rgba(201,168,76,0.4)',
+            borderRadius: 12,
+            padding: '20px 16px',
+            marginBottom: 16,
+            textAlign: 'center',
+          }}>
+            <p style={{ fontSize: 24 }}>🏆</p>
+            <p style={{ fontSize: 16, fontWeight: 800, color: '#C9A84C', marginTop: 8 }}>
+              Dags för slutspel!
+            </p>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.5 }}>
+              Grundserien är avslutad. Matcherna har lottats:
+            </p>
+            <div style={{ marginTop: 12 }}>
+              {playoffInfo.quarterFinals.map(series => {
+                const home = game.clubs.find(c => c.id === series.homeClubId)
+                const away = game.clubs.find(c => c.id === series.awayClubId)
+                const isManaged = series.homeClubId === game.managedClubId ||
+                                  series.awayClubId === game.managedClubId
+                return (
+                  <div key={series.id} style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '6px 0',
+                    fontWeight: isManaged ? 700 : 400,
+                    color: isManaged ? '#C9A84C' : 'var(--text-secondary)',
+                    fontSize: 13,
+                  }}>
+                    <span>{home?.shortName ?? home?.name}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>vs</span>
+                    <span>{away?.shortName ?? away?.name}</span>
+                  </div>
+                )
+              })}
+            </div>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 10 }}>
+              Bäst av 3 matcher per serie
+            </p>
+          </div>
+        )}
+
         {/* NEXT MATCH card */}
         {nextFixture && opponent && (
           <div className="card-stagger-1" style={{
@@ -422,7 +487,7 @@ export function DashboardScreen() {
                 <p style={{ fontSize: 20, fontWeight: 800, color: '#F0F4F8', letterSpacing: '2px' }}>VS</p>
                 {isPlayoffFixture && playoffSeries ? (
                   <p style={{ fontSize: 13, color: '#C9A84C', marginTop: 2, fontWeight: 700 }}>
-                    {getRoundLabel(playoffSeries.round)} · {playoffSeries.homeWins}–{playoffSeries.awayWins}
+                    {getRoundLabel(playoffSeries.round)} · {dynamicHomeWins}–{dynamicAwayWins}
                   </p>
                 ) : (
                   <p style={{ fontSize: 13, color: '#8A9BB0', marginTop: 2 }}>Omgång {nextFixture.roundNumber}</p>

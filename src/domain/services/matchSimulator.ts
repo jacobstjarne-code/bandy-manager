@@ -101,6 +101,23 @@ function pickGoalCommentary(
     : pickCommentary(commentary.goal, rand)
 }
 
+function pickWeatherCommentary(weather: Weather | undefined, rand: () => number): string | null {
+  if (!weather) return null
+  let pool: string[]
+  if (weather.condition === WeatherCondition.HeavySnow || weather.condition === WeatherCondition.LightSnow) {
+    pool = commentary.weatherSnow
+  } else if (weather.condition === WeatherCondition.Fog) {
+    pool = commentary.weatherFog
+  } else if (weather.condition === WeatherCondition.Thaw || weather.temperature > 2) {
+    pool = commentary.weatherMild
+  } else if (weather.temperature < -5) {
+    pool = commentary.weatherCold
+  } else {
+    pool = commentary.weatherGood
+  }
+  return pickCommentary(pool, rand)
+}
+
 export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   const {
     fixture,
@@ -1427,19 +1444,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       commentaryText = fillTemplate(pickCommentary(commentary.powerPlayGood, rand), templateVars)
     } else if (weather && (step === 15 || step === 30 || step === 45)) {
       // Weather-specific atmospheric commentary at milestone steps
-      if (weather.condition === WeatherCondition.HeavySnow) {
-        commentaryText = pickCommentary(commentary.weather_heavySnow, rand)
-      } else if (weather.condition === WeatherCondition.Thaw) {
-        commentaryText = pickCommentary(commentary.weather_thaw, rand)
-      } else if (weather.condition === WeatherCondition.Fog) {
-        commentaryText = pickCommentary(commentary.weather_fog, rand)
-      } else if (weather.condition === WeatherCondition.Clear && weather.temperature < -10) {
-        commentaryText = pickCommentary(commentary.weather_cold, rand)
-      } else if (weather.condition === WeatherCondition.Clear) {
-        commentaryText = pickCommentary(commentary.weather_clear, rand)
-      } else {
-        commentaryText = fillTemplate(pickCommentary(commentary.neutral, rand), templateVars)
-      }
+      commentaryText = pickWeatherCommentary(weather, rand) ?? fillTemplate(pickCommentary(commentary.neutral, rand), templateVars)
     } else {
       // Derby neutral override: 30% chance on every 10th step when no event
       if (rivalry && step % 10 === 0 && !goalScored && !saveOccurred && !suspensionOccurred && !cornerOccurred && rand() < 0.30) {
