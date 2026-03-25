@@ -190,19 +190,42 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
 
         {/* CA badge */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
-          <span style={{
-            fontSize: 15,
-            fontWeight: 800,
-            color: caColor(player.currentAbility),
-            textShadow: player.currentAbility >= 75
-              ? '0 0 8px rgba(34,197,94,0.4)'
-              : player.currentAbility < 40
-                ? '0 0 8px rgba(239,68,68,0.3)'
-                : undefined,
-          }}>
-            {Math.round(player.currentAbility)}
-          </span>
-          <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>CA</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{
+              fontSize: 15,
+              fontWeight: 800,
+              color: caColor(player.currentAbility),
+              textShadow: player.currentAbility >= 75
+                ? '0 0 8px rgba(34,197,94,0.4)'
+                : player.currentAbility < 40
+                  ? '0 0 8px rgba(239,68,68,0.3)'
+                  : undefined,
+            }}>
+              {Math.round(player.currentAbility)}
+            </span>
+            {player.startSeasonCA != null && player.currentAbility > player.startSeasonCA && (
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#22c55e' }}>
+                ↑+{Math.round(player.currentAbility - player.startSeasonCA)}
+              </span>
+            )}
+            {player.startSeasonCA != null && player.currentAbility < player.startSeasonCA && (
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#ef4444' }}>
+                ↓{Math.round(player.currentAbility - player.startSeasonCA)}
+              </span>
+            )}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>CA</span>
+            {player.age < 24 && (
+              <span style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', borderRadius: 4, padding: '1px 4px' }}>Utvecklas</span>
+            )}
+            {player.age >= 24 && player.age <= 30 && (
+              <span style={{ fontSize: 9, fontWeight: 700, color: '#C9A84C', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: 4, padding: '1px 4px' }}>Peak</span>
+            )}
+            {player.age > 30 && (
+              <span style={{ fontSize: 9, fontWeight: 700, color: '#4A6080', background: 'rgba(74,96,128,0.1)', border: '1px solid rgba(74,96,128,0.3)', borderRadius: 4, padding: '1px 4px' }}>Avtar</span>
+            )}
+          </div>
         </div>
 
         {/* Arrow */}

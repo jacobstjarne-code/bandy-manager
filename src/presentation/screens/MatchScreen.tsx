@@ -11,6 +11,29 @@ import type { Fixture, MatchEvent } from '../../domain/entities/Fixture'
 import type { Player } from '../../domain/entities/Player'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { getRivalry } from '../../domain/data/rivalries'
+import type { MatchWeather } from '../../domain/entities/Weather'
+import { WeatherCondition } from '../../domain/enums'
+
+function getWeatherAdvice(weather: MatchWeather | undefined): { emoji: string; text: string } | null {
+  if (!weather) return null
+  const w = weather.weather
+  if (w.condition === WeatherCondition.HeavySnow || w.condition === WeatherCondition.LightSnow) {
+    return { emoji: '❄️', text: 'Snöfall — kort passningsspel rekommenderas' }
+  }
+  if (w.condition === WeatherCondition.Fog) {
+    return { emoji: '🌫️', text: 'Dålig sikt — direktspel riskabelt' }
+  }
+  if (w.condition === WeatherCondition.Thaw || w.temperature > 2) {
+    return { emoji: '💧', text: 'Blöt is — fysisk stil gynnas, teknik missgynnas' }
+  }
+  if (w.temperature < -15) {
+    return { emoji: '🥶', text: 'Extrem kyla — skaderisk ökar' }
+  }
+  if (w.condition === WeatherCondition.Clear || w.condition === WeatherCondition.Overcast) {
+    return { emoji: '✨', text: 'Perfekta förhållanden — alla stilar fungerar' }
+  }
+  return null
+}
 
 function getPlayoffRoundLabel(round: PlayoffRound): string {
   if (round === PlayoffRound.QuarterFinal) return 'KVARTSFINAL'
@@ -1209,6 +1232,26 @@ export function MatchScreen() {
       {/* ── Steg 2: Välj taktik ─────────────────────────────────────── */}
       {matchStep === 'tactic' && (
         <div style={{ padding: '0 16px 24px' }}>
+          {(() => {
+            const weatherAdvice = getWeatherAdvice(matchWeatherData)
+            return weatherAdvice ? (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 12px',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid var(--border)',
+                borderRadius: 8,
+                marginBottom: 16,
+                fontSize: 13,
+                color: 'var(--text-secondary)',
+              }}>
+                <span>{weatherAdvice.emoji}</span>
+                <span>{weatherAdvice.text}</span>
+              </div>
+            ) : null
+          })()}
           {tacticRows.map(({ label, key, options }) => (
             <div key={key as string} style={{ marginBottom: 14 }}>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{label}</p>
