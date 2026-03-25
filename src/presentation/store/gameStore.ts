@@ -83,8 +83,7 @@ export const useGameStore = create<GameState>()(
             ? { ...f, homeScore, awayScore, events, report, homeLineup, awayLineup, status: FixtureStatus.Completed }
             : f
         )
-        const updatedGame = { ...game, fixtures: updatedFixtures }
-        set({ game: updatedGame })
+        set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId } })
       },
 
       updateTactic: (tactic) => {

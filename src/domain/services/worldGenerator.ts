@@ -653,5 +653,59 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     allPlayers.push(...clubPlayers)
   }
 
+  // Easter egg: Erik Ström always exists
+  const erikRand = mulberry32((seed ?? 42) + 777)
+  const erikClubIdx = Math.floor(erikRand() * clubs.length)
+  const erikClub = clubs[erikClubIdx]
+  const erikPlayer: Player = {
+    id: `player_erik_strom_${season}`,
+    firstName: 'Erik',
+    lastName: 'Ström',
+    age: 28,
+    nationality: 'SE',
+    clubId: erikClub.id,
+    academyClubId: erikClub.id,
+    isHomegrown: true,
+    position: PlayerPosition.Forward,
+    archetype: PlayerArchetype.Finisher,
+    salary: 15000,
+    contractUntilSeason: season + 3,
+    marketValue: 350000,
+    morale: 85,
+    form: 75,
+    fitness: 80,
+    sharpness: 70,
+    currentAbility: 72,
+    potentialAbility: 78,
+    developmentRate: 40,
+    injuryProneness: 25,
+    discipline: 80,
+    attributes: {
+      skating: 70, acceleration: 75, stamina: 68,
+      ballControl: 74, passing: 65, shooting: 80,
+      dribbling: 72, vision: 68, decisions: 70,
+      workRate: 78, positioning: 75, defending: 40,
+      cornerSkill: 60, goalkeeping: 5,
+    },
+    isInjured: false,
+    injuryDaysRemaining: 0,
+    suspensionGamesRemaining: 0,
+    seasonStats: { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0 },
+    careerStats: { totalGames: 0, totalGoals: 0, totalAssists: 0, seasonsPlayed: 1 },
+  }
+  const clubFwds = allPlayers
+    .filter(p => p.clubId === erikClub.id && p.position === PlayerPosition.Forward)
+    .sort((a, b) => a.currentAbility - b.currentAbility)
+  if (clubFwds.length > 0) {
+    const replaced = clubFwds[0]
+    const idx = allPlayers.findIndex(p => p.id === replaced.id)
+    if (idx !== -1) {
+      allPlayers[idx] = erikPlayer
+      erikClub.squadPlayerIds = erikClub.squadPlayerIds.map(
+        id => id === replaced.id ? erikPlayer.id : id
+      )
+    }
+  }
+
   return { clubs, players: allPlayers }
 }

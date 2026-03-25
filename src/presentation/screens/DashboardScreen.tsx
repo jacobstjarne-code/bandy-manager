@@ -285,14 +285,7 @@ export function DashboardScreen() {
     }
   }
 
-  const hasManagedMatch = !!game!.fixtures.find(f => {
-    const scheduledFixtures = game!.fixtures.filter(fx => fx.status === 'scheduled')
-    if (scheduledFixtures.length === 0) return false
-    const nextRound = Math.min(...scheduledFixtures.map(fx => fx.roundNumber))
-    return f.roundNumber === nextRound &&
-      (f.homeClubId === game!.managedClubId || f.awayClubId === game!.managedClubId) &&
-      f.status === 'scheduled'
-  })
+  const hasScheduledFixtures = game!.fixtures.some(f => f.status === 'scheduled')
 
   const cardStyle: React.CSSProperties = {
     background: '#122235',
@@ -313,7 +306,7 @@ export function DashboardScreen() {
 
   // Determine advance button text
   const advanceButtonText = (() => {
-    if (!canAdvance && !hasManagedMatch) {
+    if (!hasScheduledFixtures) {
       if (playoffInfo && !nextFixture) return 'Väntar på slutspel'
       return 'Sätt lineup först'
     }
@@ -704,21 +697,21 @@ export function DashboardScreen() {
       }}>
         <button
           onClick={handleAdvance}
-          disabled={!canAdvance && !hasManagedMatch}
-          className={canAdvance || hasManagedMatch ? 'btn-pulse' : undefined}
+          disabled={!hasScheduledFixtures}
+          className={hasScheduledFixtures ? 'btn-pulse' : undefined}
           style={{
             width: '100%',
             padding: '17px',
-            background: canAdvance || hasManagedMatch ? '#C9A84C' : '#1a2e47',
-            color: canAdvance || hasManagedMatch ? '#0D1B2A' : '#4A6080',
+            background: hasScheduledFixtures ? '#C9A84C' : '#1a2e47',
+            color: hasScheduledFixtures ? '#0D1B2A' : '#4A6080',
             borderRadius: 12,
             fontSize: 16,
             fontWeight: 800,
             letterSpacing: '1.5px',
             textTransform: 'uppercase',
             border: 'none',
-            boxShadow: canAdvance || hasManagedMatch ? '0 4px 20px rgba(201,168,76,0.3)' : 'none',
-            cursor: canAdvance || hasManagedMatch ? 'pointer' : 'not-allowed',
+            boxShadow: hasScheduledFixtures ? '0 4px 20px rgba(201,168,76,0.3)' : 'none',
+            cursor: hasScheduledFixtures ? 'pointer' : 'not-allowed',
             fontVariantNumeric: 'tabular-nums',
           }}
         >

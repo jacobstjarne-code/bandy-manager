@@ -33,10 +33,10 @@ export function EventScreen() {
   const events = game?.pendingEvents ?? []
 
   useEffect(() => {
-    if (events.length === 0) {
+    if (!game || events.length === 0) {
       navigate('/game', { replace: true })
     }
-  }, [events.length, navigate])
+  }, [game, events.length, navigate])
 
   if (!game || events.length === 0) return null
 
