@@ -666,49 +666,57 @@ export function MatchScreen() {
     }
     setLineupError(null)
 
-    const lineupResult = setPlayerLineup(startingIds, benchIds, captainId)
-    if (!lineupResult.success) {
-      setLineupError(lineupResult.error ?? 'Ogiltig uppställning')
-      return
-    }
-
-    if (useLiveMode && nextFixture) {
-      const homeClub = game!.clubs.find(c => c.id === nextFixture.homeClubId)
-      const awayClub = game!.clubs.find(c => c.id === nextFixture.awayClubId)
-      const isHome = nextFixture.homeClubId === managedClubId
-
-      const myLineup: import('../../domain/entities/Fixture').TeamSelection = {
-        startingPlayerIds: startingIds,
-        benchPlayerIds: benchIds,
-        captainPlayerId: captainId,
-        tactic: tacticState,
+    try {
+      const lineupResult = setPlayerLineup(startingIds, benchIds, captainId)
+      if (!lineupResult.success) {
+        setLineupError(lineupResult.error ?? 'Ogiltig uppställning')
+        return
       }
-      const aiLineup = generateAiLineupForOpponent()
 
-      const liveMatchWeather = game?.matchWeathers?.find(mw => mw.fixtureId === nextFixture.id)
-      navigate('/game/match/live', {
-        state: {
-          fixture: nextFixture,
-          homeLineup: isHome ? myLineup : aiLineup,
-          awayLineup: isHome ? aiLineup : myLineup,
-          homeClubName: homeClub?.name ?? '',
-          awayClubName: awayClub?.name ?? '',
-          isManaged: true,
-          matchWeather: liveMatchWeather,
-        },
-      })
-    } else {
-      const result = advance()
-      if (!result) return
+      if (useLiveMode && nextFixture) {
+        const homeClub = game!.clubs.find(c => c.id === nextFixture.homeClubId)
+        const awayClub = game!.clubs.find(c => c.id === nextFixture.awayClubId)
+        const isHome = nextFixture.homeClubId === managedClubId
 
-      const justPlayed = result.game.fixtures.find(f =>
-        (f.homeClubId === managedClubId || f.awayClubId === managedClubId) &&
-        f.status === FixtureStatus.Completed &&
-        f.roundNumber === (nextFixture?.roundNumber ?? -1)
-      ) ?? null
+        const myLineup: import('../../domain/entities/Fixture').TeamSelection = {
+          startingPlayerIds: startingIds,
+          benchPlayerIds: benchIds,
+          captainPlayerId: captainId,
+          tactic: tacticState,
+        }
+        const aiLineup = generateAiLineupForOpponent()
 
-      setCompletedFixture(justPlayed)
-      setShowReport(true)
+        const liveMatchWeather = game?.matchWeathers?.find(mw => mw.fixtureId === nextFixture.id)
+        navigate('/game/match/live', {
+          state: {
+            fixture: nextFixture,
+            homeLineup: isHome ? myLineup : aiLineup,
+            awayLineup: isHome ? aiLineup : myLineup,
+            homeClubName: homeClub?.name ?? '',
+            awayClubName: awayClub?.name ?? '',
+            isManaged: true,
+            matchWeather: liveMatchWeather,
+          },
+        })
+      } else {
+        const result = advance()
+        if (!result) {
+          setLineupError('Kunde inte simulera matchen')
+          return
+        }
+
+        const justPlayed = result.game.fixtures.find(f =>
+          (f.homeClubId === managedClubId || f.awayClubId === managedClubId) &&
+          f.status === FixtureStatus.Completed &&
+          f.roundNumber === (nextFixture?.roundNumber ?? -1)
+        ) ?? null
+
+        setCompletedFixture(justPlayed)
+        setShowReport(true)
+      }
+    } catch (err) {
+      console.error('handlePlayMatch kraschade:', err)
+      setLineupError(`Något gick fel: ${err instanceof Error ? err.message : 'okänt fel'}`)
     }
   }
 
