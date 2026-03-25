@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
+import { get as idbGet, set as idbSet, del as idbDel } from 'idb-keyval'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import type { Tactic } from '../../domain/entities/Club'
 import type { TrainingFocus } from '../../domain/entities/Training'
@@ -37,6 +38,19 @@ interface GameState {
   clearSeasonSummary: () => void
 }
 
+const indexedDBStorage = {
+  getItem: async (name: string): Promise<string | null> => {
+    const val = await idbGet<string>(name)
+    return val ?? null
+  },
+  setItem: async (name: string, value: string): Promise<void> => {
+    await idbSet(name, value)
+  },
+  removeItem: async (name: string): Promise<void> => {
+    await idbDel(name)
+  },
+}
+
 export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
@@ -45,6 +59,12 @@ export const useGameStore = create<GameState>()(
       lastAdvanceResult: null,
 
       newGame: (managerName, clubId) => {
+        // Clear old localStorage data that may be filling quota
+        try {
+          localStorage.removeItem('bandy-game-store')
+          const keys = Object.keys(localStorage).filter(k => k.startsWith('bandy_save_'))
+          keys.forEach(k => localStorage.removeItem(k))
+        } catch {}
         const game = createNewGame({ managerName, clubId })
         set({ game, lastAdvanceResult: null })
       },
@@ -160,6 +180,7 @@ export const useGameStore = create<GameState>()(
     }),
     {
       name: 'bandy-game-store',
+      storage: createJSONStorage(() => indexedDBStorage),
       partialize: (state) => ({ game: state.game }),
       onRehydrateStorage: () => (_state, error) => {
         if (error) {
