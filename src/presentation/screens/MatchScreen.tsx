@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameStore, useLastCompletedFixture } from '../store/gameStore'
 import { PlayerPosition, FixtureStatus, MatchEventType, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle, PlayoffRound } from '../../domain/enums'
@@ -400,6 +400,13 @@ export function MatchScreen() {
   )
   const [matchStep, setMatchStep] = useState<'lineup' | 'tactic' | 'start'>('lineup')
   const [useLiveMode, setUseLiveMode] = useState(true)
+
+  // Clear location state after consuming showReport flag so it doesn't stick on re-visits
+  useEffect(() => {
+    if ((location.state as { showReport?: boolean } | null)?.showReport) {
+      window.history.replaceState({}, '')
+    }
+  }, [location.state])
 
   const managedClubId = game?.managedClubId ?? ''
   const managedClub = game?.clubs.find(c => c.id === managedClubId)
