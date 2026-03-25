@@ -142,11 +142,12 @@ function moraleLabel(n: number): string {
 
 interface TrainingSectionProps {
   focus: TrainingFocus
-  lastSession?: { roundNumber: number; focus: TrainingFocus; injuryCount: number }
+  recentSessions?: { roundNumber: number; focus: TrainingFocus; injuryCount: number }[]
+  trainingInjuriesThisSeason: number
   onChangeFocus: (focus: TrainingFocus) => void
 }
 
-function TrainingSection({ focus, lastSession, onChangeFocus }: TrainingSectionProps) {
+function TrainingSection({ focus, recentSessions, trainingInjuriesThisSeason, onChangeFocus }: TrainingSectionProps) {
   const effects = getTrainingEffects(focus)
 
   const attrLines = Object.entries(effects.attributeBoosts)
@@ -223,7 +224,7 @@ function TrainingSection({ focus, lastSession, onChangeFocus }: TrainingSectionP
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius-sm)',
         padding: '12px 14px',
-        marginBottom: lastSession ? 16 : 0,
+        marginBottom: (recentSessions && recentSessions.length > 0) ? 16 : 0,
       }}>
         {attrLines ? (
           <p style={{ fontSize: 13, marginBottom: 6 }}>
@@ -259,8 +260,8 @@ function TrainingSection({ focus, lastSession, onChangeFocus }: TrainingSectionP
         </p>
       </div>
 
-      {/* Last session result */}
-      {lastSession && (
+      {/* Recent sessions */}
+      {recentSessions && recentSessions.length > 0 && (
         <div style={{
           background: 'var(--bg-elevated)',
           border: '1px solid var(--border)',
@@ -269,13 +270,35 @@ function TrainingSection({ focus, lastSession, onChangeFocus }: TrainingSectionP
           fontSize: 12,
           color: 'var(--text-secondary)',
         }}>
-          <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Senaste träning — </span>
-          Omgång {lastSession.roundNumber}: {trainingTypeLabel(lastSession.focus.type)} ({trainingIntensityLabel(lastSession.focus.intensity)})
-          {lastSession.injuryCount === 0
-            ? ' — Inga skador'
-            : ` — ⚠️ ${lastSession.injuryCount} skada${lastSession.injuryCount > 1 ? 'r' : ''}`}
+          <p style={{ color: 'var(--text-muted)', fontWeight: 600, marginBottom: 8 }}>Senaste träningar</p>
+          {recentSessions.map((session, i) => (
+            <p key={i} style={{ marginBottom: i < recentSessions.length - 1 ? 6 : 0 }}>
+              Omgång {session.roundNumber}: {trainingTypeLabel(session.focus.type)} ({trainingIntensityLabel(session.focus.intensity)})
+              {session.injuryCount === 0
+                ? <span style={{ color: 'var(--text-muted)' }}> — Inga skador</span>
+                : <span style={{ color: 'var(--warning)' }}> — ⚠️ {session.injuryCount} skada{session.injuryCount > 1 ? 'r' : ''}</span>}
+            </p>
+          ))}
         </div>
       )}
+
+      {/* Training injuries this season */}
+      <div style={{
+        background: trainingInjuriesThisSeason > 0 ? 'rgba(239,68,68,0.06)' : 'var(--bg-elevated)',
+        border: `1px solid ${trainingInjuriesThisSeason > 0 ? 'rgba(239,68,68,0.25)' : 'var(--border)'}`,
+        borderRadius: 'var(--radius-sm)',
+        padding: '8px 14px',
+        marginTop: 8,
+        fontSize: 12,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}>
+        <span style={{ color: 'var(--text-muted)' }}>Träningsskador denna säsong</span>
+        <span style={{ fontWeight: 600, color: trainingInjuriesThisSeason > 0 ? 'var(--danger)' : 'var(--success)' }}>
+          {trainingInjuriesThisSeason === 0 ? 'Inga' : `${trainingInjuriesThisSeason} st`}
+        </span>
+      </div>
     </SectionCard>
   )
 }
@@ -304,18 +327,22 @@ export function ClubScreen() {
 
   const training = game.managedClubTraining ?? { type: TrainingType.Physical, intensity: TrainingIntensity.Normal }
 
-  // Build last session info from training history
+  // Build recent sessions (last 3) from training history
   const history = game.trainingHistory ?? []
-  const lastSession = history.length > 0 ? (() => {
-    const last = history[history.length - 1]
-    // Count injuries from inbox items of type Training for that round
-    const injuryCount = game.inbox.filter(item =>
-      item.type === 'training' && item.body.includes(`Omgång ${last.roundNumber}`) && item.body.includes('⚠️')
-    ).length > 0
-      ? (game.inbox.find(item => item.type === 'training' && item.body.includes(`Omgång ${last.roundNumber}`))?.body.split('⚠️').length ?? 1) - 1
-      : 0
-    return { roundNumber: last.roundNumber, focus: last.focus, injuryCount }
-  })() : undefined
+  const recentSessions = history.length > 0
+    ? history.slice(-3).reverse().map(session => {
+        const inboxItem = game.inbox.find(item =>
+          item.type === 'training' && item.body.includes(`Omgång ${session.roundNumber}`)
+        )
+        const injuryCount = inboxItem ? (inboxItem.body.split('⚠️').length - 1) : 0
+        return { roundNumber: session.roundNumber, focus: session.focus, injuryCount }
+      })
+    : undefined
+
+  // Count training injuries this season from inbox
+  const trainingInjuriesThisSeason = game.inbox.filter(item =>
+    item.type === 'training' && item.body.includes('⚠️')
+  ).reduce((sum, item) => sum + (item.body.split('⚠️').length - 1), 0)
 
   return (
     <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
@@ -328,7 +355,8 @@ export function ClubScreen() {
       {/* Träning */}
       <TrainingSection
         focus={training}
-        lastSession={lastSession}
+        recentSessions={recentSessions}
+        trainingInjuriesThisSeason={trainingInjuriesThisSeason}
         onChangeFocus={setTraining}
       />
 

@@ -291,9 +291,14 @@ export function TransfersScreen() {
 
       {/* Scouting section */}
       <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
-          Scouting — andra lag
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', margin: 0 }}>
+            Scouting — andra lag
+          </p>
+          <span style={{ fontSize: 12, color: scoutBudget > 3 ? 'var(--text-secondary)' : 'var(--danger)', fontWeight: 600 }}>
+            Scoutbudget: {scoutBudget} kvar
+          </span>
+        </div>
         <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
           {scoutablePlayers.slice(0, 30).map((player, index) => {
             const report = scoutReports[player.id]
@@ -376,6 +381,79 @@ export function TransfersScreen() {
           })}
         </div>
       </div>
+
+      {/* Scout reports section */}
+      {Object.keys(scoutReports).length > 0 && (() => {
+        const reportEntries = Object.values(scoutReports)
+        return (
+          <div style={{ marginBottom: 24 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
+              Scoutrapporter ({reportEntries.length})
+            </p>
+            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+              {reportEntries.map((report, index) => {
+                const reportPlayer = game.players.find(p => p.id === report.playerId)
+                const reportClub = game.clubs.find(c => c.id === report.clubId)
+                const age = getScoutReportAge(report, game.currentSeason, report.scoutedSeason)
+                const freshnessLabel = age === 'fresh' ? 'Färsk' : age === 'aging' ? 'Gammal' : 'Inaktuell'
+                const freshnessColor = age === 'fresh' ? 'var(--success)' : age === 'aging' ? '#f59e0b' : 'var(--danger)'
+                const caRange = Math.round((100 - report.accuracy) / 10)
+                const windowOpen = getTransferWindowStatus(game.currentDate).status !== 'closed'
+                return (
+                  <div
+                    key={report.playerId}
+                    style={{
+                      padding: '12px 14px',
+                      borderBottom: index < reportEntries.length - 1 ? '1px solid var(--border)' : 'none',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 10,
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                        <p style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {reportPlayer ? `${reportPlayer.firstName} ${reportPlayer.lastName}` : report.playerId}
+                        </p>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: freshnessColor, flexShrink: 0 }}>
+                          {freshnessLabel}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2 }}>
+                        {reportPlayer ? positionShort(reportPlayer.position) + ' · ' : ''}{reportClub?.name ?? '?'} · Säsong {report.scoutedSeason}
+                      </p>
+                      <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2 }}>
+                        Styrka ~{report.estimatedCA} ± {caRange} · Potential ~{report.estimatedPA}
+                      </p>
+                      {report.notes && (
+                        <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>{report.notes}</p>
+                      )}
+                    </div>
+                    {windowOpen && reportPlayer && managedClub && (
+                      <button
+                        onClick={() => setBiddingPlayerId(report.playerId)}
+                        style={{
+                          flexShrink: 0,
+                          padding: '5px 10px',
+                          borderRadius: 'var(--radius-sm)',
+                          background: 'rgba(34,197,94,0.1)',
+                          border: '1px solid rgba(34,197,94,0.35)',
+                          color: 'var(--success)',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Lägg bud
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Expiring contracts section */}
       <div style={{ marginBottom: 24 }}>
