@@ -7,6 +7,7 @@ import type { MatchWeather } from './Weather'
 import type { TrainingFocus, TrainingSession } from './Training'
 import type { PlayoffBracket } from './Playoff'
 import type { SeasonSummary } from './SeasonSummary'
+import type { ScoutReport, ScoutAssignment } from './Scouting'
 
 export interface StandingRow {
   clubId: string
@@ -88,6 +89,10 @@ export interface SaveGame {
   showSeasonSummary?: boolean
   seasonSummaries: SeasonSummary[]
   seasonStartFinances?: number  // club finances at season start
+
+  scoutReports: Record<string, ScoutReport>    // key = playerId
+  activeScoutAssignment: ScoutAssignment | null
+  scoutBudget: number
 
   version: string
   lastSavedAt: string   // ISO datetime

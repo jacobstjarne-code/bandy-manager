@@ -6,6 +6,7 @@ import type { TrainingFocus } from '../../domain/entities/Training'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entities/Fixture'
 import { FixtureStatus, PlayoffStatus } from '../../domain/enums'
 import { createNewGame } from '../../application/useCases/createNewGame'
+import { startScoutAssignment } from '../../domain/services/scoutingService'
 import { advanceToNextEvent, type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
 import { saveSaveGame, loadSaveGame, listSaveGames, type SaveGameSummary } from '../../infrastructure/persistence/saveGameStorage'
@@ -25,6 +26,7 @@ interface GameState {
   markTutorialSeen: () => void
   markInboxRead: (itemId: string) => void
   markAllInboxRead: () => void
+  startScout: (playerId: string, clubId: string, sameRegion: boolean) => { success: boolean; error?: string }
   saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection) => void
   clearGame: () => void
   listSaves: () => SaveGameSummary[]
@@ -132,6 +134,22 @@ export const useGameStore = create<GameState>()(
         }
         saveSaveGame(updatedGame)
         set({ game: updatedGame })
+      },
+
+      startScout: (playerId, clubId, sameRegion) => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+        if (game.activeScoutAssignment) return { success: false, error: 'Scout är redan utsänd' }
+        if (game.scoutBudget <= 0) return { success: false, error: 'Scoutbudgeten är slut för säsongen' }
+        const assignment = startScoutAssignment(playerId, clubId, game.currentDate, sameRegion)
+        const updatedGame = {
+          ...game,
+          activeScoutAssignment: assignment,
+          scoutBudget: game.scoutBudget - 1,
+        }
+        saveSaveGame(updatedGame)
+        set({ game: updatedGame })
+        return { success: true }
       },
 
       clearGame: () => set({ game: null, lastAdvanceResult: null }),

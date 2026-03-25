@@ -17,6 +17,7 @@ function inboxTypeIcon(type: InboxItemType): string {
     case InboxItemType.Training: return '🏋️'
     case InboxItemType.Playoff: return '🏆'
     case InboxItemType.Derby: return '🔥'
+    case InboxItemType.ScoutReport: return '🔍'
     default: return '📬'
   }
 }
@@ -28,6 +29,7 @@ function inboxTypeColor(type: InboxItemType): string {
     case InboxItemType.MatchResult: return 'var(--accent)'
     case InboxItemType.Playoff: return '#C9A84C'
     case InboxItemType.Derby: return '#ff7040'
+    case InboxItemType.ScoutReport: return 'var(--accent)'
     case InboxItemType.YouthIntake: return 'var(--success)'
     case InboxItemType.Recovery: return 'var(--success)'
     case InboxItemType.PlayerDevelopment: return 'var(--success)'

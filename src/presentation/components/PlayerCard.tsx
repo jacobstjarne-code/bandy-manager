@@ -1,10 +1,13 @@
 import type { Player } from '../../domain/entities/Player'
+import type { ScoutReport } from '../../domain/entities/Scouting'
 import { PlayerArchetype, PlayerPosition } from '../../domain/enums'
 import { ClubBadge } from './ClubBadge'
 
 export interface PlayerCardProps {
   player: Player
   clubName: string
+  scoutReport?: ScoutReport   // if provided, show scouted attributes; if absent for non-managed, show '?'
+  isOwned?: boolean           // true = managed club player (show real attributes)
   onClick?: () => void
 }
 
@@ -153,8 +156,13 @@ function PlayerSilhouette({ jerseyNumber }: PlayerSilhouetteProps) {
   )
 }
 
-export function PlayerCard({ player, clubName, onClick }: PlayerCardProps) {
-  const topStats = getTopStats(player)
+export function PlayerCard({ player, clubName, scoutReport, isOwned = true, onClick }: PlayerCardProps) {
+  const topStats = isOwned
+    ? getTopStats(player)
+    : scoutReport
+      ? getTopStats({ ...player, attributes: { ...player.attributes, ...scoutReport.revealedAttributes } })
+      : null
+
   const archColor = archetypeColor(player.archetype)
   const fullName = `${player.firstName} ${player.lastName}`.toUpperCase()
   const posLabel = positionFullLabel(player.position).toUpperCase()
@@ -282,42 +290,51 @@ export function PlayerCard({ player, clubName, onClick }: PlayerCardProps) {
         }}>
           EGENSKAPER
         </p>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '6px 8px',
-        }}>
-          {topStats.map(stat => (
-            <div key={stat.label} style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '4px 8px',
-              background: 'rgba(255,255,255,0.04)',
-              borderRadius: 6,
-              border: '1px solid rgba(201,168,76,0.1)',
-            }}>
-              <span style={{ fontSize: 10, color: '#8A9BB0', letterSpacing: '0.3px' }}>
-                {stat.label}
-              </span>
-              <span className="tabular" style={{
-                fontSize: 12,
-                fontWeight: 800,
-                color: statValueColor(stat.value),
-                marginLeft: 4,
+        {topStats ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 8px' }}>
+            {topStats.map(stat => (
+              <div key={stat.label} style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '4px 8px',
+                background: 'rgba(255,255,255,0.04)',
+                borderRadius: 6,
+                border: '1px solid rgba(201,168,76,0.1)',
               }}>
-                {Math.round(stat.value)}
-              </span>
-            </div>
-          ))}
-        </div>
+                <span style={{ fontSize: 10, color: '#8A9BB0', letterSpacing: '0.3px' }}>{stat.label}</span>
+                <span className="tabular" style={{ fontSize: 12, fontWeight: 800, color: statValueColor(stat.value), marginLeft: 4 }}>
+                  {Math.round(stat.value)}{scoutReport && !isOwned && <span style={{ fontSize: 9, opacity: 0.6 }}> ~</span>}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 8px' }}>
+            {['A', 'B', 'C', 'D'].map(k => (
+              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: 6, border: '1px solid rgba(138,155,176,0.1)' }}>
+                <span style={{ fontSize: 10, color: '#4A6080', letterSpacing: '0.3px' }}>—</span>
+                <span style={{ fontSize: 12, fontWeight: 800, color: '#4A6080' }}>?</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Gold gradient divider */}
       <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.6), transparent)', margin: '0 0' }} />
 
-      {/* Season summary */}
+      {/* Season summary — only for owned players */}
       <div style={{ padding: '8px 14px 12px' }}>
+        {!isOwned && scoutReport && (
+          <p style={{ fontSize: 11, color: '#4A6080', fontStyle: 'italic' }}>
+            🔍 Scouted {scoutReport.scoutedDate} · uppskattad styrka {scoutReport.estimatedCA}
+          </p>
+        )}
+        {!isOwned && !scoutReport && (
+          <p style={{ fontSize: 11, color: '#4A6080' }}>Ej scostad — attribut okända</p>
+        )}
+        {isOwned && <>
         <p style={{
           fontSize: 9,
           fontWeight: 700,
@@ -366,6 +383,7 @@ export function PlayerCard({ player, clubName, onClick }: PlayerCardProps) {
         ) : (
           <p style={{ fontSize: 12, color: '#4A6080' }}>Inga matcher spelat</p>
         )}
+        </>}
       </div>
     </div>
   )

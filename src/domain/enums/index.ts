@@ -85,6 +85,7 @@ export enum InboxItemType {
   Playoff = 'playoff',
   Derby = 'derby',
   Recovery = 'recovery',
+  ScoutReport = 'scoutReport',
 }
 
 export enum TrainingType {

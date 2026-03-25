@@ -28,6 +28,8 @@ import {
   createBoardFeedbackItem,
   createTrainingItem,
 } from '../../domain/services/inboxService'
+import { processScoutAssignment } from '../../domain/services/scoutingService'
+import type { ScoutReport, ScoutAssignment } from '../../domain/entities/Scouting'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
 
 export interface AdvanceResult {
@@ -450,6 +452,43 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // ── Process active scout assignment ───────────────────────────────────
+  let updatedScoutReports = game.scoutReports ?? {}
+  let updatedScoutAssignment: ScoutAssignment | null = game.activeScoutAssignment ?? null
+
+  if (updatedScoutAssignment) {
+    updatedScoutAssignment = {
+      ...updatedScoutAssignment,
+      roundsRemaining: updatedScoutAssignment.roundsRemaining - 1,
+    }
+    if (updatedScoutAssignment.roundsRemaining <= 0) {
+      const target = finalPlayers.find(p => p.id === updatedScoutAssignment!.targetPlayerId)
+      if (target) {
+        const scoutAccuracy = 70   // default accuracy; could vary by club facilities later
+        const scoutSeed = baseSeed + nextRound * 17 + target.id.charCodeAt(0)
+        const report: ScoutReport = processScoutAssignment(
+          updatedScoutAssignment,
+          target,
+          scoutAccuracy,
+          scoutSeed,
+        )
+        updatedScoutReports = { ...updatedScoutReports, [target.id]: report }
+        const targetClub = game.clubs.find(c => c.id === updatedScoutAssignment!.targetClubId)
+        newInboxItems.push({
+          id: `inbox_scout_${target.id}_${game.currentSeason}_r${nextRound}`,
+          date: game.currentDate,
+          type: InboxItemType.ScoutReport,
+          title: `Scoutrapport: ${target.firstName} ${target.lastName}`,
+          body: `${report.notes} Beräknad styrka: ${report.estimatedCA}. Spelar i ${targetClub?.name ?? 'okänd klubb'}.`,
+          relatedPlayerId: target.id,
+          relatedClubId: updatedScoutAssignment.targetClubId,
+          isRead: false,
+        })
+      }
+      updatedScoutAssignment = null
+    }
+  }
+
   // Advance date by 7 days per round
   const newDate = advanceDate(game.currentDate, 7)
 
@@ -621,6 +660,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     matchWeathers: [...(game.matchWeathers ?? []), ...roundMatchWeathers],
     trainingHistory: updatedTrainingHistory,
     playoffBracket: updatedBracket,
+    scoutReports: updatedScoutReports,
+    activeScoutAssignment: updatedScoutAssignment,
+    scoutBudget: game.scoutBudget ?? 10,
   }
 
   return { game: updatedGame, roundPlayed: nextRound, seasonEnded: false }
@@ -840,6 +882,9 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     seasonSummaries: [...(game.seasonSummaries ?? []), seasonSummary],
     showSeasonSummary: true,
     seasonStartFinances: updatedClubs.find(c => c.id === game.managedClubId)?.finances,
+    scoutReports: game.scoutReports ?? {},
+    activeScoutAssignment: null,
+    scoutBudget: 10,
   }
 
   return { game: updatedGame, roundPlayed: null, seasonEnded: true }

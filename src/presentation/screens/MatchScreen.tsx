@@ -840,13 +840,19 @@ export function MatchScreen() {
         <>
           {/* Opponent info card */}
           {opponent && (() => {
+            const scoutReports = game.scoutReports ?? {}
             const opponentPlayers = game.players
               .filter(p => opponent.squadPlayerIds.includes(p.id) && !p.isInjured && p.suspensionGamesRemaining <= 0)
-              .sort((a, b) => b.currentAbility - a.currentAbility)
-            const avgCA = opponentPlayers.length > 0
-              ? Math.round(opponentPlayers.reduce((s, p) => s + p.currentAbility, 0) / opponentPlayers.length)
+            // Use scouted CA if available, otherwise real CA is hidden — sort by scouted or real
+            const scoutedPlayers = opponentPlayers
+              .map(p => ({ player: p, report: scoutReports[p.id] ?? null }))
+              .filter(({ report }) => !!report)
+              .sort((a, b) => (b.report!.estimatedCA) - (a.report!.estimatedCA))
+            const hasAnyScout = scoutedPlayers.length > 0
+            const avgCA = hasAnyScout
+              ? Math.round(scoutedPlayers.reduce((s, { report }) => s + report!.estimatedCA, 0) / scoutedPlayers.length)
               : 0
-            const topPlayers = opponentPlayers.slice(0, 3)
+            const topPlayers = scoutedPlayers.slice(0, 3)
             const opponentStanding = game.standings.find(s => s.clubId === opponent.id)
             return (
               <div style={{
@@ -862,21 +868,35 @@ export function MatchScreen() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{opponent.name}</p>
-                    {topPlayers.length > 0 && (
+                    {hasAnyScout ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {topPlayers.map(p => (
+                        {topPlayers.map(({ player: p, report }) => (
                           <span key={p.id} style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                             {p.firstName} {p.lastName}
                             <span style={{ color: 'var(--text-muted)', marginLeft: 4 }}>{positionShort(p.position)}</span>
+                            <span style={{ color: 'var(--accent)', marginLeft: 4, fontSize: 11 }}>~{report!.estimatedCA}</span>
                           </span>
                         ))}
                       </div>
+                    ) : (
+                      <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                        Ej scoutat — gå till Transfers för att scouta spelare
+                      </p>
                     )}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                     <div style={{ textAlign: 'center' }}>
-                      <p style={{ fontSize: 18, fontWeight: 800, color: avgCA >= 65 ? 'var(--danger)' : avgCA >= 50 ? 'var(--warning)' : 'var(--success)' }}>{avgCA}</p>
-                      <p style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Styrka</p>
+                      {hasAnyScout ? (
+                        <>
+                          <p style={{ fontSize: 18, fontWeight: 800, color: avgCA >= 65 ? 'var(--danger)' : avgCA >= 50 ? 'var(--warning)' : 'var(--success)' }}>~{avgCA}</p>
+                          <p style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Styrka</p>
+                        </>
+                      ) : (
+                        <>
+                          <p style={{ fontSize: 18, fontWeight: 800, color: '#4A6080' }}>?</p>
+                          <p style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Styrka</p>
+                        </>
+                      )}
                     </div>
                     {opponentStanding && (
                       <div style={{ textAlign: 'center' }}>

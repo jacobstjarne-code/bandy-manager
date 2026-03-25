@@ -102,6 +102,9 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     seasonSummaries: [],
     showSeasonSummary: false,
     seasonStartFinances: undefined,
+    scoutReports: {},
+    activeScoutAssignment: null,
+    scoutBudget: 10,
     version: '0.1.0',
     lastSavedAt: now,
   }

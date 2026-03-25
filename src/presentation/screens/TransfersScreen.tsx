@@ -52,105 +52,41 @@ function RenewContractModal({ player, currentSeason, onClose, onConfirm }: Renew
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>
-              Förläng kontrakt
-            </h3>
-            <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
-              {player.firstName} {player.lastName}
-            </p>
+            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Förläng kontrakt</h3>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{player.firstName} {player.lastName}</p>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'var(--bg-elevated)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-sm)',
-              color: 'var(--text-secondary)',
-              width: 32,
-              height: 32,
-              fontSize: 16,
-            }}
-          >
-            ✕
-          </button>
+          <button onClick={onClose} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)', width: 32, height: 32, fontSize: 16 }}>✕</button>
         </div>
-
-        {/* Current contract info */}
-        <div style={{
-          background: 'var(--bg-elevated)',
-          borderRadius: 'var(--radius-sm)',
-          padding: '10px 12px',
-          marginBottom: 20,
-          border: '1px solid var(--border)',
-        }}>
+        <div style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', marginBottom: 20, border: '1px solid var(--border)' }}>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
             Nuvarande: {formatCurrency(player.salary)}/mån · kontrakt t.o.m. säsong {player.contractUntilSeason}
           </p>
         </div>
-
-        {/* New salary input */}
         <div style={{ marginBottom: 16 }}>
-          <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
-            Ny lön (kr/mån)
-          </label>
+          <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Ny lön (kr/mån)</label>
           <input
             type="number"
             value={newSalary}
             onChange={e => setNewSalary(Number(e.target.value))}
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              background: 'var(--bg-elevated)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-sm)',
-              color: 'var(--text-primary)',
-              fontSize: 15,
-            }}
+            style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', fontSize: 15 }}
           />
         </div>
-
-        {/* Years selector */}
         <div style={{ marginBottom: 24 }}>
-          <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>
-            Antal år
-          </label>
+          <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>Antal år</label>
           <div style={{ display: 'flex', gap: 8 }}>
             {[1, 2, 3].map(y => (
               <button
                 key={y}
                 onClick={() => setYears(y)}
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  borderRadius: 'var(--radius-sm)',
-                  background: years === y ? 'var(--accent)' : 'var(--bg-elevated)',
-                  border: '1px solid ' + (years === y ? 'var(--accent)' : 'var(--border)'),
-                  color: years === y ? '#fff' : 'var(--text-secondary)',
-                  fontSize: 15,
-                  fontWeight: 600,
-                }}
+                style={{ flex: 1, padding: '10px', borderRadius: 'var(--radius-sm)', background: years === y ? 'var(--accent)' : 'var(--bg-elevated)', border: '1px solid ' + (years === y ? 'var(--accent)' : 'var(--border)'), color: years === y ? '#fff' : 'var(--text-secondary)', fontSize: 15, fontWeight: 600 }}
               >
                 {y} år
               </button>
             ))}
           </div>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>
-            Nytt slutdatum: säsong {currentSeason + years}
-          </p>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>Nytt slutdatum: säsong {currentSeason + years}</p>
         </div>
-
-        <button
-          onClick={() => onConfirm(player.id, newSalary, years)}
-          style={{
-            width: '100%',
-            padding: '14px',
-            background: 'var(--accent)',
-            color: '#fff',
-            borderRadius: 'var(--radius)',
-            fontSize: 15,
-            fontWeight: 600,
-          }}
-        >
+        <button onClick={() => onConfirm(player.id, newSalary, years)} style={{ width: '100%', padding: '14px', background: 'var(--accent)', color: '#fff', borderRadius: 'var(--radius)', fontSize: 15, fontWeight: 600 }}>
           Förläng kontrakt
         </button>
       </div>
@@ -160,13 +96,15 @@ function RenewContractModal({ player, currentSeason, onClose, onConfirm }: Renew
 
 export function TransfersScreen() {
   const game = useGameStore(s => s.game)
+  const startScout = useGameStore(s => s.startScout)
   const [renewingPlayerId, setRenewingPlayerId] = useState<string | null>(null)
+  const [scoutMessage, setScoutMessage] = useState<string | null>(null)
 
   if (!game) return null
 
   const managedClubPlayers = game.players.filter(p => p.clubId === game.managedClubId)
+  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
 
-  // Expiring contracts: contractUntilSeason <= currentSeason + 1
   const expiringPlayers = managedClubPlayers
     .filter(p => p.contractUntilSeason <= game.currentSeason + 1)
     .sort((a, b) => a.contractUntilSeason - b.contractUntilSeason)
@@ -174,15 +112,26 @@ export function TransfersScreen() {
   const freeAgents = game.transferState.freeAgents
   const windowInfo = getTransferWindowStatus(game.currentDate)
   const windowOpen = windowInfo.status !== 'closed'
-
   const renewingPlayer = renewingPlayerId ? game.players.find(p => p.id === renewingPlayerId) ?? null : null
+
+  const scoutReports = game.scoutReports ?? {}
+  const activeAssignment = game.activeScoutAssignment ?? null
+  const scoutBudget = game.scoutBudget ?? 10
+
+  // Other-club players eligible for scouting (not managed club, not free agents)
+  const scoutablePlayers = game.players
+    .filter(p => p.clubId !== game.managedClubId)
+    .sort((a, b) => {
+      const aScout = !!scoutReports[a.id]
+      const bScout = !!scoutReports[b.id]
+      if (aScout !== bScout) return aScout ? 1 : -1  // unscounted first
+      return (b.currentAbility - a.currentAbility)
+    })
 
   function handleRenew(playerId: string, newSalary: number, years: number) {
     if (!game) return
     const updatedPlayers = game.players.map(p =>
-      p.id === playerId
-        ? { ...p, contractUntilSeason: game.currentSeason + years, salary: newSalary }
-        : p
+      p.id === playerId ? { ...p, contractUntilSeason: game.currentSeason + years, salary: newSalary } : p
     )
     const updatedGame = { ...game, players: updatedPlayers }
     useGameStore.setState({ game: updatedGame })
@@ -192,93 +141,144 @@ export function TransfersScreen() {
 
   function handleSignFreeAgent(agentId: string) {
     if (!game) return
-    const updatedPlayers = game.players.map(p =>
-      p.id === agentId ? { ...p, clubId: game.managedClubId } : p
-    )
+    const updatedPlayers = game.players.map(p => p.id === agentId ? { ...p, clubId: game.managedClubId } : p)
     const updatedFreeAgents = game.transferState.freeAgents.filter(p => p.id !== agentId)
-    const updatedGame = {
-      ...game,
-      players: updatedPlayers,
-      transferState: { ...game.transferState, freeAgents: updatedFreeAgents },
-    }
+    const updatedGame = { ...game, players: updatedPlayers, transferState: { ...game.transferState, freeAgents: updatedFreeAgents } }
     useGameStore.setState({ game: updatedGame })
     saveSaveGame(updatedGame)
   }
 
+  function handleScout(player: Player) {
+    const targetClub = game!.clubs.find(c => c.id === player.clubId)
+    const sameRegion = !!managedClub && !!targetClub && managedClub.region === targetClub.region
+    const result = startScout(player.id, player.clubId, sameRegion)
+    if (result.success) {
+      const rounds = sameRegion ? 1 : 2
+      setScoutMessage(`Scout utsänd till ${targetClub?.name ?? 'okänd klubb'}. Rapport om ${rounds} omgång${rounds > 1 ? 'ar' : ''}.`)
+      setTimeout(() => setScoutMessage(null), 4000)
+    } else {
+      setScoutMessage(result.error ?? 'Kunde inte skicka scout.')
+      setTimeout(() => setScoutMessage(null), 3000)
+    }
+  }
+
   return (
     <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
-      <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>Transfers</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 700 }}>Transfers</h2>
+        <span style={{ fontSize: 12, color: scoutBudget > 3 ? 'var(--text-muted)' : 'var(--danger)', fontWeight: 600 }}>
+          🔍 {scoutBudget} scouts kvar
+        </span>
+      </div>
+
+      {/* Scout toast */}
+      {scoutMessage && (
+        <div style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.35)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 12, fontSize: 13, color: 'var(--accent)' }}>
+          {scoutMessage}
+        </div>
+      )}
+
+      {/* Active scout assignment */}
+      {activeAssignment && (() => {
+        const target = game.players.find(p => p.id === activeAssignment.targetPlayerId)
+        const targetClub = game.clubs.find(c => c.id === activeAssignment.targetClubId)
+        return (
+          <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
+            🔍 Scouting pågår: <strong>{target?.firstName} {target?.lastName}</strong> ({targetClub?.name ?? '?'}) · {activeAssignment.roundsRemaining} omgång{activeAssignment.roundsRemaining !== 1 ? 'ar' : ''} kvar
+          </div>
+        )
+      })()}
 
       {/* Transfer window status banner */}
       <div style={{
-        background: windowInfo.status === 'open'
-          ? 'rgba(34,197,94,0.08)'
-          : windowInfo.status === 'winter'
-          ? 'rgba(59,130,246,0.08)'
-          : 'rgba(239,68,68,0.06)',
-        border: `1px solid ${
-          windowInfo.status === 'open'
-            ? 'rgba(34,197,94,0.3)'
-            : windowInfo.status === 'winter'
-            ? 'rgba(59,130,246,0.3)'
-            : 'rgba(239,68,68,0.2)'
-        }`,
+        background: windowInfo.status === 'open' ? 'rgba(34,197,94,0.08)' : windowInfo.status === 'winter' ? 'rgba(59,130,246,0.08)' : 'rgba(239,68,68,0.06)',
+        border: `1px solid ${windowInfo.status === 'open' ? 'rgba(34,197,94,0.3)' : windowInfo.status === 'winter' ? 'rgba(59,130,246,0.3)' : 'rgba(239,68,68,0.2)'}`,
         borderRadius: 'var(--radius)',
         padding: '12px 14px',
         marginBottom: 20,
       }}>
-        <p style={{
-          fontSize: 13,
-          fontWeight: 700,
-          color: windowInfo.status === 'open'
-            ? 'var(--success)'
-            : windowInfo.status === 'winter'
-            ? '#60a5fa'
-            : 'var(--danger)',
-          marginBottom: 4,
-        }}>
+        <p style={{ fontSize: 13, fontWeight: 700, color: windowInfo.status === 'open' ? 'var(--success)' : windowInfo.status === 'winter' ? '#60a5fa' : 'var(--danger)', marginBottom: 4 }}>
           {windowInfo.status === 'open' ? '🟢' : windowInfo.status === 'winter' ? '🔵' : '🔴'} {windowInfo.label}
         </p>
-        <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-          {windowInfo.description}
-        </p>
+        <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{windowInfo.description}</p>
       </div>
 
-      {/* Expiring contracts section */}
+      {/* Scouting section */}
       <div style={{ marginBottom: 24 }}>
-        <p style={{
-          fontSize: 11,
-          fontWeight: 700,
-          textTransform: 'uppercase',
-          letterSpacing: '0.8px',
-          color: 'var(--text-muted)',
-          marginBottom: 12,
-        }}>
-          Utgående kontrakt
+        <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
+          Scouting — andra lag
         </p>
-
-        {expiringPlayers.length === 0 ? (
-          <p style={{ fontSize: 14, color: 'var(--text-secondary)', padding: '12px 0' }}>
-            Inga kontrakt utgår snart.
-          </p>
-        ) : (
-          <div style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)',
-            overflow: 'hidden',
-          }}>
-            {expiringPlayers.map((player, index) => (
+        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+          {scoutablePlayers.slice(0, 30).map((player, index) => {
+            const report = scoutReports[player.id]
+            const isScounted = !!report
+            const club = game.clubs.find(c => c.id === player.clubId)
+            const canScout = !activeAssignment && scoutBudget > 0 && !isScounted
+            return (
               <div
                 key={player.id}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  padding: '12px 14px',
-                  borderBottom: index < expiringPlayers.length - 1 ? '1px solid var(--border)' : 'none',
+                  padding: '10px 14px',
+                  borderBottom: index < Math.min(scoutablePlayers.length, 30) - 1 ? '1px solid var(--border)' : 'none',
                   gap: 10,
+                  opacity: isScounted ? 0.8 : 1,
                 }}
               >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {player.firstName} {player.lastName}
+                    {isScounted && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--accent)' }}>🔍</span>}
+                  </p>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
+                    {positionShort(player.position)} · {club?.name ?? '?'} ·{' '}
+                    {isScounted
+                      ? `Styrka ~${report.estimatedCA}`
+                      : <span style={{ color: 'var(--text-muted)' }}>Styrka ?</span>
+                    }
+                  </p>
+                  {isScounted && (
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>{report.notes}</p>
+                  )}
+                </div>
+                {!isScounted && (
+                  <button
+                    onClick={() => canScout && handleScout(player)}
+                    disabled={!canScout}
+                    style={{
+                      flexShrink: 0,
+                      padding: '5px 10px',
+                      borderRadius: 'var(--radius-sm)',
+                      background: canScout ? 'rgba(59,130,246,0.12)' : 'var(--bg-elevated)',
+                      border: `1px solid ${canScout ? 'rgba(59,130,246,0.4)' : 'var(--border)'}`,
+                      color: canScout ? 'var(--accent)' : 'var(--text-muted)',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: canScout ? 'pointer' : 'not-allowed',
+                      opacity: canScout ? 1 : 0.5,
+                    }}
+                  >
+                    🔍 Scouta
+                  </button>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Expiring contracts section */}
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
+          Utgående kontrakt
+        </p>
+        {expiringPlayers.length === 0 ? (
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', padding: '12px 0' }}>Inga kontrakt utgår snart.</p>
+        ) : (
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+            {expiringPlayers.map((player, index) => (
+              <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', borderBottom: index < expiringPlayers.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {player.firstName} {player.lastName}
@@ -287,19 +287,7 @@ export function TransfersScreen() {
                     {positionShort(player.position)} · {formatCurrency(player.salary)}/mån · t.o.m. {player.contractUntilSeason}
                   </p>
                 </div>
-                <button
-                  onClick={() => setRenewingPlayerId(player.id)}
-                  style={{
-                    flexShrink: 0,
-                    padding: '6px 12px',
-                    background: 'var(--bg-elevated)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 'var(--radius-sm)',
-                    color: 'var(--accent)',
-                    fontSize: 12,
-                    fontWeight: 600,
-                  }}
-                >
+                <button onClick={() => setRenewingPlayerId(player.id)} style={{ flexShrink: 0, padding: '6px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--accent)', fontSize: 12, fontWeight: 600 }}>
                   Förläng
                 </button>
               </div>
@@ -310,46 +298,17 @@ export function TransfersScreen() {
 
       {/* Free agents section */}
       <div>
-        <p style={{
-          fontSize: 11,
-          fontWeight: 700,
-          textTransform: 'uppercase',
-          letterSpacing: '0.8px',
-          color: 'var(--text-muted)',
-          marginBottom: 12,
-        }}>
+        <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
           Fria agenter
         </p>
-
         {freeAgents.length === 0 ? (
-          <div style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)',
-            padding: '20px 16px',
-          }}>
-            <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-              Inga fria agenter tillgängliga just nu. Fria agenter dyker upp vid säsongsslut.
-            </p>
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 16px' }}>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>Inga fria agenter tillgängliga just nu. Fria agenter dyker upp vid säsongsslut.</p>
           </div>
         ) : (
-          <div style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)',
-            overflow: 'hidden',
-          }}>
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
             {freeAgents.map((agent, index) => (
-              <div
-                key={agent.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '12px 14px',
-                  borderBottom: index < freeAgents.length - 1 ? '1px solid var(--border)' : 'none',
-                  gap: 10,
-                }}
-              >
+              <div key={agent.id} style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', borderBottom: index < freeAgents.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {agent.firstName} {agent.lastName}
@@ -361,18 +320,7 @@ export function TransfersScreen() {
                 <button
                   onClick={() => windowOpen && handleSignFreeAgent(agent.id)}
                   disabled={!windowOpen}
-                  style={{
-                    flexShrink: 0,
-                    padding: '6px 12px',
-                    background: windowOpen ? 'var(--accent)' : 'var(--bg-elevated)',
-                    border: windowOpen ? 'none' : '1px solid var(--border)',
-                    borderRadius: 'var(--radius-sm)',
-                    color: windowOpen ? '#fff' : 'var(--text-muted)',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: windowOpen ? 'pointer' : 'not-allowed',
-                    opacity: windowOpen ? 1 : 0.6,
-                  }}
+                  style={{ flexShrink: 0, padding: '6px 12px', background: windowOpen ? 'var(--accent)' : 'var(--bg-elevated)', border: windowOpen ? 'none' : '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: windowOpen ? '#fff' : 'var(--text-muted)', fontSize: 12, fontWeight: 600, cursor: windowOpen ? 'pointer' : 'not-allowed', opacity: windowOpen ? 1 : 0.6 }}
                 >
                   Värva
                 </button>
@@ -382,7 +330,6 @@ export function TransfersScreen() {
         )}
       </div>
 
-      {/* Renew modal */}
       {renewingPlayer && (
         <RenewContractModal
           player={renewingPlayer}
