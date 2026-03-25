@@ -699,20 +699,22 @@ export function MatchScreen() {
           },
         })
       } else {
-        const result = advance()
-        if (!result) {
-          setLineupError('Kunde inte simulera matchen')
-          return
+        // Snabbsim: advance the round (simulates all matches including managed)
+        try {
+          const result = advance()
+          if (!result) {
+            setLineupError('Kunde inte simulera matchen')
+            return
+          }
+          if ((result.pendingEvents?.length ?? 0) > 0) {
+            navigate('/game/events')
+          } else {
+            navigate('/game')
+          }
+        } catch (err) {
+          console.error('Snabbsim misslyckades:', err)
+          setLineupError(`Något gick fel: ${err instanceof Error ? err.message : 'okänt fel'}`)
         }
-
-        const justPlayed = result.game.fixtures.find(f =>
-          (f.homeClubId === managedClubId || f.awayClubId === managedClubId) &&
-          f.status === FixtureStatus.Completed &&
-          f.roundNumber === (nextFixture?.roundNumber ?? -1)
-        ) ?? null
-
-        setCompletedFixture(justPlayed)
-        setShowReport(true)
       }
     } catch (err) {
       console.error('handlePlayMatch kraschade:', err)

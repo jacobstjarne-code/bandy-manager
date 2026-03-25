@@ -130,6 +130,57 @@ function advanceDate(dateStr: string, days: number): string {
   return date.toISOString().slice(0, 10)
 }
 
+function stripCompletedFixture(f: Fixture, managedFixtureId?: string): Fixture {
+  // Keep full data for the most recent managed match (for match report)
+  if (f.id === managedFixtureId) return f
+  // Keep full data for non-completed fixtures
+  if (f.status !== FixtureStatus.Completed) return f
+
+  // Strip heavy data from old completed fixtures
+  return {
+    ...f,
+    // Keep only goal/card events, drop descriptions
+    events: f.events
+      .filter(e =>
+        e.type === MatchEventType.Goal ||
+        e.type === MatchEventType.RedCard ||
+        e.type === MatchEventType.YellowCard
+      )
+      .map(e => ({ ...e, description: '' })),
+    // Strip lineups — not needed after simulation
+    homeLineup: f.homeLineup ? {
+      startingPlayerIds: f.homeLineup.startingPlayerIds,
+      benchPlayerIds: [],
+      tactic: {
+        mentality: f.homeLineup.tactic.mentality,
+        tempo: f.homeLineup.tactic.tempo,
+        press: f.homeLineup.tactic.press,
+        passingRisk: f.homeLineup.tactic.passingRisk,
+        width: f.homeLineup.tactic.width,
+        attackingFocus: f.homeLineup.tactic.attackingFocus,
+        cornerStrategy: f.homeLineup.tactic.cornerStrategy,
+        penaltyKillStyle: f.homeLineup.tactic.penaltyKillStyle,
+      },
+    } : undefined,
+    awayLineup: f.awayLineup ? {
+      startingPlayerIds: f.awayLineup.startingPlayerIds,
+      benchPlayerIds: [],
+      tactic: {
+        mentality: f.awayLineup.tactic.mentality,
+        tempo: f.awayLineup.tactic.tempo,
+        press: f.awayLineup.tactic.press,
+        passingRisk: f.awayLineup.tactic.passingRisk,
+        width: f.awayLineup.tactic.width,
+        attackingFocus: f.awayLineup.tactic.attackingFocus,
+        cornerStrategy: f.awayLineup.tactic.cornerStrategy,
+        penaltyKillStyle: f.awayLineup.tactic.penaltyKillStyle,
+      },
+    } : undefined,
+    // Clear playerRatings — only needed for match report screen
+    report: f.report ? { ...f.report, playerRatings: {} } : undefined,
+  }
+}
+
 export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult {
   const scheduledFixtures = game.fixtures.filter(f => f.status === FixtureStatus.Scheduled)
 
@@ -743,9 +794,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     b.status === 'pending' || (nextRound - b.createdRound) < 5
   )
 
+  const managedFixtureId = justCompletedManagedFixture?.id
+  const strippedFixtures = finalAllFixtures.map(f => stripCompletedFixture(f, managedFixtureId))
+
   let updatedGame: SaveGame = {
     ...game,
-    fixtures: finalAllFixtures,
+    fixtures: strippedFixtures,
     players: marketUpdatedPlayers,
     standings,
     inbox: trimmedInbox,
@@ -1006,7 +1060,7 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     matchWeathers: [],
     trainingHistory: [],
     playoffBracket: null,
-    seasonSummaries: [...(game.seasonSummaries ?? []), seasonSummary],
+    seasonSummaries: [...(game.seasonSummaries ?? []), seasonSummary].slice(-5),
     showSeasonSummary: true,
     seasonStartFinances: updatedClubs.find(c => c.id === game.managedClubId)?.finances,
     scoutReports: game.scoutReports ?? {},
