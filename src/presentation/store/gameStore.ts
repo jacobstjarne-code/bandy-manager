@@ -12,6 +12,7 @@ import { createOutgoingBid } from '../../domain/services/transferService'
 import { resolveEvent as resolveEventFn } from '../../domain/services/eventService'
 import { advanceToNextEvent, type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
+import { calculateStandings } from '../../domain/services/standingsService'
 import { loadSaveGame, listSaveGames, type SaveGameSummary } from '../../infrastructure/persistence/saveGameStorage'
 
 interface GameState {
@@ -103,7 +104,9 @@ export const useGameStore = create<GameState>()(
             ? { ...f, homeScore, awayScore, events, report, homeLineup, awayLineup, status: FixtureStatus.Completed }
             : f
         )
-        set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId } })
+        const completedFixtures = updatedFixtures.filter(f => f.status === FixtureStatus.Completed)
+        const standings = calculateStandings(game.league.teamIds, completedFixtures)
+        set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings } })
       },
 
       updateTactic: (tactic) => {

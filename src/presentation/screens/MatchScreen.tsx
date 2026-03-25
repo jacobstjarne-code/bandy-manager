@@ -723,10 +723,11 @@ export function MatchScreen() {
             setLineupError('Kunde inte simulera matchen')
             return
           }
-          // Show match report, then events from dashboard
-          navigate('/game/match', {
-            state: { showReport: true }
-          })
+          if ((result.pendingEvents?.length ?? 0) > 0) {
+            navigate('/game/events')
+          } else {
+            navigate('/game')
+          }
         } catch (err) {
           console.error('Snabbsim kraschade:', err)
           setLineupError(`Något gick fel: ${err instanceof Error ? err.message : 'okänt fel'}`)
