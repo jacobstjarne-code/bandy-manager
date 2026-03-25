@@ -723,11 +723,7 @@ export function MatchScreen() {
             setLineupError('Kunde inte simulera matchen')
             return
           }
-          if ((result.pendingEvents?.length ?? 0) > 0) {
-            navigate('/game/events')
-          } else {
-            navigate('/game')
-          }
+          navigate('/game/match-result')
         } catch (err) {
           console.error('Snabbsim kraschade:', err)
           setLineupError(`Något gick fel: ${err instanceof Error ? err.message : 'okänt fel'}`)

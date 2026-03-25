@@ -353,41 +353,28 @@ export function DashboardScreen() {
   // Determine advance button text
   const advanceButtonText = (() => {
     if (!game) return 'Laddar...'
-    const hasScheduled = game.fixtures.some(f => f.status === 'scheduled')
+    const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
 
-    // No scheduled fixtures at all
-    if (!hasScheduled) {
+    if (scheduled.length === 0) {
       if (!game.playoffBracket) return 'Starta slutspel →'
       if (game.playoffBracket.status === PlayoffStatus.Completed) return 'Avsluta säsongen →'
       return 'Fortsätt slutspel →'
     }
 
-    const nextRound = Math.min(
-      ...game.fixtures
-        .filter(f => f.status === 'scheduled')
-        .map(f => f.roundNumber)
-    )
+    const nextManaged = scheduled
+      .filter(f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+      .sort((a, b) => a.roundNumber - b.roundNumber)[0]
 
-    const managedInNextRound = game.fixtures.some(
-      f => f.roundNumber === nextRound &&
-           (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
-           f.status === 'scheduled'
-    )
-
-    if (managedInNextRound) {
-      // Playoff round?
+    if (nextManaged) {
       if (game.playoffBracket) {
-        const roundLabel = nextRound <= 25 ? 'KF' : nextRound <= 28 ? 'SF' : 'Final'
-        return `Spela ${roundLabel} →`
+        const r = nextManaged.roundNumber
+        const label = r <= 25 ? 'Kvartsfinal' : r <= 28 ? 'Semifinal' : 'Final'
+        return `Spela ${label} →`
       }
-      return `Spela omgång ${nextRound} →`
+      return `Spela omgång ${nextManaged.roundNumber} →`
     }
 
-    // AI-only round
-    if (game.playoffBracket) {
-      return 'Fortsätt slutspel →'
-    }
-    return `Simulera omgång ${nextRound} →`
+    return 'Fortsätt →'
   })()
 
   return (
