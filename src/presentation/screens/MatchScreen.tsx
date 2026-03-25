@@ -694,20 +694,18 @@ export function MatchScreen() {
           },
         })
       } else {
-        // Snabbsim: advance the round (simulates all matches including managed)
         try {
           const result = advance()
           if (!result) {
             setLineupError('Kunde inte simulera matchen')
             return
           }
-          if ((result.pendingEvents?.length ?? 0) > 0) {
-            navigate('/game/events')
-          } else {
-            navigate('/game')
-          }
+          // Show match report, then events from dashboard
+          navigate('/game/match', {
+            state: { showReport: true }
+          })
         } catch (err) {
-          console.error('Snabbsim misslyckades:', err)
+          console.error('Snabbsim kraschade:', err)
           setLineupError(`Något gick fel: ${err instanceof Error ? err.message : 'okänt fel'}`)
         }
       }
