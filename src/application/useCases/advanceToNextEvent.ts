@@ -3,7 +3,8 @@ import type { Player } from '../../domain/entities/Player'
 import type { Club } from '../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
-import { FixtureStatus, MatchEventType, PlayerPosition, InboxItemType, TrainingType, TrainingIntensity, PlayoffStatus } from '../../domain/enums'
+import { FixtureStatus, MatchEventType, PlayerPosition, InboxItemType, TrainingType, TrainingIntensity, PlayoffStatus, ClubStyle } from '../../domain/enums'
+import type { FormationType } from '../../domain/entities/Formation'
 import { simulateMatch } from '../../domain/services/matchSimulator'
 import { getRivalry } from '../../domain/data/rivalries'
 import { generateMatchWeather } from '../../domain/services/weatherService'
@@ -54,6 +55,14 @@ function mulberry32(seed: number): () => number {
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296
   }
+}
+
+const AI_FORMATIONS: Record<ClubStyle, FormationType> = {
+  [ClubStyle.Defensive]: '4-3-3',
+  [ClubStyle.Balanced]: '3-3-4',
+  [ClubStyle.Attacking]: '2-3-2-3',
+  [ClubStyle.Physical]: '4-2-4',
+  [ClubStyle.Technical]: '3-4-3',
 }
 
 function generateAiLineup(club: Club, allPlayers: Player[]): TeamSelection {
@@ -111,7 +120,7 @@ function generateAiLineup(club: Club, allPlayers: Player[]): TeamSelection {
     startingPlayerIds: starters.map(p => p.id),
     benchPlayerIds: bench.map(p => p.id),
     captainPlayerId: captain?.id,
-    tactic: club.activeTactic,
+    tactic: { ...club.activeTactic, formation: AI_FORMATIONS[club.preferredStyle] ?? '3-3-4' },
   }
 }
 

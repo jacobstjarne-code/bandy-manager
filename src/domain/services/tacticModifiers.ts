@@ -155,6 +155,21 @@ export function getTacticModifiers(tactic: Tactic): TacticModifiers {
       break
   }
 
+  // Formation modifiers
+  switch (tactic.formation) {
+    case '2-3-2-3':
+      offense += 0.05
+      defense -= 0.08
+      break
+    case '4-3-3':
+    case '4-2-4':
+      offense -= 0.03
+      defense += 0.05
+      break
+    default:
+      break
+  }
+
   return {
     offenseModifier: round3(clamp(offense, 0.75, 1.25)),
     defenseModifier: round3(clamp(defense, 0.75, 1.25)),

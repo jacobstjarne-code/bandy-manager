@@ -2,6 +2,20 @@ import type { Player } from '../entities/Player'
 import type { Tactic } from '../entities/Club'
 import { PlayerPosition } from '../enums'
 
+const ADJACENT: Record<PlayerPosition, PlayerPosition[]> = {
+  [PlayerPosition.Goalkeeper]: [],
+  [PlayerPosition.Defender]: [PlayerPosition.Half],
+  [PlayerPosition.Half]: [PlayerPosition.Defender, PlayerPosition.Midfielder],
+  [PlayerPosition.Midfielder]: [PlayerPosition.Half, PlayerPosition.Forward],
+  [PlayerPosition.Forward]: [PlayerPosition.Midfielder],
+}
+
+export function getPositionFit(playerPosition: PlayerPosition, slotPosition: PlayerPosition): number {
+  if (playerPosition === slotPosition) return 1.0
+  if (ADJACENT[playerPosition]?.includes(slotPosition)) return 0.90
+  return 0.75
+}
+
 export interface SquadEvaluation {
   offenseScore: number      // 0-100
   defenseScore: number      // 0-100
@@ -20,6 +34,13 @@ function round1(value: number): number {
 
 function playerModifier(player: Player): number {
   return (player.form / 100) * 0.4 + (player.fitness / 100) * 0.6
+}
+
+function effectivePlayerModifier(player: Player, tactic: Tactic): number {
+  const base = playerModifier(player)
+  const slot = tactic.positionAssignments?.[player.id]
+  if (!slot) return base
+  return base * getPositionFit(player.position, slot.position)
 }
 
 function offensePlayerScore(player: Player): number {
@@ -50,7 +71,7 @@ function cornerPlayerScore(player: Player): number {
   return a.cornerSkill * 0.5 + a.passing * 0.3 + a.decisions * 0.2
 }
 
-export function evaluateSquad(starters: Player[], _tactic: Tactic): SquadEvaluation {
+export function evaluateSquad(starters: Player[], tactic: Tactic): SquadEvaluation {
   // --- offenseScore ---
   const forwards = starters.filter(p => p.position === PlayerPosition.Forward)
   const midfielders = starters.filter(p => p.position === PlayerPosition.Midfielder)
@@ -64,7 +85,7 @@ export function evaluateSquad(starters: Player[], _tactic: Tactic): SquadEvaluat
   let offenseScore = 0
   if (offensePlayers.length > 0) {
     const total = offensePlayers.reduce((sum, p) => {
-      return sum + offensePlayerScore(p) * playerModifier(p)
+      return sum + offensePlayerScore(p) * effectivePlayerModifier(p, tactic)
     }, 0)
     offenseScore = total / offensePlayers.length
   }
@@ -76,7 +97,7 @@ export function evaluateSquad(starters: Player[], _tactic: Tactic): SquadEvaluat
   let defenseScore = 0
   if (defensePlayers.length > 0) {
     const total = defensePlayers.reduce((sum, p) => {
-      return sum + defensePlayerScore(p) * playerModifier(p)
+      return sum + defensePlayerScore(p) * effectivePlayerModifier(p, tactic)
     }, 0)
     defenseScore = total / defensePlayers.length
   }
@@ -95,7 +116,7 @@ export function evaluateSquad(starters: Player[], _tactic: Tactic): SquadEvaluat
     let totalWeight = 0
     for (let i = 0; i < top3.length; i++) {
       const p = top3[i]
-      const score = cornerPlayerScore(p) * playerModifier(p)
+      const score = cornerPlayerScore(p) * effectivePlayerModifier(p, tactic)
       weightedSum += score * weights[i]
       totalWeight += weights[i]
     }
@@ -114,7 +135,7 @@ export function evaluateSquad(starters: Player[], _tactic: Tactic): SquadEvaluat
     )
     const a = gk.attributes
     const rawScore = a.goalkeeping * 0.55 + a.positioning * 0.25 + a.decisions * 0.20
-    goalkeeperScore = rawScore * playerModifier(gk)
+    goalkeeperScore = rawScore * effectivePlayerModifier(gk, tactic)
   }
 
   // --- disciplineRisk ---

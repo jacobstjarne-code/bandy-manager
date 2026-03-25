@@ -1,4 +1,5 @@
 import type { ClubExpectation, ClubStyle, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle } from '../enums'
+import type { FormationType, FormationSlot } from './Formation'
 
 export interface Tactic {
   mentality: TacticMentality
@@ -9,6 +10,8 @@ export interface Tactic {
   attackingFocus: TacticAttackingFocus
   cornerStrategy: CornerStrategy
   penaltyKillStyle: PenaltyKillStyle
+  formation?: FormationType
+  positionAssignments?: Record<string, FormationSlot>   // key = playerId
 }
 
 export interface Club {

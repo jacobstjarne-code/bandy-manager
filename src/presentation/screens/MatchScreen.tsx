@@ -1,9 +1,12 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameStore, useLastCompletedFixture } from '../store/gameStore'
 import { PlayerPosition, FixtureStatus, MatchEventType, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle, PlayoffRound } from '../../domain/enums'
 import { getWeatherEmoji, getIceQualityLabel, getConditionLabel } from '../../domain/services/weatherService'
 import type { Tactic } from '../../domain/entities/Club'
+import { FORMATIONS, autoAssignFormation } from '../../domain/entities/Formation'
+import type { FormationType } from '../../domain/entities/Formation'
+import { BandyPitch } from '../components/BandyPitch'
 import type { Fixture, MatchEvent } from '../../domain/entities/Fixture'
 import type { Player } from '../../domain/entities/Player'
 import type { SaveGame } from '../../domain/entities/SaveGame'
@@ -439,8 +442,8 @@ export function MatchScreen() {
     savedLineup?.captainPlayerId ?? defaultStarting[0]
   )
   const [lineupError, setLineupError] = useState<string | null>(null)
-  const [tacticState, setTacticState] = useState<Tactic>(() =>
-    managedClub?.activeTactic ?? {
+  const [tacticState, setTacticState] = useState<Tactic>(() => {
+    const base = managedClub?.activeTactic ?? {
       mentality: TacticMentality.Balanced,
       tempo: TacticTempo.Normal,
       press: TacticPress.Medium,
@@ -450,7 +453,9 @@ export function MatchScreen() {
       cornerStrategy: CornerStrategy.Standard,
       penaltyKillStyle: PenaltyKillStyle.Active,
     }
-  )
+    return { ...base, formation: base.formation ?? '3-3-4' }
+  })
+  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
 
   if (!game || !managedClub) return null
 
@@ -492,6 +497,11 @@ export function MatchScreen() {
   function togglePlayer(playerId: string) {
     const player = squadPlayers.find(p => p.id === playerId)
     if (!player || player.isInjured || player.suspensionGamesRemaining > 0) return
+    // If a slot is selected, assign player to it
+    if (selectedSlotId) {
+      assignPlayerToSlot(playerId, selectedSlotId)
+      return
+    }
     if (startingIds.includes(playerId)) {
       // Move to bench
       setStartingIds(prev => prev.filter(id => id !== playerId))
@@ -526,11 +536,45 @@ export function MatchScreen() {
     const starterIds = starters.map(p => p.id)
     const starterSet = new Set(starterIds)
     const bench = sorted.filter(p => !starterSet.has(p.id)).slice(0, 5)
+
+    // Auto-assign to formation slots
+    const formation = tacticState.formation ?? '3-3-4'
+    const template = FORMATIONS[formation]
+    const newAssignments = autoAssignFormation(template, starters)
+    const newTactic = { ...tacticState, positionAssignments: newAssignments }
+    setTacticState(newTactic)
+    updateTactic(newTactic)
+
     setStartingIds(starterIds)
     setBenchIds(bench.map(p => p.id))
     setCaptainId(starterIds[0])
+    setSelectedSlotId(null)
     setLineupError(null)
   }
+
+  const assignPlayerToSlot = useCallback((playerId: string, slotId: string) => {
+    const formation = tacticState.formation ?? '3-3-4'
+    const slot = FORMATIONS[formation].slots.find(s => s.id === slotId)
+    if (!slot) return
+    const current = { ...(tacticState.positionAssignments ?? {}) }
+    // Remove any player currently in this slot
+    for (const pid of Object.keys(current)) {
+      if (current[pid].id === slotId) delete current[pid]
+    }
+    // Remove this player's previous slot
+    delete current[playerId]
+    // Assign
+    current[playerId] = slot
+    // Ensure player is in starting XI
+    if (!startingIds.includes(playerId) && startingIds.length < 11) {
+      setStartingIds(prev => [...prev, playerId])
+      setBenchIds(prev => prev.filter(id => id !== playerId))
+    }
+    const newTactic = { ...tacticState, positionAssignments: current }
+    setTacticState(newTactic)
+    updateTactic(newTactic)
+    setSelectedSlotId(null)
+  }, [tacticState, startingIds, updateTactic])
 
   function getPlayerStatus(playerId: string): 'start' | 'bench' | 'out' {
     if (startingIds.includes(playerId)) return 'start'
@@ -906,6 +950,138 @@ export function MatchScreen() {
                     )}
                   </div>
                 </div>
+              </div>
+            )
+          })()}
+
+          {/* ── Formationsvy ─────────────────────────────────────────── */}
+          {(() => {
+            const formationType = tacticState.formation ?? '3-3-4'
+            const template = FORMATIONS[formationType]
+            const assignments = tacticState.positionAssignments ?? {}
+            // Build reverse map: slotId → playerId
+            const slotToPlayer: Record<string, string> = {}
+            for (const [pid, slot] of Object.entries(assignments)) {
+              slotToPlayer[slot.id] = pid
+            }
+            const PW = 220, PH = 130
+            return (
+              <div style={{ padding: '0 16px 12px' }}>
+                {/* Formation picker */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                  <select
+                    value={formationType}
+                    onChange={e => {
+                      const f = e.target.value as FormationType
+                      const newTactic = { ...tacticState, formation: f, positionAssignments: {} }
+                      setTacticState(newTactic)
+                      updateTactic(newTactic)
+                      setSelectedSlotId(null)
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '7px 10px',
+                      background: 'var(--bg-elevated)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 'var(--radius-sm)',
+                      color: 'var(--text-primary)',
+                      fontSize: 13,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {(Object.keys(FORMATIONS) as FormationType[]).map(f => (
+                      <option key={f} value={f}>{FORMATIONS[f].label}</option>
+                    ))}
+                  </select>
+                </div>
+                {/* Pitch */}
+                <BandyPitch width="100%">
+                  {template.slots.map(slot => {
+                    const assignedPid = slotToPlayer[slot.id]
+                    const assignedPlayer = assignedPid ? squadPlayers.find(p => p.id === assignedPid) : null
+                    const isSelected = selectedSlotId === slot.id
+                    const sx = (slot.x / 100) * PW
+                    const sy = (1 - slot.y / 100) * PH
+                    // Position fit ring color
+                    let ringColor = '#3b82f6'   // default blue (empty)
+                    if (assignedPlayer) {
+                      const fit = assignedPlayer.position === slot.position ? 'good'
+                        : ['defender', 'half', 'midfielder', 'forward'].includes(assignedPlayer.position) ? 'warn' : 'warn'
+                      ringColor = fit === 'good' ? '#22c55e' : '#f59e0b'
+                      // More precise: use actual position adjacency
+                      const ADJACENT_POS: Record<string, string[]> = {
+                        goalkeeper: [],
+                        defender: ['half'],
+                        half: ['defender', 'midfielder'],
+                        midfielder: ['half', 'forward'],
+                        forward: ['midfielder'],
+                      }
+                      if (assignedPlayer.position === slot.position) ringColor = '#22c55e'
+                      else if (ADJACENT_POS[assignedPlayer.position]?.includes(slot.position)) ringColor = '#f59e0b'
+                      else ringColor = '#ef4444'
+                    }
+                    const circleR = 11
+                    const displayText = assignedPlayer
+                      ? assignedPlayer.lastName.slice(0, 5)
+                      : slot.label
+                    const subText = assignedPlayer
+                      ? String(Math.round(assignedPlayer.currentAbility))
+                      : ''
+                    return (
+                      <g
+                        key={slot.id}
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedSlotId(null)
+                          } else {
+                            setSelectedSlotId(slot.id)
+                          }
+                        }}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <circle
+                          cx={sx}
+                          cy={sy}
+                          r={circleR}
+                          fill={isSelected ? 'rgba(201,168,76,0.3)' : assignedPlayer ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.4)'}
+                          stroke={isSelected ? '#C9A84C' : ringColor}
+                          strokeWidth={isSelected ? 2 : 1.5}
+                        />
+                        <text
+                          x={sx}
+                          y={sy - (subText ? 1.5 : 0)}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          fill="#F0F4F8"
+                          fontSize={assignedPlayer ? 5.5 : 6}
+                          fontWeight="700"
+                          fontFamily="system-ui, sans-serif"
+                        >
+                          {displayText}
+                        </text>
+                        {subText && (
+                          <text
+                            x={sx}
+                            y={sy + 5}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            fill={ringColor}
+                            fontSize={4.5}
+                            fontFamily="system-ui, sans-serif"
+                          >
+                            {subText}
+                          </text>
+                        )}
+                      </g>
+                    )
+                  })}
+                </BandyPitch>
+                {/* Selected slot hint */}
+                {selectedSlotId && (
+                  <p style={{ fontSize: 12, color: '#C9A84C', textAlign: 'center', marginTop: 6, fontWeight: 600 }}>
+                    Väljer spelare till: {template.slots.find(s => s.id === selectedSlotId)?.label ?? selectedSlotId} — klicka på en spelare nedan
+                  </p>
+                )}
               </div>
             )
           })()}
