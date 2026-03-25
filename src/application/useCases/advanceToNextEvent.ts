@@ -25,11 +25,11 @@ import {
   createSuspensionItem,
   createRecoveryItem,
   createYouthIntakeItem,
-  createBoardFeedbackItem,
   createTrainingItem,
 } from '../../domain/services/inboxService'
 import { processScoutAssignment } from '../../domain/services/scoutingService'
 import type { ScoutReport, ScoutAssignment } from '../../domain/entities/Scouting'
+import { evaluateBoard, generateBoardMessage, generateSeasonVerdict } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
 
 export interface AdvanceResult {
@@ -452,6 +452,37 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // ── Board milestone messages at rounds 7, 14, 22 ─────────────────────
+  const BOARD_MILESTONES = [7, 14, 22]
+  if (!isPlayoffRound && BOARD_MILESTONES.includes(nextRound)) {
+    const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+    const managedStanding = standings.find(s => s.clubId === game.managedClubId)
+    if (managedClub && managedStanding) {
+      const totalRounds = 22
+      const evaluation = evaluateBoard(
+        managedClub.boardExpectation,
+        managedStanding,
+        game.clubs.length,
+        nextRound,
+        totalRounds,
+      )
+      const { title, body } = generateBoardMessage(evaluation, managedClub.name, nextRound)
+      const alreadySent = game.inbox.some(
+        i => i.id === `inbox_board_r${nextRound}_${game.currentSeason}`
+      )
+      if (!alreadySent) {
+        newInboxItems.push({
+          id: `inbox_board_r${nextRound}_${game.currentSeason}`,
+          date: game.currentDate,
+          type: InboxItemType.BoardFeedback,
+          title,
+          body,
+          isRead: false,
+        })
+      }
+    }
+  }
+
   // ── Process active scout assignment ───────────────────────────────────
   let updatedScoutReports = game.scoutReports ?? {}
   let updatedScoutAssignment: ScoutAssignment | null = game.activeScoutAssignment ?? null
@@ -755,19 +786,24 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   const newInboxItems = []
 
-  // Board feedback for managed club
+  // Board verdict at season end
   const managedClubStanding = standings.find(s => s.clubId === game.managedClubId)
   if (managedClubStanding) {
     const managedClub = game.clubs.find(c => c.id === game.managedClubId)
     if (managedClub) {
-      newInboxItems.push(
-        createBoardFeedbackItem(
-          managedClub,
-          managedClubStanding,
-          game.clubs.length,
-          game.currentDate,
-        ),
+      const { title, body } = generateSeasonVerdict(
+        managedClub.boardExpectation,
+        managedClubStanding.position,
+        game.clubs.length,
       )
+      newInboxItems.push({
+        id: `inbox_board_verdict_${game.currentSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.BoardFeedback,
+        title,
+        body,
+        isRead: false,
+      } as InboxItem)
     }
   }
 
