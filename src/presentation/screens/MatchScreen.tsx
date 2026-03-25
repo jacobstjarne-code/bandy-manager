@@ -602,7 +602,13 @@ export function MatchScreen() {
   }
 
   function handlePlayMatch() {
-    if (!canPlay) return
+    if (!canPlay) {
+      setMatchStep('lineup')
+      setLineupError(startingIds.length !== 11
+        ? `Välj exakt 11 startspelare (du har ${startingIds.length})`
+        : 'Skadade eller avstängda spelare i startuppställningen')
+      return
+    }
     setLineupError(null)
 
     const lineupResult = setPlayerLineup(startingIds, benchIds, captainId)
