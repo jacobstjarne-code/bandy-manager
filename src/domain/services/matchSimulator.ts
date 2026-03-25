@@ -1,7 +1,7 @@
 import type { Player } from '../entities/Player'
 import type { Fixture, MatchEvent, MatchReport, TeamSelection } from '../entities/Fixture'
 import type { Weather } from '../entities/Weather'
-import { FixtureStatus, MatchEventType, PlayerPosition, WeatherCondition } from '../enums'
+import { FixtureStatus, MatchEventType, PlayerPosition, WeatherCondition, IceQuality, PlayerArchetype } from '../enums'
 import { evaluateSquad } from './squadEvaluator'
 import { getTacticModifiers } from './tacticModifiers'
 import { commentary, fillTemplate, pickCommentary } from '../data/commentary'
@@ -21,6 +21,8 @@ export interface SimulateMatchInput {
   awayClubName?: string
   isPlayoff?: boolean
   rivalry?: Rivalry
+  fanMood?: number
+  managedIsHome?: boolean
 }
 
 function computeWeatherEffects(w: Weather) {
@@ -35,6 +37,52 @@ function computeWeatherEffects(w: Weather) {
                   w.condition === WeatherCondition.Thaw ? 0.87 :
                   w.condition === WeatherCondition.Fog ? 0.92 : 1.0
   return { ballControlPenalty: penalty, speedModifier: speed, goalChanceModifier: goalMod }
+}
+
+export function computeWeatherTacticInteraction(
+  weather: Weather,
+  tactic: { tempo: string; passingRisk: string; width: string; press: string },
+): { extraBallControlPenalty: number; extraFatigue: number; extraInjuryRisk: number } {
+  let extraBCP = 0
+  let extraFatigue = 0
+  let extraInjury = 0
+
+  if (weather.condition === WeatherCondition.HeavySnow) {
+    if (tactic.passingRisk === 'direct') extraBCP += 10
+    if (tactic.tempo === 'high') extraFatigue += 0.15
+    if (tactic.passingRisk === 'safe') extraBCP -= 5
+  }
+
+  if (weather.condition === WeatherCondition.Thaw) {
+    if (tactic.tempo === 'high') {
+      extraFatigue += 0.20
+      extraInjury += 0.15
+    }
+    if (tactic.press === 'high') extraFatigue += 0.10
+    if (tactic.width === 'narrow') extraBCP -= 3
+  }
+
+  if (weather.condition === WeatherCondition.Fog) {
+    if (tactic.width === 'wide') extraBCP += 8
+    if (tactic.passingRisk === 'direct') extraBCP += 5
+    if (tactic.width === 'narrow' && tactic.passingRisk === 'safe') extraBCP -= 5
+  }
+
+  if (weather.temperature < -15) {
+    if (tactic.tempo === 'high') extraInjury += 0.10
+    if (tactic.press === 'high') extraFatigue += 0.10
+  }
+
+  if (weather.iceQuality === IceQuality.Excellent) {
+    if (tactic.tempo === 'high') extraFatigue -= 0.05
+    if (tactic.passingRisk === 'direct') extraBCP -= 3
+  }
+
+  return {
+    extraBallControlPenalty: extraBCP,
+    extraFatigue: Math.max(-0.10, extraFatigue),
+    extraInjuryRisk: Math.max(0, extraInjury),
+  }
 }
 
 export interface SimulateMatchResult {
@@ -130,6 +178,8 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     weather,
     isPlayoff = false,
     rivalry,
+    fanMood,
+    managedIsHome,
   } = input
 
   const rand = mulberry32(seed ?? Date.now())
@@ -164,12 +214,14 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   const awayGK = awayEval.goalkeeperScore / 100
   const awayDisciplineRisk = (awayEval.disciplineRisk * awayMods.disciplineModifier) / 100
 
-  // Apply weather modifiers
+  // Apply weather modifiers (with tactic interaction)
   let weatherGoalMod = 1.0
   if (weather && weather.condition !== undefined) {
     const { ballControlPenalty, speedModifier, goalChanceModifier } = computeWeatherEffects(weather)
-    homeAttack *= (1 - ballControlPenalty / 200) * speedModifier
-    awayAttack *= (1 - ballControlPenalty / 200) * speedModifier
+    const homeTacticWeather = computeWeatherTacticInteraction(weather, homeLineup.tactic)
+    const awayTacticWeather = computeWeatherTacticInteraction(weather, awayLineup.tactic)
+    homeAttack *= (1 - (ballControlPenalty + homeTacticWeather.extraBallControlPenalty) / 200) * speedModifier
+    awayAttack *= (1 - (ballControlPenalty + awayTacticWeather.extraBallControlPenalty) / 200) * speedModifier
     weatherGoalMod = goalChanceModifier
   }
 
@@ -184,6 +236,10 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   let derbyFoulMult = 1.0
   let derbyChanceMult = 0.0
   let effectiveHomeAdvantage = homeAdvantage
+  // Fan mood affects home advantage (only when managed club plays at home)
+  if (fanMood !== undefined && managedIsHome) {
+    effectiveHomeAdvantage *= 1 + ((fanMood - 50) / 100) * 0.06
+  }
   if (rivalry) {
     // Compress strength gap (underdogs perform better in derby)
     const avgAttack = (homeAttack + awayAttack) / 2
@@ -293,7 +349,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
 
     let wAttack = 40
     let wTransition = 15
-    let wCorner = 15
+    let wCorner = 20
     let wHalfchance = 10
     let wFoul = 12
     let wLostball = 8
@@ -519,7 +575,11 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     } else if (seqType === 'corner') {
       if (isHomeAttacking) { cornersHome++ } else { cornersAway++ }
 
-      const cornerChance = attCorner * 0.7 + randRange(rand, 0, 0.3)
+      const cornerSpecialist = attackingStarters.find(p => p.archetype === PlayerArchetype.CornerSpecialist)
+      const specialistBonus = cornerSpecialist
+        ? (cornerSpecialist.attributes.cornerSkill > 75 ? 0.25 : 0.15)
+        : 0
+      const cornerChance = attCorner * 0.7 + randRange(rand, 0, 0.3) + specialistBonus
       const defenseResist = defDefense * 0.5 + defGK * 0.3 + randRange(rand, 0, 0.2)
       const goalThreshold = clamp((cornerChance - defenseResist) * 0.25 * weatherGoalMod + 0.08, 0.06, 0.18)
 
@@ -786,6 +846,8 @@ export interface StepByStepInput {
   awayClubName?: string
   isPlayoff?: boolean
   rivalry?: Rivalry
+  fanMood?: number
+  managedIsHome?: boolean
 }
 
 export function* simulateMatchStepByStep(input: StepByStepInput): Generator<MatchStep> {
@@ -802,6 +864,8 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     awayClubName,
     isPlayoff = false,
     rivalry,
+    fanMood,
+    managedIsHome,
   } = input
 
   const rand = mulberry32(seed ?? Date.now())
@@ -836,12 +900,14 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
   const awayGK = awayEval.goalkeeperScore / 100
   const awayDisciplineRisk = (awayEval.disciplineRisk * awayMods.disciplineModifier) / 100
 
-  // Apply weather modifiers
+  // Apply weather modifiers (with tactic interaction)
   let weatherGoalModSbs = 1.0
   if (weather && weather.condition !== undefined) {
     const { ballControlPenalty, speedModifier, goalChanceModifier } = computeWeatherEffects(weather)
-    homeAttackSbs *= (1 - ballControlPenalty / 200) * speedModifier
-    awayAttackSbs *= (1 - ballControlPenalty / 200) * speedModifier
+    const homeTacticWeatherSbs = computeWeatherTacticInteraction(weather, homeLineup.tactic)
+    const awayTacticWeatherSbs = computeWeatherTacticInteraction(weather, awayLineup.tactic)
+    homeAttackSbs *= (1 - (ballControlPenalty + homeTacticWeatherSbs.extraBallControlPenalty) / 200) * speedModifier
+    awayAttackSbs *= (1 - (ballControlPenalty + awayTacticWeatherSbs.extraBallControlPenalty) / 200) * speedModifier
     weatherGoalModSbs = goalChanceModifier
   }
 
@@ -855,6 +921,10 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
   let derbyFoulMult = 1.0
   let derbyChanceMult = 0.0
   let effectiveHomeAdvantageSbs = homeAdvantage
+  // Fan mood affects home advantage (only when managed club plays at home)
+  if (fanMood !== undefined && managedIsHome) {
+    effectiveHomeAdvantageSbs *= 1 + ((fanMood - 50) / 100) * 0.06
+  }
   if (rivalry) {
     const avgAttack = (homeAttackSbs + awayAttackSbs) / 2
     homeAttackSbs = avgAttack + (homeAttackSbs - avgAttack) * 0.7
@@ -975,7 +1045,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
 
     let wAttack = 40
     let wTransition = 15
-    let wCorner = 15
+    let wCorner = 20
     let wHalfchance = 10
     let wFoul = 12
     let wLostball = 8
@@ -1028,6 +1098,17 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
   for (let step = 0; step < 60; step++) {
     const minute = Math.round(step * 1.5)
     const stepEvents: MatchEvent[] = []
+
+    // B3: Ice degrades in second half (step > 30)
+    let stepGoalMod = weatherGoalMod
+    if (weather && step > 30) {
+      const base = 0.03
+      const snowExtra = weather.condition === WeatherCondition.HeavySnow ? 0.02 : 0
+      const thawExtra = weather.condition === WeatherCondition.Thaw ? 0.03 : 0
+      const iceDegradation = base + snowExtra + thawExtra
+      const degradationPenalty = iceDegradation * (step - 30) * 0.5
+      stepGoalMod = Math.max(0.60, weatherGoalMod - degradationPenalty / 100)
+    }
 
     // Update suspension timers
     for (let i = homeSuspensionTimers.length - 1; i >= 0; i--) {
@@ -1101,7 +1182,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
 
         const shotResult = rand()
         const defenderGkStrength = defGK
-        const goalThreshold = chanceQuality * 0.45 * (1 - defenderGkStrength * 0.35) * weatherGoalMod
+        const goalThreshold = chanceQuality * 0.45 * (1 - defenderGkStrength * 0.35) * stepGoalMod
 
         if (shotResult < goalThreshold) {
           const scorer = getGoalScorer(attackingStarters)
@@ -1172,7 +1253,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
         if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
 
         const shotResult = rand()
-        const goalThreshold = chanceQuality * 0.28 * (1 - defGK * 0.4) * 1.15 * weatherGoalMod
+        const goalThreshold = chanceQuality * 0.28 * (1 - defGK * 0.4) * 1.15 * stepGoalMod
 
         if (shotResult < goalThreshold) {
           const scorer = getGoalScorer(attackingStarters)
@@ -1228,9 +1309,13 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     } else if (seqType === 'corner') {
       if (isHomeAttacking) { cornersHome++ } else { cornersAway++ }
 
-      const cornerChance = attCorner * 0.7 + randRange(rand, 0, 0.3)
+      const cornerSpecialist = attackingStarters.find(p => p.archetype === PlayerArchetype.CornerSpecialist)
+      const specialistBonus = cornerSpecialist
+        ? (cornerSpecialist.attributes.cornerSkill > 75 ? 0.25 : 0.15)
+        : 0
+      const cornerChance = attCorner * 0.7 + randRange(rand, 0, 0.3) + specialistBonus
       const defenseResist = defDefense * 0.5 + defGK * 0.3 + randRange(rand, 0, 0.2)
-      const goalThreshold = clamp((cornerChance - defenseResist) * 0.25 * weatherGoalMod + 0.08, 0.06, 0.18)
+      const goalThreshold = clamp((cornerChance - defenseResist) * 0.25 * stepGoalMod + 0.08, 0.06, 0.18)
 
       const r = rand()
       if (r < goalThreshold) {
@@ -1291,7 +1376,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     } else if (seqType === 'halfchance') {
       if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
       const chanceQuality = randRange(rand, 0.05, 0.25) * (isPlayoff ? 1.05 : 1.0)
-      const goalThreshold = chanceQuality * 0.30 * weatherGoalMod
+      const goalThreshold = chanceQuality * 0.30 * stepGoalMod
 
       if (rand() < goalThreshold) {
         const scorer = getGoalScorer(attackingStarters)
@@ -1403,6 +1488,8 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
         goalText = fillTemplate(pickCommentary(commentary.weather_goal_heavySnow, rand), templateVars)
       } else if (weather && weather.condition === WeatherCondition.Thaw && rand() < 0.20) {
         goalText = fillTemplate(pickCommentary(commentary.weather_goal_thaw, rand), templateVars)
+      } else if (rand() < 0.30) {
+        goalText = fillTemplate(pickCommentary(commentary.cornerVariant, rand), templateVars)
       } else {
         goalText = fillTemplate(pickCommentary(commentary.cornerGoal, rand), templateVars)
       }
@@ -1461,6 +1548,12 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
         } else {
           commentaryText = fillTemplate(pickCommentary(commentary.neutral, rand), templateVars)
         }
+      } else if (step === 31 && weather && !goalScored && !saveOccurred && !cornerOccurred && (weather.condition === WeatherCondition.HeavySnow || weather.condition === WeatherCondition.Thaw)) {
+        commentaryText = weather.condition === WeatherCondition.HeavySnow
+          ? pickCommentary(commentary.iceDeterioration_snow, rand)
+          : pickCommentary(commentary.iceDeterioration_thaw, rand)
+      } else if (step === 31 && !goalScored && !saveOccurred && !cornerOccurred) {
+        commentaryText = fillTemplate(pickCommentary(commentary.secondHalf, rand), templateVars)
       } else {
         commentaryText = fillTemplate(pickCommentary(commentary.neutral, rand), templateVars)
       }

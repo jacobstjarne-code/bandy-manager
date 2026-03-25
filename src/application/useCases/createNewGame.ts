@@ -120,6 +120,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     transferBids: [],
     handledContractPlayerIds: [],
     sponsors: [],
+    fanMood: 50,
     opponentAnalyses: {},
     activeTalentSearch: null,
     talentSearchResults: [],

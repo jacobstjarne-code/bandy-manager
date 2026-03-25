@@ -309,6 +309,32 @@ export const commentary = {
     "Slutsignal i {rivalry}! {score}. En match som kommer att diskuteras länge.",
     "{rivalry} är över för den här gången. {score}. Återstår att se vem som skrattar sist.",
   ],
+
+  cornerVariant: [
+    "HÖRNAVARIANTEN SITTER! Kort uppspel, vägg, skott — inne!",
+    "Ny lösning på hörnan — och den fungerar! {player} styr in!",
+    "De övade på den hela veckan! Kort hörna, fint uppspel, MÅL!",
+    "Direkt variant på hörnan! {player} var ensam framför mål! {score}!",
+  ],
+
+  secondHalf: [
+    "Andra halvlek börjar. Isen bär spår av 45 intensiva minuter.",
+    "Tillbaka efter paus. Isen har förändrats — tyngre att spela nu.",
+    "Spelarna möter en annorlunda is den här halvleken.",
+    "Andra halvlek i gång. Det syns att laget har kämpat hårt.",
+  ],
+
+  iceDeterioration_snow: [
+    "Underhållspersonalen har inte hunnit med. Isen är full av snö.",
+    "Snön lägger sig allt tjockare. Andra halvlek är en annan match.",
+    "Isen är i dåligt skick nu. Passningarna dör i snön.",
+  ],
+
+  iceDeterioration_thaw: [
+    "Vattenpölarna växer. Den här matchen avgörs av vilja, inte teknik.",
+    "Isen är i katastrof nu — spelarna glider på vatten.",
+    "Blötare och blötare för varje minut. Konditionen avgör nu.",
+  ],
 }
 
 // Helper to fill in a template

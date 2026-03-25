@@ -6,6 +6,7 @@ export type GameEventType =
   | 'starPerformance'
   | 'transferWindowAlert'
   | 'sponsorOffer'
+  | 'pressConference'
 
 export interface EventChoice {
   id: string
@@ -22,6 +23,7 @@ export interface EventEffect {
     | 'rejectContract'
     | 'boostMorale'
     | 'acceptSponsor'
+    | 'pressResponse'
     | 'noOp'
     | 'openNegotiation'
   value?: number
@@ -29,6 +31,7 @@ export interface EventEffect {
   targetClubId?: string
   bidId?: string
   sponsorData?: string
+  mediaQuote?: string
 }
 
 export interface GameEvent {

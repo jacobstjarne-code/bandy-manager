@@ -5,7 +5,7 @@ import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
 import { FixtureStatus, MatchEventType, PlayerPosition, InboxItemType, TrainingType, TrainingIntensity, PlayoffStatus, ClubStyle } from '../../domain/enums'
 import type { FormationType } from '../../domain/entities/Formation'
-import { simulateMatch } from '../../domain/services/matchSimulator'
+import { simulateMatch, computeWeatherTacticInteraction } from '../../domain/services/matchSimulator'
 import { getTacticModifiers } from '../../domain/services/tacticModifiers'
 import { getRivalry } from '../../domain/data/rivalries'
 import { generateMatchWeather } from '../../domain/services/weatherService'
@@ -33,6 +33,7 @@ import { processScoutAssignment } from '../../domain/services/scoutingService'
 import { updateAllMarketValues } from '../../domain/services/marketValueService'
 import { generateIncomingBids, resolveOutgoingBid } from '../../domain/services/transferService'
 import { generatePostAdvanceEvents } from '../../domain/services/eventService'
+import { generateMediaHeadlines } from '../../domain/services/mediaService'
 import type { GameEvent, TransferBid } from '../../domain/entities/GameEvent'
 import type { ScoutReport, ScoutAssignment } from '../../domain/entities/Scouting'
 import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, generatePreSeasonMessage } from '../../domain/services/boardService'
@@ -347,6 +348,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     for (const id of awayLineup.benchPlayerIds) benchThisRound.add(id)
 
     const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
+    const isManagedHome = fixture.homeClubId === game.managedClubId
     const result = simulateMatch({
       fixture,
       homeLineup,
@@ -358,6 +360,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       weather: matchWeather.weather,
       isPlayoff: isPlayoffRound,
       rivalry: rivalry ?? undefined,
+      fanMood: game.fanMood ?? 50,
+      managedIsHome: isManagedHome,
     })
 
     simulatedFixtures.push(result.fixture)
@@ -382,6 +386,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const managedTacticMods = managedClubForTactic
     ? getTacticModifiers(managedClubForTactic.activeTactic)
     : null
+
+  const managedFixtureInRound = simulatedFixtures.find(
+    f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
+         f.status === FixtureStatus.Completed
+  )
+  const managedFixtureWeather = managedFixtureInRound
+    ? roundMatchWeathers.find(mw => mw.fixtureId === managedFixtureInRound.id)?.weather
+    : undefined
 
   // Player fitness / form / sharpness updates (start from training-updated players)
   const updatedPlayers = trainingPlayers.map(player => {
@@ -408,7 +420,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const tacticFatigue = managedTacticMods && player.clubId === game.managedClubId
         ? managedTacticMods.fatigueRate
         : 1.0
-      const fitnessLoss = Math.round(baseFitnessLoss * tacticFatigue)
+      // Tactic × weather extra fatigue for managed players
+      let weatherTacticFatigue = 1.0
+      if (player.clubId === game.managedClubId && managedFixtureWeather && managedClubForTactic) {
+        const twi = computeWeatherTacticInteraction(managedFixtureWeather, managedClubForTactic.activeTactic)
+        weatherTacticFatigue = 1.0 + twi.extraFatigue
+      }
+      const fitnessLoss = Math.round(baseFitnessLoss * tacticFatigue * weatherTacticFatigue)
       updated.fitness = Math.max(0, updated.fitness - fitnessLoss)
 
       // Form update based on match rating
@@ -469,9 +487,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     // base 0.06 → ~6% for average player (proneness 50, fitness 70)
     const proneFactor = player.injuryProneness / 100        // 0–1
     const fatigueFactor = (100 - player.fitness) / 100 + 0.3 // 0.3–1.3
-    const tacticInjuryMod = managedTacticMods && player.clubId === game.managedClubId
+    let tacticInjuryMod = managedTacticMods && player.clubId === game.managedClubId
       ? 1.0 + (managedTacticMods.fatigueRate - 1.0) * 0.5
       : 1.0
+    if (player.clubId === game.managedClubId && managedFixtureWeather && managedClubForTactic) {
+      const twi = computeWeatherTacticInteraction(managedFixtureWeather, managedClubForTactic.activeTactic)
+      tacticInjuryMod += twi.extraInjuryRisk
+    }
     const injuryChance = 0.06 * (proneFactor + 0.3) * fatigueFactor * tacticInjuryMod
 
     if (localRand() < injuryChance) {
@@ -687,6 +709,21 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
          f.status === FixtureStatus.Completed
   )
 
+  // Fan mood update
+  const currentFanMood = game.fanMood ?? 50
+  let newFanMood = currentFanMood
+  if (justCompletedManagedFixture) {
+    const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
+    const myScore = isHome ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
+    const theirScore = isHome ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
+    const won = (myScore ?? 0) > (theirScore ?? 0)
+    const lost = (myScore ?? 0) < (theirScore ?? 0)
+    const bigWin = won && (myScore ?? 0) >= (theirScore ?? 0) + 3
+    const bigLoss = lost && (theirScore ?? 0) >= (myScore ?? 0) + 3
+    const fanDelta = bigWin ? 8 : won ? 4 : bigLoss ? -8 : lost ? -4 : 1
+    newFanMood = Math.max(0, Math.min(100, currentFanMood + fanDelta))
+  }
+
   // ── Update playoff bracket if active ─────────────────────────────────
   let updatedBracket = game.playoffBracket
   let bracketNewFixtures: Fixture[] = []
@@ -891,7 +928,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const allBids: TransferBid[] = [...resolvedBids, ...newBids]
 
   // ── Post-advance events ──────────────────────────────────────────────────
-  const newEvents = generatePostAdvanceEvents(preEventGame, newBids, nextRound, localRand)
+  const newEvents = generatePostAdvanceEvents(preEventGame, newBids, nextRound, localRand, justCompletedManagedFixture ?? undefined)
+
+  // Media headlines
+  const mediaHeadlines = generateMediaHeadlines(preEventGame, simulatedFixtures, nextRound, localRand)
+  newInboxItems.push(...mediaHeadlines)
 
   // Trim accumulated data to prevent localStorage bloat
   const MAX_INBOX = 50
@@ -940,6 +981,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     sponsors: updatedSponsors,
     activeTalentSearch: updatedTalentSearch,
     talentSearchResults: updatedTalentResults,
+    fanMood: newFanMood,
   }
 
   // Pre-generate weather for next round so dashboard/matchScreen can show it

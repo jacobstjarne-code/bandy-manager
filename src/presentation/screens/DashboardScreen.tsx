@@ -731,6 +731,25 @@ export function DashboardScreen() {
                 </span>
               </span>
             </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 13, color: '#8A9BB0' }}>
+                Supportrar:{' '}
+                <span style={{
+                  fontWeight: 600,
+                  color: (game.fanMood ?? 50) > 80 ? '#f97316'
+                    : (game.fanMood ?? 50) > 60 ? '#22c55e'
+                    : (game.fanMood ?? 50) > 40 ? '#8A9BB0'
+                    : (game.fanMood ?? 50) > 20 ? '#f59e0b'
+                    : '#ef4444'
+                }}>
+                  {(game.fanMood ?? 50) > 80 ? '🔥 Euforisk'
+                    : (game.fanMood ?? 50) > 60 ? '😊 Positiv'
+                    : (game.fanMood ?? 50) > 40 ? '😐 Neutral'
+                    : (game.fanMood ?? 50) > 20 ? '😤 Missnöjd'
+                    : '😡 Protesterar'}
+                </span>
+              </span>
+            </div>
           </div>
         </div>
 

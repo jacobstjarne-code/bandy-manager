@@ -1,7 +1,10 @@
 import type { SaveGame, Sponsor } from '../entities/SaveGame'
 import type { GameEvent, EventChoice, TransferBid } from '../entities/GameEvent'
+import type { Fixture } from '../entities/Fixture'
+import { InboxItemType } from '../enums'
 import { executeTransfer } from './transferService'
 import { generateSponsorOffer } from './sponsorService'
+import { generatePressConference } from './pressConferenceService'
 
 function formatValue(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
@@ -121,9 +124,18 @@ export function generatePostAdvanceEvents(
   newBids: TransferBid[],
   roundPlayed: number,
   rand: () => number,
+  justCompletedFixture?: Fixture,
 ): GameEvent[] {
   const events: GameEvent[] = []
   const alreadyQueued = new Set((game.pendingEvents ?? []).map(e => e.id))
+
+  // 0. Press conference after managed match
+  if (justCompletedFixture) {
+    const pressEvent = generatePressConference(justCompletedFixture, game, rand)
+    if (pressEvent && !alreadyQueued.has(pressEvent.id)) {
+      events.push(pressEvent)
+    }
+  }
 
   // 1. Incoming transfer bids → events
   for (const bid of newBids) {
@@ -406,6 +418,33 @@ export function resolveEvent(
             }
           }
         } catch {}
+      }
+      break
+    }
+    case 'pressResponse': {
+      const moraleBoost = effect.value ?? 0
+      updated = {
+        ...updated,
+        players: updated.players.map(p =>
+          p.clubId === updated.managedClubId
+            ? { ...p, morale: Math.max(0, Math.min(100, p.morale + moraleBoost)) }
+            : p
+        ),
+      }
+      // Add media quote to inbox if present
+      if (effect.mediaQuote) {
+        const mediaInboxItem = {
+          id: `inbox_press_${eventId}_${Date.now()}`,
+          date: updated.currentDate,
+          type: InboxItemType.Media,
+          title: effect.mediaQuote,
+          body: '',
+          isRead: false,
+        }
+        updated = {
+          ...updated,
+          inbox: [...updated.inbox, mediaInboxItem],
+        }
       }
       break
     }

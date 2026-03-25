@@ -18,17 +18,20 @@ import { generateBasicAnalysis } from '../../domain/services/opponentAnalysisSer
 function getWeatherAdvice(weather: MatchWeather | undefined): { emoji: string; text: string } | null {
   if (!weather) return null
   const w = weather.weather
-  if (w.condition === WeatherCondition.HeavySnow || w.condition === WeatherCondition.LightSnow) {
-    return { emoji: '❄️', text: 'Snöfall — kort passningsspel rekommenderas' }
+  if (w.condition === WeatherCondition.HeavySnow) {
+    return { emoji: '❄️', text: 'Tungt snöfall — säker passning och lågt tempo rekommenderas. Direktspel straffas hårt.' }
+  }
+  if (w.condition === WeatherCondition.LightSnow) {
+    return { emoji: '❄️', text: 'Lätt snöfall — kort passningsspel rekommenderas' }
   }
   if (w.condition === WeatherCondition.Fog) {
-    return { emoji: '🌫️', text: 'Dålig sikt — direktspel riskabelt' }
+    return { emoji: '🌫️', text: 'Dålig sikt — spela centralt och säkert. Bredd och direktspel fungerar dåligt.' }
   }
-  if (w.condition === WeatherCondition.Thaw || w.temperature > 2) {
-    return { emoji: '💧', text: 'Blöt is — fysisk stil gynnas, teknik missgynnas' }
+  if (w.condition === WeatherCondition.Thaw) {
+    return { emoji: '💧', text: 'Blöt is — sänk tempot. Högt tempo ökar skaderisken markant.' }
   }
   if (w.temperature < -15) {
-    return { emoji: '🥶', text: 'Extrem kyla — skaderisk ökar' }
+    return { emoji: '🥶', text: 'Extrem kyla — högt tempo ökar skaderisken. Lågt press rekommenderas.' }
   }
   if (w.condition === WeatherCondition.Clear || w.condition === WeatherCondition.Overcast) {
     return { emoji: '✨', text: 'Perfekta förhållanden — alla stilar fungerar' }

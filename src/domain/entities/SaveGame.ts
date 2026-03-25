@@ -135,6 +135,7 @@ export interface SaveGame {
   handledContractPlayerIds: string[]
 
   sponsors: Sponsor[]
+  fanMood?: number  // 0-100, starts 50
 
   opponentAnalyses?: Record<string, OpponentAnalysis>  // key = opponentClubId
 
