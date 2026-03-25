@@ -37,6 +37,7 @@ import type { GameEvent, TransferBid } from '../../domain/entities/GameEvent'
 import type { ScoutReport, ScoutAssignment } from '../../domain/entities/Scouting'
 import { evaluateBoard, generateBoardMessage, generateSeasonVerdict, generatePreSeasonMessage } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
+import { executeTalentSearch } from '../../domain/services/talentScoutService'
 
 export interface AdvanceResult {
   game: SaveGame
@@ -650,6 +651,34 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // ── Process active talent search ──────────────────────────────────────
+  let updatedTalentSearch = game.activeTalentSearch ?? null
+  let updatedTalentResults = [...(game.talentSearchResults ?? [])]
+  if (updatedTalentSearch) {
+    updatedTalentSearch = { ...updatedTalentSearch, roundsRemaining: updatedTalentSearch.roundsRemaining - 1 }
+    if (updatedTalentSearch.roundsRemaining <= 0) {
+      const result = executeTalentSearch(
+        updatedTalentSearch,
+        finalPlayers,
+        game.clubs,
+        game.managedClubId,
+        localRand,
+        game.currentSeason,
+        nextRound,
+      )
+      updatedTalentResults = [...updatedTalentResults, result].slice(-3)
+      updatedTalentSearch = null
+      newInboxItems.push({
+        id: `inbox_talent_${result.id}`,
+        date: game.currentDate,
+        type: InboxItemType.ScoutReport,
+        title: 'Spaningsrapport klar',
+        body: `Din scout har hittat ${result.players.length} intressanta spelare. Se Transfermarknaden för detaljer.`,
+        isRead: false,
+      })
+    }
+  }
+
   // Advance date by 7 days per round
   const newDate = advanceDate(game.currentDate, 7)
 
@@ -909,6 +938,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     transferBids: trimmedBids,
     pendingEvents: newEvents,
     sponsors: updatedSponsors,
+    activeTalentSearch: updatedTalentSearch,
+    talentSearchResults: updatedTalentResults,
   }
 
   // Pre-generate weather for next round so dashboard/matchScreen can show it
@@ -1207,6 +1238,8 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     pendingEvents: [],
     handledContractPlayerIds: [],
     sponsors: game.sponsors ?? [],
+    activeTalentSearch: null,
+    talentSearchResults: game.talentSearchResults ?? [],
   }
 
   return { game: updatedGame, roundPlayed: null, seasonEnded: true }

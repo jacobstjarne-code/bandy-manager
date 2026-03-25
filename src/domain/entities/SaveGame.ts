@@ -9,6 +9,7 @@ import type { PlayoffBracket } from './Playoff'
 import type { SeasonSummary } from './SeasonSummary'
 import type { ScoutReport, ScoutAssignment } from './Scouting'
 import type { GameEvent, TransferBid } from './GameEvent'
+import type { OpponentAnalysis } from '../services/opponentAnalysisService'
 
 export interface StandingRow {
   clubId: string
@@ -68,6 +69,30 @@ export interface Sponsor {
   signedRound: number
 }
 
+export interface TalentSearchRequest {
+  id: string
+  position: string  // PlayerPosition or 'any'
+  maxAge: number
+  maxSalary: number
+  roundsRemaining: number
+  createdRound: number
+}
+
+export interface TalentSuggestion {
+  playerId: string
+  scoutNotes: string
+  estimatedCA: number
+  estimatedValue: number
+}
+
+export interface TalentSearchResult {
+  id: string
+  requestId: string
+  players: TalentSuggestion[]
+  season: number
+  round: number
+}
+
 export interface SaveGame {
   id: string
   managerName: string
@@ -110,6 +135,11 @@ export interface SaveGame {
   handledContractPlayerIds: string[]
 
   sponsors: Sponsor[]
+
+  opponentAnalyses?: Record<string, OpponentAnalysis>  // key = fixtureId
+
+  activeTalentSearch: TalentSearchRequest | null
+  talentSearchResults: TalentSearchResult[]
 
   version: string
   lastSavedAt: string   // ISO datetime

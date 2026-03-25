@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { get as idbGet, set as idbSet, del as idbDel } from 'idb-keyval'
-import type { SaveGame } from '../../domain/entities/SaveGame'
+import type { SaveGame, TalentSearchRequest } from '../../domain/entities/SaveGame'
 import type { Tactic } from '../../domain/entities/Club'
 import type { TrainingFocus } from '../../domain/entities/Training'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entities/Fixture'
@@ -14,6 +14,7 @@ import { advanceToNextEvent, type AdvanceResult } from '../../application/useCas
 import { setLineup } from '../../application/useCases/setLineup'
 import { calculateStandings } from '../../domain/services/standingsService'
 import { loadSaveGame, listSaveGames, type SaveGameSummary } from '../../infrastructure/persistence/saveGameStorage'
+import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
 
 interface GameState {
   game: SaveGame | null
@@ -38,6 +39,8 @@ interface GameState {
   listSaves: () => SaveGameSummary[]
   clearSeasonSummary: () => void
   clearBoardMeeting: () => void
+  requestDetailedAnalysis: (opponentClubId: string, fixtureId: string) => { success: boolean; error?: string }
+  startTalentSearch: (position: string, maxAge: number, maxSalary: number, currentRound: number) => { success: boolean; error?: string }
 }
 
 const indexedDBStorage = {
@@ -186,6 +189,41 @@ export const useGameStore = create<GameState>()(
         const { game } = get()
         if (!game) return
         set({ game: { ...game, showBoardMeeting: false } })
+      },
+
+      requestDetailedAnalysis: (opponentClubId, fixtureId) => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+        if (game.scoutBudget <= 0) return { success: false, error: 'Scoutbudgeten är slut' }
+        const opponent = game.clubs.find(c => c.id === opponentClubId)
+        if (!opponent) return { success: false, error: 'Klubb hittades inte' }
+        const opponentPlayers = game.players.filter(p => p.clubId === opponentClubId)
+        const analysis = generateDetailedAnalysis(opponent, opponentPlayers, game.standings, game.fixtures, fixtureId)
+        set({
+          game: {
+            ...game,
+            scoutBudget: game.scoutBudget - 1,
+            opponentAnalyses: { ...(game.opponentAnalyses ?? {}), [fixtureId]: analysis },
+          }
+        })
+        return { success: true }
+      },
+
+      startTalentSearch: (position, maxAge, maxSalary, currentRound) => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+        if (game.activeTalentSearch) return { success: false, error: 'En spaning pågår redan' }
+        if (game.scoutBudget < 2) return { success: false, error: 'Otillräcklig scoutbudget (kräver 2)' }
+        const search: TalentSearchRequest = {
+          id: `search_${game.currentSeason}_r${currentRound}`,
+          position,
+          maxAge,
+          maxSalary,
+          roundsRemaining: 2,
+          createdRound: currentRound,
+        }
+        set({ game: { ...game, activeTalentSearch: search, scoutBudget: game.scoutBudget - 2 } })
+        return { success: true }
       },
     }),
     {

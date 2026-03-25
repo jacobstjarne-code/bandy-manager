@@ -170,9 +170,14 @@ export function TransfersScreen() {
   const game = useGameStore(s => s.game)
   const startScout = useGameStore(s => s.startScout)
   const placeOutgoingBid = useGameStore(s => s.placeOutgoingBid)
+  const startTalentSearch = useGameStore(s => s.startTalentSearch)
   const [renewingPlayerId, setRenewingPlayerId] = useState<string | null>(null)
   const [scoutMessage, setScoutMessage] = useState<string | null>(null)
   const [biddingPlayerId, setBiddingPlayerId] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'scouting' | 'spaning' | 'contracts' | 'freeagents'>('scouting')
+  const [spaningPosition, setSpanningPosition] = useState<string>('any')
+  const [spaningMaxAge, setSpanningMaxAge] = useState<number>(30)
+  const [spaningMaxSalary, setSpanningMaxSalary] = useState<number>(16000)
 
   if (!game) return null
 
@@ -248,6 +253,8 @@ export function TransfersScreen() {
     }
   }
 
+  const currentRound = game.fixtures.filter(f => f.status === 'scheduled').sort((a, b) => a.roundNumber - b.roundNumber)[0]?.roundNumber ?? 1
+
   return (
     <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
@@ -275,6 +282,34 @@ export function TransfersScreen() {
         )
       })()}
 
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid var(--border)', paddingBottom: 8 }}>
+        {([
+          { key: 'scouting', label: 'Scouting' },
+          { key: 'spaning', label: '🔎 Spaning' },
+          { key: 'contracts', label: 'Kontrakt' },
+          { key: 'freeagents', label: 'Fria agenter' },
+        ] as const).map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            style={{
+              padding: '6px 10px',
+              borderRadius: 'var(--radius-sm)',
+              background: activeTab === tab.key ? 'var(--accent)' : 'var(--bg-elevated)',
+              border: '1px solid ' + (activeTab === tab.key ? 'var(--accent)' : 'var(--border)'),
+              color: activeTab === tab.key ? '#fff' : 'var(--text-secondary)',
+              fontSize: 12,
+              fontWeight: activeTab === tab.key ? 600 : 400,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {/* Transfer window status banner */}
       <div style={{
         background: windowInfo.status === 'open' ? 'rgba(34,197,94,0.08)' : windowInfo.status === 'winter' ? 'rgba(59,130,246,0.08)' : 'rgba(239,68,68,0.06)',
@@ -290,7 +325,7 @@ export function TransfersScreen() {
       </div>
 
       {/* Scouting section */}
-      <div style={{ marginBottom: 24 }}>
+      {activeTab === 'scouting' && <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
           <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', margin: 0 }}>
             Scouting — andra lag
@@ -373,17 +408,17 @@ export function TransfersScreen() {
                       opacity: canScout ? 1 : 0.5,
                     }}
                   >
-                    🔍 Scouta
+                    🔍 Utvärdera
                   </button>
                 )}
               </div>
             )
           })}
         </div>
-      </div>
+      </div>}
 
       {/* Scout reports section */}
-      {Object.keys(scoutReports).length > 0 && (() => {
+      {activeTab === 'scouting' && Object.keys(scoutReports).length > 0 && (() => {
         const reportEntries = Object.values(scoutReports)
         return (
           <div style={{ marginBottom: 24 }}>
@@ -455,8 +490,138 @@ export function TransfersScreen() {
         )
       })()}
 
+      {/* Spaning (Talent Search) section */}
+      {activeTab === 'spaning' && (
+        <div style={{ marginBottom: 24 }}>
+          {/* Active search status */}
+          {game.activeTalentSearch && (
+            <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
+              🔍 Scout ute och letar... {game.activeTalentSearch.roundsRemaining} omgång{game.activeTalentSearch.roundsRemaining !== 1 ? 'ar' : ''} kvar
+            </div>
+          )}
+
+          {/* Search form */}
+          {!game.activeTalentSearch && (
+            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '16px', marginBottom: 16 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
+                Ny talangspaning
+              </p>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Position</label>
+                <select
+                  value={spaningPosition}
+                  onChange={e => setSpanningPosition(e.target.value)}
+                  style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', fontSize: 14 }}
+                >
+                  <option value="any">Alla positioner</option>
+                  <option value="forward">Forward</option>
+                  <option value="midfielder">Midfielder</option>
+                  <option value="defender">Defender</option>
+                  <option value="goalkeeper">Goalkeeper</option>
+                </select>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Max ålder</label>
+                <select
+                  value={spaningMaxAge}
+                  onChange={e => setSpanningMaxAge(Number(e.target.value))}
+                  style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', fontSize: 14 }}
+                >
+                  <option value={21}>21 år</option>
+                  <option value={25}>25 år</option>
+                  <option value={30}>30 år</option>
+                  <option value={40}>Alla åldrar</option>
+                </select>
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Max lön (kr/mån)</label>
+                <select
+                  value={spaningMaxSalary}
+                  onChange={e => setSpanningMaxSalary(Number(e.target.value))}
+                  style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', fontSize: 14 }}
+                >
+                  <option value={8000}>8 000 kr</option>
+                  <option value={12000}>12 000 kr</option>
+                  <option value={16000}>16 000 kr</option>
+                  <option value={25000}>25 000 kr</option>
+                </select>
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>Kostar 2 scoutbudget · kvar: {scoutBudget}</p>
+              <button
+                onClick={() => {
+                  const result = startTalentSearch(spaningPosition, spaningMaxAge, spaningMaxSalary, currentRound)
+                  if (result.success) {
+                    setScoutMessage('Spaning igång! Rapport om 2 omgångar.')
+                    setTimeout(() => setScoutMessage(null), 4000)
+                  } else {
+                    setScoutMessage(result.error ?? 'Kunde inte starta spaning.')
+                    setTimeout(() => setScoutMessage(null), 3000)
+                  }
+                }}
+                disabled={scoutBudget < 2}
+                style={{ width: '100%', padding: '12px', background: scoutBudget >= 2 ? 'var(--accent)' : 'var(--bg-elevated)', border: 'none', borderRadius: 'var(--radius)', color: scoutBudget >= 2 ? '#fff' : 'var(--text-muted)', fontSize: 14, fontWeight: 600, cursor: scoutBudget >= 2 ? 'pointer' : 'not-allowed', opacity: scoutBudget >= 2 ? 1 : 0.5 }}
+              >
+                Starta spaning
+              </button>
+            </div>
+          )}
+
+          {/* Latest talent search results */}
+          {game.talentSearchResults && game.talentSearchResults.length > 0 && (() => {
+            const latestResult = game.talentSearchResults[game.talentSearchResults.length - 1]
+            return (
+              <div>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
+                  Senaste spaningsrapport
+                </p>
+                <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+                  {latestResult.players.map((suggestion, index) => {
+                    const player = game.players.find(p => p.id === suggestion.playerId)
+                    const club = player ? game.clubs.find(c => c.id === player.clubId) : null
+                    const report = player ? (game.scoutReports ?? {})[player.id] : null
+                    const isAlreadyScouted = !!report
+                    return (
+                      <div key={suggestion.playerId} style={{ padding: '12px 14px', borderBottom: index < latestResult.players.length - 1 ? '1px solid var(--border)' : 'none', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>
+                            {player ? `${player.firstName} ${player.lastName}` : suggestion.playerId}
+                          </p>
+                          <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2 }}>
+                            {player ? positionShort(player.position) + ' · ' : ''}{club?.name ?? '?'} · {player ? `${player.age} år` : ''} · CA ~{suggestion.estimatedCA}
+                          </p>
+                          <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>{suggestion.scoutNotes}</p>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
+                          {player && !isAlreadyScouted && (
+                            <button
+                              onClick={() => player && handleScout(player)}
+                              disabled={!!activeAssignment || scoutBudget <= 0}
+                              style={{ padding: '5px 10px', borderRadius: 'var(--radius-sm)', background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.4)', color: 'var(--accent)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                            >
+                              🔍 Utvärdera
+                            </button>
+                          )}
+                          {windowOpen && player && managedClub && (
+                            <button
+                              onClick={() => setBiddingPlayerId(suggestion.playerId)}
+                              style={{ padding: '5px 10px', borderRadius: 'var(--radius-sm)', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.35)', color: 'var(--success)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                            >
+                              Lägg bud
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })()}
+        </div>
+      )}
+
       {/* Expiring contracts section */}
-      <div style={{ marginBottom: 24 }}>
+      {activeTab === 'contracts' && <div style={{ marginBottom: 24 }}>
         <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
           Utgående kontrakt
         </p>
@@ -481,10 +646,10 @@ export function TransfersScreen() {
             ))}
           </div>
         )}
-      </div>
+      </div>}
 
       {/* Free agents section */}
-      <div>
+      {activeTab === 'freeagents' && <div>
         <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
           Fria agenter
         </p>
@@ -515,7 +680,7 @@ export function TransfersScreen() {
             ))}
           </div>
         )}
-      </div>
+      </div>}
 
       {renewingPlayer && (
         <RenewContractModal
