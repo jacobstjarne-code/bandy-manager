@@ -4,6 +4,7 @@ export interface ScoutReport {
   playerId: string
   clubId: string
   scoutedDate: string
+  scoutedSeason: number
   accuracy: number   // 0-100
   revealedAttributes: Partial<Record<keyof PlayerAttributes, number>>
   estimatedCA: number

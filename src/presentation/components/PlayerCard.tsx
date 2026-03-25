@@ -1,6 +1,7 @@
 import type { Player } from '../../domain/entities/Player'
 import type { ScoutReport } from '../../domain/entities/Scouting'
 import { PlayerArchetype, PlayerPosition } from '../../domain/enums'
+import { getScoutReportAge } from '../../domain/services/scoutingService'
 import { ClubBadge } from './ClubBadge'
 
 export interface PlayerCardProps {
@@ -8,6 +9,7 @@ export interface PlayerCardProps {
   clubName: string
   scoutReport?: ScoutReport   // if provided, show scouted attributes; if absent for non-managed, show '?'
   isOwned?: boolean           // true = managed club player (show real attributes)
+  currentSeason?: number      // needed to calculate report age
   onClick?: () => void
 }
 
@@ -156,11 +158,19 @@ function PlayerSilhouette({ jerseyNumber }: PlayerSilhouetteProps) {
   )
 }
 
-export function PlayerCard({ player, clubName, scoutReport, isOwned = true, onClick }: PlayerCardProps) {
+export function PlayerCard({ player, clubName, scoutReport, isOwned = true, currentSeason, onClick }: PlayerCardProps) {
+  const reportAge = scoutReport && currentSeason
+    ? getScoutReportAge(scoutReport, currentSeason, scoutReport.scoutedSeason)
+    : scoutReport ? 'fresh' : null
+  const isStale = reportAge === 'stale'
+
+  // Stale reports are treated as if no report exists for attribute display
+  const effectiveReport = isStale ? undefined : scoutReport
+
   const topStats = isOwned
     ? getTopStats(player)
-    : scoutReport
-      ? getTopStats({ ...player, attributes: { ...player.attributes, ...scoutReport.revealedAttributes } })
+    : effectiveReport
+      ? getTopStats({ ...player, attributes: { ...player.attributes, ...effectiveReport.revealedAttributes } })
       : null
 
   const archColor = archetypeColor(player.archetype)
@@ -280,44 +290,52 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, onCl
 
       {/* EGENSKAPER section */}
       <div style={{ padding: '10px 14px 8px' }}>
-        <p style={{
-          fontSize: 9,
-          fontWeight: 700,
-          letterSpacing: '2px',
-          textTransform: 'uppercase',
-          color: '#C9A84C',
-          marginBottom: 8,
-        }}>
-          EGENSKAPER
-        </p>
-        {topStats ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 8px' }}>
-            {topStats.map(stat => (
-              <div key={stat.label} style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '4px 8px',
-                background: 'rgba(255,255,255,0.04)',
-                borderRadius: 6,
-                border: '1px solid rgba(201,168,76,0.1)',
-              }}>
-                <span style={{ fontSize: 10, color: '#8A9BB0', letterSpacing: '0.3px' }}>{stat.label}</span>
-                <span className="tabular" style={{ fontSize: 12, fontWeight: 800, color: statValueColor(stat.value), marginLeft: 4 }}>
-                  {Math.round(stat.value)}{scoutReport && !isOwned && <span style={{ fontSize: 9, opacity: 0.6 }}> ~</span>}
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 8px' }}>
-            {['A', 'B', 'C', 'D'].map(k => (
-              <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: 6, border: '1px solid rgba(138,155,176,0.1)' }}>
-                <span style={{ fontSize: 10, color: '#4A6080', letterSpacing: '0.3px' }}>—</span>
-                <span style={{ fontSize: 12, fontWeight: 800, color: '#4A6080' }}>?</span>
-              </div>
-            ))}
-          </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
+          <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#C9A84C' }}>
+            EGENSKAPER
+          </p>
+          {reportAge === 'aging' && (
+            <span style={{ fontSize: 9, color: '#f59e0b', letterSpacing: '0.3px' }}>1 säsong sedan</span>
+          )}
+          {isStale && (
+            <span style={{ fontSize: 9, color: '#ef4444', letterSpacing: '0.3px' }}>Föråldrad</span>
+          )}
+        </div>
+        <div style={{ opacity: isStale ? 0.45 : 1, transition: 'opacity 0.2s' }}>
+          {topStats ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 8px' }}>
+              {topStats.map(stat => (
+                <div key={stat.label} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '4px 8px',
+                  background: 'rgba(255,255,255,0.04)',
+                  borderRadius: 6,
+                  border: '1px solid rgba(201,168,76,0.1)',
+                }}>
+                  <span style={{ fontSize: 10, color: '#8A9BB0', letterSpacing: '0.3px' }}>{stat.label}</span>
+                  <span className="tabular" style={{ fontSize: 12, fontWeight: 800, color: statValueColor(stat.value), marginLeft: 4 }}>
+                    {Math.round(stat.value)}{effectiveReport && !isOwned && <span style={{ fontSize: 9, opacity: 0.6 }}> ~</span>}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 8px' }}>
+              {['A', 'B', 'C', 'D'].map(k => (
+                <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: 6, border: '1px solid rgba(138,155,176,0.1)' }}>
+                  <span style={{ fontSize: 10, color: '#4A6080', letterSpacing: '0.3px' }}>—</span>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: '#4A6080' }}>?</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        {isStale && (
+          <p style={{ fontSize: 10, color: '#ef4444', marginTop: 6, textAlign: 'center', opacity: 0.8 }}>
+            Föråldrad rapport — scouta igen?
+          </p>
         )}
       </div>
 
@@ -326,13 +344,13 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, onCl
 
       {/* Season summary — only for owned players */}
       <div style={{ padding: '8px 14px 12px' }}>
-        {!isOwned && scoutReport && (
+        {!isOwned && effectiveReport && (
           <p style={{ fontSize: 11, color: '#4A6080', fontStyle: 'italic' }}>
-            🔍 Scouted {scoutReport.scoutedDate} · uppskattad styrka {scoutReport.estimatedCA}
+            🔍 Scouted {effectiveReport.scoutedDate} · uppskattad styrka {effectiveReport.estimatedCA}
           </p>
         )}
-        {!isOwned && !scoutReport && (
-          <p style={{ fontSize: 11, color: '#4A6080' }}>Ej scostad — attribut okända</p>
+        {!isOwned && !effectiveReport && (
+          <p style={{ fontSize: 11, color: '#4A6080' }}>Ej scoutad — attribut okända</p>
         )}
         {isOwned && <>
         <p style={{

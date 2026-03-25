@@ -4,6 +4,7 @@ import { PlayerPosition } from '../../domain/enums'
 import type { Player } from '../../domain/entities/Player'
 import { saveSaveGame } from '../../infrastructure/persistence/saveGameStorage'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
+import { getScoutReportAge } from '../../domain/services/scoutingService'
 
 function formatCurrency(n: number): string {
   return n.toLocaleString('sv-SE') + ' kr'
@@ -211,7 +212,9 @@ export function TransfersScreen() {
         <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
           {scoutablePlayers.slice(0, 30).map((player, index) => {
             const report = scoutReports[player.id]
-            const isScounted = !!report
+            const reportAge = report ? getScoutReportAge(report, game.currentSeason, report.scoutedSeason) : null
+            const isStale = reportAge === 'stale'
+            const isScounted = !!report && !isStale
             const club = game.clubs.find(c => c.id === player.clubId)
             const canScout = !activeAssignment && scoutBudget > 0 && !isScounted
             return (
@@ -230,16 +233,18 @@ export function TransfersScreen() {
                   <p style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {player.firstName} {player.lastName}
                     {isScounted && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--accent)' }}>🔍</span>}
+                    {isStale && <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--danger)', fontWeight: 400 }}>Föråldrad</span>}
+                    {reportAge === 'aging' && !isStale && <span style={{ marginLeft: 6, fontSize: 10, color: '#f59e0b', fontWeight: 400 }}>1 säsong sedan</span>}
                   </p>
                   <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
                     {positionShort(player.position)} · {club?.name ?? '?'} ·{' '}
                     {isScounted
-                      ? `Styrka ~${report.estimatedCA}`
+                      ? <span>Styrka ~{report!.estimatedCA}</span>
                       : <span style={{ color: 'var(--text-muted)' }}>Styrka ?</span>
                     }
                   </p>
                   {isScounted && (
-                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>{report.notes}</p>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>{report!.notes}</p>
                   )}
                 </div>
                 {!isScounted && (

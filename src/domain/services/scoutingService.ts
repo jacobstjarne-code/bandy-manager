@@ -49,6 +49,7 @@ export function processScoutAssignment(
   targetPlayer: Player,
   scoutAccuracy: number,
   seed: number,
+  currentSeason: number,
 ): ScoutReport {
   const rand = makeRand(seed)
   const errorMargin = Math.round((100 - scoutAccuracy) / 10)  // accuracy 70 → ±3, accuracy 30 → ±7
@@ -66,12 +67,20 @@ export function processScoutAssignment(
     playerId: targetPlayer.id,
     clubId: assignment.targetClubId,
     scoutedDate: assignment.startedDate,
+    scoutedSeason: currentSeason,
     accuracy: scoutAccuracy,
     revealedAttributes,
     estimatedCA,
     estimatedPA,
     notes: generateScoutNotes(targetPlayer, rand),
   }
+}
+
+export function getScoutReportAge(_report: ScoutReport, currentSeason: number, scoutedSeason: number): 'fresh' | 'aging' | 'stale' {
+  const age = currentSeason - scoutedSeason
+  if (age <= 0) return 'fresh'
+  if (age === 1) return 'aging'
+  return 'stale'
 }
 
 const ARCHETYPE_STRENGTHS: Record<PlayerArchetype, string> = {

@@ -471,6 +471,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           target,
           scoutAccuracy,
           scoutSeed,
+          game.currentSeason,
         )
         updatedScoutReports = { ...updatedScoutReports, [target.id]: report }
         const targetClub = game.clubs.find(c => c.id === updatedScoutAssignment!.targetClubId)

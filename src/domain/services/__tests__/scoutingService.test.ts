@@ -3,6 +3,7 @@ import {
   startScoutAssignment,
   processScoutAssignment,
   generateScoutNotes,
+  getScoutReportAge,
 } from '../scoutingService'
 import { PlayerArchetype, PlayerPosition } from '../../enums'
 import type { Player } from '../../entities/Player'
@@ -75,14 +76,14 @@ describe('processScoutAssignment', () => {
   }
 
   it('generates revealedAttributes for all 14 attributes', () => {
-    const report = processScoutAssignment(assignment, player, 70, 42)
+    const report = processScoutAssignment(assignment, player, 70, 42, 2025)
     expect(Object.keys(report.revealedAttributes)).toHaveLength(14)
   })
 
   it('clamps all revealedAttributes to 1–99', () => {
     // Run many seeds to verify clamping
     for (let seed = 0; seed < 50; seed++) {
-      const report = processScoutAssignment(assignment, player, 30, seed)
+      const report = processScoutAssignment(assignment, player, 30, seed, 2025)
       for (const val of Object.values(report.revealedAttributes)) {
         expect(val).toBeGreaterThanOrEqual(1)
         expect(val).toBeLessThanOrEqual(99)
@@ -92,12 +93,12 @@ describe('processScoutAssignment', () => {
 
   it('estimatedCA is within ±5 of real CA (with some tolerance for rounding)', () => {
     // Over many seeds the average should be close — but individual can drift ±5+rounding
-    const report = processScoutAssignment(assignment, player, 70, 123)
+    const report = processScoutAssignment(assignment, player, 70, 123, 2025)
     expect(Math.abs(report.estimatedCA - player.currentAbility)).toBeLessThanOrEqual(6)
   })
 
   it('estimatedPA is within ±10 of real PA', () => {
-    const report = processScoutAssignment(assignment, player, 70, 456)
+    const report = processScoutAssignment(assignment, player, 70, 456, 2025)
     expect(Math.abs(report.estimatedPA - player.potentialAbility)).toBeLessThanOrEqual(11)
   })
 
@@ -108,8 +109,8 @@ describe('processScoutAssignment', () => {
     let totalDevHigh = 0
     const N = 20
     for (let s = 0; s < N; s++) {
-      const low = processScoutAssignment(assignment, player, 30, s * 101)
-      const high = processScoutAssignment(assignment, player, 90, s * 101)
+      const low = processScoutAssignment(assignment, player, 30, s * 101, 2025)
+      const high = processScoutAssignment(assignment, player, 90, s * 101, 2025)
       const attrKey = 'shooting' as const
       totalDevLow += Math.abs((low.revealedAttributes[attrKey] ?? 0) - player.attributes[attrKey])
       totalDevHigh += Math.abs((high.revealedAttributes[attrKey] ?? 0) - player.attributes[attrKey])
@@ -118,12 +119,12 @@ describe('processScoutAssignment', () => {
   })
 
   it('report contains non-empty notes', () => {
-    const report = processScoutAssignment(assignment, player, 70, 1)
+    const report = processScoutAssignment(assignment, player, 70, 1, 2025)
     expect(report.notes.length).toBeGreaterThan(0)
   })
 
   it('playerId and clubId match assignment', () => {
-    const report = processScoutAssignment(assignment, player, 70, 1)
+    const report = processScoutAssignment(assignment, player, 70, 1, 2025)
     expect(report.playerId).toBe(player.id)
     expect(report.clubId).toBe(assignment.targetClubId)
   })
@@ -143,5 +144,29 @@ describe('generateScoutNotes', () => {
       const notes = generateScoutNotes(p)
       expect(notes.length).toBeGreaterThan(0)
     }
+  })
+})
+
+describe('getScoutReportAge', () => {
+  const dummyReport = {} as import('../../entities/Scouting').ScoutReport
+
+  it('returns fresh when same season', () => {
+    expect(getScoutReportAge(dummyReport, 2025, 2025)).toBe('fresh')
+  })
+
+  it('returns fresh when scoutedSeason is in the future (edge case)', () => {
+    expect(getScoutReportAge(dummyReport, 2025, 2026)).toBe('fresh')
+  })
+
+  it('returns aging after 1 season', () => {
+    expect(getScoutReportAge(dummyReport, 2026, 2025)).toBe('aging')
+  })
+
+  it('returns stale after 2 seasons', () => {
+    expect(getScoutReportAge(dummyReport, 2027, 2025)).toBe('stale')
+  })
+
+  it('returns stale after 3+ seasons', () => {
+    expect(getScoutReportAge(dummyReport, 2030, 2025)).toBe('stale')
   })
 })
