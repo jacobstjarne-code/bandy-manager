@@ -11,7 +11,7 @@ import { createOutgoingBid } from '../../domain/services/transferService'
 import { resolveEvent as resolveEventFn } from '../../domain/services/eventService'
 import { advanceToNextEvent, type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
-import { saveSaveGame, loadSaveGame, listSaveGames, type SaveGameSummary } from '../../infrastructure/persistence/saveGameStorage'
+import { loadSaveGame, listSaveGames, type SaveGameSummary } from '../../infrastructure/persistence/saveGameStorage'
 
 interface GameState {
   game: SaveGame | null
@@ -46,7 +46,6 @@ export const useGameStore = create<GameState>()(
 
       newGame: (managerName, clubId) => {
         const game = createNewGame({ managerName, clubId })
-        saveSaveGame(game) // non-throwing after fix in saveGameStorage
         set({ game, lastAdvanceResult: null })
       },
 
@@ -61,7 +60,6 @@ export const useGameStore = create<GameState>()(
         const { game } = get()
         if (!game) return null
         const result = advanceToNextEvent(game)
-        saveSaveGame(result.game)
         set({ game: result.game, lastAdvanceResult: result })
         return result
       },
@@ -71,7 +69,6 @@ export const useGameStore = create<GameState>()(
         if (!game) return { success: false, error: 'Inget spel laddat' }
         const result = setLineup({ game, clubId: game.managedClubId, startingPlayerIds, benchPlayerIds, captainPlayerId })
         if (result.success) {
-          saveSaveGame(result.game)
           set({ game: result.game })
           return { success: true }
         }
@@ -87,7 +84,6 @@ export const useGameStore = create<GameState>()(
             : f
         )
         const updatedGame = { ...game, fixtures: updatedFixtures }
-        saveSaveGame(updatedGame)
         set({ game: updatedGame })
       },
 
@@ -97,47 +93,31 @@ export const useGameStore = create<GameState>()(
         const updatedClubs = game.clubs.map(c =>
           c.id === game.managedClubId ? { ...c, activeTactic: tactic } : c
         )
-        const updatedGame = { ...game, clubs: updatedClubs }
-        saveSaveGame(updatedGame)
-        set({ game: updatedGame })
+        set({ game: { ...game, clubs: updatedClubs } })
       },
 
       setTraining: (focus) => {
         const { game } = get()
         if (!game) return
-        const updatedGame = { ...game, managedClubTraining: focus }
-        saveSaveGame(updatedGame)
-        set({ game: updatedGame })
+        set({ game: { ...game, managedClubTraining: focus } })
       },
 
       markTutorialSeen: () => {
         const { game } = get()
         if (!game) return
-        const updatedGame = { ...game, tutorialSeen: true }
-        saveSaveGame(updatedGame)
-        set({ game: updatedGame })
+        set({ game: { ...game, tutorialSeen: true } })
       },
 
       markInboxRead: (itemId) => {
         const { game } = get()
         if (!game) return
-        const updatedGame = {
-          ...game,
-          inbox: game.inbox.map(i => i.id === itemId ? { ...i, isRead: true } : i),
-        }
-        saveSaveGame(updatedGame)
-        set({ game: updatedGame })
+        set({ game: { ...game, inbox: game.inbox.map(i => i.id === itemId ? { ...i, isRead: true } : i) } })
       },
 
       markAllInboxRead: () => {
         const { game } = get()
         if (!game) return
-        const updatedGame = {
-          ...game,
-          inbox: game.inbox.map(i => ({ ...i, isRead: true })),
-        }
-        saveSaveGame(updatedGame)
-        set({ game: updatedGame })
+        set({ game: { ...game, inbox: game.inbox.map(i => ({ ...i, isRead: true })) } })
       },
 
       startScout: (playerId, clubId, sameRegion) => {
@@ -146,13 +126,7 @@ export const useGameStore = create<GameState>()(
         if (game.activeScoutAssignment) return { success: false, error: 'Scout är redan utsänd' }
         if (game.scoutBudget <= 0) return { success: false, error: 'Scoutbudgeten är slut för säsongen' }
         const assignment = startScoutAssignment(playerId, clubId, game.currentDate, sameRegion)
-        const updatedGame = {
-          ...game,
-          activeScoutAssignment: assignment,
-          scoutBudget: game.scoutBudget - 1,
-        }
-        saveSaveGame(updatedGame)
-        set({ game: updatedGame })
+        set({ game: { ...game, activeScoutAssignment: assignment, scoutBudget: game.scoutBudget - 1 } })
         return { success: true }
       },
 
@@ -165,21 +139,14 @@ export const useGameStore = create<GameState>()(
           .sort((a, b) => a.roundNumber - b.roundNumber)[0]?.roundNumber ?? 0
         const result = createOutgoingBid(game, playerId, offerAmount, offeredSalary, contractYears, currentRound)
         if (!result.success || !result.bid) return { success: false, error: result.error }
-        const updatedGame = {
-          ...game,
-          transferBids: [...(game.transferBids ?? []), result.bid],
-        }
-        saveSaveGame(updatedGame)
-        set({ game: updatedGame })
+        set({ game: { ...game, transferBids: [...(game.transferBids ?? []), result.bid] } })
         return { success: true }
       },
 
       resolveEvent: (eventId, choiceId) => {
         const { game } = get()
         if (!game) return
-        const updatedGame = resolveEventFn(game, eventId, choiceId)
-        saveSaveGame(updatedGame)
-        set({ game: updatedGame })
+        set({ game: resolveEventFn(game, eventId, choiceId) })
       },
 
       clearGame: () => set({ game: null, lastAdvanceResult: null }),
@@ -189,9 +156,7 @@ export const useGameStore = create<GameState>()(
       clearSeasonSummary: () => {
         const { game } = get()
         if (!game) return
-        const updatedGame = { ...game, showSeasonSummary: false }
-        saveSaveGame(updatedGame)
-        set({ game: updatedGame })
+        set({ game: { ...game, showSeasonSummary: false } })
       },
     }),
     {

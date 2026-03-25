@@ -724,22 +724,41 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // ── Post-advance events ──────────────────────────────────────────────────
   const newEvents = generatePostAdvanceEvents(preEventGame, newBids, nextRound, localRand)
 
+  // Trim accumulated data to prevent localStorage bloat
+  const MAX_INBOX = 50
+  const trimmedInbox = [...game.inbox, ...newInboxItems]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, MAX_INBOX)
+
+  const MAX_TRAINING_HISTORY = 22
+  const trimmedTrainingHistory = updatedTrainingHistory.slice(-MAX_TRAINING_HISTORY)
+
+  const activeFixtureIds = new Set(finalAllFixtures
+    .filter(f => f.status === FixtureStatus.Scheduled)
+    .map(f => f.id))
+  const trimmedWeathers = [...(game.matchWeathers ?? []), ...roundMatchWeathers]
+    .filter(mw => activeFixtureIds.has(mw.fixtureId))
+
+  const trimmedBids = allBids.filter(b =>
+    b.status === 'pending' || (nextRound - b.createdRound) < 5
+  )
+
   const updatedGame: SaveGame = {
     ...game,
     fixtures: finalAllFixtures,
     players: marketUpdatedPlayers,
     standings,
-    inbox: [...game.inbox, ...newInboxItems],
+    inbox: trimmedInbox,
     currentDate: newDate,
     managedClubPendingLineup: undefined,
     lastCompletedFixtureId: justCompletedManagedFixture?.id ?? game.lastCompletedFixtureId,
-    matchWeathers: [...(game.matchWeathers ?? []), ...roundMatchWeathers],
-    trainingHistory: updatedTrainingHistory,
+    matchWeathers: trimmedWeathers,
+    trainingHistory: trimmedTrainingHistory,
     playoffBracket: updatedBracket,
     scoutReports: updatedScoutReports,
     activeScoutAssignment: updatedScoutAssignment,
     scoutBudget: game.scoutBudget ?? 10,
-    transferBids: allBids,
+    transferBids: trimmedBids,
     pendingEvents: newEvents,
   }
 
@@ -956,7 +975,7 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     fixtures: newFixtures,
     league: newLeague,
     standings: calculateStandings(updatedClubs.map(c => c.id), []),
-    inbox: [...game.inbox, ...newInboxItems],
+    inbox: [...game.inbox, ...newInboxItems].slice(-20),
     youthIntakeHistory: youthRecords,
     managedClubPendingLineup: undefined,
     matchWeathers: [],
