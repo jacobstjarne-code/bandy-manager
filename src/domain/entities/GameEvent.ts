@@ -5,6 +5,7 @@ export type GameEventType =
   | 'playerUnhappy'
   | 'starPerformance'
   | 'transferWindowAlert'
+  | 'sponsorOffer'
 
 export interface EventChoice {
   id: string
@@ -37,6 +38,7 @@ export interface GameEvent {
   relatedPlayerId?: string
   relatedClubId?: string
   relatedBidId?: string
+  sponsorData?: string
   resolved: boolean
 }
 

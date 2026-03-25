@@ -360,6 +360,66 @@ export function ClubScreen() {
         onChangeFocus={setTraining}
       />
 
+      {/* Sponsorer */}
+      {(() => {
+        const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
+        const maxSponsors = Math.min(6, 2 + Math.floor(club.reputation / 20))
+        const totalWeekly = activeSponsors.reduce((sum, s) => sum + s.weeklyIncome, 0)
+        const slots = Array.from({ length: maxSponsors })
+        return (
+          <SectionCard title="Sponsorer">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                {activeSponsors.length} av {maxSponsors} sponsorplatser
+              </span>
+              {totalWeekly > 0 && (
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>
+                  +{formatCurrency(totalWeekly)}/vecka
+                </span>
+              )}
+            </div>
+            {slots.map((_, i) => {
+              const sponsor = activeSponsors[i]
+              if (sponsor) {
+                return (
+                  <div key={sponsor.id} style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '8px 0',
+                    borderBottom: i < maxSponsors - 1 ? '1px solid var(--border)' : 'none',
+                  }}>
+                    <div>
+                      <span style={{ fontSize: 13, fontWeight: 600 }}>{sponsor.name}</span>
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{sponsor.category}</span>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>
+                        +{formatCurrency(sponsor.weeklyIncome)}/v
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                        {sponsor.contractRounds} omg kvar
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+              return (
+                <div key={`empty-${i}`} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '8px 0',
+                  borderBottom: i < maxSponsors - 1 ? '1px solid var(--border)' : 'none',
+                }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>Ledig plats</span>
+                </div>
+              )
+            })}
+          </SectionCard>
+        )
+      })()}
+
       {/* Ekonomi */}
       <SectionCard title="Ekonomi">
         <InfoRow label="Saldo" value={formatCurrency(club.finances)} />

@@ -821,14 +821,18 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       f => f.homeClubId === c.id && f.status === FixtureStatus.Completed
     )
     const matchRevenue = homeMatch
-      ? Math.round(c.reputation * 200 + localRand() * 5000)
+      ? Math.round(c.reputation * 400 + localRand() * 10000)
       : 0
 
-    const weeklySponsorship = Math.round(c.reputation * 50)
+    const weeklySponsorship = Math.round(c.reputation * 150)
+
+    const sponsorIncome = c.id === game.managedClubId
+      ? (game.sponsors ?? []).filter(s => s.contractRounds > 0).reduce((sum, s) => sum + s.weeklyIncome, 0)
+      : 0
 
     return {
       ...c,
-      finances: c.finances + matchRevenue + weeklySponsorship - weeklyWages,
+      finances: c.finances + matchRevenue + weeklySponsorship + sponsorIncome - weeklyWages,
     }
   })
 
@@ -882,6 +886,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const managedFixtureId = justCompletedManagedFixture?.id
   const strippedFixtures = finalAllFixtures.map(f => stripCompletedFixture(f, managedFixtureId))
 
+  const updatedSponsors = (game.sponsors ?? [])
+    .map(s => ({ ...s, contractRounds: s.contractRounds - 1 }))
+    .filter(s => s.contractRounds > 0)
+
   let updatedGame: SaveGame = {
     ...game,
     clubs: financiallyUpdatedClubs,
@@ -900,6 +908,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     scoutBudget: game.scoutBudget ?? 10,
     transferBids: trimmedBids,
     pendingEvents: newEvents,
+    sponsors: updatedSponsors,
   }
 
   // Pre-generate weather for next round so dashboard/matchScreen can show it
@@ -1197,6 +1206,7 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     transferBids: [],
     pendingEvents: [],
     handledContractPlayerIds: [],
+    sponsors: game.sponsors ?? [],
   }
 
   return { game: updatedGame, roundPlayed: null, seasonEnded: true }

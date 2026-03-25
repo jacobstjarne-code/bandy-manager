@@ -117,6 +117,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     pendingEvents: [],
     transferBids: [],
     handledContractPlayerIds: [],
+    sponsors: [],
     version: '0.1.0',
     lastSavedAt: now,
   }

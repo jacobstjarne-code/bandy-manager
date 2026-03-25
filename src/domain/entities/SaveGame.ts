@@ -59,6 +59,15 @@ export interface YouthIntakeRecord {
   topProspectId?: string
 }
 
+export interface Sponsor {
+  id: string
+  name: string
+  category: string
+  weeklyIncome: number
+  contractRounds: number
+  signedRound: number
+}
+
 export interface SaveGame {
   id: string
   managerName: string
@@ -98,6 +107,8 @@ export interface SaveGame {
   pendingEvents: GameEvent[]
   transferBids: TransferBid[]
   handledContractPlayerIds: string[]
+
+  sponsors: Sponsor[]
 
   version: string
   lastSavedAt: string   // ISO datetime

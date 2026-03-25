@@ -1,6 +1,7 @@
-import type { SaveGame } from '../entities/SaveGame'
+import type { SaveGame, Sponsor } from '../entities/SaveGame'
 import type { GameEvent, EventChoice, TransferBid } from '../entities/GameEvent'
 import { executeTransfer } from './transferService'
+import { generateSponsorOffer } from './sponsorService'
 
 function formatValue(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
@@ -225,6 +226,57 @@ export function generatePostAdvanceEvents(
     }
   }
 
+  if (events.length >= 2) return events
+
+  // 5. Sponsor offer
+  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+  const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
+  const maxSponsors = Math.min(6, 2 + Math.floor((managedClub?.reputation ?? 50) / 20))
+
+  if (activeSponsors.length < maxSponsors) {
+    const offer = generateSponsorOffer(
+      managedClub?.reputation ?? 50,
+      activeSponsors.length,
+      maxSponsors,
+      roundPlayed,
+      rand
+    )
+    if (offer) {
+      const totalValue = offer.weeklyIncome * offer.contractRounds
+      const weeklyFmt = offer.weeklyIncome >= 1000
+        ? `${Math.round(offer.weeklyIncome / 1000)}k kr`
+        : `${offer.weeklyIncome} kr`
+      const totalFmt = totalValue >= 1000000
+        ? `${(totalValue / 1000000).toFixed(1)} mkr`
+        : totalValue >= 1000
+        ? `${Math.round(totalValue / 1000)}k kr`
+        : `${totalValue} kr`
+
+      events.push({
+        id: `event_sponsor_${offer.id}`,
+        type: 'sponsorOffer',
+        title: `Sponsorerbjudande — ${offer.name}`,
+        body: `${offer.name} vill sponsra ${managedClub?.name ?? 'klubben'} med ${weeklyFmt}/vecka i ${offer.contractRounds} omgångar (totalt ${totalFmt}).`,
+        relatedPlayerId: undefined,
+        relatedClubId: undefined,
+        choices: [
+          {
+            id: 'accept',
+            label: `Acceptera (${weeklyFmt}/vecka)`,
+            effect: { type: 'noOp' },
+          },
+          {
+            id: 'reject',
+            label: 'Avslå',
+            effect: { type: 'noOp' },
+          },
+        ],
+        resolved: false,
+        sponsorData: JSON.stringify(offer),
+      })
+    }
+  }
+
   return events
 }
 
@@ -239,6 +291,22 @@ export function resolveEvent(
 
   const choice = event.choices.find(c => c.id === choiceId)
   if (!choice) return game
+
+  // Handle sponsor events by type (not effect)
+  if (event.type === 'sponsorOffer') {
+    if (choiceId === 'accept' && event.sponsorData) {
+      const sponsor: Sponsor = JSON.parse(event.sponsorData)
+      return {
+        ...game,
+        pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
+        sponsors: [...(game.sponsors ?? []), sponsor],
+      }
+    }
+    return {
+      ...game,
+      pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
+    }
+  }
 
   const { effect } = choice
   let updated = game
