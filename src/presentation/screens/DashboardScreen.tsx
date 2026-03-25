@@ -249,23 +249,50 @@ export function DashboardScreen() {
     return allSeries.find(s => s.fixtures.includes(nextFixture.id)) ?? null
   })() : null
 
-  const hasManagedMatch = game!.fixtures.some(
-    f => (f.homeClubId === game!.managedClubId || f.awayClubId === game!.managedClubId) &&
-         f.status === 'scheduled'
-  )
-
   const handleAdvance = () => {
-    if (hasManagedMatch) {
+    const scheduledFixtures = game!.fixtures.filter(f => f.status === 'scheduled')
+    if (scheduledFixtures.length === 0) {
+      if (canAdvance) {
+        try {
+          advance()
+        } catch (err) {
+          console.error('advance() failed:', err)
+        }
+      }
+      return
+    }
+
+    const nextSimRound = Math.min(...scheduledFixtures.map(f => f.roundNumber))
+
+    const managedMatchInNextRound = game!.fixtures.find(
+      f => f.roundNumber === nextSimRound &&
+           (f.homeClubId === game!.managedClubId || f.awayClubId === game!.managedClubId) &&
+           f.status === 'scheduled'
+    )
+
+    if (managedMatchInNextRound) {
       navigate('/game/match')
       return
     }
 
-    if (!canAdvance) return
-    const result = advance()
-    if ((result?.pendingEvents?.length ?? 0) > 0) {
-      navigate('/game/events')
+    try {
+      const result = advance()
+      if ((result?.pendingEvents?.length ?? 0) > 0) {
+        navigate('/game/events')
+      }
+    } catch (err) {
+      console.error('advance() failed:', err)
     }
   }
+
+  const hasManagedMatch = !!game!.fixtures.find(f => {
+    const scheduledFixtures = game!.fixtures.filter(fx => fx.status === 'scheduled')
+    if (scheduledFixtures.length === 0) return false
+    const nextRound = Math.min(...scheduledFixtures.map(fx => fx.roundNumber))
+    return f.roundNumber === nextRound &&
+      (f.homeClubId === game!.managedClubId || f.awayClubId === game!.managedClubId) &&
+      f.status === 'scheduled'
+  })
 
   const cardStyle: React.CSSProperties = {
     background: '#122235',
