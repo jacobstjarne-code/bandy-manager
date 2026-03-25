@@ -144,7 +144,6 @@ export const commentary = {
     "Spelet flödar fram och tillbaka utan att något konkret uppstår.",
     "Snyggt kombinationsspel av {team} — men {opponent} är välorganiserat.",
     "Tränarna på båda bänkar ger instruktioner. Taktiken justeras.",
-    "Bollen är svår att kontrollera i den här kylan.",
     "{team} vinner bollen i mittfältet och drar igång ett anfall.",
     "Lång boll bakåt — {team} startar om.",
     "Nästan! En bra rörelse av {team}, men bollen fastnar.",
