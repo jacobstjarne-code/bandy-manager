@@ -31,7 +31,7 @@ interface GameState {
   markTutorialSeen: () => void
   markInboxRead: (itemId: string) => void
   markAllInboxRead: () => void
-  startScout: (playerId: string, clubId: string, sameRegion: boolean) => { success: boolean; error?: string }
+  startEvaluation: (playerId: string, clubId: string, sameRegion: boolean) => { success: boolean; error?: string }
   placeOutgoingBid: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => { success: boolean; error?: string }
   resolveEvent: (eventId: string, choiceId: string) => void
   saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection) => void
@@ -146,9 +146,10 @@ export const useGameStore = create<GameState>()(
         set({ game: { ...game, inbox: game.inbox.map(i => ({ ...i, isRead: true })) } })
       },
 
-      startScout: (playerId, clubId, sameRegion) => {
+      startEvaluation: (playerId, clubId, sameRegion) => {
         const { game } = get()
         if (!game) return { success: false, error: 'Inget spel laddat' }
+        if (game.activeTalentSearch) return { success: false, error: 'Spaning pågår — vänta tills den är klar' }
         if (game.activeScoutAssignment) return { success: false, error: 'Scout är redan utsänd' }
         if (game.scoutBudget <= 0) return { success: false, error: 'Scoutbudgeten är slut för säsongen' }
         const assignment = startScoutAssignment(playerId, clubId, game.currentDate, sameRegion)
@@ -203,7 +204,7 @@ export const useGameStore = create<GameState>()(
           game: {
             ...game,
             scoutBudget: game.scoutBudget - 1,
-            opponentAnalyses: { ...(game.opponentAnalyses ?? {}), [fixtureId]: analysis },
+            opponentAnalyses: { ...(game.opponentAnalyses ?? {}), [opponentClubId]: analysis },
           }
         })
         return { success: true }
@@ -212,6 +213,7 @@ export const useGameStore = create<GameState>()(
       startTalentSearch: (position, maxAge, maxSalary, currentRound) => {
         const { game } = get()
         if (!game) return { success: false, error: 'Inget spel laddat' }
+        if (game.activeScoutAssignment) return { success: false, error: 'Utvärdering pågår — vänta tills den är klar' }
         if (game.activeTalentSearch) return { success: false, error: 'En spaning pågår redan' }
         if (game.scoutBudget < 2) return { success: false, error: 'Otillräcklig scoutbudget (kräver 2)' }
         const search: TalentSearchRequest = {

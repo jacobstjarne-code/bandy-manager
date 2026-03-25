@@ -1238,6 +1238,7 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     pendingEvents: [],
     handledContractPlayerIds: [],
     sponsors: game.sponsors ?? [],
+    opponentAnalyses: {},
     activeTalentSearch: null,
     talentSearchResults: game.talentSearchResults ?? [],
   }

@@ -992,7 +992,7 @@ export function MatchScreen() {
           {/* Motståndaranalys */}
           {nextFixture && opponent && (() => {
             const fixtureId = nextFixture.id
-            const savedAnalysis = game.opponentAnalyses?.[fixtureId]
+            const savedAnalysis = game.opponentAnalyses?.[opponent.id]
             const opponentPlayers = game.players.filter(p => p.clubId === opponent.id)
             const basicAnalysis = generateBasicAnalysis(opponent, opponentPlayers, game.standings, game.fixtures, fixtureId)
             const displayAnalysis = savedAnalysis ?? basicAnalysis

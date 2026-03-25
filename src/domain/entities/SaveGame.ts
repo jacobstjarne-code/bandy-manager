@@ -136,7 +136,7 @@ export interface SaveGame {
 
   sponsors: Sponsor[]
 
-  opponentAnalyses?: Record<string, OpponentAnalysis>  // key = fixtureId
+  opponentAnalyses?: Record<string, OpponentAnalysis>  // key = opponentClubId
 
   activeTalentSearch: TalentSearchRequest | null
   talentSearchResults: TalentSearchResult[]

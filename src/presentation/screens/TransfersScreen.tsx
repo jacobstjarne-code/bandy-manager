@@ -168,7 +168,7 @@ function BidModal({ player, managedClub, onClose, onConfirm }: BidModalProps) {
 
 export function TransfersScreen() {
   const game = useGameStore(s => s.game)
-  const startScout = useGameStore(s => s.startScout)
+  const startEvaluation = useGameStore(s => s.startEvaluation)
   const placeOutgoingBid = useGameStore(s => s.placeOutgoingBid)
   const startTalentSearch = useGameStore(s => s.startTalentSearch)
   const [renewingPlayerId, setRenewingPlayerId] = useState<string | null>(null)
@@ -242,7 +242,7 @@ export function TransfersScreen() {
   function handleScout(player: Player) {
     const targetClub = game!.clubs.find(c => c.id === player.clubId)
     const sameRegion = !!managedClub && !!targetClub && managedClub.region === targetClub.region
-    const result = startScout(player.id, player.clubId, sameRegion)
+    const result = startEvaluation(player.id, player.clubId, sameRegion)
     if (result.success) {
       const rounds = sameRegion ? 1 : 2
       setScoutMessage(`Scout utsänd till ${targetClub?.name ?? 'okänd klubb'}. Rapport om ${rounds} omgång${rounds > 1 ? 'ar' : ''}.`)
@@ -281,6 +281,13 @@ export function TransfersScreen() {
           </div>
         )
       })()}
+
+      {/* Active talent search */}
+      {game.activeTalentSearch && !activeAssignment && (
+        <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
+          🔎 Scouten är ute på talangspaning. Klar om {game.activeTalentSearch.roundsRemaining} omgång{game.activeTalentSearch.roundsRemaining !== 1 ? 'ar' : ''}.
+        </div>
+      )}
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid var(--border)', paddingBottom: 8 }}>
@@ -463,6 +470,26 @@ export function TransfersScreen() {
                       {report.notes && (
                         <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>{report.notes}</p>
                       )}
+                      {report.attributeProfile && (
+                        <div style={{ marginTop: 8 }}>
+                          {([
+                            { label: 'Offensiv', value: report.attributeProfile.offensive },
+                            { label: 'Defensiv', value: report.attributeProfile.defensive },
+                            { label: 'Fysisk', value: report.attributeProfile.physical },
+                            { label: 'Mental', value: report.attributeProfile.mental },
+                          ] as const).map(({ label, value }) => (
+                            <div key={label} style={{ marginBottom: 6 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                                <span style={{ fontSize: 11, color: '#4A6080' }}>{label}</span>
+                                <span style={{ fontSize: 11, color: '#8A9BB0' }}>{value}</span>
+                              </div>
+                              <div style={{ background: '#1a2e47', borderRadius: 4, height: 4 }}>
+                                <div style={{ background: '#C9A84C', borderRadius: 4, height: 4, width: `${value}%` }} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     {windowOpen && reportPlayer && managedClub && (
                       <button
@@ -493,6 +520,13 @@ export function TransfersScreen() {
       {/* Spaning (Talent Search) section */}
       {activeTab === 'spaning' && (
         <div style={{ marginBottom: 24 }}>
+          {/* Scout busy with evaluation */}
+          {game.activeScoutAssignment && (
+            <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13, color: 'var(--danger)' }}>
+              Scouten är upptagen med en utvärdering. Klar om {game.activeScoutAssignment.roundsRemaining} omgång{game.activeScoutAssignment.roundsRemaining !== 1 ? 'ar' : ''}.
+            </div>
+          )}
+
           {/* Active search status */}
           {game.activeTalentSearch && (
             <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>

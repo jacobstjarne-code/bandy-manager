@@ -63,6 +63,12 @@ export function processScoutAssignment(
   const estimatedCA = clamp(targetPlayer.currentAbility + noise(rand, 5))
   const estimatedPA = clamp(targetPlayer.potentialAbility + noise(rand, 10))
 
+  const attrs = targetPlayer.attributes
+  const offensive = Math.round((attrs.shooting + attrs.passing + attrs.dribbling + attrs.vision) / 4)
+  const defensive = Math.round((attrs.defending + attrs.positioning) / 2)
+  const physical = Math.round((attrs.skating + attrs.acceleration + attrs.stamina) / 3)
+  const mental = Math.round((attrs.decisions + attrs.workRate) / 2)
+
   return {
     playerId: targetPlayer.id,
     clubId: assignment.targetClubId,
@@ -73,6 +79,7 @@ export function processScoutAssignment(
     estimatedCA,
     estimatedPA,
     notes: generateScoutNotes(targetPlayer, rand),
+    attributeProfile: { offensive, defensive, physical, mental },
   }
 }
 

@@ -10,6 +10,12 @@ export interface ScoutReport {
   estimatedCA: number
   estimatedPA: number
   notes: string
+  attributeProfile?: {
+    offensive: number
+    defensive: number
+    physical: number
+    mental: number
+  }
 }
 
 export interface ScoutAssignment {
