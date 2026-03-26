@@ -1,5 +1,5 @@
 import type { SaveGame, InboxItem } from '../../domain/entities/SaveGame'
-import type { Player } from '../../domain/entities/Player'
+import type { Player, CareerMilestone } from '../../domain/entities/Player'
 import type { Club } from '../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
@@ -549,7 +549,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     finalPlayers = devResult.updatedPlayers
   }
 
-  // Update seasonStats for all players in completed fixtures this round
+  // Update seasonStats and careerStats for all players in completed fixtures this round
+  // Also detect career milestones for managed club players
+  const newMilestoneInboxItems: InboxItem[] = []
+
   for (const fixture of simulatedFixtures) {
     if (fixture.status !== FixtureStatus.Completed) continue
     const allStarters = [
@@ -583,6 +586,90 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         ? (prevAvgRating * prevGames + rating) / (prevGames + 1)
         : prevAvgRating
 
+      // Update careerStats
+      const prevCareerGames = p.careerStats.totalGames
+      const prevCareerGoals = p.careerStats.totalGoals
+      const prevCareerAssists = p.careerStats.totalAssists
+      const newCareerGames = prevCareerGames + 1
+      const newCareerGoals = prevCareerGoals + goals
+      const newCareerAssists = prevCareerAssists + assists
+
+      // Detect milestones for managed club players
+      const isManaged = p.clubId === game.managedClubId
+      const newMilestones: CareerMilestone[] = [...(p.careerMilestones ?? [])]
+      const existingTypes = new Set(newMilestones.map(m => `${m.type}_${m.season}`))
+
+      if (isManaged) {
+        const playerName = `${p.firstName} ${p.lastName}`
+
+        // Hat trick milestone (3+ goals this fixture)
+        if (goals >= 3) {
+          const msKey = `hatTrick_${game.currentSeason}_r${nextRound}`
+          if (!newMilestones.some(m => m.type === 'hatTrick' && m.season === game.currentSeason && m.round === nextRound)) {
+            newMilestones.push({
+              type: 'hatTrick',
+              season: game.currentSeason,
+              round: nextRound,
+              description: `${playerName} satte ${goals} mål i en match`,
+            })
+            void msKey
+            newMilestoneInboxItems.push({
+              id: `inbox_milestone_hatTrick_${p.id}_r${nextRound}_${game.currentSeason}`,
+              date: game.currentDate,
+              type: InboxItemType.BoardFeedback,
+              title: `Karriärsmilstolpe: ${playerName}`,
+              body: `${playerName} satte hattrick och nådde en karriärsmilstolpe!`,
+              relatedPlayerId: p.id,
+              isRead: false,
+            } as InboxItem)
+          }
+        }
+
+        // 100 games milestone
+        if (prevCareerGames < 100 && newCareerGames >= 100) {
+          const msKey = `games100_${game.currentSeason}`
+          if (!existingTypes.has(msKey)) {
+            newMilestones.push({
+              type: 'games100',
+              season: game.currentSeason,
+              round: nextRound,
+              description: `${playerName} spelade sin 100:e karriärmatch`,
+            })
+            newMilestoneInboxItems.push({
+              id: `inbox_milestone_games100_${p.id}_${game.currentSeason}`,
+              date: game.currentDate,
+              type: InboxItemType.BoardFeedback,
+              title: `Karriärsmilstolpe: ${playerName}`,
+              body: `${playerName} spelade sin 100:e karriärmatch — en fantastisk bedrift!`,
+              relatedPlayerId: p.id,
+              isRead: false,
+            } as InboxItem)
+          }
+        }
+
+        // 50 goals milestone
+        if (prevCareerGoals < 50 && newCareerGoals >= 50) {
+          const msKey = `goals50_${game.currentSeason}`
+          if (!existingTypes.has(msKey)) {
+            newMilestones.push({
+              type: 'goals50',
+              season: game.currentSeason,
+              round: nextRound,
+              description: `${playerName} nådde 50 karriärmål`,
+            })
+            newMilestoneInboxItems.push({
+              id: `inbox_milestone_goals50_${p.id}_${game.currentSeason}`,
+              date: game.currentDate,
+              type: InboxItemType.BoardFeedback,
+              title: `Karriärsmilstolpe: ${playerName}`,
+              body: `${playerName} nådde 50 mål i karriären — ett historiskt ögonblick!`,
+              relatedPlayerId: p.id,
+              isRead: false,
+            } as InboxItem)
+          }
+        }
+      }
+
       finalPlayers[idx] = {
         ...p,
         seasonStats: {
@@ -596,9 +683,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           averageRating: Math.round(newAvgRating * 100) / 100,
           minutesPlayed: p.seasonStats.minutesPlayed + 90,
         },
+        careerStats: {
+          ...p.careerStats,
+          totalGames: newCareerGames,
+          totalGoals: newCareerGoals,
+          totalAssists: newCareerAssists,
+        },
+        careerMilestones: isManaged ? newMilestones : p.careerMilestones,
       }
     }
   }
+
+  // Push milestone inbox items
+  newInboxItems.push(...newMilestoneInboxItems)
 
   // Match results for managed club
   for (const fixture of simulatedFixtures) {
@@ -752,6 +849,74 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const bigLoss = lost && (theirScore ?? 0) >= (myScore ?? 0) + 3
     const fanDelta = bigWin ? 8 : won ? 4 : bigLoss ? -8 : lost ? -4 : 1
     newFanMood = Math.max(0, Math.min(100, currentFanMood + fanDelta))
+  }
+
+  // ── Update rivalry history ────────────────────────────────────────────
+  let updatedRivalryHistory = { ...(game.rivalryHistory ?? {}) }
+  if (justCompletedManagedFixture) {
+    const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
+    const myScore = isHome ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
+    const theirScore = isHome ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
+    const opponentId = isHome ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId
+
+    const won = myScore > theirScore
+    const lost = myScore < theirScore
+    const resultLabel: 'win' | 'loss' | 'draw' = won ? 'win' : lost ? 'loss' : 'draw'
+
+    const prev = updatedRivalryHistory[opponentId] ?? { wins: 0, losses: 0, draws: 0, currentStreak: 0 }
+    const newWins = prev.wins + (won ? 1 : 0)
+    const newLosses = prev.losses + (lost ? 1 : 0)
+    const newDraws = prev.draws + (!won && !lost ? 1 : 0)
+
+    let newStreak: number
+    if (won) {
+      newStreak = prev.currentStreak > 0 ? prev.currentStreak + 1 : 1
+    } else if (lost) {
+      newStreak = prev.currentStreak < 0 ? prev.currentStreak - 1 : -1
+    } else {
+      newStreak = 0
+    }
+
+    updatedRivalryHistory = {
+      ...updatedRivalryHistory,
+      [opponentId]: {
+        wins: newWins,
+        losses: newLosses,
+        draws: newDraws,
+        lastResult: resultLabel,
+        currentStreak: newStreak,
+      },
+    }
+
+    // Rivalry context inbox item: if long history (4+ meetings), generate flavor text
+    const totalMeetings = newWins + newLosses + newDraws
+    if (totalMeetings >= 4) {
+      const rival = game.clubs.find(c => c.id === opponentId)
+      const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+      const alreadySentId = `inbox_rivalry_context_${opponentId}_r${nextRound}_${game.currentSeason}`
+      if (!game.inbox.some(i => i.id === alreadySentId)) {
+        let rivalryBody = ''
+        if (newWins > newLosses + newLosses * 0.5 && won) {
+          rivalryBody = `${managedClub?.name ?? 'Ni'} dominerar mötet mot ${rival?.name ?? 'motståndaren'} med ${newWins}–${newLosses} i matcher. Dominansen håller i sig.`
+        } else if (newLosses > newWins && won) {
+          rivalryBody = `Revansch! ${managedClub?.name ?? 'Ni'} bröt den negativa sviten mot ${rival?.name ?? 'motståndaren'} som lett ${newLosses}–${newWins} i möten.`
+        } else if (Math.abs(newStreak) >= 2) {
+          const streakText = newStreak > 0 ? `${newStreak} raka segrar` : `${Math.abs(newStreak)} raka förluster`
+          rivalryBody = `${managedClub?.name ?? 'Ni'} har nu ${streakText} mot ${rival?.name ?? 'motståndaren'}.`
+        }
+        if (rivalryBody) {
+          newInboxItems.push({
+            id: alreadySentId,
+            date: game.currentDate,
+            type: InboxItemType.BoardFeedback,
+            title: `Rivalmöte: ${rival?.name ?? 'Motståndaren'}`,
+            body: rivalryBody,
+            relatedClubId: opponentId,
+            isRead: false,
+          } as InboxItem)
+        }
+      }
+    }
   }
 
   // ── Update playoff bracket if active ─────────────────────────────────
@@ -1135,6 +1300,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     activeTalentSearch: updatedTalentSearch,
     talentSearchResults: updatedTalentResults,
     fanMood: newFanMood,
+    rivalryHistory: updatedRivalryHistory,
   }
 
   // Pre-generate weather for next round so dashboard/matchScreen can show it
@@ -1418,6 +1584,40 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     },
   }))
 
+  // ── Board patience update ─────────────────────────────────────────────
+  const totalTeams = game.clubs.length
+  const finalPos = managedClubStanding?.position ?? totalTeams
+  const currentPatience = game.boardPatience ?? 70
+  const currentFailures = game.consecutiveFailures ?? 0
+
+  let newBoardPatience = currentPatience
+  let newConsecutiveFailures = currentFailures
+  let managerFired = false
+
+  const topThird = Math.ceil(totalTeams / 3)
+  const bottomThird = totalTeams - Math.floor(totalTeams / 3) + 1
+
+  if (finalPos <= 2) {
+    // Promotion zone
+    newBoardPatience = Math.min(100, currentPatience + 20)
+    newConsecutiveFailures = 0
+  } else if (finalPos <= topThird) {
+    // Top 3 (but not top 2)
+    newBoardPatience = Math.min(100, currentPatience + 15)
+    newConsecutiveFailures = 0
+  } else if (finalPos >= bottomThird) {
+    // Bottom 3
+    newBoardPatience = Math.max(0, currentPatience - 20)
+    newConsecutiveFailures = currentFailures + 1
+  } else {
+    // Mid-table (pos 4-7 approximately)
+    newConsecutiveFailures = 0
+  }
+
+  if (newBoardPatience <= 15 || newConsecutiveFailures >= 3) {
+    managerFired = true
+  }
+
   const updatedGame: SaveGame = {
     ...game,
     currentSeason: nextSeason,
@@ -1436,6 +1636,8 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     cupBracket: newCupBracket,
     seasonSummaries: [...(game.seasonSummaries ?? []), seasonSummary].slice(-5),
     showSeasonSummary: true,
+    showBoardMeeting: managerFired ? false : undefined,
+    managerFired: managerFired ? true : undefined,
     seasonStartFinances: updatedClubs.find(c => c.id === game.managedClubId)?.finances,
     scoutReports: game.scoutReports ?? {},
     activeScoutAssignment: null,
@@ -1447,6 +1649,9 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     opponentAnalyses: {},
     activeTalentSearch: null,
     talentSearchResults: game.talentSearchResults ?? [],
+    boardPatience: newBoardPatience,
+    consecutiveFailures: newConsecutiveFailures,
+    rivalryHistory: game.rivalryHistory ?? {},
   }
 
   return { game: updatedGame, roundPlayed: null, seasonEnded: true }

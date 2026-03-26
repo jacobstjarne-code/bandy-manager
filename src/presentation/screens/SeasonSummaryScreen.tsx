@@ -140,7 +140,11 @@ export function SeasonSummaryScreen() {
 
   const handleNextSeason = () => {
     clearSeasonSummary()
-    navigate('/game/dashboard', { replace: true })
+    if (game.managerFired) {
+      navigate('/game/game-over', { replace: true })
+    } else {
+      navigate('/game/dashboard', { replace: true })
+    }
   }
 
   return (

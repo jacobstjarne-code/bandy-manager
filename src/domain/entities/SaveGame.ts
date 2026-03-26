@@ -139,6 +139,18 @@ export interface SaveGame {
   sponsors: Sponsor[]
   fanMood?: number  // 0-100, starts 50
 
+  boardPatience?: number         // 0–100, starts 70
+  consecutiveFailures?: number   // seasons ended in bottom half without improvement
+  managerFired?: boolean
+
+  rivalryHistory?: Record<string, {
+    wins: number
+    losses: number
+    draws: number
+    lastResult?: 'win' | 'loss' | 'draw'
+    currentStreak: number  // positive = win streak, negative = loss streak
+  }>
+
   opponentAnalyses?: Record<string, OpponentAnalysis>  // key = opponentClubId
 
   activeTalentSearch: TalentSearchRequest | null

@@ -327,6 +327,13 @@ export function DashboardScreen() {
     }
   }, [game?.showBoardMeeting, navigate])
 
+  // Auto-navigate to game over screen when manager is fired
+  useEffect(() => {
+    if (game?.managerFired) {
+      navigate('/game/game-over', { replace: true })
+    }
+  }, [game?.managerFired, navigate])
+
   if (!game || !club) return null
 
   const nextFixture = game.fixtures

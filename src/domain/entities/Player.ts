@@ -37,6 +37,13 @@ export interface PlayerCareerStats {
   seasonsPlayed: number
 }
 
+export interface CareerMilestone {
+  type: 'debutGoal' | 'hatTrick' | 'games100' | 'goals50' | 'promoted' | 'cupWinner'
+  season: number
+  round: number
+  description: string
+}
+
 export interface PlayerDayJob {
   title: string        // e.g. "Lärare", "Snickare", "Systemutvecklare"
   flexibility: number  // 50-100 (how compatible with training/matches)
@@ -83,4 +90,5 @@ export interface Player {
 
   seasonStats: PlayerSeasonStats
   careerStats: PlayerCareerStats
+  careerMilestones?: CareerMilestone[]
 }
