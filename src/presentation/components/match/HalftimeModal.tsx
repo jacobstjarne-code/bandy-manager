@@ -19,8 +19,6 @@ interface HalftimeModalProps {
   isCupFinal: boolean
   players: Player[]
 
-  showTacticPanel: boolean
-  onShowTacticPanel: (show: boolean) => void
   htMentality: TacticMentality | null
   htTempo: TacticTempo | null
   htPress: TacticPress | null
@@ -50,8 +48,6 @@ export function HalftimeModal({
   isSmFinal,
   isCupFinal,
   players,
-  showTacticPanel,
-  onShowTacticPanel,
   htMentality,
   htTempo,
   htPress,
@@ -107,6 +103,9 @@ export function HalftimeModal({
     ? 'offensiv — ta initiativet' : scoreDiff === -1
     ? 'offensiv push — ni behöver mål' : 'all-in offensiv — inget att förlora'
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'oversikt' | 'taktik' | 'byten'>('oversikt')
+
   // Substitution state
   const [pendingOutId, setPendingOutId] = useState<string | null>(null)
 
@@ -128,11 +127,19 @@ export function HalftimeModal({
     return list
   })()
 
-  function getPlayerLabel(id: string): string {
+  function getPlayerLabel(id: string, showStats = false): string {
     const p = allPlayers.find(pl => pl.id === id)
     if (!p) return id
-    return `${p.firstName[0]}. ${p.lastName} (${positionShort(p.position)})`
+    const base = `${p.firstName[0]}. ${p.lastName} (${positionShort(p.position)})`
+    if (!showStats) return base
+    return `${base} · ${p.currentAbility} · ${Math.round(p.fitness ?? 80)}%`
   }
+
+  const sortedStarters = [...effectiveStarters].sort((a, b) => {
+    const pa = allPlayers.find(p => p.id === a)
+    const pb = allPlayers.find(p => p.id === b)
+    return (pb?.fitness ?? 80) - (pa?.fitness ?? 80)
+  })
 
   function handleStarterClick(id: string) {
     if (htSubs.length >= 3 && pendingOutId !== id) return
@@ -184,6 +191,12 @@ export function HalftimeModal({
     )
   }
 
+  const tabs: { id: 'oversikt' | 'taktik' | 'byten'; label: string }[] = [
+    { id: 'oversikt', label: 'ÖVERSIKT' },
+    { id: 'taktik', label: 'TAKTIK' },
+    { id: 'byten', label: `BYTEN${htSubs.length > 0 ? ` (${htSubs.length})` : ''}` },
+  ]
+
   return (
     <div style={{
       position: 'fixed', inset: 0,
@@ -194,17 +207,20 @@ export function HalftimeModal({
       <div style={{
         background: isBigMatch ? '#0D1B2A' : 'var(--bg-surface)',
         border: isBigMatch ? '1px solid rgba(201,168,76,0.4)' : '1px solid var(--border)',
-        borderRadius: 'var(--radius)', padding: '24px 20px',
+        borderRadius: 'var(--radius)', padding: '20px 20px 16px',
         textAlign: 'center', minWidth: 260, maxWidth: 330, width: '90%',
         marginBottom: 24,
       }}>
+        {/* Header */}
         <p style={{
           fontSize: isBigMatch ? 13 : 11, fontWeight: 700, textTransform: 'uppercase',
-          letterSpacing: '1px', color: isBigMatch ? '#C9A84C' : 'var(--text-muted)', marginBottom: 14,
+          letterSpacing: '1px', color: isBigMatch ? '#C9A84C' : 'var(--text-muted)', marginBottom: 10,
         }}>
           {isSmFinal ? '⏸ HALVTID · SM-FINALEN' : isCupFinal ? '⏸ HALVTID · CUPFINALEN' : '⏸ HALVTID'}
         </p>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+
+        {/* Score */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 14 }}>
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(homeClubName, 12)}</p>
             <span style={{ fontSize: 40, fontWeight: 800 }}>{htHomeGoals}</span>
@@ -215,43 +231,67 @@ export function HalftimeModal({
             <span style={{ fontSize: 40, fontWeight: 800 }}>{htAwayGoals}</span>
           </div>
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, textAlign: 'left', lineHeight: 1.8 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span>Skott:</span>
-            <span>{halftimeStep?.shotsHome ?? 0} — {halftimeStep?.shotsAway ?? 0}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span>Hörnor:</span>
-            <span>{halftimeStep?.cornersHome ?? 0} — {halftimeStep?.cornersAway ?? 0}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span>Utvisningar:</span>
-            <span>{htHomeSuspensions} — {htAwaySuspensions}</span>
-          </div>
+
+        {/* Tab bar */}
+        <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 3 }}>
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                flex: 1, padding: '7px 4px', fontSize: 10, fontWeight: 700,
+                background: activeTab === tab.id ? 'rgba(255,255,255,0.12)' : 'transparent',
+                border: 'none', borderRadius: 6,
+                color: activeTab === tab.id ? '#F0F4F8' : '#4A6080',
+                cursor: 'pointer', letterSpacing: '0.5px',
+              }}
+            >{tab.label}</button>
+          ))}
         </div>
-        {bestPlayerName && (
-          <div style={{ marginBottom: 14, padding: '8px 12px', background: 'rgba(201,168,76,0.06)', borderRadius: 8, border: '1px solid rgba(201,168,76,0.15)' }}>
-            <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, marginBottom: 2 }}>⭐ Matchens spelare hittills</p>
-            <p style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>{bestPlayerName}</p>
-            {bestPlayer?.position && <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{bestPlayer.position}</p>}
-          </div>
-        )}
-        <p style={{ fontSize: 12, color: '#8A9BB0', fontStyle: 'italic', marginBottom: 16, lineHeight: 1.5 }}>
-          💬 "{analysis}"
-        </p>
-        {isSmFinal && (
-          <p style={{ fontSize: 11, color: '#8A9BB0', fontStyle: 'italic', marginBottom: 12, lineHeight: 1.5 }}>
-            Laget samlas i omklädningsrummet. Det är 30 minuter kvar till SM-guld.
-          </p>
-        )}
-        {isCupFinal && !isSmFinal && (
-          <p style={{ fontSize: 11, color: '#8A9BB0', fontStyle: 'italic', marginBottom: 12, lineHeight: 1.5 }}>
-            Laget samlas i omklädningsrummet. Det är 30 minuter kvar till cuptiteln.
-          </p>
+
+        {/* ÖVERSIKT tab */}
+        {activeTab === 'oversikt' && (
+          <>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, textAlign: 'left', lineHeight: 1.8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Skott:</span>
+                <span>{halftimeStep?.shotsHome ?? 0} — {halftimeStep?.shotsAway ?? 0}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Hörnor:</span>
+                <span>{halftimeStep?.cornersHome ?? 0} — {halftimeStep?.cornersAway ?? 0}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Utvisningar:</span>
+                <span>{htHomeSuspensions} — {htAwaySuspensions}</span>
+              </div>
+            </div>
+            {bestPlayerName && (
+              <div style={{ marginBottom: 14, padding: '8px 12px', background: 'rgba(201,168,76,0.06)', borderRadius: 8, border: '1px solid rgba(201,168,76,0.15)' }}>
+                <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, marginBottom: 2 }}>⭐ Matchens spelare hittills</p>
+                <p style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>{bestPlayerName}</p>
+                {bestPlayer?.position && <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{bestPlayer.position}</p>}
+              </div>
+            )}
+            <p style={{ fontSize: 12, color: '#8A9BB0', fontStyle: 'italic', marginBottom: isSmFinal || isCupFinal ? 10 : 0, lineHeight: 1.5 }}>
+              💬 "{analysis}"
+            </p>
+            {isSmFinal && (
+              <p style={{ fontSize: 11, color: '#8A9BB0', fontStyle: 'italic', marginBottom: 0, lineHeight: 1.5 }}>
+                Laget samlas i omklädningsrummet. Det är 30 minuter kvar till SM-guld.
+              </p>
+            )}
+            {isCupFinal && !isSmFinal && (
+              <p style={{ fontSize: 11, color: '#8A9BB0', fontStyle: 'italic', marginBottom: 0, lineHeight: 1.5 }}>
+                Laget samlas i omklädningsrummet. Det är 30 minuter kvar till cuptiteln.
+              </p>
+            )}
+          </>
         )}
 
-        {showTacticPanel ? (
-          <div style={{ marginBottom: 16, padding: 12, background: 'rgba(255,255,255,0.04)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)' }}>
+        {/* TAKTIK tab */}
+        {activeTab === 'taktik' && (
+          <div style={{ textAlign: 'left' }}>
             <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>Halvtidsjustering</p>
             {btnRow('Mentalitet', [
               { val: TacticMentality.Defensive, label: 'Defensiv' },
@@ -268,126 +308,108 @@ export function HalftimeModal({
               { val: TacticPress.Medium, label: 'Medium' },
               { val: TacticPress.High, label: 'Hög' },
             ], press, v => onSetPress(v as TacticPress))}
-            <p style={{ fontSize: 10, color: '#6a7d8f', fontStyle: 'italic', marginBottom: 12 }}>
+            <p style={{ fontSize: 10, color: '#6a7d8f', fontStyle: 'italic', marginBottom: 0 }}>
               💡 Rekommendation: {tacticRec}
             </p>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button
-                onClick={onApplyTactic}
-                style={{ flex: 1, padding: '10px', background: 'var(--accent)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 13, fontWeight: 700 }}
-              >Spara ändringar</button>
-              <button
-                onClick={() => onShowTacticPanel(false)}
-                style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: '#8A9BB0', fontSize: 13, fontWeight: 600 }}
-              >Behåll nuvarande</button>
-            </div>
           </div>
-        ) : (
-          <button
-            onClick={() => onShowTacticPanel(true)}
-            style={{
-              width: '100%', padding: '10px',
-              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: 'var(--radius)', color: '#C9A84C', fontSize: 13, fontWeight: 600,
-              marginBottom: 10, cursor: 'pointer',
-            }}
-          >Ändra taktik ⚙️</button>
         )}
 
-        {/* Substitution section */}
-        <div style={{ marginBottom: 16, padding: 12, background: 'rgba(255,255,255,0.04)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', textAlign: 'left' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, margin: 0 }}>Spelarbyte</p>
-            <span style={{ fontSize: 10, color: '#6a7d8f' }}>max 3</span>
-          </div>
-
-          {/* Queued subs */}
-          {htSubs.map((sub, idx) => (
-            <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, padding: '5px 8px', background: 'rgba(255,255,255,0.05)', borderRadius: 6 }}>
-              <span style={{ fontSize: 11, color: 'var(--text-primary)' }}>
-                <span style={{ color: '#f87171' }}>{getPlayerLabel(sub.outId)}</span>
-                <span style={{ color: '#6a7d8f', margin: '0 4px' }}>→</span>
-                <span style={{ color: '#4ade80' }}>{getPlayerLabel(sub.inId)}</span>
-              </span>
-              <button
-                onClick={() => removeSub(idx)}
-                style={{ background: 'none', border: 'none', color: '#6a7d8f', fontSize: 14, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}
-              >✕</button>
+        {/* BYTEN tab */}
+        {activeTab === 'byten' && (
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, margin: 0 }}>Spelarbyte</p>
+              <span style={{ fontSize: 10, color: '#6a7d8f' }}>{htSubs.length}/3</span>
             </div>
-          ))}
 
-          {htSubs.length < 3 && (
-            <>
-              <p style={{ fontSize: 10, color: '#6a7d8f', marginBottom: 6 }}>
-                {pendingOutId
-                  ? 'Välj en avbytare att sätta in'
-                  : 'Välj en startande spelare att byta ut'}
-              </p>
-
-              {/* Starters */}
-              <p style={{ fontSize: 10, color: '#8A9BB0', marginBottom: 4, fontWeight: 600 }}>Startande</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
-                {effectiveStarters.map(id => {
-                  const isOut = pendingOutId === id
-                  return (
-                    <button
-                      key={id}
-                      onClick={() => handleStarterClick(id)}
-                      style={{
-                        padding: '6px 8px', textAlign: 'left', fontSize: 11,
-                        background: isOut ? 'rgba(248,113,113,0.15)' : 'rgba(255,255,255,0.04)',
-                        border: `1px solid ${isOut ? 'rgba(248,113,113,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                        borderRadius: 5, color: isOut ? '#f87171' : '#8A9BB0',
-                        cursor: 'pointer', fontWeight: isOut ? 700 : 400,
-                      }}
-                    >
-                      {getPlayerLabel(id)}
-                    </button>
-                  )
-                })}
+            {/* Queued subs */}
+            {htSubs.map((sub, idx) => (
+              <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, padding: '5px 8px', background: 'rgba(255,255,255,0.05)', borderRadius: 6 }}>
+                <span style={{ fontSize: 11, color: 'var(--text-primary)' }}>
+                  <span style={{ color: '#f87171' }}>{getPlayerLabel(sub.outId)}</span>
+                  <span style={{ color: '#6a7d8f', margin: '0 4px' }}>→</span>
+                  <span style={{ color: '#4ade80' }}>{getPlayerLabel(sub.inId)}</span>
+                </span>
+                <button
+                  onClick={() => removeSub(idx)}
+                  style={{ background: 'none', border: 'none', color: '#6a7d8f', fontSize: 14, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}
+                >✕</button>
               </div>
+            ))}
 
-              {/* Bench */}
-              <p style={{ fontSize: 10, color: '#8A9BB0', marginBottom: 4, fontWeight: 600 }}>Bänk</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {effectiveBench.map(id => {
-                  const canSelect = !!pendingOutId
-                  return (
-                    <button
-                      key={id}
-                      onClick={() => handleBenchClick(id)}
-                      disabled={!canSelect}
-                      style={{
-                        padding: '6px 8px', textAlign: 'left', fontSize: 11,
-                        background: canSelect ? 'rgba(74,222,128,0.10)' : 'rgba(255,255,255,0.02)',
-                        border: `1px solid ${canSelect ? 'rgba(74,222,128,0.35)' : 'rgba(255,255,255,0.05)'}`,
-                        borderRadius: 5,
-                        color: canSelect ? '#4ade80' : '#4a5568',
-                        cursor: canSelect ? 'pointer' : 'default',
-                      }}
-                    >
-                      {getPlayerLabel(id)}
-                    </button>
-                  )
-                })}
-              </div>
-            </>
-          )}
-        </div>
+            {htSubs.length < 3 && (
+              <>
+                <p style={{ fontSize: 10, color: '#6a7d8f', marginBottom: 8 }}>
+                  {pendingOutId
+                    ? 'Välj avbytare att sätta in'
+                    : 'Välj spelare att byta ut'}
+                </p>
 
-        {!showTacticPanel && (
-          <button
-            onClick={onContinue}
-            style={{
-              width: '100%', padding: '12px',
-              background: isBigMatch ? '#C9A84C' : 'var(--accent)',
-              border: 'none', borderRadius: 'var(--radius)',
-              color: isBigMatch ? '#0D1B2A' : '#fff', fontSize: 15, fontWeight: 700,
-            }}
-          >
-            {tacticChanged || htSubs.length > 0 ? '🔄 ' : ''}{isSmFinal || isCupFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}
-          </button>
+                {/* Starters sorted by fitness */}
+                <p style={{ fontSize: 10, color: '#8A9BB0', marginBottom: 4, fontWeight: 600 }}>Startande (sorterat på form)</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
+                  {sortedStarters.map(id => {
+                    const isOut = pendingOutId === id
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => handleStarterClick(id)}
+                        style={{
+                          padding: '6px 8px', textAlign: 'left', fontSize: 11,
+                          background: isOut ? 'rgba(248,113,113,0.15)' : 'rgba(255,255,255,0.04)',
+                          border: `1px solid ${isOut ? 'rgba(248,113,113,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                          borderRadius: 5, color: isOut ? '#f87171' : '#8A9BB0',
+                          cursor: 'pointer', fontWeight: isOut ? 700 : 400,
+                        }}
+                      >
+                        {getPlayerLabel(id, true)}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Bench */}
+                <p style={{ fontSize: 10, color: '#8A9BB0', marginBottom: 4, fontWeight: 600 }}>Bänk</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {effectiveBench.map(id => {
+                    const canSelect = !!pendingOutId
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => handleBenchClick(id)}
+                        disabled={!canSelect}
+                        style={{
+                          padding: '6px 8px', textAlign: 'left', fontSize: 11,
+                          background: canSelect ? 'rgba(74,222,128,0.10)' : 'rgba(255,255,255,0.02)',
+                          border: `1px solid ${canSelect ? 'rgba(74,222,128,0.35)' : 'rgba(255,255,255,0.05)'}`,
+                          borderRadius: 5,
+                          color: canSelect ? '#4ade80' : '#4a5568',
+                          cursor: canSelect ? 'pointer' : 'default',
+                        }}
+                      >
+                        {getPlayerLabel(id, true)}
+                      </button>
+                    )
+                  })}
+                </div>
+              </>
+            )}
+          </div>
         )}
+
+        {/* Continue button — always visible */}
+        <button
+          onClick={htSubs.length > 0 || htMentality || htTempo || htPress ? onApplyTactic : onContinue}
+          style={{
+            width: '100%', padding: '12px', marginTop: 16,
+            background: isBigMatch ? '#C9A84C' : 'var(--accent)',
+            border: 'none', borderRadius: 'var(--radius)',
+            color: isBigMatch ? '#0D1B2A' : '#fff', fontSize: 15, fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          {tacticChanged || htSubs.length > 0 ? '🔄 ' : ''}{isSmFinal || isCupFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}
+        </button>
       </div>
     </div>
   )

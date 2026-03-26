@@ -39,6 +39,7 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
     initialCornersAway,
     initialHomeSuspensions,
     initialAwaySuspensions,
+    substitutions,
   } = input
 
   // Use a different seed offset so second half differs from first
@@ -174,9 +175,27 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
   const awaySuspensionTimers: number[] = []
   const allEvents: MatchEvent[] = []
 
+  // Emit substitution commentary events at the start of the second half (step 31)
+  const subEvents: MatchEvent[] = []
+  if (substitutions && substitutions.length > 0) {
+    const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
+    for (const sub of substitutions) {
+      const inName = findName(sub.inId)
+      const outName = findName(sub.outId)
+      subEvents.push({
+        type: MatchEventType.Substitution,
+        clubId: managedClubId,
+        playerId: sub.inId,
+        secondaryPlayerId: sub.outId,
+        minute: 45,
+        description: `🔄 ${inName} IN för ${outName}`,
+      })
+    }
+  }
+
   for (let step = 31; step < 60; step++) {
     const minute = Math.round(step * 1.5)
-    const stepEvents: MatchEvent[] = []
+    const stepEvents: MatchEvent[] = step === 31 ? [...subEvents] : []
 
     let stepGoalMod = weatherGoalMod
     if (weather && step > 30) {

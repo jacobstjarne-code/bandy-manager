@@ -68,7 +68,6 @@ export function MatchLiveScreen() {
 
   const [muted, setMuted] = useState(isMuted)
 
-  const [showTacticPanel, setShowTacticPanel] = useState(false)
   const [htMentality, setHtMentality] = useState<TacticMentality | null>(null)
   const [htTempo, setHtTempo] = useState<TacticTempo | null>(null)
   const [htPress, setHtPress] = useState<TacticPress | null>(null)
@@ -322,13 +321,14 @@ export function MatchLiveScreen() {
       initialCornersAway: halftimeStep?.cornersAway ?? 0,
       initialHomeSuspensions: halftimeStep?.activeSuspensions.homeCount ?? 0,
       initialAwaySuspensions: halftimeStep?.activeSuspensions.awayCount ?? 0,
+      substitutions: htSubs.length > 0 ? htSubs.map(s => ({ outId: s.outId, inId: s.inId })) : undefined,
+      managedIsHome,
     })
     const firstHalf = steps.slice(0, 31)
     const newSecondHalf: MatchStep[] = []
     for (const s of gen) newSecondHalf.push(s)
     setSteps([...firstHalf, ...newSecondHalf])
     setTacticChanged(true)
-    setShowTacticPanel(false)
     setShowHalftime(false)
     setCurrentStep(31)
   }
@@ -633,8 +633,6 @@ export function MatchLiveScreen() {
           isSmFinal={isSmFinal}
           isCupFinal={!!isCupFinal}
           players={game?.players ?? []}
-          showTacticPanel={showTacticPanel}
-          onShowTacticPanel={setShowTacticPanel}
           htMentality={htMentality}
           htTempo={htTempo}
           htPress={htPress}

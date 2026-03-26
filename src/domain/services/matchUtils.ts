@@ -222,6 +222,7 @@ export interface SecondHalfInput extends StepByStepInput {
   initialHomeSuspensions: number
   initialAwaySuspensions: number
   // homeLineup.tactic / awayLineup.tactic already contain updated tactics
+  substitutions?: { outId: string; inId: string }[]
 }
 
 export function simulatePenalties(
