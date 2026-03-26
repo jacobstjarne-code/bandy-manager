@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
+import { playSound } from '../audio/soundEffects'
 
 function choiceStyle(choiceId: string): React.CSSProperties {
   if (choiceId === 'accept' || choiceId === 'extend3') {
@@ -52,6 +53,7 @@ export function EventScreen() {
     : null
 
   function handleChoice(choiceId: string) {
+    playSound('click')
     resolveEvent(event.id, choiceId)
     // After resolving, remaining events shift — go to index 0 always
     setIdx(0)

@@ -12,6 +12,7 @@ import { MatchEventType, WeatherCondition, IceQuality, TacticMentality, TacticTe
 import { getWeatherEmoji, getIceQualityLabel } from '../../domain/services/weatherService'
 import { getRivalry } from '../../domain/data/rivalries'
 import { eventIcon } from '../utils/formatters'
+import { playSound, isMuted, toggleMute } from '../audio/soundEffects'
 
 function GoldConfetti() {
   const particles = Array.from({ length: 30 }, (_, i) => ({
@@ -168,6 +169,9 @@ export function MatchLiveScreen() {
   const [showPenaltiesOverlay, setShowPenaltiesOverlay] = useState(false)
   const prevPhase = useRef<string | undefined>(undefined)
 
+  // Mute toggle (needs local state to trigger re-render)
+  const [muted, setMuted] = useState(isMuted)
+
   // Halftime tactic change
   const [showTacticPanel, setShowTacticPanel] = useState(false)
   const [htMentality, setHtMentality] = useState<TacticMentality | null>(null)
@@ -221,6 +225,23 @@ export function MatchLiveScreen() {
     if (ceremonySlide !== 1) return
     const timer = setTimeout(() => setCeremonySlide(2), 3000)
     return () => clearTimeout(timer)
+  }, [ceremonySlide])
+
+  // Champagne sound when ceremony slide 2 shows a win
+  useEffect(() => {
+    if (ceremonySlide !== 2) return
+    const lastStep = steps[steps.length - 1]
+    if (!lastStep || !game) return
+    const managedIsHome = fixture?.homeClubId === game.managedClubId
+    const managedGoals = managedIsHome ? lastStep.homeScore : lastStep.awayScore
+    const oppGoals = managedIsHome ? lastStep.awayScore : lastStep.homeScore
+    // For penalties, determine winner from penalty result
+    const penStep = steps.find(s => s.penaltyDone && s.penaltyFinalResult)
+    const penResult = penStep?.penaltyFinalResult
+    const managedWon = penResult
+      ? (managedIsHome ? penResult.home > penResult.away : penResult.away > penResult.home)
+      : managedGoals > oppGoals
+    if (managedWon) playSound('champagne')
   }, [ceremonySlide])
 
   // Save live match result to game state when match is done
@@ -283,20 +304,56 @@ export function MatchLiveScreen() {
     })
   }, [currentStep])
 
-  // Score flash detection
+  // Score flash detection + goal/event sounds
   useEffect(() => {
     if (currentStep < 0 || currentStep >= steps.length) return
     const step = steps[currentStep]
+
     if (step.homeScore > prevHomeScore.current) {
       setHomeScoreFlash(true)
       setTimeout(() => setHomeScoreFlash(false), 2000)
+      playSound('goal')
     }
     if (step.awayScore > prevAwayScore.current) {
       setAwayScoreFlash(true)
       setTimeout(() => setAwayScoreFlash(false), 2000)
+      playSound('goal')
     }
     prevHomeScore.current = step.homeScore
     prevAwayScore.current = step.awayScore
+
+    // Non-goal event sounds
+    if (step.homeScore === prevHomeScore.current && step.awayScore === prevAwayScore.current) {
+      const hasRedCard = step.events.some(e => e.type === MatchEventType.RedCard)
+      const hasYellow = step.events.some(e => e.type === MatchEventType.YellowCard)
+      const hasSave = step.events.some(e => e.type === MatchEventType.Save)
+      const hasCorner = step.events.some(e => e.type === MatchEventType.Corner)
+      if (hasRedCard || hasYellow) playSound('card')
+      else if (hasSave) playSound('save')
+      else if (hasCorner) playSound('corner')
+    }
+
+    // Whistle at halftime step
+    if (step.step === 30) playSound('whistle')
+    // Whistle at full time
+    if (step.step === 60) playSound('whistle')
+
+    // Overtime announcement
+    if (step.phase === 'overtime' && step.step === 61) playSound('overtime')
+
+    // Penalty sounds
+    if (step.phase === 'penalties' && step.penaltyRound) {
+      if (step.penaltyRound.homeScored || step.penaltyRound.awayScored) {
+        // At least one scored
+        if (step.penaltyRound.homeScored && step.penaltyRound.awayScored) {
+          playSound('penaltyScore')
+        } else if (step.penaltyRound.homeScored || step.penaltyRound.awayScored) {
+          playSound('penaltyScore')
+        }
+      } else {
+        playSound('penaltyMiss')
+      }
+    }
   }, [currentStep, steps])
 
   // Playback loop
@@ -787,6 +844,19 @@ export function MatchLiveScreen() {
             }}
           >
             ⏩
+          </button>
+          <button
+            onClick={() => { toggleMute(); setMuted(isMuted()) }}
+            style={{
+              background: 'var(--bg-elevated)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--text-primary)',
+              padding: '6px 10px',
+              fontSize: 14,
+            }}
+          >
+            {muted ? '🔇' : '🔊'}
           </button>
         </div>
       </div>

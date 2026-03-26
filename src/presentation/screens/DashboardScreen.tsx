@@ -20,6 +20,7 @@ import { getRivalry } from '../../domain/data/rivalries'
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { CupBracket } from '../../domain/entities/Cup'
 import { getCupRoundLabel, getManagedClubCupStatus } from '../../domain/services/cupService'
+import { playSound } from '../audio/soundEffects'
 
 function getSeriesScore(series: { fixtures: string[]; homeClubId: string; awayClubId: string }, fixtures: Fixture[]) {
   const seriesFixtures = fixtures.filter(
@@ -451,6 +452,7 @@ export function DashboardScreen() {
     )
 
   const handleAdvance = () => {
+    playSound('click')
     const scheduledFixtures = game!.fixtures.filter(f => f.status === 'scheduled')
 
     if (scheduledFixtures.length === 0) {
