@@ -70,14 +70,14 @@ describe('calculateMarketValue', () => {
     expect(highForm).toBeGreaterThan(lowForm)
   })
 
-  it('all values within 10 000 – 5 000 000', () => {
+  it('all values within 5 000 – 500 000', () => {
     const ages = [16, 20, 24, 28, 33, 38]
     const abilities = [20, 40, 60, 80, 95]
     for (const age of ages) {
       for (const ca of abilities) {
         const v = calculateMarketValue(makePlayer({ age, currentAbility: ca }), SEASON)
-        expect(v).toBeGreaterThanOrEqual(10000)
-        expect(v).toBeLessThanOrEqual(5000000)
+        expect(v).toBeGreaterThanOrEqual(5000)
+        expect(v).toBeLessThanOrEqual(500000)
       }
     }
   })

@@ -6,7 +6,7 @@ import { InboxItemType } from '../enums'
 import { executeTransfer } from './transferService'
 import { generateSponsorOffer } from './sponsorService'
 import { generatePressConference } from './pressConferenceService'
-import { PATRON_UNHAPPY_QUOTES, PATRON_HAPPY_QUOTES } from '../data/patronData'
+import { PATRON_UNHAPPY_QUOTES, PATRON_HAPPY_QUOTES, PATRON_STYLE_COMPLAINTS } from '../data/patronData'
 import { AGENDA_QUOTES, NEWSPAPER_HEADLINES } from '../data/politicianData'
 import { HALL_DEBATE_EVENTS } from '../data/hallDebateData'
 
@@ -344,7 +344,7 @@ export function generateEvents(
         id: eid,
         type: 'communityEvent',
         title: 'Julmarknad på planen',
-        body: `${game.localPaperName ?? 'Lokaltidningen'} föreslår en julmarknad på rinken. Kostar 4 000 men ger 12 000 i intäkter och gott rykte.`,
+        body: `${game.localPaperName ?? 'Lokaltidningen'} föreslår en julmarknad på planen. Kostar 4 000 men ger 12 000 i intäkter och gott rykte.`,
         choices: [
           {
             id: 'arrange',
@@ -595,6 +595,42 @@ export function generateEvents(
               id: 'accept',
               label: 'Acceptera att han/hon lämnar',
               effect: { type: 'patronHappiness', amount: -50 },
+            },
+          ],
+          resolved: false,
+        })
+      }
+    }
+
+    // Patron style complaint — round 11–13, wantsStyle set, happiness 30–70
+    if (
+      patron.wantsStyle &&
+      currentRound >= 11 && currentRound <= 13 &&
+      (patron.happiness ?? 50) >= 30 && (patron.happiness ?? 50) <= 70
+    ) {
+      const eid = `patron_style_r${currentRound}`
+      if (!alreadyQueued.has(eid)) {
+        const quoteIdx = Math.floor(rand() * PATRON_STYLE_COMPLAINTS.length)
+        events.push({
+          id: eid,
+          type: 'patronEvent',
+          title: `${patron.name} om spelets`,
+          body: PATRON_STYLE_COMPLAINTS[quoteIdx],
+          choices: [
+            {
+              id: 'agree',
+              label: `Lova att spela mer ${patron.wantsStyle}`,
+              effect: { type: 'patronHappiness', amount: 12 },
+            },
+            {
+              id: 'diplomatic',
+              label: 'Förklara taktiska skälen',
+              effect: { type: 'patronHappiness', amount: 3 },
+            },
+            {
+              id: 'refuse',
+              label: 'Taktiken är min sak',
+              effect: { type: 'patronHappiness', amount: -8 },
             },
           ],
           resolved: false,
@@ -1396,7 +1432,7 @@ export function resolveEvent(
         ...updatedGame,
         clubs: updatedGame.clubs.map(c =>
           c.id === updatedGame.managedClubId
-            ? { ...c, reputation: Math.min(100, c.reputation + (effect.amount ?? 1)) }
+            ? { ...c, facilities: Math.min(100, (c.facilities ?? 50) + (effect.amount ?? 5)) }
             : c
         ),
       }

@@ -1592,6 +1592,44 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
+  // Patron contribution at season end
+  if (game.patron?.isActive && (game.patron.contribution ?? 0) > 0) {
+    const patronIdx = updatedClubs.findIndex(c => c.id === game.managedClubId)
+    if (patronIdx !== -1) {
+      updatedClubs[patronIdx] = {
+        ...updatedClubs[patronIdx],
+        finances: updatedClubs[patronIdx].finances + game.patron.contribution,
+      }
+      newInboxItems.push({
+        id: `inbox_patron_contribution_${game.currentSeason + 1}`,
+        date: game.currentDate,
+        type: InboxItemType.BoardFeedback,
+        title: `${game.patron.name} bidrar till klubben`,
+        body: `${game.patron.name} skänker ${game.patron.contribution.toLocaleString('sv-SE')} kr till klubben som sitt årliga bidrag. Tack för ditt stöd!`,
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
+  // KommunBidrag at season end
+  if (game.localPolitician && (game.localPolitician.kommunBidrag ?? 0) > 0) {
+    const politIdx = updatedClubs.findIndex(c => c.id === game.managedClubId)
+    if (politIdx !== -1) {
+      updatedClubs[politIdx] = {
+        ...updatedClubs[politIdx],
+        finances: updatedClubs[politIdx].finances + game.localPolitician.kommunBidrag,
+      }
+      newInboxItems.push({
+        id: `inbox_kommunbidrag_${game.currentSeason + 1}`,
+        date: game.currentDate,
+        type: InboxItemType.BoardFeedback,
+        title: `Kommunbidrag utbetalat`,
+        body: `${game.localPolitician.name} meddelar att kommunens bidrag på ${game.localPolitician.kommunBidrag.toLocaleString('sv-SE')} kr har betalats ut för säsongen.`,
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
   // Youth intake inbox for managed club
   if (youthIntakeResultForManagedClub !== null) {
     const managedClub = updatedClubs.find(c => c.id === game.managedClubId)!
@@ -1694,11 +1732,14 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     },
   }))
 
-  // Retirement check: age 34+ with CA < 40 have 50% chance, age 39+ always retire
+  // Retirement check: age 34+ CA<40: 50%, age 37+: 70%, age 39+: always
   for (const player of resetPlayers) {
     const mustRetire = player.age >= 39
-    const mightRetire = player.age >= 34 && player.currentAbility < 40
-    if (mustRetire || (mightRetire && retirementRand() < 0.5)) {
+    const r = retirementRand()
+    const retires = mustRetire
+      || (player.age >= 37 && r < 0.7)
+      || (player.age >= 34 && player.currentAbility < 40 && r < 0.5)
+    if (retires) {
       retiredPlayerIds.add(player.id)
       if (player.clubId === game.managedClubId) {
         const seasonsActive = player.age - 18  // rough career length estimate
