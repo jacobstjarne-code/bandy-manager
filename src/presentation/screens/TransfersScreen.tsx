@@ -400,7 +400,7 @@ export function TransfersScreen() {
                       opacity: canScout ? 1 : 0.5,
                     }}
                   >
-                    🔍 Utvärdera
+                    {activeAssignment ? '⏳ Scout upptagen' : scoutBudget <= 0 ? '❌ Ingen budget' : '🔍 Utvärdera'}
                   </button>
                 )}
               </div>
@@ -615,9 +615,9 @@ export function TransfersScreen() {
                             <button
                               onClick={() => player && handleScout(player)}
                               disabled={!!activeAssignment || scoutBudget <= 0}
-                              style={{ padding: '5px 10px', borderRadius: 'var(--radius-sm)', background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.4)', color: 'var(--accent)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                              style={{ padding: '5px 10px', borderRadius: 'var(--radius-sm)', background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.4)', color: (!activeAssignment && scoutBudget > 0) ? 'var(--accent)' : 'var(--text-muted)', fontSize: 12, fontWeight: 600, cursor: (!activeAssignment && scoutBudget > 0) ? 'pointer' : 'not-allowed', opacity: (!activeAssignment && scoutBudget > 0) ? 1 : 0.5 }}
                             >
-                              🔍 Utvärdera
+                              {activeAssignment ? '⏳ Scout upptagen' : scoutBudget <= 0 ? '❌ Ingen budget' : '🔍 Utvärdera'}
                             </button>
                           )}
                           {windowOpen && player && managedClub && (
