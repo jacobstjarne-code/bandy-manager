@@ -5,7 +5,7 @@ import type { SaveGame, TalentSearchRequest } from '../../domain/entities/SaveGa
 import type { Tactic } from '../../domain/entities/Club'
 import type { TrainingFocus } from '../../domain/entities/Training'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entities/Fixture'
-import { FixtureStatus, PlayoffStatus } from '../../domain/enums'
+import { FixtureStatus, PlayoffStatus, InboxItemType } from '../../domain/enums'
 import { createNewGame } from '../../application/useCases/createNewGame'
 import { startScoutAssignment } from '../../domain/services/scoutingService'
 import { createOutgoingBid } from '../../domain/services/transferService'
@@ -42,6 +42,8 @@ interface GameState {
   requestDetailedAnalysis: (opponentClubId: string, fixtureId: string) => { success: boolean; error?: string }
   startTalentSearch: (position: string, maxAge: number, maxSalary: number, currentRound: number) => { success: boolean; error?: string }
   incrementDoctorQuestions: () => void
+  talkToPlayer: (playerId: string, choice: 'encourage' | 'demand' | 'future', currentRound: number) => { moraleChange: number; formChange: number; feedback: string; inboxTriggered: boolean }
+  clearPreSeason: () => void
 }
 
 const indexedDBStorage = {
@@ -240,6 +242,89 @@ export const useGameStore = create<GameState>()(
         const { game } = get()
         if (!game) return
         set({ game: { ...game, doctorQuestionsUsed: (game.doctorQuestionsUsed ?? 0) + 1 } })
+      },
+
+      talkToPlayer: (playerId, choice, currentRound) => {
+        const { game } = get()
+        if (!game) return { moraleChange: 0, formChange: 0, feedback: '', inboxTriggered: false }
+        const player = game.players.find(p => p.id === playerId)
+        if (!player) return { moraleChange: 0, formChange: 0, feedback: '', inboxTriggered: false }
+
+        let moraleChange = 0
+        let formChange = 0
+        let feedback = ''
+        let inboxTriggered = false
+        const name = player.firstName
+
+        if (choice === 'encourage') {
+          moraleChange = 5
+          formChange = 2
+          feedback = `${name}: "Tack, det värmer."`
+        } else if (choice === 'demand') {
+          if (player.form >= 50) {
+            moraleChange = 3
+            formChange = 5
+            feedback = `${name}: "Jag ska bevisa att du har rätt."`
+          } else {
+            moraleChange = -5
+            formChange = -2
+            feedback = `${name}: "Jag vet inte om jag orkar mer..."`
+          }
+        } else if (choice === 'future') {
+          const seasons = player.contractUntilSeason - game.currentSeason
+          if (seasons > 2) {
+            moraleChange = 3
+            feedback = `${name}: "Jag trivs bra här, inga planer på att lämna."`
+          } else if (seasons === 1) {
+            moraleChange = -3
+            feedback = `${name}: "Jag behöver veta vad som gäller. Kontraktet går ut snart."`
+            inboxTriggered = true
+          } else {
+            moraleChange = -8
+            feedback = `${name}: "Jag har inte hört ett ord om förlängning. Det säger mig allt."`
+            inboxTriggered = true
+          }
+        }
+
+        const updatedPlayers = game.players.map(p =>
+          p.id === playerId
+            ? {
+                ...p,
+                morale: Math.max(0, Math.min(100, p.morale + moraleChange)),
+                form: Math.max(0, Math.min(100, p.form + formChange)),
+              }
+            : p
+        )
+
+        const updatedConversations = {
+          ...(game.playerConversations ?? {}),
+          [playerId]: currentRound,
+        }
+
+        let updatedInbox = game.inbox
+        if (inboxTriggered) {
+          updatedInbox = [
+            {
+              id: `inbox_talk_${playerId}_${Date.now()}`,
+              date: game.currentDate,
+              type: InboxItemType.ContractExpiring,
+              title: `${player.firstName} ${player.lastName} vill ha besked`,
+              body: `${player.firstName} ${player.lastName} har uttryckt oro kring sin framtid i klubben. Kontraktet löper ut om kort.`,
+              relatedPlayerId: playerId,
+              isRead: false,
+            },
+            ...updatedInbox,
+          ]
+        }
+
+        set({ game: { ...game, players: updatedPlayers, playerConversations: updatedConversations, inbox: updatedInbox } })
+        return { moraleChange, formChange, feedback, inboxTriggered }
+      },
+
+      clearPreSeason: () => {
+        const { game } = get()
+        if (!game) return
+        set({ game: { ...game, showPreSeason: false } })
       },
     }),
     {

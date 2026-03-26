@@ -322,6 +322,11 @@ export function DashboardScreen() {
   const playoffInfo = usePlayoffInfo()
   const navigate = useNavigate()
 
+  const lastSummary = game ? (game.seasonSummaries ?? []).slice(-1)[0] : null
+  const lastPos = lastSummary?.finalPosition ?? null
+  const currentPos = standing?.position ?? null
+  const posDiff = lastPos != null && currentPos != null ? lastPos - currentPos : null
+
   // Navigate to champion screen when bracket is completed
   useEffect(() => {
     if (playoffInfo?.status === PlayoffStatus.Completed) {
@@ -342,6 +347,13 @@ export function DashboardScreen() {
       navigate('/game/board-meeting', { replace: true })
     }
   }, [game?.showBoardMeeting, navigate])
+
+  // Auto-navigate to pre-season screen
+  useEffect(() => {
+    if (game?.showPreSeason && !game?.showBoardMeeting && !game?.showSeasonSummary) {
+      navigate('/game/pre-season', { replace: true })
+    }
+  }, [game?.showPreSeason, game?.showBoardMeeting, game?.showSeasonSummary, navigate])
 
   // Auto-navigate to game over screen when manager is fired
   useEffect(() => {
@@ -877,6 +889,16 @@ export function DashboardScreen() {
                 </p>
                 <p style={{ fontSize: 13, color: '#8A9BB0', marginTop: 2 }}>
                   plats · {standing.points} poäng
+                  {posDiff !== null && posDiff !== 0 && (
+                    <span style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: posDiff > 0 ? '#22c55e' : '#ef4444',
+                      marginLeft: 6,
+                    }}>
+                      {posDiff > 0 ? `↑${posDiff}` : `↓${Math.abs(posDiff)}`} jfr förra
+                    </span>
+                  )}
                 </p>
               </div>
               <div style={{ marginLeft: 'auto', textAlign: 'right' }}>

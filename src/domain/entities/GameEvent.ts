@@ -8,6 +8,8 @@ export type GameEventType =
   | 'sponsorOffer'
   | 'pressConference'
   | 'dayJobConflict'
+  | 'bidWar'
+  | 'hesitantPlayer'
 
 export interface EventChoice {
   id: string
@@ -28,6 +30,7 @@ export interface EventEffect {
     | 'noOp'
     | 'openNegotiation'
     | 'makeFullTimePro'
+    | 'raiseBid'
   value?: number
   targetPlayerId?: string
   targetClubId?: string

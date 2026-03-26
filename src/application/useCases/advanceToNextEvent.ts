@@ -1237,6 +1237,25 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const newBids = generateIncomingBids(preEventGame, nextRound, localRand)
   const allBids: TransferBid[] = [...resolvedBids, ...newBids]
 
+  // Transfer rumour: newly active outgoing bids get a 50% chance of inbox rumour
+  const newlyActiveBids = resolvedBids.filter(
+    b => b.direction === 'outgoing' && b.status === 'pending' && b.createdRound === nextRound
+  )
+  for (const bid of newlyActiveBids) {
+    if (localRand() > 0.50) continue
+    const target = game.players.find(p => p.id === bid.playerId)
+    const sellingClub = game.clubs.find(c => c.id === bid.sellingClubId)
+    if (!target || !sellingClub) continue
+    newInboxItems.push({
+      id: `inbox_rumour_${bid.id}`,
+      date: newDate,
+      type: InboxItemType.Media,
+      title: `📰 Rykten: ${target.firstName} ${target.lastName} på väg?`,
+      body: `Det florera rykten om att ${target.firstName} ${target.lastName} från ${sellingClub.name} kan vara på väg mot en ny utmaning. Inga officiella kommentarer ännu.`,
+      isRead: false,
+    })
+  }
+
   // ── Post-advance events ──────────────────────────────────────────────────
   const newEvents = generatePostAdvanceEvents(preEventGame, newBids, nextRound, localRand, justCompletedManagedFixture ?? undefined)
 
@@ -1631,6 +1650,7 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     seasonSummaries: [...(game.seasonSummaries ?? []), seasonSummary].slice(-5),
     showSeasonSummary: true,
     showBoardMeeting: managerFired ? false : undefined,
+    showPreSeason: managerFired ? false : true,
     managerFired: managerFired ? true : undefined,
     seasonStartFinances: updatedClubs.find(c => c.id === game.managedClubId)?.finances,
     scoutReports: game.scoutReports ?? {},

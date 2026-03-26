@@ -13,6 +13,64 @@ function formatValue(v: number): string {
   return `${v} kr`
 }
 
+// ── Transfer drama events ──────────────────────────────────────────────────
+function bidWarEvent(bid: TransferBid, game: SaveGame): GameEvent {
+  const player = game.players.find(p => p.id === bid.playerId)
+  const sellingClub = game.clubs.find(c => c.id === bid.sellingClubId)
+  const playerName = player ? `${player.firstName} ${player.lastName}` : 'okänd spelare'
+  const raisedAmount = Math.round(bid.offerAmount * 1.3 / 5000) * 5000
+
+  return {
+    id: `event_bidwar_${bid.id}`,
+    type: 'bidWar',
+    title: `⚔️ Budkrig — ${playerName}`,
+    body: `${sellingClub?.name ?? 'Klubben'} uppges ha fått intresse från ytterligare en klubb för ${playerName}. Vill du höja budet från ${formatValue(bid.offerAmount)} till ${formatValue(raisedAmount)} för att säkra affären?`,
+    choices: [
+      {
+        id: 'raise',
+        label: `Höj budet till ${formatValue(raisedAmount)}`,
+        effect: { type: 'raiseBid', bidId: bid.id, value: raisedAmount },
+      },
+      {
+        id: 'hold',
+        label: 'Stå fast vid ursprungsbudet',
+        effect: { type: 'noOp' },
+      },
+    ],
+    relatedPlayerId: bid.playerId,
+    relatedBidId: bid.id,
+    resolved: false,
+  }
+}
+
+function hesitantPlayerEvent(bid: TransferBid, game: SaveGame): GameEvent {
+  const player = game.players.find(p => p.id === bid.playerId)
+  const playerName = player ? `${player.firstName} ${player.lastName}` : 'okänd spelare'
+  const managedClub = game.clubs.find(c => c.id === bid.buyingClubId)
+
+  return {
+    id: `event_hesitant_${bid.id}`,
+    type: 'hesitantPlayer',
+    title: `🤔 Tveksam spelare — ${playerName}`,
+    body: `${playerName} är intresserad men tveksam — din klubb är ett steg ner i ambitionsnivå. Vill du lova honom en nyckelroll för att övertala honom?`,
+    choices: [
+      {
+        id: 'convince',
+        label: 'Lova en nyckelroll (+moral)',
+        effect: { type: 'boostMorale', targetPlayerId: bid.playerId, value: 15 },
+      },
+      {
+        id: 'accept',
+        label: `Acceptera ändå — ${managedClub?.name ?? 'vi'} är rätt val`,
+        effect: { type: 'noOp' },
+      },
+    ],
+    relatedPlayerId: bid.playerId,
+    relatedBidId: bid.id,
+    resolved: false,
+  }
+}
+
 // ── Generate events from incoming bids ────────────────────────────────────
 function bidReceivedEvent(bid: TransferBid, game: SaveGame): GameEvent {
   const player = game.players.find(p => p.id === bid.playerId)
@@ -313,6 +371,43 @@ export function generatePostAdvanceEvents(
 
   if (events.length >= 2) return events
 
+  // 6a. Bid war (pending outgoing bid, 20% chance per round)
+  const pendingOutgoing = (game.transferBids ?? []).filter(
+    b => b.direction === 'outgoing' && b.status === 'pending'
+  )
+  for (const bid of pendingOutgoing) {
+    if (events.length >= 2) break
+    if (rand() > 0.20) continue
+    const eid = `event_bidwar_${bid.id}`
+    if (!alreadyQueued.has(eid)) {
+      events.push(bidWarEvent(bid, game))
+    }
+  }
+
+  if (events.length >= 2) return events
+
+  // 6b. Hesitant player (outgoing bid just resolved as accepted, player CA > club avg)
+  const justAccepted = (game.transferBids ?? []).filter(
+    b => b.direction === 'outgoing' && b.status === 'accepted' && b.expiresRound === roundPlayed
+  )
+  if (justAccepted.length > 0) {
+    const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
+    const avgCA = managedPlayers.length > 0
+      ? managedPlayers.reduce((s, p) => s + p.currentAbility, 0) / managedPlayers.length
+      : 0
+    for (const bid of justAccepted) {
+      if (events.length >= 2) break
+      const target = game.players.find(p => p.id === bid.playerId)
+      if (!target || target.currentAbility <= avgCA) continue
+      const eid = `event_hesitant_${bid.id}`
+      if (!alreadyQueued.has(eid)) {
+        events.push(hesitantPlayerEvent(bid, game))
+      }
+    }
+  }
+
+  if (events.length >= 2) return events
+
   // 6. Sponsor offer
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
@@ -538,6 +633,17 @@ export function resolveEvent(
               : p
           ),
         }
+      }
+      break
+    }
+    case 'raiseBid': {
+      updated = {
+        ...updated,
+        transferBids: (updated.transferBids ?? []).map(b =>
+          b.id === effect.bidId
+            ? { ...b, offerAmount: effect.value ?? Math.round(b.offerAmount * 1.3 / 5000) * 5000, expiresRound: b.expiresRound + 1 }
+            : b
+        ),
       }
       break
     }

@@ -158,6 +158,10 @@ export interface SaveGame {
 
   doctorQuestionsUsed?: number  // resets each round, max 5
 
+  playerConversations?: Record<string, number>  // playerId → roundNumber of last conversation
+
+  showPreSeason?: boolean
+
   version: string
   lastSavedAt: string   // ISO datetime
 }

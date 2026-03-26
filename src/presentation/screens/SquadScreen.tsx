@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useManagedPlayers, useHasPendingLineup, useManagedClub } from '../store/gameStore'
+import { useManagedPlayers, useHasPendingLineup, useManagedClub, useGameStore } from '../store/gameStore'
 import { PlayerPosition, PlayerArchetype } from '../../domain/enums'
 import type { Player } from '../../domain/entities/Player'
 import { StatBar } from '../components/StatBar'
@@ -282,9 +282,22 @@ export function SquadScreen() {
   const hasPendingLineup = useHasPendingLineup()
   const club = useManagedClub()
   const location = useLocation()
+  const game = useGameStore(s => s.game)
+  const talkToPlayer = useGameStore(s => s.talkToPlayer)
   const [sort, setSort] = useState<SortKey>('position')
   const [filter, setFilter] = useState<FilterKey>('all')
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)
+  const [talkFeedback, setTalkFeedback] = useState<{ text: string; moraleChange: number; formChange: number } | null>(null)
+
+  const currentRound = game
+    ? (game.fixtures.filter(f => f.status === 'completed').sort((a, b) => b.roundNumber - a.roundNumber)[0]?.roundNumber ?? 0)
+    : 0
+
+  function handleTalk(playerId: string, choice: 'encourage' | 'demand' | 'future') {
+    const result = talkToPlayer(playerId, choice, currentRound)
+    setTalkFeedback({ text: result.feedback, moraleChange: result.moraleChange, formChange: result.formChange })
+    setTimeout(() => setTalkFeedback(null), 4000)
+  }
 
   useEffect(() => {
     const highlightId = (location.state as { highlightPlayer?: string } | null)?.highlightPlayer
@@ -455,6 +468,69 @@ export function SquadScreen() {
             clubName={clubName}
             onClick={undefined}
           />
+
+          {/* Spelarsamtal */}
+          {(() => {
+            const lastTalked = (game?.playerConversations ?? {})[selectedPlayer.id] ?? -Infinity
+            const canTalk = currentRound - lastTalked >= 3
+            return (
+              <div style={{ width: '100%', maxWidth: 390, padding: '0 4px', marginTop: 16 }}>
+                <p style={{
+                  fontSize: 10, fontWeight: 700, letterSpacing: '1.5px',
+                  textTransform: 'uppercase', color: '#4A6080', marginBottom: 10,
+                }}>
+                  Spelarsamtal
+                </p>
+                {talkFeedback ? (
+                  <div style={{
+                    padding: '12px 14px', background: '#0e1f33',
+                    border: '1px solid #1e3450', borderRadius: 10,
+                    animation: 'fadeInUp 200ms ease-out both',
+                  }}>
+                    <p style={{ fontSize: 13, color: '#F0F4F8', marginBottom: 6 }}>{talkFeedback.text}</p>
+                    <div style={{ display: 'flex', gap: 12, fontSize: 12 }}>
+                      {talkFeedback.moraleChange !== 0 && (
+                        <span style={{ color: talkFeedback.moraleChange > 0 ? '#22c55e' : '#ef4444' }}>
+                          Moral {talkFeedback.moraleChange > 0 ? '+' : ''}{talkFeedback.moraleChange}
+                        </span>
+                      )}
+                      {talkFeedback.formChange !== 0 && (
+                        <span style={{ color: talkFeedback.formChange > 0 ? '#22c55e' : '#ef4444' }}>
+                          Form {talkFeedback.formChange > 0 ? '+' : ''}{talkFeedback.formChange}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ) : canTalk ? (
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {([
+                      { id: 'encourage' as const, label: '👍 Uppmuntra' },
+                      { id: 'demand' as const, label: '💪 Kräv mer' },
+                      { id: 'future' as const, label: '🤝 Framtid' },
+                    ]).map(opt => (
+                      <button
+                        key={opt.id}
+                        onClick={() => handleTalk(selectedPlayer.id, opt.id)}
+                        style={{
+                          flex: 1, padding: '10px 6px', fontSize: 12, fontWeight: 600,
+                          background: '#0e1f33', border: '1px solid #1e3450',
+                          borderRadius: 8, cursor: 'pointer', color: '#F0F4F8',
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 12, color: '#4A6080' }}>
+                    {lastTalked === -Infinity
+                      ? 'Tryck en knapp för att prata med spelaren.'
+                      : `Nästa samtal möjligt omgång ${Number(lastTalked) + 3}.`}
+                  </p>
+                )}
+              </div>
+            )
+          })()}
         </div>
       )}
     </div>

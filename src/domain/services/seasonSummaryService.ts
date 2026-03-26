@@ -265,6 +265,30 @@ export function generateSeasonSummary(game: SaveGame): SeasonSummary {
     potential: Math.round(topProspectPlayer.potentialAbility),
   } : null
 
+  // Cup result
+  const cup = game.cupBracket
+  let cupResult: SeasonSummary['cupResult'] = null
+  if (cup) {
+    if (cup.winnerId === managedClubId) {
+      cupResult = 'winner'
+    } else if (cup.matches.some(m => m.round === 3 && (m.homeClubId === managedClubId || m.awayClubId === managedClubId))) {
+      cupResult = 'finalist'
+    } else if (cup.matches.some(m => m.round === 2 && m.winnerId === managedClubId)) {
+      cupResult = 'semifinal'
+    } else if (cup.matches.some(m => m.round === 1 && (m.homeClubId === managedClubId || m.awayClubId === managedClubId))) {
+      cupResult = 'quarter'
+    } else {
+      cupResult = 'eliminated'
+    }
+  }
+
+  // Standings snapshot
+  const standingsSnapshot = game.standings.map(s => ({
+    clubId: s.clubId,
+    position: s.position,
+    points: s.points,
+  }))
+
   // Narrative summary
   const expectationText: Record<ClubExpectation, string> = {
     [ClubExpectation.AvoidBottom]: 'undvika nedflyttning',
@@ -337,5 +361,7 @@ export function generateSeasonSummary(game: SaveGame): SeasonSummary {
     bestYouthProspect,
     roundPoints,
     narrativeSummary: narrative,
+    cupResult,
+    standingsSnapshot,
   }
 }

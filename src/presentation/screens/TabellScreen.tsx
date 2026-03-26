@@ -12,6 +12,9 @@ export function TabellScreen() {
   const standings = [...game.standings].sort((a, b) => a.position - b.position)
   const managedClubId = game.managedClubId
 
+  const lastSummary = (game.seasonSummaries ?? []).slice(-1)[0]
+  const lastSnapshot = lastSummary?.standingsSnapshot ?? []
+
   function clubName(clubId: string): string {
     return game!.clubs.find(c => c.id === clubId)?.shortName
       ?? game!.clubs.find(c => c.id === clubId)?.name
@@ -64,7 +67,7 @@ export function TabellScreen() {
         <span style={{ textAlign: 'right' }}>P</span>
       </div>
 
-      <div style={{
+      <div className="card-stagger-1" style={{
         background: 'var(--bg-surface)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius)',
@@ -76,6 +79,8 @@ export function TabellScreen() {
           const goalDiff = row.goalDifference >= 0
             ? `+${row.goalDifference}`
             : String(row.goalDifference)
+          const lastPos = lastSnapshot.find(s => s.clubId === row.clubId)?.position
+          const posDiff = lastPos != null ? lastPos - row.position : null
 
           return (
             <div
@@ -97,12 +102,23 @@ export function TabellScreen() {
               }}
             >
               {/* Position */}
-              <span style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: isTop3 ? '#C9A84C' : 'var(--text-muted)',
-              }}>
-                {row.position}
+              <span style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <span style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: isTop3 ? '#C9A84C' : 'var(--text-muted)',
+                }}>
+                  {row.position}
+                </span>
+                {posDiff !== null && posDiff !== 0 && (
+                  <span style={{
+                    fontSize: 9,
+                    color: posDiff > 0 ? '#22c55e' : '#ef4444',
+                    lineHeight: 1,
+                  }}>
+                    {posDiff > 0 ? '▲' : '▼'}
+                  </span>
+                )}
               </span>
 
               {/* Club badge */}

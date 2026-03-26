@@ -544,6 +544,19 @@ export function ClubScreen() {
               </div>
             )
           })}
+          <button
+            onClick={() => navigate('/game/history')}
+            style={{
+              width: '100%', marginTop: 8, padding: '10px',
+              background: 'rgba(201,168,76,0.06)',
+              border: '1px solid rgba(201,168,76,0.2)',
+              borderRadius: 'var(--radius-sm)',
+              color: '#C9A84C', fontSize: 13, fontWeight: 600,
+              cursor: 'pointer', textAlign: 'center',
+            }}
+          >
+            Hall of Fame & full historik →
+          </button>
         </SectionCard>
       )}
     </div>

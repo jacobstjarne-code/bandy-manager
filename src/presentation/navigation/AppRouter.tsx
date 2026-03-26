@@ -17,6 +17,8 @@ import { MatchResultScreen } from '../screens/MatchResultScreen'
 import { BoardMeetingScreen } from '../screens/BoardMeetingScreen'
 import { GameOverScreen } from '../screens/GameOverScreen'
 import { BandyDoktorScreen } from '../screens/BandyDoktorScreen'
+import { HistoryScreen } from '../screens/HistoryScreen'
+import { PreSeasonScreen } from '../screens/PreSeasonScreen'
 
 export function AppRouter() {
   return (
@@ -38,6 +40,8 @@ export function AppRouter() {
           <Route path="season-summary/:season" element={<SeasonSummaryScreen />} />
           <Route path="inbox" element={<InboxScreen />} />
           <Route path="doctor" element={<BandyDoktorScreen />} />
+          <Route path="history" element={<HistoryScreen />} />
+          <Route path="pre-season" element={<PreSeasonScreen />} />
         </Route>
         <Route path="/game/events" element={<EventScreen />} />
         <Route path="/game/match-result" element={<MatchResultScreen />} />

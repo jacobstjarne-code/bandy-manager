@@ -53,4 +53,7 @@ export interface SeasonSummary {
   roundPoints: number[]   // points per round for chart (cumulative)
 
   narrativeSummary: string
+
+  cupResult?: 'winner' | 'finalist' | 'semifinal' | 'quarter' | 'eliminated' | null
+  standingsSnapshot?: Array<{ clubId: string; position: number; points: number }>
 }
