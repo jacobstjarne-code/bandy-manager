@@ -532,7 +532,8 @@ export function DashboardScreen() {
     f => f.status === 'scheduled' &&
          (f.homeClubId === managedClubId || f.awayClubId === managedClubId)
   ).length
-  const canSimulateRemaining = hasScheduledFixtures && remainingManagedFixtures === 0
+  const remainingOtherFixtures = game!.fixtures.filter(f => f.status === 'scheduled').length
+  const canSimulateRemaining = hasScheduledFixtures && remainingManagedFixtures === 0 && !game!.playoffBracket
 
   const cardStyle: React.CSSProperties = {
     background: '#122235',
@@ -796,10 +797,14 @@ export function DashboardScreen() {
         )}
         {isBatchSim && (
           <div style={{
-            textAlign: 'center', marginBottom: 8,
-            fontSize: 13, color: '#C9A84C', fontWeight: 600,
+            marginBottom: 8, padding: '10px 14px',
+            background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)',
+            borderRadius: 10, textAlign: 'center',
           }}>
-            ⏩ Simulerar...
+            <div style={{ fontSize: 13, color: '#C9A84C', fontWeight: 700 }}>⏩ Simulerar säsongen...</div>
+            <div style={{ fontSize: 11, color: '#4A6080', marginTop: 3 }}>
+              {remainingOtherFixtures} omgångar kvar
+            </div>
           </div>
         )}
         <button
