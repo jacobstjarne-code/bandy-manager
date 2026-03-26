@@ -52,18 +52,18 @@ export function TabellScreen() {
 
   function getRowBorderColor(position: number): string {
     if (position <= 3) return '#C9A84C'
-    if (position <= 6) return 'rgba(201,168,76,0.4)'
+    if (position <= 8) return 'rgba(201,168,76,0.4)'
     if (position <= 10) return 'transparent'
     return 'rgba(239,68,68,0.6)'
   }
 
   const myRow = standings.find(s => s.clubId === managedClubId)
   const leaderPoints = standings[0]?.points ?? 0
-  const sixthPoints = standings.find(s => s.position === 6)?.points ?? 0
+  const eighthPoints = standings.find(s => s.position === 8)?.points ?? 0
   const myPoints = myRow?.points ?? 0
   const myPos = myRow?.position ?? 0
   const ptToLeader = leaderPoints - myPoints
-  const ptToPlayoff = myPos <= 6 ? null : sixthPoints - myPoints
+  const ptToPlayoff = myPos <= 8 ? null : eighthPoints - myPoints
 
   return (
     <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
@@ -102,7 +102,7 @@ export function TabellScreen() {
           <span style={{ fontWeight: 700 }}>{myPos}. plats</span>
           <span style={{ color: '#4A6080' }}>·</span>
           {ptToPlayoff !== null && ptToPlayoff > 0 ? (
-            <span>{ptToPlayoff}p till slutspel</span>
+            <span>{ptToPlayoff}p till topp-8</span>
           ) : (
             <span>I slutspelszonen</span>
           )}
@@ -153,8 +153,8 @@ export function TabellScreen() {
 
           return (
             <div key={row.clubId}>
-              {/* Zone divider: after position 6 */}
-              {row.position === 7 && (
+              {/* Zone divider: after position 8 (top 8 to playoffs) */}
+              {row.position === 9 && (
                 <div style={{
                   padding: '5px 10px',
                   borderTop: '1px solid rgba(201,168,76,0.4)',

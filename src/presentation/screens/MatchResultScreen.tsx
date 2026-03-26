@@ -157,7 +157,7 @@ export function MatchResultScreen() {
                 const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
                 const scorerName = scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'
                 const icon = e.type === MatchEventType.Goal
-                  ? (e.isCornerGoal ? '📐' : '⚽')
+                  ? (e.isCornerGoal ? '📐' : '🔴')
                   : '🟥'
                 return (
                   <div key={i} style={{

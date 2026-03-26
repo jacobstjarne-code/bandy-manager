@@ -123,7 +123,7 @@ export function HistoryScreen() {
                   {cup && <p style={{ fontSize: 14 }}>🏆 Cup: {cup}</p>}
                   {s.topScorer && (
                     <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                      ⚽ Toppskytt:{' '}
+                      🔴 Toppskytt:{' '}
                       <PlayerLink playerId={s.topScorer.playerId} name={s.topScorer.name} />
                       {' '}({s.topScorer.goals} mål)
                     </p>

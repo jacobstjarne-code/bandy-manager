@@ -99,6 +99,15 @@ export function generateNextCupRound(
     return { updatedBracket: bracket, newFixtures: [] }
   }
 
+  // Guard: don't generate if next round already exists in the bracket
+  const nextRoundAlreadyExists = bracket.matches.some(m => m.round === nextRound)
+  if (nextRoundAlreadyExists) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(`[cupService] Cup round ${nextRound} already exists — skipping duplicate generation`)
+    }
+    return { updatedBracket: bracket, newFixtures: [] }
+  }
+
   // Collect winners from completed round
   const winners = bracket.matches
     .filter(m => m.round === completedRound && m.winnerId)

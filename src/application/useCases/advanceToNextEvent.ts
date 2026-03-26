@@ -191,10 +191,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     if (!game.playoffBracket) {
       return handlePlayoffStart(game, seed)
     } else if (game.playoffBracket.status === PlayoffStatus.Completed) {
+      // Wait for cup to finish before ending the season
+      const pendingCupFixtures = scheduledFixtures.filter(f => f.isCup)
+      if (pendingCupFixtures.length === 0) {
+        return handleSeasonEnd(game, seed)
+      }
+      // Cup still running — fall through to simulate cup round below
+    } else {
+      // Bracket exists but incomplete with no fixtures — shouldn't happen normally
       return handleSeasonEnd(game, seed)
     }
-    // Bracket exists but incomplete with no fixtures — shouldn't happen normally
-    return handleSeasonEnd(game, seed)
   }
 
   // Find next round (from all scheduled, including cup — cup rounds interleave)

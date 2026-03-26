@@ -83,6 +83,8 @@ export function EventScreen() {
         padding: '28px 24px',
         width: '100%',
         maxWidth: 390,
+        maxHeight: '85vh',
+        overflowY: 'auto',
       }}>
         {/* Type badge */}
         <div style={{ marginBottom: 20 }}>

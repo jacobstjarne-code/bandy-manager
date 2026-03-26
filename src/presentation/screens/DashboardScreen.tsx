@@ -572,6 +572,12 @@ export function DashboardScreen() {
       .sort((a, b) => a.roundNumber - b.roundNumber)[0]
 
     if (nextManaged) {
+      if (nextManaged.isCup) {
+        const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextManaged.id)
+        const cupRound = cupMatch?.round ?? 1
+        const cupLabel = cupRound === 1 ? 'Kvartsfinal' : cupRound === 2 ? 'Semifinal' : 'Final'
+        return `Spela Cup-${cupLabel} →`
+      }
       if (game.playoffBracket) {
         const r = nextManaged.roundNumber
         const label = r <= 25 ? 'Kvartsfinal' : r <= 28 ? 'Semifinal' : 'Final'

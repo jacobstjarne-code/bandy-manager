@@ -83,6 +83,15 @@ export function MatchLiveScreen() {
   const feedRef = useRef<HTMLDivElement>(null)
   const hasSimulated = useRef(false)
 
+  // Bug 3: If fixture already completed (browser back), redirect away
+  useEffect(() => {
+    if (!fixture || !game) return
+    const liveFixture = game.fixtures.find(f => f.id === fixture.id)
+    if (liveFixture?.status === 'completed') {
+      navigate('/game', { replace: true })
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Pre-generate all steps on mount
   useEffect(() => {
     if (hasSimulated.current) return
