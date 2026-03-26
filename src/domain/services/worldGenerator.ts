@@ -16,7 +16,7 @@ import {
 } from '../enums'
 import { mulberry32 } from '../utils/random'
 
-export interface GeneratedWorld {
+interface GeneratedWorld {
   clubs: Club[]
   players: Player[]
 }
