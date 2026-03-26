@@ -854,6 +854,37 @@ export function DashboardScreen() {
           )
         })()}
 
+        {/* INKORG card */}
+        {(() => {
+          const unread = (game!.inbox ?? []).filter(i => !i.isRead)
+          if (unread.length === 0) return null
+          const latest = unread.sort((a, b) => b.date.localeCompare(a.date))[0]
+          return (
+            <div
+              onClick={() => navigate('/game/inbox')}
+              style={{ ...cardStyle, cursor: 'pointer' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <p style={{ ...cardLabelStyle, marginBottom: 0 }}>📬 Inkorg</p>
+                <span style={{
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  borderRadius: 99,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: '1px 7px',
+                }}>
+                  {unread.length} olästa
+                </span>
+              </div>
+              <p style={{ fontSize: 13, color: '#F0F4F8', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {latest.title}
+              </p>
+              <p style={{ fontSize: 11, color: '#4A6080', marginTop: 4 }}>Öppna inkorg →</p>
+            </div>
+          )
+        })()}
+
         {/* Guidance banners */}
         <GuidanceBanner
           hasPendingLineup={hasPendingLineup}

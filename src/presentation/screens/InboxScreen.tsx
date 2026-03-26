@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useGameStore } from '../store/gameStore'
 import { InboxItemType } from '../../domain/enums'
 import type { InboxItem } from '../../domain/entities/SaveGame'
@@ -55,9 +56,17 @@ interface InboxItemRowProps {
 
 function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
   const color = inboxTypeColor(item.type)
+  const [expanded, setExpanded] = useState(false)
+  const hasBody = item.body && item.body.trim().length > 0
+
+  function handleClick() {
+    if (!item.isRead) onRead(item.id)
+    if (hasBody) setExpanded(e => !e)
+  }
+
   return (
     <div
-      onClick={() => !item.isRead && onRead(item.id)}
+      onClick={handleClick}
       style={{
         display: 'flex',
         alignItems: 'flex-start',
@@ -65,7 +74,7 @@ function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
         padding: '14px 16px',
         borderBottom: '1px solid var(--border)',
         background: item.isRead ? 'transparent' : 'rgba(59,130,246,0.04)',
-        cursor: item.isRead ? 'default' : 'pointer',
+        cursor: hasBody ? 'pointer' : (item.isRead ? 'default' : 'pointer'),
         animation: `fadeInUp 200ms ease-out ${Math.min(index, 14) * 30}ms both`,
       }}
     >
@@ -90,9 +99,11 @@ function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
             fontSize: 14,
             fontWeight: item.isRead ? 500 : 700,
             color: item.isRead ? 'var(--text-secondary)' : 'var(--text-primary)',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            ...(expanded ? {} : {
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }),
           }}>
             {item.title}
           </p>
@@ -100,14 +111,22 @@ function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
             {formatDate(item.date)}
           </span>
         </div>
-        <p style={{
-          fontSize: 13,
-          color: item.isRead ? 'var(--text-muted)' : 'var(--text-secondary)',
-          marginTop: 3,
-          lineHeight: 1.4,
-        }}>
-          {item.body}
-        </p>
+        {expanded && hasBody && (
+          <p style={{
+            fontSize: 13,
+            color: 'var(--text-secondary)',
+            marginTop: 6,
+            lineHeight: 1.5,
+            whiteSpace: 'pre-wrap',
+          }}>
+            {item.body}
+          </p>
+        )}
+        {!expanded && hasBody && (
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+            Tryck för att läsa mer
+          </p>
+        )}
         {playerName && item.relatedPlayerId && (
           <div style={{ marginTop: 6 }}>
             <PlayerLink

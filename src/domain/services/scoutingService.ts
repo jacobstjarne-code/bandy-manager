@@ -60,8 +60,8 @@ export function processScoutAssignment(
     revealedAttributes[key] = clamp(base + noise(rand, errorMargin))
   }
 
-  const estimatedCA = clamp(targetPlayer.currentAbility + noise(rand, 5))
-  const estimatedPA = clamp(targetPlayer.potentialAbility + noise(rand, 10))
+  const estimatedCA = Math.round(clamp(targetPlayer.currentAbility + noise(rand, 5)))
+  const estimatedPA = Math.round(clamp(targetPlayer.potentialAbility + noise(rand, 10)))
 
   const attrs = targetPlayer.attributes
   const offensive = Math.round((attrs.shooting + attrs.passing + attrs.dribbling + attrs.vision) / 4)

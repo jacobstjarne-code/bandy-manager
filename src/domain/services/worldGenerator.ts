@@ -81,6 +81,7 @@ function buildTactic(style: ClubStyle): Tactic {
         attackingFocus: TacticAttackingFocus.Mixed,
         cornerStrategy: CornerStrategy.Standard,
         penaltyKillStyle: PenaltyKillStyle.Active,
+        formation: '5-3-2',
       }
     case ClubStyle.Attacking:
       return {

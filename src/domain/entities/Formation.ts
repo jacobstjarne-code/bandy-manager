@@ -1,7 +1,7 @@
 import { PlayerPosition } from '../enums'
 import type { Player } from './Player'
 
-export type FormationType = '3-3-4' | '4-3-3' | '3-4-3' | '2-3-2-3' | '4-2-4'
+export type FormationType = '3-3-4' | '4-3-3' | '3-4-3' | '2-3-2-3' | '4-2-4' | '5-3-2'
 
 export interface FormationSlot {
   id: string
@@ -19,9 +19,27 @@ export interface FormationTemplate {
 }
 
 export const FORMATIONS: Record<FormationType, FormationTemplate> = {
+  '5-3-2': {
+    type: '5-3-2',
+    label: '5-3-2 (Klassisk)',
+    description: 'Traditionell. Libero, två backar, två ytterhalvor, tre mittfältare, två forwards.',
+    slots: [
+      { id: 'gk',     label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 5 },
+      { id: 'def-l',  label: 'VB',  position: PlayerPosition.Defender,   x: 25, y: 15 },
+      { id: 'def-c',  label: 'LIB', position: PlayerPosition.Defender,   x: 50, y: 12 },
+      { id: 'def-r',  label: 'HB',  position: PlayerPosition.Defender,   x: 75, y: 15 },
+      { id: 'half-l', label: 'VYH', position: PlayerPosition.Half,       x: 10, y: 30 },
+      { id: 'half-r', label: 'HYH', position: PlayerPosition.Half,       x: 90, y: 30 },
+      { id: 'mid-l',  label: 'VCH', position: PlayerPosition.Half,       x: 30, y: 45 },
+      { id: 'mid-c',  label: 'CH',  position: PlayerPosition.Half,       x: 50, y: 43 },
+      { id: 'mid-r',  label: 'HCH', position: PlayerPosition.Half,       x: 70, y: 45 },
+      { id: 'fwd-l',  label: 'VF',  position: PlayerPosition.Forward,    x: 35, y: 70 },
+      { id: 'fwd-r',  label: 'HF',  position: PlayerPosition.Forward,    x: 65, y: 70 },
+    ],
+  },
   '3-3-4': {
     type: '3-3-4',
-    label: '3-3-4 (Klassisk)',
+    label: '3-3-4 (Offensiv)',
     description: 'Traditionell bandyformation. Tre backar, tre halvar, fyra forwards.',
     slots: [
       { id: 'gk',     label: 'MV', position: PlayerPosition.Goalkeeper, x: 50, y: 5 },

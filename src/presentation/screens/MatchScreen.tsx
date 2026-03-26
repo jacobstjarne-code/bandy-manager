@@ -84,7 +84,7 @@ export function MatchScreen() {
       cornerStrategy: CornerStrategy.Standard,
       penaltyKillStyle: PenaltyKillStyle.Active,
     }
-    return { ...base, formation: base.formation ?? '3-3-4' }
+    return { ...base, formation: base.formation ?? '5-3-2' }
   })
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
 

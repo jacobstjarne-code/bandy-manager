@@ -32,7 +32,7 @@ import {
 import { processScoutAssignment } from '../../domain/services/scoutingService'
 import { updateAllMarketValues } from '../../domain/services/marketValueService'
 import { generateIncomingBids, resolveOutgoingBid } from '../../domain/services/transferService'
-import { generatePostAdvanceEvents } from '../../domain/services/eventService'
+import { generatePostAdvanceEvents, generateEvents } from '../../domain/services/eventService'
 import { generateMediaHeadlines } from '../../domain/services/mediaService'
 import type { GameEvent, TransferBid } from '../../domain/entities/GameEvent'
 import type { ScoutReport, ScoutAssignment } from '../../domain/entities/Scouting'
@@ -60,7 +60,7 @@ export interface AdvanceResult {
 
 const AI_FORMATIONS: Record<ClubStyle, FormationType> = {
   [ClubStyle.Defensive]: '4-3-3',
-  [ClubStyle.Balanced]: '3-3-4',
+  [ClubStyle.Balanced]: '5-3-2',
   [ClubStyle.Attacking]: '2-3-2-3',
   [ClubStyle.Physical]: '4-2-4',
   [ClubStyle.Technical]: '3-4-3',
@@ -121,7 +121,7 @@ function generateAiLineup(club: Club, allPlayers: Player[]): TeamSelection {
     startingPlayerIds: starters.map(p => p.id),
     benchPlayerIds: bench.map(p => p.id),
     captainPlayerId: captain?.id,
-    tactic: { ...club.activeTactic, formation: AI_FORMATIONS[club.preferredStyle] ?? '3-3-4' },
+    tactic: { ...club.activeTactic, formation: AI_FORMATIONS[club.preferredStyle] ?? '5-3-2' },
   }
 }
 
@@ -1424,6 +1424,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // ── Post-advance events ──────────────────────────────────────────────────
   const newEvents = generatePostAdvanceEvents(preEventGame, newBids, nextRound, localRand, justCompletedManagedFixture ?? undefined)
+  const communityEvents = generateEvents(
+    { ...preEventGame, communityActivities: game.communityActivities },
+    nextRound,
+    localRand,
+  )
+  const allNewEvents = [...newEvents, ...communityEvents]
 
   // Media headlines
   const mediaHeadlines = generateMediaHeadlines(preEventGame, simulatedFixtures, nextRound, localRand)
@@ -1473,7 +1479,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     activeScoutAssignment: updatedScoutAssignment,
     scoutBudget: game.scoutBudget ?? 10,
     transferBids: trimmedBids,
-    pendingEvents: newEvents,
+    pendingEvents: allNewEvents,
     sponsors: updatedSponsors,
     activeTalentSearch: updatedTalentSearch,
     talentSearchResults: updatedTalentResults,
@@ -1508,7 +1514,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  return { game: updatedGame, roundPlayed: nextRound, seasonEnded: false, pendingEvents: newEvents }
+  return { game: updatedGame, roundPlayed: nextRound, seasonEnded: false, pendingEvents: allNewEvents }
 }
 
 function getPlayerRating(playerId: string, fixtures: Fixture[]): number | null {
@@ -1589,7 +1595,10 @@ function handlePlayoffStart(game: SaveGame, seed?: number): AdvanceResult {
 }
 
 function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
-  const seasonSummary = generateSeasonSummary(game)
+  // seasonSummary is generated AFTER all financial updates (prize money, patron, etc.)
+  // so the financial change reflects the full season end income.
+  // The variable is populated later in this function.
+  let seasonSummary: ReturnType<typeof generateSeasonSummary>
 
   const allFixtures = game.fixtures
   const completedFixtures = allFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
@@ -1740,6 +1749,10 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   }
 
   const nextSeason = game.currentSeason + 1
+
+  // Generate season summary now that all financial updates (prize money, patron, etc.) are done
+  seasonSummary = generateSeasonSummary({ ...game, clubs: updatedClubs })
+  console.log('[SeasonSummary] start:', game.seasonStartFinances, 'end:', updatedClubs.find(c => c.id === game.managedClubId)?.finances)
 
   // Board pre-season message for managed club
   const managedClubAfterPrize = updatedClubs.find(c => c.id === game.managedClubId)

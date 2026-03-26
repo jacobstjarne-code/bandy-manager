@@ -63,6 +63,7 @@ interface GameState {
   cancelTrainingProject: (projectId: string) => void
   seekSponsor: () => { success: boolean; sponsor?: Sponsor; error?: string }
   applyPressChoice: (moraleEffect: number, mediaQuote: string) => void
+  simulateRemainingStep: () => AdvanceResult | null
 }
 
 const indexedDBStorage = {
@@ -553,15 +554,37 @@ export const useGameStore = create<GameState>()(
             ? { ...p, morale: Math.max(0, Math.min(100, p.morale + moraleEffect)) }
             : p
         )
+        const personalizedQuote = mediaQuote.replace(/tränaren/gi, game.managerName)
         const inboxItem = {
           id: `inbox_press_live_${Date.now()}`,
           date: game.currentDate,
           type: InboxItemType.Media,
-          title: `📰 ${mediaQuote}`,
+          title: `📰 ${personalizedQuote}`,
           body: '',
           isRead: false,
         }
         set({ game: { ...game, players: updatedPlayers, inbox: [...game.inbox, inboxItem] } })
+      },
+
+      simulateRemainingStep: () => {
+        const { game, resolveEvent, setPlayerLineup, advance } = get()
+        if (!game) return null
+        if ((game.pendingEvents?.length ?? 0) > 0) {
+          const event = game.pendingEvents[0]
+          resolveEvent(event.id, event.choices[0].id)
+          return { game: get().game!, roundPlayed: null, seasonEnded: false }
+        }
+        if (!game.managedClubPendingLineup) {
+          const available = game.players
+            .filter(p => p.clubId === game.managedClubId && !p.isInjured && p.suspensionGamesRemaining <= 0)
+            .sort((a, b) => b.currentAbility - a.currentAbility)
+          setPlayerLineup(
+            available.slice(0, 11).map(p => p.id),
+            available.slice(11, 16).map(p => p.id),
+            available[0]?.id,
+          )
+        }
+        return advance()
       },
     }),
     {

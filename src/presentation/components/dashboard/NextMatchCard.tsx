@@ -87,7 +87,7 @@ export function NextMatchCard({
           position: 'relative',
           zIndex: 1,
         }}>
-          🔥 DERBY — {rivalry.name}
+          🔥 {rivalry.name}
         </div>
       )}
       <p className="section-heading" style={{ ...cardLabelStyle, position: 'relative', zIndex: 1 }}>

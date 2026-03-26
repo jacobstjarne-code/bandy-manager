@@ -86,6 +86,12 @@ export function LineupStep({
         onFormationChange={onFormationChange}
       />
 
+      <div style={{ padding: '0 16px 6px' }}>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>
+          Spelare placeras automatiskt. Manuell placering i framtida version.
+        </p>
+      </div>
+
       <div style={{ padding: '0 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 13, color: startingIds.length === 11 ? 'var(--success)' : 'var(--warning)', fontWeight: 600 }}>
           {startingIds.length}/11 startande
