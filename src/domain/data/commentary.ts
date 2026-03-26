@@ -22,7 +22,10 @@ export const commentary = {
     "Det är slut! {score} — {team} tar med sig {result} hem.",
     "Tre visslar — matchen är över. {score} efter 90 engagerade minuter.",
     "Slutvisslat! En dramatisk match når sitt slut. {score}.",
-    "Och det var det! {score}. Spelarna skakar hand efter ett hårt kämpad match.",
+    "Och det var det! {score}. Spelarna skakar hand efter ett hårt kämpat match.",
+    "FULLTID! En match som gav publiken det de kom för. {score}.",
+    "Tre visslar och det är klart. {score}. Spelarna samlas på mitten.",
+    "Slutvisslat. {team} kan andas ut. {score} — allt är sagt.",
   ],
 
   goal: [
@@ -58,6 +61,16 @@ export const commentary = {
     "{player} dundrar in reducering! Plötsligt liv i matchen! {score}!",
     "Reducering av {player}! {team} lever fortfarande! {score}!",
     "{player} ger {team} hopp med en reducering! {score}!",
+    "REDUCERING! {player} vägrar ge upp! {score} — plötsligt är det en match igen!",
+    "{player} sticker in bollen i hörnet. Det är inte över än! {score}!",
+  ],
+
+  goalLate: [
+    "SENT MÅL! {player} slår till i slutminuterna! {score}!",
+    "DRAMATIK! {player} avgör sent — {score}!",
+    "I SISTA STUND! {player} ser till att det inte slutar här! {score}!",
+    "Klockan tickar men {player} bryr sig inte! Sent mål — {score}!",
+    "DRAMATIK I SLUTFASEN! {player} med ett mål som publiken sent glömmer! {score}!",
   ],
   goalExtend: [
     "{player} utökar ledningen! {score} — nu är det kontroll!",
@@ -120,6 +133,10 @@ export const commentary = {
     "Ny hörna till {team}. Kort uppspel, passning tillbaka, skott! Blockerat.",
     "{team} tar hörna. Bollen snurrar in mot bortre stolpen men seglar över.",
     "Hörna till {team}. Spelarna trängs framför målet — domaren blåser för regelbrott.",
+    "{team} tar hörna. Bollen slås lågt och hårt — avvärjd av ett ben i sista sekunden.",
+    "Hörna för {team}. Tredje hörnan på kort tid — trycket börjar märkas.",
+    "{team} med ännu en hörna. De styr spelet nu.",
+    "Hörna. Insvingad mot mitten — {opponent}s försvar reder ut det.",
   ],
 
   powerPlayGood: [
@@ -150,6 +167,16 @@ export const commentary = {
     "Matchen flödar. Spelet är öppet och snabbt.",
     "Båda lagen vill framåt — spelet är intensivt i dag.",
     "En stund av lugn innan nästa storm. {team} samlar sig.",
+    "Spelarna verkar spara lite på krafterna — ingen vill ta en onödig risk.",
+    "{team} spelar tillbaka till målvakten som håller i bollen och ger laget andrum.",
+    "Friläge — men skottet gick rakt på målvakten. Chansen förstörd.",
+    "Domaren blåser för hands. {team} tappar initiativet.",
+    "Publiken suckar. Spelet har tappat tempo de senaste minuterna.",
+    "Klockan tickar. Båda lagen verkar nöjda med att vänta ut varandra.",
+    "En lång boll, ett offside — spelet börjar om från målgårdsavstamp.",
+    "Bollen studsar oberäkneligt. Ingen kan styra spelet just nu.",
+    "{team} byter om och letar efter ett hål i {opponent}s välorganiserade försvar.",
+    "Halvchans för {team} — men för svagt placerat för att hota på riktigt.",
   ],
 
   yellowCard: [

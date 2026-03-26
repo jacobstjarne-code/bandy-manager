@@ -120,12 +120,19 @@ const SEQUENCE_TYPES: SequenceType[] = ['attack', 'transition', 'corner', 'halfc
 function pickGoalCommentary(
   scoringTeamScore: number,
   otherTeamScore: number,
-  rand: () => number
+  rand: () => number,
+  minute = 0,
 ): string {
   const isFirstGoal = scoringTeamScore === 1 && otherTeamScore === 0
   const wasTied = (scoringTeamScore - 1) === otherTeamScore
   const wasLosing = (scoringTeamScore - 1) < otherTeamScore
   const isNowTied = scoringTeamScore === otherTeamScore
+  const isLate = minute > 75
+
+  // Late-goal variant with 35% probability when after minute 75
+  if (isLate && rand() < 0.35) {
+    return pickCommentary(commentary.goalLate, rand)
+  }
 
   let pool: string[]
   if (isFirstGoal) pool = commentary.goalOpener
@@ -1347,7 +1354,7 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
     } else if (goalScored && scorerPlayerId) {
       tvars = { ...tvars, player: findName(scorerPlayerId) }
       if (rivalry && rand() < 0.40) { commentaryText = fillTemplate(pickCommentary(commentary.derby_goal, rand), { ...tvars, rivalry: rivalry.name }); isDerbyStep = true }
-      else { const ss = isHomeAttacking ? homeScore : awayScore; const os = isHomeAttacking ? awayScore : homeScore; commentaryText = fillTemplate(pickGoalCommentary(ss, os, rand), tvars) }
+      else { const ss = isHomeAttacking ? homeScore : awayScore; const os = isHomeAttacking ? awayScore : homeScore; commentaryText = fillTemplate(pickGoalCommentary(ss, os, rand, minute), tvars) }
     } else if (saveOccurred && gkPlayerId) {
       tvars = { ...tvars, goalkeeper: findName(gkPlayerId) }
       commentaryText = fillTemplate(pickCommentary(commentary.save, rand), tvars)
@@ -2088,7 +2095,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       } else {
         const scoringTeamScore = isHomeAttacking ? homeScore : awayScore
         const otherTeamScore = isHomeAttacking ? awayScore : homeScore
-        commentaryText = fillTemplate(pickGoalCommentary(scoringTeamScore, otherTeamScore, rand), templateVars)
+        commentaryText = fillTemplate(pickGoalCommentary(scoringTeamScore, otherTeamScore, rand, minute), templateVars)
       }
     } else if (saveOccurred && gkPlayerId) {
       templateVars = { ...templateVars, goalkeeper: findPlayerName(gkPlayerId) }
