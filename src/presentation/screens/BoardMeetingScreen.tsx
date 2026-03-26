@@ -58,7 +58,7 @@ export function BoardMeetingScreen() {
         maxHeight: '85vh', overflowY: 'auto',
       }}>
         {/* Header */}
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px',
+        <p className="section-heading card-stagger-1" style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px',
           textTransform: 'uppercase', color: '#4A6080', marginBottom: 8 }}>
           Styrelsemöte
         </p>
@@ -71,12 +71,12 @@ export function BoardMeetingScreen() {
 
         {/* Förra säsongen / Välkommen */}
         {isFirstSeason ? (
-          <div style={{
+          <div className="card-stagger-2" style={{
             background: 'rgba(201,168,76,0.08)',
             border: '1px solid rgba(201,168,76,0.2)',
             borderRadius: 10, padding: '14px', marginBottom: 16,
           }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: '#C9A84C', marginBottom: 8 }}>
+            <p className="section-heading" style={{ fontSize: 12, fontWeight: 700, color: '#C9A84C', marginBottom: 8 }}>
               👋 VÄLKOMMEN
             </p>
             <p style={{ fontSize: 13, color: '#8A9BB0', lineHeight: 1.5 }}>
@@ -86,12 +86,12 @@ export function BoardMeetingScreen() {
             </p>
           </div>
         ) : (
-          <div style={{
+          <div className="card-stagger-2" style={{
             background: 'rgba(201,168,76,0.08)',
             border: '1px solid rgba(201,168,76,0.2)',
             borderRadius: 10, padding: '14px', marginBottom: 16,
           }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: '#C9A84C', marginBottom: 8 }}>
+            <p className="section-heading" style={{ fontSize: 12, fontWeight: 700, color: '#C9A84C', marginBottom: 8 }}>
               {verdictEmoji} FÖRRA SÄSONGEN
             </p>
             <p style={{ fontSize: 13, color: '#8A9BB0', lineHeight: 1.5 }}>
@@ -101,11 +101,11 @@ export function BoardMeetingScreen() {
         )}
 
         {/* Säsongens mål */}
-        <div style={{
-          background: '#122235', border: '1px solid #1e3450',
+        <div className="card-stagger-3" style={{
+          background: 'var(--bg-surface)', border: '1px solid var(--border)',
           borderRadius: 10, padding: '14px', marginBottom: 16,
         }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: '#F0F4F8', marginBottom: 8 }}>
+          <p className="section-heading" style={{ fontSize: 12, fontWeight: 700, color: '#F0F4F8', marginBottom: 8 }}>
             📋 SÄSONGENS MÅL
           </p>
           <p style={{ fontSize: 14, color: '#C9A84C', fontWeight: 600, marginBottom: 4 }}>
@@ -117,11 +117,11 @@ export function BoardMeetingScreen() {
         </div>
 
         {/* Ekonomi */}
-        <div style={{
-          background: '#122235', border: '1px solid #1e3450',
+        <div className="card-stagger-4" style={{
+          background: 'var(--bg-surface)', border: '1px solid var(--border)',
           borderRadius: 10, padding: '14px', marginBottom: 16,
         }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: '#F0F4F8', marginBottom: 8 }}>
+          <p className="section-heading" style={{ fontSize: 12, fontWeight: 700, color: '#F0F4F8', marginBottom: 8 }}>
             💰 EKONOMI
           </p>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -153,11 +153,11 @@ export function BoardMeetingScreen() {
         </div>
 
         {/* Trupp */}
-        <div style={{
-          background: '#122235', border: '1px solid #1e3450',
+        <div className="card-stagger-5" style={{
+          background: 'var(--bg-surface)', border: '1px solid var(--border)',
           borderRadius: 10, padding: '14px', marginBottom: 24,
         }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: '#F0F4F8', marginBottom: 8 }}>
+          <p className="section-heading" style={{ fontSize: 12, fontWeight: 700, color: '#F0F4F8', marginBottom: 8 }}>
             👥 TRUPP
           </p>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>

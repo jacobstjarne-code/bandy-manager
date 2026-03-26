@@ -303,7 +303,7 @@ export function TransfersScreen() {
       </div>
 
       {/* Transfer window status banner */}
-      <div style={{
+      <div className="card-stagger-1" style={{
         background: windowInfo.status === 'open' ? 'rgba(34,197,94,0.08)' : windowInfo.status === 'winter' ? 'rgba(59,130,246,0.08)' : 'rgba(239,68,68,0.06)',
         border: `1px solid ${windowInfo.status === 'open' ? 'rgba(34,197,94,0.3)' : windowInfo.status === 'winter' ? 'rgba(59,130,246,0.3)' : 'rgba(239,68,68,0.2)'}`,
         borderRadius: 'var(--radius)',
@@ -317,9 +317,9 @@ export function TransfersScreen() {
       </div>
 
       {/* Scouting section */}
-      {activeTab === 'scouting' && <div style={{ marginBottom: 24 }}>
+      {activeTab === 'scouting' && <div className="card-stagger-2" style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', margin: 0 }}>
+          <p className="section-heading" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', margin: 0 }}>
             Scouting — andra lag
           </p>
           <span style={{ fontSize: 12, color: scoutBudget > 3 ? 'var(--text-secondary)' : 'var(--danger)', fontWeight: 600 }}>
@@ -413,8 +413,8 @@ export function TransfersScreen() {
       {activeTab === 'scouting' && Object.keys(scoutReports).length > 0 && (() => {
         const reportEntries = Object.values(scoutReports)
         return (
-          <div style={{ marginBottom: 24 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
+          <div className="card-stagger-3" style={{ marginBottom: 24 }}>
+            <p className="section-heading" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
               Scoutrapporter ({reportEntries.length})
             </p>
             <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
@@ -504,7 +504,7 @@ export function TransfersScreen() {
 
       {/* Spaning (Talent Search) section */}
       {activeTab === 'spaning' && (
-        <div style={{ marginBottom: 24 }}>
+        <div className="card-stagger-2" style={{ marginBottom: 24 }}>
           {/* Scout busy with evaluation */}
           {game.activeScoutAssignment && (
             <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13, color: 'var(--danger)' }}>
@@ -522,7 +522,7 @@ export function TransfersScreen() {
           {/* Search form */}
           {!game.activeTalentSearch && (
             <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '16px', marginBottom: 16 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
+              <p className="section-heading" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
                 Ny talangspaning
               </p>
               <div style={{ marginBottom: 12 }}>
@@ -590,7 +590,7 @@ export function TransfersScreen() {
             const latestResult = game.talentSearchResults[game.talentSearchResults.length - 1]
             return (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
+                <p className="section-heading" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
                   Senaste spaningsrapport
                 </p>
                 <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
@@ -640,8 +640,8 @@ export function TransfersScreen() {
       )}
 
       {/* Expiring contracts section */}
-      {activeTab === 'contracts' && <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
+      {activeTab === 'contracts' && <div className="card-stagger-2" style={{ marginBottom: 24 }}>
+        <p className="section-heading" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
           Utgående kontrakt
         </p>
         {expiringPlayers.length === 0 ? (
@@ -668,8 +668,8 @@ export function TransfersScreen() {
       </div>}
 
       {/* Free agents section */}
-      {activeTab === 'freeagents' && <div>
-        <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
+      {activeTab === 'freeagents' && <div className="card-stagger-2">
+        <p className="section-heading" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
           Fria agenter
         </p>
         {freeAgents.length === 0 ? (

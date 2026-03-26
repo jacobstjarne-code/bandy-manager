@@ -36,18 +36,22 @@ function styleLabel(s: ClubStyle): string {
 interface SectionCardProps {
   title: string
   children: React.ReactNode
+  stagger?: number
 }
 
-function SectionCard({ title, children }: SectionCardProps) {
+function SectionCard({ title, children, stagger }: SectionCardProps) {
   return (
-    <div style={{
-      background: 'var(--bg-surface)',
-      border: '1px solid var(--border)',
-      borderRadius: 'var(--radius)',
-      padding: '16px',
-      marginBottom: 12,
-    }}>
-      <p style={{
+    <div
+      className={stagger ? `card-stagger-${stagger}` : undefined}
+      style={{
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius)',
+        padding: '16px',
+        marginBottom: 12,
+      }}
+    >
+      <p className="section-heading" style={{
         fontSize: 11,
         fontWeight: 700,
         textTransform: 'uppercase',
@@ -152,7 +156,7 @@ function TrainingSection({ focus, recentSessions, trainingInjuriesThisSeason, on
     .join(', ')
 
   return (
-    <SectionCard title="Träning">
+    <SectionCard title="Träning" stagger={1}>
       {/* Type grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 16 }}>
         {TRAINING_TYPES.map(type => {
@@ -364,7 +368,7 @@ export function ClubScreen() {
         const totalWeekly = activeSponsors.reduce((sum, s) => sum + s.weeklyIncome, 0)
         const slots = Array.from({ length: maxSponsors })
         return (
-          <SectionCard title="Sponsorer">
+          <SectionCard title="Sponsorer" stagger={2}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                 {activeSponsors.length} av {maxSponsors} sponsorplatser
@@ -418,7 +422,7 @@ export function ClubScreen() {
       })()}
 
       {/* Ekonomi */}
-      <SectionCard title="Ekonomi">
+      <SectionCard title="Ekonomi" stagger={3}>
         <InfoRow label="Saldo" value={formatCurrency(club.finances)} />
         <InfoRow label="Lönebudget" value={formatCurrency(club.wageBudget) + '/mån'} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -428,7 +432,7 @@ export function ClubScreen() {
       </SectionCard>
 
       {/* Faciliteter */}
-      <SectionCard title="Faciliteter">
+      <SectionCard title="Faciliteter" stagger={4}>
         <FacilityRow label="Anläggningar" value={club.facilities} />
         <FacilityRow label="Ungdomskvalitet" value={club.youthQuality} />
         <FacilityRow label="Ungdomsrekrytering" value={club.youthRecruitment} />
@@ -442,7 +446,7 @@ export function ClubScreen() {
       </SectionCard>
 
       {/* Förväntan */}
-      <SectionCard title="Förväntan">
+      <SectionCard title="Förväntan" stagger={5}>
         <InfoRow label="Styrelseförväntning" value={expectationLabel(club.boardExpectation)} />
         <InfoRow label="Supporterförväntning" value={expectationLabel(club.fanExpectation)} />
         <InfoRow label="Spelstil" value={styleLabel(club.preferredStyle)} />
@@ -454,7 +458,7 @@ export function ClubScreen() {
 
       {/* Tabellposition */}
       {standing && (
-        <SectionCard title="Tabellposition">
+        <SectionCard title="Tabellposition" stagger={6}>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(4, 1fr)',
@@ -504,7 +508,7 @@ export function ClubScreen() {
 
       {/* Säsongshistorik */}
       {game.seasonSummaries && game.seasonSummaries.length > 0 && (
-        <SectionCard title="Säsongshistorik">
+        <SectionCard title="Säsongshistorik" stagger={6}>
           {[...game.seasonSummaries].reverse().map(s => {
             const posColor = s.finalPosition <= 3 ? 'var(--accent)' : s.finalPosition >= 10 ? 'var(--danger)' : 'var(--text-primary)'
             let playoffLabel = ''

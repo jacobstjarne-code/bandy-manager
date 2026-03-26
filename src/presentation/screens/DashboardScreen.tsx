@@ -349,7 +349,13 @@ export function DashboardScreen() {
     }
   }, [game?.managerFired, navigate])
 
-  if (!game || !club) return null
+  if (!game || !club) return (
+    <div style={{ padding: '20px' }}>
+      <div className="shimmer" style={{ height: 120, borderRadius: 'var(--radius)', marginBottom: 12 }} />
+      <div className="shimmer" style={{ height: 80, borderRadius: 'var(--radius)', marginBottom: 12 }} />
+      <div className="shimmer" style={{ height: 80, borderRadius: 'var(--radius)' }} />
+    </div>
+  )
 
   function effectiveRound(f: { roundNumber: number; isCup?: boolean }): number {
     return f.isCup ? f.roundNumber - 100 : f.roundNumber
@@ -836,7 +842,7 @@ export function DashboardScreen() {
           />
         ) : standing && (
           <div
-            className="card-stagger-3"
+            className="card-stagger-3 gold-border-pulse"
             style={{ ...cardStyle, cursor: 'pointer' }}
             onClick={() => navigate('/game/tabell')}
           >

@@ -60,8 +60,8 @@ export function SeasonSummaryScreen() {
   }
 
   const cardStyle: React.CSSProperties = {
-    background: '#122235',
-    border: '1px solid #1e3450',
+    background: 'var(--bg-surface)',
+    border: '1px solid var(--border)',
     borderRadius: 12,
     padding: '16px',
     marginBottom: 12,
@@ -72,7 +72,7 @@ export function SeasonSummaryScreen() {
     fontWeight: 700,
     letterSpacing: '2px',
     textTransform: 'uppercase',
-    color: '#4A6080',
+    color: 'var(--text-muted)',
     marginBottom: 10,
   }
 
@@ -222,7 +222,7 @@ export function SeasonSummaryScreen() {
         </div>
 
         {/* NARRATIVE */}
-        <div style={{
+        <div className="card-stagger-1" style={{
           ...cardStyle,
           borderLeft: '3px solid #C9A84C',
           background: 'rgba(201,168,76,0.05)',
@@ -233,8 +233,8 @@ export function SeasonSummaryScreen() {
         </div>
 
         {/* SEASON'S BEST */}
-        <div style={cardStyle}>
-          <p style={labelStyle}>SÄSONGENS BÄSTA</p>
+        <div className="card-stagger-2" style={cardStyle}>
+          <p className="section-heading" style={labelStyle}>SÄSONGENS BÄSTA</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {summary.topScorer && (
               <AwardCard icon="🔴" title="Toppskyttar" name={summary.topScorer.name}
@@ -260,8 +260,8 @@ export function SeasonSummaryScreen() {
         </div>
 
         {/* STATISTICS */}
-        <div style={cardStyle}>
-          <p style={labelStyle}>STATISTIK</p>
+        <div className="card-stagger-3" style={cardStyle}>
+          <p className="section-heading" style={labelStyle}>STATISTIK</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
             <div>
               <StatRow label="Spelade" value={summary.wins + summary.draws + summary.losses} />
@@ -279,9 +279,9 @@ export function SeasonSummaryScreen() {
         </div>
 
         {/* HOME vs AWAY */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+        <div className="card-stagger-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
           <div style={{ ...cardStyle, marginBottom: 0 }}>
-            <p style={labelStyle}>HEMMA</p>
+            <p className="section-heading" style={labelStyle}>HEMMA</p>
             <p style={{ fontSize: 22, fontWeight: 800, color: '#22c55e' }}>{summary.homeRecord.wins}</p>
             <p style={{ fontSize: 11, color: '#8A9BB0' }}>V</p>
             <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
@@ -290,7 +290,7 @@ export function SeasonSummaryScreen() {
             </div>
           </div>
           <div style={{ ...cardStyle, marginBottom: 0 }}>
-            <p style={labelStyle}>BORTA</p>
+            <p className="section-heading" style={labelStyle}>BORTA</p>
             <p style={{ fontSize: 22, fontWeight: 800, color: '#22c55e' }}>{summary.awayRecord.wins}</p>
             <p style={{ fontSize: 11, color: '#8A9BB0' }}>V</p>
             <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
@@ -301,8 +301,8 @@ export function SeasonSummaryScreen() {
         </div>
 
         {/* STREAKS */}
-        <div style={cardStyle}>
-          <p style={labelStyle}>STREAKS OCH EXTREMER</p>
+        <div className="card-stagger-5" style={cardStyle}>
+          <p className="section-heading" style={labelStyle}>STREAKS OCH EXTREMER</p>
           <StatRow label="Längsta vinstsvit" value={`${summary.longestWinStreak} matcher`} color="#22c55e" />
           <StatRow label="Längsta förlustsvit" value={`${summary.longestLossStreak} matcher`} color="#ef4444" />
           {summary.biggestWin && (
@@ -314,8 +314,8 @@ export function SeasonSummaryScreen() {
         </div>
 
         {/* POINTS CHART */}
-        <div style={cardStyle}>
-          <p style={labelStyle}>POÄNGKURVA</p>
+        <div className="card-stagger-6" style={cardStyle}>
+          <p className="section-heading" style={labelStyle}>POÄNGKURVA</p>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <div>
               <span style={{ fontSize: 11, color: '#8A9BB0' }}>Första halvan: </span>
@@ -337,8 +337,8 @@ export function SeasonSummaryScreen() {
 
         {/* YOUTH INTAKE */}
         {summary.youthIntakeCount > 0 && (
-          <div style={cardStyle}>
-            <p style={labelStyle}>UNGDOMSKULL</p>
+          <div className="card-stagger-6" style={cardStyle}>
+            <p className="section-heading" style={labelStyle}>UNGDOMSKULL</p>
             <p style={{ fontSize: 14, color: '#F0F4F8', marginBottom: 8 }}>
               {summary.youthIntakeCount} nya spelare rekryterades
             </p>
@@ -355,8 +355,8 @@ export function SeasonSummaryScreen() {
         )}
 
         {/* FINANCES */}
-        <div style={cardStyle}>
-          <p style={labelStyle}>EKONOMI</p>
+        <div className="card-stagger-6" style={cardStyle}>
+          <p className="section-heading" style={labelStyle}>EKONOMI</p>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <p style={{ fontSize: 12, color: '#4A6080' }}>Vid säsongsstart</p>

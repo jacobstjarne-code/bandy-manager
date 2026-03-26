@@ -47,9 +47,10 @@ function formatDate(iso: string): string {
 interface InboxItemRowProps {
   item: InboxItem
   onRead: (id: string) => void
+  index: number
 }
 
-function InboxItemRow({ item, onRead }: InboxItemRowProps) {
+function InboxItemRow({ item, onRead, index }: InboxItemRowProps) {
   const color = inboxTypeColor(item.type)
   return (
     <div
@@ -62,6 +63,7 @@ function InboxItemRow({ item, onRead }: InboxItemRowProps) {
         borderBottom: '1px solid var(--border)',
         background: item.isRead ? 'transparent' : 'rgba(59,130,246,0.04)',
         cursor: item.isRead ? 'default' : 'pointer',
+        animation: `fadeInUp 200ms ease-out ${Math.min(index, 14) * 30}ms both`,
       }}
     >
       <div style={{
@@ -132,7 +134,7 @@ export function InboxScreen() {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <div style={{
+      <div className="card-stagger-1" style={{
         padding: '16px 16px 12px',
         borderBottom: '1px solid var(--border)',
         display: 'flex',
@@ -191,8 +193,8 @@ export function InboxScreen() {
             <p style={{ fontSize: 15 }}>Inkorgen är tom</p>
           </div>
         ) : (
-          items.map(item => (
-            <InboxItemRow key={item.id} item={item} onRead={markInboxRead} />
+          items.map((item, index) => (
+            <InboxItemRow key={item.id} item={item} onRead={markInboxRead} index={index} />
           ))
         )}
       </div>
