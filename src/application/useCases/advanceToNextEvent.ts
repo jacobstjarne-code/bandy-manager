@@ -224,8 +224,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   const simulatedFixtures: Fixture[] = []
   const roundMatchWeathers: MatchWeather[] = []
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const newInboxItems: any[] = []
+  const newInboxItems: InboxItem[] = []
 
   // Determine if this round is a playoff round
   const isPlayoffRound = game.playoffBracket !== null && nextRound > 22

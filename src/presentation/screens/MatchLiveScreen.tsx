@@ -9,6 +9,7 @@ import type { Club } from '../../domain/entities/Club'
 import { MatchEventType, WeatherCondition, IceQuality } from '../../domain/enums'
 import { getWeatherEmoji, getIceQualityLabel } from '../../domain/services/weatherService'
 import { getRivalry } from '../../domain/data/rivalries'
+import { eventIcon } from '../utils/formatters'
 
 function GoldConfetti() {
   const particles = Array.from({ length: 30 }, (_, i) => ({
@@ -91,15 +92,6 @@ function SnowOverlay() {
       ))}
     </div>
   )
-}
-
-function eventIcon(type: MatchEventType): string {
-  if (type === MatchEventType.Goal) return '🔴'
-  if (type === MatchEventType.YellowCard) return '⚠️'
-  if (type === MatchEventType.RedCard) return '🚫'
-  if (type === MatchEventType.Save) return '🧤'
-  if (type === MatchEventType.Corner) return '📐'
-  return ''
 }
 
 function truncate(s: string, n: number): string {

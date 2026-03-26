@@ -1,30 +1,15 @@
 import { useState } from 'react'
 import { useGameStore } from '../store/gameStore'
-import { PlayerPosition } from '../../domain/enums'
 import type { Player } from '../../domain/entities/Player'
 import { saveSaveGame } from '../../infrastructure/persistence/saveGameStorage'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 import { getScoutReportAge } from '../../domain/services/scoutingService'
-
-function formatCurrency(n: number): string {
-  return n.toLocaleString('sv-SE') + ' kr'
-}
+import { formatCurrency, positionShort } from '../utils/formatters'
 
 function formatValue(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
   if (v >= 1_000) return `${Math.round(v / 1_000)} tkr`
   return `${v} kr`
-}
-
-function positionShort(pos: PlayerPosition): string {
-  const map: Record<PlayerPosition, string> = {
-    [PlayerPosition.Goalkeeper]: 'MV',
-    [PlayerPosition.Defender]: 'DEF',
-    [PlayerPosition.Half]: 'HALF',
-    [PlayerPosition.Midfielder]: 'MID',
-    [PlayerPosition.Forward]: 'FWD',
-  }
-  return map[pos] ?? pos
 }
 
 interface RenewModalProps {

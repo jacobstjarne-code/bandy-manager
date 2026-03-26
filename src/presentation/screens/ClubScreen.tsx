@@ -10,10 +10,7 @@ import {
   trainingIntensityLabel,
 } from '../../domain/services/trainingService'
 import type { TrainingFocus } from '../../domain/entities/Training'
-
-function formatCurrency(n: number): string {
-  return n.toLocaleString('sv-SE') + ' kr'
-}
+import { formatCurrency } from '../utils/formatters'
 
 function expectationLabel(e: ClubExpectation): string {
   const map: Record<ClubExpectation, string> = {

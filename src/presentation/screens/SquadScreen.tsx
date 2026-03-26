@@ -4,28 +4,10 @@ import { PlayerPosition, PlayerArchetype } from '../../domain/enums'
 import type { Player } from '../../domain/entities/Player'
 import { StatBar } from '../components/StatBar'
 import { PlayerCard } from '../components/PlayerCard'
+import { positionShort, POSITION_ORDER } from '../utils/formatters'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
 type FilterKey = 'all' | 'mv' | 'def' | 'half' | 'mid' | 'fwd'
-
-function positionShort(pos: PlayerPosition): string {
-  const map: Record<PlayerPosition, string> = {
-    [PlayerPosition.Goalkeeper]: 'MV',
-    [PlayerPosition.Defender]: 'DEF',
-    [PlayerPosition.Half]: 'HALF',
-    [PlayerPosition.Midfielder]: 'MID',
-    [PlayerPosition.Forward]: 'FWD',
-  }
-  return map[pos] ?? pos
-}
-
-const POSITION_ORDER: Record<PlayerPosition, number> = {
-  [PlayerPosition.Goalkeeper]: 0,
-  [PlayerPosition.Defender]: 1,
-  [PlayerPosition.Half]: 2,
-  [PlayerPosition.Midfielder]: 3,
-  [PlayerPosition.Forward]: 4,
-}
 
 const FILTER_TO_POSITION: Record<string, PlayerPosition> = {
   mv: PlayerPosition.Goalkeeper,

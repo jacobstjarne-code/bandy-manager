@@ -2,13 +2,10 @@ import { useState } from 'react'
 import type { Player } from '../../domain/entities/Player'
 import { PlayerPosition, PlayerArchetype } from '../../domain/enums'
 import { StatBar } from './StatBar'
+import { formatCurrency } from '../utils/formatters'
 
 interface PlayerProfileContentProps {
   player: Player
-}
-
-function formatCurrency(n: number): string {
-  return n.toLocaleString('sv-SE') + ' kr'
 }
 
 function positionLabel(pos: PlayerPosition): string {
