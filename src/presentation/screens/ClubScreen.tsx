@@ -418,10 +418,12 @@ export function ClubScreen() {
           const maxSponsors = Math.min(6, 2 + Math.floor(club.reputation / 20))
           const weeklySponsors = activeSponsors.reduce((sum, s) => sum + s.weeklyIncome, 0)
           const ca = game.communityActivities
-          const kioskEst = ca?.kiosk === 'upgraded' ? 7000 : ca?.kiosk === 'basic' ? 3500 : 0
-          const lotteryEst = ca?.lottery === 'intensive' ? 2250 : ca?.lottery === 'basic' ? 1000 : 0
-          const communityEst = kioskEst + lotteryEst + (ca?.functionaries ? 3000 : 0) + (ca?.bandyplay ? 1200 : 0)
-          const weeklyBase = Math.round(club.reputation * 150)
+          const kioskEst = ca?.kiosk === 'upgraded' ? 10000 : ca?.kiosk === 'basic' ? 5000 : 0
+          const lotteryEst = ca?.lottery === 'intensive' ? 4000 : ca?.lottery === 'basic' ? 1750 : 0
+          const bandyplayEst = ca?.bandyplay ? 1500 : 0
+          const functionariesEst = ca?.functionaries ? 4000 : 0
+          const communityEst = kioskEst + lotteryEst + functionariesEst + bandyplayEst
+          const weeklyBase = Math.round(club.reputation * 250)
           const weeklyIncome = weeklyBase + weeklySponsors + communityEst
           const weeklyWages = Math.round(actualMonthlyWages / 4)
           const netPerRound = weeklyIncome - weeklyWages
@@ -496,23 +498,84 @@ export function ClubScreen() {
                 })}
               </SectionCard>
 
-              {/* Övriga intäkter */}
-              {(communityEst > 0 || patron || kommunBidrag > 0) && (
-                <SectionCard title="Övriga intäkter" stagger={3}>
-                  {communityEst > 0 && (
-                    <div style={{ paddingBottom: 8, marginBottom: 8, borderBottom: (patron || kommunBidrag > 0) ? '1px solid var(--border)' : 'none' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Föreningsverksamhet</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(communityEst)}/omg</span>
+              {/* Föreningsaktiviteter */}
+              {(() => {
+                const communityRows = [
+                  {
+                    icon: '🌭', name: 'Bandykiosken',
+                    active: ca?.kiosk !== 'none' && !!ca?.kiosk,
+                    status: ca?.kiosk === 'upgraded' ? 'Uppgraderad' : ca?.kiosk === 'basic' ? 'Aktiv' : 'Ej startad',
+                    income: ca?.kiosk === 'upgraded' ? '~10 000/match' : ca?.kiosk === 'basic' ? '~5 000/match' : '—',
+                    value: kioskEst,
+                  },
+                  {
+                    icon: '🎫', name: 'Folkspel-lotteriet',
+                    active: ca?.lottery !== 'none' && !!ca?.lottery,
+                    status: ca?.lottery === 'intensive' ? 'Intensiv' : ca?.lottery === 'basic' ? 'Aktiv' : 'Ej startad',
+                    income: ca?.lottery === 'intensive' ? '~4 000/omg' : ca?.lottery === 'basic' ? '~1 750/omg' : '—',
+                    value: lotteryEst,
+                  },
+                  {
+                    icon: '📺', name: 'BandyPlay',
+                    active: !!ca?.bandyplay,
+                    status: ca?.bandyplay ? 'Aktiv' : 'Ej startad',
+                    income: ca?.bandyplay ? '~1 500/match' : '—',
+                    value: bandyplayEst,
+                  },
+                  {
+                    icon: '🏋️', name: 'Funktionärer',
+                    active: !!ca?.functionaries,
+                    status: ca?.functionaries ? 'Aktiv' : 'Ej rekryterade',
+                    income: ca?.functionaries ? '-4 000/match (besparing)' : '—',
+                    value: functionariesEst,
+                  },
+                  {
+                    icon: '🎄', name: 'Julmarknad',
+                    active: !!ca?.julmarknad,
+                    status: ca?.julmarknad ? 'Genomförd ✓' : 'Väntar (dec)',
+                    income: '—', value: 0,
+                  },
+                  {
+                    icon: '🏪', name: 'Loppis',
+                    active: false, status: 'Slumpmässig', income: '—', value: 0,
+                  },
+                  {
+                    icon: '🚗', name: 'Bilbingo',
+                    active: false, status: 'Försäsong', income: '—', value: 0,
+                  },
+                ]
+                const communityTotal = communityRows.reduce((s, r) => s + r.value, 0)
+                return (
+                  <SectionCard title="Föreningsaktiviteter" stagger={3}>
+                    {communityRows.map((row, i) => (
+                      <div key={row.name} style={{
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        padding: '7px 0',
+                        borderBottom: i < communityRows.length - 1 ? '1px solid var(--border)' : 'none',
+                        opacity: row.active ? 1 : 0.4,
+                      }}>
+                        <div>
+                          <span style={{ fontSize: 13 }}>{row.icon} {row.name}</span>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{row.status}</span>
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: row.active ? 'var(--success)' : 'var(--text-muted)' }}>
+                          {row.income}
+                        </span>
                       </div>
-                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                        {kioskEst > 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>🏪 Kiosk +{formatCurrency(kioskEst)}</span>}
-                        {lotteryEst > 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>🎟️ Lotteri +{formatCurrency(lotteryEst)}</span>}
-                        {ca?.functionaries && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>🤝 Funktionärer +{formatCurrency(3000)}</span>}
-                        {ca?.bandyplay && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>🏒 Bandyskola +{formatCurrency(1200)}</span>}
+                    ))}
+                    {communityTotal > 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, marginTop: 2, borderTop: '1px solid var(--border)' }}>
+                        <span style={{ fontSize: 13, fontWeight: 700 }}>Totalt / hemmamatch</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--success)' }}>~+{Math.round(communityTotal / 1000)} tkr</span>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </SectionCard>
+                )
+              })()}
+
+              {/* Patron & Kommunbidrag */}
+              {(patron || kommunBidrag > 0) && (
+                <SectionCard title="Övriga intäkter" stagger={4}>
                   {patron && patron.contribution > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: kommunBidrag > 0 ? 8 : 0, marginBottom: kommunBidrag > 0 ? 8 : 0, borderBottom: kommunBidrag > 0 ? '1px solid var(--border)' : 'none' }}>
                       <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Patron — {patron.name}</span>

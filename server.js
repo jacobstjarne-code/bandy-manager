@@ -94,13 +94,20 @@ app.post('/api/doctor', doctorLimiter, async (req, res) => {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 500,
         system: systemPrompt,
         messages: messages.slice(-6),
       }),
     })
-    const data = await response.json()
+    const text = await response.text()
+    let data
+    try {
+      data = JSON.parse(text)
+    } catch {
+      console.error('Anthropic returned non-JSON:', text.slice(0, 200))
+      return res.status(502).json({ error: 'Bandydoktorn fick ett ogiltigt svar.' })
+    }
 
     if (!response.ok) {
       console.error('Anthropic API error:', data)

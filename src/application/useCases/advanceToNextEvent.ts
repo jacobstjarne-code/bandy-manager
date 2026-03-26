@@ -1199,12 +1199,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     let communityIncome = 0
     if (activities) {
       const moodMult = 0.7 + (fanMood / 100) * 0.6
-      const kioskBase = activities.kiosk === 'upgraded' ? 7000
-        : activities.kiosk === 'basic' ? 3500 : 0
+      const kioskBase = activities.kiosk === 'upgraded' ? 10000
+        : activities.kiosk === 'basic' ? 5000 : 0
       communityIncome += Math.round(kioskBase * moodMult)
-      communityIncome += activities.functionaries ? 3000 : 0
+      communityIncome += activities.functionaries ? 4000 : 0
       communityIncome += activities.bandyplay
-        ? 800 + Math.round(rand() * 700) : 0
+        ? 1000 + Math.round(rand() * 1000) : 0
     }
 
     return base + communityIncome
@@ -1217,10 +1217,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   ): number {
     if (!communityActivities) return 0
     if (communityActivities.lottery === 'intensive') {
-      return 1500 + Math.round(rand() * 1500)
+      return 3000 + Math.round(rand() * 2000)
     }
     if (communityActivities.lottery === 'basic') {
-      return 500 + Math.round(rand() * 1000)
+      return 1000 + Math.round(rand() * 1500)
     }
     return 0
   }
@@ -1258,11 +1258,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       )
     } else {
       matchRevenue = homeMatch
-        ? Math.round(c.reputation * 400 + localRand() * 10000)
+        ? Math.round(c.reputation * 600 + localRand() * 10000)
         : 0
     }
 
-    const weeklySponsorship = Math.round(c.reputation * 150)
+    const weeklySponsorship = Math.round(c.reputation * 250)
 
     const sponsorIncome = c.id === game.managedClubId
       ? (game.sponsors ?? []).filter(s => s.contractRounds > 0).reduce((sum, s) => sum + s.weeklyIncome, 0)
