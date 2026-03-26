@@ -235,9 +235,9 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   // Derby intensity modifiers
   let derbyFoulMult = 1.0
   let derbyChanceMult = 0.0
-  let effectiveHomeAdvantage = homeAdvantage
+  let effectiveHomeAdvantage = fixture.isNeutralVenue ? 0 : homeAdvantage
   // Fan mood affects home advantage (only when managed club plays at home)
-  if (fanMood !== undefined && managedIsHome) {
+  if (!fixture.isNeutralVenue && fanMood !== undefined && managedIsHome) {
     effectiveHomeAdvantage *= 1 + ((fanMood - 50) / 100) * 0.06
   }
   if (rivalry) {
@@ -249,8 +249,10 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     derbyFoulMult = 1 + rivalry.intensity * 0.15
     // More open play (higher chance quality)
     derbyChanceMult = 0.05
-    // Bigger home advantage in derby atmosphere
-    effectiveHomeAdvantage = homeAdvantage * (1 + rivalry.intensity * 0.1)
+    // Bigger home advantage in derby atmosphere (only if not neutral venue)
+    if (!fixture.isNeutralVenue) {
+      effectiveHomeAdvantage = homeAdvantage * (1 + rivalry.intensity * 0.1)
+    }
   }
 
   // Match state
@@ -920,9 +922,9 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
   // Derby intensity modifiers
   let derbyFoulMult = 1.0
   let derbyChanceMult = 0.0
-  let effectiveHomeAdvantageSbs = homeAdvantage
+  let effectiveHomeAdvantageSbs = fixture.isNeutralVenue ? 0 : homeAdvantage
   // Fan mood affects home advantage (only when managed club plays at home)
-  if (fanMood !== undefined && managedIsHome) {
+  if (!fixture.isNeutralVenue && fanMood !== undefined && managedIsHome) {
     effectiveHomeAdvantageSbs *= 1 + ((fanMood - 50) / 100) * 0.06
   }
   if (rivalry) {
@@ -931,7 +933,9 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     awayAttackSbs = avgAttack + (awayAttackSbs - avgAttack) * 0.7
     derbyFoulMult = 1 + rivalry.intensity * 0.15
     derbyChanceMult = 0.05
-    effectiveHomeAdvantageSbs = homeAdvantage * (1 + rivalry.intensity * 0.1)
+    if (!fixture.isNeutralVenue) {
+      effectiveHomeAdvantageSbs = homeAdvantage * (1 + rivalry.intensity * 0.1)
+    }
   }
 
   // Alias for use in the loop

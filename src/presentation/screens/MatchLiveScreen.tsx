@@ -4,6 +4,8 @@ import { useGameStore } from '../store/gameStore'
 import { simulateMatchStepByStep, type MatchStep } from '../../domain/services/matchSimulator'
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
+import type { PlayoffBracket } from '../../domain/entities/Playoff'
+import type { Club } from '../../domain/entities/Club'
 import { MatchEventType, WeatherCondition, IceQuality } from '../../domain/enums'
 import { getWeatherEmoji, getIceQualityLabel } from '../../domain/services/weatherService'
 import { getRivalry } from '../../domain/data/rivalries'
@@ -104,6 +106,18 @@ function truncate(s: string, n: number): string {
   return s.length > n ? s.slice(0, n) + '…' : s
 }
 
+function getFinalJourney(bracket: PlayoffBracket, clubId: string, clubs: Club[]): string {
+  const qf = bracket.quarterFinals?.find(s => s.winnerId === clubId)
+  const sf = bracket.semiFinals?.find(s => s.winnerId === clubId)
+  const qfLoserId = qf ? (qf.homeClubId === clubId ? qf.awayClubId : qf.homeClubId) : null
+  const sfLoserId = sf ? (sf.homeClubId === clubId ? sf.awayClubId : sf.homeClubId) : null
+  const qfLoser = qfLoserId ? clubs.find(c => c.id === qfLoserId)?.name : null
+  const sfLoser = sfLoserId ? clubs.find(c => c.id === sfLoserId)?.name : null
+  if (qfLoser && sfLoser) return `Slog ut ${qfLoser} i KF och ${sfLoser} i SF`
+  if (sfLoser) return `Slog ut ${sfLoser} i SF`
+  return 'Klarade sig till finalen'
+}
+
 export function MatchLiveScreen() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -130,6 +144,8 @@ export function MatchLiveScreen() {
   const [matchDone, setMatchDone] = useState(false)
   // SM-final ceremony slide (0 = not showing, 1 = final score, 2 = champion, 3 = MVP)
   const [ceremonySlide, setCeremonySlide] = useState(0)
+  // SM-final pre-match intro slide (0 = not showing, 1/2/3 = intro slides)
+  const [finalIntroSlide, setFinalIntroSlide] = useState(() => isSmFinal ? 1 : 0)
   // Score flash state
   const [homeScoreFlash, setHomeScoreFlash] = useState(false)
   const [awayScoreFlash, setAwayScoreFlash] = useState(false)
@@ -291,6 +307,219 @@ export function MatchLiveScreen() {
         Ingen matchdata tillgänglig.
       </div>
     )
+  }
+
+  // SM-final pre-match intro slides
+  if (isSmFinal && finalIntroSlide > 0) {
+    const bracket = game?.playoffBracket
+    const clubs = game?.clubs ?? []
+    const season = game?.currentSeason ?? fixture.season
+    const homeStanding = game?.standings.find(s => s.clubId === fixture.homeClubId)
+    const awayStanding = game?.standings.find(s => s.clubId === fixture.awayClubId)
+    const weatherEmoji = matchWeather ? getWeatherEmoji(matchWeather.weather.condition) : ''
+
+    if (finalIntroSlide === 1) {
+      return (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          background: 'linear-gradient(180deg, #050d18 0%, #0D1B2A 60%, #091526 100%)',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          padding: '0 24px',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          <GoldConfetti />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ fontSize: 72, marginBottom: 24 }}>🏆</div>
+            <h1 style={{
+              fontSize: 28,
+              fontWeight: 900,
+              color: '#C9A84C',
+              letterSpacing: '3px',
+              textTransform: 'uppercase',
+              marginBottom: 8,
+            }}>SM-FINALEN</h1>
+            <p style={{ fontSize: 16, color: '#8A9BB0', marginBottom: 4 }}>Studenternas IP, Uppsala</p>
+            <p style={{ fontSize: 14, color: '#6a7d8f', marginBottom: 4 }}>Säsong {season}</p>
+            {weatherEmoji && (
+              <p style={{ fontSize: 13, color: '#6a7d8f', marginBottom: 32 }}>{weatherEmoji} {matchWeather?.weather.condition}</p>
+            )}
+            <button
+              onClick={() => setFinalIntroSlide(2)}
+              style={{
+                padding: '14px 32px',
+                background: '#C9A84C',
+                border: 'none',
+                borderRadius: 12,
+                color: '#0D1B2A',
+                fontSize: 15,
+                fontWeight: 700,
+                cursor: 'pointer',
+                letterSpacing: '1px',
+              }}
+            >
+              NÄSTA →
+            </button>
+          </div>
+        </div>
+      )
+    }
+
+    if (finalIntroSlide === 2) {
+      const homeJourney = bracket ? getFinalJourney(bracket, fixture.homeClubId, clubs) : ''
+      const awayJourney = bracket ? getFinalJourney(bracket, fixture.awayClubId, clubs) : ''
+      return (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          background: '#0D1B2A',
+          padding: '24px 16px',
+          overflowY: 'auto',
+        }}>
+          <p style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '2px',
+            textTransform: 'uppercase',
+            color: '#C9A84C',
+            textAlign: 'center',
+            marginBottom: 24,
+          }}>
+            LAGPRESENTATION
+          </p>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+            {/* Home club */}
+            <div style={{
+              flex: 1,
+              background: 'rgba(201,168,76,0.06)',
+              border: '1px solid rgba(201,168,76,0.2)',
+              borderRadius: 12,
+              padding: '16px 12px',
+              textAlign: 'center',
+            }}>
+              <p style={{ fontSize: 14, fontWeight: 700, color: '#F0F4F8', marginBottom: 8 }}>
+                {truncate(homeClubName, 14)}
+              </p>
+              {homeStanding && (
+                <p style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 8 }}>
+                  Plats {homeStanding.position} i serien
+                </p>
+              )}
+              <p style={{ fontSize: 11, color: '#6a7d8f', lineHeight: 1.4 }}>{homeJourney}</p>
+            </div>
+            {/* Away club */}
+            <div style={{
+              flex: 1,
+              background: 'rgba(201,168,76,0.06)',
+              border: '1px solid rgba(201,168,76,0.2)',
+              borderRadius: 12,
+              padding: '16px 12px',
+              textAlign: 'center',
+            }}>
+              <p style={{ fontSize: 14, fontWeight: 700, color: '#F0F4F8', marginBottom: 8 }}>
+                {truncate(awayClubName, 14)}
+              </p>
+              {awayStanding && (
+                <p style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 8 }}>
+                  Plats {awayStanding.position} i serien
+                </p>
+              )}
+              <p style={{ fontSize: 11, color: '#6a7d8f', lineHeight: 1.4 }}>{awayJourney}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setFinalIntroSlide(3)}
+            style={{
+              padding: '14px',
+              background: '#C9A84C',
+              border: 'none',
+              borderRadius: 12,
+              color: '#0D1B2A',
+              fontSize: 15,
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            NÄSTA →
+          </button>
+        </div>
+      )
+    }
+
+    if (finalIntroSlide === 3) {
+      const homeStarters = homeLineup.startingPlayerIds
+        .map(id => game?.players.find(p => p.id === id))
+        .filter(Boolean)
+      const awayStarters = awayLineup.startingPlayerIds
+        .map(id => game?.players.find(p => p.id === id))
+        .filter(Boolean)
+      return (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          background: '#0D1B2A',
+          padding: '24px 16px',
+          overflowY: 'auto',
+        }}>
+          <p style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '2px',
+            textTransform: 'uppercase',
+            color: '#C9A84C',
+            textAlign: 'center',
+            marginBottom: 24,
+          }}>
+            STARTELVOR
+          </p>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
+                {truncate(homeClubName, 14)}
+              </p>
+              {homeStarters.map((p, i) => p && (
+                <p key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 4, textAlign: 'center' }}>
+                  {p.firstName} {p.lastName}
+                </p>
+              ))}
+            </div>
+            <div style={{ width: 1, background: 'rgba(201,168,76,0.15)' }} />
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
+                {truncate(awayClubName, 14)}
+              </p>
+              {awayStarters.map((p, i) => p && (
+                <p key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 4, textAlign: 'center' }}>
+                  {p.firstName} {p.lastName}
+                </p>
+              ))}
+            </div>
+          </div>
+          <button
+            onClick={() => setFinalIntroSlide(0)}
+            style={{
+              padding: '16px',
+              background: '#C9A84C',
+              border: 'none',
+              borderRadius: 12,
+              color: '#0D1B2A',
+              fontSize: 16,
+              fontWeight: 800,
+              cursor: 'pointer',
+              letterSpacing: '1px',
+            }}
+          >
+            ⚡ SPELA FINALEN
+          </button>
+        </div>
+      )
+    }
   }
 
   const currentMatchStep = currentStep >= 0 && currentStep < steps.length ? steps[currentStep] : null
@@ -517,6 +746,8 @@ export function MatchLiveScreen() {
 
           const isDerby = s.isDerbyComment || s.commentary.toLowerCase().includes('derby')
 
+          const hasCornerGoal = s.events.some(e => e.type === MatchEventType.Goal && e.isCornerGoal)
+
           if (hasGoal) {
             background = 'rgba(201, 168, 76, 0.12)'
             borderLeft = '3px solid var(--color-accent)'
@@ -578,7 +809,7 @@ export function MatchLiveScreen() {
                 <span style={{ fontSize: 14, flexShrink: 0 }}>{icon}</span>
               )}
               <span style={{ fontSize, fontWeight, color, lineHeight: 1.4 }}>
-                {s.commentary}
+                {hasCornerGoal ? `📐 HÖRNMÅL! ${s.commentary}` : s.commentary}
               </span>
             </div>
           )
