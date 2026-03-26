@@ -89,6 +89,7 @@ export enum InboxItemType {
   TransferBidReceived = 'transferBidReceived',
   TransferBidResult = 'transferBidResult',
   Media = 'media',
+  Retirement = 'retirement',
 }
 
 export enum TrainingType {

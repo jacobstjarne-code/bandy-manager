@@ -13,7 +13,13 @@ import { resolveEvent as resolveEventFn } from '../../domain/services/eventServi
 import { advanceToNextEvent, type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
 import { calculateStandings } from '../../domain/services/standingsService'
-import { loadSaveGame, listSaveGames, type SaveGameSummary } from '../../infrastructure/persistence/saveGameStorage'
+export interface SaveGameSummary {
+  id: string
+  managerName: string
+  clubName: string
+  season: number
+  lastSavedAt: string
+}
 import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
 
 interface GameState {
@@ -78,10 +84,10 @@ export const useGameStore = create<GameState>()(
       },
 
       loadGame: (id) => {
-        const game = loadSaveGame(id)
-        if (!game) return false
-        set({ game, lastAdvanceResult: null })
-        return true
+        // Game is persisted via IndexedDB through Zustand persist middleware.
+        // If the already-rehydrated game matches the requested id, it's already loaded.
+        const { game } = get()
+        return game !== null && game.id === id
       },
 
       advance: () => {
@@ -188,7 +194,12 @@ export const useGameStore = create<GameState>()(
 
       clearGame: () => set({ game: null, lastAdvanceResult: null }),
 
-      listSaves: () => listSaveGames(),
+      listSaves: () => {
+        const { game } = get()
+        if (!game) return []
+        const clubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? ''
+        return [{ id: game.id, managerName: game.managerName, clubName, season: game.currentSeason, lastSavedAt: game.lastSavedAt }]
+      },
 
       clearSeasonSummary: () => {
         const { game } = get()

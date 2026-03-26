@@ -409,6 +409,26 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   for (let step = 0; step < 60; step++) {
     const minute = Math.round(step * 1.5)
 
+    // AI halftime tactical adjustment (applied once at step 30)
+    if (step === 30) {
+      const diff = homeScore - awayScore
+      // Trailing by 2+: chase the game (offensive push)
+      if (diff <= -2) {
+        homeAttack = clamp(homeAttack * 1.18, 0, 1)
+        awayAttack = clamp(awayAttack * 0.88, 0, 1)
+      } else if (diff >= 2) {
+        homeAttack = clamp(homeAttack * 0.88, 0, 1)
+        awayAttack = clamp(awayAttack * 1.18, 0, 1)
+      } else if (diff < 0) {
+        homeAttack = clamp(homeAttack * 1.09, 0, 1)
+      } else if (diff > 0) {
+        awayAttack = clamp(awayAttack * 1.09, 0, 1)
+      }
+      // Man-advantage tactical boost
+      if (homeActiveSuspensions > 0) awayAttack = clamp(awayAttack * 1.08, 0, 1)
+      if (awayActiveSuspensions > 0) homeAttack = clamp(homeAttack * 1.08, 0, 1)
+    }
+
     // Update suspension timers
     for (let i = homeSuspensionTimers.length - 1; i >= 0; i--) {
       homeSuspensionTimers[i]--

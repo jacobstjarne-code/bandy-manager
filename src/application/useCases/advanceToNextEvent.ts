@@ -1577,10 +1577,15 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     fixtureIds: leagueFixtures.map(f => f.id),
   }
 
-  // Reset player season stats, recover fitness
+  // Reset player season stats, recover fitness, age players
   const allPlayers = [...game.players, ...youthPlayers]
+  const retirementRand = mulberry32(baseSeed + 99991)
+  const retiredPlayerIds = new Set<string>()
+  const retirementMessages: InboxItem[] = []
+
   const resetPlayers = allPlayers.map(player => ({
     ...player,
+    age: player.age + 1,
     fitness: Math.min(100, player.fitness + 15),
     startSeasonCA: player.currentAbility,
     seasonStats: {
@@ -1596,6 +1601,28 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       minutesPlayed: 0,
     },
   }))
+
+  // Retirement check: age 34+ with CA < 40 have 50% chance, age 39+ always retire
+  for (const player of resetPlayers) {
+    const mustRetire = player.age >= 39
+    const mightRetire = player.age >= 34 && player.currentAbility < 40
+    if (mustRetire || (mightRetire && retirementRand() < 0.5)) {
+      retiredPlayerIds.add(player.id)
+      if (player.clubId === game.managedClubId) {
+        const seasonsActive = player.age - 18  // rough career length estimate
+        retirementMessages.push({
+          id: `inbox_retirement_${player.id}_${nextSeason}`,
+          date: game.currentDate,
+          type: InboxItemType.Retirement,
+          title: `${player.firstName} ${player.lastName} avslutar karriären`,
+          body: `${player.firstName} ${player.lastName} (${player.age} år) meddelar att han lägger skridskorna på hyllan efter ${Math.max(1, seasonsActive)} säsonger i bandyn. Tack för allt!`,
+          isRead: false,
+        } as InboxItem)
+      }
+    }
+  }
+
+  const activePlayers = resetPlayers.filter(p => !retiredPlayerIds.has(p.id))
 
   // ── Board patience update ─────────────────────────────────────────────
   const totalTeams = game.clubs.length
@@ -1631,16 +1658,22 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     managerFired = true
   }
 
+  // Remove retired players from all club squads
+  const clubsWithRetirements = updatedClubs.map(club => ({
+    ...club,
+    squadPlayerIds: club.squadPlayerIds.filter(id => !retiredPlayerIds.has(id)),
+  }))
+
   const updatedGame: SaveGame = {
     ...game,
     currentSeason: nextSeason,
     currentDate: `${nextSeason}-10-01`,
-    clubs: updatedClubs,
-    players: resetPlayers,
+    clubs: clubsWithRetirements,
+    players: activePlayers,
     fixtures: newFixtures,
     league: newLeague,
     standings: calculateStandings(updatedClubs.map(c => c.id), []),
-    inbox: [...game.inbox, ...newInboxItems].slice(-20),
+    inbox: [...game.inbox, ...newInboxItems, ...retirementMessages].slice(-25),
     youthIntakeHistory: youthRecords,
     managedClubPendingLineup: undefined,
     matchWeathers: [],

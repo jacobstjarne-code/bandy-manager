@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   useGameStore,
@@ -29,12 +29,15 @@ function getSeriesScore(series: { fixtures: string[]; homeClubId: string; awayCl
   let homeWins = 0, awayWins = 0
   for (const f of seriesFixtures) {
     const homeWon = f.homeScore > f.awayScore
+      || (f.homeScore === f.awayScore && f.penaltyResult != null && f.penaltyResult.home > f.penaltyResult.away)
+    const awayWon = f.awayScore > f.homeScore
+      || (f.homeScore === f.awayScore && f.penaltyResult != null && f.penaltyResult.away > f.penaltyResult.home)
     if (f.homeClubId === series.homeClubId) {
       if (homeWon) homeWins++
-      else if (f.awayScore > f.homeScore) awayWins++
+      else if (awayWon) awayWins++
     } else {
       if (homeWon) awayWins++
-      else if (f.awayScore > f.homeScore) homeWins++
+      else if (awayWon) homeWins++
     }
   }
   return { homeWins, awayWins }
@@ -321,6 +324,26 @@ export function DashboardScreen() {
   const lastCompletedFixture = useLastCompletedFixture()
   const playoffInfo = usePlayoffInfo()
   const navigate = useNavigate()
+  const [isBatchSim, setIsBatchSim] = useState(false)
+
+  // Batch simulation loop — runs until a managed match or season end appears
+  useEffect(() => {
+    if (!isBatchSim || !game) return
+    const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
+    if (scheduled.length === 0) { setIsBatchSim(false); return }
+    const nextRound = Math.min(...scheduled.map(f => f.roundNumber))
+    const managedNext = scheduled.some(
+      f => f.roundNumber === nextRound &&
+           (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+    )
+    if (managedNext) { setIsBatchSim(false); return }
+    const t = setTimeout(() => {
+      const result = advance()
+      if (result?.seasonEnded || result?.playoffStarted) { setIsBatchSim(false); return }
+      if ((result?.pendingEvents?.length ?? 0) > 0) { setIsBatchSim(false); navigate('/game/events') }
+    }, 120)
+    return () => clearTimeout(t)
+  }, [isBatchSim, game])
 
   const lastSummary = game ? (game.seasonSummaries ?? []).slice(-1)[0] : null
   const lastPos = lastSummary?.finalPosition ?? null
@@ -511,6 +534,13 @@ export function DashboardScreen() {
 
   const hasScheduledFixtures = game!.fixtures.some(f => f.status === 'scheduled')
   const canClickAdvance = canAdvance || hasScheduledFixtures
+
+  const managedClubId = game!.managedClubId
+  const remainingManagedFixtures = game!.fixtures.filter(
+    f => f.status === 'scheduled' &&
+         (f.homeClubId === managedClubId || f.awayClubId === managedClubId)
+  ).length
+  const canSimulateRemaining = hasScheduledFixtures && remainingManagedFixtures === 0
 
   const cardStyle: React.CSSProperties = {
     background: '#122235',
@@ -1069,23 +1099,49 @@ export function DashboardScreen() {
         background: 'linear-gradient(to top, #0D1B2A 80%, transparent)',
         zIndex: 50,
       }}>
+        {canSimulateRemaining && !isBatchSim && (
+          <button
+            onClick={() => setIsBatchSim(true)}
+            style={{
+              width: '100%', marginBottom: 8,
+              padding: '11px',
+              background: 'transparent',
+              border: '1px solid #1e3450',
+              borderRadius: 10,
+              color: '#4A6080',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            ⏩ Simulera resterande säsong
+          </button>
+        )}
+        {isBatchSim && (
+          <div style={{
+            textAlign: 'center', marginBottom: 8,
+            fontSize: 13, color: '#C9A84C', fontWeight: 600,
+          }}>
+            ⏩ Simulerar...
+          </div>
+        )}
         <button
           onClick={handleAdvance}
-          disabled={!canClickAdvance}
-          className={canClickAdvance ? 'btn-pulse' : undefined}
+          disabled={!canClickAdvance || isBatchSim}
+          className={canClickAdvance && !isBatchSim ? 'btn-pulse' : undefined}
           style={{
             width: '100%',
             padding: '17px',
-            background: canClickAdvance ? '#C9A84C' : '#1a2e47',
-            color: canClickAdvance ? '#0D1B2A' : '#4A6080',
+            background: canClickAdvance && !isBatchSim ? '#C9A84C' : '#1a2e47',
+            color: canClickAdvance && !isBatchSim ? '#0D1B2A' : '#4A6080',
             borderRadius: 12,
             fontSize: 16,
             fontWeight: 800,
             letterSpacing: '1.5px',
             textTransform: 'uppercase',
             border: 'none',
-            boxShadow: canClickAdvance ? '0 4px 20px rgba(201,168,76,0.3)' : 'none',
-            cursor: canClickAdvance ? 'pointer' : 'not-allowed',
+            boxShadow: canClickAdvance && !isBatchSim ? '0 4px 20px rgba(201,168,76,0.3)' : 'none',
+            cursor: canClickAdvance && !isBatchSim ? 'pointer' : 'not-allowed',
             fontVariantNumeric: 'tabular-nums',
           }}
         >

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useGameStore } from '../store/gameStore'
 import type { Player } from '../../domain/entities/Player'
-import { saveSaveGame } from '../../infrastructure/persistence/saveGameStorage'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 import { getScoutReportAge } from '../../domain/services/scoutingService'
 import { formatCurrency, positionShort } from '../utils/formatters'
@@ -200,7 +199,6 @@ export function TransfersScreen() {
     )
     const updatedGame = { ...game, players: updatedPlayers }
     useGameStore.setState({ game: updatedGame })
-    saveSaveGame(updatedGame)
     setRenewingPlayerId(null)
   }
 
@@ -210,7 +208,6 @@ export function TransfersScreen() {
     const updatedFreeAgents = game.transferState.freeAgents.filter(p => p.id !== agentId)
     const updatedGame = { ...game, players: updatedPlayers, transferState: { ...game.transferState, freeAgents: updatedFreeAgents } }
     useGameStore.setState({ game: updatedGame })
-    saveSaveGame(updatedGame)
   }
 
   function handleBid(playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) {
