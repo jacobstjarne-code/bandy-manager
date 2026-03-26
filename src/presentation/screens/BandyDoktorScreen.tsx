@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft, Send } from 'lucide-react'
 import { useGameStore } from '../store/gameStore'
-import { useApiKey } from '../hooks/useApiKey'
 import { buildDoctorContext } from '../../domain/services/bandyDoctorService'
 
 const MAX_QUESTIONS = 5
@@ -24,18 +23,16 @@ export function BandyDoktorScreen() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
   const incrementDoctorQuestions = useGameStore(s => s.incrementDoctorQuestions)
-  const { apiKey, saveApiKey } = useApiKey()
 
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [inputText, setInputText] = useState('')
-  const [apiKeyInput, setApiKeyInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const questionsUsed = game?.doctorQuestionsUsed ?? 0
   const questionsLeft = MAX_QUESTIONS - questionsUsed
-  const canAsk = apiKey.length > 0 && questionsLeft > 0 && !isLoading
+  const canAsk = questionsLeft > 0 && !isLoading
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -55,13 +52,10 @@ export function BandyDoktorScreen() {
     setError(null)
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('/api/doctor', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
         },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
@@ -73,7 +67,11 @@ export function BandyDoktorScreen() {
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}))
-        throw new Error((errData as { error?: { message?: string } }).error?.message ?? `API-fel: ${response.status}`)
+        throw new Error((errData as { error?: string | { message?: string } }).error
+          ? typeof (errData as { error: string | { message?: string } }).error === 'string'
+            ? (errData as { error: string }).error
+            : ((errData as { error: { message?: string } }).error?.message ?? `API-fel: ${response.status}`)
+          : `API-fel: ${response.status}`)
       }
 
       const data = await response.json() as { content: { type: string; text: string }[] }
@@ -91,14 +89,6 @@ export function BandyDoktorScreen() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     sendQuestion(inputText)
-  }
-
-  function handleSaveApiKey() {
-    const trimmed = apiKeyInput.trim()
-    if (trimmed) {
-      saveApiKey(trimmed)
-      setApiKeyInput('')
-    }
   }
 
   return (
@@ -140,72 +130,14 @@ export function BandyDoktorScreen() {
             AI-rådgivare · {questionsLeft} {questionsLeft === 1 ? 'fråga' : 'frågor'} kvar
           </div>
         </div>
-        <div style={{
-          fontSize: 24,
-          lineHeight: 1,
-        }}>🩺</div>
+        <div style={{ fontSize: 24, lineHeight: 1 }}>🩺</div>
       </div>
 
       {/* Content */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-        {/* API key setup */}
-        {!apiKey && (
-          <div style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 8,
-            padding: '16px',
-          }}>
-            <div style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 12, fontWeight: 600 }}>
-              Aktivera Bandydoktorn
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
-              Ange din Anthropic API-nyckel för att aktivera Bandydoktorn
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input
-                type="password"
-                value={apiKeyInput}
-                onChange={e => setApiKeyInput(e.target.value)}
-                placeholder="sk-ant-..."
-                style={{
-                  flex: 1,
-                  background: 'var(--bg-base)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 6,
-                  padding: '8px 12px',
-                  color: 'var(--text-primary)',
-                  fontSize: 13,
-                  outline: 'none',
-                }}
-                onKeyDown={e => { if (e.key === 'Enter') handleSaveApiKey() }}
-              />
-              <button
-                onClick={handleSaveApiKey}
-                style={{
-                  background: 'var(--accent)',
-                  border: 'none',
-                  borderRadius: 6,
-                  padding: '8px 16px',
-                  color: '#0D1B2A',
-                  fontWeight: 700,
-                  fontSize: 12,
-                  cursor: 'pointer',
-                  letterSpacing: '0.3px',
-                }}
-              >
-                SPARA
-              </button>
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>
-              Nyckeln sparas lokalt i din webbläsare
-            </div>
-          </div>
-        )}
-
         {/* No questions left */}
-        {apiKey && questionsLeft <= 0 && (
+        {questionsLeft <= 0 && (
           <div style={{
             background: 'var(--bg-surface)',
             border: '1px solid var(--border)',
@@ -220,7 +152,7 @@ export function BandyDoktorScreen() {
         )}
 
         {/* Quick question buttons */}
-        {apiKey && questionsLeft > 0 && messages.length === 0 && (
+        {questionsLeft > 0 && messages.length === 0 && (
           <div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600, letterSpacing: '0.3px' }}>
               SNABBFRÅGOR
@@ -318,7 +250,7 @@ export function BandyDoktorScreen() {
       </div>
 
       {/* Input area */}
-      {apiKey && questionsLeft > 0 && (
+      {questionsLeft > 0 && (
         <div style={{
           padding: '12px 16px',
           borderTop: '1px solid var(--border)',
