@@ -355,8 +355,28 @@ export function DashboardScreen() {
     return f.isCup ? f.roundNumber - 100 : f.roundNumber
   }
 
+  function isManagedTeamEliminated(g: SaveGame): boolean {
+    const bracket = g.playoffBracket
+    if (!bracket) return false
+    const id = g.managedClubId
+    const allSeries = [
+      ...(bracket.quarterFinals ?? []),
+      ...(bracket.semiFinals ?? []),
+      ...(bracket.final ? [bracket.final] : []),
+    ]
+    return allSeries.some(s => s.loserId === id)
+  }
+
+  const eliminated = isManagedTeamEliminated(game)
+
   const nextFixture = game.fixtures
-    .filter(f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && f.status === 'scheduled')
+    .filter(f => {
+      if (f.status !== 'scheduled') return false
+      if (f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId) return false
+      // If eliminated from playoffs, don't show remaining playoff fixtures
+      if (eliminated && f.roundNumber > 22 && !f.isCup) return false
+      return true
+    })
     .sort((a, b) => effectiveRound(a) - effectiveRound(b))[0]
 
   const matchWeather = nextFixture
@@ -501,7 +521,11 @@ export function DashboardScreen() {
     }
 
     const nextManaged = scheduled
-      .filter(f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+      .filter(f => {
+        if (f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId) return false
+        if (eliminated && f.roundNumber > 22 && !f.isCup) return false
+        return true
+      })
       .sort((a, b) => a.roundNumber - b.roundNumber)[0]
 
     if (nextManaged) {
@@ -595,6 +619,23 @@ export function DashboardScreen() {
             </div>
             <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 10 }}>
               Bäst av 5 matcher per serie
+            </p>
+          </div>
+        )}
+
+        {/* ELIMINATED card */}
+        {eliminated && !nextFixture && game.playoffBracket && game.playoffBracket.status !== PlayoffStatus.Completed && (
+          <div className="card-stagger-1" style={{
+            background: '#122235',
+            border: '1px solid #1e3450',
+            borderRadius: 12,
+            padding: '18px',
+            marginBottom: 12,
+            textAlign: 'center',
+          }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#8A9BB0', marginBottom: 4 }}>Din säsong är slut</p>
+            <p style={{ color: '#4A6080', fontSize: 13 }}>
+              Väntar på att slutspelet ska avgöras...
             </p>
           </div>
         )}
@@ -870,14 +911,17 @@ export function DashboardScreen() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 13, color: '#8A9BB0' }}>
                 Klubbkassa:{' '}
-                <span style={{
-                  color: club.finances > 0 ? '#22c55e' : '#ef4444',
-                  fontWeight: 600
-                }}>
-                  {club.finances >= 1000000
-                    ? `${(club.finances / 1000000).toFixed(1)} mkr`
-                    : `${Math.round(club.finances / 1000)} tkr`}
-                </span>
+                {club.finances < 0 ? (
+                  <span style={{ color: '#ef4444', fontWeight: 600 }}>
+                    {Math.round(club.finances / 1000)} tkr ⚠️ KRIS
+                  </span>
+                ) : (
+                  <span style={{ color: '#22c55e', fontWeight: 600 }}>
+                    {club.finances >= 1000000
+                      ? `${(club.finances / 1000000).toFixed(1)} mkr`
+                      : `${Math.round(club.finances / 1000)} tkr`}
+                  </span>
+                )}
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

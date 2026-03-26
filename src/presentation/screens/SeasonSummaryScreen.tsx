@@ -143,7 +143,7 @@ export function SeasonSummaryScreen() {
     if (game.managerFired) {
       navigate('/game/game-over', { replace: true })
     } else {
-      navigate('/game/dashboard', { replace: true })
+      navigate('/game/board-meeting', { replace: true })
     }
   }
 

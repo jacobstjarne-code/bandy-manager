@@ -639,11 +639,28 @@ export function MatchScreen() {
     return f.isCup ? f.roundNumber - 100 : f.roundNumber
   }
 
+  function isManagedTeamEliminated(g: SaveGame): boolean {
+    const bracket = g.playoffBracket
+    if (!bracket) return false
+    const id = g.managedClubId
+    const allSeries = [
+      ...(bracket.quarterFinals ?? []),
+      ...(bracket.semiFinals ?? []),
+      ...(bracket.final ? [bracket.final] : []),
+    ]
+    return allSeries.some(s => s.loserId === id)
+  }
+
+  const eliminated = isManagedTeamEliminated(game)
+
   const nextFixture = game.fixtures
-    .filter(f =>
-      (f.homeClubId === managedClubId || f.awayClubId === managedClubId) &&
-      f.status === FixtureStatus.Scheduled
-    )
+    .filter(f => {
+      if (f.status !== FixtureStatus.Scheduled) return false
+      if (f.homeClubId !== managedClubId && f.awayClubId !== managedClubId) return false
+      // If eliminated from playoffs, don't show remaining playoff fixtures
+      if (eliminated && f.roundNumber > 22 && !f.isCup) return false
+      return true
+    })
     .sort((a, b) => effectiveRound(a) - effectiveRound(b))[0] ?? null
 
   const rivalry = nextFixture ? getRivalry(nextFixture.homeClubId, nextFixture.awayClubId) : null
@@ -1217,7 +1234,7 @@ export function MatchScreen() {
                     <p style={{ fontSize: 11, color: '#4A6080', marginBottom: 4 }}>Nyckelspelare:</p>
                     {displayAnalysis.keyPlayers.map((kp, i) => (
                       <div key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 2 }}>
-                        {kp.name} ({kp.position.slice(0,3).toUpperCase()}) · CA ~{kp.estimatedCA}
+                        {kp.name} ({kp.position.slice(0,3).toUpperCase()}) · Styrka ~{kp.estimatedCA}
                       </div>
                     ))}
                   </div>

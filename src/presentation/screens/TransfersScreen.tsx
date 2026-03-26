@@ -621,7 +621,7 @@ export function TransfersScreen() {
                             {player ? `${player.firstName} ${player.lastName}` : suggestion.playerId}
                           </p>
                           <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2 }}>
-                            {player ? positionShort(player.position) + ' · ' : ''}{club?.name ?? '?'} · {player ? `${player.age} år` : ''} · CA ~{suggestion.estimatedCA}
+                            {player ? positionShort(player.position) + ' · ' : ''}{club?.name ?? '?'} · {player ? `${player.age} år` : ''} · Styrka ~{suggestion.estimatedCA}
                           </p>
                           <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>{suggestion.scoutNotes}</p>
                         </div>

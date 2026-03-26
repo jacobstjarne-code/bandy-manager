@@ -1188,6 +1188,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     return {
       ...c,
       finances: c.finances + matchRevenue + weeklySponsorship + sponsorIncome - weeklyWages,
+      // NOTE: Finances can go negative (salary drain, no revenue). This is intentional — don't add
+      // a hard floor here as it would mask the underlying economic problem. If finances drop below
+      // -500000, consider triggering a board crisis event in the future. The UI handles negative
+      // display with a warning label.
     }
   })
 
@@ -1484,7 +1488,7 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     updatedClubs[i] = {
       ...updatedClubs[i],
       finances: updatedClubs[i].finances + prize,
-      transferBudget: Math.round((updatedClubs[i].finances + prize) * 0.15),
+      transferBudget: Math.max(0, Math.round((updatedClubs[i].finances + prize) * 0.15)),
     }
   }
 

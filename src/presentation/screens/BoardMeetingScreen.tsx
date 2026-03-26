@@ -165,7 +165,7 @@ export function BoardMeetingScreen() {
             <span style={{ fontSize: 13, color: '#F0F4F8' }}>{players.length}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <span style={{ fontSize: 13, color: '#8A9BB0' }}>Snitt-CA</span>
+            <span style={{ fontSize: 13, color: '#8A9BB0' }}>Snitt-Styrka</span>
             <span style={{ fontSize: 13, color: '#F0F4F8' }}>{avgCA}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>

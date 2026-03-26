@@ -130,7 +130,7 @@ export function EventScreen() {
                 color: '#C9A84C',
                 fontWeight: 600,
               }}>
-                {relatedPlayer.firstName} {relatedPlayer.lastName} · CA {Math.round(relatedPlayer.currentAbility)}
+                {relatedPlayer.firstName} {relatedPlayer.lastName} · Styrka {Math.round(relatedPlayer.currentAbility)}
               </span>
             )}
             {relatedClub && (

@@ -74,7 +74,7 @@ const FILTER_TABS: { key: FilterKey; label: string }[] = [
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'position', label: 'Position' },
-  { key: 'ca', label: 'CA' },
+  { key: 'ca', label: 'Styrka' },
   { key: 'form', label: 'Form' },
   { key: 'age', label: 'Ålder' },
 ]
@@ -215,7 +215,7 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
             )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>CA</span>
+            <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>Styrka</span>
             {player.age < 24 && (
               <span style={{ fontSize: 9, fontWeight: 700, color: '#38bdf8', background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', borderRadius: 4, padding: '1px 4px' }}>Utvecklas</span>
             )}
