@@ -50,6 +50,7 @@ interface GameState {
   incrementDoctorQuestions: () => void
   talkToPlayer: (playerId: string, choice: 'encourage' | 'demand' | 'future', currentRound: number) => { moraleChange: number; formChange: number; feedback: string; inboxTriggered: boolean }
   clearPreSeason: () => void
+  setBudgetPriority: (priority: 'squad' | 'balanced' | 'youth') => void
   setTransferBudget: (amount: number) => void
   buyScoutRounds: () => void
 }
@@ -338,6 +339,12 @@ export const useGameStore = create<GameState>()(
         const { game } = get()
         if (!game) return
         set({ game: { ...game, showPreSeason: false } })
+      },
+
+      setBudgetPriority: (priority) => {
+        const { game } = get()
+        if (!game) return
+        set({ game: { ...game, budgetPriority: priority } })
       },
 
       setTransferBudget: (amount: number) => {

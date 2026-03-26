@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { ClubExpectation } from '../../domain/enums'
@@ -21,6 +22,11 @@ export function PreSeasonScreen() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
   const clearPreSeason = useGameStore(s => s.clearPreSeason)
+  const setBudgetPriority = useGameStore(s => s.setBudgetPriority)
+
+  const [priority, setPriority] = useState<'squad' | 'balanced' | 'youth'>(
+    game?.budgetPriority ?? 'balanced'
+  )
 
   if (!game) { navigate('/game', { replace: true }); return null }
 
@@ -45,6 +51,7 @@ export function PreSeasonScreen() {
   )
 
   function handleStart() {
+    setBudgetPriority(priority)
     clearPreSeason()
     navigate('/game', { replace: true })
   }
@@ -163,6 +170,43 @@ export function PreSeasonScreen() {
           <p style={{ fontSize: 14, color: '#F0F4F8', fontStyle: 'italic' }}>
             "{expectationText(club.boardExpectation)}"
           </p>
+        </div>
+
+        {/* Budget priority */}
+        <div style={{
+          background: '#0e1f33', border: '1px solid #1e3450',
+          borderRadius: 12, padding: '14px 16px',
+        }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#4A6080', marginBottom: 6 }}>
+            💼 Budgetprioritet
+          </p>
+          <p style={{ fontSize: 12, color: '#4A6080', marginBottom: 10 }}>
+            {priority === 'squad'
+              ? 'Transferbudget +20% — satsning på rekrytering'
+              : priority === 'youth'
+              ? 'Transferbudget –30% — ungdomskvalitet +3p per säsong'
+              : 'Balanserad fördelning — inga bonusar'}
+          </p>
+          <div style={{ display: 'flex', gap: 6, background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 3 }}>
+            {([
+              { val: 'squad', label: '🏒 Trupp' },
+              { val: 'balanced', label: '⚖️ Balans' },
+              { val: 'youth', label: '🌱 Ungdom' },
+            ] as const).map(opt => (
+              <button
+                key={opt.val}
+                onClick={() => setPriority(opt.val)}
+                style={{
+                  flex: 1, padding: '8px 4px', fontSize: 11, fontWeight: 700,
+                  background: priority === opt.val ? 'rgba(201,168,76,0.2)' : 'transparent',
+                  border: priority === opt.val ? '1px solid rgba(201,168,76,0.4)' : '1px solid transparent',
+                  borderRadius: 6,
+                  color: priority === opt.val ? '#C9A84C' : '#4A6080',
+                  cursor: 'pointer',
+                }}
+              >{opt.label}</button>
+            ))}
+          </div>
         </div>
 
         {/* Start */}

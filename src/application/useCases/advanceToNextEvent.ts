@@ -1630,6 +1630,27 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
+  // Budget priority effects at season end
+  if (game.budgetPriority && game.budgetPriority !== 'balanced') {
+    const bpIdx = updatedClubs.findIndex(c => c.id === game.managedClubId)
+    if (bpIdx !== -1) {
+      const c = updatedClubs[bpIdx]
+      if (game.budgetPriority === 'squad') {
+        updatedClubs[bpIdx] = {
+          ...c,
+          transferBudget: Math.round((c.transferBudget ?? 0) * 1.2),
+          facilities: Math.max(0, (c.facilities ?? 50) - 1),
+        }
+      } else if (game.budgetPriority === 'youth') {
+        updatedClubs[bpIdx] = {
+          ...c,
+          transferBudget: Math.round((c.transferBudget ?? 0) * 0.7),
+          youthQuality: Math.min(100, (c.youthQuality ?? 50) + 3),
+        }
+      }
+    }
+  }
+
   // Youth intake inbox for managed club
   if (youthIntakeResultForManagedClub !== null) {
     const managedClub = updatedClubs.find(c => c.id === game.managedClubId)!

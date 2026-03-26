@@ -212,4 +212,5 @@ export interface SaveGame {
   boardPersonalities?: BoardMember[]
   hallDebateCount?: number
   lastHallDebateRound?: number
+  budgetPriority?: 'squad' | 'balanced' | 'youth'
 }
