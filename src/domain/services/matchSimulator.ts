@@ -930,6 +930,19 @@ export interface StepByStepInput {
   managedIsHome?: boolean
 }
 
+export interface SecondHalfInput extends StepByStepInput {
+  // State carried over from first half
+  initialHomeScore: number
+  initialAwayScore: number
+  initialShotsHome: number
+  initialShotsAway: number
+  initialCornersHome: number
+  initialCornersAway: number
+  initialHomeSuspensions: number
+  initialAwaySuspensions: number
+  // homeLineup.tactic / awayLineup.tactic already contain updated tactics
+}
+
 function simulatePenalties(
   homeStarters: Player[],
   awayStarters: Player[],
@@ -1003,6 +1016,418 @@ function simulatePenalties(
   }
 
   return { rounds, homeGoals, awayGoals }
+}
+
+// Regenerate just steps 30-60 (second half) with possibly updated tactic.
+// Used when player changes tactic at halftime.
+export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep> {
+  const {
+    fixture,
+    homeLineup,
+    awayLineup,
+    homePlayers,
+    awayPlayers,
+    homeAdvantage = 0.05,
+    seed,
+    weather,
+    homeClubName,
+    awayClubName,
+    isPlayoff = false,
+    rivalry,
+    fanMood,
+    managedIsHome,
+    initialHomeScore,
+    initialAwayScore,
+    initialShotsHome,
+    initialShotsAway,
+    initialCornersHome,
+    initialCornersAway,
+    initialHomeSuspensions,
+    initialAwaySuspensions,
+  } = input
+
+  // Use a different seed offset so second half differs from first
+  const rand = mulberry32((seed ?? Date.now()) + 31337)
+
+  const homeStarters = homeLineup.startingPlayerIds
+    .map(id => homePlayers.find(p => p.id === id))
+    .filter((p): p is Player => p !== undefined)
+  const awayStarters = awayLineup.startingPlayerIds
+    .map(id => awayPlayers.find(p => p.id === id))
+    .filter((p): p is Player => p !== undefined)
+
+  const homeEval = evaluateSquad(homeStarters, homeLineup.tactic)
+  const awayEval = evaluateSquad(awayStarters, awayLineup.tactic)
+  const homeMods = getTacticModifiers(homeLineup.tactic)
+  const awayMods = getTacticModifiers(awayLineup.tactic)
+
+  let homeAttack = (homeEval.offenseScore * homeMods.offenseModifier) / 100
+  const homeDefense = (homeEval.defenseScore * homeMods.defenseModifier) / 100
+  const homeCorner = (homeEval.cornerScore * homeMods.cornerModifier) / 100
+  const homeGK = homeEval.goalkeeperScore / 100
+  const homeDisciplineRisk = (homeEval.disciplineRisk * homeMods.disciplineModifier) / 100
+
+  let awayAttack = (awayEval.offenseScore * awayMods.offenseModifier) / 100
+  const awayDefense = (awayEval.defenseScore * awayMods.defenseModifier) / 100
+  const awayCorner = (awayEval.cornerScore * awayMods.cornerModifier) / 100
+  const awayGK = awayEval.goalkeeperScore / 100
+  const awayDisciplineRisk = (awayEval.disciplineRisk * awayMods.disciplineModifier) / 100
+
+  let weatherGoalMod = 1.0
+  if (weather && weather.condition !== undefined) {
+    const { ballControlPenalty, speedModifier, goalChanceModifier } = computeWeatherEffects(weather)
+    const homeTW = computeWeatherTacticInteraction(weather, homeLineup.tactic)
+    const awayTW = computeWeatherTacticInteraction(weather, awayLineup.tactic)
+    homeAttack *= (1 - (ballControlPenalty + homeTW.extraBallControlPenalty) / 200) * speedModifier
+    awayAttack *= (1 - (ballControlPenalty + awayTW.extraBallControlPenalty) / 200) * speedModifier
+    weatherGoalMod = goalChanceModifier
+  }
+
+  if (isPlayoff) {
+    homeAttack = clamp(homeAttack + (homeAttack - awayAttack) * 0.1, 0, 1)
+  }
+
+  let derbyFoulMult = 1.0
+  let derbyChanceMult = 0.0
+  let effectiveHomeAdvantage = fixture.isNeutralVenue ? 0 : homeAdvantage
+  if (!fixture.isNeutralVenue && fanMood !== undefined && managedIsHome) {
+    effectiveHomeAdvantage *= 1 + ((fanMood - 50) / 100) * 0.06
+  }
+  if (rivalry) {
+    const avg = (homeAttack + awayAttack) / 2
+    homeAttack = avg + (homeAttack - avg) * 0.7
+    awayAttack = avg + (awayAttack - avg) * 0.7
+    derbyFoulMult = 1 + rivalry.intensity * 0.15
+    derbyChanceMult = 0.05
+    if (!fixture.isNeutralVenue) {
+      effectiveHomeAdvantage = homeAdvantage * (1 + rivalry.intensity * 0.1)
+    }
+  }
+
+  const homeTeamRef = homeClubName ?? fixture.homeClubId
+  const awayTeamRef = awayClubName ?? fixture.awayClubId
+  const allPlayers = [...homePlayers, ...awayPlayers]
+  function findName(id: string): string {
+    const p = allPlayers.find(pl => pl.id === id)
+    return p ? `${p.firstName} ${p.lastName}` : id
+  }
+
+  // Track for ratings (only second half events — combined with first half in MatchLiveScreen)
+  const playerGoals: Record<string, number> = {}
+  const playerAssists: Record<string, number> = {}
+  const playerYellowCards: Record<string, number> = {}
+  const playerRedCards: Record<string, number> = {}
+  const playerSaves: Record<string, number> = {}
+  function trackGoal(id: string) { playerGoals[id] = (playerGoals[id] ?? 0) + 1 }
+  function trackAssist(id: string) { playerAssists[id] = (playerAssists[id] ?? 0) + 1 }
+  function trackYellow(id: string) { playerYellowCards[id] = (playerYellowCards[id] ?? 0) + 1 }
+  function trackRed(id: string) { playerRedCards[id] = (playerRedCards[id] ?? 0) + 1 }
+  function trackSave(id: string) { playerSaves[id] = (playerSaves[id] ?? 0) + 1 }
+  void playerGoals; void playerAssists; void playerYellowCards; void playerRedCards; void playerSaves
+  void trackYellow; void trackRed; void trackSave
+
+  function getGoalScorer(starters: Player[]): Player | undefined {
+    const nonGK = starters.filter(p => p.position !== PlayerPosition.Goalkeeper)
+    if (nonGK.length === 0) return undefined
+    const weights = nonGK.map(p =>
+      p.position === PlayerPosition.Forward ? 3 :
+      p.position === PlayerPosition.Midfielder ? 2 :
+      p.position === PlayerPosition.Half ? 1 : 0.5
+    )
+    return pickWeightedPlayer(rand, nonGK, weights)
+  }
+  function getAssistProvider(starters: Player[], excludeId?: string): Player | undefined {
+    const nonGK = starters.filter(p => p.position !== PlayerPosition.Goalkeeper && p.id !== excludeId)
+    if (nonGK.length === 0) return undefined
+    const weights = nonGK.map(p =>
+      p.position === PlayerPosition.Midfielder ? 2 :
+      p.position === PlayerPosition.Half ? 2 :
+      p.position === PlayerPosition.Defender ? 1 : 1.5
+    )
+    return pickWeightedPlayer(rand, nonGK, weights)
+  }
+  function getGK(starters: Player[]): Player | undefined {
+    return starters.find(p => p.position === PlayerPosition.Goalkeeper)
+  }
+  function getDefendingPlayer(starters: Player[]): Player | undefined {
+    const nonGK = starters.filter(p => p.position !== PlayerPosition.Goalkeeper)
+    return nonGK.length > 0 ? nonGK[Math.floor(rand() * nonGK.length)] : undefined
+  }
+
+  function buildSHWeights(isHome: boolean): number[] {
+    const tactic = isHome ? homeLineup.tactic : awayLineup.tactic
+    let wA = 40, wT = 15, wC = 20, wH = 10, wF = 12, wL = 8
+    if (tactic.tempo === 'high') { wA += 5; wC += 3; wF += 2 }
+    else if (tactic.tempo === 'low') { wA -= 5; wL += 5 }
+    if (tactic.press === 'high') { wF += 5; wT += 3 }
+    if (tactic.width === 'wide') wC += 5
+    if (tactic.cornerStrategy === 'aggressive') wC += 3
+    if (tactic.passingRisk === 'direct') { wL += 5; wA += 3; wH -= 3 }
+    if (tactic.mentality === 'offensive') { wA += 5; wH += 3 }
+    return [Math.max(1,wA), Math.max(1,wT), Math.max(1,wC), Math.max(1,wH), Math.max(1,wF), Math.max(1,wL)]
+  }
+
+  let homeScore = initialHomeScore
+  let awayScore = initialAwayScore
+  let shotsHome = initialShotsHome
+  let shotsAway = initialShotsAway
+  let cornersHome = initialCornersHome
+  let cornersAway = initialCornersAway
+  let homeActiveSuspensions = initialHomeSuspensions
+  let awayActiveSuspensions = initialAwaySuspensions
+  const homeSuspensionTimers: number[] = []
+  const awaySuspensionTimers: number[] = []
+  const allEvents: MatchEvent[] = []
+
+  for (let step = 31; step < 60; step++) {
+    const minute = Math.round(step * 1.5)
+    const stepEvents: MatchEvent[] = []
+
+    let stepGoalMod = weatherGoalMod
+    if (weather && step > 30) {
+      const base = 0.03
+      const snowExtra = weather.condition === WeatherCondition.HeavySnow ? 0.02 : 0
+      const thawExtra = weather.condition === WeatherCondition.Thaw ? 0.03 : 0
+      const deg = (base + snowExtra + thawExtra) * (step - 30) * 0.5
+      stepGoalMod = Math.max(0.60, weatherGoalMod - deg / 100)
+    }
+
+    for (let i = homeSuspensionTimers.length - 1; i >= 0; i--) {
+      homeSuspensionTimers[i]--
+      if (homeSuspensionTimers[i] <= 0) { homeSuspensionTimers.splice(i, 1); homeActiveSuspensions = Math.max(0, homeActiveSuspensions - 1) }
+    }
+    for (let i = awaySuspensionTimers.length - 1; i >= 0; i--) {
+      awaySuspensionTimers[i]--
+      if (awaySuspensionTimers[i] <= 0) { awaySuspensionTimers.splice(i, 1); awayActiveSuspensions = Math.max(0, awayActiveSuspensions - 1) }
+    }
+
+    const homePF = homeActiveSuspensions > 0 ? 0.75 : 1.0
+    const awayPF = awayActiveSuspensions > 0 ? 0.75 : 1.0
+    const hw = homeAttack * (1 + homeMods.pressModifier * 0.2) * (1 + effectiveHomeAdvantage) * homePF
+    const aw = awayAttack * (1 + awayMods.pressModifier * 0.2) * awayPF
+    const isHomeAttacking = rand() < hw / (hw + aw)
+
+    const attackingStarters = isHomeAttacking ? homeStarters : awayStarters
+    const defendingStarters = isHomeAttacking ? awayStarters : homeStarters
+    const attackingClubId = isHomeAttacking ? fixture.homeClubId : fixture.awayClubId
+    const defendingClubId = isHomeAttacking ? fixture.awayClubId : fixture.homeClubId
+
+    const attAttack = isHomeAttacking ? homeAttack : awayAttack
+    const defDefense = isHomeAttacking ? awayDefense : homeDefense
+    const defGK = isHomeAttacking ? awayGK : homeGK
+    const attCorner = isHomeAttacking ? homeCorner : awayCorner
+    const attDiscipline = isHomeAttacking ? homeDisciplineRisk : awayDisciplineRisk
+    const defDiscipline = isHomeAttacking ? awayDisciplineRisk : homeDisciplineRisk
+
+    const seqWeights = buildSHWeights(isHomeAttacking)
+    const seqIdx = weightedPick(rand, seqWeights)
+    const seqType = SEQUENCE_TYPES[seqIdx]
+
+    let goalScored = false
+    let cornerGoalScored = false
+    let saveOccurred = false
+    let suspensionOccurred = false
+    let yellowCardOccurred = false
+    let cornerOccurred = false
+    let scorerPlayerId: string | undefined
+    let gkPlayerId: string | undefined
+    let suspendedPlayerId: string | undefined
+    let yellowPlayerId: string | undefined
+
+    if (seqType === 'attack') {
+      const base = attAttack * 0.6 - defDefense * 0.4 + randRange(rand, -0.2, 0.2)
+      const cq = clamp(base * 1.2 + 0.15 + 0.15 + derbyChanceMult, 0.05, 0.95)
+      if (cq > 0.15) {
+        if (isHomeAttacking) shotsHome++; else shotsAway++
+        const r = rand()
+        const gt = cq * 0.45 * (1 - defGK * 0.35) * stepGoalMod
+        if (r < gt) {
+          const scorer = getGoalScorer(attackingStarters)
+          const assister = getAssistProvider(attackingStarters, scorer?.id)
+          if (scorer) {
+            if (isHomeAttacking) homeScore++; else awayScore++
+            scorerPlayerId = scorer.id; goalScored = true; trackGoal(scorer.id)
+            const e: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Goal by ${scorer.firstName} ${scorer.lastName}` }
+            stepEvents.push(e); allEvents.push(e)
+            if (assister) { trackAssist(assister.id); const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, secondaryPlayerId: scorer.id, description: `Assist by ${assister.firstName} ${assister.lastName}` }; stepEvents.push(ae); allEvents.push(ae) }
+          }
+        } else if (r < gt + 0.25) {
+          const gk = getGK(defendingStarters)
+          if (gk) { gkPlayerId = gk.id; saveOccurred = true; trackSave(gk.id); const e: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Save by ${gk.firstName} ${gk.lastName}` }; stepEvents.push(e); allEvents.push(e) }
+        } else if (r < gt + 0.45) {
+          cornerOccurred = true
+          if (isHomeAttacking) cornersHome++; else cornersAway++
+          const e: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Corner kick' }; stepEvents.push(e); allEvents.push(e)
+        }
+      }
+    } else if (seqType === 'transition') {
+      const cq = randRange(rand, 0.3, 0.7)
+      if (cq > 0.05) {
+        if (isHomeAttacking) shotsHome++; else shotsAway++
+        const r = rand(); const gt = cq * 0.28 * (1 - defGK * 0.4) * 1.15 * stepGoalMod
+        if (r < gt) {
+          const scorer = getGoalScorer(attackingStarters); const assister = getAssistProvider(attackingStarters, scorer?.id)
+          if (scorer) {
+            if (isHomeAttacking) homeScore++; else awayScore++
+            scorerPlayerId = scorer.id; goalScored = true; trackGoal(scorer.id)
+            const e: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Transition goal by ${scorer.firstName} ${scorer.lastName}` }; stepEvents.push(e); allEvents.push(e)
+            if (assister) { trackAssist(assister.id); const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, description: `Assist` }; stepEvents.push(ae); allEvents.push(ae) }
+          }
+        } else if (r < gt + 0.25) {
+          const gk = getGK(defendingStarters)
+          if (gk) { gkPlayerId = gk.id; saveOccurred = true; trackSave(gk.id); const e: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Save by ${gk.firstName} ${gk.lastName}` }; stepEvents.push(e); allEvents.push(e) }
+        }
+      }
+    } else if (seqType === 'corner') {
+      if (isHomeAttacking) cornersHome++; else cornersAway++
+      const specialist = attackingStarters.find(p => p.archetype === PlayerArchetype.CornerSpecialist)
+      const sb = specialist ? (specialist.attributes.cornerSkill > 75 ? 0.25 : 0.15) : 0
+      const cc = attCorner * 0.7 + randRange(rand, 0, 0.3) + sb
+      const dr = defDefense * 0.5 + defGK * 0.3 + randRange(rand, 0, 0.2)
+      const gt = clamp((cc - dr) * 0.25 * stepGoalMod + 0.08, 0.06, 0.18)
+      const r = rand()
+      if (r < gt) {
+        const scorer = getGoalScorer(attackingStarters); const assister = getAssistProvider(attackingStarters, scorer?.id)
+        if (scorer) {
+          if (isHomeAttacking) homeScore++; else awayScore++
+          scorerPlayerId = scorer.id; goalScored = true; cornerGoalScored = true; cornerOccurred = true; trackGoal(scorer.id)
+          stepEvents.push({ minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Corner kick leads to goal' })
+          allEvents.push({ minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Corner kick leads to goal' })
+          const e: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Corner goal by ${scorer.firstName} ${scorer.lastName}`, isCornerGoal: true }; stepEvents.push(e); allEvents.push(e)
+          if (assister) { trackAssist(assister.id); const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, description: `Assist` }; stepEvents.push(ae); allEvents.push(ae) }
+        }
+      } else if (r < gt + 0.3) {
+        cornerOccurred = true
+        const e: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Corner kick' }; stepEvents.push(e); allEvents.push(e)
+      }
+    } else if (seqType === 'halfchance') {
+      if (isHomeAttacking) shotsHome++; else shotsAway++
+      const cq = randRange(rand, 0.05, 0.25) * (isPlayoff ? 1.05 : 1.0)
+      if (rand() < cq * 0.30 * stepGoalMod) {
+        const scorer = getGoalScorer(attackingStarters)
+        if (scorer) {
+          if (isHomeAttacking) homeScore++; else awayScore++
+          scorerPlayerId = scorer.id; goalScored = true; trackGoal(scorer.id)
+          const e: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, description: `Half-chance goal` }; stepEvents.push(e); allEvents.push(e)
+        }
+      }
+    } else if (seqType === 'foul') {
+      const fp = attDiscipline * 0.4 + defDiscipline * 0.3
+      const r = rand()
+      if (r < fp * 0.15 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
+        const sp = getDefendingPlayer(defendingStarters)
+        if (sp) {
+          suspendedPlayerId = sp.id; suspensionOccurred = true
+          const dur = 3 + Math.floor(rand() * 3)
+          if (isHomeAttacking) { awayActiveSuspensions++; awaySuspensionTimers.push(dur) } else { homeActiveSuspensions++; homeSuspensionTimers.push(dur) }
+          trackRed(sp.id)
+          const e: MatchEvent = { minute, type: MatchEventType.RedCard, clubId: defendingClubId, playerId: sp.id, description: `Red card for ${sp.firstName} ${sp.lastName}` }; stepEvents.push(e); allEvents.push(e)
+        }
+      } else if (r < fp * 0.6 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
+        const yp = getDefendingPlayer(defendingStarters)
+        if (yp) {
+          yellowPlayerId = yp.id; yellowCardOccurred = true; trackYellow(yp.id)
+          const e: MatchEvent = { minute, type: MatchEventType.YellowCard, clubId: defendingClubId, playerId: yp.id, description: `Yellow card for ${yp.firstName} ${yp.lastName}` }; stepEvents.push(e); allEvents.push(e)
+        }
+      }
+    }
+
+    const scoreStr = `${homeScore}–${awayScore}`
+    const attackingTeam = isHomeAttacking ? homeTeamRef : awayTeamRef
+    const defendingTeam = isHomeAttacking ? awayTeamRef : homeTeamRef
+    const savingGK = gkPlayerId ? findName(gkPlayerId) : ''
+
+    let commentaryText: string
+    let isDerbyStep = false
+    let tvars: Record<string, string> = { team: attackingTeam, opponent: defendingTeam, score: scoreStr, minute: String(minute), player: scorerPlayerId ? findName(scorerPlayerId) : '', goalkeeper: savingGK, rivalry: rivalry?.name ?? '', result: '' }
+
+    if (cornerGoalScored && scorerPlayerId) {
+      tvars = { ...tvars, player: findName(scorerPlayerId) }
+      commentaryText = fillTemplate(pickCommentary(commentary.corner, rand), tvars) + ' ' + fillTemplate(pickCommentary(commentary.cornerGoal, rand), tvars)
+    } else if (goalScored && scorerPlayerId) {
+      tvars = { ...tvars, player: findName(scorerPlayerId) }
+      if (rivalry && rand() < 0.40) { commentaryText = fillTemplate(pickCommentary(commentary.derby_goal, rand), { ...tvars, rivalry: rivalry.name }); isDerbyStep = true }
+      else { const ss = isHomeAttacking ? homeScore : awayScore; const os = isHomeAttacking ? awayScore : homeScore; commentaryText = fillTemplate(pickGoalCommentary(ss, os, rand), tvars) }
+    } else if (saveOccurred && gkPlayerId) {
+      tvars = { ...tvars, goalkeeper: findName(gkPlayerId) }
+      commentaryText = fillTemplate(pickCommentary(commentary.save, rand), tvars)
+    } else if (suspensionOccurred && suspendedPlayerId) {
+      tvars = { ...tvars, player: findName(suspendedPlayerId) }
+      commentaryText = fillTemplate(pickCommentary(commentary.suspension, rand), tvars)
+    } else if (yellowCardOccurred && yellowPlayerId) {
+      tvars = { ...tvars, player: findName(yellowPlayerId) }
+      commentaryText = fillTemplate(pickCommentary(commentary.yellowCard, rand), tvars)
+    } else if (cornerOccurred && !goalScored) {
+      commentaryText = fillTemplate(pickCommentary(commentary.corner, rand), tvars)
+    } else if (step === 31) {
+      commentaryText = fillTemplate(pickCommentary(commentary.secondHalf, rand), tvars)
+    } else {
+      if (rivalry && step % 10 === 0 && rand() < 0.30) { commentaryText = fillTemplate(pickCommentary(commentary.derby_neutral, rand), { ...tvars, rivalry: rivalry.name }); isDerbyStep = true }
+      else { commentaryText = fillTemplate(pickCommentary(commentary.neutral, rand), tvars) }
+    }
+
+    const intensity: 'low' | 'medium' | 'high' = goalScored || suspensionOccurred ? 'high' : saveOccurred || cornerOccurred ? 'medium' : 'low'
+
+    yield { step, minute, events: stepEvents, homeScore, awayScore, commentary: commentaryText, intensity, activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions }, shotsHome, shotsAway, cornersHome, cornersAway, isDerbyComment: isDerbyStep || undefined, phase: 'regular' }
+  }
+
+  // Full time
+  const scoreStr = `${homeScore}–${awayScore}`
+  const ftVars: Record<string, string> = { team: homeTeamRef, opponent: awayTeamRef, score: scoreStr, minute: '90', player: '', goalkeeper: '', rivalry: rivalry?.name ?? '', result: '' }
+  const ftText = rivalry ? fillTemplate(pickCommentary(commentary.derby_fullTime, rand), { ...ftVars, rivalry: rivalry.name }) : fillTemplate(pickCommentary(commentary.fullTime, rand), ftVars)
+  yield { step: 60, minute: 90, events: [], homeScore, awayScore, commentary: ftText, intensity: 'high', activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions }, shotsHome, shotsAway, cornersHome, cornersAway, phase: 'regular' }
+
+  // Overtime + penalties if knockout and tied
+  if (!fixture.isKnockout || homeScore !== awayScore) return
+
+  yield { step: 61, minute: 90, events: [], homeScore, awayScore, commentary: pickCommentary(['FÖRLÄNGNING! Ytterligare 30 minuter avgör.', 'Det blir förlängning! Benen är tunga men viljan stark.', 'Oavgjort efter ordinarie tid — nu avgörs allt i förlängningen.'], rand), intensity: 'high', activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions }, shotsHome, shotsAway, cornersHome, cornersAway, phase: 'overtime' }
+
+  const otGoalMod = weatherGoalMod * 0.85
+  const otHA = homeAttack * 1.15
+  const otAA = awayAttack * 1.15
+  for (let step = 62; step < 82; step++) {
+    const minute = 91 + Math.round((step - 62) * 1.5)
+    const isHomeAttacking = rand() < (otHA * (1 + effectiveHomeAdvantage)) / (otHA * (1 + effectiveHomeAdvantage) + otAA)
+    const attackingStarters = isHomeAttacking ? homeStarters : awayStarters
+    const attackingClubId = isHomeAttacking ? fixture.homeClubId : fixture.awayClubId
+    const attAttack = isHomeAttacking ? otHA : otAA
+    const defDefense = isHomeAttacking ? awayDefense : homeDefense
+    const defGK = isHomeAttacking ? awayGK : homeGK
+    const cq = clamp(attAttack * 0.5 - defDefense * 0.3 + randRange(rand, -0.15, 0.25), 0.05, 0.90)
+    const gt = cq * 0.40 * (1 - defGK * 0.35) * otGoalMod
+    let goalScored = false; let scorerPlayerId: string | undefined
+    if (rand() < gt) {
+      const scorer = getGoalScorer(attackingStarters); const assister = getAssistProvider(attackingStarters, scorer?.id)
+      if (scorer) {
+        if (isHomeAttacking) homeScore++; else awayScore++
+        scorerPlayerId = scorer.id; goalScored = true; trackGoal(scorer.id)
+        allEvents.push({ minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Overtime goal by ${scorer.firstName} ${scorer.lastName}` })
+        if (assister) allEvents.push({ minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, description: 'Assist' })
+      }
+    }
+    const attackingTeam = isHomeAttacking ? homeTeamRef : awayTeamRef
+    const otScoreStr = `${homeScore}–${awayScore}`
+    const commentaryText = goalScored && scorerPlayerId
+      ? fillTemplate(pickCommentary(['MÅÅÅL I FÖRLÄNGNINGEN! {player} kan ha avgjort det! {score}!', 'DÄR SITTER DEN! {player} i förlängningen! {score}!'], rand), { player: findName(scorerPlayerId), score: otScoreStr, team: attackingTeam, opponent: '', minute: String(minute), goalkeeper: '', rivalry: '', result: '' })
+      : step === 81
+        ? pickCommentary(['Förlängningen är slut. Fortfarande oavgjort.', '30 extra minuter — ingen avgörelse.'], rand)
+        : fillTemplate(pickCommentary(['{team} driver på men hittar ingen väg fram.', 'Desperat spel — det är öppet.', 'Trötta ben men intensiv match. Vem avgör?'], rand), { team: attackingTeam, opponent: '', score: otScoreStr, minute: String(minute), player: '', goalkeeper: '', rivalry: '', result: '' })
+
+    yield { step, minute, events: goalScored && scorerPlayerId ? [{ minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorerPlayerId, description: `Overtime goal` }] : [], homeScore, awayScore, commentary: commentaryText, intensity: goalScored ? 'high' : 'medium', activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions }, shotsHome, shotsAway, cornersHome, cornersAway, phase: 'overtime', overtimeResult: goalScored ? (isHomeAttacking ? 'home' : 'away') : undefined }
+    if (goalScored) { yield { step: 82, minute: 120, events: [], homeScore, awayScore, commentary: `Matchen avgörs i förlängningen! ${homeScore}–${awayScore}.`, intensity: 'high', activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions }, shotsHome, shotsAway, cornersHome, cornersAway, phase: 'overtime', overtimeResult: isHomeAttacking ? 'home' : 'away' }; return }
+  }
+
+  const homeGKPlayer = homeStarters.find(p => p.position === PlayerPosition.Goalkeeper)
+  const awayGKPlayer = awayStarters.find(p => p.position === PlayerPosition.Goalkeeper)
+  const { rounds: pr, homeGoals: ph, awayGoals: pa } = simulatePenalties(homeStarters, awayStarters, homeGKPlayer, awayGKPlayer, rand)
+  yield { step: 83, minute: 120, events: [], homeScore, awayScore, commentary: 'STRAFFAR! Nu avgörs det!', intensity: 'high', activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions }, shotsHome, shotsAway, cornersHome, cornersAway, phase: 'penalties' }
+  let rh = 0, ra = 0
+  for (const penRound of pr) {
+    if (penRound.homeScored) rh++
+    if (penRound.awayScored) ra++
+    const isLast = penRound === pr[pr.length - 1]
+    yield { step: 84 + penRound.round - 1, minute: 120, events: [], homeScore, awayScore, commentary: isLast ? `${rh > ra ? homeTeamRef : awayTeamRef} VINNER STRAFFARNA ${Math.max(rh,ra)}-${Math.min(rh,ra)}!` : `Omgång ${penRound.round}: ${penRound.homeShooterName} ${penRound.homeScored ? '✅' : '❌'} · ${penRound.awayShooterName} ${penRound.awayScored ? '✅' : '❌'} — ${rh}-${ra}`, intensity: isLast ? 'high' : 'medium', activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions }, shotsHome, shotsAway, cornersHome, cornersAway, phase: 'penalties', penaltyRound: penRound, penaltyHomeTotal: rh, penaltyAwayTotal: ra, penaltyDone: isLast, penaltyFinalResult: isLast ? { home: ph, away: pa } : undefined }
+  }
 }
 
 export function* simulateMatchStepByStep(input: StepByStepInput): Generator<MatchStep> {

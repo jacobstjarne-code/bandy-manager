@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
-import { simulateMatchStepByStep, type MatchStep } from '../../domain/services/matchSimulator'
+import { simulateMatchStepByStep, simulateSecondHalf, type MatchStep } from '../../domain/services/matchSimulator'
+import type { Tactic } from '../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
 import type { PlayoffBracket } from '../../domain/entities/Playoff'
 import type { CupBracket } from '../../domain/entities/Cup'
 import type { Club } from '../../domain/entities/Club'
-import { MatchEventType, WeatherCondition, IceQuality } from '../../domain/enums'
+import { MatchEventType, WeatherCondition, IceQuality, TacticMentality, TacticTempo, TacticPress } from '../../domain/enums'
 import { getWeatherEmoji, getIceQualityLabel } from '../../domain/services/weatherService'
 import { getRivalry } from '../../domain/data/rivalries'
 import { eventIcon } from '../utils/formatters'
@@ -166,6 +167,13 @@ export function MatchLiveScreen() {
   const [showOvertimeOverlay, setShowOvertimeOverlay] = useState(false)
   const [showPenaltiesOverlay, setShowPenaltiesOverlay] = useState(false)
   const prevPhase = useRef<string | undefined>(undefined)
+
+  // Halftime tactic change
+  const [showTacticPanel, setShowTacticPanel] = useState(false)
+  const [htMentality, setHtMentality] = useState<TacticMentality | null>(null)
+  const [htTempo, setHtTempo] = useState<TacticTempo | null>(null)
+  const [htPress, setHtPress] = useState<TacticPress | null>(null)
+  const [tacticChanged, setTacticChanged] = useState(false)
   // SM-final/cup-final ceremony slide (0 = not showing, 1 = final score, 2 = champion/loss, 3 = MVP [SM only])
   const [ceremonySlide, setCeremonySlide] = useState(0)
   // SM-final/cup-final pre-match intro slide (0 = not showing, 1/2/3 = intro slides)
@@ -1169,24 +1177,170 @@ export function MatchLiveScreen() {
                   Laget samlas i omklädningsrummet. Det är 30 minuter kvar till cuptiteln.
                 </p>
               )}
-              <button
-                onClick={() => {
-                  setShowHalftime(false)
-                  setCurrentStep(prev => prev + 1)
-                }}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: isBigMatch ? '#C9A84C' : 'var(--accent)',
-                  border: 'none',
-                  borderRadius: 'var(--radius)',
-                  color: isBigMatch ? '#0D1B2A' : '#fff',
-                  fontSize: 15,
-                  fontWeight: 700,
-                }}
-              >
-                {isSmFinal ? 'ANDRA HALVLEK →' : isCupFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}
-              </button>
+              {/* Halftime tactic panel */}
+              {showTacticPanel ? (() => {
+                const managedIsHome = fixture.homeClubId === game?.managedClubId
+                const currentTactic = managedIsHome ? homeLineup.tactic : awayLineup.tactic
+                const mentality = htMentality ?? currentTactic.mentality
+                const tempo = htTempo ?? currentTactic.tempo
+                const press = htPress ?? currentTactic.press
+
+                // Contextual recommendation
+                const halftimeStep = steps.find(s => s.step === 30)
+                const hs = halftimeStep?.homeScore ?? 0
+                const as_ = halftimeStep?.awayScore ?? 0
+                const scoreDiff = managedIsHome ? hs - as_ : as_ - hs
+                const rec = scoreDiff >= 2
+                  ? 'defensiv' : scoreDiff === 1
+                  ? 'defensiv eller behåll tempo' : scoreDiff === 0
+                  ? 'offensiv — ta initiativet' : scoreDiff === -1
+                  ? 'offensiv push — ni behöver mål' : 'all-in offensiv — inget att förlora'
+
+                const btnRow = (
+                  label: string,
+                  options: { val: string; label: string }[],
+                  current: string,
+                  setter: (v: string) => void,
+                ) => (
+                  <div style={{ marginBottom: 14 }}>
+                    <p style={{ fontSize: 11, color: '#8A9BB0', marginBottom: 6, fontWeight: 600 }}>{label}</p>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {options.map(o => (
+                        <button
+                          key={o.val}
+                          onClick={() => setter(o.val)}
+                          style={{
+                            flex: 1,
+                            padding: '7px 4px',
+                            fontSize: 11,
+                            fontWeight: 700,
+                            background: current === o.val ? 'var(--accent)' : 'rgba(255,255,255,0.06)',
+                            border: `1px solid ${current === o.val ? 'var(--accent)' : 'rgba(255,255,255,0.12)'}`,
+                            borderRadius: 6,
+                            color: current === o.val ? '#fff' : '#8A9BB0',
+                            cursor: 'pointer',
+                          }}
+                        >{o.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                )
+
+                return (
+                  <div style={{ marginBottom: 16, padding: 12, background: 'rgba(255,255,255,0.04)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>Halvtidsjustering</p>
+                    {btnRow('Mentalitet', [
+                      { val: TacticMentality.Defensive, label: 'Defensiv' },
+                      { val: TacticMentality.Balanced, label: 'Balanserad' },
+                      { val: TacticMentality.Offensive, label: 'Offensiv' },
+                    ], mentality, v => setHtMentality(v as TacticMentality))}
+                    {btnRow('Tempo', [
+                      { val: TacticTempo.Low, label: 'Lågt' },
+                      { val: TacticTempo.Normal, label: 'Normalt' },
+                      { val: TacticTempo.High, label: 'Högt' },
+                    ], tempo, v => setHtTempo(v as TacticTempo))}
+                    {btnRow('Press', [
+                      { val: TacticPress.Low, label: 'Låg' },
+                      { val: TacticPress.Medium, label: 'Medium' },
+                      { val: TacticPress.High, label: 'Hög' },
+                    ], press, v => setHtPress(v as TacticPress))}
+                    <p style={{ fontSize: 10, color: '#6a7d8f', fontStyle: 'italic', marginBottom: 12 }}>
+                      💡 Rekommendation: {rec}
+                    </p>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        onClick={() => {
+                          // Apply tactic change: regenerate second half
+                          if (!fixture || !homeLineup || !awayLineup || !game) return
+                          const managedIsHome_ = fixture.homeClubId === game.managedClubId
+                          const currentTactic_ = managedIsHome_ ? homeLineup.tactic : awayLineup.tactic
+                          const updatedTactic: Tactic = {
+                            ...currentTactic_,
+                            mentality: htMentality ?? currentTactic_.mentality,
+                            tempo: htTempo ?? currentTactic_.tempo,
+                            press: htPress ?? currentTactic_.press,
+                          }
+                          const updatedHome = managedIsHome_ ? { ...homeLineup, tactic: updatedTactic } : homeLineup
+                          const updatedAway = managedIsHome_ ? awayLineup : { ...awayLineup, tactic: updatedTactic }
+                          const halftimeStep_ = steps.find(s => s.step === 30)
+                          const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
+                          const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
+                          const gen = simulateSecondHalf({
+                            fixture, homeLineup: updatedHome, awayLineup: updatedAway,
+                            homePlayers, awayPlayers,
+                            homeAdvantage: fixture.isNeutralVenue ? 0 : 0.05,
+                            seed: Date.now(),
+                            weather: matchWeather?.weather,
+                            homeClubName: homeClubName || undefined,
+                            awayClubName: awayClubName || undefined,
+                            rivalry: rivalry ?? undefined,
+                            initialHomeScore: halftimeStep_?.homeScore ?? 0,
+                            initialAwayScore: halftimeStep_?.awayScore ?? 0,
+                            initialShotsHome: halftimeStep_?.shotsHome ?? 0,
+                            initialShotsAway: halftimeStep_?.shotsAway ?? 0,
+                            initialCornersHome: halftimeStep_?.cornersHome ?? 0,
+                            initialCornersAway: halftimeStep_?.cornersAway ?? 0,
+                            initialHomeSuspensions: halftimeStep_?.activeSuspensions.homeCount ?? 0,
+                            initialAwaySuspensions: halftimeStep_?.activeSuspensions.awayCount ?? 0,
+                          })
+                          const firstHalf = steps.slice(0, 31) // steps 0-30
+                          const newSecondHalf: MatchStep[] = []
+                          for (const s of gen) newSecondHalf.push(s)
+                          setSteps([...firstHalf, ...newSecondHalf])
+                          setTacticChanged(true)
+                          setShowTacticPanel(false)
+                          setShowHalftime(false)
+                          setCurrentStep(31)
+                        }}
+                        style={{ flex: 1, padding: '10px', background: 'var(--accent)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 13, fontWeight: 700 }}
+                      >Spara ändringar</button>
+                      <button
+                        onClick={() => setShowTacticPanel(false)}
+                        style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: '#8A9BB0', fontSize: 13, fontWeight: 600 }}
+                      >Behåll nuvarande</button>
+                    </div>
+                  </div>
+                )
+              })() : (
+                <button
+                  onClick={() => setShowTacticPanel(true)}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    borderRadius: 'var(--radius)',
+                    color: '#C9A84C',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    marginBottom: 10,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Ändra taktik ⚙️
+                </button>
+              )}
+
+              {!showTacticPanel && (
+                <button
+                  onClick={() => {
+                    setShowHalftime(false)
+                    setCurrentStep(prev => prev + 1)
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: isBigMatch ? '#C9A84C' : 'var(--accent)',
+                    border: 'none',
+                    borderRadius: 'var(--radius)',
+                    color: isBigMatch ? '#0D1B2A' : '#fff',
+                    fontSize: 15,
+                    fontWeight: 700,
+                  }}
+                >
+                  {tacticChanged ? '🔄 ' : ''}{isSmFinal ? 'ANDRA HALVLEK →' : isCupFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}
+                </button>
+              )}
             </div>
           </div>
         )
