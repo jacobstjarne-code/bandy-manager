@@ -45,8 +45,28 @@ export function MatchResultScreen() {
   }
 
   const fadeIn = (delay: string) => ({
-    animation: `fadeInUp 400ms ease-out ${delay} both` as const,
+    animation: `fadeInUp 500ms ease-out ${delay} both` as const,
   })
+
+  // B3: Result flavor text
+  const margin = myScore - theirScore
+  const totalGoals = (fixture.homeScore ?? 0) + (fixture.awayScore ?? 0)
+  const flavorText = won
+    ? margin >= 3 ? '💪 Dominant insats'
+      : totalGoals >= 8 ? '🔥 Målrik historia'
+      : margin === 1 ? '😅 Knapp seger'
+      : '✅ Klar vinst'
+    : lost
+    ? margin <= -3 ? '💣 Svår dag på jobbet'
+      : margin === -1 ? '😤 Nära men inte nog'
+      : '❌ Klar förlust'
+    : totalGoals >= 8 ? '🎢 Dramatiskt kryss'
+    : '🤝 Rättvis poängdelning'
+
+  // B2: Key moments (goals + red cards)
+  const keyMoments = fixture.events
+    .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard)
+    .sort((a, b) => a.minute - b.minute)
 
   return (
     <div style={{
@@ -120,14 +140,50 @@ export function MatchResultScreen() {
           </span>
         </div>
 
-        {/* Goal scorers */}
+        {/* B3: Flavor text */}
+        <div style={{ textAlign: 'center', marginBottom: 16, ...fadeIn('360ms') }}>
+          <span style={{ fontSize: 13, color: won ? '#22c55e' : lost ? '#ef4444' : '#8A9BB0', fontWeight: 600 }}>
+            {flavorText}
+          </span>
+        </div>
+
+        {/* B2: Key moments mini-timeline */}
+        {keyMoments.length > 0 && (
+          <div style={{ marginBottom: 20, ...fadeIn('480ms') }}>
+            <p style={{ fontSize: 10, fontWeight: 700, color: '#4A6080', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>Nyckelmoment</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {keyMoments.map((e, i) => {
+                const isHome = e.clubId === fixture.homeClubId
+                const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
+                const scorerName = scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'
+                const icon = e.type === MatchEventType.Goal
+                  ? (e.isCornerGoal ? '📐' : '⚽')
+                  : '🟥'
+                return (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    animation: `fadeInUp 400ms ease-out ${380 + i * 80}ms both`,
+                  }}>
+                    <span style={{ fontSize: 10, color: '#4A6080', width: 28, textAlign: 'right', flexShrink: 0 }}>{e.minute}'</span>
+                    <span style={{ fontSize: 11 }}>{icon}</span>
+                    <span style={{ fontSize: 11, color: '#8A9BB0', flex: 1, textAlign: isHome ? 'left' : 'right' }}>
+                      {scorerName}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* B1: Goal scorers with per-scorer stagger */}
         {goalEvents.length > 0 && (
-          <div style={{ display: 'flex', gap: 8, marginBottom: 20, ...fadeIn('420ms') }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
             <div style={{ flex: 1 }}>
               {homeGoals.map((e, i) => {
                 const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
                 return (
-                  <div key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 2 }}>
+                  <div key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 2, animation: `fadeInUp 400ms ease-out ${600 + i * 100}ms both` }}>
                     {e.minute}' {scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'}
                     {e.isCornerGoal ? ' 📐' : ''}
                   </div>
@@ -138,7 +194,7 @@ export function MatchResultScreen() {
               {awayGoals.map((e, i) => {
                 const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
                 return (
-                  <div key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 2 }}>
+                  <div key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 2, animation: `fadeInUp 400ms ease-out ${600 + i * 100}ms both` }}>
                     {e.isCornerGoal ? '📐 ' : ''}
                     {scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'} {e.minute}'
                   </div>
@@ -159,7 +215,7 @@ export function MatchResultScreen() {
             fontSize: 12,
             color: '#C9A84C',
             textAlign: 'center',
-            ...fadeIn('540ms'),
+            ...fadeIn('800ms'),
           }}>
             ⭐ Matchens spelare: {potm.firstName} {potm.lastName} · {potmRating.toFixed(1)}
           </div>
@@ -167,7 +223,7 @@ export function MatchResultScreen() {
 
         {/* Stats from report */}
         {fixture.report && (
-          <div style={{ marginBottom: 20, ...fadeIn('620ms') }}>
+          <div style={{ marginBottom: 20, ...fadeIn('900ms') }}>
             {(() => {
               const cornerGoals = fixture.events.filter(
                 e => e.type === MatchEventType.Goal && e.isCornerGoal &&
@@ -206,7 +262,7 @@ export function MatchResultScreen() {
         )}
 
         {/* Buttons */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, ...fadeIn('800ms') }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, ...fadeIn('1000ms') }}>
           <button
             onClick={() => navigate('/game/match', { state: { showReport: true } })}
             style={{
