@@ -156,6 +156,8 @@ export interface SaveGame {
   activeTalentSearch: TalentSearchRequest | null
   talentSearchResults: TalentSearchResult[]
 
+  doctorQuestionsUsed?: number  // resets each round, max 5
+
   version: string
   lastSavedAt: string   // ISO datetime
 }

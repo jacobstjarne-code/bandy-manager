@@ -147,6 +147,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     opponentAnalyses: {},
     activeTalentSearch: null,
     talentSearchResults: [],
+    doctorQuestionsUsed: 0,
     version: '0.1.0',
     lastSavedAt: now,
   }

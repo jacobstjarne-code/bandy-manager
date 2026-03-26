@@ -41,6 +41,7 @@ interface GameState {
   clearBoardMeeting: () => void
   requestDetailedAnalysis: (opponentClubId: string, fixtureId: string) => { success: boolean; error?: string }
   startTalentSearch: (position: string, maxAge: number, maxSalary: number, currentRound: number) => { success: boolean; error?: string }
+  incrementDoctorQuestions: () => void
 }
 
 const indexedDBStorage = {
@@ -226,6 +227,12 @@ export const useGameStore = create<GameState>()(
         }
         set({ game: { ...game, activeTalentSearch: search, scoutBudget: game.scoutBudget - 2 } })
         return { success: true }
+      },
+
+      incrementDoctorQuestions: () => {
+        const { game } = get()
+        if (!game) return
+        set({ game: { ...game, doctorQuestionsUsed: (game.doctorQuestionsUsed ?? 0) + 1 } })
       },
     }),
     {

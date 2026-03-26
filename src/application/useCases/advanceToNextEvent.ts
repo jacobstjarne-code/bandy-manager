@@ -1301,6 +1301,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     talentSearchResults: updatedTalentResults,
     fanMood: newFanMood,
     rivalryHistory: updatedRivalryHistory,
+    doctorQuestionsUsed: 0,
   }
 
   // Pre-generate weather for next round so dashboard/matchScreen can show it
