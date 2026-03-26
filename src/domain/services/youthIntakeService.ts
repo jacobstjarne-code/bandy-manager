@@ -2,18 +2,7 @@ import type { Club } from '../entities/Club'
 import type { Player, PlayerAttributes, PlayerSeasonStats, PlayerCareerStats } from '../entities/Player'
 import type { YouthIntakeRecord } from '../entities/SaveGame'
 import { PlayerPosition, PlayerArchetype } from '../enums'
-
-// Mulberry32 seeded PRNG
-function mulberry32(seed: number) {
-  let s = seed >>> 0
-  return function (): number {
-    s += 0x6d2b79f5
-    let t = s
-    t = Math.imul(t ^ (t >>> 15), t | 1)
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
+import { mulberry32 } from '../utils/random'
 
 function makeRng(seed: number) {
   const rand = mulberry32(seed)

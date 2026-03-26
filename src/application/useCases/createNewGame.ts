@@ -8,6 +8,7 @@ import { calculateStandings } from '../../domain/services/standingsService'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import type { MatchWeather } from '../../domain/entities/Weather'
 import { generateCupFixtures } from '../../domain/services/cupService'
+import { mulberry32 } from '../../domain/utils/random'
 
 export interface CreateNewGameInput {
   managerName: string
@@ -16,16 +17,6 @@ export interface CreateNewGameInput {
   seed?: number
 }
 
-function mulberry32(seed: number): () => number {
-  let s = seed >>> 0
-  return function (): number {
-    s += 0x6d2b79f5
-    let t = s
-    t = Math.imul(t ^ (t >>> 15), t | 1)
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
 
 export function createNewGame(input: CreateNewGameInput): SaveGame {
   const season = input.season ?? 2025

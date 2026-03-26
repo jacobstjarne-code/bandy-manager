@@ -4,6 +4,7 @@ import type { Weather } from '../entities/Weather'
 import { FixtureStatus, MatchEventType, PlayerPosition, WeatherCondition, IceQuality, PlayerArchetype } from '../enums'
 import { evaluateSquad } from './squadEvaluator'
 import { getTacticModifiers } from './tacticModifiers'
+import { mulberry32 } from '../utils/random'
 import { commentary, fillTemplate, pickCommentary } from '../data/commentary'
 import { getConditionLabel, getIceQualityLabel } from './weatherService'
 import type { Rivalry } from '../data/rivalries'
@@ -89,17 +90,6 @@ export interface SimulateMatchResult {
   fixture: Fixture
 }
 
-// Mulberry32 seeded PRNG
-function mulberry32(seed: number): () => number {
-  let s = seed >>> 0
-  return function (): number {
-    s += 0x6d2b79f5
-    let t = s
-    t = Math.imul(t ^ (t >>> 15), t | 1)
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
 
 function clamp(value: number, min = 0, max = 1): number {
   return Math.max(min, Math.min(max, value))
