@@ -34,7 +34,7 @@ interface GameState {
   startEvaluation: (playerId: string, clubId: string, sameRegion: boolean) => { success: boolean; error?: string }
   placeOutgoingBid: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => { success: boolean; error?: string }
   resolveEvent: (eventId: string, choiceId: string) => void
-  saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection) => void
+  saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection, overtimeResult?: 'home' | 'away', penaltyResult?: { home: number; away: number }) => void
   clearGame: () => void
   listSaves: () => SaveGameSummary[]
   clearSeasonSummary: () => void
@@ -101,12 +101,19 @@ export const useGameStore = create<GameState>()(
         return { success: false, error: result.error }
       },
 
-      saveLiveMatchResult: (fixtureId, homeScore, awayScore, events, report, homeLineup, awayLineup) => {
+      saveLiveMatchResult: (fixtureId, homeScore, awayScore, events, report, homeLineup, awayLineup, overtimeResult, penaltyResult) => {
         const { game } = get()
         if (!game) return
         const updatedFixtures = game.fixtures.map(f =>
           f.id === fixtureId
-            ? { ...f, homeScore, awayScore, events, report, homeLineup, awayLineup, status: FixtureStatus.Completed }
+            ? {
+                ...f, homeScore, awayScore, events, report, homeLineup, awayLineup,
+                status: FixtureStatus.Completed,
+                wentToOvertime: (overtimeResult !== undefined || penaltyResult !== undefined) || undefined,
+                wentToPenalties: penaltyResult !== undefined || undefined,
+                overtimeResult,
+                penaltyResult,
+              }
             : f
         )
         const completedFixtures = updatedFixtures.filter(f => f.status === FixtureStatus.Completed)

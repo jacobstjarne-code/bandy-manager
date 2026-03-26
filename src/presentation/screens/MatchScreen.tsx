@@ -318,6 +318,16 @@ function MatchReportView({ fixture, game, onClose }: MatchReportViewProps) {
             {awayClub?.shortName ?? awayClub?.name}
           </p>
         </div>
+        {fixture.wentToPenalties && fixture.penaltyResult && (
+          <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600, marginTop: 2 }}>
+            efter straffar ({fixture.penaltyResult.home}-{fixture.penaltyResult.away})
+          </p>
+        )}
+        {fixture.wentToOvertime && !fixture.wentToPenalties && (
+          <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600, marginTop: 2 }}>
+            efter förlängning
+          </p>
+        )}
         {fixture.roundNumber > 22 ? (() => {
           const bracket = game.playoffBracket
           const allSeries = bracket ? [

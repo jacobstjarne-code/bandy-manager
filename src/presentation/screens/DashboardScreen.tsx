@@ -794,6 +794,16 @@ export function DashboardScreen() {
                 >
                   {lastResult.scoreFor} — {lastResult.scoreAgainst}
                 </p>
+                {lastCompletedFixture?.wentToPenalties && lastCompletedFixture.penaltyResult && (
+                  <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 600, marginTop: 2 }}>
+                    str. {lastCompletedFixture.penaltyResult.home}-{lastCompletedFixture.penaltyResult.away}
+                  </p>
+                )}
+                {lastCompletedFixture?.wentToOvertime && !lastCompletedFixture.wentToPenalties && (
+                  <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 600, marginTop: 2 }}>
+                    efter förlängning
+                  </p>
+                )}
                 <p style={{ fontSize: 12, color: '#8A9BB0', marginTop: 4 }}>
                   vs {lastResult.opponentName}
                 </p>

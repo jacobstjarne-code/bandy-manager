@@ -44,6 +44,13 @@ export interface Fixture {
 
   isCup?: boolean
   isNeutralVenue?: boolean  // true for SM-final at neutral ground (Studenternas IP, Uppsala)
+  isKnockout?: boolean      // true for all playoff + cup matches (enables overtime/penalties on draw)
+
+  // Set after the match if it went to overtime/penalties
+  wentToOvertime?: boolean
+  wentToPenalties?: boolean
+  overtimeResult?: 'home' | 'away'
+  penaltyResult?: { home: number; away: number }
 
   homeScore: number
   awayScore: number

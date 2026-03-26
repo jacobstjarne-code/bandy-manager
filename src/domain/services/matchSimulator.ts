@@ -792,6 +792,72 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     playerOfTheMatchId,
   }
 
+  // Handle overtime + penalties for knockout matches that end in a draw
+  let wentToOvertime = false
+  let wentToPenalties = false
+  let overtimeResult: 'home' | 'away' | undefined
+  let penaltyResult: { home: number; away: number } | undefined
+
+  if (fixture.isKnockout && homeScore === awayScore) {
+    wentToOvertime = true
+    // Overtime: 20 steps with reduced goal chance
+    const otGoalMod = weatherGoalMod * 0.85
+    for (let step = 0; step < 20; step++) {
+      const homePenaltyFactor = homeActiveSuspensions > 0 ? 0.75 : 1.0
+      const awayPenaltyFactor = awayActiveSuspensions > 0 ? 0.75 : 1.0
+      const homeWeight = homeAttack * 1.15 * (1 + effectiveHomeAdvantage) * homePenaltyFactor
+      const awayWeight = awayAttack * 1.15 * awayPenaltyFactor
+      const isHomeAttacking = rand() < homeWeight / (homeWeight + awayWeight)
+
+      const attackingStarters = isHomeAttacking ? homeStarters : awayStarters
+      const attackingClubId = isHomeAttacking ? fixture.homeClubId : fixture.awayClubId
+      const attAttack = isHomeAttacking ? homeAttack * 1.15 : awayAttack * 1.15
+      const defDefense = isHomeAttacking ? awayDefense : homeDefense
+      const defGK = isHomeAttacking ? awayGK : homeGK
+
+      const chanceQuality = clamp(attAttack * 0.5 - defDefense * 0.3 + randRange(rand, -0.15, 0.25), 0.05, 0.90)
+      const goalThreshold = chanceQuality * 0.40 * (1 - defGK * 0.35) * otGoalMod
+
+      if (rand() < goalThreshold) {
+        const scorer = getGoalScorer(attackingStarters)
+        if (scorer) {
+          if (isHomeAttacking) { homeScore++ } else { awayScore++ }
+          trackGoal(scorer.id)
+          const assister = getAssistProvider(attackingStarters, scorer.id)
+          events.push({
+            minute: 91 + step * 1.5,
+            type: MatchEventType.Goal,
+            clubId: attackingClubId,
+            playerId: scorer.id,
+            secondaryPlayerId: assister?.id,
+            description: `Overtime goal by ${scorer.firstName} ${scorer.lastName}`,
+          })
+          if (assister) {
+            trackAssist(assister.id)
+            events.push({
+              minute: 91 + step * 1.5,
+              type: MatchEventType.Assist,
+              clubId: attackingClubId,
+              playerId: assister.id,
+              description: `Assist by ${assister.firstName} ${assister.lastName}`,
+            })
+          }
+          overtimeResult = isHomeAttacking ? 'home' : 'away'
+          break
+        }
+      }
+    }
+
+    // Penalties if still tied after overtime
+    if (homeScore === awayScore) {
+      wentToPenalties = true
+      const homeGKPlayer = homeStarters.find(p => p.position === PlayerPosition.Goalkeeper)
+      const awayGKPlayer = awayStarters.find(p => p.position === PlayerPosition.Goalkeeper)
+      const { homeGoals, awayGoals } = simulatePenalties(homeStarters, awayStarters, homeGKPlayer, awayGKPlayer, rand)
+      penaltyResult = { home: homeGoals, away: awayGoals }
+    }
+  }
+
   const updatedFixture: Fixture = {
     ...fixture,
     homeScore,
@@ -801,12 +867,26 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     awayLineup,
     events,
     report,
+    wentToOvertime: wentToOvertime || undefined,
+    wentToPenalties: wentToPenalties || undefined,
+    overtimeResult,
+    penaltyResult,
   }
 
   return { fixture: updatedFixture }
 }
 
 // ── Step-by-step generator ──────────────────────────────────────────────
+
+export interface PenaltyRound {
+  round: number
+  homeShooterId: string
+  homeShooterName: string
+  homeScored: boolean
+  awayShooterId: string
+  awayShooterName: string
+  awayScored: boolean
+}
 
 export interface MatchStep {
   step: number
@@ -823,6 +903,14 @@ export interface MatchStep {
   cornersAway: number
   weatherNote?: string
   isDerbyComment?: boolean
+  // Overtime/penalty metadata
+  phase?: 'regular' | 'overtime' | 'penalties'
+  penaltyRound?: PenaltyRound
+  penaltyHomeTotal?: number
+  penaltyAwayTotal?: number
+  penaltyDone?: boolean
+  overtimeResult?: 'home' | 'away'
+  penaltyFinalResult?: { home: number; away: number }
 }
 
 export interface StepByStepInput {
@@ -840,6 +928,81 @@ export interface StepByStepInput {
   rivalry?: Rivalry
   fanMood?: number
   managedIsHome?: boolean
+}
+
+function simulatePenalties(
+  homeStarters: Player[],
+  awayStarters: Player[],
+  homeGK: Player | undefined,
+  awayGK: Player | undefined,
+  rand: () => number,
+): { rounds: PenaltyRound[]; homeGoals: number; awayGoals: number } {
+  // Build shooter order: 5 best outfielders by shooting, then rest
+  function getShooterOrder(starters: Player[]): Player[] {
+    const nonGK = starters.filter(p => p.position !== PlayerPosition.Goalkeeper)
+    return [...nonGK].sort((a, b) => b.attributes.shooting - a.attributes.shooting)
+  }
+  const homeShooters = getShooterOrder(homeStarters)
+  const awayShooters = getShooterOrder(awayStarters)
+
+  function shootProb(shooter: Player, gk: Player | undefined): number {
+    const base = (shooter.attributes.shooting * 0.4 + shooter.attributes.decisions * 0.3 + (shooter.morale ?? 50) * 0.3) / 100
+    const gkBonus = gk ? (gk.attributes.goalkeeping / 100) * 0.15 : 0
+    const specialistBonus = shooter.attributes.shooting > 75 ? 0.05 : 0
+    return Math.max(0.30, Math.min(0.95, 0.70 + (base - 0.50) * 0.6 - gkBonus + specialistBonus))
+  }
+
+  const rounds: PenaltyRound[] = []
+  let homeGoals = 0
+  let awayGoals = 0
+
+  // Standard 5 rounds
+  for (let i = 0; i < 5; i++) {
+    const homeShooter = homeShooters[i % homeShooters.length]
+    const awayShooter = awayShooters[i % awayShooters.length]
+    const homeScored = rand() < shootProb(homeShooter, awayGK)
+    const awayScored = rand() < shootProb(awayShooter, homeGK)
+    if (homeScored) homeGoals++
+    if (awayScored) awayGoals++
+    rounds.push({
+      round: i + 1,
+      homeShooterId: homeShooter.id,
+      homeShooterName: `${homeShooter.firstName} ${homeShooter.lastName}`,
+      homeScored,
+      awayShooterId: awayShooter.id,
+      awayShooterName: `${awayShooter.firstName} ${awayShooter.lastName}`,
+      awayScored,
+    })
+    // Early finish: if one side can't catch up after round 3
+    const remaining = 4 - i
+    if (homeGoals > awayGoals + remaining || awayGoals > homeGoals + remaining) break
+  }
+
+  // Sudden death if still tied
+  if (homeGoals === awayGoals) {
+    let sdRound = rounds.length + 1
+    while (sdRound <= 20) {
+      const homeShooter = homeShooters[(sdRound - 1) % homeShooters.length]
+      const awayShooter = awayShooters[(sdRound - 1) % awayShooters.length]
+      const homeScored = rand() < shootProb(homeShooter, awayGK)
+      const awayScored = rand() < shootProb(awayShooter, homeGK)
+      if (homeScored) homeGoals++
+      if (awayScored) awayGoals++
+      rounds.push({
+        round: sdRound,
+        homeShooterId: homeShooter.id,
+        homeShooterName: `${homeShooter.firstName} ${homeShooter.lastName}`,
+        homeScored,
+        awayShooterId: awayShooter.id,
+        awayShooterName: `${awayShooter.firstName} ${awayShooter.lastName}`,
+        awayScored,
+      })
+      if (homeGoals !== awayGoals) break
+      sdRound++
+    }
+  }
+
+  return { rounds, homeGoals, awayGoals }
 }
 
 export function* simulateMatchStepByStep(input: StepByStepInput): Generator<MatchStep> {
@@ -1586,8 +1749,8 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
 
   // Final step (step 60, minute 90) — full time
   const scoreStr = `${homeScore}–${awayScore}`
-  const homeTeamRef = fixture.homeClubId
-  const awayTeamRef = fixture.awayClubId
+  const homeTeamRef = homeClubName ?? fixture.homeClubId
+  const awayTeamRef = awayClubName ?? fixture.awayClubId
   const fullTimeVars: Record<string, string> = {
     team: homeTeamRef,
     opponent: awayTeamRef,
@@ -1617,5 +1780,225 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     cornersAway,
     weatherNote: undefined,
     isDerbyComment: rivalry ? true : undefined,
+    phase: 'regular',
+  }
+
+  // ── Overtime (for knockout matches tied after 90) ────────────────────────
+  if (!fixture.isKnockout || homeScore !== awayScore) return
+
+  // Overtime announcement step
+  yield {
+    step: 61,
+    minute: 90,
+    events: [],
+    homeScore,
+    awayScore,
+    commentary: pickCommentary([
+      'FÖRLÄNGNING! Ytterligare 30 minuter avgör. Spelarna samlar sig.',
+      'Det blir förlängning! Benen är tunga men viljan stark.',
+      'Oavgjort efter ordinarie tid — nu avgörs allt i förlängningen.',
+    ], rand),
+    intensity: 'high',
+    activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
+    shotsHome,
+    shotsAway,
+    cornersHome,
+    cornersAway,
+    phase: 'overtime',
+  }
+
+  // 20 overtime steps (minutes 91-120), slightly reduced goal chance
+  const otGoalMod = weatherGoalMod * 0.85
+  const otHomeAttack = homeAttack * 1.15
+  const otAwayAttack = awayAttack * 1.15
+
+  for (let step = 62; step < 82; step++) {
+    const minute = 91 + Math.round((step - 62) * 1.5)
+    const stepEvents: MatchEvent[] = []
+
+    // Determine initiative
+    const homePenaltyFactor = homeActiveSuspensions > 0 ? 0.75 : 1.0
+    const awayPenaltyFactor = awayActiveSuspensions > 0 ? 0.75 : 1.0
+    const homeWeight = otHomeAttack * (1 + effectiveHomeAdvantage) * homePenaltyFactor
+    const awayWeight = otAwayAttack * awayPenaltyFactor
+    const isHomeAttacking = rand() < homeWeight / (homeWeight + awayWeight)
+
+    const attackingStarters = isHomeAttacking ? homeStarters : awayStarters
+    const attackingClubId = isHomeAttacking ? fixture.homeClubId : fixture.awayClubId
+    const attAttack = isHomeAttacking ? otHomeAttack : otAwayAttack
+    const defDefense = isHomeAttacking ? awayDefense : homeDefense
+    const defGK = isHomeAttacking ? awayGK : homeGK
+
+    let goalScored = false
+    let scorerPlayerId: string | undefined
+
+    const r = rand()
+    const chanceQuality = clamp(attAttack * 0.5 - defDefense * 0.3 + randRange(rand, -0.15, 0.25), 0.05, 0.90)
+    const goalThreshold = chanceQuality * 0.40 * (1 - defGK * 0.35) * otGoalMod
+
+    if (r < goalThreshold) {
+      const scorer = getGoalScorer(attackingStarters)
+      const assister = getAssistProvider(attackingStarters, scorer?.id)
+      if (scorer) {
+        if (isHomeAttacking) { homeScore++ } else { awayScore++ }
+        scorerPlayerId = scorer.id
+        goalScored = true
+        trackGoal(scorer.id)
+        const event: MatchEvent = {
+          minute,
+          type: MatchEventType.Goal,
+          clubId: attackingClubId,
+          playerId: scorer.id,
+          secondaryPlayerId: assister?.id,
+          description: `Overtime goal by ${scorer.firstName} ${scorer.lastName}`,
+        }
+        stepEvents.push(event)
+        allEvents.push(event)
+        if (assister) {
+          trackAssist(assister.id)
+          const assistEvent: MatchEvent = {
+            minute,
+            type: MatchEventType.Assist,
+            clubId: attackingClubId,
+            playerId: assister.id,
+            secondaryPlayerId: scorer.id,
+            description: `Assist by ${assister.firstName} ${assister.lastName}`,
+          }
+          stepEvents.push(assistEvent)
+          allEvents.push(assistEvent)
+        }
+      }
+    }
+
+    const otScoreStr = `${homeScore}–${awayScore}`
+    const attackingTeam = isHomeAttacking ? homeTeamRef : awayTeamRef
+    let commentaryText: string
+    if (goalScored && scorerPlayerId) {
+      commentaryText = fillTemplate(pickCommentary([
+        'MÅÅÅL I FÖRLÄNGNINGEN! {player} kan ha avgjort det! {score}!',
+        'DÄR SITTER DEN! {player} i förlängningen! {score}!',
+        'STRAFFVINNAREN! {player} slår till i förlängningen! {score}!',
+      ], rand), { player: findPlayerName(scorerPlayerId), score: otScoreStr, team: attackingTeam, opponent: '', minute: String(minute), goalkeeper: '', rivalry: '', result: '' })
+    } else if (step === 81) {
+      commentaryText = fillTemplate(pickCommentary([
+        'Förlängningen är slut. Fortfarande {score}.',
+        '30 minuter till — ingen lyckades avgöra. {score}.',
+      ], rand), { score: otScoreStr, team: '', opponent: '', minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
+    } else {
+      commentaryText = fillTemplate(pickCommentary([
+        '{team} driver på men hittar ingen väg fram.',
+        'Desperat spel av båda lagen — det är öppet.',
+        'Trötta ben men intensiv match. Vem avgör?',
+        'En ny chans, men den brinner — läktaren håller andan.',
+        'Desperation. {team} trycker men muren håller.',
+      ], rand), { team: attackingTeam, opponent: '', score: otScoreStr, minute: String(minute), player: '', goalkeeper: '', rivalry: '', result: '' })
+    }
+
+    yield {
+      step,
+      minute,
+      events: stepEvents,
+      homeScore,
+      awayScore,
+      commentary: commentaryText,
+      intensity: goalScored ? 'high' : 'medium',
+      activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
+      shotsHome,
+      shotsAway,
+      cornersHome,
+      cornersAway,
+      phase: 'overtime',
+      overtimeResult: goalScored ? (isHomeAttacking ? 'home' : 'away') : undefined,
+    }
+
+    if (goalScored) {
+      // Overtime decided — yield done step with result
+      yield {
+        step: 82,
+        minute: 120,
+        events: [],
+        homeScore,
+        awayScore,
+        commentary: `Matchen är avgjord i förlängningen! ${homeScore}–${awayScore}.`,
+        intensity: 'high',
+        activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
+        shotsHome,
+        shotsAway,
+        cornersHome,
+        cornersAway,
+        phase: 'overtime',
+        overtimeResult: isHomeAttacking ? 'home' : 'away',
+      }
+      return
+    }
+  }
+
+  // ── Penalties (still tied after overtime) ───────────────────────────────
+  const homeGKPlayer = homeStarters.find(p => p.position === PlayerPosition.Goalkeeper)
+  const awayGKPlayer = awayStarters.find(p => p.position === PlayerPosition.Goalkeeper)
+  const { rounds: penRounds, homeGoals: penHome, awayGoals: penAway } = simulatePenalties(
+    homeStarters, awayStarters, homeGKPlayer, awayGKPlayer, rand
+  )
+
+  // Announcement step
+  yield {
+    step: 83,
+    minute: 120,
+    events: [],
+    homeScore,
+    awayScore,
+    commentary: pickCommentary([
+      'STRAFFAR! Fortfarande oavgjort! Nu avgör straffarna!',
+      'Det blir straffar! Nerverna är på yttersta spetsen.',
+      'Ingen lyckades avgöra på 120 minuter. Det slutliga avgörandet: straffar.',
+    ], rand),
+    intensity: 'high',
+    activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
+    shotsHome,
+    shotsAway,
+    cornersHome,
+    cornersAway,
+    phase: 'penalties',
+  }
+
+  // Yield one step per penalty round
+  let runningHome = 0
+  let runningAway = 0
+  for (const penRound of penRounds) {
+    if (penRound.homeScored) runningHome++
+    if (penRound.awayScored) runningAway++
+    const isLastRound = penRound === penRounds[penRounds.length - 1]
+
+    yield {
+      step: 84 + penRound.round - 1,
+      minute: 120,
+      events: [],
+      homeScore,
+      awayScore,
+      commentary: isLastRound
+        ? (runningHome > runningAway
+          ? fillTemplate(pickCommentary([
+              '{team} VINNER STRAFFARNA {penHome}-{penAway}! Vilken dramatik!',
+              'Det är avgjort! {team} tar det på straffar! {penHome}-{penAway}!',
+            ], rand), { team: homeTeamRef, penHome: String(runningHome), penAway: String(runningAway), score: `${homeScore}–${awayScore}`, opponent: awayTeamRef, minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
+          : fillTemplate(pickCommentary([
+              '{team} VINNER STRAFFARNA {penAway}-{penHome}! Vilken dramatik!',
+              'Det är avgjort! {team} tar det på straffar! {penAway}-{penHome}!',
+            ], rand), { team: awayTeamRef, penHome: String(runningHome), penAway: String(runningAway), score: `${homeScore}–${awayScore}`, opponent: homeTeamRef, minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
+        )
+        : `Omgång ${penRound.round}: ${penRound.homeShooterName} ${penRound.homeScored ? '✅' : '❌'} · ${penRound.awayShooterName} ${penRound.awayScored ? '✅' : '❌'} — Straffar: ${runningHome}-${runningAway}`,
+      intensity: isLastRound ? 'high' : 'medium',
+      activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
+      shotsHome,
+      shotsAway,
+      cornersHome,
+      cornersAway,
+      phase: 'penalties',
+      penaltyRound: penRound,
+      penaltyHomeTotal: runningHome,
+      penaltyAwayTotal: runningAway,
+      penaltyDone: isLastRound,
+      penaltyFinalResult: isLastRound ? { home: penHome, away: penAway } : undefined,
+    }
   }
 }

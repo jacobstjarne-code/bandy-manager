@@ -50,6 +50,7 @@ export function generateCupFixtures(
       homeLineup: undefined,
       awayLineup: undefined,
       isCup: true,
+      isKnockout: true,
     }
 
     const cupMatch: CupMatch = {
@@ -132,6 +133,7 @@ export function generateNextCupRound(
       homeLineup: undefined,
       awayLineup: undefined,
       isCup: true,
+      isKnockout: true,
     }
 
     const cupMatch: CupMatch = {
@@ -164,7 +166,16 @@ export function updateCupBracketAfterRound(
     const fixture = completedFixtures.find(f => f.id === match.fixtureId)
     if (!fixture || fixture.status !== FixtureStatus.Completed) return match
 
-    const homeWon = fixture.homeScore > fixture.awayScore
+    let homeWon: boolean
+    if (fixture.homeScore !== fixture.awayScore) {
+      homeWon = fixture.homeScore > fixture.awayScore
+    } else if (fixture.overtimeResult) {
+      homeWon = fixture.overtimeResult === 'home'
+    } else if (fixture.penaltyResult) {
+      homeWon = fixture.penaltyResult.home > fixture.penaltyResult.away
+    } else {
+      homeWon = true // fallback
+    }
     const winnerId = homeWon ? fixture.homeClubId : fixture.awayClubId
 
     return { ...match, winnerId }

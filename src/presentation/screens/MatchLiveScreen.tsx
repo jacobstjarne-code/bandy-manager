@@ -163,6 +163,9 @@ export function MatchLiveScreen() {
   const [isFastForward, setIsFastForward] = useState(false)
   const [showHalftime, setShowHalftime] = useState(false)
   const [matchDone, setMatchDone] = useState(false)
+  const [showOvertimeOverlay, setShowOvertimeOverlay] = useState(false)
+  const [showPenaltiesOverlay, setShowPenaltiesOverlay] = useState(false)
+  const prevPhase = useRef<string | undefined>(undefined)
   // SM-final/cup-final ceremony slide (0 = not showing, 1 = final score, 2 = champion/loss, 3 = MVP [SM only])
   const [ceremonySlide, setCeremonySlide] = useState(0)
   // SM-final/cup-final pre-match intro slide (0 = not showing, 1/2/3 = intro slides)
@@ -233,6 +236,12 @@ export function MatchLiveScreen() {
     }
     const potmId = Object.entries(playerRatings).sort((a, b) => b[1] - a[1])[0]?.[0]
 
+    // Extract overtime/penalty results from steps
+    const otStep = steps.find(s => s.phase === 'overtime' && s.overtimeResult)
+    const penStep = steps.find(s => s.penaltyDone && s.penaltyFinalResult)
+    const overtimeResult = otStep?.overtimeResult
+    const penaltyResult = penStep?.penaltyFinalResult
+
     const possession = 50
     const report = {
       playerRatings,
@@ -240,8 +249,8 @@ export function MatchLiveScreen() {
       shotsAway: lastStep.shotsAway,
       cornersHome: lastStep.cornersHome,
       cornersAway: lastStep.cornersAway,
-      penaltiesHome: 0,
-      penaltiesAway: 0,
+      penaltiesHome: penaltyResult?.home ?? 0,
+      penaltiesAway: penaltyResult?.away ?? 0,
       possessionHome: possession,
       possessionAway: 100 - possession,
       playerOfTheMatchId: potmId,
@@ -254,6 +263,8 @@ export function MatchLiveScreen() {
       report,
       homeLineup,
       awayLineup,
+      overtimeResult,
+      penaltyResult,
     )
   }, [matchDone]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -293,8 +304,28 @@ export function MatchLiveScreen() {
       return
     }
 
+    // Detect phase transition: regular → overtime
+    if (step.phase === 'overtime' && prevPhase.current !== 'overtime' && !isFastForward) {
+      prevPhase.current = 'overtime'
+      setShowOvertimeOverlay(true)
+      const timer = setTimeout(() => setShowOvertimeOverlay(false), 3000)
+      return () => clearTimeout(timer)
+    }
+    if (step.phase === 'overtime') prevPhase.current = 'overtime'
+
+    // Detect phase transition: overtime → penalties
+    if (step.phase === 'penalties' && prevPhase.current !== 'penalties' && !isFastForward) {
+      prevPhase.current = 'penalties'
+      setShowPenaltiesOverlay(true)
+      const timer = setTimeout(() => setShowPenaltiesOverlay(false), 3000)
+      return () => clearTimeout(timer)
+    }
+    if (step.phase === 'penalties') prevPhase.current = 'penalties'
+
     const delay = isFastForward
       ? 50
+      : step.phase === 'penalties'
+      ? 2000
       : step.intensity === 'high'
       ? 2200
       : step.intensity === 'medium'
@@ -1160,6 +1191,40 @@ export function MatchLiveScreen() {
           </div>
         )
       })()}
+
+      {/* Overtime overlay */}
+      {showOvertimeOverlay && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 200,
+          background: 'rgba(5, 13, 24, 0.92)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          textAlign: 'center',
+        }}>
+          <div style={{ fontSize: 52, marginBottom: 16 }}>⏱</div>
+          <h2 style={{ fontSize: 28, fontWeight: 900, color: '#C9A84C', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
+            FÖRLÄNGNING
+          </h2>
+          <p style={{ fontSize: 15, color: '#8A9BB0' }}>Oavgjort efter 90 minuter.</p>
+          <p style={{ fontSize: 14, color: '#6a7d8f', marginTop: 4 }}>Ytterligare 2 × 15 minuter spelas.</p>
+        </div>
+      )}
+
+      {/* Penalties overlay */}
+      {showPenaltiesOverlay && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 200,
+          background: 'rgba(5, 13, 24, 0.92)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          textAlign: 'center',
+        }}>
+          <div style={{ fontSize: 52, marginBottom: 16 }}>🎯</div>
+          <h2 style={{ fontSize: 28, fontWeight: 900, color: '#ef4444', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
+            STRAFFAR
+          </h2>
+          <p style={{ fontSize: 15, color: '#8A9BB0' }}>Fortfarande oavgjort efter förlängning.</p>
+          <p style={{ fontSize: 14, color: '#6a7d8f', marginTop: 4 }}>Nu avgör straffarna!</p>
+        </div>
+      )}
 
       {/* Match done overlay — normal matches */}
       {matchDone && !isSmFinal && !isCupFinal && (() => {

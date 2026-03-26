@@ -60,6 +60,7 @@ export function generatePlayoffFixtures(
       homeLineup: undefined,
       awayLineup: undefined,
       isNeutralVenue: true,
+      isKnockout: true,
     }]
   }
 
@@ -85,6 +86,7 @@ export function generatePlayoffFixtures(
     report: undefined,
     homeLineup: undefined,
     awayLineup: undefined,
+    isKnockout: true,
   }))
 }
 
@@ -111,9 +113,20 @@ export function updateSeriesAfterMatch(
     if (fixture.awayClubId === series.homeClubId) homeWins++
     else awayWins++
   } else {
-    // Draw: home team of fixture wins (overtime, simplified)
-    if (fixture.homeClubId === series.homeClubId) homeWins++
-    else awayWins++
+    // Draw in knockout: resolved by overtime or penalties
+    let winner: 'home' | 'away' = 'home' // fallback (should not happen with proper simulation)
+    if (fixture.overtimeResult) {
+      winner = fixture.overtimeResult
+    } else if (fixture.penaltyResult) {
+      winner = fixture.penaltyResult.home > fixture.penaltyResult.away ? 'home' : 'away'
+    }
+    if (winner === 'home') {
+      if (fixture.homeClubId === series.homeClubId) homeWins++
+      else awayWins++
+    } else {
+      if (fixture.awayClubId === series.homeClubId) homeWins++
+      else awayWins++
+    }
   }
 
   const updated: PlayoffSeries = { ...series, homeWins, awayWins }
