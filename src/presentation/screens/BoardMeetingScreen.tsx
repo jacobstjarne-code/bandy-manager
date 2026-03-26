@@ -40,6 +40,9 @@ export function BoardMeetingScreen() {
     : '0'
 
   // Board quotes logic
+  const myStanding = game.standings.find(s => s.clubId === game.managedClubId)
+  const myPosition = myStanding?.position ?? 6
+
   const boardMembers = (game.boardPersonalities ?? []).slice(0, 3)
 
   // Derive a stable round number for deterministic quote selection
@@ -47,12 +50,50 @@ export function BoardMeetingScreen() {
     .filter(f => f.status === 'completed')
     .sort((a, b) => b.roundNumber - a.roundNumber)[0]?.roundNumber ?? 0
 
-  // Pick a quote for a board member, deterministic based on season + round + member index
-  function pickQuote(personality: BoardPersonality, memberIndex: number): string {
-    const allQuotes = BOARD_QUOTES[personality]
-    if (!allQuotes || allQuotes.length === 0) return ''
-    const baseIndex = (game!.currentSeason * 7 + latestCompletedRound + memberIndex * 3) % allQuotes.length
-    return allQuotes[baseIndex]
+  function getContextualQuote(personality: BoardPersonality, memberIndex: number): string {
+    const baseIdx = (game!.currentSeason * 7 + latestCompletedRound + memberIndex * 3)
+
+    if (personality === 'ekonom') {
+      if (club!.finances > 500000) {
+        return '"Ekonomin ser stabil ut. Klokt av oss att hålla ordning på kassan."'
+      }
+      const quotes = BOARD_QUOTES.ekonom
+      return quotes[baseIdx % quotes.length]
+    }
+
+    if (personality === 'traditionalist') {
+      const formation = club!.activeTactic?.formation
+      if (formation && formation !== '3-3-4') {
+        const complaints = BOARD_QUOTES.traditionalist.filter(q =>
+          q.includes('3-3-4') || q.includes('taktiken') || q.includes('backar') || q.includes('Varför')
+        )
+        const pool = complaints.length > 0 ? complaints : BOARD_QUOTES.traditionalist
+        return pool[baseIdx % pool.length]
+      }
+      return '"Vi kör 3-3-4 som sig bör. Det är bandyklubbens DNA."'
+    }
+
+    if (personality === 'supporter') {
+      if (myPosition >= 11) {
+        return '"Det är tufft just nu. Men jag tror på laget. Vi vänder det."'
+      }
+      if (myPosition >= 9) {
+        return '"Vi behöver ta tre poäng. Det är dags att mobilisera."'
+      }
+      const quotes = BOARD_QUOTES.supporter
+      return quotes[baseIdx % quotes.length]
+    }
+
+    if (personality === 'modernist') {
+      if (game!.communityActivities?.bandyplay) {
+        return '"Bandyskolan är ett bra steg framåt. Det är precis sånt vi behöver göra mer av."'
+      }
+      const quotes = BOARD_QUOTES.modernist
+      return quotes[baseIdx % quotes.length]
+    }
+
+    const quotes = BOARD_QUOTES[personality as BoardPersonality]
+    return quotes[baseIdx % quotes.length]
   }
 
   // Board meeting opener — deterministic based on season
@@ -223,7 +264,7 @@ export function BoardMeetingScreen() {
               {openerText}
             </p>
             {boardMembers.map((member, i) => {
-              const quote = pickQuote(member.personality, i)
+              const quote = getContextualQuote(member.personality, i)
               if (!quote) return null
               return (
                 <div key={member.name + i} style={{
