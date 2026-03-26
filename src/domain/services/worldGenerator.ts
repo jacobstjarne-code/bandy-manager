@@ -1,5 +1,5 @@
 import type { Club, Tactic } from '../entities/Club'
-import type { Player, PlayerAttributes, PlayerSeasonStats, PlayerCareerStats } from '../entities/Player'
+import type { Player, PlayerAttributes, PlayerSeasonStats, PlayerCareerStats, PlayerDayJob } from '../entities/Player'
 import {
   PlayerPosition,
   PlayerArchetype,
@@ -502,6 +502,48 @@ function generateAttributes(
   return attrs
 }
 
+const DAY_JOB_TITLES = [
+  'Lärare', 'Snickare', 'IT-konsult', 'Polis', 'Sjuksköterska', 'Elektriker',
+  'Ingenjör', 'Säljare', 'Lastbilsförare', 'Brandman', 'Byggnadsarbetare',
+  'Systemutvecklare', 'Ekonom', 'Mekaniker', 'Personlig tränare',
+]
+
+function generateDayJobForPlayer(
+  rng: ReturnType<typeof makeRng>,
+  reputation: number,
+): { isFullTimePro: boolean; dayJob?: PlayerDayJob } {
+  const roll = rng.next()
+
+  let isFullTimePro: boolean
+  let flexMin: number
+  let flexMax: number
+
+  if (reputation > 70) {
+    isFullTimePro = roll < 0.5
+    flexMin = 80; flexMax = 100
+  } else if (reputation >= 50) {
+    isFullTimePro = roll < 0.2
+    flexMin = 65; flexMax = 90
+  } else {
+    isFullTimePro = roll < 0.05
+    flexMin = 50; flexMax = 80
+  }
+
+  if (isFullTimePro) {
+    return { isFullTimePro: true }
+  }
+
+  const title = rng.pick(DAY_JOB_TITLES)
+  const flexibility = rng.int(flexMin, flexMax)
+  let weeklyIncome = Math.round(1000 + rng.next() * 2000)
+  if (flexibility < 65) weeklyIncome += 500
+
+  return {
+    isFullTimePro: false,
+    dayJob: { title, flexibility, weeklyIncome },
+  }
+}
+
 function tierFromReputation(reputation: number): 'top' | 'mid' | 'under' {
   if (reputation >= 75) return 'top'
   if (reputation >= 55) return 'mid'
@@ -573,6 +615,8 @@ function generatePlayer(
   const isPhysical = archetype === PlayerArchetype.DefensiveWorker || archetype === PlayerArchetype.TwoWaySkater
   const isAggressive = archetype === PlayerArchetype.Finisher || archetype === PlayerArchetype.Dribbler
 
+  const { isFullTimePro, dayJob } = generateDayJobForPlayer(rng, reputation)
+
   return {
     id: `player_${clubId}_${index}`,
     firstName: rng.pick(FIRST_NAMES),
@@ -602,6 +646,8 @@ function generatePlayer(
     suspensionGamesRemaining: 0,
     seasonStats: emptyStats,
     careerStats: emptyCareer,
+    isFullTimePro,
+    dayJob,
   }
 }
 
@@ -692,6 +738,7 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     suspensionGamesRemaining: 0,
     seasonStats: { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0 },
     careerStats: { totalGames: 0, totalGoals: 0, totalAssists: 0, seasonsPlayed: 1 },
+    isFullTimePro: true,
   }
   const clubFwds = allPlayers
     .filter(p => p.clubId === erikClub.id && p.position === PlayerPosition.Forward)

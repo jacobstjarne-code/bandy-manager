@@ -7,6 +7,7 @@ export type GameEventType =
   | 'transferWindowAlert'
   | 'sponsorOffer'
   | 'pressConference'
+  | 'dayJobConflict'
 
 export interface EventChoice {
   id: string

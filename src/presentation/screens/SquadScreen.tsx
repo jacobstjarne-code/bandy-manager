@@ -257,6 +257,38 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
             📐 Hörnspec.
           </span>
         )}
+        {(player.isFullTimePro ?? false) && (
+          <span style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: '#f59e0b',
+            background: 'rgba(245,158,11,0.1)',
+            border: '1px solid rgba(245,158,11,0.25)',
+            borderRadius: 99,
+            padding: '2px 7px',
+            flexShrink: 0,
+          }}>
+            ⭐ Proffs
+          </span>
+        )}
+        {!(player.isFullTimePro ?? false) && player.dayJob && (
+          <span style={{
+            fontSize: 10,
+            fontWeight: 600,
+            color: (player.dayJob.flexibility ?? 75) < 65 ? '#ef4444' : '#8A9BB0',
+            background: (player.dayJob.flexibility ?? 75) < 65
+              ? 'rgba(239,68,68,0.08)'
+              : 'rgba(138,155,176,0.08)',
+            border: '1px solid ' + ((player.dayJob.flexibility ?? 75) < 65
+              ? 'rgba(239,68,68,0.2)'
+              : 'rgba(138,155,176,0.15)'),
+            borderRadius: 99,
+            padding: '2px 7px',
+            flexShrink: 0,
+          }}>
+            👷 {player.dayJob.title}
+          </span>
+        )}
       </div>
     </div>
   )

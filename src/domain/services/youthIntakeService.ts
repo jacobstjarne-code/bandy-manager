@@ -422,6 +422,7 @@ export function generateYouthIntake(input: YouthIntakeInput): YouthIntakeResult 
       suspensionGamesRemaining: 0,
       seasonStats: emptyStats,
       careerStats: emptyCareer,
+      isFullTimePro: false,
     }
 
     newPlayers.push(player)

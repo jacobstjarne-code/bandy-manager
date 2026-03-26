@@ -453,6 +453,27 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       updated.sharpness = Math.max(0, updated.sharpness - 3)
     }
 
+    // Day job morale effects
+    const isFullTimePro = player.isFullTimePro ?? false
+    const flexibility = player.dayJob?.flexibility ?? 75
+    if (!isFullTimePro && flexibility < 65) {
+      // Check if played in last 2 completed fixtures for managed club
+      const recentCompleted = simulatedFixtures
+        .filter(f => f.status === FixtureStatus.Completed)
+        .slice(-2)
+      const playedRecently = recentCompleted.some(f =>
+        (f.homeLineup?.startingPlayerIds ?? []).includes(player.id) ||
+        (f.awayLineup?.startingPlayerIds ?? []).includes(player.id)
+      )
+      if (playedRecently) {
+        // Hard week: day job + matches
+        updated.morale = Math.max(0, updated.morale - 2)
+      }
+    }
+    if (isFullTimePro && updated.fitness > 70) {
+      updated.morale = Math.min(100, updated.morale + 1)
+    }
+
     return updated
   })
 

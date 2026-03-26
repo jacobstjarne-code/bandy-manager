@@ -127,11 +127,16 @@ export function applyTrainingToSquad(
     const ageFactor = getAgeFactor(player.age)
     const updated = { ...player }
 
+    // Day job flexibility modifier: non-pros benefit less from training
+    const isFullTimePro = player.isFullTimePro ?? false
+    const flexibility = player.dayJob?.flexibility ?? 75
+    const dayJobModifier = isFullTimePro ? 1.05 : flexibility / 100
+
     // Apply attribute boosts
     for (const [attr, boost] of Object.entries(effects.attributeBoosts)) {
       const key = attr as keyof typeof player.attributes
       if (key in player.attributes) {
-        const delta = (boost as number) * ageFactor * facilityMultiplier
+        const delta = (boost as number) * ageFactor * facilityMultiplier * dayJobModifier
         updated.attributes = {
           ...updated.attributes,
           [key]: clamp(player.attributes[key] + delta, 0, 100),
@@ -139,8 +144,9 @@ export function applyTrainingToSquad(
       }
     }
 
-    // Fitness
-    updated.fitness = clamp(player.fitness + effects.fitnessChange, 0, 100)
+    // Fitness — fulltime pros recover +2 extra per round
+    const fitnessBonus = isFullTimePro ? 2 : 0
+    updated.fitness = clamp(player.fitness + effects.fitnessChange + fitnessBonus, 0, 100)
 
     // Morale
     updated.morale = clamp(player.morale + effects.moraleEffect, 0, 100)

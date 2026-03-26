@@ -1,5 +1,6 @@
 import type { SaveGame, Sponsor } from '../entities/SaveGame'
 import type { GameEvent, EventChoice, TransferBid } from '../entities/GameEvent'
+import type { Player } from '../entities/Player'
 import type { Fixture } from '../entities/Fixture'
 import { InboxItemType } from '../enums'
 import { executeTransfer } from './transferService'
@@ -114,6 +115,33 @@ function unhappyPlayerEvent(game: SaveGame, playerId: string): GameEvent {
     body: `${playerName} är missnöjd med sin speltid. Morale: ${player.morale}.`,
     choices,
     relatedPlayerId: playerId,
+    resolved: false,
+  }
+}
+
+// ── Day job conflict event ─────────────────────────────────────────────────
+export function generateDayJobConflictEvent(player: Player, roundNumber: number): GameEvent {
+  const playerName = `${player.firstName} ${player.lastName}`
+  const dayJobTitle = player.dayJob?.title ?? 'jobbet'
+
+  return {
+    id: `event_dayjob_${player.id}_${roundNumber}`,
+    type: 'dayJobConflict',
+    title: 'Jobbet kolliderar med träningen',
+    body: `${playerName} kämpar med att kombinera sin roll som ${dayJobTitle} med det tuffa matchschemat. Något måste ge.`,
+    choices: [
+      {
+        id: 'vila',
+        label: 'Ge honom vila',
+        effect: { type: 'boostMorale', value: 10, targetPlayerId: player.id },
+      },
+      {
+        id: 'press',
+        label: 'Han klarar det',
+        effect: { type: 'boostMorale', value: -3, targetPlayerId: player.id },
+      },
+    ],
+    relatedPlayerId: player.id,
     resolved: false,
   }
 }
@@ -240,7 +268,41 @@ export function generatePostAdvanceEvents(
 
   if (events.length >= 2) return events
 
-  // 5. Sponsor offer
+  // 5. Day job conflict
+  if (events.length < 2) {
+    const recentCompleted = game.fixtures
+      .filter(f =>
+        f.status === 'completed' &&
+        (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+      )
+      .sort((a, b) => b.roundNumber - a.roundNumber)
+      .slice(0, 5)
+
+    const dayJobCandidates = game.players.filter(p =>
+      p.clubId === game.managedClubId &&
+      !p.isInjured &&
+      !(p.isFullTimePro ?? false) &&
+      (p.dayJob?.flexibility ?? 75) < 70
+    )
+
+    for (const p of dayJobCandidates) {
+      if (events.length >= 2) break
+      const gamesInLast5 = recentCompleted.filter(f => {
+        const lineup = f.homeClubId === game.managedClubId ? f.homeLineup : f.awayLineup
+        return lineup && lineup.startingPlayerIds.includes(p.id)
+      }).length
+      if (gamesInLast5 >= 3) {
+        const eid = `event_dayjob_${p.id}_${roundPlayed}`
+        if (!alreadyQueued.has(eid)) {
+          events.push(generateDayJobConflictEvent(p, roundPlayed))
+        }
+      }
+    }
+  }
+
+  if (events.length >= 2) return events
+
+  // 6. Sponsor offer
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
   const maxSponsors = Math.min(6, 2 + Math.floor((managedClub?.reputation ?? 50) / 20))

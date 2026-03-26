@@ -37,6 +37,12 @@ export interface PlayerCareerStats {
   seasonsPlayed: number
 }
 
+export interface PlayerDayJob {
+  title: string        // e.g. "Lärare", "Snickare", "Systemutvecklare"
+  flexibility: number  // 50-100 (how compatible with training/matches)
+  weeklyIncome: number // 500-3000 SEK extra
+}
+
 export interface Player {
   id: string
   firstName: string
@@ -57,6 +63,9 @@ export interface Player {
   form: number         // 0-100
   fitness: number      // 0-100
   sharpness: number    // 0-100
+
+  dayJob?: PlayerDayJob
+  isFullTimePro: boolean // true = no day job, full focus
 
   currentAbility: number    // 0-100
   startSeasonCA?: number    // CA at start of season (for most improved tracking)
