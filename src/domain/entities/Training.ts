@@ -20,3 +20,22 @@ export interface TrainingSession {
   focus: TrainingFocus
   effects: TrainingEffects
 }
+
+export type TrainingProjectType =
+  | 'conditioning'
+  | 'shooting'
+  | 'defense'
+  | 'corners'
+  | 'physical'
+  | 'tactical'
+
+export interface TrainingProject {
+  id: string
+  type: TrainingProjectType
+  roundsTotal: number
+  roundsRemaining: number
+  intensity: 'normal' | 'hard'
+  status: 'active' | 'completed'
+  completedRound?: number
+  injuredPlayerIds?: string[]
+}

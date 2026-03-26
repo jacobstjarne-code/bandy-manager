@@ -10,7 +10,8 @@ import {
   trainingTypeDescription,
   trainingIntensityLabel,
 } from '../../domain/services/trainingService'
-import type { TrainingFocus } from '../../domain/entities/Training'
+import type { TrainingFocus, TrainingProject } from '../../domain/entities/Training'
+import { PROJECT_DEFINITIONS } from '../../domain/services/trainingProjectService'
 import { formatCurrency } from '../utils/formatters'
 
 function expectationLabel(e: ClubExpectation): string {
@@ -319,6 +320,179 @@ function attributeLabel(key: string): string {
   return map[key] ?? key
 }
 
+// ── Training Projects ─────────────────────────────────────────────────────────
+
+const RISK_LABEL: Record<string, string> = {
+  none: 'Ingen', low: 'Låg', medium: 'Medel', high: 'Hög',
+}
+const RISK_COLOR: Record<string, string> = {
+  none: 'var(--success)', low: 'var(--success)', medium: 'var(--warning)', high: 'var(--danger)',
+}
+
+interface TrainingProjectsCardProps {
+  projects: TrainingProject[]
+  onStart: (type: string, intensity: 'normal' | 'hard') => void
+  onCancel: (id: string) => void
+}
+
+function TrainingProjectsCard({ projects, onStart, onCancel }: TrainingProjectsCardProps) {
+  const [showPicker, setShowPicker] = useState(false)
+  const [pickerMsg, setPickerMsg] = useState<string | null>(null)
+
+  const active = projects.filter(p => p.status === 'active')
+  const recent = projects.filter(p => p.status === 'completed').slice(-2)
+  const freeSlots = 3 - active.length
+
+  function handleStart(type: string, intensity: 'normal' | 'hard') {
+    onStart(type, intensity)
+    setShowPicker(false)
+    setPickerMsg(null)
+  }
+
+  return (
+    <SectionCard title="Träningsprojekt" stagger={2}>
+      <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.5 }}>
+        Starta riktade projekt för snabbare spelarutveckling. Max 3 aktiva samtidigt.
+      </p>
+
+      {/* Active projects */}
+      {active.map(p => {
+        const def = PROJECT_DEFINITIONS.find(d => d.type === p.type)
+        if (!def) return null
+        const progress = (p.roundsTotal - p.roundsRemaining) / p.roundsTotal
+        return (
+          <div key={p.id} style={{
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '10px 12px',
+            marginBottom: 8,
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <span style={{ fontWeight: 700, fontSize: 13 }}>{def.emoji} {def.label}</span>
+              <button
+                onClick={() => onCancel(p.id)}
+                style={{ fontSize: 11, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                Avbryt
+              </button>
+            </div>
+            {/* Progress bar */}
+            <div style={{ height: 4, background: 'var(--border)', borderRadius: 2, marginBottom: 6 }}>
+              <div style={{ height: '100%', width: `${progress * 100}%`, background: 'var(--accent)', borderRadius: 2, transition: 'width 0.3s' }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)' }}>
+              <span>{def.effectDescription}</span>
+              <span>{p.roundsRemaining} omg kvar · {p.intensity === 'hard' ? '⚡ Intensiv' : 'Normal'}</span>
+            </div>
+          </div>
+        )
+      })}
+
+      {/* Recent completed */}
+      {recent.map(p => {
+        const def = PROJECT_DEFINITIONS.find(d => d.type === p.type)
+        if (!def) return null
+        return (
+          <div key={p.id} style={{
+            background: 'rgba(34,197,94,0.06)',
+            border: '1px solid rgba(34,197,94,0.2)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '8px 12px',
+            marginBottom: 8,
+            fontSize: 12,
+            color: 'var(--text-secondary)',
+          }}>
+            ✓ {def.emoji} {def.label} klar · {def.effectDescription}
+            {(p.injuredPlayerIds?.length ?? 0) > 0 && (
+              <span style={{ color: 'var(--warning)' }}> · ⚠️ {p.injuredPlayerIds!.length} skadad</span>
+            )}
+          </div>
+        )
+      })}
+
+      {/* Free slots */}
+      {freeSlots > 0 && !showPicker && (
+        <button
+          onClick={() => setShowPicker(true)}
+          style={{
+            width: '100%', padding: '10px', background: 'none',
+            border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)',
+            color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer', marginBottom: 8,
+          }}
+        >
+          + Starta nytt projekt ({freeSlots} slot{freeSlots > 1 ? 's' : ''} lediga)
+        </button>
+      )}
+
+      {/* Project picker */}
+      {showPicker && (
+        <div style={{
+          background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)', padding: '12px', marginBottom: 8,
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+              Välj projekt
+            </span>
+            <button onClick={() => setShowPicker(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 18, lineHeight: 1 }}>×</button>
+          </div>
+          {pickerMsg && (
+            <p style={{ fontSize: 11, color: 'var(--danger)', marginBottom: 8 }}>{pickerMsg}</p>
+          )}
+          {PROJECT_DEFINITIONS.map(def => {
+            const alreadyActive = active.some(p => p.type === def.type)
+            return (
+              <div key={def.type} style={{
+                borderBottom: '1px solid var(--border)',
+                paddingBottom: 10,
+                marginBottom: 10,
+                opacity: alreadyActive ? 0.5 : 1,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                  <div>
+                    <span style={{ fontWeight: 700, fontSize: 13 }}>{def.emoji} {def.label}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>
+                      · {def.effectDescription}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: 11, color: RISK_COLOR[def.injuryRisk] }}>
+                    Risk: {RISK_LABEL[def.injuryRisk]}
+                  </span>
+                </div>
+                {!alreadyActive && (
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button
+                      onClick={() => handleStart(def.type, 'normal')}
+                      style={{
+                        fontSize: 11, padding: '4px 10px', background: 'var(--bg-surface)',
+                        border: '1px solid var(--border)', borderRadius: 99,
+                        color: 'var(--text-primary)', cursor: 'pointer',
+                      }}
+                    >
+                      Normal · {def.roundsNormal} omg
+                    </button>
+                    <button
+                      onClick={() => handleStart(def.type, 'hard')}
+                      style={{
+                        fontSize: 11, padding: '4px 10px', background: 'rgba(239,68,68,0.08)',
+                        border: '1px solid rgba(239,68,68,0.3)', borderRadius: 99,
+                        color: 'var(--danger)', cursor: 'pointer',
+                      }}
+                    >
+                      ⚡ Intensiv · {def.roundsHard} omg
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </SectionCard>
+  )
+}
+
 // ── Main Screen ──────────────────────────────────────────────────────────────
 
 type ClubTab = 'training' | 'ekonomi' | 'klubb'
@@ -328,6 +502,8 @@ export function ClubScreen() {
   const game = useGameStore(s => s.game)
   const setTraining = useGameStore(s => s.setTraining)
   const activateCommunity = useGameStore(s => s.activateCommunity)
+  const startTrainingProject = useGameStore(s => s.startTrainingProject)
+  const cancelTrainingProject = useGameStore(s => s.cancelTrainingProject)
   const [communityMsg, setCommunityMsg] = useState<{ key: string; text: string; ok: boolean } | null>(null)
 
   function handleActivate(key: string, level: string) {
@@ -410,12 +586,19 @@ export function ClubScreen() {
 
         {/* ── Tab 1: Träning ── */}
         {activeTab === 'training' && (
-          <TrainingSection
-            focus={training}
-            recentSessions={recentSessions}
-            trainingInjuriesThisSeason={trainingInjuriesThisSeason}
-            onChangeFocus={setTraining}
-          />
+          <>
+            <TrainingSection
+              focus={training}
+              recentSessions={recentSessions}
+              trainingInjuriesThisSeason={trainingInjuriesThisSeason}
+              onChangeFocus={setTraining}
+            />
+            <TrainingProjectsCard
+              projects={game.trainingProjects ?? []}
+              onStart={(type, intensity) => startTrainingProject(type, intensity)}
+              onCancel={(id) => cancelTrainingProject(id)}
+            />
+          </>
         )}
 
         {/* ── Tab 2: Ekonomi ── */}

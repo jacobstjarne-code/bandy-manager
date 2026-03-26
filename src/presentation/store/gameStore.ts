@@ -3,7 +3,8 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import { get as idbGet, set as idbSet, del as idbDel } from 'idb-keyval'
 import type { SaveGame, TalentSearchRequest } from '../../domain/entities/SaveGame'
 import type { Tactic } from '../../domain/entities/Club'
-import type { TrainingFocus } from '../../domain/entities/Training'
+import type { TrainingFocus, TrainingProjectType } from '../../domain/entities/Training'
+import { createTrainingProject } from '../../domain/services/trainingProjectService'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entities/Fixture'
 import { FixtureStatus, PlayoffStatus, InboxItemType } from '../../domain/enums'
 import { createNewGame } from '../../application/useCases/createNewGame'
@@ -56,6 +57,8 @@ interface GameState {
   setTransferBudget: (amount: number) => void
   buyScoutRounds: () => void
   activateCommunity: (key: string, level: string) => { success: boolean; error?: string }
+  startTrainingProject: (type: string, intensity: 'normal' | 'hard') => { success: boolean; error?: string }
+  cancelTrainingProject: (projectId: string) => void
 }
 
 const indexedDBStorage = {
@@ -487,6 +490,32 @@ export const useGameStore = create<GameState>()(
 
         set({ game: { ...game, clubs: updatedClubs, communityActivities: updatedCA } })
         return { success: true }
+      },
+
+      startTrainingProject: (type, intensity) => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+        const activeProjects = (game.trainingProjects ?? []).filter(p => p.status === 'active')
+        if (activeProjects.length >= 3) {
+          return { success: false, error: 'Max 3 aktiva projekt' }
+        }
+        if (activeProjects.some(p => p.type === type)) {
+          return { success: false, error: 'Det projektet pågår redan' }
+        }
+        const newProject = createTrainingProject(type as TrainingProjectType, intensity)
+        set({ game: { ...game, trainingProjects: [...(game.trainingProjects ?? []), newProject] } })
+        return { success: true }
+      },
+
+      cancelTrainingProject: (projectId) => {
+        const { game } = get()
+        if (!game) return
+        set({
+          game: {
+            ...game,
+            trainingProjects: (game.trainingProjects ?? []).filter(p => p.id !== projectId),
+          },
+        })
       },
     }),
     {

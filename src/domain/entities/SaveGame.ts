@@ -4,7 +4,7 @@ import type { Player } from './Player'
 import type { League } from './League'
 import type { Fixture, TeamSelection } from './Fixture'
 import type { MatchWeather } from './Weather'
-import type { TrainingFocus, TrainingSession } from './Training'
+import type { TrainingFocus, TrainingSession, TrainingProject } from './Training'
 import type { PlayoffBracket } from './Playoff'
 import type { CupBracket } from './Cup'
 import type { SeasonSummary } from './SeasonSummary'
@@ -155,6 +155,7 @@ export interface SaveGame {
   managedClubPendingLineup?: TeamSelection
   managedClubTraining: TrainingFocus
   trainingHistory: TrainingSession[]
+  trainingProjects?: TrainingProject[]
 
   tutorialSeen?: boolean
   lastCompletedFixtureId?: string   // id of most recently completed managed-club fixture

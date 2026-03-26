@@ -47,6 +47,7 @@ import {
 } from '../../domain/services/cupService'
 import type { CupBracket } from '../../domain/entities/Cup'
 import { mulberry32 } from '../../domain/utils/random'
+import { processTrainingProjectsPerRound, PROJECT_DEFINITIONS } from '../../domain/services/trainingProjectService'
 
 export interface AdvanceResult {
   game: SaveGame
@@ -274,6 +275,37 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     effects: trainingEffects,
   }
   const updatedTrainingHistory = [...(game.trainingHistory ?? []), newTrainingSession]
+
+  // ── Process training projects ─────────────────────────────────────────
+  const projectRand = mulberry32(baseSeed + 88771)
+  const activeProjects = (game.trainingProjects ?? []).filter(p => p.status === 'active')
+  const projectResult = processTrainingProjectsPerRound(
+    game.trainingProjects ?? [],
+    trainingPlayers,
+    game.managedClubId,
+    projectRand,
+    nextRound,
+  )
+  // Use project-updated players going forward
+  trainingPlayers = projectResult.updatedPlayers
+
+  // Inbox: notify for each completed project
+  for (const p of projectResult.updatedProjects) {
+    const wasActive = activeProjects.some(ap => ap.id === p.id)
+    if (wasActive && p.status === 'completed') {
+      const def = PROJECT_DEFINITIONS.find(d => d.type === p.type)
+      if (def) {
+        newInboxItems.push({
+          id: `inbox_project_done_${p.id}`,
+          date: game.currentDate,
+          type: InboxItemType.BoardFeedback,
+          title: `Träningsprojekt klart: ${def.label}`,
+          body: `${def.emoji} ${def.label} är avslutat. Effekt: ${def.effectDescription}${p.injuredPlayerIds?.length ? ` · ⚠️ ${p.injuredPlayerIds.length} spelare skadades under projektet.` : ''}`,
+          isRead: false,
+        } as InboxItem)
+      }
+    }
+  }
 
   for (let i = 0; i < roundFixtures.length; i++) {
     const fixture = roundFixtures[i]
@@ -982,16 +1014,20 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       bracketNewFixtures = newFixtures
     }
 
-    // Check managed club elimination in this round
+    // Check managed club advancement or elimination in this round
     const allSeriesAfter = [
       ...updatedBracket.quarterFinals,
       ...updatedBracket.semiFinals,
       ...(updatedBracket.final ? [updatedBracket.final] : []),
     ]
     for (const series of allSeriesAfter) {
-      const managedLost = series.loserId === game.managedClubId
       const decidedThisRound = completedThisRound.some(f => series.fixtures.includes(f.id)) && isSeriesDecided(series)
-      if (managedLost && decidedThisRound) {
+      if (!decidedThisRound) continue
+
+      const managedLost = series.loserId === game.managedClubId
+      const managedWon = series.winnerId === game.managedClubId
+
+      if (managedLost) {
         const winner = game.clubs.find(c => c.id === series.winnerId)
         const roundName = series.round === 'quarterFinal' ? 'kvartsfinalen'
           : series.round === 'semiFinal' ? 'semifinalen'
@@ -1005,6 +1041,24 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           type: InboxItemType.Playoff,
           title: `Utslagen ur ${roundName}`,
           body: `${winner?.name ?? 'Motståndaren'} gick vidare med ${theirWins}-${myWins} i matcher. En stark insats, men slutspelet är nu över för er del.`,
+          isRead: false,
+        } as InboxItem)
+        break
+      }
+
+      if (managedWon && series.round !== 'final') {
+        const opponent = game.clubs.find(c => c.id === series.loserId)
+        const isHome = series.homeClubId === game.managedClubId
+        const myWins = isHome ? series.homeWins : series.awayWins
+        const theirWins = isHome ? series.awayWins : series.homeWins
+        const nextRoundName = series.round === 'quarterFinal' ? 'semifinalen' : 'SM-finalen'
+        const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+        newInboxItems.push({
+          id: `inbox_advance_${game.currentSeason}_${series.id}`,
+          date: game.currentDate,
+          type: InboxItemType.Playoff,
+          title: `Vidare till ${nextRoundName}!`,
+          body: `${managedClub?.name ?? 'Ni'} besegrade ${opponent?.name ?? 'motståndaren'} med ${myWins}-${theirWins} och går vidare till ${nextRoundName}!`,
           isRead: false,
         } as InboxItem)
         break
@@ -1426,6 +1480,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     fanMood: newFanMood,
     rivalryHistory: updatedRivalryHistory,
     doctorQuestionsUsed: 0,
+    trainingProjects: projectResult.updatedProjects,
   }
 
   // Pre-generate weather for next round so dashboard/matchScreen can show it

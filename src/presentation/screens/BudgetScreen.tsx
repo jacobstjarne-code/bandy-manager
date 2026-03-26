@@ -61,7 +61,11 @@ export function BudgetScreen() {
   const avgSponsorIncome = activeSponsors.length > 0
     ? Math.round(activeSponsors.reduce((sum, s) => sum + s.weeklyIncome, 0))
     : 0
-  const weeklyIncome = Math.round(club.reputation * 150) + avgSponsorIncome
+  const ca = game.communityActivities
+  const kioskEst = ca?.kiosk === 'upgraded' ? 8500 : ca?.kiosk === 'basic' ? 3500 : 0
+  const lotteryEst = ca?.lottery === 'intensive' ? 3200 : ca?.lottery === 'basic' ? 1250 : 0
+  const communityEst = kioskEst + lotteryEst + (ca?.functionaries ? 4000 : 0) + (ca?.bandyplay ? 1500 : 0)
+  const weeklyIncome = Math.round(club.reputation * 250) + avgSponsorIncome + communityEst
   const netPerRound = weeklyIncome - weeklyWages
 
   const currentTransferBudget = pendingTransferBudget ?? club.transferBudget
