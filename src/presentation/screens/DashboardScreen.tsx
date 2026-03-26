@@ -308,7 +308,7 @@ function CupCard({ bracket, game, cardStyle, cardLabelStyle }: CupCardProps) {
 }
 
 export function DashboardScreen() {
-  const { game, advance, markTutorialSeen } = useGameStore()
+  const { game, advance, markTutorialSeen, resolveEvent } = useGameStore()
   const club = useManagedClub()
   const standing = useCurrentStanding()
   const hasPendingLineup = useHasPendingLineup()
@@ -318,22 +318,36 @@ export function DashboardScreen() {
   const navigate = useNavigate()
   const [isBatchSim, setIsBatchSim] = useState(false)
 
-  // Batch simulation loop — runs until a managed match or season end appears
+  // Batch simulation loop — simulates all remaining league rounds, including managed club's
   useEffect(() => {
     if (!isBatchSim || !game) return
+
+    // Auto-resolve any pending events (take first choice silently)
+    if ((game.pendingEvents?.length ?? 0) > 0) {
+      const event = game.pendingEvents![0]
+      if (event.choices.length > 0) {
+        const t = setTimeout(() => resolveEvent(event.id, event.choices[0].id), 0)
+        return () => clearTimeout(t)
+      }
+    }
+
     const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
     if (scheduled.length === 0) { setIsBatchSim(false); return }
+
     const nextRound = Math.min(...scheduled.map(f => f.roundNumber))
-    const managedNext = scheduled.some(
-      f => f.roundNumber === nextRound &&
+
+    // Stop if managed club has a cup fixture in the next batch — let them play it live
+    const managedCupNext = scheduled.some(
+      f => f.roundNumber === nextRound && f.isCup &&
            (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
     )
-    if (managedNext) { setIsBatchSim(false); return }
+    if (managedCupNext) { setIsBatchSim(false); return }
+
     const t = setTimeout(() => {
       const result = advance()
       if (result?.seasonEnded || result?.playoffStarted) { setIsBatchSim(false); return }
-      if ((result?.pendingEvents?.length ?? 0) > 0) { setIsBatchSim(false); navigate('/game/events') }
-    }, 120)
+      // pendingEvents are auto-resolved next iteration — don't stop or navigate
+    }, 80)
     return () => clearTimeout(t)
   }, [isBatchSim, game])
 

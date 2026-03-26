@@ -10,6 +10,7 @@ import { createNewGame } from '../../application/useCases/createNewGame'
 import { startScoutAssignment } from '../../domain/services/scoutingService'
 import { createOutgoingBid } from '../../domain/services/transferService'
 import { resolveEvent as resolveEventFn } from '../../domain/services/eventService'
+import { updateCupBracketAfterRound } from '../../domain/services/cupService'
 import { advanceToNextEvent, type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
 import { calculateStandings } from '../../domain/services/standingsService'
@@ -129,7 +130,16 @@ export const useGameStore = create<GameState>()(
         )
         const completedFixtures = updatedFixtures.filter(f => f.status === FixtureStatus.Completed)
         const standings = calculateStandings(game.league.teamIds, completedFixtures)
-        set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings } })
+
+        // If a cup fixture was just played live, update the bracket immediately so the
+        // CupCard shows the correct result rather than waiting until advance() reaches round 103+
+        const completedCupFixture = updatedFixtures.find(f => f.id === fixtureId && f.isCup)
+        let updatedCupBracket = game.cupBracket ?? null
+        if (completedCupFixture && updatedCupBracket && !updatedCupBracket.completed) {
+          updatedCupBracket = updateCupBracketAfterRound(updatedCupBracket, [completedCupFixture])
+        }
+
+        set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings, cupBracket: updatedCupBracket } })
       },
 
       updateTactic: (tactic) => {
