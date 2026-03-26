@@ -228,6 +228,12 @@ function ratingColor(r: number): string {
 function MatchReportView({ fixture, game, onClose }: MatchReportViewProps) {
   const homeClub = game.clubs.find(c => c.id === fixture.homeClubId)
   const awayClub = game.clubs.find(c => c.id === fixture.awayClubId)
+  const managedIsHome = fixture.homeClubId === game.managedClubId
+  const managedCornerGoals = fixture.events.filter(
+    e => e.isCornerGoal && e.clubId === game.managedClubId
+  ).length
+  const managedCorners = managedIsHome ? (fixture.report?.cornersHome ?? 0) : (fixture.report?.cornersAway ?? 0)
+  const oppCorners = managedIsHome ? (fixture.report?.cornersAway ?? 0) : (fixture.report?.cornersHome ?? 0)
 
   const visibleEvents = fixture.events.filter(e =>
     e.type === MatchEventType.Goal ||
@@ -390,14 +396,14 @@ function MatchReportView({ fixture, game, onClose }: MatchReportViewProps) {
           </p>
           {[
             {
-              label: 'Skott',
-              home: String(fixture.report.shotsHome),
-              away: String(fixture.report.shotsAway),
-            },
-            {
               label: 'Hörnor',
               home: String(fixture.report.cornersHome),
               away: String(fixture.report.cornersAway),
+            },
+            {
+              label: 'Skott',
+              home: String(fixture.report.shotsHome),
+              away: String(fixture.report.shotsAway),
             },
             {
               label: 'Bollinnehav',
@@ -416,6 +422,25 @@ function MatchReportView({ fixture, game, onClose }: MatchReportViewProps) {
               <span style={{ fontSize: 14, fontWeight: 600, minWidth: 30, textAlign: 'right' }}>{away}</span>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Corner goals highlight */}
+      {managedCornerGoals > 0 && (
+        <div style={{
+          background: 'rgba(201,168,76,0.08)',
+          border: '1px solid rgba(201,168,76,0.3)',
+          borderRadius: 'var(--radius)',
+          padding: '10px 14px',
+          marginBottom: 16,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}>
+          <span style={{ fontSize: 16 }}>📐</span>
+          <span style={{ fontSize: 13, color: '#C9A84C', fontWeight: 600 }}>
+            {managedCornerGoals} hörnmål — {managedCorners}–{oppCorners} hörnor totalt
+          </span>
         </div>
       )}
 
