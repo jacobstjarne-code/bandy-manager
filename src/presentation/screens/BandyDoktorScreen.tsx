@@ -43,7 +43,7 @@ export function BandyDoktorScreen() {
     const trimmed = question.trim()
     if (!trimmed) return
 
-    const context = buildDoctorContext(game)
+    const context = `Du är Bandydoktorn, en erfaren bandytränare och analytiker. Du ger kortfattad, praktisk rådgivning på svenska. Svara alltid på svenska, max 3-4 meningar. Var konkret och handlingsorienterad.\n\nSpelarens nuläge:\n${buildDoctorContext(game)}`
     const userMessage: Message = { role: 'user', content: trimmed }
     const newMessages = [...messages, userMessage]
     setMessages(newMessages)
@@ -54,24 +54,13 @@ export function BandyDoktorScreen() {
     try {
       const response = await fetch('/api/doctor', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 400,
-          system: `Du är Bandydoktorn, en erfaren bandytränare och analytiker. Du ger kortfattad, praktisk rådgivning på svenska. Svara alltid på svenska, max 3-4 meningar. Var konkret och handlingsorienterad.\n\nSpelarens nuläge:\n${context}`,
-          messages: newMessages,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newMessages, context }),
       })
 
       if (!response.ok) {
-        const errData = await response.json().catch(() => ({}))
-        throw new Error((errData as { error?: string | { message?: string } }).error
-          ? typeof (errData as { error: string | { message?: string } }).error === 'string'
-            ? (errData as { error: string }).error
-            : ((errData as { error: { message?: string } }).error?.message ?? `API-fel: ${response.status}`)
-          : `API-fel: ${response.status}`)
+        const errData = await response.json().catch(() => ({})) as { error?: string }
+        throw new Error(errData.error ?? `API-fel: ${response.status}`)
       }
 
       const data = await response.json() as { content: { type: string; text: string }[] }
