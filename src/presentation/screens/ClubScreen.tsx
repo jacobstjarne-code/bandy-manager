@@ -504,6 +504,8 @@ export function ClubScreen() {
   const activateCommunity = useGameStore(s => s.activateCommunity)
   const startTrainingProject = useGameStore(s => s.startTrainingProject)
   const cancelTrainingProject = useGameStore(s => s.cancelTrainingProject)
+  const seekSponsor = useGameStore(s => s.seekSponsor)
+  const [sponsorFeedback, setSponsorFeedback] = useState<string | null>(null)
   const [communityMsg, setCommunityMsg] = useState<{ key: string; text: string; ok: boolean } | null>(null)
 
   function handleActivate(key: string, level: string) {
@@ -687,6 +689,33 @@ export function ClubScreen() {
                     </div>
                   )
                 })}
+                {activeSponsors.length < maxSponsors && (
+                  <div style={{ marginTop: 12, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+                    {sponsorFeedback && (
+                      <p style={{ fontSize: 12, color: sponsorFeedback.startsWith('✅') ? 'var(--success)' : 'var(--text-muted)', marginBottom: 8 }}>
+                        {sponsorFeedback}
+                      </p>
+                    )}
+                    <button
+                      onClick={() => {
+                        const result = seekSponsor()
+                        if (result.success && result.sponsor) {
+                          setSponsorFeedback(`✅ ${result.sponsor.name} tecknade avtal! +${formatCurrency(result.sponsor.weeklyIncome)}/omg`)
+                        } else {
+                          setSponsorFeedback(`Ingen intresserad just nu. (2,5 tkr avdraget)`)
+                        }
+                        setTimeout(() => setSponsorFeedback(null), 4000)
+                      }}
+                      style={{
+                        width: '100%', padding: '10px', background: 'var(--bg-elevated)',
+                        border: '1px solid var(--border)', borderRadius: 8,
+                        color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                      }}
+                    >
+                      📞 Ragga sponsor — 2,5 tkr
+                    </button>
+                  </div>
+                )}
               </SectionCard>
 
               {/* Föreningsaktiviteter */}

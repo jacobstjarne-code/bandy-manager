@@ -288,9 +288,19 @@ function CupCard({ bracket, game, cardStyle, cardLabelStyle }: CupCardProps) {
       </div>
     )
   } else {
-    statusContent = (
-      <p style={{ fontSize: 13, color: '#4A6080' }}>Drar igång under säsongen</p>
+    const playedAndWon = bracket.matches.filter(
+      m => (m.homeClubId === managedClubId || m.awayClubId === managedClubId) && m.winnerId === managedClubId
     )
+    if (playedAndWon.length > 0) {
+      const nextRoundName = playedAndWon.length >= 2 ? 'finalen' : 'semifinalen'
+      statusContent = (
+        <p style={{ fontSize: 13, color: '#22c55e', fontWeight: 600 }}>✅ Klar för {nextRoundName}</p>
+      )
+    } else {
+      statusContent = (
+        <p style={{ fontSize: 13, color: '#4A6080' }}>Drar igång under säsongen</p>
+      )
+    }
   }
 
   return (

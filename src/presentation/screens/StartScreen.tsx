@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 
+declare const __GIT_HASH__: string
+
 function NightSceneSVG() {
   return (
     <svg
@@ -293,7 +295,7 @@ export function StartScreen() {
           letterSpacing: '1px',
           opacity: 0.6,
         }}>
-          v0.1
+          v0.1.0 · {__GIT_HASH__}
         </p>
       </div>
     </div>

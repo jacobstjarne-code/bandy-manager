@@ -5,6 +5,8 @@ import type { SaveGame, TalentSearchRequest } from '../../domain/entities/SaveGa
 import type { Tactic } from '../../domain/entities/Club'
 import type { TrainingFocus, TrainingProjectType } from '../../domain/entities/Training'
 import { createTrainingProject } from '../../domain/services/trainingProjectService'
+import { generateSponsorOffer } from '../../domain/services/sponsorService'
+import type { Sponsor } from '../../domain/entities/SaveGame'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entities/Fixture'
 import { FixtureStatus, PlayoffStatus, InboxItemType } from '../../domain/enums'
 import { createNewGame } from '../../application/useCases/createNewGame'
@@ -59,6 +61,7 @@ interface GameState {
   activateCommunity: (key: string, level: string) => { success: boolean; error?: string }
   startTrainingProject: (type: string, intensity: 'normal' | 'hard') => { success: boolean; error?: string }
   cancelTrainingProject: (projectId: string) => void
+  seekSponsor: () => { success: boolean; sponsor?: Sponsor; error?: string }
 }
 
 const indexedDBStorage = {
@@ -516,6 +519,29 @@ export const useGameStore = create<GameState>()(
             trainingProjects: (game.trainingProjects ?? []).filter(p => p.id !== projectId),
           },
         })
+      },
+
+      seekSponsor: () => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+        const club = game.clubs.find(c => c.id === game.managedClubId)
+        if (!club) return { success: false, error: 'Ingen klubb hittad' }
+        const SEEK_COST = 2500
+        if (club.finances < SEEK_COST) return { success: false, error: 'Inte tillräckligt med pengar (kräver 2,5 tkr)' }
+        const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
+        const maxSponsors = Math.min(6, 2 + Math.floor(club.reputation / 20))
+        if (activeSponsors.length >= maxSponsors) return { success: false, error: 'Alla sponsorplatser är fyllda' }
+        const currentRound = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup).map(f => f.roundNumber))
+        const rand = Math.random.bind(Math)
+        // Deduct fee regardless of result
+        const updatedClubs = game.clubs.map(c => c.id === game.managedClubId ? { ...c, finances: c.finances - SEEK_COST } : c)
+        const sponsor = generateSponsorOffer(club.reputation, activeSponsors.length, maxSponsors, currentRound, rand)
+        if (!sponsor) {
+          set({ game: { ...game, clubs: updatedClubs } })
+          return { success: false, error: 'Ingen sponsor intresserad den här gången' }
+        }
+        set({ game: { ...game, clubs: updatedClubs, sponsors: [...(game.sponsors ?? []), sponsor] } })
+        return { success: true, sponsor }
       },
     }),
     {
