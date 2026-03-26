@@ -5,6 +5,7 @@ import { saveSaveGame } from '../../infrastructure/persistence/saveGameStorage'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 import { getScoutReportAge } from '../../domain/services/scoutingService'
 import { formatCurrency, positionShort } from '../utils/formatters'
+import { SectionLabel } from '../components/SectionLabel'
 
 function formatValue(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
@@ -318,14 +319,11 @@ export function TransfersScreen() {
 
       {/* Scouting section */}
       {activeTab === 'scouting' && <div className="card-stagger-2" style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-          <p className="section-heading" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', margin: 0 }}>
-            Scouting — andra lag
-          </p>
+        <SectionLabel right={
           <span style={{ fontSize: 12, color: scoutBudget > 3 ? 'var(--text-secondary)' : 'var(--danger)', fontWeight: 600 }}>
             Scoutbudget: {scoutBudget} kvar
           </span>
-        </div>
+        }>Scouting — andra lag</SectionLabel>
         <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
           {scoutablePlayers.slice(0, 30).map((player, index) => {
             const report = scoutReports[player.id]
@@ -414,9 +412,7 @@ export function TransfersScreen() {
         const reportEntries = Object.values(scoutReports)
         return (
           <div className="card-stagger-3" style={{ marginBottom: 24 }}>
-            <p className="section-heading" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
-              Scoutrapporter ({reportEntries.length})
-            </p>
+            <SectionLabel>Scoutrapporter ({reportEntries.length})</SectionLabel>
             <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
               {reportEntries.map((report, index) => {
                 const reportPlayer = game.players.find(p => p.id === report.playerId)
@@ -522,9 +518,7 @@ export function TransfersScreen() {
           {/* Search form */}
           {!game.activeTalentSearch && (
             <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '16px', marginBottom: 16 }}>
-              <p className="section-heading" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
-                Ny talangspaning
-              </p>
+              <SectionLabel>Ny talangspaning</SectionLabel>
               <div style={{ marginBottom: 12 }}>
                 <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Position</label>
                 <select
@@ -590,9 +584,7 @@ export function TransfersScreen() {
             const latestResult = game.talentSearchResults[game.talentSearchResults.length - 1]
             return (
               <div>
-                <p className="section-heading" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
-                  Senaste spaningsrapport
-                </p>
+                <SectionLabel>Senaste spaningsrapport</SectionLabel>
                 <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
                   {latestResult.players.map((suggestion, index) => {
                     const player = game.players.find(p => p.id === suggestion.playerId)
@@ -641,9 +633,7 @@ export function TransfersScreen() {
 
       {/* Expiring contracts section */}
       {activeTab === 'contracts' && <div className="card-stagger-2" style={{ marginBottom: 24 }}>
-        <p className="section-heading" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
-          Utgående kontrakt
-        </p>
+        <SectionLabel>Utgående kontrakt</SectionLabel>
         {expiringPlayers.length === 0 ? (
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', padding: '12px 0' }}>Inga kontrakt utgår snart.</p>
         ) : (
@@ -669,9 +659,7 @@ export function TransfersScreen() {
 
       {/* Free agents section */}
       {activeTab === 'freeagents' && <div className="card-stagger-2">
-        <p className="section-heading" style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 12 }}>
-          Fria agenter
-        </p>
+        <SectionLabel>Fria agenter</SectionLabel>
         {freeAgents.length === 0 ? (
           <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 16px' }}>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>Inga fria agenter tillgängliga just nu. Fria agenter dyker upp vid säsongsslut.</p>
