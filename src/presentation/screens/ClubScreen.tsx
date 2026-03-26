@@ -782,6 +782,36 @@ export function ClubScreen() {
                       ? { actionKey: 'julmarknad', actionLevel: 'active', actionCost: 2000, actionLabel: 'Anordna — 2 tkr' }
                       : {}),
                   },
+                  {
+                    icon: '🏫', name: 'Bandyskola',
+                    active: !!ca?.bandySchool,
+                    status: ca?.bandySchool ? 'Aktiv' : 'Ej startad',
+                    income: ca?.bandySchool ? '~1 000/omg + ungdom' : '—',
+                    value: ca?.bandySchool ? 1000 : 0,
+                    ...(!ca?.bandySchool
+                      ? { actionKey: 'bandySchool', actionLevel: 'active', actionCost: 5000, actionLabel: 'Starta bandyskola — 5 tkr' }
+                      : {}),
+                  },
+                  {
+                    icon: '📱', name: 'Sociala medier',
+                    active: !!ca?.socialMedia,
+                    status: ca?.socialMedia ? 'Aktiv' : 'Ej startad',
+                    income: ca?.socialMedia ? '+reputation' : '—',
+                    value: ca?.socialMedia ? 0 : 0,
+                    ...(!ca?.socialMedia
+                      ? { actionKey: 'socialMedia', actionLevel: 'active', actionCost: 2000, actionLabel: 'Starta konto — 2 tkr' }
+                      : {}),
+                  },
+                  {
+                    icon: '🍺', name: 'VIP-tält',
+                    active: !!ca?.vipTent,
+                    status: ca?.vipTent ? 'Aktiv' : club.facilities > 60 ? 'Ej startad' : 'Kräver anläggning > 60',
+                    income: ca?.vipTent ? '~10 000/match' : '—',
+                    value: ca?.vipTent ? 10000 : 0,
+                    ...(!ca?.vipTent && club.facilities > 60
+                      ? { actionKey: 'vipTent', actionLevel: 'active', actionCost: 10000, actionLabel: 'Sätt upp VIP-tält — 10 tkr' }
+                      : {}),
+                  },
                   { icon: '🏪', name: 'Loppis', active: false, status: 'Slumpmässig händelse', income: '—', value: 0, noAction: true },
                   { icon: '🚗', name: 'Bilbingo', active: false, status: 'Försäsong', income: '—', value: 0, noAction: true },
                 ]

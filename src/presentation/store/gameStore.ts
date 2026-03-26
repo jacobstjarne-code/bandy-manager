@@ -442,6 +442,9 @@ export const useGameStore = create<GameState>()(
           bandyplay:     { active: 0 },
           functionaries: { active: 2000 },
           julmarknad:    { active: 2000 },
+          bandySchool:   { active: 5000 },
+          socialMedia:   { active: 2000 },
+          vipTent:       { active: 10000 },
         }
 
         const cost = costs[key]?.[level] ?? 0
@@ -451,6 +454,7 @@ export const useGameStore = create<GameState>()(
 
         const ca = game.communityActivities ?? {
           kiosk: 'none', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false,
+          bandySchool: false, socialMedia: false, vipTent: false,
         }
 
         // Current league round (for time-restricted activities)
@@ -467,6 +471,9 @@ export const useGameStore = create<GameState>()(
         if (key === 'bandyplay' && club.reputation < 40) {
           return { success: false, error: 'Ingen kanal intresserad än (reputation < 40)' }
         }
+        if (key === 'vipTent' && club.facilities <= 60) {
+          return { success: false, error: 'Kräver anläggningsnivå > 60' }
+        }
         if (key === 'julmarknad' && (currentRound < 8 || currentRound > 12)) {
           return { success: false, error: 'Bara möjligt omgång 8–12 (december)' }
         }
@@ -481,17 +488,23 @@ export const useGameStore = create<GameState>()(
           return { success: false, error: 'Redan aktiv' }
         }
 
-        const updatedCA = key === 'bandyplay'
-          ? { ...ca, bandyplay: true }
-          : key === 'functionaries'
-            ? { ...ca, functionaries: true }
-            : key === 'julmarknad'
-              ? { ...ca, julmarknad: true }
-              : { ...ca, [key]: level }
+        const boolKeys = ['bandyplay', 'functionaries', 'julmarknad', 'bandySchool', 'socialMedia', 'vipTent']
+        const updatedCA = boolKeys.includes(key)
+          ? { ...ca, [key]: true }
+          : { ...ca, [key]: level }
 
-        const updatedClubs = game.clubs.map(c =>
+        let updatedClubs = game.clubs.map(c =>
           c.id === game.managedClubId ? { ...c, finances: c.finances - cost } : c
         )
+
+        // Bandyskola ger permanent +2 youthRecruitment
+        if (key === 'bandySchool') {
+          updatedClubs = updatedClubs.map(c =>
+            c.id === game.managedClubId
+              ? { ...c, youthRecruitment: Math.min(100, (c.youthRecruitment ?? 50) + 2) }
+              : c
+          )
+        }
 
         set({ game: { ...game, clubs: updatedClubs, communityActivities: updatedCA } })
         return { success: true }

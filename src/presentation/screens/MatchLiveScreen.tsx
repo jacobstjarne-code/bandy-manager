@@ -114,7 +114,10 @@ export function MatchLiveScreen() {
     const allSteps: MatchStep[] = []
     for (const step of gen) allSteps.push(step)
     setSteps(allSteps)
-    setCurrentStep(0)
+    if (!isSmFinal && !isCupFinal) {
+      setCurrentStep(0)
+    }
+    // For finals: currentStep stays -1 until FinalIntroScreen onStart fires
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-advance ceremony slide 1 → 2 after 3s
@@ -375,7 +378,7 @@ export function MatchLiveScreen() {
         variant="sm"
         slide={finalIntroSlide}
         onNext={() => setFinalIntroSlide(prev => prev + 1)}
-        onStart={() => setFinalIntroSlide(0)}
+        onStart={() => { setFinalIntroSlide(0); setCurrentStep(0) }}
         homeClubName={homeClubName}
         awayClubName={awayClubName}
         homeLineup={homeLineup}
@@ -399,7 +402,7 @@ export function MatchLiveScreen() {
         variant="cup"
         slide={finalIntroSlide}
         onNext={() => setFinalIntroSlide(prev => prev + 1)}
-        onStart={() => setFinalIntroSlide(0)}
+        onStart={() => { setFinalIntroSlide(0); setCurrentStep(0) }}
         homeClubName={homeClubName}
         awayClubName={awayClubName}
         homeLineup={homeLineup}

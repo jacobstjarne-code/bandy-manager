@@ -18,6 +18,9 @@ export interface CommunityActivities {
   bandyplay: boolean
   functionaries: boolean
   julmarknad: boolean
+  bandySchool?: boolean
+  socialMedia?: boolean
+  vipTent?: boolean
 }
 
 export type BoardPersonality = 'supporter' | 'ekonom' | 'traditionalist' | 'modernist'

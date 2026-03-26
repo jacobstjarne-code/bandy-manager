@@ -1267,30 +1267,42 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       communityIncome += activities.bandyplay
         ? 1000 + Math.round(rand() * 1000) : 0
 
+      // VIP-tält — hög intäkt per hemmamatch
+      if (activities.vipTent) {
+        communityIncome += 5000 + Math.round(rand() * 10000)
+      }
+
       // Running costs (dras per hemmamatch)
       let runningCost = 0
       if (activities.kiosk === 'upgraded') runningCost += 2500
       else if (activities.kiosk === 'basic') runningCost += 1500
       if (activities.bandyplay) runningCost += 1000
+      if (activities.vipTent) runningCost += 2000
       communityIncome -= runningCost
     }
 
     return base + communityIncome
   }
 
-  // Lottery income per round (regardless of whether there's a home match)
+  // Per-round community income (lottery, bandyschool, social media — regardless of home match)
   function calculateLotteryIncome(
     communityActivities: CommunityActivities | undefined,
     rand: () => number,
   ): number {
     if (!communityActivities) return 0
+    let income = 0
     if (communityActivities.lottery === 'intensive') {
-      return (3000 + Math.round(rand() * 2000)) - 800  // netto efter driftskostnad
+      income += (3000 + Math.round(rand() * 2000)) - 800
+    } else if (communityActivities.lottery === 'basic') {
+      income += (1000 + Math.round(rand() * 1500)) - 500
     }
-    if (communityActivities.lottery === 'basic') {
-      return (1000 + Math.round(rand() * 1500)) - 500  // netto efter driftskostnad
+    if (communityActivities.bandySchool) {
+      income += (500 + Math.round(rand() * 1000)) - 1000  // deltagaravgifter minus driftskostnad
     }
-    return 0
+    if (communityActivities.socialMedia) {
+      income -= 500  // bara kostnad, reputation-bonus hanteras separat
+    }
+    return income
   }
 
   const managedClubStanding = standings.find(s => s.clubId === game.managedClubId) ?? null
@@ -1378,6 +1390,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // Social media reputation boost (+1 var 5:e omgång)
+  const socialMediaBoostedClubs = (game.communityActivities?.socialMedia && nextRound % 5 === 0)
+    ? cupPrizedClubs.map(c =>
+        c.id === game.managedClubId
+          ? { ...c, reputation: Math.min(100, c.reputation + 1) }
+          : c
+      )
+    : cupPrizedClubs
+
   // ── Transfer bids ────────────────────────────────────────────────────────
   // Resolve pending outgoing bids (1 round to answer)
   const existingBids: TransferBid[] = game.transferBids ?? []
@@ -1463,7 +1484,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   let updatedGame: SaveGame = {
     ...game,
-    clubs: cupPrizedClubs,
+    clubs: socialMediaBoostedClubs,
     fixtures: strippedFixtures,
     players: marketUpdatedPlayers,
     standings,
