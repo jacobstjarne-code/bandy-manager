@@ -5,6 +5,7 @@ import {
   isSeriesDecided,
   updateSeriesAfterMatch,
   advancePlayoffRound,
+  maxMatchesInSeries,
 } from '../playoffService'
 import { PlayoffStatus, PlayoffRound, FixtureStatus } from '../../enums'
 import type { StandingRow } from '../../entities/SaveGame'
@@ -26,10 +27,24 @@ function makeStandings(): StandingRow[] {
   }))
 }
 
-function makeSeries(homeClubId = 'club_1', awayClubId = 'club_8', season = 2025): PlayoffSeries {
+function makeSeries(homeClubId = 'club_1', awayClubId = 'club_8', season = 2025, round = PlayoffRound.QuarterFinal): PlayoffSeries {
   return {
     id: `playoff_qf1_s${season}`,
-    round: PlayoffRound.QuarterFinal,
+    round,
+    homeClubId,
+    awayClubId,
+    fixtures: [],
+    homeWins: 0,
+    awayWins: 0,
+    winnerId: null,
+    loserId: null,
+  }
+}
+
+function makeFinalSeries(homeClubId = 'club_1', awayClubId = 'club_2', season = 2025): PlayoffSeries {
+  return {
+    id: `playoff_final_s${season}`,
+    round: PlayoffRound.Final,
     homeClubId,
     awayClubId,
     fixtures: [],
@@ -85,18 +100,30 @@ describe('generatePlayoffBracket', () => {
   })
 })
 
+describe('maxMatchesInSeries', () => {
+  it('returns 5 for QuarterFinal', () => {
+    expect(maxMatchesInSeries(PlayoffRound.QuarterFinal)).toBe(5)
+  })
+  it('returns 5 for SemiFinal', () => {
+    expect(maxMatchesInSeries(PlayoffRound.SemiFinal)).toBe(5)
+  })
+  it('returns 1 for Final', () => {
+    expect(maxMatchesInSeries(PlayoffRound.Final)).toBe(1)
+  })
+})
+
 describe('generatePlayoffFixtures', () => {
-  it('creates 3 fixtures for a series (best of 3)', () => {
+  it('creates 5 fixtures for a KF/SF series (best of 5)', () => {
     const series = makeSeries()
     const fixtures = generatePlayoffFixtures(series, 2025, 23)
 
-    expect(fixtures).toHaveLength(3)
+    expect(fixtures).toHaveLength(5)
     expect(fixtures[0].roundNumber).toBe(23)
     expect(fixtures[1].roundNumber).toBe(24)
-    expect(fixtures[2].roundNumber).toBe(25)
+    expect(fixtures[4].roundNumber).toBe(27)
   })
 
-  it('alternates home/away correctly: home, away, home', () => {
+  it('alternates home/away correctly for BO5: home, away, home, away, home', () => {
     const series = makeSeries('club_1', 'club_8')
     const fixtures = generatePlayoffFixtures(series, 2025, 23)
 
@@ -106,34 +133,78 @@ describe('generatePlayoffFixtures', () => {
     expect(fixtures[1].awayClubId).toBe('club_1')
     expect(fixtures[2].homeClubId).toBe('club_1')
     expect(fixtures[2].awayClubId).toBe('club_8')
+    expect(fixtures[3].homeClubId).toBe('club_8')
+    expect(fixtures[3].awayClubId).toBe('club_1')
+    expect(fixtures[4].homeClubId).toBe('club_1')
+    expect(fixtures[4].awayClubId).toBe('club_8')
   })
 
-  it('all fixtures are Scheduled status', () => {
+  it('all BO5 fixtures are Scheduled status', () => {
     const series = makeSeries()
     const fixtures = generatePlayoffFixtures(series, 2025, 23)
     expect(fixtures.every(f => f.status === FixtureStatus.Scheduled)).toBe(true)
   })
+
+  it('creates only 1 fixture for the final (single match)', () => {
+    const series = makeFinalSeries()
+    const fixtures = generatePlayoffFixtures(series, 2025, 32)
+
+    expect(fixtures).toHaveLength(1)
+    expect(fixtures[0].roundNumber).toBe(32)
+    expect(fixtures[0].homeClubId).toBe('club_1')
+    expect(fixtures[0].awayClubId).toBe('club_2')
+  })
+
+  it('final fixture has isNeutralVenue = true', () => {
+    const series = makeFinalSeries()
+    const fixtures = generatePlayoffFixtures(series, 2025, 32)
+    expect(fixtures[0].isNeutralVenue).toBe(true)
+  })
 })
 
 describe('isSeriesDecided', () => {
-  it('returns false when no wins yet', () => {
-    const series = makeSeries()
-    expect(isSeriesDecided(series)).toBe(false)
+  describe('KF/SF (best of 5, wins needed: 3)', () => {
+    it('returns false when no wins yet', () => {
+      const series = makeSeries()
+      expect(isSeriesDecided(series)).toBe(false)
+    })
+
+    it('returns false when homeWins = 2 (not enough for BO5)', () => {
+      const series = { ...makeSeries(), homeWins: 2 }
+      expect(isSeriesDecided(series)).toBe(false)
+    })
+
+    it('returns true when homeWins >= 3', () => {
+      const series = { ...makeSeries(), homeWins: 3 }
+      expect(isSeriesDecided(series)).toBe(true)
+    })
+
+    it('returns true when awayWins >= 3', () => {
+      const series = { ...makeSeries(), awayWins: 3 }
+      expect(isSeriesDecided(series)).toBe(true)
+    })
+
+    it('returns false with 2-2', () => {
+      const series = { ...makeSeries(), homeWins: 2, awayWins: 2 }
+      expect(isSeriesDecided(series)).toBe(false)
+    })
   })
 
-  it('returns true when homeWins >= 2', () => {
-    const series = { ...makeSeries(), homeWins: 2 }
-    expect(isSeriesDecided(series)).toBe(true)
-  })
+  describe('Final (single match, wins needed: 1)', () => {
+    it('returns false when no wins yet', () => {
+      const series = makeFinalSeries()
+      expect(isSeriesDecided(series)).toBe(false)
+    })
 
-  it('returns true when awayWins >= 2', () => {
-    const series = { ...makeSeries(), awayWins: 2 }
-    expect(isSeriesDecided(series)).toBe(true)
-  })
+    it('returns true when homeWins >= 1', () => {
+      const series = { ...makeFinalSeries(), homeWins: 1 }
+      expect(isSeriesDecided(series)).toBe(true)
+    })
 
-  it('returns false with 1-1', () => {
-    const series = { ...makeSeries(), homeWins: 1, awayWins: 1 }
-    expect(isSeriesDecided(series)).toBe(false)
+    it('returns true when awayWins >= 1', () => {
+      const series = { ...makeFinalSeries(), awayWins: 1 }
+      expect(isSeriesDecided(series)).toBe(true)
+    })
   })
 })
 
@@ -171,7 +242,20 @@ describe('updateSeriesAfterMatch', () => {
     expect(updated.homeWins).toBe(0)
   })
 
-  it('sets winnerId/loserId when series is decided', () => {
+  it('sets winnerId/loserId when KF series is decided (3 wins needed)', () => {
+    const series = {
+      ...makeSeries('club_1', 'club_8'),
+      homeWins: 2,
+      fixtures: ['fixture_playoff_qf1_s2025_g2'],
+    }
+    const fixture = makeFixture('playoff_qf1_s2025', 'club_1', 'club_8', 2, 0, 2)
+    const updated = updateSeriesAfterMatch(series, fixture)
+    expect(updated.homeWins).toBe(3)
+    expect(updated.winnerId).toBe('club_1')
+    expect(updated.loserId).toBe('club_8')
+  })
+
+  it('does not set winnerId/loserId at homeWins=2 for KF (not decided yet)', () => {
     const series = {
       ...makeSeries('club_1', 'club_8'),
       homeWins: 1,
@@ -180,8 +264,19 @@ describe('updateSeriesAfterMatch', () => {
     const fixture = makeFixture('playoff_qf1_s2025', 'club_1', 'club_8', 2, 0, 2)
     const updated = updateSeriesAfterMatch(series, fixture)
     expect(updated.homeWins).toBe(2)
+    expect(updated.winnerId).toBeNull()
+  })
+
+  it('sets winnerId/loserId for final after 1 win', () => {
+    const series = {
+      ...makeFinalSeries('club_1', 'club_2'),
+      fixtures: ['fixture_playoff_final_s2025_g1'],
+    }
+    const fixture = makeFixture('playoff_final_s2025', 'club_1', 'club_2', 3, 1, 1)
+    const updated = updateSeriesAfterMatch(series, fixture)
+    expect(updated.homeWins).toBe(1)
     expect(updated.winnerId).toBe('club_1')
-    expect(updated.loserId).toBe('club_8')
+    expect(updated.loserId).toBe('club_2')
   })
 })
 
@@ -198,12 +293,12 @@ describe('advancePlayoffRound', () => {
     const standings = makeStandings()
     const bracket = generatePlayoffBracket(standings, 2025)
 
-    // Decide all quarter finals
+    // Decide all quarter finals (best of 5, need 3 wins)
     const decidedBracket = {
       ...bracket,
       quarterFinals: bracket.quarterFinals.map((s, i) => ({
         ...s,
-        homeWins: 2,
+        homeWins: 3,
         awayWins: 0,
         winnerId: s.homeClubId,
         loserId: s.awayClubId,
@@ -213,7 +308,7 @@ describe('advancePlayoffRound', () => {
     const { bracket: newBracket, newFixtures } = advancePlayoffRound(decidedBracket, 2025, 26)
     expect(newBracket.status).toBe(PlayoffStatus.SemiFinals)
     expect(newBracket.semiFinals).toHaveLength(2)
-    expect(newFixtures).toHaveLength(6) // 3 fixtures per SF series
+    expect(newFixtures).toHaveLength(10) // 5 fixtures per SF series (best of 5)
   })
 
   it('advances from SF to Final when all SF decided', () => {
@@ -228,7 +323,7 @@ describe('advancePlayoffRound', () => {
           homeClubId: 'club_1',
           awayClubId: 'club_5',
           fixtures: [],
-          homeWins: 2,
+          homeWins: 3,
           awayWins: 1,
           winnerId: 'club_1',
           loserId: 'club_5',
@@ -239,7 +334,7 @@ describe('advancePlayoffRound', () => {
           homeClubId: 'club_2',
           awayClubId: 'club_6',
           fixtures: [],
-          homeWins: 2,
+          homeWins: 3,
           awayWins: 0,
           winnerId: 'club_2',
           loserId: 'club_6',
@@ -252,7 +347,7 @@ describe('advancePlayoffRound', () => {
     expect(newBracket.final).not.toBeNull()
     expect(newBracket.final?.homeClubId).toBe('club_1')
     expect(newBracket.final?.awayClubId).toBe('club_2')
-    expect(newFixtures).toHaveLength(3)
+    expect(newFixtures).toHaveLength(1) // Final is a single match
   })
 
   it('marks bracket as Completed when final is decided', () => {

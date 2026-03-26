@@ -33,13 +33,40 @@ export function generatePlayoffBracket(standings: StandingRow[], season: number)
   }
 }
 
+export function maxMatchesInSeries(round: PlayoffRound): number {
+  return round === PlayoffRound.Final ? 1 : 5
+}
+
 export function generatePlayoffFixtures(
   series: PlayoffSeries,
   season: number,
   startRound: number,
 ): Fixture[] {
-  // Best-of-3: home, away, home (for highest seeded)
+  const isFinal = series.round === PlayoffRound.Final
+  if (isFinal) {
+    // SM-final: one match at neutral venue
+    return [{
+      id: `fixture_${series.id}_g1`,
+      leagueId: `league_${season}`,
+      season,
+      roundNumber: startRound,
+      homeClubId: series.homeClubId,
+      awayClubId: series.awayClubId,
+      status: FixtureStatus.Scheduled,
+      homeScore: 0,
+      awayScore: 0,
+      events: [],
+      report: undefined,
+      homeLineup: undefined,
+      awayLineup: undefined,
+      isNeutralVenue: true,
+    }]
+  }
+
+  // Best-of-5: home, away, home, away, home
   const matchups = [
+    { home: series.homeClubId, away: series.awayClubId },
+    { home: series.awayClubId, away: series.homeClubId },
     { home: series.homeClubId, away: series.awayClubId },
     { home: series.awayClubId, away: series.homeClubId },
     { home: series.homeClubId, away: series.awayClubId },
@@ -62,7 +89,10 @@ export function generatePlayoffFixtures(
 }
 
 export function isSeriesDecided(series: PlayoffSeries): boolean {
-  return series.homeWins >= 2 || series.awayWins >= 2
+  if (series.round === PlayoffRound.Final) {
+    return series.homeWins >= 1 || series.awayWins >= 1
+  }
+  return series.homeWins >= 3 || series.awayWins >= 3
 }
 
 export function updateSeriesAfterMatch(
@@ -87,10 +117,11 @@ export function updateSeriesAfterMatch(
   }
 
   const updated: PlayoffSeries = { ...series, homeWins, awayWins }
-  if (homeWins >= 2) {
+  const winsNeeded = series.round === PlayoffRound.Final ? 1 : 3
+  if (homeWins >= winsNeeded) {
     updated.winnerId = series.homeClubId
     updated.loserId = series.awayClubId
-  } else if (awayWins >= 2) {
+  } else if (awayWins >= winsNeeded) {
     updated.winnerId = series.awayClubId
     updated.loserId = series.homeClubId
   }

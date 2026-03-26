@@ -8,6 +8,48 @@ import { MatchEventType, WeatherCondition, IceQuality } from '../../domain/enums
 import { getWeatherEmoji, getIceQualityLabel } from '../../domain/services/weatherService'
 import { getRivalry } from '../../domain/data/rivalries'
 
+function GoldConfetti() {
+  const particles = Array.from({ length: 30 }, (_, i) => ({
+    id: i,
+    left: (i * 37 + 11) % 100,
+    delay: (i * 0.17) % 3,
+    duration: 3 + (i * 0.13) % 3,
+    color: i % 3 === 0 ? '#C9A84C' : i % 3 === 1 ? '#F0F4F8' : '#FFD700',
+    size: 6 + (i % 6),
+  }))
+  return (
+    <>
+      <style>{`
+        @keyframes confettiFall {
+          0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        @keyframes goldPulse {
+          0%, 100% { text-shadow: 0 0 20px rgba(201,168,76,0.4); }
+          50% { text-shadow: 0 0 40px rgba(201,168,76,0.8), 0 0 60px rgba(201,168,76,0.4); }
+        }
+      `}</style>
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 0 }}>
+        {particles.map(p => (
+          <div
+            key={p.id}
+            style={{
+              position: 'absolute',
+              top: '-20px',
+              left: `${p.left}%`,
+              width: p.size,
+              height: p.size * 0.6,
+              background: p.color,
+              borderRadius: 2,
+              animation: `confettiFall ${p.duration}s ${p.delay}s infinite linear`,
+            }}
+          />
+        ))}
+      </div>
+    </>
+  )
+}
+
 interface LocationState {
   fixture: Fixture
   homeLineup: TeamSelection
@@ -78,6 +120,7 @@ export function MatchLiveScreen() {
   )
 
   const rivalry = fixture ? getRivalry(fixture.homeClubId, fixture.awayClubId) : null
+  const isSmFinal = fixture?.isNeutralVenue === true
 
   const [steps, setSteps] = useState<MatchStep[]>([])
   const [currentStep, setCurrentStep] = useState(-1)
@@ -85,6 +128,8 @@ export function MatchLiveScreen() {
   const [isFastForward, setIsFastForward] = useState(false)
   const [showHalftime, setShowHalftime] = useState(false)
   const [matchDone, setMatchDone] = useState(false)
+  // SM-final ceremony slide (0 = not showing, 1 = final score, 2 = champion, 3 = MVP)
+  const [ceremonySlide, setCeremonySlide] = useState(0)
   // Score flash state
   const [homeScoreFlash, setHomeScoreFlash] = useState(false)
   const [awayScoreFlash, setAwayScoreFlash] = useState(false)
@@ -105,7 +150,7 @@ export function MatchLiveScreen() {
       awayLineup,
       homePlayers,
       awayPlayers,
-      homeAdvantage: 0.05,
+      homeAdvantage: fixture.isNeutralVenue ? 0 : 0.05,
       seed: Date.now(),
       weather: matchWeather?.weather,
       homeClubName: homeClubName || undefined,
@@ -119,6 +164,13 @@ export function MatchLiveScreen() {
     setSteps(allSteps)
     setCurrentStep(0)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-advance ceremony from slide 1 to slide 2 after 3 seconds
+  useEffect(() => {
+    if (ceremonySlide !== 1) return
+    const timer = setTimeout(() => setCeremonySlide(2), 3000)
+    return () => clearTimeout(timer)
+  }, [ceremonySlide])
 
   // Save live match result to game state when match is done
   useEffect(() => {
@@ -212,6 +264,9 @@ export function MatchLiveScreen() {
     const timer = setTimeout(() => {
       if (currentStep + 1 >= steps.length) {
         setMatchDone(true)
+        if (isSmFinal) {
+          setCeremonySlide(1)
+        }
       } else {
         setCurrentStep(prev => prev + 1)
       }
@@ -544,22 +599,23 @@ export function MatchLiveScreen() {
           zIndex: 200,
         }}>
           <div style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border)',
+            background: isSmFinal ? '#0D1B2A' : 'var(--bg-surface)',
+            border: isSmFinal ? '1px solid rgba(201,168,76,0.4)' : '1px solid var(--border)',
             borderRadius: 'var(--radius)',
             padding: '28px 24px',
             textAlign: 'center',
             minWidth: 260,
+            maxWidth: 320,
           }}>
             <p style={{
-              fontSize: 11,
+              fontSize: isSmFinal ? 13 : 11,
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '1px',
-              color: 'var(--text-muted)',
+              color: isSmFinal ? '#C9A84C' : 'var(--text-muted)',
               marginBottom: 16,
             }}>
-              Halvtid
+              {isSmFinal ? 'HALVTID — SM-FINAL' : 'Halvtid'}
             </p>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 20 }}>
               <div style={{ textAlign: 'center' }}>
@@ -576,6 +632,17 @@ export function MatchLiveScreen() {
               <p>Skott: {halftimeStep?.shotsHome ?? 0} — {halftimeStep?.shotsAway ?? 0}</p>
               <p style={{ marginTop: 4 }}>Hörnor: {halftimeStep?.cornersHome ?? 0} — {halftimeStep?.cornersAway ?? 0}</p>
             </div>
+            {isSmFinal && (
+              <p style={{
+                fontSize: 12,
+                color: '#8A9BB0',
+                fontStyle: 'italic',
+                marginBottom: 20,
+                lineHeight: 1.5,
+              }}>
+                Laget samlas i omklädningsrummet. Det är 30 minuter kvar till SM-guld.
+              </p>
+            )}
             <button
               onClick={() => {
                 setShowHalftime(false)
@@ -584,22 +651,22 @@ export function MatchLiveScreen() {
               style={{
                 width: '100%',
                 padding: '12px',
-                background: 'var(--accent)',
+                background: isSmFinal ? '#C9A84C' : 'var(--accent)',
                 border: 'none',
                 borderRadius: 'var(--radius)',
-                color: '#fff',
+                color: isSmFinal ? '#0D1B2A' : '#fff',
                 fontSize: 15,
-                fontWeight: 600,
+                fontWeight: 700,
               }}
             >
-              Andra halvlek →
+              {isSmFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}
             </button>
           </div>
         </div>
       )}
 
-      {/* Match done overlay */}
-      {matchDone && (
+      {/* Match done overlay — normal matches */}
+      {matchDone && !isSmFinal && (
         <div style={{
           position: 'fixed',
           inset: 0,
@@ -706,6 +773,211 @@ export function MatchLiveScreen() {
           </div>
         </div>
       )}
+
+      {/* SM-final ceremony — Slide 1: Final score */}
+      {isSmFinal && ceremonySlide === 1 && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#0D1B2A',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 300,
+        }}>
+          <p style={{
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: '2px',
+            textTransform: 'uppercase',
+            color: '#C9A84C',
+            marginBottom: 24,
+          }}>
+            SM-FINAL
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 13, color: '#8A9BB0', marginBottom: 8 }}>{truncate(homeClubName, 14)}</p>
+              <span style={{ fontSize: 64, fontWeight: 900, color: '#F0F4F8' }}>{homeScore}</span>
+            </div>
+            <span style={{ fontSize: 32, color: '#4A6080' }}>—</span>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 13, color: '#8A9BB0', marginBottom: 8 }}>{truncate(awayClubName, 14)}</p>
+              <span style={{ fontSize: 64, fontWeight: 900, color: '#F0F4F8' }}>{awayScore}</span>
+            </div>
+          </div>
+          <p style={{ fontSize: 20, fontWeight: 700, color: '#F0F4F8', letterSpacing: '1px' }}>
+            SLUTSIGNAL!
+          </p>
+        </div>
+      )}
+
+      {/* SM-final ceremony — Slide 2: Champion celebration */}
+      {isSmFinal && ceremonySlide === 2 && (() => {
+        const managedClubId = game?.managedClubId
+        const managedIsHome = fixture.homeClubId === managedClubId
+        const managedScore = managedIsHome ? homeScore : awayScore
+        const opponentScore = managedIsHome ? awayScore : homeScore
+        const managedWon = managedScore > opponentScore
+        const season = game?.currentSeason ?? fixture.season
+        const clubName = managedIsHome ? homeClubName : awayClubName
+
+        return (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: '#0D1B2A',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 300,
+            overflow: 'hidden',
+          }}>
+            <style>{`
+              @keyframes confettiFall {
+                0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+                100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+              }
+              @keyframes goldPulse {
+                0%, 100% { text-shadow: 0 0 20px rgba(201,168,76,0.4); }
+                50% { text-shadow: 0 0 40px rgba(201,168,76,0.8), 0 0 60px rgba(201,168,76,0.4); }
+              }
+            `}</style>
+            {managedWon && <GoldConfetti />}
+            <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '0 24px' }}>
+              {managedWon ? (
+                <>
+                  <div style={{ fontSize: 80, marginBottom: 16 }}>🏆</div>
+                  <h1 style={{
+                    fontSize: 28,
+                    fontWeight: 900,
+                    color: '#C9A84C',
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    marginBottom: 12,
+                    animation: 'goldPulse 2s ease-in-out infinite',
+                  }}>
+                    SVENSKA MÄSTARE!
+                  </h1>
+                  <p style={{ fontSize: 18, color: '#F0F4F8', fontWeight: 700, marginBottom: 4 }}>
+                    {clubName}
+                  </p>
+                  <p style={{ fontSize: 14, color: '#8A9BB0', marginBottom: 32 }}>
+                    Vi vann SM-guld {season}!
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: 60, marginBottom: 16 }}>🥈</div>
+                  <h1 style={{ fontSize: 24, fontWeight: 800, color: '#8A9BB0', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 12 }}>
+                    SILVER
+                  </h1>
+                  <p style={{ fontSize: 15, color: '#F0F4F8', marginBottom: 4 }}>
+                    Ni kämpade väl.
+                  </p>
+                  <p style={{ fontSize: 14, color: '#8A9BB0', marginBottom: 32 }}>
+                    Silvermedaljörer {season}.
+                  </p>
+                </>
+              )}
+              <button
+                onClick={() => setCeremonySlide(3)}
+                style={{
+                  padding: '14px 32px',
+                  background: managedWon ? '#C9A84C' : '#1e3450',
+                  border: 'none',
+                  borderRadius: 12,
+                  color: managedWon ? '#0D1B2A' : '#F0F4F8',
+                  fontSize: 15,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Matchens spelare →
+              </button>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* SM-final ceremony — Slide 3: MVP */}
+      {isSmFinal && ceremonySlide === 3 && (() => {
+        // Find player with highest rating
+        const allStarters = [
+          ...(homeLineup?.startingPlayerIds ?? []),
+          ...(awayLineup?.startingPlayerIds ?? []),
+        ]
+        const playerRatings: Record<string, number> = {}
+        for (const id of allStarters) playerRatings[id] = 6.5
+        const allEvents = steps.flatMap(s => s.events)
+        for (const e of allEvents) {
+          if (!e.playerId) continue
+          if (e.type === MatchEventType.Goal) playerRatings[e.playerId] = Math.min(10, (playerRatings[e.playerId] ?? 6.5) + 1.5)
+          if (e.type === MatchEventType.YellowCard) playerRatings[e.playerId] = Math.max(1, (playerRatings[e.playerId] ?? 6.5) - 0.5)
+          if (e.type === MatchEventType.RedCard) playerRatings[e.playerId] = Math.max(1, (playerRatings[e.playerId] ?? 6.5) - 1.5)
+        }
+        const [mvpId, mvpRating] = Object.entries(playerRatings).sort((a, b) => b[1] - a[1])[0] ?? ['', 0]
+        const mvpPlayer = mvpId ? game?.players.find(p => p.id === mvpId) : undefined
+        const mvpName = mvpPlayer ? `${mvpPlayer.firstName} ${mvpPlayer.lastName}` : 'Okänd spelare'
+        const mvpPos = mvpPlayer?.position ?? ''
+
+        return (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: '#0D1B2A',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 300,
+          }}>
+            <div style={{ textAlign: 'center', padding: '0 24px' }}>
+              <p style={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '2px',
+                textTransform: 'uppercase',
+                color: '#C9A84C',
+                marginBottom: 24,
+              }}>
+                MATCHENS SPELARE
+              </p>
+              <div style={{ fontSize: 56, marginBottom: 16 }}>⭐</div>
+              <h2 style={{ fontSize: 24, fontWeight: 900, color: '#F0F4F8', marginBottom: 8 }}>
+                {mvpName}
+              </h2>
+              {mvpPos && (
+                <p style={{ fontSize: 13, color: '#8A9BB0', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  {mvpPos}
+                </p>
+              )}
+              <p style={{ fontSize: 32, fontWeight: 800, color: '#C9A84C', marginBottom: 32 }}>
+                {typeof mvpRating === 'number' ? mvpRating.toFixed(1) : '–'}
+              </p>
+              <button
+                onClick={() => navigate('/game/champion')}
+                style={{
+                  padding: '16px 32px',
+                  background: '#C9A84C',
+                  border: 'none',
+                  borderRadius: 12,
+                  color: '#0D1B2A',
+                  fontSize: 16,
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  letterSpacing: '1px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Säsongsavslutning →
+              </button>
+            </div>
+          </div>
+        )
+      })()}
 
     </div>
   )

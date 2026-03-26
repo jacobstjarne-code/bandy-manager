@@ -43,6 +43,7 @@ export interface Fixture {
   status: FixtureStatus
 
   isCup?: boolean
+  isNeutralVenue?: boolean  // true for SM-final at neutral ground (Studenternas IP, Uppsala)
 
   homeScore: number
   awayScore: number
