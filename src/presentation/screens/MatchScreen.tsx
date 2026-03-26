@@ -937,8 +937,10 @@ export function MatchScreen() {
   const isSeriesHome = playoffSeries ? playoffSeries.homeClubId === managedClubId : false
   const myWins = playoffSeries ? (isSeriesHome ? playoffSeries.homeWins : playoffSeries.awayWins) : 0
   const theirWins = playoffSeries ? (isSeriesHome ? playoffSeries.awayWins : playoffSeries.homeWins) : 0
+  const isCupFixture = nextFixture.isCup === true
   const roundLabel = isPlayoffRound && playoffSeries
     ? `${getPlayoffRoundLabel(playoffSeries.round)} · Serie ${myWins}–${theirWins} (bäst av 3)`
+    : isCupFixture ? '🏆 CUPMATCH'
     : rivalry ? `🔥 ${rivalry.name} ${'🔥'.repeat(rivalry.intensity)}` : `Omgång ${nextFixture.roundNumber}`
   const matchWeatherData = game?.matchWeathers?.find(w => w.fixtureId === nextFixture.id)
 
@@ -1039,12 +1041,12 @@ export function MatchScreen() {
         )}
         <div style={{
           background: 'var(--bg-surface)',
-          border: isPlayoffRound ? '1px solid rgba(201,168,76,0.3)' : rivalry ? '1px solid rgba(220,80,30,0.3)' : '1px solid var(--border)',
+          border: isPlayoffRound ? '1px solid rgba(201,168,76,0.3)' : isCupFixture ? '1px solid rgba(201,168,76,0.25)' : rivalry ? '1px solid rgba(220,80,30,0.3)' : '1px solid var(--border)',
           borderRadius: 'var(--radius)',
           padding: '12px 16px',
           marginBottom: 16,
         }}>
-          <p style={{ fontSize: 11, color: isPlayoffRound ? '#C9A84C' : rivalry ? '#ff7040' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
+          <p style={{ fontSize: 11, color: isPlayoffRound ? '#C9A84C' : isCupFixture ? '#C9A84C' : rivalry ? '#ff7040' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
             {roundLabel}
           </p>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

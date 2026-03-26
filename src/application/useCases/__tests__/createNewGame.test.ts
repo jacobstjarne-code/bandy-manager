@@ -14,9 +14,12 @@ describe('createNewGame', () => {
     expect(game.players.length).toBeLessThanOrEqual(280)
   })
 
-  it('returns SaveGame with 132 fixtures', () => {
+  it('returns SaveGame with 132 league fixtures plus cup fixtures', () => {
     const game = createNewGame({ managerName: 'Jacob', clubId: 'club_sandviken', season: 2025, seed: 42 })
-    expect(game.fixtures.length).toBe(132)
+    const leagueFixtures = game.fixtures.filter(f => !f.isCup)
+    const cupFixtures = game.fixtures.filter(f => f.isCup)
+    expect(leagueFixtures.length).toBe(132)
+    expect(cupFixtures.length).toBeGreaterThan(0)
   })
 
   it('all fixtures have status Scheduled', () => {

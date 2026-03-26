@@ -68,6 +68,7 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
     managedClubTraining: { type: TrainingType.Physical, intensity: TrainingIntensity.Normal },
     trainingHistory: [],
     playoffBracket: null,
+    cupBracket: null,
     seasonSummaries: [],
     showSeasonSummary: false,
     scoutReports: { p1: { playerId: 'p1', clubId: 'c2', scoutedDate: '2025-05-01', scoutedSeason: 2025, accuracy: 70, revealedAttributes: {}, estimatedCA: 64, estimatedPA: 74, notes: 'Bra' } },

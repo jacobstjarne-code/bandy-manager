@@ -50,7 +50,7 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
     transferState: { freeAgents: [], pendingOffers: [] },
     youthIntakeHistory: [], matchWeathers: [],
     managedClubTraining: { type: TrainingType.Physical, intensity: TrainingIntensity.Normal },
-    trainingHistory: [], playoffBracket: null, seasonSummaries: [],
+    trainingHistory: [], playoffBracket: null, cupBracket: null, seasonSummaries: [],
     showSeasonSummary: false, scoutReports: {}, activeScoutAssignment: null, scoutBudget: 10,
     pendingEvents: [], transferBids: [],
     version: '0.1.0', lastSavedAt: '2025-01-01T00:00:00Z',

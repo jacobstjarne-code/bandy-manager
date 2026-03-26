@@ -7,12 +7,24 @@ import { generateSchedule } from '../../domain/services/scheduleGenerator'
 import { calculateStandings } from '../../domain/services/standingsService'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import type { MatchWeather } from '../../domain/entities/Weather'
+import { generateCupFixtures } from '../../domain/services/cupService'
 
 export interface CreateNewGameInput {
   managerName: string
   clubId: string
   season?: number
   seed?: number
+}
+
+function mulberry32(seed: number): () => number {
+  let s = seed >>> 0
+  return function (): number {
+    s += 0x6d2b79f5
+    let t = s
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
 }
 
 export function createNewGame(input: CreateNewGameInput): SaveGame {
@@ -77,6 +89,11 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     tactic: managedClub.activeTactic,
   }
 
+  // Generate cup fixtures
+  const cupSeed = (input.seed ?? 42) + 99999
+  const cupRand = mulberry32(cupSeed)
+  const { bracket: cupBracket, fixtures: cupFixtures } = generateCupFixtures(clubs.map(c => c.id), season, cupRand)
+
   // Pre-generate weather for round 1 so it's visible before first match
   const round1Fixtures = fixtures.filter(f => f.roundNumber === 1)
   const round1Weathers: MatchWeather[] = round1Fixtures.map((f, i) => {
@@ -85,6 +102,8 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   })
 
   const now = new Date().toISOString()
+
+  const allFixtures = [...fixtures, ...cupFixtures]
 
   const game: SaveGame = {
     id: `save_${Date.now()}`,
@@ -95,7 +114,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     clubs,
     players,
     league,
-    fixtures,
+    fixtures: allFixtures,
     standings,
     inbox: [],
     transferState: {
@@ -108,6 +127,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     managedClubTraining: { type: TrainingType.Physical, intensity: TrainingIntensity.Normal },
     trainingHistory: [],
     playoffBracket: null,
+    cupBracket,
     seasonSummaries: [],
     showSeasonSummary: false,
     showBoardMeeting: true,

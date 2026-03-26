@@ -42,6 +42,8 @@ export interface Fixture {
 
   status: FixtureStatus
 
+  isCup?: boolean
+
   homeScore: number
   awayScore: number
 

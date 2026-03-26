@@ -18,6 +18,8 @@ import type { PlayoffBracket, PlayoffSeries } from '../../domain/entities/Playof
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { getRivalry } from '../../domain/data/rivalries'
 import type { Fixture } from '../../domain/entities/Fixture'
+import type { CupBracket } from '../../domain/entities/Cup'
+import { getCupRoundLabel, getManagedClubCupStatus } from '../../domain/services/cupService'
 
 function getSeriesScore(series: { fixtures: string[]; homeClubId: string; awayClubId: string }, fixtures: Fixture[]) {
   const seriesFixtures = fixtures.filter(
@@ -186,6 +188,110 @@ function PlayoffBracketCard({ bracket, game, cardStyle, cardLabelStyle }: Playof
           Bäst av 3 matcher per serie
         </p>
       )}
+    </div>
+  )
+}
+
+interface CupCardProps {
+  bracket: CupBracket
+  game: SaveGame
+  cardStyle: React.CSSProperties
+  cardLabelStyle: React.CSSProperties
+}
+
+function CupCard({ bracket, game, cardStyle, cardLabelStyle }: CupCardProps) {
+  const managedClubId = game.managedClubId
+  const cupStatus = getManagedClubCupStatus(bracket, managedClubId)
+
+  // Find managed club's next cup fixture
+  const nextCupFixture = game.fixtures
+    .filter(f => f.isCup && f.status === 'scheduled' &&
+      (f.homeClubId === managedClubId || f.awayClubId === managedClubId))
+    .sort((a, b) => a.roundNumber - b.roundNumber)[0]
+
+  // Determine current stage label
+  const roundsWithMatches = [...new Set(bracket.matches.map(m => m.round))]
+  const currentRound = Math.max(...roundsWithMatches)
+  const stageLabel = getCupRoundLabel(currentRound)
+
+  let statusContent: React.ReactNode
+
+  if (bracket.completed && bracket.winnerId === managedClubId) {
+    statusContent = (
+      <div style={{ textAlign: 'center', padding: '8px 0' }}>
+        <span style={{ fontSize: 24 }}>🏆</span>
+        <p style={{ fontSize: 14, fontWeight: 800, color: '#C9A84C', marginTop: 4 }}>CUPVINNARE!</p>
+        <p style={{ fontSize: 11, color: '#4A6080' }}>Svenska Cupen {bracket.season}</p>
+      </div>
+    )
+  } else if (cupStatus.eliminated) {
+    const roundName = cupStatus.eliminatedInRound === 1 ? 'kvartsfinalen'
+      : cupStatus.eliminatedInRound === 2 ? 'semifinalen'
+      : 'finalen'
+    statusContent = (
+      <p style={{ fontSize: 13, color: '#4A6080' }}>Utslagna i {roundName}</p>
+    )
+  } else if (nextCupFixture) {
+    const opponent = game.clubs.find(c =>
+      c.id === (nextCupFixture.homeClubId === managedClubId
+        ? nextCupFixture.awayClubId
+        : nextCupFixture.homeClubId)
+    )
+    const isHome = nextCupFixture.homeClubId === managedClubId
+    statusContent = (
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+          <span style={{ fontSize: 13, color: '#F0F4F8', fontWeight: 600 }}>
+            vs {opponent?.shortName ?? opponent?.name ?? '?'}
+          </span>
+          <span style={{
+            padding: '3px 8px',
+            borderRadius: 99,
+            fontSize: 11,
+            fontWeight: 700,
+            background: isHome ? 'rgba(34,197,94,0.15)' : 'rgba(37,99,235,0.15)',
+            color: isHome ? '#22c55e' : '#60a5fa',
+            border: `1px solid ${isHome ? 'rgba(34,197,94,0.3)' : 'rgba(37,99,235,0.3)'}`,
+          }}>
+            {isHome ? 'Hemma' : 'Borta'}
+          </span>
+        </div>
+      </div>
+    )
+  } else {
+    statusContent = (
+      <p style={{ fontSize: 13, color: '#4A6080' }}>Drar igång under säsongen</p>
+    )
+  }
+
+  return (
+    <div
+      className="card-stagger-3"
+      style={{
+        ...cardStyle,
+        background: bracket.completed && bracket.winnerId === managedClubId
+          ? 'linear-gradient(#122235, #122235) padding-box, linear-gradient(135deg, #C9A84C, transparent 60%) border-box'
+          : cardStyle.background,
+        border: bracket.completed && bracket.winnerId === managedClubId
+          ? '2px solid transparent'
+          : cardStyle.border,
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <p className="section-heading" style={cardLabelStyle}>SVENSKA CUPEN</p>
+        {!bracket.completed && !cupStatus.eliminated && (
+          <span style={{
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: '1px',
+            color: '#C9A84C',
+            textTransform: 'uppercase',
+          }}>
+            {stageLabel}
+          </span>
+        )}
+      </div>
+      {statusContent}
     </div>
   )
 }
@@ -694,6 +800,16 @@ export function DashboardScreen() {
               Visa full tabell →
             </p>
           </div>
+        )}
+
+        {/* SVENSKA CUPEN card */}
+        {game.cupBracket && (
+          <CupCard
+            bracket={game.cupBracket}
+            game={game}
+            cardStyle={cardStyle}
+            cardLabelStyle={cardLabelStyle}
+          />
         )}
 
         {/* TRUPPSTATUS card */}

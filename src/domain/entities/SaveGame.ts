@@ -6,6 +6,7 @@ import type { Fixture, TeamSelection } from './Fixture'
 import type { MatchWeather } from './Weather'
 import type { TrainingFocus, TrainingSession } from './Training'
 import type { PlayoffBracket } from './Playoff'
+import type { CupBracket } from './Cup'
 import type { SeasonSummary } from './SeasonSummary'
 import type { ScoutReport, ScoutAssignment } from './Scouting'
 import type { GameEvent, TransferBid } from './GameEvent'
@@ -120,6 +121,7 @@ export interface SaveGame {
   lastCompletedFixtureId?: string   // id of most recently completed managed-club fixture
 
   playoffBracket: PlayoffBracket | null
+  cupBracket: CupBracket | null
 
   showSeasonSummary?: boolean
   showBoardMeeting?: boolean
