@@ -15,9 +15,10 @@ import { SnowOverlay } from '../components/match/SnowOverlay'
 import { PhaseOverlay } from '../components/match/PhaseOverlay'
 import { FinalIntroScreen } from '../components/match/FinalIntroScreen'
 import { HalftimeModal } from '../components/match/HalftimeModal'
-import { MatchDoneOverlay } from '../components/match/MatchDoneOverlay'
+import { MatchDoneOverlay, type PressQuestion } from '../components/match/MatchDoneOverlay'
 import { CeremonyCupFinal } from '../components/match/CeremonyCupFinal'
 import { CeremonySmFinal } from '../components/match/CeremonySmFinal'
+import { generatePressConference } from '../../domain/services/pressConferenceService'
 
 interface LocationState {
   fixture: Fixture
@@ -32,7 +33,7 @@ interface LocationState {
 export function MatchLiveScreen() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { game, saveLiveMatchResult } = useGameStore()
+  const { game, saveLiveMatchResult, applyPressChoice } = useGameStore()
 
   const state = location.state as LocationState | null
   const fixture = state?.fixture
@@ -75,6 +76,7 @@ export function MatchLiveScreen() {
   const [htSubs, setHtSubs] = useState<{ outId: string; inId: string }[]>([])
   const [ceremonySlide, setCeremonySlide] = useState(0)
   const [finalIntroSlide, setFinalIntroSlide] = useState(() => isSmFinal ? 1 : isCupFinal ? 1 : 0)
+  const [pressQuestion, setPressQuestion] = useState<PressQuestion | null>(null)
   const [homeScoreFlash, setHomeScoreFlash] = useState(false)
   const [awayScoreFlash, setAwayScoreFlash] = useState(false)
   const prevHomeScore = useRef(0)
@@ -169,6 +171,26 @@ export function MatchLiveScreen() {
       fixture.id, lastStep.homeScore, lastStep.awayScore,
       allEvents, report, homeLineup, awayLineup, overtimeResult, penaltyResult,
     )
+
+    // Generate press conference question for normal matches (not finals — they have ceremony)
+    if (!isSmFinal && !isCupFinal && game) {
+      const completedFixture = { ...fixture, homeScore: lastStep.homeScore, awayScore: lastStep.awayScore, status: 'completed' as const }
+      const pressEvent = generatePressConference(completedFixture as typeof fixture, game, Math.random.bind(Math))
+      if (pressEvent) {
+        const journalist = pressEvent.title.replace('🎤 Presskonferens — ', '')
+        const question = pressEvent.body.replace(/^"|"$/g, '')
+        setPressQuestion({
+          journalist,
+          question,
+          choices: pressEvent.choices.map(c => ({
+            id: c.id,
+            label: c.label,
+            moraleEffect: (c.effect as { value: number }).value ?? 0,
+            mediaQuote: (c.effect as { mediaQuote?: string }).mediaQuote ?? '',
+          })),
+        })
+      }
+    }
   }, [matchDone]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-scroll feed
@@ -670,8 +692,10 @@ export function MatchLiveScreen() {
           steps={steps}
           managedClubId={game?.managedClubId}
           players={game?.players ?? []}
+          pressQuestion={pressQuestion ?? undefined}
           onSeeReport={handleSeeReport}
           onContinue={() => navigate('/game', { replace: true })}
+          onPressChoice={(moraleEffect, mediaQuote) => applyPressChoice(moraleEffect, mediaQuote)}
         />
       )}
 

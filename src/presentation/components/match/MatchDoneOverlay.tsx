@@ -1,9 +1,23 @@
+import { useState } from 'react'
 import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { MatchEventType } from '../../../domain/enums'
 import { truncate } from '../../utils/formatters'
 import { computePlayerRatings } from '../../utils/matchRatings'
+
+export interface PressChoiceData {
+  id: string
+  label: string
+  moraleEffect: number
+  mediaQuote: string
+}
+
+export interface PressQuestion {
+  journalist: string
+  question: string
+  choices: PressChoiceData[]
+}
 
 interface MatchDoneOverlayProps {
   fixture: Fixture
@@ -16,8 +30,10 @@ interface MatchDoneOverlayProps {
   steps: MatchStep[]
   managedClubId: string | undefined
   players: Player[]
+  pressQuestion?: PressQuestion
   onSeeReport: () => void
   onContinue: () => void
+  onPressChoice?: (moraleEffect: number, mediaQuote: string) => void
 }
 
 export function MatchDoneOverlay({
@@ -31,9 +47,14 @@ export function MatchDoneOverlay({
   steps,
   managedClubId,
   players,
+  pressQuestion,
   onSeeReport,
   onContinue,
+  onPressChoice,
 }: MatchDoneOverlayProps) {
+  const [pressAnswered, setPressAnswered] = useState(false)
+  const [pressQuote, setPressQuote] = useState<string | null>(null)
+
   const allGoalEvents = steps.flatMap(s => s.events.filter(e => e.type === MatchEventType.Goal))
   const lastStep = steps[steps.length - 1]
   const managedIsHome = fixture.homeClubId === managedClubId
@@ -64,6 +85,7 @@ export function MatchDoneOverlay({
         borderRadius: 'var(--radius)', padding: '24px 20px',
         textAlign: 'center', minWidth: 280, maxWidth: 340, width: '90%',
         boxShadow: `0 0 30px ${resultColor}22`,
+        marginBottom: 20,
       }}>
         <p style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', color: resultColor, marginBottom: 14 }}>
           SLUTSIGNAL
@@ -124,6 +146,47 @@ export function MatchDoneOverlay({
             <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
               {bestPlayer.position} · {typeof bestRating === 'number' ? bestRating.toFixed(1) : '–'}
             </p>
+          </div>
+        )}
+
+        {/* Presskonferens */}
+        {pressQuestion && !pressAnswered && (
+          <div style={{
+            marginBottom: 14, padding: '12px', textAlign: 'left',
+            background: 'rgba(255,255,255,0.03)', borderRadius: 8, border: '1px solid var(--border)',
+          }}>
+            <p style={{ fontSize: 11, color: '#8A9BB0', fontWeight: 700, marginBottom: 6 }}>
+              🎤 {pressQuestion.journalist}
+            </p>
+            <p style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 10, fontStyle: 'italic' }}>
+              "{pressQuestion.question}"
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {pressQuestion.choices.map(c => (
+                <button
+                  key={c.id}
+                  onClick={() => {
+                    onPressChoice?.(c.moraleEffect, c.mediaQuote)
+                    setPressQuote(c.mediaQuote)
+                    setPressAnswered(true)
+                  }}
+                  style={{
+                    padding: '9px 12px', background: 'var(--bg-elevated)',
+                    border: '1px solid var(--border)', borderRadius: 8,
+                    color: 'var(--text-primary)', fontSize: 12, fontWeight: 500,
+                    cursor: 'pointer', textAlign: 'left',
+                  }}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {pressQuestion && pressAnswered && pressQuote && (
+          <div style={{ marginBottom: 14, padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, border: '1px solid var(--border)', textAlign: 'left' }}>
+            <p style={{ fontSize: 11, color: '#8A9BB0', marginBottom: 4 }}>📰 Presskonferens</p>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic' }}>{pressQuote}</p>
           </div>
         )}
 

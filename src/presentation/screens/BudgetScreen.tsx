@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
+import { calcWeeklyEconomy } from '../../domain/services/economyService'
 
 function formatMoney(n: number): string {
   const abs = Math.abs(n)
@@ -55,18 +56,12 @@ export function BudgetScreen() {
 
   const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
   const totalSalary = managedPlayers.reduce((sum, p) => sum + (p.salary ?? 0), 0)
-  const weeklyWages = Math.round(totalSalary / 4)
-
-  const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
-  const avgSponsorIncome = activeSponsors.length > 0
-    ? Math.round(activeSponsors.reduce((sum, s) => sum + s.weeklyIncome, 0))
-    : 0
-  const ca = game.communityActivities
-  const kioskEst = ca?.kiosk === 'upgraded' ? 8500 : ca?.kiosk === 'basic' ? 3500 : 0
-  const lotteryEst = ca?.lottery === 'intensive' ? 3200 : ca?.lottery === 'basic' ? 1250 : 0
-  const communityEst = kioskEst + lotteryEst + (ca?.functionaries ? 4000 : 0) + (ca?.bandyplay ? 1500 : 0)
-  const weeklyIncome = Math.round(club.reputation * 250) + avgSponsorIncome + communityEst
-  const netPerRound = weeklyIncome - weeklyWages
+  const { weeklyIncome, weeklyWages, netPerRound } = calcWeeklyEconomy(
+    club.reputation,
+    game.sponsors ?? [],
+    game.communityActivities,
+    totalSalary,
+  )
 
   const currentTransferBudget = pendingTransferBudget ?? club.transferBudget
   const sliderMax = club.finances > 0 ? Math.min(club.finances * 0.5, club.finances) : 0

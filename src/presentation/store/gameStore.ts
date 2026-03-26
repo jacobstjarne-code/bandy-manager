@@ -62,6 +62,7 @@ interface GameState {
   startTrainingProject: (type: string, intensity: 'normal' | 'hard') => { success: boolean; error?: string }
   cancelTrainingProject: (projectId: string) => void
   seekSponsor: () => { success: boolean; sponsor?: Sponsor; error?: string }
+  applyPressChoice: (moraleEffect: number, mediaQuote: string) => void
 }
 
 const indexedDBStorage = {
@@ -542,6 +543,25 @@ export const useGameStore = create<GameState>()(
         }
         set({ game: { ...game, clubs: updatedClubs, sponsors: [...(game.sponsors ?? []), sponsor] } })
         return { success: true, sponsor }
+      },
+
+      applyPressChoice: (moraleEffect, mediaQuote) => {
+        const { game } = get()
+        if (!game) return
+        const updatedPlayers = game.players.map(p =>
+          p.clubId === game.managedClubId
+            ? { ...p, morale: Math.max(0, Math.min(100, p.morale + moraleEffect)) }
+            : p
+        )
+        const inboxItem = {
+          id: `inbox_press_live_${Date.now()}`,
+          date: game.currentDate,
+          type: InboxItemType.Media,
+          title: `📰 ${mediaQuote}`,
+          body: '',
+          isRead: false,
+        }
+        set({ game: { ...game, players: updatedPlayers, inbox: [...game.inbox, inboxItem] } })
       },
     }),
     {
