@@ -1,5 +1,9 @@
 import { PlayerPosition, MatchEventType } from '../../domain/enums'
 
+export function truncate(s: string, n: number): string {
+  return s.length > n ? s.slice(0, n) + '…' : s
+}
+
 export function positionShort(pos: PlayerPosition): string {
   const map: Record<PlayerPosition, string> = {
     [PlayerPosition.Goalkeeper]: 'MV',
