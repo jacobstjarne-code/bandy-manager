@@ -10,10 +10,8 @@ import {
   usePlayoffInfo,
 } from '../store/gameStore'
 import { TutorialOverlay } from '../components/TutorialOverlay'
-import { ClubBadge } from '../components/ClubBadge'
-import { TrophySVG, BandyStickSVG } from '../components/Decorations'
-import { IceQuality, PlayoffStatus, PlayoffRound } from '../../domain/enums'
-import { getWeatherEmoji, getIceQualityLabel } from '../../domain/services/weatherService'
+import { TrophySVG } from '../components/Decorations'
+import { PlayoffStatus } from '../../domain/enums'
 import type { PlayoffBracket, PlayoffSeries } from '../../domain/entities/Playoff'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { getRivalry } from '../../domain/data/rivalries'
@@ -21,6 +19,11 @@ import type { Fixture } from '../../domain/entities/Fixture'
 import type { CupBracket } from '../../domain/entities/Cup'
 import { getCupRoundLabel, getManagedClubCupStatus } from '../../domain/services/cupService'
 import { playSound } from '../audio/soundEffects'
+import { PlayoffBanner } from '../components/dashboard/PlayoffBanner'
+import { NextMatchCard } from '../components/dashboard/NextMatchCard'
+import { LastResultCard } from '../components/dashboard/LastResultCard'
+import { SquadStatusCard } from '../components/dashboard/SquadStatusCard'
+import { GuidanceBanner } from '../components/dashboard/GuidanceBanner'
 
 function getSeriesScore(series: { fixtures: string[]; homeClubId: string; awayClubId: string }, fixtures: Fixture[]) {
   const seriesFixtures = fixtures.filter(
@@ -43,17 +46,6 @@ function getSeriesScore(series: { fixtures: string[]; homeClubId: string; awayCl
   return { homeWins, awayWins }
 }
 
-function getRoundLabel(round: PlayoffRound): string {
-  if (round === PlayoffRound.QuarterFinal) return 'KF'
-  if (round === PlayoffRound.SemiFinal) return 'SF'
-  return 'Final'
-}
-
-function getRoundFullLabel(round: PlayoffRound): string {
-  if (round === PlayoffRound.QuarterFinal) return 'Kvartsfinal'
-  if (round === PlayoffRound.SemiFinal) return 'Semifinal'
-  return 'SM-Final'
-}
 
 interface PlayoffSeriesRowProps {
   series: PlayoffSeries
@@ -628,49 +620,7 @@ export function DashboardScreen() {
 
         {/* PLAYOFF JUST STARTED banner */}
         {isPlayoffJustStarted && (
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(201,168,76,0.15), rgba(201,168,76,0.05))',
-            border: '2px solid rgba(201,168,76,0.4)',
-            borderRadius: 12,
-            padding: '20px 16px',
-            marginBottom: 16,
-            textAlign: 'center',
-          }}>
-            <p style={{ fontSize: 24 }}>🏆</p>
-            <p style={{ fontSize: 16, fontWeight: 800, color: '#C9A84C', marginTop: 8 }}>
-              Dags för slutspel!
-            </p>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.5 }}>
-              Grundserien är avslutad. Matcherna har lottats:
-            </p>
-            <div style={{ marginTop: 12 }}>
-              {playoffInfo.quarterFinals.map(series => {
-                const home = game.clubs.find(c => c.id === series.homeClubId)
-                const away = game.clubs.find(c => c.id === series.awayClubId)
-                const isManaged = series.homeClubId === game.managedClubId ||
-                                  series.awayClubId === game.managedClubId
-                return (
-                  <div key={series.id} style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: 8,
-                    padding: '6px 0',
-                    fontWeight: isManaged ? 700 : 400,
-                    color: isManaged ? '#C9A84C' : 'var(--text-secondary)',
-                    fontSize: 13,
-                  }}>
-                    <span>{home?.shortName ?? home?.name}</span>
-                    <span style={{ color: 'var(--text-muted)' }}>vs</span>
-                    <span>{away?.shortName ?? away?.name}</span>
-                  </div>
-                )
-              })}
-            </div>
-            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 10 }}>
-              Bäst av 5 matcher per serie
-            </p>
-          </div>
+          <PlayoffBanner game={game} playoffInfo={playoffInfo} />
         )}
 
         {/* ELIMINATED card */}
@@ -692,200 +642,33 @@ export function DashboardScreen() {
 
         {/* NEXT MATCH card */}
         {nextFixture && opponent && (
-          <div className="card-stagger-1" style={{
-            background: rivalry
-              ? 'linear-gradient(135deg, #1a1215 0%, #0D1B2A 50%, #1a1215 100%) padding-box, linear-gradient(135deg, #DC3220, #C9A84C, #DC3220) border-box'
-              : 'linear-gradient(135deg, #122235 0%, #0D1B2A 50%, #0f1e30 100%) padding-box, linear-gradient(135deg, #C9A84C, transparent 60%) border-box',
-            border: '2px solid transparent',
-            borderRadius: 12,
-            padding: '18px',
-            marginBottom: 12,
-            boxShadow: '0 8px 32px rgba(201,168,76,0.12)',
-            position: 'relative',
-            overflow: 'hidden',
-          }}>
-            {/* Watermark decoration */}
-            <div style={{ position: 'absolute', top: -8, right: -8, opacity: 0.08, pointerEvents: 'none', zIndex: 0 }}>
-              <BandyStickSVG size={80} />
-            </div>
-            {rivalry && (
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                padding: '3px 10px',
-                borderRadius: 99,
-                background: 'linear-gradient(90deg, rgba(220,50,30,0.2), rgba(201,168,76,0.2))',
-                border: '1px solid rgba(220,100,30,0.4)',
-                fontSize: 11,
-                fontWeight: 700,
-                color: '#ff7040',
-                marginBottom: 8,
-                position: 'relative',
-                zIndex: 1,
-              }}>
-                🔥 DERBY — {rivalry.name}
-              </div>
-            )}
-            <p className="section-heading" style={{ ...cardLabelStyle, position: 'relative', zIndex: 1 }}>
-              {isPlayoffFixture ? `NÄSTA MATCH — ${playoffSeries ? getRoundFullLabel(playoffSeries.round).toUpperCase() : 'SLUTSPEL'}` : 'NÄSTA MATCH'}
-            </p>
-            {nextFixture.isCup && (() => {
-              const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id)
-              const roundLabel = cupMatch ? getCupRoundLabel(cupMatch.round) : 'CUPMATCH'
-              return (
-                <p style={{ fontSize: 13, color: '#C9A84C', fontWeight: 700, marginBottom: 4, position: 'relative', zIndex: 1 }}>
-                  🏆 Svenska Cupen · {roundLabel}
-                </p>
-              )
-            })()}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, position: 'relative', zIndex: 1 }}>
-              {/* Club badges */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <ClubBadge clubId={game.managedClubId} name={club.name} size={36} />
-                <span style={{ fontSize: 10, color: '#8A9BB0', maxWidth: 56, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                  {club.name}
-                </span>
-              </div>
-              <div style={{ flex: 1, textAlign: 'center' }}>
-                <p style={{ fontSize: 20, fontWeight: 800, color: '#F0F4F8', letterSpacing: '2px' }}>VS</p>
-                {isPlayoffFixture && playoffSeries ? (
-                  <p style={{ fontSize: 13, color: '#C9A84C', marginTop: 2, fontWeight: 700 }}>
-                    {getRoundLabel(playoffSeries.round)} · {dynamicHomeWins}–{dynamicAwayWins}
-                  </p>
-                ) : nextFixture.isCup ? null : (
-                  <p style={{ fontSize: 13, color: '#8A9BB0', marginTop: 2 }}>Omgång {nextFixture.roundNumber}</p>
-                )}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <ClubBadge clubId={nextFixture.homeClubId === game.managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId} name={opponent.name} size={36} />
-                <span style={{ fontSize: 10, color: '#8A9BB0', maxWidth: 56, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                  {opponent.name}
-                </span>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {/* Home/away pill */}
-              <span style={{
-                padding: '4px 10px',
-                borderRadius: 99,
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: '0.5px',
-                background: isHome ? 'rgba(34,197,94,0.15)' : 'rgba(37,99,235,0.15)',
-                color: isHome ? '#22c55e' : '#60a5fa',
-                border: `1px solid ${isHome ? 'rgba(34,197,94,0.3)' : 'rgba(37,99,235,0.3)'}`,
-              }}>
-                {isHome ? 'HEMMAMATCH' : 'BORTAMATCH'}
-              </span>
-              {/* Lineup status pill */}
-              <span style={{
-                padding: '4px 10px',
-                borderRadius: 99,
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: '0.5px',
-                background: hasPendingLineup ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)',
-                color: hasPendingLineup ? '#22c55e' : '#f59e0b',
-                border: `1px solid ${hasPendingLineup ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}`,
-              }}>
-                {hasPendingLineup ? 'TRUPP KLAR ✓' : '⚠ VÄLJ TRUPP'}
-              </span>
-            </div>
-            {matchWeather && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-                <span>{getWeatherEmoji(matchWeather.weather.condition)}</span>
-                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                  {matchWeather.weather.temperature > 0 ? '+' : ''}{matchWeather.weather.temperature}°
-                </span>
-                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>·</span>
-                <span style={{
-                  fontSize: 12,
-                  color: matchWeather.weather.iceQuality === IceQuality.Poor || matchWeather.weather.iceQuality === IceQuality.Cancelled
-                    ? 'var(--danger)' : 'var(--text-secondary)'
-                }}>
-                  {getIceQualityLabel(matchWeather.weather.iceQuality)}
-                  {(matchWeather.weather.iceQuality === IceQuality.Poor || matchWeather.weather.iceQuality === IceQuality.Cancelled) ? ' ⚠️' : ''}
-                </span>
-              </div>
-            )}
-          </div>
+          <NextMatchCard
+            nextFixture={nextFixture}
+            opponent={opponent}
+            isHome={isHome}
+            rivalry={rivalry}
+            club={club}
+            game={game}
+            isPlayoffFixture={isPlayoffFixture}
+            playoffSeries={playoffSeries}
+            dynamicHomeWins={dynamicHomeWins}
+            dynamicAwayWins={dynamicAwayWins}
+            matchWeather={matchWeather}
+            hasPendingLineup={hasPendingLineup}
+            onNavigate={() => navigate('/game/match')}
+            cardLabelStyle={cardLabelStyle}
+          />
         )}
 
         {/* SENASTE RESULTAT card */}
         {lastResult && (
-          <div
-            className="card-stagger-2"
-            style={{ ...cardStyle, cursor: 'pointer' }}
-            onClick={() => navigate('/game/match', { state: { showReport: true } })}
-          >
-            <p className="section-heading" style={cardLabelStyle}>SENASTE RESULTAT</p>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <p
-                  className="tabular"
-                  key={`${lastResult.scoreFor}-${lastResult.scoreAgainst}`}
-                  style={{
-                    fontSize: 32,
-                    fontWeight: 900,
-                    color: lastResult.scoreFor > lastResult.scoreAgainst
-                      ? '#22c55e'
-                      : lastResult.scoreFor < lastResult.scoreAgainst
-                        ? '#ef4444'
-                        : '#F0F4F8',
-                    letterSpacing: '2px',
-                    lineHeight: 1,
-                    animation: 'countUp 400ms ease-out both',
-                  }}
-                >
-                  {lastResult.scoreFor} — {lastResult.scoreAgainst}
-                </p>
-                {lastCompletedFixture?.wentToPenalties && lastCompletedFixture.penaltyResult && (
-                  <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 600, marginTop: 2 }}>
-                    str. {lastCompletedFixture.penaltyResult.home}-{lastCompletedFixture.penaltyResult.away}
-                  </p>
-                )}
-                {lastCompletedFixture?.wentToOvertime && !lastCompletedFixture.wentToPenalties && (
-                  <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 600, marginTop: 2 }}>
-                    efter förlängning
-                  </p>
-                )}
-                <p style={{ fontSize: 12, color: '#8A9BB0', marginTop: 4 }}>
-                  vs {lastResult.opponentName}
-                </p>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{
-                  padding: '4px 10px',
-                  borderRadius: 99,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  background: lastResult.scoreFor > lastResult.scoreAgainst
-                    ? 'rgba(34,197,94,0.15)'
-                    : lastResult.scoreFor < lastResult.scoreAgainst
-                      ? 'rgba(239,68,68,0.15)'
-                      : 'rgba(248,250,252,0.1)',
-                  color: lastResult.scoreFor > lastResult.scoreAgainst
-                    ? '#22c55e'
-                    : lastResult.scoreFor < lastResult.scoreAgainst
-                      ? '#ef4444'
-                      : '#F0F4F8',
-                  border: `1px solid ${lastResult.scoreFor > lastResult.scoreAgainst
-                    ? 'rgba(34,197,94,0.3)'
-                    : lastResult.scoreFor < lastResult.scoreAgainst
-                      ? 'rgba(239,68,68,0.3)'
-                      : 'rgba(248,250,252,0.15)'}`,
-                }}>
-                  {lastResult.scoreFor > lastResult.scoreAgainst
-                    ? 'Vinst'
-                    : lastResult.scoreFor < lastResult.scoreAgainst
-                      ? 'Förlust'
-                      : 'Oavgjort'}
-                </span>
-                <span style={{ color: '#C9A84C', fontSize: 16, fontWeight: 700 }}>→</span>
-              </div>
-            </div>
-          </div>
+          <LastResultCard
+            lastResult={lastResult}
+            lastCompletedFixture={lastCompletedFixture}
+            onNavigateToReport={() => navigate('/game/match', { state: { showReport: true } })}
+            cardStyle={cardStyle}
+            cardLabelStyle={cardLabelStyle}
+          />
         )}
 
         {/* SLUTSPEL card (when active) or SERIEPLACERING card */}
@@ -959,130 +742,24 @@ export function DashboardScreen() {
         )}
 
         {/* TRUPPSTATUS card */}
-        <div className="card-stagger-4" style={cardStyle}>
-          <p className="section-heading" style={cardLabelStyle}>TRUPPSTATUS</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{
-                width: 8, height: 8, borderRadius: '50%',
-                background: injuredCount === 0 ? '#22c55e' : '#ef4444',
-                flexShrink: 0,
-              }} />
-              <span style={{ fontSize: 13, color: '#8A9BB0' }}>
-                Skador: <span style={{ color: injuredCount > 0 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>
-                  {injuredCount} spelare
-                </span>
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <BandyStickSVG size={14} color={formColor} />
-              <span style={{ fontSize: 13, color: '#8A9BB0' }}>
-                Form: <span style={{ color: formColor, fontWeight: 600 }}>{formLabel}</span>
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 13, color: '#8A9BB0' }}>
-                Klubbkassa:{' '}
-                {club.finances < 0 ? (
-                  <span style={{ color: '#ef4444', fontWeight: 600 }}>
-                    {Math.round(club.finances / 1000)} tkr ⚠️ KRIS
-                  </span>
-                ) : (
-                  <span style={{ color: '#22c55e', fontWeight: 600 }}>
-                    {club.finances >= 1000000
-                      ? `${(club.finances / 1000000).toFixed(1)} mkr`
-                      : `${Math.round(club.finances / 1000)} tkr`}
-                  </span>
-                )}
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 13, color: '#8A9BB0' }}>
-                Supportrar:{' '}
-                <span style={{
-                  fontWeight: 600,
-                  color: (game.fanMood ?? 50) > 80 ? '#f97316'
-                    : (game.fanMood ?? 50) > 60 ? '#22c55e'
-                    : (game.fanMood ?? 50) > 40 ? '#8A9BB0'
-                    : (game.fanMood ?? 50) > 20 ? '#f59e0b'
-                    : '#ef4444'
-                }}>
-                  {(game.fanMood ?? 50) > 80 ? '🔥 Euforisk'
-                    : (game.fanMood ?? 50) > 60 ? '😊 Positiv'
-                    : (game.fanMood ?? 50) > 40 ? '😐 Neutral'
-                    : (game.fanMood ?? 50) > 20 ? '😤 Missnöjd'
-                    : '😡 Protesterar'}
-                </span>
-              </span>
-            </div>
-          </div>
-        </div>
+        <SquadStatusCard
+          injuredCount={injuredCount}
+          formLabel={formLabel}
+          formColor={formColor}
+          club={club}
+          game={game}
+          cardStyle={cardStyle}
+          cardLabelStyle={cardLabelStyle}
+        />
 
         {/* Guidance banners */}
-        {!hasPendingLineup && nextFixture ? (
-          <div className="card-stagger-5" style={{
-            background: 'rgba(245,158,11,0.08)',
-            border: '1px solid rgba(245,158,11,0.25)',
-            borderRadius: 10,
-            padding: '12px 14px',
-            fontSize: 13,
-            color: '#8A9BB0',
-            marginBottom: 12,
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>⚠ Du har inte satt en startelva. Sätt din trupp inför matchen.</span>
-              <button
-                onClick={() => navigate('/game/match')}
-                style={{
-                  flexShrink: 0,
-                  marginLeft: 10,
-                  background: 'none',
-                  border: 'none',
-                  color: '#C9A84C',
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  padding: 0,
-                }}
-              >
-                → Trupp
-              </button>
-            </div>
-          </div>
-        ) : lastCompletedFixture ? (
-          <div
-            className="card-stagger-5"
-            style={{
-              background: 'rgba(37,99,235,0.08)',
-              border: '1px solid rgba(37,99,235,0.2)',
-              borderRadius: 10,
-              padding: '12px 14px',
-              fontSize: 13,
-              color: '#8A9BB0',
-              marginBottom: 12,
-              cursor: 'pointer',
-            }}
-            onClick={() => navigate('/game/match', { state: { showReport: true } })}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>📋 Ny matchrapport tillgänglig. Klicka för att se rapporten</span>
-              <span style={{ marginLeft: 10, color: '#C9A84C', fontWeight: 700 }}>→</span>
-            </div>
-          </div>
-        ) : (
-          <div className="card-stagger-5" style={{
-            fontSize: 13,
-            color: '#22c55e',
-            fontWeight: 600,
-            marginBottom: 12,
-            padding: '10px 14px',
-            background: 'rgba(34,197,94,0.08)',
-            border: '1px solid rgba(34,197,94,0.2)',
-            borderRadius: 10,
-          }}>
-            ✓ Redo för match
-          </div>
-        )}
+        <GuidanceBanner
+          hasPendingLineup={hasPendingLineup}
+          nextFixture={nextFixture ?? null}
+          lastCompletedFixture={lastCompletedFixture}
+          onNavigateToMatch={() => navigate('/game/match')}
+          onNavigateToReport={() => navigate('/game/match', { state: { showReport: true } })}
+        />
 
       </div>
 
