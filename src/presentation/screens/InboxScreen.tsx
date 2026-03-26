@@ -2,6 +2,7 @@ import { useGameStore } from '../store/gameStore'
 import { InboxItemType } from '../../domain/enums'
 import type { InboxItem } from '../../domain/entities/SaveGame'
 import { Bell, Check, CheckCheck } from 'lucide-react'
+import { PlayerLink } from '../components/PlayerLink'
 
 function inboxTypeIcon(type: InboxItemType): string {
   switch (type) {
@@ -48,9 +49,10 @@ interface InboxItemRowProps {
   item: InboxItem
   onRead: (id: string) => void
   index: number
+  playerName?: string
 }
 
-function InboxItemRow({ item, onRead, index }: InboxItemRowProps) {
+function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
   const color = inboxTypeColor(item.type)
   return (
     <div
@@ -105,6 +107,15 @@ function InboxItemRow({ item, onRead, index }: InboxItemRowProps) {
         }}>
           {item.body}
         </p>
+        {playerName && item.relatedPlayerId && (
+          <div style={{ marginTop: 6 }}>
+            <PlayerLink
+              playerId={item.relatedPlayerId}
+              name={playerName}
+              style={{ fontSize: 12 }}
+            />
+          </div>
+        )}
         {!item.isRead && (
           <div style={{
             display: 'inline-block',
@@ -126,6 +137,12 @@ export function InboxScreen() {
   const markAllInboxRead = useGameStore(s => s.markAllInboxRead)
 
   if (!game) return null
+
+  function getPlayerName(id?: string): string | undefined {
+    if (!id) return undefined
+    const p = game!.players.find(pl => pl.id === id)
+    return p ? `${p.firstName} ${p.lastName}` : undefined
+  }
 
   // Sort by date descending
   const items = [...game.inbox].sort((a, b) => b.date.localeCompare(a.date))
@@ -194,7 +211,7 @@ export function InboxScreen() {
           </div>
         ) : (
           items.map((item, index) => (
-            <InboxItemRow key={item.id} item={item} onRead={markInboxRead} index={index} />
+            <InboxItemRow key={item.id} item={item} onRead={markInboxRead} index={index} playerName={getPlayerName(item.relatedPlayerId)} />
           ))
         )}
       </div>

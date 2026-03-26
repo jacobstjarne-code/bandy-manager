@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useManagedPlayers, useHasPendingLineup, useManagedClub } from '../store/gameStore'
 import { PlayerPosition, PlayerArchetype } from '../../domain/enums'
 import type { Player } from '../../domain/entities/Player'
@@ -280,9 +281,19 @@ export function SquadScreen() {
   const players = useManagedPlayers()
   const hasPendingLineup = useHasPendingLineup()
   const club = useManagedClub()
+  const location = useLocation()
   const [sort, setSort] = useState<SortKey>('position')
   const [filter, setFilter] = useState<FilterKey>('all')
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const highlightId = (location.state as { highlightPlayer?: string } | null)?.highlightPlayer
+    if (highlightId) {
+      setSelectedPlayerId(highlightId)
+      // Clear state so back/forward nav doesn't re-open
+      window.history.replaceState({ ...window.history.state, usr: {} }, '')
+    }
+  }, [location.state])
 
   const filtered = filter === 'all'
     ? players

@@ -12,6 +12,7 @@ import type { Fixture, MatchEvent } from '../../domain/entities/Fixture'
 import type { Player } from '../../domain/entities/Player'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { getRivalry } from '../../domain/data/rivalries'
+import { PlayerLink } from '../components/PlayerLink'
 import type { MatchWeather } from '../../domain/entities/Weather'
 import { WeatherCondition } from '../../domain/enums'
 import { generateBasicAnalysis } from '../../domain/services/opponentAnalysisService'
@@ -391,7 +392,14 @@ function MatchReportView({ fixture, game, onClose }: MatchReportViewProps) {
                   color: event.isCornerGoal ? '#C9A84C' : undefined,
                   fontWeight: event.isCornerGoal ? 600 : undefined,
                 }}>
-                  {event.isCornerGoal ? '📐 ' : ''}{getEventText(event)}
+                  {event.isCornerGoal ? '📐 ' : ''}
+                  {event.playerId
+                    ? <PlayerLink playerId={event.playerId} name={getPlayerName(event.playerId)} style={{ color: event.isCornerGoal ? '#C9A84C' : undefined }} />
+                    : getEventText(event)
+                  }
+                  {event.playerId && event.type === MatchEventType.Goal && ' 🔴'}
+                  {event.playerId && event.type === MatchEventType.YellowCard && ' ⚠️ Varning'}
+                  {event.playerId && event.type === MatchEventType.RedCard && ' 🚫 Utvisning 10 min'}
                 </span>
               </div>
             )
@@ -538,7 +546,7 @@ function MatchReportView({ fixture, game, onClose }: MatchReportViewProps) {
                 flexShrink: 0,
               }} />
               <div style={{ flex: 1 }}>
-                <span style={{ fontSize: 13, fontWeight: 600 }}>{player.firstName} {player.lastName}</span>
+                <PlayerLink playerId={player.id} name={`${player.firstName} ${player.lastName}`} style={{ fontSize: 13 }} />
                 <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 6 }}>
                   {positionShort(player.position)}
                 </span>
