@@ -1,4 +1,10 @@
 import { ClubExpectation } from '../enums'
+
+function ordinal(n: number): string {
+  if (n === 1) return '1:a'
+  if (n === 2) return '2:a'
+  return `${n}:e`
+}
 import type { StandingRow } from '../entities/SaveGame'
 import type { Club } from '../entities/Club'
 
@@ -237,9 +243,9 @@ export function generatePreSeasonMessage(
 
   let body = `Styrelsen har utvärderat säsongen. `
   if (lastSeasonPosition <= 3) {
-    body += `Förra säsongens ${lastSeasonPosition}:a plats imponerade. `
+    body += `Förra säsongens ${ordinal(lastSeasonPosition)} plats imponerade. `
   } else if (lastSeasonPosition >= 10) {
-    body += `Förra säsongens ${lastSeasonPosition}:e plats var under förväntan. `
+    body += `Förra säsongens ${ordinal(lastSeasonPosition)} plats var under förväntan. `
   }
 
   if (expectationChanged) {

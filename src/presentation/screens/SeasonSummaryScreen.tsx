@@ -42,7 +42,7 @@ export function SeasonSummaryScreen() {
     switch (r) {
       case 'champion': return '🏆 Svenska mästare'
       case 'finalist': return '🥈 Finalist'
-      case 'semifinal': return '4:a i semifinal'
+      case 'semifinal': return '4:e i semifinal'
       case 'quarterfinal': return 'Kvartsfinalist'
       case 'didNotQualify': return 'Ej kvalad till slutspel'
       default: return ''

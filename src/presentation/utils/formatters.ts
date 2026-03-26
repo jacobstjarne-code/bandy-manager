@@ -23,6 +23,12 @@ export const POSITION_ORDER: Record<PlayerPosition, number> = {
   [PlayerPosition.Forward]: 4,
 }
 
+export function ordinal(n: number): string {
+  if (n === 1) return '1:a'
+  if (n === 2) return '2:a'
+  return `${n}:e`
+}
+
 export function formatCurrency(n: number): string {
   return n.toLocaleString('sv-SE') + ' kr'
 }

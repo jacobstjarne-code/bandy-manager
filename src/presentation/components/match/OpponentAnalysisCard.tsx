@@ -3,6 +3,7 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { useGameStore } from '../../store/gameStore'
 import { generateBasicAnalysis } from '../../../domain/services/opponentAnalysisService'
+import { ordinal } from '../../utils/formatters'
 
 interface OpponentAnalysisCardProps {
   fixture: Fixture
@@ -33,7 +34,7 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
 
       <p style={{ fontSize: 13, color: '#8A9BB0', marginBottom: 8 }}>
         {opponent.name}
-        {displayAnalysis.tablePosition && ` · ${displayAnalysis.tablePosition}:a plats`}
+        {displayAnalysis.tablePosition && ` · ${ordinal(displayAnalysis.tablePosition)} plats`}
         {displayAnalysis.recentForm && ` · ${displayAnalysis.recentForm}`}
       </p>
 

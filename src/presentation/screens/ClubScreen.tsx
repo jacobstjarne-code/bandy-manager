@@ -509,14 +509,14 @@ export function ClubScreen() {
                     value: kioskEst,
                   },
                   {
-                    icon: '🎫', name: 'Folkspel-lotteriet',
+                    icon: '🎫', name: 'Föreningslotteriet',
                     active: ca?.lottery !== 'none' && !!ca?.lottery,
                     status: ca?.lottery === 'intensive' ? 'Intensiv' : ca?.lottery === 'basic' ? 'Aktiv' : 'Ej startad',
                     income: ca?.lottery === 'intensive' ? '~4 000/omg' : ca?.lottery === 'basic' ? '~1 750/omg' : '—',
                     value: lotteryEst,
                   },
                   {
-                    icon: '📺', name: 'BandyPlay',
+                    icon: '📺', name: 'Streamingavtal',
                     active: !!ca?.bandyplay,
                     status: ca?.bandyplay ? 'Aktiv' : 'Ej startad',
                     income: ca?.bandyplay ? '~1 500/match' : '—',

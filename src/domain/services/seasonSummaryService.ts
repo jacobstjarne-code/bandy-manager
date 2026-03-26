@@ -2,6 +2,12 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { SeasonSummary } from '../entities/SeasonSummary'
 import { ClubExpectation, FixtureStatus, PlayoffRound } from '../enums'
 
+function ordinal(n: number): string {
+  if (n === 1) return '1:a'
+  if (n === 2) return '2:a'
+  return `${n}:e`
+}
+
 export type { SeasonSummary }
 
 export function generateSeasonSummary(game: SaveGame): SeasonSummary {
@@ -301,11 +307,11 @@ export function generateSeasonSummary(game: SaveGame): SeasonSummary {
   if (isChampion) {
     narrative = `En historisk säsong! ${club.name} tog SM-guldet ${game.currentSeason} i en strålande slutspelskampanj.`
   } else if (expectationVerdict === 'exceeded') {
-    narrative = `${club.name} överträffade alla förväntningar och slutade på ${finalPosition}:e plats — styrelsen förväntade sig bara att ${expectationText[boardExpectation]}.`
+    narrative = `${club.name} överträffade alla förväntningar och slutade på ${ordinal(finalPosition)} plats — styrelsen förväntade sig bara att ${expectationText[boardExpectation]}.`
   } else if (expectationVerdict === 'met') {
-    narrative = `En solid säsong för ${club.name}. ${finalPosition}:e plats uppfyller styrelsens krav på att ${expectationText[boardExpectation]}.`
+    narrative = `En solid säsong för ${club.name}. ${ordinal(finalPosition)} plats uppfyller styrelsens krav på att ${expectationText[boardExpectation]}.`
   } else {
-    narrative = `En besvikelse. ${club.name} slutade på ${finalPosition}:e plats — långt ifrån styrelsens mål att ${expectationText[boardExpectation]}.`
+    narrative = `En besvikelse. ${club.name} slutade på ${ordinal(finalPosition)} plats — långt ifrån styrelsens mål att ${expectationText[boardExpectation]}.`
   }
 
   if (formTrend === 'improving') {

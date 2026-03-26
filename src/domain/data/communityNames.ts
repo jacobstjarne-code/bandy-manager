@@ -46,21 +46,21 @@ export const KIOSK_FLAVORS = [
 ]
 
 export const LOTTERY_FLAVORS = [
-  'Bingolotterna sålde bra på torget i lördags.',
+  'Föreningslotterna sålde bra på torget i lördags.',
   '{name} sålde flest lotter — 47 stycken den här månaden.',
-  'Sverigelotten gick trögt i blåsten. Bättre nästa gång.',
+  'Lotterna gick trögt i blåsten. Bättre nästa gång.',
   '{name} rapporterar: tre vinster bland våra köpare!',
-  'Folkspel-överskottet landar på {amount} kr den här perioden.',
+  'Lotteriöverskottet landar på {amount} kr den här perioden.',
   'Julkalendern var som vanligt mest populär.',
   '{name} stod utanför Willys varje lördag. Hjälte.',
-  'Joyna-prenumerationerna ökar — {count} nya den här månaden.',
+  'Prenumerationerna ökar — {count} nya den här månaden.',
   'En köpare vann 10 000 kr! Bra PR för klubben.',
   '{name} har ensam stått för 30% av lottförsäljningen.',
   'Klassisk lördagsförsäljning utanför Konsum. {name} i vanlig ordning.',
   '{name2} tog med barnen — de sålde 20 lotter på en timme.',
   'Månadens lottförsäljare: {name}. Ohotad etta.',
   'Vi tappade lite fart efter jul. {name} peppar truppen.',
-  '{name} fick beröm av Folkspel — topp 5 i distriktet.',
+  '{name} fick beröm av distriktet — topp 5 bland lotteriförsäljarna.',
 ]
 
 export const EVENT_FLAVORS = [

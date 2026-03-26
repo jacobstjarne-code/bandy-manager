@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { PlayerLink } from '../components/PlayerLink'
+import { ordinal } from '../utils/formatters'
 
 function playoffLabel(result: string | null | undefined): string {
   if (result === 'champion') return '🏆 SVENSKA MÄSTARE!'
@@ -111,7 +112,7 @@ export function HistoryScreen() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                   <p style={{ fontSize: 14 }}>
-                    📊 <strong>{s.finalPosition}:a plats</strong>{' '}
+                    📊 <strong>{ordinal(s.finalPosition)} plats</strong>{' '}
                     <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>({s.points}p, {s.wins}V {s.draws}O {s.losses}F)</span>
                     {s.finalPosition <= 3 && <span style={{ marginLeft: 6 }}>{['🥇','🥈','🥉'][s.finalPosition - 1]}</span>}
                   </p>
