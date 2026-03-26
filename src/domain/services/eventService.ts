@@ -227,7 +227,10 @@ export function generateEvents(
   rand: () => number,
 ): GameEvent[] {
   const events: GameEvent[] = []
-  const alreadyQueued = new Set((game.pendingEvents ?? []).map(e => e.id))
+  const alreadyQueued = new Set([
+    ...(game.pendingEvents ?? []).map(e => e.id),
+    ...(game.resolvedEventIds ?? []),
+  ])
   const ca = game.communityActivities
 
   // ── Community events ────────────────────────────────────────────────────
@@ -1511,6 +1514,7 @@ export function resolveEvent(
   updatedGame = {
     ...updatedGame,
     pendingEvents: (updatedGame.pendingEvents ?? []).filter(e => e.id !== eventId),
+    resolvedEventIds: [...(updatedGame.resolvedEventIds ?? []), eventId].slice(-200), // keep last 200
   }
 
   return updatedGame

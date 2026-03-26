@@ -528,12 +528,13 @@ export function DashboardScreen() {
   const canClickAdvance = canAdvance || hasScheduledFixtures
 
   const managedClubId = game!.managedClubId
-  const remainingManagedFixtures = game!.fixtures.filter(
-    f => f.status === 'scheduled' &&
-         (f.homeClubId === managedClubId || f.awayClubId === managedClubId)
-  ).length
   const remainingOtherFixtures = game!.fixtures.filter(f => f.status === 'scheduled').length
-  const canSimulateRemaining = hasScheduledFixtures && remainingManagedFixtures === 0 && !game!.playoffBracket
+  const playedRounds = game!.fixtures.filter(
+    f => f.status === 'completed' &&
+         (f.homeClubId === managedClubId || f.awayClubId === managedClubId) &&
+         !f.isCup
+  ).length
+  const canSimulateRemaining = hasScheduledFixtures && playedRounds >= 10 && !game!.playoffBracket
 
   const cardStyle: React.CSSProperties = {
     background: '#122235',

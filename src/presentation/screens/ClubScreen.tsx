@@ -422,31 +422,98 @@ export function ClubScreen() {
       })()}
 
       {/* Ekonomi */}
-      <SectionCard title="Ekonomi" stagger={3}>
-        <InfoRow label="Saldo" value={formatCurrency(club.finances)} />
-        <InfoRow label="Lönebudget" value={formatCurrency(club.wageBudget) + '/mån'} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Transferbudget</span>
-          <span style={{ fontSize: 14, fontWeight: 600 }}>{formatCurrency(club.transferBudget)}</span>
-        </div>
-        <button
-          onClick={() => navigate('/game/budget')}
-          style={{
-            width: '100%',
-            padding: '10px',
-            background: 'rgba(201,168,76,0.06)',
-            border: '1px solid rgba(201,168,76,0.2)',
-            borderRadius: 'var(--radius-sm)',
-            color: '#C9A84C',
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: 'pointer',
-            textAlign: 'center',
-          }}
-        >
-          Budget & ekonomi →
-        </button>
-      </SectionCard>
+      {(() => {
+        const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
+        const actualMonthlyWages = managedPlayers.reduce((sum, p) => sum + p.salary, 0)
+        const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
+        const weeklySponsors = activeSponsors.reduce((sum, s) => sum + s.weeklyIncome, 0)
+        const ca = game.communityActivities
+        const kioskEst = ca?.kiosk === 'upgraded' ? 7000 : ca?.kiosk === 'basic' ? 3500 : 0
+        const lotteryEst = ca?.lottery === 'intensive' ? 2250 : ca?.lottery === 'basic' ? 1000 : 0
+        const communityEst = kioskEst + lotteryEst + (ca?.functionaries ? 3000 : 0)
+        const weeklyIncome = weeklySponsors + communityEst
+        const patron = game.patron?.isActive ? game.patron : null
+        const kommunBidrag = (game.localPolitician?.kommunBidrag ?? 0)
+        const wagePressure = actualMonthlyWages > club.wageBudget
+
+        return (
+          <SectionCard title="Ekonomi" stagger={3}>
+            {/* Saldo */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid var(--border)' }}>
+              <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Saldo</span>
+              <span style={{ fontSize: 16, fontWeight: 700, color: club.finances < 0 ? 'var(--danger)' : 'var(--text-primary)' }}>{formatCurrency(club.finances)}</span>
+            </div>
+
+            {/* Wages */}
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Löneutgifter/mån</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: wagePressure ? 'var(--danger)' : 'var(--text-primary)' }}>
+                  -{formatCurrency(actualMonthlyWages)}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Lönebudget: {formatCurrency(club.wageBudget)}/mån</span>
+                {wagePressure && <span style={{ fontSize: 11, color: 'var(--danger)', fontWeight: 600 }}>⚠️ Överskrid</span>}
+              </div>
+            </div>
+
+            {/* Income per round */}
+            {weeklyIncome > 0 && (
+              <div style={{ paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Fasta intäkter/omg</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(weeklyIncome)}</span>
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {weeklySponsors > 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Sponsorer: +{formatCurrency(weeklySponsors)}</span>}
+                  {communityEst > 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Förening: +{formatCurrency(communityEst)}</span>}
+                </div>
+              </div>
+            )}
+
+            {/* Patron */}
+            {patron && patron.contribution > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Patron ({patron.name})</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(patron.contribution)}/sä</span>
+              </div>
+            )}
+
+            {/* Kommunbidrag */}
+            {kommunBidrag > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Kommunbidrag</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(kommunBidrag)}/sä</span>
+              </div>
+            )}
+
+            {/* Transferbudget */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Transferbudget</span>
+              <span style={{ fontSize: 14, fontWeight: 600 }}>{formatCurrency(club.transferBudget)}</span>
+            </div>
+
+            <button
+              onClick={() => navigate('/game/budget')}
+              style={{
+                width: '100%',
+                padding: '10px',
+                background: 'rgba(201,168,76,0.06)',
+                border: '1px solid rgba(201,168,76,0.2)',
+                borderRadius: 'var(--radius-sm)',
+                color: '#C9A84C',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+                textAlign: 'center',
+              }}
+            >
+              Budget & ekonomi →
+            </button>
+          </SectionCard>
+        )
+      })()}
 
       {/* Faciliteter */}
       <SectionCard title="Faciliteter" stagger={4}>

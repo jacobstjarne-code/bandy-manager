@@ -61,6 +61,22 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
         { id: 'deflect', label: '"Fokusen är alltid på nästa match."', moraleEffect: 2, mediaQuote: 'Tränaren: "Fokusen är alltid på nästa match."' },
       ],
     },
+    {
+      question: 'Vilken spelare stack ut idag?',
+      choices: [
+        { id: 'passionate', label: '"Alla, faktiskt. Det är kollektivet som vinner."', moraleEffect: 6, mediaQuote: 'Tränaren hyllade truppen: "Alla stack ut. Det är kollektivet som vinner."' },
+        { id: 'humble', label: '"Jag nämner inga namn — alla bidrar."', moraleEffect: 3, mediaQuote: 'Tränaren: "Jag nämner inga namn. Alla bidrar lika mycket."' },
+        { id: 'confident', label: '"Laget spelade upp varandra idag."', moraleEffect: 4, mediaQuote: 'Tränaren: "Laget spelade upp varandra. Det är vårt vapen."' },
+      ],
+    },
+    {
+      question: 'Hur håller ni den här formen uppe?',
+      choices: [
+        { id: 'confident', label: '"Disciplin och tro. Det är receptet."', moraleEffect: 5, mediaQuote: 'Tränaren: "Disciplin och tro på systemet. Det är receptet."' },
+        { id: 'deflect', label: '"Vi tar en match i taget."', moraleEffect: 2, mediaQuote: 'Tränaren: "En match i taget. Det låter klyschigt men det funkar."' },
+        { id: 'passionate', label: '"Vi trivs. Det märks på isen."', moraleEffect: 5, mediaQuote: 'Tränaren: "Vi trivs tillsammans. Det märks på isen."' },
+      ],
+    },
   ],
   loss: [
     {
@@ -85,6 +101,22 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
         { id: 'passionate', label: '"Vi sviker er inte igen. Det lovar jag."', moraleEffect: 3, mediaQuote: 'Tränaren lovade fansen: "Vi sviker er inte igen."' },
         { id: 'humble', label: '"De har rätt att vara besvikna. Vi förtjänade inte mer."', moraleEffect: 2, mediaQuote: 'Tränaren: "Fansen har rätt att vara besvikna."' },
         { id: 'deflect', label: '"Vi måste titta på filmen och lära oss."', moraleEffect: 1, mediaQuote: 'Tränaren: "Vi måste titta på filmen och lära oss."' },
+      ],
+    },
+    {
+      question: 'Ni hamnade bakom motståndarna taktiskt. Vad gör du annorlunda nästa match?',
+      choices: [
+        { id: 'humble', label: '"De läste oss bättre. Det justerar vi."', moraleEffect: 2, mediaQuote: 'Tränaren var självkritisk: "De läste oss bättre idag. Det justerar vi."' },
+        { id: 'confident', label: '"Vi var inte i vårt rätta element. Det rättar vi till."', moraleEffect: 3, mediaQuote: 'Tränaren: "Vi var inte i vårt rätta element. Det rättar vi till nästa gång."' },
+        { id: 'deflect', label: '"Fotboll handlar om detaljer. Idag förlorade vi i dem."', moraleEffect: 1, mediaQuote: 'Tränaren: "Det handlar om detaljer. Idag förlorade vi i dem."' },
+      ],
+    },
+    {
+      question: 'Hur pratar du med spelarna i omklädningsrummet efter en sådan här match?',
+      choices: [
+        { id: 'passionate', label: '"Rakt, ärligt. Utan filter."', moraleEffect: 4, mediaQuote: 'Tränaren: "Jag pratar rakt och ärligt med dem. Utan filter."' },
+        { id: 'humble', label: '"Jag lyssnar mer än jag pratar just nu."', moraleEffect: 3, mediaQuote: 'Tränaren: "Just nu lyssnar jag mer än jag pratar. Det är lika viktigt."' },
+        { id: 'deflect', label: '"Det stannar i omklädningsrummet."', moraleEffect: 1, mediaQuote: 'Tränaren: "Det som sägs i omklädningsrummet stannar där."' },
       ],
     },
   ],

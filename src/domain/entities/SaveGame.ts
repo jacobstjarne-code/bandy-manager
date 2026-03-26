@@ -213,4 +213,5 @@ export interface SaveGame {
   hallDebateCount?: number
   lastHallDebateRound?: number
   budgetPriority?: 'squad' | 'balanced' | 'youth'
+  resolvedEventIds?: string[]  // event IDs that have been resolved — prevents re-triggering
 }
