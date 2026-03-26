@@ -137,7 +137,7 @@ export function generateDetailedAnalysis(
         playerId: p.id,
         name: `${p.firstName[0]}. ${p.lastName}`,
         position: p.position,
-        estimatedCA: p.currentAbility,
+        estimatedCA: Math.round(p.currentAbility),
       })),
   }
 }

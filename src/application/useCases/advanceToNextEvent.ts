@@ -203,11 +203,18 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // Find next round (from all scheduled, including cup — cup rounds interleave)
-  const nextRound = Math.min(...scheduledFixtures.map(f => f.roundNumber))
-  // Include already-completed (live-played) fixtures so they are not re-simulated
+  // effectiveRound: cup fixtures use roundNumber - 100 so they interleave with league rounds
+  // (cup QF at 103 → effective 3, SF at 107 → effective 7, Final at 111 → effective 11)
+  function effectiveRound(f: { roundNumber: number; isCup?: boolean }): number {
+    return f.isCup ? f.roundNumber - 100 : f.roundNumber
+  }
+
+  // nextRound is the effective round number (league round for league phases)
+  const nextRound = Math.min(...scheduledFixtures.map(effectiveRound))
+
+  // Include cup fixtures at the same effective round + already-completed live-played fixtures
   const roundFixtures = game.fixtures.filter(f =>
-    f.roundNumber === nextRound &&
+    effectiveRound(f) === nextRound &&
     (f.status === FixtureStatus.Scheduled || f.status === FixtureStatus.Completed)
   )
 

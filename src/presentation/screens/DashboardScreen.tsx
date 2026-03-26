@@ -222,12 +222,30 @@ function CupCard({ bracket, game, cardStyle, cardLabelStyle }: CupCardProps) {
         <p style={{ fontSize: 11, color: '#4A6080' }}>Svenska Cupen {bracket.season}</p>
       </div>
     )
+  } else if (bracket.completed) {
+    const winner = game.clubs.find(c => c.id === bracket.winnerId)
+    statusContent = (
+      <div>
+        <p style={{ fontSize: 13, color: '#4A6080', marginBottom: 4 }}>Cupen är avgjord</p>
+        <p style={{ fontSize: 13, color: '#8A9BB0' }}>
+          🏆 {winner?.name ?? 'Okänd klubb'} vann Svenska Cupen
+        </p>
+      </div>
+    )
   } else if (cupStatus.eliminated) {
     const roundName = cupStatus.eliminatedInRound === 1 ? 'kvartsfinalen'
       : cupStatus.eliminatedInRound === 2 ? 'semifinalen'
       : 'finalen'
+    const winner = bracket.winnerId ? game.clubs.find(c => c.id === bracket.winnerId) : null
     statusContent = (
-      <p style={{ fontSize: 13, color: '#4A6080' }}>Utslagna i {roundName}</p>
+      <div>
+        <p style={{ fontSize: 13, color: '#4A6080', marginBottom: winner ? 4 : 0 }}>
+          Utslagna i {roundName}
+        </p>
+        {winner && (
+          <p style={{ fontSize: 12, color: '#4A6080' }}>Vinnare: {winner.name}</p>
+        )}
+      </div>
     )
   } else if (nextCupFixture) {
     const opponent = game.clubs.find(c =>
@@ -334,11 +352,13 @@ export function DashboardScreen() {
     const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
     if (scheduled.length === 0) { setIsBatchSim(false); return }
 
-    const nextRound = Math.min(...scheduled.map(f => f.roundNumber))
+    const batchEffRound = (f: { roundNumber: number; isCup?: boolean }) =>
+      f.isCup ? f.roundNumber - 100 : f.roundNumber
+    const nextEff = Math.min(...scheduled.map(batchEffRound))
 
     // Stop if managed club has a cup fixture in the next batch — let them play it live
     const managedCupNext = scheduled.some(
-      f => f.roundNumber === nextRound && f.isCup &&
+      f => batchEffRound(f) === nextEff && f.isCup &&
            (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
     )
     if (managedCupNext) { setIsBatchSim(false); return }
@@ -515,12 +535,14 @@ export function DashboardScreen() {
       return
     }
 
-    const nextSimRound = Math.min(...scheduledFixtures.map(f => f.roundNumber))
+    const effRound = (f: { roundNumber: number; isCup?: boolean }) =>
+      f.isCup ? f.roundNumber - 100 : f.roundNumber
 
-    const managedMatchInNextRound = game!.fixtures.find(
-      f => f.roundNumber === nextSimRound &&
-           (f.homeClubId === game!.managedClubId || f.awayClubId === game!.managedClubId) &&
-           f.status === 'scheduled'
+    const nextSimEff = Math.min(...scheduledFixtures.map(effRound))
+
+    const managedMatchInNextRound = scheduledFixtures.find(
+      f => effRound(f) === nextSimEff &&
+           (f.homeClubId === game!.managedClubId || f.awayClubId === game!.managedClubId)
     )
 
     if (managedMatchInNextRound) {
