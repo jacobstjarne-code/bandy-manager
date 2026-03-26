@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 
 function formatMoney(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} mkr`
-  if (n >= 1_000) return `${Math.round(n / 1_000)} tkr`
-  return `${n} kr`
+  const abs = Math.abs(n)
+  const sign = n < 0 ? '-' : ''
+  if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(1)} mkr`
+  return `${sign}${Math.round(abs / 1_000)} tkr`
 }
 
 const LABEL_STYLE: React.CSSProperties = {
@@ -186,7 +187,7 @@ export function BudgetScreen() {
                 style={{ width: '100%', accentColor: '#C9A84C', marginBottom: 12 }}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                <span style={{ fontSize: 12, color: '#4A6080' }}>0 kr</span>
+                <span style={{ fontSize: 12, color: '#4A6080' }}>0 tkr</span>
                 <span style={{ fontSize: 12, color: '#4A6080' }}>{formatMoney(Math.round(sliderMax / 10000) * 10000)}</span>
               </div>
               <button
@@ -249,12 +250,12 @@ export function BudgetScreen() {
               marginTop: 4,
             }}
           >
-            Köp 5 scoutronder — 15 000 kr
+            Köp 5 scoutronder — 15 tkr
           </button>
 
           {club.finances < 15000 && !scoutMaxReached && (
             <p style={{ fontSize: 12, color: '#ef4444', marginTop: 8 }}>
-              Otillräckligt saldo (kräver 15 000 kr).
+              Otillräckligt saldo (kräver 15 tkr).
             </p>
           )}
         </div>

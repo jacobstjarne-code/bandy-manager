@@ -760,6 +760,53 @@ export function DashboardScreen() {
           cardLabelStyle={cardLabelStyle}
         />
 
+        {/* EKONOMI card */}
+        {(() => {
+          const managedPlayers = game!.players.filter(p => p.clubId === game!.managedClubId)
+          const weeklyWages = Math.round(managedPlayers.reduce((s, p) => s + p.salary, 0) / 4)
+          const sponsorIncome = (game!.sponsors ?? []).filter(s => s.contractRounds > 0).reduce((s, sp) => s + sp.weeklyIncome, 0)
+          const ca = game!.communityActivities
+          const kioskEst = ca?.kiosk === 'upgraded' ? 7000 : ca?.kiosk === 'basic' ? 3500 : 0
+          const lotteryEst = ca?.lottery === 'intensive' ? 2250 : ca?.lottery === 'basic' ? 1000 : 0
+          const communityEst = kioskEst + lotteryEst + (ca?.functionaries ? 3000 : 0)
+          const weeklyBase = Math.round((club?.reputation ?? 50) * 150)
+          const netPerRound = weeklyBase + sponsorIncome + communityEst - weeklyWages
+          const finances = club?.finances ?? 0
+          const formatTkr = (n: number) => {
+            const abs = Math.abs(n)
+            const sign = n < 0 ? '-' : n > 0 ? '+' : ''
+            if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(1)} mkr`
+            return `${sign}${Math.round(abs / 1_000)} tkr`
+          }
+          const activeIcons = [
+            ca?.kiosk !== 'none' && ca?.kiosk ? '🏪' : null,
+            ca?.lottery !== 'none' && ca?.lottery ? '🎟️' : null,
+            ca?.bandyplay ? '🏒' : null,
+            ca?.functionaries ? '🤝' : null,
+          ].filter(Boolean)
+          return (
+            <div
+              onClick={() => navigate('/game/club')}
+              style={{ ...cardStyle, cursor: 'pointer' }}
+            >
+              <p style={{ ...cardLabelStyle }}>💰 Ekonomi</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+                <span style={{ fontSize: 18, fontWeight: 800, color: finances < 0 ? '#ef4444' : '#F0F4F8' }}>
+                  {finances >= 0 ? '' : ''}{Math.abs(finances) >= 1_000_000 ? `${(finances / 1_000_000).toFixed(1)} mkr` : `${Math.round(finances / 1_000)} tkr`}
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: netPerRound >= 0 ? '#22c55e' : '#ef4444' }}>
+                  Netto {formatTkr(netPerRound)}/omg
+                </span>
+              </div>
+              {activeIcons.length > 0 && (
+                <p style={{ fontSize: 11, color: '#4A6080' }}>
+                  Aktiva: {activeIcons.join(' ')}
+                </p>
+              )}
+            </div>
+          )
+        })()}
+
         {/* Guidance banners */}
         <GuidanceBanner
           hasPendingLineup={hasPendingLineup}

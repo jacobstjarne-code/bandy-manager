@@ -157,6 +157,9 @@ function TrainingSection({ focus, recentSessions, trainingInjuriesThisSeason, on
 
   return (
     <SectionCard title="Träning" stagger={1}>
+      <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.5 }}>
+        Träning sker automatiskt varje omgång baserat på inställningarna nedan.
+      </p>
       {/* Type grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 16 }}>
         {TRAINING_TYPES.map(type => {
