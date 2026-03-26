@@ -1212,6 +1212,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       communityIncome += activities.functionaries ? 4000 : 0
       communityIncome += activities.bandyplay
         ? 1000 + Math.round(rand() * 1000) : 0
+
+      // Running costs (dras per hemmamatch)
+      let runningCost = 0
+      if (activities.kiosk === 'upgraded') runningCost += 2000
+      else if (activities.kiosk === 'basic') runningCost += 1500
+      communityIncome -= runningCost
     }
 
     return base + communityIncome
@@ -1224,10 +1230,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   ): number {
     if (!communityActivities) return 0
     if (communityActivities.lottery === 'intensive') {
-      return 3000 + Math.round(rand() * 2000)
+      return (3000 + Math.round(rand() * 2000)) - 800  // netto efter driftskostnad
     }
     if (communityActivities.lottery === 'basic') {
-      return 1000 + Math.round(rand() * 1500)
+      return (1000 + Math.round(rand() * 1500)) - 500  // netto efter driftskostnad
     }
     return 0
   }

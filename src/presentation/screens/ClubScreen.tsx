@@ -327,6 +327,14 @@ export function ClubScreen() {
   const club = useManagedClub()
   const game = useGameStore(s => s.game)
   const setTraining = useGameStore(s => s.setTraining)
+  const activateCommunity = useGameStore(s => s.activateCommunity)
+  const [communityMsg, setCommunityMsg] = useState<{ key: string; text: string; ok: boolean } | null>(null)
+
+  function handleActivate(key: string, level: string) {
+    const result = activateCommunity(key, level)
+    setCommunityMsg({ key, text: result.error ?? 'Aktiverat!', ok: result.success })
+    setTimeout(() => setCommunityMsg(null), 3000)
+  }
   const standing = useCurrentStanding()
   const navigate = useNavigate()
   const location = useLocation()
@@ -500,67 +508,126 @@ export function ClubScreen() {
 
               {/* Föreningsaktiviteter */}
               {(() => {
-                const communityRows = [
+                interface CommunityRow {
+                  icon: string; name: string; active: boolean; status: string
+                  income: string; value: number
+                  actionKey?: string; actionLevel?: string; actionCost?: number; actionLabel?: string
+                  upgradeKey?: string; upgradeLevel?: string; upgradeCost?: number; upgradeLabel?: string
+                  noAction?: boolean
+                }
+                const communityRows: CommunityRow[] = [
                   {
                     icon: '🌭', name: 'Bandykiosken',
                     active: ca?.kiosk !== 'none' && !!ca?.kiosk,
                     status: ca?.kiosk === 'upgraded' ? 'Uppgraderad' : ca?.kiosk === 'basic' ? 'Aktiv' : 'Ej startad',
-                    income: ca?.kiosk === 'upgraded' ? '~10 000/match' : ca?.kiosk === 'basic' ? '~5 000/match' : '—',
+                    income: ca?.kiosk === 'upgraded' ? '~8 500 netto/match' : ca?.kiosk === 'basic' ? '~3 500 netto/match' : '—',
                     value: kioskEst,
+                    ...(ca?.kiosk === 'none' || !ca?.kiosk
+                      ? { actionKey: 'kiosk', actionLevel: 'basic', actionCost: 3000, actionLabel: 'Starta kiosk — 3 tkr' }
+                      : ca?.kiosk === 'basic'
+                        ? { upgradeKey: 'kiosk', upgradeLevel: 'upgraded', upgradeCost: 8000, upgradeLabel: 'Uppgradera — 8 tkr' }
+                        : {}),
                   },
                   {
                     icon: '🎫', name: 'Föreningslotteriet',
                     active: ca?.lottery !== 'none' && !!ca?.lottery,
                     status: ca?.lottery === 'intensive' ? 'Intensiv' : ca?.lottery === 'basic' ? 'Aktiv' : 'Ej startad',
-                    income: ca?.lottery === 'intensive' ? '~4 000/omg' : ca?.lottery === 'basic' ? '~1 750/omg' : '—',
+                    income: ca?.lottery === 'intensive' ? '~3 200 netto/omg' : ca?.lottery === 'basic' ? '~1 250 netto/omg' : '—',
                     value: lotteryEst,
+                    ...(ca?.lottery === 'none' || !ca?.lottery
+                      ? { actionKey: 'lottery', actionLevel: 'basic', actionCost: 1000, actionLabel: 'Starta lotteri — 1 tkr' }
+                      : ca?.lottery === 'basic'
+                        ? { upgradeKey: 'lottery', upgradeLevel: 'intensive', upgradeCost: 5000, upgradeLabel: 'Intensifiera — 5 tkr' }
+                        : {}),
                   },
                   {
                     icon: '📺', name: 'Streamingavtal',
                     active: !!ca?.bandyplay,
-                    status: ca?.bandyplay ? 'Aktiv' : 'Ej startad',
+                    status: ca?.bandyplay ? 'Aktiv' : club.reputation < 40 ? 'Ingen intresserad ännu' : 'Möjligt',
                     income: ca?.bandyplay ? '~1 500/match' : '—',
                     value: bandyplayEst,
+                    ...(!ca?.bandyplay
+                      ? { actionKey: 'bandyplay', actionLevel: 'active', actionCost: 0, actionLabel: 'Teckna avtal — gratis' }
+                      : {}),
                   },
                   {
                     icon: '🏋️', name: 'Funktionärer',
                     active: !!ca?.functionaries,
                     status: ca?.functionaries ? 'Aktiv' : 'Ej rekryterade',
-                    income: ca?.functionaries ? '-4 000/match (besparing)' : '—',
+                    income: ca?.functionaries ? '~4 000 besparing/match' : '—',
                     value: functionariesEst,
+                    ...(!ca?.functionaries
+                      ? { actionKey: 'functionaries', actionLevel: 'active', actionCost: 2000, actionLabel: 'Rekrytera — 2 tkr' }
+                      : {}),
                   },
                   {
                     icon: '🎄', name: 'Julmarknad',
                     active: !!ca?.julmarknad,
-                    status: ca?.julmarknad ? 'Genomförd ✓' : 'Väntar (dec)',
-                    income: '—', value: 0,
+                    status: ca?.julmarknad ? 'Genomförd ✓' : 'Väntar (omg 8–12)',
+                    income: ca?.julmarknad ? 'Klar' : '~8–18 tkr (engång)',
+                    value: 0,
+                    ...(!ca?.julmarknad
+                      ? { actionKey: 'julmarknad', actionLevel: 'active', actionCost: 2000, actionLabel: 'Anordna — 2 tkr' }
+                      : {}),
                   },
-                  {
-                    icon: '🏪', name: 'Loppis',
-                    active: false, status: 'Slumpmässig', income: '—', value: 0,
-                  },
-                  {
-                    icon: '🚗', name: 'Bilbingo',
-                    active: false, status: 'Försäsong', income: '—', value: 0,
-                  },
+                  { icon: '🏪', name: 'Loppis', active: false, status: 'Slumpmässig händelse', income: '—', value: 0, noAction: true },
+                  { icon: '🚗', name: 'Bilbingo', active: false, status: 'Försäsong', income: '—', value: 0, noAction: true },
                 ]
                 const communityTotal = communityRows.reduce((s, r) => s + r.value, 0)
                 return (
                   <SectionCard title="Föreningsaktiviteter" stagger={3}>
+                    {communityMsg && (
+                      <p style={{ fontSize: 12, color: communityMsg.ok ? 'var(--success)' : 'var(--danger)', marginBottom: 10, fontWeight: 600 }}>
+                        {communityMsg.ok ? '✓' : '✗'} {communityMsg.text}
+                      </p>
+                    )}
                     {communityRows.map((row, i) => (
                       <div key={row.name} style={{
-                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                        padding: '7px 0',
+                        padding: '8px 0',
                         borderBottom: i < communityRows.length - 1 ? '1px solid var(--border)' : 'none',
-                        opacity: row.active ? 1 : 0.4,
+                        opacity: row.active || !row.noAction ? 1 : 0.4,
                       }}>
-                        <div>
-                          <span style={{ fontSize: 13 }}>{row.icon} {row.name}</span>
-                          <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{row.status}</span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: (row.actionKey || row.upgradeKey) ? 6 : 0 }}>
+                          <div>
+                            <span style={{ fontSize: 13, opacity: row.active ? 1 : 0.6 }}>{row.icon} {row.name}</span>
+                            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{row.status}</span>
+                          </div>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: row.active ? 'var(--success)' : 'var(--text-muted)' }}>
+                            {row.income}
+                          </span>
                         </div>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: row.active ? 'var(--success)' : 'var(--text-muted)' }}>
-                          {row.income}
-                        </span>
+                        {row.actionKey && !row.active && (
+                          <button
+                            onClick={() => handleActivate(row.actionKey!, row.actionLevel!)}
+                            disabled={club.finances < (row.actionCost ?? 0)}
+                            style={{
+                              width: '100%', padding: '6px 10px',
+                              background: club.finances >= (row.actionCost ?? 0) ? 'rgba(201,168,76,0.08)' : 'rgba(255,255,255,0.03)',
+                              border: `1px solid ${club.finances >= (row.actionCost ?? 0) ? 'rgba(201,168,76,0.25)' : 'rgba(255,255,255,0.06)'}`,
+                              borderRadius: 6, fontSize: 12, fontWeight: 600,
+                              color: club.finances >= (row.actionCost ?? 0) ? '#C9A84C' : 'var(--text-muted)',
+                              cursor: club.finances >= (row.actionCost ?? 0) ? 'pointer' : 'not-allowed',
+                            }}
+                          >
+                            {row.actionLabel}
+                          </button>
+                        )}
+                        {row.upgradeKey && row.active && (
+                          <button
+                            onClick={() => handleActivate(row.upgradeKey!, row.upgradeLevel!)}
+                            disabled={club.finances < (row.upgradeCost ?? 0)}
+                            style={{
+                              width: '100%', padding: '6px 10px',
+                              background: club.finances >= (row.upgradeCost ?? 0) ? 'rgba(201,168,76,0.06)' : 'rgba(255,255,255,0.03)',
+                              border: `1px solid ${club.finances >= (row.upgradeCost ?? 0) ? 'rgba(201,168,76,0.2)' : 'rgba(255,255,255,0.05)'}`,
+                              borderRadius: 6, fontSize: 11, fontWeight: 600,
+                              color: club.finances >= (row.upgradeCost ?? 0) ? '#C9A84C' : 'var(--text-muted)',
+                              cursor: club.finances >= (row.upgradeCost ?? 0) ? 'pointer' : 'not-allowed',
+                            }}
+                          >
+                            {row.upgradeLabel}
+                          </button>
+                        )}
                       </div>
                     ))}
                     {communityTotal > 0 && (

@@ -54,6 +54,7 @@ interface GameState {
   setBudgetPriority: (priority: 'squad' | 'balanced' | 'youth') => void
   setTransferBudget: (amount: number) => void
   buyScoutRounds: () => void
+  activateCommunity: (key: string, level: string) => { success: boolean; error?: string }
 }
 
 const indexedDBStorage = {
@@ -375,6 +376,73 @@ export const useGameStore = create<GameState>()(
           c.id === game.managedClubId ? { ...c, finances: c.finances - 15000 } : c
         )
         set({ game: { ...game, clubs: updatedClubs, scoutBudget: (game.scoutBudget ?? 10) + 5 } })
+      },
+
+      activateCommunity: (key, level) => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+        const club = game.clubs.find(c => c.id === game.managedClubId)
+        if (!club) return { success: false, error: 'Ingen klubb hittad' }
+
+        const costs: Record<string, Record<string, number>> = {
+          kiosk:         { basic: 3000, upgraded: 8000 },
+          lottery:       { basic: 1000, intensive: 5000 },
+          bandyplay:     { active: 0 },
+          functionaries: { active: 2000 },
+          julmarknad:    { active: 2000 },
+        }
+
+        const cost = costs[key]?.[level] ?? 0
+        if (club.finances < cost) {
+          return { success: false, error: `Inte tillräckligt med pengar (kräver ${Math.round(cost / 1000)} tkr)` }
+        }
+
+        const ca = game.communityActivities ?? {
+          kiosk: 'none', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false,
+        }
+
+        // Current league round (for time-restricted activities)
+        const currentRound = Math.max(
+          0,
+          ...game.fixtures
+            .filter(f => f.status === 'completed' && !f.isCup)
+            .map(f => f.roundNumber),
+        )
+
+        if (key === 'kiosk' && !ca.functionaries && club.reputation < 50) {
+          return { success: false, error: 'Kräver funktionärer eller reputation > 50' }
+        }
+        if (key === 'bandyplay' && club.reputation < 40) {
+          return { success: false, error: 'Ingen kanal intresserad än (reputation < 40)' }
+        }
+        if (key === 'julmarknad' && (currentRound < 8 || currentRound > 12)) {
+          return { success: false, error: 'Bara möjligt omgång 8–12 (december)' }
+        }
+        // Prevent downgrade
+        if (key === 'kiosk' && ca.kiosk === 'upgraded') {
+          return { success: false, error: 'Kiosken är redan uppgraderad' }
+        }
+        if (key === 'kiosk' && ca.kiosk === level) {
+          return { success: false, error: 'Redan aktiv' }
+        }
+        if (key === 'lottery' && ca.lottery === level) {
+          return { success: false, error: 'Redan aktiv' }
+        }
+
+        const updatedCA = key === 'bandyplay'
+          ? { ...ca, bandyplay: true }
+          : key === 'functionaries'
+            ? { ...ca, functionaries: true }
+            : key === 'julmarknad'
+              ? { ...ca, julmarknad: true }
+              : { ...ca, [key]: level }
+
+        const updatedClubs = game.clubs.map(c =>
+          c.id === game.managedClubId ? { ...c, finances: c.finances - cost } : c
+        )
+
+        set({ game: { ...game, clubs: updatedClubs, communityActivities: updatedCA } })
+        return { success: true }
       },
     }),
     {
