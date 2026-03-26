@@ -397,7 +397,7 @@ export function MatchScreen() {
       : `${playoffRoundLabel} · Serie ${myWins}–${theirWins} (bäst av 5)`
     : isCupFixture
       ? `🏆 SVENSKA CUPEN · ${isCupFinal ? 'FINAL' : getCupRoundLabel(cupMatchEntry?.round ?? 1)}`
-      : rivalry ? `🔥 ${rivalry.name} ${'🔥'.repeat(rivalry.intensity)}` : `Omgång ${nextFixture.roundNumber}`
+      : rivalry ? `🔥 ${rivalry.name}` : `Omgång ${nextFixture.roundNumber}`
   const matchWeatherData = game.matchWeathers?.find(w => w.fixtureId === nextFixture.id)
 
   return (

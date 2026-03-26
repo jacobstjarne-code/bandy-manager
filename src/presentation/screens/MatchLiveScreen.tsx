@@ -496,7 +496,7 @@ export function MatchLiveScreen() {
             border: '1px solid rgba(220,100,30,0.4)', fontSize: 11, fontWeight: 700, color: '#ff7040',
             marginTop: 6, marginBottom: 4,
           }}>
-            🔥 {rivalry.name} {'🔥'.repeat(Math.min(rivalry.intensity ?? 1, 3))}
+            🔥 {rivalry.name}
           </div>
         )}
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', margin: '0 auto' }}>
@@ -513,11 +513,6 @@ export function MatchLiveScreen() {
               {matchDone ? 'Slutresultat' : `${currentMinute}'`}
             </div>
           </div>
-          {rivalry && !matchDone && (
-            <span style={{ fontSize: 10, fontWeight: 700, color: '#ff7040', letterSpacing: '2px', textTransform: 'uppercase', marginLeft: 8 }}>
-              DERBY
-            </span>
-          )}
         </div>
         {matchWeather && (
           <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>

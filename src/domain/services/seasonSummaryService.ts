@@ -316,7 +316,8 @@ export function generateSeasonSummary(game: SaveGame): SeasonSummary {
 
   if (formTrend === 'improving') {
     narrative += ' Formen förbättrades tydligt under säsongens andra halva.'
-  } else if (formTrend === 'declining') {
+  } else if (formTrend === 'declining' && finalPosition > 3) {
+    // Guard: top-3 finishes shouldn't get a "tung avslutning" narrative
     narrative += ' En stark inledning följdes dessvärre av en tung avslutning.'
   }
 

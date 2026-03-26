@@ -802,10 +802,12 @@ export function DashboardScreen() {
           const weeklyWages = Math.round(managedPlayers.reduce((s, p) => s + p.salary, 0) / 4)
           const sponsorIncome = (game!.sponsors ?? []).filter(s => s.contractRounds > 0).reduce((s, sp) => s + sp.weeklyIncome, 0)
           const ca = game!.communityActivities
-          const kioskEst = ca?.kiosk === 'upgraded' ? 7000 : ca?.kiosk === 'basic' ? 3500 : 0
-          const lotteryEst = ca?.lottery === 'intensive' ? 2250 : ca?.lottery === 'basic' ? 1000 : 0
-          const communityEst = kioskEst + lotteryEst + (ca?.functionaries ? 3000 : 0)
-          const weeklyBase = Math.round((club?.reputation ?? 50) * 150)
+          // Netto-estimates match advance() logic (income - running costs, avg fan mood)
+          const kioskEst = ca?.kiosk === 'upgraded' ? 8500 : ca?.kiosk === 'basic' ? 3500 : 0  // gross - running cost
+          const lotteryEst = ca?.lottery === 'intensive' ? 3200 : ca?.lottery === 'basic' ? 1250 : 0
+          const bandyplayEst = ca?.bandyplay ? 1500 : 0
+          const communityEst = kioskEst + lotteryEst + (ca?.functionaries ? 4000 : 0) + bandyplayEst
+          const weeklyBase = Math.round((club?.reputation ?? 50) * 250)
           const netPerRound = weeklyBase + sponsorIncome + communityEst - weeklyWages
           const finances = club?.finances ?? 0
           const formatTkr = (n: number) => {

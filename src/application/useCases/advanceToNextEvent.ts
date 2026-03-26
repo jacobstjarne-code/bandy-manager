@@ -385,8 +385,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     simulatedIds.has(f.id) ? (simulatedFixtures.find(sf => sf.id === f.id) ?? f) : f,
   )
 
-  // Update standings
-  const completedFixtures = allFixtures.filter(f => f.status === FixtureStatus.Completed)
+  // Update standings — exclude cup fixtures so they don't inflate played/goal counts
+  const completedFixtures = allFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
   const standings = calculateStandings(game.league.teamIds, completedFixtures)
 
   // Snapshot injury state before updates (for recovery notifications)
@@ -1215,8 +1215,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
       // Running costs (dras per hemmamatch)
       let runningCost = 0
-      if (activities.kiosk === 'upgraded') runningCost += 2000
+      if (activities.kiosk === 'upgraded') runningCost += 2500
       else if (activities.kiosk === 'basic') runningCost += 1500
+      if (activities.bandyplay) runningCost += 1000
       communityIncome -= runningCost
     }
 
@@ -1465,8 +1466,8 @@ function getPlayerRating(playerId: string, fixtures: Fixture[]): number | null {
 }
 
 function handlePlayoffStart(game: SaveGame, seed?: number): AdvanceResult {
-  // Calculate standings from regular season completed fixtures
-  const completedFixtures = game.fixtures.filter(f => f.status === FixtureStatus.Completed)
+  // Calculate standings from regular season completed fixtures — exclude cup
+  const completedFixtures = game.fixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
   const standings = calculateStandings(game.league.teamIds, completedFixtures)
 
   const bracket = generatePlayoffBracket(standings, game.currentSeason)
@@ -1536,7 +1537,7 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const seasonSummary = generateSeasonSummary(game)
 
   const allFixtures = game.fixtures
-  const completedFixtures = allFixtures.filter(f => f.status === FixtureStatus.Completed)
+  const completedFixtures = allFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
   const standings = calculateStandings(game.league.teamIds, completedFixtures)
 
   const newInboxItems = []

@@ -11,6 +11,7 @@ import { startScoutAssignment } from '../../domain/services/scoutingService'
 import { createOutgoingBid } from '../../domain/services/transferService'
 import { resolveEvent as resolveEventFn } from '../../domain/services/eventService'
 import { updateCupBracketAfterRound } from '../../domain/services/cupService'
+import { updateSeriesAfterMatch, advancePlayoffRound } from '../../domain/services/playoffService'
 import { advanceToNextEvent, type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
 import { calculateStandings } from '../../domain/services/standingsService'
@@ -129,7 +130,7 @@ export const useGameStore = create<GameState>()(
               }
             : f
         )
-        const completedFixtures = updatedFixtures.filter(f => f.status === FixtureStatus.Completed)
+        const completedFixtures = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
         const standings = calculateStandings(game.league.teamIds, completedFixtures)
 
         // If a cup fixture was just played live, update the bracket immediately so the
@@ -140,7 +141,50 @@ export const useGameStore = create<GameState>()(
           updatedCupBracket = updateCupBracketAfterRound(updatedCupBracket, [completedCupFixture])
         }
 
-        set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings, cupBracket: updatedCupBracket } })
+        // If a playoff fixture was just played live, update the bracket immediately
+        // so ChampionScreen shows the correct result
+        const completedFixture = updatedFixtures.find(f => f.id === fixtureId)!
+        let updatedPlayoffBracket = game.playoffBracket
+        if (completedFixture.isKnockout && !completedFixture.isCup && updatedPlayoffBracket) {
+          // Update the relevant series
+          updatedPlayoffBracket = {
+            ...updatedPlayoffBracket,
+            quarterFinals: updatedPlayoffBracket.quarterFinals.map(s =>
+              s.fixtures.includes(fixtureId) ? updateSeriesAfterMatch(s, completedFixture) : s
+            ),
+            semiFinals: updatedPlayoffBracket.semiFinals.map(s =>
+              s.fixtures.includes(fixtureId) ? updateSeriesAfterMatch(s, completedFixture) : s
+            ),
+            final: updatedPlayoffBracket.final && updatedPlayoffBracket.final.fixtures.includes(fixtureId)
+              ? updateSeriesAfterMatch(updatedPlayoffBracket.final, completedFixture)
+              : updatedPlayoffBracket.final,
+          }
+
+          // Check if current phase is complete and advance
+          const phaseComplete = (() => {
+            if (updatedPlayoffBracket.status === PlayoffStatus.QuarterFinals)
+              return updatedPlayoffBracket.quarterFinals.every(s => s.winnerId !== null)
+            if (updatedPlayoffBracket.status === PlayoffStatus.SemiFinals)
+              return updatedPlayoffBracket.semiFinals.every(s => s.winnerId !== null)
+            if (updatedPlayoffBracket.status === PlayoffStatus.Final)
+              return updatedPlayoffBracket.final?.winnerId !== null
+            return false
+          })()
+
+          if (phaseComplete) {
+            const nextRoundStart = updatedPlayoffBracket.status === PlayoffStatus.QuarterFinals ? 26
+              : updatedPlayoffBracket.status === PlayoffStatus.SemiFinals ? 29 : 32
+            const { bracket: advancedBracket, newFixtures: newPlayoffFixtures } =
+              advancePlayoffRound(updatedPlayoffBracket, game.currentSeason, nextRoundStart)
+            updatedPlayoffBracket = advancedBracket
+            // Add any new playoff fixtures (e.g. semi fixtures after all QFs decided)
+            if (newPlayoffFixtures.length > 0) {
+              updatedFixtures.push(...newPlayoffFixtures)
+            }
+          }
+        }
+
+        set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings, cupBracket: updatedCupBracket, playoffBracket: updatedPlayoffBracket } })
       },
 
       updateTactic: (tactic) => {
