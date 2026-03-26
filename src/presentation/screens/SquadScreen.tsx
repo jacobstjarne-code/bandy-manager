@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useManagedPlayers, useHasPendingLineup, useManagedClub, useGameStore } from '../store/gameStore'
 import { PlayerPosition, PlayerArchetype } from '../../domain/enums'
 import type { Player } from '../../domain/entities/Player'
@@ -320,8 +320,10 @@ export function SquadScreen() {
     return 0
   })
 
+  const navigate = useNavigate()
   const selectedPlayer = selectedPlayerId ? players.find(p => p.id === selectedPlayerId) ?? null : null
   const clubName = club?.name ?? ''
+  const doctorQuestionsLeft = Math.max(0, 5 - (game?.doctorQuestionsUsed ?? 0))
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#0D1B2A' }}>
@@ -417,6 +419,23 @@ export function SquadScreen() {
             Inga spelare i denna position
           </p>
         )}
+        <button
+          onClick={() => navigate('/game/doctor')}
+          style={{
+            width: '100%', margin: '8px 0 90px',
+            padding: '12px',
+            background: 'rgba(56,189,248,0.06)',
+            border: '1px solid rgba(56,189,248,0.18)',
+            borderRadius: 10,
+            color: '#38bdf8',
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
+            textAlign: 'center',
+          }}
+        >
+          🩺 Fråga Bandydoktorn · {doctorQuestionsLeft} frågor kvar
+        </button>
       </div>
 
       {/* Player Card Modal */}

@@ -769,6 +769,28 @@ export function DashboardScreen() {
           onNavigateToReport={() => navigate('/game/match', { state: { showReport: true } })}
         />
 
+        {/* Bandydoktorn */}
+        {(() => {
+          const questionsLeft = Math.max(0, 5 - (game!.doctorQuestionsUsed ?? 0))
+          return (
+            <button
+              onClick={() => navigate('/game/doctor')}
+              style={{
+                width: '100%', marginTop: 8, marginBottom: 120,
+                padding: '11px 14px',
+                background: 'rgba(56,189,248,0.05)',
+                border: '1px solid rgba(56,189,248,0.15)',
+                borderRadius: 10,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                cursor: 'pointer',
+              }}
+            >
+              <span style={{ fontSize: 13, color: '#38bdf8', fontWeight: 600 }}>🩺 Bandydoktorn</span>
+              <span style={{ fontSize: 12, color: '#4A6080' }}>{questionsLeft} frågor kvar →</span>
+            </button>
+          )
+        })()}
+
       </div>
 
       {/* Fixed bottom: FORTSÄTT button */}
