@@ -85,9 +85,9 @@ function bidReceivedEvent(bid: TransferBid, game: SaveGame): GameEvent {
     : ''
   const mvText = player ? `Marknadsvärde: ${formatValue(player.marketValue ?? 0)}` : ''
   const playerMarketVal = player?.marketValue ?? 50000
-  const counterAmountRaw = Math.round(bid.offerAmount * 1.5 / 5000) * 5000
+  const counterAmountRaw = Math.round(bid.offerAmount * 1.3 / 5000) * 5000
   const counterAmount = Math.min(counterAmountRaw, playerMarketVal * 2)
-  const canCounter = counterAmount > bid.offerAmount && (bid.counterCount ?? 0) === 0
+  const canCounter = counterAmount > bid.offerAmount && (bid.counterCount ?? 0) < 2
 
   const choices: EventChoice[] = [
     {
@@ -1185,18 +1185,30 @@ export function resolveEvent(
       break
     }
     case 'counterOffer': {
-      updatedGame = {
-        ...updatedGame,
-        transferBids: (updatedGame.transferBids ?? []).map(b =>
-          b.id === effect.bidId
-            ? {
-                ...b,
-                offerAmount: effect.value ?? b.offerAmount,
-                expiresRound: b.expiresRound + 1,
-                counterCount: (b.counterCount ?? 0) + 1,
-              }
-            : b,
-        ),
+      const currentBid = (updatedGame.transferBids ?? []).find(b => b.id === effect.bidId)
+      const currentCount = currentBid?.counterCount ?? 0
+      if (currentCount >= 2) {
+        // Third attempt — AI gives up
+        updatedGame = {
+          ...updatedGame,
+          transferBids: (updatedGame.transferBids ?? []).map(b =>
+            b.id === effect.bidId ? { ...b, status: 'rejected' as const } : b,
+          ),
+        }
+      } else {
+        updatedGame = {
+          ...updatedGame,
+          transferBids: (updatedGame.transferBids ?? []).map(b =>
+            b.id === effect.bidId
+              ? {
+                  ...b,
+                  offerAmount: effect.value ?? b.offerAmount,
+                  expiresRound: b.expiresRound + 1,
+                  counterCount: currentCount + 1,
+                }
+              : b,
+          ),
+        }
       }
       break
     }

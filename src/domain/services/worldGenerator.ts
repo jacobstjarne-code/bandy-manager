@@ -580,7 +580,7 @@ function generatePlayer(
   const isHomegrown = age <= 23 && nationality === 'svenska' ? true : rng.next() < 0.3
 
   const contractUntilSeason = season + rng.int(1, 3)
-  const salary = clamp(ca * 200 + rng.int(-2000, 2000), 3000, Infinity)
+  const salary = clamp(ca * 250 + rng.int(-2000, 3000), 3000, 50000)
   const marketValue = calculateMarketValue(
     { age, currentAbility: ca, form: 60, contractUntilSeason } as Player,
     season,

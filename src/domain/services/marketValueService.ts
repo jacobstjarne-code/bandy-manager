@@ -30,7 +30,7 @@ export function calculateMarketValue(player: Player, currentSeason: number): num
   const base = ageCurve(player.age) * caCurve(player.currentAbility)
   const raw = base * formMultiplier(player.form) * contractMultiplier(player, currentSeason) * 50000
   const rounded = Math.round(raw / 5000) * 5000
-  return Math.max(10000, Math.min(500000, rounded))
+  return Math.max(5000, Math.min(500000, rounded))
 }
 
 export function updateAllMarketValues(players: Player[], currentSeason: number): Player[] {
