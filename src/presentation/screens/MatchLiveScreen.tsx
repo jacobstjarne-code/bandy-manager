@@ -73,6 +73,7 @@ export function MatchLiveScreen() {
   const [htTempo, setHtTempo] = useState<TacticTempo | null>(null)
   const [htPress, setHtPress] = useState<TacticPress | null>(null)
   const [tacticChanged, setTacticChanged] = useState(false)
+  const [htSubs, setHtSubs] = useState<{ outId: string; inId: string }[]>([])
   const [ceremonySlide, setCeremonySlide] = useState(0)
   const [finalIntroSlide, setFinalIntroSlide] = useState(() => isSmFinal ? 1 : isCupFinal ? 1 : 0)
   const [homeScoreFlash, setHomeScoreFlash] = useState(false)
@@ -278,8 +279,29 @@ export function MatchLiveScreen() {
       tempo: htTempo ?? currentTactic.tempo,
       press: htPress ?? currentTactic.press,
     }
-    const updatedHome = managedIsHome ? { ...homeLineup, tactic: updatedTactic } : homeLineup
-    const updatedAway = managedIsHome ? awayLineup : { ...awayLineup, tactic: updatedTactic }
+
+    // Apply substitutions to managed team's lineup
+    const applySubstitutions = (lineup: TeamSelection): TeamSelection => {
+      if (!htSubs.length) return lineup
+      const starters = [...lineup.startingPlayerIds]
+      const bench = [...lineup.benchPlayerIds]
+      for (const sub of htSubs) {
+        const outIdx = starters.indexOf(sub.outId)
+        const inIdx = bench.indexOf(sub.inId)
+        if (outIdx >= 0 && inIdx >= 0) {
+          starters[outIdx] = sub.inId
+          bench[inIdx] = sub.outId
+        }
+      }
+      return { ...lineup, tactic: lineup.tactic, startingPlayerIds: starters, benchPlayerIds: bench }
+    }
+
+    const updatedHome = managedIsHome
+      ? applySubstitutions({ ...homeLineup, tactic: updatedTactic })
+      : homeLineup
+    const updatedAway = !managedIsHome
+      ? applySubstitutions({ ...awayLineup, tactic: updatedTactic })
+      : awayLineup
     const halftimeStep = steps.find(s => s.step === 30)
     const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
     const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
@@ -620,6 +642,10 @@ export function MatchLiveScreen() {
           onSetTempo={setHtTempo}
           onSetPress={setHtPress}
           tacticChanged={tacticChanged}
+          htSubs={htSubs}
+          onHtSubsChange={setHtSubs}
+          managedLineup={fixture.homeClubId === game?.managedClubId ? homeLineup : awayLineup}
+          allPlayers={game?.players ?? []}
           onApplyTactic={handleApplyTactic}
           onContinue={() => { setShowHalftime(false); setCurrentStep(prev => prev + 1) }}
         />

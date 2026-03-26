@@ -425,10 +425,27 @@ export function ClubScreen() {
       <SectionCard title="Ekonomi" stagger={3}>
         <InfoRow label="Saldo" value={formatCurrency(club.finances)} />
         <InfoRow label="Lönebudget" value={formatCurrency(club.wageBudget) + '/mån'} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Transferbudget</span>
           <span style={{ fontSize: 14, fontWeight: 600 }}>{formatCurrency(club.transferBudget)}</span>
         </div>
+        <button
+          onClick={() => navigate('/game/budget')}
+          style={{
+            width: '100%',
+            padding: '10px',
+            background: 'rgba(201,168,76,0.06)',
+            border: '1px solid rgba(201,168,76,0.2)',
+            borderRadius: 'var(--radius-sm)',
+            color: '#C9A84C',
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
+            textAlign: 'center',
+          }}
+        >
+          Budget & ekonomi →
+        </button>
       </SectionCard>
 
       {/* Faciliteter */}

@@ -50,6 +50,8 @@ interface GameState {
   incrementDoctorQuestions: () => void
   talkToPlayer: (playerId: string, choice: 'encourage' | 'demand' | 'future', currentRound: number) => { moraleChange: number; formChange: number; feedback: string; inboxTriggered: boolean }
   clearPreSeason: () => void
+  setTransferBudget: (amount: number) => void
+  buyScoutRounds: () => void
 }
 
 const indexedDBStorage = {
@@ -336,6 +338,26 @@ export const useGameStore = create<GameState>()(
         const { game } = get()
         if (!game) return
         set({ game: { ...game, showPreSeason: false } })
+      },
+
+      setTransferBudget: (amount: number) => {
+        const { game } = get()
+        if (!game) return
+        const updatedClubs = game.clubs.map(c =>
+          c.id === game.managedClubId ? { ...c, transferBudget: Math.max(0, amount) } : c
+        )
+        set({ game: { ...game, clubs: updatedClubs } })
+      },
+
+      buyScoutRounds: () => {
+        const { game } = get()
+        if (!game) return
+        const club = game.clubs.find(c => c.id === game.managedClubId)
+        if (!club || club.finances < 15000) return
+        const updatedClubs = game.clubs.map(c =>
+          c.id === game.managedClubId ? { ...c, finances: c.finances - 15000 } : c
+        )
+        set({ game: { ...game, clubs: updatedClubs, scoutBudget: (game.scoutBudget ?? 10) + 5 } })
       },
     }),
     {

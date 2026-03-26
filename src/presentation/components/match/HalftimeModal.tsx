@@ -1,8 +1,9 @@
+import { useState } from 'react'
 import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { MatchEventType, TacticMentality, TacticTempo, TacticPress } from '../../../domain/enums'
-import { truncate } from '../../utils/formatters'
+import { truncate, positionShort } from '../../utils/formatters'
 import { computePlayerRatings } from '../../utils/matchRatings'
 
 interface HalftimeModalProps {
@@ -27,6 +28,11 @@ interface HalftimeModalProps {
   onSetTempo: (v: TacticTempo) => void
   onSetPress: (v: TacticPress) => void
   tacticChanged: boolean
+
+  htSubs: { outId: string; inId: string }[]
+  onHtSubsChange: (subs: { outId: string; inId: string }[]) => void
+  managedLineup: TeamSelection
+  allPlayers: Player[]
 
   onApplyTactic: () => void
   onContinue: () => void
@@ -53,6 +59,10 @@ export function HalftimeModal({
   onSetTempo,
   onSetPress,
   tacticChanged,
+  htSubs,
+  onHtSubsChange,
+  managedLineup,
+  allPlayers,
   onApplyTactic,
   onContinue,
 }: HalftimeModalProps) {
@@ -97,6 +107,54 @@ export function HalftimeModal({
     ? 'offensiv — ta initiativet' : scoreDiff === -1
     ? 'offensiv push — ni behöver mål' : 'all-in offensiv — inget att förlora'
 
+  // Substitution state
+  const [pendingOutId, setPendingOutId] = useState<string | null>(null)
+
+  // Compute effective starters/bench accounting for already-queued subs
+  const effectiveStarters = (() => {
+    const list = [...managedLineup.startingPlayerIds]
+    for (const sub of htSubs) {
+      const idx = list.indexOf(sub.outId)
+      if (idx >= 0) list[idx] = sub.inId
+    }
+    return list
+  })()
+  const effectiveBench = (() => {
+    const list = [...managedLineup.benchPlayerIds]
+    for (const sub of htSubs) {
+      const idx = list.indexOf(sub.inId)
+      if (idx >= 0) list[idx] = sub.outId
+    }
+    return list
+  })()
+
+  function getPlayerLabel(id: string): string {
+    const p = allPlayers.find(pl => pl.id === id)
+    if (!p) return id
+    return `${p.firstName[0]}. ${p.lastName} (${positionShort(p.position)})`
+  }
+
+  function handleStarterClick(id: string) {
+    if (htSubs.length >= 3 && pendingOutId !== id) return
+    if (pendingOutId === id) {
+      setPendingOutId(null)
+    } else {
+      setPendingOutId(id)
+    }
+  }
+
+  function handleBenchClick(inId: string) {
+    if (!pendingOutId) return
+    const newSub = { outId: pendingOutId, inId }
+    onHtSubsChange([...htSubs, newSub])
+    setPendingOutId(null)
+  }
+
+  function removeSub(idx: number) {
+    const updated = htSubs.filter((_, i) => i !== idx)
+    onHtSubsChange(updated)
+  }
+
   function btnRow(
     label: string,
     options: { val: string; label: string }[],
@@ -131,13 +189,14 @@ export function HalftimeModal({
       position: 'fixed', inset: 0,
       background: 'rgba(0,0,0,0.85)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
-      paddingTop: '60px', zIndex: 200,
+      paddingTop: '40px', zIndex: 200, overflowY: 'auto',
     }}>
       <div style={{
         background: isBigMatch ? '#0D1B2A' : 'var(--bg-surface)',
         border: isBigMatch ? '1px solid rgba(201,168,76,0.4)' : '1px solid var(--border)',
         borderRadius: 'var(--radius)', padding: '24px 20px',
         textAlign: 'center', minWidth: 260, maxWidth: 330, width: '90%',
+        marginBottom: 24,
       }}>
         <p style={{
           fontSize: isBigMatch ? 13 : 11, fontWeight: 700, textTransform: 'uppercase',
@@ -235,6 +294,87 @@ export function HalftimeModal({
           >Ändra taktik ⚙️</button>
         )}
 
+        {/* Substitution section */}
+        <div style={{ marginBottom: 16, padding: 12, background: 'rgba(255,255,255,0.04)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', textAlign: 'left' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, margin: 0 }}>Spelarbyte</p>
+            <span style={{ fontSize: 10, color: '#6a7d8f' }}>max 3</span>
+          </div>
+
+          {/* Queued subs */}
+          {htSubs.map((sub, idx) => (
+            <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, padding: '5px 8px', background: 'rgba(255,255,255,0.05)', borderRadius: 6 }}>
+              <span style={{ fontSize: 11, color: 'var(--text-primary)' }}>
+                <span style={{ color: '#f87171' }}>{getPlayerLabel(sub.outId)}</span>
+                <span style={{ color: '#6a7d8f', margin: '0 4px' }}>→</span>
+                <span style={{ color: '#4ade80' }}>{getPlayerLabel(sub.inId)}</span>
+              </span>
+              <button
+                onClick={() => removeSub(idx)}
+                style={{ background: 'none', border: 'none', color: '#6a7d8f', fontSize: 14, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}
+              >✕</button>
+            </div>
+          ))}
+
+          {htSubs.length < 3 && (
+            <>
+              <p style={{ fontSize: 10, color: '#6a7d8f', marginBottom: 6 }}>
+                {pendingOutId
+                  ? 'Välj en avbytare att sätta in'
+                  : 'Välj en startande spelare att byta ut'}
+              </p>
+
+              {/* Starters */}
+              <p style={{ fontSize: 10, color: '#8A9BB0', marginBottom: 4, fontWeight: 600 }}>Startande</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
+                {effectiveStarters.map(id => {
+                  const isOut = pendingOutId === id
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => handleStarterClick(id)}
+                      style={{
+                        padding: '6px 8px', textAlign: 'left', fontSize: 11,
+                        background: isOut ? 'rgba(248,113,113,0.15)' : 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${isOut ? 'rgba(248,113,113,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                        borderRadius: 5, color: isOut ? '#f87171' : '#8A9BB0',
+                        cursor: 'pointer', fontWeight: isOut ? 700 : 400,
+                      }}
+                    >
+                      {getPlayerLabel(id)}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Bench */}
+              <p style={{ fontSize: 10, color: '#8A9BB0', marginBottom: 4, fontWeight: 600 }}>Bänk</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {effectiveBench.map(id => {
+                  const canSelect = !!pendingOutId
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => handleBenchClick(id)}
+                      disabled={!canSelect}
+                      style={{
+                        padding: '6px 8px', textAlign: 'left', fontSize: 11,
+                        background: canSelect ? 'rgba(74,222,128,0.10)' : 'rgba(255,255,255,0.02)',
+                        border: `1px solid ${canSelect ? 'rgba(74,222,128,0.35)' : 'rgba(255,255,255,0.05)'}`,
+                        borderRadius: 5,
+                        color: canSelect ? '#4ade80' : '#4a5568',
+                        cursor: canSelect ? 'pointer' : 'default',
+                      }}
+                    >
+                      {getPlayerLabel(id)}
+                    </button>
+                  )
+                })}
+              </div>
+            </>
+          )}
+        </div>
+
         {!showTacticPanel && (
           <button
             onClick={onContinue}
@@ -245,7 +385,7 @@ export function HalftimeModal({
               color: isBigMatch ? '#0D1B2A' : '#fff', fontSize: 15, fontWeight: 700,
             }}
           >
-            {tacticChanged ? '🔄 ' : ''}{isSmFinal || isCupFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}
+            {tacticChanged || htSubs.length > 0 ? '🔄 ' : ''}{isSmFinal || isCupFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}
           </button>
         )}
       </div>
