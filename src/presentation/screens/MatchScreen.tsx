@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameStore, useLastCompletedFixture } from '../store/gameStore'
-import { PlayerPosition, FixtureStatus, MatchEventType, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle, PlayoffRound } from '../../domain/enums'
+import { PlayerPosition, FixtureStatus, MatchEventType, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle, PlayoffRound, PlayerArchetype } from '../../domain/enums'
 import { getWeatherEmoji, getIceQualityLabel, getConditionLabel } from '../../domain/services/weatherService'
 import type { Tactic } from '../../domain/entities/Club'
 import { FORMATIONS, autoAssignFormation } from '../../domain/entities/Formation'
@@ -15,28 +15,162 @@ import type { MatchWeather } from '../../domain/entities/Weather'
 import { WeatherCondition } from '../../domain/enums'
 import { generateBasicAnalysis } from '../../domain/services/opponentAnalysisService'
 
-function getWeatherAdvice(weather: MatchWeather | undefined): { emoji: string; text: string } | null {
-  if (!weather) return null
+interface WeatherAdviceItem {
+  icon: string
+  text: string
+  severity: 'danger' | 'warning' | 'info' | 'positive'
+  isViolated: boolean
+}
+
+function getDetailedWeatherAdvice(
+  weather: MatchWeather | undefined,
+  tactic: { tempo: string; passingRisk: string; width: string; press: string; cornerStrategy: string }
+): WeatherAdviceItem[] {
+  if (!weather) return []
   const w = weather.weather
+  const items: WeatherAdviceItem[] = []
+
   if (w.condition === WeatherCondition.HeavySnow) {
-    return { emoji: '❄️', text: 'Tungt snöfall — säker passning och lågt tempo rekommenderas. Direktspel straffas hårt.' }
+    items.push({
+      icon: tactic.passingRisk === 'direct' ? '🚫' : '⚠️',
+      text: tactic.passingRisk === 'direct'
+        ? 'Direktspel i tungt snöfall: -10 extra bollkontrollpenalty'
+        : 'Tungt snöfall — säkert passningsspel rekommenderas',
+      severity: tactic.passingRisk === 'direct' ? 'danger' : 'warning',
+      isViolated: tactic.passingRisk === 'direct',
+    })
+    if (tactic.tempo === 'high') {
+      items.push({
+        icon: '🚫',
+        text: 'Högt tempo i snö: +15% fatigue per match',
+        severity: 'danger',
+        isViolated: true,
+      })
+    }
+    if (tactic.cornerStrategy === 'aggressive') {
+      items.push({
+        icon: '✅',
+        text: 'Aggressiva hörnor påverkas minimalt av snö — bra val',
+        severity: 'positive',
+        isViolated: false,
+      })
+    }
+    if (tactic.passingRisk === 'safe') {
+      items.push({
+        icon: '✅',
+        text: 'Säkert passningsspel fungerar bra i snö — bra val',
+        severity: 'positive',
+        isViolated: false,
+      })
+    }
   }
-  if (w.condition === WeatherCondition.LightSnow) {
-    return { emoji: '❄️', text: 'Lätt snöfall — kort passningsspel rekommenderas' }
-  }
-  if (w.condition === WeatherCondition.Fog) {
-    return { emoji: '🌫️', text: 'Dålig sikt — spela centralt och säkert. Bredd och direktspel fungerar dåligt.' }
-  }
+
   if (w.condition === WeatherCondition.Thaw) {
-    return { emoji: '💧', text: 'Blöt is — sänk tempot. Högt tempo ökar skaderisken markant.' }
+    if (tactic.tempo === 'high') {
+      items.push({
+        icon: '🚫',
+        text: 'Högt tempo på blöt is: extrem fatigue + markant ökad skaderisk',
+        severity: 'danger',
+        isViolated: true,
+      })
+    } else {
+      items.push({
+        icon: '💧',
+        text: 'Blöt is — sänk tempot för att undvika skador',
+        severity: 'warning',
+        isViolated: false,
+      })
+    }
+    if (tactic.press === 'high') {
+      items.push({
+        icon: '⚠️',
+        text: 'Hög press på blöt is: +10% extra fatigue',
+        severity: 'warning',
+        isViolated: true,
+      })
+    }
+    if (tactic.width === 'narrow') {
+      items.push({
+        icon: '✅',
+        text: 'Smalt centralt spel fungerar bättre i töväder',
+        severity: 'positive',
+        isViolated: false,
+      })
+    }
   }
+
+  if (w.condition === WeatherCondition.Fog) {
+    if (tactic.width === 'wide') {
+      items.push({
+        icon: '🚫',
+        text: 'Brett spel i dimma: långa passningar missar ofta',
+        severity: 'danger',
+        isViolated: true,
+      })
+    }
+    if (tactic.passingRisk === 'direct') {
+      items.push({
+        icon: '🚫',
+        text: 'Direktspel i dimma: svårt att sikta, tappade bollar',
+        severity: 'danger',
+        isViolated: true,
+      })
+    }
+    if (tactic.width === 'narrow' && tactic.passingRisk === 'safe') {
+      items.push({
+        icon: '✅',
+        text: 'Smalt centralt + säkert passningsspel: bästa val i dimma',
+        severity: 'positive',
+        isViolated: false,
+      })
+    } else if (tactic.width !== 'wide' && tactic.passingRisk !== 'direct') {
+      items.push({
+        icon: '💡',
+        text: 'Dimma — spela centralt och kort för bäst effekt',
+        severity: 'info',
+        isViolated: false,
+      })
+    }
+  }
+
   if (w.temperature < -15) {
-    return { emoji: '🥶', text: 'Extrem kyla — högt tempo ökar skaderisken. Lågt press rekommenderas.' }
+    if (tactic.tempo === 'high') {
+      items.push({
+        icon: '⚠️',
+        text: 'Extrem kyla + högt tempo: ökad skaderisk',
+        severity: 'warning',
+        isViolated: true,
+      })
+    }
+    if (tactic.press === 'high') {
+      items.push({
+        icon: '⚠️',
+        text: 'Hög press i extrem kyla: +10% extra fatigue',
+        severity: 'warning',
+        isViolated: true,
+      })
+    }
+    if (tactic.tempo !== 'high' && tactic.press !== 'high') {
+      items.push({
+        icon: '🥶',
+        text: `Extrem kyla (${w.temperature}°) — din taktik hanterar kylan bra`,
+        severity: 'info',
+        isViolated: false,
+      })
+    }
   }
-  if (w.condition === WeatherCondition.Clear || w.condition === WeatherCondition.Overcast) {
-    return { emoji: '✨', text: 'Perfekta förhållanden — alla stilar fungerar' }
+
+  if ((w.condition === WeatherCondition.Clear || w.condition === WeatherCondition.Overcast) &&
+      w.temperature >= -10 && w.temperature <= 5) {
+    items.push({
+      icon: '✅',
+      text: 'Perfekta förhållanden — alla stilar fungerar',
+      severity: 'positive',
+      isViolated: false,
+    })
   }
-  return null
+
+  return items
 }
 
 function getPlayoffRoundLabel(round: PlayoffRound): string {
@@ -851,6 +985,49 @@ export function MatchScreen() {
     ]},
   ]
 
+  const tacticExplanations: Record<string, Record<string, string>> = {
+    mentality: {
+      defensive: 'Fokus på försvar. Minskar attackchanserna, stärker defensiven.',
+      balanced: 'Balanserad spelplan. Ingen tydlig vikt åt något håll.',
+      offensive: 'Fokus på anfall. Fler chanser men sårbarare bak.',
+    },
+    tempo: {
+      low: 'Lugnt spel. Spelarna tröttas ut 15% långsammare.',
+      normal: 'Normalt matchspel.',
+      high: 'Högt tryck. Fler sekvenser men +20% fatigue och skaderisk.',
+    },
+    press: {
+      low: 'Låg press. Drar sig tillbaka och väntar på bollen.',
+      medium: 'Normal press med lätt disciplinrisk.',
+      high: 'Intensiv press. Fler bollvinster men mer kort och fatigue.',
+    },
+    passingRisk: {
+      safe: 'Korta säkra passningar. Rekommenderas i dåligt väder.',
+      mixed: 'Varierat passningsspel. Balanserad risk.',
+      direct: 'Långa direkta bollar. Fler chanser, men fler tappar.',
+    },
+    width: {
+      narrow: 'Smalt spel. Bättre centralt försvar, färre hörnor.',
+      normal: 'Normal spelbredd. Balanserat.',
+      wide: 'Brett spel. Fler hörnor och kantsituationer.',
+    },
+    cornerStrategy: {
+      safe: 'Kort hörna, säkra passningar. Lägre målrisk.',
+      standard: 'Varierade hörnor. Balanserat upplägg.',
+      aggressive: 'Alla framåt på hörnan! Hög målchans men sårbar i omställning.',
+    },
+    penaltyKillStyle: {
+      passive: 'Håller sig i egen zon vid utvisning. Säkert men passivt.',
+      active: 'Balanserat utvisningsspel med lätt press.',
+      aggressive: 'Pressar även med man mindre. Hög risk, hög belöning.',
+    },
+    attackingFocus: {
+      central: 'Anfall centralt. Bättre möjligheter nära mål.',
+      wings: 'Anfall via kanterna. Mer hörnor, mer kross.',
+      mixed: 'Varierar angreppssätt beroende på situationen.',
+    },
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
       {/* ── Always visible: header ───────────────────────────────────── */}
@@ -1327,24 +1504,37 @@ export function MatchScreen() {
       {matchStep === 'tactic' && (
         <div style={{ padding: '0 16px 24px' }}>
           {(() => {
-            const weatherAdvice = getWeatherAdvice(matchWeatherData)
-            return weatherAdvice ? (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '8px 12px',
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid var(--border)',
-                borderRadius: 8,
-                marginBottom: 16,
-                fontSize: 13,
-                color: 'var(--text-secondary)',
-              }}>
-                <span>{weatherAdvice.emoji}</span>
-                <span>{weatherAdvice.text}</span>
+            const adviceItems = getDetailedWeatherAdvice(matchWeatherData, tacticState)
+            if (adviceItems.length === 0) return null
+            return (
+              <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {adviceItems.map((item, i) => (
+                  <div key={i} style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 8,
+                    padding: '8px 12px',
+                    background: item.severity === 'danger' ? 'rgba(239,68,68,0.08)'
+                      : item.severity === 'warning' ? 'rgba(245,158,11,0.08)'
+                      : item.severity === 'positive' ? 'rgba(34,197,94,0.06)'
+                      : 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${item.severity === 'danger' ? 'rgba(239,68,68,0.25)'
+                      : item.severity === 'warning' ? 'rgba(245,158,11,0.25)'
+                      : item.severity === 'positive' ? 'rgba(34,197,94,0.2)'
+                      : 'var(--border)'}`,
+                    borderRadius: 8,
+                    fontSize: 12,
+                    color: item.severity === 'danger' ? '#ef4444'
+                      : item.severity === 'warning' ? '#f59e0b'
+                      : item.severity === 'positive' ? '#22c55e'
+                      : 'var(--text-secondary)',
+                  }}>
+                    <span style={{ flexShrink: 0 }}>{item.icon}</span>
+                    <span style={{ lineHeight: 1.4 }}>{item.text}</span>
+                  </div>
+                ))}
               </div>
-            ) : null
+            )
           })()}
           {tacticRows.map(({ label, key, options }) => (
             <div key={key as string} style={{ marginBottom: 14 }}>
@@ -1354,8 +1544,54 @@ export function MatchScreen() {
                 value={tacticState[key] as string}
                 onChange={v => handleTacticChange(key, v as Tactic[typeof key])}
               />
+              {tacticExplanations[key as string]?.[tacticState[key] as string] && (
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.4 }}>
+                  {tacticExplanations[key as string]![tacticState[key] as string]}
+                </p>
+              )}
             </div>
           ))}
+          {/* Corner specialist info */}
+          {(() => {
+            if (!game) return null
+            const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
+            const cornerSpec = managedPlayers.find(
+              p => p.archetype === PlayerArchetype.CornerSpecialist && startingIds.includes(p.id)
+            )
+            if (cornerSpec) {
+              return (
+                <div style={{
+                  background: 'rgba(201,168,76,0.08)',
+                  border: '1px solid rgba(201,168,76,0.2)',
+                  borderRadius: 8,
+                  padding: '8px 12px',
+                  fontSize: 12,
+                  color: '#C9A84C',
+                  marginTop: 4,
+                  marginBottom: 12,
+                }}>
+                  📐 {cornerSpec.firstName} {cornerSpec.lastName} är hörnspecialist (hörnfärdighet {cornerSpec.attributes.cornerSkill}) — aggressiv hörnstrategi rekommenderas!
+                </div>
+              )
+            }
+            if (tacticState.cornerStrategy === 'aggressive') {
+              return (
+                <div style={{
+                  background: 'rgba(245,158,11,0.08)',
+                  border: '1px solid rgba(245,158,11,0.2)',
+                  borderRadius: 8,
+                  padding: '8px 12px',
+                  fontSize: 12,
+                  color: '#f59e0b',
+                  marginTop: 4,
+                  marginBottom: 12,
+                }}>
+                  ⚠️ Ingen hörnspecialist i startelvan — aggressiva hörnor mindre effektiva
+                </div>
+              )
+            }
+            return null
+          })()}
           <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
             <button onClick={() => setMatchStep('lineup')} style={{
               flex: 1, padding: '13px', background: 'var(--bg-elevated)',

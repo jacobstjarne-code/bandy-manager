@@ -162,16 +162,43 @@ export function MatchResultScreen() {
 
         {/* Stats from report */}
         {fixture.report && (
-          <div style={{
-            display: 'flex', justifyContent: 'center', gap: 16,
-            fontSize: 12, color: '#4A6080', marginBottom: 24,
-          }}>
-            {fixture.report.shotsHome !== undefined && (
-              <span>Skott {fixture.report.shotsHome}–{fixture.report.shotsAway}</span>
-            )}
-            {fixture.report.cornersHome !== undefined && (
-              <span>Hörnor {fixture.report.cornersHome}–{fixture.report.cornersAway}</span>
-            )}
+          <div style={{ marginBottom: 20 }}>
+            {/* Corner goals highlight */}
+            {(() => {
+              const cornerGoals = fixture.events.filter(
+                e => e.type === MatchEventType.Goal && e.isCornerGoal &&
+                     (e.clubId === game.managedClubId)
+              ).length
+              if (cornerGoals > 0) {
+                return (
+                  <div style={{
+                    textAlign: 'center',
+                    fontSize: 12,
+                    color: '#C9A84C',
+                    background: 'rgba(201,168,76,0.07)',
+                    border: '1px solid rgba(201,168,76,0.18)',
+                    borderRadius: 8,
+                    padding: '6px 12px',
+                    marginBottom: 10,
+                  }}>
+                    📐 {cornerGoals} hörnmål — {fixture.report.cornersHome}–{fixture.report.cornersAway} hörnor totalt
+                  </div>
+                )
+              }
+              return null
+            })()}
+            {/* Stats row: corners first, then shots */}
+            <div style={{
+              display: 'flex', justifyContent: 'center', gap: 16,
+              fontSize: 12, color: '#4A6080',
+            }}>
+              {fixture.report.cornersHome !== undefined && (
+                <span>Hörnor {fixture.report.cornersHome}–{fixture.report.cornersAway}</span>
+              )}
+              {fixture.report.shotsHome !== undefined && (
+                <span>Skott {fixture.report.shotsHome}–{fixture.report.shotsAway}</span>
+              )}
+            </div>
           </div>
         )}
 

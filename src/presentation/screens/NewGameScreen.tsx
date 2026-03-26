@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
-import { ArrowLeft, ArrowRight, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
 import { CLUB_TEMPLATES } from '../../domain/services/worldGenerator'
 
 function difficultyLabel(reputation: number): { label: string; color: string } {
@@ -10,17 +10,33 @@ function difficultyLabel(reputation: number): { label: string; color: string } {
   return { label: 'Svår', color: '#ef4444' }
 }
 
+const CLUB_FLAVOR: Record<string, string> = {
+  'broberg':   'Den lilla klubben med de stora drömmarna.',
+  'bollnas':   'Tradition i varje fiber. Hälsinglands hjärta.',
+  'edsbyn':    'Bandy i blodet. Edsbyn andas historia.',
+  'villa':     'Storklubben från Lidköping. Skyhöga förväntningar.',
+  'vetlanda':  'Småländsk envishet. De ger aldrig upp.',
+  'hammarby':  'Stockholms bandystolthet. Söderstadion väntar.',
+  'grimsas':   'Underdogen. Liten budget, stort hjärta.',
+  'motala':    'Östgötsk klass. Ett lag på väg uppåt.',
+  'sandviken': 'Jernvallen. Legendarisk arena, legendarisk klubb.',
+  'sirius':    'Uppsalas stolthet. Akademisk stad, hungrig klubb.',
+  'vasteras':  'Regerande mästare. Titeln ska försvaras.',
+  'lodose':    'Nykomlingen. Ingen tror på er — bevisa dem fel.',
+}
+
 const CLUBS = CLUB_TEMPLATES.map(t => ({
   id: t.id,
   name: t.name,
   region: t.region,
   reputation: t.reputation,
   youthQuality: t.youthQuality,
+  flavor: CLUB_FLAVOR[t.id] ?? 'En stolt bandyklubb med ambitioner.',
   ...difficultyLabel(t.reputation),
 }))
 
 function ReputationStars({ value }: { value: number }) {
-  const stars = Math.round(value / 20) // 0-100 -> 0-5 stars
+  const stars = Math.round(value / 20)
   return (
     <div style={{ display: 'flex', gap: 2 }}>
       {[1,2,3,4,5].map(i => (
@@ -38,10 +54,20 @@ function ReputationStars({ value }: { value: number }) {
 export function NewGameScreen() {
   const navigate = useNavigate()
   const { newGame } = useGameStore()
-  const [step, setStep] = useState<1 | 2>(1)
+  const [step, setStep] = useState<'intro' | 'name' | 'club'>('intro')
+  const [introPhase, setIntroPhase] = useState(0)
   const [managerName, setManagerName] = useState('')
   const [selectedClubId, setSelectedClubId] = useState<string | null>(null)
   const [isStarting, setIsStarting] = useState(false)
+
+  // Intro sequence: 0 → "SÄSONGEN 2025/2026", 1 → "En ny tränare kliver in.", then transition to name
+  useEffect(() => {
+    if (step !== 'intro') return
+    const t1 = setTimeout(() => setIntroPhase(1), 800)
+    const t2 = setTimeout(() => setIntroPhase(2), 1600)
+    const t3 = setTimeout(() => setStep('name'), 3000)
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+  }, [step])
 
   const handleStart = () => {
     if (!selectedClubId || !managerName.trim()) return
@@ -57,6 +83,129 @@ export function NewGameScreen() {
     }, 50)
   }
 
+  // Intro splash
+  if (step === 'intro') {
+    return (
+      <div style={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(180deg, #060e19 0%, #0D1B2A 100%)',
+        gap: 16,
+        padding: '0 32px',
+        textAlign: 'center',
+      }}>
+        <p style={{
+          fontSize: 13,
+          fontWeight: 700,
+          letterSpacing: '4px',
+          textTransform: 'uppercase',
+          color: '#C9A84C',
+          opacity: introPhase >= 0 ? 1 : 0,
+          transition: 'opacity 600ms ease',
+        }}>
+          SÄSONGEN 2025/2026
+        </p>
+        <p style={{
+          fontSize: 18,
+          color: '#F0F4F8',
+          fontWeight: 300,
+          letterSpacing: '1px',
+          opacity: introPhase >= 2 ? 1 : 0,
+          transition: 'opacity 600ms ease',
+        }}>
+          En ny tränare kliver in.
+        </p>
+      </div>
+    )
+  }
+
+  // Name step
+  if (step === 'name') {
+    return (
+      <div style={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'linear-gradient(180deg, #060e19 0%, #0D1B2A 100%)',
+      }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 32px' }}>
+          <p style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '4px',
+            textTransform: 'uppercase',
+            color: '#4A6080',
+            marginBottom: 24,
+          }}>
+            NYTT UPPDRAG
+          </p>
+          <h2 style={{
+            fontSize: 28,
+            fontWeight: 900,
+            color: '#F0F4F8',
+            letterSpacing: '2px',
+            textTransform: 'uppercase',
+            marginBottom: 32,
+            textAlign: 'center',
+          }}>
+            VEM ÄR DU?
+          </h2>
+          <input
+            autoFocus
+            type="text"
+            value={managerName}
+            onChange={e => setManagerName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && managerName.trim() && setStep('club')}
+            placeholder="Ditt namn"
+            maxLength={40}
+            style={{
+              width: '100%',
+              maxWidth: 300,
+              padding: '12px 4px',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: '2px solid rgba(201,168,76,0.5)',
+              color: '#C9A84C',
+              fontSize: 22,
+              fontWeight: 700,
+              outline: 'none',
+              textAlign: 'center',
+              letterSpacing: '1px',
+            }}
+          />
+        </div>
+        <div style={{ padding: '20px 32px', paddingBottom: 'calc(20px + var(--safe-bottom))' }}>
+          <button
+            onClick={() => setStep('club')}
+            disabled={!managerName.trim()}
+            style={{
+              width: '100%',
+              padding: '16px 24px',
+              background: 'transparent',
+              border: `2px solid ${managerName.trim() ? '#C9A84C' : '#1e3450'}`,
+              borderRadius: 'var(--radius)',
+              color: managerName.trim() ? '#C9A84C' : '#4A6080',
+              fontSize: 14,
+              fontWeight: 700,
+              letterSpacing: '3px',
+              textTransform: 'uppercase',
+              cursor: managerName.trim() ? 'pointer' : 'not-allowed',
+              transition: 'all 0.2s',
+            }}
+          >
+            GÅ VIDARE →
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Club selection step
+  const selectedClub = selectedClubId ? CLUBS.find(c => c.id === selectedClubId) : null
+
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
       {/* Header */}
@@ -68,154 +217,106 @@ export function NewGameScreen() {
         gap: 12,
       }}>
         <button
-          onClick={() => step === 2 ? setStep(1) : navigate('/')}
-          style={{ background: 'none', color: 'var(--text-secondary)', padding: 4 }}
+          onClick={() => setStep('name')}
+          style={{ background: 'none', color: 'var(--text-secondary)', padding: 4, fontSize: 18 }}
         >
-          <ArrowLeft size={20} />
+          ←
         </button>
         <div>
-          <h2 style={{ fontSize: 17, fontWeight: 600 }}>Nytt spel</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>Steg {step} av 2</p>
+          <h2 style={{ fontSize: 17, fontWeight: 600 }}>Välj klubb</h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>{managerName}</p>
         </div>
       </div>
 
-      {/* Step indicator */}
-      <div style={{ display: 'flex', height: 3 }}>
-        <div style={{ flex: 1, background: 'var(--accent)' }} />
-        <div style={{ flex: 1, background: step === 2 ? 'var(--accent)' : 'var(--border)' }} />
+      {/* Club list */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', paddingBottom: selectedClub ? 140 : 80 }}>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: 16, fontSize: 14 }}>
+          Varje klubb har sin historia. Välj din.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {CLUBS.map(club => {
+            const isSelected = selectedClubId === club.id
+            return (
+              <button
+                key={club.id}
+                onClick={() => setSelectedClubId(isSelected ? null : club.id)}
+                style={{
+                  width: '100%',
+                  padding: '14px 16px',
+                  background: isSelected ? 'rgba(201,168,76,0.08)' : 'var(--bg-elevated)',
+                  border: `1px solid ${isSelected ? 'rgba(201,168,76,0.4)' : 'var(--border)'}`,
+                  borderRadius: 'var(--radius)',
+                  textAlign: 'left',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 5,
+                  transition: 'all 0.15s',
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 600, fontSize: 15, color: isSelected ? '#C9A84C' : 'var(--text-primary)' }}>
+                    {club.name}
+                  </span>
+                  <span style={{
+                    fontSize: 11, fontWeight: 600, color: club.color,
+                    padding: '2px 8px', background: `${club.color}20`, borderRadius: 20,
+                  }}>
+                    {club.label}
+                  </span>
+                </div>
+                <p style={{ fontSize: 12, color: isSelected ? '#8A9BB0' : 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>
+                  {club.flavor}
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{club.region}</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>·</span>
+                  <ReputationStars value={club.reputation} />
+                </div>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
-      {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px' }}>
-        {step === 1 ? (
-          <div>
-            <h3 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Ditt namn</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: 24, fontSize: 14 }}>
-              Vad ska du kallas?
-            </p>
-            <input
-              autoFocus
-              type="text"
-              value={managerName}
-              onChange={e => setManagerName(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && managerName.trim() && setStep(2)}
-              placeholder="Förnamn Efternamn"
-              maxLength={40}
-              style={{
-                width: '100%',
-                padding: '14px 16px',
-                background: 'var(--bg-elevated)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius)',
-                color: 'var(--text-primary)',
-                fontSize: 16,
-                outline: 'none',
-              }}
-            />
-          </div>
-        ) : (
-          <div>
-            <h3 style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Välj klubb</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: 20, fontSize: 14 }}>
-              Varje klubb har sin historia. Välj din.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {CLUBS.map(club => (
-                <button
-                  key={club.id}
-                  onClick={() => setSelectedClubId(club.id)}
-                  style={{
-                    width: '100%',
-                    padding: '14px 16px',
-                    background: selectedClubId === club.id ? 'rgba(59,130,246,0.12)' : 'var(--bg-elevated)',
-                    border: `1px solid ${selectedClubId === club.id ? 'var(--accent)' : 'var(--border)'}`,
-                    borderRadius: 'var(--radius)',
-                    textAlign: 'left',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 6,
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 600, fontSize: 15, color: 'var(--text-primary)' }}>
-                      {club.name}
-                    </span>
-                    <span style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: club.color,
-                      padding: '2px 8px',
-                      background: `${club.color}20`,
-                      borderRadius: 20,
-                    }}>
-                      {club.label}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{club.region}</span>
-                    <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>·</span>
-                    <ReputationStars value={club.reputation} />
-                  </div>
-                  <div style={{ display: 'flex', gap: 12 }}>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                      Rykte {club.reputation}
-                    </span>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                      Ungdom {club.youthQuality}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Footer CTA */}
-      <div style={{
-        padding: '16px 20px',
-        paddingBottom: 'calc(16px + var(--safe-bottom))',
-        borderTop: '1px solid var(--border)',
-      }}>
-        {step === 1 ? (
-          <button
-            onClick={() => setStep(2)}
-            disabled={!managerName.trim()}
-            style={{
-              width: '100%',
-              padding: '15px 24px',
-              background: managerName.trim() ? 'var(--accent)' : 'var(--bg-elevated)',
-              color: managerName.trim() ? '#fff' : 'var(--text-muted)',
-              borderRadius: 'var(--radius)',
-              fontSize: 16,
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-            }}
-          >
-            Välj klubb <ArrowRight size={18} />
-          </button>
-        ) : (
+      {/* Footer CTA — fixed at bottom when club selected */}
+      {selectedClub && (
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '100%',
+          maxWidth: 430,
+          padding: '16px 20px',
+          paddingBottom: 'calc(16px + var(--safe-bottom))',
+          background: 'linear-gradient(to top, #0D1B2A 70%, transparent)',
+          borderTop: '1px solid rgba(201,168,76,0.15)',
+        }}>
+          <p style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 10, textAlign: 'center' }}>
+            Starta karriären som tränare för {selectedClub.name}?
+          </p>
           <button
             onClick={handleStart}
-            disabled={!selectedClubId || isStarting}
+            disabled={isStarting}
             style={{
               width: '100%',
-              padding: '15px 24px',
-              background: selectedClubId && !isStarting ? 'var(--accent)' : 'var(--bg-elevated)',
-              color: selectedClubId && !isStarting ? '#fff' : 'var(--text-muted)',
+              padding: '16px 24px',
+              background: 'transparent',
+              border: '2px solid #C9A84C',
               borderRadius: 'var(--radius)',
-              fontSize: 16,
-              fontWeight: 600,
+              color: '#C9A84C',
+              fontSize: 13,
+              fontWeight: 700,
+              letterSpacing: '3px',
+              textTransform: 'uppercase',
+              cursor: isStarting ? 'not-allowed' : 'pointer',
             }}
           >
-            {isStarting ? 'Startar karriär...' : 'Starta karriär'}
+            {isStarting ? 'STARTAR...' : 'ACCEPTERA UPPDRAGET'}
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

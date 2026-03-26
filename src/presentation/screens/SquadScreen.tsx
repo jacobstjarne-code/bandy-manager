@@ -243,6 +243,20 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
           <StatBar value={player.fitness} color={barColor(player.fitness)} height={5} />
         </div>
         {statusPill}
+        {player.archetype === PlayerArchetype.CornerSpecialist && (
+          <span style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: '#C9A84C',
+            background: 'rgba(201,168,76,0.1)',
+            border: '1px solid rgba(201,168,76,0.25)',
+            borderRadius: 99,
+            padding: '2px 7px',
+            flexShrink: 0,
+          }}>
+            📐 Hörnspec.
+          </span>
+        )}
       </div>
     </div>
   )
