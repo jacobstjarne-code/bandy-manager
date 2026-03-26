@@ -743,5 +743,15 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     }
   }
 
-  return { clubs, players: allPlayers }
+  // Set hasIndoorArena on up to 3 high-reputation clubs
+  const highRepClubs = clubs
+    .filter(c => c.reputation >= 55)
+    .sort(() => rng.next() - 0.5)
+    .slice(0, 3)
+  const indoorArenaIds = new Set(highRepClubs.map(c => c.id))
+  const clubsWithArena = clubs.map(c =>
+    indoorArenaIds.has(c.id) ? { ...c, hasIndoorArena: true } : c
+  )
+
+  return { clubs: clubsWithArena, players: allPlayers }
 }

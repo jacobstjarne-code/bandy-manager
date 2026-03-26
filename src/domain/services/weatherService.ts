@@ -78,13 +78,18 @@ export function generateMatchWeather(
     else iceQuality = IceQuality.Moderate
   }
 
+  // Indoor arena overrides: stable ice, never cancelled
+  if (homeClub.hasIndoorArena) {
+    iceQuality = IceQuality.Good
+  }
+
   // Effects
   let ballControlPenalty = 0
   let speedModifier = 1.0
   let injuryRiskModifier = 1.0
   let goalChanceModifier = 1.0
   let attendanceModifier = 1.0
-  const cancelled = iceQuality === IceQuality.Cancelled
+  const cancelled = homeClub.hasIndoorArena ? false : iceQuality === IceQuality.Cancelled
 
   if (condition === WeatherCondition.HeavySnow) {
     ballControlPenalty = 15 + Math.round(rand() * 10)

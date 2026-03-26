@@ -33,6 +33,7 @@ export interface Club {
   fanExpectation: ClubExpectation
   preferredStyle: ClubStyle
   hasArtificialIce: boolean   // förberedd för V0.2 vädersystem
+  hasIndoorArena?: boolean
 
   activeTactic: Tactic
   squadPlayerIds: string[]

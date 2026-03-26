@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
+import { BOARD_QUOTES, BOARD_MEETING_OPENERS } from '../../domain/data/boardData'
+import type { BoardPersonality } from '../../domain/entities/SaveGame'
 
 export function BoardMeetingScreen() {
   const navigate = useNavigate()
@@ -36,6 +38,37 @@ export function BoardMeetingScreen() {
   const avgAge = players.length > 0
     ? (players.reduce((s, p) => s + p.age, 0) / players.length).toFixed(1)
     : '0'
+
+  // Board quotes logic
+  const boardMembers = (game.boardPersonalities ?? []).slice(0, 3)
+
+  // Derive a stable round number for deterministic quote selection
+  const latestCompletedRound = game.fixtures
+    .filter(f => f.status === 'completed')
+    .sort((a, b) => b.roundNumber - a.roundNumber)[0]?.roundNumber ?? 0
+
+  // Pick a quote for a board member, deterministic based on season + round + member index
+  function pickQuote(personality: BoardPersonality, memberIndex: number): string {
+    const allQuotes = BOARD_QUOTES[personality]
+    if (!allQuotes || allQuotes.length === 0) return ''
+    const baseIndex = (game!.currentSeason * 7 + latestCompletedRound + memberIndex * 3) % allQuotes.length
+    return allQuotes[baseIndex]
+  }
+
+  // Board meeting opener — deterministic based on season
+  const openerTemplate = BOARD_MEETING_OPENERS[game.currentSeason % BOARD_MEETING_OPENERS.length]
+  const ordforande = boardMembers.find(m => m.role === 'ordförande')
+  const kassor = boardMembers.find(m => m.role === 'kassör')
+  const openerText = openerTemplate
+    .replace('{ordförande}', ordforande?.name ?? 'Ordföranden')
+    .replace('{kassör}', kassor?.name ?? 'Kassören')
+
+  const personalityLabel: Record<BoardPersonality, string> = {
+    supporter: 'supporter',
+    ekonom: 'ekonom',
+    traditionalist: 'traditionalist',
+    modernist: 'modernist',
+  }
 
   function handleStart() {
     clearBoardMeeting()
@@ -155,7 +188,7 @@ export function BoardMeetingScreen() {
         {/* Trupp */}
         <div className="card-stagger-5" style={{
           background: 'var(--bg-surface)', border: '1px solid var(--border)',
-          borderRadius: 10, padding: '14px', marginBottom: 24,
+          borderRadius: 10, padding: '14px', marginBottom: 16,
         }}>
           <p className="section-heading" style={{ fontSize: 12, fontWeight: 700, color: '#F0F4F8', marginBottom: 8 }}>
             👥 TRUPP
@@ -173,6 +206,46 @@ export function BoardMeetingScreen() {
             <span style={{ fontSize: 13, color: '#F0F4F8' }}>{avgAge}</span>
           </div>
         </div>
+
+        {/* Styrelsemedlemmarnas röster */}
+        {boardMembers.length > 0 && (
+          <div style={{
+            background: 'rgba(14,31,51,0.8)',
+            border: '1px solid #1e3450',
+            borderRadius: 10, padding: '14px', marginBottom: 24,
+          }}>
+            <p className="section-heading" style={{
+              fontSize: 12, fontWeight: 700, color: '#F0F4F8', marginBottom: 4,
+            }}>
+              💬 STYRELSEMEDLEMMARNA OM LÄGET
+            </p>
+            <p style={{ fontSize: 11, color: '#3a5270', marginBottom: 14, fontStyle: 'italic' }}>
+              {openerText}
+            </p>
+            {boardMembers.map((member, i) => {
+              const quote = pickQuote(member.personality, i)
+              if (!quote) return null
+              return (
+                <div key={member.name + i} style={{
+                  marginBottom: i < boardMembers.length - 1 ? 14 : 0,
+                  paddingBottom: i < boardMembers.length - 1 ? 14 : 0,
+                  borderBottom: i < boardMembers.length - 1 ? '1px solid #1a2e45' : 'none',
+                }}>
+                  <p style={{
+                    fontSize: 13, color: '#C8D8E8', lineHeight: 1.5,
+                    fontStyle: 'italic', marginBottom: 4,
+                  }}>
+                    {quote}
+                  </p>
+                  <p style={{ fontSize: 11, color: '#4A6080' }}>
+                    <span style={{ color: '#7A94B0', fontWeight: 600 }}>{member.name}</span>
+                    {' · '}{member.role}{' · '}{personalityLabel[member.personality]}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        )}
 
         {/* Knapp */}
         <button

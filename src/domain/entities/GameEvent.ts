@@ -10,6 +10,10 @@ export type GameEventType =
   | 'dayJobConflict'
   | 'bidWar'
   | 'hesitantPlayer'
+  | 'communityEvent'
+  | 'patronEvent'
+  | 'politicianEvent'
+  | 'hallDebate'
 
 export interface EventChoice {
   id: string
@@ -31,12 +35,25 @@ export interface EventEffect {
     | 'openNegotiation'
     | 'makeFullTimePro'
     | 'raiseBid'
+    | 'setCommunity'
+    | 'patronHappiness'
+    | 'politicianRelationship'
+    | 'kommunBidragChange'
+    | 'facilitiesUpgrade'
+    | 'kommunGamble'
+    | 'tempFacilities'
+    | 'income'
+    | 'reputation'
+    | 'fanMood'
   value?: number
+  amount?: number
   targetPlayerId?: string
   targetClubId?: string
   bidId?: string
   sponsorData?: string
   mediaQuote?: string
+  communityKey?: string
+  communityValue?: string
 }
 
 export interface GameEvent {

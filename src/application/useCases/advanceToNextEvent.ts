@@ -1,4 +1,4 @@
-import type { SaveGame, InboxItem } from '../../domain/entities/SaveGame'
+import type { SaveGame, InboxItem, CommunityActivities, StandingRow } from '../../domain/entities/SaveGame'
 import type { Player, CareerMilestone } from '../../domain/entities/Player'
 import type { Club } from '../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
@@ -347,13 +347,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
     const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
     const isManagedHome = fixture.homeClubId === game.managedClubId
+    const homeAdv = homeClub?.hasIndoorArena ? 0.05 * 0.85 : 0.05
     const result = simulateMatch({
       fixture,
       homeLineup,
       awayLineup,
       homePlayers,
       awayPlayers,
-      homeAdvantage: 0.05,
+      homeAdvantage: homeAdv,
       seed: baseSeed + i,
       weather: matchWeather.weather,
       isPlayoff: isPlayoffRound,
@@ -1155,6 +1156,71 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   const marketUpdatedPlayers = updateAllMarketValues(finalPlayers, game.currentSeason)
 
+  // ── Dynamic match revenue (Del F) ─────────────────────────────────
+  function calculateMatchRevenue(
+    club: Club,
+    isHomeManagedMatch: boolean,
+    standing: StandingRow | null,
+    fanMood: number,
+    communityActivities: CommunityActivities | undefined,
+    rand: () => number,
+    isKnockout: boolean,
+    isCup: boolean,
+    hasRivalry: boolean,
+  ): number {
+    if (!isHomeManagedMatch) return 0
+
+    const baseRevenue = club.reputation * 400
+
+    const position = standing?.position ?? 8
+    const formBonus = position <= 3 ? 1.30
+      : position <= 6 ? 1.10
+      : position >= 10 ? 0.80 : 1.0
+
+    const moodBonus = 0.85 + (fanMood / 100) * 0.30
+
+    const eventBonus = isKnockout ? 1.50 : isCup ? 1.25 : 1.0
+
+    const derbyBonus = hasRivalry ? 1.40 : 1.0
+
+    const base = Math.round(
+      baseRevenue * formBonus * moodBonus * eventBonus * derbyBonus
+      + rand() * 5000
+    )
+
+    // Community income
+    const activities = communityActivities
+    let communityIncome = 0
+    if (activities) {
+      const moodMult = 0.7 + (fanMood / 100) * 0.6
+      const kioskBase = activities.kiosk === 'upgraded' ? 7000
+        : activities.kiosk === 'basic' ? 3500 : 0
+      communityIncome += Math.round(kioskBase * moodMult)
+      communityIncome += activities.functionaries ? 3000 : 0
+      communityIncome += activities.bandyplay
+        ? 800 + Math.round(rand() * 700) : 0
+    }
+
+    return base + communityIncome
+  }
+
+  // Lottery income per round (regardless of whether there's a home match)
+  function calculateLotteryIncome(
+    communityActivities: CommunityActivities | undefined,
+    rand: () => number,
+  ): number {
+    if (!communityActivities) return 0
+    if (communityActivities.lottery === 'intensive') {
+      return 1500 + Math.round(rand() * 1500)
+    }
+    if (communityActivities.lottery === 'basic') {
+      return 500 + Math.round(rand() * 1000)
+    }
+    return 0
+  }
+
+  const managedClubStanding = standings.find(s => s.clubId === game.managedClubId) ?? null
+
   // Economy: wages, match revenue, sponsorship per round
   const financiallyUpdatedClubs = game.clubs.map(c => {
     const clubPlayers = marketUpdatedPlayers.filter(p => p.clubId === c.id)
@@ -1164,9 +1230,31 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const homeMatch = simulatedFixtures.find(
       f => f.homeClubId === c.id && f.status === FixtureStatus.Completed
     )
-    const matchRevenue = homeMatch
-      ? Math.round(c.reputation * 400 + localRand() * 10000)
-      : 0
+
+    let matchRevenue: number
+    if (c.id === game.managedClubId) {
+      const isHomeManagedMatch = !!homeMatch
+      const matchIsKnockout = homeMatch?.isKnockout ?? false
+      const matchIsCup = homeMatch?.isCup ?? false
+      const matchHasRivalry = homeMatch
+        ? !!getRivalry(homeMatch.homeClubId, homeMatch.awayClubId)
+        : false
+      matchRevenue = calculateMatchRevenue(
+        c,
+        isHomeManagedMatch,
+        managedClubStanding,
+        currentFanMood,
+        game.communityActivities,
+        localRand,
+        matchIsKnockout,
+        matchIsCup,
+        matchHasRivalry,
+      )
+    } else {
+      matchRevenue = homeMatch
+        ? Math.round(c.reputation * 400 + localRand() * 10000)
+        : 0
+    }
 
     const weeklySponsorship = Math.round(c.reputation * 150)
 
@@ -1174,9 +1262,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       ? (game.sponsors ?? []).filter(s => s.contractRounds > 0).reduce((sum, s) => sum + s.weeklyIncome, 0)
       : 0
 
+    const lotteryIncome = c.id === game.managedClubId
+      ? calculateLotteryIncome(game.communityActivities, localRand)
+      : 0
+
     return {
       ...c,
-      finances: c.finances + matchRevenue + weeklySponsorship + sponsorIncome - weeklyWages,
+      finances: c.finances + matchRevenue + weeklySponsorship + sponsorIncome + lotteryIncome - weeklyWages,
       // NOTE: Finances can go negative (salary drain, no revenue). This is intentional — don't add
       // a hard floor here as it would mask the underlying economic problem. If finances drop below
       // -500000, consider triggering a board crisis event in the future. The UI handles negative

@@ -12,6 +12,45 @@ import type { ScoutReport, ScoutAssignment } from './Scouting'
 import type { GameEvent, TransferBid } from './GameEvent'
 import type { OpponentAnalysis } from '../services/opponentAnalysisService'
 
+export interface CommunityActivities {
+  kiosk: 'none' | 'basic' | 'upgraded'
+  lottery: 'none' | 'basic' | 'intensive'
+  bandyplay: boolean
+  functionaries: boolean
+  julmarknad: boolean
+}
+
+export type BoardPersonality = 'supporter' | 'ekonom' | 'traditionalist' | 'modernist'
+export type BoardRole = 'ordförande' | 'kassör' | 'ledamot'
+
+export interface BoardMember {
+  name: string
+  role: BoardRole
+  personality: BoardPersonality
+}
+
+export interface Patron {
+  name: string
+  business: string
+  influence: number
+  happiness: number
+  contribution: number
+  favoritePlayerId?: string
+  favoriteRelation?: string
+  wantsStyle?: string
+  isActive: boolean
+  hasBeenWarned?: boolean
+}
+
+export interface LocalPolitician {
+  name: string
+  title: string
+  party: string
+  agenda: 'youth' | 'inclusion' | 'prestige' | 'savings'
+  relationship: number
+  kommunBidrag: number
+}
+
 export interface StandingRow {
   clubId: string
   played: number
@@ -164,4 +203,13 @@ export interface SaveGame {
 
   version: string
   lastSavedAt: string   // ISO datetime
+
+  communityActivities?: CommunityActivities
+  volunteers?: string[]
+  localPaperName?: string
+  patron?: Patron
+  localPolitician?: LocalPolitician
+  boardPersonalities?: BoardMember[]
+  hallDebateCount?: number
+  lastHallDebateRound?: number
 }

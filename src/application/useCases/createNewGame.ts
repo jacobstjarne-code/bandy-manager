@@ -1,7 +1,8 @@
-import type { SaveGame } from '../../domain/entities/SaveGame'
+import type { SaveGame, Patron, LocalPolitician, BoardMember, CommunityActivities } from '../../domain/entities/SaveGame'
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { League } from '../../domain/entities/League'
-import { FixtureStatus, TrainingType, TrainingIntensity, PlayerPosition } from '../../domain/enums'
+import type { Player } from '../../domain/entities/Player'
+import { FixtureStatus, TrainingType, TrainingIntensity, PlayerPosition, ClubStyle } from '../../domain/enums'
 import { generateWorld } from '../../domain/services/worldGenerator'
 import { generateSchedule } from '../../domain/services/scheduleGenerator'
 import { calculateStandings } from '../../domain/services/standingsService'
@@ -9,6 +10,84 @@ import { generateMatchWeather } from '../../domain/services/weatherService'
 import type { MatchWeather } from '../../domain/entities/Weather'
 import { generateCupFixtures } from '../../domain/services/cupService'
 import { mulberry32 } from '../../domain/utils/random'
+import { PATRON_PROFILES, PATRON_RELATIONS } from '../../domain/data/patronData'
+import { POLITICIAN_PROFILES } from '../../domain/data/politicianData'
+import { BOARD_PROFILES } from '../../domain/data/boardData'
+import { VOLUNTEER_FIRST_NAMES, LOCAL_PAPER_NAMES } from '../../domain/data/communityNames'
+
+function pickRandom<T>(arr: T[], rand: () => number): T {
+  return arr[Math.floor(rand() * arr.length)]
+}
+
+function pickUnique<T>(arr: T[], count: number, rand: () => number): T[] {
+  const shuffled = [...arr].sort(() => rand() - 0.5)
+  return shuffled.slice(0, count)
+}
+
+function generatePatron(
+  clubReputation: number,
+  managedPlayers: Player[],
+  rand: () => number,
+): Patron | undefined {
+  if (clubReputation < 35 || rand() > 0.75) return undefined
+  const profile = pickRandom(PATRON_PROFILES, rand)
+  const influence = 30 + Math.floor(rand() * 60)
+  const contribution = Math.round(
+    (influence * 500 + clubReputation * 300 + rand() * 30000) / 1000
+  ) * 1000
+  const lowAbilityPlayers = managedPlayers.filter(p => p.currentAbility < 50)
+  const favPlayer = rand() < 0.40 && lowAbilityPlayers.length > 0
+    ? pickRandom(lowAbilityPlayers, rand)
+    : undefined
+  const relation = favPlayer ? pickRandom(PATRON_RELATIONS, rand) : undefined
+  const wantsStyle = rand() < 0.50
+    ? (rand() < 0.5 ? ClubStyle.Attacking : ClubStyle.Physical)
+    : undefined
+
+  return {
+    name: `${profile.first} ${profile.last}`,
+    business: profile.biz,
+    influence,
+    happiness: 60,
+    contribution,
+    favoritePlayerId: favPlayer?.id,
+    favoriteRelation: relation,
+    wantsStyle,
+    isActive: true,
+    hasBeenWarned: false,
+  }
+}
+
+function generatePolitician(rand: () => number): LocalPolitician {
+  const profile = pickRandom(POLITICIAN_PROFILES, rand)
+  const agendas: Array<'youth' | 'inclusion' | 'prestige' | 'savings'> =
+    ['youth', 'inclusion', 'prestige', 'savings']
+  return {
+    name: `${profile.first} ${profile.last}`,
+    title: `${profile.title} ${profile.party}`,
+    party: profile.party,
+    agenda: pickRandom(agendas, rand),
+    relationship: 50,
+    kommunBidrag: 50000 + Math.round(rand() * 100000),
+  }
+}
+
+function generateBoardMembers(rand: () => number): BoardMember[] {
+  const ordforanden = BOARD_PROFILES.filter(p => p.role === 'ordförande')
+  const kassorer = BOARD_PROFILES.filter(p => p.role === 'kassör')
+  const ledamoter = BOARD_PROFILES.filter(p => p.role === 'ledamot')
+
+  const chair = pickRandom(ordforanden, rand)
+  const treasurer = pickRandom(kassorer, rand)
+  const memberCount = 1 + Math.floor(rand() * 3)
+  const members = pickUnique(ledamoter, memberCount, rand)
+
+  return [chair, treasurer, ...members].map(p => ({
+    name: `${p.first} ${p.last}`,
+    role: p.role,
+    personality: p.personality,
+  }))
+}
 
 export interface CreateNewGameInput {
   managerName: string
@@ -20,6 +99,7 @@ export interface CreateNewGameInput {
 
 export function createNewGame(input: CreateNewGameInput): SaveGame {
   const season = input.season ?? 2025
+  const rand = mulberry32((input.seed ?? 42) + 12345)
 
   const { clubs, players } = generateWorld(season, input.seed)
 
@@ -55,7 +135,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   const standings = calculateStandings(clubs.map(c => c.id), [])
 
   // Auto-select best valid lineup for the managed club
-  const managedClub = clubs.find(c => c.id === input.clubId)!
+  const managedClubForLineup = clubs.find(c => c.id === input.clubId)!
   const available = players.filter(
     p => p.clubId === input.clubId && !p.isInjured && p.suspensionGamesRemaining <= 0
   )
@@ -77,7 +157,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     startingPlayerIds: starters.map(p => p.id),
     benchPlayerIds: bench.map(p => p.id),
     captainPlayerId: starters[0]?.id,
-    tactic: managedClub.activeTactic,
+    tactic: managedClubForLineup.activeTactic,
   }
 
   // Generate cup fixtures
@@ -96,13 +176,36 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
 
   const allFixtures = [...fixtures, ...cupFixtures]
 
+  // Ensure the player's chosen club doesn't have hasIndoorArena
+  const clubsFixed = clubs.map(c =>
+    c.id === input.clubId ? { ...c, hasIndoorArena: false } : c
+  )
+
+  const managedClub = clubsFixed.find(c => c.id === input.clubId)!
+  const managedPlayers = players.filter(p => p.clubId === input.clubId)
+
+  const volunteers = pickUnique(VOLUNTEER_FIRST_NAMES, 6 + Math.floor(rand() * 3), rand)
+  const localPaperName = pickRandom(LOCAL_PAPER_NAMES, rand)
+
+  const patron = generatePatron(managedClub.reputation, managedPlayers, rand)
+  const localPolitician = generatePolitician(rand)
+  const boardPersonalities = generateBoardMembers(rand)
+
+  const communityActivities: CommunityActivities = {
+    kiosk: 'none',
+    lottery: 'none',
+    bandyplay: false,
+    functionaries: false,
+    julmarknad: false,
+  }
+
   const game: SaveGame = {
     id: `save_${Date.now()}`,
     managerName: input.managerName,
     managedClubId: input.clubId,
     currentDate: `${season}-10-01`,
     currentSeason: season,
-    clubs,
+    clubs: clubsFixed,
     players,
     league,
     fixtures: allFixtures,
@@ -139,6 +242,14 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     activeTalentSearch: null,
     talentSearchResults: [],
     doctorQuestionsUsed: 0,
+    communityActivities,
+    volunteers,
+    localPaperName,
+    patron,
+    localPolitician,
+    boardPersonalities,
+    hallDebateCount: 0,
+    lastHallDebateRound: 0,
     version: '0.1.0',
     lastSavedAt: now,
   }
