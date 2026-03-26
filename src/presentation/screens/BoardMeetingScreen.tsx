@@ -50,8 +50,18 @@ export function BoardMeetingScreen() {
     .filter(f => f.status === 'completed')
     .sort((a, b) => b.roundNumber - a.roundNumber)[0]?.roundNumber ?? 0
 
+  function hashGameId(s: string): number {
+    let h = 0
+    for (let i = 0; i < s.length; i++) {
+      h = ((h << 5) - h) + s.charCodeAt(i)
+      h |= 0
+    }
+    return Math.abs(h)
+  }
+  const gameIdSeed = hashGameId(game!.id ?? 'default')
+
   function getContextualQuote(personality: BoardPersonality, memberIndex: number): string {
-    const baseIdx = (game!.currentSeason * 7 + latestCompletedRound + memberIndex * 3)
+    const baseIdx = (gameIdSeed + game!.currentSeason * 7 + latestCompletedRound + memberIndex * 3)
 
     if (personality === 'ekonom') {
       if (club!.finances > 500000) {

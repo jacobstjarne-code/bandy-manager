@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { Home, Users, Swords, ArrowLeftRight, Bell, Stethoscope } from 'lucide-react'
+import { Home, Users, Swords, ArrowLeftRight, Bell, Building2 } from 'lucide-react'
 import { useInjuredInLineup, useExpiringContracts, useNextRoundNumber, useHasPendingLineup, useGameStore, useUnreadInboxCount } from '../store/gameStore'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 
@@ -10,7 +10,7 @@ const tabs = [
   { to: '/game/match', label: 'Match', Icon: Swords },
   { to: '/game/transfers', label: 'Transfers', Icon: ArrowLeftRight },
   { to: '/game/inbox', label: 'Inkorg', Icon: Bell },
-  { to: '/game/doctor', label: 'Doktorn', Icon: Stethoscope },
+  { to: '/game/club', label: 'Klubb', Icon: Building2 },
 ]
 
 function Badge({ count }: { count: number }) {

@@ -643,6 +643,22 @@ export function ClubScreen() {
           </button>
         </SectionCard>
       )}
+
+      {/* Bandydoktorn */}
+      <button
+        onClick={() => navigate('/game/doctor')}
+        style={{
+          width: '100%', marginBottom: 80, padding: '12px',
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius)',
+          color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600,
+          cursor: 'pointer', textAlign: 'center',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+        }}
+      >
+        🩺 Bandydoktorn →
+      </button>
     </div>
   )
 }
