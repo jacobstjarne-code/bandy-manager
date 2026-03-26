@@ -786,7 +786,7 @@ export function DashboardScreen() {
           ].filter(Boolean)
           return (
             <div
-              onClick={() => navigate('/game/club')}
+              onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}
               style={{ ...cardStyle, cursor: 'pointer' }}
             >
               <p style={{ ...cardLabelStyle }}>💰 Ekonomi</p>

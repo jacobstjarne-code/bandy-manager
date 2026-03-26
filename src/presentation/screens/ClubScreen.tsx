@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useManagedClub, useGameStore, useCurrentStanding } from '../store/gameStore'
 import { ClubExpectation, ClubStyle, TrainingType, TrainingIntensity } from '../../domain/enums'
 import { StatBar } from '../components/StatBar'
@@ -320,18 +321,23 @@ function attributeLabel(key: string): string {
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
 
+type ClubTab = 'training' | 'ekonomi' | 'klubb'
+
 export function ClubScreen() {
   const club = useManagedClub()
   const game = useGameStore(s => s.game)
   const setTraining = useGameStore(s => s.setTraining)
   const standing = useCurrentStanding()
   const navigate = useNavigate()
+  const location = useLocation()
+  const [activeTab, setActiveTab] = useState<ClubTab>(
+    (location.state as { tab?: ClubTab } | null)?.tab ?? 'training'
+  )
 
   if (!club || !game) return null
 
   const training = game.managedClubTraining ?? { type: TrainingType.Physical, intensity: TrainingIntensity.Normal }
 
-  // Build recent sessions (last 3) from training history
   const history = game.trainingHistory ?? []
   const recentSessions = history.length > 0
     ? history.slice(-3).reverse().map(session => {
@@ -343,325 +349,301 @@ export function ClubScreen() {
       })
     : undefined
 
-  // Count training injuries this season from inbox
   const trainingInjuriesThisSeason = game.inbox.filter(item =>
     item.type === 'training' && item.body.includes('⚠️')
   ).reduce((sum, item) => sum + (item.body.split('⚠️').length - 1), 0)
 
+  const TAB_LABELS: { key: ClubTab; label: string }[] = [
+    { key: 'training', label: 'Träning' },
+    { key: 'ekonomi', label: 'Ekonomi' },
+    { key: 'klubb', label: 'Klubb' },
+  ]
+
   return (
-    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 700 }}>{club.name}</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginTop: 4 }}>{club.region}</p>
-      </div>
+      <div style={{ padding: '20px 16px 0', flexShrink: 0 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 2 }}>{club.name}</h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 14 }}>{club.region}</p>
 
-      {/* Träning */}
-      <TrainingSection
-        focus={training}
-        recentSessions={recentSessions}
-        trainingInjuriesThisSeason={trainingInjuriesThisSeason}
-        onChangeFocus={setTraining}
-      />
-
-      {/* Sponsorer */}
-      {(() => {
-        const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
-        const maxSponsors = Math.min(6, 2 + Math.floor(club.reputation / 20))
-        const totalWeekly = activeSponsors.reduce((sum, s) => sum + s.weeklyIncome, 0)
-        const slots = Array.from({ length: maxSponsors })
-        return (
-          <SectionCard title="Sponsorer" stagger={2}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                {activeSponsors.length} av {maxSponsors} sponsorplatser
-              </span>
-              {totalWeekly > 0 && (
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>
-                  +{formatCurrency(totalWeekly)}/vecka
-                </span>
-              )}
-            </div>
-            {slots.map((_, i) => {
-              const sponsor = activeSponsors[i]
-              if (sponsor) {
-                return (
-                  <div key={sponsor.id} style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '8px 0',
-                    borderBottom: i < maxSponsors - 1 ? '1px solid var(--border)' : 'none',
-                  }}>
-                    <div>
-                      <span style={{ fontSize: 13, fontWeight: 600 }}>{sponsor.name}</span>
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{sponsor.category}</span>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>
-                        +{formatCurrency(sponsor.weeklyIncome)}/v
-                      </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                        {sponsor.contractRounds} omg kvar
-                      </div>
-                    </div>
-                  </div>
-                )
-              }
-              return (
-                <div key={`empty-${i}`} style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '8px 0',
-                  borderBottom: i < maxSponsors - 1 ? '1px solid var(--border)' : 'none',
-                }}>
-                  <span style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>Ledig plats</span>
-                </div>
-              )
-            })}
-          </SectionCard>
-        )
-      })()}
-
-      {/* Ekonomi */}
-      {(() => {
-        const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
-        const actualMonthlyWages = managedPlayers.reduce((sum, p) => sum + p.salary, 0)
-        const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
-        const weeklySponsors = activeSponsors.reduce((sum, s) => sum + s.weeklyIncome, 0)
-        const ca = game.communityActivities
-        const kioskEst = ca?.kiosk === 'upgraded' ? 7000 : ca?.kiosk === 'basic' ? 3500 : 0
-        const lotteryEst = ca?.lottery === 'intensive' ? 2250 : ca?.lottery === 'basic' ? 1000 : 0
-        const communityEst = kioskEst + lotteryEst + (ca?.functionaries ? 3000 : 0)
-        const weeklyIncome = weeklySponsors + communityEst
-        const patron = game.patron?.isActive ? game.patron : null
-        const kommunBidrag = (game.localPolitician?.kommunBidrag ?? 0)
-        const wagePressure = actualMonthlyWages > club.wageBudget
-
-        return (
-          <SectionCard title="Ekonomi" stagger={3}>
-            {/* Saldo */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid var(--border)' }}>
-              <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Saldo</span>
-              <span style={{ fontSize: 16, fontWeight: 700, color: club.finances < 0 ? 'var(--danger)' : 'var(--text-primary)' }}>{formatCurrency(club.finances)}</span>
-            </div>
-
-            {/* Wages */}
-            <div style={{ marginBottom: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Löneutgifter/mån</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: wagePressure ? 'var(--danger)' : 'var(--text-primary)' }}>
-                  -{formatCurrency(actualMonthlyWages)}
-                </span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Lönebudget: {formatCurrency(club.wageBudget)}/mån</span>
-                {wagePressure && <span style={{ fontSize: 11, color: 'var(--danger)', fontWeight: 600 }}>⚠️ Överskrid</span>}
-              </div>
-            </div>
-
-            {/* Income per round */}
-            {weeklyIncome > 0 && (
-              <div style={{ paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid var(--border)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-                  <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Fasta intäkter/omg</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(weeklyIncome)}</span>
-                </div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {weeklySponsors > 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Sponsorer: +{formatCurrency(weeklySponsors)}</span>}
-                  {communityEst > 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Förening: +{formatCurrency(communityEst)}</span>}
-                </div>
-              </div>
-            )}
-
-            {/* Patron */}
-            {patron && patron.contribution > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid var(--border)' }}>
-                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Patron ({patron.name})</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(patron.contribution)}/sä</span>
-              </div>
-            )}
-
-            {/* Kommunbidrag */}
-            {kommunBidrag > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid var(--border)' }}>
-                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Kommunbidrag</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(kommunBidrag)}/sä</span>
-              </div>
-            )}
-
-            {/* Transferbudget */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Transferbudget</span>
-              <span style={{ fontSize: 14, fontWeight: 600 }}>{formatCurrency(club.transferBudget)}</span>
-            </div>
-
+        {/* Tab bar */}
+        <div style={{
+          display: 'flex',
+          borderBottom: '1px solid var(--border)',
+          marginBottom: 0,
+        }}>
+          {TAB_LABELS.map(({ key, label }) => (
             <button
-              onClick={() => navigate('/game/budget')}
+              key={key}
+              onClick={() => setActiveTab(key)}
               style={{
-                width: '100%',
-                padding: '10px',
-                background: 'rgba(201,168,76,0.06)',
-                border: '1px solid rgba(201,168,76,0.2)',
-                borderRadius: 'var(--radius-sm)',
-                color: '#C9A84C',
-                fontSize: 13,
-                fontWeight: 600,
+                flex: 1,
+                padding: '10px 4px',
+                background: 'none',
+                border: 'none',
+                borderBottom: activeTab === key ? '2px solid var(--accent)' : '2px solid transparent',
+                color: activeTab === key ? 'var(--accent)' : 'var(--text-muted)',
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: '0.8px',
+                textTransform: 'uppercase',
                 cursor: 'pointer',
-                textAlign: 'center',
+                transition: 'color 0.15s',
               }}
             >
-              Budget & ekonomi →
+              {label}
             </button>
-          </SectionCard>
-        )
-      })()}
-
-      {/* Faciliteter */}
-      <SectionCard title="Faciliteter" stagger={4}>
-        <FacilityRow label="Anläggningar" value={club.facilities} />
-        <FacilityRow label="Ungdomskvalitet" value={club.youthQuality} />
-        <FacilityRow label="Ungdomsrekrytering" value={club.youthRecruitment} />
-        <div style={{ marginBottom: 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-            <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Ungdomsutveckling</span>
-            <span style={{ fontSize: 14, fontWeight: 600 }}>{club.youthDevelopment}</span>
-          </div>
-          <StatBar value={club.youthDevelopment} color='var(--accent)' height={5} />
+          ))}
         </div>
-      </SectionCard>
+      </div>
 
-      {/* Förväntan */}
-      <SectionCard title="Förväntan" stagger={5}>
-        <InfoRow label="Styrelseförväntning" value={expectationLabel(club.boardExpectation)} />
-        <InfoRow label="Supporterförväntning" value={expectationLabel(club.fanExpectation)} />
-        <InfoRow label="Spelstil" value={styleLabel(club.preferredStyle)} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Konstis</span>
-          <span style={{ fontSize: 14, fontWeight: 600 }}>{club.hasArtificialIce ? 'Ja' : 'Nej'}</span>
-        </div>
-      </SectionCard>
+      {/* Scrollable content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px 90px' }}>
 
-      {/* Tabellposition */}
-      {standing && (
-        <SectionCard title="Tabellposition" stagger={6}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: 8,
-            marginBottom: 12,
-          }}>
-            {[
-              { label: 'Plats', value: standing.position },
-              { label: 'Poäng', value: standing.points },
-              { label: 'Spelade', value: standing.played },
-              { label: 'Mål+', value: standing.goalsFor },
-            ].map(({ label, value }) => (
-              <div key={label} style={{
-                background: 'var(--bg-elevated)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '10px 6px',
-                textAlign: 'center',
-                border: '1px solid var(--border)',
-              }}>
-                <div style={{ fontSize: 18, fontWeight: 700 }}>{value}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {[
-              { label: 'V', value: standing.wins },
-              { label: 'O', value: standing.draws },
-              { label: 'F', value: standing.losses },
-              { label: 'MålD', value: standing.goalDifference > 0 ? '+' + standing.goalDifference : String(standing.goalDifference) },
-            ].map(({ label, value }) => (
-              <div key={label} style={{
-                flex: 1,
-                background: 'var(--bg-elevated)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '8px 4px',
-                textAlign: 'center',
-                border: '1px solid var(--border)',
-              }}>
-                <div style={{ fontSize: 16, fontWeight: 600 }}>{value}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
-      )}
+        {/* ── Tab 1: Träning ── */}
+        {activeTab === 'training' && (
+          <TrainingSection
+            focus={training}
+            recentSessions={recentSessions}
+            trainingInjuriesThisSeason={trainingInjuriesThisSeason}
+            onChangeFocus={setTraining}
+          />
+        )}
 
-      {/* Säsongshistorik */}
-      {game.seasonSummaries && game.seasonSummaries.length > 0 && (
-        <SectionCard title="Säsongshistorik" stagger={6}>
-          {[...game.seasonSummaries].reverse().map(s => {
-            const posColor = s.finalPosition <= 3 ? 'var(--accent)' : s.finalPosition >= 10 ? 'var(--danger)' : 'var(--text-primary)'
-            let playoffLabel = ''
-            if (s.playoffResult === 'champion') playoffLabel = '🏆'
-            else if (s.playoffResult === 'finalist') playoffLabel = '🥈 Finalist'
-            else if (s.playoffResult === 'semifinal') playoffLabel = 'SF'
-            else if (s.playoffResult === 'quarterfinal') playoffLabel = 'KF'
-            return (
-              <div
-                key={s.season}
-                onClick={() => navigate(`/game/season-summary/${s.season}`)}
+        {/* ── Tab 2: Ekonomi ── */}
+        {activeTab === 'ekonomi' && (() => {
+          const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
+          const actualMonthlyWages = managedPlayers.reduce((sum, p) => sum + p.salary, 0)
+          const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
+          const maxSponsors = Math.min(6, 2 + Math.floor(club.reputation / 20))
+          const weeklySponsors = activeSponsors.reduce((sum, s) => sum + s.weeklyIncome, 0)
+          const ca = game.communityActivities
+          const kioskEst = ca?.kiosk === 'upgraded' ? 7000 : ca?.kiosk === 'basic' ? 3500 : 0
+          const lotteryEst = ca?.lottery === 'intensive' ? 2250 : ca?.lottery === 'basic' ? 1000 : 0
+          const communityEst = kioskEst + lotteryEst + (ca?.functionaries ? 3000 : 0) + (ca?.bandyplay ? 1200 : 0)
+          const weeklyBase = Math.round(club.reputation * 150)
+          const weeklyIncome = weeklyBase + weeklySponsors + communityEst
+          const weeklyWages = Math.round(actualMonthlyWages / 4)
+          const netPerRound = weeklyIncome - weeklyWages
+          const patron = game.patron?.isActive ? game.patron : null
+          const kommunBidrag = game.localPolitician?.kommunBidrag ?? 0
+          const wagePressure = actualMonthlyWages > club.wageBudget
+          const slots = Array.from({ length: maxSponsors })
+
+          return (
+            <>
+              {/* Kassaöversikt */}
+              <SectionCard title="Kassaöversikt" stagger={1}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Saldo</span>
+                  <span style={{ fontSize: 18, fontWeight: 800, color: club.finances < 0 ? 'var(--danger)' : 'var(--text-primary)' }}>
+                    {formatCurrency(club.finances)}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Intäkter / omg</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(weeklyIncome)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Lönekostnader / omg</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: wagePressure ? 'var(--danger)' : 'var(--text-primary)' }}>
+                    -{formatCurrency(weeklyWages)}
+                  </span>
+                </div>
+                {wagePressure && (
+                  <p style={{ fontSize: 11, color: 'var(--danger)', marginBottom: 6 }}>
+                    ⚠️ Lönekostnader överstiger lönebudget ({formatCurrency(club.wageBudget)}/mån)
+                  </p>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: 13, fontWeight: 700 }}>Netto / omg</span>
+                  <span style={{ fontSize: 14, fontWeight: 800, color: netPerRound >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+                    {netPerRound >= 0 ? '+' : ''}{formatCurrency(netPerRound)}
+                  </span>
+                </div>
+              </SectionCard>
+
+              {/* Sponsorer */}
+              <SectionCard title="Sponsorer" stagger={2}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                    {activeSponsors.length} av {maxSponsors} platser
+                  </span>
+                  {weeklySponsors > 0 && (
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>
+                      +{formatCurrency(weeklySponsors)}/omg
+                    </span>
+                  )}
+                </div>
+                {slots.map((_, i) => {
+                  const sponsor = activeSponsors[i]
+                  return sponsor ? (
+                    <div key={sponsor.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: i < maxSponsors - 1 ? '1px solid var(--border)' : 'none' }}>
+                      <div>
+                        <span style={{ fontSize: 13, fontWeight: 600 }}>{sponsor.name}</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{sponsor.category}</span>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(sponsor.weeklyIncome)}/omg</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{sponsor.contractRounds} omg kvar</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div key={`empty-${i}`} style={{ padding: '7px 0', borderBottom: i < maxSponsors - 1 ? '1px solid var(--border)' : 'none' }}>
+                      <span style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>Ledig plats</span>
+                    </div>
+                  )
+                })}
+              </SectionCard>
+
+              {/* Övriga intäkter */}
+              {(communityEst > 0 || patron || kommunBidrag > 0) && (
+                <SectionCard title="Övriga intäkter" stagger={3}>
+                  {communityEst > 0 && (
+                    <div style={{ paddingBottom: 8, marginBottom: 8, borderBottom: (patron || kommunBidrag > 0) ? '1px solid var(--border)' : 'none' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Föreningsverksamhet</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(communityEst)}/omg</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        {kioskEst > 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>🏪 Kiosk +{formatCurrency(kioskEst)}</span>}
+                        {lotteryEst > 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>🎟️ Lotteri +{formatCurrency(lotteryEst)}</span>}
+                        {ca?.functionaries && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>🤝 Funktionärer +{formatCurrency(3000)}</span>}
+                        {ca?.bandyplay && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>🏒 Bandyskola +{formatCurrency(1200)}</span>}
+                      </div>
+                    </div>
+                  )}
+                  {patron && patron.contribution > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: kommunBidrag > 0 ? 8 : 0, marginBottom: kommunBidrag > 0 ? 8 : 0, borderBottom: kommunBidrag > 0 ? '1px solid var(--border)' : 'none' }}>
+                      <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Patron — {patron.name}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(patron.contribution)}/sä</span>
+                    </div>
+                  )}
+                  {kommunBidrag > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Kommunbidrag</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(kommunBidrag)}/sä</span>
+                    </div>
+                  )}
+                </SectionCard>
+              )}
+
+              <button
+                onClick={() => navigate('/game/budget')}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingBottom: 10,
-                  marginBottom: 10,
-                  borderBottom: '1px solid var(--border)',
-                  cursor: 'pointer',
+                  width: '100%', padding: '12px',
+                  background: 'rgba(201,168,76,0.06)',
+                  border: '1px solid rgba(201,168,76,0.2)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: '#C9A84C', fontSize: 13, fontWeight: 600,
+                  cursor: 'pointer', textAlign: 'center',
                 }}
               >
-                <span style={{ fontSize: 14, color: 'var(--text-secondary)', minWidth: 48 }}>{s.season}</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: posColor, minWidth: 32, textAlign: 'center' }}>
-                  {s.finalPosition}.
-                </span>
-                <span style={{ fontSize: 13, color: 'var(--text-secondary)', minWidth: 52, textAlign: 'center' }}>
-                  {s.points} p
-                </span>
-                <span style={{ fontSize: 12, color: 'var(--text-muted)', flex: 1, textAlign: 'right' }}>
-                  {playoffLabel}
-                </span>
-                <span style={{ fontSize: 14, color: 'var(--accent)', marginLeft: 8 }}>→</span>
-              </div>
-            )
-          })}
-          <button
-            onClick={() => navigate('/game/history')}
-            style={{
-              width: '100%', marginTop: 8, padding: '10px',
-              background: 'rgba(201,168,76,0.06)',
-              border: '1px solid rgba(201,168,76,0.2)',
-              borderRadius: 'var(--radius-sm)',
-              color: '#C9A84C', fontSize: 13, fontWeight: 600,
-              cursor: 'pointer', textAlign: 'center',
-            }}
-          >
-            Hall of Fame & full historik →
-          </button>
-        </SectionCard>
-      )}
+                Budget & transferbudget →
+              </button>
+            </>
+          )
+        })()}
 
-      {/* Bandydoktorn */}
-      <button
-        onClick={() => navigate('/game/doctor')}
-        style={{
-          width: '100%', marginBottom: 80, padding: '12px',
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius)',
-          color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600,
-          cursor: 'pointer', textAlign: 'center',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-        }}
-      >
-        🩺 Bandydoktorn →
-      </button>
+        {/* ── Tab 3: Klubb ── */}
+        {activeTab === 'klubb' && (
+          <>
+            <SectionCard title="Faciliteter" stagger={1}>
+              <FacilityRow label="Anläggningar" value={club.facilities} />
+              <FacilityRow label="Ungdomskvalitet" value={club.youthQuality} />
+              <FacilityRow label="Ungdomsrekrytering" value={club.youthRecruitment} />
+              <div style={{ marginBottom: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                  <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Ungdomsutveckling</span>
+                  <span style={{ fontSize: 14, fontWeight: 600 }}>{club.youthDevelopment}</span>
+                </div>
+                <StatBar value={club.youthDevelopment} color='var(--accent)' height={5} />
+              </div>
+            </SectionCard>
+
+            <SectionCard title="Förväntan & profil" stagger={2}>
+              <InfoRow label="Styrelseförväntning" value={expectationLabel(club.boardExpectation)} />
+              <InfoRow label="Supporterförväntning" value={expectationLabel(club.fanExpectation)} />
+              <InfoRow label="Spelstil" value={styleLabel(club.preferredStyle)} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Konstis</span>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>{club.hasArtificialIce ? 'Ja' : 'Nej'}</span>
+              </div>
+            </SectionCard>
+
+            {standing && (
+              <SectionCard title="Tabellposition" stagger={3}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
+                  {[
+                    { label: 'Plats', value: standing.position },
+                    { label: 'Poäng', value: standing.points },
+                    { label: 'Spelade', value: standing.played },
+                    { label: 'Mål+', value: standing.goalsFor },
+                  ].map(({ label, value }) => (
+                    <div key={label} style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', padding: '10px 6px', textAlign: 'center', border: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: 18, fontWeight: 700 }}>{value}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {[
+                    { label: 'V', value: standing.wins },
+                    { label: 'O', value: standing.draws },
+                    { label: 'F', value: standing.losses },
+                    { label: 'MålD', value: standing.goalDifference > 0 ? '+' + standing.goalDifference : String(standing.goalDifference) },
+                  ].map(({ label, value }) => (
+                    <div key={label} style={{ flex: 1, background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', padding: '8px 4px', textAlign: 'center', border: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: 16, fontWeight: 600 }}>{value}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
+                    </div>
+                  ))}
+                </div>
+              </SectionCard>
+            )}
+
+            {game.seasonSummaries && game.seasonSummaries.length > 0 && (
+              <SectionCard title="Säsongshistorik" stagger={4}>
+                {[...game.seasonSummaries].reverse().map(s => {
+                  const posColor = s.finalPosition <= 3 ? 'var(--accent)' : s.finalPosition >= 10 ? 'var(--danger)' : 'var(--text-primary)'
+                  let playoffLabel = ''
+                  if (s.playoffResult === 'champion') playoffLabel = '🏆'
+                  else if (s.playoffResult === 'finalist') playoffLabel = '🥈'
+                  else if (s.playoffResult === 'semifinal') playoffLabel = 'SF'
+                  else if (s.playoffResult === 'quarterfinal') playoffLabel = 'KF'
+                  return (
+                    <div
+                      key={s.season}
+                      onClick={() => navigate(`/game/season-summary/${s.season}`)}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
+                    >
+                      <span style={{ fontSize: 14, color: 'var(--text-secondary)', minWidth: 48 }}>{s.season}</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: posColor, minWidth: 32, textAlign: 'center' }}>{s.finalPosition}.</span>
+                      <span style={{ fontSize: 13, color: 'var(--text-secondary)', minWidth: 52, textAlign: 'center' }}>{s.points} p</span>
+                      <span style={{ fontSize: 12, color: 'var(--text-muted)', flex: 1, textAlign: 'right' }}>{playoffLabel}</span>
+                      <span style={{ fontSize: 14, color: 'var(--accent)', marginLeft: 8 }}>→</span>
+                    </div>
+                  )
+                })}
+                <button
+                  onClick={() => navigate('/game/history')}
+                  style={{ width: '100%', marginTop: 8, padding: '10px', background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 'var(--radius-sm)', color: '#C9A84C', fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'center' }}
+                >
+                  Hall of Fame & full historik →
+                </button>
+              </SectionCard>
+            )}
+
+            <button
+              onClick={() => navigate('/game/doctor')}
+              style={{ width: '100%', padding: '12px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+            >
+              🩺 Bandydoktorn →
+            </button>
+          </>
+        )}
+
+      </div>
     </div>
   )
 }
