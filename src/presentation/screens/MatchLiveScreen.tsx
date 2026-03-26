@@ -5,6 +5,7 @@ import { simulateMatchStepByStep, type MatchStep } from '../../domain/services/m
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
 import type { PlayoffBracket } from '../../domain/entities/Playoff'
+import type { CupBracket } from '../../domain/entities/Cup'
 import type { Club } from '../../domain/entities/Club'
 import { MatchEventType, WeatherCondition, IceQuality } from '../../domain/enums'
 import { getWeatherEmoji, getIceQualityLabel } from '../../domain/services/weatherService'
@@ -110,6 +111,25 @@ function getFinalJourney(bracket: PlayoffBracket, clubId: string, clubs: Club[])
   return 'Klarade sig till finalen'
 }
 
+function getCupJourney(
+  bracket: CupBracket,
+  clubId: string,
+  clubs: Club[]
+): string {
+  const wonMatches = bracket.matches
+    .filter(m => m.winnerId === clubId)
+    .sort((a, b) => a.round - b.round)
+
+  return wonMatches
+    .map(m => {
+      const oppId = m.homeClubId === clubId ? m.awayClubId : m.homeClubId
+      const opp = clubs.find(c => c.id === oppId)?.name ?? '?'
+      const roundName = m.round === 1 ? 'KF' : m.round === 2 ? 'SF' : 'Final'
+      return `${roundName}: Slog ${opp}`
+    })
+    .join('\n')
+}
+
 export function MatchLiveScreen() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -128,16 +148,25 @@ export function MatchLiveScreen() {
   const rivalry = fixture ? getRivalry(fixture.homeClubId, fixture.awayClubId) : null
   const isSmFinal = fixture?.isNeutralVenue === true
 
+  const isCupFinal = fixture?.isCup === true && (() => {
+    const bracket = game?.cupBracket
+    if (!bracket) return false
+    const finalMatch = bracket.matches.find(m => m.round === 3)
+    return finalMatch?.fixtureId === fixture.id
+  })()
+
+  const isBigMatch = isSmFinal || isCupFinal
+
   const [steps, setSteps] = useState<MatchStep[]>([])
   const [currentStep, setCurrentStep] = useState(-1)
   const [isPaused, setIsPaused] = useState(false)
   const [isFastForward, setIsFastForward] = useState(false)
   const [showHalftime, setShowHalftime] = useState(false)
   const [matchDone, setMatchDone] = useState(false)
-  // SM-final ceremony slide (0 = not showing, 1 = final score, 2 = champion, 3 = MVP)
+  // SM-final/cup-final ceremony slide (0 = not showing, 1 = final score, 2 = champion/loss, 3 = MVP [SM only])
   const [ceremonySlide, setCeremonySlide] = useState(0)
-  // SM-final pre-match intro slide (0 = not showing, 1/2/3 = intro slides)
-  const [finalIntroSlide, setFinalIntroSlide] = useState(() => isSmFinal ? 1 : 0)
+  // SM-final/cup-final pre-match intro slide (0 = not showing, 1/2/3 = intro slides)
+  const [finalIntroSlide, setFinalIntroSlide] = useState(() => isSmFinal ? 1 : isCupFinal ? 1 : 0)
   // Score flash state
   const [homeScoreFlash, setHomeScoreFlash] = useState(false)
   const [awayScoreFlash, setAwayScoreFlash] = useState(false)
@@ -275,7 +304,7 @@ export function MatchLiveScreen() {
     const timer = setTimeout(() => {
       if (currentStep + 1 >= steps.length) {
         setMatchDone(true)
-        if (isSmFinal) {
+        if (isSmFinal || isCupFinal) {
           setCeremonySlide(1)
         }
       } else {
@@ -511,6 +540,143 @@ export function MatchLiveScreen() {
             }}
           >
             ⚡ SPELA FINALEN
+          </button>
+        </div>
+      )
+    }
+  }
+
+  // Cup final pre-match intro slides
+  if (!isSmFinal && isCupFinal && finalIntroSlide > 0) {
+    const season = game?.currentSeason ?? fixture.season
+    const weatherEmoji = matchWeather ? getWeatherEmoji(matchWeather.weather.condition) : ''
+
+    if (finalIntroSlide === 1) {
+      return (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          background: 'linear-gradient(180deg, #050d18 0%, #0D1B2A 60%, #091526 100%)',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          padding: '0 24px',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ fontSize: 56, marginBottom: 20 }}>🏆</div>
+            <p style={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: '#C9A84C',
+              letterSpacing: '3px',
+              textTransform: 'uppercase',
+              marginBottom: 4,
+            }}>SVENSKA CUPEN</p>
+            <h1 style={{
+              fontSize: 28,
+              fontWeight: 900,
+              color: '#F0F4F8',
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              marginBottom: 20,
+            }}>FINAL</h1>
+            <p style={{ fontSize: 14, color: '#6a7d8f', marginBottom: 4 }}>Säsong {season}</p>
+            <p style={{ fontSize: 16, color: '#C9A84C', fontWeight: 700, marginBottom: 4 }}>
+              {truncate(homeClubName, 14)}  vs  {truncate(awayClubName, 14)}
+            </p>
+            {weatherEmoji && (
+              <p style={{ fontSize: 13, color: '#6a7d8f', marginBottom: 28 }}>{weatherEmoji} {matchWeather?.weather.condition}</p>
+            )}
+            {!weatherEmoji && <div style={{ marginBottom: 28 }} />}
+            <button
+              onClick={() => setFinalIntroSlide(2)}
+              style={{
+                padding: '14px 32px',
+                background: '#C9A84C',
+                border: 'none',
+                borderRadius: 12,
+                color: '#0D1B2A',
+                fontSize: 15,
+                fontWeight: 700,
+                cursor: 'pointer',
+                letterSpacing: '1px',
+              }}
+            >
+              Visa uppställning →
+            </button>
+          </div>
+        </div>
+      )
+    }
+
+    if (finalIntroSlide === 2) {
+      const homeStarters = homeLineup.startingPlayerIds
+        .map(id => game?.players.find(p => p.id === id))
+        .filter(Boolean)
+      const awayStarters = awayLineup.startingPlayerIds
+        .map(id => game?.players.find(p => p.id === id))
+        .filter(Boolean)
+      return (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          background: '#0D1B2A',
+          padding: '24px 16px',
+          overflowY: 'auto',
+        }}>
+          <p style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '2px',
+            textTransform: 'uppercase',
+            color: '#C9A84C',
+            textAlign: 'center',
+            marginBottom: 24,
+          }}>
+            STARTELVORNA
+          </p>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
+                {truncate(homeClubName, 14)}
+              </p>
+              {homeStarters.map((p, i) => p && (
+                <p key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 4, textAlign: 'center' }}>
+                  {p.firstName} {p.lastName}
+                </p>
+              ))}
+            </div>
+            <div style={{ width: 1, background: 'rgba(201,168,76,0.15)' }} />
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
+                {truncate(awayClubName, 14)}
+              </p>
+              {awayStarters.map((p, i) => p && (
+                <p key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 4, textAlign: 'center' }}>
+                  {p.firstName} {p.lastName}
+                </p>
+              ))}
+            </div>
+          </div>
+          <button
+            onClick={() => setFinalIntroSlide(0)}
+            style={{
+              padding: '16px',
+              background: '#C9A84C',
+              border: 'none',
+              borderRadius: 12,
+              color: '#0D1B2A',
+              fontSize: 16,
+              fontWeight: 800,
+              cursor: 'pointer',
+              letterSpacing: '1px',
+            }}
+          >
+            ⚡ SPELA CUPFINALEN
           </button>
         </div>
       )
@@ -890,8 +1056,8 @@ export function MatchLiveScreen() {
             zIndex: 200,
           }}>
             <div style={{
-              background: isSmFinal ? '#0D1B2A' : 'var(--bg-surface)',
-              border: isSmFinal ? '1px solid rgba(201,168,76,0.4)' : '1px solid var(--border)',
+              background: isBigMatch ? '#0D1B2A' : 'var(--bg-surface)',
+              border: isBigMatch ? '1px solid rgba(201,168,76,0.4)' : '1px solid var(--border)',
               borderRadius: 'var(--radius)',
               padding: '24px 20px',
               textAlign: 'center',
@@ -900,14 +1066,14 @@ export function MatchLiveScreen() {
               width: '90%',
             }}>
               <p style={{
-                fontSize: isSmFinal ? 13 : 11,
+                fontSize: isBigMatch ? 13 : 11,
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 letterSpacing: '1px',
-                color: isSmFinal ? '#C9A84C' : 'var(--text-muted)',
+                color: isBigMatch ? '#C9A84C' : 'var(--text-muted)',
                 marginBottom: 14,
               }}>
-                ⏸ {isSmFinal ? 'HALVTID — SM-FINAL' : 'HALVTID'}
+                {isSmFinal ? '⏸ HALVTID · SM-FINALEN' : isCupFinal ? '⏸ HALVTID · CUPFINALEN' : '⏸ HALVTID'}
               </p>
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                 <div style={{ textAlign: 'center' }}>
@@ -961,6 +1127,17 @@ export function MatchLiveScreen() {
                   Laget samlas i omklädningsrummet. Det är 30 minuter kvar till SM-guld.
                 </p>
               )}
+              {isCupFinal && !isSmFinal && (
+                <p style={{
+                  fontSize: 11,
+                  color: '#8A9BB0',
+                  fontStyle: 'italic',
+                  marginBottom: 12,
+                  lineHeight: 1.5,
+                }}>
+                  Laget samlas i omklädningsrummet. Det är 30 minuter kvar till cuptiteln.
+                </p>
+              )}
               <button
                 onClick={() => {
                   setShowHalftime(false)
@@ -969,15 +1146,15 @@ export function MatchLiveScreen() {
                 style={{
                   width: '100%',
                   padding: '12px',
-                  background: isSmFinal ? '#C9A84C' : 'var(--accent)',
+                  background: isBigMatch ? '#C9A84C' : 'var(--accent)',
                   border: 'none',
                   borderRadius: 'var(--radius)',
-                  color: isSmFinal ? '#0D1B2A' : '#fff',
+                  color: isBigMatch ? '#0D1B2A' : '#fff',
                   fontSize: 15,
                   fontWeight: 700,
                 }}
               >
-                {isSmFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}
+                {isSmFinal ? 'ANDRA HALVLEK →' : isCupFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}
               </button>
             </div>
           </div>
@@ -985,7 +1162,7 @@ export function MatchLiveScreen() {
       })()}
 
       {/* Match done overlay — normal matches */}
-      {matchDone && !isSmFinal && (() => {
+      {matchDone && !isSmFinal && !isCupFinal && (() => {
         const allGoalEvents = steps.flatMap(s =>
           s.events.filter(e => e.type === MatchEventType.Goal)
         )
@@ -1144,6 +1321,162 @@ export function MatchLiveScreen() {
                   Fortsätt →
                 </button>
               </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Cup final ceremony — Slide 1: Final score (auto-advances) */}
+      {!isSmFinal && isCupFinal && ceremonySlide === 1 && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#0D1B2A',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 300,
+        }}>
+          <p style={{
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: '2px',
+            textTransform: 'uppercase',
+            color: '#C9A84C',
+            marginBottom: 24,
+          }}>
+            CUPFINALEN
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 13, color: '#8A9BB0', marginBottom: 8 }}>{truncate(homeClubName, 14)}</p>
+              <span style={{ fontSize: 64, fontWeight: 900, color: '#F0F4F8' }}>{homeScore}</span>
+            </div>
+            <span style={{ fontSize: 32, color: '#4A6080' }}>—</span>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 13, color: '#8A9BB0', marginBottom: 8 }}>{truncate(awayClubName, 14)}</p>
+              <span style={{ fontSize: 64, fontWeight: 900, color: '#F0F4F8' }}>{awayScore}</span>
+            </div>
+          </div>
+          <p style={{ fontSize: 20, fontWeight: 700, color: '#F0F4F8', letterSpacing: '1px' }}>
+            SLUTSIGNAL!
+          </p>
+        </div>
+      )}
+
+      {/* Cup final ceremony — Slide 2: Winner or loss */}
+      {!isSmFinal && isCupFinal && ceremonySlide === 2 && (() => {
+        const managedClubId = game?.managedClubId
+        const managedIsHome = fixture.homeClubId === managedClubId
+        const managedScore = managedIsHome ? homeScore : awayScore
+        const opponentScore = managedIsHome ? awayScore : homeScore
+        const managedWon = managedScore > opponentScore
+        const season = game?.currentSeason ?? fixture.season
+        const managedClubName = managedIsHome ? homeClubName : awayClubName
+        const opponentName = managedIsHome ? awayClubName : homeClubName
+        const clubs = game?.clubs ?? []
+        const cupBracket = game?.cupBracket
+        const cupJourney = managedWon && cupBracket && managedClubId
+          ? getCupJourney(cupBracket, managedClubId, clubs)
+          : ''
+
+        return (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: '#0D1B2A',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 300,
+            overflow: 'hidden',
+          }}>
+            {managedWon && <GoldConfetti />}
+            <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '0 24px' }}>
+              {managedWon ? (
+                <>
+                  <div style={{ fontSize: 64, marginBottom: 16 }}>🏆</div>
+                  <h1 style={{
+                    fontSize: 26,
+                    fontWeight: 900,
+                    color: '#C9A84C',
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    marginBottom: 8,
+                  }}>
+                    CUPVINNARE!
+                  </h1>
+                  <p style={{ fontSize: 18, color: '#F0F4F8', fontWeight: 700, marginBottom: 4 }}>
+                    {managedClubName}
+                  </p>
+                  <p style={{ fontSize: 13, color: '#8A9BB0', marginBottom: 20 }}>
+                    Svenska Cupen {season}
+                  </p>
+                  {cupJourney && (
+                    <div style={{
+                      marginBottom: 24,
+                      padding: '12px 16px',
+                      background: 'rgba(201,168,76,0.06)',
+                      border: '1px solid rgba(201,168,76,0.2)',
+                      borderRadius: 10,
+                      textAlign: 'left',
+                    }}>
+                      <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        Cupvägen
+                      </p>
+                      {cupJourney.split('\n').map((line, i) => (
+                        <p key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 4 }}>{line}</p>
+                      ))}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => navigate('/game', { replace: true })}
+                    style={{
+                      padding: '14px 32px',
+                      background: '#C9A84C',
+                      border: 'none',
+                      borderRadius: 12,
+                      color: '#0D1B2A',
+                      fontSize: 15,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      letterSpacing: '1px',
+                    }}
+                  >
+                    Cupfest! →
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: 56, marginBottom: 16 }}>🥈</div>
+                  <h1 style={{ fontSize: 22, fontWeight: 800, color: '#8A9BB0', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 12 }}>
+                    Cupfinalförlust
+                  </h1>
+                  <p style={{ fontSize: 15, color: '#F0F4F8', marginBottom: 4 }}>
+                    {opponentName} vann Svenska Cupen
+                  </p>
+                  <p style={{ fontSize: 13, color: '#8A9BB0', marginBottom: 32 }}>
+                    Ni kom ändå långt.
+                  </p>
+                  <button
+                    onClick={() => navigate('/game', { replace: true })}
+                    style={{
+                      padding: '14px 32px',
+                      background: '#1e3450',
+                      border: '1px solid rgba(201,168,76,0.2)',
+                      borderRadius: 12,
+                      color: '#F0F4F8',
+                      fontSize: 15,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Fortsätt →
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )

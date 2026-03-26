@@ -971,11 +971,17 @@ export function MatchScreen() {
   const myWins = playoffSeries ? (isSeriesHome ? playoffSeries.homeWins : playoffSeries.awayWins) : 0
   const theirWins = playoffSeries ? (isSeriesHome ? playoffSeries.awayWins : playoffSeries.homeWins) : 0
   const isCupFixture = nextFixture.isCup === true
+  const isCupFinal = nextFixture.isCup === true && (() => {
+    const bracket = game?.cupBracket
+    if (!bracket) return false
+    return bracket.matches.find(m => m.round === 3)?.fixtureId === nextFixture.id
+  })()
   const isFinalMatch = playoffSeries?.round === PlayoffRound.Final
   const roundLabel = isPlayoffRound && playoffSeries
     ? isFinalMatch
       ? `SM-FINAL · Studenternas IP, Uppsala`
       : `${getPlayoffRoundLabel(playoffSeries.round)} · Serie ${myWins}–${theirWins} (bäst av 5)`
+    : isCupFinal ? '🏆 SVENSKA CUPEN · FINAL'
     : isCupFixture ? '🏆 CUPMATCH'
     : rivalry ? `🔥 ${rivalry.name} ${'🔥'.repeat(rivalry.intensity)}` : `Omgång ${nextFixture.roundNumber}`
   const matchWeatherData = game?.matchWeathers?.find(w => w.fixtureId === nextFixture.id)
