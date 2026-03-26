@@ -11,18 +11,18 @@ function difficultyLabel(reputation: number): { label: string; color: string } {
 }
 
 const CLUB_FLAVOR: Record<string, string> = {
-  'broberg':   'Den lilla klubben med de stora drömmarna.',
-  'bollnas':   'Tradition i varje fiber. Hälsinglands hjärta.',
-  'edsbyn':    'Bandy i blodet. Edsbyn andas historia.',
-  'villa':     'Storklubben från Lidköping. Skyhöga förväntningar.',
-  'vetlanda':  'Småländsk envishet. De ger aldrig upp.',
-  'hammarby':  'Stockholms bandystolthet. Söderstadion väntar.',
-  'grimsas':   'Underdogen. Liten budget, stort hjärta.',
-  'motala':    'Östgötsk klass. Ett lag på väg uppåt.',
-  'sandviken': 'Jernvallen. Legendarisk arena, legendarisk klubb.',
-  'sirius':    'Uppsalas stolthet. Akademisk stad, hungrig klubb.',
-  'vasteras':  'Regerande mästare. Titeln ska försvaras.',
-  'lodose':    'Nykomlingen. Ingen tror på er — bevisa dem fel.',
+  'club_sandviken':  'Hårda tag på hård is. Storvik ger sig aldrig.',
+  'club_sirius':     'Akademisk stad, hungrig klubb. Tierp vill uppåt.',
+  'club_vasteras':   'Hallstahammar andas bandy. Förväntningarna är höga.',
+  'club_broberg':    'Den lilla klubben med de stora drömmarna.',
+  'club_villa':      'Lödöse har allt att bevisa. Nykomlingens hunger.',
+  'club_falun':      'Gagnefs IF — envishet i blodet. De ger aldrig upp.',
+  'club_ljusdal':    'Bergsjö. Liten budget, stort hjärta.',
+  'club_edsbyn':     'Alfta — tradition i varje fiber.',
+  'club_tillberga':  'Kolbäck. Underdogen. Ingen tror på er.',
+  'club_kungalv':    'Bohus BK. Västkustbandy med attityd.',
+  'club_skutskar':   'Skutskär. Upplands stolthet på isen.',
+  'club_soderhamns': 'Iggesund. Där bandyn lever året runt.',
 }
 
 const CLUBS = CLUB_TEMPLATES.map(t => ({

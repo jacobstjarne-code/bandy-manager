@@ -688,11 +688,15 @@ export function DashboardScreen() {
             <p className="section-heading" style={{ ...cardLabelStyle, position: 'relative', zIndex: 1 }}>
               {isPlayoffFixture ? `NÄSTA MATCH — ${playoffSeries ? getRoundFullLabel(playoffSeries.round).toUpperCase() : 'SLUTSPEL'}` : 'NÄSTA MATCH'}
             </p>
-            {nextFixture.isCup && (
-              <p style={{ fontSize: 13, color: '#C9A84C', fontWeight: 700, marginBottom: 4, position: 'relative', zIndex: 1 }}>
-                🏆 Svenska Cupen · {getCupRoundLabel(nextFixture.roundNumber)}
-              </p>
-            )}
+            {nextFixture.isCup && (() => {
+              const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id)
+              const roundLabel = cupMatch ? getCupRoundLabel(cupMatch.round) : 'CUPMATCH'
+              return (
+                <p style={{ fontSize: 13, color: '#C9A84C', fontWeight: 700, marginBottom: 4, position: 'relative', zIndex: 1 }}>
+                  🏆 Svenska Cupen · {roundLabel}
+                </p>
+              )
+            })()}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, position: 'relative', zIndex: 1 }}>
               {/* Club badges */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
@@ -707,9 +711,7 @@ export function DashboardScreen() {
                   <p style={{ fontSize: 13, color: '#C9A84C', marginTop: 2, fontWeight: 700 }}>
                     {getRoundLabel(playoffSeries.round)} · {dynamicHomeWins}–{dynamicAwayWins}
                   </p>
-                ) : nextFixture.isCup ? (
-                  <p style={{ fontSize: 13, color: '#C9A84C', marginTop: 2 }}>Cupomgång</p>
-                ) : (
+                ) : nextFixture.isCup ? null : (
                   <p style={{ fontSize: 13, color: '#8A9BB0', marginTop: 2 }}>Omgång {nextFixture.roundNumber}</p>
                 )}
               </div>

@@ -16,6 +16,7 @@ import { PlayerLink } from '../components/PlayerLink'
 import type { MatchWeather } from '../../domain/entities/Weather'
 import { WeatherCondition } from '../../domain/enums'
 import { generateBasicAnalysis } from '../../domain/services/opponentAnalysisService'
+import { getCupRoundLabel } from '../../domain/services/cupService'
 
 interface WeatherAdviceItem {
   icon: string
@@ -989,18 +990,15 @@ export function MatchScreen() {
   const myWins = playoffSeries ? (isSeriesHome ? playoffSeries.homeWins : playoffSeries.awayWins) : 0
   const theirWins = playoffSeries ? (isSeriesHome ? playoffSeries.awayWins : playoffSeries.homeWins) : 0
   const isCupFixture = nextFixture.isCup === true
-  const isCupFinal = nextFixture.isCup === true && (() => {
-    const bracket = game?.cupBracket
-    if (!bracket) return false
-    return bracket.matches.find(m => m.round === 3)?.fixtureId === nextFixture.id
-  })()
+  const cupMatchEntry = isCupFixture ? game?.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id) : null
+  const isCupFinal = cupMatchEntry?.round === 3
   const isFinalMatch = playoffSeries?.round === PlayoffRound.Final
   const roundLabel = isPlayoffRound && playoffSeries
     ? isFinalMatch
       ? `SM-FINAL · Studenternas IP, Uppsala`
       : `${getPlayoffRoundLabel(playoffSeries.round)} · Serie ${myWins}–${theirWins} (bäst av 5)`
-    : isCupFinal ? '🏆 SVENSKA CUPEN · FINAL'
-    : isCupFixture ? '🏆 CUPMATCH'
+    : isCupFixture
+      ? `🏆 SVENSKA CUPEN · ${isCupFinal ? 'FINAL' : getCupRoundLabel(cupMatchEntry?.round ?? 1)}`
     : rivalry ? `🔥 ${rivalry.name} ${'🔥'.repeat(rivalry.intensity)}` : `Omgång ${nextFixture.roundNumber}`
   const matchWeatherData = game?.matchWeathers?.find(w => w.fixtureId === nextFixture.id)
 
