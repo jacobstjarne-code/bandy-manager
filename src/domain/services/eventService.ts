@@ -84,7 +84,10 @@ function bidReceivedEvent(bid: TransferBid, game: SaveGame): GameEvent {
     ? `Kontrakt: ${player.contractUntilSeason - game.currentSeason} säsong(er) kvar`
     : ''
   const mvText = player ? `Marknadsvärde: ${formatValue(player.marketValue ?? 0)}` : ''
-  const counterAmount = Math.round(bid.offerAmount * 1.5 / 5000) * 5000
+  const playerMarketVal = player?.marketValue ?? 50000
+  const counterAmountRaw = Math.round(bid.offerAmount * 1.5 / 5000) * 5000
+  const counterAmount = Math.min(counterAmountRaw, playerMarketVal * 2)
+  const canCounter = counterAmount > bid.offerAmount && (bid.counterCount ?? 0) === 0
 
   const choices: EventChoice[] = [
     {
@@ -92,11 +95,11 @@ function bidReceivedEvent(bid: TransferBid, game: SaveGame): GameEvent {
       label: `Acceptera (${formatValue(bid.offerAmount)})`,
       effect: { type: 'acceptTransfer', bidId: bid.id, targetPlayerId: bid.playerId, targetClubId: bid.buyingClubId },
     },
-    {
+    ...(canCounter ? [{
       id: 'counter',
       label: `Kräv mer (${formatValue(counterAmount)})`,
-      effect: { type: 'counterOffer', bidId: bid.id, value: counterAmount },
-    },
+      effect: { type: 'counterOffer' as const, bidId: bid.id, value: counterAmount },
+    }] : []),
     {
       id: 'reject',
       label: 'Avslå',
@@ -876,7 +879,46 @@ export function generatePostAdvanceEvents(
   for (const bid of existingPendingBids) {
     if (events.length >= 2) break
     const eid = `event_bid_${bid.id}`
-    if (!alreadyQueued.has(eid)) {
+    if (alreadyQueued.has(eid)) continue
+    if ((bid.counterCount ?? 0) >= 1) {
+      // AI responds to counter — accept if ≥1.5x market value, otherwise withdraw
+      const player = game.players.find(p => p.id === bid.playerId)
+      const marketVal = player?.marketValue ?? 50000
+      const buyingClub = game.clubs.find(c => c.id === bid.buyingClubId)
+      const clubName = buyingClub?.name ?? 'Köparklubben'
+      const playerName = player ? `${player.firstName} ${player.lastName}` : 'spelaren'
+      if (bid.offerAmount >= marketVal * 1.5) {
+        events.push({
+          id: `event_bid_aiaccept_${bid.id}`,
+          type: 'transferBidReceived',
+          title: `${clubName} accepterar din motbud`,
+          body: `${clubName} godkänner det höjda kravet på ${formatValue(bid.offerAmount)} för ${playerName}. Bekräfta försäljningen.`,
+          choices: [{
+            id: 'confirm',
+            label: `Genomför transfer (${formatValue(bid.offerAmount)})`,
+            effect: { type: 'acceptTransfer', bidId: bid.id, targetPlayerId: bid.playerId, targetClubId: bid.buyingClubId },
+          }],
+          relatedPlayerId: bid.playerId,
+          relatedBidId: bid.id,
+          resolved: false,
+        })
+      } else {
+        events.push({
+          id: `event_bid_aireject_${bid.id}`,
+          type: 'transferBidReceived',
+          title: `${clubName} drar sig ur`,
+          body: `${clubName} accepterar inte din prissättning på ${formatValue(bid.offerAmount)} för ${playerName} och drar tillbaka budet.`,
+          choices: [{
+            id: 'ok',
+            label: 'OK',
+            effect: { type: 'rejectTransfer', bidId: bid.id, targetPlayerId: bid.playerId },
+          }],
+          relatedPlayerId: bid.playerId,
+          relatedBidId: bid.id,
+          resolved: false,
+        })
+      }
+    } else {
       events.push(bidReceivedEvent(bid, game))
     }
   }
@@ -1147,7 +1189,12 @@ export function resolveEvent(
         ...updatedGame,
         transferBids: (updatedGame.transferBids ?? []).map(b =>
           b.id === effect.bidId
-            ? { ...b, offerAmount: effect.value ?? b.offerAmount, expiresRound: b.expiresRound + 1 }
+            ? {
+                ...b,
+                offerAmount: effect.value ?? b.offerAmount,
+                expiresRound: b.expiresRound + 1,
+                counterCount: (b.counterCount ?? 0) + 1,
+              }
             : b,
         ),
       }

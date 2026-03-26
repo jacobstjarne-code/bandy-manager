@@ -15,6 +15,7 @@ import {
   PenaltyKillStyle,
 } from '../enums'
 import { mulberry32 } from '../utils/random'
+import { calculateMarketValue } from './marketValueService'
 
 interface GeneratedWorld {
   clubs: Club[]
@@ -578,8 +579,12 @@ function generatePlayer(
   const nationality = rng.next() < 0.8 ? 'svenska' : rng.pick(['norska', 'finska', 'ryska'])
   const isHomegrown = age <= 23 && nationality === 'svenska' ? true : rng.next() < 0.3
 
+  const contractUntilSeason = season + rng.int(1, 3)
   const salary = clamp(ca * 200 + rng.int(-2000, 2000), 3000, Infinity)
-  const marketValue = clamp(ca * 3000 + rng.int(-5000, 5000), 5000, Infinity)
+  const marketValue = calculateMarketValue(
+    { age, currentAbility: ca, form: 60, contractUntilSeason } as Player,
+    season,
+  )
 
   const emptyStats: PlayerSeasonStats = {
     gamesPlayed: 0,
@@ -618,7 +623,7 @@ function generatePlayer(
     position,
     archetype,
     salary,
-    contractUntilSeason: season + rng.int(1, 3),
+    contractUntilSeason,
     marketValue,
     morale: rng.int(50, 80),
     form: rng.int(50, 70),

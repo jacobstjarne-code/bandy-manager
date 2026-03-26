@@ -81,4 +81,5 @@ export interface TransferBid {
   status: 'pending' | 'accepted' | 'rejected' | 'expired'
   createdRound: number
   expiresRound: number
+  counterCount?: number
 }
