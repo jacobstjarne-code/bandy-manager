@@ -153,10 +153,13 @@ export function MatchLiveScreen() {
   const prevAwayScore = useRef(0)
 
   const feedRef = useRef<HTMLDivElement>(null)
+  const hasSimulated = useRef(false)
 
   // Pre-generate all 60 steps on mount
   useEffect(() => {
+    if (hasSimulated.current) return
     if (!fixture || !homeLineup || !awayLineup || !game) return
+    hasSimulated.current = true
 
     const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
     const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
@@ -298,7 +301,7 @@ export function MatchLiveScreen() {
   }
 
   function handleSeeReport() {
-    navigate('/game/match', { state: { showReport: true } })
+    navigate('/game/match', { state: { showReport: true }, replace: true })
   }
 
   if (!fixture || !homeLineup || !awayLineup) {
@@ -666,20 +669,53 @@ export function MatchLiveScreen() {
             {truncate(awayClubName, 10)}
           </span>
         </div>
-        {/* Clock ring with minute display */}
-        <div style={{ position: 'relative', display: 'inline-block', margin: '0 auto' }}>
-          <svg width="48" height="48" viewBox="0 0 48 48" style={{ position: 'absolute', top: -18, left: '50%', transform: 'translateX(-50%)' }}>
-            <circle cx="24" cy="24" r="20" fill="none" stroke="#1e3450" strokeWidth="2"/>
-            <circle cx="24" cy="24" r="20" fill="none" stroke="#C9A84C" strokeWidth="2"
-              strokeDasharray={`${(currentMinute / 90) * 125.7} 125.7`}
-              strokeLinecap="round"
-              transform="rotate(-90 24 24)"
-              style={{ transition: 'stroke-dasharray 600ms ease-out' }}
-            />
-          </svg>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600, paddingTop: 4 }}>
-            {matchDone ? 'Slutresultat' : `${currentMinute}'`}
+        {/* Derby badge */}
+        {rivalry && (
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            padding: '3px 10px',
+            borderRadius: 99,
+            background: 'linear-gradient(90deg, rgba(220,50,30,0.2), rgba(201,168,76,0.2))',
+            border: '1px solid rgba(220,100,30,0.4)',
+            fontSize: 11,
+            fontWeight: 700,
+            color: '#ff7040',
+            marginTop: 6,
+            marginBottom: 4,
+          }}>
+            🔥 {rivalry.name} {'🔥'.repeat(Math.min(rivalry.intensity ?? 1, 3))}
           </div>
+        )}
+        {/* Clock ring with minute display */}
+        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', margin: '0 auto' }}>
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <svg width="48" height="48" viewBox="0 0 48 48" style={{ position: 'absolute', top: -18, left: '50%', transform: 'translateX(-50%)' }}>
+              <circle cx="24" cy="24" r="20" fill="none" stroke="#1e3450" strokeWidth="2"/>
+              <circle cx="24" cy="24" r="20" fill="none" stroke="#C9A84C" strokeWidth="2"
+                strokeDasharray={`${(currentMinute / 90) * 125.7} 125.7`}
+                strokeLinecap="round"
+                transform="rotate(-90 24 24)"
+                style={{ transition: 'stroke-dasharray 600ms ease-out' }}
+              />
+            </svg>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600, paddingTop: 4 }}>
+              {matchDone ? 'Slutresultat' : `${currentMinute}'`}
+            </div>
+          </div>
+          {rivalry && !matchDone && (
+            <span style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: '#ff7040',
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              marginLeft: 8,
+            }}>
+              DERBY
+            </span>
+          )}
         </div>
         {matchWeather && (
           <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
@@ -817,138 +853,227 @@ export function MatchLiveScreen() {
       </div>
 
       {/* Halftime modal */}
-      {showHalftime && !matchDone && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.85)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          paddingTop: '80px',
-          zIndex: 200,
-        }}>
+      {showHalftime && !matchDone && (() => {
+        const htSteps = steps.slice(0, 31)
+        const htEvents = htSteps.flatMap(s => s.events)
+        const htHomeGoals = halftimeStep?.homeScore ?? homeScore
+        const htAwayGoals = halftimeStep?.awayScore ?? awayScore
+        const htHomeSuspensions = htEvents.filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.homeClubId).length
+        const htAwaySuspensions = htEvents.filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.awayClubId).length
+
+        // Best player so far
+        const htStarters = [...(homeLineup.startingPlayerIds ?? []), ...(awayLineup.startingPlayerIds ?? [])]
+        const htRatings: Record<string, number> = {}
+        for (const id of htStarters) htRatings[id] = 6.5
+        for (const e of htEvents) {
+          if (!e.playerId) continue
+          if (e.type === MatchEventType.Goal) htRatings[e.playerId] = Math.min(10, (htRatings[e.playerId] ?? 6.5) + 1.5)
+          if (e.type === MatchEventType.RedCard) htRatings[e.playerId] = Math.max(1, (htRatings[e.playerId] ?? 6.5) - 1.5)
+        }
+        const [bestId] = Object.entries(htRatings).sort((a, b) => b[1] - a[1])[0] ?? ['', 0]
+        const bestPlayer = bestId ? game?.players.find(p => p.id === bestId) : undefined
+        const bestPlayerName = bestPlayer ? `${bestPlayer.firstName} ${bestPlayer.lastName}` : null
+
+        const managedIsHome = fixture.homeClubId === game?.managedClubId
+        const managedGoals = managedIsHome ? htHomeGoals : htAwayGoals
+        const oppGoals = managedIsHome ? htAwayGoals : htHomeGoals
+        const diff = managedGoals - oppGoals
+        const analysis =
+          diff >= 2 ? 'Stark insats. Fortsätt kontrollera tempot.' :
+          diff === 1 ? 'Ledningen är skör. Var uppmärksam defensivt.' :
+          diff === 0 ? 'Jämnt — allt avgörs i andra halvlek.' :
+          diff === -1 ? 'Hänger med. En omgång kan vända det.' :
+          'Tufft läge. Överväg taktikbyte.'
+
+        return (
           <div style={{
-            background: isSmFinal ? '#0D1B2A' : 'var(--bg-surface)',
-            border: isSmFinal ? '1px solid rgba(201,168,76,0.4)' : '1px solid var(--border)',
-            borderRadius: 'var(--radius)',
-            padding: '28px 24px',
-            textAlign: 'center',
-            minWidth: 260,
-            maxWidth: 320,
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.85)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            paddingTop: '60px',
+            zIndex: 200,
           }}>
-            <p style={{
-              fontSize: isSmFinal ? 13 : 11,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              color: isSmFinal ? '#C9A84C' : 'var(--text-muted)',
-              marginBottom: 16,
+            <div style={{
+              background: isSmFinal ? '#0D1B2A' : 'var(--bg-surface)',
+              border: isSmFinal ? '1px solid rgba(201,168,76,0.4)' : '1px solid var(--border)',
+              borderRadius: 'var(--radius)',
+              padding: '24px 20px',
+              textAlign: 'center',
+              minWidth: 260,
+              maxWidth: 330,
+              width: '90%',
             }}>
-              {isSmFinal ? 'HALVTID — SM-FINAL' : 'Halvtid'}
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(homeClubName, 12)}</p>
-                <span style={{ fontSize: 40, fontWeight: 800 }}>{halftimeStep?.homeScore ?? homeScore}</span>
+              <p style={{
+                fontSize: isSmFinal ? 13 : 11,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                color: isSmFinal ? '#C9A84C' : 'var(--text-muted)',
+                marginBottom: 14,
+              }}>
+                ⏸ {isSmFinal ? 'HALVTID — SM-FINAL' : 'HALVTID'}
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(homeClubName, 12)}</p>
+                  <span style={{ fontSize: 40, fontWeight: 800 }}>{htHomeGoals}</span>
+                </div>
+                <span style={{ fontSize: 24, color: 'var(--text-muted)' }}>—</span>
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(awayClubName, 12)}</p>
+                  <span style={{ fontSize: 40, fontWeight: 800 }}>{htAwayGoals}</span>
+                </div>
               </div>
-              <span style={{ fontSize: 24, color: 'var(--text-muted)' }}>—</span>
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(awayClubName, 12)}</p>
-                <span style={{ fontSize: 40, fontWeight: 800 }}>{halftimeStep?.awayScore ?? awayScore}</span>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, textAlign: 'left', lineHeight: 1.8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Skott:</span>
+                  <span>{halftimeStep?.shotsHome ?? 0} — {halftimeStep?.shotsAway ?? 0}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Hörnor:</span>
+                  <span>{halftimeStep?.cornersHome ?? 0} — {halftimeStep?.cornersAway ?? 0}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Utvisningar:</span>
+                  <span>{htHomeSuspensions} — {htAwaySuspensions}</span>
+                </div>
               </div>
-            </div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
-              <p>Skott: {halftimeStep?.shotsHome ?? 0} — {halftimeStep?.shotsAway ?? 0}</p>
-              <p style={{ marginTop: 4 }}>Hörnor: {halftimeStep?.cornersHome ?? 0} — {halftimeStep?.cornersAway ?? 0}</p>
-            </div>
-            {isSmFinal && (
+              {bestPlayerName && (
+                <div style={{ marginBottom: 14, padding: '8px 12px', background: 'rgba(201,168,76,0.06)', borderRadius: 8, border: '1px solid rgba(201,168,76,0.15)' }}>
+                  <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, marginBottom: 2 }}>⭐ Matchens spelare hittills</p>
+                  <p style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>{bestPlayerName}</p>
+                  {bestPlayer?.position && <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{bestPlayer.position}</p>}
+                </div>
+              )}
               <p style={{
                 fontSize: 12,
                 color: '#8A9BB0',
                 fontStyle: 'italic',
-                marginBottom: 20,
+                marginBottom: 16,
                 lineHeight: 1.5,
               }}>
-                Laget samlas i omklädningsrummet. Det är 30 minuter kvar till SM-guld.
+                💬 "{analysis}"
               </p>
-            )}
-            <button
-              onClick={() => {
-                setShowHalftime(false)
-                setCurrentStep(prev => prev + 1)
-              }}
-              style={{
-                width: '100%',
-                padding: '12px',
-                background: isSmFinal ? '#C9A84C' : 'var(--accent)',
-                border: 'none',
-                borderRadius: 'var(--radius)',
-                color: isSmFinal ? '#0D1B2A' : '#fff',
-                fontSize: 15,
-                fontWeight: 700,
-              }}
-            >
-              {isSmFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}
-            </button>
+              {isSmFinal && (
+                <p style={{
+                  fontSize: 11,
+                  color: '#8A9BB0',
+                  fontStyle: 'italic',
+                  marginBottom: 12,
+                  lineHeight: 1.5,
+                }}>
+                  Laget samlas i omklädningsrummet. Det är 30 minuter kvar till SM-guld.
+                </p>
+              )}
+              <button
+                onClick={() => {
+                  setShowHalftime(false)
+                  setCurrentStep(prev => prev + 1)
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: isSmFinal ? '#C9A84C' : 'var(--accent)',
+                  border: 'none',
+                  borderRadius: 'var(--radius)',
+                  color: isSmFinal ? '#0D1B2A' : '#fff',
+                  fontSize: 15,
+                  fontWeight: 700,
+                }}
+              >
+                {isSmFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* Match done overlay — normal matches */}
-      {matchDone && !isSmFinal && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.9)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          paddingTop: '60px',
-          zIndex: 200,
-        }}>
-          <div style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)',
-            padding: '28px 24px',
-            textAlign: 'center',
-            minWidth: 280,
-            maxWidth: 340,
-            width: '90%',
-          }}>
-            <p style={{
-              fontSize: 11,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              color: 'var(--text-muted)',
-              marginBottom: 16,
-            }}>
-              Slutresultat
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(homeClubName, 12)}</p>
-                <span style={{ fontSize: 40, fontWeight: 800 }}>{homeScore}</span>
-              </div>
-              <span style={{ fontSize: 24, color: 'var(--text-muted)' }}>—</span>
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(awayClubName, 12)}</p>
-                <span style={{ fontSize: 40, fontWeight: 800 }}>{awayScore}</span>
-              </div>
-            </div>
+      {matchDone && !isSmFinal && (() => {
+        const allGoalEvents = steps.flatMap(s =>
+          s.events.filter(e => e.type === MatchEventType.Goal)
+        )
+        const lastStep = steps[steps.length - 1]
+        const managedIsHome = fixture.homeClubId === game?.managedClubId
+        const managedGoals = managedIsHome ? homeScore : awayScore
+        const oppGoals = managedIsHome ? awayScore : homeScore
+        const resultColor = managedGoals > oppGoals ? '#22c55e' : managedGoals < oppGoals ? '#ef4444' : '#eab308'
 
-            {/* Goal scorers */}
-            {(() => {
-              const allGoalEvents = steps.flatMap(s =>
-                s.events.filter(e => e.type === MatchEventType.Goal)
-              )
-              if (allGoalEvents.length === 0) return null
-              return (
-                <div style={{ marginBottom: 20, textAlign: 'left' }}>
+        // Best player from all starters
+        const allStarters = [...(homeLineup.startingPlayerIds ?? []), ...(awayLineup.startingPlayerIds ?? [])]
+        const finalRatings: Record<string, number> = {}
+        for (const id of allStarters) finalRatings[id] = 6.5
+        const allEvents = steps.flatMap(s => s.events)
+        for (const e of allEvents) {
+          if (!e.playerId) continue
+          if (e.type === MatchEventType.Goal) finalRatings[e.playerId] = Math.min(10, (finalRatings[e.playerId] ?? 6.5) + 1.5)
+          if (e.type === MatchEventType.YellowCard) finalRatings[e.playerId] = Math.max(1, (finalRatings[e.playerId] ?? 6.5) - 0.5)
+          if (e.type === MatchEventType.RedCard) finalRatings[e.playerId] = Math.max(1, (finalRatings[e.playerId] ?? 6.5) - 1.5)
+        }
+        const managedStarters = (managedIsHome ? homeLineup.startingPlayerIds : awayLineup.startingPlayerIds) ?? []
+        const [bestId, bestRating] = Object.entries(finalRatings)
+          .filter(([id]) => managedStarters.includes(id))
+          .sort((a, b) => b[1] - a[1])[0] ?? ['', 0]
+        const bestPlayer = bestId ? game?.players.find(p => p.id === bestId) : undefined
+
+        return (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.9)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            paddingTop: '50px',
+            zIndex: 200,
+            overflowY: 'auto',
+          }}>
+            <div style={{
+              background: 'var(--bg-surface)',
+              border: `2px solid ${resultColor}`,
+              borderRadius: 'var(--radius)',
+              padding: '24px 20px',
+              textAlign: 'center',
+              minWidth: 280,
+              maxWidth: 340,
+              width: '90%',
+              boxShadow: `0 0 30px ${resultColor}22`,
+            }}>
+              <p style={{
+                fontSize: 13,
+                fontWeight: 800,
+                textTransform: 'uppercase',
+                letterSpacing: '2px',
+                color: resultColor,
+                marginBottom: 14,
+              }}>
+                SLUTSIGNAL
+              </p>
+              {fixture.isCup && (
+                <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 700, marginBottom: 8 }}>
+                  🏆 Svenska Cupen
+                </p>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(homeClubName, 12)}</p>
+                  <span style={{ fontSize: 40, fontWeight: 800 }}>{homeScore}</span>
+                </div>
+                <span style={{ fontSize: 24, color: 'var(--text-muted)' }}>—</span>
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(awayClubName, 12)}</p>
+                  <span style={{ fontSize: 40, fontWeight: 800 }}>{awayScore}</span>
+                </div>
+              </div>
+
+              {/* Goal scorers */}
+              {allGoalEvents.length > 0 && (
+                <div style={{ marginBottom: 14, textAlign: 'left' }}>
                   {allGoalEvents.map((e, i) => {
                     const isHome = e.clubId === fixture.homeClubId
                     const foundPlayer = e.playerId ? game?.players.find(p => p.id === e.playerId) : undefined
@@ -966,44 +1091,71 @@ export function MatchLiveScreen() {
                     )
                   })}
                 </div>
-              )
-            })()}
+              )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <button
-                onClick={() => navigate('/game')}
-                style={{
-                  padding: '14px',
-                  background: 'var(--accent)',
-                  border: 'none',
-                  borderRadius: 'var(--radius)',
-                  color: '#fff',
-                  fontSize: 15,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                Dags för nästa match →
-              </button>
-              <button
-                onClick={handleSeeReport}
-                style={{
-                  padding: '12px',
-                  background: 'var(--bg-elevated)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius)',
-                  color: 'var(--text-secondary)',
-                  fontSize: 13,
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                }}
-              >
-                Se matchrapport →
-              </button>
+              {/* Match facts */}
+              {lastStep && (
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, textAlign: 'left', lineHeight: 1.8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Skott:</span>
+                    <span>{lastStep.shotsHome} — {lastStep.shotsAway}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Hörnor:</span>
+                    <span>{lastStep.cornersHome} — {lastStep.cornersAway}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Best player */}
+              {bestPlayer && (
+                <div style={{ marginBottom: 14, padding: '8px 12px', background: 'rgba(201,168,76,0.06)', borderRadius: 8, border: '1px solid rgba(201,168,76,0.15)' }}>
+                  <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, marginBottom: 2 }}>⭐ Matchens spelare</p>
+                  <p style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>
+                    {bestPlayer.firstName} {bestPlayer.lastName}
+                  </p>
+                  <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                    {bestPlayer.position} · {typeof bestRating === 'number' ? bestRating.toFixed(1) : '–'}
+                  </p>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <button
+                  onClick={handleSeeReport}
+                  style={{
+                    padding: '14px',
+                    background: 'var(--accent)',
+                    border: 'none',
+                    borderRadius: 'var(--radius)',
+                    color: '#fff',
+                    fontSize: 15,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Se rapport →
+                </button>
+                <button
+                  onClick={() => navigate('/game', { replace: true })}
+                  style={{
+                    padding: '12px',
+                    background: 'var(--bg-elevated)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius)',
+                    color: 'var(--text-secondary)',
+                    fontSize: 13,
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Fortsätt →
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* SM-final ceremony — Slide 1: Final score */}
       {isSmFinal && ceremonySlide === 1 && (
@@ -1189,7 +1341,7 @@ export function MatchLiveScreen() {
                 {typeof mvpRating === 'number' ? mvpRating.toFixed(1) : '–'}
               </p>
               <button
-                onClick={() => navigate('/game/champion')}
+                onClick={() => navigate('/game/champion', { replace: true })}
                 style={{
                   padding: '16px 32px',
                   background: '#C9A84C',

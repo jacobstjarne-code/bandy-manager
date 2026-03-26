@@ -67,10 +67,10 @@ export const commentary = {
 
   cornerGoal: [
     "MÅÅÅL DIREKT PÅ HÖRNA! {player} slår in bollen i perfekt kurva! {score}!",
-    "HÖRNMÅL! {player} styr in vid främre stolpen efter en vasst insvängd hörna! {score}!",
+    "HÖRNMÅL! {player} styr in vid främre stolpen! Vass hörna! {score}!",
     "MÅÅÅL! Hörnan slås in hårt, {player} är framme och styr — {score}!",
     "HÖRNVARIANT SOM SLUTAR I MÅL! {player} var fri på bakvakten! {score}!",
-    "Insvängd hörna — INNE! {player} nickar — nej, styr med pinnen — in! {score}!",
+    "Insvängd hörna — INNE! {player} styr in den med pinnen! {score}!",
     "MÅÅÅL! Hörnan drillar in i det långt bortre hörnet. {score}!",
     "{team} utnyttjar hörnhörnan perfekt — {player} avslutar kallt. {score}!",
     "HÖRNMÅL! En av bandyns magiska stunder — {player} med en match att minnas! {score}!",
@@ -112,10 +112,10 @@ export const commentary = {
   ],
 
   corner: [
-    "Hörna till {team}. Slås in hårt — nickas undan av försvaret.",
+    "Hörna till {team}. Slås in hårt — rensas av försvaret.",
     "Hörna för {team}. Bollen kurvar in men målvakten boxar ut den i sista stund.",
     "Hörna till {team}. Kort variant — tillbaka till hörnläggaren som skjuter! Utanför.",
-    "{team} får hörna. Hög boll in framför mål — rensning av {opponent}.",
+    "{team} får hörna. Hård insvingare framför mål — rensning av {opponent}.",
     "Hörna {team}. Insvingad direkt mot mål — stolpe! Nära att sitta.",
     "Ny hörna till {team}. Kort uppspel, passning tillbaka, skott! Blockerat.",
     "{team} tar hörna. Bollen snurrar in mot bortre stolpen men seglar över.",

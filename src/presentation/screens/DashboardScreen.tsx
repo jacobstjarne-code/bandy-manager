@@ -185,7 +185,9 @@ function PlayoffBracketCard({ bracket, game, cardStyle, cardLabelStyle }: Playof
 
       {bracket.status !== PlayoffStatus.Completed && (
         <p style={{ fontSize: 11, color: '#8A9BB0', marginTop: 8 }}>
-          Bäst av 3 matcher per serie
+          {bracket.status === PlayoffStatus.Final
+            ? 'En match avgör'
+            : 'Bäst av 5 matcher per serie'}
         </p>
       )}
     </div>
@@ -238,6 +240,14 @@ function CupCard({ bracket, game, cardStyle, cardLabelStyle }: CupCardProps) {
         : nextCupFixture.homeClubId)
     )
     const isHome = nextCupFixture.homeClubId === managedClubId
+    const cupLeagueRound = nextCupFixture.roundNumber - 100
+    const lastLeagueRound = Math.max(
+      0,
+      ...game.fixtures
+        .filter(f => !f.isCup && f.status === 'completed')
+        .map(f => f.roundNumber)
+    )
+    const roundsUntil = cupLeagueRound - lastLeagueRound
     statusContent = (
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
@@ -256,6 +266,11 @@ function CupCard({ bracket, game, cardStyle, cardLabelStyle }: CupCardProps) {
             {isHome ? 'Hemma' : 'Borta'}
           </span>
         </div>
+        <p style={{ fontSize: 11, color: roundsUntil <= 1 ? '#f59e0b' : '#8A9BB0', marginTop: 4 }}>
+          {roundsUntil <= 1
+            ? '⚡ Spelas NÄSTA omgång!'
+            : `Spelas vid serieomgång ${cupLeagueRound} (om ${roundsUntil} omgångar)`}
+        </p>
       </div>
     )
   } else {
@@ -336,9 +351,13 @@ export function DashboardScreen() {
 
   if (!game || !club) return null
 
+  function effectiveRound(f: { roundNumber: number; isCup?: boolean }): number {
+    return f.isCup ? f.roundNumber - 100 : f.roundNumber
+  }
+
   const nextFixture = game.fixtures
     .filter(f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && f.status === 'scheduled')
-    .sort((a, b) => a.roundNumber - b.roundNumber)[0]
+    .sort((a, b) => effectiveRound(a) - effectiveRound(b))[0]
 
   const matchWeather = nextFixture
     ? (game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id)
@@ -575,7 +594,7 @@ export function DashboardScreen() {
               })}
             </div>
             <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 10 }}>
-              Bäst av 3 matcher per serie
+              Bäst av 5 matcher per serie
             </p>
           </div>
         )}
@@ -620,6 +639,11 @@ export function DashboardScreen() {
             <p className="section-heading" style={{ ...cardLabelStyle, position: 'relative', zIndex: 1 }}>
               {isPlayoffFixture ? `NÄSTA MATCH — ${playoffSeries ? getRoundFullLabel(playoffSeries.round).toUpperCase() : 'SLUTSPEL'}` : 'NÄSTA MATCH'}
             </p>
+            {nextFixture.isCup && (
+              <p style={{ fontSize: 13, color: '#C9A84C', fontWeight: 700, marginBottom: 4, position: 'relative', zIndex: 1 }}>
+                🏆 Svenska Cupen · {getCupRoundLabel(nextFixture.roundNumber)}
+              </p>
+            )}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, position: 'relative', zIndex: 1 }}>
               {/* Club badges */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
@@ -634,6 +658,8 @@ export function DashboardScreen() {
                   <p style={{ fontSize: 13, color: '#C9A84C', marginTop: 2, fontWeight: 700 }}>
                     {getRoundLabel(playoffSeries.round)} · {dynamicHomeWins}–{dynamicAwayWins}
                   </p>
+                ) : nextFixture.isCup ? (
+                  <p style={{ fontSize: 13, color: '#C9A84C', marginTop: 2 }}>Cupomgång</p>
                 ) : (
                   <p style={{ fontSize: 13, color: '#8A9BB0', marginTop: 2 }}>Omgång {nextFixture.roundNumber}</p>
                 )}

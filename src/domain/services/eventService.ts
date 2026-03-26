@@ -123,9 +123,10 @@ function unhappyPlayerEvent(game: SaveGame, playerId: string): GameEvent {
 export function generateDayJobConflictEvent(player: Player, roundNumber: number): GameEvent {
   const playerName = `${player.firstName} ${player.lastName}`
   const dayJobTitle = player.dayJob?.title ?? 'jobbet'
+  const period = Math.floor(roundNumber / 5)
 
   return {
-    id: `event_dayjob_${player.id}_${roundNumber}`,
+    id: `event_dayjob_${player.id}_period${period}`,
     type: 'dayJobConflict',
     title: 'Jobbet kolliderar med träningen',
     body: `${playerName} kämpar med att kombinera sin roll som ${dayJobTitle} med det tuffa matchschemat. Något måste ge.`,
@@ -139,6 +140,15 @@ export function generateDayJobConflictEvent(player: Player, roundNumber: number)
         id: 'press',
         label: 'Han klarar det',
         effect: { type: 'boostMorale', value: -3, targetPlayerId: player.id },
+      },
+      {
+        id: 'goPro',
+        label: `Erbjud heltidskontrakt (lön ×1.5 → ${Math.round(player.salary * 1.5).toLocaleString('sv-SE')} kr/mån)`,
+        effect: {
+          type: 'makeFullTimePro',
+          targetPlayerId: player.id,
+          value: Math.round(player.salary * 1.5),
+        },
       },
     ],
     relatedPlayerId: player.id,
@@ -292,7 +302,8 @@ export function generatePostAdvanceEvents(
         return lineup && lineup.startingPlayerIds.includes(p.id)
       }).length
       if (gamesInLast5 >= 3) {
-        const eid = `event_dayjob_${p.id}_${roundPlayed}`
+        const period = Math.floor(roundPlayed / 5)
+        const eid = `event_dayjob_${p.id}_period${period}`
         if (!alreadyQueued.has(eid)) {
           events.push(generateDayJobConflictEvent(p, roundPlayed))
         }
@@ -506,6 +517,26 @@ export function resolveEvent(
         updated = {
           ...updated,
           inbox: [...updated.inbox, mediaInboxItem],
+        }
+      }
+      break
+    }
+    case 'makeFullTimePro': {
+      const pid = effect.targetPlayerId
+      if (pid) {
+        updated = {
+          ...updated,
+          players: updated.players.map(p =>
+            p.id === pid
+              ? {
+                  ...p,
+                  isFullTimePro: true,
+                  dayJob: undefined,
+                  salary: effect.value ?? p.salary,
+                  morale: Math.min(100, p.morale + 15),
+                }
+              : p
+          ),
         }
       }
       break

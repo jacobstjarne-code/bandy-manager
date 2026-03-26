@@ -635,12 +635,16 @@ export function MatchScreen() {
 
   const canPlay = startingIds.length === 11 && injuredInStarting.length === 0
 
+  function effectiveRound(f: { roundNumber: number; isCup?: boolean }): number {
+    return f.isCup ? f.roundNumber - 100 : f.roundNumber
+  }
+
   const nextFixture = game.fixtures
     .filter(f =>
       (f.homeClubId === managedClubId || f.awayClubId === managedClubId) &&
       f.status === FixtureStatus.Scheduled
     )
-    .sort((a, b) => a.roundNumber - b.roundNumber)[0] ?? null
+    .sort((a, b) => effectiveRound(a) - effectiveRound(b))[0] ?? null
 
   const rivalry = nextFixture ? getRivalry(nextFixture.homeClubId, nextFixture.awayClubId) : null
 

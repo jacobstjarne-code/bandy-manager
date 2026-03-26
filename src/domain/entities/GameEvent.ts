@@ -27,6 +27,7 @@ export interface EventEffect {
     | 'pressResponse'
     | 'noOp'
     | 'openNegotiation'
+    | 'makeFullTimePro'
   value?: number
   targetPlayerId?: string
   targetClubId?: string

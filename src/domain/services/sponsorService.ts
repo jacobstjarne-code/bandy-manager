@@ -47,7 +47,11 @@ export function generateSponsorOffer(
   rand: () => number
 ): Sponsor | null {
   if (currentSponsors >= maxSponsors) return null
-  if (rand() > 0.20) return null
+  if (currentSponsors === 0 && round % 2 === 0) {
+    // Always try to generate when no sponsors, every other round
+  } else if (rand() > 0.40) {
+    return null
+  }
 
   const { name, category } = generateSponsorName(rand)
   const baseIncome = 1500 + Math.round(clubReputation * 50 + rand() * 2000)
