@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { playSound } from '../audio/soundEffects'
+import { csColor, formatFinance, formatFinanceAbs } from '../utils/formatters'
 
 export function RoundSummaryScreen() {
   const navigate = useNavigate()
@@ -48,26 +49,6 @@ export function RoundSummaryScreen() {
   const trainingFocus = game.managedClubTraining
   const activeProjects = (game.trainingProjects ?? []).filter(p => p.status === 'active')
   const loanDeals = game.loanDeals ?? []
-
-  function fmt(n: number) {
-    const abs = Math.abs(n)
-    const sign = n > 0 ? '+' : n < 0 ? '-' : ''
-    if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(1)} mkr`
-    return `${sign}${Math.round(abs / 1_000)} tkr`
-  }
-
-  function fmtAbs(n: number) {
-    const abs = Math.abs(n)
-    if (abs >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} mkr`
-    return `${Math.round(n / 1_000)} tkr`
-  }
-
-  function csColor(cs: number) {
-    if (cs > 70) return '#22c55e'
-    if (cs > 50) return '#C9A84C'
-    if (cs > 30) return '#f59e0b'
-    return '#ef4444'
-  }
 
   const formattedDate = new Date(date).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long' })
 
@@ -179,8 +160,8 @@ export function RoundSummaryScreen() {
 
         <TappableCard
           label="EKONOMI"
-          summary={fmtAbs(financesAfter)}
-          detail={financesDelta !== 0 ? fmt(financesDelta) + ' denna omgång' : undefined}
+          summary={formatFinanceAbs(financesAfter)}
+          detail={financesDelta !== 0 ? formatFinance(financesDelta) + ' denna omgång' : undefined}
           accent={financesAfter < 0 ? '#ef4444' : '#F0F4F8'}
           onClick={() => navigate('/game/budget')}
         />

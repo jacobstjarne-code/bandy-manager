@@ -4,6 +4,7 @@ import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
 import { ClubBadge } from '../components/ClubBadge'
 import { Card } from '../components/Card'
 import { SectionLabel } from '../components/SectionLabel'
+import { csColor, formatCurrency } from '../utils/formatters'
 
 export function SeasonSummaryScreen() {
   const navigate = useNavigate()
@@ -341,7 +342,7 @@ export function SeasonSummaryScreen() {
             <SectionLabel>ORTEN</SectionLabel>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <span style={{ fontSize: 12, color: '#4A6080' }}>Lokalstöd vid säsongsslut</span>
-              <span style={{ fontSize: 16, fontWeight: 700, color: summary.communityStandingEnd > 70 ? '#22c55e' : summary.communityStandingEnd > 50 ? '#C9A84C' : summary.communityStandingEnd > 30 ? '#f59e0b' : '#ef4444' }}>
+              <span style={{ fontSize: 16, fontWeight: 700, color: csColor(summary.communityStandingEnd) }}>
                 {summary.communityStandingEnd}
               </span>
             </div>
@@ -349,7 +350,7 @@ export function SeasonSummaryScreen() {
               <div style={{
                 height: '100%',
                 width: `${summary.communityStandingEnd}%`,
-                background: summary.communityStandingEnd > 70 ? '#22c55e' : summary.communityStandingEnd > 50 ? '#C9A84C' : summary.communityStandingEnd > 30 ? '#f59e0b' : '#ef4444',
+                background: csColor(summary.communityStandingEnd),
                 borderRadius: 3,
                 transition: 'width 0.6s ease',
               }} />
@@ -368,18 +369,18 @@ export function SeasonSummaryScreen() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <p style={{ fontSize: 12, color: '#4A6080' }}>Vid säsongsstart</p>
-              <p style={{ fontSize: 16, fontWeight: 700 }}>{summary.startFinances.toLocaleString('sv-SE')} kr</p>
+              <p style={{ fontSize: 16, fontWeight: 700 }}>{formatCurrency(summary.startFinances)}</p>
             </div>
             <span style={{ fontSize: 20, color: summary.financialChange >= 0 ? '#22c55e' : '#ef4444' }}>
               →
             </span>
             <div style={{ textAlign: 'right' }}>
               <p style={{ fontSize: 12, color: '#4A6080' }}>Vid säsongsslut</p>
-              <p style={{ fontSize: 16, fontWeight: 700 }}>{summary.endFinances.toLocaleString('sv-SE')} kr</p>
+              <p style={{ fontSize: 16, fontWeight: 700 }}>{formatCurrency(summary.endFinances)}</p>
             </div>
           </div>
           <p style={{ fontSize: 13, fontWeight: 600, color: summary.financialChange >= 0 ? '#22c55e' : '#ef4444', marginTop: 8, textAlign: 'center' }}>
-            {summary.financialChange >= 0 ? '+' : ''}{summary.financialChange.toLocaleString('sv-SE')} kr
+            {summary.financialChange >= 0 ? '+' : ''}{formatCurrency(Math.abs(summary.financialChange))}
           </p>
         </Card>
 

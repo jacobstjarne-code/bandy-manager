@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { getFunctionaryQuote } from '../../../domain/services/functionaryQuoteService'
+import { csColor } from '../../utils/formatters'
 
 interface Props {
   game: SaveGame
@@ -12,13 +13,6 @@ export function CommunityPulse({ game, currentRound }: Props) {
   const cs = game.communityStanding ?? 50
   const quote = getFunctionaryQuote(game, currentRound, game.lastCompletedFixtureId)
   const headline = [...(game.inbox ?? [])].filter(i => i.type === 'mediaEvent' || i.type === 'media').sort((a, b) => b.date.localeCompare(a.date))[0]?.title
-
-  function csColor(v: number) {
-    if (v > 70) return '#22c55e'
-    if (v > 50) return '#C9A84C'
-    if (v > 30) return '#f59e0b'
-    return '#ef4444'
-  }
 
   return (
     <div
