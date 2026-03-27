@@ -3,20 +3,7 @@ import type { YouthTeam, YouthPlayer, YouthMatchResult, AcademyLevel } from '../
 import { PlayerPosition, PlayerArchetype } from '../enums'
 import { clamp } from '../utils/clamp'
 import { mulberry32 } from '../utils/random'
-
-const FIRST_NAMES = [
-  'Erik', 'Lars', 'Anders', 'Johan', 'Karl', 'Per', 'Mikael', 'Stefan', 'Thomas',
-  'Daniel', 'Magnus', 'Marcus', 'Patrik', 'Jonas', 'Oscar', 'Viktor', 'Emil', 'Anton', 'Simon',
-  'Axel', 'Gustav', 'Filip', 'Ludvig', 'Hampus', 'Linus', 'Mattias', 'Niklas', 'Tobias',
-  'William', 'Elias', 'Noah', 'Hugo', 'Albin', 'Isak', 'Samuel', 'Felix', 'Oliver', 'Nils',
-]
-
-const LAST_NAMES = [
-  'Andersson', 'Johansson', 'Karlsson', 'Nilsson', 'Eriksson', 'Larsson', 'Olsson', 'Persson',
-  'Svensson', 'Gustafsson', 'Pettersson', 'Jansson', 'Hansson', 'Lindqvist', 'Lindgren',
-  'Lindström', 'Magnusson', 'Berglund', 'Lundqvist', 'Holm', 'Berg', 'Nyström', 'Hedlund',
-  'Björk', 'Söderberg', 'Lund', 'Nordström', 'Wikström', 'Strand', 'Åberg',
-]
+import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../data/playerNames'
 
 // Fictional opposing youth teams from Swedish bandy regions
 const YOUTH_OPPONENTS = [
@@ -94,8 +81,8 @@ export function generateYouthTeam(
 
     players.push({
       id: `youth_${season}_${club.id}_${i}`,
-      firstName: pickRand(FIRST_NAMES, rand),
-      lastName: pickRand(LAST_NAMES, rand),
+      firstName: pickRand(PLAYER_FIRST_NAMES, rand),
+      lastName: pickRand(PLAYER_LAST_NAMES, rand),
       age,
       position,
       archetype: archetypeForPosition(position, rand),

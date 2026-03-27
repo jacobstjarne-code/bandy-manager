@@ -1,6 +1,6 @@
 # Säsongsanalys — Bandy Manager v0.1
 
-Genererad: 2026-03-27 14:08:47
+Genererad: 2026-03-27 14:18:18
 Simulerade säsonger: 5 (seeds: 42, 123, 456, 789, 1337)
 
 ## Före/efter-jämförelse (kalibreringsjusteringar 2026-03-22)
@@ -58,21 +58,21 @@ Simulerade säsonger: 5 (seeds: 42, 123, 456, 789, 1337)
 
 | # | Spelare | Lag | Mål |
 |---|---------|-----|-----|
-| 1 | Viktor Lundqvist | Norrala | 24 |
-| 2 | Anton Holm | Storvik | 21 |
-| 3 | Simon Lindgren | Hallstahammar | 18 |
-| 4 | Anton Svensson | Hallstahammar | 17 |
-| 5 | Niklas Jansson | Hallstahammar | 16 |
+| 1 | Filip Holm | Norrala | 24 |
+| 2 | Hampus Nyström | Storvik | 21 |
+| 3 | Mattias Lindström | Hallstahammar | 18 |
+| 4 | Hampus Svensson | Hallstahammar | 17 |
+| 5 | Samuel Hansson | Hallstahammar | 16 |
 
 ## Spelarbetyg (snitt, bästa säsong — seed 123)
 
 | # | Spelare | Lag | Snittbetyg | Matcher |
 |---|---------|-----|------------|---------|
-| 1 | Thomas Eriksson | Tierp | 7.19 | 22 |
-| 2 | Viktor Lundqvist | Norrala | 7.16 | 22 |
-| 3 | Filip Eriksson | Storvik | 7.13 | 22 |
-| 4 | Anton Holm | Storvik | 7.12 | 22 |
-| 5 | Anton Svensson | Hallstahammar | 7.11 | 22 |
+| 1 | Patrik Eriksson | Tierp | 7.19 | 22 |
+| 2 | Filip Holm | Norrala | 7.16 | 22 |
+| 3 | Tobias Eriksson | Storvik | 7.13 | 22 |
+| 4 | Hampus Nyström | Storvik | 7.12 | 22 |
+| 5 | Hampus Svensson | Hallstahammar | 7.11 | 22 |
 
 ## Flaggor
 

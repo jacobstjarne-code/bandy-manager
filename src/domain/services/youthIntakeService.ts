@@ -4,6 +4,7 @@ import type { YouthIntakeRecord } from '../entities/SaveGame'
 import { PlayerPosition, PlayerArchetype } from '../enums'
 import { mulberry32 } from '../utils/random'
 import { clamp } from '../utils/clamp'
+import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../data/playerNames'
 
 function makeRng(seed: number) {
   const rand = mulberry32(seed)
@@ -16,18 +17,6 @@ function makeRng(seed: number) {
 }
 
 
-const FIRST_NAMES = [
-  'Erik', 'Lars', 'Anders', 'Johan', 'Karl', 'Per', 'Mikael', 'Olof', 'Stefan', 'Thomas',
-  'Daniel', 'Magnus', 'Marcus', 'Patrik', 'Jonas', 'Oscar', 'Viktor', 'Emil', 'Anton', 'Simon',
-  'Axel', 'Gustav', 'Filip', 'Ludvig', 'Hampus', 'Linus', 'Mattias', 'Niklas', 'Robert', 'Tobias',
-]
-
-const LAST_NAMES = [
-  'Andersson', 'Johansson', 'Karlsson', 'Nilsson', 'Eriksson', 'Larsson', 'Olsson', 'Persson',
-  'Svensson', 'Gustafsson', 'Pettersson', 'Jonsson', 'Jansson', 'Hansson', 'Bengtsson',
-  'Lindqvist', 'Lindgren', 'Lindström', 'Magnusson', 'Berglund', 'Lundqvist', 'Holm', 'Berg',
-  'Nyström', 'Hedlund', 'Lund', 'Nordström', 'Björk', 'Söderberg', 'Wikström',
-]
 
 export interface YouthIntakeInput {
   club: Club
@@ -382,8 +371,8 @@ export function generateYouthIntake(input: YouthIntakeInput): YouthIntakeResult 
 
     const player: Player = {
       id,
-      firstName: rng.pick(FIRST_NAMES),
-      lastName: rng.pick(LAST_NAMES),
+      firstName: rng.pick(PLAYER_FIRST_NAMES),
+      lastName: rng.pick(PLAYER_LAST_NAMES),
       age,
       nationality: 'svenska',
       clubId: club.id,

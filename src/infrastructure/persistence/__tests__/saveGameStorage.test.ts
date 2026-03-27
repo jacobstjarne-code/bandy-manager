@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { saveSaveGame, loadSaveGame, listSaveGames, deleteSaveGame } from '../saveGameStorage'
+import { migrateSaveGame } from '../saveGameMigration'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { createNewGame } from '../../../application/useCases/createNewGame'
 
@@ -111,5 +112,51 @@ describe('saveGameStorage', () => {
     const loaded2 = loadSaveGame('save_002')
     expect(loaded2).not.toBeNull()
     expect(loaded2?.id).toBe('save_002')
+  })
+})
+
+describe('migrateSaveGame', () => {
+  it('adds missing communityActivities flags to old save', () => {
+    const oldSave = {
+      communityActivities: { kiosk: 'basic', lottery: 'none', bandyplay: false, functionaries: true, julmarknad: false },
+      players: [],
+    }
+    const migrated = migrateSaveGame(oldSave)
+    expect((migrated.communityActivities as any).socialMedia).toBe(false)
+    expect((migrated.communityActivities as any).vipTent).toBe(false)
+  })
+
+  it('adds missing top-level fields', () => {
+    const oldSave = { players: [], communityActivities: {} }
+    const migrated = migrateSaveGame(oldSave)
+    expect(migrated.fanMood).toBe(50)
+    expect(migrated.boardPatience).toBe(70)
+    expect(migrated.pendingEvents).toEqual([])
+    expect(migrated.communityStanding).toBe(50)
+  })
+
+  it('does not overwrite existing fields', () => {
+    const oldSave = { fanMood: 75, boardPatience: 30, players: [], communityActivities: {} }
+    const migrated = migrateSaveGame(oldSave)
+    expect(migrated.fanMood).toBe(75)
+    expect(migrated.boardPatience).toBe(30)
+  })
+
+  it('adds missing player seasonStats fields', () => {
+    const oldSave = {
+      players: [{ id: 'p1', seasonStats: { gamesPlayed: 5, goals: 2, assists: 1, cornerGoals: 0, yellowCards: 0, redCards: 0, averageRating: 6.5 } }],
+      communityActivities: {},
+    }
+    const migrated = migrateSaveGame(oldSave)
+    const player = migrated.players[0] as any
+    expect(player.seasonStats.minutesPlayed).toBe(0)
+    expect(player.seasonStats.penaltyGoals).toBe(0)
+    expect(player.seasonStats.suspensions).toBe(0)
+  })
+
+  it('sets version to current version', () => {
+    const oldSave = { version: '0.1.0', players: [], communityActivities: {} }
+    const migrated = migrateSaveGame(oldSave)
+    expect(migrated.version).toBe('0.2.0')
   })
 })

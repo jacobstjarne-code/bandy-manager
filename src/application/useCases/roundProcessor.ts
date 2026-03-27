@@ -604,6 +604,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         e => e.type === MatchEventType.RedCard && e.playerId === id
       ).length
 
+      // Check if player was substituted out — use actual minutes played
+      const subOutEvent = fixture.events.find(
+        e => e.type === MatchEventType.Substitution && e.playerId === id
+      )
+      const minutesThisGame = subOutEvent ? Math.min(90, subOutEvent.minute) : 90
+
       const prevGames = p.seasonStats.gamesPlayed
       const prevAvgRating = p.seasonStats.averageRating
       const newAvgRating = rating !== undefined
@@ -703,7 +709,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           yellowCards: p.seasonStats.yellowCards + yellows,
           redCards: p.seasonStats.redCards + reds,
           averageRating: Math.round(newAvgRating * 100) / 100,
-          minutesPlayed: p.seasonStats.minutesPlayed + 90,
+          minutesPlayed: p.seasonStats.minutesPlayed + minutesThisGame,
         },
         careerStats: {
           ...p.careerStats,
@@ -712,6 +718,26 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           totalAssists: newCareerAssists,
         },
         careerMilestones: isManaged ? newMilestones : p.careerMilestones,
+      }
+    }
+
+    // Track minutes for substitute players who came on mid-game
+    const subInEvents = fixture.events.filter(
+      e => e.type === MatchEventType.Substitution && e.secondaryPlayerId !== undefined
+    )
+    for (const subEvent of subInEvents) {
+      const subInId = subEvent.secondaryPlayerId!
+      const subInIdx = finalPlayers.findIndex(p => p.id === subInId)
+      if (subInIdx === -1) continue
+      const subPlayer = finalPlayers[subInIdx]
+      const subMinutes = Math.max(0, 90 - Math.min(90, subEvent.minute))
+      if (subMinutes <= 0) continue
+      finalPlayers[subInIdx] = {
+        ...subPlayer,
+        seasonStats: {
+          ...subPlayer.seasonStats,
+          minutesPlayed: subPlayer.seasonStats.minutesPlayed + subMinutes,
+        },
       }
     }
   }

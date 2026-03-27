@@ -1,4 +1,5 @@
 import type { SaveGame } from '../../domain/entities/SaveGame'
+import { migrateSaveGame } from './saveGameMigration'
 
 export interface SaveGameSummary {
   id: string
@@ -48,7 +49,7 @@ export function loadSaveGame(id: string): SaveGame | null {
     const key = `${SAVE_PREFIX}${id}`
     const raw = localStorage.getItem(key)
     if (raw === null) return null
-    return JSON.parse(raw) as SaveGame
+    return migrateSaveGame(JSON.parse(raw))
   } catch {
     return null
   }
