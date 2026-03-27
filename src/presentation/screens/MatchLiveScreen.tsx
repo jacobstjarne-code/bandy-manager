@@ -514,15 +514,15 @@ export function MatchLiveScreen() {
       {/* Scoreboard */}
       <div style={{
         background: rivalry
-          ? 'linear-gradient(180deg, rgba(200,50,30,0.08) 0%, #0a1520 10%, #122235 100%)'
-          : 'linear-gradient(180deg, #0a1520 0%, #122235 100%)',
+          ? 'linear-gradient(180deg, rgba(200,50,30,0.08) 0%, var(--bg-dark) 10%, var(--bg-dark-surface) 100%)'
+          : 'linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-dark-surface) 100%)',
         borderBottom: '1px solid var(--border)',
         padding: '16px', textAlign: 'center', flexShrink: 0, position: 'relative', overflow: 'hidden',
       }}>
-        <div style={{ position: 'absolute', top: 0, left: 0, width: 120, height: 80, background: 'radial-gradient(ellipse at top left, rgba(180,210,255,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: 0, right: 0, width: 120, height: 80, background: 'radial-gradient(ellipse at top right, rgba(180,210,255,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: 0, left: 0, width: 120, height: 80, background: 'radial-gradient(ellipse at top left, rgba(196,122,58,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: 0, right: 0, width: 120, height: 80, background: 'radial-gradient(ellipse at top right, rgba(196,122,58,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16, marginBottom: 4, position: 'relative', zIndex: 1 }}>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)', flex: 1, textAlign: 'right' }}>
+          <span style={{ fontSize: 13, color: 'var(--text-light-secondary)', flex: 1, textAlign: 'right' }}>
             {truncate(homeClubName, 10)}
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -530,23 +530,25 @@ export function MatchLiveScreen() {
               key={`home-${homeScore}`}
               style={{
                 fontSize: 48, fontWeight: 800, lineHeight: 1,
-                color: homeScoreFlash ? 'var(--color-accent)' : 'var(--text-primary)',
+                color: homeScoreFlash ? 'var(--accent)' : 'var(--text-light)',
+                fontFamily: 'var(--font-display)',
                 transition: 'color 0.3s ease',
-                textShadow: homeScoreFlash ? '0 0 20px var(--color-accent)' : 'none',
+                textShadow: homeScoreFlash ? '0 0 20px var(--accent)' : 'none',
                 fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"',
                 animation: homeScoreFlash ? 'scaleFlash 400ms ease-out both' : undefined,
               }}
             >
               {homeScore}
             </span>
-            <span style={{ fontSize: 24, color: 'var(--text-muted)', fontWeight: 300 }}>—</span>
+            <span style={{ fontSize: 24, color: 'rgba(245,241,235,0.35)', fontWeight: 300 }}>—</span>
             <span
               key={`away-${awayScore}`}
               style={{
                 fontSize: 48, fontWeight: 800, lineHeight: 1,
-                color: awayScoreFlash ? 'var(--color-accent)' : 'var(--text-primary)',
+                color: awayScoreFlash ? 'var(--accent)' : 'var(--text-light)',
+                fontFamily: 'var(--font-display)',
                 transition: 'color 0.3s ease',
-                textShadow: awayScoreFlash ? '0 0 20px var(--color-accent)' : 'none',
+                textShadow: awayScoreFlash ? '0 0 20px var(--accent)' : 'none',
                 fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"',
                 animation: awayScoreFlash ? 'scaleFlash 400ms ease-out both' : undefined,
               }}
@@ -554,7 +556,7 @@ export function MatchLiveScreen() {
               {awayScore}
             </span>
           </div>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)', flex: 1, textAlign: 'left' }}>
+          <span style={{ fontSize: 13, color: 'var(--text-light-secondary)', flex: 1, textAlign: 'left' }}>
             {truncate(awayClubName, 10)}
           </span>
         </div>
@@ -571,20 +573,20 @@ export function MatchLiveScreen() {
         <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', margin: '0 auto' }}>
           <div style={{ position: 'relative', display: 'inline-block' }}>
             <svg width="48" height="48" viewBox="0 0 48 48" style={{ position: 'absolute', top: -18, left: '50%', transform: 'translateX(-50%)' }}>
-              <circle cx="24" cy="24" r="20" fill="none" stroke="#1e3450" strokeWidth="2"/>
+              <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(245,241,235,0.12)" strokeWidth="2"/>
               <circle cx="24" cy="24" r="20" fill="none" stroke="#C9A84C" strokeWidth="2"
                 strokeDasharray={`${(currentMinute / 90) * 125.7} 125.7`}
                 strokeLinecap="round" transform="rotate(-90 24 24)"
                 style={{ transition: 'stroke-dasharray 600ms ease-out' }}
               />
             </svg>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600, paddingTop: 4 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-light-secondary)', fontWeight: 600, paddingTop: 4 }}>
               {matchDone ? 'Slutresultat' : `${currentMinute}'`}
             </div>
           </div>
         </div>
         {matchWeather && (
-          <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
+          <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-light-secondary)', marginTop: 4 }}>
             {getWeatherEmoji(matchWeather.weather.condition)}{' '}
             {matchWeather.weather.temperature > 0 ? '+' : ''}{matchWeather.weather.temperature}°
             {' · '}
@@ -598,11 +600,11 @@ export function MatchLiveScreen() {
 
       {/* Intensity bar */}
       {currentMatchStep && (
-        <div style={{ height: 3, background: '#0d1e33', flexShrink: 0, overflow: 'hidden' }}>
+        <div style={{ height: 3, background: 'var(--bg-dark-surface)', flexShrink: 0, overflow: 'hidden' }}>
           <div style={{
             height: '100%',
             width: currentMatchStep.intensity === 'high' ? '100%' : currentMatchStep.intensity === 'medium' ? '66%' : '33%',
-            background: currentMatchStep.intensity === 'high' ? '#C9A84C' : currentMatchStep.intensity === 'medium' ? '#2563EB' : '#1e3450',
+            background: currentMatchStep.intensity === 'high' ? 'var(--accent)' : currentMatchStep.intensity === 'medium' ? 'var(--ice)' : 'rgba(245,241,235,0.15)',
             transition: 'width 600ms ease-out, background-color 600ms ease-out',
             borderRadius: '0 2px 2px 0',
           }} />

@@ -568,7 +568,7 @@ export function DashboardScreen() {
                 {club.name}
               </h1>
               <p style={{ color: 'var(--text-light-secondary)', fontSize: 12, margin: '0 0 6px', fontFamily: 'var(--font-body)' }}>
-                Säsong {game.currentSeason} · {seasonPhase.label}
+                Säsong {game.currentSeason}/{game.currentSeason + 1} · {seasonPhase.label}
               </p>
               <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                 {standing && (
@@ -748,8 +748,8 @@ export function DashboardScreen() {
                 <span className="tag tag-outline">{activeIcons.join(' ')} aktiva</span>
                 <span
                   onClick={e => { e.stopPropagation(); navigate('/game/budget') }}
-                  className="tag tag-ghost"
-                  style={{ cursor: 'pointer' }}
+                  className="btn btn-ghost"
+                  style={{ fontSize: 11 }}
                 >
                   Budget →
                 </span>

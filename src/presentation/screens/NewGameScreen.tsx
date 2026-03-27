@@ -80,7 +80,7 @@ export function NewGameScreen() {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        background: 'linear-gradient(180deg, #060e19 0%, #0D1B2A 100%)',
+        background: 'var(--bg-dark)',
       }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 32px' }}>
           <p style={{
@@ -88,15 +88,16 @@ export function NewGameScreen() {
             fontWeight: 700,
             letterSpacing: '4px',
             textTransform: 'uppercase',
-            color: '#4A6080',
+            color: 'var(--accent)',
             marginBottom: 24,
           }}>
             NYTT UPPDRAG
           </p>
           <h2 style={{
             fontSize: 28,
-            fontWeight: 900,
-            color: '#F0F4F8',
+            fontWeight: 400,
+            color: 'var(--text-light)',
+            fontFamily: 'var(--font-display)',
             letterSpacing: '2px',
             textTransform: 'uppercase',
             marginBottom: 32,

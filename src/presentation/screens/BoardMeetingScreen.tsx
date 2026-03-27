@@ -129,41 +129,42 @@ export function BoardMeetingScreen() {
   return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: 'rgba(6,14,25,0.97)',
+      background: 'rgba(14,13,11,0.96)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       padding: '24px 20px', zIndex: 500,
       maxWidth: 430, margin: '0 auto',
     }}>
       <div style={{
-        background: '#0e1f33', border: '1px solid #1e3450',
+        background: 'var(--bg-dark-surface)',
+        border: '1px solid rgba(196,122,58,0.18)',
         borderRadius: 16, padding: '28px 24px',
         width: '100%', maxWidth: 390,
         maxHeight: '85vh', overflowY: 'auto',
       }}>
         {/* Header */}
-        <p className="section-heading card-stagger-1" style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px',
-          textTransform: 'uppercase', color: '#4A6080', marginBottom: 8 }}>
+        <p className="section-heading card-stagger-1" style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px',
+          textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
           Styrelsemöte
         </p>
-        <h2 style={{ fontSize: 18, fontWeight: 800, color: '#F0F4F8', marginBottom: 6 }}>
-          Inför säsong {game.currentSeason}
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-light)', marginBottom: 6, fontFamily: 'var(--font-display)' }}>
+          Inför säsong {game.currentSeason}/{game.currentSeason + 1}
         </h2>
-        <p style={{ fontSize: 13, color: '#8A9BB0', marginBottom: 20 }}>
+        <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', marginBottom: 20 }}>
           {club.name}
         </p>
 
         {/* Förra säsongen / Välkommen */}
         {isFirstSeason ? (
           <div className="card-stagger-2" style={{
-            background: 'rgba(201,168,76,0.08)',
-            border: '1px solid rgba(201,168,76,0.2)',
+            background: 'rgba(196,122,58,0.08)',
+            border: '1px solid rgba(196,122,58,0.22)',
             borderRadius: 10, padding: '14px', marginBottom: 16,
           }}>
-            <p className="section-heading" style={{ fontSize: 12, fontWeight: 700, color: '#C9A84C', marginBottom: 8 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
               👋 VÄLKOMMEN
             </p>
-            <p style={{ fontSize: 13, color: '#8A9BB0', lineHeight: 1.5 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', lineHeight: 1.6 }}>
               Välkommen som ny tränare för {club.name}. Styrelsen har
               stora förhoppningar på dig. Här är vad vi förväntar oss
               av den kommande säsongen.
@@ -171,14 +172,14 @@ export function BoardMeetingScreen() {
           </div>
         ) : (
           <div className="card-stagger-2" style={{
-            background: 'rgba(201,168,76,0.08)',
-            border: '1px solid rgba(201,168,76,0.2)',
+            background: 'rgba(196,122,58,0.08)',
+            border: '1px solid rgba(196,122,58,0.22)',
             borderRadius: 10, padding: '14px', marginBottom: 16,
           }}>
-            <p className="section-heading" style={{ fontSize: 12, fontWeight: 700, color: '#C9A84C', marginBottom: 8 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
               {verdictEmoji} FÖRRA SÄSONGEN
             </p>
-            <p style={{ fontSize: 13, color: '#8A9BB0', lineHeight: 1.5 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', lineHeight: 1.6 }}>
               {lastSummary.narrativeSummary}
             </p>
           </div>
@@ -186,48 +187,48 @@ export function BoardMeetingScreen() {
 
         {/* Säsongens mål */}
         <div className="card-stagger-3" style={{
-          background: 'var(--bg-surface)', border: '1px solid var(--border)',
+          background: 'var(--bg-dark-elevated)', border: '1px solid rgba(255,255,255,0.07)',
           borderRadius: 10, padding: '14px', marginBottom: 16,
         }}>
-          <p className="section-heading" style={{ fontSize: 12, fontWeight: 700, color: '#F0F4F8', marginBottom: 8 }}>
-            📋 SÄSONGENS MÅL
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-light-secondary)', marginBottom: 10 }}>
+            📋 Säsongens mål
           </p>
-          <p style={{ fontSize: 14, color: '#C9A84C', fontWeight: 600, marginBottom: 4 }}>
+          <p style={{ fontSize: 15, color: 'var(--accent)', fontWeight: 600, marginBottom: 6, fontFamily: 'var(--font-display)' }}>
             {expectationText[club.boardExpectation] ?? 'Gör ert bästa'}
           </p>
-          <p style={{ fontSize: 12, color: '#4A6080' }}>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
             Styrelsen förväntar sig att ni uppnår detta mål. Misslyckande kan få konsekvenser.
           </p>
         </div>
 
         {/* Ekonomi */}
         <div className="card-stagger-4" style={{
-          background: 'var(--bg-surface)', border: '1px solid var(--border)',
+          background: 'var(--bg-dark-elevated)', border: '1px solid rgba(255,255,255,0.07)',
           borderRadius: 10, padding: '14px', marginBottom: 16,
         }}>
-          <p className="section-heading" style={{ fontSize: 12, fontWeight: 700, color: '#F0F4F8', marginBottom: 8 }}>
-            💰 EKONOMI
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-light-secondary)', marginBottom: 10 }}>
+            💰 Ekonomi
           </p>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ fontSize: 13, color: '#8A9BB0' }}>Klubbkassa</span>
+            <span style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>Klubbkassa</span>
             <span style={{ fontSize: 13, fontWeight: 600,
-              color: club.finances > 0 ? '#22c55e' : '#ef4444' }}>
+              color: club.finances > 0 ? 'var(--success)' : 'var(--danger)' }}>
               {club.finances >= 1000000
                 ? `${(club.finances / 1000000).toFixed(1)} mkr`
                 : `${Math.round(club.finances / 1000)} tkr`}
             </span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ fontSize: 13, color: '#8A9BB0' }}>Transferbudget</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#C9A84C' }}>
+            <span style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>Transferbudget</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)' }}>
               {club.transferBudget >= 1000000
                 ? `${(club.transferBudget / 1000000).toFixed(1)} mkr`
                 : `${Math.round(club.transferBudget / 1000)} tkr`}
             </span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 13, color: '#8A9BB0' }}>Sponsorer</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#8A9BB0' }}>
+            <span style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>Sponsorer</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-light-secondary)' }}>
               {sponsors.length}/{maxSponsors}{' '}
               {sponsorIncome > 0
                 ? `(+${Math.round(sponsorIncome / 1000)} tkr/vecka)`
@@ -238,39 +239,40 @@ export function BoardMeetingScreen() {
 
         {/* Trupp */}
         <div className="card-stagger-5" style={{
-          background: 'var(--bg-surface)', border: '1px solid var(--border)',
+          background: 'var(--bg-dark-elevated)', border: '1px solid rgba(255,255,255,0.07)',
           borderRadius: 10, padding: '14px', marginBottom: 16,
         }}>
-          <p className="section-heading" style={{ fontSize: 12, fontWeight: 700, color: '#F0F4F8', marginBottom: 8 }}>
-            👥 TRUPP
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-light-secondary)', marginBottom: 10 }}>
+            👥 Trupp
           </p>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <span style={{ fontSize: 13, color: '#8A9BB0' }}>Antal spelare</span>
-            <span style={{ fontSize: 13, color: '#F0F4F8' }}>{players.length}</span>
+            <span style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>Antal spelare</span>
+            <span style={{ fontSize: 13, color: 'var(--text-light)' }}>{players.length}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <span style={{ fontSize: 13, color: '#8A9BB0' }}>Snitt-Styrka</span>
-            <span style={{ fontSize: 13, color: '#F0F4F8' }}>{avgCA}</span>
+            <span style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>Snitt-Styrka</span>
+            <span style={{ fontSize: 13, color: 'var(--text-light)' }}>{avgCA}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 13, color: '#8A9BB0' }}>Snittålder</span>
-            <span style={{ fontSize: 13, color: '#F0F4F8' }}>{avgAge}</span>
+            <span style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>Snittålder</span>
+            <span style={{ fontSize: 13, color: 'var(--text-light)' }}>{avgAge}</span>
           </div>
         </div>
 
         {/* Styrelsemedlemmarnas röster */}
         {boardMembers.length > 0 && (
           <div style={{
-            background: 'rgba(14,31,51,0.8)',
-            border: '1px solid #1e3450',
+            background: 'rgba(0,0,0,0.25)',
+            border: '1px solid rgba(255,255,255,0.06)',
             borderRadius: 10, padding: '14px', marginBottom: 24,
           }}>
-            <p className="section-heading" style={{
-              fontSize: 12, fontWeight: 700, color: '#F0F4F8', marginBottom: 4,
+            <p style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
+              color: 'var(--text-light-secondary)', marginBottom: 8,
             }}>
-              💬 STYRELSEMEDLEMMARNA OM LÄGET
+              💬 Styrelsemedlemmarna om läget
             </p>
-            <p style={{ fontSize: 11, color: '#3a5270', marginBottom: 14, fontStyle: 'italic' }}>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16, fontStyle: 'italic', fontFamily: 'var(--font-display)' }}>
               {openerText}
             </p>
             {boardMembers.map((member, i) => {
@@ -280,16 +282,16 @@ export function BoardMeetingScreen() {
                 <div key={member.name + i} style={{
                   marginBottom: i < boardMembers.length - 1 ? 14 : 0,
                   paddingBottom: i < boardMembers.length - 1 ? 14 : 0,
-                  borderBottom: i < boardMembers.length - 1 ? '1px solid #1a2e45' : 'none',
+                  borderBottom: i < boardMembers.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
                 }}>
                   <p style={{
-                    fontSize: 13, color: '#C8D8E8', lineHeight: 1.5,
-                    fontStyle: 'italic', marginBottom: 4,
+                    fontSize: 13, color: 'var(--text-light-secondary)', lineHeight: 1.6,
+                    fontStyle: 'italic', marginBottom: 6, fontFamily: 'var(--font-display)',
                   }}>
                     {quote}
                   </p>
-                  <p style={{ fontSize: 11, color: '#4A6080' }}>
-                    <span style={{ color: '#7A94B0', fontWeight: 600 }}>{member.name}</span>
+                  <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                    <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{member.name}</span>
                     {' · '}{member.role}{' · '}{personalityLabel[member.personality]}
                   </p>
                 </div>
@@ -301,12 +303,12 @@ export function BoardMeetingScreen() {
         {/* Knapp */}
         <button
           onClick={handleStart}
+          className="btn btn-copper"
           style={{
             width: '100%', padding: '16px',
-            background: '#C9A84C', border: 'none',
-            borderRadius: 12, fontSize: 15, fontWeight: 800,
-            color: '#0D1B2A', letterSpacing: '1px',
-            textTransform: 'uppercase', cursor: 'pointer',
+            fontSize: 15, fontWeight: 800,
+            letterSpacing: '1px', textTransform: 'uppercase',
+            borderRadius: 12,
           }}
         >
           {isFirstSeason ? 'Kör igång! →' : 'Starta säsongen →'}
