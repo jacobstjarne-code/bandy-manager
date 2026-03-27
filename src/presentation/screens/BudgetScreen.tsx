@@ -15,20 +15,20 @@ const LABEL_STYLE: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: '1.2px',
   textTransform: 'uppercase',
-  color: '#4A6080',
+  color: 'var(--text-muted)',
   marginBottom: 10,
 }
 
 const CARD_STYLE: React.CSSProperties = {
-  background: '#0e1f33',
-  border: '1px solid #1e3450',
+  background: 'var(--bg-elevated)',
+  border: '1px solid var(--border)',
   borderRadius: 12,
   padding: '16px',
 }
 
 const BODY_STYLE: React.CSSProperties = {
   fontSize: 14,
-  color: '#F0F4F8',
+  color: 'var(--text-primary)',
 }
 
 const ROW_STYLE: React.CSSProperties = {
@@ -85,7 +85,7 @@ export function BudgetScreen() {
   return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: 'rgba(6,14,25,0.97)',
+      background: 'var(--bg)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center',
       padding: '24px 20px',
@@ -104,17 +104,17 @@ export function BudgetScreen() {
           }}>
             EKONOMI
           </p>
-          <h1 style={{ fontSize: 26, fontWeight: 800, color: '#F0F4F8' }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-primary)' }}>
             Budget & ekonomi
           </h1>
-          <p style={{ fontSize: 14, color: '#8A9BB0', marginTop: 4 }}>{club.name}</p>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4 }}>{club.name}</p>
         </div>
 
         {/* Klubbkassa */}
         <div style={CARD_STYLE}>
           <p style={LABEL_STYLE}>Klubbkassa</p>
           <div style={ROW_STYLE}>
-            <span style={{ ...BODY_STYLE, color: '#8A9BB0' }}>Saldo</span>
+            <span style={{ ...BODY_STYLE, color: 'var(--text-secondary)' }}>Saldo</span>
             <span style={{
               fontSize: 20, fontWeight: 800,
               color: club.finances >= 0 ? '#22c55e' : '#ef4444',
@@ -123,30 +123,30 @@ export function BudgetScreen() {
             </span>
           </div>
           <div style={{
-            borderTop: '1px solid #1e3450',
+            borderTop: '1px solid var(--border)',
             paddingTop: 10,
             marginTop: 4,
             display: 'flex', flexDirection: 'column', gap: 6,
           }}>
             <div style={ROW_STYLE}>
-              <span style={{ fontSize: 13, color: '#8A9BB0' }}>Intäkter / omgång</span>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Intäkter / omgång</span>
               <span style={{ fontSize: 13, fontWeight: 600, color: '#22c55e' }}>
                 +{formatMoney(weeklyIncome)}
               </span>
             </div>
             <div style={ROW_STYLE}>
-              <span style={{ fontSize: 13, color: '#8A9BB0' }}>Lönekostnader / omgång</span>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Lönekostnader / omgång</span>
               <span style={{ fontSize: 13, fontWeight: 600, color: '#ef4444' }}>
                 -{formatMoney(weeklyWages)}
               </span>
             </div>
             <div style={{
               ...ROW_STYLE,
-              borderTop: '1px solid #1e3450',
+              borderTop: '1px solid var(--border)',
               paddingTop: 8,
               marginTop: 2,
             }}>
-              <span style={{ fontSize: 13, color: '#8A9BB0' }}>Netto / omgång</span>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Netto / omgång</span>
               <span style={{
                 fontSize: 14, fontWeight: 700,
                 color: netPerRound >= 0 ? '#22c55e' : '#ef4444',
@@ -162,8 +162,8 @@ export function BudgetScreen() {
           <div style={CARD_STYLE}>
             <p style={LABEL_STYLE}>Arena</p>
             <div style={ROW_STYLE}>
-              <span style={{ fontSize: 13, color: '#8A9BB0' }}>Kapacitet</span>
-              <span style={{ fontSize: 14, fontWeight: 700, color: '#F0F4F8' }}>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Kapacitet</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
                 {club.arenaCapacity.toLocaleString('sv-SE')} åskådare
               </span>
             </div>
@@ -174,7 +174,7 @@ export function BudgetScreen() {
         <div style={CARD_STYLE}>
           <p style={LABEL_STYLE}>Transferbudget</p>
           <div style={ROW_STYLE}>
-            <span style={{ ...BODY_STYLE, color: '#8A9BB0' }}>Avsatt budget</span>
+            <span style={{ ...BODY_STYLE, color: 'var(--text-secondary)' }}>Avsatt budget</span>
             <span style={{ fontSize: 16, fontWeight: 700, color: '#C9A84C' }}>
               {formatMoney(currentTransferBudget)}
             </span>
@@ -186,7 +186,7 @@ export function BudgetScreen() {
             </p>
           ) : (
             <>
-              <p style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 8, marginTop: 4 }}>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 8, marginTop: 4 }}>
                 Sätt avsatt transferbudget
               </p>
               <input
@@ -199,8 +199,8 @@ export function BudgetScreen() {
                 style={{ width: '100%', accentColor: '#C9A84C', marginBottom: 12 }}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                <span style={{ fontSize: 12, color: '#4A6080' }}>0 tkr</span>
-                <span style={{ fontSize: 12, color: '#4A6080' }}>{formatMoney(Math.round(sliderMax / 10000) * 10000)}</span>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>0 tkr</span>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{formatMoney(Math.round(sliderMax / 10000) * 10000)}</span>
               </div>
               <button
                 onClick={handleSaveTransferBudget}
@@ -222,7 +222,7 @@ export function BudgetScreen() {
             </>
           )}
 
-          <p style={{ fontSize: 12, color: '#4A6080', marginTop: 10, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 10, lineHeight: 1.5 }}>
             Transferbudget räknas aldrig av kassan förrän ett köp görs.
           </p>
         </div>
@@ -231,17 +231,17 @@ export function BudgetScreen() {
         <div style={CARD_STYLE}>
           <p style={LABEL_STYLE}>Scouting</p>
           <div style={ROW_STYLE}>
-            <span style={{ ...BODY_STYLE, color: '#8A9BB0' }}>Scoutronder kvar</span>
+            <span style={{ ...BODY_STYLE, color: 'var(--text-secondary)' }}>Scoutronder kvar</span>
             <span style={{
               fontSize: 20, fontWeight: 800,
-              color: scoutBudget > 5 ? '#C9A84C' : scoutBudget > 0 ? '#F0F4F8' : '#ef4444',
+              color: scoutBudget > 5 ? '#C9A84C' : scoutBudget > 0 ? 'var(--text-primary)' : '#ef4444',
             }}>
               {scoutBudget}
             </span>
           </div>
 
           {scoutMaxReached && (
-            <p style={{ fontSize: 13, color: '#8A9BB0', marginBottom: 10 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 10 }}>
               Max antal scoutronder uppnått (30).
             </p>
           )}
@@ -252,10 +252,10 @@ export function BudgetScreen() {
             style={{
               width: '100%',
               padding: '12px',
-              background: canBuyScout ? 'rgba(201,168,76,0.12)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${canBuyScout ? 'rgba(201,168,76,0.35)' : 'rgba(255,255,255,0.08)'}`,
+              background: canBuyScout ? 'rgba(201,168,76,0.12)' : 'rgba(0,0,0,0.04)',
+              border: `1px solid ${canBuyScout ? 'rgba(201,168,76,0.35)' : 'var(--border)'}`,
               borderRadius: 8,
-              color: canBuyScout ? '#C9A84C' : '#4A6080',
+              color: canBuyScout ? '#C9A84C' : 'var(--text-muted)',
               fontSize: 14,
               fontWeight: 700,
               cursor: canBuyScout ? 'pointer' : 'not-allowed',
@@ -279,9 +279,9 @@ export function BudgetScreen() {
             marginTop: 4,
             padding: '14px',
             background: 'transparent',
-            border: '1px solid #1e3450',
+            border: '1px solid var(--border)',
             borderRadius: 12,
-            color: '#8A9BB0',
+            color: 'var(--text-secondary)',
             fontSize: 15,
             fontWeight: 600,
             cursor: 'pointer',

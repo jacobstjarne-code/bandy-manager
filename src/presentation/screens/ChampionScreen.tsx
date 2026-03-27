@@ -18,7 +18,7 @@ function Confetti() {
     left: (i * 37 + 11) % 100,
     delay: (i * 0.17) % 3,
     duration: 3 + (i * 0.13) % 3,
-    color: i % 2 === 0 ? '#C9A84C' : '#F0F4F8',
+    color: i % 2 === 0 ? '#C9A84C' : 'var(--text-light)',
     size: 6 + (i % 6),
   }))
   return (
@@ -86,7 +86,7 @@ export function ChampionScreen() {
     <div style={{
       position: 'relative',
       height: '100%',
-      background: '#0D1B2A',
+      background: 'var(--bg-dark)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -121,14 +121,15 @@ export function ChampionScreen() {
               textTransform: 'uppercase',
               marginBottom: 8,
               animation: 'goldPulse 2s ease-in-out infinite',
+              fontFamily: 'var(--font-display)',
             }}>
               Svenska Mästare!
             </h1>
-            <p style={{ fontSize: 16, color: '#F0F4F8', fontWeight: 700, marginBottom: 4 }}>
+            <p style={{ fontSize: 16, color: 'var(--text-light)', fontWeight: 700, marginBottom: 4 }}>
               {club.name}
             </p>
-            <p style={{ fontSize: 13, color: '#8A9BB0', marginBottom: 24 }}>
-              Säsong {game.currentSeason}
+            <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', marginBottom: 24 }}>
+              Säsong {game.currentSeason}/{game.currentSeason + 1}
             </p>
           </>
         ) : (
@@ -136,28 +137,28 @@ export function ChampionScreen() {
             <div style={{ fontSize: 60, marginBottom: 16 }}>
               <span role="img" aria-label="silver medal">🥈</span>
             </div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: '#F0F4F8', marginBottom: 8 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-light)', marginBottom: 8, fontFamily: 'var(--font-display)' }}>
               En stark säsong
             </h1>
-            <p style={{ fontSize: 14, color: '#8A9BB0', marginBottom: 8 }}>
-              {champion?.name ?? 'Motståndet'} tog SM-guldet säsong {game.currentSeason}.
+            <p style={{ fontSize: 14, color: 'var(--text-light-secondary)', marginBottom: 8 }}>
+              {champion?.name ?? 'Motståndet'} tog SM-guldet säsong {game.currentSeason}/{game.currentSeason + 1}.
             </p>
-            <p style={{ fontSize: 13, color: '#4A6080', marginBottom: 24 }}>
-              {club.name} · Säsong {game.currentSeason}
+            <p style={{ fontSize: 13, color: 'rgba(245,241,235,0.35)', marginBottom: 24 }}>
+              {club.name} · Säsong {game.currentSeason}/{game.currentSeason + 1}
             </p>
           </>
         )}
 
         {/* Playoff run summary */}
         <div style={{
-          background: '#122235',
-          border: '1px solid #1e3450',
+          background: 'var(--bg-dark-elevated)',
+          border: '1px solid rgba(196,186,168,0.15)',
           borderRadius: 12,
           padding: '16px',
           marginBottom: 24,
           textAlign: 'left',
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#4A6080', marginBottom: 12 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(245,241,235,0.35)', marginBottom: 12 }}>
             SLUTSPELSRESA
           </p>
           {managedSeries.length > 0 ? managedSeries.map(s => {
@@ -175,20 +176,20 @@ export function ChampionScreen() {
                 alignItems: 'center',
                 marginBottom: 8,
               }}>
-                <span style={{ fontSize: 12, color: '#8A9BB0' }}>
+                <span style={{ fontSize: 12, color: 'var(--text-light-secondary)' }}>
                   {roundLabel} vs {opponent?.name ?? '?'}
                 </span>
                 <span style={{
                   fontSize: 12,
                   fontWeight: 700,
-                  color: won ? '#22c55e' : '#ef4444',
+                  color: won ? 'var(--success)' : 'var(--danger)',
                 }}>
                   {myWins}-{theirWins} {won ? '✓' : '✗'}
                 </span>
               </div>
             )
           }) : (
-            <p style={{ fontSize: 12, color: '#4A6080' }}>Nådde inte slutspelet</p>
+            <p style={{ fontSize: 12, color: 'rgba(245,241,235,0.35)' }}>Nådde inte slutspelet</p>
           )}
         </div>
 
@@ -198,8 +199,8 @@ export function ChampionScreen() {
           style={{
             width: '100%',
             padding: '17px',
-            background: '#C9A84C',
-            color: '#0D1B2A',
+            background: 'var(--accent)',
+            color: 'var(--bg-dark)',
             borderRadius: 12,
             fontSize: 16,
             fontWeight: 800,

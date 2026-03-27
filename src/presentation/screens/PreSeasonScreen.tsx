@@ -59,7 +59,7 @@ export function PreSeasonScreen() {
   return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: 'rgba(6,14,25,0.97)',
+      background: 'var(--bg)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       padding: '24px 20px', zIndex: 500,
@@ -77,26 +77,26 @@ export function PreSeasonScreen() {
           }}>
             FÖRSÄSONG
           </p>
-          <h1 style={{ fontSize: 26, fontWeight: 800, color: '#F0F4F8' }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-primary)' }}>
             Säsong {game.currentSeason}
           </h1>
-          <p style={{ fontSize: 14, color: '#8A9BB0', marginTop: 4 }}>{club.name}</p>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4 }}>{club.name}</p>
         </div>
 
         {/* Ungdomsintag */}
         {youthCount > 0 && (
           <div style={{
-            background: '#0e1f33', border: '1px solid #1e3450',
+            background: 'var(--bg-elevated)', border: '1px solid var(--border)',
             borderRadius: 12, padding: '14px 16px',
           }}>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#22c55e', marginBottom: 8 }}>
               🌱 Ungdomsintag
             </p>
-            <p style={{ fontSize: 14, color: '#F0F4F8', marginBottom: 4 }}>
+            <p style={{ fontSize: 14, color: 'var(--text-primary)', marginBottom: 4 }}>
               {youthCount} nya spelare från akademin!
             </p>
             {topProspect && (
-              <p style={{ fontSize: 13, color: '#8A9BB0' }}>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                 Mest lovande: <strong style={{ color: '#C9A84C' }}>
                   {topProspect.firstName} {topProspect.lastName}
                 </strong>{' '}
@@ -108,29 +108,29 @@ export function PreSeasonScreen() {
 
         {/* Truppen */}
         <div style={{
-          background: '#0e1f33', border: '1px solid #1e3450',
+          background: 'var(--bg-elevated)', border: '1px solid var(--border)',
           borderRadius: 12, padding: '14px 16px',
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#4A6080', marginBottom: 8 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             📋 Truppen
           </p>
-          <p style={{ fontSize: 14, color: '#F0F4F8' }}>
+          <p style={{ fontSize: 14, color: 'var(--text-primary)' }}>
             {managedPlayers.length} spelare · Snitt-styrka: <strong style={{ color: '#C9A84C' }}>{avgCA}</strong>
           </p>
         </div>
 
         {/* Ekonomi */}
         <div style={{
-          background: '#0e1f33', border: '1px solid #1e3450',
+          background: 'var(--bg-elevated)', border: '1px solid var(--border)',
           borderRadius: 12, padding: '14px 16px',
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#4A6080', marginBottom: 8 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             💰 Ekonomi
           </p>
-          <p style={{ fontSize: 14, color: '#F0F4F8' }}>
+          <p style={{ fontSize: 14, color: 'var(--text-primary)' }}>
             Klubbkassa: <strong>{formatCurrency(club.finances)}</strong>
           </p>
-          <p style={{ fontSize: 13, color: '#8A9BB0', marginTop: 2 }}>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>
             Transferbudget: {formatCurrency(club.transferBudget ?? 0)}
           </p>
         </div>
@@ -139,19 +139,19 @@ export function PreSeasonScreen() {
         {expiringPlayers.length > 0 && (
           <div style={{
             background: expiringPlayers.length > 3
-              ? 'rgba(239,68,68,0.06)' : '#0e1f33',
+              ? 'rgba(176,80,64,0.06)' : 'var(--bg-elevated)',
             border: expiringPlayers.length > 3
-              ? '1px solid rgba(239,68,68,0.3)' : '1px solid #1e3450',
+              ? '1px solid rgba(176,80,64,0.3)' : '1px solid var(--border)',
             borderRadius: 12, padding: '14px 16px',
           }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: expiringPlayers.length > 3 ? '#ef4444' : '#4A6080', marginBottom: 8 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: expiringPlayers.length > 3 ? 'var(--danger)' : 'var(--text-muted)', marginBottom: 8 }}>
               📋 Kontraktssituation
             </p>
-            <p style={{ fontSize: 14, color: '#F0F4F8' }}>
+            <p style={{ fontSize: 14, color: 'var(--text-primary)' }}>
               {expiringPlayers.length} spelare med utgående kontrakt
             </p>
             {expiringPlayers.length > 3 && (
-              <p style={{ fontSize: 13, color: '#ef4444', marginTop: 4 }}>
+              <p style={{ fontSize: 13, color: 'var(--danger)', marginTop: 4 }}>
                 ⚠️ Flera viktiga beslut att ta!
               </p>
             )}
@@ -160,34 +160,34 @@ export function PreSeasonScreen() {
 
         {/* Styrelsens förväntning */}
         <div style={{
-          background: 'rgba(201,168,76,0.06)',
-          border: '1px solid rgba(201,168,76,0.2)',
+          background: 'rgba(196,122,58,0.06)',
+          border: '1px solid rgba(196,122,58,0.2)',
           borderRadius: 12, padding: '14px 16px',
         }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 8 }}>
             🔮 Styrelsens förväntning
           </p>
-          <p style={{ fontSize: 14, color: '#F0F4F8', fontStyle: 'italic' }}>
+          <p style={{ fontSize: 14, color: 'var(--text-primary)', fontStyle: 'italic' }}>
             "{expectationText(club.boardExpectation)}"
           </p>
         </div>
 
         {/* Budget priority */}
         <div style={{
-          background: '#0e1f33', border: '1px solid #1e3450',
+          background: 'var(--bg-elevated)', border: '1px solid var(--border)',
           borderRadius: 12, padding: '14px 16px',
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#4A6080', marginBottom: 6 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
             💼 Budgetprioritet
           </p>
-          <p style={{ fontSize: 12, color: '#4A6080', marginBottom: 10 }}>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>
             {priority === 'squad'
               ? 'Transferbudget +20% — satsning på rekrytering'
               : priority === 'youth'
               ? 'Transferbudget –30% — ungdomskvalitet +3p per säsong'
               : 'Balanserad fördelning — inga bonusar'}
           </p>
-          <div style={{ display: 'flex', gap: 6, background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 3 }}>
+          <div style={{ display: 'flex', gap: 6, background: 'var(--bg)', borderRadius: 8, padding: 3 }}>
             {([
               { val: 'squad', label: '🏒 Trupp' },
               { val: 'balanced', label: '⚖️ Balans' },
@@ -201,7 +201,7 @@ export function PreSeasonScreen() {
                   background: priority === opt.val ? 'rgba(201,168,76,0.2)' : 'transparent',
                   border: priority === opt.val ? '1px solid rgba(201,168,76,0.4)' : '1px solid transparent',
                   borderRadius: 6,
-                  color: priority === opt.val ? '#C9A84C' : '#4A6080',
+                  color: priority === opt.val ? '#C9A84C' : 'var(--text-muted)',
                   cursor: 'pointer',
                 }}
               >{opt.label}</button>

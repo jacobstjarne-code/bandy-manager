@@ -33,7 +33,7 @@ export function MatchResultScreen() {
   const potm = potmId ? game.players.find(p => p.id === potmId) : null
   const potmRating = potmId ? fixture.report?.playerRatings[potmId] : null
 
-  const resultColor = won ? '#22c55e' : lost ? '#ef4444' : '#e2e8f0'
+  const resultColor = won ? '#5A9A4A' : lost ? '#B05040' : '#C4BAA8'
   const resultLabel = won ? 'SEGER' : lost ? 'FÖRLUST' : 'OAVGJORT'
 
   function handleContinue() {
@@ -72,7 +72,7 @@ export function MatchResultScreen() {
     <div style={{
       position: 'fixed',
       inset: 0,
-      background: 'rgba(6,14,25,0.97)',
+      background: 'rgba(14,13,11,0.97)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -82,8 +82,8 @@ export function MatchResultScreen() {
       overflowY: 'auto',
     }}>
       <div style={{
-        background: '#0e1f33',
-        border: '1px solid #1e3450',
+        background: 'var(--bg-dark-surface)',
+        border: '1px solid rgba(196,186,168,0.15)',
         borderRadius: 16,
         padding: '28px 24px',
         width: '100%',
@@ -93,7 +93,7 @@ export function MatchResultScreen() {
         <div style={{ marginBottom: 16, textAlign: 'center', ...fadeIn('0ms') }}>
           <span style={{
             fontSize: 11, fontWeight: 700, letterSpacing: '1.5px',
-            textTransform: 'uppercase', color: '#4A6080',
+            textTransform: 'uppercase', color: 'var(--text-light-secondary)',
           }}>
             {fixture.roundNumber <= 22
               ? `Omgång ${fixture.roundNumber}`
@@ -105,10 +105,10 @@ export function MatchResultScreen() {
 
         {/* Club names */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, ...fadeIn('80ms') }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#8A9BB0', flex: 1, textAlign: 'left' }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-light-secondary)', flex: 1, textAlign: 'left' }}>
             {homeClub?.shortName ?? homeClub?.name}
           </span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#8A9BB0', flex: 1, textAlign: 'right' }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-light-secondary)', flex: 1, textAlign: 'right' }}>
             {awayClub?.shortName ?? awayClub?.name}
           </span>
         </div>
@@ -118,11 +118,11 @@ export function MatchResultScreen() {
           display: 'flex', justifyContent: 'center', alignItems: 'center',
           gap: 16, marginBottom: 12, ...fadeIn('160ms'),
         }}>
-          <span style={{ fontSize: 52, fontWeight: 800, color: resultColor, lineHeight: 1 }}>
+          <span style={{ fontSize: 52, fontWeight: 800, color: resultColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
             {fixture.homeScore}
           </span>
-          <span style={{ fontSize: 28, color: '#4A6080', fontWeight: 300 }}>–</span>
-          <span style={{ fontSize: 52, fontWeight: 800, color: resultColor, lineHeight: 1 }}>
+          <span style={{ fontSize: 28, color: 'rgba(245,241,235,0.30)', fontWeight: 300 }}>–</span>
+          <span style={{ fontSize: 52, fontWeight: 800, color: resultColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
             {fixture.awayScore}
           </span>
         </div>
@@ -132,8 +132,8 @@ export function MatchResultScreen() {
           <span style={{
             fontSize: 12, fontWeight: 700, letterSpacing: '1px',
             padding: '4px 12px', borderRadius: 20,
-            background: won ? 'rgba(34,197,94,0.1)' : lost ? 'rgba(239,68,68,0.1)' : 'rgba(226,232,240,0.08)',
-            border: `1px solid ${won ? 'rgba(34,197,94,0.3)' : lost ? 'rgba(239,68,68,0.3)' : 'rgba(226,232,240,0.2)'}`,
+            background: won ? 'rgba(90,154,74,0.12)' : lost ? 'rgba(176,80,64,0.12)' : 'rgba(245,241,235,0.08)',
+            border: `1px solid ${won ? 'rgba(90,154,74,0.3)' : lost ? 'rgba(176,80,64,0.3)' : 'rgba(245,241,235,0.2)'}`,
             color: resultColor,
           }}>
             {resultLabel}
@@ -142,7 +142,7 @@ export function MatchResultScreen() {
 
         {/* B3: Flavor text */}
         <div style={{ textAlign: 'center', marginBottom: 16, ...fadeIn('360ms') }}>
-          <span style={{ fontSize: 13, color: won ? '#22c55e' : lost ? '#ef4444' : '#8A9BB0', fontWeight: 600 }}>
+          <span style={{ fontSize: 13, color: won ? '#5A9A4A' : lost ? '#B05040' : 'var(--text-light-secondary)', fontWeight: 600 }}>
             {flavorText}
           </span>
         </div>
@@ -150,7 +150,7 @@ export function MatchResultScreen() {
         {/* B2: Key moments mini-timeline */}
         {keyMoments.length > 0 && (
           <div style={{ marginBottom: 20, ...fadeIn('480ms') }}>
-            <p style={{ fontSize: 10, fontWeight: 700, color: '#4A6080', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>Nyckelmoment</p>
+            <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-light-secondary)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>Nyckelmoment</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {keyMoments.map((e, i) => {
                 const isHome = e.clubId === fixture.homeClubId
@@ -164,9 +164,9 @@ export function MatchResultScreen() {
                     display: 'flex', alignItems: 'center', gap: 6,
                     animation: `fadeInUp 400ms ease-out ${380 + i * 80}ms both`,
                   }}>
-                    <span style={{ fontSize: 10, color: '#4A6080', width: 28, textAlign: 'right', flexShrink: 0 }}>{e.minute}'</span>
+                    <span style={{ fontSize: 10, color: 'var(--text-light-secondary)', width: 28, textAlign: 'right', flexShrink: 0 }}>{e.minute}'</span>
                     <span style={{ fontSize: 11 }}>{icon}</span>
-                    <span style={{ fontSize: 11, color: '#8A9BB0', flex: 1, textAlign: isHome ? 'left' : 'right' }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-light-secondary)', flex: 1, textAlign: isHome ? 'left' : 'right' }}>
                       {scorerName}
                     </span>
                   </div>
@@ -183,7 +183,7 @@ export function MatchResultScreen() {
               {homeGoals.map((e, i) => {
                 const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
                 return (
-                  <div key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 2, animation: `fadeInUp 400ms ease-out ${600 + i * 100}ms both` }}>
+                  <div key={i} style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginBottom: 2, animation: `fadeInUp 400ms ease-out ${600 + i * 100}ms both` }}>
                     {e.minute}' {scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'}
                     {e.isCornerGoal ? ' 📐' : ''}
                   </div>
@@ -194,7 +194,7 @@ export function MatchResultScreen() {
               {awayGoals.map((e, i) => {
                 const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
                 return (
-                  <div key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 2, animation: `fadeInUp 400ms ease-out ${600 + i * 100}ms both` }}>
+                  <div key={i} style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginBottom: 2, animation: `fadeInUp 400ms ease-out ${600 + i * 100}ms both` }}>
                     {e.isCornerGoal ? '📐 ' : ''}
                     {scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'} {e.minute}'
                   </div>
@@ -249,7 +249,7 @@ export function MatchResultScreen() {
             })()}
             <div style={{
               display: 'flex', justifyContent: 'center', gap: 16,
-              fontSize: 12, color: '#4A6080',
+              fontSize: 12, color: 'var(--text-light-secondary)',
             }}>
               {fixture.report.cornersHome !== undefined && (
                 <span>Hörnor {fixture.report.cornersHome}–{fixture.report.cornersAway}</span>
@@ -268,9 +268,9 @@ export function MatchResultScreen() {
             style={{
               width: '100%', padding: '13px 16px', borderRadius: 10,
               fontSize: 14, fontWeight: 600, cursor: 'pointer',
-              background: 'var(--bg-elevated)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border)',
+              background: 'var(--bg-dark-elevated)',
+              color: 'var(--text-light)',
+              border: '1px solid rgba(196,186,168,0.2)',
             }}
           >
             Se fullständig rapport →

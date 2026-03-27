@@ -54,7 +54,7 @@ export function RoundSummaryScreen() {
 
   const LABEL: React.CSSProperties = {
     fontSize: 10, fontWeight: 700, letterSpacing: '1.5px',
-    textTransform: 'uppercase', color: '#4A6080', marginBottom: 4,
+    textTransform: 'uppercase', color: 'var(--text-light-secondary)', marginBottom: 4,
   }
 
   function TappableCard({ label, summary, detail, onClick, accent }: {
@@ -63,17 +63,17 @@ export function RoundSummaryScreen() {
   }) {
     return (
       <div onClick={onClick} style={{
-        background: '#0e1f33', border: '1px solid #1e3450', borderRadius: 12,
+        background: 'var(--bg-dark-surface)', border: '1px solid rgba(196,186,168,0.15)', borderRadius: 12,
         padding: '14px 16px', marginBottom: 10,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
         cursor: onClick ? 'pointer' : 'default',
       }}>
         <div style={{ flex: 1 }}>
           <div style={LABEL}>{label}</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: accent ?? '#F0F4F8' }}>{summary}</div>
-          {detail && <div style={{ fontSize: 12, color: '#8A9BB0', marginTop: 3 }}>{detail}</div>}
+          <div style={{ fontSize: 14, fontWeight: 700, color: accent ?? 'var(--text-light)' }}>{summary}</div>
+          {detail && <div style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginTop: 3 }}>{detail}</div>}
         </div>
-        {onClick && <span style={{ fontSize: 18, color: '#4A6080' }}>›</span>}
+        {onClick && <span style={{ fontSize: 18, color: 'var(--text-light-secondary)' }}>›</span>}
       </div>
     )
   }
@@ -91,18 +91,18 @@ export function RoundSummaryScreen() {
   }
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#0D1B2A', color: '#F0F4F8' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg-dark)', color: 'var(--text-light)' }}>
       {/* Header */}
       <div style={{
-        textAlign: 'center', padding: '20px 20px 14px', borderBottom: '1px solid #1e3450',
+        textAlign: 'center', padding: '20px 20px 14px', borderBottom: '1px solid rgba(196,186,168,0.15)',
         opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease', flexShrink: 0,
       }}>
-        <p style={{ fontSize: 10, letterSpacing: 2, color: '#4A6080', textTransform: 'uppercase', marginBottom: 4 }}>
+        <p style={{ fontSize: 10, letterSpacing: 2, color: 'var(--text-light-secondary)', textTransform: 'uppercase', marginBottom: 4 }}>
           OMGÅNG {round}
         </p>
         <h1 style={{ fontSize: 22, fontWeight: 800 }}>{formattedDate}</h1>
         {temperature !== undefined && (
-          <p style={{ fontSize: 13, color: temperature <= 0 ? '#60a5fa' : '#8A9BB0', marginTop: 4 }}>
+          <p style={{ fontSize: 13, color: temperature <= 0 ? 'var(--ice)' : 'var(--text-light-secondary)', marginTop: 4 }}>
             {temperature <= -5 ? '❄️ ' : temperature <= 0 ? '🌨 ' : '🌤 '}{temperature > 0 ? '+' : ''}{temperature}°C
           </p>
         )}
@@ -119,7 +119,7 @@ export function RoundSummaryScreen() {
             onClick={() => navigate('/game/match-result')}
           />
         ) : (
-          <TappableCard label="MATCHEN" summary="Ingen match denna omgång" accent="#4A6080" />
+          <TappableCard label="MATCHEN" summary="Ingen match denna omgång" accent="var(--text-light-secondary)" />
         )}
 
         <TappableCard
@@ -148,7 +148,7 @@ export function RoundSummaryScreen() {
             <span>
               Lokalstöd: <span style={{ color: csColor(communityStandingAfter) }}>{communityStandingAfter}</span>
               {csDelta !== 0 && (
-                <span style={{ color: csDelta > 0 ? '#22c55e' : '#ef4444', fontSize: 12, marginLeft: 6 }}>
+                <span style={{ color: csDelta > 0 ? 'var(--success)' : 'var(--danger)', fontSize: 12, marginLeft: 6 }}>
                   {csDelta > 0 ? `+${csDelta}` : csDelta}
                 </span>
               )}
@@ -162,7 +162,7 @@ export function RoundSummaryScreen() {
           label="EKONOMI"
           summary={formatFinanceAbs(financesAfter)}
           detail={financesDelta !== 0 ? formatFinance(financesDelta) + ' denna omgång' : undefined}
-          accent={financesAfter < 0 ? '#ef4444' : '#F0F4F8'}
+          accent={financesAfter < 0 ? 'var(--danger)' : 'var(--text-light)'}
           onClick={() => navigate('/game/budget')}
         />
 
@@ -171,7 +171,7 @@ export function RoundSummaryScreen() {
             label="SKADOR"
             summary={`${injuries.length} ny${injuries.length > 1 ? 'a' : ''} skada`}
             detail={injuries.join(' · ')}
-            accent="#ef4444"
+            accent="var(--danger)"
             onClick={() => navigate('/game/squad')}
           />
         )}
@@ -186,11 +186,11 @@ export function RoundSummaryScreen() {
         position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 430, padding: '12px 20px',
         paddingBottom: 'calc(12px + var(--safe-bottom, 0px))',
-        background: 'linear-gradient(to top, #0D1B2A 80%, transparent)',
+        background: 'linear-gradient(to top, #0E0D0B 80%, transparent)',
         zIndex: 50, opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease 0.3s',
       }}>
         <button onClick={handleContinue} style={{
-          width: '100%', padding: '17px', background: '#C9A84C', color: '#0D1B2A',
+          width: '100%', padding: '17px', background: 'var(--accent)', color: 'var(--bg-dark)',
           borderRadius: 12, fontSize: 16, fontWeight: 800, letterSpacing: '1.5px',
           textTransform: 'uppercase', border: 'none',
           boxShadow: '0 4px 20px rgba(201,168,76,0.3)', cursor: 'pointer',
