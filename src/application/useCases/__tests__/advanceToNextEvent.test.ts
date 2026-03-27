@@ -45,10 +45,15 @@ describe('advanceToNextEvent', () => {
       lastResult = advanceToNextEvent(lastResult.game, round)
     }
 
+    // Cup-fixtures added after cup system was built — filter to league only
     const resolved = lastResult.game.fixtures.filter(
-      f => f.status === FixtureStatus.Completed || f.status === FixtureStatus.Postponed
+      f => (f.status === FixtureStatus.Completed || f.status === FixtureStatus.Postponed) && !f.isCup
     )
     expect(resolved.length).toBe(132)
+    const resolvedCup = lastResult.game.fixtures.filter(
+      f => (f.status === FixtureStatus.Completed || f.status === FixtureStatus.Postponed) && f.isCup
+    )
+    expect(resolvedCup.length).toBeGreaterThanOrEqual(6)  // minst QF spelade
     expect(lastResult.seasonEnded).toBe(false)
     expect(lastResult.roundPlayed).toBe(22)
   }, 60000)
