@@ -100,6 +100,27 @@ export const sounds = {
     playTone(110, 0.20, 'triangle', 0.10, 300)
     playTone(165, 0.35, 'triangle', 0.12, 600)
   },
+
+  communityUp: () => {
+    playTone(660, 0.10, 'sine', 0.07, 0)
+    playTone(880, 0.18, 'sine', 0.08, 90)
+  },
+
+  communityDown: () => {
+    playTone(220, 0.20, 'triangle', 0.07, 0)
+    playTone(180, 0.30, 'triangle', 0.05, 200)
+  },
+
+  youthGoal: () => {
+    playTone(784, 0.10, 'square', 0.07, 0)
+    playTone(988, 0.18, 'square', 0.08, 100)
+  },
+
+  crisis: () => {
+    playTone(220, 0.30, 'sawtooth', 0.08, 0)
+    playTone(233, 0.30, 'sawtooth', 0.06, 100)
+    playTone(196, 0.40, 'sawtooth', 0.07, 250)
+  },
 }
 
 // Global mute (persisted in localStorage)

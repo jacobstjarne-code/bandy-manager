@@ -596,6 +596,33 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     seasonEndPendingEvents.push(handlingsplanEvent)
   }
 
+  // ── Funktionärsdöd (2%/säsong vid age >= 65) ──────────────────────────────
+  const deathRand = mulberry32((seed ?? 42) + game.currentSeason * 31337)
+  let updatedNamedCharacters = (game.namedCharacters ?? []).map(c => ({ ...c }))
+  let communityStandingDelta = 0
+  for (const char of updatedNamedCharacters) {
+    if (char.isAlive === false) continue
+    if (!char.id.startsWith('func_')) continue
+    const age = char.age ?? 55
+    const deathChance = age >= 65 ? 0.02 : 0
+    if (deathChance > 0 && deathRand() < deathChance) {
+      char.isAlive = false
+      char.age = age + 1
+      communityStandingDelta += 3
+      const mourner = updatedNamedCharacters.find(c => c.isAlive !== false && c.id !== char.id && c.id.startsWith('func_'))
+      newInboxItems.push({
+        id: `inbox_functionary_death_${char.id}_${game.currentSeason}`,
+        date: `${nextSeason}-10-01`,
+        type: InboxItemType.Community,
+        title: `${char.name} har gått bort`,
+        body: `${char.name}, ${char.role?.toLowerCase() ?? 'funktionär'} sedan många år, avled under sommaren. Föreningen sörjer.${mourner ? ` "${mourner.name}: Vi saknar ${char.name}."` : ''}`,
+        isRead: false,
+      } as InboxItem)
+    } else {
+      char.age = age + 1
+    }
+  }
+
   const updatedGame: SaveGame = {
     ...game,
     currentSeason: nextSeason,
@@ -663,7 +690,8 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // V0.9 fields
     licenseReview,
     licenseWarningCount,
-    communityStanding: newCommunityStanding,
+    namedCharacters: updatedNamedCharacters,
+    communityStanding: Math.min(100, newCommunityStanding + communityStandingDelta),
     journalistRelationship: newJournalistRelationship,
     sponsorNetworkMood: game.sponsorNetworkMood ?? 70,
     patron: updatedPatron,

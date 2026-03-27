@@ -11,6 +11,7 @@ export function CommunityPulse({ game, currentRound }: Props) {
   const navigate = useNavigate()
   const cs = game.communityStanding ?? 50
   const quote = getFunctionaryQuote(game, currentRound, game.lastCompletedFixtureId)
+  const headline = (game as any).latestHeadline as string | undefined
 
   function csColor(v: number) {
     if (v > 70) return '#22c55e'
@@ -40,8 +41,15 @@ export function CommunityPulse({ game, currentRound }: Props) {
       <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, marginBottom: 10 }}>
         <div style={{ height: '100%', width: `${cs}%`, background: csColor(cs), borderRadius: 2, transition: 'width 0.6s ease' }} />
       </div>
+      {headline && (
+        <div style={{ borderTop: '1px solid #1e3450', paddingTop: 8, marginBottom: quote ? 8 : 0 }}>
+          <p style={{ fontSize: 12, color: '#8A9BB0', lineHeight: 1.4 }}>
+            📰 {headline}
+          </p>
+        </div>
+      )}
       {quote && (
-        <div style={{ borderTop: '1px solid #1e3450', paddingTop: 10 }}>
+        <div style={{ borderTop: headline ? '1px solid rgba(255,255,255,0.04)' : '1px solid #1e3450', paddingTop: 8 }}>
           <p style={{ fontSize: 13, color: '#F0F4F8', lineHeight: 1.5, fontStyle: 'italic' }}>
             "{quote.quote}"
           </p>

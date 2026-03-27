@@ -981,6 +981,12 @@ export function DashboardScreen() {
                   Aktiva: {activeIcons.join(' ')}
                 </p>
               )}
+              <span
+                onClick={e => { e.stopPropagation(); navigate('/game/budget') }}
+                style={{ fontSize: 11, color: '#4A6080', cursor: 'pointer', textDecoration: 'underline', marginTop: 4, display: 'inline-block' }}
+              >
+                Se budget →
+              </span>
             </div>
           )
         })()}

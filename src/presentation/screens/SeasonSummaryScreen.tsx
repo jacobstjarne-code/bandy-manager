@@ -335,8 +335,35 @@ export function SeasonSummaryScreen() {
           </Card>
         )}
 
+        {/* COMMUNITY STANDING */}
+        {summary.communityStandingEnd !== undefined && (
+          <Card stagger={6}>
+            <SectionLabel>ORTEN</SectionLabel>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <span style={{ fontSize: 12, color: '#4A6080' }}>Lokalstöd vid säsongsslut</span>
+              <span style={{ fontSize: 16, fontWeight: 700, color: summary.communityStandingEnd > 70 ? '#22c55e' : summary.communityStandingEnd > 50 ? '#C9A84C' : summary.communityStandingEnd > 30 ? '#f59e0b' : '#ef4444' }}>
+                {summary.communityStandingEnd}
+              </span>
+            </div>
+            <div style={{ height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3 }}>
+              <div style={{
+                height: '100%',
+                width: `${summary.communityStandingEnd}%`,
+                background: summary.communityStandingEnd > 70 ? '#22c55e' : summary.communityStandingEnd > 50 ? '#C9A84C' : summary.communityStandingEnd > 30 ? '#f59e0b' : '#ef4444',
+                borderRadius: 3,
+                transition: 'width 0.6s ease',
+              }} />
+            </div>
+            {(summary.communityHighlights ?? []).length > 0 && (
+              <p style={{ fontSize: 12, color: '#8A9BB0', marginTop: 8 }}>
+                {summary.communityHighlights.join(' · ')}
+              </p>
+            )}
+          </Card>
+        )}
+
         {/* FINANCES */}
-        <Card stagger={6}>
+        <Card stagger={7}>
           <SectionLabel>EKONOMI</SectionLabel>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>

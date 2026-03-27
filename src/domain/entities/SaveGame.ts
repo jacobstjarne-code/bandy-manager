@@ -305,4 +305,7 @@ export interface SaveGame {
 
   // Sprint 5: named characters
   namedCharacters?: NamedCharacter[]
+
+  // Sprint 5: lokaltidningsrubrik — uppdateras varje omgång
+  latestHeadline?: string
 }

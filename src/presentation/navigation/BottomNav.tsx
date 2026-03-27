@@ -10,7 +10,7 @@ const tabs = [
   { to: '/game/match', label: 'Match', Icon: Swords },
   { to: '/game/transfers', label: 'Transfers', Icon: ArrowLeftRight },
   { to: '/game/inbox', label: 'Inkorg', Icon: Bell },
-  { to: '/game/club', label: 'Klubb', Icon: Building2 },
+  { to: '/game/club', label: 'Förening', Icon: Building2 },
 ]
 
 function Badge({ count }: { count: number }) {

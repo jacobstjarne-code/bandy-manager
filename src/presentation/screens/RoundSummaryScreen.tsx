@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
+import { playSound } from '../audio/soundEffects'
 
 export function RoundSummaryScreen() {
   const navigate = useNavigate()
@@ -13,10 +14,22 @@ export function RoundSummaryScreen() {
     if (!roundSummary) navigate('/game/dashboard', { replace: true })
   }, [roundSummary, navigate])
 
+  const soundsPlayed = useRef(false)
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80)
     return () => clearTimeout(t)
   }, [])
+
+  useEffect(() => {
+    if (!roundSummary || soundsPlayed.current) return
+    soundsPlayed.current = true
+    const csDelta = (roundSummary.communityStandingAfter ?? 0) - (roundSummary.communityStandingBefore ?? roundSummary.communityStandingAfter ?? 0)
+    if (csDelta > 0) setTimeout(() => playSound('communityUp'), 400)
+    else if (csDelta < 0) setTimeout(() => playSound('communityDown'), 400)
+    if (roundSummary.youthMatchResult?.includes('vann')) setTimeout(() => playSound('youthGoal'), 600)
+    if (roundSummary.injuries && roundSummary.injuries.length > 0 && (roundSummary.communityStandingAfter ?? 50) < 20)
+      setTimeout(() => playSound('crisis'), 800)
+  }, [roundSummary])
 
   if (!roundSummary || !game) return null
 

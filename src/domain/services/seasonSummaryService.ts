@@ -430,5 +430,8 @@ export function generateSeasonSummary(game: SaveGame): SeasonSummary {
     cupResult,
     standingsSnapshot,
     storyTriggers,
+    communityStandingStart: game.communityStanding ?? 50,
+    communityStandingEnd: game.communityStanding ?? 50,
+    communityHighlights: [],
   }
 }

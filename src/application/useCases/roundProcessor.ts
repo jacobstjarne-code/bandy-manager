@@ -1761,6 +1761,30 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // Lokaltidningsrubrik per omgång
+  const managedClubName = game.clubs.find(c => c.id === game.managedClubId)?.shortName
+    ?? game.clubs.find(c => c.id === game.managedClubId)?.name
+    ?? 'Laget'
+  let latestHeadline = `${managedClubName} spelar vidare — säsongen fortsätter`
+  if (justCompletedManagedFixture) {
+    const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
+    const myScore = isHome ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
+    const theirScore = isHome ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
+    const oppClub = game.clubs.find(c => c.id === (isHome ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId))
+    const oppName = oppClub?.shortName ?? oppClub?.name ?? 'motståndaren'
+    if ((myScore ?? 0) > (theirScore ?? 0)) {
+      latestHeadline = `${managedClubName} vinner mot ${oppName} — publiken jublar`
+    } else if ((myScore ?? 0) < (theirScore ?? 0)) {
+      latestHeadline = `Tungt tapp för ${managedClubName} — ${oppName} för stark`
+    } else {
+      latestHeadline = `${managedClubName} och ${oppName} delar på poängen`
+    }
+  } else if (game.communityActivities?.bandyplay && nextRound <= 6) {
+    latestHeadline = `Rekordmånga barn i ${managedClubName}s bandyskola i år`
+  } else if ((game.sponsors ?? []).some(s => s.contractRounds > 20)) {
+    latestHeadline = `Nytt sponsoravtal lyfter ${managedClubName}`
+  }
+
   let updatedGame: SaveGame = {
     ...game,
     clubs: academyUpdatedClubs,
@@ -1791,6 +1815,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     academyLevel: game.academyLevel ?? 'basic',
     mentorships: game.mentorships ?? [],
     loanDeals: updatedLoanDeals,
+    latestHeadline,
   }
 
   // Pre-generate weather for next round so dashboard/matchScreen can show it

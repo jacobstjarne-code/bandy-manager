@@ -29,15 +29,21 @@ export function EventScreen() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
   const resolveEvent = useGameStore(s => s.resolveEvent)
+  const roundSummary = useGameStore(s => s.roundSummary)
   const [idx, setIdx] = useState(0)
 
   const events = game?.pendingEvents ?? []
 
   useEffect(() => {
-    if (!game || events.length === 0) {
+    if (!game) {
       navigate('/game', { replace: true })
+      return
     }
-  }, [game, events.length, navigate])
+    if (events.length === 0) {
+      // All events resolved — go to round-summary if one exists, else dashboard
+      navigate(roundSummary ? '/game/round-summary' : '/game/dashboard', { replace: true })
+    }
+  }, [game, events.length, navigate, roundSummary])
 
   if (!game || events.length === 0) return null
 

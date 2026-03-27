@@ -54,6 +54,10 @@ export interface SeasonSummary {
 
   narrativeSummary: string
 
+  communityStandingStart: number
+  communityStandingEnd: number
+  communityHighlights: string[]
+
   cupResult?: 'winner' | 'finalist' | 'semifinal' | 'quarter' | 'eliminated' | null
   standingsSnapshot?: Array<{ clubId: string; position: number; points: number }>
   storyTriggers?: Array<{
