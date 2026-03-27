@@ -33,6 +33,8 @@ export interface BoardMember {
   personality: BoardPersonality
 }
 
+export type PatronPersonality = 'selfless' | 'controlling' | 'strategic' | 'nostalgic'
+
 export interface Patron {
   name: string
   business: string
@@ -44,15 +46,26 @@ export interface Patron {
   wantsStyle?: string
   isActive: boolean
   hasBeenWarned?: boolean
+  personality?: PatronPersonality
+  patience?: number           // 0-100, decreases when ignored
+  totalContributed?: number   // running total
+  demands?: string[]
 }
+
+export type PoliticalAgenda = 'youth' | 'inclusion' | 'prestige' | 'savings' | 'infrastructure'
 
 export interface LocalPolitician {
   name: string
   title: string
-  party: string
-  agenda: 'youth' | 'inclusion' | 'prestige' | 'savings'
+  party: 'S' | 'M' | 'C' | 'L' | 'KD' | 'lokalt' | string
+  agenda: PoliticalAgenda
   relationship: number
   kommunBidrag: number
+  generosity?: number          // 0-100
+  mandatExpires?: number       // season number when mandate expires
+  demands?: string[]
+  demandsMet?: boolean
+  corruption?: number          // 0-100
 }
 
 export interface StandingRow {
@@ -111,6 +124,19 @@ export interface Sponsor {
   weeklyIncome: number
   contractRounds: number
   signedRound: number
+  personality?: 'local' | 'regional' | 'foundation'
+  networkMood?: number        // 0-100
+  icaMaxi?: boolean           // special ICA Maxi sponsor
+  icaMaxi_active?: boolean    // player visit active this season
+}
+
+export interface LicenseReview {
+  season: number
+  status: 'approved' | 'warning' | 'continued_review' | 'denied'
+  conditions?: string[]
+  deadline?: number           // rounds to fix
+  requiredCapital?: number
+  warningCount?: number       // consecutive warnings
 }
 
 export interface TalentSearchRequest {
@@ -227,4 +253,12 @@ export interface SaveGame {
   lastHallDebateRound?: number
   budgetPriority?: 'squad' | 'balanced' | 'youth'
   resolvedEventIds?: string[]  // event IDs that have been resolved — prevents re-triggering
+
+  // V0.9 NÄTET fields
+  licenseReview?: LicenseReview
+  licenseWarningCount?: number   // consecutive seasons with warning/continued_review
+  communityStanding?: number     // 0-100, starts 50
+  journalistRelationship?: number  // 0-100, starts 50
+  pressConferenceCount?: number
+  sponsorNetworkMood?: number    // 0-100, collective mood
 }

@@ -641,6 +641,24 @@ export function ClubScreen() {
           const wagePressure = actualMonthlyWages > club.wageBudget
           const slots = Array.from({ length: maxSponsors })
 
+          const licenseReview = game.licenseReview
+          const licenseIcon = licenseReview?.status === 'approved' ? '✅'
+            : licenseReview?.status === 'warning' ? '⚠️'
+            : licenseReview?.status === 'continued_review' ? '🔴'
+            : licenseReview?.status === 'denied' ? '❌'
+            : '✅'
+          const licenseLabel = licenseReview?.status === 'approved' ? 'Godkänd'
+            : licenseReview?.status === 'warning' ? 'Varning'
+            : licenseReview?.status === 'continued_review' ? 'Fortsatt granskning'
+            : licenseReview?.status === 'denied' ? 'Nekad'
+            : 'Ej granskad'
+          const licenseColor = licenseReview?.status === 'approved' ? 'var(--success)'
+            : licenseReview?.status === 'warning' ? 'var(--warning)'
+            : licenseReview?.status === 'continued_review' ? 'var(--danger)'
+            : licenseReview?.status === 'denied' ? 'var(--danger)'
+            : 'var(--text-muted)'
+          const communityStanding = game.communityStanding ?? 50
+
           return (
             <>
               {/* Kassaöversikt */}
@@ -672,6 +690,22 @@ export function ClubScreen() {
                     {netPerRound >= 0 ? '+' : ''}{formatCurrency(netPerRound)}
                   </span>
                 </div>
+                {/* License status badge */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, marginTop: 8, borderTop: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Licensstatus</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: licenseColor }}>
+                    {licenseIcon} {licenseLabel}
+                  </span>
+                </div>
+                {/* Community standing */}
+                {communityStanding !== undefined && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 6, marginTop: 6, borderTop: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Lokal ställning</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: communityStanding > 70 ? 'var(--success)' : communityStanding > 40 ? 'var(--text-primary)' : 'var(--danger)' }}>
+                      {communityStanding}/100
+                    </span>
+                  </div>
+                )}
               </SectionCard>
 
               {/* Sponsorer */}

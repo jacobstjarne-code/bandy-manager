@@ -14,6 +14,14 @@ export type GameEventType =
   | 'patronEvent'
   | 'politicianEvent'
   | 'hallDebate'
+  | 'licenseHandlingsplan'
+  | 'kommunMote'
+  | 'gentjanst'
+  | 'icaMaxiEvent'
+  | 'patronInfluence'
+  | 'spoksponsor'
+  | 'presskonferens'
+  | 'detOmojligaValet'
 
 export interface EventChoice {
   id: string
@@ -45,6 +53,11 @@ export interface EventEffect {
     | 'income'
     | 'reputation'
     | 'fanMood'
+    | 'communityStanding'
+    | 'journalistRelationship'
+    | 'patronInfluence'
+    | 'boardPatience'
+    | 'multiEffect'
   value?: number
   amount?: number
   targetPlayerId?: string
@@ -54,6 +67,8 @@ export interface EventEffect {
   mediaQuote?: string
   communityKey?: string
   communityValue?: string
+  // For multiEffect: serialized array of sub-effects
+  subEffects?: string
 }
 
 export interface GameEvent {

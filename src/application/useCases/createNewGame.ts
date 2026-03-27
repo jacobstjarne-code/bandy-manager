@@ -61,15 +61,22 @@ function generatePatron(
 
 function generatePolitician(rand: () => number): LocalPolitician {
   const profile = pickRandom(POLITICIAN_PROFILES, rand)
-  const agendas: Array<'youth' | 'inclusion' | 'prestige' | 'savings'> =
-    ['youth', 'inclusion', 'prestige', 'savings']
+  const agendas: Array<'youth' | 'inclusion' | 'prestige' | 'savings' | 'infrastructure'> =
+    ['youth', 'inclusion', 'prestige', 'savings', 'infrastructure']
+  const agenda = pickRandom(agendas, rand)
+  const generosity = agenda === 'savings'
+    ? Math.round(20 + rand() * 20)
+    : Math.round(50 + rand() * 40)
   return {
     name: `${profile.first} ${profile.last}`,
     title: `${profile.title} ${profile.party}`,
     party: profile.party,
-    agenda: pickRandom(agendas, rand),
+    agenda,
     relationship: 50,
     kommunBidrag: 50000 + Math.round(rand() * 100000),
+    generosity,
+    mandatExpires: (new Date().getFullYear()) + 4,
+    corruption: Math.round(rand() * 60),
   }
 }
 
@@ -203,6 +210,21 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     vipTent: false,
   }
 
+  // Generate ICA Maxi sponsor if reputation > 40 (50% chance)
+  const icaMaxiSponsors: import('../../domain/entities/SaveGame').Sponsor[] = []
+  if (managedClub.reputation > 40 && rand() < 0.5) {
+    const shortName = managedClub.shortName || managedClub.name.split(' ')[0]
+    icaMaxiSponsors.push({
+      id: `sponsor_icamaxi_start`,
+      name: `ICA Maxi ${shortName}`,
+      category: 'Dagligvaruhandel',
+      weeklyIncome: 3000 + Math.round(rand() * 2000),
+      contractRounds: 8,
+      signedRound: 0,
+      icaMaxi: true,
+    })
+  }
+
   const game: SaveGame = {
     id: `save_${Date.now()}`,
     managerName: input.managerName,
@@ -237,7 +259,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     pendingEvents: [],
     transferBids: [],
     handledContractPlayerIds: [],
-    sponsors: [],
+    sponsors: icaMaxiSponsors,
     fanMood: 50,
     boardPatience: 70,
     consecutiveFailures: 0,
@@ -260,6 +282,11 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     loanDeals: [],
     version: '0.1.0',
     lastSavedAt: now,
+    // V0.9 fields
+    communityStanding: 50,
+    journalistRelationship: 50,
+    sponsorNetworkMood: 70,
+    licenseWarningCount: 0,
   }
 
   return game

@@ -812,6 +812,185 @@ export function generateEvents(
     }
   }
 
+  // ── ICA Maxi event (every 4 rounds if icaMaxi sponsor exists) ──────────
+  const icaMaxiSponsor = (game.sponsors ?? []).find(s => s.icaMaxi === true && s.contractRounds > 0)
+  if (icaMaxiSponsor && currentRound % 4 === 0) {
+    const eid = `icamaxi_visit_r${currentRound}_${game.currentSeason}`
+    if (!alreadyQueued.has(eid)) {
+      events.push({
+        id: eid,
+        type: 'icaMaxiEvent',
+        title: 'Spelarsponsorträff',
+        body: `ICA Maxi erbjuder 5 000 kr extra/omg om en spelare besöker butiken och träffar kunder.`,
+        choices: [
+          {
+            id: 'send_player',
+            label: 'Skicka en spelare till butiken',
+            effect: { type: 'multiEffect', subEffects: JSON.stringify([
+              { type: 'income', amount: 5000 },
+              { type: 'communityStanding', amount: 2 },
+            ]) },
+          },
+          {
+            id: 'decline',
+            label: 'Avböj — laget behöver all träning',
+            effect: { type: 'noOp' },
+          },
+        ],
+        resolved: false,
+      })
+    }
+  }
+
+  // ── Patron influence escalation ──────────────────────────────────────────
+  const patronGame = game.patron
+  if (patronGame?.isActive) {
+    const influence = patronGame.influence ?? 30
+    const patience = patronGame.patience ?? 80
+
+    // Influence crosses 60 — wants to affect decisions
+    if (influence >= 60 && influence < 80) {
+      const eid = `patron_influence_60_${game.currentSeason}`
+      if (!alreadyQueued.has(eid)) {
+        events.push({
+          id: eid,
+          type: 'patronInfluence',
+          title: `${patronGame.name} vill påverka beslut`,
+          body: `${patronGame.name} har bidragit med ${(patronGame.totalContributed ?? patronGame.contribution).toLocaleString('sv-SE')} kr totalt och börjar känna att han borde ha mer att säga till om.`,
+          choices: [
+            {
+              id: 'listen',
+              label: 'Bjud in till styrelsemöte',
+              effect: { type: 'patronHappiness', amount: 15 },
+            },
+            {
+              id: 'decline',
+              label: 'Tacka men håll gränsen',
+              effect: { type: 'patronHappiness', amount: -5 },
+            },
+          ],
+          resolved: false,
+        })
+      }
+    }
+
+    // Patron ignored — patience < 20 and influence > 30
+    if (patience < 20 && influence > 30) {
+      const eid = `patron_ignored_${game.currentSeason}`
+      if (!alreadyQueued.has(eid)) {
+        events.push({
+          id: eid,
+          type: 'patronInfluence',
+          title: `${patronGame.name} känner sig ignorerad`,
+          body: `${patronGame.name} har investerat i klubben men märker att hans synpunkter aldrig tas på allvar. Han funderar på att dra sig tillbaka.`,
+          choices: [
+            {
+              id: 'apologize',
+              label: 'Be om ursäkt och bjud på lunch',
+              effect: { type: 'patronInfluence', amount: 0, value: 20 },
+            },
+            {
+              id: 'ignore',
+              label: 'Det är min klubb, inte hans',
+              effect: { type: 'patronHappiness', amount: -50 },
+            },
+          ],
+          resolved: false,
+        })
+      }
+    }
+  }
+
+  // ── Kommunmöte — politician demand event (once per politician) ───────────
+  const politician2 = game.localPolitician
+  if (politician2 && !politician2.demandsMet) {
+    const eid = `kommot_demand_${politician2.mandatExpires ?? game.currentSeason}_${game.currentSeason}`
+    if (!alreadyQueued.has(eid) && currentRound === 3) {
+      const agenda = politician2.agenda
+      let demandBody = ''
+      let choices: typeof events[0]['choices'] = []
+
+      if (agenda === 'savings') {
+        demandBody = `${politician2.name} ringer och vill diskutera kommunens bidrag. Han oroar sig för föreningens ekonomi.`
+        choices = [
+          { id: 'confirm', label: 'Lova inga löneökningar nästa år', effect: { type: 'politicianRelationship', amount: 10 } },
+          { id: 'pushback', label: 'Vi investerar för framtiden', effect: { type: 'politicianRelationship', amount: -5 } },
+        ]
+      } else if (agenda === 'youth') {
+        const hasSchool = game.communityActivities?.bandySchool
+        demandBody = `${politician2.name} vill att föreningen satsar mer på ungdomar. ${hasSchool ? 'Han ser positivt på bandyskolan.' : 'Han vill se en bandyskola.'}`
+        choices = [
+          { id: 'confirm', label: hasSchool ? 'Vi är stolta över bandyskolan' : 'Vi planerar en bandyskola', effect: { type: 'politicianRelationship', amount: hasSchool ? 15 : -5 } },
+          { id: 'focus', label: 'A-laget är vår prioritet', effect: { type: 'politicianRelationship', amount: -8 } },
+        ]
+      } else if (agenda === 'prestige') {
+        demandBody = `${politician2.name} vill att kommunen syns med laget. Han ser er som ett varumärke för regionen.`
+        choices = [
+          { id: 'welcome', label: 'Välkomna samarbetet', effect: { type: 'politicianRelationship', amount: 12 } },
+          { id: 'independent', label: 'Föreningen är fristående', effect: { type: 'politicianRelationship', amount: -5 } },
+        ]
+      } else if (agenda === 'inclusion') {
+        demandBody = `${politician2.name} vill att föreningen öppnar upp för fler grupper i samhället.`
+        choices = [
+          { id: 'program', label: 'Starta ett inkluderingsprogram', effect: { type: 'communityStanding', amount: 5 } },
+          { id: 'already', label: 'Vi är redan öppna för alla', effect: { type: 'politicianRelationship', amount: -3 } },
+        ]
+      } else if (agenda === 'infrastructure') {
+        demandBody = `${politician2.name} vill säkerställa att era anläggningar håller hög standard.`
+        choices = [
+          { id: 'confirm', label: 'Vi investerar i anläggningarna', effect: { type: 'politicianRelationship', amount: 10 } },
+          { id: 'later', label: 'Det får vänta', effect: { type: 'politicianRelationship', amount: -5 } },
+        ]
+      }
+
+      if (demandBody && choices.length > 0) {
+        events.push({
+          id: eid,
+          type: 'kommunMote',
+          title: `Kommunmöte — ${politician2.name}`,
+          body: demandBody,
+          choices,
+          resolved: false,
+        })
+      }
+    }
+  }
+
+  // ── Gentjänst event (new politician, corruption >= 50, 40% chance) ───────
+  const pol3 = game.localPolitician
+  if (pol3 && (pol3.corruption ?? 0) >= 50 && currentRound === 2) {
+    const eid = `gentjanst_${pol3.mandatExpires ?? game.currentSeason}_${game.currentSeason}`
+    if (!alreadyQueued.has(eid) && rand() < 0.4) {
+      events.push({
+        id: eid,
+        type: 'gentjanst',
+        title: 'En gentjänst',
+        body: `${pol3.name} hör av sig diskret. Hans brorson är ett ungt talang och undrar om han kan komma och träna med truppen. "Inget officiellt, bara kolla läget."`,
+        choices: [
+          {
+            id: 'yes',
+            label: 'Klart han är välkommen',
+            effect: { type: 'politicianRelationship', amount: 20 },
+          },
+          {
+            id: 'community',
+            label: 'Bara i ungdomsverksamheten',
+            effect: { type: 'politicianRelationship', amount: 5 },
+          },
+          {
+            id: 'no',
+            label: 'Vi rekryterar efter merit — inga undantag',
+            effect: { type: 'multiEffect', subEffects: JSON.stringify([
+              { type: 'politicianRelationship', amount: -10 },
+              { type: 'boardPatience', amount: 3 },
+            ]) },
+          },
+        ],
+        resolved: false,
+      })
+    }
+  }
+
   // ── Hall debate events ──────────────────────────────────────────────────
   const hasIndoorRival = game.clubs.some(
     c => c.id !== game.managedClubId && c.hasIndoorArena === true
@@ -1120,6 +1299,90 @@ export function generatePostAdvanceEvents(
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
   const maxSponsors = Math.min(6, 2 + Math.floor((managedClub?.reputation ?? 50) / 20))
+
+  // Spöksponsorn — one-time if desperate
+  if (events.length < 2) {
+    const spookId = 'ghostSponsorOffered'
+    const managedClubForSpook = game.clubs.find(c => c.id === game.managedClubId)
+    if (
+      !alreadyQueued.has(spookId) &&
+      (managedClubForSpook?.finances ?? 0) < 0 &&
+      (managedClubForSpook?.reputation ?? 0) > 60 &&
+      !game.patron &&
+      (game.currentSeason ?? 1) >= 2
+    ) {
+      events.push({
+        id: spookId,
+        type: 'spoksponsor',
+        title: 'Okänt nummer',
+        body: 'En affärsman ringer. Han har hört om er situation och vill investera 150 000 kr. I gengäld vill han sitta med på styrelsemöten och ha inflytande.',
+        choices: [
+          {
+            id: 'accept',
+            label: 'Tacka ja — desperatläget kräver det',
+            effect: { type: 'multiEffect', subEffects: JSON.stringify([
+              { type: 'income', amount: 150000 },
+              { type: 'communityStanding', amount: -5 },
+            ]) },
+          },
+          {
+            id: 'decline',
+            label: 'Tacka nej — vi klarar oss på annat sätt',
+            effect: { type: 'boardPatience', amount: -5 },
+          },
+        ],
+        resolved: false,
+      })
+    }
+  }
+
+  // Det omöjliga valet — one-time financial crisis
+  if (events.length < 2) {
+    const omojligId = `detOmojligaValet_${game.currentSeason}`
+    const managedClubOmojlig = game.clubs.find(c => c.id === game.managedClubId)
+    if (
+      !alreadyQueued.has(omojligId) &&
+      (managedClubOmojlig?.finances ?? 0) < -50000 &&
+      (game.communityStanding ?? 50) > 60
+    ) {
+      const academyProspect = game.players.find(p =>
+        p.clubId === game.managedClubId &&
+        p.promotedFromAcademy === true &&
+        (p.currentAbility ?? 0) > 50
+      )
+      if (academyProspect) {
+        const playerName = `${academyProspect.firstName} ${academyProspect.lastName}`
+        events.push({
+          id: omojligId,
+          type: 'detOmojligaValet',
+          title: 'Det omöjliga valet',
+          body: `Licensnämnden kräver positivt kapital. Du har en akademiprodukt värd pengar — ${playerName}. Hela orten älskar honom. Säljer du honom räddar du klubben, men skadar ditt rykte.`,
+          relatedPlayerId: academyProspect.id,
+          choices: [
+            {
+              id: 'sell',
+              label: `Sälj ${playerName} — rädda klubben (180 000 kr)`,
+              effect: { type: 'multiEffect', subEffects: JSON.stringify([
+                { type: 'income', amount: 180000 },
+                { type: 'communityStanding', amount: -12 },
+                { type: 'fanMood', amount: -15 },
+                { type: 'journalistRelationship', amount: -10 },
+              ]) },
+            },
+            {
+              id: 'keep',
+              label: 'Behåll honom — riskera licensproblem',
+              effect: { type: 'multiEffect', subEffects: JSON.stringify([
+                { type: 'communityStanding', amount: 5 },
+                { type: 'fanMood', amount: 8 },
+              ]) },
+            },
+          ],
+          resolved: false,
+        })
+      }
+    }
+  }
 
   if (activeSponsors.length < maxSponsors) {
     const offer = generateSponsorOffer(
@@ -1492,10 +1755,159 @@ export function resolveEvent(
       }
       break
     }
+    case 'communityStanding': {
+      updatedGame = {
+        ...updatedGame,
+        communityStanding: Math.max(0, Math.min(100, (updatedGame.communityStanding ?? 50) + (effect.amount ?? 0))),
+      }
+      break
+    }
+    case 'journalistRelationship': {
+      updatedGame = {
+        ...updatedGame,
+        journalistRelationship: Math.max(0, Math.min(100, (updatedGame.journalistRelationship ?? 50) + (effect.amount ?? 0))),
+      }
+      break
+    }
+    case 'patronInfluence': {
+      if (!updatedGame.patron) break
+      updatedGame = {
+        ...updatedGame,
+        patron: {
+          ...updatedGame.patron,
+          influence: Math.max(0, Math.min(100, (updatedGame.patron.influence ?? 30) + (effect.amount ?? 0))),
+          patience: Math.max(0, Math.min(100, (updatedGame.patron.patience ?? 80) + (effect.value ?? 0))),
+        },
+      }
+      break
+    }
+    case 'boardPatience': {
+      updatedGame = {
+        ...updatedGame,
+        boardPatience: Math.max(0, Math.min(100, (updatedGame.boardPatience ?? 70) + (effect.amount ?? 0))),
+      }
+      break
+    }
+    case 'multiEffect': {
+      // subEffects is a JSON array of EventEffect objects
+      if (effect.subEffects) {
+        try {
+          const subList: Array<{ type: string; amount?: number; value?: number; targetPlayerId?: string }> = JSON.parse(effect.subEffects)
+          for (const sub of subList) {
+            if (sub.type === 'income') {
+              updatedGame = {
+                ...updatedGame,
+                clubs: updatedGame.clubs.map(c =>
+                  c.id === updatedGame.managedClubId
+                    ? { ...c, finances: c.finances + (sub.amount ?? 0) }
+                    : c
+                ),
+              }
+            } else if (sub.type === 'communityStanding') {
+              updatedGame = {
+                ...updatedGame,
+                communityStanding: Math.max(0, Math.min(100, (updatedGame.communityStanding ?? 50) + (sub.amount ?? 0))),
+              }
+            } else if (sub.type === 'fanMood') {
+              updatedGame = {
+                ...updatedGame,
+                fanMood: Math.max(0, Math.min(100, (updatedGame.fanMood ?? 50) + (sub.amount ?? 0))),
+              }
+            } else if (sub.type === 'journalistRelationship') {
+              updatedGame = {
+                ...updatedGame,
+                journalistRelationship: Math.max(0, Math.min(100, (updatedGame.journalistRelationship ?? 50) + (sub.amount ?? 0))),
+              }
+            } else if (sub.type === 'boardPatience') {
+              updatedGame = {
+                ...updatedGame,
+                boardPatience: Math.max(0, Math.min(100, (updatedGame.boardPatience ?? 70) + (sub.amount ?? 0))),
+              }
+            } else if (sub.type === 'politicianRelationship') {
+              if (updatedGame.localPolitician) {
+                updatedGame = {
+                  ...updatedGame,
+                  localPolitician: {
+                    ...updatedGame.localPolitician,
+                    relationship: Math.max(0, Math.min(100, (updatedGame.localPolitician.relationship ?? 50) + (sub.amount ?? 0))),
+                  },
+                }
+              }
+            } else if (sub.type === 'boostMorale' && sub.targetPlayerId) {
+              updatedGame = {
+                ...updatedGame,
+                players: updatedGame.players.map(p =>
+                  p.id === sub.targetPlayerId
+                    ? { ...p, morale: Math.min(100, p.morale + (sub.amount ?? 5)) }
+                    : p
+                ),
+              }
+            } else if (sub.type === 'patronInfluence') {
+              if (updatedGame.patron) {
+                updatedGame = {
+                  ...updatedGame,
+                  patron: {
+                    ...updatedGame.patron,
+                    influence: Math.max(0, Math.min(100, (updatedGame.patron.influence ?? 30) + (sub.amount ?? 0))),
+                  },
+                }
+              }
+            }
+          }
+        } catch { /* ignore parse errors */ }
+      }
+      break
+    }
     case 'noOp':
     case 'openNegotiation':
     default:
       break
+  }
+
+  // Special: detOmojligaValet sell — remove player from squad
+  if (event.type === 'detOmojligaValet' && choiceId === 'sell' && event.relatedPlayerId) {
+    const pid = event.relatedPlayerId
+    updatedGame = {
+      ...updatedGame,
+      players: updatedGame.players.map(p => p.id === pid ? { ...p, clubId: 'free_agent' } : p),
+      clubs: updatedGame.clubs.map(c =>
+        c.id === updatedGame.managedClubId
+          ? { ...c, squadPlayerIds: c.squadPlayerIds.filter(id => id !== pid) }
+          : c
+      ),
+      inbox: [...(updatedGame.inbox ?? []), {
+        id: `inbox_sell_academyproduct_${pid}_${updatedGame.currentSeason}`,
+        date: updatedGame.currentDate,
+        type: InboxItemType.Media,
+        title: 'Akademijuvel säljs',
+        body: 'Klubben säljer sin akademiprodukt för att lösa den ekonomiska krisen. Lokaltidningen skriver kritiskt om beslutet.',
+        isRead: false,
+      }],
+    }
+  }
+
+  // Special: spoksponsor accept — add board member modernist
+  if (event.type === 'spoksponsor' && choiceId === 'accept') {
+    const newMember = { name: 'Okänd Investerare', role: 'ledamot' as const, personality: 'modernist' as const }
+    updatedGame = {
+      ...updatedGame,
+      boardPersonalities: [...(updatedGame.boardPersonalities ?? []), newMember],
+    }
+  }
+
+  // Special: icaMaxiEvent send_player — also add morale effect to random player
+  if (event.type === 'icaMaxiEvent' && choiceId === 'send_player') {
+    const managedPlayers = updatedGame.players.filter(p => p.clubId === updatedGame.managedClubId && !p.isInjured)
+    if (managedPlayers.length > 0) {
+      const chosen = managedPlayers[Math.floor(Math.random() * managedPlayers.length)]
+      const moraleDelta = (chosen.discipline ?? 50) > 60 ? 5 : -3
+      updatedGame = {
+        ...updatedGame,
+        players: updatedGame.players.map(p =>
+          p.id === chosen.id ? { ...p, morale: Math.max(0, Math.min(100, p.morale + moraleDelta)) } : p
+        ),
+      }
+    }
   }
 
   // If this was a hall debate event, increment counters

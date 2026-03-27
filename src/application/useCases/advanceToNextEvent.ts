@@ -49,6 +49,8 @@ import type { CupBracket } from '../../domain/entities/Cup'
 import { mulberry32 } from '../../domain/utils/random'
 import { processTrainingProjectsPerRound, PROJECT_DEFINITIONS } from '../../domain/services/trainingProjectService'
 import { simulateYouthMatch, generateYouthTeam } from '../../domain/services/academyService'
+import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
+import type { LicenseReview } from '../../domain/entities/SaveGame'
 
 export interface AdvanceResult {
   game: SaveGame
@@ -1679,9 +1681,94 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const managedFixtureId = justCompletedManagedFixture?.id
   const strippedFixtures = finalAllFixtures.map(f => stripCompletedFixture(f, managedFixtureId))
 
-  const updatedSponsors = (game.sponsors ?? [])
-    .map(s => ({ ...s, contractRounds: s.contractRounds - 1 }))
-    .filter(s => s.contractRounds > 0)
+  // ── V0.9: Sponsor chain effects & ICA Maxi ─────────────────────────────────
+  const v09Rand = mulberry32(baseSeed + 999777)
+  let v09Sponsors = (game.sponsors ?? []).map(s => ({ ...s, contractRounds: s.contractRounds - 1 }))
+
+  // Sponsor leaving chain effect: 30% chance another sponsor's income drops by 20%
+  const leavingSponsors = v09Sponsors.filter(s => s.contractRounds <= 0)
+  if (leavingSponsors.length > 0 && v09Rand() < 0.3) {
+    const remaining = v09Sponsors.filter(s => s.contractRounds > 0)
+    if (remaining.length > 0) {
+      const idx = Math.floor(v09Rand() * remaining.length)
+      const affectedSponsor = remaining[idx]
+      v09Sponsors = v09Sponsors.map(s =>
+        s.id === affectedSponsor.id
+          ? { ...s, weeklyIncome: Math.round(s.weeklyIncome * 0.8) }
+          : s
+      )
+      newInboxItems.push({
+        id: `inbox_sponsor_chain_${nextRound}_${game.currentSeason}`,
+        date: newDate,
+        type: InboxItemType.SponsorNetwork,
+        title: 'Sponsornätverket oroligt',
+        body: `${affectedSponsor.name} har hört rykten om en avgång i sponsorgruppen. Deras bidrag minskar tillfälligt.`,
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
+  // License warning makes sponsors nervous: 20% chance one leaves
+  if (
+    game.licenseReview?.status === 'warning' ||
+    game.licenseReview?.status === 'continued_review'
+  ) {
+    const activeSponsorsForCheck = v09Sponsors.filter(s => s.contractRounds > 0)
+    if (activeSponsorsForCheck.length > 0 && v09Rand() < 0.2) {
+      const leavingIdx = Math.floor(v09Rand() * activeSponsorsForCheck.length)
+      const leavingSponsor = activeSponsorsForCheck[leavingIdx]
+      v09Sponsors = v09Sponsors.map(s =>
+        s.id === leavingSponsor.id ? { ...s, contractRounds: 0 } : s
+      )
+      newInboxItems.push({
+        id: `inbox_sponsor_license_leave_${nextRound}_${game.currentSeason}`,
+        date: newDate,
+        type: InboxItemType.SponsorNetwork,
+        title: `${leavingSponsor.name} drar sig ur`,
+        body: `${leavingSponsor.name} har fått kännedom om licensnämndens varning och väljer att avsluta samarbetet omedelbart.`,
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
+  // Win streak sponsor bonus: 5% chance per win a new sponsor contact arrives
+  if (justCompletedManagedFixture) {
+    const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
+    const myScore = isHome ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
+    const theirScore = isHome ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
+    const wonMatch = (myScore ?? 0) > (theirScore ?? 0)
+    if (wonMatch && v09Rand() < 0.05) {
+      newInboxItems.push({
+        id: `inbox_sponsor_win_${nextRound}_${game.currentSeason}`,
+        date: newDate,
+        type: InboxItemType.SponsorNetwork,
+        title: 'Spontant sponsorintresse',
+        body: 'En lokal företagare hörde om segern och är intresserad av ett sponsorsamarbete. Se Ekonomi-fliken.',
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
+  const updatedSponsors = v09Sponsors.filter(s => s.contractRounds > 0)
+
+  // ── V0.9: Patron influence per-round inbox ─────────────────────────────────
+  const v09Patron = game.patron
+  if (v09Patron?.isActive) {
+    const influence = v09Patron.influence ?? 30
+    if (influence >= 30 && influence < 60) {
+      const patronInboxId = `inbox_patron_invite_${game.currentSeason}`
+      if (!game.inbox.some(i => i.id === patronInboxId)) {
+        newInboxItems.push({
+          id: patronInboxId,
+          date: newDate,
+          type: InboxItemType.PatronInfluence,
+          title: `${v09Patron.name} vill bli inbjuden till matcher`,
+          body: `${v09Patron.name} har bidragit generöst och hör av sig: "Jag skulle gärna se ett par matcher live i år."`,
+          isRead: false,
+        } as InboxItem)
+      }
+    }
+  }
 
   let updatedGame: SaveGame = {
     ...game,
@@ -1853,6 +1940,131 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
+  // ── License check (V0.9) ──────────────────────────────────────────────────
+  const licenseRand = mulberry32((seed ?? game.currentSeason * 12345) + 777123)
+  const managedClubForLicense = game.clubs.find(c => c.id === game.managedClubId)
+  let licenseReview: LicenseReview | undefined = game.licenseReview
+  let licenseWarningCount = game.licenseWarningCount ?? 0
+
+  if (managedClubForLicense) {
+    const licFinances = managedClubForLicense.finances
+    const hasYouth = !!(game.youthTeam) || !!(game.communityActivities?.bandySchool)
+    const prevDenied = game.licenseReview?.status === 'denied'
+
+    let failCount = 0
+    if (licFinances <= 0) failCount++
+    if (!hasYouth) failCount++
+    if (prevDenied) failCount++
+
+    let licStatus: LicenseReview['status']
+    if (licFinances < -200000 || licenseWarningCount >= 3) {
+      licStatus = 'denied'
+    } else if (failCount === 0) {
+      licStatus = 'approved'
+    } else if (failCount === 1) {
+      licStatus = 'warning'
+    } else {
+      licStatus = 'continued_review'
+    }
+
+    if (licStatus === 'approved') {
+      licenseWarningCount = 0
+    } else if (licStatus === 'warning' || licStatus === 'continued_review') {
+      licenseWarningCount++
+    }
+
+    licenseReview = {
+      season: game.currentSeason,
+      status: licStatus,
+      requiredCapital: licFinances < 0 ? Math.abs(licFinances) : undefined,
+      warningCount: licenseWarningCount,
+    }
+
+    if (licStatus === 'approved') {
+      newInboxItems.push({
+        id: `inbox_license_${game.currentSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.LicenseReview,
+        title: 'Licensnämnden: Licens beviljad',
+        body: `Licensnämnden har granskat ${managedClubForLicense.name} och beviljar licens för nästa säsong. Fortsätt det goda arbetet.`,
+        isRead: false,
+      } as InboxItem)
+    } else if (licStatus === 'warning') {
+      newInboxItems.push({
+        id: `inbox_license_${game.currentSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.LicenseReview,
+        title: 'Licensnämnden: Varning utfärdad',
+        body: `Licensnämnden har identifierat brister hos ${managedClubForLicense.name}. En formell varning utfärdas. Handlingsplan krävs.`,
+        isRead: false,
+      } as InboxItem)
+    } else if (licStatus === 'continued_review') {
+      newInboxItems.push({
+        id: `inbox_license_${game.currentSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.LicenseReview,
+        title: 'Licensnämnden: Fortsatt granskning',
+        body: `Licensnämnden ger ${managedClubForLicense.name} fortsatt villkorlig licens. Flera kriterier uppfylls inte. Omedelbara åtgärder krävs.`,
+        isRead: false,
+      } as InboxItem)
+    } else if (licStatus === 'denied') {
+      // Tvångsnedflyttning
+      newInboxItems.push({
+        id: `inbox_license_${game.currentSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.LicenseReview,
+        title: 'LICENSNÄMNDEN: LICENS NEKAD — TVÅNGSNEDFLYTTNING',
+        body: `Licensnämnden nekar ${managedClubForLicense.name} licens för elitbandyn. Klubben tvingas ta konsekvenserna. Tre spelare lämnar pga elitserieklausul. Majoriteten av sponsorerna drar sig ur. Styrelsen beslutar att tränaren stannar — men under hårt tryck.`,
+        isRead: false,
+      } as InboxItem)
+    }
+
+    // Generate handlingsplan event for warning/continued_review
+    if (licStatus === 'warning' || licStatus === 'continued_review') {
+      const handlingsplanEvent: GameEvent = {
+        id: `licenseHandlingsplan_${game.currentSeason}`,
+        type: 'licenseHandlingsplan',
+        title: 'Licensnämndens krav: Handlingsplan',
+        body: `Licensnämnden kräver en handlingsplan för att säkra ${managedClubForLicense.name}s framtida licens. Välj er strategi.`,
+        choices: [
+          {
+            id: 'sparplan',
+            label: 'Sparplan — minska löner 15%',
+            effect: { type: 'multiEffect', subEffects: JSON.stringify([
+              { type: 'income', amount: Math.round((licenseReview.requiredCapital ?? 50000) * 0.8) },
+            ]) },
+          },
+          {
+            id: 'membership',
+            label: 'Medlemsdrivning — engagera lokala krafter',
+            effect: { type: 'communityStanding', amount: 5 },
+          },
+          {
+            id: 'sponsors',
+            label: 'Fler sponsorer — lova synlighet',
+            effect: { type: 'reputation', amount: 2 },
+          },
+          ...(game.patron?.isActive ? [{
+            id: 'patron',
+            label: `Patronen — be ${game.patron.name} om hjälp`,
+            effect: { type: 'patronHappiness' as const, amount: 10 },
+          }] : []),
+        ],
+        resolved: false,
+      }
+      newInboxItems.push({
+        id: `inbox_handlingsplan_${game.currentSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.LicenseReview,
+        title: 'Licensnämnden kräver handlingsplan',
+        body: 'Öppna händelserna för att svara på licensnämndens krav.',
+        isRead: false,
+      } as InboxItem)
+      // We'll add this as a pending event in the updated game
+      void handlingsplanEvent // will be added below
+    }
+  }
+
   // Youth intake for all clubs
   const youthPlayers: Player[] = []
   const youthRecords = [...game.youthIntakeHistory]
@@ -1921,20 +2133,25 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
-  // KommunBidrag at season end
-  if (game.localPolitician && (game.localPolitician.kommunBidrag ?? 0) > 0) {
+  // KommunBidrag at season end — dynamic calculation (V0.9)
+  if (game.localPolitician) {
     const politIdx = updatedClubs.findIndex(c => c.id === game.managedClubId)
     if (politIdx !== -1) {
+      const polClub = updatedClubs[politIdx]
+      const commStanding = game.communityStanding ?? 50
+      const dynamicBidrag = calculateKommunBidrag(game.localPolitician, polClub, commStanding, game)
+      // Update the stored kommunBidrag value for display
+      // (we update the politician below in the updatedGame)
       updatedClubs[politIdx] = {
         ...updatedClubs[politIdx],
-        finances: updatedClubs[politIdx].finances + game.localPolitician.kommunBidrag,
+        finances: updatedClubs[politIdx].finances + dynamicBidrag,
       }
       newInboxItems.push({
         id: `inbox_kommunbidrag_${game.currentSeason + 1}`,
         date: game.currentDate,
-        type: InboxItemType.BoardFeedback,
+        type: InboxItemType.KommunBidrag,
         title: `Kommunbidrag utbetalat`,
-        body: `${game.localPolitician.name} meddelar att kommunens bidrag på ${game.localPolitician.kommunBidrag.toLocaleString('sv-SE')} kr har betalats ut för säsongen.`,
+        body: `${game.localPolitician.name} meddelar att kommunens bidrag på ${dynamicBidrag.toLocaleString('sv-SE')} kr har betalats ut. Beräknat utifrån ert ungdomsengagemang (${(game.youthTeam?.players.length ?? 0)} ungdomar), kommunens välvilja och er lokala ställning (${commStanding}/100).`,
         isRead: false,
       } as InboxItem)
     }
@@ -2131,12 +2348,173 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     squadPlayerIds: club.squadPlayerIds.filter(id => !retiredPlayerIds.has(id)),
   }))
 
+  // ── Tvångsnedflyttning effects (license denied) ───────────────────────────
+  let clubsAfterLicense = clubsWithRetirements
+  let playersAfterLicense = activePlayers
+  let sponsorsAfterLicense = game.sponsors ?? []
+  let licFireManager = false
+
+  if (licenseReview?.status === 'denied' && managedClubForLicense) {
+    // Remove 3 random managed players
+    const managedSquadIds = clubsAfterLicense.find(c => c.id === game.managedClubId)?.squadPlayerIds ?? []
+    const shuffledIds = [...managedSquadIds].sort(() => licenseRand() - 0.5)
+    const removedIds = new Set(shuffledIds.slice(0, Math.min(3, shuffledIds.length)))
+    playersAfterLicense = playersAfterLicense.map(p =>
+      removedIds.has(p.id) && p.clubId === game.managedClubId
+        ? { ...p, clubId: 'free_agent' }
+        : p
+    )
+    clubsAfterLicense = clubsAfterLicense.map(c =>
+      c.id === game.managedClubId
+        ? {
+            ...c,
+            reputation: Math.max(0, (c.reputation ?? 50) - 15),
+            squadPlayerIds: c.squadPlayerIds.filter(id => !removedIds.has(id)),
+          }
+        : c
+    )
+    // Remove 60% of sponsors
+    const keepCount = Math.ceil(sponsorsAfterLicense.length * 0.4)
+    sponsorsAfterLicense = sponsorsAfterLicense.slice(0, keepCount)
+
+    licFireManager = false  // Manager survives but demoted
+  }
+
+  // ── Kommunval — every 4th season, 50% chance of new politician ───────────
+  let nextPolitician = game.localPolitician
+  const kommunvalRand = mulberry32(baseSeed + 444777)
+  if (nextSeason % 4 === 0 && kommunvalRand() < 0.5) {
+    const newPol = generateNewPolitician(baseSeed + nextSeason * 31, nextSeason)
+    nextPolitician = newPol
+    newInboxItems.push({
+      id: `inbox_kommunval_${nextSeason}`,
+      date: game.currentDate,
+      type: InboxItemType.KommunBidrag,
+      title: `Kommunval: ${newPol.name} ny kommunalråd`,
+      body: `${newPol.name} (${newPol.party}) är kommunens nya kommunalråd med agenda "${newPol.agenda}". Kommunbidraget beräknas om baserat på deras prioriteringar. Relation startar på 40/100.`,
+      isRead: false,
+    } as InboxItem)
+  }
+
+  // ── Patron contribution + influence escalation ─────────────────────────────
+  let updatedPatron = game.patron
+  if (updatedPatron?.isActive) {
+    const newInfluence = Math.min(100, (updatedPatron.influence ?? 30) + 5)
+    const newTotalContributed = (updatedPatron.totalContributed ?? 0) + updatedPatron.contribution
+
+    if (newInfluence >= 80 && (updatedPatron.influence ?? 30) < 80) {
+      newInboxItems.push({
+        id: `inbox_patron_demands_${nextSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.PatronInfluence,
+        title: `${updatedPatron.name} kräver inflytande`,
+        body: `${updatedPatron.name} har bidragit med totalt ${newTotalContributed.toLocaleString('sv-SE')} kr och känner att han förtjänar mer att säga till om i klubbens beslut.`,
+        isRead: false,
+      } as InboxItem)
+    }
+
+    updatedPatron = {
+      ...updatedPatron,
+      influence: newInfluence,
+      totalContributed: newTotalContributed,
+    }
+  }
+
+  // ── Media effects (journalist relationship) ────────────────────────────────
+  let newJournalistRelationship = game.journalistRelationship ?? 50
+  let newCommunityStanding = game.communityStanding ?? 50
+
+  // Grävande artikel trigger: journalist unhappy + bad finances or license warning
+  const managedClubFin = clubsWithRetirements.find(c => c.id === game.managedClubId)?.finances ?? 0
+  const gravId = `gravande_artikel_${game.currentSeason}`
+  const resolvedSet = new Set(game.resolvedEventIds ?? [])
+  if (
+    newJournalistRelationship < 30 &&
+    (managedClubFin < -50000 || licenseReview?.status === 'warning' || licenseReview?.status === 'continued_review') &&
+    !resolvedSet.has(gravId)
+  ) {
+    newCommunityStanding = Math.max(0, newCommunityStanding - 5)
+    newJournalistRelationship = Math.max(0, newJournalistRelationship - 5)
+    newInboxItems.push({
+      id: `inbox_gravande_${game.currentSeason}`,
+      date: game.currentDate,
+      type: InboxItemType.MediaEvent,
+      title: 'Lokaltidningen granskar ekonomin',
+      body: `${game.localPaperName ?? 'Lokaltidningen'} publicerar en kritisk granskning av ${managedClubForLicense?.name ?? 'klubbens'} ekonomi. Kommunen och sponsorer reagerar negativt.`,
+      isRead: false,
+    } as InboxItem)
+    // Reduce sponsor network mood and politician relationship
+    if (nextPolitician) {
+      nextPolitician = { ...nextPolitician, relationship: Math.max(0, nextPolitician.relationship - 10) }
+    }
+  }
+
+  // Räddande artikel trigger: journalist happy + youth team good record
+  const raddId = `raddande_artikel_${game.currentSeason}`
+  const youthWins = game.youthTeam?.seasonRecord?.w ?? 0
+  if (
+    newJournalistRelationship > 70 &&
+    game.youthTeam &&
+    youthWins > 5 &&
+    !resolvedSet.has(raddId)
+  ) {
+    newCommunityStanding = Math.min(100, newCommunityStanding + 5)
+    newInboxItems.push({
+      id: `inbox_raddande_${game.currentSeason}`,
+      date: game.currentDate,
+      type: InboxItemType.MediaEvent,
+      title: 'Lokaltidningen skriver helsida om akademin',
+      body: `${game.localPaperName ?? 'Lokaltidningen'} hyllar ${managedClubForLicense?.name ?? 'klubbens'} ungdomsverksamhet med en helsida. Kommunen och sponsorer reagerar positivt.`,
+      isRead: false,
+    } as InboxItem)
+    if (nextPolitician) {
+      nextPolitician = { ...nextPolitician, relationship: Math.min(100, nextPolitician.relationship + 5) }
+    }
+  }
+
+  // ── Build handlingsplan pending event if needed ───────────────────────────
+  const seasonEndPendingEvents: GameEvent[] = []
+  if (licenseReview?.status === 'warning' || licenseReview?.status === 'continued_review') {
+    const handlingsplanEvent: GameEvent = {
+      id: `licenseHandlingsplan_${game.currentSeason}`,
+      type: 'licenseHandlingsplan',
+      title: 'Licensnämndens krav: Handlingsplan',
+      body: `Licensnämnden kräver en handlingsplan för att säkra ${managedClubForLicense?.name ?? 'klubbens'} framtida licens. Välj er strategi noggrant.`,
+      choices: [
+        {
+          id: 'sparplan',
+          label: 'Sparplan — dra ner på löner och kostnader',
+          effect: { type: 'multiEffect', subEffects: JSON.stringify([
+            { type: 'income', amount: Math.round((licenseReview.requiredCapital ?? 50000) * 0.8) },
+          ]) },
+        },
+        {
+          id: 'membership',
+          label: 'Medlemsdrivning — engagera lokala krafter',
+          effect: { type: 'communityStanding', amount: 8 },
+        },
+        {
+          id: 'sponsors',
+          label: 'Fler sponsorer — lova synlighet och PR',
+          effect: { type: 'reputation', amount: 3 },
+        },
+        ...(updatedPatron?.isActive ? [{
+          id: 'patron',
+          label: `Patronen — be ${updatedPatron.name} om hjälp`,
+          effect: { type: 'patronHappiness' as const, amount: 15 },
+        }] : []),
+      ],
+      resolved: false,
+    }
+    seasonEndPendingEvents.push(handlingsplanEvent)
+  }
+
   const updatedGame: SaveGame = {
     ...game,
     currentSeason: nextSeason,
     currentDate: `${nextSeason}-10-01`,
-    clubs: clubsWithRetirements,
-    players: activePlayers,
+    clubs: clubsAfterLicense,
+    players: playersAfterLicense,
     fixtures: newFixtures,
     league: newLeague,
     standings: calculateStandings(updatedClubs.map(c => c.id), []),
@@ -2149,17 +2527,20 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     cupBracket: newCupBracket,
     seasonSummaries: [...(game.seasonSummaries ?? []), seasonSummary].slice(-5),
     showSeasonSummary: true,
-    showBoardMeeting: managerFired ? false : undefined,
-    showPreSeason: managerFired ? false : true,
+    showBoardMeeting: (managerFired || licFireManager) ? false : undefined,
+    showPreSeason: (managerFired || licFireManager) ? false : true,
     managerFired: managerFired ? true : undefined,
+    fanMood: licenseReview?.status === 'denied'
+      ? Math.max(0, (game.fanMood ?? 50) - 15)
+      : game.fanMood,
     seasonStartFinances: updatedClubs.find(c => c.id === game.managedClubId)?.finances,
     scoutReports: game.scoutReports ?? {},
     activeScoutAssignment: null,
     scoutBudget: 10,
     transferBids: [],
-    pendingEvents: [],
+    pendingEvents: seasonEndPendingEvents,
     handledContractPlayerIds: [],
-    sponsors: game.sponsors ?? [],
+    sponsors: sponsorsAfterLicense,
     opponentAnalyses: {},
     activeTalentSearch: null,
     talentSearchResults: game.talentSearchResults ?? [],
@@ -2192,6 +2573,32 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     academyUpgradeSeason: game.academyUpgradeSeason === nextSeason ? undefined : game.academyUpgradeSeason,
     mentorships: [],
     loanDeals: [],
+    // V0.9 fields
+    licenseReview,
+    licenseWarningCount,
+    communityStanding: newCommunityStanding,
+    journalistRelationship: newJournalistRelationship,
+    sponsorNetworkMood: game.sponsorNetworkMood ?? 70,
+    patron: updatedPatron,
+    localPolitician: nextPolitician
+      ? {
+          ...nextPolitician,
+          kommunBidrag: nextPolitician
+            ? calculateKommunBidrag(
+                nextPolitician,
+                clubsAfterLicense.find(c => c.id === game.managedClubId) ?? managedClubForLicense!,
+                newCommunityStanding,
+                { ...game, communityStanding: newCommunityStanding }
+              )
+            : (game.localPolitician?.kommunBidrag ?? 0),
+        }
+      : game.localPolitician,
+    resolvedEventIds: [
+      ...(game.resolvedEventIds ?? []),
+      ...(licenseReview?.status !== 'denied' ? [] : []),
+      gravId,
+      raddId,
+    ].slice(-200),
   }
 
   return { game: updatedGame, roundPlayed: null, seasonEnded: true }

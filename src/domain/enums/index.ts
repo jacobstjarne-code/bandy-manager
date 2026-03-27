@@ -92,6 +92,11 @@ export enum InboxItemType {
   Retirement = 'retirement',
   Community = 'community',
   YouthP17 = 'youthP17',
+  LicenseReview = 'licenseReview',
+  KommunBidrag = 'kommunBidrag',
+  SponsorNetwork = 'sponsorNetwork',
+  PatronInfluence = 'patronInfluence',
+  MediaEvent = 'mediaEvent',
 }
 
 export enum TrainingType {
