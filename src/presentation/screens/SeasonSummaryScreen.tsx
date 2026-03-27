@@ -386,6 +386,16 @@ export function SeasonSummaryScreen() {
         {!isHistorical && (
           <div style={{ padding: '0 0 20px' }}>
             <button
+              onClick={() => navigate('/game/history')}
+              style={{
+                width: '100%', padding: '13px', marginBottom: 10,
+                background: 'transparent', border: '1px solid #1e3450',
+                borderRadius: 12, color: '#8A9BB0', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+              }}
+            >
+              📖 Se hela karriärhistoriken
+            </button>
+            <button
               onClick={handleNextSeason}
               style={{
                 width: '100%',

@@ -24,6 +24,8 @@ import { NextMatchCard } from '../components/dashboard/NextMatchCard'
 import { LastResultCard } from '../components/dashboard/LastResultCard'
 import { SquadStatusCard } from '../components/dashboard/SquadStatusCard'
 import { GuidanceBanner } from '../components/dashboard/GuidanceBanner'
+import { CommunityPulse } from '../components/dashboard/CommunityPulse'
+import { ContextualNudges } from '../components/dashboard/ContextualNudges'
 import { calcWeeklyEconomy } from '../../domain/services/economyService'
 
 function getSeriesScore(series: { fixtures: string[]; homeClubId: string; awayClubId: string }, fixtures: Fixture[]) {
@@ -363,11 +365,6 @@ function getRolfQuote(round: number, communityStanding: number, volunteerMorale:
   return ROLF_BASE_QUOTES[round] ?? 'Isen håller.'
 }
 
-// Sprint 3: Priority 1 events (block the advance button)
-const PRIORITY_1_EVENTS = new Set([
-  'licenseHandlingsplan', 'kommunMote', 'spoksponsor',
-  'hallDebate', 'detOmojligaValet',
-])
 
 export function DashboardScreen() {
   const { game, advance, markTutorialSeen, resolveEvent, roundSummary } = useGameStore()
@@ -562,9 +559,7 @@ export function DashboardScreen() {
     ? getRolfQuote(currentRound, cs, rolf?.morale ?? 70)
     : (birgitta ? `${birgitta.name}: "Vi håller ihop."` : '')
 
-  // Sprint 3: Priority 1 event blocking
-  const firstPendingEvent = (game.pendingEvents ?? [])[0]
-  const isPriority1Event = firstPendingEvent && PRIORITY_1_EVENTS.has(firstPendingEvent.type)
+  // pendingEvents handled via post-advance navigation — no inline rendering
 
   // Determine playoff context for next fixture
   const isPlayoffFixture = nextFixture && nextFixture.roundNumber > 22
@@ -886,6 +881,10 @@ export function DashboardScreen() {
           />
         )}
 
+        {/* ORTEN + ATT TÄNKA PÅ */}
+        <CommunityPulse game={game} currentRound={currentRound} />
+        <ContextualNudges game={game} currentRound={currentRound} />
+
         {/* TRUPPSTATUS card */}
         <SquadStatusCard
           injuredCount={injuredCount}
@@ -1063,50 +1062,7 @@ export function DashboardScreen() {
         background: 'linear-gradient(to top, #0D1B2A 80%, transparent)',
         zIndex: 50,
       }}>
-        {/* PENDING EVENT inline — Sprint 3 */}
-        {firstPendingEvent && (
-          <div style={{
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 8,
-            padding: 12,
-            marginBottom: 12,
-          }}>
-            <div style={{ fontSize: 11, letterSpacing: 1, opacity: 0.5, marginBottom: 6 }}>
-              ⚡ HÄNDELSE
-            </div>
-            <div style={{ fontWeight: 600, marginBottom: 4 }}>{firstPendingEvent.title}</div>
-            <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 10 }}>{firstPendingEvent.body ?? ''}</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {(firstPendingEvent.choices ?? []).map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => resolveEvent(firstPendingEvent.id, choice.id)}
-                  style={{
-                    background: 'rgba(201,168,76,0.15)',
-                    border: '1px solid rgba(201,168,76,0.3)',
-                    borderRadius: 6,
-                    padding: '8px 12px',
-                    color: '#C9A84C',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    fontSize: 13,
-                  }}
-                >
-                  {choice.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {isPriority1Event && (
-          <div style={{ fontSize: 12, color: '#f59e0b', marginBottom: 8, textAlign: 'center' }}>
-            Hantera händelsen ovan först.
-          </div>
-        )}
-
-        {canSimulateRemaining && !isBatchSim && !firstPendingEvent && (
+        {canSimulateRemaining && !isBatchSim && (
           <button
             onClick={() => setIsBatchSim(true)}
             style={{
@@ -1138,21 +1094,21 @@ export function DashboardScreen() {
         )}
         <button
           onClick={handleAdvance}
-          disabled={!canClickAdvance || isBatchSim || !!isPriority1Event}
-          className={canClickAdvance && !isBatchSim && !isPriority1Event ? 'btn-pulse' : undefined}
+          disabled={!canClickAdvance || isBatchSim}
+          className={canClickAdvance && !isBatchSim ? 'btn-pulse' : undefined}
           style={{
             width: '100%',
             padding: '17px',
-            background: canClickAdvance && !isBatchSim && !isPriority1Event ? '#C9A84C' : '#1a2e47',
-            color: canClickAdvance && !isBatchSim && !isPriority1Event ? '#0D1B2A' : '#4A6080',
+            background: canClickAdvance && !isBatchSim ? '#C9A84C' : '#1a2e47',
+            color: canClickAdvance && !isBatchSim ? '#0D1B2A' : '#4A6080',
             borderRadius: 12,
             fontSize: 16,
             fontWeight: 800,
             letterSpacing: '1.5px',
             textTransform: 'uppercase',
             border: 'none',
-            boxShadow: canClickAdvance && !isBatchSim && !isPriority1Event ? '0 4px 20px rgba(201,168,76,0.3)' : 'none',
-            cursor: canClickAdvance && !isBatchSim && !isPriority1Event ? 'pointer' : 'not-allowed',
+            boxShadow: canClickAdvance && !isBatchSim ? '0 4px 20px rgba(201,168,76,0.3)' : 'none',
+            cursor: canClickAdvance && !isBatchSim ? 'pointer' : 'not-allowed',
             fontVariantNumeric: 'tabular-nums',
           }}
         >

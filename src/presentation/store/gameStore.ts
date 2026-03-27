@@ -15,6 +15,7 @@ import { resolveEvent as resolveEventFn } from '../../domain/services/eventServi
 import { updateCupBracketAfterRound } from '../../domain/services/cupService'
 import { updateSeriesAfterMatch, advancePlayoffRound } from '../../domain/services/playoffService'
 import { advanceToNextEvent, type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
+import { navigateTo } from '../navigation/globalNavigate'
 import { setLineup } from '../../application/useCases/setLineup'
 import { calculateStandings } from '../../domain/services/standingsService'
 import type { LoanDeal } from '../../domain/entities/Academy'
@@ -220,6 +221,26 @@ export const useGameStore = create<GameState>()(
         }
 
         set({ game: result.game, lastAdvanceResult: result, roundSummary: summary })
+
+        // Post-advance navigation (priority order)
+        const pendingCount = result.game.pendingEvents?.length ?? 0
+        const managerFired = (result.game as any).managerFired
+        if (managerFired) {
+          navigateTo('/game/game-over', { replace: true })
+        } else if (result.seasonEnded) {
+          if ((result.game as any).showSeasonSummary) {
+            navigateTo('/game/season-summary', { replace: true })
+          } else if ((result.game as any).showBoardMeeting) {
+            navigateTo('/game/board-meeting', { replace: true })
+          } else if ((result.game as any).showPreSeason) {
+            navigateTo('/game/pre-season', { replace: true })
+          }
+        } else if (pendingCount > 0) {
+          navigateTo('/game/events', { replace: true })
+        } else if (summary.matchPlayed) {
+          navigateTo('/game/round-summary', { replace: true })
+        }
+
         return result
       },
 

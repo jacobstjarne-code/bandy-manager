@@ -1,0 +1,384 @@
+import type { SaveGame } from '../../entities/SaveGame'
+import type { GameEvent, TransferBid } from '../../entities/GameEvent'
+import type { Fixture } from '../../entities/Fixture'
+import { generatePressConference } from '../pressConferenceService'
+import { generateSponsorOffer } from '../sponsorService'
+import {
+  bidReceivedEvent,
+  bidWarEvent,
+  hesitantPlayerEvent,
+  contractRequestEvent,
+  unhappyPlayerEvent,
+  generateDayJobConflictEvent,
+  formatValue,
+} from './eventFactories'
+
+// ── generatePostAdvanceEvents ──────────────────────────────────────────────
+export function generatePostAdvanceEvents(
+  game: SaveGame,
+  newBids: TransferBid[],
+  roundPlayed: number,
+  rand: () => number,
+  justCompletedFixture?: Fixture,
+): GameEvent[] {
+  const events: GameEvent[] = []
+  const alreadyQueued = new Set((game.pendingEvents ?? []).map(e => e.id))
+
+  // 0. Press conference after managed match
+  if (justCompletedFixture) {
+    const pressEvent = generatePressConference(justCompletedFixture, game, rand)
+    if (pressEvent && !alreadyQueued.has(pressEvent.id)) {
+      events.push(pressEvent)
+    }
+  }
+
+  // 1. Incoming transfer bids → events
+  for (const bid of newBids) {
+    if (events.length >= 2) break
+    const eid = `event_bid_${bid.id}`
+    if (!alreadyQueued.has(eid)) {
+      events.push(bidReceivedEvent(bid, game))
+    }
+  }
+
+  // 1b. Re-surface existing pending incoming bids (e.g. after counter-offer)
+  const existingPendingBids = (game.transferBids ?? []).filter(
+    b => b.direction === 'incoming' && b.status === 'pending',
+  )
+  for (const bid of existingPendingBids) {
+    if (events.length >= 2) break
+    const eid = `event_bid_${bid.id}`
+    if (alreadyQueued.has(eid)) continue
+    if ((bid.counterCount ?? 0) >= 1) {
+      // AI responds to counter — accept if ≥1.5x market value, otherwise withdraw
+      const player = game.players.find(p => p.id === bid.playerId)
+      const marketVal = player?.marketValue ?? 50000
+      const buyingClub = game.clubs.find(c => c.id === bid.buyingClubId)
+      const clubName = buyingClub?.name ?? 'Köparklubben'
+      const playerName = player ? `${player.firstName} ${player.lastName}` : 'spelaren'
+      if (bid.offerAmount >= marketVal * 1.5) {
+        events.push({
+          id: `event_bid_aiaccept_${bid.id}`,
+          type: 'transferBidReceived',
+          title: `${clubName} accepterar din motbud`,
+          body: `${clubName} godkänner det höjda kravet på ${formatValue(bid.offerAmount)} för ${playerName}. Bekräfta försäljningen.`,
+          choices: [{
+            id: 'confirm',
+            label: `Genomför transfer (${formatValue(bid.offerAmount)})`,
+            effect: { type: 'acceptTransfer', bidId: bid.id, targetPlayerId: bid.playerId, targetClubId: bid.buyingClubId },
+          }],
+          relatedPlayerId: bid.playerId,
+          relatedBidId: bid.id,
+          resolved: false,
+        })
+      } else {
+        events.push({
+          id: `event_bid_aireject_${bid.id}`,
+          type: 'transferBidReceived',
+          title: `${clubName} drar sig ur`,
+          body: `${clubName} accepterar inte din prissättning på ${formatValue(bid.offerAmount)} för ${playerName} och drar tillbaka budet.`,
+          choices: [{
+            id: 'ok',
+            label: 'OK',
+            effect: { type: 'rejectTransfer', bidId: bid.id, targetPlayerId: bid.playerId },
+          }],
+          relatedPlayerId: bid.playerId,
+          relatedBidId: bid.id,
+          resolved: false,
+        })
+      }
+    } else {
+      events.push(bidReceivedEvent(bid, game))
+    }
+  }
+
+  if (events.length >= 2) return events
+
+  // 2. Contract requests (CA > 50, < 1 season left, managed club)
+  const CONTRACT_ROUNDS = [5, 10, 15, 20]
+  if (CONTRACT_ROUNDS.includes(roundPlayed)) {
+    const handledIds = new Set(game.handledContractPlayerIds ?? [])
+    const contractCandidates = game.players
+      .filter(p =>
+        p.clubId === game.managedClubId &&
+        p.currentAbility > 50 &&
+        p.contractUntilSeason <= game.currentSeason + 1 &&
+        !handledIds.has(p.id)
+      )
+      .sort((a, b) => b.currentAbility - a.currentAbility)
+
+    if (contractCandidates.length > 0 && events.length < 2) {
+      const p = contractCandidates[0]
+      events.push(contractRequestEvent(game, p.id))
+    }
+  }
+
+  if (events.length >= 2) return events
+
+  // 3. Unhappy players (morale < 35, bänkad 3+ matcher) — simplified check
+  const recentFixtures = game.fixtures
+    .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+    .sort((a, b) => b.roundNumber - a.roundNumber)
+    .slice(0, 3)
+
+  const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId && !p.isInjured)
+  for (const p of managedPlayers) {
+    if (events.length >= 2) break
+    if (p.morale >= 35) continue
+
+    // Check if benched in last 3 matches
+    const benchedCount = recentFixtures.filter(f => {
+      const lineup = f.homeClubId === game.managedClubId ? f.homeLineup : f.awayLineup
+      return lineup && lineup.benchPlayerIds.includes(p.id) && !lineup.startingPlayerIds.includes(p.id)
+    }).length
+
+    if (benchedCount >= 2) {
+      const eid = `event_unhappy_${p.id}_${game.currentSeason}`
+      if (!alreadyQueued.has(eid)) {
+        events.push(unhappyPlayerEvent(game, p.id))
+      }
+    }
+  }
+
+  if (events.length >= 2) return events
+
+  // 4. Star performance (8.5+ rating, auto-resolve with morale boost — add as resolved=false with single choice)
+  const lastFixture = recentFixtures[0]
+  if (lastFixture?.report?.playerRatings && rand() > 0.5) {
+    for (const [pid, rating] of Object.entries(lastFixture.report.playerRatings)) {
+      if (events.length >= 2) break
+      if (rating < 8.5) continue
+
+      const player = game.players.find(p => p.id === pid)
+      if (!player || player.clubId !== game.managedClubId) continue
+      const eid = `event_star_${pid}_${roundPlayed}`
+      if (alreadyQueued.has(eid)) continue
+
+      events.push({
+        id: eid,
+        type: 'starPerformance',
+        title: `⭐ Stjärnprestation — ${player.firstName} ${player.lastName}`,
+        body: `${player.firstName} ${player.lastName} fick betyget ${rating.toFixed(1)} senaste matchen. Laget hyllar insatsen.`,
+        choices: [
+          {
+            id: 'ok',
+            label: 'Bra jobbat!',
+            effect: { type: 'boostMorale', targetPlayerId: pid, value: 5 },
+          },
+        ],
+        relatedPlayerId: pid,
+        resolved: false,
+      })
+      break
+    }
+  }
+
+  if (events.length >= 2) return events
+
+  // 5. Day job conflict
+  if (events.length < 2) {
+    const recentCompleted = game.fixtures
+      .filter(f =>
+        f.status === 'completed' &&
+        (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+      )
+      .sort((a, b) => b.roundNumber - a.roundNumber)
+      .slice(0, 5)
+
+    const dayJobCandidates = game.players.filter(p =>
+      p.clubId === game.managedClubId &&
+      !p.isInjured &&
+      !(p.isFullTimePro ?? false) &&
+      (p.dayJob?.flexibility ?? 75) < 70
+    )
+
+    for (const p of dayJobCandidates) {
+      if (events.length >= 2) break
+      const gamesInLast5 = recentCompleted.filter(f => {
+        const lineup = f.homeClubId === game.managedClubId ? f.homeLineup : f.awayLineup
+        return lineup && lineup.startingPlayerIds.includes(p.id)
+      }).length
+      if (gamesInLast5 >= 3) {
+        const period = Math.floor(roundPlayed / 5)
+        const eid = `event_dayjob_${p.id}_period${period}`
+        if (!alreadyQueued.has(eid)) {
+          events.push(generateDayJobConflictEvent(p, roundPlayed))
+        }
+      }
+    }
+  }
+
+  if (events.length >= 2) return events
+
+  // 6a. Bid war (pending outgoing bid, 20% chance per round)
+  const pendingOutgoing = (game.transferBids ?? []).filter(
+    b => b.direction === 'outgoing' && b.status === 'pending'
+  )
+  for (const bid of pendingOutgoing) {
+    if (events.length >= 2) break
+    if (rand() > 0.20) continue
+    const eid = `event_bidwar_${bid.id}`
+    if (!alreadyQueued.has(eid)) {
+      events.push(bidWarEvent(bid, game))
+    }
+  }
+
+  if (events.length >= 2) return events
+
+  // 6b. Hesitant player (outgoing bid just resolved as accepted, player CA > club avg)
+  const justAccepted = (game.transferBids ?? []).filter(
+    b => b.direction === 'outgoing' && b.status === 'accepted' && b.expiresRound === roundPlayed
+  )
+  if (justAccepted.length > 0) {
+    const managedPlayersForHesitant = game.players.filter(p => p.clubId === game.managedClubId)
+    const avgCA = managedPlayersForHesitant.length > 0
+      ? managedPlayersForHesitant.reduce((s, p) => s + p.currentAbility, 0) / managedPlayersForHesitant.length
+      : 0
+    for (const bid of justAccepted) {
+      if (events.length >= 2) break
+      const target = game.players.find(p => p.id === bid.playerId)
+      if (!target || target.currentAbility <= avgCA) continue
+      const eid = `event_hesitant_${bid.id}`
+      if (!alreadyQueued.has(eid)) {
+        events.push(hesitantPlayerEvent(bid, game))
+      }
+    }
+  }
+
+  if (events.length >= 2) return events
+
+  // 6. Sponsor offer
+  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+  const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
+  const maxSponsors = Math.min(6, 2 + Math.floor((managedClub?.reputation ?? 50) / 20))
+
+  // Spöksponsorn — one-time if desperate
+  if (events.length < 2) {
+    const spookId = 'ghostSponsorOffered'
+    const managedClubForSpook = game.clubs.find(c => c.id === game.managedClubId)
+    if (
+      !alreadyQueued.has(spookId) &&
+      (managedClubForSpook?.finances ?? 0) < 0 &&
+      (managedClubForSpook?.reputation ?? 0) > 60 &&
+      !game.patron &&
+      (game.currentSeason ?? 1) >= 2
+    ) {
+      events.push({
+        id: spookId,
+        type: 'spoksponsor',
+        title: 'Okänt nummer',
+        body: 'En affärsman ringer. Han har hört om er situation och vill investera 150 000 kr. I gengäld vill han sitta med på styrelsemöten och ha inflytande.',
+        choices: [
+          {
+            id: 'accept',
+            label: 'Tacka ja — desperatläget kräver det',
+            effect: { type: 'multiEffect', subEffects: JSON.stringify([
+              { type: 'income', amount: 150000 },
+              { type: 'communityStanding', amount: -5 },
+            ]) },
+          },
+          {
+            id: 'decline',
+            label: 'Tacka nej — vi klarar oss på annat sätt',
+            effect: { type: 'boardPatience', amount: -5 },
+          },
+        ],
+        resolved: false,
+      })
+    }
+  }
+
+  // Det omöjliga valet — one-time financial crisis
+  if (events.length < 2) {
+    const omojligId = `detOmojligaValet_${game.currentSeason}`
+    const managedClubOmojlig = game.clubs.find(c => c.id === game.managedClubId)
+    if (
+      !alreadyQueued.has(omojligId) &&
+      (managedClubOmojlig?.finances ?? 0) < -50000 &&
+      (game.communityStanding ?? 50) > 60
+    ) {
+      const academyProspect = game.players.find(p =>
+        p.clubId === game.managedClubId &&
+        p.promotedFromAcademy === true &&
+        (p.currentAbility ?? 0) > 50
+      )
+      if (academyProspect) {
+        const playerName = `${academyProspect.firstName} ${academyProspect.lastName}`
+        events.push({
+          id: omojligId,
+          type: 'detOmojligaValet',
+          title: 'Det omöjliga valet',
+          body: `Licensnämnden kräver positivt kapital. Du har en akademiprodukt värd pengar — ${playerName}. Hela orten älskar honom. Säljer du honom räddar du klubben, men skadar ditt rykte.`,
+          relatedPlayerId: academyProspect.id,
+          choices: [
+            {
+              id: 'sell',
+              label: `Sälj ${playerName} — rädda klubben (180 000 kr)`,
+              effect: { type: 'multiEffect', subEffects: JSON.stringify([
+                { type: 'income', amount: 180000 },
+                { type: 'communityStanding', amount: -12 },
+                { type: 'fanMood', amount: -15 },
+                { type: 'journalistRelationship', amount: -10 },
+              ]) },
+            },
+            {
+              id: 'keep',
+              label: 'Behåll honom — riskera licensproblem',
+              effect: { type: 'multiEffect', subEffects: JSON.stringify([
+                { type: 'communityStanding', amount: 5 },
+                { type: 'fanMood', amount: 8 },
+              ]) },
+            },
+          ],
+          resolved: false,
+        })
+      }
+    }
+  }
+
+  if (activeSponsors.length < maxSponsors) {
+    const offer = generateSponsorOffer(
+      managedClub?.reputation ?? 50,
+      activeSponsors.length,
+      maxSponsors,
+      roundPlayed,
+      rand
+    )
+    if (offer) {
+      const totalValue = offer.weeklyIncome * offer.contractRounds
+      const weeklyFmt = offer.weeklyIncome >= 1000
+        ? `${Math.round(offer.weeklyIncome / 1000)}k kr`
+        : `${offer.weeklyIncome} kr`
+      const totalFmt = totalValue >= 1000000
+        ? `${(totalValue / 1000000).toFixed(1)} mkr`
+        : totalValue >= 1000
+        ? `${Math.round(totalValue / 1000)}k kr`
+        : `${totalValue} kr`
+
+      events.push({
+        id: `event_sponsor_${offer.id}`,
+        type: 'sponsorOffer',
+        title: `Sponsorerbjudande — ${offer.name}`,
+        body: `${offer.name} vill sponsra ${managedClub?.name ?? 'klubben'} med ${weeklyFmt}/vecka i ${offer.contractRounds} omgångar (totalt ${totalFmt}).`,
+        relatedPlayerId: undefined,
+        relatedClubId: undefined,
+        choices: [
+          {
+            id: 'accept',
+            label: `Acceptera (${weeklyFmt}/vecka)`,
+            effect: { type: 'acceptSponsor', sponsorData: JSON.stringify(offer) },
+          },
+          {
+            id: 'reject',
+            label: 'Avslå',
+            effect: { type: 'noOp' },
+          },
+        ],
+        resolved: false,
+        sponsorData: JSON.stringify(offer),
+      })
+    }
+  }
+
+  return events
+}

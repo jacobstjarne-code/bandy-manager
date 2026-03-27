@@ -406,6 +406,22 @@ export function SquadScreen() {
 
       {/* Player list */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px' }}>
+        {/* Doktorn-banner vid kritisk fitness */}
+        {players.filter(p => p.fitness < 35 && !p.isInjured).length >= 2 && (
+          <div
+            onClick={() => navigate('/game/doctor')}
+            style={{
+              background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
+              borderRadius: 10, padding: '10px 14px', marginBottom: 12,
+              cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}
+          >
+            <span style={{ fontSize: 13, color: '#ef4444' }}>
+              🩺 {players.filter(p => p.fitness < 35 && !p.isInjured).length} spelare med kritisk fitness
+            </span>
+            <span style={{ fontSize: 12, color: '#8A9BB0' }}>Fråga doktorn →</span>
+          </div>
+        )}
         {sorted.map((player, index) => (
           <PlayerRowAnimated
             key={player.id}
@@ -419,6 +435,37 @@ export function SquadScreen() {
             Inga spelare i denna position
           </p>
         )}
+        {/* Låneavtal */}
+        {(game?.loanDeals ?? []).length > 0 && (
+          <div style={{ marginTop: 20, marginBottom: 12 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#4A6080', marginBottom: 10 }}>
+              UTLÅNADE SPELARE
+            </p>
+            {(game?.loanDeals ?? []).map((deal: any) => {
+              const player = game?.players.find(p => p.id === deal.playerId)
+              if (!player) return null
+              const completedLeague = game?.fixtures.filter(f => f.status === 'completed' && !f.isCup).length ?? 0
+              const roundsLeft = (deal.endRound ?? 22) - completedLeague
+              return (
+                <div key={deal.playerId} style={{
+                  background: '#0e1f33', border: '1px solid #1e3450', borderRadius: 10,
+                  padding: '10px 14px', marginBottom: 8,
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                }}>
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: '#F0F4F8' }}>{player.firstName} {player.lastName}</p>
+                    <p style={{ fontSize: 11, color: '#8A9BB0' }}>{deal.destinationClubName} · {deal.matchesPlayed ?? 0}/{deal.totalMatches ?? '?'} matcher</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 700 }}>Betyg: {deal.averageRating > 0 ? deal.averageRating.toFixed(1) : '—'}</p>
+                    <p style={{ fontSize: 11, color: '#4A6080' }}>{Math.max(0, roundsLeft)} omg. kvar</p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
         <button
           onClick={() => navigate('/game/doctor')}
           style={{

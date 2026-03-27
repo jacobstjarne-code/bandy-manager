@@ -12,6 +12,7 @@ import type { MatchWeather } from '../../domain/entities/Weather'
 import { generateCupFixtures } from '../../domain/services/cupService'
 import { mulberry32 } from '../../domain/utils/random'
 import { PATRON_PROFILES, PATRON_RELATIONS } from '../../domain/data/patronData'
+import { FUNCTIONARY_TEMPLATES } from '../../domain/data/functionaries'
 import { POLITICIAN_PROFILES } from '../../domain/data/politicianData'
 import { BOARD_PROFILES } from '../../domain/data/boardData'
 import { VOLUNTEER_FIRST_NAMES, LOCAL_PAPER_NAMES } from '../../domain/data/communityNames'
@@ -287,11 +288,23 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     journalistRelationship: 50,
     sponsorNetworkMood: 70,
     licenseWarningCount: 0,
-    // Sprint 5: named characters
+    // Sprint 5: named characters (rolf/birgitta/journalist kept for backward compat, func_* for new system)
     namedCharacters: [
       { id: 'rolf', name: 'Rolf Hedlund', role: 'isspolaren', age: 67, isAlive: true, morale: 70 },
       { id: 'birgitta', name: 'Birgitta Ström', role: 'kioskansvarig', age: 54, isAlive: true, morale: 70 },
       { id: 'journalist', name: 'Anna-Lena Ström', role: 'journalist', age: 45, isAlive: true },
+      ...(() => {
+        let s = (input.seed ?? 1) + 99991
+        function rand() { s = ((s * 1664525 + 1013904223) | 0) >>> 0; return s / 0xffffffff }
+        return FUNCTIONARY_TEMPLATES.map((t, i) => ({
+          id: `func_${i}`,
+          name: t.namePool[Math.floor(rand() * t.namePool.length)],
+          role: t.role,
+          age: 45 + Math.floor(rand() * 25),
+          isAlive: true,
+          morale: 60 + Math.floor(rand() * 30),
+        }))
+      })(),
     ],
   }
 

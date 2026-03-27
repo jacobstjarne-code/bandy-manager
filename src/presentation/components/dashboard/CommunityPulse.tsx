@@ -1,0 +1,55 @@
+import { useNavigate } from 'react-router-dom'
+import type { SaveGame } from '../../../domain/entities/SaveGame'
+import { getFunctionaryQuote } from '../../../domain/services/functionaryQuoteService'
+
+interface Props {
+  game: SaveGame
+  currentRound: number
+}
+
+export function CommunityPulse({ game, currentRound }: Props) {
+  const navigate = useNavigate()
+  const cs = game.communityStanding ?? 50
+  const quote = getFunctionaryQuote(game, currentRound, game.lastCompletedFixtureId)
+
+  function csColor(v: number) {
+    if (v > 70) return '#22c55e'
+    if (v > 50) return '#C9A84C'
+    if (v > 30) return '#f59e0b'
+    return '#ef4444'
+  }
+
+  return (
+    <div
+      onClick={() => navigate('/game/club')}
+      style={{
+        background: '#0e1f33',
+        border: '1px solid #1e3450',
+        borderRadius: 12,
+        padding: '14px 16px',
+        marginBottom: 12,
+        cursor: 'pointer',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#4A6080' }}>
+          ORTEN
+        </span>
+        <span style={{ fontSize: 14, fontWeight: 800, color: csColor(cs) }}>{cs}</span>
+      </div>
+      <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, marginBottom: 10 }}>
+        <div style={{ height: '100%', width: `${cs}%`, background: csColor(cs), borderRadius: 2, transition: 'width 0.6s ease' }} />
+      </div>
+      {quote && (
+        <div style={{ borderTop: '1px solid #1e3450', paddingTop: 10 }}>
+          <p style={{ fontSize: 13, color: '#F0F4F8', lineHeight: 1.5, fontStyle: 'italic' }}>
+            "{quote.quote}"
+          </p>
+          <p style={{ fontSize: 11, color: '#4A6080', marginTop: 4 }}>
+            — {quote.name}, {quote.role}
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}

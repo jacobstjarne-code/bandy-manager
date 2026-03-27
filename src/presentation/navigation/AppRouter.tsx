@@ -1,5 +1,15 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { setGlobalNavigate } from './globalNavigate'
 import { StartScreen } from '../screens/StartScreen'
+
+function NavigateSetter() {
+  const nav = useNavigate()
+  useEffect(() => {
+    setGlobalNavigate((path, opts) => nav(path, opts ?? {}))
+  }, [nav])
+  return null
+}
 import { NewGameScreen } from '../screens/NewGameScreen'
 import { GameShell } from './GameShell'
 import { DashboardScreen } from '../screens/DashboardScreen'
@@ -25,6 +35,7 @@ import { RoundSummaryScreen } from '../screens/RoundSummaryScreen'
 export function AppRouter() {
   return (
     <BrowserRouter>
+      <NavigateSetter />
       <Routes>
         <Route path="/" element={<StartScreen />} />
         <Route path="/new-game" element={<NewGameScreen />} />
