@@ -9,7 +9,7 @@ const ALL_ATTRIBUTE_KEYS: (keyof PlayerAttributes)[] = [
   'positioning', 'defending', 'cornerSkill', 'goalkeeping',
 ]
 
-function clamp(v: number): number {
+function clampAttr(v: number): number {
   return Math.max(1, Math.min(99, Math.round(v)))
 }
 
@@ -57,11 +57,11 @@ export function processScoutAssignment(
   const revealedAttributes: Partial<Record<keyof PlayerAttributes, number>> = {}
   for (const key of ALL_ATTRIBUTE_KEYS) {
     const base = targetPlayer.attributes[key]
-    revealedAttributes[key] = clamp(base + noise(rand, errorMargin))
+    revealedAttributes[key] = clampAttr(base + noise(rand, errorMargin))
   }
 
-  const estimatedCA = Math.round(clamp(targetPlayer.currentAbility + noise(rand, 5)))
-  const estimatedPA = Math.round(clamp(targetPlayer.potentialAbility + noise(rand, 10)))
+  const estimatedCA = Math.round(clampAttr(targetPlayer.currentAbility + noise(rand, 5)))
+  const estimatedPA = Math.round(clampAttr(targetPlayer.potentialAbility + noise(rand, 10)))
 
   const attrs = targetPlayer.attributes
   const offensive = Math.round((attrs.shooting + attrs.passing + attrs.dribbling + attrs.vision) / 4)

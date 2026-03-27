@@ -71,9 +71,10 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
 
   // Playoff intensity modifiers
   if (isPlayoff) {
-    // Better team wins more reliably (reduce randomness by tightening strength differences)
-    const homeStrengthBonus = (homeAttack - awayAttack) * 0.1
-    homeAttack = clamp(homeAttack + homeStrengthBonus, 0, 1)
+    // Better team wins more reliably — apply symmetric strength amplification
+    const diff = (homeAttack - awayAttack) * 0.1
+    homeAttack = clamp(homeAttack + diff, 0, 1)
+    awayAttack = clamp(awayAttack - diff, 0, 1)
   }
 
   // Derby intensity modifiers
@@ -327,7 +328,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
 
     if (seqType === 'attack') {
       const base = attAttack * 0.6 - defDefense * 0.4 + randRange(rand, -0.2, 0.2)
-      const chanceQuality = clamp(base * 1.2 + 0.15 + 0.15 + derbyChanceMult, 0.05, 0.95)
+      const chanceQuality = clamp(base * 1.2 + 0.15 + derbyChanceMult, 0.05, 0.95)
 
       if (chanceQuality > 0.15) {
         if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
@@ -516,7 +517,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
       }
     } else if (seqType === 'foul') {
       // Defending team commits the foul
-      const foulProb = (attDiscipline) * 0.4 + (defDiscipline) * 0.3
+      const foulProb = defDiscipline * 0.6 + attDiscipline * 0.1
 
       const r = rand()
       if (r < foulProb * 0.15 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {

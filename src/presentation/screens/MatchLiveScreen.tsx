@@ -20,6 +20,7 @@ import { CeremonyCupFinal } from '../components/match/CeremonyCupFinal'
 import { CeremonySmFinal } from '../components/match/CeremonySmFinal'
 import { SubstitutionModal } from '../components/match/SubstitutionModal'
 import { generatePressConference } from '../../domain/services/pressConferenceService'
+import { mulberry32 } from '../../domain/utils/random'
 
 interface LocationState {
   fixture: Fixture
@@ -182,7 +183,9 @@ export function MatchLiveScreen() {
     // Generate press conference question for normal matches (not finals — they have ceremony)
     if (!isSmFinal && !isCupFinal && game) {
       const completedFixture = { ...fixture, homeScore: lastStep.homeScore, awayScore: lastStep.awayScore, status: 'completed' as const }
-      const pressEvent = generatePressConference(completedFixture as typeof fixture, game, Math.random.bind(Math))
+      const pressSeed = fixture.id.split('').reduce((h, c) => h * 31 + c.charCodeAt(0), 0)
+      const pressRand = mulberry32(pressSeed + (game.currentSeason ?? 2025) * 17)
+      const pressEvent = generatePressConference(completedFixture as typeof fixture, game, pressRand)
       if (pressEvent) {
         const journalist = pressEvent.title.replace('🎤 Presskonferens — ', '')
         const question = pressEvent.body.replace(/^"|"$/g, '')
@@ -212,18 +215,21 @@ export function MatchLiveScreen() {
     if (currentStep < 0 || currentStep >= steps.length) return
     const step = steps[currentStep]
 
-    if (step.homeScore > prevHomeScore.current) {
+    const prevHome = prevHomeScore.current
+    const prevAway = prevAwayScore.current
+    prevHomeScore.current = step.homeScore
+    prevAwayScore.current = step.awayScore
+
+    if (step.homeScore > prevHome) {
       setHomeScoreFlash(true)
       setTimeout(() => setHomeScoreFlash(false), 2000)
       playSound('goal')
     }
-    if (step.awayScore > prevAwayScore.current) {
+    if (step.awayScore > prevAway) {
       setAwayScoreFlash(true)
       setTimeout(() => setAwayScoreFlash(false), 2000)
       playSound('goal')
     }
-    prevHomeScore.current = step.homeScore
-    prevAwayScore.current = step.awayScore
 
     if (step.homeScore === prevHomeScore.current && step.awayScore === prevAwayScore.current) {
       const hasRedCard = step.events.some(e => e.type === MatchEventType.RedCard)

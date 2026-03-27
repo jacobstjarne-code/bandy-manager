@@ -114,11 +114,15 @@ export function updateSeriesAfterMatch(
     else awayWins++
   } else {
     // Draw in knockout: resolved by overtime or penalties
-    let winner: 'home' | 'away' = 'home' // fallback (should not happen with proper simulation)
+    if (!fixture.overtimeResult && !fixture.penaltyResult) {
+      // No tiebreaker recorded — skip this result to avoid silently corrupting the series
+      return series
+    }
+    let winner: 'home' | 'away'
     if (fixture.overtimeResult) {
       winner = fixture.overtimeResult
-    } else if (fixture.penaltyResult) {
-      winner = fixture.penaltyResult.home > fixture.penaltyResult.away ? 'home' : 'away'
+    } else {
+      winner = (fixture.penaltyResult!.home > fixture.penaltyResult!.away) ? 'home' : 'away'
     }
     if (winner === 'home') {
       if (fixture.homeClubId === series.homeClubId) homeWins++

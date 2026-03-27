@@ -374,10 +374,14 @@ export const useGameStore = create<GameState>()(
       placeOutgoingBid: (playerId, offerAmount, offeredSalary, contractYears) => {
         const { game } = get()
         if (!game) return { success: false, error: 'Inget spel laddat' }
-        const currentRound = game.fixtures
-          .filter(f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-          .filter(f => f.status === 'scheduled')
-          .sort((a, b) => a.roundNumber - b.roundNumber)[0]?.roundNumber ?? 0
+        const scheduledFixtures = game.fixtures
+          .filter(f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && f.status === 'scheduled')
+          .sort((a, b) => a.roundNumber - b.roundNumber)
+
+        if (scheduledFixtures.length === 0) {
+          return { success: false, error: 'Inga fler matcher denna säsong — vänta till nästa säsong' }
+        }
+        const currentRound = scheduledFixtures[0].roundNumber
         const result = createOutgoingBid(game, playerId, offerAmount, offeredSalary, contractYears, currentRound)
         if (!result.success || !result.bid) return { success: false, error: result.error }
         set({ game: { ...game, transferBids: [...(game.transferBids ?? []), result.bid] } })
@@ -981,7 +985,11 @@ export const useGameStore = create<GameState>()(
         if (!game) return null
         if ((game.pendingEvents?.length ?? 0) > 0) {
           const event = game.pendingEvents[0]
-          resolveEvent(event.id, event.choices[0].id)
+          const neutralChoice = event.choices.find(c =>
+            c.id.includes('reject') || c.id.includes('decline') || c.id.includes('no') ||
+            (c.effect as { type?: string })?.type === 'noOp'
+          ) ?? event.choices[0]
+          resolveEvent(event.id, neutralChoice.id)
           return { game: get().game!, roundPlayed: null, seasonEnded: false }
         }
         if (!game.managedClubPendingLineup) {

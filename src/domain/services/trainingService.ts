@@ -2,10 +2,7 @@ import type { Player } from '../entities/Player'
 import type { TrainingFocus, TrainingEffects } from '../entities/Training'
 import { TrainingType, TrainingIntensity } from '../enums'
 import { mulberry32 } from '../utils/random'
-
-function clamp(v: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, v))
-}
+import { clamp } from '../utils/clamp'
 
 // ── Base attribute boosts at Normal intensity ────────────────────────────────
 const BASE_BOOSTS: Record<TrainingType, Partial<Record<string, number>>> = {

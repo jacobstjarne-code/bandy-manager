@@ -50,8 +50,7 @@ export function evaluateBoard(
     case ClubExpectation.MidTable:
       if (pos >= 4 && pos <= 8) satisfaction = 'delighted'
       else if (pos <= 10 + lenient) satisfaction = 'satisfied'
-      else if (pos >= totalTeams - 2 - lenient) satisfaction = 'concerned'
-      else satisfaction = 'satisfied'
+      else satisfaction = 'concerned'
       break
 
     case ClubExpectation.AvoidBottom:

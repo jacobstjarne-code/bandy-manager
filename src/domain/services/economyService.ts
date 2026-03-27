@@ -23,7 +23,11 @@ export function calcWeeklyEconomy(
   const ca = communityActivities
   const kioskEst = ca?.kiosk === 'upgraded' ? 8500 : ca?.kiosk === 'basic' ? 3500 : 0
   const lotteryEst = ca?.lottery === 'intensive' ? 3200 : ca?.lottery === 'basic' ? 1250 : 0
-  const communityIncome = kioskEst + lotteryEst + (ca?.functionaries ? 4000 : 0) + (ca?.bandyplay ? 1500 : 0)
+  const communityIncome = kioskEst + lotteryEst
+    + (ca?.functionaries ? 4000 : 0)
+    + (ca?.bandyplay ? 1500 : 0)
+    + (ca?.vipTent ? 2500 : 0)
+    + (ca?.socialMedia ? 1000 : 0)
 
   const weeklyIncome = weeklyBase + sponsorIncome + communityIncome
   const weeklyWages = Math.round(monthlySalaryTotal / 4)

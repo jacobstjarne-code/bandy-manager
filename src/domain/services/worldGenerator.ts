@@ -16,6 +16,7 @@ import {
 } from '../enums'
 import { mulberry32 } from '../utils/random'
 import { calculateMarketValue } from './marketValueService'
+import { clamp } from '../utils/clamp'
 
 interface GeneratedWorld {
   clubs: Club[]
@@ -54,9 +55,6 @@ const LAST_NAMES = [
   'Nyström', 'Hedlund', 'Lund', 'Nordström', 'Björk', 'Söderberg', 'Wikström',
 ]
 
-function clamp(val: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, val))
-}
 
 function buildTactic(style: ClubStyle): Tactic {
   switch (style) {

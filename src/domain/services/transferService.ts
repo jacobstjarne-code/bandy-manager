@@ -58,7 +58,7 @@ export function generateIncomingBids(
   if (otherClubs.length === 0) return []
   const buyingClub = otherClubs[Math.floor(rand() * otherClubs.length)]
 
-  const marketVal = targetPlayer.marketValue || 50000
+  const marketVal = targetPlayer.marketValue ?? 50000
   const isAcademyProduct = targetPlayer.isHomegrown && targetPlayer.academyClubId === game.managedClubId
   const premiumMultiplier = isAcademyProduct ? 1.2 : 1.0
   const offerAmount = Math.round(marketVal * (0.8 + rand() * 0.6) * premiumMultiplier / 5000) * 5000
@@ -141,7 +141,7 @@ export function resolveOutgoingBid(
   const target = game.players.find(p => p.id === bid.playerId)
   if (!target) return 'rejected'
 
-  const marketVal = target.marketValue || 50000
+  const marketVal = target.marketValue ?? 50000
   const ratio = bid.offerAmount / marketVal
 
   // Always accept at 120%+ of market value

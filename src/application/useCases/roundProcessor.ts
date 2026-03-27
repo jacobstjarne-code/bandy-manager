@@ -221,8 +221,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const roundMatchWeathers: MatchWeather[] = []
   const newInboxItems: InboxItem[] = []
 
-  // Determine if this round is a playoff round
-  const isPlayoffRound = game.playoffBracket !== null && nextRound > 22
+  // Determine if this round is a playoff round (cup fixtures have IDs containing 'cup_')
+  const isCupRound = roundFixtures.some(f => f.id.includes('cup_'))
+  const isPlayoffRound = !isCupRound && game.playoffBracket !== null && nextRound > 22
 
   // ── Apply training for all clubs this round ────────────────────────────
   let trainingPlayers = [...game.players]
@@ -239,7 +240,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       club.id,
       focus,
       club.facilities,
-      baseSeed + club.id.length * 31 + nextRound,
+      baseSeed + club.id.split('').reduce((h, c) => h * 31 + c.charCodeAt(0), 0) + nextRound,
     )
     trainingPlayers = trainingResult.updatedPlayers
 
@@ -444,8 +445,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       }
     }
 
-    // ── Suspension recovery (decrement every round for non-playing suspended players) ──
-    if (updated.suspensionGamesRemaining > 0 && !startersThisRound.has(player.id)) {
+    // ── Suspension recovery (decrement every round for all suspended players) ──
+    if (updated.suspensionGamesRemaining > 0) {
       updated.suspensionGamesRemaining = Math.max(0, updated.suspensionGamesRemaining - 1)
     }
 
@@ -475,10 +476,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       // Sharpness increases
       updated.sharpness = Math.min(100, updated.sharpness + 10)
 
-      // Reduce suspension
-      if (updated.suspensionGamesRemaining > 0) {
-        updated.suspensionGamesRemaining = Math.max(0, updated.suspensionGamesRemaining - 1)
-      }
     } else if (benchThisRound.has(player.id)) {
       updated.fitness = Math.min(100, updated.fitness + 5)
       updated.sharpness = Math.max(0, updated.sharpness - 5)
@@ -550,7 +547,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const twi = computeWeatherTacticInteraction(managedFixtureWeather, managedClubForTactic.activeTactic)
       tacticInjuryMod += twi.extraInjuryRisk
     }
-    const injuryChance = 0.06 * (proneFactor + 0.3) * fatigueFactor * tacticInjuryMod
+    const injuryChance = 0.06 * Math.max(0.1, proneFactor) * fatigueFactor * tacticInjuryMod
 
     if (localRand() < injuryChance) {
       const days = 7 + Math.floor(localRand() * 28)  // 1–5 weeks

@@ -137,16 +137,32 @@ export function autoAssignFormation(
 ): Record<string, FormationSlot> {
   const assignments: Record<string, FormationSlot> = {}
   const usedIds = new Set<string>()
+  const filledSlotIndices = new Set<number>()
 
-  for (const slot of template.slots) {
-    // Best available player with matching position
+  for (let i = 0; i < template.slots.length; i++) {
+    const slot = template.slots[i]
     const best = players
       .filter(p => p.position === slot.position && !usedIds.has(p.id))
       .sort((a, b) => b.currentAbility - a.currentAbility)[0]
     if (best) {
       assignments[best.id] = slot
       usedIds.add(best.id)
+      filledSlotIndices.add(i)
     }
   }
+
+  // Second pass: fill unfilled slots with best remaining player by CA
+  for (let i = 0; i < template.slots.length; i++) {
+    if (filledSlotIndices.has(i)) continue
+    const slot = template.slots[i]
+    const fallback = players
+      .filter(p => !usedIds.has(p.id))
+      .sort((a, b) => b.currentAbility - a.currentAbility)[0]
+    if (fallback) {
+      assignments[fallback.id] = slot
+      usedIds.add(fallback.id)
+    }
+  }
+
   return assignments
 }

@@ -1,6 +1,7 @@
 import type { Player } from '../entities/Player'
 import type { Tactic } from '../entities/Club'
 import { PlayerPosition } from '../enums'
+import { clamp } from '../utils/clamp'
 
 const ADJACENT: Record<PlayerPosition, PlayerPosition[]> = {
   [PlayerPosition.Goalkeeper]: [],
@@ -24,9 +25,6 @@ export interface SquadEvaluation {
   disciplineRisk: number    // 0-100 (higher = more risky)
 }
 
-function clamp(value: number, min = 0, max = 100): number {
-  return Math.max(min, Math.min(max, value))
-}
 
 function round1(value: number): number {
   return Math.round(value * 10) / 10
@@ -139,8 +137,9 @@ export function evaluateSquad(starters: Player[], tactic: Tactic): SquadEvaluati
   }
 
   // --- disciplineRisk ---
-  const avgDiscipline =
-    starters.reduce((sum, p) => sum + p.discipline, 0) / starters.length
+  const avgDiscipline = starters.length > 0
+    ? starters.reduce((sum, p) => sum + p.discipline, 0) / starters.length
+    : 50
   const disciplineRisk = 100 - avgDiscipline
 
   return {

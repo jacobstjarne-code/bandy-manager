@@ -1,6 +1,7 @@
 import type { Player, PlayerAttributes } from '../entities/Player'
 import { PlayerArchetype } from '../enums'
 import { mulberry32 } from '../utils/random'
+import { clamp } from '../utils/clamp'
 
 function makeRng(seed: number) {
   const rand = mulberry32(seed)
@@ -11,9 +12,6 @@ function makeRng(seed: number) {
   }
 }
 
-function clamp(val: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, val))
-}
 
 export interface DevelopmentInput {
   players: Player[]

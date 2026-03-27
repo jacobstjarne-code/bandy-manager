@@ -1,6 +1,8 @@
 import type { Club } from '../entities/Club'
 import type { YouthTeam, YouthPlayer, YouthMatchResult, AcademyLevel } from '../entities/Academy'
 import { PlayerPosition, PlayerArchetype } from '../enums'
+import { clamp } from '../utils/clamp'
+import { mulberry32 } from '../utils/random'
 
 const FIRST_NAMES = [
   'Erik', 'Lars', 'Anders', 'Johan', 'Karl', 'Per', 'Mikael', 'Stefan', 'Thomas',
@@ -35,9 +37,6 @@ function pickRand<T>(arr: T[], rand: () => number): T {
   return arr[Math.floor(rand() * arr.length)]
 }
 
-function clamp(v: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, v))
-}
 
 function archetypeForPosition(pos: PlayerPosition, rand: () => number): PlayerArchetype {
   const r = rand()
@@ -72,17 +71,6 @@ function getPADistribution(academyLevel: AcademyLevel, youthQuality: number, ran
   }
 }
 
-// Simple mulberry32 PRNG — same as worldGenerator
-function mulberry32(seed: number): () => number {
-  let s = seed >>> 0
-  return function() {
-    s += 0x6d2b79f5
-    let t = s
-    t = Math.imul(t ^ (t >>> 15), t | 1)
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
 
 export function generateYouthTeam(
   club: Club,

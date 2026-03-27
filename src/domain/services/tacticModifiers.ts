@@ -1,4 +1,5 @@
 import type { Tactic } from '../entities/Club'
+import { clamp } from '../utils/clamp'
 import {
   TacticMentality,
   TacticTempo,
@@ -20,9 +21,6 @@ export interface TacticModifiers {
   fatigueRate: number        // 0.80–1.30 — how fast players tire
 }
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value))
-}
 
 function round3(value: number): number {
   return Math.round(value * 1000) / 1000
