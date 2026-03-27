@@ -37,4 +37,5 @@ export interface Club {
 
   activeTactic: Tactic
   squadPlayerIds: string[]
+  academyReputation?: number  // 0-100
 }

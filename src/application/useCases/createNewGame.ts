@@ -4,6 +4,7 @@ import type { League } from '../../domain/entities/League'
 import type { Player } from '../../domain/entities/Player'
 import { FixtureStatus, TrainingType, TrainingIntensity, PlayerPosition, ClubStyle } from '../../domain/enums'
 import { generateWorld } from '../../domain/services/worldGenerator'
+import { generateYouthTeam } from '../../domain/services/academyService'
 import { generateSchedule } from '../../domain/services/scheduleGenerator'
 import { calculateStandings } from '../../domain/services/standingsService'
 import { generateMatchWeather } from '../../domain/services/weatherService'
@@ -197,6 +198,9 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     bandyplay: false,
     functionaries: false,
     julmarknad: false,
+    bandySchool: false,
+    socialMedia: false,
+    vipTent: false,
   }
 
   const game: SaveGame = {
@@ -250,6 +254,10 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     boardPersonalities,
     hallDebateCount: 0,
     lastHallDebateRound: 0,
+    youthTeam: generateYouthTeam(managedClub, 'basic', season, (input.seed ?? 42) + 77777),
+    academyLevel: 'basic',
+    mentorships: [],
+    loanDeals: [],
     version: '0.1.0',
     lastSavedAt: now,
   }

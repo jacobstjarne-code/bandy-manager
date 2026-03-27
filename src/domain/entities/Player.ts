@@ -91,4 +91,8 @@ export interface Player {
   seasonStats: PlayerSeasonStats
   careerStats: PlayerCareerStats
   careerMilestones?: CareerMilestone[]
+  isOnLoan?: boolean
+  loanClubName?: string
+  promotedFromAcademy?: boolean
+  promotionRound?: number
 }

@@ -495,18 +495,20 @@ function TrainingProjectsCard({ projects, onStart, onCancel }: TrainingProjectsC
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
 
-type ClubTab = 'training' | 'ekonomi' | 'klubb'
+type ClubTab = 'training' | 'ekonomi' | 'klubb' | 'akademi'
 
 export function ClubScreen() {
   const club = useManagedClub()
   const game = useGameStore(s => s.game)
   const setTraining = useGameStore(s => s.setTraining)
   const activateCommunity = useGameStore(s => s.activateCommunity)
+  const upgradeAcademy = useGameStore(s => s.upgradeAcademy)
   const startTrainingProject = useGameStore(s => s.startTrainingProject)
   const cancelTrainingProject = useGameStore(s => s.cancelTrainingProject)
   const seekSponsor = useGameStore(s => s.seekSponsor)
   const [sponsorFeedback, setSponsorFeedback] = useState<string | null>(null)
   const [communityMsg, setCommunityMsg] = useState<{ key: string; text: string; ok: boolean } | null>(null)
+  const [upgradeMsg, setUpgradeMsg] = useState<string | null>(null)
 
   function handleActivate(key: string, level: string) {
     const result = activateCommunity(key, level)
@@ -543,6 +545,7 @@ export function ClubScreen() {
     { key: 'training', label: 'Träning' },
     { key: 'ekonomi', label: 'Ekonomi' },
     { key: 'klubb', label: 'Klubb' },
+    { key: 'akademi', label: 'Akademi' },
   ]
 
   return (
@@ -1014,6 +1017,113 @@ export function ClubScreen() {
             </button>
           </>
         )}
+
+        {/* ── Tab 4: Akademi ── */}
+        {activeTab === 'akademi' && (() => {
+          const youthTeam = game.youthTeam
+          const academyLevel = game.academyLevel ?? 'basic'
+          const levelLabel = academyLevel === 'elite' ? 'Elitakademi' : academyLevel === 'developing' ? 'Satsning' : 'Grundverksamhet'
+          const levelDrift = academyLevel === 'elite' ? 10000 : academyLevel === 'developing' ? 5000 : 2000
+          const nextLevelLabel = academyLevel === 'basic' ? 'Satsning (50 tkr)' : academyLevel === 'developing' ? 'Elitakademi (150 tkr)' : null
+
+          function handleUpgrade() {
+            const result = upgradeAcademy()
+            setUpgradeMsg(result.error ?? 'Uppgradering beställd! Träder i kraft nästa säsong.')
+            setTimeout(() => setUpgradeMsg(null), 4000)
+          }
+
+          const readyPlayers = youthTeam?.players.filter(p => p.readyForPromotion) ?? []
+          const almostReady = youthTeam?.players.filter(p => !p.readyForPromotion && p.currentAbility >= 20) ?? []
+          const notReady = youthTeam?.players.filter(p => !p.readyForPromotion && p.currentAbility < 20) ?? []
+
+          return (
+            <div>
+              {/* Academy level card */}
+              <SectionCard title="Akademinivå" stagger={1}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+                  <span style={{ fontSize: 15, fontWeight: 700 }}>{levelLabel}</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{(levelDrift / 1000)} tkr/omg</span>
+                </div>
+                {game.academyUpgradeInProgress && (
+                  <p style={{ fontSize: 12, color: 'var(--warning)', marginBottom: 8 }}>
+                    Uppgradering pågår — klar säsong {game.academyUpgradeSeason}
+                  </p>
+                )}
+                {upgradeMsg && (
+                  <p style={{ fontSize: 12, color: 'var(--success)', marginBottom: 8 }}>✓ {upgradeMsg}</p>
+                )}
+                {nextLevelLabel && !game.academyUpgradeInProgress && (
+                  <button
+                    onClick={handleUpgrade}
+                    style={{
+                      padding: '8px 14px', borderRadius: 'var(--radius)',
+                      background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.4)',
+                      color: 'var(--accent)', fontSize: 13, fontWeight: 600, cursor: 'pointer', width: '100%',
+                    }}
+                  >
+                    Uppgradera till {nextLevelLabel}
+                  </button>
+                )}
+              </SectionCard>
+
+              {/* P17 team */}
+              {youthTeam && (
+                <SectionCard title="Pojklaget (P17)" stagger={2}>
+                  <div style={{ marginBottom: 10 }}>
+                    <span style={{ fontSize: 14, fontWeight: 600 }}>
+                      {youthTeam.seasonRecord.w}V {youthTeam.seasonRecord.d}O {youthTeam.seasonRecord.l}F
+                      {' · '}GM {youthTeam.seasonRecord.gf} · GM mot {youthTeam.seasonRecord.ga}
+                      {' · '}Plats {youthTeam.tablePosition}
+                    </span>
+                  </div>
+                  {youthTeam.results.length > 0 && (
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>
+                      Senast: {(() => {
+                        const last = youthTeam.results[youthTeam.results.length - 1]
+                        const won = last.goalsFor > last.goalsAgainst
+                        const drew = last.goalsFor === last.goalsAgainst
+                        return `${won ? 'Vann' : drew ? 'Oavgjort' : 'Förlorade'} mot ${last.opponentName} ${last.goalsFor}–${last.goalsAgainst}`
+                      })()}
+                    </p>
+                  )}
+
+                  {/* Player list */}
+                  {[
+                    { label: 'Redo för uppkallning', players: readyPlayers },
+                    { label: 'Utvecklas', players: almostReady },
+                    { label: 'Tidiga talanger', players: notReady },
+                  ].map(group => group.players.length > 0 && (
+                    <div key={group.label} style={{ marginBottom: 10 }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
+                        {group.label}
+                      </p>
+                      {group.players.map(p => {
+                        const stars = p.potentialAbility >= 70 ? '★★★★' : p.potentialAbility >= 55 ? '★★★' : p.potentialAbility >= 45 ? '★★' : '★'
+                        return (
+                          <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
+                            <div>
+                              <span style={{ fontSize: 13, fontWeight: 600 }}>{p.firstName} {p.lastName}</span>
+                              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
+                                {p.age} år · {p.position.substring(0, 3).toUpperCase()}
+                              </span>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>CA {Math.round(p.currentAbility)}</span>
+                              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>{stars}</span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ))}
+                  {youthTeam.players.length === 0 && (
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Inga pojklagsspelare den här säsongen.</p>
+                  )}
+                </SectionCard>
+              )}
+            </div>
+          )
+        })()}
 
       </div>
     </div>

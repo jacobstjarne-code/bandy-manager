@@ -91,6 +91,7 @@ export enum InboxItemType {
   Media = 'media',
   Retirement = 'retirement',
   Community = 'community',
+  YouthP17 = 'youthP17',
 }
 
 export enum TrainingType {

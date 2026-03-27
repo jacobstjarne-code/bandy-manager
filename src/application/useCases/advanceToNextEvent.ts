@@ -48,6 +48,7 @@ import {
 import type { CupBracket } from '../../domain/entities/Cup'
 import { mulberry32 } from '../../domain/utils/random'
 import { processTrainingProjectsPerRound, PROJECT_DEFINITIONS } from '../../domain/services/trainingProjectService'
+import { simulateYouthMatch, generateYouthTeam } from '../../domain/services/academyService'
 
 export interface AdvanceResult {
   game: SaveGame
@@ -1452,6 +1453,49 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   )
   const allNewEvents = [...newEvents, ...communityEvents]
 
+  // ── P17 Youth match simulation (every other round) ──────────────────────
+  let updatedYouthTeam = game.youthTeam
+  if (nextRound % 2 === 0 && game.youthTeam && game.youthTeam.players.length > 0) {
+    const youthSeed = baseSeed + nextRound * 97
+    const youthRand = mulberry32(youthSeed)
+    const youthSim = simulateYouthMatch(game.youthTeam, game.academyLevel ?? 'basic', youthRand, nextRound)
+
+    updatedYouthTeam = {
+      ...game.youthTeam,
+      players: youthSim.updatedPlayers,
+      results: [...game.youthTeam.results.slice(-10), youthSim.matchResult],
+      seasonRecord: youthSim.updatedRecord,
+      tablePosition: youthSim.updatedPosition,
+    }
+
+    const { matchResult } = youthSim
+    const won = matchResult.goalsFor > matchResult.goalsAgainst
+    const drew = matchResult.goalsFor === matchResult.goalsAgainst
+    const resultStr = won ? 'vann' : drew ? 'spelade oavgjort' : 'förlorade'
+    const scoreStr = `${matchResult.goalsFor}–${matchResult.goalsAgainst}`
+    const scorerStr = matchResult.scorers.length > 0
+      ? `\nMålgörare: ${matchResult.scorers.join(', ')}.`
+      : ''
+    const bestStr = matchResult.bestPlayer ? `\n${matchResult.bestPlayer} utsågs till matchens spelare.` : ''
+    const record = youthSim.updatedRecord
+    const tableStr = `Laget ligger ${youthSim.updatedPosition}:a i ungdomsserien (${record.w}V ${record.d}O ${record.l}F).`
+
+    // Check if any player is newly ready for promotion
+    const readyPlayers = youthSim.updatedPlayers.filter(p => p.readyForPromotion)
+    const scoutNote = readyPlayers.length > 0
+      ? `\n\n⭐ SCOUTRAPPORTEN: ${readyPlayers[0].firstName} ${readyPlayers[0].lastName} (${readyPlayers[0].age} år) börjar bli mogen för A-truppen.`
+      : ''
+
+    newInboxItems.push({
+      id: `inbox_p17_r${nextRound}_${game.currentSeason}`,
+      date: newDate,
+      type: InboxItemType.YouthP17,
+      title: `📋 P17 ${resultStr} mot ${matchResult.opponentName} ${scoreStr}`,
+      body: `Pojklaget ${resultStr} mot ${matchResult.opponentName} med ${scoreStr}.${scorerStr}${bestStr}\n${tableStr}${scoutNote}`,
+      isRead: false,
+    } as InboxItem)
+  }
+
   // Media headlines
   const mediaHeadlines = generateMediaHeadlines(preEventGame, simulatedFixtures, nextRound, localRand)
   newInboxItems.push(...mediaHeadlines)
@@ -1508,6 +1552,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     rivalryHistory: updatedRivalryHistory,
     doctorQuestionsUsed: 0,
     trainingProjects: projectResult.updatedProjects,
+    youthTeam: updatedYouthTeam,
+    academyLevel: game.academyLevel ?? 'basic',
+    mentorships: game.mentorships ?? [],
+    loanDeals: game.loanDeals ?? [],
   }
 
   // Pre-generate weather for next round so dashboard/matchScreen can show it
@@ -1965,6 +2013,28 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     communityActivities: game.communityActivities
       ? { ...game.communityActivities, julmarknad: false }
       : game.communityActivities,
+    youthTeam: generateYouthTeam(
+      updatedClubs.find(c => c.id === game.managedClubId) ?? game.clubs.find(c => c.id === game.managedClubId)!,
+      (() => {
+        if (game.academyUpgradeInProgress && game.academyUpgradeSeason === nextSeason) {
+          return game.academyLevel === 'basic' ? 'developing' : 'elite'
+        }
+        return game.academyLevel ?? 'basic'
+      })(),
+      nextSeason,
+      baseSeed + 77777,
+    ),
+    academyLevel: (() => {
+      // If upgrade was scheduled for this season, apply it
+      if (game.academyUpgradeInProgress && game.academyUpgradeSeason === nextSeason) {
+        return game.academyLevel === 'basic' ? 'developing' : 'elite'
+      }
+      return game.academyLevel ?? 'basic'
+    })(),
+    academyUpgradeInProgress: game.academyUpgradeSeason === nextSeason ? false : game.academyUpgradeInProgress,
+    academyUpgradeSeason: game.academyUpgradeSeason === nextSeason ? undefined : game.academyUpgradeSeason,
+    mentorships: [],
+    loanDeals: [],
   }
 
   return { game: updatedGame, roundPlayed: null, seasonEnded: true }

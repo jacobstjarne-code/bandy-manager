@@ -21,6 +21,7 @@ function inboxTypeIcon(type: InboxItemType): string {
     case InboxItemType.Playoff: return '🏆'
     case InboxItemType.Derby: return '🔥'
     case InboxItemType.ScoutReport: return '🔍'
+    case InboxItemType.YouthP17: return '📋'
     default: return '📬'
   }
 }
@@ -36,6 +37,7 @@ function inboxTypeColor(type: InboxItemType): string {
     case InboxItemType.YouthIntake: return 'var(--success)'
     case InboxItemType.Recovery: return 'var(--success)'
     case InboxItemType.PlayerDevelopment: return 'var(--success)'
+    case InboxItemType.YouthP17: return 'var(--success)'
     default: return 'var(--text-muted)'
   }
 }

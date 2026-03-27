@@ -9,6 +9,7 @@ import type { PlayoffBracket } from './Playoff'
 import type { CupBracket } from './Cup'
 import type { SeasonSummary } from './SeasonSummary'
 import type { ScoutReport, ScoutAssignment } from './Scouting'
+import type { YouthTeam, Mentorship, LoanDeal, RegionalPartnership, AcademyLevel } from './Academy'
 import type { GameEvent, TransferBid } from './GameEvent'
 import type { OpponentAnalysis } from '../services/opponentAnalysisService'
 
@@ -204,6 +205,14 @@ export interface SaveGame {
   playerConversations?: Record<string, number>  // playerId → roundNumber of last conversation
 
   showPreSeason?: boolean
+
+  youthTeam?: YouthTeam
+  academyLevel: AcademyLevel
+  academyUpgradeInProgress?: boolean
+  academyUpgradeSeason?: number
+  mentorships: Mentorship[]
+  loanDeals: LoanDeal[]
+  regionalPartnership?: RegionalPartnership
 
   version: string
   lastSavedAt: string   // ISO datetime

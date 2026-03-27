@@ -59,6 +59,7 @@ interface GameState {
   setTransferBudget: (amount: number) => void
   buyScoutRounds: () => void
   activateCommunity: (key: string, level: string) => { success: boolean; error?: string }
+  upgradeAcademy: () => { success: boolean; error?: string }
   startTrainingProject: (type: string, intensity: 'normal' | 'hard') => { success: boolean; error?: string }
   cancelTrainingProject: (projectId: string) => void
   seekSponsor: () => { success: boolean; sponsor?: Sponsor; error?: string }
@@ -507,6 +508,46 @@ export const useGameStore = create<GameState>()(
         }
 
         set({ game: { ...game, clubs: updatedClubs, communityActivities: updatedCA } })
+        return { success: true }
+      },
+
+      upgradeAcademy: () => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+        const club = game.clubs.find(c => c.id === game.managedClubId)
+        if (!club) return { success: false, error: 'Ingen klubb hittad' }
+
+        const currentLevel = game.academyLevel ?? 'basic'
+        if (currentLevel === 'elite') return { success: false, error: 'Akademin är redan på elitnivå' }
+        if (game.academyUpgradeInProgress) return { success: false, error: 'Uppgradering pågår redan' }
+
+        const cost = currentLevel === 'basic' ? 50000 : 150000
+
+        if (currentLevel === 'developing' && club.facilities <= 70) {
+          return { success: false, error: 'Elitnivå kräver anläggning > 70' }
+        }
+        if (currentLevel === 'developing' && (club.youthQuality ?? 0) <= 65) {
+          return { success: false, error: 'Elitnivå kräver ungdomskvalitet > 65' }
+        }
+        if (currentLevel === 'basic' && club.facilities <= 50) {
+          return { success: false, error: 'Satsningsnivå kräver anläggning > 50' }
+        }
+        if (club.finances < cost) {
+          return { success: false, error: `Inte tillräckligt med pengar (kräver ${cost / 1000} tkr)` }
+        }
+
+        const updatedClubs = game.clubs.map(c =>
+          c.id === game.managedClubId ? { ...c, finances: c.finances - cost } : c
+        )
+
+        set({
+          game: {
+            ...game,
+            clubs: updatedClubs,
+            academyUpgradeInProgress: true,
+            academyUpgradeSeason: game.currentSeason + 1,
+          }
+        })
         return { success: true }
       },
 
