@@ -45,9 +45,9 @@ export function RoundSummaryScreen() {
   const financesDelta = financesAfter - financesBefore
   const csDelta = communityStandingAfter - (communityStandingBefore ?? communityStandingAfter)
 
-  const trainingFocus = (game as any).managedClubTraining
-  const activeProjects = ((game as any).trainingProjects ?? []).filter((p: any) => p.status === 'active')
-  const loanDeals = (game as any).loanDeals ?? []
+  const trainingFocus = game.managedClubTraining
+  const activeProjects = (game.trainingProjects ?? []).filter(p => p.status === 'active')
+  const loanDeals = game.loanDeals ?? []
 
   function fmt(n: number) {
     const abs = Math.abs(n)
@@ -98,8 +98,8 @@ export function RoundSummaryScreen() {
   }
 
   function handleContinue() {
+    const pendingCount = game?.pendingEvents?.length ?? 0
     clearRoundSummary()
-    const pendingCount = (game as any).pendingEvents?.length ?? 0
     navigate(pendingCount > 0 ? '/game/events' : '/game/dashboard', { replace: true })
   }
 
@@ -156,7 +156,7 @@ export function RoundSummaryScreen() {
           <TappableCard
             label="UTLÅNADE"
             summary={`${loanDeals.length} spelare på lån`}
-            detail={loanDeals.map((d: any) => d.destinationClubName).join(', ')}
+            detail={loanDeals.map(d => d.destinationClubName).join(', ')}
             onClick={() => navigate('/game/squad')}
           />
         )}

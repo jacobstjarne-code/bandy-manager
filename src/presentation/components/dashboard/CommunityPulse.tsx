@@ -11,7 +11,7 @@ export function CommunityPulse({ game, currentRound }: Props) {
   const navigate = useNavigate()
   const cs = game.communityStanding ?? 50
   const quote = getFunctionaryQuote(game, currentRound, game.lastCompletedFixtureId)
-  const headline = (game as any).latestHeadline as string | undefined
+  const headline = [...(game.inbox ?? [])].filter(i => i.type === 'mediaEvent' || i.type === 'media').sort((a, b) => b.date.localeCompare(a.date))[0]?.title
 
   function csColor(v: number) {
     if (v > 70) return '#22c55e'

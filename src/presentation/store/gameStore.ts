@@ -224,15 +224,15 @@ export const useGameStore = create<GameState>()(
 
         // Post-advance navigation (priority order)
         const pendingCount = result.game.pendingEvents?.length ?? 0
-        const managerFired = (result.game as any).managerFired
+        const managerFired = result.game.managerFired
         if (managerFired) {
           navigateTo('/game/game-over', { replace: true })
         } else if (result.seasonEnded) {
-          if ((result.game as any).showSeasonSummary) {
+          if (result.game.showSeasonSummary) {
             navigateTo('/game/season-summary', { replace: true })
-          } else if ((result.game as any).showBoardMeeting) {
+          } else if (result.game.showBoardMeeting) {
             navigateTo('/game/board-meeting', { replace: true })
-          } else if ((result.game as any).showPreSeason) {
+          } else if (result.game.showPreSeason) {
             navigateTo('/game/pre-season', { replace: true })
           }
         } else if (pendingCount > 0) {

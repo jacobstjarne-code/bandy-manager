@@ -25,6 +25,12 @@ export const FUNCTIONARY_TEMPLATES: FunctionaryTemplate[] = [
         'I år kör vi hårt. Jag har sett truppen. Det kan bli bra.',
         'Föreningens bästa tillgång är folket bakom kiosken. Det vet ni.',
       ],
+      höst: [
+        'Rutinen är inne nu. Det är bra. Rutinen vinner matcher.',
+        'November. Mörkt och kallt. Exakt som det ska vara.',
+        'Lagen börjar visa vad dom går för nu. Det är dags.',
+        'Hört att grannklubben värvat. Spelar ingen roll. Vi har våra.',
+      ],
       annandagen: [
         'Annandagsbandyn är årets viktigaste match. Det är bara sant.',
         'Fullt på läktaren imorgon. Har tänkt på det sen i somras.',
@@ -42,6 +48,12 @@ export const FUNCTIONARY_TEMPLATES: FunctionaryTemplate[] = [
         'Tabellen är vad den är. Men vi ger oss inte.',
         'Försäljningen i kiosken är ner. Stämningen märks.',
         'Kurt sa att vi är klara. Jag sa åt Kurt att hålla käften.',
+      ],
+      våroffensiv: [
+        'Februari. Nu avgörs det. Folk på läktaren vet det.',
+        'Sju omgångar kvar. Varje poäng väger dubbelt nu.',
+        'Isen är bäst nu. Kall och fast. Perfekt bandyis.',
+        'Kan lukta slutspel. Har luktat det förut. Smakar bättre när man vinner.',
       ],
       slutspurt: [
         'Tre omgångar kvar. Det är som en finale varje gång nu.',
@@ -83,6 +95,11 @@ export const FUNCTIONARY_TEMPLATES: FunctionaryTemplate[] = [
         'Ny säsong. Ny chans. Ungdomarna vet inte om tabellen. De spelar ändå.',
         'Har sett träningarna. Det börjar likna ett lag.',
       ],
+      höst: [
+        'P17 hittar rytmen. Det tar tre matcher. Nu är vi där.',
+        'Bra träningar i veckan. Ungdomarna är hungriga.',
+        'En av killarna frågade om han kan komma upp och träna med er. Snart.',
+      ],
       annandagen: [
         'Ungdomarna älskar annandagsbandyn. De springer runt och säljer lotter.',
         'Fick in tre nya spelare till P17. Julklappar, kalla dom.',
@@ -92,6 +109,11 @@ export const FUNCTIONARY_TEMPLATES: FunctionaryTemplate[] = [
         'Minus sexton på träningen igår. Fem dök upp. Dom fem är laget.',
         'Säsongen för ungdomarna är i sin bästa del nu. De har hittat varann.',
         'Håller ögonen på en av pojkarna. Kan bli bra för er på sikt.',
+      ],
+      våroffensiv: [
+        'P17-säsongen går mot sitt slut. Pojkarna har vuxit enormt.',
+        'Tre av mina spelare tittar på era matcher nu. Dom vill dit.',
+        'Sista pushen för ungdomarna. Precis som för er.',
       ],
       slutspurt: [
         'Pojkarna i P17 tittar på varje match nu. Dom vill upp.',
@@ -120,6 +142,11 @@ export const FUNCTIONARY_TEMPLATES: FunctionaryTemplate[] = [
         'Kommunen ringde. Positiva signaler. Mer säger jag inte.',
         'Budgeten är satt. Förutsättningarna finns. Nu är det er tur.',
       ],
+      höst: [
+        'Styrelsen är nöjd med starten. Håll kursen.',
+        'Sponsorerna hör av sig med positiva signaler. Bra.',
+        'Tidigt att säga vart det bär. Men riktningen är rätt.',
+      ],
       vinter: [
         'Halvtid. Styrelsen bedömer läget löpande.',
         'Ekonomin är stabil. Det är mer än vi vågades hoppas i somras.',
@@ -129,6 +156,11 @@ export const FUNCTIONARY_TEMPLATES: FunctionaryTemplate[] = [
         'Styrelsen har sett sämre. Vi ger oss inte.',
         'Licensnämnden är nöjd. Det är det viktigaste just nu.',
         'Föreningen är inte bara tabellen. Men tabellen hjälper.',
+      ],
+      våroffensiv: [
+        'Nu ser styrelsen vad vi jobbar mot. Det är viktigt.',
+        'Kommunen följer slutspurten. Deras intresse är ett gott tecken.',
+        'Styrelsen samlas inför varje match nu. Vi vill vara med.',
       ],
       slutspurt: [
         'Det är nu. Styrelsen är enad. Kör.',

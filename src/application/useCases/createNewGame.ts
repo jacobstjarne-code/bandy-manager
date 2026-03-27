@@ -288,11 +288,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     journalistRelationship: 50,
     sponsorNetworkMood: 70,
     licenseWarningCount: 0,
-    // Sprint 5: named characters (rolf/birgitta/journalist kept for backward compat, func_* for new system)
     namedCharacters: [
-      { id: 'rolf', name: 'Rolf Hedlund', role: 'isspolaren', age: 67, isAlive: true, morale: 70 },
-      { id: 'birgitta', name: 'Birgitta Ström', role: 'kioskansvarig', age: 54, isAlive: true, morale: 70 },
-      { id: 'journalist', name: 'Anna-Lena Ström', role: 'journalist', age: 45, isAlive: true },
       ...(() => {
         let s = (input.seed ?? 1) + 99991
         function rand() { s = ((s * 1664525 + 1013904223) | 0) >>> 0; return s / 0xffffffff }

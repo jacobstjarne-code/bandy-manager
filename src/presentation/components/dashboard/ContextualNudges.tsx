@@ -18,7 +18,6 @@ export function ContextualNudges({ game, currentRound: _r }: Props) {
 
   const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
-  const g = game as any
 
   const criticalFitness = managedPlayers.filter(p => p.fitness < 30 && !p.isInjured)
   if (criticalFitness.length >= 2)
@@ -33,22 +32,22 @@ export function ContextualNudges({ game, currentRound: _r }: Props) {
   if ((managedClub?.finances ?? 0) < -50000)
     nudges.push({ icon: '💸', text: 'Kassan är negativ — se budgeten', path: '/game/budget' })
 
-  if (g.licenseReview?.status === 'warning' || g.licenseReview?.status === 'continued_review')
+  if (game.licenseReview?.status === 'warning' || game.licenseReview?.status === 'continued_review')
     nudges.push({ icon: '🏛️', text: 'Licensnämnden kräver åtgärder', path: '/game/budget' })
 
-  const freshReport = Object.values(g.scoutReports ?? {}).find((r: any) => r.scoutedSeason === game.currentSeason)
+  const freshReport = Object.values(game.scoutReports ?? {}).find(r => r.scoutedSeason === game.currentSeason)
   if (freshReport) {
-    const player = game.players.find(p => p.id === (freshReport as any).playerId)
-    if (player && !game.inbox.some((i: any) => i.type === 'scoutReport' && i.isRead))
+    const player = game.players.find(p => p.id === freshReport.playerId)
+    if (player && !game.inbox.some(i => i.type === 'scoutReport' && i.isRead))
       nudges.push({ icon: '🔍', text: `Scoutrapport klar: ${player.firstName} ${player.lastName}`, path: '/game/transfers' })
   }
 
-  const readyYouth = g.youthTeam?.players?.find((p: any) => p.readyForPromotion)
+  const readyYouth = game.youthTeam?.players?.find(p => p.readyForPromotion)
   if (readyYouth)
     nudges.push({ icon: '⭐', text: `${readyYouth.firstName} ${readyYouth.lastName} kan vara redo för A-laget`, path: '/game/club' })
 
-  if (g.patron?.isActive && (g.patron.happiness ?? 50) < 30)
-    nudges.push({ icon: '😤', text: `${g.patron.name} är missnöjd — agera`, path: '/game/club' })
+  if (game.patron?.isActive && (game.patron.happiness ?? 50) < 30)
+    nudges.push({ icon: '😤', text: `${game.patron.name} är missnöjd — agera`, path: '/game/club' })
 
   if (nudges.length === 0) return null
 
