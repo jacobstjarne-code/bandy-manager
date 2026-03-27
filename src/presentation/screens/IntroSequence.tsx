@@ -134,21 +134,20 @@ export function IntroSequence() {
       </div>
 
       {/* ── S1 ── Title + tagline + CTA + credit */}
+      {/* No wrapper opacity — children handle their own visibility to avoid double-multiply */}
       <div style={{
         position: 'absolute', inset: 0,
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'space-between',
-        paddingTop: 120, paddingBottom: 60, padding: '120px 40px 60px',
-        opacity: s1 ? 1 : 0,
-        transition: 'opacity 600ms ease',
+        padding: '120px 40px 60px',
         pointerEvents: s1 ? 'auto' : 'none',
       }}>
-        {/* Title block */}
+        {/* Title block — fixed dimensions so letterSpacing changes don't reflow layout */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18 }}>
           <h1 style={{
             fontSize: 34,
             fontWeight: 400,
-            letterSpacing: s1 ? '9px' : '2px',
+            letterSpacing: '8px',
             color: '#F5F1EB',
             textTransform: 'uppercase',
             fontFamily: 'Georgia, serif',
@@ -156,7 +155,8 @@ export function IntroSequence() {
             textAlign: 'center',
             lineHeight: 1.1,
             opacity: s1 ? 1 : 0,
-            transition: 'opacity 1000ms ease, letter-spacing 1400ms ease',
+            transform: s1 ? 'scale(1)' : 'scale(0.96)',
+            transition: 'opacity 1100ms ease, transform 1100ms ease',
           }}>
             BANDY MANAGER
           </h1>
@@ -169,7 +169,7 @@ export function IntroSequence() {
             margin: 0,
             opacity: s1 ? 1 : 0,
             transition: 'opacity 700ms ease',
-            transitionDelay: s1 ? '900ms' : '0ms',
+            transitionDelay: s1 ? '1000ms' : '0ms',
           }}>
             En liten by. Ett lag. En hel värld.
           </p>
@@ -197,7 +197,7 @@ export function IntroSequence() {
               animation: s1 ? 'pulseCTA 2.5s ease-in-out infinite' : 'none',
               opacity: s1 ? 1 : 0,
               transition: 'opacity 700ms ease',
-              transitionDelay: s1 ? '1500ms' : '0ms',
+              transitionDelay: s1 ? '1600ms' : '0ms',
             }}
           >
             STARTA KARRIÄREN
@@ -210,7 +210,7 @@ export function IntroSequence() {
               filter: 'invert(1) brightness(.85) sepia(.15)',
               opacity: s1 ? 0.32 : 0,
               transition: 'opacity 700ms ease',
-              transitionDelay: s1 ? '1900ms' : '0ms',
+              transitionDelay: s1 ? '2000ms' : '0ms',
             }}
           />
         </div>
