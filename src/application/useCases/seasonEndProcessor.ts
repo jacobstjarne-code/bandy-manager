@@ -272,9 +272,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   const nextSeason = game.currentSeason + 1
 
-  // Generate season summary now that all financial updates (prize money, patron, etc.) are done
-  seasonSummary = generateSeasonSummary({ ...game, clubs: updatedClubs })
-
   // Board pre-season message for managed club
   const managedClubAfterPrize = updatedClubs.find(c => c.id === game.managedClubId)
   if (managedClubAfterPrize) {
@@ -439,7 +436,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   let clubsAfterLicense = clubsWithRetirements
   let playersAfterLicense = activePlayers
   let sponsorsAfterLicense = game.sponsors ?? []
-  let licFireManager = false
 
   if (licenseReview?.status === 'denied' && managedClubForLicense) {
     // Remove 3 random managed players
@@ -464,7 +460,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     const keepCount = Math.ceil(sponsorsAfterLicense.length * 0.4)
     sponsorsAfterLicense = sponsorsAfterLicense.slice(0, keepCount)
 
-    licFireManager = false  // Manager survives but demoted
   }
 
   // ── Kommunval — every 4th season, 50% chance of new politician ───────────
@@ -623,6 +618,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
+  // Generate season summary with the final communityStanding (after all season-end adjustments)
+  seasonSummary = generateSeasonSummary(
+    { ...game, clubs: updatedClubs },
+    Math.min(100, newCommunityStanding + communityStandingDelta),
+  )
+
   const updatedGame: SaveGame = {
     ...game,
     currentSeason: nextSeason,
@@ -641,8 +642,8 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     cupBracket: newCupBracket,
     seasonSummaries: [...(game.seasonSummaries ?? []), seasonSummary].slice(-5),
     showSeasonSummary: true,
-    showBoardMeeting: (managerFired || licFireManager) ? false : undefined,
-    showPreSeason: (managerFired || licFireManager) ? false : true,
+    showBoardMeeting: managerFired ? false : undefined,
+    showPreSeason: managerFired ? false : true,
     managerFired: managerFired ? true : undefined,
     fanMood: licenseReview?.status === 'denied'
       ? Math.max(0, (game.fanMood ?? 50) - 15)

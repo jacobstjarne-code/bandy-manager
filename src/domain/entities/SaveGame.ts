@@ -9,7 +9,7 @@ import type { PlayoffBracket } from './Playoff'
 import type { CupBracket } from './Cup'
 import type { SeasonSummary } from './SeasonSummary'
 import type { ScoutReport, ScoutAssignment } from './Scouting'
-import type { YouthTeam, Mentorship, LoanDeal, RegionalPartnership, AcademyLevel } from './Academy'
+import type { YouthTeam, Mentorship, LoanDeal, AcademyLevel } from './Academy'
 import type { GameEvent, TransferBid } from './GameEvent'
 import type { OpponentAnalysis } from '../services/opponentAnalysisService'
 
@@ -279,8 +279,6 @@ export interface SaveGame {
   academyUpgradeSeason?: number
   mentorships: Mentorship[]
   loanDeals: LoanDeal[]
-  regionalPartnership?: RegionalPartnership
-
   version: string
   lastSavedAt: string   // ISO datetime
 
@@ -300,12 +298,9 @@ export interface SaveGame {
   licenseWarningCount?: number   // consecutive seasons with warning/continued_review
   communityStanding?: number     // 0-100, starts 50
   journalistRelationship?: number  // 0-100, starts 50
-  pressConferenceCount?: number
   sponsorNetworkMood?: number    // 0-100, collective mood
 
   // Sprint 5: named characters
   namedCharacters?: NamedCharacter[]
 
-  // Sprint 5: lokaltidningsrubrik — uppdateras varje omgång
-  latestHeadline?: string
 }

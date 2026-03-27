@@ -136,9 +136,6 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     season,
     teamIds: clubs.map(c => c.id),
     fixtureIds: fixtures.map(f => f.id),
-    pointsForWin: 3,
-    pointsForDraw: 1,
-    pointsForLoss: 0,
   }
 
   const standings = calculateStandings(clubs.map(c => c.id), [])

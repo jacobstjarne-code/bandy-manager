@@ -5,7 +5,4 @@ export interface League {
   teamIds: string[]
   fixtureIds: string[]
 
-  pointsForWin: number    // 3
-  pointsForDraw: number   // 1
-  pointsForLoss: number   // 0
 }

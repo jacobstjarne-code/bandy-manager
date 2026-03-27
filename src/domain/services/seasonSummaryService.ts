@@ -1,6 +1,6 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { SeasonSummary } from '../entities/SeasonSummary'
-import { ClubExpectation, FixtureStatus, PlayoffRound } from '../enums'
+import { ClubExpectation, FixtureStatus, MatchEventType, PlayoffRound } from '../enums'
 
 function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
   const managedClubId = game.managedClubId
@@ -67,7 +67,7 @@ function ordinal(n: number): string {
 
 export type { SeasonSummary }
 
-export function generateSeasonSummary(game: SaveGame): SeasonSummary {
+export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: number): SeasonSummary {
   const managedClubId = game.managedClubId
   const club = game.clubs.find(c => c.id === managedClubId)!
   const managedPlayers = game.players.filter(p => p.clubId === managedClubId)
@@ -301,13 +301,22 @@ export function generateSeasonSummary(game: SaveGame): SeasonSummary {
     roundPoints.push(cumulativePoints)
   }
 
-  // Injuries (count currently injured players)
-  const injuredPlayers = managedPlayers.filter(p => p.isInjured)
-  const totalInjuries = injuredPlayers.length
-  const mostInjuredPlayer = totalInjuries > 0 ? {
-    name: `${injuredPlayers[0].firstName} ${injuredPlayers[0].lastName}`,
-    injuries: 1,
-  } : null
+  // Injuries (count Injury events from this season's fixtures)
+  const injuryEvents = clubFixtures.flatMap(f =>
+    f.events.filter(e => e.type === MatchEventType.Injury && e.clubId === managedClubId)
+  )
+  const totalInjuries = injuryEvents.length
+  const injuryCountByPlayer: Record<string, number> = {}
+  for (const e of injuryEvents) {
+    if (e.playerId) injuryCountByPlayer[e.playerId] = (injuryCountByPlayer[e.playerId] ?? 0) + 1
+  }
+  const topInjuredEntry = Object.entries(injuryCountByPlayer).sort((a, b) => b[1] - a[1])[0]
+  const mostInjuredPlayer = topInjuredEntry
+    ? (() => {
+        const p = managedPlayers.find(pl => pl.id === topInjuredEntry[0])
+        return p ? { name: `${p.firstName} ${p.lastName}`, injuries: topInjuredEntry[1] } : null
+      })()
+    : null
 
   // Finances
   const startFinances = game.seasonStartFinances ?? club.finances
@@ -431,7 +440,7 @@ export function generateSeasonSummary(game: SaveGame): SeasonSummary {
     standingsSnapshot,
     storyTriggers,
     communityStandingStart: game.communityStanding ?? 50,
-    communityStandingEnd: game.communityStanding ?? 50,
+    communityStandingEnd: communityStandingEnd ?? game.communityStanding ?? 50,
     communityHighlights: [],
   }
 }
