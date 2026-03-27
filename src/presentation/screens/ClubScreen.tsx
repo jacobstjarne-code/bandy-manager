@@ -503,12 +503,25 @@ export function ClubScreen() {
   const setTraining = useGameStore(s => s.setTraining)
   const activateCommunity = useGameStore(s => s.activateCommunity)
   const upgradeAcademy = useGameStore(s => s.upgradeAcademy)
+  const promoteYouthPlayer = useGameStore(s => s.promoteYouthPlayer)
+  const assignMentor = useGameStore(s => s.assignMentor)
+  const removeMentor = useGameStore(s => s.removeMentor)
+  const loanOutPlayer = useGameStore(s => s.loanOutPlayer)
+  const recallLoan = useGameStore(s => s.recallLoan)
   const startTrainingProject = useGameStore(s => s.startTrainingProject)
   const cancelTrainingProject = useGameStore(s => s.cancelTrainingProject)
   const seekSponsor = useGameStore(s => s.seekSponsor)
   const [sponsorFeedback, setSponsorFeedback] = useState<string | null>(null)
   const [communityMsg, setCommunityMsg] = useState<{ key: string; text: string; ok: boolean } | null>(null)
   const [upgradeMsg, setUpgradeMsg] = useState<string | null>(null)
+  const [promotionMsg, setPromotionMsg] = useState<string | null>(null)
+  const [mentorMsg, setMentorMsg] = useState<string | null>(null)
+  const [selectedMentorSeniorId, setSelectedMentorSeniorId] = useState<string>('')
+  const [selectedMentorYouthId, setSelectedMentorYouthId] = useState<string>('')
+  const [loanMsg, setLoanMsg] = useState<string | null>(null)
+  const [selectedLoanPlayerId, setSelectedLoanPlayerId] = useState<string>('')
+  const [selectedLoanClub, setSelectedLoanClub] = useState<string>('')
+  const [selectedLoanRounds, setSelectedLoanRounds] = useState<number>(4)
 
   function handleActivate(key: string, level: string) {
     const result = activateCommunity(key, level)
@@ -1036,6 +1049,22 @@ export function ClubScreen() {
           const almostReady = youthTeam?.players.filter(p => !p.readyForPromotion && p.currentAbility >= 20) ?? []
           const notReady = youthTeam?.players.filter(p => !p.readyForPromotion && p.currentAbility < 20) ?? []
 
+          const activeMentorships = (game.mentorships ?? []).filter(m => m.isActive)
+          const managedPlayers = game.players.filter(p => p.clubId === club.id)
+          const mentorCandidates = managedPlayers.filter(p => p.age >= 25 && p.discipline > 60)
+          const youthForMentor = [
+            ...(youthTeam?.players ?? []).map(p => ({ id: p.id, name: `${p.firstName} ${p.lastName} (P17)` })),
+            ...managedPlayers.filter(p => p.promotedFromAcademy).map(p => ({ id: p.id, name: `${p.firstName} ${p.lastName} (A-lag)` })),
+          ]
+
+          const activeLoanDeals = game.loanDeals ?? []
+          const loanablePlayers = managedPlayers.filter(p => p.age <= 23 && !p.isOnLoan)
+          const LOAN_CLUBS = ['Skutskärs IF', 'Tillberga IK', 'Bollnäs GIF', 'Delsbo IF', 'Norrby IF']
+
+          const currentRound = game.fixtures
+            .filter(f => f.status === 'completed' && !f.isCup)
+            .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+
           return (
             <div>
               {/* Academy level card */}
@@ -1044,6 +1073,11 @@ export function ClubScreen() {
                   <span style={{ fontSize: 15, fontWeight: 700 }}>{levelLabel}</span>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{(levelDrift / 1000)} tkr/omg</span>
                 </div>
+                {club.academyReputation !== undefined && (
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
+                    Akademirykte: {club.academyReputation}/100
+                  </p>
+                )}
                 {game.academyUpgradeInProgress && (
                   <p style={{ fontSize: 12, color: 'var(--warning)', marginBottom: 8 }}>
                     Uppgradering pågår — klar säsong {game.academyUpgradeSeason}
@@ -1087,11 +1121,15 @@ export function ClubScreen() {
                     </p>
                   )}
 
+                  {promotionMsg && (
+                    <p style={{ fontSize: 12, color: 'var(--success)', marginBottom: 8 }}>✓ {promotionMsg}</p>
+                  )}
+
                   {/* Player list */}
                   {[
-                    { label: 'Redo för uppkallning', players: readyPlayers },
-                    { label: 'Utvecklas', players: almostReady },
-                    { label: 'Tidiga talanger', players: notReady },
+                    { label: 'Redo för uppkallning', players: readyPlayers, canPromote: true },
+                    { label: 'Utvecklas', players: almostReady, canPromote: true },
+                    { label: 'Tidiga talanger', players: notReady, canPromote: false },
                   ].map(group => group.players.length > 0 && (
                     <div key={group.label} style={{ marginBottom: 10 }}>
                       <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
@@ -1100,16 +1138,38 @@ export function ClubScreen() {
                       {group.players.map(p => {
                         const stars = p.potentialAbility >= 70 ? '★★★★' : p.potentialAbility >= 55 ? '★★★' : p.potentialAbility >= 45 ? '★★' : '★'
                         return (
-                          <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
+                          <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
                             <div>
                               <span style={{ fontSize: 13, fontWeight: 600 }}>{p.firstName} {p.lastName}</span>
                               <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
                                 {p.age} år · {p.position.substring(0, 3).toUpperCase()}
                               </span>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>CA {Math.round(p.currentAbility)}</span>
-                              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>{stars}</span>
+                              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{stars}</span>
+                              {group.canPromote && (
+                                <button
+                                  onClick={() => {
+                                    const result = promoteYouthPlayer(p.id)
+                                    if (result.success) {
+                                      const timingStr = result.timing === 'good' ? 'Perfekt tajming!' : result.timing === 'early' ? 'Lite tidig uppkallning.' : 'Sent men välkommen!'
+                                      setPromotionMsg(`${p.firstName} ${p.lastName} kallad upp. ${timingStr}`)
+                                      setTimeout(() => setPromotionMsg(null), 5000)
+                                    } else {
+                                      setPromotionMsg(result.error ?? 'Fel')
+                                      setTimeout(() => setPromotionMsg(null), 4000)
+                                    }
+                                  }}
+                                  style={{
+                                    padding: '3px 8px', borderRadius: 'var(--radius)',
+                                    background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.4)',
+                                    color: 'var(--accent)', fontSize: 11, cursor: 'pointer',
+                                  }}
+                                >
+                                  Kalla upp
+                                </button>
+                              )}
                             </div>
                           </div>
                         )
@@ -1121,6 +1181,179 @@ export function ClubScreen() {
                   )}
                 </SectionCard>
               )}
+
+              {/* Mentorskap */}
+              <SectionCard title="Mentorskap" stagger={3}>
+                {mentorMsg && (
+                  <p style={{ fontSize: 12, color: 'var(--success)', marginBottom: 8 }}>✓ {mentorMsg}</p>
+                )}
+                {activeMentorships.length > 0 && (
+                  <div style={{ marginBottom: 12 }}>
+                    {activeMentorships.map(m => {
+                      const mentor = managedPlayers.find(p => p.id === m.seniorPlayerId)
+                      const youth = youthTeam?.players.find(p => p.id === m.youthPlayerId)
+                        ?? managedPlayers.find(p => p.id === m.youthPlayerId)
+                      if (!mentor || !youth) return null
+                      return (
+                        <div key={m.youthPlayerId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
+                          <span style={{ fontSize: 13 }}>
+                            {mentor.firstName} {mentor.lastName} → {'firstName' in youth ? `${youth.firstName} ${youth.lastName}` : ''}
+                          </span>
+                          <button
+                            onClick={() => {
+                              removeMentor(m.youthPlayerId)
+                              setMentorMsg('Mentorskap avslutat.')
+                              setTimeout(() => setMentorMsg(null), 3000)
+                            }}
+                            style={{ padding: '3px 8px', borderRadius: 'var(--radius)', background: 'rgba(255,80,80,0.1)', border: '1px solid rgba(255,80,80,0.3)', color: '#f87171', fontSize: 11, cursor: 'pointer' }}
+                          >
+                            Ta bort
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+                {activeMentorships.length < 3 && mentorCandidates.length > 0 && youthForMentor.length > 0 && (
+                  <div>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Tilldela mentor (max 3 aktiva)</p>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <select
+                        value={selectedMentorSeniorId}
+                        onChange={e => setSelectedMentorSeniorId(e.target.value)}
+                        style={{ flex: 1, minWidth: 120, padding: '4px 6px', borderRadius: 'var(--radius)', background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontSize: 12 }}
+                      >
+                        <option value="">Välj mentor</option>
+                        {mentorCandidates.map(p => (
+                          <option key={p.id} value={p.id}>{p.firstName} {p.lastName} (discp {p.discipline})</option>
+                        ))}
+                      </select>
+                      <select
+                        value={selectedMentorYouthId}
+                        onChange={e => setSelectedMentorYouthId(e.target.value)}
+                        style={{ flex: 1, minWidth: 120, padding: '4px 6px', borderRadius: 'var(--radius)', background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontSize: 12 }}
+                      >
+                        <option value="">Välj spelare</option>
+                        {youthForMentor.map(y => (
+                          <option key={y.id} value={y.id}>{y.name}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => {
+                          if (!selectedMentorSeniorId || !selectedMentorYouthId) return
+                          const result = assignMentor(selectedMentorSeniorId, selectedMentorYouthId)
+                          setMentorMsg(result.error ?? 'Mentorskap tilldelat!')
+                          setTimeout(() => setMentorMsg(null), 4000)
+                          setSelectedMentorSeniorId('')
+                          setSelectedMentorYouthId('')
+                        }}
+                        style={{ padding: '4px 12px', borderRadius: 'var(--radius)', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.4)', color: 'var(--accent)', fontSize: 12, cursor: 'pointer' }}
+                      >
+                        Tilldela
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {mentorCandidates.length === 0 && (
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Inga seniorer med tillräcklig disciplin (ålder ≥25, disciplin &gt;60).</p>
+                )}
+              </SectionCard>
+
+              {/* Lån */}
+              <SectionCard title="Lån (U23)" stagger={4}>
+                {loanMsg && (
+                  <p style={{ fontSize: 12, color: 'var(--success)', marginBottom: 8 }}>✓ {loanMsg}</p>
+                )}
+                {activeLoanDeals.length > 0 && (
+                  <div style={{ marginBottom: 12 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>Aktiva lån</p>
+                    {activeLoanDeals.map(deal => {
+                      const loanPlayer = game.players.find(p => p.id === deal.playerId)
+                      if (!loanPlayer) return null
+                      const roundsLeft = deal.endRound - currentRound
+                      const lastReport = deal.reports[deal.reports.length - 1]
+                      return (
+                        <div key={deal.playerId} style={{ padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <span style={{ fontSize: 13, fontWeight: 600 }}>{loanPlayer.firstName} {loanPlayer.lastName}</span>
+                              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>{deal.destinationClubName} · {roundsLeft} omg kvar</span>
+                            </div>
+                            <button
+                              onClick={() => {
+                                recallLoan(deal.playerId)
+                                setLoanMsg(`${loanPlayer.firstName} ${loanPlayer.lastName} återkallad.`)
+                                setTimeout(() => setLoanMsg(null), 3000)
+                              }}
+                              style={{ padding: '3px 8px', borderRadius: 'var(--radius)', background: 'rgba(255,80,80,0.1)', border: '1px solid rgba(255,80,80,0.3)', color: '#f87171', fontSize: 11, cursor: 'pointer' }}
+                            >
+                              Återkalla
+                            </button>
+                          </div>
+                          {lastReport && (
+                            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                              Senast: {lastReport.played ? `Spelade (betyg ${lastReport.rating}${lastReport.goals > 0 ? `, ${lastReport.goals} mål` : ''})` : 'Satt på bänken'}
+                              {' · '}{deal.matchesPlayed}/{deal.totalMatches} matcher
+                            </p>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+                {loanablePlayers.length > 0 && (
+                  <div>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>Låna ut spelare (max 23 år)</p>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <select
+                        value={selectedLoanPlayerId}
+                        onChange={e => setSelectedLoanPlayerId(e.target.value)}
+                        style={{ flex: 1, minWidth: 120, padding: '4px 6px', borderRadius: 'var(--radius)', background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontSize: 12 }}
+                      >
+                        <option value="">Välj spelare</option>
+                        {loanablePlayers.map(p => (
+                          <option key={p.id} value={p.id}>{p.firstName} {p.lastName} ({p.age} år)</option>
+                        ))}
+                      </select>
+                      <select
+                        value={selectedLoanClub}
+                        onChange={e => setSelectedLoanClub(e.target.value)}
+                        style={{ flex: 1, minWidth: 120, padding: '4px 6px', borderRadius: 'var(--radius)', background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontSize: 12 }}
+                      >
+                        <option value="">Välj mottagarklubb</option>
+                        {LOAN_CLUBS.map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={selectedLoanRounds}
+                        onChange={e => setSelectedLoanRounds(Number(e.target.value))}
+                        style={{ padding: '4px 6px', borderRadius: 'var(--radius)', background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontSize: 12 }}
+                      >
+                        {[2, 4, 6, 8].map(r => (
+                          <option key={r} value={r}>{r} omgångar</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => {
+                          if (!selectedLoanPlayerId || !selectedLoanClub) return
+                          const result = loanOutPlayer(selectedLoanPlayerId, selectedLoanClub, selectedLoanRounds)
+                          setLoanMsg(result.error ?? 'Spelare utlånad!')
+                          setTimeout(() => setLoanMsg(null), 4000)
+                          setSelectedLoanPlayerId('')
+                          setSelectedLoanClub('')
+                        }}
+                        style={{ padding: '4px 12px', borderRadius: 'var(--radius)', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.4)', color: 'var(--accent)', fontSize: 12, cursor: 'pointer' }}
+                      >
+                        Låna ut
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {loanablePlayers.length === 0 && activeLoanDeals.length === 0 && (
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Inga U23-spelare tillgängliga för lån.</p>
+                )}
+              </SectionCard>
             </div>
           )
         })()}

@@ -8,7 +8,7 @@ import { createTrainingProject } from '../../domain/services/trainingProjectServ
 import { generateSponsorOffer } from '../../domain/services/sponsorService'
 import type { Sponsor } from '../../domain/entities/SaveGame'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entities/Fixture'
-import { FixtureStatus, PlayoffStatus, InboxItemType } from '../../domain/enums'
+import { FixtureStatus, PlayoffStatus, InboxItemType, PlayerPosition } from '../../domain/enums'
 import { createNewGame } from '../../application/useCases/createNewGame'
 import { startScoutAssignment } from '../../domain/services/scoutingService'
 import { createOutgoingBid } from '../../domain/services/transferService'
@@ -18,6 +18,7 @@ import { updateSeriesAfterMatch, advancePlayoffRound } from '../../domain/servic
 import { advanceToNextEvent, type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
 import { calculateStandings } from '../../domain/services/standingsService'
+import type { LoanDeal } from '../../domain/entities/Academy'
 export interface SaveGameSummary {
   id: string
   managerName: string
@@ -60,6 +61,11 @@ interface GameState {
   buyScoutRounds: () => void
   activateCommunity: (key: string, level: string) => { success: boolean; error?: string }
   upgradeAcademy: () => { success: boolean; error?: string }
+  promoteYouthPlayer: (youthPlayerId: string) => { success: boolean; error?: string; timing?: 'early' | 'good' | 'late' }
+  assignMentor: (seniorPlayerId: string, youthPlayerId: string) => { success: boolean; error?: string }
+  removeMentor: (youthPlayerId: string) => void
+  loanOutPlayer: (playerId: string, destinationClubName: string, rounds: number) => { success: boolean; error?: string }
+  recallLoan: (playerId: string) => void
   startTrainingProject: (type: string, intensity: 'normal' | 'hard') => { success: boolean; error?: string }
   cancelTrainingProject: (projectId: string) => void
   seekSponsor: () => { success: boolean; sponsor?: Sponsor; error?: string }
@@ -549,6 +555,230 @@ export const useGameStore = create<GameState>()(
           }
         })
         return { success: true }
+      },
+
+      promoteYouthPlayer: (youthPlayerId) => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+
+        const youthPlayer = game.youthTeam?.players.find(p => p.id === youthPlayerId)
+        if (!youthPlayer) return { success: false, error: 'Spelare hittades inte' }
+
+        const club = game.clubs.find(c => c.id === game.managedClubId)
+        if (!club) return { success: false, error: 'Ingen klubb hittad' }
+
+        // Determine timing
+        let timing: 'early' | 'good' | 'late'
+        if (youthPlayer.currentAbility < 25 || youthPlayer.confidence < 40) {
+          timing = 'early'
+        } else if (youthPlayer.currentAbility > 35 && youthPlayer.confidence > 70 && youthPlayer.age >= 17) {
+          timing = 'late'
+        } else {
+          timing = 'good'
+        }
+
+        // Calculate current round
+        const currentRound = game.fixtures
+          .filter(f => f.status === 'completed' && !f.isCup)
+          .reduce((max, f) => Math.max(max, f.roundNumber), 0) + 1
+
+        // Deterministic salary based on youthPlayerId hash
+        let hash = 0
+        for (let i = 0; i < youthPlayerId.length; i++) {
+          hash = ((hash << 5) - hash) + youthPlayerId.charCodeAt(i)
+          hash |= 0
+        }
+        const hashRand = Math.abs(hash % 1000) / 1000
+        const salary = 2000 + Math.round(hashRand * 2000)
+
+        // Generate position-based attributes
+        function generateAttributes(position: PlayerPosition, ca: number) {
+          const base = Math.round(ca * 0.6)
+          const high = Math.round(ca * 1.1)
+          const low = Math.round(ca * 0.4)
+          const mid = Math.round(ca * 0.8)
+
+          if (position === PlayerPosition.Goalkeeper) {
+            return { skating: mid, acceleration: base, stamina: mid, ballControl: low, passing: low, shooting: low, dribbling: low, vision: mid, decisions: mid, workRate: mid, positioning: mid, defending: mid, cornerSkill: low, goalkeeping: high }
+          } else if (position === PlayerPosition.Defender) {
+            return { skating: mid, acceleration: mid, stamina: mid, ballControl: base, passing: base, shooting: low, dribbling: low, vision: base, decisions: mid, workRate: high, positioning: high, defending: high, cornerSkill: base, goalkeeping: low }
+          } else if (position === PlayerPosition.Half) {
+            return { skating: mid, acceleration: mid, stamina: high, ballControl: mid, passing: mid, shooting: base, dribbling: base, vision: mid, decisions: mid, workRate: high, positioning: mid, defending: mid, cornerSkill: base, goalkeeping: low }
+          } else if (position === PlayerPosition.Midfielder) {
+            return { skating: mid, acceleration: mid, stamina: mid, ballControl: mid, passing: high, shooting: base, dribbling: mid, vision: high, decisions: high, workRate: mid, positioning: mid, defending: base, cornerSkill: base, goalkeeping: low }
+          } else {
+            // Forward
+            return { skating: high, acceleration: high, stamina: mid, ballControl: mid, passing: base, shooting: high, dribbling: high, vision: mid, decisions: mid, workRate: mid, positioning: high, defending: low, cornerSkill: base, goalkeeping: low }
+          }
+        }
+
+        const newPlayer = {
+          id: `player_promoted_${youthPlayerId}_${game.currentSeason}`,
+          firstName: youthPlayer.firstName,
+          lastName: youthPlayer.lastName,
+          age: youthPlayer.age,
+          nationality: 'Svensk',
+          clubId: game.managedClubId,
+          academyClubId: game.managedClubId,
+          isHomegrown: true,
+          position: youthPlayer.position,
+          archetype: youthPlayer.archetype,
+          salary,
+          contractUntilSeason: game.currentSeason + 2,
+          marketValue: Math.round(youthPlayer.currentAbility * 1000),
+          morale: timing === 'good' ? 75 : timing === 'early' ? 45 : 60,
+          form: 50,
+          fitness: 80,
+          sharpness: 60,
+          dayJob: undefined,
+          isFullTimePro: false,
+          currentAbility: youthPlayer.currentAbility,
+          potentialAbility: youthPlayer.potentialAbility,
+          developmentRate: youthPlayer.developmentRate,
+          injuryProneness: 30,
+          discipline: 65,
+          attributes: generateAttributes(youthPlayer.position, youthPlayer.currentAbility),
+          isInjured: false,
+          injuryDaysRemaining: 0,
+          suspensionGamesRemaining: 0,
+          seasonStats: { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0 },
+          careerStats: { totalGames: 0, totalGoals: 0, totalAssists: 0, seasonsPlayed: 0 },
+          promotedFromAcademy: true,
+          promotionRound: currentRound,
+        }
+
+        const updatedYouthPlayers = game.youthTeam!.players.filter(p => p.id !== youthPlayerId)
+        const updatedYouthTeam = { ...game.youthTeam!, players: updatedYouthPlayers }
+        const updatedPlayers = [...game.players, newPlayer]
+        const updatedClubs = game.clubs.map(c =>
+          c.id === game.managedClubId
+            ? { ...c, squadPlayerIds: [...c.squadPlayerIds, newPlayer.id] }
+            : c
+        )
+
+        const inboxItem = {
+          id: `inbox_promotion_${youthPlayerId}_${game.currentSeason}`,
+          date: game.currentDate,
+          type: InboxItemType.YouthIntake,
+          title: `⭐ ${youthPlayer.firstName} ${youthPlayer.lastName} kallas upp till A-truppen`,
+          body: timing === 'good'
+            ? `${youthPlayer.firstName} ${youthPlayer.lastName} (${youthPlayer.age} år) är klar för steget upp. Tajmingen är bra.`
+            : timing === 'early'
+            ? `${youthPlayer.firstName} ${youthPlayer.lastName} kallas upp lite tidigt. Han är fortfarande ung och kanske inte riktigt mogen.`
+            : `${youthPlayer.firstName} ${youthPlayer.lastName} har vänt på ett par uppkallningar — nu är det dags att ta steget.`,
+          isRead: false,
+        }
+
+        set({
+          game: {
+            ...game,
+            players: updatedPlayers,
+            clubs: updatedClubs,
+            youthTeam: updatedYouthTeam,
+            inbox: [inboxItem, ...game.inbox],
+          }
+        })
+        return { success: true, timing }
+      },
+
+      assignMentor: (seniorPlayerId, youthPlayerId) => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+
+        const activeMentorships = (game.mentorships ?? []).filter(m => m.isActive)
+        if (activeMentorships.length >= 3) return { success: false, error: 'Max 3 aktiva mentorskap' }
+
+        const seniorPlayer = game.players.find(p => p.id === seniorPlayerId)
+        if (!seniorPlayer) return { success: false, error: 'Mentor hittades inte' }
+        if (seniorPlayer.age < 25) return { success: false, error: 'Mentorn måste vara minst 25 år' }
+        if (seniorPlayer.discipline <= 60) return { success: false, error: 'Mentorn behöver disciplin > 60' }
+
+        const youthInTeam = game.youthTeam?.players.some(p => p.id === youthPlayerId)
+        const youthInA = game.players.some(p => p.id === youthPlayerId && p.promotedFromAcademy)
+        if (!youthInTeam && !youthInA) return { success: false, error: 'Yngre spelare hittades inte' }
+
+        const alreadyMentored = (game.mentorships ?? []).some(m => m.isActive && m.youthPlayerId === youthPlayerId)
+        if (alreadyMentored) return { success: false, error: 'Spelaren har redan en mentor' }
+
+        const currentRound = game.fixtures
+          .filter(f => f.status === 'completed' && !f.isCup)
+          .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+
+        const mentorship = { seniorPlayerId, youthPlayerId, startRound: currentRound, isActive: true }
+        set({ game: { ...game, mentorships: [...(game.mentorships ?? []), mentorship] } })
+        return { success: true }
+      },
+
+      removeMentor: (youthPlayerId) => {
+        const { game } = get()
+        if (!game) return
+        const updatedMentorships = (game.mentorships ?? []).map(m =>
+          m.youthPlayerId === youthPlayerId && m.isActive ? { ...m, isActive: false } : m
+        )
+        set({ game: { ...game, mentorships: updatedMentorships } })
+      },
+
+      loanOutPlayer: (playerId, destinationClubName, rounds) => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+
+        const player = game.players.find(p => p.id === playerId)
+        if (!player) return { success: false, error: 'Spelare hittades inte' }
+        if (player.clubId !== game.managedClubId) return { success: false, error: 'Spelaren tillhör inte din klubb' }
+        if (player.age > 23) return { success: false, error: 'Lån är bara för spelare under 24 år' }
+        if (player.isOnLoan) return { success: false, error: 'Spelaren är redan på lån' }
+
+        const currentRound = game.fixtures
+          .filter(f => f.status === 'completed' && !f.isCup)
+          .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+
+        const loanDeal: LoanDeal = {
+          playerId,
+          destinationClubName,
+          startRound: currentRound,
+          endRound: currentRound + rounds,
+          salaryShare: 0.5,
+          matchesPlayed: 0,
+          totalMatches: rounds,
+          averageRating: 0,
+          reports: [],
+        }
+
+        const updatedPlayers = game.players.map(p =>
+          p.id === playerId ? { ...p, isOnLoan: true, loanClubName: destinationClubName } : p
+        )
+        const updatedClubs = game.clubs.map(c =>
+          c.id === game.managedClubId
+            ? { ...c, squadPlayerIds: c.squadPlayerIds.filter(id => id !== playerId) }
+            : c
+        )
+
+        set({
+          game: {
+            ...game,
+            players: updatedPlayers,
+            clubs: updatedClubs,
+            loanDeals: [...(game.loanDeals ?? []), loanDeal],
+          }
+        })
+        return { success: true }
+      },
+
+      recallLoan: (playerId) => {
+        const { game } = get()
+        if (!game) return
+
+        const updatedPlayers = game.players.map(p =>
+          p.id === playerId ? { ...p, isOnLoan: false, loanClubName: undefined } : p
+        )
+        const updatedClubs = game.clubs.map(c =>
+          c.id === game.managedClubId && !c.squadPlayerIds.includes(playerId)
+            ? { ...c, squadPlayerIds: [...c.squadPlayerIds, playerId] }
+            : c
+        )
+        const updatedLoanDeals = (game.loanDeals ?? []).filter(d => d.playerId !== playerId)
+
+        set({ game: { ...game, players: updatedPlayers, clubs: updatedClubs, loanDeals: updatedLoanDeals } })
       },
 
       startTrainingProject: (type, intensity) => {

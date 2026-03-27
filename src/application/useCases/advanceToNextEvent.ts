@@ -1496,6 +1496,163 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     } as InboxItem)
   }
 
+  // ── Mentor effects per round ─────────────────────────────────────────────
+  let mentorUpdatedYouthPlayers = updatedYouthTeam?.players ?? []
+  const activeMentorships = (game.mentorships ?? []).filter(m => m.isActive)
+  for (const m of activeMentorships) {
+    const mentor = marketUpdatedPlayers.find(p => p.id === m.seniorPlayerId)
+    if (!mentor) continue
+    const youthIdx = mentorUpdatedYouthPlayers.findIndex(p => p.id === m.youthPlayerId)
+    if (youthIdx >= 0 && mentor.form >= 40) {
+      const devBoost = mentor.discipline / 20
+      mentorUpdatedYouthPlayers = mentorUpdatedYouthPlayers.map((p, i) => i === youthIdx ? {
+        ...p,
+        developmentRate: Math.min(100, p.developmentRate + devBoost * 0.1),
+        confidence: Math.min(100, p.confidence + 1),
+      } : p)
+    }
+  }
+  if (updatedYouthTeam) {
+    updatedYouthTeam = { ...updatedYouthTeam, players: mentorUpdatedYouthPlayers }
+  }
+
+  // ── Loan deal processing ─────────────────────────────────────────────────
+  let loanUpdatedPlayers = [...marketUpdatedPlayers]
+  const activeLoanDeals = (game.loanDeals ?? []).filter(d => nextRound <= d.endRound)
+  const returnedLoanPlayerIds: string[] = []
+
+  for (const deal of activeLoanDeals) {
+    if (nextRound >= deal.endRound) {
+      returnedLoanPlayerIds.push(deal.playerId)
+      loanUpdatedPlayers = loanUpdatedPlayers.map(p => p.id === deal.playerId
+        ? { ...p, isOnLoan: false, loanClubName: undefined }
+        : p
+      )
+      const participationRate = deal.totalMatches > 0 ? deal.matchesPlayed / deal.totalMatches : 0
+      const caBoost = participationRate >= 0.75 ? 3 + Math.floor(localRand() * 3)
+        : participationRate >= 0.5 ? 1 + Math.floor(localRand() * 2) : 0
+      if (caBoost > 0) {
+        loanUpdatedPlayers = loanUpdatedPlayers.map(p => p.id === deal.playerId
+          ? { ...p, currentAbility: Math.min(p.potentialAbility, p.currentAbility + caBoost), morale: Math.min(100, (p.morale ?? 50) + 10) }
+          : p
+        )
+      }
+      const returnedPlayer = loanUpdatedPlayers.find(p => p.id === deal.playerId)
+      if (returnedPlayer) {
+        const confStr = participationRate >= 0.75 ? 'spelade regelbundet och kom tillbaka stärkt'
+          : participationRate >= 0.5 ? 'fick speltid och har utvecklats'
+          : 'satt mest på bänken och är lite besviken'
+        newInboxItems.push({
+          id: `inbox_loan_return_${deal.playerId}_${nextRound}`,
+          date: newDate,
+          type: InboxItemType.YouthIntake,
+          title: `🏒 ${returnedPlayer.firstName} ${returnedPlayer.lastName} är tillbaka från lån`,
+          body: `${returnedPlayer.firstName} ${returnedPlayer.lastName} återvänder från ${deal.destinationClubName}. Han ${confStr}.${caBoost > 0 ? ` CA +${caBoost}.` : ''}`,
+          isRead: false,
+        })
+      }
+    }
+  }
+
+  // Return loaned players to squad
+  const managedClubAfterLoan = returnedLoanPlayerIds.length > 0
+    ? socialMediaBoostedClubs.map(c => {
+        if (c.id !== game.managedClubId) return c
+        const newIds = returnedLoanPlayerIds.filter(id => !c.squadPlayerIds.includes(id))
+        return newIds.length > 0 ? { ...c, squadPlayerIds: [...c.squadPlayerIds, ...newIds] } : c
+      })
+    : socialMediaBoostedClubs
+
+  const updatedLoanDeals = (game.loanDeals ?? [])
+    .filter(d => !returnedLoanPlayerIds.includes(d.playerId))
+    .map(d => {
+      if (nextRound % 2 === 0 && nextRound < d.endRound) {
+        const played = localRand() > 0.25
+        const rating = played ? Math.round((5 + localRand() * 3) * 10) / 10 : 0
+        const goals = played && localRand() > 0.6 ? 1 : 0
+        const newMatchesPlayed = d.matchesPlayed + (played ? 1 : 0)
+        return {
+          ...d,
+          matchesPlayed: newMatchesPlayed,
+          averageRating: newMatchesPlayed > 0
+            ? Math.round(((d.averageRating * d.matchesPlayed + rating) / newMatchesPlayed) * 10) / 10
+            : rating,
+          reports: [...d.reports.slice(-5), { round: nextRound, played, rating, goals, assists: 0 }],
+        }
+      }
+      return d
+    })
+
+  // ── Academy events ───────────────────────────────────────────────────────
+  if (game.youthTeam && nextRound >= 3 && nextRound <= 18) {
+    const conflictPlayers = updatedYouthTeam?.players.filter(p => p.schoolConflict) ?? []
+    if (conflictPlayers.length > 0 && localRand() < 0.12) {
+      const player = conflictPlayers[Math.floor(localRand() * conflictPlayers.length)]
+      allNewEvents.push({
+        id: `event_school_conflict_${player.id}_${nextRound}`,
+        type: 'communityEvent',
+        title: `Skolkonflikt — ${player.firstName} ${player.lastName}`,
+        body: `${player.firstName} har nationellt prov imorgon. Han missar träningen om han pluggar.`,
+        choices: [
+          {
+            id: 'let_study',
+            label: 'Låt honom plugga',
+            effect: { type: 'noOp' },
+          },
+          {
+            id: 'train',
+            label: 'Han bör komma på träningen',
+            effect: { type: 'noOp' },
+          },
+        ],
+        resolved: false,
+      })
+    }
+  }
+
+  if (game.youthTeam && (nextRound === 8 || nextRound === 15)) {
+    const callupCandidates = updatedYouthTeam?.players.filter(p => p.potentialAbility > 50) ?? []
+    if (callupCandidates.length >= 1) {
+      const selected = callupCandidates.slice(0, Math.min(2, callupCandidates.length))
+      const names = selected.map(p => `${p.firstName} ${p.lastName}`).join(' och ')
+      const districtName = ['Gävleborgs', 'Hälsinglands', 'Västmanlands', 'Dalarnas', 'Upplands'][Math.floor(localRand() * 5)]
+      allNewEvents.push({
+        id: `event_district_callup_${nextRound}_${game.currentSeason}`,
+        type: 'communityEvent',
+        title: `Distriktslagsuttag — ${names}`,
+        body: `${names} är kallade till ${districtName} P17-samling. De missar 2 P17-matcher men kan få värdefull erfarenhet.`,
+        choices: [
+          {
+            id: 'send',
+            label: 'Skicka dem',
+            effect: { type: 'noOp' },
+          },
+          {
+            id: 'keep',
+            label: 'Behåll i klubben',
+            effect: { type: 'noOp' },
+          },
+        ],
+        resolved: false,
+      })
+    }
+  }
+
+  // ── Academy reputation update ────────────────────────────────────────────
+  const academyReputationDelta = (() => {
+    if (!game.youthTeam || !updatedYouthTeam) return 0
+    const newWins = updatedYouthTeam.seasonRecord.w - game.youthTeam.seasonRecord.w
+    return newWins > 0 ? 1 : 0
+  })()
+
+  const academyUpdatedClubs = academyReputationDelta > 0
+    ? managedClubAfterLoan.map(c =>
+        c.id === game.managedClubId
+          ? { ...c, academyReputation: Math.min(100, (c.academyReputation ?? 50) + academyReputationDelta) }
+          : c
+      )
+    : managedClubAfterLoan
+
   // Media headlines
   const mediaHeadlines = generateMediaHeadlines(preEventGame, simulatedFixtures, nextRound, localRand)
   newInboxItems.push(...mediaHeadlines)
@@ -1528,9 +1685,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   let updatedGame: SaveGame = {
     ...game,
-    clubs: socialMediaBoostedClubs,
+    clubs: academyUpdatedClubs,
     fixtures: strippedFixtures,
-    players: marketUpdatedPlayers,
+    players: loanUpdatedPlayers,
     standings,
     inbox: trimmedInbox,
     currentDate: newDate,
@@ -1555,7 +1712,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     youthTeam: updatedYouthTeam,
     academyLevel: game.academyLevel ?? 'basic',
     mentorships: game.mentorships ?? [],
-    loanDeals: game.loanDeals ?? [],
+    loanDeals: updatedLoanDeals,
   }
 
   // Pre-generate weather for next round so dashboard/matchScreen can show it

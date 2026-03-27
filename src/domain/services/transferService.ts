@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { TransferBid } from '../entities/GameEvent'
 import { getTransferWindowStatus } from './transferWindowService'
+import { InboxItemType } from '../enums'
 
 function bidId(round: number, playerId: string, buyingClubId: string): string {
   return `bid_${round}_${playerId}_${buyingClubId}`
@@ -58,7 +59,9 @@ export function generateIncomingBids(
   const buyingClub = otherClubs[Math.floor(rand() * otherClubs.length)]
 
   const marketVal = targetPlayer.marketValue || 50000
-  const offerAmount = Math.round(marketVal * (0.8 + rand() * 0.6) / 5000) * 5000
+  const isAcademyProduct = targetPlayer.isHomegrown && targetPlayer.academyClubId === game.managedClubId
+  const premiumMultiplier = isAcademyProduct ? 1.2 : 1.0
+  const offerAmount = Math.round(marketVal * (0.8 + rand() * 0.6) * premiumMultiplier / 5000) * 5000
   const offeredSalary = Math.round(targetPlayer.salary * (1.1 + rand() * 0.3) / 1000) * 1000
 
   const bid: TransferBid = {
@@ -195,10 +198,29 @@ export function executeTransfer(
     b.id === bid.id ? { ...b, status: 'accepted' as const } : b,
   )
 
+  const soldPlayer = game.players.find(p => p.id === playerId)
+  const isAcademyProduct = soldPlayer?.isHomegrown && soldPlayer.academyClubId === sellingClubId
+  const isSoldFromManagedClub = sellingClubId === game.managedClubId
+
+  const fanInboxItems = (isAcademyProduct && isSoldFromManagedClub && soldPlayer)
+    ? [{
+        id: `inbox_fan_academy_sale_${playerId}_${game.currentDate}`,
+        date: game.currentDate,
+        type: InboxItemType.Media,
+        title: `Fans reagerar på försäljningen av ${soldPlayer.firstName} ${soldPlayer.lastName}`,
+        body: `Lokaltidningen skriver om missnöjet bland supportrarna efter att ${soldPlayer.firstName} ${soldPlayer.lastName}, en produkt ur egen akademi, säljs till en annan klubb. "Man säljer inte sin framtid," säger supporterklubben.`,
+        isRead: false,
+      }]
+    : []
+
+  const fanMoodPenalty = isAcademyProduct && isSoldFromManagedClub ? -8 : 0
+
   return {
     ...game,
     players: updatedPlayers,
     clubs: updatedClubs,
     transferBids: updatedBids,
+    inbox: fanInboxItems.length > 0 ? [...fanInboxItems, ...game.inbox] : game.inbox,
+    fanMood: fanMoodPenalty !== 0 ? Math.max(0, (game.fanMood ?? 50) + fanMoodPenalty) : game.fanMood,
   }
 }
