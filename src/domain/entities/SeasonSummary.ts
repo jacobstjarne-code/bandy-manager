@@ -56,4 +56,11 @@ export interface SeasonSummary {
 
   cupResult?: 'winner' | 'finalist' | 'semifinal' | 'quarter' | 'eliminated' | null
   standingsSnapshot?: Array<{ clubId: string; position: number; points: number }>
+  storyTriggers?: Array<{
+    type: 'academyStarBorn' | 'rivalBoughtOurPlayer' | 'veteranFarewell' | 'hatTrickHero' | 'topScorerDebut' | 'comebackKing'
+    headline: string
+    body: string
+    relatedPlayerId?: string
+    relatedClubId?: string
+  }>
 }

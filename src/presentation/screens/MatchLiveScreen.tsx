@@ -18,6 +18,7 @@ import { HalftimeModal } from '../components/match/HalftimeModal'
 import { MatchDoneOverlay, type PressQuestion } from '../components/match/MatchDoneOverlay'
 import { CeremonyCupFinal } from '../components/match/CeremonyCupFinal'
 import { CeremonySmFinal } from '../components/match/CeremonySmFinal'
+import { SubstitutionModal } from '../components/match/SubstitutionModal'
 import { generatePressConference } from '../../domain/services/pressConferenceService'
 
 interface LocationState {
@@ -74,6 +75,8 @@ export function MatchLiveScreen() {
   const [htPress, setHtPress] = useState<TacticPress | null>(null)
   const [tacticChanged, setTacticChanged] = useState(false)
   const [htSubs, setHtSubs] = useState<{ outId: string; inId: string }[]>([])
+  const [liveSubsUsed, setLiveSubsUsed] = useState(0)
+  const [showSubModal, setShowSubModal] = useState(false)
   const [ceremonySlide, setCeremonySlide] = useState(0)
   const [finalIntroSlide, setFinalIntroSlide] = useState(() => isSmFinal ? 1 : isCupFinal ? 1 : 0)
   const [pressQuestion, setPressQuestion] = useState<PressQuestion | null>(null)
@@ -422,11 +425,36 @@ export function MatchLiveScreen() {
   const homeScore = currentMatchStep?.homeScore ?? 0
   const awayScore = currentMatchStep?.awayScore ?? 0
 
+  // NOTE: Live substitutions are visual-only — match simulation is deterministic (pre-seeded PRNG)
+  // and all steps were computed before the match started. Subs here do not affect the simulation outcome.
+  function handleLiveSub(_outId: string, _inId: string) {
+    setLiveSubsUsed(prev => prev + 1)
+    setShowSubModal(false)
+    setIsPaused(false)
+  }
+
+  const managedIsHomeForSubs = fixture ? fixture.homeClubId === game?.managedClubId : false
+  const managedLineup = managedIsHomeForSubs ? homeLineup : awayLineup
+  const managedStarterPlayers = managedLineup
+    ? (game?.players ?? []).filter(p => managedLineup.startingPlayerIds?.includes(p.id))
+    : []
+  const managedBenchPlayers = managedLineup
+    ? (game?.players ?? []).filter(p => managedLineup.benchPlayerIds?.includes(p.id))
+    : []
+
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', height: '100%',
       background: 'var(--bg)', overflow: 'hidden', position: 'relative',
     }}>
+      {showSubModal && (
+        <SubstitutionModal
+          starters={managedStarterPlayers}
+          bench={managedBenchPlayers}
+          onConfirm={handleLiveSub}
+          onClose={() => { setShowSubModal(false); setIsPaused(false) }}
+        />
+      )}
       {/* Header bar */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -458,6 +486,14 @@ export function MatchLiveScreen() {
           >
             ⏩
           </button>
+          {currentStep >= 10 && currentStep <= 50 && liveSubsUsed < 2 && !matchDone && (
+            <button
+              onClick={() => { setIsPaused(true); setShowSubModal(true) }}
+              style={{ background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.4)', borderRadius: 'var(--radius-sm)', color: '#C9A84C', padding: '6px 10px', fontSize: 14, cursor: 'pointer' }}
+            >
+              🔄
+            </button>
+          )}
           <button
             onClick={() => { toggleMute(); setMuted(isMuted()) }}
             style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', padding: '6px 10px', fontSize: 14 }}

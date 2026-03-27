@@ -157,6 +157,19 @@ export function BudgetScreen() {
           </div>
         </div>
 
+        {/* Arena */}
+        {club.arenaCapacity != null && (
+          <div style={CARD_STYLE}>
+            <p style={LABEL_STYLE}>Arena</p>
+            <div style={ROW_STYLE}>
+              <span style={{ fontSize: 13, color: '#8A9BB0' }}>Kapacitet</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#F0F4F8' }}>
+                {club.arenaCapacity.toLocaleString('sv-SE')} åskådare
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Transferbudget */}
         <div style={CARD_STYLE}>
           <p style={LABEL_STYLE}>Transferbudget</p>

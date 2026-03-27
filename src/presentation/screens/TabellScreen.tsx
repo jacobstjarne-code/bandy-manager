@@ -300,23 +300,75 @@ export function TabellScreen() {
                 const fix = getNextMeeting(row.clubId)
                 const isDerby = isRivalryMatch(row.clubId, managedClubId)
                 const isHome = fix?.homeClubId === managedClubId
+
+                const h2hFixtures = (game!.fixtures ?? []).filter(f =>
+                  f.status === 'completed' &&
+                  ((f.homeClubId === managedClubId && f.awayClubId === row.clubId) ||
+                   (f.awayClubId === managedClubId && f.homeClubId === row.clubId))
+                ).sort((a, b) => a.roundNumber - b.roundNumber)
+
+                let h2hW = 0, h2hD = 0, h2hL = 0, h2hGF = 0, h2hGA = 0
+                for (const f of h2hFixtures) {
+                  const isH = f.homeClubId === managedClubId
+                  const gf = isH ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
+                  const ga = isH ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
+                  h2hGF += gf; h2hGA += ga
+                  if (gf > ga) h2hW++
+                  else if (gf < ga) h2hL++
+                  else h2hD++
+                }
+
+                const career = game!.rivalryHistory?.[row.clubId]
+
                 return (
                   <div style={{
-                    padding: '8px 10px 10px 59px',
+                    padding: '10px 10px 12px 59px',
                     fontSize: 12,
                     color: '#8A9BB0',
                     background: 'rgba(201,168,76,0.04)',
                     borderTop: '1px solid rgba(201,168,76,0.1)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 6,
                   }}>
                     {fix ? (
-                      <>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                         <span style={{ color: '#C9A84C', fontWeight: 600 }}>Omgång {fix.roundNumber}</span>
-                        {' · '}
+                        <span>·</span>
                         <span>{isHome ? 'Hemma' : 'Borta'}</span>
-                        {isDerby && <span> · 🔥 Derby</span>}
-                      </>
+                        {isDerby && <span>· 🔥 Derby</span>}
+                      </div>
                     ) : (
                       <span>Inga fler möten denna säsong</span>
+                    )}
+
+                    {h2hFixtures.length > 0 && (
+                      <div style={{ display: 'flex', gap: 10, fontSize: 11, flexWrap: 'wrap' }}>
+                        <span style={{ color: '#4A6080' }}>I år:</span>
+                        {h2hFixtures.map(f => {
+                          const isH = f.homeClubId === managedClubId
+                          const gf = isH ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
+                          const ga = isH ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
+                          const col = gf > ga ? '#22c55e' : gf < ga ? '#ef4444' : '#e2a84c'
+                          return (
+                            <span key={f.id} style={{ color: col, fontWeight: 700 }}>
+                              {gf}–{ga}
+                            </span>
+                          )
+                        })}
+                        <span style={{ color: '#4A6080' }}>({h2hW}V {h2hD}O {h2hL}F, {h2hGF}–{h2hGA})</span>
+                      </div>
+                    )}
+
+                    {career && (career.wins + career.losses + career.draws) >= 2 && (
+                      <div style={{ fontSize: 11, color: '#4A6080' }}>
+                        Totalt: {career.wins}V {career.draws}O {career.losses}F
+                        {career.currentStreak !== 0 && (
+                          <span style={{ color: career.currentStreak > 0 ? '#22c55e' : '#ef4444', marginLeft: 6 }}>
+                            · {Math.abs(career.currentStreak)} raka {career.currentStreak > 0 ? 'segrar' : 'förluster'}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
                 )

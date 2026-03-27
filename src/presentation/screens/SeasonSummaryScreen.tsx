@@ -356,6 +356,32 @@ export function SeasonSummaryScreen() {
           </p>
         </Card>
 
+        {/* SÄSONGENS BERÄTTELSER */}
+        {(summary.storyTriggers ?? []).length > 0 && (
+          <div style={{ marginTop: 20 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 12 }}>
+              SÄSONGENS BERÄTTELSER
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {(summary.storyTriggers ?? []).map((trigger, i) => (
+                <div key={i} style={{
+                  background: '#0e1f33',
+                  border: '1px solid rgba(201,168,76,0.2)',
+                  borderRadius: 10,
+                  padding: '12px 14px',
+                }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#F0F4F8', marginBottom: 4 }}>
+                    {trigger.headline}
+                  </p>
+                  <p style={{ fontSize: 12, color: '#8A9BB0', lineHeight: 1.5 }}>
+                    {trigger.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* NEXT SEASON BUTTON (only if not historical view) */}
         {!isHistorical && (
           <div style={{ padding: '0 0 20px' }}>

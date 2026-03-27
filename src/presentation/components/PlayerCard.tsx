@@ -158,6 +158,47 @@ function PlayerSilhouette({ jerseyNumber }: PlayerSilhouetteProps) {
   )
 }
 
+function CaSparkline({ history, currentCa }: { history: Array<{ season: number; ca: number }>; currentCa: number }) {
+  const points = [...history, { season: 9999, ca: currentCa }]
+  if (points.length < 2) return null
+
+  const minCa = Math.max(0, Math.min(...points.map(p => p.ca)) - 5)
+  const maxCa = Math.min(100, Math.max(...points.map(p => p.ca)) + 5)
+  const range = maxCa - minCa || 1
+  const W = 180
+  const H = 32
+  const step = W / (points.length - 1)
+
+  const coords = points.map((p, i) => ({
+    x: i * step,
+    y: H - ((p.ca - minCa) / range) * H,
+  }))
+
+  const last = coords[coords.length - 1]
+  const prev = coords[coords.length - 2]
+  const trending = last.y <= prev.y
+
+  return (
+    <div style={{ marginTop: 8 }}>
+      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#4A6080', marginBottom: 4 }}>
+        CA-UTVECKLING
+      </p>
+      <svg width={W} height={H + 4} viewBox={`0 0 ${W} ${H + 4}`} style={{ display: 'block' }}>
+        <polyline
+          points={coords.map(c => `${c.x},${c.y}`).join(' ')}
+          fill="none"
+          stroke={trending ? '#22c55e' : '#ef4444'}
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle cx={last.x} cy={last.y} r="3" fill={trending ? '#22c55e' : '#ef4444'} />
+        <text x={last.x + 5} y={last.y + 4} fontSize="9" fill="#F0F4F8" fontWeight="700">{currentCa}</text>
+      </svg>
+    </div>
+  )
+}
+
 function formatMarketValue(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
   if (v >= 1_000) return `${Math.round(v / 1_000)} tkr`
@@ -409,6 +450,9 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
           </div>
         ) : (
           <p style={{ fontSize: 12, color: '#4A6080' }}>Inga matcher spelat</p>
+        )}
+        {isOwned && (player.caHistory ?? []).length >= 1 && (
+          <CaSparkline history={player.caHistory ?? []} currentCa={player.currentAbility} />
         )}
         </>}
       </div>

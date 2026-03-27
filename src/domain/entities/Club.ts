@@ -34,6 +34,7 @@ export interface Club {
   preferredStyle: ClubStyle
   hasArtificialIce: boolean   // förberedd för V0.2 vädersystem
   hasIndoorArena?: boolean
+  arenaCapacity?: number
 
   activeTactic: Tactic
   squadPlayerIds: string[]

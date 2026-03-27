@@ -76,6 +76,7 @@ export interface Player {
 
   currentAbility: number    // 0-100
   startSeasonCA?: number    // CA at start of season (for most improved tracking)
+  caHistory?: Array<{ season: number; ca: number }>
   potentialAbility: number  // 0-100
   developmentRate: number   // 0-100
 

@@ -111,4 +111,12 @@ describe('generateWorld', () => {
       expect(clubIds.has(player.clubId)).toBe(true)
     }
   })
+
+  it('all clubs have arenaCapacity between 2000 and 12000', () => {
+    for (const club of world.clubs) {
+      expect(club.arenaCapacity).toBeDefined()
+      expect(club.arenaCapacity).toBeGreaterThanOrEqual(2000)
+      expect(club.arenaCapacity).toBeLessThanOrEqual(12000)
+    }
+  })
 })

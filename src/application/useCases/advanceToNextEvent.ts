@@ -1238,9 +1238,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   ): number {
     if (!isHomeManagedMatch) return 0
 
-    const baseRevenue = club.reputation * 400
-
+    const capacity = club.arenaCapacity ?? Math.round(club.reputation * 80 + 2000)
     const position = standing?.position ?? 8
+    const attendanceRate = Math.min(0.95, 0.40 + (fanMood / 100) * 0.45 + (position <= 3 ? 0.10 : 0))
+    const ticketPrice = 80 + Math.round((club.reputation ?? 50) * 0.8)
+    const baseRevenue = Math.round(capacity * attendanceRate * ticketPrice)
+
     const formBonus = position <= 3 ? 1.30
       : position <= 6 ? 1.10
       : position >= 10 ? 0.80 : 1.0
@@ -2233,6 +2236,14 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     age: player.age + 1,
     fitness: Math.min(100, player.fitness + 15),
     startSeasonCA: player.currentAbility,
+    careerStats: {
+      ...player.careerStats,
+      seasonsPlayed: (player.careerStats?.seasonsPlayed ?? 0) + 1,
+    },
+    caHistory: [
+      ...(player.caHistory ?? []),
+      { season: game.currentSeason, ca: player.currentAbility },
+    ].slice(-10),
     seasonStats: {
       gamesPlayed: 0,
       goals: 0,

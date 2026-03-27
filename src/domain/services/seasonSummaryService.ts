@@ -2,6 +2,63 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { SeasonSummary } from '../entities/SeasonSummary'
 import { ClubExpectation, FixtureStatus, PlayoffRound } from '../enums'
 
+function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
+  const managedClubId = game.managedClubId
+  const managedPlayers = game.players.filter(p => p.clubId === managedClubId)
+  const triggers: NonNullable<SeasonSummary['storyTriggers']> = []
+
+  // 1. Academy star: promoted from academy, ≥10 games, avgRating ≥7.0
+  const academyStar = managedPlayers.find(p =>
+    p.promotedFromAcademy === true &&
+    p.seasonStats.gamesPlayed >= 10 &&
+    p.seasonStats.averageRating >= 7.0
+  )
+  if (academyStar) {
+    triggers.push({
+      type: 'academyStarBorn',
+      headline: `Akademistjärna: ${academyStar.firstName} ${academyStar.lastName}`,
+      body: `${academyStar.firstName} ${academyStar.lastName} klev fram ur akademin och spelade ${academyStar.seasonStats.gamesPlayed} matcher med ett snittbetyg på ${academyStar.seasonStats.averageRating.toFixed(1)}.`,
+      relatedPlayerId: academyStar.id,
+    })
+  }
+
+  // 2. Hat trick hero: careerMilestones with type 'hatTrick' this season
+  if (triggers.length < 3) {
+    const hatTrickHero = managedPlayers.find(p =>
+      (p.careerMilestones ?? []).some(m => m.type === 'hatTrick' && m.season === game.currentSeason)
+    )
+    if (hatTrickHero) {
+      triggers.push({
+        type: 'hatTrickHero',
+        headline: `Hattrick: ${hatTrickHero.firstName} ${hatTrickHero.lastName}`,
+        body: `${hatTrickHero.firstName} ${hatTrickHero.lastName} satte hattrick under säsongen — en prestation som går till historien.`,
+        relatedPlayerId: hatTrickHero.id,
+      })
+    }
+  }
+
+  // 3. Comeback king: was injured, came back, ≥5 goals, ≤15 games
+  if (triggers.length < 3) {
+    const comebackKing = managedPlayers.find(p =>
+      p.isInjured === false &&
+      p.injuryProneness > 0 &&
+      p.seasonStats.goals >= 5 &&
+      p.seasonStats.gamesPlayed <= 15 &&
+      p.seasonStats.gamesPlayed > 0
+    )
+    if (comebackKing) {
+      triggers.push({
+        type: 'comebackKing',
+        headline: `Comebackkung: ${comebackKing.firstName} ${comebackKing.lastName}`,
+        body: `Trots skadebekymmer kämpade ${comebackKing.firstName} ${comebackKing.lastName} sig tillbaka och satte ${comebackKing.seasonStats.goals} mål på bara ${comebackKing.seasonStats.gamesPlayed} matcher.`,
+        relatedPlayerId: comebackKing.id,
+      })
+    }
+  }
+
+  return triggers.length > 0 ? triggers : undefined
+}
+
 function ordinal(n: number): string {
   if (n === 1) return '1:a'
   if (n === 2) return '2:a'
@@ -325,6 +382,8 @@ export function generateSeasonSummary(game: SaveGame): SeasonSummary {
     narrative += ` ${topScorer.name} stod för ${topScorer.goals} mål och var lagets viktigaste offensiva kraft.`
   }
 
+  const storyTriggers = generateStoryTriggers(game)
+
   return {
     season: game.currentSeason,
     clubId: managedClubId,
@@ -370,5 +429,6 @@ export function generateSeasonSummary(game: SaveGame): SeasonSummary {
     narrativeSummary: narrative,
     cupResult,
     standingsSnapshot,
+    storyTriggers,
   }
 }
