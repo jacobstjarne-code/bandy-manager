@@ -76,6 +76,7 @@ export function MatchLiveScreen() {
   const [tacticChanged, setTacticChanged] = useState(false)
   const [htSubs, setHtSubs] = useState<{ outId: string; inId: string }[]>([])
   const [liveSubsUsed, setLiveSubsUsed] = useState(0)
+  const [liveSubs, setLiveSubs] = useState<{ outId: string; inId: string; minute: number }[]>([])
   const [showSubModal, setShowSubModal] = useState(false)
   const [ceremonySlide, setCeremonySlide] = useState(0)
   const [finalIntroSlide, setFinalIntroSlide] = useState(() => isSmFinal ? 1 : isCupFinal ? 1 : 0)
@@ -425,9 +426,10 @@ export function MatchLiveScreen() {
   const homeScore = currentMatchStep?.homeScore ?? 0
   const awayScore = currentMatchStep?.awayScore ?? 0
 
-  // NOTE: Live substitutions are visual-only — match simulation is deterministic (pre-seeded PRNG)
-  // and all steps were computed before the match started. Subs here do not affect the simulation outcome.
-  function handleLiveSub(_outId: string, _inId: string) {
+  // NOTE: Live substitutions don't affect the pre-computed match simulation outcome,
+  // but are stored and shown in the commentary feed.
+  function handleLiveSub(outId: string, inId: string) {
+    setLiveSubs(prev => [...prev, { outId, inId, minute: currentMinute }])
     setLiveSubsUsed(prev => prev + 1)
     setShowSubModal(false)
     setIsPaused(false)
@@ -614,7 +616,7 @@ export function MatchLiveScreen() {
         }}
       >
         {matchWeather?.weather.condition === WeatherCondition.HeavySnow && <SnowOverlay />}
-        {[...displayedSteps].reverse().map((s, idx) => {
+        {[...displayedSteps].reverse().flatMap((s, idx) => {
           const hasGoal = s.events.some(e => e.type === MatchEventType.Goal)
           const hasSuspension = s.events.some(e => e.type === MatchEventType.RedCard)
           const hasCorner = s.events.some(e => e.type === MatchEventType.Corner) && !hasGoal
@@ -661,7 +663,7 @@ export function MatchLiveScreen() {
           )
           const icon = primaryEvent ? eventIcon(primaryEvent.type) : ''
 
-          return (
+          const rows: React.ReactNode[] = [
             <div
               key={idx}
               style={{
@@ -680,7 +682,51 @@ export function MatchLiveScreen() {
                 {hasCornerGoal ? `📐 HÖRNMÅL! ${s.commentary}` : s.commentary}
               </span>
             </div>
-          )
+          ]
+
+          // Halftime substitution events (from matchStepByStep, at minute 45)
+          s.events.filter(e => e.type === MatchEventType.Substitution).forEach((e, si) => {
+            rows.push(
+              <div
+                key={`htsub-${idx}-${si}`}
+                style={{
+                  display: 'flex', alignItems: 'center',
+                  padding: '6px 16px', gap: 8,
+                  borderLeft: '3px solid rgba(201,168,76,0.35)',
+                  animation: 'fadeInUp 250ms ease-out both',
+                }}
+              >
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 28, flexShrink: 0 }}>{e.minute}'</span>
+                <span style={{ fontSize: 14, flexShrink: 0 }}>🔄</span>
+                <span style={{ fontSize: 13, color: '#C9A84C' }}>{e.description.replace('🔄 ', '')}</span>
+              </div>
+            )
+          })
+
+          // Live substitutions made at this step's minute
+          liveSubs.filter(ls => ls.minute === s.minute).forEach((ls, si) => {
+            const inPlayer = game?.players.find(p => p.id === ls.inId)
+            const outPlayer = game?.players.find(p => p.id === ls.outId)
+            const inName = inPlayer ? `${inPlayer.firstName} ${inPlayer.lastName}` : '?'
+            const outName = outPlayer ? `${outPlayer.firstName} ${outPlayer.lastName}` : '?'
+            rows.push(
+              <div
+                key={`livesub-${idx}-${si}`}
+                style={{
+                  display: 'flex', alignItems: 'center',
+                  padding: '6px 16px', gap: 8,
+                  borderLeft: '3px solid rgba(201,168,76,0.35)',
+                  animation: 'fadeInUp 250ms ease-out both',
+                }}
+              >
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 28, flexShrink: 0 }}>{ls.minute}'</span>
+                <span style={{ fontSize: 14, flexShrink: 0 }}>🔄</span>
+                <span style={{ fontSize: 13, color: '#C9A84C' }}>{inName} IN för {outName}</span>
+              </div>
+            )
+          })
+
+          return rows
         })}
       </div>
 
