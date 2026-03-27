@@ -11,7 +11,8 @@ function NavigateSetter() {
   return null
 }
 import { NewGameScreen } from '../screens/NewGameScreen'
-import { GameShell } from './GameShell'
+import { IntroSequence } from '../screens/IntroSequence'
+import { GameShell, GameGuard } from './GameShell'
 import { DashboardScreen } from '../screens/DashboardScreen'
 import { SquadScreen } from '../screens/SquadScreen'
 import { MatchScreen } from '../screens/MatchScreen'
@@ -38,6 +39,7 @@ export function AppRouter() {
       <NavigateSetter />
       <Routes>
         <Route path="/" element={<StartScreen />} />
+        <Route path="/intro" element={<IntroSequence />} />
         <Route path="/new-game" element={<NewGameScreen />} />
         <Route path="/game" element={<GameShell />}>
           <Route index element={<Navigate to="dashboard" replace />} />
@@ -57,11 +59,13 @@ export function AppRouter() {
           <Route path="pre-season" element={<PreSeasonScreen />} />
           <Route path="budget" element={<BudgetScreen />} />
         </Route>
-        <Route path="/game/events" element={<EventScreen />} />
-        <Route path="/game/round-summary" element={<RoundSummaryScreen />} />
-        <Route path="/game/match-result" element={<MatchResultScreen />} />
-        <Route path="/game/board-meeting" element={<BoardMeetingScreen />} />
-        <Route path="/game/game-over" element={<GameOverScreen />} />
+        <Route element={<GameGuard />}>
+          <Route path="/game/events" element={<EventScreen />} />
+          <Route path="/game/round-summary" element={<RoundSummaryScreen />} />
+          <Route path="/game/match-result" element={<MatchResultScreen />} />
+          <Route path="/game/board-meeting" element={<BoardMeetingScreen />} />
+          <Route path="/game/game-over" element={<GameOverScreen />} />
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

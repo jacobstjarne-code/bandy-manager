@@ -24,7 +24,7 @@ export function ContextualNudges({ game, currentRound: _r }: Props) {
     nudges.push({ icon: '⚡', text: `${criticalFitness.length} spelare med kritisk fitness — byt träningsfokus?`, path: '/game/club' })
 
   const expiringContracts = managedPlayers.filter(p =>
-    (p.contractUntilSeason ?? 0) <= (game.currentSeason ?? 2025) && (p.currentAbility ?? 0) > 55
+    (p.contractUntilSeason ?? 0) <= (game.currentSeason ?? 2025) + 1 && (p.currentAbility ?? 0) > 55
   )
   if (expiringContracts.length > 0)
     nudges.push({ icon: '📋', text: `${expiringContracts[0].firstName} ${expiringContracts[0].lastName} — kontrakt löper ut snart`, path: '/game/transfers' })
@@ -38,7 +38,7 @@ export function ContextualNudges({ game, currentRound: _r }: Props) {
   const freshReport = Object.values(game.scoutReports ?? {}).find(r => r.scoutedSeason === game.currentSeason)
   if (freshReport) {
     const player = game.players.find(p => p.id === freshReport.playerId)
-    if (player && !game.inbox.some(i => i.type === 'scoutReport' && i.isRead))
+    if (player && game.inbox.some(i => i.type === 'scoutReport' && !i.isRead))
       nudges.push({ icon: '🔍', text: `Scoutrapport klar: ${player.firstName} ${player.lastName}`, path: '/game/transfers' })
   }
 

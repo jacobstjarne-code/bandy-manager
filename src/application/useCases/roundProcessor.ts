@@ -315,7 +315,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
     const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
     const isManagedHome = fixture.homeClubId === game.managedClubId
-    const homeAdv = homeClub?.hasIndoorArena ? 0.05 * 0.85 : 0.05
+    const baseAdv = homeClub?.hasIndoorArena ? 0.05 * 0.85 : 0.05
+    const isManaged = fixture.homeClubId === game.managedClubId
+    const communityBonus = isManaged
+      ? ((game.communityStanding ?? 50) - 50) / 50 * 0.02
+      : 0
+    const homeAdv = Math.max(0, baseAdv + communityBonus)
     const result = simulateMatch({
       fixture,
       homeLineup,

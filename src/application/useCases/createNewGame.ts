@@ -108,7 +108,7 @@ export interface CreateNewGameInput {
 
 
 export function createNewGame(input: CreateNewGameInput): SaveGame {
-  const season = input.season ?? 2025
+  const season = input.season ?? 2026
   const rand = mulberry32((input.seed ?? 42) + 12345)
 
   const { clubs, players: rawPlayers } = generateWorld(season, input.seed)

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { Star } from 'lucide-react'
@@ -54,20 +54,10 @@ function ReputationStars({ value }: { value: number }) {
 export function NewGameScreen() {
   const navigate = useNavigate()
   const { newGame } = useGameStore()
-  const [step, setStep] = useState<'intro' | 'name' | 'club'>('intro')
-  const [introPhase, setIntroPhase] = useState(0)
+  const [step, setStep] = useState<'name' | 'club'>('name')
   const [managerName, setManagerName] = useState('')
   const [selectedClubId, setSelectedClubId] = useState<string | null>(null)
   const [isStarting, setIsStarting] = useState(false)
-
-  // Intro sequence: 0 → "SÄSONGEN 2025/2026", 1 → "En ny tränare kliver in.", then transition to name
-  useEffect(() => {
-    if (step !== 'intro') return
-    const t1 = setTimeout(() => setIntroPhase(1), 800)
-    const t2 = setTimeout(() => setIntroPhase(2), 1600)
-    const t3 = setTimeout(() => setStep('name'), 3000)
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
-  }, [step])
 
   const handleStart = () => {
     if (!selectedClubId || !managerName.trim()) return
@@ -81,45 +71,6 @@ export function NewGameScreen() {
         setIsStarting(false)
       }
     }, 50)
-  }
-
-  // Intro splash
-  if (step === 'intro') {
-    return (
-      <div style={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(180deg, #060e19 0%, #0D1B2A 100%)',
-        gap: 16,
-        padding: '0 32px',
-        textAlign: 'center',
-      }}>
-        <p style={{
-          fontSize: 13,
-          fontWeight: 700,
-          letterSpacing: '4px',
-          textTransform: 'uppercase',
-          color: '#C9A84C',
-          opacity: introPhase >= 0 ? 1 : 0,
-          transition: 'opacity 600ms ease',
-        }}>
-          SÄSONGEN 2025/2026
-        </p>
-        <p style={{
-          fontSize: 18,
-          color: '#F0F4F8',
-          fontWeight: 300,
-          letterSpacing: '1px',
-          opacity: introPhase >= 2 ? 1 : 0,
-          transition: 'opacity 600ms ease',
-        }}>
-          En ny tränare kliver in.
-        </p>
-      </div>
-    )
   }
 
   // Name step

@@ -27,6 +27,7 @@ export interface SaveGameSummary {
   lastSavedAt: string
 }
 import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
+import { saveSaveGame, loadSaveGame, listSaveGames, deleteSaveGame } from '../../infrastructure/persistence/saveGameStorage'
 
 interface GameState {
   game: SaveGame | null
@@ -36,7 +37,7 @@ interface GameState {
 
   // Actions
   newGame: (managerName: string, clubId: string) => void
-  loadGame: (id: string) => boolean
+  loadGame: (id: string) => Promise<boolean>
   advance: () => AdvanceResult | null
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string) => { success: boolean; error?: string }
   updateTactic: (tactic: Tactic) => void
@@ -97,6 +98,9 @@ export const useGameStore = create<GameState>()(
       roundSummary: null,
 
       newGame: (managerName, clubId) => {
+        // Delete all existing saves from IndexedDB before starting fresh
+        const existing = listSaveGames()
+        existing.forEach(s => deleteSaveGame(s.id).catch(() => {}))
         // Clear old localStorage data that may be filling quota
         try {
           localStorage.removeItem('bandy-game-store')
@@ -107,11 +111,13 @@ export const useGameStore = create<GameState>()(
         set({ game, lastAdvanceResult: null })
       },
 
-      loadGame: (id) => {
-        // Game is persisted via IndexedDB through Zustand persist middleware.
-        // If the already-rehydrated game matches the requested id, it's already loaded.
+      loadGame: async (id) => {
         const { game } = get()
-        return game !== null && game.id === id
+        if (game !== null && game.id === id) return true
+        const loaded = await loadSaveGame(id)
+        if (!loaded) return false
+        set({ game: loaded, lastAdvanceResult: null })
+        return true
       },
 
       advance: () => {
@@ -220,7 +226,9 @@ export const useGameStore = create<GameState>()(
           youthMatchResult,
         }
 
-        set({ game: result.game, lastAdvanceResult: result, roundSummary: summary })
+        const gameToSave = { ...result.game, lastSavedAt: new Date().toISOString() }
+        set({ game: gameToSave, lastAdvanceResult: result, roundSummary: summary })
+        saveSaveGame(gameToSave).catch(e => console.warn('Autosave misslyckades:', e))
 
         // Post-advance navigation (priority order)
         const pendingCount = result.game.pendingEvents?.length ?? 0
@@ -398,10 +406,7 @@ export const useGameStore = create<GameState>()(
       clearRoundSummary: () => set({ roundSummary: null }),
 
       listSaves: () => {
-        const { game } = get()
-        if (!game) return []
-        const clubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? ''
-        return [{ id: game.id, managerName: game.managerName, clubName, season: game.currentSeason, lastSavedAt: game.lastSavedAt }]
+        return listSaveGames()
       },
 
       clearSeasonSummary: () => {

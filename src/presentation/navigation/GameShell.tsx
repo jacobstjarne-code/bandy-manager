@@ -2,6 +2,13 @@ import { Outlet, Navigate, useLocation } from 'react-router-dom'
 import { BottomNav } from './BottomNav'
 import { useGameStore } from '../store/gameStore'
 
+// Lightweight guard for full-screen routes that don't use BottomNav
+export function GameGuard() {
+  const game = useGameStore(s => s.game)
+  if (!game) return <Navigate to="/" replace />
+  return <Outlet />
+}
+
 export function GameShell() {
   const game = useGameStore(s => s.game)
   const location = useLocation()

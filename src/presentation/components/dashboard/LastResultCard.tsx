@@ -3,89 +3,90 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 interface LastResultCardProps {
   lastResult: { scoreFor: number; scoreAgainst: number; opponentName: string }
   lastCompletedFixture: Fixture | null
+  recentForm: Array<'V' | 'O' | 'F'>
   onNavigateToReport: () => void
-  cardStyle: React.CSSProperties
-  cardLabelStyle: React.CSSProperties
+}
+
+const formColors = {
+  V: { bg: 'var(--success)', letter: '#fff' },
+  O: { bg: 'var(--border-dark)', letter: '#fff' },
+  F: { bg: 'var(--danger)', letter: '#fff' },
 }
 
 export function LastResultCard({
   lastResult,
   lastCompletedFixture,
+  recentForm,
   onNavigateToReport,
-  cardStyle,
-  cardLabelStyle,
 }: LastResultCardProps) {
+  const isWin = lastResult.scoreFor > lastResult.scoreAgainst
+  const isLoss = lastResult.scoreFor < lastResult.scoreAgainst
+
   return (
     <div
-      className="card-stagger-2"
-      style={{ ...cardStyle, cursor: 'pointer' }}
+      className="card-sharp card-stagger-2"
+      style={{ flex: 1, cursor: 'pointer', overflow: 'hidden' }}
       onClick={onNavigateToReport}
     >
-      <p className="section-heading" style={cardLabelStyle}>SENASTE RESULTAT</p>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <p
-            className="tabular"
-            key={`${lastResult.scoreFor}-${lastResult.scoreAgainst}`}
-            style={{
-              fontSize: 32,
-              fontWeight: 900,
-              color: lastResult.scoreFor > lastResult.scoreAgainst
-                ? '#22c55e'
-                : lastResult.scoreFor < lastResult.scoreAgainst
-                  ? '#ef4444'
-                  : '#F0F4F8',
-              letterSpacing: '2px',
-              lineHeight: 1,
-              animation: 'countUp 400ms ease-out both',
-            }}
-          >
-            {lastResult.scoreFor} — {lastResult.scoreAgainst}
+      <div style={{ padding: '12px 12px 10px' }}>
+        <p style={{
+          fontSize: 9,
+          fontWeight: 600,
+          letterSpacing: '2.5px',
+          textTransform: 'uppercase',
+          color: 'var(--text-muted)',
+          fontFamily: 'var(--font-body)',
+          margin: '0 0 6px',
+        }}>
+          Senast
+        </p>
+
+        <p
+          className="tabular"
+          key={`${lastResult.scoreFor}-${lastResult.scoreAgainst}`}
+          style={{
+            fontSize: 26,
+            fontWeight: 400,
+            color: 'var(--text-primary)',
+            margin: 0,
+            lineHeight: 1,
+            fontFamily: 'var(--font-display)',
+            animation: 'countUp 400ms ease-out both',
+          }}
+        >
+          {lastResult.scoreFor}
+          <span style={{ color: 'var(--border-dark)', fontSize: 20 }}>–</span>
+          {lastResult.scoreAgainst}
+        </p>
+
+        {lastCompletedFixture?.wentToPenalties && lastCompletedFixture.penaltyResult && (
+          <p style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 600, marginTop: 2, fontFamily: 'var(--font-body)' }}>
+            str. {lastCompletedFixture.penaltyResult.home}-{lastCompletedFixture.penaltyResult.away}
           </p>
-          {lastCompletedFixture?.wentToPenalties && lastCompletedFixture.penaltyResult && (
-            <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 600, marginTop: 2 }}>
-              str. {lastCompletedFixture.penaltyResult.home}-{lastCompletedFixture.penaltyResult.away}
-            </p>
-          )}
-          {lastCompletedFixture?.wentToOvertime && !lastCompletedFixture.wentToPenalties && (
-            <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 600, marginTop: 2 }}>
-              efter förlängning
-            </p>
-          )}
-          <p style={{ fontSize: 12, color: '#8A9BB0', marginTop: 4 }}>
-            vs {lastResult.opponentName}
+        )}
+        {lastCompletedFixture?.wentToOvertime && !lastCompletedFixture.wentToPenalties && (
+          <p style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 600, marginTop: 2, fontFamily: 'var(--font-body)' }}>
+            förlängning
           </p>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{
-            padding: '4px 10px',
-            borderRadius: 99,
-            fontSize: 11,
-            fontWeight: 700,
-            background: lastResult.scoreFor > lastResult.scoreAgainst
-              ? 'rgba(34,197,94,0.15)'
-              : lastResult.scoreFor < lastResult.scoreAgainst
-                ? 'rgba(239,68,68,0.15)'
-                : 'rgba(248,250,252,0.1)',
-            color: lastResult.scoreFor > lastResult.scoreAgainst
-              ? '#22c55e'
-              : lastResult.scoreFor < lastResult.scoreAgainst
-                ? '#ef4444'
-                : '#F0F4F8',
-            border: `1px solid ${lastResult.scoreFor > lastResult.scoreAgainst
-              ? 'rgba(34,197,94,0.3)'
-              : lastResult.scoreFor < lastResult.scoreAgainst
-                ? 'rgba(239,68,68,0.3)'
-                : 'rgba(248,250,252,0.15)'}`,
-          }}>
-            {lastResult.scoreFor > lastResult.scoreAgainst
-              ? 'Vinst'
-              : lastResult.scoreFor < lastResult.scoreAgainst
-                ? 'Förlust'
-                : 'Oavgjort'}
-          </span>
-          <span style={{ color: '#C9A84C', fontSize: 16, fontWeight: 700 }}>→</span>
-        </div>
+        )}
+
+        <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '3px 0 0', fontFamily: 'var(--font-body)' }}>
+          {isWin ? 'vinst' : isLoss ? 'förlust' : 'oavgjort'} mot {lastResult.opponentName}
+        </p>
+
+        {/* Form squares */}
+        {recentForm.length > 0 && (
+          <div style={{ display: 'flex', gap: 3, marginTop: 6 }}>
+            {recentForm.map((r, i) => (
+              <svg key={i} viewBox="0 0 12 12" width="11" height="11">
+                <rect x="1" y="1" width="10" height="10" rx="3" fill={formColors[r].bg}/>
+                <text x="6" y="9" textAnchor="middle" fontSize="6" fill={formColors[r].letter} fontFamily="system-ui">
+                  {r}
+                </text>
+              </svg>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

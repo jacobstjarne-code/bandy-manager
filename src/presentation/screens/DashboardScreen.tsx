@@ -10,12 +10,12 @@ import {
   usePlayoffInfo,
 } from '../store/gameStore'
 import { TutorialOverlay } from '../components/TutorialOverlay'
-import { TrophySVG } from '../components/Decorations'
+import { ClubBadge } from '../components/ClubBadge'
 import { PlayoffStatus } from '../../domain/enums'
 import type { PlayoffBracket, PlayoffSeries } from '../../domain/entities/Playoff'
 import type { SaveGame } from '../../domain/entities/SaveGame'
-import { getRivalry } from '../../domain/data/rivalries'
 import type { Fixture } from '../../domain/entities/Fixture'
+import type { EventChoice } from '../../domain/entities/GameEvent'
 import type { CupBracket } from '../../domain/entities/Cup'
 import { getCupRoundLabel, getManagedClubCupStatus } from '../../domain/services/cupService'
 import { playSound } from '../audio/soundEffects'
@@ -49,7 +49,6 @@ function getSeriesScore(series: { fixtures: string[]; homeClubId: string; awayCl
   return { homeWins, awayWins }
 }
 
-
 interface PlayoffSeriesRowProps {
   series: PlayoffSeries
   game: SaveGame
@@ -62,51 +61,19 @@ function PlayoffSeriesRow({ series, game, managedClubId }: PlayoffSeriesRowProps
   const isManagedHome = series.homeClubId === managedClubId
   const isManagedAway = series.awayClubId === managedClubId
   const isManaged = isManagedHome || isManagedAway
-
   const { homeWins, awayWins } = getSeriesScore(series, game.fixtures)
   const homeWon = homeWins > awayWins && series.winnerId !== null
   const awayWon = awayWins > homeWins && series.winnerId !== null
 
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '6px 0',
-      borderBottom: '1px solid #1a2e47',
-    }}>
-      <span style={{
-        fontSize: 12,
-        color: isManagedHome ? '#C9A84C' : homeWon ? '#F0F4F8' : '#4A6080',
-        fontWeight: isManagedHome ? 700 : 400,
-        flex: 1,
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-      }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
+      <span style={{ fontSize: 12, color: isManagedHome ? 'var(--accent-dark)' : homeWon ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: isManagedHome ? 700 : 400, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'var(--font-body)' }}>
         {homeClub?.shortName ?? homeClub?.name ?? '?'}
       </span>
-      <span style={{
-        fontSize: 13,
-        fontWeight: 800,
-        color: isManaged ? '#C9A84C' : '#F0F4F8',
-        letterSpacing: '1px',
-        margin: '0 8px',
-        minWidth: 32,
-        textAlign: 'center',
-      }}>
+      <span style={{ fontSize: 13, fontWeight: 700, color: isManaged ? 'var(--accent-dark)' : 'var(--text-primary)', letterSpacing: '1px', margin: '0 8px', minWidth: 32, textAlign: 'center', fontFamily: 'var(--font-display)' }}>
         {homeWins}–{awayWins}
       </span>
-      <span style={{
-        fontSize: 12,
-        color: isManagedAway ? '#C9A84C' : awayWon ? '#F0F4F8' : '#4A6080',
-        fontWeight: isManagedAway ? 700 : 400,
-        flex: 1,
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-        textAlign: 'right',
-      }}>
+      <span style={{ fontSize: 12, color: isManagedAway ? 'var(--accent-dark)' : awayWon ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: isManagedAway ? 700 : 400, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'right', fontFamily: 'var(--font-body)' }}>
         {awayClub?.shortName ?? awayClub?.name ?? '?'}
       </span>
     </div>
@@ -116,13 +83,10 @@ function PlayoffSeriesRow({ series, game, managedClubId }: PlayoffSeriesRowProps
 interface PlayoffBracketCardProps {
   bracket: PlayoffBracket
   game: SaveGame
-  cardStyle: React.CSSProperties
-  cardLabelStyle: React.CSSProperties
 }
 
-function PlayoffBracketCard({ bracket, game, cardStyle, cardLabelStyle }: PlayoffBracketCardProps) {
+function PlayoffBracketCard({ bracket, game }: PlayoffBracketCardProps) {
   const managedClubId = game.managedClubId
-
   const statusLabel = bracket.status === PlayoffStatus.QuarterFinals ? 'KVARTSFINAL'
     : bracket.status === PlayoffStatus.SemiFinals ? 'SEMIFINAL'
     : bracket.status === PlayoffStatus.Final ? 'SM-FINAL'
@@ -137,58 +101,39 @@ function PlayoffBracketCard({ bracket, game, cardStyle, cardLabelStyle }: Playof
   const champion = bracket.champion ? game.clubs.find(c => c.id === bracket.champion) : null
 
   return (
-    <div
-      className="card-stagger-3"
-      style={{
-        ...cardStyle,
-        background: 'linear-gradient(#122235, #122235) padding-box, linear-gradient(135deg, #C9A84C, transparent 60%) border-box',
-        border: '2px solid transparent',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <p className="section-heading" style={cardLabelStyle}>SLUTSPEL</p>
-        <span style={{
-          fontSize: 10,
-          fontWeight: 700,
-          letterSpacing: '1px',
-          color: '#C9A84C',
-          textTransform: 'uppercase',
-        }}>
-          {statusLabel}
+    <div className="card-sharp card-stagger-3" style={{ margin: '0 12px 10px', overflow: 'hidden' }}>
+      <div
+        className="texture-leather"
+        style={{ backgroundColor: 'var(--bg-leather)', padding: '7px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+      >
+        <span style={{ color: 'var(--text-light-secondary)', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'var(--font-body)', fontWeight: 600 }}>
+          Slutspel
         </span>
+        <span className="tag tag-fill">{statusLabel}</span>
       </div>
-
-      {bracket.status === PlayoffStatus.Completed && champion ? (
-        <div style={{ textAlign: 'center', padding: '8px 0' }}>
-          <span style={{ fontSize: 24 }}>🏆</span>
-          <p style={{ fontSize: 14, fontWeight: 800, color: '#C9A84C', marginTop: 4 }}>
-            {champion.name}
+      <div style={{ padding: '12px 14px' }}>
+        {bracket.status === PlayoffStatus.Completed && champion ? (
+          <div style={{ textAlign: 'center', padding: '8px 0' }}>
+            <span style={{ fontSize: 24 }}>🏆</span>
+            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent-dark)', marginTop: 4, fontFamily: 'var(--font-display)' }}>{champion.name}</p>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Svenska Mästare {bracket.season}</p>
+          </div>
+        ) : (
+          <div>
+            {activeSeries.map(series => (
+              <PlayoffSeriesRow key={series.id} series={series} game={game} managedClubId={managedClubId} />
+            ))}
+            {activeSeries.length === 0 && (
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Slutspelet startar snart</p>
+            )}
+          </div>
+        )}
+        {bracket.status !== PlayoffStatus.Completed && (
+          <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 8, fontFamily: 'var(--font-body)' }}>
+            {bracket.status === PlayoffStatus.Final ? 'En match avgör' : 'Bäst av 5 matcher per serie'}
           </p>
-          <p style={{ fontSize: 11, color: '#4A6080' }}>Svenska Mästare {bracket.season}</p>
-        </div>
-      ) : (
-        <div>
-          {activeSeries.map(series => (
-            <PlayoffSeriesRow
-              key={series.id}
-              series={series}
-              game={game}
-              managedClubId={managedClubId}
-            />
-          ))}
-          {activeSeries.length === 0 && (
-            <p style={{ fontSize: 12, color: '#4A6080' }}>Slutspelet startar snart</p>
-          )}
-        </div>
-      )}
-
-      {bracket.status !== PlayoffStatus.Completed && (
-        <p style={{ fontSize: 11, color: '#8A9BB0', marginTop: 8 }}>
-          {bracket.status === PlayoffStatus.Final
-            ? 'En match avgör'
-            : 'Bäst av 5 matcher per serie'}
-        </p>
-      )}
+        )}
+      </div>
     </div>
   )
 }
@@ -196,21 +141,15 @@ function PlayoffBracketCard({ bracket, game, cardStyle, cardLabelStyle }: Playof
 interface CupCardProps {
   bracket: CupBracket
   game: SaveGame
-  cardStyle: React.CSSProperties
-  cardLabelStyle: React.CSSProperties
 }
 
-function CupCard({ bracket, game, cardStyle, cardLabelStyle }: CupCardProps) {
+function CupCard({ bracket, game }: CupCardProps) {
   const managedClubId = game.managedClubId
   const cupStatus = getManagedClubCupStatus(bracket, managedClubId)
-
-  // Find managed club's next cup fixture
   const nextCupFixture = game.fixtures
     .filter(f => f.isCup && f.status === 'scheduled' &&
       (f.homeClubId === managedClubId || f.awayClubId === managedClubId))
     .sort((a, b) => a.roundNumber - b.roundNumber)[0]
-
-  // Determine current stage label
   const roundsWithMatches = [...new Set(bracket.matches.map(m => m.round))]
   const currentRound = Math.max(...roundsWithMatches)
   const stageLabel = getCupRoundLabel(currentRound)
@@ -221,124 +160,70 @@ function CupCard({ bracket, game, cardStyle, cardLabelStyle }: CupCardProps) {
     statusContent = (
       <div style={{ textAlign: 'center', padding: '8px 0' }}>
         <span style={{ fontSize: 24 }}>🏆</span>
-        <p style={{ fontSize: 14, fontWeight: 800, color: '#C9A84C', marginTop: 4 }}>CUPVINNARE!</p>
-        <p style={{ fontSize: 11, color: '#4A6080' }}>Svenska Cupen {bracket.season}</p>
+        <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent-dark)', marginTop: 4, fontFamily: 'var(--font-display)' }}>CUPVINNARE!</p>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Svenska Cupen {bracket.season}</p>
       </div>
     )
   } else if (bracket.completed) {
     const winner = game.clubs.find(c => c.id === bracket.winnerId)
     statusContent = (
       <div>
-        <p style={{ fontSize: 13, color: '#4A6080', marginBottom: 4 }}>Cupen är avgjord</p>
-        <p style={{ fontSize: 13, color: '#8A9BB0' }}>
-          🏆 {winner?.name ?? 'Okänd klubb'} vann Svenska Cupen
-        </p>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4, fontFamily: 'var(--font-body)' }}>Cupen är avgjord</p>
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>🏆 {winner?.name ?? 'Okänd klubb'} vann Svenska Cupen</p>
       </div>
     )
   } else if (cupStatus.eliminated) {
-    const roundName = cupStatus.eliminatedInRound === 1 ? 'kvartsfinalen'
-      : cupStatus.eliminatedInRound === 2 ? 'semifinalen'
-      : 'finalen'
+    const roundName = cupStatus.eliminatedInRound === 1 ? 'kvartsfinalen' : cupStatus.eliminatedInRound === 2 ? 'semifinalen' : 'finalen'
     const winner = bracket.winnerId ? game.clubs.find(c => c.id === bracket.winnerId) : null
     statusContent = (
       <div>
-        <p style={{ fontSize: 13, color: '#4A6080', marginBottom: winner ? 4 : 0 }}>
-          Utslagna i {roundName}
-        </p>
-        {winner && (
-          <p style={{ fontSize: 12, color: '#4A6080' }}>Vinnare: {winner.name}</p>
-        )}
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: winner ? 4 : 0, fontFamily: 'var(--font-body)' }}>Utslagna i {roundName}</p>
+        {winner && <p style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Vinnare: {winner.name}</p>}
       </div>
     )
   } else if (nextCupFixture) {
-    const opponent = game.clubs.find(c =>
-      c.id === (nextCupFixture.homeClubId === managedClubId
-        ? nextCupFixture.awayClubId
-        : nextCupFixture.homeClubId)
-    )
+    const opponent = game.clubs.find(c => c.id === (nextCupFixture.homeClubId === managedClubId ? nextCupFixture.awayClubId : nextCupFixture.homeClubId))
     const isHome = nextCupFixture.homeClubId === managedClubId
     const cupLeagueRound = nextCupFixture.roundNumber - 100
-    const lastLeagueRound = Math.max(
-      0,
-      ...game.fixtures
-        .filter(f => !f.isCup && f.status === 'completed')
-        .map(f => f.roundNumber)
-    )
+    const lastLeagueRound = Math.max(0, ...game.fixtures.filter(f => !f.isCup && f.status === 'completed').map(f => f.roundNumber))
     const roundsUntil = cupLeagueRound - lastLeagueRound
     statusContent = (
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
-          <span style={{ fontSize: 13, color: '#F0F4F8', fontWeight: 600 }}>
-            vs {opponent?.shortName ?? opponent?.name ?? '?'}
-          </span>
-          <span style={{
-            padding: '3px 8px',
-            borderRadius: 99,
-            fontSize: 11,
-            fontWeight: 700,
-            background: isHome ? 'rgba(34,197,94,0.15)' : 'rgba(37,99,235,0.15)',
-            color: isHome ? '#22c55e' : '#60a5fa',
-            border: `1px solid ${isHome ? 'rgba(34,197,94,0.3)' : 'rgba(37,99,235,0.3)'}`,
-          }}>
-            {isHome ? 'Hemma' : 'Borta'}
-          </span>
+          <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600, fontFamily: 'var(--font-body)' }}>vs {opponent?.shortName ?? opponent?.name ?? '?'}</span>
+          <span className={isHome ? 'tag tag-green' : 'tag tag-ice'}>{isHome ? 'Hemma' : 'Borta'}</span>
         </div>
-        <p style={{ fontSize: 11, color: roundsUntil <= 1 ? '#f59e0b' : '#8A9BB0', marginTop: 4 }}>
-          {roundsUntil <= 1
-            ? '⚡ Spelas NÄSTA omgång!'
-            : `Spelas vid serieomgång ${cupLeagueRound} (om ${roundsUntil} omgångar)`}
+        <p style={{ fontSize: 11, color: roundsUntil <= 1 ? 'var(--warning)' : 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-body)' }}>
+          {roundsUntil <= 1 ? '⚡ Spelas NÄSTA omgång!' : `Spelas vid serieomgång ${cupLeagueRound} (om ${roundsUntil} omgångar)`}
         </p>
       </div>
     )
   } else {
-    const playedAndWon = bracket.matches.filter(
-      m => (m.homeClubId === managedClubId || m.awayClubId === managedClubId) && m.winnerId === managedClubId
-    )
-    if (playedAndWon.length > 0) {
-      const nextRoundName = playedAndWon.length >= 2 ? 'finalen' : 'semifinalen'
-      statusContent = (
-        <p style={{ fontSize: 13, color: '#22c55e', fontWeight: 600 }}>✅ Klar för {nextRoundName}</p>
-      )
-    } else {
-      statusContent = (
-        <p style={{ fontSize: 13, color: '#4A6080' }}>Drar igång under säsongen</p>
-      )
-    }
+    const playedAndWon = bracket.matches.filter(m => (m.homeClubId === managedClubId || m.awayClubId === managedClubId) && m.winnerId === managedClubId)
+    statusContent = playedAndWon.length > 0
+      ? <p style={{ fontSize: 13, color: 'var(--success)', fontWeight: 600, fontFamily: 'var(--font-body)' }}>✅ Klar för {playedAndWon.length >= 2 ? 'finalen' : 'semifinalen'}</p>
+      : <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Drar igång under säsongen</p>
   }
 
   return (
-    <div
-      className="card-stagger-3"
-      style={{
-        ...cardStyle,
-        background: bracket.completed && bracket.winnerId === managedClubId
-          ? 'linear-gradient(#122235, #122235) padding-box, linear-gradient(135deg, #C9A84C, transparent 60%) border-box'
-          : cardStyle.background,
-        border: bracket.completed && bracket.winnerId === managedClubId
-          ? '2px solid transparent'
-          : cardStyle.border,
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <p className="section-heading" style={cardLabelStyle}>SVENSKA CUPEN</p>
-        {!bracket.completed && !cupStatus.eliminated && (
-          <span style={{
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: '1px',
-            color: '#C9A84C',
-            textTransform: 'uppercase',
-          }}>
-            {stageLabel}
-          </span>
-        )}
+    <div className="card-sharp card-stagger-3" style={{ margin: '0 12px 10px', overflow: 'hidden' }}>
+      <div className="texture-leather" style={{ backgroundColor: 'var(--bg-leather)', padding: '7px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ color: 'var(--text-light-secondary)', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'var(--font-body)', fontWeight: 600 }}>🏆 Svenska Cupen</span>
+        {!bracket.completed && !cupStatus.eliminated && <span className="tag tag-copper">{stageLabel}</span>}
       </div>
-      {statusContent}
+      <div style={{ padding: '12px 14px' }}>{statusContent}</div>
     </div>
   )
 }
 
-// Sprint 4: Season phase
+function pickBatchSimChoice(choices: EventChoice[]): string {
+  const noOp = choices.find(c => c.effect.type === 'noOp')
+  if (noOp) return noOp.id
+  const rejectTransfer = choices.find(c => c.effect.type === 'rejectTransfer')
+  if (rejectTransfer) return rejectTransfer.id
+  return choices[0].id
+}
+
 function getSeasonPhase(round: number): { label: string; icon: string } {
   if (round <= 4) return { label: 'Höststarten', icon: '🍂' }
   if (round <= 7) return { label: 'Vardagen', icon: '🏒' }
@@ -349,25 +234,55 @@ function getSeasonPhase(round: number): { label: string; icon: string } {
   return { label: 'Slutspelet', icon: '🏆' }
 }
 
-// Sprint 2: Rolf's quotes
-const ROLF_BASE_QUOTES: Record<number, string> = {
-  1: 'Ny säsong. Isen ligger fint.',
-  4: 'Tre nya ungar på träningen igår. Fint att se.',
-  8: 'Annandagen. Min favoritdag på året.',
-  12: 'Kylan biter. Men vi biter tillbaka.',
-  15: 'Jag har hållit på i 38 år. Tänker inte sluta nu.',
-  20: 'Slutspelet närmar sig. Känner det i magen.',
+// Snow particles for header
+function SnowParticles() {
+  const particles = [
+    { size: 2,   opacity: 0.35, top: 8,  left: 35,  duration: 4,   delay: 0   },
+    { size: 1.5, opacity: 0.2,  top: 4,  left: 100, duration: 5.5, delay: 1   },
+    { size: 2.5, opacity: 0.3,  top: 6,  left: 190, duration: 3.5, delay: 0.3 },
+    { size: 1,   opacity: 0.25, top: 10, left: 280, duration: 4.5, delay: 2   },
+    { size: 2,   opacity: 0.2,  top: 2,  left: 330, duration: 6,   delay: 1.5 },
+    { size: 1.5, opacity: 0.15, top: 14, left: 150, duration: 7,   delay: 3   },
+    { size: 2,   opacity: 0.2,  top: 18, left: 250, duration: 5,   delay: 0.8 },
+  ]
+  return (
+    <>
+      {particles.map((p, i) => (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            width: p.size,
+            height: p.size,
+            background: `rgba(255,255,255,${p.opacity})`,
+            borderRadius: '50%',
+            top: p.top,
+            left: p.left,
+            animation: `snow ${p.duration}s linear infinite ${p.delay}s`,
+            pointerEvents: 'none',
+          }}
+        />
+      ))}
+    </>
+  )
 }
 
-function getRolfQuote(round: number, communityStanding: number, volunteerMorale: number): string {
-  if (volunteerMorale < 40) return 'Jag vet inte hur länge jag orkar.'
-  if (communityStanding > 80) return 'Folk stannar upp och tackar mig numera. Ovant.'
-  return ROLF_BASE_QUOTES[round] ?? 'Isen håller.'
+// Ornamental diamond divider above CTA
+function DiamondDivider() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+      <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, var(--border-dark))' }} />
+      <svg viewBox="0 0 28 12" width="28" height="12">
+        <polygon points="14,1 27,6 14,11 1,6" fill="none" stroke="var(--accent)" strokeWidth="0.8" opacity="0.4"/>
+        <polygon points="14,4 20,6 14,8 8,6" fill="var(--accent)" opacity="0.15"/>
+      </svg>
+      <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, var(--border-dark), transparent)' }} />
+    </div>
+  )
 }
-
 
 export function DashboardScreen() {
-  const { game, advance, markTutorialSeen, resolveEvent, roundSummary } = useGameStore()
+  const { game, advance, markTutorialSeen, resolveEvent } = useGameStore()
   const club = useManagedClub()
   const standing = useCurrentStanding()
   const hasPendingLineup = useHasPendingLineup()
@@ -377,86 +292,43 @@ export function DashboardScreen() {
   const navigate = useNavigate()
   const [isBatchSim, setIsBatchSim] = useState(false)
 
-  // Batch simulation loop — simulates all remaining league rounds, including managed club's
   useEffect(() => {
     if (!isBatchSim || !game) return
-
-    // Auto-resolve any pending events (take first choice silently)
     if ((game.pendingEvents?.length ?? 0) > 0) {
       const event = game.pendingEvents![0]
       if (event.choices.length > 0) {
-        const t = setTimeout(() => resolveEvent(event.id, event.choices[0].id), 0)
+        const choiceId = pickBatchSimChoice(event.choices)
+        const t = setTimeout(() => resolveEvent(event.id, choiceId), 0)
         return () => clearTimeout(t)
       }
     }
-
     const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
     if (scheduled.length === 0) { setIsBatchSim(false); return }
-
-    const batchEffRound = (f: { roundNumber: number; isCup?: boolean }) =>
-      f.isCup ? f.roundNumber - 100 : f.roundNumber
+    const batchEffRound = (f: { roundNumber: number; isCup?: boolean }) => f.isCup ? f.roundNumber - 100 : f.roundNumber
     const nextEff = Math.min(...scheduled.map(batchEffRound))
-
-    // Stop if managed club has a cup fixture in the next batch — let them play it live
-    const managedCupNext = scheduled.some(
-      f => batchEffRound(f) === nextEff && f.isCup &&
-           (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-    )
+    const managedCupNext = scheduled.some(f => batchEffRound(f) === nextEff && f.isCup && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
     if (managedCupNext) { setIsBatchSim(false); return }
-
     const t = setTimeout(() => {
       const result = advance()
       if (result?.seasonEnded || result?.playoffStarted) { setIsBatchSim(false); return }
-      // pendingEvents are auto-resolved next iteration — don't stop or navigate
     }, 80)
     return () => clearTimeout(t)
   }, [isBatchSim, game])
 
-  const lastSummary = game ? (game.seasonSummaries ?? []).slice(-1)[0] : null
-  const lastPos = lastSummary?.finalPosition ?? null
-  const currentPos = standing?.position ?? null
-  const posDiff = lastPos != null && currentPos != null ? lastPos - currentPos : null
-
-  // Navigate to champion screen when bracket is completed
   useEffect(() => {
-    if (playoffInfo?.status === PlayoffStatus.Completed) {
-      navigate('/game/champion', { replace: true })
-    }
-  }, [playoffInfo?.status, navigate])
-
-  // Auto-navigate to season summary when it's ready
-  useEffect(() => {
-    if (game?.showSeasonSummary) {
-      navigate('/game/season-summary', { replace: true })
-    }
-  }, [game?.showSeasonSummary, navigate])
-
-  // Auto-navigate to board meeting when it's ready
-  useEffect(() => {
-    if (game?.showBoardMeeting) {
-      navigate('/game/board-meeting', { replace: true })
-    }
-  }, [game?.showBoardMeeting, navigate])
-
-  // Auto-navigate to pre-season screen
-  useEffect(() => {
-    if (game?.showPreSeason && !game?.showBoardMeeting && !game?.showSeasonSummary) {
-      navigate('/game/pre-season', { replace: true })
-    }
-  }, [game?.showPreSeason, game?.showBoardMeeting, game?.showSeasonSummary, navigate])
-
-  // Auto-navigate to game over screen when manager is fired
-  useEffect(() => {
-    if (game?.managerFired) {
-      navigate('/game/game-over', { replace: true })
-    }
-  }, [game?.managerFired, navigate])
+    if (game?.managerFired) navigate('/game/game-over', { replace: true })
+    else if (game?.showSeasonSummary) navigate('/game/season-summary', { replace: true })
+    else if (game?.showBoardMeeting) navigate('/game/board-meeting', { replace: true })
+    else if (game?.showPreSeason) navigate('/game/pre-season', { replace: true })
+    else if (playoffInfo?.status === PlayoffStatus.Completed) navigate('/game/champion', { replace: true })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   if (!game || !club) return (
-    <div style={{ padding: '20px' }}>
-      <div className="shimmer" style={{ height: 120, borderRadius: 'var(--radius)', marginBottom: 12 }} />
-      <div className="shimmer" style={{ height: 80, borderRadius: 'var(--radius)', marginBottom: 12 }} />
-      <div className="shimmer" style={{ height: 80, borderRadius: 'var(--radius)' }} />
+    <div style={{ padding: 20 }}>
+      <div className="shimmer" style={{ height: 160, borderRadius: 3, marginBottom: 10 }} />
+      <div className="shimmer" style={{ height: 80, borderRadius: 3, marginBottom: 10 }} />
+      <div className="shimmer" style={{ height: 80, borderRadius: 3 }} />
     </div>
   )
 
@@ -468,11 +340,7 @@ export function DashboardScreen() {
     const bracket = g.playoffBracket
     if (!bracket) return false
     const id = g.managedClubId
-    const allSeries = [
-      ...(bracket.quarterFinals ?? []),
-      ...(bracket.semiFinals ?? []),
-      ...(bracket.final ? [bracket.final] : []),
-    ]
+    const allSeries = [...(bracket.quarterFinals ?? []), ...(bracket.semiFinals ?? []), ...(bracket.final ? [bracket.final] : [])]
     return allSeries.some(s => s.loserId === id)
   }
 
@@ -482,214 +350,122 @@ export function DashboardScreen() {
     .filter(f => {
       if (f.status !== 'scheduled') return false
       if (f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId) return false
-      // If eliminated from playoffs, don't show remaining playoff fixtures
       if (eliminated && f.roundNumber > 22 && !f.isCup) return false
       return true
     })
     .sort((a, b) => effectiveRound(a) - effectiveRound(b))[0]
 
-  const matchWeather = nextFixture
-    ? (game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id)
-    : undefined
-
-  const opponent = nextFixture
-    ? game.clubs.find(c => c.id === (nextFixture.homeClubId === game.managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId))
-    : null
-
+  const matchWeather = nextFixture ? (game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id) : undefined
+  const opponent = nextFixture ? game.clubs.find(c => c.id === (nextFixture.homeClubId === game.managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId)) : null
   const isHome = nextFixture ? nextFixture.homeClubId === game.managedClubId : false
 
-  const rivalry = nextFixture ? getRivalry(nextFixture.homeClubId, nextFixture.awayClubId) : null
-
-  // Last match result data
+  // Last match result
   let lastResult: { scoreFor: number; scoreAgainst: number; opponentName: string } | null = null
   if (lastCompletedFixture) {
     const isHomeTeam = lastCompletedFixture.homeClubId === game.managedClubId
     const scoreFor = isHomeTeam ? lastCompletedFixture.homeScore : lastCompletedFixture.awayScore
     const scoreAgainst = isHomeTeam ? lastCompletedFixture.awayScore : lastCompletedFixture.homeScore
-    const lastOpponentId = isHomeTeam ? lastCompletedFixture.awayClubId : lastCompletedFixture.homeClubId
-    const lastOpponent = game.clubs.find(c => c.id === lastOpponentId)
-    lastResult = {
-      scoreFor,
-      scoreAgainst,
-      opponentName: lastOpponent?.name ?? 'Okänd',
-    }
+    const lastOpponent = game.clubs.find(c => c.id === (isHomeTeam ? lastCompletedFixture.awayClubId : lastCompletedFixture.homeClubId))
+    lastResult = { scoreFor, scoreAgainst, opponentName: lastOpponent?.name ?? 'Okänd' }
   }
 
-  // Squad status
+  // Squad stats
   const squadPlayers = game.players.filter(p => p.clubId === game.managedClubId)
   const injuredCount = squadPlayers.filter(p => p.isInjured).length
-  const avgForm = squadPlayers.length > 0
-    ? squadPlayers.reduce((sum, p) => sum + p.form, 0) / squadPlayers.length
-    : 0
-  const formLabel = avgForm >= 65 ? 'Hög' : avgForm >= 40 ? 'Normal' : 'Låg'
-  const formColor = avgForm >= 65 ? '#22c55e' : avgForm >= 40 ? '#f59e0b' : '#ef4444'
+  const readyCount = Math.max(0, squadPlayers.length - injuredCount)
+  const avgForm = squadPlayers.length > 0 ? Math.round(squadPlayers.reduce((sum, p) => sum + p.form, 0) / squadPlayers.length) : 0
+  const avgFitness = squadPlayers.length > 0 ? Math.round(squadPlayers.reduce((sum, p) => sum + (p.fitness ?? 75), 0) / squadPlayers.length) : 0
+  const morale = game.fanMood ?? 50
+  const sharpness = Math.round((avgForm * 0.6 + avgFitness * 0.4))
 
-  // Current round number
-  const currentRound = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup)
-    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
-
-  // Sprint 4: Season phase
+  // Current round
+  const currentRound = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max, f) => Math.max(max, f.roundNumber), 0)
   const seasonPhase = getSeasonPhase(currentRound)
 
-  // Sprint 6: Current weather for temperature display
-  const currentWeather = nextFixture
-    ? (game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id)
-    : undefined
+  // Recent form (last 5)
+  const recentForm: Array<'V' | 'O' | 'F'> = game.fixtures
+    .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup)
+    .sort((a, b) => b.roundNumber - a.roundNumber)
+    .slice(0, 5)
+    .map(f => {
+      const isHomeTeam = f.homeClubId === game.managedClubId
+      const scored = isHomeTeam ? f.homeScore : f.awayScore
+      const conceded = isHomeTeam ? f.awayScore : f.homeScore
+      return scored > conceded ? 'V' : scored < conceded ? 'F' : 'O'
+    })
+
+  // Win streak for header tag
+  const winStreak = (() => {
+    let streak = 0
+    for (const r of recentForm) {
+      if (r === 'V') streak++
+      else break
+    }
+    return streak
+  })()
+
+  // Temperature display
+  const currentWeather = nextFixture ? (game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id) : undefined
   const tempDisplay = currentWeather?.weather.temperature !== undefined
     ? `${currentWeather.weather.temperature > 0 ? '+' : ''}${currentWeather.weather.temperature}°`
     : null
-  const tempIsFreezingCold = (currentWeather?.weather.temperature ?? 0) <= -15
-  const tempIsMelting = (currentWeather?.weather.temperature ?? -10) >= 2 && currentRound > 14
 
-  // Sprint 2: Bygdens Puls data
-  const cs = game.communityStanding ?? 50
-  const communityColor = cs > 70 ? '#4CAF50' : cs > 50 ? '#FFC107' : cs > 30 ? '#FF9800' : '#f44336'
-  const trendArrow = roundSummary
-    ? (roundSummary.communityStandingAfter > roundSummary.communityStandingBefore ? '↑'
-      : roundSummary.communityStandingAfter < roundSummary.communityStandingBefore ? '↓' : '→')
-    : '→'
-  const communityNote = roundSummary?.communityNote
-
-  // Rolf character
-  const rolf = game.namedCharacters?.find(c => c.id === 'rolf')
-  const birgitta = game.namedCharacters?.find(c => c.id === 'birgitta')
-  const rolfAlive = rolf?.isAlive !== false
-  const rolfQuote = rolfAlive
-    ? getRolfQuote(currentRound, cs, rolf?.morale ?? 70)
-    : (birgitta ? `${birgitta.name}: "Vi håller ihop."` : '')
-
-  // pendingEvents handled via post-advance navigation — no inline rendering
-
-  // Determine playoff context for next fixture
+  // Playoff context
   const isPlayoffFixture = nextFixture && nextFixture.roundNumber > 22
   const playoffSeries = isPlayoffFixture && playoffInfo ? (() => {
-    const allSeries = [
-      ...playoffInfo.quarterFinals,
-      ...playoffInfo.semiFinals,
-      ...(playoffInfo.final ? [playoffInfo.final] : []),
-    ]
+    const allSeries = [...playoffInfo.quarterFinals, ...playoffInfo.semiFinals, ...(playoffInfo.final ? [playoffInfo.final] : [])]
     return allSeries.find(s => s.fixtures.includes(nextFixture.id)) ?? null
   })() : null
 
-  const seriesFixtures = playoffSeries
-    ? game.fixtures.filter(f => playoffSeries.fixtures.includes(f.id) && f.status === 'completed')
-    : []
-  const dynamicHomeWins = seriesFixtures.filter(f => {
-    const isSeriesHome = f.homeClubId === playoffSeries?.homeClubId
-    return isSeriesHome ? f.homeScore > f.awayScore : f.awayScore > f.homeScore
-  }).length
-  const dynamicAwayWins = seriesFixtures.filter(f => {
-    const isSeriesHome = f.homeClubId === playoffSeries?.homeClubId
-    return isSeriesHome ? f.awayScore > f.homeScore : f.homeScore > f.awayScore
-  }).length
+  const seriesFixtures = playoffSeries ? game.fixtures.filter(f => playoffSeries.fixtures.includes(f.id) && f.status === 'completed') : []
+  const dynamicHomeWins = seriesFixtures.filter(f => { const isSH = f.homeClubId === playoffSeries?.homeClubId; return isSH ? f.homeScore > f.awayScore : f.awayScore > f.homeScore }).length
+  const dynamicAwayWins = seriesFixtures.filter(f => { const isSH = f.homeClubId === playoffSeries?.homeClubId; return isSH ? f.awayScore > f.homeScore : f.homeScore > f.awayScore }).length
 
-  const isPlayoffJustStarted = playoffInfo &&
-    playoffInfo.status === PlayoffStatus.QuarterFinals &&
-    playoffInfo.quarterFinals.every(s =>
-      game.fixtures.filter(f => s.fixtures.includes(f.id) && f.status === 'completed').length === 0
-    )
+  const isPlayoffJustStarted = playoffInfo && playoffInfo.status === PlayoffStatus.QuarterFinals &&
+    playoffInfo.quarterFinals.every(s => game.fixtures.filter(f => s.fixtures.includes(f.id) && f.status === 'completed').length === 0)
 
-  const handleAdvance = () => {
-    playSound('click')
-    const scheduledFixtures = game!.fixtures.filter(f => f.status === 'scheduled')
-
-    if (scheduledFixtures.length === 0) {
-      // No scheduled fixtures → trigger playoff start or season end
-      try {
-        const result = advance()
-        if (result?.playoffStarted) {
-          return
-        }
-        if (result?.seasonEnded) {
-          return
-        }
-        if ((result?.pendingEvents?.length ?? 0) > 0) {
-          navigate('/game/events')
-          return
-        }
-        navigate('/game/round-summary')
-      } catch (err) {
-        console.error('advance() failed:', err)
-      }
-      return
-    }
-
-    const effRound = (f: { roundNumber: number; isCup?: boolean }) =>
-      f.isCup ? f.roundNumber - 100 : f.roundNumber
-
-    const nextSimEff = Math.min(...scheduledFixtures.map(effRound))
-
-    const managedMatchInNextRound = scheduledFixtures.find(
-      f => effRound(f) === nextSimEff &&
-           (f.homeClubId === game!.managedClubId || f.awayClubId === game!.managedClubId)
-    )
-
-    if (managedMatchInNextRound) {
-      navigate('/game/match')
-      return
-    }
-
-    try {
-      const result = advance()
-      if ((result?.pendingEvents?.length ?? 0) > 0) {
-        navigate('/game/events')
-        return
-      }
-      navigate('/game/round-summary')
-    } catch (err) {
-      console.error('advance() failed:', err)
-    }
+  // Economy
+  const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
+  const monthlySalary = managedPlayers.reduce((s, p) => s + p.salary, 0)
+  const { netPerRound } = calcWeeklyEconomy(club.reputation ?? 50, game.sponsors ?? [], game.communityActivities, monthlySalary)
+  const ca = game.communityActivities
+  const finances = club.finances ?? 0
+  const formatTkr = (n: number) => {
+    const abs = Math.abs(n)
+    const sign = n < 0 ? '-' : n > 0 ? '+' : ''
+    if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(1)} mkr`
+    return `${sign}${Math.round(abs / 1_000)} tkr`
   }
+  const activeIcons = [
+    ca?.kiosk && ca.kiosk !== 'none' ? '🏪' : null,
+    ca?.lottery && ca.lottery !== 'none' ? '🎟️' : null,
+    ca?.bandyplay ? '🏒' : null,
+    ca?.functionaries ? '🤝' : null,
+  ].filter(Boolean)
 
-  const hasScheduledFixtures = game!.fixtures.some(f => f.status === 'scheduled')
+  // Inbox
+  const unread = (game.inbox ?? []).filter(i => !i.isRead)
+  const latestUnread = unread.sort((a, b) => b.date.localeCompare(a.date))[0]
+
+  // Advance button
+  const hasScheduledFixtures = game.fixtures.some(f => f.status === 'scheduled')
   const canClickAdvance = canAdvance || hasScheduledFixtures
+  const playedRounds = game.fixtures.filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup).length
+  const canSimulateRemaining = hasScheduledFixtures && playedRounds >= 10 && !game.playoffBracket
+  const remainingOtherFixtures = game.fixtures.filter(f => f.status === 'scheduled').length
 
-  const managedClubId = game!.managedClubId
-  const remainingOtherFixtures = game!.fixtures.filter(f => f.status === 'scheduled').length
-  const playedRounds = game!.fixtures.filter(
-    f => f.status === 'completed' &&
-         (f.homeClubId === managedClubId || f.awayClubId === managedClubId) &&
-         !f.isCup
-  ).length
-  const canSimulateRemaining = hasScheduledFixtures && playedRounds >= 10 && !game!.playoffBracket
-
-  const cardStyle: React.CSSProperties = {
-    background: '#122235',
-    border: '1px solid #1e3450',
-    borderRadius: 12,
-    padding: '16px',
-    marginBottom: 12,
-  }
-
-  const cardLabelStyle: React.CSSProperties = {
-    fontSize: 10,
-    fontWeight: 700,
-    letterSpacing: '2px',
-    textTransform: 'uppercase',
-    color: '#4A6080',
-    marginBottom: 10,
-  }
-
-  // Determine advance button text
   const advanceButtonText = (() => {
-    if (!game) return 'Laddar...'
     const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
-
     if (scheduled.length === 0) {
       if (!game.playoffBracket) return 'Starta slutspel →'
       if (game.playoffBracket.status === PlayoffStatus.Completed) return 'Avsluta säsongen →'
       return 'Fortsätt slutspel →'
     }
-
-    const nextManaged = scheduled
-      .filter(f => {
-        if (f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId) return false
-        if (eliminated && f.roundNumber > 22 && !f.isCup) return false
-        return true
-      })
-      .sort((a, b) => a.roundNumber - b.roundNumber)[0]
-
+    const nextManaged = scheduled.filter(f => {
+      if (f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId) return false
+      if (eliminated && f.roundNumber > 22 && !f.isCup) return false
+      return true
+    }).sort((a, b) => a.roundNumber - b.roundNumber)[0]
     if (nextManaged) {
       if (nextManaged.isCup) {
         const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextManaged.id)
@@ -699,94 +475,167 @@ export function DashboardScreen() {
       }
       if (game.playoffBracket) {
         const r = nextManaged.roundNumber
-        const label = r <= 25 ? 'Kvartsfinal' : r <= 28 ? 'Semifinal' : 'Final'
-        return `Spela ${label} →`
+        return `Spela ${r <= 25 ? 'Kvartsfinal' : r <= 28 ? 'Semifinal' : 'Final'} →`
       }
       return `Spela omgång ${nextManaged.roundNumber} →`
     }
-
     return 'Fortsätt →'
   })()
 
+  const handleAdvance = () => {
+    playSound('click')
+    const scheduledFixtures = game.fixtures.filter(f => f.status === 'scheduled')
+    if (scheduledFixtures.length === 0) {
+      try {
+        const result = advance()
+        if (result?.playoffStarted || result?.seasonEnded) return
+        if ((result?.pendingEvents?.length ?? 0) > 0) { navigate('/game/events'); return }
+        navigate('/game/round-summary')
+      } catch (err) { console.error('advance() failed:', err) }
+      return
+    }
+    const effRound = (f: { roundNumber: number; isCup?: boolean }) => f.isCup ? f.roundNumber - 100 : f.roundNumber
+    const nextSimEff = Math.min(...scheduledFixtures.map(effRound))
+    const managedMatchInNextRound = scheduledFixtures.find(f => effRound(f) === nextSimEff && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+    if (managedMatchInNextRound) { navigate('/game/match'); return }
+    try {
+      const result = advance()
+      if ((result?.pendingEvents?.length ?? 0) > 0) { navigate('/game/events'); return }
+      navigate('/game/round-summary')
+    } catch (err) { console.error('advance() failed:', err) }
+  }
+
+  // Date string for header
+  const dateStr = (() => {
+    const d = new Date(game.currentDate)
+    return d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })
+  })()
+
   return (
-    <div className="screen-enter floodlight-bg noise-overlay" style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      background: tempIsFreezingCold ? 'rgba(100, 140, 200, 0.03)' : tempIsMelting ? 'rgba(34,197,94,0.02)' : '#0D1B2A',
-    }}>
-      {/* Tutorial overlay */}
+    <div className="screen-enter" style={{ position: 'relative', minHeight: '100%', background: 'var(--bg)' }}>
       {!game.tutorialSeen && (
-        <TutorialOverlay
-          managerName={game.managerName}
-          clubName={club.name}
-          onDone={markTutorialSeen}
-        />
+        <TutorialOverlay managerName={game.managerName} clubName={club.name} onDone={markTutorialSeen} />
       )}
 
-      {/* Header */}
-      <div style={{
-        textAlign: 'center',
-        padding: '16px 20px 12px',
-        borderBottom: '1px solid #1e3450',
-        background: '#0D1B2A',
-        flexShrink: 0,
-      }}>
-        <p style={{ color: '#4A6080', fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 4 }}>
-          Säsong {game.currentSeason}
-        </p>
-        <h1 style={{ fontSize: 18, fontWeight: 800, letterSpacing: '3px', color: '#F0F4F8', textTransform: 'uppercase' }}>
-          Bandy Manager
-        </h1>
-        <p style={{ color: '#8A9BB0', fontSize: 12, marginTop: 4 }}>{club.name}</p>
-        {/* Sprint 4: Season phase + round + temperature */}
-        <p style={{ color: '#4A6080', fontSize: 11, marginTop: 4 }}>
-          {seasonPhase.icon} {seasonPhase.label}
-          {currentRound > 0 && ` · Omgång ${currentRound}`}
-          {(() => {
-            const d = new Date(game.currentDate)
-            return ` · ${d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}`
-          })()}
-          {tempDisplay && (
-            <span style={{ marginLeft: 4, color: (currentWeather?.weather.temperature ?? 0) <= 0 ? '#60a5fa' : '#8A9BB0' }}>
-              {(currentWeather?.weather.temperature ?? 0) <= -5 ? '❄️ ' : ''}{tempDisplay}
-            </span>
-          )}
-        </p>
+      {/* ── HEADER ── */}
+      <div style={{ position: 'relative', overflow: 'hidden' }}>
+        <div
+          className="texture-wood"
+          style={{ backgroundColor: 'var(--bg-dark)', position: 'relative' }}
+        >
+          {/* Leather grain overlay */}
+          <div className="texture-leather" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+
+          {/* Floodlight glow cones */}
+          <div style={{ position: 'absolute', top: -70, left: 20, width: 120, height: 200, background: 'radial-gradient(ellipse at 50% 0%, rgba(255,240,210,0.08) 0%, transparent 70%)', transform: 'rotate(-8deg)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: -50, right: 10, width: 140, height: 220, background: 'radial-gradient(ellipse at 50% 0%, rgba(255,240,210,0.06) 0%, transparent 70%)', transform: 'rotate(5deg)', pointerEvents: 'none' }} />
+
+          {/* Snow */}
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+            <SnowParticles />
+          </div>
+
+          {/* Top bar: logo + tags */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px 0', position: 'relative' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <svg viewBox="0 0 22 22" width="18" height="18">
+                <circle cx="11" cy="11" r="9.5" fill="var(--bg-dark-surface)" stroke="var(--accent-dark)" strokeWidth="1.2"/>
+                <text x="11" y="14" textAnchor="middle" fontFamily="Georgia, serif" fontSize="8" fill="var(--accent)">
+                  {club.name.charAt(0)}
+                </text>
+              </svg>
+              <span style={{ color: 'var(--text-light-secondary)', fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'var(--font-body)' }}>
+                Bandy Manager
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              {tempDisplay && (
+                <span className="tag tag-ice">❄ {tempDisplay}</span>
+              )}
+              {currentRound > 0 && (
+                <span className="tag tag-copper">Omg {currentRound}</span>
+              )}
+            </div>
+          </div>
+
+          {/* Club identity */}
+          <div style={{ padding: '14px 14px', display: 'flex', alignItems: 'center', gap: 14, position: 'relative' }}>
+            <div style={{ width: 60, height: 60, flexShrink: 0 }}>
+              <ClubBadge clubId={game.managedClubId} name={club.name} size={60} strokeColor="rgba(196,122,58,0.8)" />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h1 style={{ color: 'var(--text-light)', fontSize: 22, fontWeight: 400, margin: '0 0 3px', letterSpacing: '0.5px', fontFamily: 'var(--font-display)', lineHeight: 1.2 }}>
+                {club.name}
+              </h1>
+              <p style={{ color: 'var(--text-light-secondary)', fontSize: 12, margin: '0 0 6px', fontFamily: 'var(--font-body)' }}>
+                Säsong {game.currentSeason} · {seasonPhase.label}
+              </p>
+              <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                {standing && (
+                  <span className="tag tag-outline" style={{ borderColor: 'rgba(196,186,168,0.3)', color: 'var(--text-light-secondary)' }}>
+                    {standing.position}:e i serien
+                  </span>
+                )}
+                {winStreak >= 2 && (
+                  <span className="tag tag-green">{winStreak} raka vinster</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Season phase strip */}
+          <div
+            className="texture-wood"
+            style={{ backgroundColor: 'rgba(196,122,58,0.12)', borderTop: '1px solid rgba(196,122,58,0.15)', borderBottom: '1px solid rgba(196,122,58,0.15)', padding: '9px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 15 }}>{seasonPhase.icon}</span>
+              <span style={{ color: 'var(--accent)', fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-body)' }}>
+                {seasonPhase.label}
+              </span>
+              <span style={{ color: 'var(--text-light-secondary)', fontSize: 10, fontFamily: 'var(--font-body)' }}>
+                {dateStr}
+              </span>
+            </div>
+            {matchWeather && (
+              <span className="tag tag-ice" style={{ gap: 4 }}>
+                <svg viewBox="0 0 8 8" width="6" height="6">
+                  <circle cx="4" cy="4" r="3" fill="var(--ice)"/>
+                </svg>
+                {matchWeather.weather.iceQuality}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Ice divider */}
+        <div className="ice-divider" />
       </div>
 
-      {/* Scrollable content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px', paddingBottom: '100px' }}>
+      {/* ── CONTENT ── */}
+      <div className="texture-wood" style={{ paddingTop: 12, paddingBottom: 120 }}>
 
-        {/* PLAYOFF JUST STARTED banner */}
+        {/* Playoff just started banner */}
         {isPlayoffJustStarted && (
-          <PlayoffBanner game={game} playoffInfo={playoffInfo} />
-        )}
-
-        {/* ELIMINATED card */}
-        {eliminated && !nextFixture && game.playoffBracket && game.playoffBracket.status !== PlayoffStatus.Completed && (
-          <div className="card-stagger-1" style={{
-            background: '#122235',
-            border: '1px solid #1e3450',
-            borderRadius: 12,
-            padding: '18px',
-            marginBottom: 12,
-            textAlign: 'center',
-          }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#8A9BB0', marginBottom: 4 }}>Din säsong är slut</p>
-            <p style={{ color: '#4A6080', fontSize: 13 }}>
-              Väntar på att slutspelet ska avgöras...
-            </p>
+          <div style={{ margin: '0 12px 10px' }}>
+            <PlayoffBanner game={game} playoffInfo={playoffInfo} />
           </div>
         )}
 
-        {/* NEXT MATCH card */}
+        {/* Eliminated */}
+        {eliminated && !nextFixture && game.playoffBracket && game.playoffBracket.status !== PlayoffStatus.Completed && (
+          <div className="card-round card-stagger-1" style={{ margin: '0 12px 10px', padding: '18px', textAlign: 'center' }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 4, fontFamily: 'var(--font-body)' }}>Din säsong är slut</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 13, fontFamily: 'var(--font-body)' }}>Väntar på att slutspelet ska avgöras...</p>
+          </div>
+        )}
+
+        {/* Next match card */}
         {nextFixture && opponent && (
           <NextMatchCard
             nextFixture={nextFixture}
             opponent={opponent}
             isHome={isHome}
-            rivalry={rivalry}
             club={club}
             game={game}
             isPlayoffFixture={isPlayoffFixture}
@@ -795,232 +644,159 @@ export function DashboardScreen() {
             dynamicAwayWins={dynamicAwayWins}
             matchWeather={matchWeather}
             hasPendingLineup={hasPendingLineup}
-            onNavigate={() => navigate('/game/match')}
-            cardLabelStyle={cardLabelStyle}
           />
         )}
 
-        {/* SENASTE RESULTAT card */}
-        {lastResult && (
-          <LastResultCard
-            lastResult={lastResult}
-            lastCompletedFixture={lastCompletedFixture}
-            onNavigateToReport={() => navigate('/game/match', { state: { showReport: true } })}
-            cardStyle={cardStyle}
-            cardLabelStyle={cardLabelStyle}
-          />
-        )}
-
-        {/* SLUTSPEL card (when active) or SERIEPLACERING card */}
-        {playoffInfo ? (
-          <PlayoffBracketCard
-            bracket={playoffInfo}
-            game={game}
-            cardStyle={cardStyle}
-            cardLabelStyle={cardLabelStyle}
-          />
-        ) : standing && (
-          <div
-            className="card-stagger-3 gold-border-pulse"
-            style={{ ...cardStyle, cursor: 'pointer' }}
-            onClick={() => navigate('/game/tabell')}
-          >
-            <p className="section-heading" style={cardLabelStyle}>SERIEPLACERING</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <TrophySVG size={36} />
-              <div>
-                <p
-                  className={standing.position <= 3 ? 'gold-glow tabular' : 'tabular'}
-                  style={{
-                    fontSize: 28,
-                    fontWeight: standing.position <= 3 ? 800 : 900,
-                    color: standing.position <= 3 ? '#C9A84C' : '#F0F4F8',
-                    lineHeight: 1,
-                  }}
-                >
-                  {standing.position}.
+        {/* Stats row: Tabell + Senast */}
+        <div style={{ display: 'flex', gap: 8, margin: '0 12px 10px' }}>
+          {/* Tabell sharp card */}
+          {standing && (
+            <div
+              className="card-sharp card-stagger-3"
+              style={{ flex: 1, cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
+              onClick={() => navigate('/game/tabell')}
+            >
+              {standing.position <= 8 && (
+                <span className="tag tag-fill" style={{ position: 'absolute', top: -1, right: 8, borderRadius: '0 0 8px 8px', letterSpacing: '1px' }}>
+                  SLUTSPEL
+                </span>
+              )}
+              <div style={{ padding: '12px 12px 10px' }}>
+                <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: '0 0 6px' }}>
+                  Tabell
                 </p>
-                <p style={{ fontSize: 13, color: '#8A9BB0', marginTop: 2 }}>
-                  plats · {standing.points} poäng
-                  {posDiff !== null && posDiff !== 0 && (
-                    <span style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: posDiff > 0 ? '#22c55e' : '#ef4444',
-                      marginLeft: 6,
-                    }}>
-                      {posDiff > 0 ? `↑${posDiff}` : `↓${Math.abs(posDiff)}`} jfr förra
-                    </span>
-                  )}
-                </p>
-              </div>
-              <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-                <p style={{
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: standing.goalDifference >= 0 ? '#22c55e' : '#ef4444',
-                }}>
-                  {standing.goalDifference >= 0 ? '+' : ''}{standing.goalDifference}
-                </p>
-                <p style={{ fontSize: 11, color: '#4A6080' }}>Målskillnad</p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
+                  <span style={{ fontSize: 36, fontWeight: 400, color: 'var(--accent-dark)', lineHeight: 1, fontFamily: 'var(--font-display)' }}>
+                    {standing.position}
+                  </span>
+                  <div>
+                    {(() => {
+                      const lastSummary = (game.seasonSummaries ?? []).slice(-1)[0]
+                      const lastPos = lastSummary?.finalPosition ?? null
+                      const posDiff = lastPos != null ? lastPos - standing.position : null
+                      return posDiff !== null && posDiff !== 0 ? (
+                        <span style={{ fontSize: 12, fontWeight: 700, color: posDiff > 0 ? 'var(--success)' : 'var(--danger)', fontFamily: 'var(--font-body)' }}>
+                          {posDiff > 0 ? `↑${posDiff}` : `↓${Math.abs(posDiff)}`}
+                        </span>
+                      ) : null
+                    })()}
+                    <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '3px 0 0', fontFamily: 'var(--font-body)' }}>
+                      {standing.points}p · {standing.goalDifference >= 0 ? '+' : ''}{standing.goalDifference} mål
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-            <p style={{ fontSize: 11, color: '#C9A84C', marginTop: 10, fontWeight: 600 }}>
-              Visa full tabell →
-            </p>
-          </div>
-        )}
-
-        {/* SVENSKA CUPEN card */}
-        {game.cupBracket && (
-          <CupCard
-            bracket={game.cupBracket}
-            game={game}
-            cardStyle={cardStyle}
-            cardLabelStyle={cardLabelStyle}
-          />
-        )}
-
-        {/* ORTEN + ATT TÄNKA PÅ */}
-        <CommunityPulse game={game} currentRound={currentRound} />
-        <ContextualNudges game={game} currentRound={currentRound} />
-
-        {/* TRUPPSTATUS card */}
-        <SquadStatusCard
-          injuredCount={injuredCount}
-          formLabel={formLabel}
-          formColor={formColor}
-          club={club}
-          game={game}
-          cardStyle={cardStyle}
-          cardLabelStyle={cardLabelStyle}
-        />
-
-        {/* BYGDENS PULS — Sprint 2 */}
-        <div style={{ ...cardStyle, marginBottom: 12 }}>
-          <div style={{ fontSize: 11, letterSpacing: 1, opacity: 0.5, marginBottom: 8, fontWeight: 700, textTransform: 'uppercase' }}>
-            BYGDENS PULS
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-            <span>🏘️</span>
-            <span style={{ fontWeight: 700, fontSize: 18, color: communityColor }}>{cs}</span>
-            <span style={{ color: communityColor, fontSize: 12 }}>{trendArrow}</span>
-            <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 3 }}>
-              <div style={{
-                width: `${cs}%`, height: '100%',
-                background: communityColor,
-                borderRadius: 3,
-                transition: 'width 0.5s ease',
-              }} />
-            </div>
-          </div>
-          {communityNote && (
-            <div style={{ fontSize: 12, opacity: 0.7, fontStyle: 'italic', marginBottom: 6 }}>
-              📰 "{communityNote}"
-            </div>
           )}
-          {(rolfAlive || birgitta) && (
-            <div style={{ fontSize: 12, opacity: 0.6 }}>
-              🧊 {rolfQuote}
-            </div>
-          )}
-          {!rolfAlive && !birgitta && (
-            <div style={{ fontSize: 12, opacity: 0.4 }}>🧊</div>
-          )}
-          {/* P17 one-liner — Sprint 2 */}
-          {game.youthTeam && (
-            <div style={{ fontSize: 12, opacity: 0.7, marginTop: 6 }}>
-              🎓 P17: {game.youthTeam.tablePosition}:a i serien
-              {' '}({game.youthTeam.seasonRecord.w}V{' '}
-              {game.youthTeam.seasonRecord.d}O{' '}
-              {game.youthTeam.seasonRecord.l}F)
-            </div>
+
+          {/* Senast sharp card */}
+          {lastResult && (
+            <LastResultCard
+              lastResult={lastResult}
+              lastCompletedFixture={lastCompletedFixture}
+              recentForm={recentForm}
+              onNavigateToReport={() => navigate('/game/match', { state: { showReport: true } })}
+            />
           )}
         </div>
 
-        {/* EKONOMI card */}
-        {(() => {
-          const managedPlayers = game!.players.filter(p => p.clubId === game!.managedClubId)
-          const monthlySalary = managedPlayers.reduce((s, p) => s + p.salary, 0)
-          const { netPerRound } = calcWeeklyEconomy(
-            club?.reputation ?? 50,
-            game!.sponsors ?? [],
-            game!.communityActivities,
-            monthlySalary,
-          )
-          const ca = game!.communityActivities
-          const finances = club?.finances ?? 0
-          const formatTkr = (n: number) => {
-            const abs = Math.abs(n)
-            const sign = n < 0 ? '-' : n > 0 ? '+' : ''
-            if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(1)} mkr`
-            return `${sign}${Math.round(abs / 1_000)} tkr`
-          }
-          const activeIcons = [
-            ca?.kiosk !== 'none' && ca?.kiosk ? '🏪' : null,
-            ca?.lottery !== 'none' && ca?.lottery ? '🎟️' : null,
-            ca?.bandyplay ? '🏒' : null,
-            ca?.functionaries ? '🤝' : null,
-          ].filter(Boolean)
-          return (
-            <div
-              onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}
-              style={{ ...cardStyle, cursor: 'pointer' }}
-            >
-              <p style={{ ...cardLabelStyle }}>💰 Ekonomi</p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-                <span style={{ fontSize: 18, fontWeight: 800, color: finances < 0 ? '#ef4444' : '#F0F4F8' }}>
-                  {finances >= 0 ? '' : ''}{Math.abs(finances) >= 1_000_000 ? `${(finances / 1_000_000).toFixed(1)} mkr` : `${Math.round(finances / 1_000)} tkr`}
-                </span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: netPerRound >= 0 ? '#22c55e' : '#ef4444' }}>
-                  Netto {formatTkr(netPerRound)}/omg
+        {/* Playoff bracket or cup */}
+        {playoffInfo ? (
+          <PlayoffBracketCard bracket={playoffInfo} game={game} />
+        ) : game.cupBracket ? (
+          <CupCard bracket={game.cupBracket} game={game} />
+        ) : null}
+
+        {/* Squad status */}
+        <SquadStatusCard
+          readyCount={readyCount}
+          injuredCount={injuredCount}
+          avgForm={avgForm}
+          avgFitness={avgFitness}
+          morale={morale}
+          sharpness={sharpness}
+        />
+
+        {/* Bygdens Puls */}
+        <CommunityPulse game={game} currentRound={currentRound} />
+
+        {/* Contextual nudges */}
+        <ContextualNudges game={game} currentRound={currentRound} />
+
+        {/* Ekonomi sharp card */}
+        <div
+          className="card-sharp"
+          style={{ margin: '0 12px 10px', cursor: 'pointer' }}
+          onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}
+        >
+          <div style={{ padding: '12px 14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
+                  Ekonomi
+                </p>
+                <span style={{ fontSize: 18, fontWeight: 400, color: finances < 0 ? 'var(--danger)' : 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+                  {Math.abs(finances) >= 1_000_000 ? `${(finances / 1_000_000).toFixed(1)} mkr` : `${Math.round(finances / 1_000)} tkr`}
                 </span>
               </div>
-              {activeIcons.length > 0 && (
-                <p style={{ fontSize: 11, color: '#4A6080' }}>
-                  Aktiva: {activeIcons.join(' ')}
-                </p>
-              )}
-              <span
-                onClick={e => { e.stopPropagation(); navigate('/game/budget') }}
-                style={{ fontSize: 11, color: '#4A6080', cursor: 'pointer', textDecoration: 'underline', marginTop: 4, display: 'inline-block' }}
-              >
-                Se budget →
+              <span style={{ fontSize: 12, fontWeight: 700, color: netPerRound >= 0 ? 'var(--success-light)' : 'var(--danger-text)', fontFamily: 'var(--font-body)' }}>
+                {formatTkr(netPerRound)}/omg
               </span>
             </div>
-          )
-        })()}
-
-        {/* INKORG card */}
-        {(() => {
-          const unread = (game!.inbox ?? []).filter(i => !i.isRead)
-          if (unread.length === 0) return null
-          const latest = unread.sort((a, b) => b.date.localeCompare(a.date))[0]
-          return (
-            <div
-              onClick={() => navigate('/game/inbox')}
-              style={{ ...cardStyle, cursor: 'pointer' }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <p style={{ ...cardLabelStyle, marginBottom: 0 }}>📬 Inkorg</p>
-                <span style={{
-                  background: 'var(--accent)',
-                  color: '#fff',
-                  borderRadius: 99,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: '1px 7px',
-                }}>
-                  {unread.length} olästa
+            {activeIcons.length > 0 && (
+              <div style={{ display: 'flex', gap: 5, marginTop: 6 }}>
+                <span className="tag tag-outline">{activeIcons.join(' ')} aktiva</span>
+                <span
+                  onClick={e => { e.stopPropagation(); navigate('/game/budget') }}
+                  className="tag tag-ghost"
+                  style={{ cursor: 'pointer' }}
+                >
+                  Budget →
                 </span>
               </div>
-              <p style={{ fontSize: 13, color: '#F0F4F8', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {latest.title}
-              </p>
-              <p style={{ fontSize: 11, color: '#4A6080', marginTop: 4 }}>Öppna inkorg →</p>
+            )}
+          </div>
+        </div>
+
+        {/* Inkorg round card */}
+        {latestUnread && (
+          <div
+            className="card-round"
+            style={{ margin: '0 12px 10px', cursor: 'pointer' }}
+            onClick={() => navigate('/game/inbox')}
+          >
+            <div style={{ padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
+                <span className="tag tag-fill" style={{ animation: 'breatheDot 2s ease-in-out infinite', flexShrink: 0 }}>
+                  {unread.length}
+                </span>
+                <p style={{ fontSize: 12, color: 'var(--bg-leather)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: 'var(--font-body)' }}>
+                  {latestUnread.title}
+                </p>
+              </div>
+              <button className="btn btn-outline" style={{ flexShrink: 0, marginLeft: 6, fontSize: 11, padding: '5px 12px' }}>
+                Inkorg →
+              </button>
             </div>
-          )
-        })()}
+          </div>
+        )}
+
+        {/* P17 sharp card */}
+        {game.youthTeam && (
+          <div className="card-sharp" style={{ margin: '0 12px 10px' }}>
+            <div style={{ padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span className="tag tag-outline">🎓 P17</span>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
+                  {game.youthTeam.tablePosition}:a · {game.youthTeam.seasonRecord.w}V {game.youthTeam.seasonRecord.d}O {game.youthTeam.seasonRecord.l}F
+                </span>
+              </div>
+              <button className="btn btn-ghost" style={{ fontSize: 10, padding: '4px 10px' }} onClick={e => { e.stopPropagation(); navigate('/game/club', { state: { tab: 'akademi' } }) }}>
+                Akademi →
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Guidance banners */}
         <GuidanceBanner
@@ -1033,93 +809,66 @@ export function DashboardScreen() {
 
         {/* Bandydoktorn */}
         {(() => {
-          const questionsLeft = Math.max(0, 5 - (game!.doctorQuestionsUsed ?? 0))
+          const questionsLeft = Math.max(0, 5 - (game.doctorQuestionsUsed ?? 0))
           return (
             <button
               onClick={() => navigate('/game/doctor')}
-              style={{
-                width: '100%', marginTop: 8, marginBottom: 120,
-                padding: '11px 14px',
-                background: 'rgba(56,189,248,0.05)',
-                border: '1px solid rgba(56,189,248,0.15)',
-                borderRadius: 10,
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                cursor: 'pointer',
-              }}
+              className="btn btn-ghost"
+              style={{ width: 'calc(100% - 24px)', margin: '0 12px 4px', padding: '11px 14px', justifyContent: 'space-between', borderRadius: 10 }}
             >
-              <span style={{ fontSize: 13, color: '#38bdf8', fontWeight: 600 }}>🩺 Bandydoktorn</span>
-              <span style={{ fontSize: 12, color: '#4A6080' }}>{questionsLeft} frågor kvar →</span>
+              <span>🩺 Bandydoktorn</span>
+              <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>{questionsLeft} frågor kvar →</span>
             </button>
           )
         })()}
 
-      </div>
+        {/* Diamond ornament + CTA */}
+        <div style={{ margin: '8px 12px 0' }}>
+          <DiamondDivider />
 
-      {/* Fixed bottom: FORTSÄTT button */}
-      <div style={{
-        position: 'absolute',
-        bottom: 0,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '100%',
-        maxWidth: '430px',
-        padding: '12px 20px',
-        paddingBottom: 'calc(12px + var(--safe-bottom))',
-        background: 'linear-gradient(to top, #0D1B2A 80%, transparent)',
-        zIndex: 50,
-      }}>
-        {canSimulateRemaining && !isBatchSim && (
+          {/* Batch sim */}
+          {canSimulateRemaining && !isBatchSim && (
+            <button
+              onClick={() => setIsBatchSim(true)}
+              className="btn btn-ghost"
+              style={{ width: '100%', marginBottom: 8, justifyContent: 'center' }}
+            >
+              ⏩ Simulera resterande säsong
+            </button>
+          )}
+          {isBatchSim && (
+            <div style={{ marginBottom: 8, padding: '10px 14px', background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.2)', borderRadius: 10, textAlign: 'center' }}>
+              <div style={{ fontSize: 13, color: 'var(--accent-dark)', fontWeight: 700, fontFamily: 'var(--font-body)' }}>⏩ Simulerar säsongen...</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3, fontFamily: 'var(--font-body)' }}>{remainingOtherFixtures} omgångar kvar</div>
+            </div>
+          )}
+
+          {/* Main CTA */}
           <button
-            onClick={() => setIsBatchSim(true)}
+            onClick={handleAdvance}
+            disabled={!canClickAdvance || isBatchSim}
+            className="texture-leather"
             style={{
-              width: '100%', marginBottom: 8,
-              padding: '11px',
-              background: 'transparent',
-              border: '1px solid #1e3450',
-              borderRadius: 10,
-              color: '#4A6080',
-              fontSize: 13,
+              width: '100%',
+              padding: '18px',
+              background: canClickAdvance && !isBatchSim
+                ? 'linear-gradient(135deg, #B06830, #8B4820)'
+                : 'var(--border)',
+              color: canClickAdvance && !isBatchSim ? 'var(--text-light)' : 'var(--text-muted)',
+              border: 'none',
+              borderRadius: 12,
+              fontSize: 15,
               fontWeight: 600,
-              cursor: 'pointer',
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              fontFamily: 'var(--font-body)',
+              cursor: canClickAdvance && !isBatchSim ? 'pointer' : 'not-allowed',
+              animation: canClickAdvance && !isBatchSim ? 'pulseCTA 3s ease-in-out infinite' : undefined,
             }}
           >
-            ⏩ Simulera resterande säsong
+            {advanceButtonText}
           </button>
-        )}
-        {isBatchSim && (
-          <div style={{
-            marginBottom: 8, padding: '10px 14px',
-            background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)',
-            borderRadius: 10, textAlign: 'center',
-          }}>
-            <div style={{ fontSize: 13, color: '#C9A84C', fontWeight: 700 }}>⏩ Simulerar säsongen...</div>
-            <div style={{ fontSize: 11, color: '#4A6080', marginTop: 3 }}>
-              {remainingOtherFixtures} omgångar kvar
-            </div>
-          </div>
-        )}
-        <button
-          onClick={handleAdvance}
-          disabled={!canClickAdvance || isBatchSim}
-          className={canClickAdvance && !isBatchSim ? 'btn-pulse' : undefined}
-          style={{
-            width: '100%',
-            padding: '17px',
-            background: canClickAdvance && !isBatchSim ? '#C9A84C' : '#1a2e47',
-            color: canClickAdvance && !isBatchSim ? '#0D1B2A' : '#4A6080',
-            borderRadius: 12,
-            fontSize: 16,
-            fontWeight: 800,
-            letterSpacing: '1.5px',
-            textTransform: 'uppercase',
-            border: 'none',
-            boxShadow: canClickAdvance && !isBatchSim ? '0 4px 20px rgba(201,168,76,0.3)' : 'none',
-            cursor: canClickAdvance && !isBatchSim ? 'pointer' : 'not-allowed',
-            fontVariantNumeric: 'tabular-nums',
-          }}
-        >
-          {advanceButtonText}
-        </button>
+        </div>
       </div>
     </div>
   )

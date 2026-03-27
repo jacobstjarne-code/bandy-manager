@@ -154,9 +154,16 @@ function NightSceneSVG() {
 
 export function StartScreen() {
   const navigate = useNavigate()
-  const { game, listSaves } = useGameStore()
+  const { loadGame, listSaves } = useGameStore()
   const saves = listSaves()
-  const hasSave = saves.length > 0 || game !== null
+  const hasSave = saves.length > 0
+
+  async function handleLoadGame() {
+    const save = saves[0]
+    if (!save) return
+    const ok = await loadGame(save.id)
+    if (ok) navigate('/game')
+  }
 
   return (
     <div
@@ -227,7 +234,7 @@ export function StartScreen() {
       {/* Buttons */}
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <button
-          onClick={() => navigate('/new-game')}
+          onClick={() => navigate('/intro')}
           style={{
             width: '100%',
             padding: '16px 24px',
@@ -246,7 +253,7 @@ export function StartScreen() {
         </button>
 
         <button
-          onClick={() => navigate('/game')}
+          onClick={() => { if (hasSave) navigate('/game') }}
           disabled={!hasSave}
           style={{
             width: '100%',
@@ -267,6 +274,7 @@ export function StartScreen() {
         </button>
 
         <button
+          onClick={handleLoadGame}
           disabled={!hasSave}
           style={{
             width: '100%',

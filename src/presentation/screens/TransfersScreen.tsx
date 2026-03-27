@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import type { Player } from '../../domain/entities/Player'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 import { getScoutReportAge } from '../../domain/services/scoutingService'
 import { formatCurrency, positionShort } from '../utils/formatters'
 import { SectionLabel } from '../components/SectionLabel'
+import { bidReceivedEvent } from '../../domain/services/events/eventFactories'
 
 function formatValue(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
@@ -15,11 +17,13 @@ function formatValue(v: number): string {
 interface RenewModalProps {
   player: Player
   currentSeason: number
+  minSalary: number
+  error?: string | null
   onClose: () => void
   onConfirm: (playerId: string, newSalary: number, years: number) => void
 }
 
-function RenewContractModal({ player, currentSeason, onClose, onConfirm }: RenewModalProps) {
+function RenewContractModal({ player, currentSeason, minSalary, error, onClose, onConfirm }: RenewModalProps) {
   const [newSalary, setNewSalary] = useState(player.salary)
   const [years, setYears] = useState(1)
 
@@ -53,6 +57,9 @@ function RenewContractModal({ player, currentSeason, onClose, onConfirm }: Renew
           <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
             Nuvarande: {formatCurrency(player.salary)}/mån · kontrakt t.o.m. säsong {player.contractUntilSeason}
           </p>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+            Lägsta acceptabelt: {formatCurrency(minSalary)}/mån
+          </p>
         </div>
         <div style={{ marginBottom: 16 }}>
           <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Ny lön (kr/mån)</label>
@@ -78,6 +85,7 @@ function RenewContractModal({ player, currentSeason, onClose, onConfirm }: Renew
           </div>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>Nytt slutdatum: säsong {currentSeason + years}</p>
         </div>
+        {error && <p style={{ fontSize: 13, color: 'var(--danger)', marginBottom: 12 }}>{error}</p>}
         <button onClick={() => onConfirm(player.id, newSalary, years)} style={{ width: '100%', padding: '14px', background: 'var(--accent)', color: '#fff', borderRadius: 'var(--radius)', fontSize: 15, fontWeight: 600 }}>
           Förläng kontrakt
         </button>
@@ -117,7 +125,7 @@ function BidModal({ player, managedClub, onClose, onConfirm }: BidModalProps) {
           <button onClick={onClose} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)', width: 32, height: 32, fontSize: 16 }}>✕</button>
         </div>
         <div style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', marginBottom: 16, border: '1px solid var(--border)', fontSize: 13, color: 'var(--text-secondary)' }}>
-          Marknadsvärde: {formatValue(player.marketValue)} · Transferbudget: {formatValue(managedClub.transferBudget)}
+          Marknadsvärde: {formatValue(player.marketValue ?? 0)} · Transferbudget: {formatValue(managedClub.transferBudget)}
         </div>
         <div style={{ marginBottom: 14 }}>
           <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Budsumma (kr)</label>
@@ -156,10 +164,12 @@ export function TransfersScreen() {
   const startEvaluation = useGameStore(s => s.startEvaluation)
   const placeOutgoingBid = useGameStore(s => s.placeOutgoingBid)
   const startTalentSearch = useGameStore(s => s.startTalentSearch)
+  const navigate = useNavigate()
   const [renewingPlayerId, setRenewingPlayerId] = useState<string | null>(null)
+  const [renewError, setRenewError] = useState<string | null>(null)
   const [scoutMessage, setScoutMessage] = useState<string | null>(null)
   const [biddingPlayerId, setBiddingPlayerId] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'scouting' | 'spaning' | 'contracts' | 'freeagents'>('scouting')
+  const [activeTab, setActiveTab] = useState<'scouting' | 'spaning' | 'contracts' | 'freeagents' | 'sell'>('scouting')
   const [spaningPosition, setSpanningPosition] = useState<string>('any')
   const [spaningMaxAge, setSpanningMaxAge] = useState<number>(30)
   const [spaningMaxSalary, setSpanningMaxSalary] = useState<number>(16000)
@@ -194,20 +204,80 @@ export function TransfersScreen() {
 
   function handleRenew(playerId: string, newSalary: number, years: number) {
     if (!game) return
+    const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+    if (!managedClub) return
+    const squadPlayers = game.players.filter(p => p.clubId === game.managedClubId)
+    const currentPlayer = squadPlayers.find(p => p.id === playerId)
+    if (!currentPlayer) return
+    // AI negotiation: player demands a salary based on CA
+    const isFullTimePro = !currentPlayer.dayJob
+    const minSalary = Math.round((isFullTimePro
+      ? currentPlayer.currentAbility * 200 * 0.80
+      : currentPlayer.currentAbility * 80 * 0.80) / 500) * 500
+    if (newSalary < minSalary) {
+      setRenewError(`${currentPlayer.firstName} avslår — kräver minst ${formatCurrency(minSalary)}/mån`)
+      return
+    }
+    // Budget check
+    const currentWageBill = squadPlayers.reduce((sum, p) => sum + p.salary, 0)
+    const projectedWageBill = currentWageBill - currentPlayer.salary + newSalary
+    if (projectedWageBill > managedClub.wageBudget) {
+      setRenewError(`Lönebudgeten överskrids. Kvar: ${formatCurrency(managedClub.wageBudget - currentWageBill + currentPlayer.salary)}/mån`)
+      return
+    }
     const updatedPlayers = game.players.map(p =>
       p.id === playerId ? { ...p, contractUntilSeason: game.currentSeason + years, salary: newSalary } : p
     )
-    const updatedGame = { ...game, players: updatedPlayers }
-    useGameStore.setState({ game: updatedGame })
+    useGameStore.setState({ game: { ...game, players: updatedPlayers } })
     setRenewingPlayerId(null)
+    setRenewError(null)
   }
 
   function handleSignFreeAgent(agentId: string) {
     if (!game) return
     const updatedPlayers = game.players.map(p => p.id === agentId ? { ...p, clubId: game.managedClubId } : p)
     const updatedFreeAgents = game.transferState.freeAgents.filter(p => p.id !== agentId)
-    const updatedGame = { ...game, players: updatedPlayers, transferState: { ...game.transferState, freeAgents: updatedFreeAgents } }
+    const updatedClubs = game.clubs.map(c =>
+      c.id === game.managedClubId
+        ? { ...c, squadPlayerIds: [...c.squadPlayerIds, agentId] }
+        : c
+    )
+    const updatedGame = { ...game, players: updatedPlayers, clubs: updatedClubs, transferState: { ...game.transferState, freeAgents: updatedFreeAgents } }
     useGameStore.setState({ game: updatedGame })
+  }
+
+  function handleListForSale(playerId: string) {
+    if (!game) return
+    const player = game.players.find(p => p.id === playerId)
+    if (!player) return
+    // Pick a random AI club as the "interested buyer"
+    const otherClubs = game.clubs.filter(c => c.id !== game.managedClubId)
+    if (otherClubs.length === 0) return
+    const buyingClub = otherClubs[Math.floor(Math.random() * otherClubs.length)]
+    const marketVal = player.marketValue ?? 50000
+    const offerAmount = Math.round(marketVal * 0.9 / 5000) * 5000
+    const offeredSalary = Math.round(player.salary * 1.1 / 1000) * 1000
+    const bid = {
+      id: `bid_sell_${Date.now()}_${playerId}`,
+      playerId,
+      buyingClubId: buyingClub.id,
+      sellingClubId: game.managedClubId,
+      offerAmount,
+      offeredSalary,
+      contractYears: 3,
+      direction: 'incoming' as const,
+      status: 'pending' as const,
+      createdRound: Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup).map(f => f.roundNumber)),
+      expiresRound: Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup).map(f => f.roundNumber)) + 2,
+    }
+    const event = bidReceivedEvent(bid, game)
+    const updatedGame = {
+      ...game,
+      transferBids: [...(game.transferBids ?? []), bid],
+      pendingEvents: [...(game.pendingEvents ?? []), event],
+    }
+    useGameStore.setState({ game: updatedGame })
+    navigate('/game/events')
   }
 
   function handleBid(playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) {
@@ -279,6 +349,7 @@ export function TransfersScreen() {
           { key: 'spaning', label: '🔎 Spaning' },
           { key: 'contracts', label: 'Kontrakt' },
           { key: 'freeagents', label: 'Fria agenter' },
+          { key: 'sell', label: '💰 Sälj' },
         ] as const).map(tab => (
           <button
             key={tab.key}
@@ -525,9 +596,9 @@ export function TransfersScreen() {
                 >
                   <option value="any">Alla positioner</option>
                   <option value="forward">Forward</option>
-                  <option value="midfielder">Midfielder</option>
-                  <option value="defender">Defender</option>
-                  <option value="goalkeeper">Goalkeeper</option>
+                  <option value="midfielder">Mittfältare</option>
+                  <option value="defender">Back</option>
+                  <option value="goalkeeper">Målvakt</option>
                 </select>
               </div>
               <div style={{ marginBottom: 12 }}>
@@ -686,14 +757,50 @@ export function TransfersScreen() {
         )}
       </div>}
 
-      {renewingPlayer && (
-        <RenewContractModal
-          player={renewingPlayer}
-          currentSeason={game.currentSeason}
-          onClose={() => setRenewingPlayerId(null)}
-          onConfirm={handleRenew}
-        />
-      )}
+      {activeTab === 'sell' && <div className="card-stagger-2" style={{ marginBottom: 24 }}>
+        <SectionLabel>Sätt spelare till salu</SectionLabel>
+        {!windowOpen && (
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12 }}>Transferfönstret är stängt. Försäljning möjlig sommaren och vintern.</p>
+        )}
+        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+          {managedClubPlayers.sort((a, b) => b.currentAbility - a.currentAbility).map((player, index) => (
+            <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', borderBottom: index < managedClubPlayers.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {player.firstName} {player.lastName}
+                </p>
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+                  {positionShort(player.position)} · Styrka {Math.round(player.currentAbility)} · MV {formatCurrency(player.marketValue ?? 0)}
+                </p>
+              </div>
+              <button
+                onClick={() => windowOpen && handleListForSale(player.id)}
+                disabled={!windowOpen}
+                style={{ flexShrink: 0, padding: '6px 12px', background: windowOpen ? '#16a34a' : 'var(--bg-elevated)', border: windowOpen ? 'none' : '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: windowOpen ? '#fff' : 'var(--text-muted)', fontSize: 12, fontWeight: 600, cursor: windowOpen ? 'pointer' : 'not-allowed', opacity: windowOpen ? 1 : 0.6 }}
+              >
+                Sätt till salu
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>}
+
+      {renewingPlayer && (() => {
+        const isFullTimePro = !renewingPlayer.dayJob
+        const minSalary = Math.round((isFullTimePro
+          ? renewingPlayer.currentAbility * 200 * 0.80
+          : renewingPlayer.currentAbility * 80 * 0.80) / 500) * 500
+        return (
+          <RenewContractModal
+            player={renewingPlayer}
+            currentSeason={game.currentSeason}
+            minSalary={minSalary}
+            error={renewError}
+            onClose={() => { setRenewingPlayerId(null); setRenewError(null) }}
+            onConfirm={handleRenew}
+          />
+        )
+      })()}
 
       {biddingPlayerId && managedClub && (() => {
         const biddingPlayer = game.players.find(p => p.id === biddingPlayerId)

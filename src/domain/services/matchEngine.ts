@@ -196,7 +196,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
 
     let wAttack = 40
     let wTransition = 15
-    let wCorner = 20
+    let wCorner = 13
     let wHalfchance = 10
     let wFoul = 12
     let wLostball = 8
@@ -335,7 +335,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
 
         const shotResult = rand()
         const defenderGkStrength = defGK
-        const goalThreshold = chanceQuality * 0.45 * (1 - defenderGkStrength * 0.35) * weatherGoalMod
+        const goalThreshold = chanceQuality * 0.58 * (1 - defenderGkStrength * 0.35) * weatherGoalMod
 
         if (shotResult < goalThreshold) {
           // GOAL
@@ -448,7 +448,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
         : 0
       const cornerChance = attCorner * 0.7 + randRange(rand, 0, 0.3) + specialistBonus
       const defenseResist = defDefense * 0.5 + defGK * 0.3 + randRange(rand, 0, 0.2)
-      const goalThreshold = clamp((cornerChance - defenseResist) * 0.25 * weatherGoalMod + 0.08, 0.06, 0.18)
+      const goalThreshold = clamp((cornerChance - defenseResist) * 0.20 * weatherGoalMod + 0.04, 0.05, 0.12)
 
       const r = rand()
       if (r < goalThreshold) {

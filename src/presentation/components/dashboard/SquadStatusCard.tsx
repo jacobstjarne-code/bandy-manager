@@ -1,82 +1,102 @@
-import { BandyStickSVG } from '../Decorations'
-import type { Club } from '../../../domain/entities/Club'
-import type { SaveGame } from '../../../domain/entities/SaveGame'
+interface StatBarProps {
+  label: string
+  value: number
+  valueColor: string
+  barGradient: string
+}
+
+function StatBar({ label, value, valueColor, barGradient }: StatBarProps) {
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+        <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: valueColor, fontFamily: 'var(--font-body)' }}>{value}</span>
+      </div>
+      <div style={{ height: 7, borderRadius: 4, overflow: 'hidden', background: 'var(--border-dark)' }}>
+        <div style={{
+          height: '100%',
+          width: `${Math.min(100, Math.max(0, value))}%`,
+          background: barGradient,
+          borderRadius: 4,
+          transition: 'width 0.6s ease',
+        }} />
+      </div>
+    </div>
+  )
+}
 
 interface SquadStatusCardProps {
+  readyCount: number
   injuredCount: number
-  formLabel: string
-  formColor: string
-  club: Club
-  game: SaveGame
-  cardStyle: React.CSSProperties
-  cardLabelStyle: React.CSSProperties
+  avgForm: number
+  avgFitness: number
+  morale: number
+  sharpness: number
 }
 
 export function SquadStatusCard({
+  readyCount,
   injuredCount,
-  formLabel,
-  formColor,
-  club,
-  game,
-  cardStyle,
-  cardLabelStyle,
+  avgForm,
+  avgFitness,
+  morale,
+  sharpness,
 }: SquadStatusCardProps) {
   return (
-    <div className="card-stagger-4" style={cardStyle}>
-      <p className="section-heading" style={cardLabelStyle}>TRUPPSTATUS</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{
-            width: 8, height: 8, borderRadius: '50%',
-            background: injuredCount === 0 ? '#22c55e' : '#ef4444',
-            flexShrink: 0,
-          }} />
-          <span style={{ fontSize: 13, color: '#8A9BB0' }}>
-            Skador: <span style={{ color: injuredCount > 0 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>
-              {injuredCount} spelare
+    <div className="card-sharp card-stagger-4" style={{ margin: '0 12px 10px', overflow: 'hidden' }}>
+      {/* Leather header bar */}
+      <div
+        className="texture-leather"
+        style={{
+          backgroundColor: 'var(--bg-leather)',
+          padding: '7px 14px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <span style={{ color: 'var(--text-light-secondary)', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'var(--font-body)', fontWeight: 600 }}>
+          Truppstatus
+        </span>
+        <div style={{ display: 'flex', gap: 4 }}>
+          <span className="tag" style={{ background: 'rgba(90,154,74,0.15)', color: '#7EB88A', fontSize: 8 }}>
+            {readyCount} redo
+          </span>
+          {injuredCount > 0 && (
+            <span className="tag tag-red" style={{ fontSize: 8 }}>
+              {injuredCount} skadade
             </span>
-          </span>
+          )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <BandyStickSVG size={14} color={formColor} />
-          <span style={{ fontSize: 13, color: '#8A9BB0' }}>
-            Form: <span style={{ color: formColor, fontWeight: 600 }}>{formLabel}</span>
-          </span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 13, color: '#8A9BB0' }}>
-            Klubbkassa:{' '}
-            {club.finances < 0 ? (
-              <span style={{ color: '#ef4444', fontWeight: 600 }}>
-                {Math.round(club.finances / 1000)} tkr ⚠️ KRIS
-              </span>
-            ) : (
-              <span style={{ color: '#22c55e', fontWeight: 600 }}>
-                {club.finances >= 1000000
-                  ? `${(club.finances / 1000000).toFixed(1)} mkr`
-                  : `${Math.round(club.finances / 1000)} tkr`}
-              </span>
-            )}
-          </span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 13, color: '#8A9BB0' }}>
-            Supportrar:{' '}
-            <span style={{
-              fontWeight: 600,
-              color: (game.fanMood ?? 50) > 80 ? '#f97316'
-                : (game.fanMood ?? 50) > 60 ? '#22c55e'
-                : (game.fanMood ?? 50) > 40 ? '#8A9BB0'
-                : (game.fanMood ?? 50) > 20 ? '#f59e0b'
-                : '#ef4444'
-            }}>
-              {(game.fanMood ?? 50) > 80 ? '🔥 Euforisk'
-                : (game.fanMood ?? 50) > 60 ? '😊 Positiv'
-                : (game.fanMood ?? 50) > 40 ? '😐 Neutral'
-                : (game.fanMood ?? 50) > 20 ? '😤 Missnöjd'
-                : '😡 Protesterar'}
-            </span>
-          </span>
+      </div>
+
+      {/* Stat bars */}
+      <div style={{ padding: '12px 14px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <StatBar
+            label="Form"
+            value={avgForm}
+            valueColor="var(--success-light)"
+            barGradient="linear-gradient(90deg, #6BA04A, #5A9A4A)"
+          />
+          <StatBar
+            label="Kondition"
+            value={avgFitness}
+            valueColor="var(--accent)"
+            barGradient="linear-gradient(90deg, #D4945A, #C47A3A)"
+          />
+          <StatBar
+            label="Moral"
+            value={morale}
+            valueColor="var(--ice-dark)"
+            barGradient="linear-gradient(90deg, #7EB3D4, #5A7A8A)"
+          />
+          <StatBar
+            label="Skärpa"
+            value={sharpness}
+            valueColor="var(--text-muted)"
+            barGradient="linear-gradient(90deg, #C4BAA8, #8A857A)"
+          />
         </div>
       </div>
     </div>

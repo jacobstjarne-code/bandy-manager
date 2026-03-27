@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { Home, Users, Swords, ArrowLeftRight, Bell, Building2 } from 'lucide-react'
+import { Home, Users, Swords, ArrowLeftRight, Bell, Building2, Table2 } from 'lucide-react'
 import { useInjuredInLineup, useExpiringContracts, useNextRoundNumber, useHasPendingLineup, useGameStore, useUnreadInboxCount } from '../store/gameStore'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 
@@ -8,6 +8,7 @@ const tabs = [
   { to: '/game/dashboard', label: 'Hem', Icon: Home },
   { to: '/game/squad', label: 'Trupp', Icon: Users },
   { to: '/game/match', label: 'Match', Icon: Swords },
+  { to: '/game/tabell', label: 'Tabell', Icon: Table2 },
   { to: '/game/transfers', label: 'Transfers', Icon: ArrowLeftRight },
   { to: '/game/inbox', label: 'Inkorg', Icon: Bell },
   { to: '/game/club', label: 'Förening', Icon: Building2 },
@@ -77,7 +78,8 @@ export function BottomNav() {
       height: `calc(var(--bottom-nav-height) + var(--safe-bottom))`,
       paddingBottom: 'var(--safe-bottom)',
       background: 'var(--bg-surface)',
-      borderTop: '1px solid var(--border)',
+      backgroundImage: 'repeating-linear-gradient(92deg, rgba(160,130,90,0.04) 0px, rgba(160,130,90,0.02) 2px, transparent 2px, transparent 8px)',
+      borderTop: '1.5px solid var(--border)',
       display: 'flex',
       alignItems: 'stretch',
       zIndex: 100,
@@ -120,12 +122,15 @@ export function BottomNav() {
                     width: 7,
                     height: 7,
                     borderRadius: '50%',
-                    background: windowStatus === 'winter' ? '#60a5fa' : 'var(--success)',
-                    border: '1.5px solid #0D1B2A',
+                    background: windowStatus === 'winter' ? 'var(--ice)' : 'var(--success)',
+                    border: '1.5px solid var(--bg-surface)',
                   }} />
                 )}
               </div>
               <span>{label}</span>
+              {isActive && (
+                <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--accent)', marginTop: 1 }} />
+              )}
             </span>
           )}
         </NavLink>

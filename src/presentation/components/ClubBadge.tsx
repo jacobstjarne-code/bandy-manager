@@ -3,19 +3,22 @@ type Symbol =
   | 'mountain' | 'elk' | 'axe' | 'tower' | 'wave' | 'tree' | 'bear'
 
 const CLUB_BADGES: Record<string, { primary: string; secondary: string; symbol: Symbol }> = {
-  'club_sandviken': { primary: '#1e4d8c', secondary: '#C9A84C', symbol: 'hammer' },
-  'club_sirius':    { primary: '#1a237e', secondary: '#FFD700', symbol: 'star' },
+  'club_sandviken': { primary: '#1e4d8c', secondary: '#C47A3A', symbol: 'hammer' },
+  'club_sirius':    { primary: '#1a237e', secondary: '#E8D080', symbol: 'star' },
   'club_vasteras':  { primary: '#006400', secondary: '#FFFFFF', symbol: 'crown' },
   'club_broberg':   { primary: '#8B0000', secondary: '#FFFFFF', symbol: 'river' },
-  'club_villa':     { primary: '#4A0080', secondary: '#C9A84C', symbol: 'shield' },
+  'club_villa':     { primary: '#4A0080', secondary: '#C47A3A', symbol: 'shield' },
   'club_falun':     { primary: '#CC0000', secondary: '#FFFFFF', symbol: 'mountain' },
   'club_ljusdal':   { primary: '#2E7D32', secondary: '#FFFFFF', symbol: 'elk' },
   'club_edsbyn':    { primary: '#FF6600', secondary: '#000000', symbol: 'axe' },
-  'club_tillberga': { primary: '#333333', secondary: '#C9A84C', symbol: 'tower' },
+  'club_tillberga': { primary: '#333333', secondary: '#C47A3A', symbol: 'tower' },
   'club_kungalv':   { primary: '#0066CC', secondary: '#FFFFFF', symbol: 'wave' },
-  'club_skutskar':  { primary: '#006633', secondary: '#FFD700', symbol: 'tree' },
+  'club_skutskar':  { primary: '#006633', secondary: '#E8D080', symbol: 'tree' },
   'club_soderhamns':{ primary: '#990000', secondary: '#FFFFFF', symbol: 'bear' },
 }
+
+// Shield path for 64×64 viewBox
+const SHIELD_PATH = 'M32 2 L58 12 V32 C58 46 46 54 32 60 C18 54 6 46 6 32 V12 Z'
 
 function deterministicColor(name: string): string {
   const colors = ['#1e4d8c', '#7b2d2d', '#1a5e3a', '#5a2d7a', '#8B6914']
@@ -132,19 +135,39 @@ interface ClubBadgeProps {
   clubId: string
   name: string
   size?: number
+  /** Stroke color around shield — copper for home, muted for away */
+  strokeColor?: string
 }
 
-export function ClubBadge({ clubId, name, size = 40 }: ClubBadgeProps) {
+export function ClubBadge({ clubId, name, size = 40, strokeColor }: ClubBadgeProps) {
   const badge = CLUB_BADGES[clubId]
   const gradId = `badge-grad-${clubId || name}`
+  const stroke = strokeColor ?? 'rgba(196,122,58,0.5)'
 
   if (!badge) {
-    // Fallback: deterministic color + initial letter
     return (
       <svg viewBox="0 0 64 64" width={size} height={size}>
-        <circle cx="32" cy="32" r="30" fill={deterministicColor(name)}/>
-        <circle cx="32" cy="32" r="30" fill="none" stroke="#C9A84C" strokeWidth="1.5" opacity="0.3"/>
-        <text x="32" y="38" textAnchor="middle" fill="#F0F4F8" fontSize="22" fontWeight="800">
+        <defs>
+          <radialGradient id={`${gradId}-fb`} cx="50%" cy="30%" r="70%">
+            <stop offset="0%" stopColor={deterministicColor(name)} stopOpacity="1"/>
+            <stop offset="100%" stopColor={deterministicColor(name)} stopOpacity="0.7"/>
+          </radialGradient>
+          <clipPath id={`${gradId}-clip`}>
+            <path d={SHIELD_PATH}/>
+          </clipPath>
+        </defs>
+        <path d={SHIELD_PATH} fill={`url(#${gradId}-fb)`}/>
+        <path d={SHIELD_PATH} fill="black" opacity="0.2"/>
+        <path d={SHIELD_PATH} fill="none" stroke={stroke} strokeWidth="1.5"/>
+        <text
+          x="32" y="38"
+          textAnchor="middle"
+          fill="#F5F1EB"
+          fontSize="22"
+          fontWeight="800"
+          fontFamily="Georgia, serif"
+          clipPath={`url(#${gradId}-clip)`}
+        >
           {name.charAt(0).toUpperCase()}
         </text>
       </svg>
@@ -156,20 +179,31 @@ export function ClubBadge({ clubId, name, size = 40 }: ClubBadgeProps) {
   return (
     <svg viewBox="0 0 64 64" width={size} height={size}>
       <defs>
-        <radialGradient id={gradId} cx="50%" cy="35%" r="65%">
+        <radialGradient id={gradId} cx="50%" cy="30%" r="70%">
           <stop offset="0%" stopColor={primary} stopOpacity="1"/>
-          <stop offset="100%" stopColor={primary} stopOpacity="0.6"/>
+          <stop offset="100%" stopColor={primary} stopOpacity="0.7"/>
         </radialGradient>
+        <clipPath id={`${gradId}-clip`}>
+          <path d={SHIELD_PATH}/>
+        </clipPath>
       </defs>
-      {/* Dark overlay for depth effect */}
-      <circle cx="32" cy="32" r="30" fill={`url(#${gradId})`}/>
-      <circle cx="32" cy="32" r="30" fill="black" opacity="0.25"/>
-      {/* Gold ring */}
-      <circle cx="32" cy="32" r="30" fill="none" stroke="#C9A84C" strokeWidth="1.5" opacity="0.4"/>
-      {/* Inner ring */}
-      <circle cx="32" cy="32" r="26" fill="none" stroke={secondary} strokeWidth="0.5" opacity="0.2"/>
-      {/* Symbol */}
-      {renderSymbol(symbol, primary, secondary)}
+      {/* Shield background */}
+      <path d={SHIELD_PATH} fill={`url(#${gradId})`}/>
+      <path d={SHIELD_PATH} fill="black" opacity="0.2"/>
+      {/* Symbol — clipped to shield shape */}
+      <g clipPath={`url(#${gradId}-clip)`}>
+        {renderSymbol(symbol, primary, secondary)}
+      </g>
+      {/* Shield border */}
+      <path d={SHIELD_PATH} fill="none" stroke={stroke} strokeWidth="1.5"/>
+      {/* Inner line for depth */}
+      <path
+        d="M32 6 L54 15 V32 C54 44 43 51 32 57 C21 51 10 44 10 32 V15 Z"
+        fill="none"
+        stroke={secondary}
+        strokeWidth="0.5"
+        opacity="0.2"
+      />
     </svg>
   )
 }

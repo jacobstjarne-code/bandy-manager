@@ -4,40 +4,78 @@
   padding: 0;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   DESIGN TOKENS — Heritage Bandy Palette
+   ═══════════════════════════════════════════════════════════ */
 :root {
-  --bg: #0D1B2A;
-  --bg-surface: #122235;
-  --bg-elevated: #1a2e47;
-  --border: #1e3450;
-  --text-primary: #F0F4F8;
-  --text-secondary: #8A9BB0;
-  --text-muted: #4A6080;
-  --accent: #C9A84C;
-  --accent-dim: #A07830;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --radius: 10px;
-  --radius-sm: 6px;
+  /* Backgrounds */
+  --bg:               #EDE8DF;
+  --bg-surface:       #FAF8F4;
+  --bg-elevated:      #FFFFFF;
+  --bg-dark:          #0E0D0B;
+  --bg-dark-surface:  #1E1D19;
+  --bg-dark-elevated: #2C2A24;
+  --bg-leather:       #3D3A32;
+
+  /* Borders */
+  --border:           #DDD7CC;
+  --border-dark:      #C4BAA8;
+
+  /* Text — light surfaces */
+  --text-primary:     #1A1A18;
+  --text-secondary:   #6B6760;
+  --text-muted:       #8A857A;
+
+  /* Text — dark surfaces */
+  --text-light:           #F5F1EB;
+  --text-light-secondary: #C4BAA8;
+
+  /* Accent — copper/terracotta */
+  --accent:       #C47A3A;
+  --accent-dark:  #A25828;
+  --accent-deep:  #8B4820;
+
+  /* Semantic */
+  --success:        #5A9A4A;
+  --success-light:  #4A6A3A;
+  --warning:        #C47A3A;
+  --danger:         #B05040;
+  --danger-text:    #8B3E30;
+  --ice:            #7EB3D4;
+  --ice-dark:       #5A7A8A;
+
+  /* Legacy aliases (keep for backward compat until screens migrated) */
+  --accent-dim:         #A25828;
+  --color-primary:      #C47A3A;
+  --color-accent:       #C47A3A;
+  --color-accent-dim:   #A25828;
+  --color-bg-deep:      #0E0D0B;
+  --color-bg-card:      #FAF8F4;
+  --color-text:         #1A1A18;
+  --color-text-secondary: #6B6760;
+
+  /* Typography */
+  --font-display: 'Georgia', 'Times New Roman', serif;
+  --font-body:    system-ui, -apple-system, sans-serif;
+  --font:         system-ui, -apple-system, sans-serif;
+
+  /* Shape */
+  --radius:    14px;
+  --radius-sm:  3px;
+
+  /* Layout */
   --bottom-nav-height: 60px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-
-  /* Named aliases for design system */
-  --color-primary: #2563EB;
-  --color-accent: #C9A84C;
-  --color-accent-dim: #A07830;
-  --color-bg-deep: #0D1B2A;
-  --color-bg-card: #122235;
-  --color-text: #F0F4F8;
-  --color-text-secondary: #8A9BB0;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════════ */
 html, body {
   height: 100%;
   background: var(--bg);
   color: var(--text-primary);
-  font-family: var(--font);
+  font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -56,16 +94,11 @@ html, body {
 button {
   cursor: pointer;
   border: none;
-  font-family: var(--font);
-}
-
-button:active {
-  transform: scale(0.97);
-  transition: transform 50ms ease;
+  font-family: var(--font-body);
 }
 
 input {
-  font-family: var(--font);
+  font-family: var(--font-body);
 }
 
 a {
@@ -73,86 +106,307 @@ a {
   color: inherit;
 }
 
-:root {
-  --color-bg-deep: #0D1B2A;
-  --color-bg-card: #122235;
-  --color-primary: #2563EB;
-  --color-accent: #C9A84C;
-  --color-accent-dim: #A07830;
-  --color-text: #F0F4F8;
-  --color-text-secondary: #8A9BB0;
+/* ═══════════════════════════════════════════════════════════
+   SHAPE HIERARCHY
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Tags: passive info labels (pill, no shadow) ── */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border-radius: 99px;
+  padding: 2px 8px;
+  font-size: 9px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.gradient-bg {
-  background: linear-gradient(160deg, #0D1B2A 0%, #122235 60%, #0D1B2A 100%);
+.tag-fill {
+  background: var(--accent);
+  color: #fff;
 }
 
-/* ─── Keyframes ─────────────────────────────────────────── */
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+.tag-copper {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent-dark);
 }
+
+.tag-outline {
+  background: transparent;
+  border: 1px solid var(--border-dark);
+  color: var(--text-secondary);
+}
+
+.tag-green {
+  background: rgba(90,154,74,0.12);
+  border: 1px solid rgba(90,154,74,0.3);
+  color: var(--success-light);
+}
+
+.tag-red {
+  background: rgba(176,80,64,0.10);
+  border: 1px solid rgba(176,80,64,0.25);
+  color: var(--danger-text);
+}
+
+.tag-ice {
+  background: rgba(126,179,212,0.12);
+  border: 1px solid rgba(126,179,212,0.3);
+  color: var(--ice-dark);
+}
+
+.tag-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.tag-dark {
+  background: rgba(255,255,255,0.1);
+  color: var(--text-light-secondary);
+}
+
+/* ── Buttons: interactive, tappable (rect, shadow) ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+  transition: box-shadow 0.15s, transform 0.1s;
+  border: none;
+}
+
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+}
+
+.btn-copper {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #fff;
+  box-shadow: 0 3px 8px rgba(162,88,40,0.30), 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.btn-copper:active {
+  box-shadow: 0 1px 3px rgba(162,88,40,0.20);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--accent);
+  color: var(--accent-dark);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+}
+
+.btn-ghost {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-dark);
+  color: var(--text-secondary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(176,80,64,0.25);
+}
+
+/* ── Sharp cards: factual data display ── */
+.card-sharp {
+  border-radius: 3px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+}
+
+/* ── Round cards: narrative / interaction ── */
+.card-round {
+  border-radius: 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+}
+
+/* ── Leather bar: dark header strip inside cards ── */
+.leather-bar {
+  background: var(--bg-leather);
+  padding: 8px 12px;
+}
+
+.leather-bar:first-child {
+  border-radius: 14px 14px 0 0;
+}
+
+.card-sharp > .leather-bar:first-child {
+  border-radius: 3px 3px 0 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TEXTURES
+   ═══════════════════════════════════════════════════════════ */
+
+/* Wood grain — subtle warm lines */
+.texture-wood {
+  background-image: repeating-linear-gradient(
+    92deg,
+    rgba(160,130,90,0.04) 0px,
+    rgba(160,130,90,0.02) 2px,
+    transparent 2px,
+    transparent 8px
+  );
+}
+
+/* Leather grain — fine dot pattern for dark surfaces */
+.texture-leather {
+  background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='1' cy='1' r='.4' fill='%23000' opacity='.03'/%3E%3C/svg%3E");
+}
+
+/* Ice divider — shimmer strip between header and content */
+.ice-divider {
+  height: 5px;
+  background: linear-gradient(90deg, #C4BAA8, #E8E2D8, #F5F1EB, #E8E2D8, #C4BAA8);
+  background-size: 200px 100%;
+  animation: shimmerIce 3s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════════ */
 
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 4px 20px rgba(201,168,76,0.25); }
-  50%       { box-shadow: 0 4px 28px rgba(201,168,76,0.55), 0 0 0 4px rgba(201,168,76,0.08); }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes scaleFlash {
-  0%   { transform: scale(1); }
-  40%  { transform: scale(1.06); }
-  100% { transform: scale(1); }
+@keyframes fadeInUpScale {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-@keyframes shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+/* Snow particles */
+@keyframes snow {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 0.4; }
+  100% { transform: translateY(140px) translateX(18px); opacity: 0; }
 }
 
+/* Copper CTA pulse */
+@keyframes pulseCTA {
+  0%, 100% { box-shadow: 0 4px 16px rgba(162,88,40,0.3); }
+  50%       { box-shadow: 0 6px 24px rgba(162,88,40,0.55), 0 0 0 4px rgba(196,122,58,0.08); }
+}
+
+/* Heartbeat for Bygdens Puls EKG icon */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  30%       { transform: scale(1.12); }
+  60%       { transform: scale(1); }
+  75%       { transform: scale(1.05); }
+}
+
+/* Ice shimmer divider */
+@keyframes shimmerIce {
+  0%   { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+
+/* Slide up on mount */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* "Redo" status tag ring pulse */
+@keyframes pulseRing {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(1.08); }
+}
+
+/* Unread inbox dot breathe */
+@keyframes breatheDot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+/* Bounce for nav tabs */
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
   40%       { transform: translateY(-4px); }
   70%       { transform: translateY(-2px); }
 }
 
+/* Scale flash for score events */
+@keyframes scaleFlash {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+/* Confetti fall */
+@keyframes confettiFall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* Legacy shimmer for skeleton loader */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+/* Count-up pop */
 @keyframes countUp {
   from { opacity: 0; transform: scale(0.85); }
   to   { opacity: 1; transform: scale(1); }
 }
 
-/* ─── Screen enter animation ────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════════════════ */
+
+/* Screen transitions */
 .screen-enter {
   animation: fadeIn 220ms ease-out both;
 }
 
-/* ─── Stagger card animation ────────────────────────────── */
-.card-stagger-1 { animation: fadeInUpScale 280ms ease-out 0ms both; }
-.card-stagger-2 { animation: fadeInUpScale 280ms ease-out 60ms both; }
+/* Card stagger animations */
+.card-stagger-1 { animation: fadeInUpScale 280ms ease-out   0ms both; }
+.card-stagger-2 { animation: fadeInUpScale 280ms ease-out  60ms both; }
 .card-stagger-3 { animation: fadeInUpScale 280ms ease-out 120ms both; }
 .card-stagger-4 { animation: fadeInUpScale 280ms ease-out 180ms both; }
 .card-stagger-5 { animation: fadeInUpScale 280ms ease-out 240ms both; }
 .card-stagger-6 { animation: fadeInUpScale 280ms ease-out 300ms both; }
 
-/* ─── Pulsing button ────────────────────────────────────── */
+/* Interactive button pulse */
 .btn-pulse {
-  animation: pulseGlow 2s ease-in-out infinite;
+  animation: pulseCTA 3s ease-in-out infinite;
 }
 
-/* ─── Shimmer skeleton ──────────────────────────────────── */
+/* Skeleton shimmer */
 .shimmer {
-  background: linear-gradient(90deg, var(--bg-elevated) 25%, #2a3a50 50%, var(--bg-elevated) 75%);
+  background: linear-gradient(90deg, var(--bg-surface) 25%, #EDE8D8 50%, var(--bg-surface) 75%);
   background-size: 800px 100%;
   animation: shimmer 1.6s infinite linear;
-  border-radius: var(--radius-sm);
+  border-radius: 3px;
 }
 
-/* ─── Noise texture overlay ─────────────────────────────── */
+/* Noise overlay */
 .noise-overlay {
   position: relative;
 }
@@ -168,11 +422,12 @@ a {
   z-index: 0;
 }
 
-/* ─── Section heading decoration ────────────────────────── */
+/* Section heading with copper underline */
 .section-heading {
   position: relative;
   padding-bottom: 8px;
   margin-bottom: 12px;
+  font-family: var(--font-display);
 }
 .section-heading::after {
   content: '';
@@ -181,22 +436,38 @@ a {
   left: 0;
   width: 40px;
   height: 2px;
-  background: #C9A84C;
+  background: var(--accent);
   border-radius: 2px;
 }
 
-/* ─── Gold glow text ────────────────────────────────────── */
-.gold-glow {
-  text-shadow: 0 0 14px rgba(201,168,76,0.6), 0 0 4px rgba(201,168,76,0.3);
+/* Copper glow text */
+.copper-glow {
+  text-shadow: 0 0 14px rgba(196,122,58,0.5), 0 0 4px rgba(196,122,58,0.25);
 }
 
-/* ─── Tabular numbers ───────────────────────────────────── */
+/* Legacy gold-glow (re-mapped to copper) */
+.gold-glow {
+  text-shadow: 0 0 14px rgba(196,122,58,0.5), 0 0 4px rgba(196,122,58,0.25);
+}
+
+/* Small uppercase label (used in cards) */
+.bm-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  margin: 0;
+}
+
+/* Tabular numbers */
 .tabular {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
 
-/* ─── Floodlight atmosphere (dashboard) ─────────────────── */
+/* Floodlight atmosphere */
 .floodlight-bg {
   position: relative;
 }
@@ -208,38 +479,38 @@ a {
   transform: translateX(-50%);
   width: 500px;
   height: 300px;
-  background: radial-gradient(ellipse at 50% 0%, rgba(180,210,255,0.06) 0%, transparent 70%);
+  background:
+    radial-gradient(ellipse at 25% 0%, rgba(196,122,58,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 75% 0%, rgba(196,122,58,0.06) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
 }
 
-@keyframes snowfall {
-  0%   { transform: translateY(-10px) translateX(0); opacity: 0; }
-  10%  { opacity: 0.8; }
-  90%  { opacity: 0.6; }
-  100% { transform: translateY(100vh) translateX(20px); opacity: 0; }
+/* Copper border pulse (playoff/attention) */
+@keyframes copperBorderPulse {
+  0%, 100% { border-color: rgba(196,122,58,0.2); }
+  50%       { border-color: rgba(196,122,58,0.5); }
+}
+.copper-border-pulse {
+  animation: copperBorderPulse 3s ease-in-out infinite;
 }
 
-@keyframes fadeInUpScale {
-  from { opacity: 0; transform: translateY(10px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes goldShimmer {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 1.0; }
-}
-
-@keyframes confettiFall {
-  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-}
-
-@keyframes goldBorderPulse {
-  0%, 100% { border-color: rgba(201,168,76,0.2); }
-  50% { border-color: rgba(201,168,76,0.5); }
-}
-
+/* Legacy gold-border-pulse re-mapped */
 .gold-border-pulse {
-  animation: goldBorderPulse 3s ease-in-out infinite;
+  animation: copperBorderPulse 3s ease-in-out infinite;
+}
+
+/* Gradient background re-mapped */
+.gradient-bg {
+  background: linear-gradient(160deg, var(--bg) 0%, var(--bg-surface) 60%, var(--bg) 100%);
+}
+
+/* Heartbeat animation utility */
+.heartbeat {
+  animation: heartbeat 2s ease-in-out infinite;
+}
+
+/* Breathe animation utility */
+.breathe {
+  animation: breatheDot 2s ease-in-out infinite;
 }
