@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 
@@ -157,6 +158,11 @@ export function StartScreen() {
   const { loadGame, listSaves } = useGameStore()
   const saves = listSaves()
   const hasSave = saves.length > 0
+
+  // No save → skip StartScreen entirely and go straight to intro
+  useEffect(() => {
+    if (!hasSave) navigate('/intro', { replace: true })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleLoadGame() {
     const save = saves[0]
