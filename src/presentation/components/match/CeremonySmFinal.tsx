@@ -41,7 +41,7 @@ export function CeremonySmFinal({
   if (slide === 1) {
     return (
       <div style={{
-        position: 'fixed', inset: 0, background: '#0D1B2A',
+        position: 'fixed', inset: 0, background: 'var(--bg-dark)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         zIndex: 300,
       }}>
@@ -50,16 +50,16 @@ export function CeremonySmFinal({
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 13, color: '#8A9BB0', marginBottom: 8 }}>{truncate(homeClubName, 14)}</p>
-            <span style={{ fontSize: 64, fontWeight: 900, color: '#F0F4F8' }}>{homeScore}</span>
+            <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', marginBottom: 8 }}>{truncate(homeClubName, 14)}</p>
+            <span style={{ fontSize: 64, fontWeight: 900, color: 'var(--text-light)', fontFamily: 'var(--font-display)' }}>{homeScore}</span>
           </div>
-          <span style={{ fontSize: 32, color: '#4A6080' }}>—</span>
+          <span style={{ fontSize: 32, color: 'rgba(245,241,235,0.35)' }}>—</span>
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 13, color: '#8A9BB0', marginBottom: 8 }}>{truncate(awayClubName, 14)}</p>
-            <span style={{ fontSize: 64, fontWeight: 900, color: '#F0F4F8' }}>{awayScore}</span>
+            <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', marginBottom: 8 }}>{truncate(awayClubName, 14)}</p>
+            <span style={{ fontSize: 64, fontWeight: 900, color: 'var(--text-light)', fontFamily: 'var(--font-display)' }}>{awayScore}</span>
           </div>
         </div>
-        <p style={{ fontSize: 20, fontWeight: 700, color: '#F0F4F8', letterSpacing: '1px' }}>SLUTSIGNAL!</p>
+        <p style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-light)', letterSpacing: '1px' }}>SLUTSIGNAL!</p>
       </div>
     )
   }
@@ -73,7 +73,7 @@ export function CeremonySmFinal({
 
     return (
       <div style={{
-        position: 'fixed', inset: 0, background: '#0D1B2A',
+        position: 'fixed', inset: 0, background: 'var(--bg-dark)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         zIndex: 300, overflow: 'hidden',
       }}>
@@ -89,25 +89,25 @@ export function CeremonySmFinal({
               }}>
                 SVENSKA MÄSTARE!
               </h1>
-              <p style={{ fontSize: 18, color: '#F0F4F8', fontWeight: 700, marginBottom: 4 }}>{clubName}</p>
-              <p style={{ fontSize: 14, color: '#8A9BB0', marginBottom: 32 }}>Vi vann SM-guld {season}!</p>
+              <p style={{ fontSize: 18, color: 'var(--text-light)', fontWeight: 700, marginBottom: 4 }}>{clubName}</p>
+              <p style={{ fontSize: 14, color: 'var(--text-light-secondary)', marginBottom: 32 }}>Vi vann SM-guld {season}!</p>
             </>
           ) : (
             <>
               <div style={{ fontSize: 60, marginBottom: 16 }}>🥈</div>
-              <h1 style={{ fontSize: 24, fontWeight: 800, color: '#8A9BB0', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 12 }}>
+              <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-light-secondary)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 12 }}>
                 SILVER
               </h1>
-              <p style={{ fontSize: 15, color: '#F0F4F8', marginBottom: 4 }}>Ni kämpade väl.</p>
-              <p style={{ fontSize: 14, color: '#8A9BB0', marginBottom: 32 }}>Silvermedaljörer {season}.</p>
+              <p style={{ fontSize: 15, color: 'var(--text-light)', marginBottom: 4 }}>Ni kämpade väl.</p>
+              <p style={{ fontSize: 14, color: 'var(--text-light-secondary)', marginBottom: 32 }}>Silvermedaljörer {season}.</p>
             </>
           )}
           <button
             onClick={onAdvance}
             style={{
               padding: '14px 32px', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer',
-              background: managedWon ? '#C9A84C' : '#1e3450',
-              color: managedWon ? '#0D1B2A' : '#F0F4F8',
+              background: managedWon ? '#C9A84C' : 'var(--bg-dark-surface)',
+              color: managedWon ? 'var(--bg-dark)' : 'var(--text-light)',
             }}
           >
             Matchens spelare →
@@ -131,7 +131,7 @@ export function CeremonySmFinal({
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: '#0D1B2A',
+      position: 'fixed', inset: 0, background: 'var(--bg-dark)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       zIndex: 300,
     }}>
@@ -140,18 +140,18 @@ export function CeremonySmFinal({
           MATCHENS SPELARE
         </p>
         <div style={{ fontSize: 56, marginBottom: 16 }}>⭐</div>
-        <h2 style={{ fontSize: 24, fontWeight: 900, color: '#F0F4F8', marginBottom: 8 }}>{mvpName}</h2>
+        <h2 style={{ fontSize: 24, fontWeight: 900, color: 'var(--text-light)', marginBottom: 8 }}>{mvpName}</h2>
         {mvpPos && (
-          <p style={{ fontSize: 13, color: '#8A9BB0', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px' }}>
+          <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px' }}>
             {mvpPos}
           </p>
         )}
-        <p style={{ fontSize: 32, fontWeight: 800, color: '#C9A84C', marginBottom: 32 }}>
+        <p style={{ fontSize: 32, fontWeight: 800, color: '#C9A84C', marginBottom: 32, fontFamily: 'var(--font-display)' }}>
           {typeof mvpRating === 'number' ? mvpRating.toFixed(1) : '–'}
         </p>
         <button
           onClick={onNavigate}
-          style={{ padding: '16px 32px', background: '#C9A84C', border: 'none', borderRadius: 12, color: '#0D1B2A', fontSize: 16, fontWeight: 800, cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase' }}
+          style={{ padding: '16px 32px', background: '#C9A84C', border: 'none', borderRadius: 12, color: 'var(--bg-dark)', fontSize: 16, fontWeight: 800, cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase' }}
         >
           Säsongsavslutning →
         </button>

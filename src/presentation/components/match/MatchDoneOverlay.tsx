@@ -60,7 +60,7 @@ export function MatchDoneOverlay({
   const managedIsHome = fixture.homeClubId === managedClubId
   const managedGoals = managedIsHome ? homeScore : awayScore
   const oppGoals = managedIsHome ? awayScore : homeScore
-  const resultColor = managedGoals > oppGoals ? '#22c55e' : managedGoals < oppGoals ? '#ef4444' : '#eab308'
+  const resultColor = managedGoals > oppGoals ? '#5A9A4A' : managedGoals < oppGoals ? '#B05040' : '#C47A3A'
 
   const allStarters = [...(homeLineup.startingPlayerIds ?? []), ...(awayLineup.startingPlayerIds ?? [])]
   const allEvents = steps.flatMap(s => s.events)
@@ -155,7 +155,7 @@ export function MatchDoneOverlay({
             marginBottom: 14, padding: '12px', textAlign: 'left',
             background: 'rgba(255,255,255,0.03)', borderRadius: 8, border: '1px solid var(--border)',
           }}>
-            <p style={{ fontSize: 11, color: '#8A9BB0', fontWeight: 700, marginBottom: 6 }}>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 6 }}>
               🎤 {pressQuestion.journalist}
             </p>
             <p style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 10, fontStyle: 'italic' }}>
@@ -185,7 +185,7 @@ export function MatchDoneOverlay({
         )}
         {pressQuestion && pressAnswered && pressQuote && (
           <div style={{ marginBottom: 14, padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, border: '1px solid var(--border)', textAlign: 'left' }}>
-            <p style={{ fontSize: 11, color: '#8A9BB0', marginBottom: 4 }}>📰 Presskonferens</p>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>📰 Presskonferens</p>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic' }}>{pressQuote}</p>
           </div>
         )}

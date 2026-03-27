@@ -170,7 +170,7 @@ export function HalftimeModal({
   ) {
     return (
       <div style={{ marginBottom: 14 }}>
-        <p style={{ fontSize: 11, color: '#8A9BB0', marginBottom: 6, fontWeight: 600 }}>{label}</p>
+        <p style={{ fontSize: 11, color: 'var(--text-light-secondary)', marginBottom: 6, fontWeight: 600 }}>{label}</p>
         <div style={{ display: 'flex', gap: 6 }}>
           {options.map(o => (
             <button
@@ -181,7 +181,7 @@ export function HalftimeModal({
                 background: current === o.val ? 'var(--accent)' : 'rgba(255,255,255,0.06)',
                 border: `1px solid ${current === o.val ? 'var(--accent)' : 'rgba(255,255,255,0.12)'}`,
                 borderRadius: 6,
-                color: current === o.val ? '#fff' : '#8A9BB0',
+                color: current === o.val ? '#fff' : 'var(--text-light-secondary)',
                 cursor: 'pointer',
               }}
             >{o.label}</button>
@@ -200,12 +200,12 @@ export function HalftimeModal({
   return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: 'rgba(0,0,0,0.85)',
+      background: 'rgba(14,13,11,0.96)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
       paddingTop: '40px', zIndex: 200, overflowY: 'auto',
     }}>
       <div style={{
-        background: isBigMatch ? '#0D1B2A' : 'var(--bg-surface)',
+        background: isBigMatch ? 'var(--bg-dark-surface)' : 'var(--bg-surface)',
         border: isBigMatch ? '1px solid rgba(201,168,76,0.4)' : '1px solid var(--border)',
         borderRadius: 'var(--radius)', padding: '20px 20px 16px',
         textAlign: 'center', minWidth: 260, maxWidth: 330, width: '90%',
@@ -242,7 +242,7 @@ export function HalftimeModal({
                 flex: 1, padding: '7px 4px', fontSize: 10, fontWeight: 700,
                 background: activeTab === tab.id ? 'rgba(255,255,255,0.12)' : 'transparent',
                 border: 'none', borderRadius: 6,
-                color: activeTab === tab.id ? '#F0F4F8' : '#4A6080',
+                color: activeTab === tab.id ? 'var(--text-light)' : 'rgba(245,241,235,0.35)',
                 cursor: 'pointer', letterSpacing: '0.5px',
               }}
             >{tab.label}</button>
@@ -273,16 +273,16 @@ export function HalftimeModal({
                 {bestPlayer?.position && <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{bestPlayer.position}</p>}
               </div>
             )}
-            <p style={{ fontSize: 12, color: '#8A9BB0', fontStyle: 'italic', marginBottom: isSmFinal || isCupFinal ? 10 : 0, lineHeight: 1.5 }}>
+            <p style={{ fontSize: 12, color: 'var(--text-light-secondary)', fontStyle: 'italic', marginBottom: isSmFinal || isCupFinal ? 10 : 0, lineHeight: 1.5 }}>
               💬 "{analysis}"
             </p>
             {isSmFinal && (
-              <p style={{ fontSize: 11, color: '#8A9BB0', fontStyle: 'italic', marginBottom: 0, lineHeight: 1.5 }}>
+              <p style={{ fontSize: 11, color: 'var(--text-light-secondary)', fontStyle: 'italic', marginBottom: 0, lineHeight: 1.5 }}>
                 Laget samlas i omklädningsrummet. Det är 30 minuter kvar till SM-guld.
               </p>
             )}
             {isCupFinal && !isSmFinal && (
-              <p style={{ fontSize: 11, color: '#8A9BB0', fontStyle: 'italic', marginBottom: 0, lineHeight: 1.5 }}>
+              <p style={{ fontSize: 11, color: 'var(--text-light-secondary)', fontStyle: 'italic', marginBottom: 0, lineHeight: 1.5 }}>
                 Laget samlas i omklädningsrummet. Det är 30 minuter kvar till cuptiteln.
               </p>
             )}
@@ -346,7 +346,7 @@ export function HalftimeModal({
                 </p>
 
                 {/* Starters sorted by fitness */}
-                <p style={{ fontSize: 10, color: '#8A9BB0', marginBottom: 4, fontWeight: 600 }}>Startande (sorterat på form)</p>
+                <p style={{ fontSize: 10, color: 'var(--text-light-secondary)', marginBottom: 4, fontWeight: 600 }}>Startande (sorterat på form)</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
                   {sortedStarters.map(id => {
                     const isOut = pendingOutId === id
@@ -358,7 +358,7 @@ export function HalftimeModal({
                           padding: '6px 8px', textAlign: 'left', fontSize: 11,
                           background: isOut ? 'rgba(248,113,113,0.15)' : 'rgba(255,255,255,0.04)',
                           border: `1px solid ${isOut ? 'rgba(248,113,113,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                          borderRadius: 5, color: isOut ? '#f87171' : '#8A9BB0',
+                          borderRadius: 5, color: isOut ? '#f87171' : 'var(--text-light-secondary)',
                           cursor: 'pointer', fontWeight: isOut ? 700 : 400,
                         }}
                       >
@@ -369,7 +369,7 @@ export function HalftimeModal({
                 </div>
 
                 {/* Bench */}
-                <p style={{ fontSize: 10, color: '#8A9BB0', marginBottom: 4, fontWeight: 600 }}>Bänk</p>
+                <p style={{ fontSize: 10, color: 'var(--text-light-secondary)', marginBottom: 4, fontWeight: 600 }}>Bänk</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {effectiveBench.map(id => {
                     const canSelect = !!pendingOutId
@@ -404,7 +404,7 @@ export function HalftimeModal({
             width: '100%', padding: '12px', marginTop: 16,
             background: isBigMatch ? '#C9A84C' : 'var(--accent)',
             border: 'none', borderRadius: 'var(--radius)',
-            color: isBigMatch ? '#0D1B2A' : '#fff', fontSize: 15, fontWeight: 700,
+            color: isBigMatch ? '#1A1A18' : '#fff', fontSize: 15, fontWeight: 700,
             cursor: 'pointer',
           }}
         >

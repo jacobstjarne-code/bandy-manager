@@ -91,7 +91,7 @@ function getTopStats(player: Player): { label: string; value: number }[] {
 
 function statValueColor(value: number): string {
   if (value >= 75) return '#22c55e'
-  if (value >= 60) return '#F0F4F8'
+  if (value >= 60) return 'var(--text-primary)'
   if (value >= 40) return '#f59e0b'
   return '#ef4444'
 }
@@ -180,7 +180,7 @@ function CaSparkline({ history, currentCa }: { history: Array<{ season: number; 
 
   return (
     <div style={{ marginTop: 8 }}>
-      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#4A6080', marginBottom: 4 }}>
+      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
         CA-UTVECKLING
       </p>
       <svg width={W} height={H + 4} viewBox={`0 0 ${W} ${H + 4}`} style={{ display: 'block' }}>
@@ -193,7 +193,7 @@ function CaSparkline({ history, currentCa }: { history: Array<{ season: number; 
           strokeLinejoin="round"
         />
         <circle cx={last.x} cy={last.y} r="3" fill={trending ? '#22c55e' : '#ef4444'} />
-        <text x={last.x + 5} y={last.y + 4} fontSize="9" fill="#F0F4F8" fontWeight="700">{currentCa}</text>
+        <text x={last.x + 5} y={last.y + 4} fontSize="9" fill="var(--text-primary)" fontWeight="700">{currentCa}</text>
       </svg>
     </div>
   )
@@ -234,9 +234,9 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
       style={{
         width: 280,
         borderRadius: 16,
-        background: 'linear-gradient(#122235, #0D1B2A) padding-box, linear-gradient(160deg, #C9A84C 0%, #8B6914 50%, transparent 100%) border-box',
+        background: 'linear-gradient(var(--bg-surface), var(--bg)) padding-box, linear-gradient(160deg, #C9A84C 0%, #8B6914 50%, transparent 100%) border-box',
         border: '2px solid transparent',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.1)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.15), 0 0 0 1px rgba(201,168,76,0.1)',
         overflow: 'hidden',
         cursor: onClick ? 'pointer' : 'default',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -259,7 +259,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
           <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, letterSpacing: '1px' }}>
             #{jerseyNum}
           </p>
-          <p style={{ fontSize: 10, color: '#8A9BB0', letterSpacing: '1px', textTransform: 'uppercase' }}>
+          <p style={{ fontSize: 10, color: 'var(--text-secondary)', letterSpacing: '1px', textTransform: 'uppercase' }}>
             {posLabel}
           </p>
         </div>
@@ -274,7 +274,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
         justifyContent: 'center',
         alignItems: 'center',
         padding: '8px 0 4px',
-        background: 'linear-gradient(180deg, #0a1928 0%, #0d1e33 100%)',
+        background: 'linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-elevated) 100%)',
         position: 'relative',
         overflow: 'hidden',
       }}>
@@ -299,7 +299,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
         <p style={{
           fontSize: 17,
           fontWeight: 900,
-          color: '#F0F4F8',
+          color: 'var(--text-primary)',
           letterSpacing: '-0.3px',
           lineHeight: 1.1,
           textTransform: 'uppercase',
@@ -316,14 +316,14 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
           }}>
             {clubName.toUpperCase()}
           </span>
-          <span style={{ color: '#1e3450', fontSize: 12 }}>·</span>
+          <span style={{ color: 'var(--border)', fontSize: 12 }}>·</span>
           <div style={{
             padding: '2px 6px',
             borderRadius: 4,
             background: archColor,
             fontSize: 10,
             fontWeight: 700,
-            color: '#F0F4F8',
+            color: 'var(--text-light)',
             letterSpacing: '0.5px',
             textTransform: 'uppercase',
           }}>
@@ -361,8 +361,8 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
                   borderRadius: 6,
                   border: '1px solid rgba(201,168,76,0.1)',
                 }}>
-                  <span style={{ fontSize: 10, color: '#8A9BB0', letterSpacing: '0.3px' }}>{stat.label}</span>
-                  <span className="tabular" style={{ fontSize: 12, fontWeight: 800, color: statValueColor(stat.value), marginLeft: 4 }}>
+                  <span style={{ fontSize: 10, color: 'var(--text-secondary)', letterSpacing: '0.3px' }}>{stat.label}</span>
+                  <span className="tabular" style={{ fontSize: 12, fontWeight: 800, color: statValueColor(stat.value), marginLeft: 4, fontFamily: 'var(--font-display)' }}>
                     {Math.round(stat.value)}{effectiveReport && !isOwned && <span style={{ fontSize: 9, opacity: 0.6 }}> ~</span>}
                   </span>
                 </div>
@@ -372,8 +372,8 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 8px' }}>
               {['A', 'B', 'C', 'D'].map(k => (
                 <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: 6, border: '1px solid rgba(138,155,176,0.1)' }}>
-                  <span style={{ fontSize: 10, color: '#4A6080', letterSpacing: '0.3px' }}>—</span>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: '#4A6080' }}>?</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.3px' }}>—</span>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-muted)' }}>?</span>
                 </div>
               ))}
             </div>
@@ -392,12 +392,12 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
       {/* Season summary — only for owned players */}
       <div style={{ padding: '8px 14px 12px' }}>
         {!isOwned && effectiveReport && (
-          <p style={{ fontSize: 11, color: '#4A6080', fontStyle: 'italic' }}>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
             🔍 Scouted {effectiveReport.scoutedDate} · uppskattad styrka {effectiveReport.estimatedCA}
           </p>
         )}
         {!isOwned && !effectiveReport && (
-          <p style={{ fontSize: 11, color: '#4A6080' }}>Ej scoutad — attribut okända</p>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>Ej scoutad — attribut okända</p>
         )}
         {isOwned && <>
         <p style={{
@@ -405,51 +405,51 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
           fontWeight: 700,
           letterSpacing: '2px',
           textTransform: 'uppercase',
-          color: '#4A6080',
+          color: 'var(--text-muted)',
           marginBottom: 6,
         }}>
           SÄSONG
         </p>
-        <p style={{ fontSize: 11, color: '#4A6080', marginBottom: 6 }}>
-          Marknadsvärde: <span style={{ color: '#8A9BB0', fontWeight: 700 }}>{formatMarketValue(player.marketValue)}</span>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>
+          Marknadsvärde: <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>{formatMarketValue(player.marketValue)}</span>
         </p>
         {player.seasonStats.gamesPlayed > 0 ? (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px 6px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 5, padding: '4px 2px' }}>
-              <span style={{ fontSize: 14, fontWeight: 800, color: '#F0F4F8' }}>{player.seasonStats.goals}</span>
-              <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>MÅL</span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: 5, padding: '4px 2px' }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{player.seasonStats.goals}</span>
+              <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>MÅL</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 5, padding: '4px 2px' }}>
-              <span style={{ fontSize: 14, fontWeight: 800, color: '#F0F4F8' }}>{player.seasonStats.assists}</span>
-              <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>ASSIST</span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: 5, padding: '4px 2px' }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{player.seasonStats.assists}</span>
+              <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>ASSIST</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 5, padding: '4px 2px' }}>
-              <span style={{ fontSize: 14, fontWeight: 800, color: '#F0F4F8' }}>{player.seasonStats.gamesPlayed}</span>
-              <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>MATCHER</span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: 5, padding: '4px 2px' }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{player.seasonStats.gamesPlayed}</span>
+              <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>MATCHER</span>
             </div>
             {player.seasonStats.averageRating > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 5, padding: '4px 2px' }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: player.seasonStats.averageRating >= 7 ? '#22c55e' : player.seasonStats.averageRating >= 6 ? '#f59e0b' : '#ef4444' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: 5, padding: '4px 2px' }}>
+                <span style={{ fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-display)', color: player.seasonStats.averageRating >= 7 ? '#22c55e' : player.seasonStats.averageRating >= 6 ? '#f59e0b' : '#ef4444' }}>
                   {player.seasonStats.averageRating.toFixed(1)}
                 </span>
-                <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>BETYG</span>
+                <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>BETYG</span>
               </div>
             )}
             {player.seasonStats.yellowCards > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 5, padding: '4px 2px' }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: '#f59e0b' }}>{player.seasonStats.yellowCards}</span>
-                <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>GULA</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: 5, padding: '4px 2px' }}>
+                <span style={{ fontSize: 14, fontWeight: 800, color: '#f59e0b', fontFamily: 'var(--font-display)' }}>{player.seasonStats.yellowCards}</span>
+                <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>GULA</span>
               </div>
             )}
             {player.seasonStats.suspensions > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: 5, padding: '4px 2px' }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: '#ef4444' }}>{player.seasonStats.suspensions}</span>
-                <span style={{ fontSize: 9, color: '#4A6080', letterSpacing: '0.5px' }}>UTVISN</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: 5, padding: '4px 2px' }}>
+                <span style={{ fontSize: 14, fontWeight: 800, color: '#ef4444', fontFamily: 'var(--font-display)' }}>{player.seasonStats.suspensions}</span>
+                <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>UTVISN</span>
               </div>
             )}
           </div>
         ) : (
-          <p style={{ fontSize: 12, color: '#4A6080' }}>Inga matcher spelat</p>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Inga matcher spelat</p>
         )}
         {isOwned && (player.caHistory ?? []).length >= 1 && (
           <CaSparkline history={player.caHistory ?? []} currentCa={player.currentAbility} />

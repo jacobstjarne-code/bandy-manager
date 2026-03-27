@@ -61,7 +61,7 @@ export function OpponentInfoCard({ opponent, game }: OpponentInfoCardProps) {
               </>
             ) : (
               <>
-                <p style={{ fontSize: 18, fontWeight: 800, color: '#4A6080' }}>?</p>
+                <p style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-muted)' }}>?</p>
                 <p style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Styrka</p>
               </>
             )}

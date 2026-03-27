@@ -23,23 +23,23 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
   return (
     <div style={{
       margin: '0 16px 12px',
-      background: '#0e1f33',
-      border: '1px solid #1e3450',
+      background: 'var(--bg-elevated)',
+      border: '1px solid var(--border)',
       borderRadius: 12,
       padding: '16px',
     }}>
-      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#4A6080', marginBottom: 10 }}>
+      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
         📊 Motståndaranalys
       </p>
 
-      <p style={{ fontSize: 13, color: '#8A9BB0', marginBottom: 8 }}>
+      <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 8 }}>
         {opponent.name}
         {displayAnalysis.tablePosition && ` · ${ordinal(displayAnalysis.tablePosition)} plats`}
         {displayAnalysis.recentForm && ` · ${displayAnalysis.recentForm}`}
       </p>
 
       {displayAnalysis.level === 'detailed' && displayAnalysis.style && (
-        <p style={{ fontSize: 12, color: '#4A6080', marginBottom: 8 }}>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
           Spelstil: {displayAnalysis.style}
           {displayAnalysis.formation && ` · Formation: ${displayAnalysis.formation}`}
         </p>
@@ -47,9 +47,9 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
 
       {displayAnalysis.keyPlayers.length > 0 && (
         <div style={{ marginBottom: 10 }}>
-          <p style={{ fontSize: 11, color: '#4A6080', marginBottom: 4 }}>Nyckelspelare:</p>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Nyckelspelare:</p>
           {displayAnalysis.keyPlayers.map((kp, i) => (
-            <div key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 2 }}>
+            <div key={i} style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2 }}>
               {kp.name} ({kp.position.slice(0, 3).toUpperCase()}) · Styrka ~{kp.estimatedCA}
             </div>
           ))}

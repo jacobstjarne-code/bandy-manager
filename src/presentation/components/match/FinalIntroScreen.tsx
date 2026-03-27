@@ -14,7 +14,7 @@ const introBtn: React.CSSProperties = {
   background: '#C9A84C',
   border: 'none',
   borderRadius: 12,
-  color: '#0D1B2A',
+  color: 'var(--bg-dark)',
   fontSize: 15,
   fontWeight: 700,
   cursor: 'pointer',
@@ -26,7 +26,7 @@ const startBtn: React.CSSProperties = {
   background: '#C9A84C',
   border: 'none',
   borderRadius: 12,
-  color: '#0D1B2A',
+  color: 'var(--bg-dark)',
   fontSize: 16,
   fontWeight: 800,
   cursor: 'pointer',
@@ -79,7 +79,7 @@ export function FinalIntroScreen({
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        background: 'linear-gradient(180deg, #050d18 0%, #0D1B2A 60%, #091526 100%)',
+        background: 'linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-dark) 60%, var(--bg-dark) 100%)',
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
@@ -103,7 +103,7 @@ export function FinalIntroScreen({
           <h1 style={{
             fontSize: 28,
             fontWeight: 900,
-            color: variant === 'sm' ? '#C9A84C' : '#F0F4F8',
+            color: variant === 'sm' ? '#C9A84C' : 'var(--text-light)',
             letterSpacing: '3px',
             textTransform: 'uppercase',
             marginBottom: 8,
@@ -111,16 +111,16 @@ export function FinalIntroScreen({
             {variant === 'sm' ? 'SM-FINALEN' : 'FINAL'}
           </h1>
           {variant === 'sm' && (
-            <p style={{ fontSize: 16, color: '#8A9BB0', marginBottom: 4 }}>Studenternas IP, Uppsala</p>
+            <p style={{ fontSize: 16, color: 'var(--text-light-secondary)', marginBottom: 4 }}>Studenternas IP, Uppsala</p>
           )}
-          <p style={{ fontSize: 14, color: '#6a7d8f', marginBottom: 4 }}>Säsong {season}</p>
+          <p style={{ fontSize: 14, color: 'rgba(245,241,235,0.35)', marginBottom: 4 }}>Säsong {season}</p>
           {variant === 'cup' && (
             <p style={{ fontSize: 16, color: '#C9A84C', fontWeight: 700, marginBottom: 4 }}>
               {truncate(homeClubName, 14)}  vs  {truncate(awayClubName, 14)}
             </p>
           )}
           {weatherEmoji && (
-            <p style={{ fontSize: 13, color: '#6a7d8f', marginBottom: variant === 'sm' ? 32 : 28 }}>
+            <p style={{ fontSize: 13, color: 'rgba(245,241,235,0.35)', marginBottom: variant === 'sm' ? 32 : 28 }}>
               {weatherEmoji} {matchWeather?.weather.condition}
             </p>
           )}
@@ -148,7 +148,7 @@ export function FinalIntroScreen({
       return (
         <div style={{
           display: 'flex', flexDirection: 'column', height: '100%',
-          background: '#0D1B2A', padding: '24px 16px', overflowY: 'auto',
+          background: 'var(--bg-dark)', padding: '24px 16px', overflowY: 'auto',
         }}>
           <p style={{
             fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
@@ -159,29 +159,29 @@ export function FinalIntroScreen({
               flex: 1, background: 'rgba(201,168,76,0.06)',
               border: '1px solid rgba(201,168,76,0.2)', borderRadius: 12, padding: '16px 12px', textAlign: 'center',
             }}>
-              <p style={{ fontSize: 14, fontWeight: 700, color: '#F0F4F8', marginBottom: 8 }}>
+              <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-light)', marginBottom: 8 }}>
                 {truncate(homeClubName, 14)}
               </p>
               {homeStanding && (
-                <p style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 8 }}>
+                <p style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginBottom: 8 }}>
                   Plats {homeStanding.position} i serien
                 </p>
               )}
-              <p style={{ fontSize: 11, color: '#6a7d8f', lineHeight: 1.4 }}>{homeJourney}</p>
+              <p style={{ fontSize: 11, color: 'rgba(245,241,235,0.35)', lineHeight: 1.4 }}>{homeJourney}</p>
             </div>
             <div style={{
               flex: 1, background: 'rgba(201,168,76,0.06)',
               border: '1px solid rgba(201,168,76,0.2)', borderRadius: 12, padding: '16px 12px', textAlign: 'center',
             }}>
-              <p style={{ fontSize: 14, fontWeight: 700, color: '#F0F4F8', marginBottom: 8 }}>
+              <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-light)', marginBottom: 8 }}>
                 {truncate(awayClubName, 14)}
               </p>
               {awayStanding && (
-                <p style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 8 }}>
+                <p style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginBottom: 8 }}>
                   Plats {awayStanding.position} i serien
                 </p>
               )}
-              <p style={{ fontSize: 11, color: '#6a7d8f', lineHeight: 1.4 }}>{awayJourney}</p>
+              <p style={{ fontSize: 11, color: 'rgba(245,241,235,0.35)', lineHeight: 1.4 }}>{awayJourney}</p>
             </div>
           </div>
           <button onClick={onNext} style={{ ...introBtn, padding: '14px', width: '100%' }}>NÄSTA →</button>
@@ -193,7 +193,7 @@ export function FinalIntroScreen({
     return (
       <div style={{
         display: 'flex', flexDirection: 'column', height: '100%',
-        background: '#0D1B2A', padding: '24px 16px', overflowY: 'auto',
+        background: 'var(--bg-dark)', padding: '24px 16px', overflowY: 'auto',
       }}>
         <p style={{
           fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
@@ -205,18 +205,18 @@ export function FinalIntroScreen({
               {truncate(homeClubName, 14)}
             </p>
             {homeStarters.map((p, i) => p && (
-              <p key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 4, textAlign: 'center' }}>
+              <p key={i} style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginBottom: 4, textAlign: 'center' }}>
                 {p.firstName} {p.lastName}
               </p>
             ))}
           </div>
-          <div style={{ width: 1, background: 'rgba(201,168,76,0.15)' }} />
+          <div style={{ width: 1, background: 'rgba(196,186,168,0.15)' }} />
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
               {truncate(awayClubName, 14)}
             </p>
             {awayStarters.map((p, i) => p && (
-              <p key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 4, textAlign: 'center' }}>
+              <p key={i} style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginBottom: 4, textAlign: 'center' }}>
                 {p.firstName} {p.lastName}
               </p>
             ))}
@@ -238,7 +238,7 @@ export function FinalIntroScreen({
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', height: '100%',
-      background: '#0D1B2A', padding: '24px 16px', overflowY: 'auto',
+      background: 'var(--bg-dark)', padding: '24px 16px', overflowY: 'auto',
     }}>
       <p style={{
         fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
@@ -250,18 +250,18 @@ export function FinalIntroScreen({
             {truncate(homeClubName, 14)}
           </p>
           {homeStarters.map((p, i) => p && (
-            <p key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 4, textAlign: 'center' }}>
+            <p key={i} style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginBottom: 4, textAlign: 'center' }}>
               {p.firstName} {p.lastName}
             </p>
           ))}
         </div>
-        <div style={{ width: 1, background: 'rgba(201,168,76,0.15)' }} />
+        <div style={{ width: 1, background: 'rgba(196,186,168,0.15)' }} />
         <div style={{ flex: 1 }}>
           <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
             {truncate(awayClubName, 14)}
           </p>
           {awayStarters.map((p, i) => p && (
-            <p key={i} style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 4, textAlign: 'center' }}>
+            <p key={i} style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginBottom: 4, textAlign: 'center' }}>
               {p.firstName} {p.lastName}
             </p>
           ))}
