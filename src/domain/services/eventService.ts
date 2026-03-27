@@ -1517,7 +1517,6 @@ export function resolveEvent(
     case 'extendContract': {
       const pid = effect.targetPlayerId
       if (pid) {
-        const player = updatedGame.players.find(p => p.id === pid)
         const years = choice.id === 'extend3' ? 3 : 1
         updatedGame = {
           ...updatedGame,
@@ -1533,7 +1532,6 @@ export function resolveEvent(
           ),
           handledContractPlayerIds: [...(updatedGame.handledContractPlayerIds ?? []), pid],
         }
-        void player
       }
       break
     }

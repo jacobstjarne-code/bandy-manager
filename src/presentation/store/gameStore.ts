@@ -1,12 +1,11 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { get as idbGet, set as idbSet, del as idbDel } from 'idb-keyval'
-import type { SaveGame, TalentSearchRequest, RoundSummaryData } from '../../domain/entities/SaveGame'
+import type { SaveGame, TalentSearchRequest, RoundSummaryData, Sponsor } from '../../domain/entities/SaveGame'
 import type { Tactic } from '../../domain/entities/Club'
 import type { TrainingFocus, TrainingProjectType } from '../../domain/entities/Training'
 import { createTrainingProject } from '../../domain/services/trainingProjectService'
 import { generateSponsorOffer } from '../../domain/services/sponsorService'
-import type { Sponsor } from '../../domain/entities/SaveGame'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entities/Fixture'
 import { FixtureStatus, PlayoffStatus, InboxItemType, PlayerPosition } from '../../domain/enums'
 import { createNewGame } from '../../application/useCases/createNewGame'
@@ -151,7 +150,6 @@ export const useGameStore = create<GameState>()(
           matchResult = `${homeClub?.shortName ?? homeClub?.name ?? '?'} ${managedFixture.homeScore}–${managedFixture.awayScore} ${awayClub?.shortName ?? awayClub?.name ?? '?'}`
 
           // Collect scorers for managed club
-          const isHome = managedFixture.homeClubId === resultGame.managedClubId
           const managedPlayerIds = new Set(resultGame.players.filter(p => p.clubId === resultGame.managedClubId).map(p => p.id))
           const goalsByPlayer: Record<string, number> = {}
           const assistsByPlayer: Record<string, number> = {}
@@ -171,7 +169,6 @@ export const useGameStore = create<GameState>()(
             else scorerStrs.push(`${name} ${goals} mål`)
           }
           if (scorerStrs.length > 0) matchScorers = scorerStrs
-          void isHome
         }
 
         // Injuries from this round

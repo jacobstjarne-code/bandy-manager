@@ -642,7 +642,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
         // Hat trick milestone (3+ goals this fixture)
         if (goals >= 3) {
-          const msKey = `hatTrick_${game.currentSeason}_r${nextRound}`
           if (!newMilestones.some(m => m.type === 'hatTrick' && m.season === game.currentSeason && m.round === nextRound)) {
             newMilestones.push({
               type: 'hatTrick',
@@ -650,7 +649,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
               round: nextRound,
               description: `${playerName} satte ${goals} mål i en match`,
             })
-            void msKey
             newMilestoneInboxItems.push({
               id: `inbox_milestone_hatTrick_${p.id}_r${nextRound}_${game.currentSeason}`,
               date: game.currentDate,
@@ -1839,7 +1837,7 @@ function getPlayerRating(playerId: string, fixtures: Fixture[]): number | null {
   return null
 }
 
-function handlePlayoffStart(game: SaveGame, seed?: number): AdvanceResult {
+function handlePlayoffStart(game: SaveGame, _seed?: number): AdvanceResult {
   // Calculate standings from regular season completed fixtures — exclude cup
   const completedFixtures = game.fixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
   const standings = calculateStandings(game.league.teamIds, completedFixtures)
@@ -1903,7 +1901,6 @@ function handlePlayoffStart(game: SaveGame, seed?: number): AdvanceResult {
 
   // If managed club didn't make playoffs, we have scheduled fixtures for other teams
   // but the bracket is set. Return playoffStarted so UI can react.
-  void seed
   return { game: updatedGame, roundPlayed: null, seasonEnded: false, playoffStarted: true }
 }
 
