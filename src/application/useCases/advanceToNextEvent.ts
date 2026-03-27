@@ -1299,7 +1299,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     } else if (communityActivities.lottery === 'basic') {
       income += (1000 + Math.round(rand() * 1500)) - 500
     }
-    if (communityActivities.bandySchool) {
+    if (communityActivities.bandyplay) {
       income += (500 + Math.round(rand() * 1000)) - 1000  // deltagaravgifter minus driftskostnad
     }
     if (communityActivities.socialMedia) {
@@ -1948,7 +1948,7 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   if (managedClubForLicense) {
     const licFinances = managedClubForLicense.finances
-    const hasYouth = !!(game.youthTeam) || !!(game.communityActivities?.bandySchool)
+    const hasYouth = !!(game.youthTeam) || !!(game.communityActivities?.bandyplay)
     const prevDenied = game.licenseReview?.status === 'denied'
 
     let failCount = 0
@@ -2019,39 +2019,8 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       } as InboxItem)
     }
 
-    // Generate handlingsplan event for warning/continued_review
+    // Inbox notification for handlingsplan (the actual GameEvent is created below in seasonEndPendingEvents)
     if (licStatus === 'warning' || licStatus === 'continued_review') {
-      const handlingsplanEvent: GameEvent = {
-        id: `licenseHandlingsplan_${game.currentSeason}`,
-        type: 'licenseHandlingsplan',
-        title: 'Licensnämndens krav: Handlingsplan',
-        body: `Licensnämnden kräver en handlingsplan för att säkra ${managedClubForLicense.name}s framtida licens. Välj er strategi.`,
-        choices: [
-          {
-            id: 'sparplan',
-            label: 'Sparplan — minska löner 15%',
-            effect: { type: 'multiEffect', subEffects: JSON.stringify([
-              { type: 'income', amount: Math.round((licenseReview.requiredCapital ?? 50000) * 0.8) },
-            ]) },
-          },
-          {
-            id: 'membership',
-            label: 'Medlemsdrivning — engagera lokala krafter',
-            effect: { type: 'communityStanding', amount: 5 },
-          },
-          {
-            id: 'sponsors',
-            label: 'Fler sponsorer — lova synlighet',
-            effect: { type: 'reputation', amount: 2 },
-          },
-          ...(game.patron?.isActive ? [{
-            id: 'patron',
-            label: `Patronen — be ${game.patron.name} om hjälp`,
-            effect: { type: 'patronHappiness' as const, amount: 10 },
-          }] : []),
-        ],
-        resolved: false,
-      }
       newInboxItems.push({
         id: `inbox_handlingsplan_${game.currentSeason}`,
         date: game.currentDate,
@@ -2060,8 +2029,6 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         body: 'Öppna händelserna för att svara på licensnämndens krav.',
         isRead: false,
       } as InboxItem)
-      // We'll add this as a pending event in the updated game
-      void handlingsplanEvent // will be added below
     }
   }
 
@@ -2518,7 +2485,7 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     fixtures: newFixtures,
     league: newLeague,
     standings: calculateStandings(updatedClubs.map(c => c.id), []),
-    inbox: [...game.inbox, ...newInboxItems, ...retirementMessages].slice(-25),
+    inbox: [...game.inbox, ...newInboxItems, ...retirementMessages].slice(-75),
     youthIntakeHistory: youthRecords,
     managedClubPendingLineup: undefined,
     matchWeathers: [],

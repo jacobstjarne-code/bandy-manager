@@ -12,11 +12,11 @@ export function calculateKommunBidrag(
   const base = 30000
   const generosityMod = (politician.generosity ?? 60) / 100
   const communityMod = communityStanding / 50  // 0-2
-  const activeYouth = (game.youthTeam?.players.length ?? 0) + (game.communityActivities?.bandySchool ? 15 : 0)
+  const activeYouth = (game.youthTeam?.players.length ?? 0) + (game.communityActivities?.bandyplay ? 15 : 0)
   const lokStod = activeYouth * 100
   let agendaBonus = 0
-  if (politician.agenda === 'youth' && game.communityActivities?.bandySchool) agendaBonus = 20000
-  if (politician.agenda === 'inclusion' && game.communityActivities?.bandySchool) agendaBonus = 15000
+  if (politician.agenda === 'youth' && game.communityActivities?.bandyplay) agendaBonus = 20000
+  if (politician.agenda === 'inclusion' && game.communityActivities?.bandyplay) agendaBonus = 15000
   if (politician.agenda === 'prestige' && (club.reputation ?? 50) > 65) agendaBonus = 10000
   if (politician.agenda === 'infrastructure' && (club.facilities ?? 50) > 60) agendaBonus = 15000
   const relBonus = politician.relationship > 70 ? 10000 : 0
