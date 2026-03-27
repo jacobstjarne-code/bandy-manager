@@ -156,7 +156,7 @@ export function IntroSequence() {
             textAlign: 'center',
             lineHeight: 1.1,
             opacity: s1 ? 1 : 0,
-            transition: s1 ? 'opacity 1000ms ease, letter-spacing 1400ms ease' : 'none',
+            transition: 'opacity 1000ms ease, letter-spacing 1400ms ease',
           }}>
             BANDY MANAGER
           </h1>
@@ -168,7 +168,8 @@ export function IntroSequence() {
             textAlign: 'center',
             margin: 0,
             opacity: s1 ? 1 : 0,
-            transition: s1 ? 'opacity 700ms ease 900ms' : 'none',
+            transition: 'opacity 700ms ease',
+            transitionDelay: s1 ? '900ms' : '0ms',
           }}>
             En liten by. Ett lag. En hel värld.
           </p>
@@ -195,7 +196,8 @@ export function IntroSequence() {
               boxShadow: '0 4px 24px rgba(196,122,58,0.40)',
               animation: s1 ? 'pulseCTA 2.5s ease-in-out infinite' : 'none',
               opacity: s1 ? 1 : 0,
-              transition: s1 ? 'opacity 700ms ease 1500ms' : 'none',
+              transition: 'opacity 700ms ease',
+              transitionDelay: s1 ? '1500ms' : '0ms',
             }}
           >
             STARTA KARRIÄREN
@@ -207,7 +209,8 @@ export function IntroSequence() {
               width: 52,
               filter: 'invert(1) brightness(.85) sepia(.15)',
               opacity: s1 ? 0.32 : 0,
-              transition: s1 ? 'opacity 700ms ease 1900ms' : 'none',
+              transition: 'opacity 700ms ease',
+              transitionDelay: s1 ? '1900ms' : '0ms',
             }}
           />
         </div>
