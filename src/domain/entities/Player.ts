@@ -1,4 +1,6 @@
 import type { PlayerPosition, PlayerArchetype } from '../enums'
+import type { PlayerTrait } from '../data/playerTraits'
+export type { PlayerTrait }
 
 export interface PlayerAttributes {
   skating: number         // 0-100
@@ -96,4 +98,7 @@ export interface Player {
   loanClubName?: string
   promotedFromAcademy?: boolean
   promotionRound?: number
+  isCharacterPlayer?: boolean
+  trait?: PlayerTrait
+  loyaltyScore?: number  // 0–10
 }

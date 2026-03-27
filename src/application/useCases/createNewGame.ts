@@ -16,6 +16,7 @@ import { FUNCTIONARY_TEMPLATES } from '../../domain/data/functionaries'
 import { POLITICIAN_PROFILES } from '../../domain/data/politicianData'
 import { BOARD_PROFILES } from '../../domain/data/boardData'
 import { VOLUNTEER_FIRST_NAMES, LOCAL_PAPER_NAMES } from '../../domain/data/communityNames'
+import { initCharacterPlayers } from '../../domain/services/characterPlayerService'
 
 function pickRandom<T>(arr: T[], rand: () => number): T {
   return arr[Math.floor(rand() * arr.length)]
@@ -110,7 +111,8 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   const season = input.season ?? 2025
   const rand = mulberry32((input.seed ?? 42) + 12345)
 
-  const { clubs, players } = generateWorld(season, input.seed)
+  const { clubs, players: rawPlayers } = generateWorld(season, input.seed)
+  const players = initCharacterPlayers(rawPlayers, input.seed ?? 42)
 
   const scheduleFixtures = generateSchedule(clubs.map(c => c.id), season)
 

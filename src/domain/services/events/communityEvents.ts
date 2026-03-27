@@ -1,5 +1,6 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent, EventChoice, EventEffect } from '../../entities/GameEvent'
+import { generateCharacterPlayerEvents } from '../characterPlayerService'
 import { PATRON_UNHAPPY_QUOTES, PATRON_HAPPY_QUOTES, PATRON_STYLE_COMPLAINTS } from '../../data/patronData'
 import { AGENDA_QUOTES, NEWSPAPER_HEADLINES } from '../../data/politicianData'
 import { HALL_DEBATE_EVENTS } from '../../data/hallDebateData'
@@ -886,6 +887,14 @@ export function generateEvents(
       resolved: false,
     })
   }
+
+  const characterEvents = generateCharacterPlayerEvents(
+    game.players ?? [],
+    currentRound,
+    alreadyQueued,
+    rand,
+  )
+  events.push(...characterEvents)
 
   return events
 }

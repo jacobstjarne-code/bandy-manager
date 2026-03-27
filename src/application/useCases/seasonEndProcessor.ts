@@ -16,6 +16,7 @@ import { generateYouthTeam } from '../../domain/services/academyService'
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
 import { generateSeasonVerdict, generatePreSeasonMessage } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
+import { updateLoyaltyScores } from '../../domain/services/characterPlayerService'
 import type { LicenseReview } from '../../domain/entities/SaveGame'
 import type { AdvanceResult } from './advanceTypes'
 
@@ -434,7 +435,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   // ── Tvångsnedflyttning effects (license denied) ───────────────────────────
   let clubsAfterLicense = clubsWithRetirements
-  let playersAfterLicense = activePlayers
+  let playersAfterLicense = updateLoyaltyScores(activePlayers)
   let sponsorsAfterLicense = game.sponsors ?? []
 
   if (licenseReview?.status === 'denied' && managedClubForLicense) {

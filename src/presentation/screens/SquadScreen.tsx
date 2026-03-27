@@ -6,6 +6,7 @@ import type { Player } from '../../domain/entities/Player'
 import { StatBar } from '../components/StatBar'
 import { PlayerCard } from '../components/PlayerCard'
 import { positionShort, POSITION_ORDER } from '../utils/formatters'
+import { TRAIT_META } from '../../domain/data/playerTraits'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
 type FilterKey = 'all' | 'mv' | 'def' | 'half' | 'mid' | 'fwd'
@@ -534,6 +535,33 @@ export function SquadScreen() {
             clubName={clubName}
             onClick={undefined}
           />
+
+          {/* Karaktärsspelare badge */}
+          {selectedPlayer.isCharacterPlayer && selectedPlayer.trait && (() => {
+            const meta = TRAIT_META[selectedPlayer.trait]
+            const ls = selectedPlayer.loyaltyScore ?? 5
+            return (
+              <div style={{
+                width: '100%', maxWidth: 390, marginTop: 12,
+                background: '#0e1f33', border: `1px solid ${meta.color}44`,
+                borderRadius: 10, padding: '10px 14px',
+                display: 'flex', alignItems: 'center', gap: 10,
+              }}>
+                <span style={{ fontSize: 22 }}>{meta.emoji}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: meta.color, letterSpacing: '0.5px' }}>
+                      {meta.label}
+                    </span>
+                    <span style={{ fontSize: 10, color: '#4A6080' }}>
+                      Lojalitet {ls}/10
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 11, color: '#8A9BB0', lineHeight: 1.4 }}>{meta.description}</p>
+                </div>
+              </div>
+            )
+          })()}
 
           {/* Spelarsamtal */}
           {(() => {
