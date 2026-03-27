@@ -1773,7 +1773,6 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   // Generate season summary now that all financial updates (prize money, patron, etc.) are done
   seasonSummary = generateSeasonSummary({ ...game, clubs: updatedClubs })
-  console.log('[SeasonSummary] start:', game.seasonStartFinances, 'end:', updatedClubs.find(c => c.id === game.managedClubId)?.finances)
 
   // Board pre-season message for managed club
   const managedClubAfterPrize = updatedClubs.find(c => c.id === game.managedClubId)
@@ -1962,6 +1961,10 @@ function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     boardPatience: newBoardPatience,
     consecutiveFailures: newConsecutiveFailures,
     rivalryHistory: game.rivalryHistory ?? {},
+    trainingProjects: [],
+    communityActivities: game.communityActivities
+      ? { ...game.communityActivities, julmarknad: false }
+      : game.communityActivities,
   }
 
   return { game: updatedGame, roundPlayed: null, seasonEnded: true }
