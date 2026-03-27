@@ -53,7 +53,7 @@ export function ContextualNudges({ game, currentRound: _r }: Props) {
 
   return (
     <div style={{ marginBottom: 12 }}>
-      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#4A6080', marginBottom: 8 }}>
+      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
         ATT TÄNKA PÅ
       </p>
       {nudges.slice(0, 3).map((n, i) => (
@@ -69,8 +69,8 @@ export function ContextualNudges({ game, currentRound: _r }: Props) {
           }}
         >
           <span style={{ fontSize: 14 }}>{n.icon}</span>
-          <span style={{ fontSize: 13, color: '#8A9BB0', flex: 1 }}>{n.text}</span>
-          <span style={{ fontSize: 14, color: '#4A6080' }}>›</span>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)', flex: 1 }}>{n.text}</span>
+          <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>›</span>
         </div>
       ))}
     </div>

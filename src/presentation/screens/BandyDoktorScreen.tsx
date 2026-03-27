@@ -273,7 +273,7 @@ export function BandyDoktorScreen() {
                 border: '1px solid var(--border)',
                 borderRadius: 8,
                 padding: '10px 14px',
-                color: canAsk && inputText.trim() ? '#0D1B2A' : 'var(--text-muted)',
+                color: canAsk && inputText.trim() ? 'var(--bg-dark)' : 'var(--text-muted)',
                 cursor: canAsk && inputText.trim() ? 'pointer' : 'not-allowed',
                 display: 'flex',
                 alignItems: 'center',

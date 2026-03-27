@@ -182,7 +182,7 @@ export function StartScreen() {
         padding: '0 28px',
         paddingTop: 'env(safe-area-inset-top, 20px)',
         paddingBottom: 'calc(env(safe-area-inset-bottom, 20px) + 20px)',
-        background: 'linear-gradient(180deg, #061018 0%, #0D1B2A 40%, #0a1520 100%)',
+        background: 'var(--bg-dark)',
       }}
     >
       {/* Top spacer */}
@@ -197,7 +197,7 @@ export function StartScreen() {
             fontSize: 32,
             fontWeight: 900,
             letterSpacing: '5px',
-            color: '#F0F4F8',
+            color: 'var(--text-light)',
             textTransform: 'uppercase',
             lineHeight: 1.1,
             margin: 0,
@@ -227,7 +227,7 @@ export function StartScreen() {
         }} />
 
         <p style={{
-          color: '#8A9BB0',
+          color: 'var(--text-light-secondary)',
           fontSize: 10,
           letterSpacing: '3px',
           textTransform: 'uppercase',
@@ -244,8 +244,8 @@ export function StartScreen() {
           style={{
             width: '100%',
             padding: '16px 24px',
-            background: '#C9A84C',
-            color: '#0D1B2A',
+            background: 'var(--accent)',
+            color: 'var(--bg-dark)',
             borderRadius: 10,
             fontSize: 15,
             fontWeight: 800,
@@ -264,14 +264,14 @@ export function StartScreen() {
           style={{
             width: '100%',
             padding: '16px 24px',
-            background: hasSave ? '#2563EB' : 'transparent',
-            color: hasSave ? '#fff' : '#4A6080',
+            background: hasSave ? 'var(--accent)' : 'transparent',
+            color: hasSave ? 'var(--bg-dark)' : 'rgba(245,241,235,0.35)',
             borderRadius: 10,
             fontSize: 15,
             fontWeight: 700,
             letterSpacing: '0.5px',
             textTransform: 'uppercase',
-            border: hasSave ? 'none' : '1px solid #1e3450',
+            border: hasSave ? 'none' : '1px solid rgba(196,186,168,0.15)',
             opacity: hasSave ? 1 : 0.5,
             cursor: hasSave ? 'pointer' : 'not-allowed',
           }}
@@ -286,13 +286,13 @@ export function StartScreen() {
             width: '100%',
             padding: '16px 24px',
             background: 'transparent',
-            color: hasSave ? '#8A9BB0' : '#4A6080',
+            color: hasSave ? 'var(--text-light-secondary)' : 'rgba(245,241,235,0.25)',
             borderRadius: 10,
             fontSize: 15,
             fontWeight: 400,
             letterSpacing: '0.5px',
             textTransform: 'uppercase',
-            border: `1px solid ${hasSave ? '#1e3450' : 'transparent'}`,
+            border: `1px solid ${hasSave ? 'rgba(196,186,168,0.2)' : 'transparent'}`,
             opacity: hasSave ? 1 : 0.35,
             cursor: hasSave ? 'pointer' : 'not-allowed',
           }}
@@ -304,10 +304,9 @@ export function StartScreen() {
       {/* Version */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', paddingBottom: 4 }}>
         <p style={{
-          color: '#4A6080',
+          color: 'rgba(245,241,235,0.30)',
           fontSize: 11,
           letterSpacing: '1px',
-          opacity: 0.6,
         }}>
           v0.1.0 · {__GIT_HASH__}
         </p>

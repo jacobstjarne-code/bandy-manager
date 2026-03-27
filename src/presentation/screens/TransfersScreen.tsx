@@ -529,10 +529,10 @@ export function TransfersScreen() {
                           ] as const).map(({ label, value }) => (
                             <div key={label} style={{ marginBottom: 6 }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                                <span style={{ fontSize: 11, color: '#4A6080' }}>{label}</span>
-                                <span style={{ fontSize: 11, color: '#8A9BB0' }}>{value}</span>
+                                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</span>
+                                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{value}</span>
                               </div>
-                              <div style={{ background: '#1a2e47', borderRadius: 4, height: 4 }}>
+                              <div style={{ background: 'var(--border)', borderRadius: 4, height: 4 }}>
                                 <div style={{ background: '#C9A84C', borderRadius: 4, height: 4, width: `${value}%` }} />
                               </div>
                             </div>

@@ -23,7 +23,7 @@ export function GuidanceBanner({
         borderRadius: 10,
         padding: '12px 14px',
         fontSize: 13,
-        color: '#8A9BB0',
+        color: 'var(--text-secondary)',
         marginBottom: 12,
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -59,7 +59,7 @@ export function GuidanceBanner({
           borderRadius: 10,
           padding: '12px 14px',
           fontSize: 13,
-          color: '#8A9BB0',
+          color: 'var(--text-secondary)',
           marginBottom: 12,
           cursor: 'pointer',
         }}

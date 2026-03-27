@@ -31,7 +31,7 @@ function Badge({ count }: { count: number }) {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      border: '1.5px solid #0D1B2A',
+      border: '1.5px solid var(--bg-dark)',
     }}>
       {count}
     </div>

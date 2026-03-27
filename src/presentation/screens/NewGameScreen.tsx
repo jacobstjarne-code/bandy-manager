@@ -137,9 +137,9 @@ export function NewGameScreen() {
               width: '100%',
               padding: '16px 24px',
               background: 'transparent',
-              border: `2px solid ${managerName.trim() ? '#C9A84C' : '#1e3450'}`,
+              border: `2px solid ${managerName.trim() ? 'var(--accent)' : 'rgba(196,186,168,0.2)'}`,
               borderRadius: 'var(--radius)',
-              color: managerName.trim() ? '#C9A84C' : '#4A6080',
+              color: managerName.trim() ? 'var(--accent)' : 'rgba(245,241,235,0.35)',
               fontSize: 14,
               fontWeight: 700,
               letterSpacing: '3px',
@@ -217,7 +217,7 @@ export function NewGameScreen() {
                     {club.label}
                   </span>
                 </div>
-                <p style={{ fontSize: 12, color: isSelected ? '#8A9BB0' : 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>
                   {club.flavor}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -242,10 +242,10 @@ export function NewGameScreen() {
           maxWidth: 430,
           padding: '16px 20px',
           paddingBottom: 'calc(16px + var(--safe-bottom))',
-          background: 'linear-gradient(to top, #0D1B2A 70%, transparent)',
+          background: 'linear-gradient(to top, #EDE8DF 70%, transparent)',
           borderTop: '1px solid rgba(201,168,76,0.15)',
         }}>
-          <p style={{ fontSize: 12, color: '#8A9BB0', marginBottom: 10, textAlign: 'center' }}>
+          <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 10, textAlign: 'center' }}>
             Starta karriären som tränare för {selectedClub.name}?
           </p>
           <button

@@ -100,13 +100,13 @@ export function TabellScreen() {
           flexWrap: 'wrap',
         }}>
           <span style={{ fontWeight: 700 }}>{myPos}. plats</span>
-          <span style={{ color: '#4A6080' }}>·</span>
+          <span style={{ color: 'var(--text-muted)' }}>·</span>
           {ptToPlayoff !== null && ptToPlayoff > 0 ? (
             <span>{ptToPlayoff}p till topp-8</span>
           ) : (
             <span>I slutspelszonen</span>
           )}
-          <span style={{ color: '#4A6080' }}>·</span>
+          <span style={{ color: 'var(--text-muted)' }}>·</span>
           <span>{ptToLeader > 0 ? `${ptToLeader}p till ledaren` : 'Serieledare'}</span>
         </div>
       )}
@@ -123,7 +123,7 @@ export function TabellScreen() {
         letterSpacing: '0.6px',
         color: 'var(--text-muted)',
         marginBottom: 4,
-        background: 'linear-gradient(90deg, #0D1B2A, #122235, #0D1B2A)',
+        background: 'linear-gradient(90deg, var(--bg-dark), var(--bg-dark-surface), var(--bg-dark))',
         borderRadius: 6,
       }}>
         <span>#</span>
@@ -264,7 +264,7 @@ export function TabellScreen() {
                         background: result === 'W' ? '#22c55e'
                           : result === 'L' ? '#ef4444'
                           : result === 'D' ? '#e2a84c'
-                          : '#1e3450',
+                          : 'var(--border)',
                       }} />
                     )
                   })}
@@ -324,7 +324,7 @@ export function TabellScreen() {
                   <div style={{
                     padding: '10px 10px 12px 59px',
                     fontSize: 12,
-                    color: '#8A9BB0',
+                    color: 'var(--text-secondary)',
                     background: 'rgba(201,168,76,0.04)',
                     borderTop: '1px solid rgba(201,168,76,0.1)',
                     display: 'flex',
@@ -344,7 +344,7 @@ export function TabellScreen() {
 
                     {h2hFixtures.length > 0 && (
                       <div style={{ display: 'flex', gap: 10, fontSize: 11, flexWrap: 'wrap' }}>
-                        <span style={{ color: '#4A6080' }}>I år:</span>
+                        <span style={{ color: 'var(--text-muted)' }}>I år:</span>
                         {h2hFixtures.map(f => {
                           const isH = f.homeClubId === managedClubId
                           const gf = isH ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
@@ -356,15 +356,15 @@ export function TabellScreen() {
                             </span>
                           )
                         })}
-                        <span style={{ color: '#4A6080' }}>({h2hW}V {h2hD}O {h2hL}F, {h2hGF}–{h2hGA})</span>
+                        <span style={{ color: 'var(--text-muted)' }}>({h2hW}V {h2hD}O {h2hL}F, {h2hGF}–{h2hGA})</span>
                       </div>
                     )}
 
                     {career && (career.wins + career.losses + career.draws) >= 2 && (
-                      <div style={{ fontSize: 11, color: '#4A6080' }}>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                         Totalt: {career.wins}V {career.draws}O {career.losses}F
                         {career.currentStreak !== 0 && (
-                          <span style={{ color: career.currentStreak > 0 ? '#22c55e' : '#ef4444', marginLeft: 6 }}>
+                          <span style={{ color: career.currentStreak > 0 ? 'var(--success)' : 'var(--danger)', marginLeft: 6 }}>
                             · {Math.abs(career.currentStreak)} raka {career.currentStreak > 0 ? 'segrar' : 'förluster'}
                           </span>
                         )}
