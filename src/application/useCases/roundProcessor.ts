@@ -1,17 +1,15 @@
 import type { SaveGame, InboxItem, CommunityActivities, StandingRow } from '../../domain/entities/SaveGame'
-import type { Player, CareerMilestone } from '../../domain/entities/Player'
+import type { Player } from '../../domain/entities/Player'
 import type { Club } from '../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
-import { FixtureStatus, MatchEventType, PlayerPosition, InboxItemType, TrainingType, TrainingIntensity, PlayoffStatus, ClubStyle } from '../../domain/enums'
+import { FixtureStatus, MatchEventType, PlayerPosition, InboxItemType, PlayoffStatus, ClubStyle } from '../../domain/enums'
 import type { FormationType } from '../../domain/entities/Formation'
-import { simulateMatch, computeWeatherTacticInteraction } from '../../domain/services/matchSimulator'
+import { simulateMatch } from '../../domain/services/matchSimulator'
 import { getTacticModifiers } from '../../domain/services/tacticModifiers'
 import { getRivalry } from '../../domain/data/rivalries'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import { calculateStandings } from '../../domain/services/standingsService'
-import { developPlayers } from '../../domain/services/playerDevelopmentService'
-import { applyTrainingToSquad, selectAiTrainingFocus, getTrainingEffects } from '../../domain/services/trainingService'
 import {
   updateSeriesAfterMatch,
   isSeriesDecided,
@@ -22,7 +20,6 @@ import {
   createInjuryItem,
   createSuspensionItem,
   createRecoveryItem,
-  createTrainingItem,
 } from '../../domain/services/inboxService'
 import { processScoutAssignment } from '../../domain/services/scoutingService'
 import { updateAllMarketValues } from '../../domain/services/marketValueService'
@@ -40,11 +37,13 @@ import {
 } from '../../domain/services/cupService'
 import type { CupBracket } from '../../domain/entities/Cup'
 import { mulberry32 } from '../../domain/utils/random'
-import { processTrainingProjectsPerRound, PROJECT_DEFINITIONS } from '../../domain/services/trainingProjectService'
 import { simulateYouthMatch } from '../../domain/services/academyService'
 import { handleSeasonEnd } from './seasonEndProcessor'
 import { handlePlayoffStart } from './playoffTransition'
 import type { AdvanceResult } from './advanceTypes'
+import { applyRoundTraining } from './processors/trainingProcessor'
+import { applyPlayerStateUpdates } from './processors/playerStateProcessor'
+import { updatePlayerMatchStats } from './processors/statsProcessor'
 
 export type { AdvanceResult }
 
@@ -226,78 +225,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const isPlayoffRound = !isCupRound && game.playoffBracket !== null && nextRound > 22
 
   // ── Apply training for all clubs this round ────────────────────────────
-  let trainingPlayers = [...game.players]
-  const managedClubTraining = game.managedClubTraining ?? { type: TrainingType.Physical, intensity: TrainingIntensity.Normal }
-
-  for (const club of game.clubs) {
-    const isManaged = club.id === game.managedClubId
-    const focus = isManaged
-      ? managedClubTraining
-      : selectAiTrainingFocus(game.players, club.id)
-
-    const trainingResult = applyTrainingToSquad(
-      trainingPlayers,
-      club.id,
-      focus,
-      club.facilities,
-      baseSeed + club.id.split('').reduce((h, c) => h * 31 + c.charCodeAt(0), 0) + nextRound,
-    )
-    trainingPlayers = trainingResult.updatedPlayers
-
-    // Inbox for managed club injuries from training
-    if (isManaged) {
-      const injuredInTraining = trainingResult.injuredPlayerIds
-        .map(id => trainingPlayers.find(p => p.id === id))
-        .filter((p): p is Player => p !== undefined)
-
-      newInboxItems.push(
-        createTrainingItem(focus, nextRound, injuredInTraining, game.currentDate),
-      )
-
-      // Record training session in history
-    }
-  }
-
-  // Build updated training history
-  const trainingEffects = getTrainingEffects(managedClubTraining)
-  const newTrainingSession = {
-    season: game.currentSeason,
-    roundNumber: nextRound,
-    focus: managedClubTraining,
-    effects: trainingEffects,
-  }
-  const updatedTrainingHistory = [...(game.trainingHistory ?? []), newTrainingSession]
-
-  // ── Process training projects ─────────────────────────────────────────
-  const projectRand = mulberry32(baseSeed + 88771)
-  const activeProjects = (game.trainingProjects ?? []).filter(p => p.status === 'active')
-  const projectResult = processTrainingProjectsPerRound(
-    game.trainingProjects ?? [],
-    trainingPlayers,
-    game.managedClubId,
-    projectRand,
-    nextRound,
-  )
-  // Use project-updated players going forward
-  trainingPlayers = projectResult.updatedPlayers
-
-  // Inbox: notify for each completed project
-  for (const p of projectResult.updatedProjects) {
-    const wasActive = activeProjects.some(ap => ap.id === p.id)
-    if (wasActive && p.status === 'completed') {
-      const def = PROJECT_DEFINITIONS.find(d => d.type === p.type)
-      if (def) {
-        newInboxItems.push({
-          id: `inbox_project_done_${p.id}`,
-          date: game.currentDate,
-          type: InboxItemType.BoardFeedback,
-          title: `Träningsprojekt klart: ${def.label}`,
-          body: `${def.emoji} ${def.label} är avslutat. Effekt: ${def.effectDescription}${p.injuredPlayerIds?.length ? ` · ⚠️ ${p.injuredPlayerIds.length} spelare skadades under projektet.` : ''}`,
-          isRead: false,
-        } as InboxItem)
-      }
-    }
-  }
+  const trainingResult = applyRoundTraining(game, baseSeed, nextRound)
+  let trainingPlayers = trainingResult.players
+  const updatedTrainingHistory = trainingResult.trainingHistory
+  newInboxItems.push(...trainingResult.inboxItems)
 
   for (let i = 0; i < roundFixtures.length; i++) {
     const fixture = roundFixtures[i]
@@ -432,318 +363,31 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     : undefined
 
   // Player fitness / form / sharpness updates (start from training-updated players)
-  const updatedPlayers = trainingPlayers.map(player => {
-    let updated = { ...player }
-
-    // ── Injury recovery (every round ≈ 7 days) ──────────────────────────
-    if (updated.isInjured && updated.injuryDaysRemaining > 0) {
-      updated.injuryDaysRemaining = Math.max(0, updated.injuryDaysRemaining - 7)
-      if (updated.injuryDaysRemaining <= 0) {
-        updated.isInjured = false
-        updated.injuryDaysRemaining = 0
-        updated.fitness = Math.max(30, updated.fitness - 15)
-      }
-    }
-
-    // ── Suspension recovery (decrement every round for all suspended players) ──
-    if (updated.suspensionGamesRemaining > 0) {
-      updated.suspensionGamesRemaining = Math.max(0, updated.suspensionGamesRemaining - 1)
-    }
-
-    if (startersThisRound.has(player.id)) {
-      // Reduce fitness 15-25
-      const baseFitnessLoss = 15 + Math.floor(localRand() * 10)
-      const tacticFatigue = managedTacticMods && player.clubId === game.managedClubId
-        ? managedTacticMods.fatigueRate
-        : 1.0
-      // Tactic × weather extra fatigue for managed players
-      let weatherTacticFatigue = 1.0
-      if (player.clubId === game.managedClubId && managedFixtureWeather && managedClubForTactic) {
-        const twi = computeWeatherTacticInteraction(managedFixtureWeather, managedClubForTactic.activeTactic)
-        weatherTacticFatigue = 1.0 + twi.extraFatigue
-      }
-      const fitnessLoss = Math.round(baseFitnessLoss * tacticFatigue * weatherTacticFatigue)
-      updated.fitness = Math.max(0, updated.fitness - fitnessLoss)
-
-      // Form update based on match rating
-      const rating = getPlayerRating(player.id, simulatedFixtures)
-      if (rating !== null) {
-        if (rating >= 7) updated.form = Math.min(100, updated.form + 3)
-        else if (rating <= 5) updated.form = Math.max(0, updated.form - 3)
-        else updated.form = Math.min(100, updated.form + 1)
-      }
-
-      // Sharpness increases
-      updated.sharpness = Math.min(100, updated.sharpness + 10)
-
-    } else if (benchThisRound.has(player.id)) {
-      updated.fitness = Math.min(100, updated.fitness + 5)
-      updated.sharpness = Math.max(0, updated.sharpness - 5)
-    } else {
-      // Did not play
-      updated.fitness = Math.min(100, updated.fitness + 8)
-      updated.sharpness = Math.max(0, updated.sharpness - 3)
-    }
-
-    // Day job morale effects
-    const isFullTimePro = player.isFullTimePro ?? false
-    const flexibility = player.dayJob?.flexibility ?? 75
-    if (!isFullTimePro && flexibility < 65) {
-      // Check if played in last 2 completed fixtures for managed club
-      const recentCompleted = simulatedFixtures
-        .filter(f => f.status === FixtureStatus.Completed)
-        .slice(-2)
-      const playedRecently = recentCompleted.some(f =>
-        (f.homeLineup?.startingPlayerIds ?? []).includes(player.id) ||
-        (f.awayLineup?.startingPlayerIds ?? []).includes(player.id)
-      )
-      if (playedRecently) {
-        // Hard week: day job + matches
-        updated.morale = Math.max(0, updated.morale - 2)
-      }
-    }
-    if (isFullTimePro && updated.fitness > 70) {
-      updated.morale = Math.min(100, updated.morale + 1)
-    }
-
-    return updated
-  })
-
-  // Process match events for suspensions
-  const newlyInjured: Array<{ player: Player; days: number }> = []
-  const newlySuspended: Array<{ player: Player }> = []
-
-  for (const fixture of simulatedFixtures) {
-    for (const event of fixture.events) {
-      if (event.type === MatchEventType.RedCard && event.playerId) {
-        const idx = updatedPlayers.findIndex(p => p.id === event.playerId)
-        if (idx !== -1) {
-          const prev = updatedPlayers[idx].suspensionGamesRemaining
-          updatedPlayers[idx] = { ...updatedPlayers[idx], suspensionGamesRemaining: 3 }
-          if (prev === 0) {
-            newlySuspended.push({ player: updatedPlayers[idx] })
-          }
-        }
-      }
-    }
-  }
-
-  // Post-match injury check for every starter
-  // ~5-8% base chance per match player with average fitness/proneness
-  for (const playerId of startersThisRound) {
-    const idx = updatedPlayers.findIndex(p => p.id === playerId)
-    if (idx === -1) continue
-    const player = updatedPlayers[idx]
-    if (player.isInjured) continue
-
-    // injury chance = base × proneness factor × fatigue factor
-    // base 0.06 → ~6% for average player (proneness 50, fitness 70)
-    const proneFactor = player.injuryProneness / 100        // 0–1
-    const fatigueFactor = (100 - player.fitness) / 100 + 0.3 // 0.3–1.3
-    let tacticInjuryMod = managedTacticMods && player.clubId === game.managedClubId
-      ? 1.0 + (managedTacticMods.fatigueRate - 1.0) * 0.5
-      : 1.0
-    if (player.clubId === game.managedClubId && managedFixtureWeather && managedClubForTactic) {
-      const twi = computeWeatherTacticInteraction(managedFixtureWeather, managedClubForTactic.activeTactic)
-      tacticInjuryMod += twi.extraInjuryRisk
-    }
-    const injuryChance = 0.06 * Math.max(0.1, proneFactor) * fatigueFactor * tacticInjuryMod
-
-    if (localRand() < injuryChance) {
-      const days = 7 + Math.floor(localRand() * 28)  // 1–5 weeks
-      updatedPlayers[idx] = {
-        ...player,
-        isInjured: true,
-        injuryDaysRemaining: days,
-      }
-      newlyInjured.push({ player: updatedPlayers[idx], days })
-    }
-  }
-
-  // Player development every 2 rounds
+  const playerStateResult = applyPlayerStateUpdates(
+    trainingPlayers,
+    startersThisRound,
+    benchThisRound,
+    game,
+    managedTacticMods,
+    managedFixtureWeather,
+    managedClubForTactic,
+    baseSeed,
+    nextRound,
+    simulatedFixtures,
+  )
+  const updatedPlayers = playerStateResult.updatedPlayers
+  const newlyInjured = playerStateResult.newlyInjured
+  const newlySuspended = playerStateResult.newlySuspended
   let finalPlayers = updatedPlayers
-  if (nextRound % 2 === 0) {
-    const clubFacilities = Object.fromEntries(game.clubs.map(c => [c.id, c.facilities]))
-    const devResult = developPlayers({
-      players: updatedPlayers,
-      clubFacilities,
-      weekNumber: nextRound,
-    })
-    finalPlayers = devResult.updatedPlayers
-  }
 
   // Update seasonStats and careerStats for all players in completed fixtures this round
   // Also detect career milestones for managed club players
-  const newMilestoneInboxItems: InboxItem[] = []
-
-  for (const fixture of simulatedFixtures) {
-    if (fixture.status !== FixtureStatus.Completed) continue
-    const allStarters = [
-      ...(fixture.homeLineup?.startingPlayerIds ?? []),
-      ...(fixture.awayLineup?.startingPlayerIds ?? []),
-    ]
-
-    for (const id of allStarters) {
-      const idx = finalPlayers.findIndex(p => p.id === id)
-      if (idx === -1) continue
-      const p = finalPlayers[idx]
-      const rating = fixture.report?.playerRatings[id]
-      const goals = fixture.events.filter(
-        e => e.type === MatchEventType.Goal && e.playerId === id
-      ).length
-      const assists = fixture.events.filter(
-        e => e.type === MatchEventType.Assist && e.playerId === id
-      ).length
-      const cornerGoals = fixture.events.filter(
-        e => e.type === MatchEventType.Goal && e.playerId === id && e.isCornerGoal
-      ).length
-      const yellows = fixture.events.filter(
-        e => e.type === MatchEventType.YellowCard && e.playerId === id
-      ).length
-      const reds = fixture.events.filter(
-        e => e.type === MatchEventType.RedCard && e.playerId === id
-      ).length
-
-      // Check if player was substituted out — use actual minutes played
-      const subOutEvent = fixture.events.find(
-        e => e.type === MatchEventType.Substitution && e.playerId === id
-      )
-      const minutesThisGame = subOutEvent ? Math.min(90, subOutEvent.minute) : 90
-
-      const prevGames = p.seasonStats.gamesPlayed
-      const prevAvgRating = p.seasonStats.averageRating
-      const newAvgRating = rating !== undefined
-        ? (prevAvgRating * prevGames + rating) / (prevGames + 1)
-        : prevAvgRating
-
-      // Update careerStats
-      const prevCareerGames = p.careerStats.totalGames
-      const prevCareerGoals = p.careerStats.totalGoals
-      const prevCareerAssists = p.careerStats.totalAssists
-      const newCareerGames = prevCareerGames + 1
-      const newCareerGoals = prevCareerGoals + goals
-      const newCareerAssists = prevCareerAssists + assists
-
-      // Detect milestones for managed club players
-      const isManaged = p.clubId === game.managedClubId
-      const newMilestones: CareerMilestone[] = [...(p.careerMilestones ?? [])]
-      const existingTypes = new Set(newMilestones.map(m => `${m.type}_${m.season}`))
-
-      if (isManaged) {
-        const playerName = `${p.firstName} ${p.lastName}`
-
-        // Hat trick milestone (3+ goals this fixture)
-        if (goals >= 3) {
-          if (!newMilestones.some(m => m.type === 'hatTrick' && m.season === game.currentSeason && m.round === nextRound)) {
-            newMilestones.push({
-              type: 'hatTrick',
-              season: game.currentSeason,
-              round: nextRound,
-              description: `${playerName} satte ${goals} mål i en match`,
-            })
-            newMilestoneInboxItems.push({
-              id: `inbox_milestone_hatTrick_${p.id}_r${nextRound}_${game.currentSeason}`,
-              date: game.currentDate,
-              type: InboxItemType.BoardFeedback,
-              title: `Karriärsmilstolpe: ${playerName}`,
-              body: `${playerName} satte hattrick och nådde en karriärsmilstolpe!`,
-              relatedPlayerId: p.id,
-              isRead: false,
-            } as InboxItem)
-          }
-        }
-
-        // 100 games milestone
-        if (prevCareerGames < 100 && newCareerGames >= 100) {
-          const msKey = `games100_${game.currentSeason}`
-          if (!existingTypes.has(msKey)) {
-            newMilestones.push({
-              type: 'games100',
-              season: game.currentSeason,
-              round: nextRound,
-              description: `${playerName} spelade sin 100:e karriärmatch`,
-            })
-            newMilestoneInboxItems.push({
-              id: `inbox_milestone_games100_${p.id}_${game.currentSeason}`,
-              date: game.currentDate,
-              type: InboxItemType.BoardFeedback,
-              title: `Karriärsmilstolpe: ${playerName}`,
-              body: `${playerName} spelade sin 100:e karriärmatch — en fantastisk bedrift!`,
-              relatedPlayerId: p.id,
-              isRead: false,
-            } as InboxItem)
-          }
-        }
-
-        // 50 goals milestone
-        if (prevCareerGoals < 50 && newCareerGoals >= 50) {
-          const msKey = `goals50_${game.currentSeason}`
-          if (!existingTypes.has(msKey)) {
-            newMilestones.push({
-              type: 'goals50',
-              season: game.currentSeason,
-              round: nextRound,
-              description: `${playerName} nådde 50 karriärmål`,
-            })
-            newMilestoneInboxItems.push({
-              id: `inbox_milestone_goals50_${p.id}_${game.currentSeason}`,
-              date: game.currentDate,
-              type: InboxItemType.BoardFeedback,
-              title: `Karriärsmilstolpe: ${playerName}`,
-              body: `${playerName} nådde 50 mål i karriären — ett historiskt ögonblick!`,
-              relatedPlayerId: p.id,
-              isRead: false,
-            } as InboxItem)
-          }
-        }
-      }
-
-      finalPlayers[idx] = {
-        ...p,
-        seasonStats: {
-          ...p.seasonStats,
-          gamesPlayed: prevGames + 1,
-          goals: p.seasonStats.goals + goals,
-          assists: p.seasonStats.assists + assists,
-          cornerGoals: p.seasonStats.cornerGoals + cornerGoals,
-          yellowCards: p.seasonStats.yellowCards + yellows,
-          redCards: p.seasonStats.redCards + reds,
-          averageRating: Math.round(newAvgRating * 100) / 100,
-          minutesPlayed: p.seasonStats.minutesPlayed + minutesThisGame,
-        },
-        careerStats: {
-          ...p.careerStats,
-          totalGames: newCareerGames,
-          totalGoals: newCareerGoals,
-          totalAssists: newCareerAssists,
-        },
-        careerMilestones: isManaged ? newMilestones : p.careerMilestones,
-      }
-    }
-
-    // Track minutes for substitute players who came on mid-game
-    const subInEvents = fixture.events.filter(
-      e => e.type === MatchEventType.Substitution && e.secondaryPlayerId !== undefined
-    )
-    for (const subEvent of subInEvents) {
-      const subInId = subEvent.secondaryPlayerId!
-      const subInIdx = finalPlayers.findIndex(p => p.id === subInId)
-      if (subInIdx === -1) continue
-      const subPlayer = finalPlayers[subInIdx]
-      const subMinutes = Math.max(0, 90 - Math.min(90, subEvent.minute))
-      if (subMinutes <= 0) continue
-      finalPlayers[subInIdx] = {
-        ...subPlayer,
-        seasonStats: {
-          ...subPlayer.seasonStats,
-          minutesPlayed: subPlayer.seasonStats.minutesPlayed + subMinutes,
-        },
-      }
-    }
-  }
+  const statsResult = updatePlayerMatchStats(finalPlayers, simulatedFixtures, game, nextRound)
+  finalPlayers = statsResult.finalPlayers
+  const milestoneInboxItems = statsResult.milestoneInboxItems
 
   // Push milestone inbox items
-  newInboxItems.push(...newMilestoneInboxItems)
+  newInboxItems.push(...milestoneInboxItems)
 
   // Match results for managed club
   for (const fixture of simulatedFixtures) {
@@ -1809,7 +1453,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     fanMood: newFanMood,
     rivalryHistory: updatedRivalryHistory,
     doctorQuestionsUsed: 0,
-    trainingProjects: projectResult.updatedProjects,
+    trainingProjects: trainingResult.trainingProjects,
     youthTeam: updatedYouthTeam,
     academyLevel: game.academyLevel ?? 'basic',
     mentorships: game.mentorships ?? [],
@@ -1844,11 +1488,3 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   return { game: updatedGame, roundPlayed: nextRound, seasonEnded: false, pendingEvents: allNewEvents }
 }
 
-function getPlayerRating(playerId: string, fixtures: Fixture[]): number | null {
-  for (const fixture of fixtures) {
-    if (fixture.report?.playerRatings[playerId] !== undefined) {
-      return fixture.report.playerRatings[playerId]
-    }
-  }
-  return null
-}

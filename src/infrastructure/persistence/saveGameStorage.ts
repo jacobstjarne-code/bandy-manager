@@ -1,3 +1,4 @@
+import { get, set, del } from 'idb-keyval'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { migrateSaveGame } from './saveGameMigration'
 
@@ -16,12 +17,10 @@ function isLocalStorageAvailable(): boolean {
   return typeof localStorage !== 'undefined'
 }
 
-export function saveSaveGame(game: SaveGame): void {
-  if (!isLocalStorageAvailable()) return
-
+export async function saveSaveGame(game: SaveGame): Promise<void> {
   try {
     const key = `${SAVE_PREFIX}${game.id}`
-    localStorage.setItem(key, JSON.stringify(game))
+    await set(key, game)
 
     const clubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? ''
 
@@ -36,20 +35,20 @@ export function saveSaveGame(game: SaveGame): void {
     const existing = listSaveGames()
     const filtered = existing.filter(s => s.id !== game.id)
     filtered.push(summary)
-    localStorage.setItem(INDEX_KEY, JSON.stringify(filtered))
+    if (isLocalStorageAvailable()) {
+      localStorage.setItem(INDEX_KEY, JSON.stringify(filtered))
+    }
   } catch (e) {
-    console.warn('saveSaveGame: kunde inte spara till localStorage', e)
+    console.warn('saveSaveGame: kunde inte spara', e)
   }
 }
 
-export function loadSaveGame(id: string): SaveGame | null {
-  if (!isLocalStorageAvailable()) return null
-
+export async function loadSaveGame(id: string): Promise<SaveGame | null> {
   try {
     const key = `${SAVE_PREFIX}${id}`
-    const raw = localStorage.getItem(key)
-    if (raw === null) return null
-    return migrateSaveGame(JSON.parse(raw))
+    const raw = await get<SaveGame>(key)
+    if (raw === undefined) return null
+    return migrateSaveGame(raw)
   } catch {
     return null
   }
@@ -70,13 +69,13 @@ export function listSaveGames(): SaveGameSummary[] {
   }
 }
 
-export function deleteSaveGame(id: string): void {
-  if (!isLocalStorageAvailable()) return
-
+export async function deleteSaveGame(id: string): Promise<void> {
   const key = `${SAVE_PREFIX}${id}`
-  localStorage.removeItem(key)
+  await del(key)
 
-  const existing = listSaveGames()
-  const filtered = existing.filter(s => s.id !== id)
-  localStorage.setItem(INDEX_KEY, JSON.stringify(filtered))
+  if (isLocalStorageAvailable()) {
+    const existing = listSaveGames()
+    const filtered = existing.filter(s => s.id !== id)
+    localStorage.setItem(INDEX_KEY, JSON.stringify(filtered))
+  }
 }
