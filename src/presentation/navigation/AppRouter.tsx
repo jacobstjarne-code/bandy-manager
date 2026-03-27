@@ -20,6 +20,7 @@ import { BandyDoktorScreen } from '../screens/BandyDoktorScreen'
 import { HistoryScreen } from '../screens/HistoryScreen'
 import { PreSeasonScreen } from '../screens/PreSeasonScreen'
 import { BudgetScreen } from '../screens/BudgetScreen'
+import { RoundSummaryScreen } from '../screens/RoundSummaryScreen'
 
 export function AppRouter() {
   return (
@@ -46,6 +47,7 @@ export function AppRouter() {
           <Route path="budget" element={<BudgetScreen />} />
         </Route>
         <Route path="/game/events" element={<EventScreen />} />
+        <Route path="/game/round-summary" element={<RoundSummaryScreen />} />
         <Route path="/game/match-result" element={<MatchResultScreen />} />
         <Route path="/game/board-meeting" element={<BoardMeetingScreen />} />
         <Route path="/game/game-over" element={<GameOverScreen />} />

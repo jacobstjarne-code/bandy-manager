@@ -287,6 +287,12 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     journalistRelationship: 50,
     sponsorNetworkMood: 70,
     licenseWarningCount: 0,
+    // Sprint 5: named characters
+    namedCharacters: [
+      { id: 'rolf', name: 'Rolf Hedlund', role: 'isspolaren', age: 67, isAlive: true, morale: 70 },
+      { id: 'birgitta', name: 'Birgitta Ström', role: 'kioskansvarig', age: 54, isAlive: true, morale: 70 },
+      { id: 'journalist', name: 'Anna-Lena Ström', role: 'journalist', age: 45, isAlive: true },
+    ],
   }
 
   return game

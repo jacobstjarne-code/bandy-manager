@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { get as idbGet, set as idbSet, del as idbDel } from 'idb-keyval'
-import type { SaveGame, TalentSearchRequest } from '../../domain/entities/SaveGame'
+import type { SaveGame, TalentSearchRequest, RoundSummaryData } from '../../domain/entities/SaveGame'
 import type { Tactic } from '../../domain/entities/Club'
 import type { TrainingFocus, TrainingProjectType } from '../../domain/entities/Training'
 import { createTrainingProject } from '../../domain/services/trainingProjectService'
@@ -32,6 +32,7 @@ interface GameState {
   game: SaveGame | null
   isLoading: boolean
   lastAdvanceResult: AdvanceResult | null
+  roundSummary: RoundSummaryData | null
 
   // Actions
   newGame: (managerName: string, clubId: string) => void
@@ -71,6 +72,7 @@ interface GameState {
   seekSponsor: () => { success: boolean; sponsor?: Sponsor; error?: string }
   applyPressChoice: (moraleEffect: number, mediaQuote: string) => void
   simulateRemainingStep: () => AdvanceResult | null
+  clearRoundSummary: () => void
 }
 
 const indexedDBStorage = {
@@ -92,6 +94,7 @@ export const useGameStore = create<GameState>()(
       game: null,
       isLoading: false,
       lastAdvanceResult: null,
+      roundSummary: null,
 
       newGame: (managerName, clubId) => {
         // Clear old localStorage data that may be filling quota
@@ -114,8 +117,112 @@ export const useGameStore = create<GameState>()(
       advance: () => {
         const { game } = get()
         if (!game) return null
+
+        // Capture before-state for RoundSummary
+        const managedClubBefore = game.clubs.find(c => c.id === game.managedClubId)
+        const financesBefore = managedClubBefore?.finances ?? 0
+        const communityStandingBefore = game.communityStanding ?? 50
+        const inboxCountBefore = game.inbox.length
+
         const result = advanceToNextEvent(game)
-        set({ game: result.game, lastAdvanceResult: result })
+
+        // Build roundSummary from before + after state
+        const resultGame = result.game
+        const managedClubAfter = resultGame.clubs.find(c => c.id === resultGame.managedClubId)
+        const financesAfter = managedClubAfter?.finances ?? 0
+        const communityStandingAfter = resultGame.communityStanding ?? 50
+        const newInboxCount = Math.max(0, resultGame.inbox.length - inboxCountBefore)
+
+        // Find managed fixture played this round
+        const managedFixture = result.roundPlayed !== null
+          ? resultGame.fixtures.find(f =>
+              (f.homeClubId === resultGame.managedClubId || f.awayClubId === resultGame.managedClubId) &&
+              f.status === 'completed' &&
+              (f.isCup ? f.roundNumber - 100 : f.roundNumber) === result.roundPlayed
+            )
+          : undefined
+
+        let matchResult: string | undefined
+        let matchScorers: string[] | undefined
+
+        if (managedFixture) {
+          const homeClub = resultGame.clubs.find(c => c.id === managedFixture.homeClubId)
+          const awayClub = resultGame.clubs.find(c => c.id === managedFixture.awayClubId)
+          matchResult = `${homeClub?.shortName ?? homeClub?.name ?? '?'} ${managedFixture.homeScore}–${managedFixture.awayScore} ${awayClub?.shortName ?? awayClub?.name ?? '?'}`
+
+          // Collect scorers for managed club
+          const isHome = managedFixture.homeClubId === resultGame.managedClubId
+          const managedPlayerIds = new Set(resultGame.players.filter(p => p.clubId === resultGame.managedClubId).map(p => p.id))
+          const goalsByPlayer: Record<string, number> = {}
+          const assistsByPlayer: Record<string, number> = {}
+          for (const evt of managedFixture.events) {
+            if (evt.playerId && managedPlayerIds.has(evt.playerId)) {
+              if (evt.type === 'goal') goalsByPlayer[evt.playerId] = (goalsByPlayer[evt.playerId] ?? 0) + 1
+              if (evt.type === 'assist') assistsByPlayer[evt.playerId] = (assistsByPlayer[evt.playerId] ?? 0) + 1
+            }
+          }
+          const scorerStrs: string[] = []
+          for (const [pid, goals] of Object.entries(goalsByPlayer)) {
+            const p = resultGame.players.find(pl => pl.id === pid)
+            if (!p) continue
+            const assists = assistsByPlayer[pid] ?? 0
+            const name = `${p.firstName} ${p.lastName.slice(0, 1)}.`
+            if (assists > 0) scorerStrs.push(`${name} ${goals}+${assists}`)
+            else scorerStrs.push(`${name} ${goals} mål`)
+          }
+          if (scorerStrs.length > 0) matchScorers = scorerStrs
+          void isHome
+        }
+
+        // Injuries from this round
+        const newlyInjuredPlayers = resultGame.players.filter(p =>
+          p.clubId === resultGame.managedClubId &&
+          p.isInjured &&
+          !game.players.find(op => op.id === p.id)?.isInjured
+        )
+        const injuries = newlyInjuredPlayers.map(p => {
+          const weeks = Math.ceil(p.injuryDaysRemaining / 7)
+          return `${p.firstName} ${p.lastName} (${weeks} v.)`
+        })
+
+        // Weather for managed fixture
+        let temperature: number | undefined
+        if (managedFixture) {
+          const mw = resultGame.matchWeathers.find(w => w.fixtureId === managedFixture.id)
+            ?? game.matchWeathers.find(w => w.fixtureId === managedFixture.id)
+          if (mw) temperature = mw.weather.temperature
+        }
+
+        // communityStanding changes (simple delta)
+        const csDelta = communityStandingAfter - communityStandingBefore
+        const communityStandingChanges: { reason: string; delta: number }[] = csDelta !== 0
+          ? [{ reason: csDelta > 0 ? 'Positiv utveckling' : 'Negativ händelse', delta: csDelta }]
+          : []
+
+        // Youth match result from inbox
+        const youthInbox = resultGame.inbox.find(i =>
+          i.type === 'youthP17' && !game.inbox.find(o => o.id === i.id)
+        )
+        const youthMatchResult = youthInbox ? youthInbox.title.replace(/^📋 /, '') : undefined
+
+        const summary: RoundSummaryData = {
+          round: result.roundPlayed ?? 0,
+          date: resultGame.currentDate,
+          temperature,
+          matchPlayed: !!managedFixture,
+          matchResult,
+          matchScorers,
+          communityStandingBefore,
+          communityStandingAfter,
+          communityStandingChanges,
+          financesBefore,
+          financesAfter,
+          injuries,
+          newInboxCount,
+          youthMatchResult,
+        }
+
+        set({ game: result.game, lastAdvanceResult: result, roundSummary: summary })
         return result
       },
 
@@ -265,7 +372,8 @@ export const useGameStore = create<GameState>()(
         set({ game: resolveEventFn(game, eventId, choiceId) })
       },
 
-      clearGame: () => set({ game: null, lastAdvanceResult: null }),
+      clearGame: () => set({ game: null, lastAdvanceResult: null, roundSummary: null }),
+      clearRoundSummary: () => set({ roundSummary: null }),
 
       listSaves: () => {
         const { game } = get()

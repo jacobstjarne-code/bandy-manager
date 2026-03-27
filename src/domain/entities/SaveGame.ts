@@ -163,6 +163,47 @@ export interface TalentSearchResult {
   round: number
 }
 
+// Sprint 1: RoundSummaryData
+export interface RoundSummaryData {
+  round: number
+  date: string
+  temperature?: number
+
+  // Match
+  matchPlayed: boolean
+  matchResult?: string
+  matchScorers?: string[]
+
+  // Community
+  communityStandingBefore: number
+  communityStandingAfter: number
+  communityStandingChanges: { reason: string; delta: number }[]
+  communityNote?: string
+  attendance?: number
+
+  // Academy
+  youthMatchResult?: string
+  mentorEffect?: string
+
+  // Economy
+  financesBefore: number
+  financesAfter: number
+
+  // Events
+  injuries: string[]
+  newInboxCount: number
+}
+
+// Sprint 5: NamedCharacter
+export interface NamedCharacter {
+  id: string
+  name: string
+  role: string
+  age?: number
+  isAlive?: boolean
+  morale?: number
+}
+
 export interface SaveGame {
   id: string
   managerName: string
@@ -261,4 +302,7 @@ export interface SaveGame {
   journalistRelationship?: number  // 0-100, starts 50
   pressConferenceCount?: number
   sponsorNetworkMood?: number    // 0-100, collective mood
+
+  // Sprint 5: named characters
+  namedCharacters?: NamedCharacter[]
 }

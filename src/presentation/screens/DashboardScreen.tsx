@@ -336,8 +336,41 @@ function CupCard({ bracket, game, cardStyle, cardLabelStyle }: CupCardProps) {
   )
 }
 
+// Sprint 4: Season phase
+function getSeasonPhase(round: number): { label: string; icon: string } {
+  if (round <= 4) return { label: 'Höststarten', icon: '🍂' }
+  if (round <= 7) return { label: 'Vardagen', icon: '🏒' }
+  if (round === 8) return { label: 'Annandagen', icon: '🎄' }
+  if (round <= 14) return { label: 'Vintern', icon: '❄️' }
+  if (round <= 18) return { label: 'Vårkänslorna', icon: '🌱' }
+  if (round <= 22) return { label: 'Grundseriens slut', icon: '📊' }
+  return { label: 'Slutspelet', icon: '🏆' }
+}
+
+// Sprint 2: Rolf's quotes
+const ROLF_BASE_QUOTES: Record<number, string> = {
+  1: 'Ny säsong. Isen ligger fint.',
+  4: 'Tre nya ungar på träningen igår. Fint att se.',
+  8: 'Annandagen. Min favoritdag på året.',
+  12: 'Kylan biter. Men vi biter tillbaka.',
+  15: 'Jag har hållit på i 38 år. Tänker inte sluta nu.',
+  20: 'Slutspelet närmar sig. Känner det i magen.',
+}
+
+function getRolfQuote(round: number, communityStanding: number, volunteerMorale: number): string {
+  if (volunteerMorale < 40) return 'Jag vet inte hur länge jag orkar.'
+  if (communityStanding > 80) return 'Folk stannar upp och tackar mig numera. Ovant.'
+  return ROLF_BASE_QUOTES[round] ?? 'Isen håller.'
+}
+
+// Sprint 3: Priority 1 events (block the advance button)
+const PRIORITY_1_EVENTS = new Set([
+  'licenseHandlingsplan', 'kommunMote', 'spoksponsor',
+  'hallDebate', 'detOmojligaValet',
+])
+
 export function DashboardScreen() {
-  const { game, advance, markTutorialSeen, resolveEvent } = useGameStore()
+  const { game, advance, markTutorialSeen, resolveEvent, roundSummary } = useGameStore()
   const club = useManagedClub()
   const standing = useCurrentStanding()
   const hasPendingLineup = useHasPendingLineup()
@@ -494,6 +527,45 @@ export function DashboardScreen() {
   const formLabel = avgForm >= 65 ? 'Hög' : avgForm >= 40 ? 'Normal' : 'Låg'
   const formColor = avgForm >= 65 ? '#22c55e' : avgForm >= 40 ? '#f59e0b' : '#ef4444'
 
+  // Current round number
+  const currentRound = game.fixtures
+    .filter(f => f.status === 'completed' && !f.isCup)
+    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+
+  // Sprint 4: Season phase
+  const seasonPhase = getSeasonPhase(currentRound)
+
+  // Sprint 6: Current weather for temperature display
+  const currentWeather = nextFixture
+    ? (game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id)
+    : undefined
+  const tempDisplay = currentWeather?.weather.temperature !== undefined
+    ? `${currentWeather.weather.temperature > 0 ? '+' : ''}${currentWeather.weather.temperature}°`
+    : null
+  const tempIsFreezingCold = (currentWeather?.weather.temperature ?? 0) <= -15
+  const tempIsMelting = (currentWeather?.weather.temperature ?? -10) >= 2 && currentRound > 14
+
+  // Sprint 2: Bygdens Puls data
+  const cs = game.communityStanding ?? 50
+  const communityColor = cs > 70 ? '#4CAF50' : cs > 50 ? '#FFC107' : cs > 30 ? '#FF9800' : '#f44336'
+  const trendArrow = roundSummary
+    ? (roundSummary.communityStandingAfter > roundSummary.communityStandingBefore ? '↑'
+      : roundSummary.communityStandingAfter < roundSummary.communityStandingBefore ? '↓' : '→')
+    : '→'
+  const communityNote = roundSummary?.communityNote
+
+  // Rolf character
+  const rolf = game.namedCharacters?.find(c => c.id === 'rolf')
+  const birgitta = game.namedCharacters?.find(c => c.id === 'birgitta')
+  const rolfAlive = rolf?.isAlive !== false
+  const rolfQuote = rolfAlive
+    ? getRolfQuote(currentRound, cs, rolf?.morale ?? 70)
+    : (birgitta ? `${birgitta.name}: "Vi håller ihop."` : '')
+
+  // Sprint 3: Priority 1 event blocking
+  const firstPendingEvent = (game.pendingEvents ?? [])[0]
+  const isPriority1Event = firstPendingEvent && PRIORITY_1_EVENTS.has(firstPendingEvent.type)
+
   // Determine playoff context for next fixture
   const isPlayoffFixture = nextFixture && nextFixture.roundNumber > 22
   const playoffSeries = isPlayoffFixture && playoffInfo ? (() => {
@@ -539,7 +611,9 @@ export function DashboardScreen() {
         }
         if ((result?.pendingEvents?.length ?? 0) > 0) {
           navigate('/game/events')
+          return
         }
+        navigate('/game/round-summary')
       } catch (err) {
         console.error('advance() failed:', err)
       }
@@ -565,7 +639,9 @@ export function DashboardScreen() {
       const result = advance()
       if ((result?.pendingEvents?.length ?? 0) > 0) {
         navigate('/game/events')
+        return
       }
+      navigate('/game/round-summary')
     } catch (err) {
       console.error('advance() failed:', err)
     }
@@ -642,7 +718,7 @@ export function DashboardScreen() {
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      background: '#0D1B2A',
+      background: tempIsFreezingCold ? 'rgba(100, 140, 200, 0.03)' : tempIsMelting ? 'rgba(34,197,94,0.02)' : '#0D1B2A',
     }}>
       {/* Tutorial overlay */}
       {!game.tutorialSeen && (
@@ -668,6 +744,20 @@ export function DashboardScreen() {
           Bandy Manager
         </h1>
         <p style={{ color: '#8A9BB0', fontSize: 12, marginTop: 4 }}>{club.name}</p>
+        {/* Sprint 4: Season phase + round + temperature */}
+        <p style={{ color: '#4A6080', fontSize: 11, marginTop: 4 }}>
+          {seasonPhase.icon} {seasonPhase.label}
+          {currentRound > 0 && ` · Omgång ${currentRound}`}
+          {(() => {
+            const d = new Date(game.currentDate)
+            return ` · ${d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}`
+          })()}
+          {tempDisplay && (
+            <span style={{ marginLeft: 4, color: (currentWeather?.weather.temperature ?? 0) <= 0 ? '#60a5fa' : '#8A9BB0' }}>
+              {(currentWeather?.weather.temperature ?? 0) <= -5 ? '❄️ ' : ''}{tempDisplay}
+            </span>
+          )}
+        </p>
       </div>
 
       {/* Scrollable content */}
@@ -807,6 +897,48 @@ export function DashboardScreen() {
           cardLabelStyle={cardLabelStyle}
         />
 
+        {/* BYGDENS PULS — Sprint 2 */}
+        <div style={{ ...cardStyle, marginBottom: 12 }}>
+          <div style={{ fontSize: 11, letterSpacing: 1, opacity: 0.5, marginBottom: 8, fontWeight: 700, textTransform: 'uppercase' }}>
+            BYGDENS PULS
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <span>🏘️</span>
+            <span style={{ fontWeight: 700, fontSize: 18, color: communityColor }}>{cs}</span>
+            <span style={{ color: communityColor, fontSize: 12 }}>{trendArrow}</span>
+            <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 3 }}>
+              <div style={{
+                width: `${cs}%`, height: '100%',
+                background: communityColor,
+                borderRadius: 3,
+                transition: 'width 0.5s ease',
+              }} />
+            </div>
+          </div>
+          {communityNote && (
+            <div style={{ fontSize: 12, opacity: 0.7, fontStyle: 'italic', marginBottom: 6 }}>
+              📰 "{communityNote}"
+            </div>
+          )}
+          {(rolfAlive || birgitta) && (
+            <div style={{ fontSize: 12, opacity: 0.6 }}>
+              🧊 {rolfQuote}
+            </div>
+          )}
+          {!rolfAlive && !birgitta && (
+            <div style={{ fontSize: 12, opacity: 0.4 }}>🧊</div>
+          )}
+          {/* P17 one-liner — Sprint 2 */}
+          {game.youthTeam && (
+            <div style={{ fontSize: 12, opacity: 0.7, marginTop: 6 }}>
+              🎓 P17: {game.youthTeam.tablePosition}:a i serien
+              {' '}({game.youthTeam.seasonRecord.w}V{' '}
+              {game.youthTeam.seasonRecord.d}O{' '}
+              {game.youthTeam.seasonRecord.l}F)
+            </div>
+          )}
+        </div>
+
         {/* EKONOMI card */}
         {(() => {
           const managedPlayers = game!.players.filter(p => p.clubId === game!.managedClubId)
@@ -931,7 +1063,50 @@ export function DashboardScreen() {
         background: 'linear-gradient(to top, #0D1B2A 80%, transparent)',
         zIndex: 50,
       }}>
-        {canSimulateRemaining && !isBatchSim && (
+        {/* PENDING EVENT inline — Sprint 3 */}
+        {firstPendingEvent && (
+          <div style={{
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 8,
+            padding: 12,
+            marginBottom: 12,
+          }}>
+            <div style={{ fontSize: 11, letterSpacing: 1, opacity: 0.5, marginBottom: 6 }}>
+              ⚡ HÄNDELSE
+            </div>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>{firstPendingEvent.title}</div>
+            <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 10 }}>{firstPendingEvent.body ?? ''}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {(firstPendingEvent.choices ?? []).map(choice => (
+                <button
+                  key={choice.id}
+                  onClick={() => resolveEvent(firstPendingEvent.id, choice.id)}
+                  style={{
+                    background: 'rgba(201,168,76,0.15)',
+                    border: '1px solid rgba(201,168,76,0.3)',
+                    borderRadius: 6,
+                    padding: '8px 12px',
+                    color: '#C9A84C',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontSize: 13,
+                  }}
+                >
+                  {choice.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {isPriority1Event && (
+          <div style={{ fontSize: 12, color: '#f59e0b', marginBottom: 8, textAlign: 'center' }}>
+            Hantera händelsen ovan först.
+          </div>
+        )}
+
+        {canSimulateRemaining && !isBatchSim && !firstPendingEvent && (
           <button
             onClick={() => setIsBatchSim(true)}
             style={{
@@ -963,21 +1138,21 @@ export function DashboardScreen() {
         )}
         <button
           onClick={handleAdvance}
-          disabled={!canClickAdvance || isBatchSim}
-          className={canClickAdvance && !isBatchSim ? 'btn-pulse' : undefined}
+          disabled={!canClickAdvance || isBatchSim || !!isPriority1Event}
+          className={canClickAdvance && !isBatchSim && !isPriority1Event ? 'btn-pulse' : undefined}
           style={{
             width: '100%',
             padding: '17px',
-            background: canClickAdvance && !isBatchSim ? '#C9A84C' : '#1a2e47',
-            color: canClickAdvance && !isBatchSim ? '#0D1B2A' : '#4A6080',
+            background: canClickAdvance && !isBatchSim && !isPriority1Event ? '#C9A84C' : '#1a2e47',
+            color: canClickAdvance && !isBatchSim && !isPriority1Event ? '#0D1B2A' : '#4A6080',
             borderRadius: 12,
             fontSize: 16,
             fontWeight: 800,
             letterSpacing: '1.5px',
             textTransform: 'uppercase',
             border: 'none',
-            boxShadow: canClickAdvance && !isBatchSim ? '0 4px 20px rgba(201,168,76,0.3)' : 'none',
-            cursor: canClickAdvance && !isBatchSim ? 'pointer' : 'not-allowed',
+            boxShadow: canClickAdvance && !isBatchSim && !isPriority1Event ? '0 4px 20px rgba(201,168,76,0.3)' : 'none',
+            cursor: canClickAdvance && !isBatchSim && !isPriority1Event ? 'pointer' : 'not-allowed',
             fontVariantNumeric: 'tabular-nums',
           }}
         >
