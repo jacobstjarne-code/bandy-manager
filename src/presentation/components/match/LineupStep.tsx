@@ -98,15 +98,11 @@ export function LineupStep({
         </span>
         <button
           onClick={onAutoFill}
+          className="btn btn-outline"
           style={{
             padding: '8px 16px',
-            borderRadius: 'var(--radius)',
-            background: 'rgba(196,122,58,0.15)',
-            border: '1px solid rgba(196,122,58,0.5)',
-            color: 'var(--accent)',
             fontSize: 13,
             fontWeight: 700,
-            cursor: 'pointer',
           }}
         >
           ⚡ Bästa elvan
@@ -176,12 +172,10 @@ export function LineupStep({
             ))}
           </div>
         )}
-        <button onClick={onNext} disabled={!canPlay} style={{
-          width: '100%', padding: '15px',
-          background: canPlay ? 'var(--accent)' : 'var(--bg-elevated)',
-          border: '1px solid ' + (canPlay ? 'var(--accent)' : 'var(--border)'),
-          borderRadius: 'var(--radius)', color: canPlay ? '#fff' : 'var(--text-muted)',
-          fontSize: 16, fontWeight: 600, cursor: canPlay ? 'pointer' : 'not-allowed',
+        <button onClick={onNext} disabled={!canPlay} className={`btn ${canPlay ? 'btn-copper' : 'btn-ghost'}`} style={{
+          width: '100%', padding: '15px', fontSize: 16, fontWeight: 600,
+          cursor: canPlay ? 'pointer' : 'not-allowed',
+          opacity: canPlay ? 1 : 0.5,
         }}>
           Välj taktik →
         </button>

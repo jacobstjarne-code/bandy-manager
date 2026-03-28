@@ -32,7 +32,7 @@ function inboxTypeColor(type: InboxItemType): string {
     case InboxItemType.Suspension: return 'var(--danger)'
     case InboxItemType.MatchResult: return 'var(--accent)'
     case InboxItemType.Playoff: return 'var(--accent)'
-    case InboxItemType.Derby: return '#ff7040'
+    case InboxItemType.Derby: return 'var(--danger)'
     case InboxItemType.ScoutReport: return 'var(--accent)'
     case InboxItemType.YouthIntake: return 'var(--success)'
     case InboxItemType.Recovery: return 'var(--success)'
@@ -75,7 +75,8 @@ function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
         gap: 12,
         padding: '14px 16px',
         borderBottom: '1px solid var(--border)',
-        background: item.isRead ? 'transparent' : 'rgba(59,130,246,0.04)',
+        borderLeft: item.isRead ? '3px solid transparent' : '3px solid rgba(196,122,58,0.2)',
+        background: item.isRead ? 'transparent' : 'rgba(196,122,58,0.04)',
         cursor: hasBody ? 'pointer' : (item.isRead ? 'default' : 'pointer'),
         animation: `fadeInUp 200ms ease-out ${Math.min(index, 14) * 30}ms both`,
       }}
@@ -184,7 +185,7 @@ export function InboxScreen() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Bell size={20} color="var(--text-primary)" />
-          <h2 style={{ fontSize: 18, fontWeight: 700 }}>Inkorg</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)' }}>Inkorg</h2>
           {unreadCount > 0 && (
             <div style={{
               background: 'var(--accent)',
@@ -201,15 +202,12 @@ export function InboxScreen() {
         {unreadCount > 0 && (
           <button
             onClick={markAllInboxRead}
+            className="btn btn-ghost"
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: 5,
-              background: 'none',
-              color: 'var(--accent)',
               fontSize: 13,
-              fontWeight: 600,
-              padding: '4px 8px',
             }}
           >
             <CheckCheck size={15} />

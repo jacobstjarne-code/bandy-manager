@@ -345,13 +345,7 @@ export function MatchScreen() {
     return (
       <div style={{ padding: '20px 16px' }}>
         <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 16 }}>Match</h2>
-        <div style={{
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius)',
-          padding: '32px 20px',
-          textAlign: 'center',
-        }}>
+        <div className="card-round" style={{ padding: '32px 20px', textAlign: 'center' }}>
           <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Säsongen är slut</p>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Inga fler matcher att spela den här säsongen.</p>
         </div>
@@ -409,25 +403,20 @@ export function MatchScreen() {
             <LastMatchCard fixture={lastCompletedFixture} game={game} managedClubId={managedClubId} />
           </div>
         )}
-        <div style={{
-          background: 'var(--bg-surface)',
-          border: isPlayoffRound ? '1px solid rgba(196,122,58,0.3)' : isCupFixture ? '1px solid rgba(196,122,58,0.25)' : rivalry ? '1px solid rgba(220,80,30,0.3)' : '1px solid var(--border)',
-          borderRadius: 'var(--radius)',
-          padding: '12px 16px',
-          marginBottom: 16,
-        }}>
-          <p style={{ fontSize: 11, color: isPlayoffRound ? 'var(--accent)' : isCupFixture ? 'var(--accent)' : rivalry ? '#ff7040' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
+        <div
+          className="card-round"
+          style={{
+            border: isPlayoffRound ? '1px solid rgba(196,122,58,0.3)' : isCupFixture ? '1px solid rgba(196,122,58,0.25)' : rivalry ? '1px solid rgba(220,80,30,0.3)' : undefined,
+            padding: '12px 16px',
+            marginBottom: 16,
+          }}
+        >
+          <p style={{ fontSize: 11, color: isPlayoffRound ? 'var(--accent)' : isCupFixture ? 'var(--accent)' : rivalry ? 'var(--danger)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
             {roundLabel}
           </p>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <p style={{ fontSize: 17, fontWeight: 700 }}>vs {opponent?.name ?? 'Okänd'}</p>
-            <span style={{
-              padding: '3px 10px', borderRadius: 99,
-              background: isHome ? 'var(--accent)' : 'var(--bg-elevated)',
-              border: '1px solid ' + (isHome ? 'var(--accent)' : 'var(--border)'),
-              color: isHome ? '#fff' : 'var(--text-secondary)',
-              fontSize: 12, fontWeight: 600,
-            }}>
+            <p style={{ fontSize: 17, fontWeight: 700, fontFamily: 'var(--font-display)' }}>vs {opponent?.name ?? 'Okänd'}</p>
+            <span className={isHome ? 'tag tag-copper' : 'tag tag-ghost'}>
               {isHome ? 'Hemma' : 'Borta'}
             </span>
           </div>

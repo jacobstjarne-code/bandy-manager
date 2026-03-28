@@ -7,6 +7,7 @@ import { StatBar } from '../components/StatBar'
 import { PlayerCard } from '../components/PlayerCard'
 import { positionShort, POSITION_ORDER } from '../utils/formatters'
 import { TRAIT_META } from '../../domain/data/playerTraits'
+import { SectionCard } from '../components/SectionCard'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
 type FilterKey = 'all' | 'mv' | 'def' | 'half' | 'mid' | 'fwd'
@@ -20,10 +21,10 @@ const FILTER_TO_POSITION: Record<string, PlayerPosition> = {
 }
 
 function caColor(ca: number): string {
-  if (ca >= 75) return '#C47A3A'
-  if (ca >= 60) return '#1A1A18'
-  if (ca >= 40) return '#C47A3A'
-  return '#9A9590'
+  if (ca >= 75) return 'var(--accent)'
+  if (ca >= 60) return 'var(--text-primary)'
+  if (ca >= 40) return 'var(--accent)'
+  return 'var(--text-secondary)'
 }
 
 function barColor(value: number): string {
@@ -124,14 +125,14 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
           width: 28,
           height: 28,
           borderRadius: '50%',
-          background: archColor,
+          background: archColor + '22',
           border: '1px solid rgba(196,122,58,0.2)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: 11,
           fontWeight: 800,
-          color: 'var(--text-light)',
+          color: archColor,
           flexShrink: 0,
         }}>
           {positionShort(player.position).charAt(0)}
@@ -143,6 +144,7 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
             fontSize: 14,
             fontWeight: 700,
             color: 'var(--text-primary)',
+            fontFamily: 'var(--font-display)',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -186,7 +188,7 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
               <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--ice)', background: 'rgba(126,179,212,0.1)', border: '1px solid rgba(126,179,212,0.25)', borderRadius: 4, padding: '1px 4px' }}>Utvecklas</span>
             )}
             {player.age >= 24 && player.age <= 30 && (
-              <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--accent)', background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.25)', borderRadius: 4, padding: '1px 4px' }}>Peak</span>
+              <span className="tag tag-copper" style={{ fontSize: 9, fontWeight: 700, padding: '1px 4px' }}>Peak</span>
             )}
             {player.age > 30 && (
               <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', background: 'rgba(138,133,122,0.1)', border: '1px solid rgba(138,133,122,0.3)', borderRadius: 4, padding: '1px 4px' }}>Avtar</span>
@@ -290,6 +292,7 @@ export function SquadScreen() {
           letterSpacing: '2px',
           textTransform: 'uppercase',
           color: 'var(--text-primary)',
+          fontFamily: 'var(--font-display)',
           marginBottom: 14,
         }}>
           Trupp
@@ -317,18 +320,8 @@ export function SquadScreen() {
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
-              style={{
-                flexShrink: 0,
-                padding: '5px 12px',
-                borderRadius: 99,
-                background: filter === tab.key ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
-                border: '1px solid ' + (filter === tab.key ? 'var(--accent)' : 'var(--border)'),
-                color: filter === tab.key ? 'var(--accent)' : 'var(--text-secondary)',
-                fontSize: 12,
-                fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: filter === tab.key ? 'inset 0 -2px 0 var(--accent)' : undefined,
-              }}
+              className={`btn ${filter === tab.key ? 'btn-copper' : 'btn-ghost'}`}
+              style={{ flexShrink: 0, padding: '6px 12px', fontSize: 11 }}
             >
               {tab.label}
             </button>
@@ -342,15 +335,14 @@ export function SquadScreen() {
             <button
               key={opt.key}
               onClick={() => setSort(opt.key)}
+              className={`btn ${sort === opt.key ? 'btn-ghost' : 'btn-ghost'}`}
               style={{
                 padding: '3px 8px',
-                borderRadius: 6,
-                background: sort === opt.key ? 'var(--bg-elevated)' : 'transparent',
-                border: '1px solid ' + (sort === opt.key ? 'var(--border)' : 'transparent'),
-                color: sort === opt.key ? 'var(--text-primary)' : 'var(--text-muted)',
                 fontSize: 12,
                 fontWeight: sort === opt.key ? 700 : 400,
-                cursor: 'pointer',
+                color: sort === opt.key ? 'var(--text-primary)' : 'var(--text-muted)',
+                background: sort === opt.key ? 'var(--bg-elevated)' : 'transparent',
+                border: sort === opt.key ? '1px solid var(--border)' : '1px solid transparent',
               }}
             >
               {opt.label}
@@ -377,25 +369,26 @@ export function SquadScreen() {
             <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Fråga doktorn →</span>
           </div>
         )}
-        {sorted.map((player, index) => (
-          <PlayerRowAnimated
-            key={player.id}
-            player={player}
-            index={index}
-            onClick={() => setSelectedPlayerId(player.id)}
-          />
-        ))}
-        {sorted.length === 0 && (
-          <p style={{ padding: '40px 16px', color: 'var(--text-muted)', textAlign: 'center', fontSize: 14 }}>
-            Inga spelare i denna position
-          </p>
-        )}
+
+        <SectionCard title="TRUPPEN" variant="sharp" style={{ margin: '0 0 16px' }}>
+          {sorted.map((player, index) => (
+            <PlayerRowAnimated
+              key={player.id}
+              player={player}
+              index={index}
+              onClick={() => setSelectedPlayerId(player.id)}
+            />
+          ))}
+          {sorted.length === 0 && (
+            <p style={{ padding: '24px 0', color: 'var(--text-muted)', textAlign: 'center', fontSize: 14 }}>
+              Inga spelare i denna position
+            </p>
+          )}
+        </SectionCard>
+
         {/* Låneavtal */}
         {(game?.loanDeals ?? []).length > 0 && (
-          <div style={{ marginTop: 20, marginBottom: 12 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
-              UTLÅNADE SPELARE
-            </p>
+          <SectionCard title="UTLÅNADE SPELARE" variant="sharp" style={{ margin: '0 0 16px' }}>
             {(game?.loanDeals ?? []).map((deal: any) => {
               const player = game?.players.find(p => p.id === deal.playerId)
               if (!player) return null
@@ -403,7 +396,7 @@ export function SquadScreen() {
               const roundsLeft = (deal.endRound ?? 22) - completedLeague
               return (
                 <div key={deal.playerId} style={{
-                  background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 10,
+                  background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 6,
                   padding: '10px 14px', marginBottom: 8,
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 }}>
@@ -418,21 +411,18 @@ export function SquadScreen() {
                 </div>
               )
             })}
-          </div>
+          </SectionCard>
         )}
 
         <button
           onClick={() => navigate('/game/doctor')}
+          className="btn btn-ghost"
           style={{
             width: '100%', margin: '8px 0 90px',
             padding: '12px',
-            background: 'rgba(126,179,212,0.08)',
-            border: '1px solid rgba(126,179,212,0.25)',
-            borderRadius: 10,
             color: 'var(--ice)',
             fontSize: 13,
             fontWeight: 600,
-            cursor: 'pointer',
             textAlign: 'center',
           }}
         >
@@ -465,18 +455,15 @@ export function SquadScreen() {
           }}>
             <button
               onClick={() => setSelectedPlayerId(null)}
+              className="btn btn-ghost"
               style={{
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border)',
-                borderRadius: 8,
-                color: 'var(--text-secondary)',
                 width: 36,
                 height: 36,
                 fontSize: 18,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                cursor: 'pointer',
+                padding: 0,
               }}
             >
               ✕
@@ -538,12 +525,12 @@ export function SquadScreen() {
                     <p style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 6 }}>{talkFeedback.text}</p>
                     <div style={{ display: 'flex', gap: 12, fontSize: 12 }}>
                       {talkFeedback.moraleChange !== 0 && (
-                        <span style={{ color: talkFeedback.moraleChange > 0 ? 'var(--success)' : 'var(--danger)' }}>
+                        <span className={talkFeedback.moraleChange > 0 ? 'tag tag-green' : 'tag tag-red'}>
                           Moral {talkFeedback.moraleChange > 0 ? '+' : ''}{talkFeedback.moraleChange}
                         </span>
                       )}
                       {talkFeedback.formChange !== 0 && (
-                        <span style={{ color: talkFeedback.formChange > 0 ? 'var(--success)' : 'var(--danger)' }}>
+                        <span className={talkFeedback.formChange > 0 ? 'tag tag-green' : 'tag tag-red'}>
                           Form {talkFeedback.formChange > 0 ? '+' : ''}{talkFeedback.formChange}
                         </span>
                       )}
@@ -559,11 +546,8 @@ export function SquadScreen() {
                       <button
                         key={opt.id}
                         onClick={() => handleTalk(selectedPlayer.id, opt.id)}
-                        style={{
-                          flex: 1, padding: '10px 6px', fontSize: 12, fontWeight: 600,
-                          background: 'var(--bg-surface)', border: '1px solid var(--border)',
-                          borderRadius: 8, cursor: 'pointer', color: 'var(--text-primary)',
-                        }}
+                        className="btn btn-outline"
+                        style={{ flex: 1, padding: '10px 6px', fontSize: 12 }}
                       >
                         {opt.label}
                       </button>

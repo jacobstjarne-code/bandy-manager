@@ -263,7 +263,7 @@ export function TabellScreen() {
                         borderRadius: '50%',
                         background: result === 'W' ? 'var(--success)'
                           : result === 'L' ? 'var(--danger)'
-                          : result === 'D' ? '#e2a84c'
+                          : result === 'D' ? 'var(--accent)'
                           : 'var(--border)',
                       }} />
                     )
@@ -349,7 +349,7 @@ export function TabellScreen() {
                           const isH = f.homeClubId === managedClubId
                           const gf = isH ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
                           const ga = isH ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
-                          const col = gf > ga ? 'var(--success)' : gf < ga ? 'var(--danger)' : '#e2a84c'
+                          const col = gf > ga ? 'var(--success)' : gf < ga ? 'var(--danger)' : 'var(--accent)'
                           return (
                             <span key={f.id} style={{ color: col, fontWeight: 700 }}>
                               {gf}–{ga}

@@ -77,10 +77,8 @@ export function HistoryScreen() {
       </div>
 
       {summaries.length === 0 ? (
-        <div style={{
+        <div className="card-round" style={{
           padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)',
-          background: 'var(--bg-surface)', border: '1px solid var(--border)',
-          borderRadius: 'var(--radius)',
         }}>
           <p style={{ fontSize: 22, marginBottom: 12 }}>📖</p>
           <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>Ingen historik ännu.</p>
@@ -94,11 +92,10 @@ export function HistoryScreen() {
             return (
               <div
                 key={s.season}
-                className={`card-stagger-${Math.min(i + 1, 6)}`}
+                className={`card-round card-stagger-${Math.min(i + 1, 6)}`}
                 style={{
-                  background: isGold ? 'linear-gradient(135deg, rgba(196,122,58,0.12), rgba(196,122,58,0.04))' : 'var(--bg-surface)',
-                  border: isGold ? '1px solid rgba(196,122,58,0.4)' : '1px solid var(--border)',
-                  borderRadius: 'var(--radius)',
+                  background: isGold ? 'linear-gradient(135deg, rgba(196,122,58,0.12), rgba(196,122,58,0.04))' : undefined,
+                  border: isGold ? '1px solid rgba(196,122,58,0.4)' : undefined,
                   padding: '16px',
                 }}
               >
@@ -160,10 +157,7 @@ export function HistoryScreen() {
       )}
 
       {/* Hall of Fame */}
-      <div style={{
-        background: 'var(--bg-surface)', border: '1px solid var(--border)',
-        borderRadius: 'var(--radius)', padding: '18px 16px',
-      }}>
+      <div className="card-round" style={{ padding: '18px 16px' }}>
         <p style={{
           fontSize: 12, fontWeight: 700, letterSpacing: '2px',
           textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 18,
@@ -174,7 +168,7 @@ export function HistoryScreen() {
 
         {topGoalScorers.length > 0 && (
           <div style={{ marginBottom: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: 8 }}>
+            <p className="leather-bar texture-leather" style={{ color: 'var(--text-light-secondary)', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 8 }}>
               🎯 Flest mål i karriären
             </p>
             {topGoalScorers.map((p, i) => (
@@ -189,7 +183,7 @@ export function HistoryScreen() {
 
         {topByGames.length > 0 && (
           <div style={{ marginBottom: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: 8 }}>
+            <p className="leather-bar texture-leather" style={{ color: 'var(--text-light-secondary)', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 8 }}>
               🏒 Flest matcher
             </p>
             {topByGames.map((p, i) => (
@@ -204,7 +198,7 @@ export function HistoryScreen() {
 
         {topByRating.length > 0 && (
           <div>
-            <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: 8 }}>
+            <p className="leather-bar texture-leather" style={{ color: 'var(--text-light-secondary)', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 8 }}>
               ⭐ Bästa snittbetyg (min 10 matcher)
             </p>
             {topByRating.map(({ p, avg }, i) => (

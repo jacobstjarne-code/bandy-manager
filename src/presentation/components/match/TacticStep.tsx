@@ -83,17 +83,13 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
       ) : null}
 
       <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-        <button onClick={onBack} style={{
-          flex: 1, padding: '13px', background: 'var(--bg-elevated)',
-          border: '1px solid var(--border)', borderRadius: 'var(--radius)',
-          color: 'var(--text-secondary)', fontSize: 14, fontWeight: 500, cursor: 'pointer',
+        <button onClick={onBack} className="btn btn-outline" style={{
+          flex: 1, padding: '13px', fontSize: 14,
         }}>
           ← Tillbaka
         </button>
-        <button onClick={onNext} style={{
-          flex: 2, padding: '13px', background: 'var(--accent)',
-          border: 'none', borderRadius: 'var(--radius)',
-          color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+        <button onClick={onNext} className="btn btn-copper" style={{
+          flex: 2, padding: '13px', fontSize: 15, fontWeight: 700,
         }}>
           Nästa →
         </button>

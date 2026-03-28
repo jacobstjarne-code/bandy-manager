@@ -81,17 +81,13 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
         </div>
       )}
 
-      <button onClick={onBack} style={{
-        width: '100%', padding: '12px', background: 'transparent',
-        border: '1px solid var(--border)', borderRadius: 'var(--radius)',
-        color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500, cursor: 'pointer', marginBottom: 10,
+      <button onClick={onBack} className="btn btn-outline" style={{
+        width: '100%', padding: '12px', fontSize: 13, marginBottom: 10,
       }}>
         ← Ändra taktik
       </button>
-      <button onClick={onPlay} style={{
-        width: '100%', padding: '16px', background: 'var(--accent)', border: 'none',
-        borderRadius: 'var(--radius)', color: '#fff', fontSize: 17, fontWeight: 700,
-        cursor: 'pointer', letterSpacing: '0.3px',
+      <button onClick={onPlay} className="btn btn-copper" style={{
+        width: '100%', padding: '16px', fontSize: 17, fontWeight: 700, letterSpacing: '0.3px',
       }}>
         Lycka till! →
       </button>

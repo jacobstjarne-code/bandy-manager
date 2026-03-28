@@ -48,10 +48,10 @@ function RenewContractModal({ player, currentSeason, minSalary, error, onClose, 
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Förläng kontrakt</h3>
+            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, fontFamily: 'var(--font-display)' }}>Förläng kontrakt</h3>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{player.firstName} {player.lastName}</p>
           </div>
-          <button onClick={onClose} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)', width: 32, height: 32, fontSize: 16 }}>✕</button>
+          <button onClick={onClose} className="btn btn-ghost" style={{ width: 32, height: 32, fontSize: 16, padding: 0 }}>✕</button>
         </div>
         <div style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', marginBottom: 20, border: '1px solid var(--border)' }}>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
@@ -77,7 +77,8 @@ function RenewContractModal({ player, currentSeason, minSalary, error, onClose, 
               <button
                 key={y}
                 onClick={() => setYears(y)}
-                style={{ flex: 1, padding: '10px', borderRadius: 'var(--radius-sm)', background: years === y ? 'var(--accent)' : 'var(--bg-elevated)', border: '1px solid ' + (years === y ? 'var(--accent)' : 'var(--border)'), color: years === y ? '#fff' : 'var(--text-secondary)', fontSize: 15, fontWeight: 600 }}
+                className={`btn ${years === y ? 'btn-copper' : 'btn-outline'}`}
+                style={{ flex: 1, padding: '10px', fontSize: 15, fontWeight: 600 }}
               >
                 {y} år
               </button>
@@ -86,7 +87,11 @@ function RenewContractModal({ player, currentSeason, minSalary, error, onClose, 
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>Nytt slutdatum: säsong {currentSeason + years}</p>
         </div>
         {error && <p style={{ fontSize: 13, color: 'var(--danger)', marginBottom: 12 }}>{error}</p>}
-        <button onClick={() => onConfirm(player.id, newSalary, years)} style={{ width: '100%', padding: '14px', background: 'var(--accent)', color: '#fff', borderRadius: 'var(--radius)', fontSize: 15, fontWeight: 600 }}>
+        <button
+          onClick={() => onConfirm(player.id, newSalary, years)}
+          className="btn btn-copper"
+          style={{ width: '100%', padding: '14px', fontSize: 15, fontWeight: 600 }}
+        >
           Förläng kontrakt
         </button>
       </div>
@@ -119,10 +124,10 @@ function BidModal({ player, managedClub, onClose, onConfirm }: BidModalProps) {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Lägg bud</h3>
+            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, fontFamily: 'var(--font-display)' }}>Lägg bud</h3>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{player.firstName} {player.lastName}</p>
           </div>
-          <button onClick={onClose} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)', width: 32, height: 32, fontSize: 16 }}>✕</button>
+          <button onClick={onClose} className="btn btn-ghost" style={{ width: 32, height: 32, fontSize: 16, padding: 0 }}>✕</button>
         </div>
         <div style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', marginBottom: 16, border: '1px solid var(--border)', fontSize: 13, color: 'var(--text-secondary)' }}>
           Marknadsvärde: {formatValue(player.marketValue ?? 0)} · Transferbudget: {formatValue(managedClub.transferBudget)}
@@ -141,7 +146,12 @@ function BidModal({ player, managedClub, onClose, onConfirm }: BidModalProps) {
           <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>Kontraktslängd</label>
           <div style={{ display: 'flex', gap: 8 }}>
             {[1, 2, 3].map(y => (
-              <button key={y} onClick={() => setContractYears(y)} style={{ flex: 1, padding: '10px', borderRadius: 'var(--radius-sm)', background: contractYears === y ? 'var(--accent)' : 'var(--bg-elevated)', border: '1px solid ' + (contractYears === y ? 'var(--accent)' : 'var(--border)'), color: contractYears === y ? '#fff' : 'var(--text-secondary)', fontSize: 15, fontWeight: 600 }}>
+              <button
+                key={y}
+                onClick={() => setContractYears(y)}
+                className={`btn ${contractYears === y ? 'btn-copper' : 'btn-outline'}`}
+                style={{ flex: 1, padding: '10px', fontSize: 15, fontWeight: 600 }}
+              >
                 {y} år
               </button>
             ))}
@@ -151,7 +161,9 @@ function BidModal({ player, managedClub, onClose, onConfirm }: BidModalProps) {
         <button
           onClick={() => canAfford && onConfirm(player.id, offerAmount, offeredSalary, contractYears)}
           disabled={!canAfford}
-          style={{ width: '100%', padding: '14px', background: canAfford ? 'var(--accent)' : 'var(--bg-elevated)', color: canAfford ? '#fff' : 'var(--text-muted)', borderRadius: 'var(--radius)', fontSize: 15, fontWeight: 600, border: 'none', cursor: canAfford ? 'pointer' : 'not-allowed', opacity: canAfford ? 1 : 0.5 }}>
+          className={`btn ${canAfford ? 'btn-copper' : 'btn-ghost'}`}
+          style={{ width: '100%', padding: '14px', fontSize: 15, fontWeight: 600, cursor: canAfford ? 'pointer' : 'not-allowed', opacity: canAfford ? 1 : 0.5 }}
+        >
           Lägg bud
         </button>
       </div>
@@ -309,9 +321,9 @@ export function TransfersScreen() {
   const currentRound = game.fixtures.filter(f => f.status === 'scheduled').sort((a, b) => a.roundNumber - b.roundNumber)[0]?.roundNumber ?? 1
 
   return (
-    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
+    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%', background: 'var(--bg)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 700 }}>Transfers</h2>
+        <h2 style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)' }}>Transfers</h2>
         <span style={{ fontSize: 12, color: scoutBudget > 3 ? 'var(--text-muted)' : 'var(--danger)', fontWeight: 600 }}>
           🔍 {scoutBudget} scouts kvar
         </span>
@@ -319,7 +331,14 @@ export function TransfersScreen() {
 
       {/* Scout toast */}
       {scoutMessage && (
-        <div style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.35)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 12, fontSize: 13, color: 'var(--accent)' }}>
+        <div className="card-sharp" style={{
+          background: 'rgba(196,122,58,0.04)',
+          border: '1px solid rgba(196,122,58,0.15)',
+          padding: '10px 14px',
+          marginBottom: 12,
+          fontSize: 13,
+          color: 'var(--accent)',
+        }}>
           {scoutMessage}
         </div>
       )}
@@ -329,7 +348,7 @@ export function TransfersScreen() {
         const target = game.players.find(p => p.id === activeAssignment.targetPlayerId)
         const targetClub = game.clubs.find(c => c.id === activeAssignment.targetClubId)
         return (
-          <div style={{ background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
+          <div className="card-sharp" style={{ background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.25)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
             🔍 Scouting pågår: <strong>{target?.firstName} {target?.lastName}</strong> ({targetClub?.name ?? '?'}) · {activeAssignment.roundsRemaining} omgång{activeAssignment.roundsRemaining !== 1 ? 'ar' : ''} kvar
           </div>
         )
@@ -337,7 +356,7 @@ export function TransfersScreen() {
 
       {/* Active talent search */}
       {game.activeTalentSearch && !activeAssignment && (
-        <div style={{ background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
+        <div className="card-sharp" style={{ background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.25)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
           🔎 Scouten är ute på talangspaning. Klar om {game.activeTalentSearch.roundsRemaining} omgång{game.activeTalentSearch.roundsRemaining !== 1 ? 'ar' : ''}.
         </div>
       )}
@@ -354,15 +373,11 @@ export function TransfersScreen() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
+            className={`btn ${activeTab === tab.key ? 'btn-copper' : 'btn-ghost'}`}
             style={{
               padding: '6px 10px',
-              borderRadius: 'var(--radius-sm)',
-              background: activeTab === tab.key ? 'var(--accent)' : 'var(--bg-elevated)',
-              border: '1px solid ' + (activeTab === tab.key ? 'var(--accent)' : 'var(--border)'),
-              color: activeTab === tab.key ? '#fff' : 'var(--text-secondary)',
               fontSize: 12,
               fontWeight: activeTab === tab.key ? 600 : 400,
-              cursor: 'pointer',
               whiteSpace: 'nowrap',
             }}
           >
@@ -372,15 +387,14 @@ export function TransfersScreen() {
       </div>
 
       {/* Transfer window status banner */}
-      <div className="card-stagger-1" style={{
-        background: windowInfo.status === 'open' ? 'rgba(34,197,94,0.08)' : windowInfo.status === 'winter' ? 'rgba(59,130,246,0.08)' : 'rgba(239,68,68,0.06)',
-        border: `1px solid ${windowInfo.status === 'open' ? 'rgba(34,197,94,0.3)' : windowInfo.status === 'winter' ? 'rgba(59,130,246,0.3)' : 'rgba(239,68,68,0.2)'}`,
-        borderRadius: 'var(--radius)',
+      <div className="card-sharp card-stagger-1" style={{
+        background: windowInfo.status === 'open' ? 'rgba(34,197,94,0.08)' : windowInfo.status === 'winter' ? 'rgba(196,122,58,0.08)' : 'rgba(239,68,68,0.06)',
+        border: `1px solid ${windowInfo.status === 'open' ? 'rgba(34,197,94,0.3)' : windowInfo.status === 'winter' ? 'rgba(196,122,58,0.25)' : 'rgba(239,68,68,0.2)'}`,
         padding: '12px 14px',
         marginBottom: 20,
       }}>
-        <p style={{ fontSize: 13, fontWeight: 700, color: windowInfo.status === 'open' ? 'var(--success)' : windowInfo.status === 'winter' ? '#60a5fa' : 'var(--danger)', marginBottom: 4 }}>
-          {windowInfo.status === 'open' ? '🟢' : windowInfo.status === 'winter' ? '🔵' : '🔴'} {windowInfo.label}
+        <p style={{ fontSize: 13, fontWeight: 700, color: windowInfo.status === 'open' ? 'var(--success)' : windowInfo.status === 'winter' ? 'var(--accent)' : 'var(--danger)', marginBottom: 4 }}>
+          {windowInfo.status === 'open' ? '🟢' : windowInfo.status === 'winter' ? '🟡' : '🔴'} {windowInfo.label}
         </p>
         <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{windowInfo.description}</p>
       </div>
@@ -392,7 +406,7 @@ export function TransfersScreen() {
             Scoutbudget: {scoutBudget} kvar
           </span>
         }>Scouting — andra lag</SectionLabel>
-        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+        <div className="card-round" style={{ overflow: 'hidden' }}>
           {scoutablePlayers.slice(0, 30).map((player, index) => {
             const report = scoutReports[player.id]
             const reportAge = report ? getScoutReportAge(report, game.currentSeason, report.scoutedSeason) : null
@@ -410,6 +424,7 @@ export function TransfersScreen() {
                   borderBottom: index < Math.min(scoutablePlayers.length, 30) - 1 ? '1px solid var(--border)' : 'none',
                   gap: 10,
                   opacity: isScounted ? 0.8 : 1,
+                  background: isScounted ? 'rgba(196,122,58,0.04)' : undefined,
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -417,7 +432,9 @@ export function TransfersScreen() {
                     {player.firstName} {player.lastName}
                     {isScounted && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--accent)' }}>🔍</span>}
                     {isStale && <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--danger)', fontWeight: 400 }}>Föråldrad</span>}
-                    {reportAge === 'aging' && !isStale && <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--warning)', fontWeight: 400 }}>1 säsong sedan</span>}
+                    {reportAge === 'aging' && !isStale && (
+                      <span className="tag tag-outline" style={{ marginLeft: 6, color: 'var(--warning)' }}>1 säsong sedan</span>
+                    )}
                   </p>
                   <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
                     {positionShort(player.position)} · {club?.name ?? '?'} · {formatValue(player.marketValue)} ·{' '}
@@ -433,16 +450,12 @@ export function TransfersScreen() {
                 {isScounted && windowOpen && (
                   <button
                     onClick={() => setBiddingPlayerId(player.id)}
+                    className="btn btn-outline"
                     style={{
                       flexShrink: 0,
                       padding: '5px 10px',
-                      borderRadius: 'var(--radius-sm)',
-                      background: 'rgba(34,197,94,0.1)',
-                      border: '1px solid rgba(34,197,94,0.35)',
-                      color: 'var(--success)',
                       fontSize: 12,
                       fontWeight: 600,
-                      cursor: 'pointer',
                       marginLeft: 4,
                     }}
                   >
@@ -453,13 +466,10 @@ export function TransfersScreen() {
                   <button
                     onClick={() => canScout && handleScout(player)}
                     disabled={!canScout}
+                    className={`btn ${canScout ? 'btn-outline' : 'btn-ghost'}`}
                     style={{
                       flexShrink: 0,
                       padding: '5px 10px',
-                      borderRadius: 'var(--radius-sm)',
-                      background: canScout ? 'rgba(59,130,246,0.12)' : 'var(--bg-elevated)',
-                      border: `1px solid ${canScout ? 'rgba(59,130,246,0.4)' : 'var(--border)'}`,
-                      color: canScout ? 'var(--accent)' : 'var(--text-muted)',
                       fontSize: 12,
                       fontWeight: 600,
                       cursor: canScout ? 'pointer' : 'not-allowed',
@@ -481,7 +491,7 @@ export function TransfersScreen() {
         return (
           <div className="card-stagger-3" style={{ marginBottom: 24 }}>
             <SectionLabel>Scoutrapporter ({reportEntries.length})</SectionLabel>
-            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+            <div className="card-round" style={{ overflow: 'hidden' }}>
               {reportEntries.map((report, index) => {
                 const reportPlayer = game.players.find(p => p.id === report.playerId)
                 const reportClub = game.clubs.find(c => c.id === report.clubId)
@@ -543,16 +553,12 @@ export function TransfersScreen() {
                     {windowOpen && reportPlayer && managedClub && (
                       <button
                         onClick={() => setBiddingPlayerId(report.playerId)}
+                        className="btn btn-outline"
                         style={{
                           flexShrink: 0,
                           padding: '5px 10px',
-                          borderRadius: 'var(--radius-sm)',
-                          background: 'rgba(34,197,94,0.1)',
-                          border: '1px solid rgba(34,197,94,0.35)',
-                          color: 'var(--success)',
                           fontSize: 12,
                           fontWeight: 600,
-                          cursor: 'pointer',
                         }}
                       >
                         Lägg bud
@@ -571,21 +577,21 @@ export function TransfersScreen() {
         <div className="card-stagger-2" style={{ marginBottom: 24 }}>
           {/* Scout busy with evaluation */}
           {game.activeScoutAssignment && (
-            <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13, color: 'var(--danger)' }}>
+            <div className="card-sharp" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', padding: '10px 14px', marginBottom: 16, fontSize: 13, color: 'var(--danger)' }}>
               Scouten är upptagen med en utvärdering. Klar om {game.activeScoutAssignment.roundsRemaining} omgång{game.activeScoutAssignment.roundsRemaining !== 1 ? 'ar' : ''}.
             </div>
           )}
 
           {/* Active search status */}
           {game.activeTalentSearch && (
-            <div style={{ background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
+            <div className="card-sharp" style={{ background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.25)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
               🔍 Scout ute och letar... {game.activeTalentSearch.roundsRemaining} omgång{game.activeTalentSearch.roundsRemaining !== 1 ? 'ar' : ''} kvar
             </div>
           )}
 
           {/* Search form */}
           {!game.activeTalentSearch && (
-            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '16px', marginBottom: 16 }}>
+            <div className="card-round" style={{ padding: '16px', marginBottom: 16 }}>
               <SectionLabel>Ny talangspaning</SectionLabel>
               <div style={{ marginBottom: 12 }}>
                 <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Position</label>
@@ -640,7 +646,8 @@ export function TransfersScreen() {
                   }
                 }}
                 disabled={scoutBudget < 2}
-                style={{ width: '100%', padding: '12px', background: scoutBudget >= 2 ? 'var(--accent)' : 'var(--bg-elevated)', border: 'none', borderRadius: 'var(--radius)', color: scoutBudget >= 2 ? '#fff' : 'var(--text-muted)', fontSize: 14, fontWeight: 600, cursor: scoutBudget >= 2 ? 'pointer' : 'not-allowed', opacity: scoutBudget >= 2 ? 1 : 0.5 }}
+                className={`btn ${scoutBudget >= 2 ? 'btn-copper' : 'btn-ghost'}`}
+                style={{ width: '100%', padding: '12px', fontSize: 14, fontWeight: 600, cursor: scoutBudget >= 2 ? 'pointer' : 'not-allowed', opacity: scoutBudget >= 2 ? 1 : 0.5 }}
               >
                 Starta spaning
               </button>
@@ -653,7 +660,7 @@ export function TransfersScreen() {
             return (
               <div>
                 <SectionLabel>Senaste spaningsrapport</SectionLabel>
-                <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+                <div className="card-round" style={{ overflow: 'hidden' }}>
                   {latestResult.players.map((suggestion, index) => {
                     const player = game.players.find(p => p.id === suggestion.playerId)
                     const club = player ? game.clubs.find(c => c.id === player.clubId) : null
@@ -675,7 +682,8 @@ export function TransfersScreen() {
                             <button
                               onClick={() => player && handleScout(player)}
                               disabled={!!activeAssignment || scoutBudget <= 0}
-                              style={{ padding: '5px 10px', borderRadius: 'var(--radius-sm)', background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.4)', color: (!activeAssignment && scoutBudget > 0) ? 'var(--accent)' : 'var(--text-muted)', fontSize: 12, fontWeight: 600, cursor: (!activeAssignment && scoutBudget > 0) ? 'pointer' : 'not-allowed', opacity: (!activeAssignment && scoutBudget > 0) ? 1 : 0.5 }}
+                              className={`btn ${(!activeAssignment && scoutBudget > 0) ? 'btn-outline' : 'btn-ghost'}`}
+                              style={{ padding: '5px 10px', fontSize: 12, fontWeight: 600, cursor: (!activeAssignment && scoutBudget > 0) ? 'pointer' : 'not-allowed', opacity: (!activeAssignment && scoutBudget > 0) ? 1 : 0.5 }}
                             >
                               {activeAssignment ? '⏳ Scout upptagen' : scoutBudget <= 0 ? '❌ Ingen budget' : '🔍 Utvärdera'}
                             </button>
@@ -683,7 +691,8 @@ export function TransfersScreen() {
                           {windowOpen && player && managedClub && (
                             <button
                               onClick={() => setBiddingPlayerId(suggestion.playerId)}
-                              style={{ padding: '5px 10px', borderRadius: 'var(--radius-sm)', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.35)', color: 'var(--success)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                              className="btn btn-outline"
+                              style={{ padding: '5px 10px', fontSize: 12, fontWeight: 600 }}
                             >
                               Lägg bud
                             </button>
@@ -705,7 +714,7 @@ export function TransfersScreen() {
         {expiringPlayers.length === 0 ? (
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', padding: '12px 0' }}>Inga kontrakt utgår snart.</p>
         ) : (
-          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+          <div className="card-round" style={{ overflow: 'hidden' }}>
             {expiringPlayers.map((player, index) => (
               <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', borderBottom: index < expiringPlayers.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -716,7 +725,11 @@ export function TransfersScreen() {
                     {positionShort(player.position)} · {formatValue(player.marketValue)} · {formatCurrency(player.salary)}/mån · t.o.m. {player.contractUntilSeason}
                   </p>
                 </div>
-                <button onClick={() => setRenewingPlayerId(player.id)} style={{ flexShrink: 0, padding: '6px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--accent)', fontSize: 12, fontWeight: 600 }}>
+                <button
+                  onClick={() => setRenewingPlayerId(player.id)}
+                  className="btn btn-outline"
+                  style={{ flexShrink: 0, padding: '6px 12px', fontSize: 12, fontWeight: 600 }}
+                >
                   Förläng
                 </button>
               </div>
@@ -729,11 +742,11 @@ export function TransfersScreen() {
       {activeTab === 'freeagents' && <div className="card-stagger-2">
         <SectionLabel>Fria agenter</SectionLabel>
         {freeAgents.length === 0 ? (
-          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 16px' }}>
+          <div className="card-round" style={{ padding: '20px 16px' }}>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>Inga fria agenter tillgängliga just nu. Fria agenter dyker upp vid säsongsslut.</p>
           </div>
         ) : (
-          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+          <div className="card-round" style={{ overflow: 'hidden' }}>
             {freeAgents.map((agent, index) => (
               <div key={agent.id} style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', borderBottom: index < freeAgents.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -747,7 +760,8 @@ export function TransfersScreen() {
                 <button
                   onClick={() => windowOpen && handleSignFreeAgent(agent.id)}
                   disabled={!windowOpen}
-                  style={{ flexShrink: 0, padding: '6px 12px', background: windowOpen ? 'var(--accent)' : 'var(--bg-elevated)', border: windowOpen ? 'none' : '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: windowOpen ? '#fff' : 'var(--text-muted)', fontSize: 12, fontWeight: 600, cursor: windowOpen ? 'pointer' : 'not-allowed', opacity: windowOpen ? 1 : 0.6 }}
+                  className={`btn ${windowOpen ? 'btn-copper' : 'btn-ghost'}`}
+                  style={{ flexShrink: 0, padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: windowOpen ? 'pointer' : 'not-allowed', opacity: windowOpen ? 1 : 0.6 }}
                 >
                   Värva
                 </button>
@@ -762,7 +776,7 @@ export function TransfersScreen() {
         {!windowOpen && (
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12 }}>Transferfönstret är stängt. Försäljning möjlig sommaren och vintern.</p>
         )}
-        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+        <div className="card-round" style={{ overflow: 'hidden' }}>
           {managedClubPlayers.sort((a, b) => b.currentAbility - a.currentAbility).map((player, index) => (
             <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', borderBottom: index < managedClubPlayers.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -776,7 +790,8 @@ export function TransfersScreen() {
               <button
                 onClick={() => windowOpen && handleListForSale(player.id)}
                 disabled={!windowOpen}
-                style={{ flexShrink: 0, padding: '6px 12px', background: windowOpen ? '#16a34a' : 'var(--bg-elevated)', border: windowOpen ? 'none' : '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: windowOpen ? '#fff' : 'var(--text-muted)', fontSize: 12, fontWeight: 600, cursor: windowOpen ? 'pointer' : 'not-allowed', opacity: windowOpen ? 1 : 0.6 }}
+                className={`btn ${windowOpen ? 'btn-outline' : 'btn-ghost'}`}
+                style={{ flexShrink: 0, padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: windowOpen ? 'pointer' : 'not-allowed', opacity: windowOpen ? 1 : 0.6 }}
               >
                 Sätt till salu
               </button>

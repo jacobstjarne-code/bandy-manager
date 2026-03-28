@@ -188,11 +188,11 @@ export function BandyDoktorScreen() {
                   maxWidth: '82%',
                   padding: '10px 14px',
                   borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-                  background: msg.role === 'user' ? '#1a2e47' : '#2a2000',
-                  border: msg.role === 'user' ? '1px solid #2a4060' : '1px solid var(--accent)44',
+                  background: msg.role === 'user' ? 'var(--bg-dark-elevated)' : 'rgba(196,122,58,0.08)',
+                  border: msg.role === 'user' ? '1px solid rgba(196,186,168,0.12)' : '1px solid rgba(196,122,58,0.25)',
                   fontSize: 13,
                   lineHeight: 1.5,
-                  color: msg.role === 'user' ? 'var(--text-primary)' : '#e8c96a',
+                  color: msg.role === 'user' ? 'var(--text-light)' : 'var(--text-light-secondary)',
                 }}>
                   {msg.content}
                 </div>
@@ -204,10 +204,10 @@ export function BandyDoktorScreen() {
                   maxWidth: '82%',
                   padding: '10px 14px',
                   borderRadius: '12px 12px 12px 2px',
-                  background: '#2a2000',
-                  border: '1px solid var(--accent)44',
+                  background: 'rgba(196,122,58,0.08)',
+                  border: '1px solid rgba(196,122,58,0.25)',
                   fontSize: 13,
-                  color: '#e8c96a',
+                  color: 'var(--text-light-secondary)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,

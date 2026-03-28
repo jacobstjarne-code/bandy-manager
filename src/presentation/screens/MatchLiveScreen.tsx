@@ -471,40 +471,39 @@ export function MatchLiveScreen() {
       }}>
         <button
           onClick={handleAbort}
-          style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 500, padding: '4px 8px' }}
+          className="btn btn-ghost"
+          style={{ fontSize: 14, fontWeight: 500, padding: '4px 8px' }}
         >
           ← Avbryt
         </button>
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             onClick={() => setIsPaused(prev => !prev)}
-            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', padding: '6px 12px', fontSize: 14 }}
+            className="btn btn-ghost"
+            style={{ padding: '6px 12px', fontSize: 14 }}
           >
             {isPaused ? '▶' : '⏸'}
           </button>
           <button
             onClick={() => setIsFastForward(prev => !prev)}
-            style={{
-              background: isFastForward ? 'var(--accent)' : 'var(--bg-elevated)',
-              border: '1px solid ' + (isFastForward ? 'var(--accent)' : 'var(--border)'),
-              borderRadius: 'var(--radius-sm)',
-              color: isFastForward ? '#fff' : 'var(--text-primary)',
-              padding: '6px 12px', fontSize: 14,
-            }}
+            className={`btn ${isFastForward ? 'btn-copper' : 'btn-ghost'}`}
+            style={{ padding: '6px 12px', fontSize: 14 }}
           >
             ⏩
           </button>
           {currentStep >= 10 && currentStep <= 50 && liveSubsUsed < 2 && !matchDone && (
             <button
               onClick={() => { setIsPaused(true); setShowSubModal(true) }}
-              style={{ background: 'rgba(196,122,58,0.12)', border: '1px solid rgba(196,122,58,0.4)', borderRadius: 'var(--radius-sm)', color: 'var(--accent)', padding: '6px 10px', fontSize: 14, cursor: 'pointer' }}
+              className="btn btn-outline"
+              style={{ padding: '6px 10px', fontSize: 14 }}
             >
               🔄
             </button>
           )}
           <button
             onClick={() => { toggleMute(); setMuted(isMuted()) }}
-            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', padding: '6px 10px', fontSize: 14 }}
+            className="btn btn-ghost"
+            style={{ padding: '6px 10px', fontSize: 14 }}
           >
             {muted ? '🔇' : '🔊'}
           </button>
@@ -564,7 +563,7 @@ export function MatchLiveScreen() {
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px',
             borderRadius: 99, background: 'linear-gradient(90deg, rgba(220,50,30,0.2), rgba(196,122,58,0.2))',
-            border: '1px solid rgba(220,100,30,0.4)', fontSize: 11, fontWeight: 700, color: '#ff7040',
+            border: '1px solid rgba(220,100,30,0.4)', fontSize: 11, fontWeight: 700, color: 'var(--danger)',
             marginTop: 6, marginBottom: 4,
           }}>
             🔥 {rivalry.name}
@@ -656,7 +655,7 @@ export function MatchLiveScreen() {
             borderLeft = '3px solid var(--warning)'
             color = 'var(--text-primary)'
           } else if (hasCorner) {
-            borderLeft = '3px solid #60a5fa'
+            borderLeft = '3px solid rgba(196,122,58,0.4)'
             color = 'var(--text-primary)'
             fontWeight = 500
           } else if (isDerby) {

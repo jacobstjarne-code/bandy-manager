@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useManagedClub, useGameStore, useCurrentStanding } from '../store/gameStore'
 import { ClubExpectation, ClubStyle, TrainingType, TrainingIntensity } from '../../domain/enums'
 import { StatBar } from '../components/StatBar'
+import { SectionCard } from '../components/SectionCard'
 import {
   getTrainingEffects,
   trainingTypeLabel,
@@ -35,38 +36,6 @@ function styleLabel(s: ClubStyle): string {
   return map[s] ?? s
 }
 
-interface SectionCardProps {
-  title: string
-  children: React.ReactNode
-  stagger?: number
-}
-
-function SectionCard({ title, children, stagger }: SectionCardProps) {
-  return (
-    <div
-      className={stagger ? `card-stagger-${stagger}` : undefined}
-      style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius)',
-        padding: '16px',
-        marginBottom: 12,
-      }}
-    >
-      <p className="section-heading" style={{
-        fontSize: 11,
-        fontWeight: 700,
-        textTransform: 'uppercase',
-        letterSpacing: '0.8px',
-        color: 'var(--text-muted)',
-        marginBottom: 12,
-      }}>
-        {title}
-      </p>
-      {children}
-    </div>
-  )
-}
 
 interface InfoRowProps {
   label: string
@@ -171,8 +140,8 @@ function TrainingSection({ focus, recentSessions, trainingInjuriesThisSeason, on
               key={type}
               onClick={() => onChangeFocus({ ...focus, type })}
               style={{
-                background: active ? 'rgba(234,179,8,0.12)' : 'var(--bg-elevated)',
-                border: `1.5px solid ${active ? 'var(--warning)' : 'var(--border)'}`,
+                background: active ? 'rgba(196,122,58,0.1)' : 'var(--bg-elevated)',
+                border: `1.5px solid ${active ? 'var(--accent)' : 'var(--border)'}`,
                 borderRadius: 'var(--radius-sm)',
                 padding: '10px 10px 8px',
                 textAlign: 'left',
@@ -181,7 +150,7 @@ function TrainingSection({ focus, recentSessions, trainingInjuriesThisSeason, on
               }}
             >
               <div style={{ fontSize: 20, marginBottom: 3 }}>{trainingTypeEmoji(type)}</div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: active ? 'var(--warning)' : 'var(--text-primary)', marginBottom: 2 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: active ? 'var(--accent)' : 'var(--text-primary)', marginBottom: 2 }}>
                 {trainingTypeLabel(type)}
               </div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.3 }}>
@@ -290,8 +259,8 @@ function TrainingSection({ focus, recentSessions, trainingInjuriesThisSeason, on
 
       {/* Training injuries this season */}
       <div style={{
-        background: trainingInjuriesThisSeason > 0 ? 'rgba(239,68,68,0.06)' : 'var(--bg-elevated)',
-        border: `1px solid ${trainingInjuriesThisSeason > 0 ? 'rgba(239,68,68,0.25)' : 'var(--border)'}`,
+        background: trainingInjuriesThisSeason > 0 ? 'rgba(176,80,64,0.06)' : 'var(--bg-elevated)',
+        border: `1px solid ${trainingInjuriesThisSeason > 0 ? 'rgba(176,80,64,0.25)' : 'var(--border)'}`,
         borderRadius: 'var(--radius-sm)',
         padding: '8px 14px',
         marginTop: 8,
@@ -414,12 +383,9 @@ function TrainingProjectsCard({ projects, onStart, onCancel }: TrainingProjectsC
       {/* Free slots */}
       {freeSlots > 0 && !showPicker && (
         <button
+          className="btn btn-ghost"
           onClick={() => setShowPicker(true)}
-          style={{
-            width: '100%', padding: '10px', background: 'none',
-            border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm)',
-            color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer', marginBottom: 8,
-          }}
+          style={{ width: '100%', marginBottom: 8 }}
         >
           + Starta nytt projekt ({freeSlots} slot{freeSlots > 1 ? 's' : ''} lediga)
         </button>
@@ -463,22 +429,16 @@ function TrainingProjectsCard({ projects, onStart, onCancel }: TrainingProjectsC
                 {!alreadyActive && (
                   <div style={{ display: 'flex', gap: 6 }}>
                     <button
+                      className="btn btn-ghost"
                       onClick={() => handleStart(def.type, 'normal')}
-                      style={{
-                        fontSize: 11, padding: '4px 10px', background: 'var(--bg-surface)',
-                        border: '1px solid var(--border)', borderRadius: 99,
-                        color: 'var(--text-primary)', cursor: 'pointer',
-                      }}
+                      style={{ fontSize: 11, padding: '4px 10px' }}
                     >
                       Normal · {def.roundsNormal} omg
                     </button>
                     <button
+                      className="btn btn-ghost"
                       onClick={() => handleStart(def.type, 'hard')}
-                      style={{
-                        fontSize: 11, padding: '4px 10px', background: 'rgba(239,68,68,0.08)',
-                        border: '1px solid rgba(239,68,68,0.3)', borderRadius: 99,
-                        color: 'var(--danger)', cursor: 'pointer',
-                      }}
+                      style={{ fontSize: 11, padding: '4px 10px', color: 'var(--danger)' }}
                     >
                       ⚡ Intensiv · {def.roundsHard} omg
                     </button>
@@ -564,9 +524,11 @@ export function ClubScreen() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
-      <div style={{ padding: '20px 16px 0', flexShrink: 0 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 2 }}>{club.name}</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 14 }}>{club.region}</p>
+      <div className="texture-leather" style={{ background: 'var(--bg-dark)', padding: '20px 16px 0', flexShrink: 0 }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--text-light)', marginBottom: 6 }}>{club.name}</h1>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
+          <span className="tag tag-dark">{club.region}</span>
+        </div>
 
         {/* Tab bar */}
         <div style={{
@@ -747,6 +709,7 @@ export function ClubScreen() {
                       </p>
                     )}
                     <button
+                      className="btn btn-outline"
                       onClick={() => {
                         const result = seekSponsor()
                         if (result.success && result.sponsor) {
@@ -756,11 +719,7 @@ export function ClubScreen() {
                         }
                         setTimeout(() => setSponsorFeedback(null), 4000)
                       }}
-                      style={{
-                        width: '100%', padding: '10px', background: 'var(--bg-elevated)',
-                        border: '1px solid var(--border)', borderRadius: 8,
-                        color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                      }}
+                      style={{ width: '100%' }}
                     >
                       📞 Ragga sponsor — 2,5 tkr
                     </button>
@@ -890,32 +849,20 @@ export function ClubScreen() {
                         </div>
                         {row.actionKey && !row.active && (
                           <button
+                            className="btn btn-outline"
                             onClick={() => handleActivate(row.actionKey!, row.actionLevel!)}
                             disabled={club.finances < (row.actionCost ?? 0)}
-                            style={{
-                              width: '100%', padding: '6px 10px',
-                              background: club.finances >= (row.actionCost ?? 0) ? 'rgba(196,122,58,0.08)' : 'rgba(255,255,255,0.03)',
-                              border: `1px solid ${club.finances >= (row.actionCost ?? 0) ? 'rgba(196,122,58,0.25)' : 'rgba(255,255,255,0.06)'}`,
-                              borderRadius: 6, fontSize: 12, fontWeight: 600,
-                              color: club.finances >= (row.actionCost ?? 0) ? 'var(--accent)' : 'var(--text-muted)',
-                              cursor: club.finances >= (row.actionCost ?? 0) ? 'pointer' : 'not-allowed',
-                            }}
+                            style={{ width: '100%' }}
                           >
                             {row.actionLabel}
                           </button>
                         )}
                         {row.upgradeKey && row.active && (
                           <button
+                            className="btn btn-ghost"
                             onClick={() => handleActivate(row.upgradeKey!, row.upgradeLevel!)}
                             disabled={club.finances < (row.upgradeCost ?? 0)}
-                            style={{
-                              width: '100%', padding: '6px 10px',
-                              background: club.finances >= (row.upgradeCost ?? 0) ? 'rgba(196,122,58,0.06)' : 'rgba(255,255,255,0.03)',
-                              border: `1px solid ${club.finances >= (row.upgradeCost ?? 0) ? 'rgba(196,122,58,0.2)' : 'rgba(255,255,255,0.05)'}`,
-                              borderRadius: 6, fontSize: 11, fontWeight: 600,
-                              color: club.finances >= (row.upgradeCost ?? 0) ? 'var(--accent)' : 'var(--text-muted)',
-                              cursor: club.finances >= (row.upgradeCost ?? 0) ? 'pointer' : 'not-allowed',
-                            }}
+                            style={{ width: '100%' }}
                           >
                             {row.upgradeLabel}
                           </button>
@@ -951,15 +898,9 @@ export function ClubScreen() {
               )}
 
               <button
+                className="btn btn-outline"
                 onClick={() => navigate('/game/budget')}
-                style={{
-                  width: '100%', padding: '12px',
-                  background: 'rgba(196,122,58,0.06)',
-                  border: '1px solid rgba(196,122,58,0.2)',
-                  borderRadius: 'var(--radius-sm)',
-                  color: 'var(--accent)', fontSize: 13, fontWeight: 600,
-                  cursor: 'pointer', textAlign: 'center',
-                }}
+                style={{ width: '100%', margin: '0 0 8px' }}
               >
                 Budget & transferbudget →
               </button>
@@ -1048,8 +989,9 @@ export function ClubScreen() {
                   )
                 })}
                 <button
+                  className="btn btn-outline"
                   onClick={() => navigate('/game/history')}
-                  style={{ width: '100%', marginTop: 8, padding: '10px', background: 'rgba(196,122,58,0.06)', border: '1px solid rgba(196,122,58,0.2)', borderRadius: 'var(--radius-sm)', color: 'var(--accent)', fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'center' }}
+                  style={{ width: '100%', marginTop: 8 }}
                 >
                   Hall of Fame & full historik →
                 </button>
@@ -1057,8 +999,9 @@ export function ClubScreen() {
             )}
 
             <button
+              className="btn btn-ghost"
               onClick={() => navigate('/game/doctor')}
-              style={{ width: '100%', padding: '12px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+              style={{ width: '100%' }}
             >
               🩺 Bandydoktorn →
             </button>
@@ -1122,12 +1065,9 @@ export function ClubScreen() {
                 )}
                 {nextLevelLabel && !game.academyUpgradeInProgress && (
                   <button
+                    className="btn btn-outline"
                     onClick={handleUpgrade}
-                    style={{
-                      padding: '8px 14px', borderRadius: 'var(--radius)',
-                      background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.4)',
-                      color: 'var(--accent)', fontSize: 13, fontWeight: 600, cursor: 'pointer', width: '100%',
-                    }}
+                    style={{ width: '100%' }}
                   >
                     Uppgradera till {nextLevelLabel}
                   </button>
@@ -1195,11 +1135,8 @@ export function ClubScreen() {
                                       setTimeout(() => setPromotionMsg(null), 4000)
                                     }
                                   }}
-                                  style={{
-                                    padding: '3px 8px', borderRadius: 'var(--radius)',
-                                    background: 'rgba(196,122,58,0.15)', border: '1px solid rgba(196,122,58,0.4)',
-                                    color: 'var(--accent)', fontSize: 11, cursor: 'pointer',
-                                  }}
+                                  className="btn btn-outline"
+                                  style={{ padding: '3px 8px', fontSize: 11 }}
                                 >
                                   Kalla upp
                                 </button>
@@ -1239,7 +1176,8 @@ export function ClubScreen() {
                               setMentorMsg('Mentorskap avslutat.')
                               setTimeout(() => setMentorMsg(null), 3000)
                             }}
-                            style={{ padding: '3px 8px', borderRadius: 'var(--radius)', background: 'rgba(255,80,80,0.1)', border: '1px solid rgba(255,80,80,0.3)', color: '#f87171', fontSize: 11, cursor: 'pointer' }}
+                            className="btn btn-ghost"
+                            style={{ padding: '3px 8px', fontSize: 11, color: 'var(--danger)' }}
                           >
                             Ta bort
                           </button>
@@ -1281,7 +1219,8 @@ export function ClubScreen() {
                           setSelectedMentorSeniorId('')
                           setSelectedMentorYouthId('')
                         }}
-                        style={{ padding: '4px 12px', borderRadius: 'var(--radius)', background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.4)', color: 'var(--accent)', fontSize: 12, cursor: 'pointer' }}
+                        className="btn btn-outline"
+                        style={{ padding: '4px 12px', fontSize: 12 }}
                       >
                         Tilldela
                       </button>
@@ -1319,7 +1258,8 @@ export function ClubScreen() {
                                 setLoanMsg(`${loanPlayer.firstName} ${loanPlayer.lastName} återkallad.`)
                                 setTimeout(() => setLoanMsg(null), 3000)
                               }}
-                              style={{ padding: '3px 8px', borderRadius: 'var(--radius)', background: 'rgba(255,80,80,0.1)', border: '1px solid rgba(255,80,80,0.3)', color: '#f87171', fontSize: 11, cursor: 'pointer' }}
+                              className="btn btn-ghost"
+                              style={{ padding: '3px 8px', fontSize: 11, color: 'var(--danger)' }}
                             >
                               Återkalla
                             </button>
@@ -1377,7 +1317,8 @@ export function ClubScreen() {
                           setSelectedLoanPlayerId('')
                           setSelectedLoanClub('')
                         }}
-                        style={{ padding: '4px 12px', borderRadius: 'var(--radius)', background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.4)', color: 'var(--accent)', fontSize: 12, cursor: 'pointer' }}
+                        className="btn btn-outline"
+                        style={{ padding: '4px 12px', fontSize: 12 }}
                       >
                         Låna ut
                       </button>
