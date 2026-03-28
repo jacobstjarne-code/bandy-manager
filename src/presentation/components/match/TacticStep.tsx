@@ -52,17 +52,36 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
         </div>
       )}
 
-      {tacticRows.map(({ label, key, options }) => (
-        <div key={key as string} style={{ marginBottom: 14 }}>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{label}</p>
-          <SegmentedControl
-            options={options}
-            value={tacticState[key] as string}
-            onChange={v => onChange(key, v as Tactic[typeof key])}
-            explanation={tacticExplanations[key as string]?.[tacticState[key] as string]}
-          />
-        </div>
-      ))}
+      {/* Taktik-grupper i kort */}
+      {(() => {
+        const groups = [
+          { label: '⚔️ Spelplan', keys: ['mentality', 'tempo', 'pressing'] },
+          { label: '⚽ Bollspel', keys: ['passingStyle', 'width', 'attackFocus'] },
+          { label: '📐 Fasta situationer', keys: ['cornerStrategy'] },
+        ]
+        return groups.map((group, gi) => {
+          const rows = tacticRows.filter(r => group.keys.includes(r.key as string))
+          if (rows.length === 0) return null
+          return (
+            <div key={gi} className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px' }}>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+                {group.label}
+              </p>
+              {rows.map(({ label, key, options }, ri) => (
+                <div key={key as string} style={{ marginBottom: ri < rows.length - 1 ? 12 : 0 }}>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 5, fontWeight: 500 }}>{label}</p>
+                  <SegmentedControl
+                    options={options}
+                    value={tacticState[key] as string}
+                    onChange={v => onChange(key, v as Tactic[typeof key])}
+                    explanation={tacticExplanations[key as string]?.[tacticState[key] as string]}
+                  />
+                </div>
+              ))}
+            </div>
+          )
+        })
+      })()}
 
       {cornerSpec ? (
         <div style={{
