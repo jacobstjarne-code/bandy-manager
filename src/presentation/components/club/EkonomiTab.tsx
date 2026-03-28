@@ -1,21 +1,23 @@
 import { useState } from 'react'
-import type { NavigateFunction } from 'react-router-dom'
 import type { Club } from '../../../domain/entities/Club'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { SectionCard } from '../SectionCard'
-import { formatCurrency } from '../../utils/formatters'
+import { formatCurrency, formatFinance } from '../../utils/formatters'
 
 interface EkonomiTabProps {
   club: Club
   game: SaveGame
   seekSponsor: () => { success: boolean; sponsor?: { name: string; weeklyIncome: number }; error?: string }
   activateCommunity: (key: string, level: string) => { success: boolean; error?: string }
-  navigate: NavigateFunction
+  setTransferBudget: (amount: number) => void
+  buyScoutRounds: () => void
 }
 
-export function EkonomiTab({ club, game, seekSponsor, activateCommunity, navigate }: EkonomiTabProps) {
+export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTransferBudget, buyScoutRounds }: EkonomiTabProps) {
   const [sponsorFeedback, setSponsorFeedback] = useState<string | null>(null)
   const [communityMsg, setCommunityMsg] = useState<{ key: string; text: string; ok: boolean } | null>(null)
+  const [pendingTransferBudget, setPendingTransferBudget] = useState<number | null>(null)
+  const [savedFeedback, setSavedFeedback] = useState(false)
 
   function handleActivate(key: string, level: string) {
     const result = activateCommunity(key, level)
@@ -338,13 +340,99 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, navigat
         </SectionCard>
       )}
 
-      <button
-        className="btn btn-outline"
-        onClick={() => navigate('/game/budget')}
-        style={{ width: '100%', margin: '0 0 8px' }}
-      >
-        Budget & transferbudget →
-      </button>
+      {/* Transferbudget */}
+      <SectionCard title="💸 Transferbudget" stagger={5}>
+        {(() => {
+          const currentTransferBudget = pendingTransferBudget ?? club.transferBudget
+          const sliderMax = club.finances > 0 ? Math.min(club.finances * 0.5, club.finances) : 0
+          const sliderDisabled = club.finances <= 0
+          return (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Avsatt budget</span>
+                <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--accent)' }}>
+                  {formatFinance(currentTransferBudget)}
+                </span>
+              </div>
+              {sliderDisabled ? (
+                <p style={{ fontSize: 13, color: 'var(--danger)' }}>
+                  Kassan är negativ — transferbudget kan inte sättas just nu.
+                </p>
+              ) : (
+                <>
+                  <input
+                    type="range"
+                    min={0}
+                    max={Math.round(sliderMax / 10000) * 10000}
+                    step={10000}
+                    value={currentTransferBudget}
+                    onChange={e => setPendingTransferBudget(Number(e.target.value))}
+                    style={{ width: '100%', accentColor: 'var(--accent)', marginBottom: 10 }}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>0 tkr</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{formatFinance(Math.round(sliderMax / 10000) * 10000)}</span>
+                  </div>
+                  <button
+                    className={savedFeedback ? 'btn btn-outline' : 'btn btn-copper'}
+                    onClick={() => {
+                      setTransferBudget(currentTransferBudget)
+                      setSavedFeedback(true)
+                      setTimeout(() => setSavedFeedback(false), 1800)
+                    }}
+                    style={{ width: '100%' }}
+                  >
+                    {savedFeedback ? '✓ Sparat!' : 'Spara transferbudget'}
+                  </button>
+                </>
+              )}
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 10, lineHeight: 1.5 }}>
+                Transferbudget räknas aldrig av kassan förrän ett köp görs.
+              </p>
+            </>
+          )
+        })()}
+      </SectionCard>
+
+      {/* Scouting */}
+      <SectionCard title="🔭 Scouting" stagger={6}>
+        {(() => {
+          const scoutBudget = game.scoutBudget ?? 0
+          const canBuyScout = club.finances >= 15000 && scoutBudget < 30
+          const scoutMaxReached = scoutBudget >= 30
+          return (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Scoutronder kvar</span>
+                <span style={{
+                  fontSize: 20, fontWeight: 800,
+                  color: scoutBudget > 5 ? 'var(--accent)' : scoutBudget > 0 ? 'var(--text-primary)' : 'var(--danger)',
+                }}>
+                  {scoutBudget}
+                </span>
+              </div>
+              {scoutMaxReached && (
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 10 }}>
+                  Max antal scoutronder uppnått (30).
+                </p>
+              )}
+              <button
+                className="btn btn-outline"
+                onClick={() => { if (canBuyScout) buyScoutRounds() }}
+                disabled={!canBuyScout}
+                style={{ width: '100%' }}
+              >
+                Köp 5 scoutronder — 15 tkr
+              </button>
+              {club.finances < 15000 && !scoutMaxReached && (
+                <p style={{ fontSize: 12, color: 'var(--danger)', marginTop: 8 }}>
+                  Otillräckligt saldo (kräver 15 tkr).
+                </p>
+              )}
+            </>
+          )
+        })()}
+      </SectionCard>
     </>
   )
 }

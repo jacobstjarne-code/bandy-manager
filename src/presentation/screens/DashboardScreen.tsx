@@ -785,7 +785,7 @@ export function DashboardScreen() {
               <div style={{ display: 'flex', gap: 5, marginTop: 6 }}>
                 <span className="tag tag-outline">{activeIcons.join(' ')} aktiva</span>
                 <span
-                  onClick={e => { e.stopPropagation(); navigate('/game/budget') }}
+                  onClick={e => { e.stopPropagation(); navigate('/game/club', { state: { tab: 'ekonomi' } }) }}
                   className="btn btn-ghost"
                   style={{ fontSize: 11 }}
                 >

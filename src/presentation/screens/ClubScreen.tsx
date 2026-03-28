@@ -26,6 +26,8 @@ export function ClubScreen() {
   const startTrainingProject = useGameStore(s => s.startTrainingProject)
   const cancelTrainingProject = useGameStore(s => s.cancelTrainingProject)
   const seekSponsor = useGameStore(s => s.seekSponsor)
+  const setTransferBudget = useGameStore(s => s.setTransferBudget)
+  const buyScoutRounds = useGameStore(s => s.buyScoutRounds)
   const standing = useCurrentStanding()
   const navigate = useNavigate()
   const location = useLocation()
@@ -121,7 +123,7 @@ export function ClubScreen() {
 
         {/* ── Tab 2: Ekonomi ── */}
         {activeTab === 'ekonomi' && (
-          <EkonomiTab club={club} game={game} seekSponsor={seekSponsor} activateCommunity={activateCommunity} navigate={navigate} />
+          <EkonomiTab club={club} game={game} seekSponsor={seekSponsor} activateCommunity={activateCommunity} setTransferBudget={setTransferBudget} buyScoutRounds={buyScoutRounds} />
         )}
 
         {/* ── Tab 3: Klubb ── */}

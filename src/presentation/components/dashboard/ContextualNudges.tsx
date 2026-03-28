@@ -30,10 +30,10 @@ export function ContextualNudges({ game, currentRound: _r }: Props) {
     nudges.push({ icon: '📋', text: `${expiringContracts[0].firstName} ${expiringContracts[0].lastName} — kontrakt löper ut snart`, path: '/game/transfers' })
 
   if ((managedClub?.finances ?? 0) < -50000)
-    nudges.push({ icon: '💸', text: 'Kassan är negativ — se budgeten', path: '/game/budget' })
+    nudges.push({ icon: '💸', text: 'Kassan är negativ — se budgeten', path: '/game/club' })
 
   if (game.licenseReview?.status === 'warning' || game.licenseReview?.status === 'continued_review')
-    nudges.push({ icon: '🏛️', text: 'Licensnämnden kräver åtgärder', path: '/game/budget' })
+    nudges.push({ icon: '🏛️', text: 'Licensnämnden kräver åtgärder', path: '/game/club' })
 
   const freshReport = Object.values(game.scoutReports ?? {}).find(r => r.scoutedSeason === game.currentSeason)
   if (freshReport) {

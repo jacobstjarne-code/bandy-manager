@@ -30,7 +30,6 @@ import { GameOverScreen } from '../screens/GameOverScreen'
 import { BandyDoktorScreen } from '../screens/BandyDoktorScreen'
 import { HistoryScreen } from '../screens/HistoryScreen'
 import { PreSeasonScreen } from '../screens/PreSeasonScreen'
-import { BudgetScreen } from '../screens/BudgetScreen'
 import { RoundSummaryScreen } from '../screens/RoundSummaryScreen'
 
 export function AppRouter() {
@@ -57,7 +56,6 @@ export function AppRouter() {
           <Route path="doctor" element={<BandyDoktorScreen />} />
           <Route path="history" element={<HistoryScreen />} />
           <Route path="pre-season" element={<PreSeasonScreen />} />
-          <Route path="budget" element={<BudgetScreen />} />
         </Route>
         <Route element={<GameGuard />}>
           <Route path="/game/events" element={<EventScreen />} />
