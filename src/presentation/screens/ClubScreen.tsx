@@ -375,44 +375,36 @@ function TrainingProjectsCard({ projects, onStart, onCancel }: TrainingProjectsC
         )
       })}
 
-      {/* Available projects — shown directly when slots are free */}
+      {/* Available projects — compact rows */}
       {freeSlots > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           {PROJECT_DEFINITIONS.map(def => {
             const alreadyActive = active.some(p => p.type === def.type)
             if (alreadyActive) return null
             return (
               <div key={def.type} style={{
-                border: '1.5px dashed var(--border-dark)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '10px 12px',
-                opacity: freeSlots === 0 ? 0.5 : 1,
+                display: 'flex', alignItems: 'center', gap: 8,
+                borderTop: '1px solid var(--border)',
+                padding: '8px 0',
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                  <div>
-                    <span style={{ fontWeight: 700, fontSize: 13 }}>{def.emoji} {def.label}</span>
-                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{def.effectDescription}</p>
-                  </div>
-                  <span style={{ fontSize: 11, color: RISK_COLOR[def.injuryRisk], flexShrink: 0, marginLeft: 8 }}>
-                    Risk: {RISK_LABEL[def.injuryRisk]}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <button
-                    className="btn btn-copper"
-                    onClick={() => handleStart(def.type, 'normal')}
-                    style={{ fontSize: 11, padding: '4px 12px' }}
-                  >
-                    Starta · {def.roundsNormal} omg
-                  </button>
-                  <button
-                    className="btn btn-ghost"
-                    onClick={() => handleStart(def.type, 'hard')}
-                    style={{ fontSize: 11, padding: '4px 10px', color: 'var(--danger)' }}
-                  >
-                    ⚡ Intensiv · {def.roundsHard} omg
-                  </button>
-                </div>
+                <span style={{ fontWeight: 700, fontSize: 13, flex: 1, minWidth: 0 }}>{def.emoji} {def.label}</span>
+                <button
+                  className="btn btn-copper"
+                  onClick={() => handleStart(def.type, 'normal')}
+                  style={{ fontSize: 11, padding: '4px 10px', flexShrink: 0 }}
+                >
+                  Starta · {def.roundsNormal} omg
+                </button>
+                <button
+                  className="btn btn-ghost"
+                  onClick={() => handleStart(def.type, 'hard')}
+                  style={{ fontSize: 11, padding: '4px 8px', color: 'var(--danger)', flexShrink: 0 }}
+                >
+                  ⚡ {def.roundsHard} omg
+                </button>
+                <span style={{ fontSize: 10, color: RISK_COLOR[def.injuryRisk], flexShrink: 0 }}>
+                  {RISK_LABEL[def.injuryRisk]}
+                </span>
               </div>
             )
           })}
@@ -911,31 +903,11 @@ export function ClubScreen() {
 
             {standing && (
               <SectionCard title="📊 Tabellposition" stagger={3}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
-                  {[
-                    { label: 'Plats', value: standing.position },
-                    { label: 'Poäng', value: standing.points },
-                    { label: 'Spelade', value: standing.played },
-                    { label: 'Mål+', value: standing.goalsFor },
-                  ].map(({ label, value }) => (
-                    <div key={label} style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', padding: '10px 6px', textAlign: 'center', border: '1px solid var(--border)' }}>
-                      <div style={{ fontSize: 18, fontWeight: 700 }}>{value}</div>
-                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {[
-                    { label: 'V', value: standing.wins },
-                    { label: 'O', value: standing.draws },
-                    { label: 'F', value: standing.losses },
-                    { label: 'MålD', value: standing.goalDifference > 0 ? '+' + standing.goalDifference : String(standing.goalDifference) },
-                  ].map(({ label, value }) => (
-                    <div key={label} style={{ flex: 1, background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', padding: '8px 4px', textAlign: 'center', border: '1px solid var(--border)' }}>
-                      <div style={{ fontSize: 16, fontWeight: 600 }}>{value}</div>
-                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
-                    </div>
-                  ))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <span style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)' }}>{standing.position}:e</span>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                    {standing.points}p · {standing.wins}V {standing.draws}O {standing.losses}F · MS {standing.goalDifference > 0 ? '+' : ''}{standing.goalDifference}
+                  </span>
                 </div>
               </SectionCard>
             )}
