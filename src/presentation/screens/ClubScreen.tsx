@@ -593,7 +593,7 @@ export function ClubScreen() {
           return (
             <>
               {/* Kassaöversikt */}
-              <SectionCard title="Kassaöversikt" stagger={1}>
+              <SectionCard title="💰 Kassaöversikt" stagger={1}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid var(--border)' }}>
                   <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Saldo</span>
                   <span style={{ fontSize: 18, fontWeight: 800, color: club.finances < 0 ? 'var(--danger)' : 'var(--text-primary)' }}>
@@ -640,7 +640,7 @@ export function ClubScreen() {
               </SectionCard>
 
               {/* Sponsorer */}
-              <SectionCard title="Sponsorer" stagger={2}>
+              <SectionCard title="🤝 Sponsorer" stagger={2}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                   <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                     {activeSponsors.length} av {maxSponsors} platser
@@ -795,7 +795,7 @@ export function ClubScreen() {
                 ]
                 const communityTotal = communityRows.reduce((s, r) => s + r.value, 0)
                 return (
-                  <SectionCard title="Föreningsaktiviteter" stagger={3}>
+                  <SectionCard title="🎪 Föreningsaktiviteter" stagger={3}>
                     {communityMsg && (
                       <p style={{ fontSize: 12, color: communityMsg.ok ? 'var(--success)' : 'var(--danger)', marginBottom: 10, fontWeight: 600 }}>
                         {communityMsg.ok ? '✓' : '✗'} {communityMsg.text}
@@ -850,17 +850,23 @@ export function ClubScreen() {
 
               {/* Patron & Kommunbidrag */}
               {(patron || kommunBidrag > 0) && (
-                <SectionCard title="Övriga intäkter" stagger={4}>
+                <SectionCard title="🏦 Övriga intäkter" stagger={4}>
                   {patron && patron.contribution > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: kommunBidrag > 0 ? 8 : 0, marginBottom: kommunBidrag > 0 ? 8 : 0, borderBottom: kommunBidrag > 0 ? '1px solid var(--border)' : 'none' }}>
-                      <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Patron — {patron.name}</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(patron.contribution)}/sä</span>
+                    <div style={{ marginBottom: kommunBidrag > 0 ? 10 : 0, paddingBottom: kommunBidrag > 0 ? 10 : 0, borderBottom: kommunBidrag > 0 ? '1px solid var(--border)' : 'none' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Patron — {patron.name}</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(patron.contribution)}/sä</span>
+                      </div>
+                      <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>Dyker upp vid hög lokal ställning (&gt;60). Donerar en gång per säsong.</p>
                     </div>
                   )}
                   {kommunBidrag > 0 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Kommunbidrag</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(kommunBidrag)}/sä</span>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Kommunbidrag</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(kommunBidrag)}/sä</span>
+                      </div>
+                      <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>Baseras på lokal ställning och ungdomsverksamhet.</p>
                     </div>
                   )}
                 </SectionCard>
@@ -880,7 +886,7 @@ export function ClubScreen() {
         {/* ── Tab 3: Klubb ── */}
         {activeTab === 'klubb' && (
           <>
-            <SectionCard title="Faciliteter" stagger={1}>
+            <SectionCard title="🏟️ Faciliteter" stagger={1}>
               <FacilityRow label="Anläggningar" value={club.facilities} />
               <FacilityRow label="Ungdomskvalitet" value={club.youthQuality} />
               <FacilityRow label="Ungdomsrekrytering" value={club.youthRecruitment} />
@@ -893,7 +899,7 @@ export function ClubScreen() {
               </div>
             </SectionCard>
 
-            <SectionCard title="Förväntan & profil" stagger={2}>
+            <SectionCard title="🎯 Förväntan & profil" stagger={2}>
               <InfoRow label="Styrelseförväntning" value={expectationLabel(club.boardExpectation)} />
               <InfoRow label="Supporterförväntning" value={expectationLabel(club.fanExpectation)} />
               <InfoRow label="Spelstil" value={styleLabel(club.preferredStyle)} />
@@ -904,7 +910,7 @@ export function ClubScreen() {
             </SectionCard>
 
             {standing && (
-              <SectionCard title="Tabellposition" stagger={3}>
+              <SectionCard title="📊 Tabellposition" stagger={3}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
                   {[
                     { label: 'Plats', value: standing.position },
@@ -935,7 +941,7 @@ export function ClubScreen() {
             )}
 
             {game.seasonSummaries && game.seasonSummaries.length > 0 && (
-              <SectionCard title="Säsongshistorik" stagger={4}>
+              <SectionCard title="📅 Säsongshistorik" stagger={4}>
                 {[...game.seasonSummaries].reverse().map(s => {
                   const posColor = s.finalPosition <= 3 ? 'var(--accent)' : s.finalPosition >= 10 ? 'var(--danger)' : 'var(--text-primary)'
                   let playoffLabel = ''
@@ -1014,7 +1020,10 @@ export function ClubScreen() {
           return (
             <div>
               {/* Academy level card */}
-              <SectionCard title="Akademinivå" stagger={1}>
+              <SectionCard title="🏫 Akademinivå" stagger={1}>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 10, lineHeight: 1.4 }}>
+                  Akademin utvecklar unga spelare. Uppgradera nivån för bättre rekrytering och utveckling.
+                </p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
                   <span style={{ fontSize: 15, fontWeight: 700 }}>{levelLabel}</span>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{(levelDrift / 1000)} tkr/omg</span>
@@ -1045,7 +1054,10 @@ export function ClubScreen() {
 
               {/* P17 team */}
               {youthTeam && (
-                <SectionCard title="Pojklaget (P17)" stagger={2}>
+                <SectionCard title="⚽ Pojklaget (P17)" stagger={2}>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 10, lineHeight: 1.4 }}>
+                    P17-laget spelar egna matcher. Talanger kan lyftas till A-laget när de är redo.
+                  </p>
                   <div style={{ marginBottom: 10 }}>
                     <span style={{ fontSize: 14, fontWeight: 600 }}>
                       {youthTeam.seasonRecord.w}V {youthTeam.seasonRecord.d}O {youthTeam.seasonRecord.l}F
@@ -1083,7 +1095,7 @@ export function ClubScreen() {
                         return (
                           <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
                             <div>
-                              <span style={{ fontSize: 13, fontWeight: 600 }}>{p.firstName} {p.lastName}</span>
+                              <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-display)' }}>{p.firstName} {p.lastName}</span>
                               <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
                                 {p.age} år · {p.position.substring(0, 3).toUpperCase()}
                               </span>
@@ -1123,7 +1135,10 @@ export function ClubScreen() {
               )}
 
               {/* Mentorskap */}
-              <SectionCard title="Mentorskap" stagger={3}>
+              <SectionCard title="🤝 Mentorskap" stagger={3}>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 10, lineHeight: 1.4 }}>
+                  Para ihop en senior med en junior för snabbare utveckling.
+                </p>
                 {mentorMsg && (
                   <p style={{ fontSize: 12, color: 'var(--success)', marginBottom: 8 }}>✓ {mentorMsg}</p>
                 )}
@@ -1202,7 +1217,10 @@ export function ClubScreen() {
               </SectionCard>
 
               {/* Lån */}
-              <SectionCard title="Lån (U23)" stagger={4}>
+              <SectionCard title="📤 Lån (U23)" stagger={4}>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 10, lineHeight: 1.4 }}>
+                  Låna ut unga spelare för att ge dem speltid och utveckling.
+                </p>
                 {loanMsg && (
                   <p style={{ fontSize: 12, color: 'var(--success)', marginBottom: 8 }}>✓ {loanMsg}</p>
                 )}
