@@ -1,6 +1,13 @@
 import type { Tactic } from '../../../domain/entities/Club'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import { getWeatherEmoji, getIceQualityLabel, getConditionLabel } from '../../../domain/services/weatherService'
+import { tacticRows } from '../../utils/tacticData'
+
+function tacticLabel(key: keyof Tactic, value: string): string {
+  const row = tacticRows.find(r => r.key === key)
+  const opt = row?.options.find(o => o.value === value)
+  return opt?.label ?? value
+}
 
 interface StartStepProps {
   startingIds: string[]
@@ -17,32 +24,33 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
   return (
     <div style={{ padding: '0 16px 24px' }}>
       {/* Summary */}
-      <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '14px', marginBottom: 16 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: 10 }}>Sammanfattning</p>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Startspelare</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>{startingIds.length} valda ✓</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Mentalitet</span>
-          <span style={{ fontSize: 13, fontWeight: 600 }}>{tacticState.mentality}</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Tempo</span>
-          <span style={{ fontSize: 13, fontWeight: 600 }}>{tacticState.tempo}</span>
-        </div>
+      <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px' }}>
+        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>📋 Sammanfattning</p>
+        {[
+          { label: 'Startspelare', value: `${startingIds.length} valda ✓`, color: 'var(--success)' },
+          { label: 'Mentalitet', value: tacticLabel('mentality', tacticState.mentality) },
+          { label: 'Tempo', value: tacticLabel('tempo', tacticState.tempo) },
+          { label: 'Press', value: tacticLabel('press', tacticState.press) },
+          { label: 'Passning', value: tacticLabel('passingRisk', tacticState.passingRisk) },
+          { label: 'Hörnstrategi', value: tacticLabel('cornerStrategy', tacticState.cornerStrategy) },
+        ].map((row, i) => (
+          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{row.label}</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: row.color ?? 'var(--text-primary)' }}>{row.value}</span>
+          </div>
+        ))}
       </div>
 
       {/* Weather */}
       {matchWeatherData && (
-        <div style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', marginBottom: 16, border: `1px solid ${matchWeatherData.effects.cancelled ? 'var(--danger)' : 'var(--border)'}` }}>
+        <div className="card-sharp" style={{ marginBottom: 10, padding: '10px 14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 20 }}>{getWeatherEmoji(matchWeatherData.weather.condition)}</span>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 600 }}>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>
                 {matchWeatherData.weather.temperature > 0 ? '+' : ''}{matchWeatherData.weather.temperature}° · {getConditionLabel(matchWeatherData.weather.condition)}
               </div>
-              <div style={{ fontSize: 12, color: matchWeatherData.weather.iceQuality === 'poor' ? 'var(--danger)' : 'var(--text-secondary)' }}>
+              <div style={{ fontSize: 11, color: matchWeatherData.weather.iceQuality === 'poor' ? 'var(--danger)' : 'var(--text-muted)' }}>
                 {getIceQualityLabel(matchWeatherData.weather.iceQuality)}
               </div>
             </div>
@@ -51,8 +59,8 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
       )}
 
       {/* Live / Snabbsim toggle */}
-      <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: 8 }}>Spelläge</p>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+      <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>🎮 Spelläge</p>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
         <button onClick={() => onSetLiveMode(true)} style={{
           flex: 1, padding: '12px 8px',
           background: useLiveMode ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
