@@ -59,7 +59,20 @@ Only expand when user taps to start.
   - Kommunbidrag: "Baseras på lokal ställning och ungdomsverksamhet."
   - Use `font-size: 11px; color: var(--text-muted); font-style: italic;` under each row
 
-## 6. Klubb-tab (if leather-bars exist there too)
+## 6. Merge Budget into Ekonomi tab
+The Budget screen (`BudgetScreen.tsx`) is currently a separate route only reachable via a button on the Ekonomi tab. This is confusing.
+
+**Solution:** Move the budget content (Klubbkassa summary, Arena, Transferbudget slider) directly INTO the Ekonomi tab on ClubScreen, replacing the "Budget & transferbudget →" button. Remove the separate BudgetScreen route.
+
+The Ekonomi tab should show (top to bottom):
+1. 💰 Kassaöversikt (card-sharp, card-label)
+2. 🏟️ Arena (card-sharp)
+3. 📊 Transferbudget with slider (card-sharp)
+4. 🤝 Sponsorer (card-sharp)
+5. 🏘️ Övriga intäkter — Patron + Kommunbidrag with explainers (card-sharp)
+6. 📋 Föreningsaktiviteter overview (card-sharp)
+
+## 7. Klubb-tab (if leather-bars exist there too)
 - Same treatment: remove leather-bars, use card-label pattern
 
 ## 7. Verification
