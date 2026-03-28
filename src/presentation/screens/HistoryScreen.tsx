@@ -69,7 +69,7 @@ export function HistoryScreen() {
           ←
         </button>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 800, letterSpacing: '1.5px', textTransform: 'uppercase' }}>Klubbhistorik</h1>
+  <h1 style={{ fontSize: 20, fontWeight: 800, letterSpacing: '1.5px', textTransform: 'uppercase', fontFamily: 'var(--font-display)' }}>Klubbhistorik</h1>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
             {game.clubs.find(c => c.id === game.managedClubId)?.name}
           </p>
@@ -168,7 +168,7 @@ export function HistoryScreen() {
 
         {topGoalScorers.length > 0 && (
           <div style={{ marginBottom: 20 }}>
-            <p className="leather-bar texture-leather" style={{ color: 'var(--text-light-secondary)', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 8 }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: 8 }}>
               🎯 Flest mål i karriären
             </p>
             {topGoalScorers.map((p, i) => (
@@ -183,7 +183,7 @@ export function HistoryScreen() {
 
         {topByGames.length > 0 && (
           <div style={{ marginBottom: 20 }}>
-            <p className="leather-bar texture-leather" style={{ color: 'var(--text-light-secondary)', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 8 }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: 8 }}>
               🏒 Flest matcher
             </p>
             {topByGames.map((p, i) => (
@@ -198,7 +198,7 @@ export function HistoryScreen() {
 
         {topByRating.length > 0 && (
           <div>
-            <p className="leather-bar texture-leather" style={{ color: 'var(--text-light-secondary)', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 8 }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: 8 }}>
               ⭐ Bästa snittbetyg (min 10 matcher)
             </p>
             {topByRating.map(({ p, avg }, i) => (

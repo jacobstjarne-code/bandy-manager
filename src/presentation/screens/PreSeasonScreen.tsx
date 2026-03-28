@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { ClubExpectation } from '../../domain/enums'
+import { positionShort } from '../utils/formatters'
 
 function expectationText(e: ClubExpectation): string {
   switch (e) {
@@ -100,7 +101,7 @@ export function PreSeasonScreen() {
                 Mest lovande: <strong style={{ color: 'var(--accent)' }}>
                   {topProspect.firstName} {topProspect.lastName}
                 </strong>{' '}
-                ({topProspect.position}, potential {Math.round(topProspect.potentialAbility)})
+                ({positionShort(topProspect.position)}, potential {Math.round(topProspect.potentialAbility)})
               </p>
             )}
           </div>

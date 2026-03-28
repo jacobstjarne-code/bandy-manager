@@ -121,7 +121,7 @@ export function PlayerProfileContent({ player, isOwned = false }: PlayerProfileC
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Player name & basics */}
       <div style={{ padding: '0 20px 16px' }}>
-        <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 4 }}>
+        <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 4, fontFamily: 'var(--font-display)' }}>
           {player.firstName} {player.lastName}
         </h2>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
