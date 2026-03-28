@@ -24,9 +24,7 @@ import { PlayoffBanner } from '../components/dashboard/PlayoffBanner'
 import { NextMatchCard } from '../components/dashboard/NextMatchCard'
 import { LastResultCard } from '../components/dashboard/LastResultCard'
 import { SquadStatusCard } from '../components/dashboard/SquadStatusCard'
-import { GuidanceBanner } from '../components/dashboard/GuidanceBanner'
 import { CommunityPulse } from '../components/dashboard/CommunityPulse'
-import { ContextualNudges } from '../components/dashboard/ContextualNudges'
 import { calcWeeklyEconomy } from '../../domain/services/economyService'
 
 function getSeriesScore(series: { fixtures: string[]; homeClubId: string; awayClubId: string }, fixtures: Fixture[]) {
