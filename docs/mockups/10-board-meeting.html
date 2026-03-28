@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bandy Manager — Styrelsemöte (mockup)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-dark: #0E0D0B; --bg-dark-surface: #1E1D19; --bg-dark-elevated: #2C2A24; --bg-leather: #3D3A32;
+    --border-dark: #C4BAA8;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8; --text-muted: #8A857A;
+    --accent: #C47A3A; --accent-dark: #A25828;
+    --success: #5A9A4A; --danger: #B05040;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body: system-ui, -apple-system, sans-serif;
+  }
+  body { background: #333; font-family: var(--font-body); display: flex; justify-content: center; padding: 20px 0; }
+  .phone { width: 390px; height: 844px; background: rgba(14,13,11,0.96); border-radius: 40px; overflow: hidden; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 24px 20px; }
+  .texture-leather { background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='1' cy='1' r='.4' fill='%23000' opacity='.03'/%3E%3C/svg%3E"); }
+
+  .modal {
+    background: var(--bg-dark-surface); border: 1px solid rgba(196,122,58,0.18);
+    border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 390px;
+    max-height: 85vh; overflow-y: auto;
+  }
+  .section-card {
+    background: var(--bg-dark-elevated); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px; padding: 14px; margin-bottom: 14px;
+  }
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--text-light-secondary); margin-bottom: 10px;
+  }
+  .highlight-card {
+    background: rgba(196,122,58,0.08); border: 1px solid rgba(196,122,58,0.22);
+    border-radius: 10px; padding: 14px; margin-bottom: 14px;
+  }
+  .quote-block {
+    margin-bottom: 14px; padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .quote-block:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+  .btn-copper {
+    width: 100%; padding: 16px; border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: var(--text-light); cursor: pointer;
+    box-shadow: 0 3px 12px rgba(162,88,40,0.35);
+  }
+  .data-row {
+    display: flex; justify-content: space-between; margin-bottom: 6px;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="modal texture-leather">
+
+    <!-- Header -->
+    <p style="font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; position: relative; padding-bottom: 8px;">
+      Styrelsemöte
+      <span style="position:absolute; bottom:0; left:0; width:40px; height:2px; background:var(--accent); border-radius:2px;"></span>
+    </p>
+    <h2 style="font-size: 18px; font-weight: 700; color: var(--text-light); margin-bottom: 6px; font-family: var(--font-display);">Inför säsong 2026/2027</h2>
+    <p style="font-size: 13px; color: var(--text-light-secondary); margin-bottom: 20px;">Bergsjö BK</p>
+
+    <!-- Välkommen -->
+    <div class="highlight-card">
+      <p style="font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px;">👋 VÄLKOMMEN</p>
+      <p style="font-size: 13px; color: var(--text-light-secondary); line-height: 1.6;">
+        Välkommen som ny tränare för Bergsjö BK. Styrelsen har stora förhoppningar på dig. Här är vad vi förväntar oss av den kommande säsongen.
+      </p>
+    </div>
+
+    <!-- Säsongens mål -->
+    <div class="section-card">
+      <p class="section-label">📋 Säsongens mål</p>
+      <p style="font-size: 15px; color: var(--accent); font-weight: 600; margin-bottom: 6px; font-family: var(--font-display);">etablera oss i mitten av tabellen</p>
+      <p style="font-size: 12px; color: var(--text-muted);">Styrelsen förväntar sig att ni uppnår detta mål. Misslyckande kan få konsekvenser.</p>
+    </div>
+
+    <!-- Ekonomi -->
+    <div class="section-card">
+      <p class="section-label">💰 Ekonomi</p>
+      <div class="data-row">
+        <span style="color: var(--text-light-secondary);">Klubbkassa</span>
+        <span style="font-weight: 600; color: var(--success);">300 tkr</span>
+      </div>
+      <div class="data-row">
+        <span style="color: var(--text-light-secondary);">Transferbudget</span>
+        <span style="font-weight: 600; color: var(--accent);">22 tkr</span>
+      </div>
+      <div class="data-row" style="margin-bottom:0;">
+        <span style="color: var(--text-light-secondary);">Sponsorer</span>
+        <span style="font-weight: 600; color: var(--text-light-secondary);">0/5 (inga aktiva)</span>
+      </div>
+    </div>
+
+    <!-- Trupp -->
+    <div class="section-card">
+      <p class="section-label">👥 Trupp</p>
+      <div class="data-row">
+        <span style="color: var(--text-light-secondary);">Antal spelare</span>
+        <span style="color: var(--text-light);">22</span>
+      </div>
+      <div class="data-row">
+        <span style="color: var(--text-light-secondary);">Snitt-Styrka</span>
+        <span style="color: var(--text-light);">45</span>
+      </div>
+      <div class="data-row" style="margin-bottom:0;">
+        <span style="color: var(--text-light-secondary);">Snittålder</span>
+        <span style="color: var(--text-light);">24.1</span>
+      </div>
+    </div>
+
+    <!-- Styrelsemedlemmarna -->
+    <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 14px; margin-bottom: 24px;">
+      <p class="section-label">💬 Styrelsemedlemmarna om läget</p>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px; font-style: italic; font-family: var(--font-display);">
+        Mötet börjar fem minuter sent. Karin Holm var tvungen att parkera om.
+      </p>
+
+      <div class="quote-block">
+        <p style="font-size: 13px; color: var(--text-light-secondary); line-height: 1.6; font-style: italic; margin-bottom: 6px; font-family: var(--font-display);">
+          "En ny hemsida skulle göra skillnad."
+        </p>
+        <p style="font-size: 11px; color: var(--text-muted);">
+          <span style="color: var(--accent); font-weight: 600;">Karin Lindström</span> · ordförande · modernist
+        </p>
+      </div>
+
+      <div class="quote-block">
+        <p style="font-size: 13px; color: var(--text-light-secondary); line-height: 1.6; font-style: italic; margin-bottom: 6px; font-family: var(--font-display);">
+          "Kan vi frysa lönerna nästa säsong?"
+        </p>
+        <p style="font-size: 11px; color: var(--text-muted);">
+          <span style="color: var(--accent); font-weight: 600;">Karin Holm</span> · kassör · ekonom
+        </p>
+      </div>
+
+      <div class="quote-block">
+        <p style="font-size: 13px; color: var(--text-light-secondary); line-height: 1.6; font-style: italic; margin-bottom: 6px; font-family: var(--font-display);">
+          "Vi är en 3-3-4-klubb. Alltid varit, alltid ska vara."
+        </p>
+        <p style="font-size: 11px; color: var(--text-muted);">
+          <span style="color: var(--accent); font-weight: 600;">Gunilla Nilsson</span> · ledamot · traditionalist
+        </p>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <button class="btn-copper">KÖR IGÅNG! →</button>
+
+  </div>
+</div>
+</body>
+</html>

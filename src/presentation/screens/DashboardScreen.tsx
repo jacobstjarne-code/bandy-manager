@@ -18,6 +18,7 @@ import type { Fixture } from '../../domain/entities/Fixture'
 import type { EventChoice } from '../../domain/entities/GameEvent'
 import type { CupBracket } from '../../domain/entities/Cup'
 import { getCupRoundLabel, getManagedClubCupStatus } from '../../domain/services/cupService'
+import { getIceQualityLabel } from '../../domain/services/weatherService'
 import { playSound } from '../audio/soundEffects'
 import { PlayoffBanner } from '../components/dashboard/PlayoffBanner'
 import { NextMatchCard } from '../components/dashboard/NextMatchCard'
@@ -620,7 +621,7 @@ export function DashboardScreen() {
                 <svg viewBox="0 0 8 8" width="6" height="6">
                   <circle cx="4" cy="4" r="3" fill="var(--ice)"/>
                 </svg>
-                {matchWeather.weather.iceQuality}
+                {getIceQualityLabel(matchWeather.weather.iceQuality)}
               </span>
             )}
           </div>
@@ -738,7 +739,7 @@ export function DashboardScreen() {
           <CupCard bracket={game.cupBracket} game={game} />
         ) : null}
 
-        {/* Squad status */}
+        {/* Squad status (Trupp) */}
         <SquadStatusCard
           readyCount={readyCount}
           injuredCount={injuredCount}
@@ -748,12 +749,6 @@ export function DashboardScreen() {
           sharpness={sharpness}
           onNavigateToSquad={() => navigate('/game/squad')}
         />
-
-        {/* Bygdens Puls */}
-        <CommunityPulse game={game} currentRound={currentRound} onNavigate={() => navigate('/game/club', { state: { tab: 'community' } })} />
-
-        {/* Contextual nudges */}
-        <ContextualNudges game={game} currentRound={currentRound} />
 
         {/* Ekonomi sharp card */}
         <div
@@ -765,7 +760,7 @@ export function DashboardScreen() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                 <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
-                  Ekonomi
+                  💰 Ekonomi
                 </p>
                 <span style={{ fontSize: 18, fontWeight: 400, color: finances < 0 ? 'var(--danger)' : 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
                   {Math.abs(finances) >= 1_000_000 ? `${(finances / 1_000_000).toFixed(1)} mkr` : `${Math.round(finances / 1_000)} tkr`}
@@ -802,6 +797,9 @@ export function DashboardScreen() {
             )}
           </div>
         </div>
+
+        {/* Bygdens Puls */}
+        <CommunityPulse game={game} currentRound={currentRound} onNavigate={() => navigate('/game/club', { state: { tab: 'community' } })} />
 
         {/* Inkorg round card */}
         {latestUnread && (
@@ -867,15 +865,6 @@ export function DashboardScreen() {
             </div>
           </div>
         )}
-
-        {/* Guidance banners */}
-        <GuidanceBanner
-          hasPendingLineup={hasPendingLineup}
-          nextFixture={nextFixture ?? null}
-          lastCompletedFixture={lastCompletedFixture}
-          onNavigateToMatch={() => navigate('/game/match')}
-          onNavigateToReport={() => navigate('/game/match', { state: { showReport: true } })}
-        />
 
         {/* Bandydoktorn */}
         {(() => {

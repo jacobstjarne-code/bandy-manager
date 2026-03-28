@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bandy Manager — Dashboard v6</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #EDE8DF; --bg-surface: #FAF8F4; --bg-elevated: #FFFFFF;
+    --bg-dark: #0E0D0B; --bg-dark-surface: #1E1D19; --bg-dark-elevated: #2C2A24; --bg-leather: #3D3A32;
+    --border: #DDD7CC; --border-dark: #C4BAA8;
+    --text-primary: #1A1A18; --text-secondary: #6B6760; --text-muted: #8A857A;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8;
+    --accent: #C47A3A; --accent-dark: #A25828;
+    --success: #5A9A4A; --warning: #C47A3A; --danger: #B05040;
+    --ice: #A8D4F0; --ice-dark: #7EAAC8;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body: system-ui, -apple-system, sans-serif;
+    --bottom-nav-height: 56px;
+  }
+  body { background: #333; font-family: var(--font-body); display: flex; justify-content: center; padding: 20px 0; }
+  .phone { width: 390px; height: 844px; background: var(--bg); border-radius: 40px; overflow: hidden; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
+  .scroll-area { flex: 1; overflow-y: auto; padding-bottom: calc(var(--bottom-nav-height) + 12px); }
+  .texture-wood { background-image: repeating-linear-gradient(92deg, rgba(160,130,90,0.04) 0px, rgba(160,130,90,0.02) 2px, transparent 2px, transparent 8px); }
+  .texture-leather { background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='1' cy='1' r='.4' fill='%23000' opacity='.03'/%3E%3C/svg%3E"); }
+  .ice-divider { height: 5px; background: linear-gradient(90deg, #C4BAA8, #E8E2D8, #F5F1EB, #E8E2D8, #C4BAA8); background-size: 200px 100%; animation: shimmerIce 3s linear infinite; }
+  @keyframes shimmerIce { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
+  @keyframes snow { 0% { transform: translateY(0) translateX(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 0.4; } 100% { transform: translateY(140px) translateX(18px); opacity: 0; } }
+  .snow-particle { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.3); pointer-events: none; }
+
+  .tag { display: inline-flex; align-items: center; gap: 3px; border-radius: 99px; padding: 2px 8px; font-size: 9px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; white-space: nowrap; font-family: var(--font-body); }
+  .tag-fill { background: var(--accent); color: #fff; }
+  .tag-copper { background: transparent; border: 1px solid var(--accent); color: var(--accent-dark); }
+  .tag-outline { background: transparent; border: 1px solid var(--border-dark); color: var(--text-secondary); }
+  .tag-green { background: rgba(90,154,74,0.12); border: 1px solid rgba(90,154,74,0.3); color: #4A6A3A; }
+  .tag-red { background: rgba(176,80,64,0.10); border: 1px solid rgba(176,80,64,0.25); color: #8B3E30; }
+  .tag-ice { background: rgba(168,212,240,0.15); border: 1px solid rgba(168,212,240,0.4); color: #A8D4F0; }
+  .tag-ice-on-light { background: rgba(90,140,170,0.10); border: 1px solid rgba(90,140,170,0.3); color: #3A6A80; }
+
+  .card-sharp { border-radius: 3px; background: var(--bg-surface); border: 1px solid var(--border); overflow: hidden; }
+  .card-round { border-radius: 14px; background: var(--bg-surface); border: 1px solid var(--border); overflow: hidden; }
+  .leather-bar { background: var(--bg-leather); padding: 7px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .leather-bar-label { color: var(--text-light-secondary); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; font-family: var(--font-body); font-weight: 600; }
+
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .card-label { font-size: 9px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); font-family: var(--font-body); margin: 0; }
+
+  /* ── NAV CHEVRON — small, subtle, consistent ── */
+  .card-nav {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0;
+    background: transparent; border: 1px solid var(--border);
+    color: var(--accent); font-size: 12px; line-height: 1;
+    cursor: pointer; font-family: var(--font-body);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    transition: all 0.15s;
+  }
+  .card-nav:hover { border-color: var(--accent); background: rgba(196,122,58,0.05); }
+
+  .metric-plate {
+    display: inline-flex; align-items: center; gap: 3px;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: 5px; padding: 2px 7px;
+  }
+
+  .cta-main { width: 100%; padding: 18px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; font-family: var(--font-body); background: linear-gradient(135deg, #B06830, #8B4820); color: var(--text-light); cursor: pointer; animation: pulseCTA 3s ease-in-out infinite; }
+  @keyframes pulseCTA { 0%, 100% { box-shadow: 0 4px 16px rgba(162,88,40,0.3); } 50% { box-shadow: 0 6px 24px rgba(162,88,40,0.55), 0 0 0 4px rgba(196,122,58,0.08); } }
+
+  .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: var(--bottom-nav-height); background: var(--bg-surface); background-image: repeating-linear-gradient(92deg, rgba(160,130,90,0.04) 0px, rgba(160,130,90,0.02) 2px, transparent 2px, transparent 8px); border-top: 1.5px solid var(--border); display: flex; align-items: stretch; }
+  .nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 9px; font-weight: 400; color: var(--text-muted); text-decoration: none; position: relative; }
+  .nav-tab.active { color: var(--accent); font-weight: 600; }
+  .nav-tab.active::after { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); margin-top: 1px; }
+  .nav-tab svg { width: 20px; height: 20px; }
+  .nav-badge { position: absolute; top: 4px; right: 50%; transform: translateX(14px); min-width: 14px; height: 14px; background: var(--danger); color: #fff; border-radius: 99px; font-size: 9px; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--bg-surface); }
+</style>
+</head>
+<body>
+<div class="phone">
+<div class="scroll-area">
+
+  <!-- ═══════ HEADER ═══════ -->
+  <div style="position:relative; overflow:hidden;">
+    <div class="texture-wood texture-leather" style="background-color:var(--bg-dark); position:relative;">
+      <div style="position:absolute; top:-70px; left:20px; width:120px; height:200px; background:radial-gradient(ellipse at 50% 0%, rgba(255,240,210,0.08) 0%, transparent 70%); transform:rotate(-8deg); pointer-events:none;"></div>
+      <div style="position:absolute; top:-50px; right:10px; width:140px; height:220px; background:radial-gradient(ellipse at 50% 0%, rgba(255,240,210,0.06) 0%, transparent 70%); transform:rotate(5deg); pointer-events:none;"></div>
+      <div style="position:absolute; inset:0; pointer-events:none; overflow:hidden;">
+        <div class="snow-particle" style="width:2px;height:2px;top:8px;left:35px;animation:snow 4s linear infinite 0s;"></div>
+        <div class="snow-particle" style="width:1.5px;height:1.5px;top:4px;left:100px;animation:snow 5.5s linear infinite 1s;"></div>
+        <div class="snow-particle" style="width:2.5px;height:2.5px;top:6px;left:190px;animation:snow 3.5s linear infinite 0.3s;"></div>
+        <div class="snow-particle" style="width:1px;height:1px;top:10px;left:280px;animation:snow 4.5s linear infinite 2s;"></div>
+        <div class="snow-particle" style="width:2px;height:2px;top:2px;left:330px;animation:snow 6s linear infinite 1.5s;"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 14px 0; position:relative;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <svg viewBox="0 0 22 22" width="18" height="18"><circle cx="11" cy="11" r="9.5" fill="var(--bg-dark-surface)" stroke="var(--accent-dark)" stroke-width="1.2"/><text x="11" y="14" text-anchor="middle" font-family="Georgia" font-size="8" fill="var(--accent)">B</text></svg>
+          <span style="color:var(--text-light-secondary); font-size:10px; letter-spacing:2px; text-transform:uppercase;">Bandy Manager</span>
+        </div>
+        <div style="display:flex; gap:5px;">
+          <span class="tag tag-ice">❄ -7°</span>
+          <span class="tag tag-copper">Omg 3</span>
+        </div>
+      </div>
+      <div style="padding:14px; display:flex; align-items:center; gap:14px; position:relative;">
+        <div style="width:60px; height:60px; flex-shrink:0;">
+          <svg viewBox="0 0 60 60" width="60" height="60"><polygon points="30,4 56,18 56,46 30,56 4,46 4,18" fill="var(--bg-dark-surface)" stroke="rgba(196,122,58,0.8)" stroke-width="2"/><text x="30" y="34" text-anchor="middle" font-family="Georgia" font-size="16" fill="var(--accent)">B</text></svg>
+        </div>
+        <div>
+          <h1 style="color:var(--text-light); font-size:22px; font-weight:400; font-family:var(--font-display); letter-spacing:0.5px; line-height:1.2; margin-bottom:3px;">Bergsjö BK</h1>
+          <p style="color:var(--text-light-secondary); font-size:12px; margin-bottom:6px;">Säsong 2026/2027 · Höststarten</p>
+          <div style="display:flex; gap:5px;">
+            <span class="tag tag-outline" style="border-color:rgba(196,186,168,0.3); color:var(--text-light-secondary);">5:e i serien</span>
+            <span class="tag tag-green">3 raka vinster</span>
+          </div>
+        </div>
+      </div>
+      <div class="texture-wood" style="background-color:rgba(196,122,58,0.12); border-top:1px solid rgba(196,122,58,0.15); border-bottom:1px solid rgba(196,122,58,0.15); padding:9px 14px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:15px;">🍂</span>
+          <span style="color:var(--accent); font-size:12px; font-weight:700;">Höststarten</span>
+          <span style="color:var(--text-light-secondary); font-size:10px;">1 okt</span>
+        </div>
+        <span class="tag tag-ice" style="gap:4px;"><svg viewBox="0 0 8 8" width="6" height="6"><circle cx="4" cy="4" r="3" fill="var(--ice)"/></svg>God is</span>
+      </div>
+    </div>
+    <div class="ice-divider"></div>
+  </div>
+
+  <!-- ═══════ CONTENT ═══════ -->
+  <div class="texture-wood" style="padding:12px 12px 20px;">
+
+    <!-- ═══ NÄSTA MATCH ═══ -->
+    <div class="card-round" style="margin-bottom:10px; border:1.5px solid rgba(196,80,50,0.30); background:rgba(196,80,50,0.03);">
+      <div class="leather-bar texture-leather" style="background:#3D3228; border-radius:13px 13px 0 0;">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:11px;">⚔️</span>
+          <span class="leather-bar-label">Nästa match</span>
+        </div>
+        <div style="display:flex; gap:4px;">
+          <span class="tag" style="background:rgba(196,80,50,0.2); color:#E8A090; font-size:8px; padding:2px 7px; border:1px solid rgba(196,80,50,0.3);">DERBY</span>
+          <span class="tag" style="background:transparent; color:var(--text-light-secondary); font-size:8px; padding:2px 7px; border:1px solid rgba(196,186,168,0.2);">BORTA</span>
+        </div>
+      </div>
+      <div style="padding:10px 12px;">
+        <p style="text-align:center; font-size:11px; color:var(--danger); font-weight:600; margin-bottom:6px;">🔥 Hälsingederbyt · Intensitet 3</p>
+        <div style="display:flex; align-items:center; justify-content:center; padding:4px 0;">
+          <div style="text-align:center; flex:1;">
+            <svg viewBox="0 0 36 36" width="36" height="36"><polygon points="18,3 33,12 33,28 18,33 3,28 3,12" fill="var(--bg-dark-surface)" stroke="rgba(196,122,58,0.7)" stroke-width="1.5"/><text x="18" y="21" text-anchor="middle" font-family="Georgia" font-size="10" fill="var(--accent)">B</text></svg>
+            <p style="font-size:11px; font-weight:700; margin-top:3px;">Bergsjö</p>
+            <span class="tag tag-copper" style="font-size:8px; padding:1px 6px; margin-top:2px;">5:e</span>
+          </div>
+          <span style="font-size:12px; color:var(--accent-dark); font-family:var(--font-display); font-style:italic;">vs</span>
+          <div style="text-align:center; flex:1;">
+            <svg viewBox="0 0 36 36" width="36" height="36"><polygon points="18,3 33,12 33,28 18,33 3,28 3,12" fill="var(--bg-dark-surface)" stroke="rgba(196,186,168,0.5)" stroke-width="1.5"/><text x="18" y="21" text-anchor="middle" font-family="Georgia" font-size="10" fill="var(--text-muted)">N</text></svg>
+            <p style="font-size:11px; font-weight:700; margin-top:3px;">Norrala</p>
+            <span class="tag tag-outline" style="font-size:8px; padding:1px 6px; margin-top:2px;">3:e</span>
+          </div>
+        </div>
+        <div style="margin-top:8px; padding-top:6px; border-top:1px solid var(--border); display:flex; gap:4px; justify-content:center; flex-wrap:wrap;">
+          <span class="tag tag-green" style="font-size:8px;">✓ Uppställning</span>
+          <span class="tag tag-green" style="font-size:8px;">✓ Taktik</span>
+          <span class="tag tag-copper" style="font-size:8px;">○ Välj trupp</span>
+          <span class="tag tag-ice-on-light" style="font-size:8px;">❄ God is</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TABELL + SENAST ═══ -->
+    <div style="display:flex; gap:8px; margin-bottom:10px;">
+      <div class="card-sharp" style="flex:1; position:relative; cursor:pointer;">
+        <span class="tag tag-fill" style="position:absolute; top:-1px; right:8px; border-radius:0 0 8px 8px; letter-spacing:1px; font-size:8px; padding:2px 6px;">SLUTSPEL</span>
+        <div style="padding:14px 12px 10px;">
+          <div class="card-header">
+            <p class="card-label">📊 Tabell</p>
+            <button class="card-nav" style="margin-top:4px;">›</button>
+          </div>
+          <div style="display:flex; align-items:baseline; gap:5px;">
+            <span style="font-size:36px; font-weight:400; color:var(--accent-dark); line-height:1; font-family:var(--font-display);">5</span>
+            <div>
+              <span style="font-size:12px; font-weight:700; color:var(--success);">↑2</span>
+              <p style="font-size:10px; color:var(--text-muted); margin-top:3px;">15p · +3 mål</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-sharp" style="flex:1; cursor:pointer;">
+        <div style="padding:12px 12px 10px;">
+          <div class="card-header">
+            <p class="card-label">🔴 Senast</p>
+            <button class="card-nav">›</button>
+          </div>
+          <span style="font-size:22px; font-weight:400; color:var(--success); line-height:1; font-family:var(--font-display);">4–2</span>
+          <p style="font-size:10px; color:var(--text-muted); margin-top:3px;">vinst mot Alfta</p>
+          <div style="display:flex; gap:3px; margin-top:5px;">
+            <div style="width:16px; height:16px; border-radius:3px; background:var(--success); display:flex; align-items:center; justify-content:center;"><span style="font-size:8px; color:#fff; font-weight:700;">V</span></div>
+            <div style="width:16px; height:16px; border-radius:3px; background:var(--success); display:flex; align-items:center; justify-content:center;"><span style="font-size:8px; color:#fff; font-weight:700;">V</span></div>
+            <div style="width:16px; height:16px; border-radius:3px; background:var(--success); display:flex; align-items:center; justify-content:center;"><span style="font-size:8px; color:#fff; font-weight:700;">V</span></div>
+            <div style="width:16px; height:16px; border-radius:3px; background:var(--danger); display:flex; align-items:center; justify-content:center;"><span style="font-size:8px; color:#fff; font-weight:700;">F</span></div>
+            <div style="width:16px; height:16px; border-radius:3px; border:1.5px solid var(--border-dark);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ CUP ═══ -->
+    <div class="card-sharp" style="margin-bottom:10px;">
+      <div style="padding:12px 14px;">
+        <div class="card-header" style="margin-bottom:6px;">
+          <p class="card-label">🏆 Svenska Cupen</p>
+          <span class="tag tag-copper">KVARTSFINAL</span>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:13px; font-weight:600;">vs Storvik</span>
+          <span class="tag tag-ice-on-light">Borta</span>
+        </div>
+        <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Om 2 omgångar</p>
+      </div>
+    </div>
+
+    <!-- ═══ TRUPP ═══ -->
+    <div class="card-sharp" style="margin-bottom:10px; cursor:pointer;">
+      <div style="padding:12px 14px;">
+        <div class="card-header">
+          <p class="card-label">👥 Trupp</p>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="tag tag-green">22 redo</span>
+            <button class="card-nav">›</button>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:3px;"><span style="font-size:11px; color:var(--text-muted);">Form</span><span style="font-size:11px; font-weight:600;">61</span></div>
+            <div style="height:5px; background:var(--border); border-radius:3px; overflow:hidden;"><div style="width:61%; height:100%; background:var(--success); border-radius:3px;"></div></div>
+          </div>
+          <div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:3px;"><span style="font-size:11px; color:var(--text-muted);">Kondition</span><span style="font-size:11px; font-weight:600;">74</span></div>
+            <div style="height:5px; background:var(--border); border-radius:3px; overflow:hidden;"><div style="width:74%; height:100%; background:var(--warning); border-radius:3px;"></div></div>
+          </div>
+          <div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:3px;"><span style="font-size:11px; color:var(--text-muted);">Moral</span><span style="font-size:11px; font-weight:600;">50</span></div>
+            <div style="height:5px; background:var(--border); border-radius:3px; overflow:hidden;"><div style="width:50%; height:100%; background:var(--ice-dark); border-radius:3px;"></div></div>
+          </div>
+          <div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:3px;"><span style="font-size:11px; color:var(--text-muted);">Skärpa</span><span style="font-size:11px; font-weight:600;">66</span></div>
+            <div style="height:5px; background:var(--border); border-radius:3px; overflow:hidden;"><div style="width:66%; height:100%; background:var(--text-muted); border-radius:3px;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ EKONOMI ═══ -->
+    <div class="card-sharp" style="margin-bottom:10px; cursor:pointer;">
+      <div style="padding:12px 14px;">
+        <div class="card-header" style="margin-bottom:0;">
+          <div style="display:flex; align-items:baseline; gap:8px;">
+            <p class="card-label">💰 Ekonomi</p>
+            <span style="font-size:18px; font-weight:400; color:var(--text-primary); font-family:var(--font-display);">300 tkr</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:12px; font-weight:700; color:var(--danger);">-16 tkr/omg</span>
+            <button class="card-nav">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ BYGDENS PULS ═══ -->
+    <div class="card-sharp" style="margin-bottom:10px; cursor:pointer;">
+      <div style="padding:12px 14px;">
+        <div class="card-header">
+          <p class="card-label">🏘️ Bygdens puls</p>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div class="metric-plate">
+              <span style="font-size:11px; color:var(--success); font-weight:600;">↗</span>
+              <span style="font-size:14px; font-weight:700; color:var(--text-primary); font-family:var(--font-display);">50</span>
+            </div>
+            <button class="card-nav">›</button>
+          </div>
+        </div>
+        <div style="height:6px; background:var(--border); border-radius:3px; overflow:hidden;">
+          <div style="width:50%; height:100%; background:linear-gradient(90deg, var(--accent), var(--success)); border-radius:3px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AKADEMI ═══ -->
+    <div class="card-sharp" style="margin-bottom:10px; cursor:pointer;">
+      <div style="padding:10px 14px;">
+        <div class="card-header" style="margin-bottom:0;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <p class="card-label">🎓 Akademi</p>
+            <span style="font-size:12px; color:var(--text-secondary);">P17 · 5:a · 0V 0O 0F</span>
+          </div>
+          <button class="card-nav">›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ INKORG ═══ -->
+    <div class="card-round" style="margin-bottom:10px; cursor:pointer;">
+      <div style="padding:10px 14px;">
+        <div class="card-header" style="margin-bottom:0;">
+          <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
+            <p class="card-label" style="flex-shrink:0;">📬 Inkorg</p>
+            <span class="tag tag-fill" style="flex-shrink:0;">2</span>
+            <p style="font-size:11px; color:var(--text-secondary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0;">Patrik Berglund — kontrakt</p>
+          </div>
+          <button class="card-nav" style="flex-shrink:0; margin-left:8px;">›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ BANDYDOKTORN ═══ -->
+    <div class="card-sharp" style="margin-bottom:10px; cursor:pointer;">
+      <div style="padding:10px 14px;">
+        <div class="card-header" style="margin-bottom:0;">
+          <p class="card-label">🩺 Bandydoktorn</p>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:11px; color:var(--text-muted);">5 frågor kvar</span>
+            <button class="card-nav">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diamond + CTA -->
+    <div style="display:flex; align-items:center; gap:10px; margin:6px 0 14px;">
+      <div style="flex:1; height:1px; background:linear-gradient(90deg, transparent, var(--border-dark));"></div>
+      <svg viewBox="0 0 28 12" width="28" height="12"><polygon points="14,1 27,6 14,11 1,6" fill="none" stroke="var(--accent)" stroke-width="0.8" opacity="0.4"/><polygon points="14,4 20,6 14,8 8,6" fill="var(--accent)" opacity="0.15"/></svg>
+      <div style="flex:1; height:1px; background:linear-gradient(90deg, var(--border-dark), transparent);"></div>
+    </div>
+    <button class="cta-main texture-leather">Spela omgång 4 →</button>
+  </div>
+</div>
+
+<!-- ═══════ BOTTOM NAV ═══════ -->
+<div class="bottom-nav">
+  <a class="nav-tab active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><span>Hem</span></a>
+  <a class="nav-tab" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>Trupp</span><span class="nav-badge">1</span></a>
+  <a class="nav-tab" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/></svg><span>Match</span></a>
+  <a class="nav-tab" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg><span>Tabell</span></a>
+  <a class="nav-tab" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg><span>Transfers</span></a>
+  <a class="nav-tab" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><span>Inkorg</span></a>
+  <a class="nav-tab" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg><span>Förening</span></a>
+</div>
+
+</div>
+</body>
+</html>
