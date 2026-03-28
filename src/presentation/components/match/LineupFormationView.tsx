@@ -78,7 +78,7 @@ export function LineupFormationView({
           const sx = (slot.x / 100) * PW
           const sy = (1 - slot.y / 100) * PH
 
-          let ringColor = '#3b82f6'
+          let ringColor = 'var(--accent)'
           if (assignedPlayer) {
             if (assignedPlayer.position === slot.position) ringColor = 'var(--success)'
             else if (ADJACENT_POS[assignedPlayer.position]?.includes(slot.position)) ringColor = 'var(--warning)'

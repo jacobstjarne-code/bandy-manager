@@ -88,6 +88,7 @@ export function BottomNav() {
         <NavLink
           key={to}
           to={to}
+          style={{ flex: 1, display: 'flex', textDecoration: 'none' }}
         >
           {({ isActive }) => (
             <span style={{
