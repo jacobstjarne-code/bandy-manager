@@ -3,7 +3,8 @@ import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { MatchEventType } from '../../../domain/enums'
-import { truncate } from '../../utils/formatters'
+import { truncate, positionShort } from '../../utils/formatters'
+import { PlayerPosition } from '../../../domain/enums'
 import { computePlayerRatings } from '../../utils/matchRatings'
 
 export interface PressChoiceData {
@@ -75,16 +76,15 @@ export function MatchDoneOverlay({
   return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: 'rgba(0,0,0,0.9)',
+      background: 'rgba(14,13,11,0.92)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
       paddingTop: '50px', zIndex: 200, overflowY: 'auto',
     }}>
-      <div style={{
-        background: 'var(--bg-surface)',
-        border: `2px solid ${resultColor}`,
-        borderRadius: 'var(--radius)', padding: '24px 20px',
+      <div className="card-round" style={{
+        padding: '24px 20px',
         textAlign: 'center', minWidth: 280, maxWidth: 340, width: '90%',
-        boxShadow: `0 0 30px ${resultColor}22`,
+        border: 'none',
+        boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
         marginBottom: 20,
       }}>
         <p style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', color: resultColor, marginBottom: 14 }}>
@@ -144,7 +144,7 @@ export function MatchDoneOverlay({
               {bestPlayer.firstName} {bestPlayer.lastName}
             </p>
             <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-              {bestPlayer.position} · {typeof bestRating === 'number' ? bestRating.toFixed(1) : '–'}
+              {positionShort(bestPlayer.position as PlayerPosition)} · {typeof bestRating === 'number' ? bestRating.toFixed(1) : '–'}
             </p>
           </div>
         )}

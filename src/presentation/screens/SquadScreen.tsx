@@ -197,12 +197,13 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
         </div>
 
         {/* Nav button */}
-        <div style={{
+        <button style={{
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          width: 24, height: 24, borderRadius: 6, flexShrink: 0,
-          background: 'var(--bg-dark-surface)', color: 'var(--text-light)',
-          fontSize: 12, fontWeight: 600,
-        }}>›</div>
+          width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+          background: 'transparent', border: '1px solid var(--border)',
+          color: 'var(--accent)', fontSize: 11, lineHeight: 1,
+          boxShadow: '0 1px 2px rgba(0,0,0,0.03)', cursor: 'pointer',
+        }}>›</button>
       </div>
 
       {/* Bottom row: form + fitness bars + status pill */}
@@ -228,8 +229,8 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
         )}
         {!(player.isFullTimePro ?? false) && player.dayJob && (
           <span
-            className={(player.dayJob.flexibility ?? 75) < 65 ? 'tag tag-red' : 'tag tag-outline'}
-            style={{ flexShrink: 0 }}
+            className="tag tag-outline"
+            style={{ flexShrink: 0, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
           >
             👷 {player.dayJob.title}
           </span>

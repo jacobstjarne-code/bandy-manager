@@ -304,9 +304,7 @@ export function MatchLiveScreen() {
     return () => clearTimeout(timer)
   }, [currentStep, isPaused, isFastForward, steps])
 
-  function handleAbort() {
-    if (window.confirm('Avbryt matchen? Resultatet sparas inte.')) navigate(-1)
-  }
+  // Avbryt removed — once match starts, you're committed
 
   function handleSeeReport() {
     navigate('/game/match', { state: { showReport: true }, replace: true })
@@ -469,13 +467,7 @@ export function MatchLiveScreen() {
         padding: '10px 16px', background: 'var(--bg-surface)',
         borderBottom: '1px solid var(--border)', flexShrink: 0,
       }}>
-        <button
-          onClick={handleAbort}
-          className="btn btn-ghost"
-          style={{ fontSize: 14, fontWeight: 500, padding: '4px 8px' }}
-        >
-          ← Avbryt
-        </button>
+        <div />
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             onClick={() => setIsPaused(prev => !prev)}
@@ -524,7 +516,7 @@ export function MatchLiveScreen() {
           <span style={{ fontSize: 13, color: 'var(--text-light-secondary)', flex: 1, textAlign: 'right' }}>
             {truncate(homeClubName, 10)}
           </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 130, justifyContent: 'center' }}>
             <span
               key={`home-${homeScore}`}
               style={{
@@ -535,6 +527,7 @@ export function MatchLiveScreen() {
                 textShadow: homeScoreFlash ? '0 0 20px var(--accent)' : 'none',
                 fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"',
                 animation: homeScoreFlash ? 'scaleFlash 400ms ease-out both' : undefined,
+                minWidth: 36, textAlign: 'center',
               }}
             >
               {homeScore}
@@ -550,6 +543,7 @@ export function MatchLiveScreen() {
                 textShadow: awayScoreFlash ? '0 0 20px var(--accent)' : 'none',
                 fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"',
                 animation: awayScoreFlash ? 'scaleFlash 400ms ease-out both' : undefined,
+                minWidth: 36, textAlign: 'center',
               }}
             >
               {awayScore}
@@ -569,9 +563,9 @@ export function MatchLiveScreen() {
             🔥 {rivalry.name}
           </div>
         )}
-        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', margin: '0 auto' }}>
-          <div style={{ position: 'relative', display: 'inline-block' }}>
-            <svg width="48" height="48" viewBox="0 0 48 48" style={{ position: 'absolute', top: -18, left: '50%', transform: 'translateX(-50%)' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
+          <div style={{ position: 'relative', width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="48" height="48" viewBox="0 0 48 48" style={{ position: 'absolute', inset: 0 }}>
               <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(245,241,235,0.12)" strokeWidth="2"/>
               <circle cx="24" cy="24" r="20" fill="none" stroke="var(--accent)" strokeWidth="2"
                 strokeDasharray={`${(currentMinute / 90) * 125.7} 125.7`}
@@ -579,9 +573,9 @@ export function MatchLiveScreen() {
                 style={{ transition: 'stroke-dasharray 600ms ease-out' }}
               />
             </svg>
-            <div style={{ fontSize: 13, color: 'var(--text-light-secondary)', fontWeight: 600, paddingTop: 4 }}>
-              {matchDone ? 'Slutresultat' : `${currentMinute}'`}
-            </div>
+            <span style={{ fontSize: 13, color: 'var(--text-light-secondary)', fontWeight: 600, position: 'relative', zIndex: 1 }}>
+              {matchDone ? 'Slut' : `${currentMinute}'`}
+            </span>
           </div>
         </div>
         {matchWeather && (

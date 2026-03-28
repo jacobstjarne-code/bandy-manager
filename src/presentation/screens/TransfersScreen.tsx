@@ -43,8 +43,10 @@ function RenewContractModal({ player, currentSeason, minSalary, error, onClose, 
         borderRadius: '16px 16px 0 0',
         border: '1px solid var(--border)',
         borderBottom: 'none',
-        padding: '24px 20px',
+        padding: '24px 20px 32px',
         width: '100%',
+        maxHeight: '85vh',
+        overflowY: 'auto',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
           <div>
@@ -120,7 +122,9 @@ function BidModal({ player, managedClub, onClose, onConfirm }: BidModalProps) {
     }}>
       <div style={{
         background: 'var(--bg-surface)', borderRadius: '16px 16px 0 0',
-        border: '1px solid var(--border)', borderBottom: 'none', padding: '24px 20px', width: '100%',
+        border: '1px solid var(--border)', borderBottom: 'none',
+        padding: '24px 20px 32px', width: '100%',
+        maxHeight: '85vh', overflowY: 'auto',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <div>
@@ -428,7 +432,7 @@ export function TransfersScreen() {
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {player.firstName} {player.lastName}
                     {isScounted && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--accent)' }}>🔍</span>}
                     {isStale && <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--danger)', fontWeight: 400 }}>Föråldrad</span>}
@@ -575,6 +579,13 @@ export function TransfersScreen() {
       {/* Spaning (Talent Search) section */}
       {activeTab === 'spaning' && (
         <div className="card-stagger-2" style={{ marginBottom: 24 }}>
+          {/* Explainer */}
+          <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 12 }}>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              🔎 <strong style={{ color: 'var(--text-primary)' }}>Spaning</strong> skickar ut din scout för att hitta okända spelare som matchar dina kriterier. Tar 2 omgångar. Skiljer sig från <em>Scouting</em> som utvärderar kända spelare.
+            </p>
+          </div>
+
           {/* Scout busy with evaluation */}
           {game.activeScoutAssignment && (
             <div className="card-sharp" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', padding: '10px 14px', marginBottom: 16, fontSize: 13, color: 'var(--danger)' }}>
@@ -669,7 +680,7 @@ export function TransfersScreen() {
                     return (
                       <div key={suggestion.playerId} style={{ padding: '12px 14px', borderBottom: index < latestResult.players.length - 1 ? '1px solid var(--border)' : 'none', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>
+                          <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', marginBottom: 2 }}>
                             {player ? `${player.firstName} ${player.lastName}` : suggestion.playerId}
                           </p>
                           <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2 }}>
@@ -718,7 +729,7 @@ export function TransfersScreen() {
             {expiringPlayers.map((player, index) => (
               <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', borderBottom: index < expiringPlayers.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {player.firstName} {player.lastName}
                   </p>
                   <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
@@ -750,7 +761,7 @@ export function TransfersScreen() {
             {freeAgents.map((agent, index) => (
               <div key={agent.id} style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', borderBottom: index < freeAgents.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {agent.firstName} {agent.lastName}
                   </p>
                   <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
@@ -780,7 +791,7 @@ export function TransfersScreen() {
           {managedClubPlayers.sort((a, b) => b.currentAbility - a.currentAbility).map((player, index) => (
             <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', borderBottom: index < managedClubPlayers.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {player.firstName} {player.lastName}
                 </p>
                 <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>

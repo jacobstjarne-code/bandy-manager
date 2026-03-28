@@ -81,10 +81,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
       </p>
 
       {/* Score banner */}
-      <div style={{
-        background: 'var(--bg-surface)', border: '1px solid var(--border)',
-        borderRadius: 'var(--radius)', padding: '20px 16px', marginBottom: 16, textAlign: 'center',
-      }}>
+      <div className="card-sharp" style={{ padding: '20px 16px', marginBottom: 10, textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', flex: 1, textAlign: 'left' }}>
             {homeClub?.shortName ?? homeClub?.name}
@@ -128,15 +125,12 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
 
       {/* Events timeline */}
       {visibleEvents.length > 0 && (
-        <div style={{
-          background: 'var(--bg-surface)', border: '1px solid var(--border)',
-          borderRadius: 'var(--radius)', overflow: 'hidden', marginBottom: 16,
-        }}>
+        <div className="card-sharp" style={{ overflow: 'hidden', marginBottom: 10 }}>
           <p style={{
-            fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px',
+            fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2.5px',
             color: 'var(--text-muted)', padding: '12px 14px 8px',
           }}>
-            Händelser
+            ⚡ Händelser
           </p>
           {visibleEvents.map((event, index) => {
             const isHome = event.clubId === fixture.homeClubId
@@ -177,15 +171,12 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
 
       {/* Match stats */}
       {fixture.report && (
-        <div style={{
-          background: 'var(--bg-surface)', border: '1px solid var(--border)',
-          borderRadius: 'var(--radius)', padding: '14px', marginBottom: 16,
-        }}>
+        <div className="card-sharp" style={{ padding: '14px', marginBottom: 10 }}>
           <p style={{
-            fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px',
+            fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2.5px',
             color: 'var(--text-muted)', marginBottom: 12,
           }}>
-            Statistik
+            📊 Statistik
           </p>
           {[
             { label: 'Hörnor', home: String(fixture.report.cornersHome), away: String(fixture.report.cornersAway) },
@@ -217,15 +208,12 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
 
       {/* Player ratings */}
       {ratedPlayers.length > 0 && (
-        <div style={{
-          background: 'var(--bg-surface)', border: '1px solid var(--border)',
-          borderRadius: 'var(--radius)', overflow: 'hidden', marginBottom: 24,
-        }}>
+        <div className="card-sharp" style={{ overflow: 'hidden', marginBottom: 16 }}>
           <p style={{
-            fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px',
+            fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2.5px',
             color: 'var(--text-muted)', padding: '12px 14px 8px',
           }}>
-            Spelarbetyg
+            ⭐ Spelarbetyg
           </p>
           {(() => {
             const potmId = fixture.report?.playerOfTheMatchId

@@ -82,15 +82,12 @@ export function TabellScreen() {
         >
           ←
         </button>
-        <h1 style={{ fontSize: 22, fontWeight: 700 }}>Tabell</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)' }}>Tabell</h1>
       </div>
 
       {/* Summary card for managed club */}
       {myRow && (
-        <div style={{
-          background: 'rgba(196,122,58,0.06)',
-          border: '1px solid rgba(196,122,58,0.2)',
-          borderRadius: 10,
+        <div className="card-sharp" style={{
           padding: '10px 14px',
           marginBottom: 12,
           fontSize: 12,
