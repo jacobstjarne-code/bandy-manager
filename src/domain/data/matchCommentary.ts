@@ -362,6 +362,7 @@ export const commentary = {
     "Isen är i katastrof nu — spelarna glider på vatten.",
     "Blötare och blötare för varje minut. Konditionen avgör nu.",
   ],
+
   overtimeStart: [
     'FÖRLÄNGNING! Ytterligare 30 minuter avgör. Spelarna samlar sig.',
     'Det blir förlängning! Benen är tunga men viljan stark.',

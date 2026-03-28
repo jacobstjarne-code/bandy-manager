@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { getTransferWindowStatus } from '../transferWindowService'
-import { commentary } from '../../data/commentary'
+import { commentary } from '../../data/matchCommentary'
 import type { Player } from '../../entities/Player'
 import { PlayerPosition, PlayerArchetype, FixtureStatus } from '../../enums'
 

@@ -3,7 +3,7 @@ import type { Fixture, MatchEvent, TeamSelection } from '../entities/Fixture'
 import type { Weather } from '../entities/Weather'
 import { WeatherCondition, IceQuality, PlayerPosition } from '../enums'
 import type { Rivalry } from '../data/rivalries'
-import { commentary, pickCommentary } from '../data/commentary'
+import { commentary, pickCommentary } from '../data/matchCommentary'
 
 export interface SimulateMatchInput {
   fixture: Fixture
