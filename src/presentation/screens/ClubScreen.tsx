@@ -567,16 +567,16 @@ export function ClubScreen() {
         {/* ── Tab 1: Träning ── */}
         {activeTab === 'training' && (
           <>
+            <TrainingProjectsCard
+              projects={game.trainingProjects ?? []}
+              onStart={(type, intensity) => startTrainingProject(type, intensity)}
+              onCancel={(id) => cancelTrainingProject(id)}
+            />
             <TrainingSection
               focus={training}
               recentSessions={recentSessions}
               trainingInjuriesThisSeason={trainingInjuriesThisSeason}
               onChangeFocus={setTraining}
-            />
-            <TrainingProjectsCard
-              projects={game.trainingProjects ?? []}
-              onStart={(type, intensity) => startTrainingProject(type, intensity)}
-              onCancel={(id) => cancelTrainingProject(id)}
             />
           </>
         )}

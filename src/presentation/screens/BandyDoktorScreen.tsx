@@ -224,7 +224,7 @@ export function BandyDoktorScreen() {
         {/* Error */}
         {error && (
           <div style={{
-            background: '#2a0a0a',
+            background: 'var(--bg-dark-surface)',
             border: '1px solid var(--danger)',
             borderRadius: 8,
             padding: '12px 14px',

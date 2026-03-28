@@ -640,11 +640,11 @@ export function MatchLiveScreen() {
           let boxShadow: string | undefined = undefined
 
           if (hasGoal) {
-            background = 'rgba(201, 168, 76, 0.12)'
-            borderLeft = '3px solid var(--color-accent)'
+            background = 'rgba(196, 122, 58, 0.12)'
+            borderLeft = '3px solid var(--accent)'
             fontSize = 14
             fontWeight = 600
-            color = 'var(--color-accent)'
+            color = 'var(--accent)'
             paddingLeft = 12
             boxShadow = 'inset 3px 0 0 var(--accent)'
           } else if (hasSuspension) {
