@@ -196,8 +196,13 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
           </div>
         </div>
 
-        {/* Arrow */}
-        <span style={{ color: 'var(--text-muted)', fontSize: 14, marginLeft: 2 }}>▸</span>
+        {/* Nav button */}
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+          background: 'var(--bg-dark-surface)', color: 'var(--text-light)',
+          fontSize: 12, fontWeight: 600,
+        }}>›</div>
       </div>
 
       {/* Bottom row: form + fitness bars + status pill */}
