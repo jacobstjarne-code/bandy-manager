@@ -225,7 +225,7 @@ a {
 
 /* ── Sharp cards: factual data display ── */
 .card-sharp {
-  border-radius: 3px;
+  border-radius: 8px;
   background: var(--bg-surface);
   border: 1px solid var(--border);
 }
