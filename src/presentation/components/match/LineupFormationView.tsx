@@ -104,7 +104,7 @@ export function LineupFormationView({
               <text
                 x={sx} y={sy - (subText ? 1.5 : 0)}
                 textAnchor="middle" dominantBaseline="middle"
-                fill="#F0F4F8" fontSize={assignedPlayer ? 5.5 : 6} fontWeight="700"
+                fill="#F5F1EB" fontSize={assignedPlayer ? 5.5 : 6} fontWeight="700"
                 fontFamily="system-ui, sans-serif"
               >
                 {displayText}
