@@ -28,9 +28,25 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
       borderRadius: 12,
       padding: '16px',
     }}>
-      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
-        📊 Motståndaranalys
-      </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
+          🔍 Motståndaren
+        </p>
+        {displayAnalysis.level === 'basic' && (
+          <button
+            className="btn btn-ghost"
+            style={{ padding: '4px 10px', fontSize: 12 }}
+            onClick={() => {
+              const result = requestDetailedAnalysis(opponent.id, fixture.id)
+              if (!result.success && result.error) {
+                onError(result.error)
+              }
+            }}
+          >
+            Scouta →
+          </button>
+        )}
+      </div>
 
       <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 8 }}>
         {opponent.name}
@@ -77,22 +93,9 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
       )}
 
       {displayAnalysis.level === 'basic' && (
-        <button
-          onClick={() => {
-            const result = requestDetailedAnalysis(opponent.id, fixture.id)
-            if (!result.success && result.error) {
-              onError(result.error)
-            }
-          }}
-          style={{
-            marginTop: 10, padding: '8px 14px',
-            background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.3)',
-            borderRadius: 8, fontSize: 12, fontWeight: 600, color: 'var(--accent)',
-            cursor: 'pointer', width: '100%',
-          }}
-        >
-          🔎 Fördjupad analys (1 budget · kvar: {game.scoutBudget})
-        </button>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>
+          🔎 Scouta för fördjupad analys (1 budget · kvar: {game.scoutBudget})
+        </p>
       )}
     </div>
   )

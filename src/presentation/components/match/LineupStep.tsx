@@ -105,7 +105,7 @@ export function LineupStep({
             fontWeight: 700,
           }}
         >
-          ⚡ Bästa elvan
+          ✨ Generera bästa elvan
         </button>
       </div>
 

@@ -46,6 +46,9 @@ export function LineupFormationView({
   return (
     <div style={{ padding: '0 16px 12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0, flexShrink: 0 }}>
+          ⚙️ Formation
+        </p>
         <select
           value={formationType}
           onChange={e => {
@@ -97,14 +100,14 @@ export function LineupFormationView({
             >
               <circle
                 cx={sx} cy={sy} r={circleR}
-                fill={isSelected ? 'rgba(196,122,58,0.3)' : assignedPlayer ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.4)'}
+                fill="rgba(255,255,255,0.5)"
                 stroke={isSelected ? 'var(--accent)' : ringColor}
                 strokeWidth={isSelected ? 2 : 1.5}
               />
               <text
                 x={sx} y={sy - (subText ? 1.5 : 0)}
                 textAnchor="middle" dominantBaseline="middle"
-                fill="#F5F1EB" fontSize={assignedPlayer ? 5.5 : 6} fontWeight="700"
+                fill="#1A1A18" fontSize={assignedPlayer ? 5.5 : 6} fontWeight="700"
                 fontFamily="system-ui, sans-serif"
               >
                 {displayText}
