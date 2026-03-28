@@ -51,7 +51,18 @@ Only expand when user taps to start.
 - `src/presentation/components/club/TrainingProjectsCard.tsx` — project display
 - `src/presentation/components/club/TrainingSection.tsx` — daily training
 
-## 5. Verification
+## 5. Ekonomi-tab fixes
+- Remove leather-bars from Kassaöversikt, Sponsorer, Övriga intäkter → use card-sharp + card-label pattern
+- Tighten spacing in kassaöversikt table (reduce padding/margins)
+- Patron + Kommunbidrag: add brief explainer text showing HOW they are earned:
+  - Patron: "Dyker upp vid hög lokal ställning (>60). Donerar en gång per säsong."
+  - Kommunbidrag: "Baseras på lokal ställning och ungdomsverksamhet."
+  - Use `font-size: 11px; color: var(--text-muted); font-style: italic;` under each row
+
+## 6. Klubb-tab (if leather-bars exist there too)
+- Same treatment: remove leather-bars, use card-label pattern
+
+## 7. Verification
 ```bash
 grep -rn "shooting\|workRate\|cornerSkill\|acceleration\|defending" src/presentation/ --include="*.tsx" | grep -v "import\|enum\|interface\|type " | head -20
 # Should return 0 display-facing hits (only data/logic references)
