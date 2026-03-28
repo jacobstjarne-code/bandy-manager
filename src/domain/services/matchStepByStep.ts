@@ -1232,11 +1232,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     events: [],
     homeScore,
     awayScore,
-    commentary: pickCommentary([
-      'FÖRLÄNGNING! Ytterligare 30 minuter avgör. Spelarna samlar sig.',
-      'Det blir förlängning! Benen är tunga men viljan stark.',
-      'Oavgjort efter ordinarie tid — nu avgörs allt i förlängningen.',
-    ], rand),
+    commentary: pickCommentary(commentary.overtimeStart, rand),
     intensity: 'high',
     activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
     shotsHome,
@@ -1313,24 +1309,11 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     const attackingTeam = isHomeAttacking ? homeTeamRef : awayTeamRef
     let commentaryText: string
     if (goalScored && scorerPlayerId) {
-      commentaryText = fillTemplate(pickCommentary([
-        'MÅÅÅL I FÖRLÄNGNINGEN! {player} kan ha avgjort det! {score}!',
-        'DÄR SITTER DEN! {player} i förlängningen! {score}!',
-        'STRAFFVINNAREN! {player} slår till i förlängningen! {score}!',
-      ], rand), { player: findPlayerName(scorerPlayerId), score: otScoreStr, team: attackingTeam, opponent: '', minute: String(minute), goalkeeper: '', rivalry: '', result: '' })
+      commentaryText = fillTemplate(pickCommentary(commentary.overtimeGoal, rand), { player: findPlayerName(scorerPlayerId), score: otScoreStr, team: attackingTeam, opponent: '', minute: String(minute), goalkeeper: '', rivalry: '', result: '' })
     } else if (step === 81) {
-      commentaryText = fillTemplate(pickCommentary([
-        'Förlängningen är slut. Fortfarande {score}.',
-        '30 minuter till — ingen lyckades avgöra. {score}.',
-      ], rand), { score: otScoreStr, team: '', opponent: '', minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
+      commentaryText = fillTemplate(pickCommentary(commentary.overtimeEnd, rand), { score: otScoreStr, team: '', opponent: '', minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
     } else {
-      commentaryText = fillTemplate(pickCommentary([
-        '{team} driver på men hittar ingen väg fram.',
-        'Desperat spel av båda lagen — det är öppet.',
-        'Trötta ben men intensiv match. Vem avgör?',
-        'En ny chans, men den brinner — läktaren håller andan.',
-        'Desperation. {team} trycker men muren håller.',
-      ], rand), { team: attackingTeam, opponent: '', score: otScoreStr, minute: String(minute), player: '', goalkeeper: '', rivalry: '', result: '' })
+      commentaryText = fillTemplate(pickCommentary(commentary.overtimeNoGoal, rand), { team: attackingTeam, opponent: '', score: otScoreStr, minute: String(minute), player: '', goalkeeper: '', rivalry: '', result: '' })
     }
 
     yield {
@@ -1386,11 +1369,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     events: [],
     homeScore,
     awayScore,
-    commentary: pickCommentary([
-      'STRAFFAR! Fortfarande oavgjort! Nu avgör straffarna!',
-      'Det blir straffar! Nerverna är på yttersta spetsen.',
-      'Ingen lyckades avgöra på 120 minuter. Det slutliga avgörandet: straffar.',
-    ], rand),
+    commentary: pickCommentary(commentary.penaltyStart, rand),
     intensity: 'high',
     activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
     shotsHome,
@@ -1416,14 +1395,8 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       awayScore,
       commentary: isLastRound
         ? (runningHome > runningAway
-          ? fillTemplate(pickCommentary([
-              '{team} VINNER STRAFFARNA {penHome}-{penAway}! Vilken dramatik!',
-              'Det är avgjort! {team} tar det på straffar! {penHome}-{penAway}!',
-            ], rand), { team: homeTeamRef, penHome: String(runningHome), penAway: String(runningAway), score: `${homeScore}–${awayScore}`, opponent: awayTeamRef, minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
-          : fillTemplate(pickCommentary([
-              '{team} VINNER STRAFFARNA {penAway}-{penHome}! Vilken dramatik!',
-              'Det är avgjort! {team} tar det på straffar! {penAway}-{penHome}!',
-            ], rand), { team: awayTeamRef, penHome: String(runningHome), penAway: String(runningAway), score: `${homeScore}–${awayScore}`, opponent: homeTeamRef, minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
+          ? fillTemplate(pickCommentary(commentary.penaltyWinHome, rand), { team: homeTeamRef, penHome: String(runningHome), penAway: String(runningAway), score: `${homeScore}–${awayScore}`, opponent: awayTeamRef, minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
+          : fillTemplate(pickCommentary(commentary.penaltyWinAway, rand), { team: awayTeamRef, penHome: String(runningHome), penAway: String(runningAway), score: `${homeScore}–${awayScore}`, opponent: homeTeamRef, minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
         )
         : `Omgång ${penRound.round}: ${penRound.homeShooterName} ${penRound.homeScored ? '✅' : '❌'} · ${penRound.awayShooterName} ${penRound.awayScored ? '✅' : '❌'} — Straffar: ${runningHome}-${runningAway}`,
       intensity: isLastRound ? 'high' : 'medium',

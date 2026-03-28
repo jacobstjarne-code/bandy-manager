@@ -362,6 +362,46 @@ export const commentary = {
     "Isen är i katastrof nu — spelarna glider på vatten.",
     "Blötare och blötare för varje minut. Konditionen avgör nu.",
   ],
+  overtimeStart: [
+    'FÖRLÄNGNING! Ytterligare 30 minuter avgör. Spelarna samlar sig.',
+    'Det blir förlängning! Benen är tunga men viljan stark.',
+    'Oavgjort efter ordinarie tid — nu avgörs allt i förlängningen.',
+  ],
+
+  overtimeGoal: [
+    'MÅÅÅL I FÖRLÄNGNINGEN! {player} kan ha avgjort det! {score}!',
+    'DÄR SITTER DEN! {player} i förlängningen! {score}!',
+    'STRAFFVINNAREN! {player} slår till i förlängningen! {score}!',
+  ],
+
+  overtimeEnd: [
+    'Förlängningen är slut. Fortfarande {score}.',
+    '30 minuter till — ingen lyckades avgöra. {score}.',
+  ],
+
+  overtimeNoGoal: [
+    '{team} driver på men hittar ingen väg fram.',
+    'Desperat spel av båda lagen — det är öppet.',
+    'Trötta ben men intensiv match. Vem avgör?',
+    'En ny chans, men den brinner — läktaren håller andan.',
+    'Desperation. {team} trycker men muren håller.',
+  ],
+
+  penaltyStart: [
+    'STRAFFAR! Fortfarande oavgjort! Nu avgör straffarna!',
+    'Det blir straffar! Nerverna är på yttersta spetsen.',
+    'Ingen lyckades avgöra på 120 minuter. Det slutliga avgörandet: straffar.',
+  ],
+
+  penaltyWinHome: [
+    '{team} VINNER STRAFFARNA {penHome}-{penAway}! Vilken dramatik!',
+    'Det är avgjort! {team} tar det på straffar! {penHome}-{penAway}!',
+  ],
+
+  penaltyWinAway: [
+    '{team} VINNER STRAFFARNA {penAway}-{penHome}! Vilken dramatik!',
+    'Det är avgjort! {team} tar det på straffar! {penAway}-{penHome}!',
+  ],
 }
 
 // Helper to fill in a template
