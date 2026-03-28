@@ -4,36 +4,11 @@ import { getFunctionaryQuote } from '../../../domain/services/functionaryQuoteSe
 interface Props {
   game: SaveGame
   currentRound: number
+  onNavigate?: () => void
 }
 
-function EkgIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 14"
-      width="28"
-      height="16"
-      style={{ animation: 'heartbeat 2s ease-in-out infinite' }}
-    >
-      <polyline
-        points="0,7 5,7 7,2 9,12 11,5 13,9 15,7 24,7"
-        fill="none"
-        stroke="#A25828"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
 
-function trendTag(cs: number, prevCs: number | undefined) {
-  if (prevCs === undefined) return null
-  if (cs > prevCs) return <span className="tag tag-green">↑ stigande</span>
-  if (cs < prevCs) return <span className="tag tag-red">↓ sjunkande</span>
-  return <span className="tag tag-outline">→ stabil</span>
-}
-
-export function CommunityPulse({ game, currentRound }: Props) {
+export function CommunityPulse({ game, currentRound, onNavigate }: Props) {
   const cs = game.communityStanding ?? 50
   const quote = getFunctionaryQuote(game, currentRound, game.lastCompletedFixtureId)
   const ca = game.communityActivities
@@ -55,29 +30,24 @@ export function CommunityPulse({ game, currentRound }: Props) {
   const prevCs = undefined // Could derive from roundSummary if passed in
 
   return (
-    <div className="card-round card-stagger-5" style={{ margin: '0 12px 10px', background: 'rgba(250,247,240,1)' }}>
+    <div className="card-sharp card-stagger-5" style={{ margin: '0 12px 10px' }}>
       <div style={{ padding: 14 }}>
         {/* Header row */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <p className="bm-label" style={{
-              fontSize: 9,
-              fontWeight: 600,
-              letterSpacing: '2.5px',
-              textTransform: 'uppercase',
-              color: 'var(--text-muted)',
-              fontFamily: 'var(--font-body)',
-              margin: 0,
-            }}>
-              Bygdens puls
-            </p>
-            {trendTag(cs, prevCs)}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <EkgIcon />
-            <span style={{ fontSize: 20, fontWeight: 400, color: '#A25828', fontFamily: 'var(--font-display)' }}>
-              {cs}
-            </span>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
+            🏘️ Bygdens puls
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {/* Metric plate */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 5, padding: '2px 7px' }}>
+              <span style={{ fontSize: 11, color: cs > (prevCs ?? cs) ? 'var(--success)' : cs < (prevCs ?? cs) ? 'var(--danger)' : 'var(--text-secondary)', fontWeight: 600 }}>
+                {cs > (prevCs ?? cs) ? '↗' : cs < (prevCs ?? cs) ? '↘' : '→'}
+              </span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{cs}</span>
+            </div>
+            {onNavigate && (
+              <button onClick={(e) => { e.stopPropagation(); onNavigate() }} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: 4, flexShrink: 0, background: 'transparent', border: '1px solid var(--border)', color: 'var(--accent)', fontSize: 12, lineHeight: 1, boxShadow: '0 1px 2px rgba(0,0,0,0.03)', cursor: 'pointer' }}>›</button>
+            )}
           </div>
         </div>
 

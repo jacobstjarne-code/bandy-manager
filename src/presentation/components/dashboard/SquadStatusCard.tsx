@@ -32,6 +32,7 @@ interface SquadStatusCardProps {
   avgFitness: number
   morale: number
   sharpness: number
+  onNavigateToSquad?: () => void
 }
 
 export function SquadStatusCard({
@@ -41,37 +42,28 @@ export function SquadStatusCard({
   avgFitness,
   morale,
   sharpness,
+  onNavigateToSquad,
 }: SquadStatusCardProps) {
   return (
-    <div className="card-sharp card-stagger-4" style={{ margin: '0 12px 10px', overflow: 'hidden' }}>
-      {/* Leather header bar */}
-      <div
-        className="texture-leather"
-        style={{
-          backgroundColor: 'var(--bg-leather)',
-          padding: '7px 14px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <span style={{ color: 'var(--text-light-secondary)', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'var(--font-body)', fontWeight: 600 }}>
-          Truppstatus
-        </span>
-        <div style={{ display: 'flex', gap: 4 }}>
-          <span className="tag" style={{ background: 'rgba(90,154,74,0.15)', color: '#7EB88A', fontSize: 8 }}>
-            {readyCount} redo
-          </span>
-          {injuredCount > 0 && (
-            <span className="tag tag-red" style={{ fontSize: 8 }}>
-              {injuredCount} skadade
-            </span>
-          )}
-        </div>
-      </div>
-
+    <div
+      className="card-sharp card-stagger-4"
+      style={{ margin: '0 12px 10px', overflow: 'hidden', cursor: onNavigateToSquad ? 'pointer' : undefined }}
+      onClick={onNavigateToSquad}
+    >
       {/* Stat bars */}
       <div style={{ padding: '12px 14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
+            👥 Trupp
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className="tag tag-green">{readyCount} redo</span>
+            {injuredCount > 0 && <span className="tag tag-red">{injuredCount} skadade</span>}
+            {onNavigateToSquad && (
+              <button onClick={(e) => { e.stopPropagation(); onNavigateToSquad() }} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 18, height: 18, borderRadius: 4, flexShrink: 0, background: 'transparent', border: '1px solid var(--border)', color: 'var(--accent)', fontSize: 12, lineHeight: 1, boxShadow: '0 1px 2px rgba(0,0,0,0.03)', cursor: 'pointer' }}>›</button>
+            )}
+          </div>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <StatBar
             label="Form"

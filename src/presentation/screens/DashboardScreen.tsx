@@ -100,18 +100,32 @@ function PlayoffBracketCard({ bracket, game }: PlayoffBracketCardProps) {
 
   const champion = bracket.champion ? game.clubs.find(c => c.id === bracket.champion) : null
 
+  const navigate = useNavigate()
+
   return (
     <div className="card-sharp card-stagger-3" style={{ margin: '0 12px 10px', overflow: 'hidden' }}>
-      <div
-        className="texture-leather"
-        style={{ backgroundColor: 'var(--bg-leather)', padding: '7px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-      >
-        <span style={{ color: 'var(--text-light-secondary)', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'var(--font-body)', fontWeight: 600 }}>
-          Slutspel
-        </span>
-        <span className="tag tag-fill">{statusLabel}</span>
+      <div style={{ padding: '12px 14px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
+            ⚔️ SLUTSPEL
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className="tag tag-fill">{statusLabel}</span>
+            <button
+              onClick={(e) => { e.stopPropagation(); navigate('/game/tabell') }}
+              style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                background: 'transparent', border: '1px solid var(--border)',
+                color: 'var(--accent)', fontSize: 12, lineHeight: 1,
+                boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                cursor: 'pointer',
+              }}
+            >›</button>
+          </div>
+        </div>
       </div>
-      <div style={{ padding: '12px 14px' }}>
+      <div style={{ padding: '0 14px 12px' }}>
         {bracket.status === PlayoffStatus.Completed && champion ? (
           <div style={{ textAlign: 'center', padding: '8px 0' }}>
             <span style={{ fontSize: 24 }}>🏆</span>
@@ -207,11 +221,15 @@ function CupCard({ bracket, game }: CupCardProps) {
 
   return (
     <div className="card-sharp card-stagger-3" style={{ margin: '0 12px 10px', overflow: 'hidden' }}>
-      <div className="texture-leather" style={{ backgroundColor: 'var(--bg-leather)', padding: '7px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ color: 'var(--text-light-secondary)', fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'var(--font-body)', fontWeight: 600 }}>🏆 Svenska Cupen</span>
-        {!bracket.completed && !cupStatus.eliminated && <span className="tag tag-copper">{stageLabel}</span>}
+      <div style={{ padding: '12px 14px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
+            🏆 SVENSKA CUPEN
+          </p>
+          {!bracket.completed && !cupStatus.eliminated && <span className="tag tag-copper">{stageLabel}</span>}
+        </div>
       </div>
-      <div style={{ padding: '12px 14px' }}>{statusContent}</div>
+      <div style={{ padding: '0 14px 12px' }}>{statusContent}</div>
     </div>
   )
 }
@@ -661,10 +679,23 @@ export function DashboardScreen() {
                   SLUTSPEL
                 </span>
               )}
-              <div style={{ padding: '12px 12px 10px' }}>
-                <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: '0 0 6px' }}>
-                  Tabell
-                </p>
+              <div style={{ padding: '14px 12px 10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
+                    📊 Tabell
+                  </p>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); navigate('/game/tabell') }}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                      background: 'transparent', border: '1px solid var(--border)',
+                      color: 'var(--accent)', fontSize: 12, lineHeight: 1,
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                      cursor: 'pointer',
+                    }}
+                  >›</button>
+                </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
                   <span style={{ fontSize: 36, fontWeight: 400, color: 'var(--accent-dark)', lineHeight: 1, fontFamily: 'var(--font-display)' }}>
                     {standing.position}
@@ -715,10 +746,11 @@ export function DashboardScreen() {
           avgFitness={avgFitness}
           morale={morale}
           sharpness={sharpness}
+          onNavigateToSquad={() => navigate('/game/squad')}
         />
 
         {/* Bygdens Puls */}
-        <CommunityPulse game={game} currentRound={currentRound} />
+        <CommunityPulse game={game} currentRound={currentRound} onNavigate={() => navigate('/game/club', { state: { tab: 'community' } })} />
 
         {/* Contextual nudges */}
         <ContextualNudges game={game} currentRound={currentRound} />
@@ -739,9 +771,22 @@ export function DashboardScreen() {
                   {Math.abs(finances) >= 1_000_000 ? `${(finances / 1_000_000).toFixed(1)} mkr` : `${Math.round(finances / 1_000)} tkr`}
                 </span>
               </div>
-              <span style={{ fontSize: 12, fontWeight: 700, color: netPerRound >= 0 ? 'var(--success-light)' : 'var(--danger-text)', fontFamily: 'var(--font-body)' }}>
-                {formatTkr(netPerRound)}/omg
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: netPerRound >= 0 ? 'var(--success-light)' : 'var(--danger-text)', fontFamily: 'var(--font-body)' }}>
+                  {formatTkr(netPerRound)}/omg
+                </span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate('/game/club', { state: { tab: 'ekonomi' } }) }}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                    background: 'transparent', border: '1px solid var(--border)',
+                    color: 'var(--accent)', fontSize: 12, lineHeight: 1,
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                    cursor: 'pointer',
+                  }}
+                >›</button>
+              </div>
             </div>
             {activeIcons.length > 0 && (
               <div style={{ display: 'flex', gap: 5, marginTop: 6 }}>
@@ -765,35 +810,60 @@ export function DashboardScreen() {
             style={{ margin: '0 12px 10px', cursor: 'pointer' }}
             onClick={() => navigate('/game/inbox')}
           >
-            <div style={{ padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
-                <span className="tag tag-fill" style={{ animation: 'breatheDot 2s ease-in-out infinite', flexShrink: 0 }}>
-                  {unread.length}
-                </span>
-                <p style={{ fontSize: 12, color: 'var(--bg-leather)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: 'var(--font-body)' }}>
-                  {latestUnread.title}
-                </p>
+            <div style={{ padding: '10px 14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0, flexShrink: 0 }}>
+                    📬 Inkorg
+                  </p>
+                  <span className="tag tag-fill" style={{ animation: 'breatheDot 2s ease-in-out infinite', flexShrink: 0 }}>
+                    {unread.length}
+                  </span>
+                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {latestUnread.title}
+                  </p>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate('/game/inbox') }}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                    background: 'transparent', border: '1px solid var(--border)',
+                    color: 'var(--accent)', fontSize: 12, lineHeight: 1,
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                    cursor: 'pointer', marginLeft: 8,
+                  }}
+                >›</button>
               </div>
-              <button className="btn btn-outline" style={{ flexShrink: 0, marginLeft: 6, fontSize: 11, padding: '5px 12px' }}>
-                Inkorg →
-              </button>
             </div>
           </div>
         )}
 
         {/* P17 sharp card */}
         {game.youthTeam && (
-          <div className="card-sharp" style={{ margin: '0 12px 10px' }}>
-            <div style={{ padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span className="tag tag-outline">🎓 P17</span>
-                <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
-                  {game.youthTeam.tablePosition}:a · {game.youthTeam.seasonRecord.w}V {game.youthTeam.seasonRecord.d}O {game.youthTeam.seasonRecord.l}F
-                </span>
+          <div className="card-sharp" style={{ margin: '0 12px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'akademi' } })}>
+            <div style={{ padding: '10px 14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
+                    🎓 Akademi
+                  </p>
+                  <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
+                    P17 · {game.youthTeam.tablePosition}:a · {game.youthTeam.seasonRecord.w}V {game.youthTeam.seasonRecord.d}O {game.youthTeam.seasonRecord.l}F
+                  </span>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate('/game/club', { state: { tab: 'akademi' } }) }}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                    background: 'transparent', border: '1px solid var(--border)',
+                    color: 'var(--accent)', fontSize: 12, lineHeight: 1,
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                    cursor: 'pointer',
+                  }}
+                >›</button>
               </div>
-              <button className="btn btn-ghost" style={{ fontSize: 10, padding: '4px 10px' }} onClick={e => { e.stopPropagation(); navigate('/game/club', { state: { tab: 'akademi' } }) }}>
-                Akademi →
-              </button>
             </div>
           </div>
         )}
@@ -811,14 +881,35 @@ export function DashboardScreen() {
         {(() => {
           const questionsLeft = Math.max(0, 5 - (game.doctorQuestionsUsed ?? 0))
           return (
-            <button
+            <div
+              className="card-sharp"
+              style={{ margin: '0 12px 4px', cursor: 'pointer' }}
               onClick={() => navigate('/game/doctor')}
-              className="btn btn-ghost"
-              style={{ width: 'calc(100% - 24px)', margin: '0 12px 4px', padding: '11px 14px', justifyContent: 'space-between', borderRadius: 10 }}
             >
-              <span>🩺 Bandydoktorn</span>
-              <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>{questionsLeft} frågor kvar →</span>
-            </button>
+              <div style={{ padding: '10px 14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
+                    🩺 Bandydoktorn
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
+                      {questionsLeft} frågor kvar
+                    </span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); navigate('/game/doctor') }}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                        width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                        background: 'transparent', border: '1px solid var(--border)',
+                        color: 'var(--accent)', fontSize: 12, lineHeight: 1,
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                        cursor: 'pointer',
+                      }}
+                    >›</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           )
         })()}
 

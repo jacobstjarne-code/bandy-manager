@@ -152,7 +152,7 @@ export function NextMatchCard({
     headerTagStyle = { background: 'rgba(196,122,58,0.15)', color: '#D4A850', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,122,58,0.2)' }
   } else if (isDerby) {
     headerIcon = derbyIntense ? '🔥' : '⚔️'
-    headerLabel = rivalry!.name
+    headerLabel = 'Nästa match'
     headerTagText = 'DERBY'
     headerTagStyle = { background: 'rgba(196,80,50,0.2)', color: '#E8A090', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,80,50,0.3)' }
   } else if (isAnnandagen) {
@@ -237,6 +237,11 @@ export function NextMatchCard({
 
       {/* Match body */}
       <div style={{ padding: '10px 12px' }}>
+        {isDerby && (
+          <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--danger)', fontWeight: 600, marginBottom: 6, fontFamily: 'var(--font-body)' }}>
+            🔥 {rivalry!.name} · Intensitet {rivalry!.intensity}
+          </p>
+        )}
         {/* Crests + vs */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 0' }}>
           {/* My club */}
