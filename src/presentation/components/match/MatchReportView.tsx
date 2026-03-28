@@ -99,12 +99,12 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
           </p>
         </div>
         {fixture.wentToPenalties && fixture.penaltyResult && (
-          <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600, marginTop: 2 }}>
+          <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginTop: 2 }}>
             efter straffar ({fixture.penaltyResult.home}-{fixture.penaltyResult.away})
           </p>
         )}
         {fixture.wentToOvertime && !fixture.wentToPenalties && (
-          <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600, marginTop: 2 }}>
+          <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginTop: 2 }}>
             efter förlängning
           </p>
         )}
@@ -117,7 +117,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
           ] : []
           const series = allSeries.find(s => s.fixtures.includes(fixture.id))
           return (
-            <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 700 }}>
+            <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 700 }}>
               {series ? getPlayoffRoundLabel(series.round) : 'SLUTSPEL'}
             </p>
           )
@@ -157,12 +157,12 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
                 </span>
                 <span style={{
                   fontSize: 13, flex: 1, textAlign: isHome ? 'left' : 'right',
-                  color: event.isCornerGoal ? '#C9A84C' : undefined,
+                  color: event.isCornerGoal ? 'var(--accent)' : undefined,
                   fontWeight: event.isCornerGoal ? 600 : undefined,
                 }}>
                   {event.isCornerGoal ? '📐 ' : ''}
                   {event.playerId
-                    ? <PlayerLink playerId={event.playerId} name={getPlayerName(event.playerId)} style={{ color: event.isCornerGoal ? '#C9A84C' : undefined }} />
+                    ? <PlayerLink playerId={event.playerId} name={getPlayerName(event.playerId)} style={{ color: event.isCornerGoal ? 'var(--accent)' : undefined }} />
                     : getEventText(event)
                   }
                   {event.playerId && event.type === MatchEventType.Goal && ' 🔴'}
@@ -204,12 +204,12 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
       {/* Corner goals highlight */}
       {managedCornerGoals > 0 && (
         <div style={{
-          background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.3)',
+          background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.3)',
           borderRadius: 'var(--radius)', padding: '10px 14px', marginBottom: 16,
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <span style={{ fontSize: 16 }}>📐</span>
-          <span style={{ fontSize: 13, color: '#C9A84C', fontWeight: 600 }}>
+          <span style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 600 }}>
             {managedCornerGoals} hörnmål — {managedCorners}–{oppCorners} hörnor totalt
           </span>
         </div>
@@ -234,22 +234,22 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
             return (
               <div style={{
                 display: 'flex', alignItems: 'center', padding: '12px 14px',
-                background: 'linear-gradient(135deg, rgba(201,168,76,0.18) 0%, rgba(201,168,76,0.06) 100%)',
-                borderBottom: '1px solid rgba(201,168,76,0.3)', gap: 10,
+                background: 'linear-gradient(135deg, rgba(196,122,58,0.18) 0%, rgba(196,122,58,0.06) 100%)',
+                borderBottom: '1px solid rgba(196,122,58,0.3)', gap: 10,
               }}>
                 <span style={{ fontSize: 20 }}>⭐</span>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: '#C9A84C', marginBottom: 2 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--accent)', marginBottom: 2 }}>
                     Matchens spelare
                   </div>
-                  <span style={{ fontSize: 15, fontWeight: 700, color: '#C9A84C' }}>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--accent)' }}>
                     {potm.player.firstName} {potm.player.lastName}
                   </span>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 6 }}>
                     {positionShort(potm.player.position)}
                   </span>
                 </div>
-                <span style={{ fontSize: 18, fontWeight: 800, color: '#C9A84C' }}>
+                <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--accent)' }}>
                   {potm.rating.toFixed(1)}
                 </span>
               </div>

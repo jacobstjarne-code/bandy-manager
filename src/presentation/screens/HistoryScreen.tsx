@@ -96,15 +96,15 @@ export function HistoryScreen() {
                 key={s.season}
                 className={`card-stagger-${Math.min(i + 1, 6)}`}
                 style={{
-                  background: isGold ? 'linear-gradient(135deg, rgba(201,168,76,0.12), rgba(201,168,76,0.04))' : 'var(--bg-surface)',
-                  border: isGold ? '1px solid rgba(201,168,76,0.4)' : '1px solid var(--border)',
+                  background: isGold ? 'linear-gradient(135deg, rgba(196,122,58,0.12), rgba(196,122,58,0.04))' : 'var(--bg-surface)',
+                  border: isGold ? '1px solid rgba(196,122,58,0.4)' : '1px solid var(--border)',
                   borderRadius: 'var(--radius)',
                   padding: '16px',
                 }}
               >
                 <p style={{
                   fontSize: 11, fontWeight: 700, letterSpacing: '1.2px',
-                  textTransform: 'uppercase', color: isGold ? '#C9A84C' : 'var(--text-muted)',
+                  textTransform: 'uppercase', color: isGold ? 'var(--accent)' : 'var(--text-muted)',
                   marginBottom: 10,
                 }}>
                   ── Säsong {s.season} ──
@@ -117,7 +117,7 @@ export function HistoryScreen() {
                     {s.finalPosition <= 3 && <span style={{ marginLeft: 6 }}>{['🥇','🥈','🥉'][s.finalPosition - 1]}</span>}
                   </p>
                   <p style={{ fontSize: 14 }}>
-                    🏒 SM: <span style={{ color: isGold ? '#C9A84C' : 'var(--text-primary)', fontWeight: isGold ? 700 : 500 }}>
+                    🏒 SM: <span style={{ color: isGold ? 'var(--accent)' : 'var(--text-primary)', fontWeight: isGold ? 700 : 500 }}>
                       {playoffLabel(s.playoffResult)}
                     </span>
                   </p>
@@ -145,7 +145,7 @@ export function HistoryScreen() {
                   )}
                   <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                     💰 Ekonomi: {formatFinances(s.startFinances)} → {formatFinances(s.endFinances)}{' '}
-                    <span style={{ color: s.financialChange >= 0 ? '#22c55e' : '#ef4444', fontWeight: 600 }}>
+                    <span style={{ color: s.financialChange >= 0 ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>
                       ({s.financialChange >= 0 ? '+' : ''}{formatFinances(s.financialChange)})
                     </span>
                   </p>
@@ -166,8 +166,8 @@ export function HistoryScreen() {
       }}>
         <p style={{
           fontSize: 12, fontWeight: 700, letterSpacing: '2px',
-          textTransform: 'uppercase', color: '#C9A84C', marginBottom: 18,
-          borderBottom: '1px solid rgba(201,168,76,0.25)', paddingBottom: 10,
+          textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 18,
+          borderBottom: '1px solid rgba(196,122,58,0.25)', paddingBottom: 10,
         }}>
           ── Hall of Fame ──
         </p>
@@ -181,7 +181,7 @@ export function HistoryScreen() {
               <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid var(--border)' }}>
                 <span style={{ fontSize: 12, color: 'var(--text-muted)', width: 16 }}>{i + 1}.</span>
                 <PlayerLink playerId={p.id} name={`${p.firstName} ${p.lastName}`} style={{ fontSize: 13 }} />
-                <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 700, color: '#C9A84C' }}>{p.careerStats.totalGoals}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 700, color: 'var(--accent)' }}>{p.careerStats.totalGoals}</span>
               </div>
             ))}
           </div>
@@ -196,7 +196,7 @@ export function HistoryScreen() {
               <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid var(--border)' }}>
                 <span style={{ fontSize: 12, color: 'var(--text-muted)', width: 16 }}>{i + 1}.</span>
                 <PlayerLink playerId={p.id} name={`${p.firstName} ${p.lastName}`} style={{ fontSize: 13 }} />
-                <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 700, color: '#C9A84C' }}>{p.careerStats.totalGames}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 700, color: 'var(--accent)' }}>{p.careerStats.totalGames}</span>
               </div>
             ))}
           </div>
@@ -211,7 +211,7 @@ export function HistoryScreen() {
               <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < topByRating.length - 1 ? '1px solid var(--border)' : 'none' }}>
                 <span style={{ fontSize: 12, color: 'var(--text-muted)', width: 16 }}>{i + 1}.</span>
                 <PlayerLink playerId={p.id} name={`${p.firstName} ${p.lastName}`} style={{ fontSize: 13 }} />
-                <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 700, color: '#C9A84C' }}>{avg.toFixed(1)}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 14, fontWeight: 700, color: 'var(--accent)' }}>{avg.toFixed(1)}</span>
               </div>
             ))}
           </div>

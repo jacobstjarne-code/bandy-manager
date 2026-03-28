@@ -35,7 +35,7 @@ export function GuidanceBanner({
               marginLeft: 10,
               background: 'none',
               border: 'none',
-              color: '#C9A84C',
+              color: 'var(--accent)',
               fontSize: 13,
               fontWeight: 700,
               cursor: 'pointer',
@@ -67,7 +67,7 @@ export function GuidanceBanner({
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>📋 Ny matchrapport tillgänglig. Klicka för att se rapporten</span>
-          <span style={{ marginLeft: 10, color: '#C9A84C', fontWeight: 700 }}>→</span>
+          <span style={{ marginLeft: 10, color: 'var(--accent)', fontWeight: 700 }}>→</span>
         </div>
       </div>
     )
@@ -76,7 +76,7 @@ export function GuidanceBanner({
   return (
     <div className="card-stagger-5" style={{
       fontSize: 13,
-      color: '#22c55e',
+      color: 'var(--success)',
       fontWeight: 600,
       marginBottom: 12,
       padding: '10px 14px',

@@ -39,10 +39,10 @@ export class ErrorBoundary extends Component<Props, State> {
             style={{
               marginTop: 8,
               padding: '10px 24px',
-              background: 'rgba(201,168,76,0.15)',
-              border: '1px solid rgba(201,168,76,0.4)',
+              background: 'rgba(196,122,58,0.15)',
+              border: '1px solid rgba(196,122,58,0.4)',
               borderRadius: 8,
-              color: '#C9A84C',
+              color: 'var(--accent)',
               fontSize: 13,
               fontWeight: 700,
               cursor: 'pointer',

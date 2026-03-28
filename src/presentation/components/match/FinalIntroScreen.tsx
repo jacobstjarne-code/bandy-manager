@@ -11,7 +11,7 @@ import { GoldConfetti } from './GoldConfetti'
 
 const introBtn: React.CSSProperties = {
   padding: '14px 32px',
-  background: '#C9A84C',
+  background: 'var(--accent)',
   border: 'none',
   borderRadius: 12,
   color: 'var(--bg-dark)',
@@ -23,7 +23,7 @@ const introBtn: React.CSSProperties = {
 
 const startBtn: React.CSSProperties = {
   padding: '16px',
-  background: '#C9A84C',
+  background: 'var(--accent)',
   border: 'none',
   borderRadius: 12,
   color: 'var(--bg-dark)',
@@ -94,7 +94,7 @@ export function FinalIntroScreen({
             <p style={{
               fontSize: 12,
               fontWeight: 700,
-              color: '#C9A84C',
+              color: 'var(--accent)',
               letterSpacing: '3px',
               textTransform: 'uppercase',
               marginBottom: 4,
@@ -103,7 +103,7 @@ export function FinalIntroScreen({
           <h1 style={{
             fontSize: 28,
             fontWeight: 900,
-            color: variant === 'sm' ? '#C9A84C' : 'var(--text-light)',
+            color: variant === 'sm' ? 'var(--accent)' : 'var(--text-light)',
             letterSpacing: '3px',
             textTransform: 'uppercase',
             marginBottom: 8,
@@ -115,7 +115,7 @@ export function FinalIntroScreen({
           )}
           <p style={{ fontSize: 14, color: 'rgba(245,241,235,0.35)', marginBottom: 4 }}>Säsong {season}</p>
           {variant === 'cup' && (
-            <p style={{ fontSize: 16, color: '#C9A84C', fontWeight: 700, marginBottom: 4 }}>
+            <p style={{ fontSize: 16, color: 'var(--accent)', fontWeight: 700, marginBottom: 4 }}>
               {truncate(homeClubName, 14)}  vs  {truncate(awayClubName, 14)}
             </p>
           )}
@@ -152,12 +152,12 @@ export function FinalIntroScreen({
         }}>
           <p style={{
             fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
-            color: '#C9A84C', textAlign: 'center', marginBottom: 24,
+            color: 'var(--accent)', textAlign: 'center', marginBottom: 24,
           }}>LAGPRESENTATION</p>
           <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
             <div style={{
-              flex: 1, background: 'rgba(201,168,76,0.06)',
-              border: '1px solid rgba(201,168,76,0.2)', borderRadius: 12, padding: '16px 12px', textAlign: 'center',
+              flex: 1, background: 'rgba(196,122,58,0.06)',
+              border: '1px solid rgba(196,122,58,0.2)', borderRadius: 12, padding: '16px 12px', textAlign: 'center',
             }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-light)', marginBottom: 8 }}>
                 {truncate(homeClubName, 14)}
@@ -170,8 +170,8 @@ export function FinalIntroScreen({
               <p style={{ fontSize: 11, color: 'rgba(245,241,235,0.35)', lineHeight: 1.4 }}>{homeJourney}</p>
             </div>
             <div style={{
-              flex: 1, background: 'rgba(201,168,76,0.06)',
-              border: '1px solid rgba(201,168,76,0.2)', borderRadius: 12, padding: '16px 12px', textAlign: 'center',
+              flex: 1, background: 'rgba(196,122,58,0.06)',
+              border: '1px solid rgba(196,122,58,0.2)', borderRadius: 12, padding: '16px 12px', textAlign: 'center',
             }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-light)', marginBottom: 8 }}>
                 {truncate(awayClubName, 14)}
@@ -197,11 +197,11 @@ export function FinalIntroScreen({
       }}>
         <p style={{
           fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
-          color: '#C9A84C', textAlign: 'center', marginBottom: 24,
+          color: 'var(--accent)', textAlign: 'center', marginBottom: 24,
         }}>STARTELVORNA</p>
         <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
               {truncate(homeClubName, 14)}
             </p>
             {homeStarters.map((p, i) => p && (
@@ -212,7 +212,7 @@ export function FinalIntroScreen({
           </div>
           <div style={{ width: 1, background: 'rgba(196,186,168,0.15)' }} />
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
               {truncate(awayClubName, 14)}
             </p>
             {awayStarters.map((p, i) => p && (
@@ -242,11 +242,11 @@ export function FinalIntroScreen({
     }}>
       <p style={{
         fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
-        color: '#C9A84C', textAlign: 'center', marginBottom: 24,
+        color: 'var(--accent)', textAlign: 'center', marginBottom: 24,
       }}>STARTELVOR</p>
       <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
+          <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
             {truncate(homeClubName, 14)}
           </p>
           {homeStarters.map((p, i) => p && (
@@ -257,7 +257,7 @@ export function FinalIntroScreen({
         </div>
         <div style={{ width: 1, background: 'rgba(196,186,168,0.15)' }} />
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
+          <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginBottom: 8, textAlign: 'center' }}>
             {truncate(awayClubName, 14)}
           </p>
           {awayStarters.map((p, i) => p && (

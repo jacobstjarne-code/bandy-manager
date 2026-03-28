@@ -73,7 +73,7 @@ export function PreSeasonScreen() {
         <div style={{ textAlign: 'center', marginBottom: 8 }}>
           <p style={{
             fontSize: 11, fontWeight: 700, letterSpacing: '2px',
-            textTransform: 'uppercase', color: '#C9A84C', marginBottom: 6,
+            textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 6,
           }}>
             FÖRSÄSONG
           </p>
@@ -89,7 +89,7 @@ export function PreSeasonScreen() {
             background: 'var(--bg-elevated)', border: '1px solid var(--border)',
             borderRadius: 12, padding: '14px 16px',
           }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#22c55e', marginBottom: 8 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--success)', marginBottom: 8 }}>
               🌱 Ungdomsintag
             </p>
             <p style={{ fontSize: 14, color: 'var(--text-primary)', marginBottom: 4 }}>
@@ -97,7 +97,7 @@ export function PreSeasonScreen() {
             </p>
             {topProspect && (
               <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                Mest lovande: <strong style={{ color: '#C9A84C' }}>
+                Mest lovande: <strong style={{ color: 'var(--accent)' }}>
                   {topProspect.firstName} {topProspect.lastName}
                 </strong>{' '}
                 ({topProspect.position}, potential {Math.round(topProspect.potentialAbility)})
@@ -115,7 +115,7 @@ export function PreSeasonScreen() {
             📋 Truppen
           </p>
           <p style={{ fontSize: 14, color: 'var(--text-primary)' }}>
-            {managedPlayers.length} spelare · Snitt-styrka: <strong style={{ color: '#C9A84C' }}>{avgCA}</strong>
+            {managedPlayers.length} spelare · Snitt-styrka: <strong style={{ color: 'var(--accent)' }}>{avgCA}</strong>
           </p>
         </div>
 
@@ -164,7 +164,7 @@ export function PreSeasonScreen() {
           border: '1px solid rgba(196,122,58,0.2)',
           borderRadius: 12, padding: '14px 16px',
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 8 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
             🔮 Styrelsens förväntning
           </p>
           <p style={{ fontSize: 14, color: 'var(--text-primary)', fontStyle: 'italic' }}>
@@ -198,10 +198,10 @@ export function PreSeasonScreen() {
                 onClick={() => setPriority(opt.val)}
                 style={{
                   flex: 1, padding: '8px 4px', fontSize: 11, fontWeight: 700,
-                  background: priority === opt.val ? 'rgba(201,168,76,0.2)' : 'transparent',
-                  border: priority === opt.val ? '1px solid rgba(201,168,76,0.4)' : '1px solid transparent',
+                  background: priority === opt.val ? 'rgba(196,122,58,0.2)' : 'transparent',
+                  border: priority === opt.val ? '1px solid rgba(196,122,58,0.4)' : '1px solid transparent',
                   borderRadius: 6,
-                  color: priority === opt.val ? '#C9A84C' : 'var(--text-muted)',
+                  color: priority === opt.val ? 'var(--accent)' : 'var(--text-muted)',
                   cursor: 'pointer',
                 }}
               >{opt.label}</button>

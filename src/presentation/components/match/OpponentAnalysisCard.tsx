@@ -59,17 +59,17 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
       {displayAnalysis.level === 'detailed' && (
         <>
           {displayAnalysis.strengths.length > 0 && (
-            <p style={{ fontSize: 12, color: '#22c55e', marginBottom: 4 }}>
+            <p style={{ fontSize: 12, color: 'var(--success)', marginBottom: 4 }}>
               ✅ {displayAnalysis.strengths.join(', ')}
             </p>
           )}
           {displayAnalysis.weaknesses.length > 0 && (
-            <p style={{ fontSize: 12, color: '#ef4444', marginBottom: 4 }}>
+            <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 4 }}>
               ⚠️ {displayAnalysis.weaknesses.join(', ')}
             </p>
           )}
           {displayAnalysis.recommendation && (
-            <p style={{ fontSize: 12, color: '#C9A84C', marginTop: 8, fontStyle: 'italic' }}>
+            <p style={{ fontSize: 12, color: 'var(--accent)', marginTop: 8, fontStyle: 'italic' }}>
               💡 {displayAnalysis.recommendation}
             </p>
           )}
@@ -86,8 +86,8 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
           }}
           style={{
             marginTop: 10, padding: '8px 14px',
-            background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)',
-            borderRadius: 8, fontSize: 12, fontWeight: 600, color: '#C9A84C',
+            background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.3)',
+            borderRadius: 8, fontSize: 12, fontWeight: 600, color: 'var(--accent)',
             cursor: 'pointer', width: '100%',
           }}
         >

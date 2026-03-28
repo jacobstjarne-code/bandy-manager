@@ -45,7 +45,7 @@ export function CeremonySmFinal({
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         zIndex: 300,
       }}>
-        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 24 }}>
+        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 24 }}>
           SM-FINAL
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
@@ -83,7 +83,7 @@ export function CeremonySmFinal({
             <>
               <div style={{ fontSize: 80, marginBottom: 16 }}>🏆</div>
               <h1 style={{
-                fontSize: 28, fontWeight: 900, color: '#C9A84C', letterSpacing: '2px',
+                fontSize: 28, fontWeight: 900, color: 'var(--accent)', letterSpacing: '2px',
                 textTransform: 'uppercase', marginBottom: 12,
                 animation: 'goldPulse 2s ease-in-out infinite',
               }}>
@@ -106,7 +106,7 @@ export function CeremonySmFinal({
             onClick={onAdvance}
             style={{
               padding: '14px 32px', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer',
-              background: managedWon ? '#C9A84C' : 'var(--bg-dark-surface)',
+              background: managedWon ? 'var(--accent)' : 'var(--bg-dark-surface)',
               color: managedWon ? 'var(--bg-dark)' : 'var(--text-light)',
             }}
           >
@@ -136,7 +136,7 @@ export function CeremonySmFinal({
       zIndex: 300,
     }}>
       <div style={{ textAlign: 'center', padding: '0 24px' }}>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 24 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 24 }}>
           MATCHENS SPELARE
         </p>
         <div style={{ fontSize: 56, marginBottom: 16 }}>⭐</div>
@@ -146,12 +146,12 @@ export function CeremonySmFinal({
             {mvpPos}
           </p>
         )}
-        <p style={{ fontSize: 32, fontWeight: 800, color: '#C9A84C', marginBottom: 32, fontFamily: 'var(--font-display)' }}>
+        <p style={{ fontSize: 32, fontWeight: 800, color: 'var(--accent)', marginBottom: 32, fontFamily: 'var(--font-display)' }}>
           {typeof mvpRating === 'number' ? mvpRating.toFixed(1) : '–'}
         </p>
         <button
           onClick={onNavigate}
-          style={{ padding: '16px 32px', background: '#C9A84C', border: 'none', borderRadius: 12, color: 'var(--bg-dark)', fontSize: 16, fontWeight: 800, cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase' }}
+          style={{ padding: '16px 32px', background: 'var(--accent)', border: 'none', borderRadius: 12, color: 'var(--bg-dark)', fontSize: 16, fontWeight: 800, cursor: 'pointer', letterSpacing: '1px', textTransform: 'uppercase' }}
         >
           Säsongsavslutning →
         </button>

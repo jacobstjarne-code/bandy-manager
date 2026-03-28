@@ -80,9 +80,9 @@ export function LineupFormationView({
 
           let ringColor = '#3b82f6'
           if (assignedPlayer) {
-            if (assignedPlayer.position === slot.position) ringColor = '#22c55e'
-            else if (ADJACENT_POS[assignedPlayer.position]?.includes(slot.position)) ringColor = '#f59e0b'
-            else ringColor = '#ef4444'
+            if (assignedPlayer.position === slot.position) ringColor = 'var(--success)'
+            else if (ADJACENT_POS[assignedPlayer.position]?.includes(slot.position)) ringColor = 'var(--warning)'
+            else ringColor = 'var(--danger)'
           }
 
           const circleR = 11
@@ -97,8 +97,8 @@ export function LineupFormationView({
             >
               <circle
                 cx={sx} cy={sy} r={circleR}
-                fill={isSelected ? 'rgba(201,168,76,0.3)' : assignedPlayer ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.4)'}
-                stroke={isSelected ? '#C9A84C' : ringColor}
+                fill={isSelected ? 'rgba(196,122,58,0.3)' : assignedPlayer ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.4)'}
+                stroke={isSelected ? 'var(--accent)' : ringColor}
                 strokeWidth={isSelected ? 2 : 1.5}
               />
               <text
@@ -124,7 +124,7 @@ export function LineupFormationView({
       </BandyPitch>
 
       {selectedSlotId && (
-        <p style={{ fontSize: 12, color: '#C9A84C', textAlign: 'center', marginTop: 6, fontWeight: 600 }}>
+        <p style={{ fontSize: 12, color: 'var(--accent)', textAlign: 'center', marginTop: 6, fontWeight: 600 }}>
           Väljer spelare till: {template.slots.find(s => s.id === selectedSlotId)?.label ?? selectedSlotId} — klicka på en spelare nedan
         </p>
       )}

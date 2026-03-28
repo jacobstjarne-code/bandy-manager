@@ -51,8 +51,8 @@ export function TabellScreen() {
   }
 
   function getRowBorderColor(position: number): string {
-    if (position <= 3) return '#C9A84C'
-    if (position <= 8) return 'rgba(201,168,76,0.4)'
+    if (position <= 3) return 'var(--accent)'
+    if (position <= 8) return 'rgba(196,122,58,0.4)'
     if (position <= 10) return 'transparent'
     return 'rgba(239,68,68,0.6)'
   }
@@ -88,13 +88,13 @@ export function TabellScreen() {
       {/* Summary card for managed club */}
       {myRow && (
         <div style={{
-          background: 'rgba(201,168,76,0.06)',
-          border: '1px solid rgba(201,168,76,0.2)',
+          background: 'rgba(196,122,58,0.06)',
+          border: '1px solid rgba(196,122,58,0.2)',
           borderRadius: 10,
           padding: '10px 14px',
           marginBottom: 12,
           fontSize: 12,
-          color: '#C9A84C',
+          color: 'var(--accent)',
           display: 'flex',
           gap: 6,
           flexWrap: 'wrap',
@@ -157,13 +157,13 @@ export function TabellScreen() {
               {row.position === 9 && (
                 <div style={{
                   padding: '5px 10px',
-                  borderTop: '1px solid rgba(201,168,76,0.4)',
+                  borderTop: '1px solid rgba(196,122,58,0.4)',
                   fontSize: 9,
                   fontWeight: 700,
                   letterSpacing: '1px',
                   textTransform: 'uppercase',
-                  color: 'rgba(201,168,76,0.6)',
-                  background: 'rgba(201,168,76,0.03)',
+                  color: 'rgba(196,122,58,0.6)',
+                  background: 'rgba(196,122,58,0.03)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
@@ -203,9 +203,9 @@ export function TabellScreen() {
                   borderTop: i === 0 ? 'none' : '1px solid var(--border)',
                   borderLeft: `3px solid ${getRowBorderColor(row.position)}`,
                   background: isManaged
-                    ? 'linear-gradient(90deg, rgba(201,168,76,0.12) 0%, rgba(201,168,76,0.04) 100%)'
+                    ? 'linear-gradient(90deg, rgba(196,122,58,0.12) 0%, rgba(196,122,58,0.04) 100%)'
                     : isTop3
-                    ? 'rgba(201,168,76,0.05)'
+                    ? 'rgba(196,122,58,0.05)'
                     : row.position >= 11
                     ? 'rgba(239,68,68,0.04)'
                     : 'transparent',
@@ -217,14 +217,14 @@ export function TabellScreen() {
                   <span style={{
                     fontSize: 13,
                     fontWeight: 700,
-                    color: isTop3 ? '#C9A84C' : 'var(--text-muted)',
+                    color: isTop3 ? 'var(--accent)' : 'var(--text-muted)',
                   }}>
                     {row.position}
                   </span>
                   {posDiff !== null && posDiff !== 0 && (
                     <span style={{
                       fontSize: 9,
-                      color: posDiff > 0 ? '#22c55e' : '#ef4444',
+                      color: posDiff > 0 ? 'var(--success)' : 'var(--danger)',
                       lineHeight: 1,
                     }}>
                       {posDiff > 0 ? '▲' : '▼'}
@@ -239,7 +239,7 @@ export function TabellScreen() {
                 <span style={{
                   fontSize: 13,
                   fontWeight: isManaged ? 700 : 500,
-                  color: isManaged ? '#C9A84C' : 'var(--text-primary)',
+                  color: isManaged ? 'var(--accent)' : 'var(--text-primary)',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -261,8 +261,8 @@ export function TabellScreen() {
                         width: 8,
                         height: 8,
                         borderRadius: '50%',
-                        background: result === 'W' ? '#22c55e'
-                          : result === 'L' ? '#ef4444'
+                        background: result === 'W' ? 'var(--success)'
+                          : result === 'L' ? 'var(--danger)'
                           : result === 'D' ? '#e2a84c'
                           : 'var(--border)',
                       }} />
@@ -289,7 +289,7 @@ export function TabellScreen() {
                   fontSize: 14,
                   fontWeight: 800,
                   textAlign: 'right',
-                  color: isManaged ? '#C9A84C' : 'var(--text-primary)',
+                  color: isManaged ? 'var(--accent)' : 'var(--text-primary)',
                 }}>
                   {row.points}
                 </span>
@@ -325,15 +325,15 @@ export function TabellScreen() {
                     padding: '10px 10px 12px 59px',
                     fontSize: 12,
                     color: 'var(--text-secondary)',
-                    background: 'rgba(201,168,76,0.04)',
-                    borderTop: '1px solid rgba(201,168,76,0.1)',
+                    background: 'rgba(196,122,58,0.04)',
+                    borderTop: '1px solid rgba(196,122,58,0.1)',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 6,
                   }}>
                     {fix ? (
                       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                        <span style={{ color: '#C9A84C', fontWeight: 600 }}>Omgång {fix.roundNumber}</span>
+                        <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Omgång {fix.roundNumber}</span>
                         <span>·</span>
                         <span>{isHome ? 'Hemma' : 'Borta'}</span>
                         {isDerby && <span>· 🔥 Derby</span>}
@@ -349,7 +349,7 @@ export function TabellScreen() {
                           const isH = f.homeClubId === managedClubId
                           const gf = isH ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
                           const ga = isH ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
-                          const col = gf > ga ? '#22c55e' : gf < ga ? '#ef4444' : '#e2a84c'
+                          const col = gf > ga ? 'var(--success)' : gf < ga ? 'var(--danger)' : '#e2a84c'
                           return (
                             <span key={f.id} style={{ color: col, fontWeight: 700 }}>
                               {gf}–{ga}

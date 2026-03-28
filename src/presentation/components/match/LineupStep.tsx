@@ -101,8 +101,8 @@ export function LineupStep({
           style={{
             padding: '8px 16px',
             borderRadius: 'var(--radius)',
-            background: 'rgba(201,168,76,0.15)',
-            border: '1px solid rgba(201,168,76,0.5)',
+            background: 'rgba(196,122,58,0.15)',
+            border: '1px solid rgba(196,122,58,0.5)',
             color: 'var(--accent)',
             fontSize: 13,
             fontWeight: 700,
@@ -153,7 +153,7 @@ export function LineupStep({
                     ...(unavailable
                       ? { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--danger)' }
                       : status === 'start'
-                      ? { background: 'rgba(201,168,76,0.15)', border: '1px solid var(--accent)', color: 'var(--accent)' }
+                      ? { background: 'rgba(196,122,58,0.15)', border: '1px solid var(--accent)', color: 'var(--accent)' }
                       : status === 'bench'
                       ? { background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }
                       : { background: 'transparent', border: '1px solid transparent', color: 'var(--text-muted)' }),

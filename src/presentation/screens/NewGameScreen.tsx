@@ -5,9 +5,9 @@ import { Star } from 'lucide-react'
 import { CLUB_TEMPLATES } from '../../domain/services/worldGenerator'
 
 function difficultyLabel(reputation: number): { label: string; color: string } {
-  if (reputation >= 75) return { label: 'Lätt', color: '#22c55e' }
-  if (reputation >= 55) return { label: 'Normal', color: '#f59e0b' }
-  return { label: 'Svår', color: '#ef4444' }
+  if (reputation >= 75) return { label: 'Lätt', color: 'var(--success)' }
+  if (reputation >= 55) return { label: 'Normal', color: 'var(--warning)' }
+  return { label: 'Svår', color: 'var(--danger)' }
 }
 
 const CLUB_FLAVOR: Record<string, string> = {
@@ -119,8 +119,8 @@ export function NewGameScreen() {
               padding: '12px 4px',
               background: 'transparent',
               border: 'none',
-              borderBottom: '2px solid rgba(201,168,76,0.5)',
-              color: '#C9A84C',
+              borderBottom: '2px solid rgba(196,122,58,0.5)',
+              color: 'var(--accent)',
               fontSize: 22,
               fontWeight: 700,
               outline: 'none',
@@ -133,19 +133,16 @@ export function NewGameScreen() {
           <button
             onClick={() => setStep('club')}
             disabled={!managerName.trim()}
+            className="btn btn-outline"
             style={{
               width: '100%',
               padding: '16px 24px',
-              background: 'transparent',
-              border: `2px solid ${managerName.trim() ? 'var(--accent)' : 'rgba(196,186,168,0.2)'}`,
-              borderRadius: 'var(--radius)',
-              color: managerName.trim() ? 'var(--accent)' : 'rgba(245,241,235,0.35)',
               fontSize: 14,
-              fontWeight: 700,
               letterSpacing: '3px',
               textTransform: 'uppercase',
+              opacity: managerName.trim() ? 1 : 0.35,
               cursor: managerName.trim() ? 'pointer' : 'not-allowed',
-              transition: 'all 0.2s',
+              transition: 'opacity 0.2s',
             }}
           >
             GÅ VIDARE →
@@ -195,8 +192,8 @@ export function NewGameScreen() {
                 style={{
                   width: '100%',
                   padding: '14px 16px',
-                  background: isSelected ? 'rgba(201,168,76,0.08)' : 'var(--bg-elevated)',
-                  border: `1px solid ${isSelected ? 'rgba(201,168,76,0.4)' : 'var(--border)'}`,
+                  background: isSelected ? 'rgba(196,122,58,0.08)' : 'var(--bg-elevated)',
+                  border: `1px solid ${isSelected ? 'rgba(196,122,58,0.4)' : 'var(--border)'}`,
                   borderRadius: 'var(--radius)',
                   textAlign: 'left',
                   display: 'flex',
@@ -207,7 +204,7 @@ export function NewGameScreen() {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: 600, fontSize: 15, color: isSelected ? '#C9A84C' : 'var(--text-primary)' }}>
+                  <span style={{ fontWeight: 600, fontSize: 15, color: isSelected ? 'var(--accent)' : 'var(--text-primary)' }}>
                     {club.name}
                   </span>
                   <span style={{
@@ -243,7 +240,7 @@ export function NewGameScreen() {
           padding: '16px 20px',
           paddingBottom: 'calc(16px + var(--safe-bottom))',
           background: 'linear-gradient(to top, #EDE8DF 70%, transparent)',
-          borderTop: '1px solid rgba(201,168,76,0.15)',
+          borderTop: '1px solid rgba(196,122,58,0.15)',
         }}>
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 10, textAlign: 'center' }}>
             Starta karriären som tränare för {selectedClub.name}?
@@ -251,15 +248,11 @@ export function NewGameScreen() {
           <button
             onClick={handleStart}
             disabled={isStarting}
+            className="btn btn-copper"
             style={{
               width: '100%',
               padding: '16px 24px',
-              background: 'transparent',
-              border: '2px solid #C9A84C',
-              borderRadius: 'var(--radius)',
-              color: '#C9A84C',
               fontSize: 13,
-              fontWeight: 700,
               letterSpacing: '3px',
               textTransform: 'uppercase',
               cursor: isStarting ? 'not-allowed' : 'pointer',

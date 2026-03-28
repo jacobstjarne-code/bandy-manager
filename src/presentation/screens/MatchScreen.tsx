@@ -411,12 +411,12 @@ export function MatchScreen() {
         )}
         <div style={{
           background: 'var(--bg-surface)',
-          border: isPlayoffRound ? '1px solid rgba(201,168,76,0.3)' : isCupFixture ? '1px solid rgba(201,168,76,0.25)' : rivalry ? '1px solid rgba(220,80,30,0.3)' : '1px solid var(--border)',
+          border: isPlayoffRound ? '1px solid rgba(196,122,58,0.3)' : isCupFixture ? '1px solid rgba(196,122,58,0.25)' : rivalry ? '1px solid rgba(220,80,30,0.3)' : '1px solid var(--border)',
           borderRadius: 'var(--radius)',
           padding: '12px 16px',
           marginBottom: 16,
         }}>
-          <p style={{ fontSize: 11, color: isPlayoffRound ? '#C9A84C' : isCupFixture ? '#C9A84C' : rivalry ? '#ff7040' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
+          <p style={{ fontSize: 11, color: isPlayoffRound ? 'var(--accent)' : isCupFixture ? 'var(--accent)' : rivalry ? '#ff7040' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
             {roundLabel}
           </p>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -91,7 +91,7 @@ export function MatchDoneOverlay({
           SLUTSIGNAL
         </p>
         {fixture.isCup && (
-          <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 700, marginBottom: 8 }}>
+          <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 700, marginBottom: 8 }}>
             🏆 Svenska Cupen
           </p>
         )}
@@ -138,8 +138,8 @@ export function MatchDoneOverlay({
         )}
 
         {bestPlayer && (
-          <div style={{ marginBottom: 14, padding: '8px 12px', background: 'rgba(201,168,76,0.06)', borderRadius: 8, border: '1px solid rgba(201,168,76,0.15)' }}>
-            <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, marginBottom: 2 }}>⭐ Matchens spelare</p>
+          <div style={{ marginBottom: 14, padding: '8px 12px', background: 'rgba(196,122,58,0.06)', borderRadius: 8, border: '1px solid rgba(196,122,58,0.15)' }}>
+            <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginBottom: 2 }}>⭐ Matchens spelare</p>
             <p style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>
               {bestPlayer.firstName} {bestPlayer.lastName}
             </p>

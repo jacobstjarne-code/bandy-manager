@@ -55,7 +55,7 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
         <button onClick={() => onSetLiveMode(true)} style={{
           flex: 1, padding: '12px 8px',
-          background: useLiveMode ? 'rgba(201,168,76,0.12)' : 'var(--bg-elevated)',
+          background: useLiveMode ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
           border: '2px solid ' + (useLiveMode ? 'var(--accent)' : 'var(--border)'),
           borderRadius: 'var(--radius)', cursor: 'pointer',
         }}>
@@ -65,7 +65,7 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
         </button>
         <button onClick={() => onSetLiveMode(false)} style={{
           flex: 1, padding: '12px 8px',
-          background: !useLiveMode ? 'rgba(201,168,76,0.12)' : 'var(--bg-elevated)',
+          background: !useLiveMode ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
           border: '2px solid ' + (!useLiveMode ? 'var(--accent)' : 'var(--border)'),
           borderRadius: 'var(--radius)', cursor: 'pointer',
         }}>

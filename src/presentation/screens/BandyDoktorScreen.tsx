@@ -81,7 +81,7 @@ export function BandyDoktorScreen() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', background: 'var(--bg-base)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', background: 'var(--bg)' }}>
       {/* Header */}
       <div style={{
         display: 'flex',
@@ -189,7 +189,7 @@ export function BandyDoktorScreen() {
                   padding: '10px 14px',
                   borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
                   background: msg.role === 'user' ? '#1a2e47' : '#2a2000',
-                  border: msg.role === 'user' ? '1px solid #2a4060' : '1px solid #C9A84C44',
+                  border: msg.role === 'user' ? '1px solid #2a4060' : '1px solid var(--accent)44',
                   fontSize: 13,
                   lineHeight: 1.5,
                   color: msg.role === 'user' ? 'var(--text-primary)' : '#e8c96a',
@@ -205,7 +205,7 @@ export function BandyDoktorScreen() {
                   padding: '10px 14px',
                   borderRadius: '12px 12px 12px 2px',
                   background: '#2a2000',
-                  border: '1px solid #C9A84C44',
+                  border: '1px solid var(--accent)44',
                   fontSize: 13,
                   color: '#e8c96a',
                   display: 'flex',
@@ -255,7 +255,7 @@ export function BandyDoktorScreen() {
               disabled={!canAsk}
               style={{
                 flex: 1,
-                background: 'var(--bg-base)',
+                background: 'var(--bg)',
                 border: '1px solid var(--border)',
                 borderRadius: 8,
                 padding: '10px 14px',
@@ -269,7 +269,7 @@ export function BandyDoktorScreen() {
               type="submit"
               disabled={!canAsk || !inputText.trim()}
               style={{
-                background: canAsk && inputText.trim() ? 'var(--accent)' : 'var(--bg-base)',
+                background: canAsk && inputText.trim() ? 'var(--accent)' : 'var(--bg)',
                 border: '1px solid var(--border)',
                 borderRadius: 8,
                 padding: '10px 14px',

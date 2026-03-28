@@ -14,7 +14,7 @@ function choiceStyle(choiceId: string): React.CSSProperties {
   if (choiceId === 'reject') {
     return {
       background: 'rgba(239,68,68,0.1)',
-      color: '#ef4444',
+      color: 'var(--danger)',
       border: '1px solid rgba(239,68,68,0.35)',
     }
   }
@@ -133,11 +133,11 @@ export function EventScreen() {
             {relatedPlayer && (
               <span style={{
                 fontSize: 12,
-                background: 'rgba(201,168,76,0.1)',
-                border: '1px solid rgba(201,168,76,0.3)',
+                background: 'rgba(196,122,58,0.1)',
+                border: '1px solid rgba(196,122,58,0.3)',
                 borderRadius: 20,
                 padding: '4px 10px',
-                color: '#C9A84C',
+                color: 'var(--accent)',
                 fontWeight: 600,
               }}>
                 {relatedPlayer.firstName} {relatedPlayer.lastName} · Styrka {Math.round(relatedPlayer.currentAbility)}

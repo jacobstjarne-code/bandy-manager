@@ -11,13 +11,13 @@ export const TRAIT_META: Record<PlayerTrait, TraitMeta> = {
   veteran: {
     label: 'Veteran',
     description: 'En erfaren spjutspets med år av tjänst. Laget lyssnar.',
-    color: '#C9A84C',
+    color: 'var(--accent)',
     emoji: '🏅',
   },
   hungrig: {
     label: 'Hungrig',
     description: 'Ung och driven. Vill bevisa sig.',
-    color: '#22c55e',
+    color: 'var(--success)',
     emoji: '🔥',
   },
   ledare: {
@@ -35,7 +35,7 @@ export const TRAIT_META: Record<PlayerTrait, TraitMeta> = {
   joker: {
     label: 'Joker',
     description: 'Oförutsägbar. Kan avgöra matcher — åt båda håll.',
-    color: '#f59e0b',
+    color: 'var(--warning)',
     emoji: '🃏',
   },
 }

@@ -18,7 +18,7 @@ function Confetti() {
     left: (i * 37 + 11) % 100,
     delay: (i * 0.17) % 3,
     duration: 3 + (i * 0.13) % 3,
-    color: i % 2 === 0 ? '#C9A84C' : 'var(--text-light)',
+    color: i % 2 === 0 ? 'var(--accent)' : 'var(--text-light)',
     size: 6 + (i % 6),
   }))
   return (
@@ -100,8 +100,8 @@ export function ChampionScreen() {
           100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
         }
         @keyframes goldPulse {
-          0%, 100% { text-shadow: 0 0 20px rgba(201,168,76,0.4); }
-          50% { text-shadow: 0 0 40px rgba(201,168,76,0.8), 0 0 60px rgba(201,168,76,0.4); }
+          0%, 100% { text-shadow: 0 0 20px rgba(196,122,58,0.4); }
+          50% { text-shadow: 0 0 40px rgba(196,122,58,0.8), 0 0 60px rgba(196,122,58,0.4); }
         }
       `}</style>
 
@@ -116,7 +116,7 @@ export function ChampionScreen() {
             <h1 style={{
               fontSize: 28,
               fontWeight: 900,
-              color: '#C9A84C',
+              color: 'var(--accent)',
               letterSpacing: '2px',
               textTransform: 'uppercase',
               marginBottom: 8,

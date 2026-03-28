@@ -329,7 +329,7 @@ export function TransfersScreen() {
         const target = game.players.find(p => p.id === activeAssignment.targetPlayerId)
         const targetClub = game.clubs.find(c => c.id === activeAssignment.targetClubId)
         return (
-          <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
+          <div style={{ background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
             🔍 Scouting pågår: <strong>{target?.firstName} {target?.lastName}</strong> ({targetClub?.name ?? '?'}) · {activeAssignment.roundsRemaining} omgång{activeAssignment.roundsRemaining !== 1 ? 'ar' : ''} kvar
           </div>
         )
@@ -337,7 +337,7 @@ export function TransfersScreen() {
 
       {/* Active talent search */}
       {game.activeTalentSearch && !activeAssignment && (
-        <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
+        <div style={{ background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
           🔎 Scouten är ute på talangspaning. Klar om {game.activeTalentSearch.roundsRemaining} omgång{game.activeTalentSearch.roundsRemaining !== 1 ? 'ar' : ''}.
         </div>
       )}
@@ -417,7 +417,7 @@ export function TransfersScreen() {
                     {player.firstName} {player.lastName}
                     {isScounted && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--accent)' }}>🔍</span>}
                     {isStale && <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--danger)', fontWeight: 400 }}>Föråldrad</span>}
-                    {reportAge === 'aging' && !isStale && <span style={{ marginLeft: 6, fontSize: 10, color: '#f59e0b', fontWeight: 400 }}>1 säsong sedan</span>}
+                    {reportAge === 'aging' && !isStale && <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--warning)', fontWeight: 400 }}>1 säsong sedan</span>}
                   </p>
                   <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
                     {positionShort(player.position)} · {club?.name ?? '?'} · {formatValue(player.marketValue)} ·{' '}
@@ -487,7 +487,7 @@ export function TransfersScreen() {
                 const reportClub = game.clubs.find(c => c.id === report.clubId)
                 const age = getScoutReportAge(report, game.currentSeason, report.scoutedSeason)
                 const freshnessLabel = age === 'fresh' ? 'Färsk' : age === 'aging' ? 'Gammal' : 'Inaktuell'
-                const freshnessColor = age === 'fresh' ? 'var(--success)' : age === 'aging' ? '#f59e0b' : 'var(--danger)'
+                const freshnessColor = age === 'fresh' ? 'var(--success)' : age === 'aging' ? 'var(--warning)' : 'var(--danger)'
                 const caRange = Math.round((100 - report.accuracy) / 10)
                 const windowOpen = getTransferWindowStatus(game.currentDate).status !== 'closed'
                 return (
@@ -533,7 +533,7 @@ export function TransfersScreen() {
                                 <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{value}</span>
                               </div>
                               <div style={{ background: 'var(--border)', borderRadius: 4, height: 4 }}>
-                                <div style={{ background: '#C9A84C', borderRadius: 4, height: 4, width: `${value}%` }} />
+                                <div style={{ background: 'var(--accent)', borderRadius: 4, height: 4, width: `${value}%` }} />
                               </div>
                             </div>
                           ))}
@@ -578,7 +578,7 @@ export function TransfersScreen() {
 
           {/* Active search status */}
           {game.activeTalentSearch && (
-            <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
+            <div style={{ background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
               🔍 Scout ute och letar... {game.activeTalentSearch.roundsRemaining} omgång{game.activeTalentSearch.roundsRemaining !== 1 ? 'ar' : ''} kvar
             </div>
           )}

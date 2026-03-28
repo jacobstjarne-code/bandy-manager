@@ -4,7 +4,7 @@ export function GoldConfetti() {
     left: (i * 37 + 11) % 100,
     delay: (i * 0.17) % 3,
     duration: 3 + (i * 0.13) % 3,
-    color: i % 3 === 0 ? '#C9A84C' : i % 3 === 1 ? '#F5F1EB' : '#FFD700',
+    color: i % 3 === 0 ? 'var(--accent)' : i % 3 === 1 ? '#F5F1EB' : '#FFD700',
     size: 6 + (i % 6),
   }))
   return (
@@ -15,8 +15,8 @@ export function GoldConfetti() {
           100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
         }
         @keyframes goldPulse {
-          0%, 100% { text-shadow: 0 0 20px rgba(201,168,76,0.4); }
-          50% { text-shadow: 0 0 40px rgba(201,168,76,0.8), 0 0 60px rgba(201,168,76,0.4); }
+          0%, 100% { text-shadow: 0 0 20px rgba(196,122,58,0.4); }
+          50% { text-shadow: 0 0 40px rgba(196,122,58,0.8), 0 0 60px rgba(196,122,58,0.4); }
         }
       `}</style>
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 0 }}>

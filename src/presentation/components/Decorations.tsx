@@ -13,7 +13,7 @@ export function BandyBallSVG({ size = 24 }: { size?: number }) {
   )
 }
 
-export function BandyStickSVG({ size = 24, color = '#C9A84C' }: { size?: number; color?: string }) {
+export function BandyStickSVG({ size = 24, color = 'var(--accent)' }: { size?: number; color?: string }) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
       {/* Shaft */}

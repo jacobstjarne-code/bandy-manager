@@ -894,10 +894,10 @@ export function ClubScreen() {
                             disabled={club.finances < (row.actionCost ?? 0)}
                             style={{
                               width: '100%', padding: '6px 10px',
-                              background: club.finances >= (row.actionCost ?? 0) ? 'rgba(201,168,76,0.08)' : 'rgba(255,255,255,0.03)',
-                              border: `1px solid ${club.finances >= (row.actionCost ?? 0) ? 'rgba(201,168,76,0.25)' : 'rgba(255,255,255,0.06)'}`,
+                              background: club.finances >= (row.actionCost ?? 0) ? 'rgba(196,122,58,0.08)' : 'rgba(255,255,255,0.03)',
+                              border: `1px solid ${club.finances >= (row.actionCost ?? 0) ? 'rgba(196,122,58,0.25)' : 'rgba(255,255,255,0.06)'}`,
                               borderRadius: 6, fontSize: 12, fontWeight: 600,
-                              color: club.finances >= (row.actionCost ?? 0) ? '#C9A84C' : 'var(--text-muted)',
+                              color: club.finances >= (row.actionCost ?? 0) ? 'var(--accent)' : 'var(--text-muted)',
                               cursor: club.finances >= (row.actionCost ?? 0) ? 'pointer' : 'not-allowed',
                             }}
                           >
@@ -910,10 +910,10 @@ export function ClubScreen() {
                             disabled={club.finances < (row.upgradeCost ?? 0)}
                             style={{
                               width: '100%', padding: '6px 10px',
-                              background: club.finances >= (row.upgradeCost ?? 0) ? 'rgba(201,168,76,0.06)' : 'rgba(255,255,255,0.03)',
-                              border: `1px solid ${club.finances >= (row.upgradeCost ?? 0) ? 'rgba(201,168,76,0.2)' : 'rgba(255,255,255,0.05)'}`,
+                              background: club.finances >= (row.upgradeCost ?? 0) ? 'rgba(196,122,58,0.06)' : 'rgba(255,255,255,0.03)',
+                              border: `1px solid ${club.finances >= (row.upgradeCost ?? 0) ? 'rgba(196,122,58,0.2)' : 'rgba(255,255,255,0.05)'}`,
                               borderRadius: 6, fontSize: 11, fontWeight: 600,
-                              color: club.finances >= (row.upgradeCost ?? 0) ? '#C9A84C' : 'var(--text-muted)',
+                              color: club.finances >= (row.upgradeCost ?? 0) ? 'var(--accent)' : 'var(--text-muted)',
                               cursor: club.finances >= (row.upgradeCost ?? 0) ? 'pointer' : 'not-allowed',
                             }}
                           >
@@ -954,10 +954,10 @@ export function ClubScreen() {
                 onClick={() => navigate('/game/budget')}
                 style={{
                   width: '100%', padding: '12px',
-                  background: 'rgba(201,168,76,0.06)',
-                  border: '1px solid rgba(201,168,76,0.2)',
+                  background: 'rgba(196,122,58,0.06)',
+                  border: '1px solid rgba(196,122,58,0.2)',
                   borderRadius: 'var(--radius-sm)',
-                  color: '#C9A84C', fontSize: 13, fontWeight: 600,
+                  color: 'var(--accent)', fontSize: 13, fontWeight: 600,
                   cursor: 'pointer', textAlign: 'center',
                 }}
               >
@@ -1049,7 +1049,7 @@ export function ClubScreen() {
                 })}
                 <button
                   onClick={() => navigate('/game/history')}
-                  style={{ width: '100%', marginTop: 8, padding: '10px', background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 'var(--radius-sm)', color: '#C9A84C', fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'center' }}
+                  style={{ width: '100%', marginTop: 8, padding: '10px', background: 'rgba(196,122,58,0.06)', border: '1px solid rgba(196,122,58,0.2)', borderRadius: 'var(--radius-sm)', color: 'var(--accent)', fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'center' }}
                 >
                   Hall of Fame & full historik →
                 </button>
@@ -1125,7 +1125,7 @@ export function ClubScreen() {
                     onClick={handleUpgrade}
                     style={{
                       padding: '8px 14px', borderRadius: 'var(--radius)',
-                      background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.4)',
+                      background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.4)',
                       color: 'var(--accent)', fontSize: 13, fontWeight: 600, cursor: 'pointer', width: '100%',
                     }}
                   >
@@ -1197,7 +1197,7 @@ export function ClubScreen() {
                                   }}
                                   style={{
                                     padding: '3px 8px', borderRadius: 'var(--radius)',
-                                    background: 'rgba(201,168,76,0.15)', border: '1px solid rgba(201,168,76,0.4)',
+                                    background: 'rgba(196,122,58,0.15)', border: '1px solid rgba(196,122,58,0.4)',
                                     color: 'var(--accent)', fontSize: 11, cursor: 'pointer',
                                   }}
                                 >
@@ -1281,7 +1281,7 @@ export function ClubScreen() {
                           setSelectedMentorSeniorId('')
                           setSelectedMentorYouthId('')
                         }}
-                        style={{ padding: '4px 12px', borderRadius: 'var(--radius)', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.4)', color: 'var(--accent)', fontSize: 12, cursor: 'pointer' }}
+                        style={{ padding: '4px 12px', borderRadius: 'var(--radius)', background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.4)', color: 'var(--accent)', fontSize: 12, cursor: 'pointer' }}
                       >
                         Tilldela
                       </button>
@@ -1377,7 +1377,7 @@ export function ClubScreen() {
                           setSelectedLoanPlayerId('')
                           setSelectedLoanClub('')
                         }}
-                        style={{ padding: '4px 12px', borderRadius: 'var(--radius)', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.4)', color: 'var(--accent)', fontSize: 12, cursor: 'pointer' }}
+                        style={{ padding: '4px 12px', borderRadius: 'var(--radius)', background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.4)', color: 'var(--accent)', fontSize: 12, cursor: 'pointer' }}
                       >
                         Låna ut
                       </button>

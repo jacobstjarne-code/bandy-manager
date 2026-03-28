@@ -50,10 +50,10 @@ export function formatFinanceAbs(n: number): string {
 
 // Community standing color: green → gold → amber → red
 export function csColor(cs: number): string {
-  if (cs > 70) return '#22c55e'
-  if (cs > 50) return '#C9A84C'
-  if (cs > 30) return '#f59e0b'
-  return '#ef4444'
+  if (cs > 70) return 'var(--success)'
+  if (cs > 50) return 'var(--accent)'
+  if (cs > 30) return 'var(--warning)'
+  return 'var(--danger)'
 }
 
 export function eventIcon(type: MatchEventType): string {

@@ -115,7 +115,7 @@ export function RoundSummaryScreen() {
             label="MATCHEN"
             summary={matchResult ?? 'Match spelad'}
             detail={matchScorers?.join(' · ')}
-            accent="#C9A84C"
+            accent="var(--accent)"
             onClick={() => navigate('/game/match-result')}
           />
         ) : (
@@ -193,7 +193,7 @@ export function RoundSummaryScreen() {
           width: '100%', padding: '17px', background: 'var(--accent)', color: 'var(--bg-dark)',
           borderRadius: 12, fontSize: 16, fontWeight: 800, letterSpacing: '1.5px',
           textTransform: 'uppercase', border: 'none',
-          boxShadow: '0 4px 20px rgba(201,168,76,0.3)', cursor: 'pointer',
+          boxShadow: '0 4px 20px rgba(196,122,58,0.3)', cursor: 'pointer',
         }}>
           Fortsätt →
         </button>

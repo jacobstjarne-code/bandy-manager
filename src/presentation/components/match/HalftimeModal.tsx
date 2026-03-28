@@ -206,7 +206,7 @@ export function HalftimeModal({
     }}>
       <div style={{
         background: isBigMatch ? 'var(--bg-dark-surface)' : 'var(--bg-surface)',
-        border: isBigMatch ? '1px solid rgba(201,168,76,0.4)' : '1px solid var(--border)',
+        border: isBigMatch ? '1px solid rgba(196,122,58,0.4)' : '1px solid var(--border)',
         borderRadius: 'var(--radius)', padding: '20px 20px 16px',
         textAlign: 'center', minWidth: 260, maxWidth: 330, width: '90%',
         marginBottom: 24,
@@ -214,7 +214,7 @@ export function HalftimeModal({
         {/* Header */}
         <p style={{
           fontSize: isBigMatch ? 13 : 11, fontWeight: 700, textTransform: 'uppercase',
-          letterSpacing: '1px', color: isBigMatch ? '#C9A84C' : 'var(--text-muted)', marginBottom: 10,
+          letterSpacing: '1px', color: isBigMatch ? 'var(--accent)' : 'var(--text-muted)', marginBottom: 10,
         }}>
           {isSmFinal ? '⏸ HALVTID · SM-FINALEN' : isCupFinal ? '⏸ HALVTID · CUPFINALEN' : '⏸ HALVTID'}
         </p>
@@ -267,8 +267,8 @@ export function HalftimeModal({
               </div>
             </div>
             {bestPlayerName && (
-              <div style={{ marginBottom: 14, padding: '8px 12px', background: 'rgba(201,168,76,0.06)', borderRadius: 8, border: '1px solid rgba(201,168,76,0.15)' }}>
-                <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, marginBottom: 2 }}>⭐ Matchens spelare hittills</p>
+              <div style={{ marginBottom: 14, padding: '8px 12px', background: 'rgba(196,122,58,0.06)', borderRadius: 8, border: '1px solid rgba(196,122,58,0.15)' }}>
+                <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginBottom: 2 }}>⭐ Matchens spelare hittills</p>
                 <p style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>{bestPlayerName}</p>
                 {bestPlayer?.position && <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{bestPlayer.position}</p>}
               </div>
@@ -292,7 +292,7 @@ export function HalftimeModal({
         {/* TAKTIK tab */}
         {activeTab === 'taktik' && (
           <div style={{ textAlign: 'left' }}>
-            <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>Halvtidsjustering</p>
+            <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>Halvtidsjustering</p>
             {btnRow('Mentalitet', [
               { val: TacticMentality.Defensive, label: 'Defensiv' },
               { val: TacticMentality.Balanced, label: 'Balanserad' },
@@ -318,7 +318,7 @@ export function HalftimeModal({
         {activeTab === 'byten' && (
           <div style={{ textAlign: 'left' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, margin: 0 }}>Spelarbyte</p>
+              <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, margin: 0 }}>Spelarbyte</p>
               <span style={{ fontSize: 10, color: '#6a7d8f' }}>{htSubs.length}/3</span>
             </div>
 
@@ -402,7 +402,7 @@ export function HalftimeModal({
           onClick={htSubs.length > 0 || htMentality || htTempo || htPress ? onApplyTactic : onContinue}
           style={{
             width: '100%', padding: '12px', marginTop: 16,
-            background: isBigMatch ? '#C9A84C' : 'var(--accent)',
+            background: isBigMatch ? 'var(--accent)' : 'var(--accent)',
             border: 'none', borderRadius: 'var(--radius)',
             color: isBigMatch ? '#1A1A18' : '#fff', fontSize: 15, fontWeight: 700,
             cursor: 'pointer',

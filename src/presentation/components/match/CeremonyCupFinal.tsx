@@ -39,7 +39,7 @@ export function CeremonyCupFinal({
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         zIndex: 300,
       }}>
-        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 24 }}>
+        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 24 }}>
           CUPFINALEN
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
@@ -81,14 +81,14 @@ export function CeremonyCupFinal({
         {managedWon ? (
           <>
             <div style={{ fontSize: 64, marginBottom: 16 }}>🏆</div>
-            <h1 style={{ fontSize: 26, fontWeight: 900, color: '#C9A84C', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 8 }}>
+            <h1 style={{ fontSize: 26, fontWeight: 900, color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 8 }}>
               CUPVINNARE!
             </h1>
             <p style={{ fontSize: 18, color: 'var(--text-light)', fontWeight: 700, marginBottom: 4 }}>{managedClubName}</p>
             <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', marginBottom: 20 }}>Svenska Cupen {season}</p>
             {cupJourney && (
-              <div style={{ marginBottom: 24, padding: '12px 16px', background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 10, textAlign: 'left' }}>
-                <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px' }}>Cupvägen</p>
+              <div style={{ marginBottom: 24, padding: '12px 16px', background: 'rgba(196,122,58,0.06)', border: '1px solid rgba(196,122,58,0.2)', borderRadius: 10, textAlign: 'left' }}>
+                <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px' }}>Cupvägen</p>
                 {cupJourney.split('\n').map((line, i) => (
                   <p key={i} style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginBottom: 4 }}>{line}</p>
                 ))}
@@ -96,7 +96,7 @@ export function CeremonyCupFinal({
             )}
             <button
               onClick={onNavigate}
-              style={{ padding: '14px 32px', background: '#C9A84C', border: 'none', borderRadius: 12, color: 'var(--bg-dark)', fontSize: 15, fontWeight: 700, cursor: 'pointer', letterSpacing: '1px' }}
+              style={{ padding: '14px 32px', background: 'var(--accent)', border: 'none', borderRadius: 12, color: 'var(--bg-dark)', fontSize: 15, fontWeight: 700, cursor: 'pointer', letterSpacing: '1px' }}
             >
               Cupfest! →
             </button>

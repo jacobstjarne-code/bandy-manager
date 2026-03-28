@@ -100,7 +100,7 @@ export function BudgetScreen() {
         <div style={{ textAlign: 'center', marginBottom: 8 }}>
           <p style={{
             fontSize: 11, fontWeight: 700, letterSpacing: '2px',
-            textTransform: 'uppercase', color: '#C9A84C', marginBottom: 6,
+            textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 6,
           }}>
             EKONOMI
           </p>
@@ -117,7 +117,7 @@ export function BudgetScreen() {
             <span style={{ ...BODY_STYLE, color: 'var(--text-secondary)' }}>Saldo</span>
             <span style={{
               fontSize: 20, fontWeight: 800,
-              color: club.finances >= 0 ? '#22c55e' : '#ef4444',
+              color: club.finances >= 0 ? 'var(--success)' : 'var(--danger)',
             }}>
               {formatMoney(club.finances)}
             </span>
@@ -130,13 +130,13 @@ export function BudgetScreen() {
           }}>
             <div style={ROW_STYLE}>
               <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Intäkter / omgång</span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#22c55e' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>
                 +{formatMoney(weeklyIncome)}
               </span>
             </div>
             <div style={ROW_STYLE}>
               <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Lönekostnader / omgång</span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#ef4444' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--danger)' }}>
                 -{formatMoney(weeklyWages)}
               </span>
             </div>
@@ -149,7 +149,7 @@ export function BudgetScreen() {
               <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Netto / omgång</span>
               <span style={{
                 fontSize: 14, fontWeight: 700,
-                color: netPerRound >= 0 ? '#22c55e' : '#ef4444',
+                color: netPerRound >= 0 ? 'var(--success)' : 'var(--danger)',
               }}>
                 {netPerRound >= 0 ? '+' : ''}{formatMoney(netPerRound)}
               </span>
@@ -175,13 +175,13 @@ export function BudgetScreen() {
           <p style={LABEL_STYLE}>Transferbudget</p>
           <div style={ROW_STYLE}>
             <span style={{ ...BODY_STYLE, color: 'var(--text-secondary)' }}>Avsatt budget</span>
-            <span style={{ fontSize: 16, fontWeight: 700, color: '#C9A84C' }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--accent)' }}>
               {formatMoney(currentTransferBudget)}
             </span>
           </div>
 
           {sliderDisabled ? (
-            <p style={{ fontSize: 13, color: '#ef4444', marginTop: 6 }}>
+            <p style={{ fontSize: 13, color: 'var(--danger)', marginTop: 6 }}>
               Kassan är negativ — transferbudget kan inte sättas just nu.
             </p>
           ) : (
@@ -196,7 +196,7 @@ export function BudgetScreen() {
                 step={10000}
                 value={currentTransferBudget}
                 onChange={e => setPendingTransferBudget(Number(e.target.value))}
-                style={{ width: '100%', accentColor: '#C9A84C', marginBottom: 12 }}
+                style={{ width: '100%', accentColor: 'var(--accent)', marginBottom: 12 }}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
                 <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>0 tkr</span>
@@ -207,10 +207,10 @@ export function BudgetScreen() {
                 style={{
                   width: '100%',
                   padding: '10px',
-                  background: savedFeedback ? 'rgba(34,197,94,0.15)' : 'rgba(201,168,76,0.12)',
-                  border: `1px solid ${savedFeedback ? '#22c55e' : 'rgba(201,168,76,0.35)'}`,
+                  background: savedFeedback ? 'rgba(34,197,94,0.15)' : 'rgba(196,122,58,0.12)',
+                  border: `1px solid ${savedFeedback ? 'var(--success)' : 'rgba(196,122,58,0.35)'}`,
                   borderRadius: 8,
-                  color: savedFeedback ? '#22c55e' : '#C9A84C',
+                  color: savedFeedback ? 'var(--success)' : 'var(--accent)',
                   fontSize: 14,
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -234,7 +234,7 @@ export function BudgetScreen() {
             <span style={{ ...BODY_STYLE, color: 'var(--text-secondary)' }}>Scoutronder kvar</span>
             <span style={{
               fontSize: 20, fontWeight: 800,
-              color: scoutBudget > 5 ? '#C9A84C' : scoutBudget > 0 ? 'var(--text-primary)' : '#ef4444',
+              color: scoutBudget > 5 ? 'var(--accent)' : scoutBudget > 0 ? 'var(--text-primary)' : 'var(--danger)',
             }}>
               {scoutBudget}
             </span>
@@ -252,10 +252,10 @@ export function BudgetScreen() {
             style={{
               width: '100%',
               padding: '12px',
-              background: canBuyScout ? 'rgba(201,168,76,0.12)' : 'rgba(0,0,0,0.04)',
-              border: `1px solid ${canBuyScout ? 'rgba(201,168,76,0.35)' : 'var(--border)'}`,
+              background: canBuyScout ? 'rgba(196,122,58,0.12)' : 'rgba(0,0,0,0.04)',
+              border: `1px solid ${canBuyScout ? 'rgba(196,122,58,0.35)' : 'var(--border)'}`,
               borderRadius: 8,
-              color: canBuyScout ? '#C9A84C' : 'var(--text-muted)',
+              color: canBuyScout ? 'var(--accent)' : 'var(--text-muted)',
               fontSize: 14,
               fontWeight: 700,
               cursor: canBuyScout ? 'pointer' : 'not-allowed',
@@ -266,7 +266,7 @@ export function BudgetScreen() {
           </button>
 
           {club.finances < 15000 && !scoutMaxReached && (
-            <p style={{ fontSize: 12, color: '#ef4444', marginTop: 8 }}>
+            <p style={{ fontSize: 12, color: 'var(--danger)', marginTop: 8 }}>
               Otillräckligt saldo (kräver 15 tkr).
             </p>
           )}

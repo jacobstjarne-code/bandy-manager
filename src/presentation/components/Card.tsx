@@ -17,7 +17,7 @@ export function Card({ children, stagger, gold, danger, style, onClick }: CardPr
       style={{
         background: 'var(--bg-surface)',
         border: gold
-          ? '1px solid rgba(201,168,76,0.35)'
+          ? '1px solid rgba(196,122,58,0.35)'
           : danger
           ? '1px solid rgba(239,68,68,0.35)'
           : '1px solid var(--border)',

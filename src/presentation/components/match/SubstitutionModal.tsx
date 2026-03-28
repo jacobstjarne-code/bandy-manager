@@ -38,7 +38,7 @@ export function SubstitutionModal({ starters, bench, onConfirm, onClose }: Subst
                 textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between',
               }}>
                 <span>{p.firstName} {p.lastName}</span>
-                <span style={{ color: p.fitness < 40 ? '#ef4444' : 'rgba(245,241,235,0.35)', fontSize: 11 }}>Fitness {p.fitness}</span>
+                <span style={{ color: p.fitness < 40 ? 'var(--danger)' : 'rgba(245,241,235,0.35)', fontSize: 11 }}>Fitness {p.fitness}</span>
               </button>
             ))}
           </div>
@@ -48,7 +48,7 @@ export function SubstitutionModal({ starters, bench, onConfirm, onClose }: Subst
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {availableBench.map(p => (
               <button key={p.id} onClick={() => onConfirm(outId, p.id)} style={{
-                background: 'var(--bg-dark-surface)', border: '1px solid rgba(201,168,76,0.3)', borderRadius: 8,
+                background: 'var(--bg-dark-surface)', border: '1px solid rgba(196,122,58,0.3)', borderRadius: 8,
                 padding: '10px 12px', color: 'var(--text-light)', fontSize: 13,
                 textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between',
               }}>

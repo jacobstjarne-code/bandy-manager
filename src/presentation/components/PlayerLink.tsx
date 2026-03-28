@@ -22,10 +22,10 @@ export function PlayerLink({ playerId, name, style }: PlayerLinkProps) {
         fontSize: 'inherit',
         cursor: 'pointer',
         textDecoration: 'underline',
-        textDecorationColor: 'rgba(201,168,76,0.4)',
+        textDecorationColor: 'rgba(196,122,58,0.4)',
         textUnderlineOffset: 3,
         ...style,
-        color: style?.color ?? '#C9A84C',
+        color: style?.color ?? 'var(--accent)',
       }}
     >
       {name}

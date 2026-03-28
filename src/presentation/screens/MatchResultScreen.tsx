@@ -207,13 +207,13 @@ export function MatchResultScreen() {
         {/* POTM */}
         {potm && potmRating !== null && potmRating !== undefined && (
           <div style={{
-            background: 'rgba(201,168,76,0.08)',
-            border: '1px solid rgba(201,168,76,0.2)',
+            background: 'rgba(196,122,58,0.08)',
+            border: '1px solid rgba(196,122,58,0.2)',
             borderRadius: 8,
             padding: '8px 12px',
             marginBottom: 16,
             fontSize: 12,
-            color: '#C9A84C',
+            color: 'var(--accent)',
             textAlign: 'center',
             ...fadeIn('800ms'),
           }}>
@@ -234,9 +234,9 @@ export function MatchResultScreen() {
                   <div style={{
                     textAlign: 'center',
                     fontSize: 12,
-                    color: '#C9A84C',
-                    background: 'rgba(201,168,76,0.07)',
-                    border: '1px solid rgba(201,168,76,0.18)',
+                    color: 'var(--accent)',
+                    background: 'rgba(196,122,58,0.07)',
+                    border: '1px solid rgba(196,122,58,0.18)',
                     borderRadius: 8,
                     padding: '6px 12px',
                     marginBottom: 10,

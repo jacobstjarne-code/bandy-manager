@@ -31,7 +31,7 @@ function inboxTypeColor(type: InboxItemType): string {
     case InboxItemType.Injury: return 'var(--danger)'
     case InboxItemType.Suspension: return 'var(--danger)'
     case InboxItemType.MatchResult: return 'var(--accent)'
-    case InboxItemType.Playoff: return '#C9A84C'
+    case InboxItemType.Playoff: return 'var(--accent)'
     case InboxItemType.Derby: return '#ff7040'
     case InboxItemType.ScoutReport: return 'var(--accent)'
     case InboxItemType.YouthIntake: return 'var(--success)'

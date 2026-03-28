@@ -28,7 +28,7 @@ export function SeasonSummaryScreen() {
     return (
       <div style={{ padding: 20, color: 'var(--text-secondary)' }}>
         Ingen säsongssammanfattning tillgänglig.
-        <button onClick={() => navigate('/game/dashboard')} style={{ marginTop: 16, color: '#C9A84C', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
+        <button onClick={() => navigate('/game/dashboard')} style={{ marginTop: 16, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}>
           ← Tillbaka
         </button>
       </div>
@@ -37,7 +37,7 @@ export function SeasonSummaryScreen() {
 
   const isHistorical = !!params.season
   const isChampion = summary.playoffResult === 'champion'
-  const positionColor = summary.finalPosition <= 3 ? '#C9A84C' : summary.finalPosition >= 10 ? 'var(--danger)' : 'var(--text-light)'
+  const positionColor = summary.finalPosition <= 3 ? 'var(--accent)' : summary.finalPosition >= 10 ? 'var(--danger)' : 'var(--text-light)'
 
   function playoffResultLabel(r: SeasonSummary['playoffResult']): string {
     switch (r) {
@@ -97,13 +97,13 @@ export function SeasonSummaryScreen() {
         <rect x="0" y="0" width={w} height={h} fill="transparent"/>
         {/* Threshold line (top 8 approx) */}
         <line x1={pad.l} y1={thresholdY} x2={w - pad.r} y2={thresholdY}
-          stroke="#C9A84C" strokeWidth="1" strokeDasharray="4,4" opacity="0.4"/>
-        <text x={w - pad.r - 2} y={thresholdY - 3} fontSize="8" fill="#C9A84C" textAnchor="end" opacity="0.6">Topp 8</text>
+          stroke="var(--accent)" strokeWidth="1" strokeDasharray="4,4" opacity="0.4"/>
+        <text x={w - pad.r - 2} y={thresholdY - 3} fontSize="8" fill="var(--accent)" textAnchor="end" opacity="0.6">Topp 8</text>
         {/* Line */}
         <polyline
           points={points}
           fill="none"
-          stroke="#C9A84C"
+          stroke="var(--accent)"
           strokeWidth="2"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -111,8 +111,8 @@ export function SeasonSummaryScreen() {
         {/* Dots at first and last */}
         {data.length > 0 && (
           <>
-            <circle cx={pad.l} cy={pad.t + chartH - (data[0] / maxPts) * chartH} r="3" fill="#C9A84C"/>
-            <circle cx={pad.l + chartW} cy={pad.t + chartH - (data[data.length-1] / maxPts) * chartH} r="3" fill="#C9A84C"/>
+            <circle cx={pad.l} cy={pad.t + chartH - (data[0] / maxPts) * chartH} r="3" fill="var(--accent)"/>
+            <circle cx={pad.l + chartW} cy={pad.t + chartH - (data[data.length-1] / maxPts) * chartH} r="3" fill="var(--accent)"/>
           </>
         )}
         {/* X-axis labels */}
@@ -168,7 +168,7 @@ export function SeasonSummaryScreen() {
               fontSize: 40,
               fontWeight: 900,
               color: positionColor,
-              textShadow: summary.finalPosition <= 3 ? '0 0 20px rgba(201,168,76,0.5)' : 'none',
+              textShadow: summary.finalPosition <= 3 ? '0 0 20px rgba(196,122,58,0.5)' : 'none',
             }}>
               {summary.finalPosition}.
             </span>
@@ -183,7 +183,7 @@ export function SeasonSummaryScreen() {
             <p style={{
               fontSize: 13,
               fontWeight: 700,
-              color: isChampion ? '#C9A84C' : 'var(--text-light-secondary)',
+              color: isChampion ? 'var(--accent)' : 'var(--text-light-secondary)',
               marginBottom: 8,
             }}>
               {playoffResultLabel(summary.playoffResult)}
@@ -208,7 +208,7 @@ export function SeasonSummaryScreen() {
         </div>
 
         {/* NARRATIVE */}
-        <Card stagger={1} style={{ borderLeft: '3px solid #C9A84C', background: 'rgba(201,168,76,0.05)' }}>
+        <Card stagger={1} style={{ borderLeft: '3px solid var(--accent)', background: 'rgba(196,122,58,0.05)' }}>
           <p style={{ fontSize: 15, fontStyle: 'italic', color: 'var(--text-light)', lineHeight: 1.6 }}>
             "{summary.narrativeSummary}"
           </p>
@@ -325,8 +325,8 @@ export function SeasonSummaryScreen() {
               {summary.youthIntakeCount} nya spelare rekryterades
             </p>
             {summary.bestYouthProspect && (
-              <div style={{ background: 'rgba(201,168,76,0.08)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(201,168,76,0.2)' }}>
-                <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, marginBottom: 4 }}>BÄSTA PROSPEKT</p>
+              <div style={{ background: 'rgba(196,122,58,0.08)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(196,122,58,0.2)' }}>
+                <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginBottom: 4 }}>BÄSTA PROSPEKT</p>
                 <p style={{ fontSize: 14, fontWeight: 700 }}>{summary.bestYouthProspect.name}</p>
                 <p style={{ fontSize: 12, color: 'var(--text-light-secondary)' }}>
                   {summary.bestYouthProspect.position} · Potential: {summary.bestYouthProspect.potential}
@@ -387,14 +387,14 @@ export function SeasonSummaryScreen() {
         {/* SÄSONGENS BERÄTTELSER */}
         {(summary.storyTriggers ?? []).length > 0 && (
           <div style={{ marginTop: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#C9A84C', marginBottom: 12 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>
               SÄSONGENS BERÄTTELSER
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {(summary.storyTriggers ?? []).map((trigger, i) => (
                 <div key={i} style={{
                   background: 'var(--bg-dark-surface)',
-                  border: '1px solid rgba(201,168,76,0.2)',
+                  border: '1px solid rgba(196,122,58,0.2)',
                   borderRadius: 10,
                   padding: '12px 14px',
                 }}>
@@ -452,8 +452,8 @@ export function SeasonSummaryScreen() {
 function AwardCard({ icon, title, name, value }: { icon: string; title: string; name: string; value: string }) {
   return (
     <div style={{
-      background: 'rgba(201,168,76,0.06)',
-      border: '1px solid rgba(201,168,76,0.15)',
+      background: 'rgba(196,122,58,0.06)',
+      border: '1px solid rgba(196,122,58,0.15)',
       borderRadius: 8,
       padding: '10px',
     }}>

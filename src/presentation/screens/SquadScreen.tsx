@@ -27,9 +27,9 @@ function caColor(ca: number): string {
 }
 
 function barColor(value: number): string {
-  if (value > 65) return '#22c55e'
-  if (value >= 40) return '#f59e0b'
-  return '#ef4444'
+  if (value > 65) return 'var(--success)'
+  if (value >= 40) return 'var(--warning)'
+  return 'var(--danger)'
 }
 
 function archetypeColor(arch: PlayerArchetype): string {
@@ -125,7 +125,7 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
           height: 28,
           borderRadius: '50%',
           background: archColor,
-          border: '1px solid rgba(201,168,76,0.2)',
+          border: '1px solid rgba(196,122,58,0.2)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -170,12 +170,12 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
               {Math.round(player.currentAbility)}
             </span>
             {player.startSeasonCA != null && player.currentAbility > player.startSeasonCA && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#22c55e' }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--success)' }}>
                 ↑+{Math.round(player.currentAbility - player.startSeasonCA)}
               </span>
             )}
             {player.startSeasonCA != null && player.currentAbility < player.startSeasonCA && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#ef4444' }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--danger)' }}>
                 ↓{Math.round(player.currentAbility - player.startSeasonCA)}
               </span>
             )}
@@ -186,7 +186,7 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
               <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--ice)', background: 'rgba(126,179,212,0.1)', border: '1px solid rgba(126,179,212,0.25)', borderRadius: 4, padding: '1px 4px' }}>Utvecklas</span>
             )}
             {player.age >= 24 && player.age <= 30 && (
-              <span style={{ fontSize: 9, fontWeight: 700, color: '#C9A84C', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: 4, padding: '1px 4px' }}>Peak</span>
+              <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--accent)', background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.25)', borderRadius: 4, padding: '1px 4px' }}>Peak</span>
             )}
             {player.age > 30 && (
               <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', background: 'rgba(138,133,122,0.1)', border: '1px solid rgba(138,133,122,0.3)', borderRadius: 4, padding: '1px 4px' }}>Avtar</span>
@@ -321,13 +321,13 @@ export function SquadScreen() {
                 flexShrink: 0,
                 padding: '5px 12px',
                 borderRadius: 99,
-                background: filter === tab.key ? 'rgba(201,168,76,0.12)' : 'var(--bg-elevated)',
-                border: '1px solid ' + (filter === tab.key ? '#C9A84C' : 'var(--border)'),
-                color: filter === tab.key ? '#C9A84C' : 'var(--text-secondary)',
+                background: filter === tab.key ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
+                border: '1px solid ' + (filter === tab.key ? 'var(--accent)' : 'var(--border)'),
+                color: filter === tab.key ? 'var(--accent)' : 'var(--text-secondary)',
                 fontSize: 12,
                 fontWeight: 700,
                 cursor: 'pointer',
-                boxShadow: filter === tab.key ? 'inset 0 -2px 0 #C9A84C' : undefined,
+                boxShadow: filter === tab.key ? 'inset 0 -2px 0 var(--accent)' : undefined,
               }}
             >
               {tab.label}
@@ -371,7 +371,7 @@ export function SquadScreen() {
               cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}
           >
-            <span style={{ fontSize: 13, color: '#ef4444' }}>
+            <span style={{ fontSize: 13, color: 'var(--danger)' }}>
               🩺 {players.filter(p => p.fitness < 35 && !p.isInjured).length} spelare med kritisk fitness
             </span>
             <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Fråga doktorn →</span>
@@ -412,7 +412,7 @@ export function SquadScreen() {
                     <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{deal.destinationClubName} · {deal.matchesPlayed ?? 0}/{deal.totalMatches ?? '?'} matcher</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: 12, color: '#C9A84C', fontWeight: 700 }}>Betyg: {deal.averageRating > 0 ? deal.averageRating.toFixed(1) : '—'}</p>
+                    <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 700 }}>Betyg: {deal.averageRating > 0 ? deal.averageRating.toFixed(1) : '—'}</p>
                     <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{Math.max(0, roundsLeft)} omg. kvar</p>
                   </div>
                 </div>
@@ -538,12 +538,12 @@ export function SquadScreen() {
                     <p style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 6 }}>{talkFeedback.text}</p>
                     <div style={{ display: 'flex', gap: 12, fontSize: 12 }}>
                       {talkFeedback.moraleChange !== 0 && (
-                        <span style={{ color: talkFeedback.moraleChange > 0 ? '#22c55e' : '#ef4444' }}>
+                        <span style={{ color: talkFeedback.moraleChange > 0 ? 'var(--success)' : 'var(--danger)' }}>
                           Moral {talkFeedback.moraleChange > 0 ? '+' : ''}{talkFeedback.moraleChange}
                         </span>
                       )}
                       {talkFeedback.formChange !== 0 && (
-                        <span style={{ color: talkFeedback.formChange > 0 ? '#22c55e' : '#ef4444' }}>
+                        <span style={{ color: talkFeedback.formChange > 0 ? 'var(--success)' : 'var(--danger)' }}>
                           Form {talkFeedback.formChange > 0 ? '+' : ''}{talkFeedback.formChange}
                         </span>
                       )}

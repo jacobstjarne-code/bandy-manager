@@ -9,15 +9,15 @@ interface PlayoffBannerProps {
 export function PlayoffBanner({ game, playoffInfo }: PlayoffBannerProps) {
   return (
     <div style={{
-      background: 'linear-gradient(135deg, rgba(201,168,76,0.15), rgba(201,168,76,0.05))',
-      border: '2px solid rgba(201,168,76,0.4)',
+      background: 'linear-gradient(135deg, rgba(196,122,58,0.15), rgba(196,122,58,0.05))',
+      border: '2px solid rgba(196,122,58,0.4)',
       borderRadius: 12,
       padding: '20px 16px',
       marginBottom: 16,
       textAlign: 'center',
     }}>
       <p style={{ fontSize: 24 }}>🏆</p>
-      <p style={{ fontSize: 16, fontWeight: 800, color: '#C9A84C', marginTop: 8 }}>
+      <p style={{ fontSize: 16, fontWeight: 800, color: 'var(--accent)', marginTop: 8 }}>
         Dags för slutspel!
       </p>
       <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.5 }}>
@@ -37,7 +37,7 @@ export function PlayoffBanner({ game, playoffInfo }: PlayoffBannerProps) {
               gap: 8,
               padding: '6px 0',
               fontWeight: isManaged ? 700 : 400,
-              color: isManaged ? '#C9A84C' : 'var(--text-secondary)',
+              color: isManaged ? 'var(--accent)' : 'var(--text-secondary)',
               fontSize: 13,
             }}>
               <span>{home?.shortName ?? home?.name}</span>

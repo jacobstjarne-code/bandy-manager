@@ -97,7 +97,7 @@ function NightSceneSVG() {
         x="148" y="100"
         width="7" height="62"
         rx="3"
-        fill="#C9A84C"
+        fill="var(--accent)"
         opacity="0.9"
         transform="rotate(-18, 152, 131)"
       />
@@ -108,13 +108,13 @@ function NightSceneSVG() {
         opacity="0.95"
       />
       {/* Ball / puck */}
-      <circle cx="118" cy="168" r="7" fill="#C9A84C" opacity="0.85" />
+      <circle cx="118" cy="168" r="7" fill="var(--accent)" opacity="0.85" />
       <circle cx="116" cy="166" r="2" fill="#0D1B2A" opacity="0.4" />
       <circle cx="121" cy="167" r="2" fill="#0D1B2A" opacity="0.4" />
 
       {/* Speed lines */}
-      <line x1="100" y1="150" x2="125" y2="148" stroke="#C9A84C" strokeWidth="1.5" opacity="0.2" strokeLinecap="round" />
-      <line x1="96" y1="158" x2="120" y2="157" stroke="#C9A84C" strokeWidth="1" opacity="0.15" strokeLinecap="round" />
+      <line x1="100" y1="150" x2="125" y2="148" stroke="var(--accent)" strokeWidth="1.5" opacity="0.2" strokeLinecap="round" />
+      <line x1="96" y1="158" x2="120" y2="157" stroke="var(--accent)" strokeWidth="1" opacity="0.15" strokeLinecap="round" />
 
       {/* Left audience */}
       <rect x="0" y="140" width="60" height="20" fill="#040e18" opacity="0.6"/>
@@ -148,7 +148,7 @@ function NightSceneSVG() {
       <line x1="144" y1="187" x2="157" y2="187" stroke="#0a1520" strokeWidth="2.5" strokeLinecap="round" opacity="0.9"/>
       <line x1="167" y1="183" x2="178" y2="183" stroke="#0a1520" strokeWidth="2.5" strokeLinecap="round" opacity="0.9"/>
       {/* gold edge highlight on player */}
-      <ellipse cx="160" cy="165" rx="7" ry="9" fill="none" stroke="#C9A84C" strokeWidth="0.5" opacity="0.25"/>
+      <ellipse cx="160" cy="165" rx="7" ry="9" fill="none" stroke="var(--accent)" strokeWidth="0.5" opacity="0.25"/>
     </svg>
   )
 }
@@ -208,7 +208,7 @@ export function StartScreen() {
             fontSize: 32,
             fontWeight: 900,
             letterSpacing: '5px',
-            color: '#C9A84C',
+            color: 'var(--accent)',
             textTransform: 'uppercase',
             lineHeight: 1.2,
             margin: 0,
@@ -221,7 +221,7 @@ export function StartScreen() {
         <div style={{
           width: 60,
           height: 1,
-          background: '#C9A84C',
+          background: 'var(--accent)',
           margin: '14px auto 12px',
           opacity: 0.7,
         }} />
@@ -252,7 +252,7 @@ export function StartScreen() {
             letterSpacing: '1px',
             textTransform: 'uppercase',
             border: 'none',
-            boxShadow: '0 4px 20px rgba(201,168,76,0.3)',
+            boxShadow: '0 4px 20px rgba(196,122,58,0.3)',
           }}
         >
           NYTT SPEL

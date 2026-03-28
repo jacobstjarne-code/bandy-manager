@@ -13,7 +13,7 @@ export function PhaseOverlay({ phase }: PhaseOverlayProps) {
       {phase === 'overtime' ? (
         <>
           <div style={{ fontSize: 52, marginBottom: 16 }}>⏱</div>
-          <h2 style={{ fontSize: 28, fontWeight: 900, color: '#C9A84C', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
+          <h2 style={{ fontSize: 28, fontWeight: 900, color: 'var(--accent)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
             FÖRLÄNGNING
           </h2>
           <p style={{ fontSize: 15, color: 'var(--text-light-secondary)' }}>Oavgjort efter 90 minuter.</p>

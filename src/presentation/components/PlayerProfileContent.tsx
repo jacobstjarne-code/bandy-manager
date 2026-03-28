@@ -239,12 +239,12 @@ export function PlayerProfileContent({ player, isOwned = false }: PlayerProfileC
                     <p style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 6 }}>{talkFeedback.text}</p>
                     <div style={{ display: 'flex', gap: 12, fontSize: 12 }}>
                       {talkFeedback.moraleChange !== 0 && (
-                        <span style={{ color: talkFeedback.moraleChange > 0 ? '#22c55e' : '#ef4444' }}>
+                        <span style={{ color: talkFeedback.moraleChange > 0 ? 'var(--success)' : 'var(--danger)' }}>
                           Moral {talkFeedback.moraleChange > 0 ? '+' : ''}{talkFeedback.moraleChange}
                         </span>
                       )}
                       {talkFeedback.formChange !== 0 && (
-                        <span style={{ color: talkFeedback.formChange > 0 ? '#22c55e' : '#ef4444' }}>
+                        <span style={{ color: talkFeedback.formChange > 0 ? 'var(--success)' : 'var(--danger)' }}>
                           Form {talkFeedback.formChange > 0 ? '+' : ''}{talkFeedback.formChange}
                         </span>
                       )}
@@ -380,9 +380,9 @@ export function PlayerProfileContent({ player, isOwned = false }: PlayerProfileC
                 if (!isRating || rawRating === null || rawRating === undefined) return { fontSize: 14, fontWeight: 600 }
                 if (rawRating >= 8.0) return {
                   fontSize: 14, fontWeight: 700,
-                  background: 'rgba(201,168,76,0.2)',
-                  color: '#C9A84C',
-                  border: '1px solid rgba(201,168,76,0.4)',
+                  background: 'rgba(196,122,58,0.2)',
+                  color: 'var(--accent)',
+                  border: '1px solid rgba(196,122,58,0.4)',
                   padding: '2px 8px',
                   borderRadius: 6,
                   fontFamily: "'SF Mono', 'Courier New', monospace",
@@ -391,7 +391,7 @@ export function PlayerProfileContent({ player, isOwned = false }: PlayerProfileC
                 if (rawRating < 5.0) return {
                   fontSize: 14, fontWeight: 700,
                   background: 'rgba(239,68,68,0.15)',
-                  color: '#ef4444',
+                  color: 'var(--danger)',
                   border: '1px solid rgba(239,68,68,0.3)',
                   padding: '2px 8px',
                   borderRadius: 6,

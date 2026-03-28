@@ -497,7 +497,7 @@ export function MatchLiveScreen() {
           {currentStep >= 10 && currentStep <= 50 && liveSubsUsed < 2 && !matchDone && (
             <button
               onClick={() => { setIsPaused(true); setShowSubModal(true) }}
-              style={{ background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.4)', borderRadius: 'var(--radius-sm)', color: '#C9A84C', padding: '6px 10px', fontSize: 14, cursor: 'pointer' }}
+              style={{ background: 'rgba(196,122,58,0.12)', border: '1px solid rgba(196,122,58,0.4)', borderRadius: 'var(--radius-sm)', color: 'var(--accent)', padding: '6px 10px', fontSize: 14, cursor: 'pointer' }}
             >
               🔄
             </button>
@@ -563,7 +563,7 @@ export function MatchLiveScreen() {
         {rivalry && (
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px',
-            borderRadius: 99, background: 'linear-gradient(90deg, rgba(220,50,30,0.2), rgba(201,168,76,0.2))',
+            borderRadius: 99, background: 'linear-gradient(90deg, rgba(220,50,30,0.2), rgba(196,122,58,0.2))',
             border: '1px solid rgba(220,100,30,0.4)', fontSize: 11, fontWeight: 700, color: '#ff7040',
             marginTop: 6, marginBottom: 4,
           }}>
@@ -574,7 +574,7 @@ export function MatchLiveScreen() {
           <div style={{ position: 'relative', display: 'inline-block' }}>
             <svg width="48" height="48" viewBox="0 0 48 48" style={{ position: 'absolute', top: -18, left: '50%', transform: 'translateX(-50%)' }}>
               <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(245,241,235,0.12)" strokeWidth="2"/>
-              <circle cx="24" cy="24" r="20" fill="none" stroke="#C9A84C" strokeWidth="2"
+              <circle cx="24" cy="24" r="20" fill="none" stroke="var(--accent)" strokeWidth="2"
                 strokeDasharray={`${(currentMinute / 90) * 125.7} 125.7`}
                 strokeLinecap="round" transform="rotate(-90 24 24)"
                 style={{ transition: 'stroke-dasharray 600ms ease-out' }}
@@ -647,7 +647,7 @@ export function MatchLiveScreen() {
             fontWeight = 600
             color = 'var(--color-accent)'
             paddingLeft = 12
-            boxShadow = 'inset 3px 0 0 #C9A84C'
+            boxShadow = 'inset 3px 0 0 var(--accent)'
           } else if (hasSuspension) {
             borderLeft = '3px solid var(--danger)'
             color = 'var(--danger)'
@@ -700,13 +700,13 @@ export function MatchLiveScreen() {
                 style={{
                   display: 'flex', alignItems: 'center',
                   padding: '6px 16px', gap: 8,
-                  borderLeft: '3px solid rgba(201,168,76,0.35)',
+                  borderLeft: '3px solid rgba(196,122,58,0.35)',
                   animation: 'fadeInUp 250ms ease-out both',
                 }}
               >
                 <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 28, flexShrink: 0 }}>{e.minute}'</span>
                 <span style={{ fontSize: 14, flexShrink: 0 }}>🔄</span>
-                <span style={{ fontSize: 13, color: '#C9A84C' }}>{e.description.replace('🔄 ', '')}</span>
+                <span style={{ fontSize: 13, color: 'var(--accent)' }}>{e.description.replace('🔄 ', '')}</span>
               </div>
             )
           })
@@ -723,13 +723,13 @@ export function MatchLiveScreen() {
                 style={{
                   display: 'flex', alignItems: 'center',
                   padding: '6px 16px', gap: 8,
-                  borderLeft: '3px solid rgba(201,168,76,0.35)',
+                  borderLeft: '3px solid rgba(196,122,58,0.35)',
                   animation: 'fadeInUp 250ms ease-out both',
                 }}
               >
                 <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 28, flexShrink: 0 }}>{ls.minute}'</span>
                 <span style={{ fontSize: 14, flexShrink: 0 }}>🔄</span>
-                <span style={{ fontSize: 13, color: '#C9A84C' }}>{inName} IN för {outName}</span>
+                <span style={{ fontSize: 13, color: 'var(--accent)' }}>{inName} IN för {outName}</span>
               </div>
             )
           })

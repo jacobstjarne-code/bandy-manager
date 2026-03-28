@@ -90,10 +90,10 @@ function getTopStats(player: Player): { label: string; value: number }[] {
 }
 
 function statValueColor(value: number): string {
-  if (value >= 75) return '#22c55e'
+  if (value >= 75) return 'var(--success)'
   if (value >= 60) return 'var(--text-primary)'
-  if (value >= 40) return '#f59e0b'
-  return '#ef4444'
+  if (value >= 40) return 'var(--warning)'
+  return 'var(--danger)'
 }
 
 interface PlayerSilhouetteProps {
@@ -108,8 +108,8 @@ function PlayerSilhouette({ jerseyNumber }: PlayerSilhouetteProps) {
           <line x1="0" y1="0" x2="0" y2="8" stroke="white" strokeWidth="1" opacity="0.02"/>
         </pattern>
         <radialGradient id="player-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#C9A84C" stopOpacity="0.15"/>
-          <stop offset="100%" stopColor="#C9A84C" stopOpacity="0"/>
+          <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.15"/>
+          <stop offset="100%" stopColor="var(--accent)" stopOpacity="0"/>
         </radialGradient>
       </defs>
       <rect width="120" height="160" fill="#0a1928" />
@@ -122,29 +122,29 @@ function PlayerSilhouette({ jerseyNumber }: PlayerSilhouetteProps) {
       <circle cx="95" cy="50" r="0.8" fill="white" opacity="0.35" style={{ animation: 'snowfall 5s 2s infinite linear' }}/>
       <circle cx="45" cy="15" r="1.2" fill="white" opacity="0.3" style={{ animation: 'snowfall 7s 1s infinite linear' }}/>
       {/* Body / torso */}
-      <ellipse cx="60" cy="75" rx="18" ry="22" fill="#C9A84C" opacity="0.85" />
+      <ellipse cx="60" cy="75" rx="18" ry="22" fill="var(--accent)" opacity="0.85" />
       {/* Head with helmet */}
-      <circle cx="60" cy="46" r="14" fill="#C9A84C" opacity="0.9" />
+      <circle cx="60" cy="46" r="14" fill="var(--accent)" opacity="0.9" />
       <rect x="48" y="38" width="24" height="10" rx="3" fill="#8B6914" />
       {/* Visor */}
       <line x1="50" y1="48" x2="70" y2="48" stroke="#0a1928" strokeWidth="2" />
       {/* Helmet visor detail */}
       <path d="M50,48 Q60,52 70,48" stroke="#0a1928" strokeWidth="1.5" fill="none"/>
       {/* Left arm / stick */}
-      <line x1="58" y1="80" x2="35" y2="110" stroke="#C9A84C" strokeWidth="5" strokeLinecap="round" />
+      <line x1="58" y1="80" x2="35" y2="110" stroke="var(--accent)" strokeWidth="5" strokeLinecap="round" />
       {/* Right arm */}
-      <line x1="62" y1="80" x2="80" y2="95" stroke="#C9A84C" strokeWidth="4" strokeLinecap="round" />
+      <line x1="62" y1="80" x2="80" y2="95" stroke="var(--accent)" strokeWidth="4" strokeLinecap="round" />
       {/* Stick shaft */}
       <line x1="35" y1="110" x2="25" y2="140" stroke="#8B6914" strokeWidth="3" strokeLinecap="round" />
       {/* Blade */}
       <line x1="18" y1="140" x2="38" y2="142" stroke="#8B6914" strokeWidth="4" strokeLinecap="round" />
       {/* Skate blade details */}
-      <line x1="35" y1="133" x2="50" y2="134" stroke="#C9A84C" strokeWidth="1" opacity="0.5"/>
-      <line x1="75" y1="128" x2="90" y2="129" stroke="#C9A84C" strokeWidth="1" opacity="0.5"/>
+      <line x1="35" y1="133" x2="50" y2="134" stroke="var(--accent)" strokeWidth="1" opacity="0.5"/>
+      <line x1="75" y1="128" x2="90" y2="129" stroke="var(--accent)" strokeWidth="1" opacity="0.5"/>
       {/* Left leg */}
-      <line x1="55" y1="97" x2="45" y2="130" stroke="#C9A84C" strokeWidth="7" strokeLinecap="round" />
+      <line x1="55" y1="97" x2="45" y2="130" stroke="var(--accent)" strokeWidth="7" strokeLinecap="round" />
       {/* Right leg */}
-      <line x1="65" y1="97" x2="80" y2="125" stroke="#C9A84C" strokeWidth="7" strokeLinecap="round" />
+      <line x1="65" y1="97" x2="80" y2="125" stroke="var(--accent)" strokeWidth="7" strokeLinecap="round" />
       {/* Skates */}
       <ellipse cx="42" cy="133" rx="10" ry="4" fill="#8B6914" />
       <ellipse cx="82" cy="128" rx="10" ry="4" fill="#8B6914" />
@@ -187,12 +187,12 @@ function CaSparkline({ history, currentCa }: { history: Array<{ season: number; 
         <polyline
           points={coords.map(c => `${c.x},${c.y}`).join(' ')}
           fill="none"
-          stroke={trending ? '#22c55e' : '#ef4444'}
+          stroke={trending ? 'var(--success)' : 'var(--danger)'}
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <circle cx={last.x} cy={last.y} r="3" fill={trending ? '#22c55e' : '#ef4444'} />
+        <circle cx={last.x} cy={last.y} r="3" fill={trending ? 'var(--success)' : 'var(--danger)'} />
         <text x={last.x + 5} y={last.y + 4} fontSize="9" fill="var(--text-primary)" fontWeight="700">{currentCa}</text>
       </svg>
     </div>
@@ -234,9 +234,9 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
       style={{
         width: 280,
         borderRadius: 16,
-        background: 'linear-gradient(var(--bg-surface), var(--bg)) padding-box, linear-gradient(160deg, #C9A84C 0%, #8B6914 50%, transparent 100%) border-box',
+        background: 'linear-gradient(var(--bg-surface), var(--bg)) padding-box, linear-gradient(160deg, var(--accent) 0%, #8B6914 50%, transparent 100%) border-box',
         border: '2px solid transparent',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.15), 0 0 0 1px rgba(201,168,76,0.1)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.15), 0 0 0 1px rgba(196,122,58,0.1)',
         overflow: 'hidden',
         cursor: onClick ? 'pointer' : 'default',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -256,7 +256,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
 
         {/* Position + number */}
         <div style={{ textAlign: 'right' }}>
-          <p style={{ fontSize: 11, color: '#C9A84C', fontWeight: 700, letterSpacing: '1px' }}>
+          <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, letterSpacing: '1px' }}>
             #{jerseyNum}
           </p>
           <p style={{ fontSize: 10, color: 'var(--text-secondary)', letterSpacing: '1px', textTransform: 'uppercase' }}>
@@ -266,7 +266,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
       </div>
 
       {/* Gold divider */}
-      <div style={{ height: 1, background: 'rgba(201,168,76,0.3)', margin: '0 14px' }} />
+      <div style={{ height: 1, background: 'rgba(196,122,58,0.3)', margin: '0 14px' }} />
 
       {/* Player illustration area */}
       <div style={{
@@ -286,13 +286,13 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
           transform: 'translateX(-50%)',
           width: 100,
           height: 40,
-          background: 'radial-gradient(ellipse, rgba(201,168,76,0.15) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse, rgba(196,122,58,0.15) 0%, transparent 70%)',
         }} />
         <PlayerSilhouette jerseyNumber={jerseyNum} />
       </div>
 
       {/* Gold divider */}
-      <div style={{ height: 1, background: 'rgba(201,168,76,0.5)', margin: '0 14px' }} />
+      <div style={{ height: 1, background: 'rgba(196,122,58,0.5)', margin: '0 14px' }} />
 
       {/* Name + club + position */}
       <div style={{ padding: '10px 14px 8px' }}>
@@ -310,7 +310,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
           <span style={{
             fontSize: 10,
             fontWeight: 700,
-            color: '#C9A84C',
+            color: 'var(--accent)',
             letterSpacing: '1px',
             textTransform: 'uppercase',
           }}>
@@ -333,19 +333,19 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
       </div>
 
       {/* Gold divider */}
-      <div style={{ height: 1, background: 'rgba(201,168,76,0.25)', margin: '0 14px' }} />
+      <div style={{ height: 1, background: 'rgba(196,122,58,0.25)', margin: '0 14px' }} />
 
       {/* EGENSKAPER section */}
       <div style={{ padding: '10px 14px 8px' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
-          <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: '#C9A84C' }}>
+          <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)' }}>
             EGENSKAPER
           </p>
           {reportAge === 'aging' && (
-            <span style={{ fontSize: 9, color: '#f59e0b', letterSpacing: '0.3px' }}>1 säsong sedan</span>
+            <span style={{ fontSize: 9, color: 'var(--warning)', letterSpacing: '0.3px' }}>1 säsong sedan</span>
           )}
           {isStale && (
-            <span style={{ fontSize: 9, color: '#ef4444', letterSpacing: '0.3px' }}>Föråldrad</span>
+            <span style={{ fontSize: 9, color: 'var(--danger)', letterSpacing: '0.3px' }}>Föråldrad</span>
           )}
         </div>
         <div style={{ opacity: isStale ? 0.45 : 1, transition: 'opacity 0.2s' }}>
@@ -359,7 +359,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
                   padding: '4px 8px',
                   background: 'rgba(255,255,255,0.04)',
                   borderRadius: 6,
-                  border: '1px solid rgba(201,168,76,0.1)',
+                  border: '1px solid rgba(196,122,58,0.1)',
                 }}>
                   <span style={{ fontSize: 10, color: 'var(--text-secondary)', letterSpacing: '0.3px' }}>{stat.label}</span>
                   <span className="tabular" style={{ fontSize: 12, fontWeight: 800, color: statValueColor(stat.value), marginLeft: 4, fontFamily: 'var(--font-display)' }}>
@@ -380,14 +380,14 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
           )}
         </div>
         {isStale && (
-          <p style={{ fontSize: 10, color: '#ef4444', marginTop: 6, textAlign: 'center', opacity: 0.8 }}>
+          <p style={{ fontSize: 10, color: 'var(--danger)', marginTop: 6, textAlign: 'center', opacity: 0.8 }}>
             Föråldrad rapport — scouta igen?
           </p>
         )}
       </div>
 
       {/* Gold gradient divider */}
-      <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.6), transparent)', margin: '0 0' }} />
+      <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, rgba(196,122,58,0.6), transparent)', margin: '0 0' }} />
 
       {/* Season summary — only for owned players */}
       <div style={{ padding: '8px 14px 12px' }}>
@@ -429,7 +429,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
             </div>
             {player.seasonStats.averageRating > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: 5, padding: '4px 2px' }}>
-                <span style={{ fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-display)', color: player.seasonStats.averageRating >= 7 ? '#22c55e' : player.seasonStats.averageRating >= 6 ? '#f59e0b' : '#ef4444' }}>
+                <span style={{ fontSize: 14, fontWeight: 800, fontFamily: 'var(--font-display)', color: player.seasonStats.averageRating >= 7 ? 'var(--success)' : player.seasonStats.averageRating >= 6 ? 'var(--warning)' : 'var(--danger)' }}>
                   {player.seasonStats.averageRating.toFixed(1)}
                 </span>
                 <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>BETYG</span>
@@ -437,13 +437,13 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
             )}
             {player.seasonStats.yellowCards > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: 5, padding: '4px 2px' }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: '#f59e0b', fontFamily: 'var(--font-display)' }}>{player.seasonStats.yellowCards}</span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--warning)', fontFamily: 'var(--font-display)' }}>{player.seasonStats.yellowCards}</span>
                 <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>GULA</span>
               </div>
             )}
             {player.seasonStats.suspensions > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: 5, padding: '4px 2px' }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: '#ef4444', fontFamily: 'var(--font-display)' }}>{player.seasonStats.suspensions}</span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--danger)', fontFamily: 'var(--font-display)' }}>{player.seasonStats.suspensions}</span>
                 <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>UTVISN</span>
               </div>
             )}

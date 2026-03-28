@@ -40,9 +40,9 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
                 : item.severity === 'positive' ? 'rgba(34,197,94,0.2)'
                 : 'var(--border)'}`,
               borderRadius: 8, fontSize: 12,
-              color: item.severity === 'danger' ? '#ef4444'
-                : item.severity === 'warning' ? '#f59e0b'
-                : item.severity === 'positive' ? '#22c55e'
+              color: item.severity === 'danger' ? 'var(--danger)'
+                : item.severity === 'warning' ? 'var(--warning)'
+                : item.severity === 'positive' ? 'var(--success)'
                 : 'var(--text-secondary)',
             }}>
               <span style={{ flexShrink: 0 }}>{item.icon}</span>
@@ -66,8 +66,8 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
 
       {cornerSpec ? (
         <div style={{
-          background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)',
-          borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#C9A84C',
+          background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.2)',
+          borderRadius: 8, padding: '8px 12px', fontSize: 12, color: 'var(--accent)',
           marginTop: 4, marginBottom: 12,
         }}>
           📐 {cornerSpec.firstName} {cornerSpec.lastName} är hörnspecialist (hörnfärdighet {cornerSpec.attributes.cornerSkill}) — aggressiv hörnstrategi rekommenderas!
@@ -75,7 +75,7 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
       ) : tacticState.cornerStrategy === 'aggressive' ? (
         <div style={{
           background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)',
-          borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#f59e0b',
+          borderRadius: 8, padding: '8px 12px', fontSize: 12, color: 'var(--warning)',
           marginTop: 4, marginBottom: 12,
         }}>
           ⚠️ Ingen hörnspecialist i startelvan — aggressiva hörnor mindre effektiva
