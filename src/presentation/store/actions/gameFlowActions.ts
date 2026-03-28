@@ -1,0 +1,189 @@
+import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
+import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
+import { navigateTo } from '../../navigation/globalNavigate'
+import { saveSaveGame } from '../../../infrastructure/persistence/saveGameStorage'
+
+interface GetState {
+  game: SaveGame | null
+  roundSummary: RoundSummaryData | null
+  lastAdvanceResult: AdvanceResult | null
+  resolveEvent: (eventId: string, choiceId: string) => void
+  setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string) => { success: boolean; error?: string }
+  advance: () => AdvanceResult | null
+}
+
+type Get = () => GetState
+type Set = (partial: Partial<{ game: SaveGame | null; roundSummary: RoundSummaryData | null; lastAdvanceResult: AdvanceResult | null }>) => void
+
+export function gameFlowActions(get: Get, set: Set) {
+  return {
+    advance: (): AdvanceResult | null => {
+      const { game } = get()
+      if (!game) return null
+
+      const managedClubBefore = game.clubs.find(c => c.id === game.managedClubId)
+      const financesBefore = managedClubBefore?.finances ?? 0
+      const communityStandingBefore = game.communityStanding ?? 50
+      const inboxCountBefore = game.inbox.length
+
+      const result = advanceToNextEvent(game)
+
+      const resultGame = result.game
+      const managedClubAfter = resultGame.clubs.find(c => c.id === resultGame.managedClubId)
+      const financesAfter = managedClubAfter?.finances ?? 0
+      const communityStandingAfter = resultGame.communityStanding ?? 50
+      const newInboxCount = Math.max(0, resultGame.inbox.length - inboxCountBefore)
+
+      const managedFixture = result.roundPlayed !== null
+        ? resultGame.fixtures.find(f =>
+            (f.homeClubId === resultGame.managedClubId || f.awayClubId === resultGame.managedClubId) &&
+            f.status === 'completed' &&
+            (f.isCup ? f.roundNumber - 100 : f.roundNumber) === result.roundPlayed
+          )
+        : undefined
+
+      let matchResult: string | undefined
+      let matchScorers: string[] | undefined
+
+      if (managedFixture) {
+        const homeClub = resultGame.clubs.find(c => c.id === managedFixture.homeClubId)
+        const awayClub = resultGame.clubs.find(c => c.id === managedFixture.awayClubId)
+        matchResult = `${homeClub?.shortName ?? homeClub?.name ?? '?'} ${managedFixture.homeScore}–${managedFixture.awayScore} ${awayClub?.shortName ?? awayClub?.name ?? '?'}`
+
+        const managedPlayerIds = new Set(resultGame.players.filter(p => p.clubId === resultGame.managedClubId).map(p => p.id))
+        const goalsByPlayer: Record<string, number> = {}
+        const assistsByPlayer: Record<string, number> = {}
+        for (const evt of managedFixture.events) {
+          if (evt.playerId && managedPlayerIds.has(evt.playerId)) {
+            if (evt.type === 'goal') goalsByPlayer[evt.playerId] = (goalsByPlayer[evt.playerId] ?? 0) + 1
+            if (evt.type === 'assist') assistsByPlayer[evt.playerId] = (assistsByPlayer[evt.playerId] ?? 0) + 1
+          }
+        }
+        const scorerStrs: string[] = []
+        for (const [pid, goals] of Object.entries(goalsByPlayer)) {
+          const p = resultGame.players.find(pl => pl.id === pid)
+          if (!p) continue
+          const assists = assistsByPlayer[pid] ?? 0
+          const name = `${p.firstName} ${p.lastName.slice(0, 1)}.`
+          if (assists > 0) scorerStrs.push(`${name} ${goals}+${assists}`)
+          else scorerStrs.push(`${name} ${goals} mål`)
+        }
+        if (scorerStrs.length > 0) matchScorers = scorerStrs
+      }
+
+      const newlyInjuredPlayers = resultGame.players.filter(p =>
+        p.clubId === resultGame.managedClubId &&
+        p.isInjured &&
+        !game.players.find(op => op.id === p.id)?.isInjured
+      )
+      const injuries = newlyInjuredPlayers.map(p => {
+        const weeks = Math.ceil(p.injuryDaysRemaining / 7)
+        return `${p.firstName} ${p.lastName} (${weeks} v.)`
+      })
+
+      let temperature: number | undefined
+      if (managedFixture) {
+        const mw = resultGame.matchWeathers.find(w => w.fixtureId === managedFixture.id)
+          ?? game.matchWeathers.find(w => w.fixtureId === managedFixture.id)
+        if (mw) temperature = mw.weather.temperature
+      }
+
+      const csDelta = communityStandingAfter - communityStandingBefore
+      const communityStandingChanges: { reason: string; delta: number }[] = csDelta !== 0
+        ? [{ reason: csDelta > 0 ? 'Positiv utveckling' : 'Negativ händelse', delta: csDelta }]
+        : []
+
+      const youthInbox = resultGame.inbox.find(i =>
+        i.type === 'youthP17' && !game.inbox.find(o => o.id === i.id)
+      )
+      const youthMatchResult = youthInbox ? youthInbox.title.replace(/^📋 /, '') : undefined
+
+      const summary: RoundSummaryData = {
+        round: result.roundPlayed ?? 0,
+        date: resultGame.currentDate,
+        temperature,
+        matchPlayed: !!managedFixture,
+        matchResult,
+        matchScorers,
+        communityStandingBefore,
+        communityStandingAfter,
+        communityStandingChanges,
+        financesBefore,
+        financesAfter,
+        injuries,
+        newInboxCount,
+        youthMatchResult,
+      }
+
+      const gameToSave = { ...result.game, lastSavedAt: new Date().toISOString() }
+      set({ game: gameToSave, lastAdvanceResult: result, roundSummary: summary })
+      saveSaveGame(gameToSave).catch(e => console.warn('Autosave misslyckades:', e))
+
+      const pendingCount = result.game.pendingEvents?.length ?? 0
+      const managerFired = result.game.managerFired
+      if (managerFired) {
+        navigateTo('/game/game-over', { replace: true })
+      } else if (result.seasonEnded) {
+        if (result.game.showSeasonSummary) {
+          navigateTo('/game/season-summary', { replace: true })
+        } else if (result.game.showBoardMeeting) {
+          navigateTo('/game/board-meeting', { replace: true })
+        } else if (result.game.showPreSeason) {
+          navigateTo('/game/pre-season', { replace: true })
+        }
+      } else if (pendingCount > 0) {
+        navigateTo('/game/events', { replace: true })
+      } else if (summary.matchPlayed) {
+        navigateTo('/game/round-summary', { replace: true })
+      }
+
+      return result
+    },
+
+    clearBoardMeeting: () => {
+      const { game } = get()
+      if (!game) return
+      set({ game: { ...game, showBoardMeeting: false } })
+    },
+
+    clearPreSeason: () => {
+      const { game } = get()
+      if (!game) return
+      set({ game: { ...game, showPreSeason: false } })
+    },
+
+    clearSeasonSummary: () => {
+      const { game } = get()
+      if (!game) return
+      set({ game: { ...game, showSeasonSummary: false, showBoardMeeting: true } })
+    },
+
+    clearRoundSummary: () => set({ roundSummary: null }),
+
+    simulateRemainingStep: (): AdvanceResult | null => {
+      const state = get()
+      const { game, resolveEvent, setPlayerLineup, advance } = state
+      if (!game) return null
+      if ((game.pendingEvents?.length ?? 0) > 0) {
+        const event = game.pendingEvents[0]
+        const neutralChoice = event.choices.find(c =>
+          c.id.includes('reject') || c.id.includes('decline') || c.id.includes('no') ||
+          (c.effect as { type?: string })?.type === 'noOp'
+        ) ?? event.choices[0]
+        resolveEvent(event.id, neutralChoice.id)
+        return { game: get().game!, roundPlayed: null, seasonEnded: false }
+      }
+      if (!game.managedClubPendingLineup) {
+        const available = game.players
+          .filter(p => p.clubId === game.managedClubId && !p.isInjured && p.suspensionGamesRemaining <= 0)
+          .sort((a, b) => b.currentAbility - a.currentAbility)
+        setPlayerLineup(
+          available.slice(0, 11).map(p => p.id),
+          available.slice(11, 16).map(p => p.id),
+          available[0]?.id,
+        )
+      }
+      return advance()
+    },
+  }
+}

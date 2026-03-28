@@ -1,24 +1,18 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { get as idbGet, set as idbSet, del as idbDel } from 'idb-keyval'
-import type { SaveGame, TalentSearchRequest, RoundSummaryData, Sponsor } from '../../domain/entities/SaveGame'
+import type { SaveGame, RoundSummaryData, Sponsor } from '../../domain/entities/SaveGame'
 import type { Tactic } from '../../domain/entities/Club'
-import type { TrainingFocus, TrainingProjectType } from '../../domain/entities/Training'
-import { createTrainingProject } from '../../domain/services/trainingProjectService'
-import { generateSponsorOffer } from '../../domain/services/sponsorService'
+import type { TrainingFocus } from '../../domain/entities/Training'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entities/Fixture'
-import { FixtureStatus, PlayoffStatus, InboxItemType, PlayerPosition } from '../../domain/enums'
+import { FixtureStatus, PlayoffStatus, InboxItemType } from '../../domain/enums'
 import { createNewGame } from '../../application/useCases/createNewGame'
-import { startScoutAssignment } from '../../domain/services/scoutingService'
-import { createOutgoingBid } from '../../domain/services/transferService'
 import { resolveEvent as resolveEventFn } from '../../domain/services/eventService'
-import { updateCupBracketAfterRound } from '../../domain/services/cupService'
-import { updateSeriesAfterMatch, advancePlayoffRound } from '../../domain/services/playoffService'
-import { advanceToNextEvent, type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
-import { navigateTo } from '../navigation/globalNavigate'
+import { type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
-import { calculateStandings } from '../../domain/services/standingsService'
-import type { LoanDeal } from '../../domain/entities/Academy'
+import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
+import { loadSaveGame, listSaveGames, deleteSaveGame } from '../../infrastructure/persistence/saveGameStorage'
+
 export interface SaveGameSummary {
   id: string
   managerName: string
@@ -26,8 +20,11 @@ export interface SaveGameSummary {
   season: number
   lastSavedAt: string
 }
-import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
-import { saveSaveGame, loadSaveGame, listSaveGames, deleteSaveGame } from '../../infrastructure/persistence/saveGameStorage'
+import { matchActions } from './actions/matchActions'
+import { trainingActions } from './actions/trainingActions'
+import { transferActions } from './actions/transferActions'
+import { academyActions } from './actions/academyActions'
+import { gameFlowActions } from './actions/gameFlowActions'
 
 interface GameState {
   game: SaveGame | null
@@ -120,138 +117,6 @@ export const useGameStore = create<GameState>()(
         return true
       },
 
-      advance: () => {
-        const { game } = get()
-        if (!game) return null
-
-        // Capture before-state for RoundSummary
-        const managedClubBefore = game.clubs.find(c => c.id === game.managedClubId)
-        const financesBefore = managedClubBefore?.finances ?? 0
-        const communityStandingBefore = game.communityStanding ?? 50
-        const inboxCountBefore = game.inbox.length
-
-        const result = advanceToNextEvent(game)
-
-        // Build roundSummary from before + after state
-        const resultGame = result.game
-        const managedClubAfter = resultGame.clubs.find(c => c.id === resultGame.managedClubId)
-        const financesAfter = managedClubAfter?.finances ?? 0
-        const communityStandingAfter = resultGame.communityStanding ?? 50
-        const newInboxCount = Math.max(0, resultGame.inbox.length - inboxCountBefore)
-
-        // Find managed fixture played this round
-        const managedFixture = result.roundPlayed !== null
-          ? resultGame.fixtures.find(f =>
-              (f.homeClubId === resultGame.managedClubId || f.awayClubId === resultGame.managedClubId) &&
-              f.status === 'completed' &&
-              (f.isCup ? f.roundNumber - 100 : f.roundNumber) === result.roundPlayed
-            )
-          : undefined
-
-        let matchResult: string | undefined
-        let matchScorers: string[] | undefined
-
-        if (managedFixture) {
-          const homeClub = resultGame.clubs.find(c => c.id === managedFixture.homeClubId)
-          const awayClub = resultGame.clubs.find(c => c.id === managedFixture.awayClubId)
-          matchResult = `${homeClub?.shortName ?? homeClub?.name ?? '?'} ${managedFixture.homeScore}–${managedFixture.awayScore} ${awayClub?.shortName ?? awayClub?.name ?? '?'}`
-
-          // Collect scorers for managed club
-          const managedPlayerIds = new Set(resultGame.players.filter(p => p.clubId === resultGame.managedClubId).map(p => p.id))
-          const goalsByPlayer: Record<string, number> = {}
-          const assistsByPlayer: Record<string, number> = {}
-          for (const evt of managedFixture.events) {
-            if (evt.playerId && managedPlayerIds.has(evt.playerId)) {
-              if (evt.type === 'goal') goalsByPlayer[evt.playerId] = (goalsByPlayer[evt.playerId] ?? 0) + 1
-              if (evt.type === 'assist') assistsByPlayer[evt.playerId] = (assistsByPlayer[evt.playerId] ?? 0) + 1
-            }
-          }
-          const scorerStrs: string[] = []
-          for (const [pid, goals] of Object.entries(goalsByPlayer)) {
-            const p = resultGame.players.find(pl => pl.id === pid)
-            if (!p) continue
-            const assists = assistsByPlayer[pid] ?? 0
-            const name = `${p.firstName} ${p.lastName.slice(0, 1)}.`
-            if (assists > 0) scorerStrs.push(`${name} ${goals}+${assists}`)
-            else scorerStrs.push(`${name} ${goals} mål`)
-          }
-          if (scorerStrs.length > 0) matchScorers = scorerStrs
-        }
-
-        // Injuries from this round
-        const newlyInjuredPlayers = resultGame.players.filter(p =>
-          p.clubId === resultGame.managedClubId &&
-          p.isInjured &&
-          !game.players.find(op => op.id === p.id)?.isInjured
-        )
-        const injuries = newlyInjuredPlayers.map(p => {
-          const weeks = Math.ceil(p.injuryDaysRemaining / 7)
-          return `${p.firstName} ${p.lastName} (${weeks} v.)`
-        })
-
-        // Weather for managed fixture
-        let temperature: number | undefined
-        if (managedFixture) {
-          const mw = resultGame.matchWeathers.find(w => w.fixtureId === managedFixture.id)
-            ?? game.matchWeathers.find(w => w.fixtureId === managedFixture.id)
-          if (mw) temperature = mw.weather.temperature
-        }
-
-        // communityStanding changes (simple delta)
-        const csDelta = communityStandingAfter - communityStandingBefore
-        const communityStandingChanges: { reason: string; delta: number }[] = csDelta !== 0
-          ? [{ reason: csDelta > 0 ? 'Positiv utveckling' : 'Negativ händelse', delta: csDelta }]
-          : []
-
-        // Youth match result from inbox
-        const youthInbox = resultGame.inbox.find(i =>
-          i.type === 'youthP17' && !game.inbox.find(o => o.id === i.id)
-        )
-        const youthMatchResult = youthInbox ? youthInbox.title.replace(/^📋 /, '') : undefined
-
-        const summary: RoundSummaryData = {
-          round: result.roundPlayed ?? 0,
-          date: resultGame.currentDate,
-          temperature,
-          matchPlayed: !!managedFixture,
-          matchResult,
-          matchScorers,
-          communityStandingBefore,
-          communityStandingAfter,
-          communityStandingChanges,
-          financesBefore,
-          financesAfter,
-          injuries,
-          newInboxCount,
-          youthMatchResult,
-        }
-
-        const gameToSave = { ...result.game, lastSavedAt: new Date().toISOString() }
-        set({ game: gameToSave, lastAdvanceResult: result, roundSummary: summary })
-        saveSaveGame(gameToSave).catch(e => console.warn('Autosave misslyckades:', e))
-
-        // Post-advance navigation (priority order)
-        const pendingCount = result.game.pendingEvents?.length ?? 0
-        const managerFired = result.game.managerFired
-        if (managerFired) {
-          navigateTo('/game/game-over', { replace: true })
-        } else if (result.seasonEnded) {
-          if (result.game.showSeasonSummary) {
-            navigateTo('/game/season-summary', { replace: true })
-          } else if (result.game.showBoardMeeting) {
-            navigateTo('/game/board-meeting', { replace: true })
-          } else if (result.game.showPreSeason) {
-            navigateTo('/game/pre-season', { replace: true })
-          }
-        } else if (pendingCount > 0) {
-          navigateTo('/game/events', { replace: true })
-        } else if (summary.matchPlayed) {
-          navigateTo('/game/round-summary', { replace: true })
-        }
-
-        return result
-      },
-
       setPlayerLineup: (startingPlayerIds, benchPlayerIds, captainPlayerId) => {
         const { game } = get()
         if (!game) return { success: false, error: 'Inget spel laddat' }
@@ -263,78 +128,6 @@ export const useGameStore = create<GameState>()(
         return { success: false, error: result.error }
       },
 
-      saveLiveMatchResult: (fixtureId, homeScore, awayScore, events, report, homeLineup, awayLineup, overtimeResult, penaltyResult) => {
-        const { game } = get()
-        if (!game) return
-        const updatedFixtures = game.fixtures.map(f =>
-          f.id === fixtureId
-            ? {
-                ...f, homeScore, awayScore, events, report, homeLineup, awayLineup,
-                status: FixtureStatus.Completed,
-                wentToOvertime: (overtimeResult !== undefined || penaltyResult !== undefined) || undefined,
-                wentToPenalties: penaltyResult !== undefined || undefined,
-                overtimeResult,
-                penaltyResult,
-              }
-            : f
-        )
-        const completedFixtures = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
-        const standings = calculateStandings(game.league.teamIds, completedFixtures)
-
-        // If a cup fixture was just played live, update the bracket immediately so the
-        // CupCard shows the correct result rather than waiting until advance() reaches round 103+
-        const completedCupFixture = updatedFixtures.find(f => f.id === fixtureId && f.isCup)
-        let updatedCupBracket = game.cupBracket ?? null
-        if (completedCupFixture && updatedCupBracket && !updatedCupBracket.completed) {
-          updatedCupBracket = updateCupBracketAfterRound(updatedCupBracket, [completedCupFixture])
-        }
-
-        // If a playoff fixture was just played live, update the bracket immediately
-        // so ChampionScreen shows the correct result
-        const completedFixture = updatedFixtures.find(f => f.id === fixtureId)!
-        let updatedPlayoffBracket = game.playoffBracket
-        if (completedFixture.isKnockout && !completedFixture.isCup && updatedPlayoffBracket) {
-          // Update the relevant series
-          updatedPlayoffBracket = {
-            ...updatedPlayoffBracket,
-            quarterFinals: updatedPlayoffBracket.quarterFinals.map(s =>
-              s.fixtures.includes(fixtureId) ? updateSeriesAfterMatch(s, completedFixture) : s
-            ),
-            semiFinals: updatedPlayoffBracket.semiFinals.map(s =>
-              s.fixtures.includes(fixtureId) ? updateSeriesAfterMatch(s, completedFixture) : s
-            ),
-            final: updatedPlayoffBracket.final && updatedPlayoffBracket.final.fixtures.includes(fixtureId)
-              ? updateSeriesAfterMatch(updatedPlayoffBracket.final, completedFixture)
-              : updatedPlayoffBracket.final,
-          }
-
-          // Check if current phase is complete and advance
-          const phaseComplete = (() => {
-            if (updatedPlayoffBracket.status === PlayoffStatus.QuarterFinals)
-              return updatedPlayoffBracket.quarterFinals.every(s => s.winnerId !== null)
-            if (updatedPlayoffBracket.status === PlayoffStatus.SemiFinals)
-              return updatedPlayoffBracket.semiFinals.every(s => s.winnerId !== null)
-            if (updatedPlayoffBracket.status === PlayoffStatus.Final)
-              return updatedPlayoffBracket.final?.winnerId !== null
-            return false
-          })()
-
-          if (phaseComplete) {
-            const nextRoundStart = updatedPlayoffBracket.status === PlayoffStatus.QuarterFinals ? 26
-              : updatedPlayoffBracket.status === PlayoffStatus.SemiFinals ? 29 : 32
-            const { bracket: advancedBracket, newFixtures: newPlayoffFixtures } =
-              advancePlayoffRound(updatedPlayoffBracket, game.currentSeason, nextRoundStart)
-            updatedPlayoffBracket = advancedBracket
-            // Add any new playoff fixtures (e.g. semi fixtures after all QFs decided)
-            if (newPlayoffFixtures.length > 0) {
-              updatedFixtures.push(...newPlayoffFixtures)
-            }
-          }
-        }
-
-        set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings, cupBracket: updatedCupBracket, playoffBracket: updatedPlayoffBracket } })
-      },
-
       updateTactic: (tactic) => {
         const { game } = get()
         if (!game) return
@@ -342,12 +135,6 @@ export const useGameStore = create<GameState>()(
           c.id === game.managedClubId ? { ...c, activeTactic: tactic } : c
         )
         set({ game: { ...game, clubs: updatedClubs } })
-      },
-
-      setTraining: (focus) => {
-        const { game } = get()
-        if (!game) return
-        set({ game: { ...game, managedClubTraining: focus } })
       },
 
       markTutorialSeen: () => {
@@ -368,34 +155,6 @@ export const useGameStore = create<GameState>()(
         set({ game: { ...game, inbox: game.inbox.map(i => ({ ...i, isRead: true })) } })
       },
 
-      startEvaluation: (playerId, clubId, sameRegion) => {
-        const { game } = get()
-        if (!game) return { success: false, error: 'Inget spel laddat' }
-        if (game.activeTalentSearch) return { success: false, error: 'Spaning pågår — vänta tills den är klar' }
-        if (game.activeScoutAssignment) return { success: false, error: 'Scout är redan utsänd' }
-        if (game.scoutBudget <= 0) return { success: false, error: 'Scoutbudgeten är slut för säsongen' }
-        const assignment = startScoutAssignment(playerId, clubId, game.currentDate, sameRegion)
-        set({ game: { ...game, activeScoutAssignment: assignment, scoutBudget: game.scoutBudget - 1 } })
-        return { success: true }
-      },
-
-      placeOutgoingBid: (playerId, offerAmount, offeredSalary, contractYears) => {
-        const { game } = get()
-        if (!game) return { success: false, error: 'Inget spel laddat' }
-        const scheduledFixtures = game.fixtures
-          .filter(f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && f.status === 'scheduled')
-          .sort((a, b) => a.roundNumber - b.roundNumber)
-
-        if (scheduledFixtures.length === 0) {
-          return { success: false, error: 'Inga fler matcher denna säsong — vänta till nästa säsong' }
-        }
-        const currentRound = scheduledFixtures[0].roundNumber
-        const result = createOutgoingBid(game, playerId, offerAmount, offeredSalary, contractYears, currentRound)
-        if (!result.success || !result.bid) return { success: false, error: result.error }
-        set({ game: { ...game, transferBids: [...(game.transferBids ?? []), result.bid] } })
-        return { success: true }
-      },
-
       resolveEvent: (eventId, choiceId) => {
         const { game } = get()
         if (!game) return
@@ -403,22 +162,8 @@ export const useGameStore = create<GameState>()(
       },
 
       clearGame: () => set({ game: null, lastAdvanceResult: null, roundSummary: null }),
-      clearRoundSummary: () => set({ roundSummary: null }),
-
       listSaves: () => {
         return listSaveGames()
-      },
-
-      clearSeasonSummary: () => {
-        const { game } = get()
-        if (!game) return
-        set({ game: { ...game, showSeasonSummary: false, showBoardMeeting: true } })
-      },
-
-      clearBoardMeeting: () => {
-        const { game } = get()
-        if (!game) return
-        set({ game: { ...game, showBoardMeeting: false } })
       },
 
       requestDetailedAnalysis: (opponentClubId, fixtureId) => {
@@ -436,24 +181,6 @@ export const useGameStore = create<GameState>()(
             opponentAnalyses: { ...(game.opponentAnalyses ?? {}), [opponentClubId]: analysis },
           }
         })
-        return { success: true }
-      },
-
-      startTalentSearch: (position, maxAge, maxSalary, currentRound) => {
-        const { game } = get()
-        if (!game) return { success: false, error: 'Inget spel laddat' }
-        if (game.activeScoutAssignment) return { success: false, error: 'Utvärdering pågår — vänta tills den är klar' }
-        if (game.activeTalentSearch) return { success: false, error: 'En spaning pågår redan' }
-        if (game.scoutBudget < 2) return { success: false, error: 'Otillräcklig scoutbudget (kräver 2)' }
-        const search: TalentSearchRequest = {
-          id: `search_${game.currentSeason}_r${currentRound}`,
-          position,
-          maxAge,
-          maxSalary,
-          roundsRemaining: 2,
-          createdRound: currentRound,
-        }
-        set({ game: { ...game, activeTalentSearch: search, scoutBudget: game.scoutBudget - 2 } })
         return { success: true }
       },
 
@@ -540,12 +267,6 @@ export const useGameStore = create<GameState>()(
         return { moraleChange, formChange, feedback, inboxTriggered }
       },
 
-      clearPreSeason: () => {
-        const { game } = get()
-        if (!game) return
-        set({ game: { ...game, showPreSeason: false } })
-      },
-
       setBudgetPriority: (priority) => {
         const { game } = get()
         if (!game) return
@@ -572,443 +293,12 @@ export const useGameStore = create<GameState>()(
         set({ game: { ...game, clubs: updatedClubs, scoutBudget: (game.scoutBudget ?? 10) + 5 } })
       },
 
-      activateCommunity: (key, level) => {
-        const { game } = get()
-        if (!game) return { success: false, error: 'Inget spel laddat' }
-        const club = game.clubs.find(c => c.id === game.managedClubId)
-        if (!club) return { success: false, error: 'Ingen klubb hittad' }
-
-        const costs: Record<string, Record<string, number>> = {
-          kiosk:         { basic: 3000, upgraded: 8000 },
-          lottery:       { basic: 1000, intensive: 5000 },
-          bandyplay:     { active: 0 },
-          functionaries: { active: 2000 },
-          julmarknad:    { active: 2000 },
-          bandySchool:   { active: 5000 },
-          socialMedia:   { active: 2000 },
-          vipTent:       { active: 10000 },
-        }
-
-        const cost = costs[key]?.[level] ?? 0
-        if (club.finances < cost) {
-          return { success: false, error: `Inte tillräckligt med pengar (kräver ${Math.round(cost / 1000)} tkr)` }
-        }
-
-        const ca = game.communityActivities ?? {
-          kiosk: 'none', lottery: 'none', bandyplay: false, functionaries: false, julmarknad: false,
-          bandySchool: false, socialMedia: false, vipTent: false,
-        }
-
-        // Current league round (for time-restricted activities)
-        const currentRound = Math.max(
-          0,
-          ...game.fixtures
-            .filter(f => f.status === 'completed' && !f.isCup)
-            .map(f => f.roundNumber),
-        )
-
-        if (key === 'kiosk' && !ca.functionaries && club.reputation < 50) {
-          return { success: false, error: 'Kräver funktionärer eller reputation > 50' }
-        }
-        if (key === 'bandyplay' && club.reputation < 40) {
-          return { success: false, error: 'Ingen kanal intresserad än (reputation < 40)' }
-        }
-        if (key === 'vipTent' && club.facilities <= 60) {
-          return { success: false, error: 'Kräver anläggningsnivå > 60' }
-        }
-        if (key === 'julmarknad' && (currentRound < 8 || currentRound > 12)) {
-          return { success: false, error: 'Bara möjligt omgång 8–12 (december)' }
-        }
-        // Prevent downgrade
-        if (key === 'kiosk' && ca.kiosk === 'upgraded') {
-          return { success: false, error: 'Kiosken är redan uppgraderad' }
-        }
-        if (key === 'kiosk' && ca.kiosk === level) {
-          return { success: false, error: 'Redan aktiv' }
-        }
-        if (key === 'lottery' && ca.lottery === level) {
-          return { success: false, error: 'Redan aktiv' }
-        }
-
-        const boolKeys = ['bandyplay', 'functionaries', 'julmarknad', 'bandySchool', 'socialMedia', 'vipTent']
-        const updatedCA = boolKeys.includes(key)
-          ? { ...ca, [key]: true }
-          : { ...ca, [key]: level }
-
-        let updatedClubs = game.clubs.map(c =>
-          c.id === game.managedClubId ? { ...c, finances: c.finances - cost } : c
-        )
-
-        // Bandyskola ger permanent +2 youthRecruitment
-        if (key === 'bandySchool') {
-          updatedClubs = updatedClubs.map(c =>
-            c.id === game.managedClubId
-              ? { ...c, youthRecruitment: Math.min(100, (c.youthRecruitment ?? 50) + 2) }
-              : c
-          )
-        }
-
-        set({ game: { ...game, clubs: updatedClubs, communityActivities: updatedCA } })
-        return { success: true }
-      },
-
-      upgradeAcademy: () => {
-        const { game } = get()
-        if (!game) return { success: false, error: 'Inget spel laddat' }
-        const club = game.clubs.find(c => c.id === game.managedClubId)
-        if (!club) return { success: false, error: 'Ingen klubb hittad' }
-
-        const currentLevel = game.academyLevel ?? 'basic'
-        if (currentLevel === 'elite') return { success: false, error: 'Akademin är redan på elitnivå' }
-        if (game.academyUpgradeInProgress) return { success: false, error: 'Uppgradering pågår redan' }
-
-        const cost = currentLevel === 'basic' ? 50000 : 150000
-
-        if (currentLevel === 'developing' && club.facilities <= 70) {
-          return { success: false, error: 'Elitnivå kräver anläggning > 70' }
-        }
-        if (currentLevel === 'developing' && (club.youthQuality ?? 0) <= 65) {
-          return { success: false, error: 'Elitnivå kräver ungdomskvalitet > 65' }
-        }
-        if (currentLevel === 'basic' && club.facilities <= 50) {
-          return { success: false, error: 'Satsningsnivå kräver anläggning > 50' }
-        }
-        if (club.finances < cost) {
-          return { success: false, error: `Inte tillräckligt med pengar (kräver ${cost / 1000} tkr)` }
-        }
-
-        const updatedClubs = game.clubs.map(c =>
-          c.id === game.managedClubId ? { ...c, finances: c.finances - cost } : c
-        )
-
-        set({
-          game: {
-            ...game,
-            clubs: updatedClubs,
-            academyUpgradeInProgress: true,
-            academyUpgradeSeason: game.currentSeason + 1,
-          }
-        })
-        return { success: true }
-      },
-
-      promoteYouthPlayer: (youthPlayerId) => {
-        const { game } = get()
-        if (!game) return { success: false, error: 'Inget spel laddat' }
-
-        const youthPlayer = game.youthTeam?.players.find(p => p.id === youthPlayerId)
-        if (!youthPlayer) return { success: false, error: 'Spelare hittades inte' }
-
-        const club = game.clubs.find(c => c.id === game.managedClubId)
-        if (!club) return { success: false, error: 'Ingen klubb hittad' }
-
-        // Determine timing
-        let timing: 'early' | 'good' | 'late'
-        if (youthPlayer.currentAbility < 25 || youthPlayer.confidence < 40) {
-          timing = 'early'
-        } else if (youthPlayer.currentAbility > 35 && youthPlayer.confidence > 70 && youthPlayer.age >= 17) {
-          timing = 'late'
-        } else {
-          timing = 'good'
-        }
-
-        // Calculate current round
-        const currentRound = game.fixtures
-          .filter(f => f.status === 'completed' && !f.isCup)
-          .reduce((max, f) => Math.max(max, f.roundNumber), 0) + 1
-
-        // Deterministic salary based on youthPlayerId hash
-        let hash = 0
-        for (let i = 0; i < youthPlayerId.length; i++) {
-          hash = ((hash << 5) - hash) + youthPlayerId.charCodeAt(i)
-          hash |= 0
-        }
-        const hashRand = Math.abs(hash % 1000) / 1000
-        const salary = 2000 + Math.round(hashRand * 2000)
-
-        // Generate position-based attributes
-        function generateAttributes(position: PlayerPosition, ca: number) {
-          const base = Math.round(ca * 0.6)
-          const high = Math.round(ca * 1.1)
-          const low = Math.round(ca * 0.4)
-          const mid = Math.round(ca * 0.8)
-
-          if (position === PlayerPosition.Goalkeeper) {
-            return { skating: mid, acceleration: base, stamina: mid, ballControl: low, passing: low, shooting: low, dribbling: low, vision: mid, decisions: mid, workRate: mid, positioning: mid, defending: mid, cornerSkill: low, goalkeeping: high }
-          } else if (position === PlayerPosition.Defender) {
-            return { skating: mid, acceleration: mid, stamina: mid, ballControl: base, passing: base, shooting: low, dribbling: low, vision: base, decisions: mid, workRate: high, positioning: high, defending: high, cornerSkill: base, goalkeeping: low }
-          } else if (position === PlayerPosition.Half) {
-            return { skating: mid, acceleration: mid, stamina: high, ballControl: mid, passing: mid, shooting: base, dribbling: base, vision: mid, decisions: mid, workRate: high, positioning: mid, defending: mid, cornerSkill: base, goalkeeping: low }
-          } else if (position === PlayerPosition.Midfielder) {
-            return { skating: mid, acceleration: mid, stamina: mid, ballControl: mid, passing: high, shooting: base, dribbling: mid, vision: high, decisions: high, workRate: mid, positioning: mid, defending: base, cornerSkill: base, goalkeeping: low }
-          } else {
-            // Forward
-            return { skating: high, acceleration: high, stamina: mid, ballControl: mid, passing: base, shooting: high, dribbling: high, vision: mid, decisions: mid, workRate: mid, positioning: high, defending: low, cornerSkill: base, goalkeeping: low }
-          }
-        }
-
-        const newPlayer = {
-          id: `player_promoted_${youthPlayerId}_${game.currentSeason}`,
-          firstName: youthPlayer.firstName,
-          lastName: youthPlayer.lastName,
-          age: youthPlayer.age,
-          nationality: 'Svensk',
-          clubId: game.managedClubId,
-          academyClubId: game.managedClubId,
-          isHomegrown: true,
-          position: youthPlayer.position,
-          archetype: youthPlayer.archetype,
-          salary,
-          contractUntilSeason: game.currentSeason + 2,
-          marketValue: Math.round(youthPlayer.currentAbility * 1000),
-          morale: timing === 'good' ? 75 : timing === 'early' ? 45 : 60,
-          form: 50,
-          fitness: 80,
-          sharpness: 60,
-          dayJob: undefined,
-          isFullTimePro: false,
-          currentAbility: youthPlayer.currentAbility,
-          potentialAbility: youthPlayer.potentialAbility,
-          developmentRate: youthPlayer.developmentRate,
-          injuryProneness: 30,
-          discipline: 65,
-          attributes: generateAttributes(youthPlayer.position, youthPlayer.currentAbility),
-          isInjured: false,
-          injuryDaysRemaining: 0,
-          suspensionGamesRemaining: 0,
-          seasonStats: { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0 },
-          careerStats: { totalGames: 0, totalGoals: 0, totalAssists: 0, seasonsPlayed: 0 },
-          promotedFromAcademy: true,
-          promotionRound: currentRound,
-        }
-
-        const updatedYouthPlayers = game.youthTeam!.players.filter(p => p.id !== youthPlayerId)
-        const updatedYouthTeam = { ...game.youthTeam!, players: updatedYouthPlayers }
-        const updatedPlayers = [...game.players, newPlayer]
-        const updatedClubs = game.clubs.map(c =>
-          c.id === game.managedClubId
-            ? { ...c, squadPlayerIds: [...c.squadPlayerIds, newPlayer.id] }
-            : c
-        )
-
-        const inboxItem = {
-          id: `inbox_promotion_${youthPlayerId}_${game.currentSeason}`,
-          date: game.currentDate,
-          type: InboxItemType.YouthIntake,
-          title: `⭐ ${youthPlayer.firstName} ${youthPlayer.lastName} kallas upp till A-truppen`,
-          body: timing === 'good'
-            ? `${youthPlayer.firstName} ${youthPlayer.lastName} (${youthPlayer.age} år) är klar för steget upp. Tajmingen är bra.`
-            : timing === 'early'
-            ? `${youthPlayer.firstName} ${youthPlayer.lastName} kallas upp lite tidigt. Han är fortfarande ung och kanske inte riktigt mogen.`
-            : `${youthPlayer.firstName} ${youthPlayer.lastName} har vänt på ett par uppkallningar — nu är det dags att ta steget.`,
-          isRead: false,
-        }
-
-        set({
-          game: {
-            ...game,
-            players: updatedPlayers,
-            clubs: updatedClubs,
-            youthTeam: updatedYouthTeam,
-            inbox: [inboxItem, ...game.inbox],
-          }
-        })
-        return { success: true, timing }
-      },
-
-      assignMentor: (seniorPlayerId, youthPlayerId) => {
-        const { game } = get()
-        if (!game) return { success: false, error: 'Inget spel laddat' }
-
-        const activeMentorships = (game.mentorships ?? []).filter(m => m.isActive)
-        if (activeMentorships.length >= 3) return { success: false, error: 'Max 3 aktiva mentorskap' }
-
-        const seniorPlayer = game.players.find(p => p.id === seniorPlayerId)
-        if (!seniorPlayer) return { success: false, error: 'Mentor hittades inte' }
-        if (seniorPlayer.age < 25) return { success: false, error: 'Mentorn måste vara minst 25 år' }
-        if (seniorPlayer.discipline <= 60) return { success: false, error: 'Mentorn behöver disciplin > 60' }
-
-        const youthInTeam = game.youthTeam?.players.some(p => p.id === youthPlayerId)
-        const youthInA = game.players.some(p => p.id === youthPlayerId && p.promotedFromAcademy)
-        if (!youthInTeam && !youthInA) return { success: false, error: 'Yngre spelare hittades inte' }
-
-        const alreadyMentored = (game.mentorships ?? []).some(m => m.isActive && m.youthPlayerId === youthPlayerId)
-        if (alreadyMentored) return { success: false, error: 'Spelaren har redan en mentor' }
-
-        const currentRound = game.fixtures
-          .filter(f => f.status === 'completed' && !f.isCup)
-          .reduce((max, f) => Math.max(max, f.roundNumber), 0)
-
-        const mentorship = { seniorPlayerId, youthPlayerId, startRound: currentRound, isActive: true }
-        set({ game: { ...game, mentorships: [...(game.mentorships ?? []), mentorship] } })
-        return { success: true }
-      },
-
-      removeMentor: (youthPlayerId) => {
-        const { game } = get()
-        if (!game) return
-        const updatedMentorships = (game.mentorships ?? []).map(m =>
-          m.youthPlayerId === youthPlayerId && m.isActive ? { ...m, isActive: false } : m
-        )
-        set({ game: { ...game, mentorships: updatedMentorships } })
-      },
-
-      loanOutPlayer: (playerId, destinationClubName, rounds) => {
-        const { game } = get()
-        if (!game) return { success: false, error: 'Inget spel laddat' }
-
-        const player = game.players.find(p => p.id === playerId)
-        if (!player) return { success: false, error: 'Spelare hittades inte' }
-        if (player.clubId !== game.managedClubId) return { success: false, error: 'Spelaren tillhör inte din klubb' }
-        if (player.age > 23) return { success: false, error: 'Lån är bara för spelare under 24 år' }
-        if (player.isOnLoan) return { success: false, error: 'Spelaren är redan på lån' }
-
-        const currentRound = game.fixtures
-          .filter(f => f.status === 'completed' && !f.isCup)
-          .reduce((max, f) => Math.max(max, f.roundNumber), 0)
-
-        const loanDeal: LoanDeal = {
-          playerId,
-          destinationClubName,
-          startRound: currentRound,
-          endRound: currentRound + rounds,
-          salaryShare: 0.5,
-          matchesPlayed: 0,
-          totalMatches: rounds,
-          averageRating: 0,
-          reports: [],
-        }
-
-        const updatedPlayers = game.players.map(p =>
-          p.id === playerId ? { ...p, isOnLoan: true, loanClubName: destinationClubName } : p
-        )
-        const updatedClubs = game.clubs.map(c =>
-          c.id === game.managedClubId
-            ? { ...c, squadPlayerIds: c.squadPlayerIds.filter(id => id !== playerId) }
-            : c
-        )
-
-        set({
-          game: {
-            ...game,
-            players: updatedPlayers,
-            clubs: updatedClubs,
-            loanDeals: [...(game.loanDeals ?? []), loanDeal],
-          }
-        })
-        return { success: true }
-      },
-
-      recallLoan: (playerId) => {
-        const { game } = get()
-        if (!game) return
-
-        const updatedPlayers = game.players.map(p =>
-          p.id === playerId ? { ...p, isOnLoan: false, loanClubName: undefined } : p
-        )
-        const updatedClubs = game.clubs.map(c =>
-          c.id === game.managedClubId && !c.squadPlayerIds.includes(playerId)
-            ? { ...c, squadPlayerIds: [...c.squadPlayerIds, playerId] }
-            : c
-        )
-        const updatedLoanDeals = (game.loanDeals ?? []).filter(d => d.playerId !== playerId)
-
-        set({ game: { ...game, players: updatedPlayers, clubs: updatedClubs, loanDeals: updatedLoanDeals } })
-      },
-
-      startTrainingProject: (type, intensity) => {
-        const { game } = get()
-        if (!game) return { success: false, error: 'Inget spel laddat' }
-        const activeProjects = (game.trainingProjects ?? []).filter(p => p.status === 'active')
-        if (activeProjects.length >= 3) {
-          return { success: false, error: 'Max 3 aktiva projekt' }
-        }
-        if (activeProjects.some(p => p.type === type)) {
-          return { success: false, error: 'Det projektet pågår redan' }
-        }
-        const newProject = createTrainingProject(type as TrainingProjectType, intensity)
-        set({ game: { ...game, trainingProjects: [...(game.trainingProjects ?? []), newProject] } })
-        return { success: true }
-      },
-
-      cancelTrainingProject: (projectId) => {
-        const { game } = get()
-        if (!game) return
-        set({
-          game: {
-            ...game,
-            trainingProjects: (game.trainingProjects ?? []).filter(p => p.id !== projectId),
-          },
-        })
-      },
-
-      seekSponsor: () => {
-        const { game } = get()
-        if (!game) return { success: false, error: 'Inget spel laddat' }
-        const club = game.clubs.find(c => c.id === game.managedClubId)
-        if (!club) return { success: false, error: 'Ingen klubb hittad' }
-        const SEEK_COST = 2500
-        if (club.finances < SEEK_COST) return { success: false, error: 'Inte tillräckligt med pengar (kräver 2,5 tkr)' }
-        const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
-        const maxSponsors = Math.min(6, 2 + Math.floor(club.reputation / 20))
-        if (activeSponsors.length >= maxSponsors) return { success: false, error: 'Alla sponsorplatser är fyllda' }
-        const currentRound = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup).map(f => f.roundNumber))
-        const rand = Math.random.bind(Math)
-        // Deduct fee regardless of result
-        const updatedClubs = game.clubs.map(c => c.id === game.managedClubId ? { ...c, finances: c.finances - SEEK_COST } : c)
-        const sponsor = generateSponsorOffer(club.reputation, activeSponsors.length, maxSponsors, currentRound, rand)
-        if (!sponsor) {
-          set({ game: { ...game, clubs: updatedClubs } })
-          return { success: false, error: 'Ingen sponsor intresserad den här gången' }
-        }
-        set({ game: { ...game, clubs: updatedClubs, sponsors: [...(game.sponsors ?? []), sponsor] } })
-        return { success: true, sponsor }
-      },
-
-      applyPressChoice: (moraleEffect, mediaQuote) => {
-        const { game } = get()
-        if (!game) return
-        const updatedPlayers = game.players.map(p =>
-          p.clubId === game.managedClubId
-            ? { ...p, morale: Math.max(0, Math.min(100, p.morale + moraleEffect)) }
-            : p
-        )
-        const personalizedQuote = mediaQuote.replace(/tränaren/gi, game.managerName)
-        const inboxItem = {
-          id: `inbox_press_live_${Date.now()}`,
-          date: game.currentDate,
-          type: InboxItemType.Media,
-          title: `📰 ${personalizedQuote}`,
-          body: '',
-          isRead: false,
-        }
-        set({ game: { ...game, players: updatedPlayers, inbox: [...game.inbox, inboxItem] } })
-      },
-
-      simulateRemainingStep: () => {
-        const { game, resolveEvent, setPlayerLineup, advance } = get()
-        if (!game) return null
-        if ((game.pendingEvents?.length ?? 0) > 0) {
-          const event = game.pendingEvents[0]
-          const neutralChoice = event.choices.find(c =>
-            c.id.includes('reject') || c.id.includes('decline') || c.id.includes('no') ||
-            (c.effect as { type?: string })?.type === 'noOp'
-          ) ?? event.choices[0]
-          resolveEvent(event.id, neutralChoice.id)
-          return { game: get().game!, roundPlayed: null, seasonEnded: false }
-        }
-        if (!game.managedClubPendingLineup) {
-          const available = game.players
-            .filter(p => p.clubId === game.managedClubId && !p.isInjured && p.suspensionGamesRemaining <= 0)
-            .sort((a, b) => b.currentAbility - a.currentAbility)
-          setPlayerLineup(
-            available.slice(0, 11).map(p => p.id),
-            available.slice(11, 16).map(p => p.id),
-            available[0]?.id,
-          )
-        }
-        return advance()
-      },
+      // Action slices — override inline implementations above
+      ...matchActions(get, set),
+      ...trainingActions(get, set),
+      ...transferActions(get, set),
+      ...academyActions(get, set),
+      ...gameFlowActions(get, set),
     }),
     {
       name: 'bandy-game-store',
