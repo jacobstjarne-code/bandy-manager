@@ -79,7 +79,7 @@ export function PreSeasonScreen() {
             FÖRSÄSONG
           </p>
           <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-primary)' }}>
-            Säsong {game.currentSeason}
+            Säsong {game.currentSeason}/{game.currentSeason + 1}
           </h1>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4 }}>{club.name}</p>
         </div>

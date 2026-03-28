@@ -163,7 +163,7 @@ export function RoundSummaryScreen() {
           summary={formatFinanceAbs(financesAfter)}
           detail={financesDelta !== 0 ? formatFinance(financesDelta) + ' denna omgång' : undefined}
           accent={financesAfter < 0 ? 'var(--danger)' : 'var(--text-light)'}
-          onClick={() => navigate('/game/budget')}
+          onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}
         />
 
         {injuries.length > 0 && (
