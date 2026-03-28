@@ -326,12 +326,14 @@ export function TransfersScreen() {
 
   return (
     <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%', background: 'var(--bg)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 0, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
         <h2 style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)' }}>Transfers</h2>
         <span style={{ fontSize: 12, color: scoutBudget > 3 ? 'var(--text-muted)' : 'var(--danger)', fontWeight: 600 }}>
           🔍 {scoutBudget} scouts kvar
         </span>
       </div>
+
+      <div style={{ height: 12 }} />
 
       {/* Scout toast */}
       {scoutMessage && (

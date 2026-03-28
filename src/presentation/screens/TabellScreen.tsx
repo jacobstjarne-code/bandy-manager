@@ -67,7 +67,7 @@ export function TabellScreen() {
 
   return (
     <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 0, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
         <button
           onClick={() => navigate(-1)}
           style={{
@@ -84,6 +84,8 @@ export function TabellScreen() {
         </button>
         <h1 style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)' }}>Tabell</h1>
       </div>
+
+      <div style={{ height: 16 }} />
 
       {/* Summary card for managed club */}
       {myRow && (

@@ -291,7 +291,7 @@ export function SquadScreen() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg)' }}>
       {/* Header */}
-      <div style={{ padding: '20px 16px 0', flexShrink: 0 }}>
+      <div style={{ padding: '20px 16px 12px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
         <h2 style={{
           fontSize: 20,
           fontWeight: 800,
