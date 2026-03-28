@@ -127,9 +127,9 @@ function TrainingSection({ focus, recentSessions, trainingInjuriesThisSeason, on
     .join(', ')
 
   return (
-    <SectionCard title="Träning" stagger={1}>
+    <SectionCard title="🏋️ Daglig träning" stagger={1}>
       <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.5 }}>
-        Träning sker automatiskt varje omgång baserat på inställningarna nedan.
+        Grundträningen som sker <strong>automatiskt varje omgång</strong>.
       </p>
       {/* Type grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 16 }}>
@@ -305,23 +305,18 @@ interface TrainingProjectsCardProps {
 }
 
 function TrainingProjectsCard({ projects, onStart, onCancel }: TrainingProjectsCardProps) {
-  const [showPicker, setShowPicker] = useState(false)
-  const [pickerMsg, setPickerMsg] = useState<string | null>(null)
-
   const active = projects.filter(p => p.status === 'active')
   const recent = projects.filter(p => p.status === 'completed').slice(-2)
   const freeSlots = 3 - active.length
 
   function handleStart(type: string, intensity: 'normal' | 'hard') {
     onStart(type, intensity)
-    setShowPicker(false)
-    setPickerMsg(null)
   }
 
   return (
-    <SectionCard title="Träningsprojekt" stagger={2}>
+    <SectionCard title="⚡ Träningsprojekt" stagger={2}>
       <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.5 }}>
-        Starta riktade projekt för snabbare spelarutveckling. Max 3 aktiva samtidigt.
+        Riktade insatser som ger <strong>snabbare utveckling</strong> inom ett specifikt område.
       </p>
 
       {/* Active projects */}
@@ -380,70 +375,44 @@ function TrainingProjectsCard({ projects, onStart, onCancel }: TrainingProjectsC
         )
       })}
 
-      {/* Free slots */}
-      {freeSlots > 0 && !showPicker && (
-        <button
-          className="btn btn-ghost"
-          onClick={() => setShowPicker(true)}
-          style={{ width: '100%', marginBottom: 8 }}
-        >
-          + Starta nytt projekt ({freeSlots} slot{freeSlots > 1 ? 's' : ''} lediga)
-        </button>
-      )}
-
-      {/* Project picker */}
-      {showPicker && (
-        <div style={{
-          background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-sm)', padding: '12px', marginBottom: 8,
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-              Välj projekt
-            </span>
-            <button onClick={() => setShowPicker(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 18, lineHeight: 1 }}>×</button>
-          </div>
-          {pickerMsg && (
-            <p style={{ fontSize: 11, color: 'var(--danger)', marginBottom: 8 }}>{pickerMsg}</p>
-          )}
+      {/* Available projects — shown directly when slots are free */}
+      {freeSlots > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {PROJECT_DEFINITIONS.map(def => {
             const alreadyActive = active.some(p => p.type === def.type)
+            if (alreadyActive) return null
             return (
               <div key={def.type} style={{
-                borderBottom: '1px solid var(--border)',
-                paddingBottom: 10,
-                marginBottom: 10,
-                opacity: alreadyActive ? 0.5 : 1,
+                border: '1.5px dashed var(--border-dark)',
+                borderRadius: 'var(--radius-sm)',
+                padding: '10px 12px',
+                opacity: freeSlots === 0 ? 0.5 : 1,
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                   <div>
                     <span style={{ fontWeight: 700, fontSize: 13 }}>{def.emoji} {def.label}</span>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>
-                      · {def.effectDescription}
-                    </span>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{def.effectDescription}</p>
                   </div>
-                  <span style={{ fontSize: 11, color: RISK_COLOR[def.injuryRisk] }}>
+                  <span style={{ fontSize: 11, color: RISK_COLOR[def.injuryRisk], flexShrink: 0, marginLeft: 8 }}>
                     Risk: {RISK_LABEL[def.injuryRisk]}
                   </span>
                 </div>
-                {!alreadyActive && (
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button
-                      className="btn btn-ghost"
-                      onClick={() => handleStart(def.type, 'normal')}
-                      style={{ fontSize: 11, padding: '4px 10px' }}
-                    >
-                      Normal · {def.roundsNormal} omg
-                    </button>
-                    <button
-                      className="btn btn-ghost"
-                      onClick={() => handleStart(def.type, 'hard')}
-                      style={{ fontSize: 11, padding: '4px 10px', color: 'var(--danger)' }}
-                    >
-                      ⚡ Intensiv · {def.roundsHard} omg
-                    </button>
-                  </div>
-                )}
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button
+                    className="btn btn-copper"
+                    onClick={() => handleStart(def.type, 'normal')}
+                    style={{ fontSize: 11, padding: '4px 12px' }}
+                  >
+                    Starta · {def.roundsNormal} omg
+                  </button>
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => handleStart(def.type, 'hard')}
+                    style={{ fontSize: 11, padding: '4px 10px', color: 'var(--danger)' }}
+                  >
+                    ⚡ Intensiv · {def.roundsHard} omg
+                  </button>
+                </div>
               </div>
             )
           })}
