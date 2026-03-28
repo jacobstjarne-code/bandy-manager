@@ -121,41 +121,55 @@ export function LineupStep({
               const status = getStatus(player.id)
               const isCaptain = player.id === captainId
               const unavailable = player.isInjured || player.suspensionGamesRemaining > 0
+              const posLetter = positionShort(player.position).charAt(0)
+              const badgeColor = unavailable
+                ? { bg: 'rgba(176,80,64,0.15)', border: 'rgba(176,80,64,0.3)', text: 'var(--danger)' }
+                : status === 'start'
+                ? { bg: 'rgba(196,122,58,0.15)', border: 'rgba(196,122,58,0.3)', text: 'var(--accent)' }
+                : { bg: 'rgba(90,154,74,0.15)', border: 'rgba(90,154,74,0.3)', text: 'var(--success)' }
               return (
                 <div key={player.id} style={{
-                  display: 'flex', alignItems: 'center', padding: '10px 16px',
+                  display: 'flex', alignItems: 'center', padding: '8px 16px',
                   borderBottom: '1px solid var(--border)', gap: 10,
-                  background: unavailable ? 'rgba(239,68,68,0.04)' : 'transparent',
-                  opacity: unavailable ? 0.55 : 1,
-                }}>
-                  <button onClick={() => onSetCaptain(player.id)} disabled={unavailable} style={{
-                    background: 'none', border: 'none', fontSize: 14,
-                    opacity: isCaptain ? 1 : 0.2,
-                    cursor: unavailable ? 'not-allowed' : 'pointer', flexShrink: 0, padding: 0,
-                  }} title="Kapten">👑</button>
+                  opacity: unavailable ? 0.5 : 1,
+                  cursor: unavailable ? 'default' : 'pointer',
+                }} onClick={() => !unavailable && onTogglePlayer(player.id)}>
+                  <div
+                    onClick={(e) => { e.stopPropagation(); if (!unavailable) onSetCaptain(player.id) }}
+                    style={{
+                      width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: badgeColor.bg, border: `1px solid ${badgeColor.border}`,
+                      color: badgeColor.text, fontSize: 11, fontWeight: 800,
+                      cursor: unavailable ? 'default' : 'pointer',
+                      position: 'relative',
+                    }}>
+                    {posLetter}
+                    {isCaptain && (
+                      <span style={{ position: 'absolute', top: -4, right: -4, fontSize: 10 }}>👑</span>
+                    )}
+                  </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: 0 }}>
                       {player.firstName} {player.lastName}
-                      {player.isInjured && <span style={{ marginLeft: 4, fontSize: 12 }}>🩹</span>}
-                      {player.suspensionGamesRemaining > 0 && <span style={{ marginLeft: 4, fontSize: 12 }}>🚫</span>}
                     </p>
-                    <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>
                       Styrka {Math.round(player.currentAbility)} · Form {Math.round(player.form)}
                     </p>
                   </div>
-                  <button onClick={() => onTogglePlayer(player.id)} disabled={unavailable} style={{
-                    flexShrink: 0, padding: '4px 10px', borderRadius: 99, fontSize: 12, fontWeight: 600,
-                    cursor: unavailable ? 'not-allowed' : 'pointer',
-                    ...(unavailable
-                      ? { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--danger)' }
-                      : status === 'start'
-                      ? { background: 'rgba(196,122,58,0.15)', border: '1px solid var(--accent)', color: 'var(--accent)' }
-                      : status === 'bench'
-                      ? { background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }
-                      : { background: 'transparent', border: '1px solid transparent', color: 'var(--text-muted)' }),
-                  }}>
-                    {unavailable ? (player.isInjured ? 'Skadad' : 'Avstängd') : status === 'start' ? 'Start' : status === 'bench' ? 'Bänk' : 'Ute'}
-                  </button>
+                  <span
+                    className={unavailable ? 'tag tag-red' : status === 'start' ? 'tag tag-green' : status === 'bench' ? 'tag tag-outline' : ''}
+                    style={{
+                      flexShrink: 0, fontSize: 9, fontWeight: 600,
+                      ...(status === 'out' && !unavailable ? { color: 'var(--text-muted)', fontSize: 11 } : {}),
+                    }}
+                  >
+                    {unavailable
+                      ? (player.isInjured ? '🩹 Skadad' : `🚫 Avstängd`)
+                      : status === 'start' ? 'Start'
+                      : status === 'bench' ? 'Bänk'
+                      : 'Ute'}
+                  </span>
                 </div>
               )
             })}
