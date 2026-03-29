@@ -392,7 +392,33 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
-  const activePlayers = resetPlayers.filter(p => !retiredPlayerIds.has(p.id))
+  // ── Contract expiry — players whose contracts have run out ───────────────
+  const handledContractIds = new Set(game.handledContractPlayerIds ?? [])
+  const contractExpiredIds = new Set<string>()
+  const contractExpiryInbox: InboxItem[] = []
+
+  for (const player of resetPlayers) {
+    if (retiredPlayerIds.has(player.id)) continue          // already retiring
+    if (handledContractIds.has(player.id)) continue        // renewed during season
+    if (player.contractUntilSeason > game.currentSeason) continue  // still valid
+
+    contractExpiredIds.add(player.id)
+
+    if (player.clubId === game.managedClubId) {
+      contractExpiryInbox.push({
+        id: `inbox_contract_expired_${player.id}_${nextSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.ContractExpiring,
+        title: `${player.firstName} ${player.lastName} lämnar klubben`,
+        body: `${player.firstName} ${player.lastName}s kontrakt har löpt ut. Han lämnar som fri agent.`,
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
+  const activePlayers = resetPlayers
+    .filter(p => !retiredPlayerIds.has(p.id))
+    .map(p => contractExpiredIds.has(p.id) ? { ...p, clubId: 'free_agent' } : p)
 
   // ── Board patience update ─────────────────────────────────────────────
   const totalTeams = game.clubs.length
@@ -428,10 +454,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     managerFired = true
   }
 
-  // Remove retired players from all club squads
+  // Remove retired and contract-expired players from all club squads
   const clubsWithRetirements = updatedClubs.map(club => ({
     ...club,
-    squadPlayerIds: club.squadPlayerIds.filter(id => !retiredPlayerIds.has(id)),
+    squadPlayerIds: club.squadPlayerIds.filter(
+      id => !retiredPlayerIds.has(id) && !contractExpiredIds.has(id)
+    ),
   }))
 
   // ── Tvångsnedflyttning effects (license denied) ───────────────────────────
@@ -635,7 +663,14 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     fixtures: newFixtures,
     league: newLeague,
     standings: calculateStandings(updatedClubs.map(c => c.id), []),
-    inbox: [...game.inbox, ...newInboxItems, ...retirementMessages].slice(-75),
+    inbox: [...game.inbox, ...newInboxItems, ...retirementMessages, ...contractExpiryInbox].slice(-75),
+    transferState: {
+      ...game.transferState,
+      freeAgents: [
+        ...(game.transferState?.freeAgents ?? []),
+        ...playersAfterLicense.filter(p => contractExpiredIds.has(p.id)),
+      ],
+    },
     youthIntakeHistory: youthRecords,
     managedClubPendingLineup: undefined,
     matchWeathers: [],
