@@ -900,10 +900,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   ): number {
     if (!isHomeManagedMatch) return 0
 
-    const capacity = club.arenaCapacity ?? Math.round(club.reputation * 30 + 500)
+    const capacity = club.arenaCapacity ?? Math.round(club.reputation * 25 + 600)
     const position = standing?.position ?? 8
     const attendanceRate = Math.min(0.95, 0.40 + (fanMood / 100) * 0.45 + (position <= 3 ? 0.10 : 0))
-    const ticketPrice = 80 + Math.round((club.reputation ?? 50) * 0.5)
+    const ticketPrice = 60 + Math.round((club.reputation ?? 50) * 0.4)
     const baseRevenue = Math.round(capacity * attendanceRate * ticketPrice)
 
     const formBonus = position <= 3 ? 1.30
@@ -926,16 +926,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     let communityIncome = 0
     if (activities) {
       const moodMult = 0.7 + (fanMood / 100) * 0.6
-      const kioskBase = activities.kiosk === 'upgraded' ? 5000
-        : activities.kiosk === 'basic' ? 2500 : 0
+      const kioskBase = activities.kiosk === 'upgraded' ? 2500
+        : activities.kiosk === 'basic' ? 1250 : 0
       communityIncome += Math.round(kioskBase * moodMult)
-      communityIncome += activities.functionaries ? 2000 : 0
+      communityIncome += activities.functionaries ? 1000 : 0
       communityIncome += activities.bandyplay
-        ? 500 + Math.round(rand() * 500) : 0
+        ? 250 + Math.round(rand() * 250) : 0
 
       // VIP-tält — intäkt per hemmamatch
       if (activities.vipTent) {
-        communityIncome += 2500 + Math.round(rand() * 5000)
+        communityIncome += 1250 + Math.round(rand() * 2500)
       }
 
       // Running costs (dras per hemmamatch)
@@ -958,12 +958,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     if (!communityActivities) return 0
     let income = 0
     if (communityActivities.lottery === 'intensive') {
-      income += (3000 + Math.round(rand() * 2000)) - 800
+      income += (1500 + Math.round(rand() * 1000)) - 800
     } else if (communityActivities.lottery === 'basic') {
-      income += (1000 + Math.round(rand() * 1500)) - 500
+      income += (500 + Math.round(rand() * 750)) - 500
     }
     if (communityActivities.bandyplay) {
-      income += (500 + Math.round(rand() * 1000)) - 1000  // deltagaravgifter minus driftskostnad
+      income += (250 + Math.round(rand() * 500)) - 1000  // deltagaravgifter minus driftskostnad
     }
     if (communityActivities.socialMedia) {
       income -= 500  // bara kostnad, reputation-bonus hanteras separat
@@ -1008,7 +1008,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         : 0
     }
 
-    const weeklySponsorship = Math.round(c.reputation * 80)
+    const weeklySponsorship = Math.round(c.reputation * 60)
 
     const sponsorIncome = c.id === game.managedClubId
       ? (game.sponsors ?? []).filter(s => s.contractRounds > 0).reduce((sum, s) => sum + s.weeklyIncome, 0)

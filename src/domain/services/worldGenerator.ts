@@ -644,7 +644,7 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     reputation: t.reputation,
     finances: Math.round((t.reputation * 4000 + 50000 + rng.next() * 80000) / 10000) * 10000,
     wageBudget: t.wageBudget,
-    transferBudget: Math.round((t.reputation * 1500 + rng.next() * 30000) / 5000) * 5000,
+    transferBudget: Math.round((t.reputation * 1000 + rng.next() * 20000) / 5000) * 5000,
     youthQuality: t.youthQuality,
     youthRecruitment: t.youthRecruitment,
     youthDevelopment: t.youthDevelopment,
@@ -655,7 +655,7 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     preferredStyle: t.preferredStyle,
     activeTactic: buildTactic(t.preferredStyle),
     squadPlayerIds: [],
-    arenaCapacity: Math.round((t.reputation * 30 + 500) / 500) * 500,
+    arenaCapacity: Math.round((t.reputation * 25 + 600) / 500) * 500,
   }))
 
   const allPlayers: Player[] = []
