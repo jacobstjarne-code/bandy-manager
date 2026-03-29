@@ -59,11 +59,11 @@ export function PreSeasonScreen() {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0,
+      height: '100%',
       background: 'var(--bg)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
-      padding: '24px 20px', zIndex: 500,
+      padding: '24px 20px',
       overflowY: 'auto',
     }}>
       <div style={{
