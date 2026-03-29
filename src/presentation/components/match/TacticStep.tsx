@@ -55,9 +55,9 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
       {/* Taktik-grupper i kort */}
       {(() => {
         const groups = [
-          { label: '⚔️ Spelplan', keys: ['mentality', 'tempo', 'pressing'] },
-          { label: '⚽ Bollspel', keys: ['passingStyle', 'width', 'attackFocus'] },
-          { label: '📐 Fasta situationer', keys: ['cornerStrategy'] },
+          { label: '⚔️ Spelplan', keys: ['mentality', 'tempo', 'press'] },
+          { label: '⚽ Bollspel', keys: ['passingRisk', 'width', 'attackingFocus'] },
+          { label: '📐 Fasta situationer', keys: ['cornerStrategy', 'penaltyKillStyle'] },
         ]
         return groups.map((group, gi) => {
           const rows = tacticRows.filter(r => group.keys.includes(r.key as string))
