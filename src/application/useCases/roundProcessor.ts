@@ -3,7 +3,7 @@ import type { Player } from '../../domain/entities/Player'
 import type { Club } from '../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
-import { FixtureStatus, MatchEventType, PlayerPosition, InboxItemType, PlayoffStatus, ClubStyle } from '../../domain/enums'
+import { FixtureStatus, MatchEventType, PlayerPosition, InboxItemType, PlayoffStatus, ClubStyle, TrainingType, TrainingIntensity } from '../../domain/enums'
 import type { FormationType } from '../../domain/entities/Formation'
 import { simulateMatch } from '../../domain/services/matchSimulator'
 import { getTacticModifiers } from '../../domain/services/tacticModifiers'
@@ -1430,6 +1430,114 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           isRead: false,
         } as InboxItem)
       }
+    }
+  }
+
+  // ── Nudges: community activities, training, sponsor, morale ────────────────
+  const nudgeManagedClub = game.clubs.find(c => c.id === game.managedClubId)
+  const activeSponsorsCount = (game.sponsors ?? []).filter(s => s.contractRounds > 0).length
+  const nudgeMaxSponsors = nudgeManagedClub ? Math.min(6, 2 + Math.floor(nudgeManagedClub.reputation / 20)) : 3
+
+  // Community activity nudges (once per season, only if not started)
+  const communityNudges: Array<{ round: number; id: string; title: string; body: string }> = [
+    {
+      round: 5,
+      id: `inbox_nudge_kiosk_${game.currentSeason}`,
+      title: 'Kioskverksamhet?',
+      body: 'En grupp frivilliga har frågat om att starta en kiosk vid hemmamatcherna. Det skulle kosta 3 tkr att komma igång.',
+    },
+    {
+      round: 3,
+      id: `inbox_nudge_socialmedia_${game.currentSeason}`,
+      title: 'Sociala medier?',
+      body: 'Någon i styrelsen föreslår att klubben borde vara mer aktiv på sociala medier. Det kostar lite men ger synlighet. Kolla in Förening → Ekonomi.',
+    },
+    {
+      round: 8,
+      id: `inbox_nudge_lottery_${game.currentSeason}`,
+      title: 'Lotteri för klubben?',
+      body: 'En av supportrarna har föreslagit ett lotteri. Det kan ge ett bra tillskott till kassan. Se Förening → Ekonomi.',
+    },
+  ]
+  for (const nudge of communityNudges) {
+    if (nextRound === nudge.round && !game.inbox.some(i => i.id === nudge.id)) {
+      newInboxItems.push({
+        id: nudge.id,
+        date: newDate,
+        type: InboxItemType.Community,
+        title: nudge.title,
+        body: nudge.body,
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
+  // BandySchool nudge: round 12, if not started and academyLevel > basic
+  if (nextRound === 12 && !game.communityActivities?.bandySchool && (game.academyLevel ?? 'basic') !== 'basic') {
+    const id = `inbox_nudge_bandyschool_${game.currentSeason}`
+    if (!game.inbox.some(i => i.id === id)) {
+      newInboxItems.push({
+        id,
+        date: newDate,
+        type: InboxItemType.Community,
+        title: 'Starta bandyskola?',
+        body: 'Med er akademi på plats finns det möjlighet att starta en bandyskola för barn. Det stärker klubbens lokala förankring. Se Förening → Ekonomi.',
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
+  // Training nudge: if user hasn't changed default training after round 3
+  if (nextRound === 3) {
+    const defaultTraining =
+      (game.managedClubTraining?.type === TrainingType.Physical || game.managedClubTraining?.type === undefined) &&
+      (game.managedClubTraining?.intensity === TrainingIntensity.Normal || game.managedClubTraining?.intensity === undefined)
+    const id = `inbox_nudge_training_${game.currentSeason}`
+    if (defaultTraining && !game.inbox.some(i => i.id === id)) {
+      newInboxItems.push({
+        id,
+        date: newDate,
+        type: InboxItemType.Training,
+        title: 'Träningsschema',
+        body: 'Spelarna undrar om det inte är dags att variera träningen? Kolla in träningstabben under Förening.',
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
+  // Sponsor nudge: every 4th round, 25% chance if sponsors < maxSponsors
+  if (nextRound % 4 === 0 && activeSponsorsCount < nudgeMaxSponsors && localRand() < 0.25) {
+    const id = `inbox_nudge_sponsor_${nextRound}_${game.currentSeason}`
+    if (!game.inbox.some(i => i.id === id)) {
+      const sponsorNames = ['Johanssons Bygg AB', 'Karlssons Bil', 'Bergström El & Installation', 'Lindströms Åkeri', 'Erikssons Redovisning']
+      const sponsorName = sponsorNames[Math.floor(localRand() * sponsorNames.length)]
+      const incomePerRound = 500 + Math.round(localRand() * 1000)
+      const durationRounds = 4 + Math.round(localRand() * 4)
+      newInboxItems.push({
+        id,
+        date: newDate,
+        type: InboxItemType.SponsorNetwork,
+        title: `Sponsorerbjudande från ${sponsorName}`,
+        body: `${sponsorName} vill teckna ett avtal värt ${incomePerRound} kr/omgång i ${durationRounds} omgångar. Gå till Förening → Ekonomi → Sponsorer.`,
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
+  // Morale nudge: if any managed squad player drops below 30
+  const managedSquadIds = nudgeManagedClub?.squadPlayerIds ?? []
+  for (const player of finalPlayers.filter(p => managedSquadIds.includes(p.id) && (p.morale ?? 50) < 30)) {
+    const id = `inbox_morale_${player.id}_r${nextRound}_${game.currentSeason}`
+    if (!game.inbox.some(i => i.id === id)) {
+      newInboxItems.push({
+        id,
+        date: newDate,
+        type: InboxItemType.Community,
+        title: `${player.firstName} ${player.lastName} vill prata`,
+        body: `${player.firstName} ${player.lastName} verkar inte må bra. Kanske är det dags för ett spelarsamtal? Klicka på spelaren i Trupp.`,
+        isRead: false,
+      } as InboxItem)
+      break // max one morale nudge per round
     }
   }
 
