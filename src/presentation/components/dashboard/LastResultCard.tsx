@@ -73,12 +73,18 @@ export function LastResultCard({
         {recentForm.length > 0 && (
           <div style={{ display: 'flex', gap: 3, marginTop: 6 }}>
             {recentForm.map((r, i) => (
-              <svg key={i} viewBox="0 0 12 12" width="11" height="11">
-                <rect x="1" y="1" width="10" height="10" rx="3" fill={formColors[r].bg}/>
-                <text x="6" y="9" textAnchor="middle" fontSize="6" fill={formColors[r].letter} fontFamily="system-ui">
-                  {r}
-                </text>
-              </svg>
+              <div
+                key={i}
+                style={{
+                  width: 14, height: 14, borderRadius: 3,
+                  background: formColors[r].bg,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 7, fontWeight: 700, color: formColors[r].letter,
+                  lineHeight: 1,
+                }}
+              >
+                {r}
+              </div>
             ))}
           </div>
         )}

@@ -13,7 +13,6 @@ import { TutorialOverlay } from '../components/TutorialOverlay'
 import { PlayoffStatus } from '../../domain/enums'
 import type { PlayoffBracket, PlayoffSeries } from '../../domain/entities/Playoff'
 import type { SaveGame } from '../../domain/entities/SaveGame'
-import type { Fixture } from '../../domain/entities/Fixture'
 import type { EventChoice } from '../../domain/entities/GameEvent'
 import type { CupBracket } from '../../domain/entities/Cup'
 import { getCupRoundLabel, getManagedClubCupStatus } from '../../domain/services/cupService'
@@ -25,26 +24,6 @@ import { SquadStatusCard } from '../components/dashboard/SquadStatusCard'
 import { CommunityPulse } from '../components/dashboard/CommunityPulse'
 import { calcWeeklyEconomy } from '../../domain/services/economyService'
 
-function getSeriesScore(series: { fixtures: string[]; homeClubId: string; awayClubId: string }, fixtures: Fixture[]) {
-  const seriesFixtures = fixtures.filter(
-    f => series.fixtures.includes(f.id) && f.status === 'completed'
-  )
-  let homeWins = 0, awayWins = 0
-  for (const f of seriesFixtures) {
-    const homeWon = f.homeScore > f.awayScore
-      || (f.homeScore === f.awayScore && f.penaltyResult != null && f.penaltyResult.home > f.penaltyResult.away)
-    const awayWon = f.awayScore > f.homeScore
-      || (f.homeScore === f.awayScore && f.penaltyResult != null && f.penaltyResult.away > f.penaltyResult.home)
-    if (f.homeClubId === series.homeClubId) {
-      if (homeWon) homeWins++
-      else if (awayWon) awayWins++
-    } else {
-      if (homeWon) awayWins++
-      else if (awayWon) homeWins++
-    }
-  }
-  return { homeWins, awayWins }
-}
 
 interface PlayoffSeriesRowProps {
   series: PlayoffSeries
@@ -58,7 +37,8 @@ function PlayoffSeriesRow({ series, game, managedClubId }: PlayoffSeriesRowProps
   const isManagedHome = series.homeClubId === managedClubId
   const isManagedAway = series.awayClubId === managedClubId
   const isManaged = isManagedHome || isManagedAway
-  const { homeWins, awayWins } = getSeriesScore(series, game.fixtures)
+  const homeWins = series.homeWins
+  const awayWins = series.awayWins
   const homeWon = homeWins > awayWins && series.winnerId !== null
   const awayWon = awayWins > homeWins && series.winnerId !== null
 
@@ -372,9 +352,9 @@ export function DashboardScreen() {
     return allSeries.find(s => s.fixtures.includes(nextFixture.id)) ?? null
   })() : null
 
-  const seriesFixtures = playoffSeries ? game.fixtures.filter(f => playoffSeries.fixtures.includes(f.id) && f.status === 'completed') : []
-  const dynamicHomeWins = seriesFixtures.filter(f => { const isSH = f.homeClubId === playoffSeries?.homeClubId; return isSH ? f.homeScore > f.awayScore : f.awayScore > f.homeScore }).length
-  const dynamicAwayWins = seriesFixtures.filter(f => { const isSH = f.homeClubId === playoffSeries?.homeClubId; return isSH ? f.awayScore > f.homeScore : f.homeScore > f.awayScore }).length
+  const managedIsSeriesHome = playoffSeries ? playoffSeries.homeClubId === game.managedClubId : false
+  const dynamicHomeWins = playoffSeries ? (managedIsSeriesHome ? playoffSeries.homeWins : playoffSeries.awayWins) : 0
+  const dynamicAwayWins = playoffSeries ? (managedIsSeriesHome ? playoffSeries.awayWins : playoffSeries.homeWins) : 0
 
   const isPlayoffJustStarted = playoffInfo && playoffInfo.status === PlayoffStatus.QuarterFinals &&
     playoffInfo.quarterFinals.every(s => game.fixtures.filter(f => s.fixtures.includes(f.id) && f.status === 'completed').length === 0)
