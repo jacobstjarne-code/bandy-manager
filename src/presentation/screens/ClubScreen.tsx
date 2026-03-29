@@ -63,42 +63,36 @@ export function ClubScreen() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Header */}
-      <div className="texture-leather" style={{ background: 'var(--bg-dark)', padding: '20px 16px 0', flexShrink: 0 }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--text-light)', marginBottom: 6 }}>{club.name}</h1>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
-          <span className="tag tag-dark">{club.region}</span>
-        </div>
-
-        {/* Tab bar */}
-        <div style={{
-          display: 'flex',
-          borderBottom: '1px solid var(--border)',
-          marginBottom: 0,
-        }}>
-          {TAB_LABELS.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setActiveTab(key)}
-              style={{
-                flex: 1,
-                padding: '10px 4px',
-                background: 'none',
-                border: 'none',
-                borderBottom: activeTab === key ? '2px solid var(--accent)' : '2px solid transparent',
-                color: activeTab === key ? 'var(--accent)' : 'var(--text-muted)',
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: '0.8px',
-                textTransform: 'uppercase',
-                cursor: 'pointer',
-                transition: 'color 0.15s',
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+      {/* Tab bar */}
+      <div style={{
+        display: 'flex',
+        background: 'var(--bg-surface)',
+        borderBottom: '1px solid var(--border)',
+        padding: '0',
+        flexShrink: 0,
+      }}>
+        {TAB_LABELS.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setActiveTab(key)}
+            style={{
+              flex: 1,
+              padding: '10px 4px',
+              background: 'none',
+              border: 'none',
+              borderBottom: activeTab === key ? '2px solid var(--accent)' : '2px solid transparent',
+              color: activeTab === key ? 'var(--accent)' : 'var(--text-muted)',
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: '0.8px',
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+              transition: 'color 0.15s',
+            }}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* Scrollable content */}

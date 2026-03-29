@@ -10,7 +10,6 @@ import {
   usePlayoffInfo,
 } from '../store/gameStore'
 import { TutorialOverlay } from '../components/TutorialOverlay'
-import { ClubBadge } from '../components/ClubBadge'
 import { PlayoffStatus } from '../../domain/enums'
 import type { PlayoffBracket, PlayoffSeries } from '../../domain/entities/Playoff'
 import type { SaveGame } from '../../domain/entities/SaveGame'
@@ -18,7 +17,6 @@ import type { Fixture } from '../../domain/entities/Fixture'
 import type { EventChoice } from '../../domain/entities/GameEvent'
 import type { CupBracket } from '../../domain/entities/Cup'
 import { getCupRoundLabel, getManagedClubCupStatus } from '../../domain/services/cupService'
-import { getIceQualityLabel } from '../../domain/services/weatherService'
 import { playSound } from '../audio/soundEffects'
 import { PlayoffBanner } from '../components/dashboard/PlayoffBanner'
 import { NextMatchCard } from '../components/dashboard/NextMatchCard'
@@ -241,49 +239,6 @@ function pickBatchSimChoice(choices: EventChoice[]): string {
   return choices[0].id
 }
 
-function getSeasonPhase(round: number): { label: string; icon: string } {
-  if (round <= 4) return { label: 'Höststarten', icon: '🍂' }
-  if (round <= 7) return { label: 'Vardagen', icon: '🏒' }
-  if (round === 8) return { label: 'Annandagen', icon: '🎄' }
-  if (round <= 14) return { label: 'Vintern', icon: '❄️' }
-  if (round <= 18) return { label: 'Vårkänslorna', icon: '🌱' }
-  if (round <= 22) return { label: 'Grundseriens slut', icon: '📊' }
-  return { label: 'Slutspelet', icon: '🏆' }
-}
-
-// Snow particles for header
-function SnowParticles() {
-  const particles = [
-    { size: 2,   opacity: 0.35, top: 8,  left: 35,  duration: 4,   delay: 0   },
-    { size: 1.5, opacity: 0.2,  top: 4,  left: 100, duration: 5.5, delay: 1   },
-    { size: 2.5, opacity: 0.3,  top: 6,  left: 190, duration: 3.5, delay: 0.3 },
-    { size: 1,   opacity: 0.25, top: 10, left: 280, duration: 4.5, delay: 2   },
-    { size: 2,   opacity: 0.2,  top: 2,  left: 330, duration: 6,   delay: 1.5 },
-    { size: 1.5, opacity: 0.15, top: 14, left: 150, duration: 7,   delay: 3   },
-    { size: 2,   opacity: 0.2,  top: 18, left: 250, duration: 5,   delay: 0.8 },
-  ]
-  return (
-    <>
-      {particles.map((p, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            width: p.size,
-            height: p.size,
-            background: `rgba(255,255,255,${p.opacity})`,
-            borderRadius: '50%',
-            top: p.top,
-            left: p.left,
-            animation: `snow ${p.duration}s linear infinite ${p.delay}s`,
-            pointerEvents: 'none',
-          }}
-        />
-      ))}
-    </>
-  )
-}
-
 // Ornamental diamond divider above CTA
 function DiamondDivider() {
   return (
@@ -397,7 +352,6 @@ export function DashboardScreen() {
 
   // Current round
   const currentRound = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max, f) => Math.max(max, f.roundNumber), 0)
-  const seasonPhase = getSeasonPhase(currentRound)
 
   // Recent form (last 5)
   const recentForm: Array<'V' | 'O' | 'F'> = game.fixtures
@@ -410,22 +364,6 @@ export function DashboardScreen() {
       const conceded = isHomeTeam ? f.awayScore : f.homeScore
       return scored > conceded ? 'V' : scored < conceded ? 'F' : 'O'
     })
-
-  // Win streak for header tag
-  const winStreak = (() => {
-    let streak = 0
-    for (const r of recentForm) {
-      if (r === 'V') streak++
-      else break
-    }
-    return streak
-  })()
-
-  // Temperature display
-  const currentWeather = nextFixture ? (game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id) : undefined
-  const tempDisplay = currentWeather?.weather.temperature !== undefined
-    ? `${currentWeather.weather.temperature > 0 ? '+' : ''}${currentWeather.weather.temperature}°`
-    : null
 
   // Playoff context
   const isPlayoffFixture = nextFixture && nextFixture.roundNumber > 22
@@ -522,112 +460,11 @@ export function DashboardScreen() {
     } catch (err) { console.error('advance() failed:', err) }
   }
 
-  // Date string for header
-  const dateStr = (() => {
-    const d = new Date(game.currentDate)
-    return d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })
-  })()
-
   return (
     <div className="screen-enter" style={{ position: 'relative', minHeight: '100%', background: 'var(--bg)' }}>
       {!game.tutorialSeen && (
         <TutorialOverlay managerName={game.managerName} clubName={club.name} onDone={markTutorialSeen} />
       )}
-
-      {/* ── HEADER ── */}
-      <div style={{ position: 'relative', overflow: 'hidden' }}>
-        <div
-          className="texture-wood"
-          style={{ backgroundColor: 'var(--bg-dark)', position: 'relative' }}
-        >
-          {/* Leather grain overlay */}
-          <div className="texture-leather" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
-
-          {/* Floodlight glow cones */}
-          <div style={{ position: 'absolute', top: -70, left: 20, width: 120, height: 200, background: 'radial-gradient(ellipse at 50% 0%, rgba(255,240,210,0.08) 0%, transparent 70%)', transform: 'rotate(-8deg)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', top: -50, right: 10, width: 140, height: 220, background: 'radial-gradient(ellipse at 50% 0%, rgba(255,240,210,0.06) 0%, transparent 70%)', transform: 'rotate(5deg)', pointerEvents: 'none' }} />
-
-          {/* Snow */}
-          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-            <SnowParticles />
-          </div>
-
-          {/* Top bar: logo + tags */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px 0', position: 'relative' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <svg viewBox="0 0 22 22" width="18" height="18">
-                <circle cx="11" cy="11" r="9.5" fill="var(--bg-dark-surface)" stroke="var(--accent-dark)" strokeWidth="1.2"/>
-                <text x="11" y="14" textAnchor="middle" fontFamily="Georgia, serif" fontSize="8" fill="var(--accent)">
-                  {club.name.charAt(0)}
-                </text>
-              </svg>
-              <span style={{ color: 'var(--text-light-secondary)', fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'var(--font-body)' }}>
-                Bandy Manager
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              {tempDisplay && (
-                <span className="tag tag-ice">❄ {tempDisplay}</span>
-              )}
-              {currentRound > 0 && (
-                <span className="tag tag-copper">Omg {currentRound}</span>
-              )}
-            </div>
-          </div>
-
-          {/* Club identity */}
-          <div style={{ padding: '14px 14px', display: 'flex', alignItems: 'center', gap: 14, position: 'relative' }}>
-            <div style={{ width: 60, height: 60, flexShrink: 0 }}>
-              <ClubBadge clubId={game.managedClubId} name={club.name} size={60} strokeColor="rgba(196,122,58,0.8)" />
-            </div>
-            <div style={{ flex: 1 }}>
-              <h1 style={{ color: 'var(--text-light)', fontSize: 22, fontWeight: 400, margin: '0 0 3px', letterSpacing: '0.5px', fontFamily: 'var(--font-display)', lineHeight: 1.2 }}>
-                {club.name}
-              </h1>
-              <p style={{ color: 'var(--text-light-secondary)', fontSize: 12, margin: '0 0 6px', fontFamily: 'var(--font-body)' }}>
-                Säsong {game.currentSeason}/{game.currentSeason + 1} · {seasonPhase.label}
-              </p>
-              <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                {standing && (
-                  <span className="tag tag-outline" style={{ borderColor: 'rgba(196,186,168,0.3)', color: 'var(--text-light-secondary)' }}>
-                    {standing.position}:e i serien
-                  </span>
-                )}
-                {winStreak >= 2 && (
-                  <span className="tag tag-green">{winStreak} raka vinster</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Season phase strip */}
-          <div
-            className="texture-wood"
-            style={{ backgroundColor: 'rgba(196,122,58,0.12)', borderTop: '1px solid rgba(196,122,58,0.15)', borderBottom: '1px solid rgba(196,122,58,0.15)', padding: '9px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 15 }}>{seasonPhase.icon}</span>
-              <span style={{ color: 'var(--accent)', fontSize: 12, fontWeight: 700, fontFamily: 'var(--font-body)' }}>
-                {seasonPhase.label}
-              </span>
-              <span style={{ color: 'var(--text-light-secondary)', fontSize: 10, fontFamily: 'var(--font-body)' }}>
-                {dateStr}
-              </span>
-            </div>
-            {matchWeather && (
-              <span className="tag tag-ice" style={{ gap: 4 }}>
-                <svg viewBox="0 0 8 8" width="6" height="6">
-                  <circle cx="4" cy="4" r="3" fill="var(--ice)"/>
-                </svg>
-                {getIceQualityLabel(matchWeather.weather.iceQuality)}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Ice divider */}
-        <div className="ice-divider" />
-      </div>
 
       {/* ── CONTENT ── */}
       <div className="texture-wood" style={{ paddingTop: 12, paddingBottom: 120 }}>
