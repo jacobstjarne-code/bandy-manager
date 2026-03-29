@@ -132,7 +132,9 @@ export function gameFlowActions(get: Get, set: Set) {
           navigateTo('/game/pre-season', { replace: true })
         }
       } else if (!suppressMatchNavigation) {
-        if (pendingCount > 0) {
+        if (result.hasManagedCupMatch) {
+          navigateTo('/game/match', { replace: true })
+        } else if (pendingCount > 0) {
           navigateTo('/game/events', { replace: true })
         } else if (summary.matchPlayed) {
           navigateTo('/game/round-summary', { replace: true })

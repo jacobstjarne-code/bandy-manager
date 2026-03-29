@@ -47,7 +47,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
   const managedPlayers = game.players.filter(p => p.clubId === club.id)
   const mentorCandidates = managedPlayers.filter(p => p.age >= 25 && p.discipline > 60)
   const youthForMentor = [
-    ...(youthTeam?.players ?? []).map(p => ({ id: p.id, name: `${p.firstName} ${p.lastName} (P17)` })),
+    ...(youthTeam?.players ?? []).map(p => ({ id: p.id, name: `${p.firstName} ${p.lastName} (P19)` })),
     ...managedPlayers.filter(p => p.promotedFromAcademy).map(p => ({ id: p.id, name: `${p.firstName} ${p.lastName} (A-lag)` })),
   ]
 
@@ -95,9 +95,9 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
 
       {/* P17 team */}
       {youthTeam && (
-        <SectionCard title="⚽ Pojklaget (P17)" stagger={2}>
+        <SectionCard title="⚽ Pojklaget (P19)" stagger={2}>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 10, lineHeight: 1.4 }}>
-            P17-laget spelar egna matcher. Talanger kan lyftas till A-laget när de är redo.
+            P19-laget spelar egna matcher. Talanger kan lyftas till A-laget när de är redo.
           </p>
           <div style={{ marginBottom: 10 }}>
             <span style={{ fontSize: 14, fontWeight: 600 }}>

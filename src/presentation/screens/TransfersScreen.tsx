@@ -443,7 +443,7 @@ export function TransfersScreen() {
                     )}
                   </p>
                   <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
-                    {positionShort(player.position)} · {club?.name ?? '?'} · {formatValue(player.marketValue)} ·{' '}
+                    {positionShort(player.position)} · {player.age} år · {club?.name ?? '?'} · {formatValue(player.marketValue)} ·{' '}
                     {isScounted
                       ? <span>Styrka ~{report!.estimatedCA}</span>
                       : <span style={{ color: 'var(--text-muted)' }}>Styrka ?</span>

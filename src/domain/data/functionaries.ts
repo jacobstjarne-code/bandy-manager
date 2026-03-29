@@ -87,22 +87,22 @@ export const FUNCTIONARY_TEMPLATES: FunctionaryTemplate[] = [
   },
   {
     role: 'Ungdomsledare',
-    roleDescription: 'Tränar P17-laget sedan sex år tillbaka',
+    roleDescription: 'Tränar P19-laget sedan sex år tillbaka',
     namePool: ['Annika', 'Birgitta', 'Susanne', 'Kristina', 'Margareta', 'Eva-Lena', 'Ingrid', 'Mona'],
     quotesByPhase: {
       höststart: [
-        'P17 ser bra ut i år. Tre pojkar som kan bli något på sikt.',
+        'P19 ser bra ut i år. Tre pojkar som kan bli något på sikt.',
         'Ny säsong. Ny chans. Ungdomarna vet inte om tabellen. De spelar ändå.',
         'Har sett träningarna. Det börjar likna ett lag.',
       ],
       höst: [
-        'P17 hittar rytmen. Det tar tre matcher. Nu är vi där.',
+        'P19 hittar rytmen. Det tar tre matcher. Nu är vi där.',
         'Bra träningar i veckan. Ungdomarna är hungriga.',
         'En av killarna frågade om han kan komma upp och träna med er. Snart.',
       ],
       annandagen: [
         'Ungdomarna älskar annandagsbandyn. De springer runt och säljer lotter.',
-        'Fick in tre nya spelare till P17. Julklappar, kalla dom.',
+        'Fick in tre nya spelare till P19. Julklappar, kalla dom.',
         'Julpausen är bra. Spelarna vilar. Sen kör vi hårt.',
       ],
       vinter: [
@@ -111,20 +111,20 @@ export const FUNCTIONARY_TEMPLATES: FunctionaryTemplate[] = [
         'Håller ögonen på en av pojkarna. Kan bli bra för er på sikt.',
       ],
       våroffensiv: [
-        'P17-säsongen går mot sitt slut. Pojkarna har vuxit enormt.',
+        'P19-säsongen går mot sitt slut. Pojkarna har vuxit enormt.',
         'Tre av mina spelare tittar på era matcher nu. Dom vill dit.',
         'Sista pushen för ungdomarna. Precis som för er.',
       ],
       slutspurt: [
-        'Pojkarna i P17 tittar på varje match nu. Dom vill upp.',
+        'Pojkarna i P19 tittar på varje match nu. Dom vill upp.',
         'Har tre som är redo snart. Men det är ert beslut.',
-        'Avslutning för P17 om två veckor. Men vi följer med er in i slutet.',
+        'Avslutning för P19 om två veckor. Men vi följer med er in i slutet.',
       ],
     },
     quotesByCondition: {
       afterWin: [
         'Ungdomarna firade med oss. Det är därför vi gör det här.',
-        'P17 vann också igår. Bra dag för klubben.',
+        'P19 vann också igår. Bra dag för klubben.',
       ],
       afterLoss: [
         'Håller ungdomarna borta från löparsniack. Det hjälper ingen.',

@@ -7,4 +7,5 @@ export interface AdvanceResult {
   seasonEnded: boolean
   playoffStarted?: boolean
   pendingEvents?: GameEvent[]
+  hasManagedCupMatch?: boolean
 }

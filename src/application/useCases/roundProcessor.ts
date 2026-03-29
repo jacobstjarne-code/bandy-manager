@@ -221,6 +221,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const roundMatchWeathers: MatchWeather[] = []
   const newInboxItems: InboxItem[] = []
 
+  // Detect if there is a pending (unplayed) cup match for the managed club this round
+  let hasManagedCupPending = false
+
   // Determine if this round contains cup fixtures
   const isCupRound = roundFixtures.some(f => f.isCup)
   const isPlayoffRound = !isCupRound && game.playoffBracket !== null && nextRound > 22
@@ -233,6 +236,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   for (let i = 0; i < roundFixtures.length; i++) {
     const fixture = roundFixtures[i]
+
+    // Skip scheduled cup fixtures for the managed club — they must be played live
+    if (
+      fixture.isCup &&
+      fixture.status === FixtureStatus.Scheduled &&
+      (fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId)
+    ) {
+      hasManagedCupPending = true
+      continue
+    }
 
     // Skip fixtures already played via live mode — track starters for fitness, don't re-simulate
     if (fixture.status === FixtureStatus.Completed) {
@@ -573,8 +586,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // Advance date by 7 days per round
-  const newDate = advanceDate(game.currentDate, 7)
+  // Advance date by 7 days per round; round 8 is always Annandagen (26 dec)
+  let newDate = advanceDate(game.currentDate, 7)
+  if (nextRound === 8) newDate = `${game.currentSeason}-12-26`
 
   const justCompletedManagedFixture = simulatedFixtures.find(
     f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
@@ -1166,7 +1180,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   )
   const allNewEvents = [...newEvents, ...communityEvents]
 
-  // ── P17 Youth match simulation (every other round) ──────────────────────
+  // ── P19 Youth match simulation (every other round) ──────────────────────
   let updatedYouthTeam = game.youthTeam
   if (nextRound % 2 === 0 && game.youthTeam && game.youthTeam.players.length > 0) {
     const youthSeed = baseSeed + nextRound * 97
@@ -1203,7 +1217,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       id: `inbox_p17_r${nextRound}_${game.currentSeason}`,
       date: newDate,
       type: InboxItemType.YouthP17,
-      title: `📋 P17 ${resultStr} mot ${matchResult.opponentName} ${scoreStr}`,
+      title: `📋 P19 ${resultStr} mot ${matchResult.opponentName} ${scoreStr}`,
       body: `Pojklaget ${resultStr} mot ${matchResult.opponentName} med ${scoreStr}.${scorerStr}${bestStr}\n${tableStr}${scoutNote}`,
       isRead: false,
     } as InboxItem)
@@ -1333,7 +1347,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         id: `event_district_callup_${nextRound}_${game.currentSeason}`,
         type: 'communityEvent',
         title: `Distriktslagsuttag — ${names}`,
-        body: `${names} är kallade till ${districtName} P17-samling. De missar 2 P17-matcher men kan få värdefull erfarenhet.`,
+        body: `${names} är kallade till ${districtName} P19-samling. De missar 2 P19-matcher men kan få värdefull erfarenhet.`,
         choices: [
           {
             id: 'send',
@@ -1646,6 +1660,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  return { game: updatedGame, roundPlayed: nextRound, seasonEnded: false, pendingEvents: allNewEvents }
+  return { game: updatedGame, roundPlayed: nextRound, seasonEnded: false, pendingEvents: allNewEvents, hasManagedCupMatch: hasManagedCupPending }
 }
 

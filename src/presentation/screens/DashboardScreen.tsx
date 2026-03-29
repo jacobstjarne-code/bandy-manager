@@ -333,6 +333,11 @@ export function DashboardScreen() {
   // Current round
   const currentRound = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max, f) => Math.max(max, f.roundNumber), 0)
 
+  // Current date for display
+  const currentDateObj = new Date(game.currentDate)
+  const MONTHS = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december']
+  const currentDateStr = `${currentDateObj.getDate()} ${MONTHS[currentDateObj.getMonth()]} ${currentDateObj.getFullYear()}`
+
   // Recent form (last 5)
   const recentForm: Array<'V' | 'O' | 'F'> = game.fixtures
     .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup)
@@ -652,7 +657,7 @@ export function DashboardScreen() {
           </div>
         )}
 
-        {/* P17 sharp card */}
+        {/* P19 sharp card */}
         {game.youthTeam && (
           <div className="card-sharp" style={{ margin: '0 12px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'akademi' } })}>
             <div style={{ padding: '10px 14px' }}>
@@ -662,7 +667,7 @@ export function DashboardScreen() {
                     🎓 Akademi
                   </p>
                   <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
-                    P17 · {game.youthTeam.tablePosition}:a · {game.youthTeam.seasonRecord.w}V {game.youthTeam.seasonRecord.d}O {game.youthTeam.seasonRecord.l}F
+                    P19 · {game.youthTeam.tablePosition}:a · {game.youthTeam.seasonRecord.w}V {game.youthTeam.seasonRecord.d}O {game.youthTeam.seasonRecord.l}F
                   </span>
                 </div>
                 <button
@@ -719,6 +724,16 @@ export function DashboardScreen() {
 
         {/* Diamond ornament + CTA */}
         <div style={{ margin: '8px 12px 0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, padding: '0 2px' }}>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', letterSpacing: '0.5px' }}>
+              {currentDateStr}
+            </span>
+            {currentRound > 0 && (
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', letterSpacing: '0.5px' }}>
+                Omgång {currentRound}
+              </span>
+            )}
+          </div>
           <DiamondDivider />
 
           {/* Batch sim */}

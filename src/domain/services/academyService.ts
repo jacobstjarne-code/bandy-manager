@@ -7,9 +7,9 @@ import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../data/playerNames'
 
 // Fictional opposing youth teams from Swedish bandy regions
 const YOUTH_OPPONENTS = [
-  'Norrala P17', 'Gagnefs P17', 'Bollnäs P17', 'Alfta P17', 'Delsbo P17',
-  'Smedjebackens P17', 'Rättvik P17', 'Malung P17', 'Haninge P17', 'Hammarby P17',
-  'Enebybergs P17', 'Borlänge P17', 'Hedemora P17', 'Norberg P17', 'Fagersta P17',
+  'Norrala P19', 'Gagnefs P19', 'Bollnäs P19', 'Alfta P19', 'Delsbo P19',
+  'Smedjebackens P19', 'Rättvik P19', 'Malung P19', 'Haninge P19', 'Hammarby P19',
+  'Enebybergs P19', 'Borlänge P19', 'Hedemora P19', 'Norberg P19', 'Fagersta P19',
 ]
 
 const YOUTH_POSITION_POOL: PlayerPosition[] = [

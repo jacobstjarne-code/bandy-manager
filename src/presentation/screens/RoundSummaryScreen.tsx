@@ -130,7 +130,7 @@ export function RoundSummaryScreen() {
         />
 
         {youthMatchResult && (
-          <TappableCard label="AKADEMIN P17" summary={youthMatchResult} onClick={() => navigate('/game/club')} />
+          <TappableCard label="AKADEMIN P19" summary={youthMatchResult} onClick={() => navigate('/game/club')} />
         )}
 
         {loanDeals.length > 0 && (
