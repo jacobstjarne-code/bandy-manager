@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { BOARD_QUOTES, BOARD_MEETING_OPENERS } from '../../domain/data/boardData'
 import type { BoardPersonality } from '../../domain/entities/SaveGame'
+import { GameHeader } from '../components/GameHeader'
 
 export function BoardMeetingScreen() {
   const navigate = useNavigate()
@@ -129,10 +130,12 @@ export function BoardMeetingScreen() {
   return (
     <div style={{
       height: '100%',
-      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
       background: 'var(--bg)',
-      padding: '20px 16px 90px',
     }}>
+      <GameHeader />
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px 90px' }}>
       {/* Header */}
       <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 4 }}>
         Styrelsemöte
@@ -281,6 +284,7 @@ export function BoardMeetingScreen() {
       >
         {isFirstSeason ? 'Kör igång! →' : 'Starta säsongen →'}
       </button>
+      </div>
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { playSound } from '../audio/soundEffects'
 import { csColor, formatFinance, formatFinanceAbs } from '../utils/formatters'
+import { GameHeader } from '../components/GameHeader'
 
 export function RoundSummaryScreen() {
   const navigate = useNavigate()
@@ -92,6 +93,7 @@ export function RoundSummaryScreen() {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+      <GameHeader />
       {/* Header */}
       <div style={{
         textAlign: 'center', padding: '20px 20px 14px', borderBottom: '1px solid var(--border)',

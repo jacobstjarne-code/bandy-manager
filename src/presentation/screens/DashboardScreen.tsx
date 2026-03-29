@@ -634,7 +634,7 @@ export function DashboardScreen() {
         </div>
 
         {/* Bygdens Puls */}
-        <CommunityPulse game={game} currentRound={currentRound} onNavigate={() => navigate('/game/club', { state: { tab: 'community' } })} />
+        <CommunityPulse game={game} currentRound={currentRound} onNavigate={() => navigate('/game/club', { state: { tab: 'ekonomi' } })} />
 
         {/* Inkorg round card */}
         {latestUnread && (

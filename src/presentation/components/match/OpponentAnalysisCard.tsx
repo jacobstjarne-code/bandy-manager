@@ -30,7 +30,7 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
-          🔍 Motståndaren
+          🔍 Matchanalys
         </p>
         {displayAnalysis.level === 'basic' && (
           <button

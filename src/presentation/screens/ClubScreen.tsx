@@ -31,8 +31,10 @@ export function ClubScreen() {
   const standing = useCurrentStanding()
   const navigate = useNavigate()
   const location = useLocation()
+  const VALID_TABS: ClubTab[] = ['training', 'ekonomi', 'klubb', 'akademi']
+  const rawTab = (location.state as { tab?: string } | null)?.tab
   const [activeTab, setActiveTab] = useState<ClubTab>(
-    (location.state as { tab?: ClubTab } | null)?.tab ?? 'training'
+    rawTab && VALID_TABS.includes(rawTab as ClubTab) ? (rawTab as ClubTab) : 'training'
   )
 
   if (!club || !game) return null

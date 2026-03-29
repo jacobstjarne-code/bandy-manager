@@ -7,7 +7,14 @@ import { useGameStore } from '../store/gameStore'
 export function GameGuard() {
   const game = useGameStore(s => s.game)
   if (!game) return <Navigate to="/" replace />
-  return <Outlet />
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <GameHeader />
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        <Outlet />
+      </div>
+    </div>
+  )
 }
 
 export function GameShell() {

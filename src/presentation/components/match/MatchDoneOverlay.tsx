@@ -76,7 +76,7 @@ export function MatchDoneOverlay({
   return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: 'rgba(14,13,11,0.92)',
+      background: 'rgba(0,0,0,0.5)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
       paddingTop: '50px', zIndex: 200, overflowY: 'auto',
     }}>

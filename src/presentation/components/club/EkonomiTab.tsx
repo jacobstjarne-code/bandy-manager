@@ -197,6 +197,9 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
             {licenseIcon} {licenseLabel}
           </span>
         </div>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4, lineHeight: 1.4 }}>
+          Licensnämnden granskar ekonomin varje säsong. Negativ kassa eller svag ungdomsverksamhet kan ge varning — som i sin tur skrämmer sponsorer.
+        </p>
         {communityStanding !== undefined && (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 6, marginTop: 6, borderTop: '1px solid var(--border)' }}>
             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Lokal ställning</span>

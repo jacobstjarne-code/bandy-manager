@@ -70,30 +70,22 @@ export function MatchResultScreen() {
 
   return (
     <div style={{
-      position: 'fixed',
-      inset: 0,
-      background: 'rgba(14,13,11,0.97)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px 20px',
-      zIndex: 500,
+      height: '100%',
       overflowY: 'auto',
+      background: 'var(--bg)',
+      padding: '20px 16px 90px',
     }}>
-      <div style={{
-        background: 'var(--bg-dark-surface)',
-        border: '1px solid rgba(196,186,168,0.15)',
-        borderRadius: 16,
-        padding: '28px 24px',
+      <div className="card-sharp" style={{
+        padding: '24px 20px',
         width: '100%',
         maxWidth: 390,
+        margin: '0 auto',
       }}>
         {/* Round label */}
         <div style={{ marginBottom: 16, textAlign: 'center', ...fadeIn('0ms') }}>
           <span style={{
             fontSize: 11, fontWeight: 700, letterSpacing: '1.5px',
-            textTransform: 'uppercase', color: 'var(--text-light-secondary)',
+            textTransform: 'uppercase', color: 'var(--text-muted)',
           }}>
             {fixture.roundNumber <= 22
               ? `Omgång ${fixture.roundNumber}`
@@ -105,10 +97,10 @@ export function MatchResultScreen() {
 
         {/* Club names */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, ...fadeIn('80ms') }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-light-secondary)', flex: 1, textAlign: 'left' }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', flex: 1, textAlign: 'left' }}>
             {homeClub?.shortName ?? homeClub?.name}
           </span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-light-secondary)', flex: 1, textAlign: 'right' }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', flex: 1, textAlign: 'right' }}>
             {awayClub?.shortName ?? awayClub?.name}
           </span>
         </div>
@@ -121,7 +113,7 @@ export function MatchResultScreen() {
           <span style={{ fontSize: 52, fontWeight: 800, color: resultColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
             {fixture.homeScore}
           </span>
-          <span style={{ fontSize: 28, color: 'rgba(245,241,235,0.30)', fontWeight: 300 }}>–</span>
+          <span style={{ fontSize: 28, color: 'var(--text-muted)', fontWeight: 300 }}>–</span>
           <span style={{ fontSize: 52, fontWeight: 800, color: resultColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
             {fixture.awayScore}
           </span>
@@ -150,7 +142,7 @@ export function MatchResultScreen() {
         {/* B2: Key moments mini-timeline */}
         {keyMoments.length > 0 && (
           <div style={{ marginBottom: 20, ...fadeIn('480ms') }}>
-            <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-light-secondary)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>Nyckelmoment</p>
+            <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>Nyckelmoment</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {keyMoments.map((e, i) => {
                 const isHome = e.clubId === fixture.homeClubId
@@ -268,9 +260,9 @@ export function MatchResultScreen() {
             style={{
               width: '100%', padding: '13px 16px', borderRadius: 10,
               fontSize: 14, fontWeight: 600, cursor: 'pointer',
-              background: 'var(--bg-dark-elevated)',
-              color: 'var(--text-light)',
-              border: '1px solid rgba(196,186,168,0.2)',
+              background: 'var(--bg-elevated)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border)',
             }}
           >
             Se fullständig rapport →

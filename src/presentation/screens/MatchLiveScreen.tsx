@@ -466,47 +466,6 @@ export function MatchLiveScreen() {
           onClose={() => { setShowSubModal(false); setIsPaused(false) }}
         />
       )}
-      {/* Header bar */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '10px 16px', background: 'var(--bg-surface)',
-        borderBottom: '1px solid var(--border)', flexShrink: 0,
-      }}>
-        <div />
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button
-            onClick={() => setIsPaused(prev => !prev)}
-            className="btn btn-ghost"
-            style={{ padding: '6px 12px', fontSize: 14 }}
-          >
-            {isPaused ? '▶' : '⏸'}
-          </button>
-          <button
-            onClick={() => setIsFastForward(prev => !prev)}
-            className={`btn ${isFastForward ? 'btn-copper' : 'btn-ghost'}`}
-            style={{ padding: '6px 12px', fontSize: 14 }}
-          >
-            ⏩
-          </button>
-          {currentStep >= 10 && currentStep <= 50 && liveSubsUsed < 2 && !matchDone && (
-            <button
-              onClick={() => { setIsPaused(true); setShowSubModal(true) }}
-              className="btn btn-outline"
-              style={{ padding: '6px 10px', fontSize: 14 }}
-            >
-              🔄
-            </button>
-          )}
-          <button
-            onClick={() => { toggleMute(); setMuted(isMuted()) }}
-            className="btn btn-ghost"
-            style={{ padding: '6px 10px', fontSize: 14 }}
-          >
-            {muted ? '🔇' : '🔊'}
-          </button>
-        </div>
-      </div>
-
       {/* LED Scoreboard */}
       <div style={{
         background: '#0A0A0A',
@@ -597,6 +556,43 @@ export function MatchLiveScreen() {
             {matchWeather.weather.temperature <= -15 && ' ❄'}
           </p>
         )}
+      </div>
+
+      {/* Controls below scoreboard */}
+      <div style={{
+        display: 'flex', justifyContent: 'center', gap: 8,
+        padding: '6px 16px', flexShrink: 0,
+      }}>
+        <button
+          onClick={() => setIsPaused(prev => !prev)}
+          className="btn btn-ghost"
+          style={{ padding: '6px 12px', fontSize: 14 }}
+        >
+          {isPaused ? '▶' : '⏸'}
+        </button>
+        <button
+          onClick={() => setIsFastForward(prev => !prev)}
+          className={`btn ${isFastForward ? 'btn-copper' : 'btn-ghost'}`}
+          style={{ padding: '6px 12px', fontSize: 14 }}
+        >
+          ⏩
+        </button>
+        {currentStep >= 10 && currentStep <= 50 && liveSubsUsed < 2 && !matchDone && (
+          <button
+            onClick={() => { setIsPaused(true); setShowSubModal(true) }}
+            className="btn btn-outline"
+            style={{ padding: '6px 10px', fontSize: 14 }}
+          >
+            🔄
+          </button>
+        )}
+        <button
+          onClick={() => { toggleMute(); setMuted(isMuted()) }}
+          className="btn btn-ghost"
+          style={{ padding: '6px 10px', fontSize: 14 }}
+        >
+          {muted ? '🔇' : '🔊'}
+        </button>
       </div>
 
       {/* Intensity bar */}

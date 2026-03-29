@@ -69,12 +69,19 @@ export function EventScreen() {
 
   return (
     <div style={{
-      height: '100%',
-      overflowY: 'auto',
-      background: 'var(--bg)',
-      padding: '20px 16px',
+      position: 'fixed', inset: 0,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'flex-start',
+      paddingTop: '60px', zIndex: 200, overflowY: 'auto',
     }}>
-      <div className="card-sharp" style={{ padding: '20px', marginBottom: 16 }}>
+      <div className="card-round" style={{
+        padding: '24px 20px',
+        minWidth: 280, maxWidth: 360, width: '90%',
+        marginBottom: 20,
+        border: 'none',
+        boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
+      }}>
         {/* Type badge */}
         <p style={{
           fontSize: 9,
@@ -166,7 +173,7 @@ export function EventScreen() {
 
       {/* Progress */}
       {total > 1 && (
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginTop: 8 }}>
           {idx + 1} / {total}
         </p>
       )}

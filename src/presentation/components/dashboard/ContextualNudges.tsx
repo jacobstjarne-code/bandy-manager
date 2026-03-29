@@ -10,6 +10,7 @@ interface Nudge {
   icon: string
   text: string
   path: string
+  state?: Record<string, string>
 }
 
 export function ContextualNudges({ game, currentRound: _r }: Props) {
@@ -30,10 +31,10 @@ export function ContextualNudges({ game, currentRound: _r }: Props) {
     nudges.push({ icon: '📋', text: `${expiringContracts[0].firstName} ${expiringContracts[0].lastName} — kontrakt löper ut snart`, path: '/game/transfers' })
 
   if ((managedClub?.finances ?? 0) < -50000)
-    nudges.push({ icon: '💸', text: 'Kassan är negativ — se budgeten', path: '/game/club' })
+    nudges.push({ icon: '💸', text: 'Kassan är negativ — se budgeten', path: '/game/club', state: { tab: 'ekonomi' } })
 
   if (game.licenseReview?.status === 'warning' || game.licenseReview?.status === 'continued_review')
-    nudges.push({ icon: '🏛️', text: 'Licensnämnden kräver åtgärder', path: '/game/club' })
+    nudges.push({ icon: '🏛️', text: 'Licensnämnden kräver åtgärder', path: '/game/club', state: { tab: 'ekonomi' } })
 
   const freshReport = Object.values(game.scoutReports ?? {}).find(r => r.scoutedSeason === game.currentSeason)
   if (freshReport) {
@@ -59,7 +60,7 @@ export function ContextualNudges({ game, currentRound: _r }: Props) {
       {nudges.slice(0, 3).map((n, i) => (
         <div
           key={i}
-          onClick={() => navigate(n.path)}
+          onClick={() => navigate(n.path, n.state ? { state: n.state } : undefined)}
           style={{
             display: 'flex', alignItems: 'center', gap: 10,
             padding: '9px 12px', marginBottom: 6,

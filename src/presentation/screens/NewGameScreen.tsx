@@ -80,7 +80,7 @@ export function NewGameScreen() {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        background: 'var(--bg-dark)',
+        background: 'var(--bg)',
       }}>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 32px' }}>
           <p style={{
@@ -96,7 +96,7 @@ export function NewGameScreen() {
           <h2 style={{
             fontSize: 28,
             fontWeight: 400,
-            color: 'var(--text-light)',
+            color: 'var(--text-primary)',
             fontFamily: 'var(--font-display)',
             letterSpacing: '2px',
             textTransform: 'uppercase',
@@ -133,7 +133,7 @@ export function NewGameScreen() {
           <button
             onClick={() => setStep('club')}
             disabled={!managerName.trim()}
-            className="btn btn-outline"
+            className="btn btn-copper"
             style={{
               width: '100%',
               padding: '16px 24px',
