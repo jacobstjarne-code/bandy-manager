@@ -502,92 +502,95 @@ export function MatchLiveScreen() {
         </div>
       </div>
 
-      {/* Scoreboard */}
+      {/* LED Scoreboard */}
       <div style={{
-        background: rivalry
-          ? 'linear-gradient(180deg, rgba(200,50,30,0.08) 0%, var(--bg-dark) 10%, var(--bg-dark-surface) 100%)'
-          : 'linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-dark-surface) 100%)',
-        borderBottom: '1px solid var(--border)',
-        padding: '16px', textAlign: 'center', flexShrink: 0, position: 'relative', overflow: 'hidden',
+        background: '#0A0A0A',
+        borderRadius: 8,
+        border: '3px solid #1A1A1A',
+        boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3)',
+        padding: '12px 16px',
+        margin: '8px 12px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 6,
+        flexShrink: 0,
       }}>
-        <div style={{ position: 'absolute', top: 0, left: 0, width: 120, height: 80, background: 'radial-gradient(ellipse at top left, rgba(196,122,58,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: 0, right: 0, width: 120, height: 80, background: 'radial-gradient(ellipse at top right, rgba(196,122,58,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16, marginBottom: 4, position: 'relative', zIndex: 1 }}>
-          <span style={{ fontSize: 13, color: 'var(--text-light-secondary)', flex: 1, textAlign: 'right' }}>
-            {truncate(homeClubName, 10)}
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 130, justifyContent: 'center' }}>
+        {/* Score row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', width: '100%' }}>
+          <div style={{ flex: 1, textAlign: 'center' }}>
+            <p style={{ fontFamily: 'Courier New, monospace', fontWeight: 700, fontSize: 13, color: 'rgba(255,255,255,0.85)', letterSpacing: '1.5px', margin: '0 0 2px', textTransform: 'uppercase' }}>
+              {truncate(homeClubName, 8)}
+            </p>
             <span
               key={`home-${homeScore}`}
               style={{
-                fontSize: 48, fontWeight: 800, lineHeight: 1,
-                color: homeScoreFlash ? 'var(--accent)' : 'var(--text-light)',
-                fontFamily: 'var(--font-display)',
-                transition: 'color 0.3s ease',
-                textShadow: homeScoreFlash ? '0 0 20px var(--accent)' : 'none',
-                fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"',
+                display: 'block',
+                fontFamily: 'Courier New, monospace', fontWeight: 900, fontSize: 56,
+                color: homeScoreFlash ? '#FF9900' : '#FF1A1A',
+                textShadow: homeScoreFlash
+                  ? '0 0 20px rgba(255,153,0,0.8), 0 0 40px rgba(255,153,0,0.4)'
+                  : '0 0 10px rgba(255,26,26,0.6), 0 0 20px rgba(255,26,26,0.3)',
+                lineHeight: 1, letterSpacing: '4px',
+                transition: 'color 0.3s ease, text-shadow 0.3s ease',
                 animation: homeScoreFlash ? 'scaleFlash 400ms ease-out both' : undefined,
-                minWidth: 36, textAlign: 'center',
               }}
             >
               {homeScore}
             </span>
-            <span style={{ fontSize: 24, color: 'rgba(245,241,235,0.35)', fontWeight: 300 }}>—</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <span style={{ color: '#FF1A1A', fontSize: 28, fontWeight: 900, opacity: 0.7, fontFamily: 'Courier New, monospace', lineHeight: 1 }}>–</span>
+            <span style={{
+              fontFamily: 'Courier New, monospace', fontWeight: 700, fontSize: 22,
+              color: '#CCFF00',
+              textShadow: '0 0 8px rgba(204,255,0,0.5)',
+              lineHeight: 1,
+            }}>
+              {matchDone ? 'FT' : `${currentMinute}'`}
+            </span>
+          </div>
+          <div style={{ flex: 1, textAlign: 'center' }}>
+            <p style={{ fontFamily: 'Courier New, monospace', fontWeight: 700, fontSize: 13, color: 'rgba(255,255,255,0.85)', letterSpacing: '1.5px', margin: '0 0 2px', textTransform: 'uppercase' }}>
+              {truncate(awayClubName, 8)}
+            </p>
             <span
               key={`away-${awayScore}`}
               style={{
-                fontSize: 48, fontWeight: 800, lineHeight: 1,
-                color: awayScoreFlash ? 'var(--accent)' : 'var(--text-light)',
-                fontFamily: 'var(--font-display)',
-                transition: 'color 0.3s ease',
-                textShadow: awayScoreFlash ? '0 0 20px var(--accent)' : 'none',
-                fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"',
+                display: 'block',
+                fontFamily: 'Courier New, monospace', fontWeight: 900, fontSize: 56,
+                color: awayScoreFlash ? '#FF9900' : '#FF1A1A',
+                textShadow: awayScoreFlash
+                  ? '0 0 20px rgba(255,153,0,0.8), 0 0 40px rgba(255,153,0,0.4)'
+                  : '0 0 10px rgba(255,26,26,0.6), 0 0 20px rgba(255,26,26,0.3)',
+                lineHeight: 1, letterSpacing: '4px',
+                transition: 'color 0.3s ease, text-shadow 0.3s ease',
                 animation: awayScoreFlash ? 'scaleFlash 400ms ease-out both' : undefined,
-                minWidth: 36, textAlign: 'center',
               }}
             >
               {awayScore}
             </span>
           </div>
-          <span style={{ fontSize: 13, color: 'var(--text-light-secondary)', flex: 1, textAlign: 'left' }}>
-            {truncate(awayClubName, 10)}
-          </span>
         </div>
         {rivalry && (
           <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 10px',
-            borderRadius: 99, background: 'linear-gradient(90deg, rgba(220,50,30,0.2), rgba(196,122,58,0.2))',
-            border: '1px solid rgba(220,100,30,0.4)', fontSize: 11, fontWeight: 700, color: 'var(--danger)',
-            marginTop: 6, marginBottom: 4,
+            display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px',
+            borderRadius: 99, background: 'rgba(220,50,30,0.2)',
+            border: '1px solid rgba(220,100,30,0.4)', fontSize: 10, fontWeight: 700, color: '#FF6644',
           }}>
             🔥 {rivalry.name}
           </div>
         )}
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
-          <div style={{ position: 'relative', width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="48" height="48" viewBox="0 0 48 48" style={{ position: 'absolute', inset: 0 }}>
-              <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(245,241,235,0.12)" strokeWidth="2"/>
-              <circle cx="24" cy="24" r="20" fill="none" stroke="var(--accent)" strokeWidth="2"
-                strokeDasharray={`${(currentMinute / 90) * 125.7} 125.7`}
-                strokeLinecap="round" transform="rotate(-90 24 24)"
-                style={{ transition: 'stroke-dasharray 600ms ease-out' }}
-              />
-            </svg>
-            <span style={{ fontSize: 13, color: 'var(--text-light-secondary)', fontWeight: 600, position: 'relative', zIndex: 1 }}>
-              {matchDone ? 'Slut' : `${currentMinute}'`}
-            </span>
-          </div>
-        </div>
         {matchWeather && (
-          <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-light-secondary)', marginTop: 4 }}>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0, fontFamily: 'Courier New, monospace' }}>
             {getWeatherEmoji(matchWeather.weather.condition)}{' '}
             {matchWeather.weather.temperature > 0 ? '+' : ''}{matchWeather.weather.temperature}°
             {' · '}
-            <span style={{ color: matchWeather.weather.iceQuality === IceQuality.Poor ? 'var(--danger)' : 'inherit' }}>
+            <span style={{ color: matchWeather.weather.iceQuality === IceQuality.Poor ? '#FF6644' : 'inherit' }}>
               {getIceQualityLabel(matchWeather.weather.iceQuality)}
             </span>
             {matchWeather.weather.temperature <= -15 && ' ❄'}
-          </div>
+          </p>
         )}
       </div>
 
