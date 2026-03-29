@@ -173,7 +173,7 @@ export function IntroSequence() {
             transition: 'opacity 700ms ease',
             transitionDelay: s1 ? '1000ms' : '0ms',
           }}>
-            En liten by. Ett lag. En hel värld.
+            En ort. Ett lag. Ett mål.
           </p>
         </div>
 

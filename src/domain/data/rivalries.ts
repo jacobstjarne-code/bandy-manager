@@ -5,15 +5,15 @@ export interface Rivalry {
 }
 
 export const RIVALRIES: Rivalry[] = [
-  { clubIds: ['club_sandviken', 'club_edsbyn'], name: 'Gävleborgsderbyt', intensity: 3 },
-  { clubIds: ['club_ljusdal', 'club_edsbyn'], name: 'Hälsinglandsderbyt', intensity: 2 },
-  { clubIds: ['club_ljusdal', 'club_broberg'], name: 'Hälsinglandsderbyt', intensity: 2 },
-  { clubIds: ['club_sandviken', 'club_broberg'], name: 'Norrlandsderbyt', intensity: 2 },
-  { clubIds: ['club_vasteras', 'club_tillberga'], name: 'Västmanlandsderbyt', intensity: 3 },
-  { clubIds: ['club_villa', 'club_kungalv'], name: 'Älvderbyt', intensity: 2 },
-  { clubIds: ['club_sirius', 'club_skutskar'], name: 'Upplandsderbyt', intensity: 1 },
-  { clubIds: ['club_soderhamns', 'club_broberg'], name: 'Hälsingederbyt', intensity: 3 },
-  { clubIds: ['club_falun', 'club_edsbyn'], name: 'Inland mot kust', intensity: 2 },
+  { clubIds: ['club_sirius', 'club_skutskar'], name: 'Upplandsderbyt', intensity: 3 },
+  { clubIds: ['club_edsbyn', 'club_ljusdal'], name: 'Bruksderbyt', intensity: 2 },
+  { clubIds: ['club_falun', 'club_soderhamns'], name: 'Daladerbyt', intensity: 3 },
+  { clubIds: ['club_tillberga', 'club_villa'], name: 'Slaget om södern', intensity: 2 },
+  { clubIds: ['club_broberg', 'club_tillberga'], name: 'Nord mot syd', intensity: 1 },
+  { clubIds: ['club_kungalv', 'club_ljusdal'], name: 'Blåderbyt', intensity: 1 },
+  { clubIds: ['club_falun', 'club_sandviken'], name: 'Gävledaladerbyt', intensity: 2 },
+  { clubIds: ['club_vasteras', 'club_sirius'], name: 'Forsderbyt', intensity: 1 },
+  { clubIds: ['club_kungalv', 'club_edsbyn'], name: 'Slaget om Värmland', intensity: 3 },
 ]
 
 export function getRivalry(clubId1: string, clubId2: string): Rivalry | null {

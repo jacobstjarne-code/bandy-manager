@@ -285,7 +285,7 @@ export function NextMatchCard({
         {/* SM-Final: italic quote */}
         {isFinal && (
           <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--accent-dark)', margin: '4px 0 2px', fontStyle: 'italic', fontFamily: 'var(--font-display)' }}>
-            "Hela Sverige tittar."
+            "Sveriges svar på Superbowl."
           </p>
         )}
 
