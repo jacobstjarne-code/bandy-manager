@@ -24,9 +24,9 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
     label: '5-3-2 (Klassisk)',
     description: 'Traditionell. Libero, två backar, två ytterhalvor, tre mittfältare, två forwards.',
     slots: [
-      { id: 'gk',     label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 5 },
+      { id: 'gk',     label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
       { id: 'def-l',  label: 'VB',  position: PlayerPosition.Defender,   x: 25, y: 15 },
-      { id: 'def-c',  label: 'LIB', position: PlayerPosition.Defender,   x: 50, y: 12 },
+      { id: 'def-c',  label: 'LIB', position: PlayerPosition.Defender,   x: 50, y: 22 },
       { id: 'def-r',  label: 'HB',  position: PlayerPosition.Defender,   x: 75, y: 15 },
       { id: 'half-l', label: 'VYH', position: PlayerPosition.Half,       x: 10, y: 30 },
       { id: 'half-r', label: 'HYH', position: PlayerPosition.Half,       x: 90, y: 30 },
@@ -42,7 +42,7 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
     label: '3-3-4 (Offensiv)',
     description: 'Traditionell bandyformation. Tre backar, tre halvar, fyra forwards.',
     slots: [
-      { id: 'gk',     label: 'MV', position: PlayerPosition.Goalkeeper, x: 50, y: 5 },
+      { id: 'gk',     label: 'MV', position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
       { id: 'def-l',  label: 'VB', position: PlayerPosition.Defender,   x: 20, y: 20 },
       { id: 'def-c',  label: 'CB', position: PlayerPosition.Defender,   x: 50, y: 18 },
       { id: 'def-r',  label: 'HB', position: PlayerPosition.Defender,   x: 80, y: 20 },
@@ -60,7 +60,7 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
     label: '4-3-3 (Defensiv)',
     description: 'Fyra backar ger stabilitet. Tre halvar, tre forwards.',
     slots: [
-      { id: 'gk',      label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 5 },
+      { id: 'gk',      label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
       { id: 'def-ll',  label: 'VB',  position: PlayerPosition.Defender,   x: 15, y: 20 },
       { id: 'def-lc',  label: 'VCB', position: PlayerPosition.Defender,   x: 38, y: 18 },
       { id: 'def-rc',  label: 'HCB', position: PlayerPosition.Defender,   x: 62, y: 18 },
@@ -78,7 +78,7 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
     label: '3-4-3 (Mittfält)',
     description: 'Starkt mittfält med fyra halvar. Bra bollinnehav.',
     slots: [
-      { id: 'gk',      label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 5 },
+      { id: 'gk',      label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
       { id: 'def-l',   label: 'VB',  position: PlayerPosition.Defender,   x: 20, y: 20 },
       { id: 'def-c',   label: 'CB',  position: PlayerPosition.Defender,   x: 50, y: 18 },
       { id: 'def-r',   label: 'HB',  position: PlayerPosition.Defender,   x: 80, y: 20 },
@@ -96,7 +96,7 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
     label: '2-3-2-3 (Offensiv)',
     description: 'Bara två backar — all vikt framåt. Riskabelt men explosivt.',
     slots: [
-      { id: 'gk',     label: 'MV', position: PlayerPosition.Goalkeeper, x: 50, y: 5 },
+      { id: 'gk',     label: 'MV', position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
       { id: 'def-l',  label: 'VB', position: PlayerPosition.Defender,   x: 30, y: 18 },
       { id: 'def-r',  label: 'HB', position: PlayerPosition.Defender,   x: 70, y: 18 },
       { id: 'half-l', label: 'VH', position: PlayerPosition.Half,       x: 20, y: 35 },
@@ -114,7 +114,7 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
     label: '4-2-4 (Ultra-offensiv)',
     description: 'Maximal bredd med fyra forwards och fyra backar. Tunn halvbackslinje.',
     slots: [
-      { id: 'gk',      label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 5 },
+      { id: 'gk',      label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
       { id: 'def-ll',  label: 'VB',  position: PlayerPosition.Defender,   x: 15, y: 20 },
       { id: 'def-lc',  label: 'VCB', position: PlayerPosition.Defender,   x: 38, y: 18 },
       { id: 'def-rc',  label: 'HCB', position: PlayerPosition.Defender,   x: 62, y: 18 },
