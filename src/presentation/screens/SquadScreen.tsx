@@ -443,7 +443,7 @@ export function SquadScreen() {
             position: 'fixed',
             inset: 0,
             zIndex: 200,
-            background: 'rgba(14,13,11,0.95)',
+            background: 'rgba(0,0,0,0.5)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',

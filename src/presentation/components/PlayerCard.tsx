@@ -233,10 +233,10 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
       onClick={onClick}
       style={{
         width: 280,
-        borderRadius: 16,
-        background: 'linear-gradient(var(--bg-surface), var(--bg)) padding-box, linear-gradient(160deg, var(--accent) 0%, #8B6914 50%, transparent 100%) border-box',
-        border: '2px solid transparent',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.15), 0 0 0 1px rgba(196,122,58,0.1)',
+        borderRadius: 14,
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
         overflow: 'hidden',
         cursor: onClick ? 'pointer' : 'default',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',

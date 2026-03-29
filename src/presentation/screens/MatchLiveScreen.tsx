@@ -8,7 +8,7 @@ import type { MatchWeather } from '../../domain/entities/Weather'
 import { MatchEventType, WeatherCondition, IceQuality, TacticMentality, TacticTempo, TacticPress } from '../../domain/enums'
 import { getWeatherEmoji, getIceQualityLabel } from '../../domain/services/weatherService'
 import { getRivalry } from '../../domain/data/rivalries'
-import { eventIcon, truncate } from '../utils/formatters'
+import { eventIcon } from '../utils/formatters'
 import { computePlayerRatings } from '../utils/matchRatings'
 import { playSound, isMuted, toggleMute } from '../audio/soundEffects'
 import { SnowOverlay } from '../components/match/SnowOverlay'
@@ -430,6 +430,11 @@ export function MatchLiveScreen() {
   const homeScore = currentMatchStep?.homeScore ?? 0
   const awayScore = currentMatchStep?.awayScore ?? 0
 
+  const homeClub = fixture ? game?.clubs.find(c => c.id === fixture.homeClubId) : undefined
+  const awayClub = fixture ? game?.clubs.find(c => c.id === fixture.awayClubId) : undefined
+  const homeShort = (homeClub?.shortName ?? homeClubName).substring(0, 6)
+  const awayShort = (awayClub?.shortName ?? awayClubName).substring(0, 6)
+
   // NOTE: Live substitutions don't affect the pre-computed match simulation outcome,
   // but are stored and shown in the commentary feed.
   function handleLiveSub(outId: string, inId: string) {
@@ -520,7 +525,7 @@ export function MatchLiveScreen() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', width: '100%' }}>
           <div style={{ flex: 1, textAlign: 'center' }}>
             <p style={{ fontFamily: 'Courier New, monospace', fontWeight: 700, fontSize: 13, color: 'rgba(255,255,255,0.85)', letterSpacing: '1.5px', margin: '0 0 2px', textTransform: 'uppercase' }}>
-              {truncate(homeClubName, 8)}
+              {homeShort} <span style={{ color: '#CCFF00', fontSize: 12, fontWeight: 700 }}>H</span>
             </p>
             <span
               key={`home-${homeScore}`}
@@ -552,7 +557,7 @@ export function MatchLiveScreen() {
           </div>
           <div style={{ flex: 1, textAlign: 'center' }}>
             <p style={{ fontFamily: 'Courier New, monospace', fontWeight: 700, fontSize: 13, color: 'rgba(255,255,255,0.85)', letterSpacing: '1.5px', margin: '0 0 2px', textTransform: 'uppercase' }}>
-              {truncate(awayClubName, 8)}
+              <span style={{ color: '#CCFF00', fontSize: 12, fontWeight: 700 }}>G</span> {awayShort}
             </p>
             <span
               key={`away-${awayScore}`}
@@ -582,7 +587,7 @@ export function MatchLiveScreen() {
           </div>
         )}
         {matchWeather && (
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0, fontFamily: 'Courier New, monospace' }}>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: 0, fontFamily: 'Courier New, monospace' }}>
             {getWeatherEmoji(matchWeather.weather.condition)}{' '}
             {matchWeather.weather.temperature > 0 ? '+' : ''}{matchWeather.weather.temperature}°
             {' · '}

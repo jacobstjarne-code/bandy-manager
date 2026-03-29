@@ -14,38 +14,52 @@ export function GameHeader() {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: '10px 16px',
+      padding: '12px 16px',
       background: 'var(--bg-dark)',
       borderBottom: '2px solid var(--accent)',
       flexShrink: 0,
+      minHeight: 44,
     }}>
+      <span style={{
+        fontFamily: 'var(--font-display)',
+        fontSize: 12,
+        letterSpacing: '2.5px',
+        color: 'rgba(245,241,235,0.45)',
+        textTransform: 'uppercase',
+      }}>
+        Bandy Manager
+      </span>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: 11,
-          letterSpacing: '2.5px',
-          color: 'rgba(245,241,235,0.45)',
-          textTransform: 'uppercase',
+        <div style={{
+          width: 24, height: 24, borderRadius: 4,
+          background: 'rgba(196,122,58,0.15)',
+          border: '1px solid rgba(196,122,58,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 10, color: 'var(--accent)',
         }}>
-          Bandy Manager
-        </span>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{
-          fontSize: 12,
-          color: 'rgba(245,241,235,0.8)',
-          fontWeight: 700,
-          fontFamily: 'var(--font-display)',
-        }}>
-          {club.shortName ?? club.name}
-        </span>
-        <span style={{
-          fontSize: 10,
-          color: 'rgba(245,241,235,0.45)',
-        }}>
-          {game.managerName} · Säsong {game.currentSeason}/{game.currentSeason + 1}
-          {currentRound > 0 ? ` · Omg ${currentRound}` : ''}
-        </span>
+          {(club.shortName ?? club.name).substring(0, 2).toUpperCase()}
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <p style={{
+            fontSize: 13,
+            color: 'rgba(245,241,235,0.85)',
+            fontWeight: 700,
+            fontFamily: 'var(--font-display)',
+            margin: 0,
+            lineHeight: 1.2,
+          }}>
+            {club.shortName ?? club.name}
+          </p>
+          <p style={{
+            fontSize: 10,
+            color: 'rgba(245,241,235,0.4)',
+            margin: 0,
+            lineHeight: 1.2,
+          }}>
+            {game.managerName} · {game.currentSeason}/{game.currentSeason + 1}
+            {currentRound > 0 ? ` · Omg ${currentRound}` : ''}
+          </p>
+        </div>
       </div>
     </div>
   )
