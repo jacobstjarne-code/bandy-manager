@@ -128,192 +128,155 @@ export function BoardMeetingScreen() {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0,
-      background: 'rgba(14,13,11,0.96)',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      padding: '24px 20px', zIndex: 500,
-      maxWidth: 430, margin: '0 auto',
+      height: '100%',
+      overflowY: 'auto',
+      background: 'var(--bg)',
+      padding: '20px 16px 90px',
     }}>
-      <div style={{
-        background: 'var(--bg-dark-surface)',
-        border: '1px solid rgba(196,122,58,0.18)',
-        borderRadius: 16, padding: '28px 24px',
-        width: '100%', maxWidth: 390,
-        maxHeight: '85vh', overflowY: 'auto',
-      }}>
-        {/* Header */}
-        <p className="section-heading card-stagger-1" style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px',
-          textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
-          Styrelsemöte
+      {/* Header */}
+      <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 4 }}>
+        Styrelsemöte
+      </p>
+      <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
+        Inför säsong {game.currentSeason}/{game.currentSeason + 1}
+      </h2>
+      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>{club.name}</p>
+
+      {/* Förra säsongen / Välkommen */}
+      {isFirstSeason ? (
+        <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px' }}>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+            👋 Välkommen
+          </p>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+            Välkommen som ny tränare för {club.name}. Styrelsen har
+            stora förhoppningar på dig. Här är vad vi förväntar oss
+            av den kommande säsongen.
+          </p>
+        </div>
+      ) : (
+        <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px' }}>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+            {verdictEmoji} Förra säsongen
+          </p>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+            {lastSummary.narrativeSummary}
+          </p>
+        </div>
+      )}
+
+      {/* Säsongens mål */}
+      <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px' }}>
+        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+          📋 Säsongens mål
         </p>
-        <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-light)', marginBottom: 6, fontFamily: 'var(--font-display)' }}>
-          Inför säsong {game.currentSeason}/{game.currentSeason + 1}
-        </h2>
-        <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', marginBottom: 20 }}>
-          {club.name}
+        <p style={{ fontSize: 15, color: 'var(--accent)', fontWeight: 600, marginBottom: 6, fontFamily: 'var(--font-display)' }}>
+          {expectationText[club.boardExpectation] ?? 'Gör ert bästa'}
         </p>
-
-        {/* Förra säsongen / Välkommen */}
-        {isFirstSeason ? (
-          <div className="card-stagger-2" style={{
-            background: 'rgba(196,122,58,0.08)',
-            border: '1px solid rgba(196,122,58,0.22)',
-            borderRadius: 10, padding: '14px', marginBottom: 16,
-          }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
-              👋 VÄLKOMMEN
-            </p>
-            <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', lineHeight: 1.6 }}>
-              Välkommen som ny tränare för {club.name}. Styrelsen har
-              stora förhoppningar på dig. Här är vad vi förväntar oss
-              av den kommande säsongen.
-            </p>
-          </div>
-        ) : (
-          <div className="card-stagger-2" style={{
-            background: 'rgba(196,122,58,0.08)',
-            border: '1px solid rgba(196,122,58,0.22)',
-            borderRadius: 10, padding: '14px', marginBottom: 16,
-          }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
-              {verdictEmoji} FÖRRA SÄSONGEN
-            </p>
-            <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', lineHeight: 1.6 }}>
-              {lastSummary.narrativeSummary}
-            </p>
-          </div>
-        )}
-
-        {/* Säsongens mål */}
-        <div className="card-stagger-3" style={{
-          background: 'var(--bg-dark-elevated)', border: '1px solid rgba(255,255,255,0.07)',
-          borderRadius: 10, padding: '14px', marginBottom: 16,
-        }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-light-secondary)', marginBottom: 10 }}>
-            📋 Säsongens mål
-          </p>
-          <p style={{ fontSize: 15, color: 'var(--accent)', fontWeight: 600, marginBottom: 6, fontFamily: 'var(--font-display)' }}>
-            {expectationText[club.boardExpectation] ?? 'Gör ert bästa'}
-          </p>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-            Styrelsen förväntar sig att ni uppnår detta mål. Misslyckande kan få konsekvenser.
-          </p>
-        </div>
-
-        {/* Ekonomi */}
-        <div className="card-stagger-4" style={{
-          background: 'var(--bg-dark-elevated)', border: '1px solid rgba(255,255,255,0.07)',
-          borderRadius: 10, padding: '14px', marginBottom: 16,
-        }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-light-secondary)', marginBottom: 10 }}>
-            💰 Ekonomi
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>Klubbkassa</span>
-            <span style={{ fontSize: 13, fontWeight: 600,
-              color: club.finances > 0 ? 'var(--success)' : 'var(--danger)' }}>
-              {club.finances >= 1000000
-                ? `${(club.finances / 1000000).toFixed(1)} mkr`
-                : `${Math.round(club.finances / 1000)} tkr`}
-            </span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>Transferbudget</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)' }}>
-              {club.transferBudget >= 1000000
-                ? `${(club.transferBudget / 1000000).toFixed(1)} mkr`
-                : `${Math.round(club.transferBudget / 1000)} tkr`}
-            </span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>Sponsorer</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-light-secondary)' }}>
-              {sponsors.length}/{maxSponsors}{' '}
-              {sponsorIncome > 0
-                ? `(+${Math.round(sponsorIncome / 1000)} tkr/vecka)`
-                : '(inga aktiva)'}
-            </span>
-          </div>
-        </div>
-
-        {/* Trupp */}
-        <div className="card-stagger-5" style={{
-          background: 'var(--bg-dark-elevated)', border: '1px solid rgba(255,255,255,0.07)',
-          borderRadius: 10, padding: '14px', marginBottom: 16,
-        }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-light-secondary)', marginBottom: 10 }}>
-            👥 Trupp
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <span style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>Antal spelare</span>
-            <span style={{ fontSize: 13, color: 'var(--text-light)' }}>{players.length}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <span style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>Snitt-Styrka</span>
-            <span style={{ fontSize: 13, color: 'var(--text-light)' }}>{avgCA}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>Snittålder</span>
-            <span style={{ fontSize: 13, color: 'var(--text-light)' }}>{avgAge}</span>
-          </div>
-        </div>
-
-        {/* Styrelsemedlemmarnas röster */}
-        {boardMembers.length > 0 && (
-          <div style={{
-            background: 'rgba(0,0,0,0.25)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: 10, padding: '14px', marginBottom: 24,
-          }}>
-            <p style={{
-              fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase',
-              color: 'var(--text-light-secondary)', marginBottom: 8,
-            }}>
-              💬 Styrelsemedlemmarna om läget
-            </p>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16, fontStyle: 'italic', fontFamily: 'var(--font-display)' }}>
-              {openerText}
-            </p>
-            {boardMembers.map((member, i) => {
-              const quote = getContextualQuote(member.personality, i)
-              if (!quote) return null
-              return (
-                <div key={member.name + i} style={{
-                  marginBottom: i < boardMembers.length - 1 ? 14 : 0,
-                  paddingBottom: i < boardMembers.length - 1 ? 14 : 0,
-                  borderBottom: i < boardMembers.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                }}>
-                  <p style={{
-                    fontSize: 13, color: 'var(--text-light-secondary)', lineHeight: 1.6,
-                    fontStyle: 'italic', marginBottom: 6, fontFamily: 'var(--font-display)',
-                  }}>
-                    {quote}
-                  </p>
-                  <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                    <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{member.name}</span>
-                    {' · '}{member.role}{' · '}{personalityLabel[member.personality]}
-                  </p>
-                </div>
-              )
-            })}
-          </div>
-        )}
-
-        {/* Knapp */}
-        <button
-          onClick={handleStart}
-          className="btn btn-copper"
-          style={{
-            width: '100%', padding: '16px',
-            fontSize: 15, fontWeight: 800,
-            letterSpacing: '1px', textTransform: 'uppercase',
-            borderRadius: 12,
-          }}
-        >
-          {isFirstSeason ? 'Kör igång! →' : 'Starta säsongen →'}
-        </button>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+          Styrelsen förväntar sig att ni uppnår detta mål. Misslyckande kan få konsekvenser.
+        </p>
       </div>
+
+      {/* Ekonomi */}
+      <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px' }}>
+        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+          💰 Ekonomi
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Klubbkassa</span>
+          <span style={{ fontSize: 13, fontWeight: 600,
+            color: club.finances > 0 ? 'var(--success)' : 'var(--danger)' }}>
+            {club.finances >= 1000000
+              ? `${(club.finances / 1000000).toFixed(1)} mkr`
+              : `${Math.round(club.finances / 1000)} tkr`}
+          </span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Transferbudget</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)' }}>
+            {club.transferBudget >= 1000000
+              ? `${(club.transferBudget / 1000000).toFixed(1)} mkr`
+              : `${Math.round(club.transferBudget / 1000)} tkr`}
+          </span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Sponsorer</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
+            {sponsors.length}/{maxSponsors}{' '}
+            {sponsorIncome > 0
+              ? `(+${Math.round(sponsorIncome / 1000)} tkr/vecka)`
+              : '(inga aktiva)'}
+          </span>
+        </div>
+      </div>
+
+      {/* Trupp */}
+      <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px' }}>
+        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+          👥 Trupp
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Antal spelare</span>
+          <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{players.length}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Snitt-Styrka</span>
+          <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{avgCA}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Snittålder</span>
+          <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{avgAge}</span>
+        </div>
+      </div>
+
+      {/* Styrelsemedlemmarnas röster */}
+      {boardMembers.length > 0 && (
+        <div className="card-sharp" style={{ marginBottom: 24, padding: '12px 14px' }}>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+            💬 Styrelsemedlemmarna om läget
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16, fontStyle: 'italic', fontFamily: 'var(--font-display)' }}>
+            {openerText}
+          </p>
+          {boardMembers.map((member, i) => {
+            const quote = getContextualQuote(member.personality, i)
+            if (!quote) return null
+            return (
+              <div key={member.name + i} style={{
+                marginBottom: i < boardMembers.length - 1 ? 14 : 0,
+                paddingBottom: i < boardMembers.length - 1 ? 14 : 0,
+                borderBottom: i < boardMembers.length - 1 ? '1px solid var(--border)' : 'none',
+              }}>
+                <p style={{
+                  fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6,
+                  fontStyle: 'italic', marginBottom: 6, fontFamily: 'var(--font-display)',
+                }}>
+                  {quote}
+                </p>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{member.name}</span>
+                  {' · '}{member.role}{' · '}{personalityLabel[member.personality]}
+                </p>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Knapp */}
+      <button
+        onClick={handleStart}
+        className="btn btn-copper"
+        style={{
+          width: '100%', padding: '16px',
+          fontSize: 15, fontWeight: 800,
+          letterSpacing: '1px', textTransform: 'uppercase',
+          borderRadius: 12,
+        }}
+      >
+        {isFirstSeason ? 'Kör igång! →' : 'Starta säsongen →'}
+      </button>
     </div>
   )
 }
