@@ -69,47 +69,29 @@ export function EventScreen() {
 
   return (
     <div style={{
-      position: 'fixed',
-      inset: 0,
-      background: 'rgba(14,13,11,0.97)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px 20px',
-      zIndex: 500,
-      maxWidth: 430,
-      margin: '0 auto',
+      height: '100%',
+      overflowY: 'auto',
+      background: 'var(--bg)',
+      padding: '20px 16px',
     }}>
-      {/* Card */}
-      <div style={{
-        background: 'var(--bg-dark-surface)',
-        border: '1px solid rgba(196,186,168,0.15)',
-        borderRadius: 16,
-        padding: '28px 24px',
-        width: '100%',
-        maxWidth: 390,
-        maxHeight: '85vh',
-        overflowY: 'auto',
-      }}>
+      <div className="card-sharp" style={{ padding: '20px', marginBottom: 16 }}>
         {/* Type badge */}
-        <div style={{ marginBottom: 20 }}>
-          <span style={{
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: '1.5px',
-            textTransform: 'uppercase',
-            color: 'var(--text-light-secondary)',
-          }}>
-            Händelse
-          </span>
-        </div>
+        <p style={{
+          fontSize: 9,
+          fontWeight: 600,
+          letterSpacing: '2.5px',
+          textTransform: 'uppercase',
+          color: 'var(--text-muted)',
+          marginBottom: 12,
+        }}>
+          Händelse
+        </p>
 
         {/* Title */}
         <h2 style={{
           fontSize: 18,
           fontWeight: 800,
-          color: 'var(--text-light)',
+          color: 'var(--text-primary)',
           marginBottom: 14,
           lineHeight: 1.3,
         }}>
@@ -119,7 +101,7 @@ export function EventScreen() {
         {/* Body */}
         <p style={{
           fontSize: 14,
-          color: 'var(--text-light-secondary)',
+          color: 'var(--text-secondary)',
           lineHeight: 1.6,
           marginBottom: relatedPlayer || relatedClub ? 12 : 24,
           whiteSpace: 'pre-line',
@@ -184,7 +166,7 @@ export function EventScreen() {
 
       {/* Progress */}
       {total > 1 && (
-        <p style={{ marginTop: 20, fontSize: 13, color: 'var(--text-light-secondary)' }}>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>
           {idx + 1} / {total}
         </p>
       )}
