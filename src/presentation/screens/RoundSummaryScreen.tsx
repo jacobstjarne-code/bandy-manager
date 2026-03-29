@@ -54,7 +54,7 @@ export function RoundSummaryScreen() {
 
   const LABEL: React.CSSProperties = {
     fontSize: 10, fontWeight: 700, letterSpacing: '1.5px',
-    textTransform: 'uppercase', color: 'var(--text-light-secondary)', marginBottom: 4,
+    textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4,
   }
 
   function TappableCard({ label, summary, detail, onClick, accent }: {
@@ -63,17 +63,17 @@ export function RoundSummaryScreen() {
   }) {
     return (
       <div onClick={onClick} style={{
-        background: 'var(--bg-dark-surface)', border: '1px solid rgba(196,186,168,0.15)', borderRadius: 12,
+        background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12,
         padding: '14px 16px', marginBottom: 10,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
         cursor: onClick ? 'pointer' : 'default',
       }}>
         <div style={{ flex: 1 }}>
           <div style={LABEL}>{label}</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: accent ?? 'var(--text-light)' }}>{summary}</div>
-          {detail && <div style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginTop: 3 }}>{detail}</div>}
+          <div style={{ fontSize: 14, fontWeight: 700, color: accent ?? 'var(--text-primary)' }}>{summary}</div>
+          {detail && <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 3 }}>{detail}</div>}
         </div>
-        {onClick && <span style={{ fontSize: 18, color: 'var(--text-light-secondary)' }}>›</span>}
+        {onClick && <span style={{ fontSize: 18, color: 'var(--text-secondary)' }}>›</span>}
       </div>
     )
   }
@@ -91,18 +91,18 @@ export function RoundSummaryScreen() {
   }
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg-dark)', color: 'var(--text-light)' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
       {/* Header */}
       <div style={{
-        textAlign: 'center', padding: '20px 20px 14px', borderBottom: '1px solid rgba(196,186,168,0.15)',
+        textAlign: 'center', padding: '20px 20px 14px', borderBottom: '1px solid var(--border)',
         opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease', flexShrink: 0,
       }}>
-        <p style={{ fontSize: 10, letterSpacing: 2, color: 'var(--text-light-secondary)', textTransform: 'uppercase', marginBottom: 4 }}>
+        <p style={{ fontSize: 10, letterSpacing: 2, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 4 }}>
           OMGÅNG {round}
         </p>
-        <h1 style={{ fontSize: 22, fontWeight: 800 }}>{formattedDate}</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)' }}>{formattedDate}</h1>
         {temperature !== undefined && (
-          <p style={{ fontSize: 13, color: temperature <= 0 ? 'var(--ice)' : 'var(--text-light-secondary)', marginTop: 4 }}>
+          <p style={{ fontSize: 13, color: temperature <= 0 ? 'var(--ice)' : 'var(--text-secondary)', marginTop: 4 }}>
             {temperature <= -5 ? '❄️ ' : temperature <= 0 ? '🌨 ' : '🌤 '}{temperature > 0 ? '+' : ''}{temperature}°C
           </p>
         )}
@@ -149,7 +149,7 @@ export function RoundSummaryScreen() {
               Lokalstöd: <span style={{ color: csColor(communityStandingAfter) }}>{communityStandingAfter}</span>
               {csDelta !== 0 && (
                 <span style={{ color: csDelta > 0 ? 'var(--success)' : 'var(--danger)', fontSize: 12, marginLeft: 6 }}>
-                  {csDelta > 0 ? `+${csDelta}` : csDelta}
+                  {csDelta > 0 ? `+${csDelta}` : String(csDelta)}
                 </span>
               )}
             </span>
@@ -162,7 +162,7 @@ export function RoundSummaryScreen() {
           label="EKONOMI"
           summary={formatFinanceAbs(financesAfter)}
           detail={financesDelta !== 0 ? formatFinance(financesDelta) + ' denna omgång' : undefined}
-          accent={financesAfter < 0 ? 'var(--danger)' : 'var(--text-light)'}
+          accent={financesAfter < 0 ? 'var(--danger)' : 'var(--text-primary)'}
           onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}
         />
 
@@ -186,7 +186,7 @@ export function RoundSummaryScreen() {
         position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 430, padding: '12px 20px',
         paddingBottom: 'calc(12px + var(--safe-bottom, 0px))',
-        background: 'linear-gradient(to top, #0E0D0B 80%, transparent)',
+        background: 'linear-gradient(to top, var(--bg) 80%, transparent)',
         zIndex: 50, opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease 0.3s',
       }}>
         <button onClick={handleContinue} style={{
