@@ -89,8 +89,11 @@ export function LineupFormationView({
           }
 
           const circleR = 11
-          const displayText = assignedPlayer ? assignedPlayer.lastName.slice(0, 5) : slot.label
-          const subText = assignedPlayer ? String(Math.round(assignedPlayer.currentAbility)) : ''
+          const posLabel = slot.label.toUpperCase()
+          const circleText = assignedPlayer
+            ? (assignedPlayer.shirtNumber != null ? String(assignedPlayer.shirtNumber) : assignedPlayer.lastName.slice(0, 4))
+            : ''
+          const nameText = assignedPlayer ? assignedPlayer.lastName.slice(0, 5) : ''
 
           return (
             <g
@@ -98,27 +101,38 @@ export function LineupFormationView({
               onClick={() => onSlotClick(slot.id)}
               style={{ cursor: 'pointer' }}
             >
+              {/* Position label above circle */}
+              <text
+                x={sx} y={sy - circleR - 3}
+                textAnchor="middle" dominantBaseline="auto"
+                fill="rgba(255,255,255,0.7)" fontSize={4} fontWeight="700"
+                fontFamily="system-ui, sans-serif" letterSpacing="0.5"
+              >
+                {posLabel}
+              </text>
               <circle
                 cx={sx} cy={sy} r={circleR}
                 fill="rgba(255,255,255,0.5)"
                 stroke={isSelected ? 'var(--accent)' : ringColor}
                 strokeWidth={isSelected ? 2 : 1.5}
               />
+              {/* Shirt number or slot label in circle */}
               <text
-                x={sx} y={sy - (subText ? 1.5 : 0)}
+                x={sx} y={sy}
                 textAnchor="middle" dominantBaseline="middle"
-                fill="#1A1A18" fontSize={assignedPlayer ? 5.5 : 6} fontWeight="700"
+                fill="#1A1A18" fontSize={assignedPlayer ? 7 : 6} fontWeight="700"
                 fontFamily="system-ui, sans-serif"
               >
-                {displayText}
+                {assignedPlayer ? circleText : posLabel}
               </text>
-              {subText && (
+              {/* Player last name below circle */}
+              {nameText && (
                 <text
-                  x={sx} y={sy + 5}
-                  textAnchor="middle" dominantBaseline="middle"
-                  fill={ringColor} fontSize={4.5} fontFamily="system-ui, sans-serif"
+                  x={sx} y={sy + circleR + 4}
+                  textAnchor="middle" dominantBaseline="hanging"
+                  fill="rgba(255,255,255,0.85)" fontSize={4.5} fontFamily="system-ui, sans-serif"
                 >
-                  {subText}
+                  {nameText}
                 </text>
               )}
             </g>

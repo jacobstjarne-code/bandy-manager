@@ -630,6 +630,7 @@ function generatePlayer(
     careerStats: emptyCareer,
     isFullTimePro,
     dayJob,
+    shirtNumber: index + 1,
   }
 }
 

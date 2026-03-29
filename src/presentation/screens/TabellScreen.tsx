@@ -8,6 +8,7 @@ export function TabellScreen() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
   const [expandedClubId, setExpandedClubId] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'tabell' | 'statistik'>('tabell')
 
   if (!game) return null
 
@@ -85,8 +86,84 @@ export function TabellScreen() {
         <h1 style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)' }}>Tabell</h1>
       </div>
 
-      <div style={{ height: 16 }} />
+      <div style={{ height: 12 }} />
 
+      {/* Tab switcher */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'var(--bg-elevated)', borderRadius: 8, padding: 4 }}>
+        {(['tabell', 'statistik'] as const).map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              flex: 1, padding: '8px 0',
+              background: activeTab === tab ? 'var(--accent)' : 'transparent',
+              color: activeTab === tab ? 'var(--text-light)' : 'var(--text-muted)',
+              border: 'none', borderRadius: 6,
+              fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase',
+              cursor: 'pointer',
+            }}
+          >
+            {tab === 'tabell' ? 'TABELL' : 'STATISTIK'}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'statistik' && (() => {
+        const allPlayers = game!.players.filter(p => p.seasonStats.gamesPlayed > 0)
+        const topScorers = [...allPlayers].sort((a, b) => b.seasonStats.goals - a.seasonStats.goals).slice(0, 10)
+        const topAssisters = [...allPlayers].sort((a, b) => b.seasonStats.assists - a.seasonStats.assists).slice(0, 10)
+        const topCornerGoals = [...allPlayers].sort((a, b) => b.seasonStats.cornerGoals - a.seasonStats.cornerGoals).slice(0, 10)
+        const topRated = [...allPlayers].filter(p => p.seasonStats.gamesPlayed >= 5).sort((a, b) => b.seasonStats.averageRating - a.seasonStats.averageRating).slice(0, 10)
+        const topPenaltyMin = [...allPlayers].sort((a, b) => (b.seasonStats.yellowCards * 5 + b.seasonStats.redCards * 10) - (a.seasonStats.yellowCards * 5 + a.seasonStats.redCards * 10)).slice(0, 10)
+
+        function StatTable({ title, players, value, unit }: { title: string; players: typeof allPlayers; value: (p: typeof allPlayers[0]) => string | number; unit?: string }) {
+          return (
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>{title}</p>
+              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+                {players.map((p, i) => {
+                  const club = game!.clubs.find(c => c.id === p.clubId)
+                  const isManaged = p.clubId === game!.managedClubId
+                  return (
+                    <div key={p.id} style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      padding: '9px 12px',
+                      borderTop: i === 0 ? 'none' : '1px solid var(--border)',
+                      background: isManaged ? 'rgba(196,122,58,0.06)' : 'transparent',
+                    }}>
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)', width: 16, textAlign: 'right' }}>{i + 1}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ fontSize: 13, fontWeight: isManaged ? 700 : 500, color: isManaged ? 'var(--accent)' : 'var(--text-primary)' }}>
+                          {p.firstName} {p.lastName}
+                        </span>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
+                          {club?.shortName ?? club?.name ?? '?'} · {p.age} år
+                        </span>
+                      </div>
+                      <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--accent-dark)', fontFamily: 'var(--font-display)' }}>
+                        {value(p)}{unit ? <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)' }}>{unit}</span> : null}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        }
+
+        return (
+          <div>
+            <StatTable title="⚽ Toppskytt" players={topScorers} value={p => p.seasonStats.goals} unit=" mål" />
+            <StatTable title="🎯 Flest assist" players={topAssisters} value={p => p.seasonStats.assists} unit=" ast" />
+            <StatTable title="🔄 Flest hörnmål" players={topCornerGoals} value={p => p.seasonStats.cornerGoals} unit=" hörn" />
+            <StatTable title="⭐ Bäst snittbetyg (min 5 matcher)" players={topRated} value={p => p.seasonStats.averageRating.toFixed(1)} />
+            <StatTable title="🟨 Flest utvisningsminuter" players={topPenaltyMin} value={p => p.seasonStats.yellowCards * 5 + p.seasonStats.redCards * 10} unit=" min" />
+          </div>
+        )
+      })()}
+
+      {activeTab === 'tabell' && (
+      <>
       {/* Summary card for managed club */}
       {myRow && (
         <div className="card-sharp" style={{
@@ -380,6 +457,8 @@ export function TabellScreen() {
       <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 12, textAlign: 'center' }}>
         S = Spelade · MS = Målskillnad · P = Poäng · Form: ●grön=seger ●röd=förlust ●gul=oavgjort
       </p>
+      </>
+      )}
     </div>
   )
 }

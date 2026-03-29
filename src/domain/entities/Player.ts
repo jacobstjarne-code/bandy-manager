@@ -101,4 +101,5 @@ export interface Player {
   isCharacterPlayer?: boolean
   trait?: PlayerTrait
   loyaltyScore?: number  // 0–10
+  shirtNumber?: number
 }
