@@ -194,6 +194,46 @@ export function PlayerProfileContent({ player, isOwned = false }: PlayerProfileC
               </div>
             ))}
 
+            {/* Season stats summary */}
+            {player.seasonStats.gamesPlayed > 0 && (
+              <div
+                onClick={() => setActiveTab('Säsong')}
+                style={{
+                  marginTop: 16,
+                  padding: '10px 14px',
+                  background: 'var(--bg-elevated)',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--border)',
+                  cursor: 'pointer',
+                }}
+              >
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+                  Säsongen
+                </p>
+                <div style={{ display: 'flex', gap: 16 }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                    <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{player.seasonStats.gamesPlayed}</span> M
+                  </span>
+                  <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                    <span style={{ fontWeight: 700, color: player.seasonStats.goals > 0 ? 'var(--text-primary)' : 'var(--text-muted)' }}>{player.seasonStats.goals}</span> mål
+                  </span>
+                  <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                    <span style={{ fontWeight: 700, color: player.seasonStats.assists > 0 ? 'var(--text-primary)' : 'var(--text-muted)' }}>{player.seasonStats.assists}</span> assist
+                  </span>
+                  <span style={{ fontSize: 13 }}>
+                    <span style={{
+                      fontWeight: 700,
+                      color: player.seasonStats.averageRating >= 7.5 ? 'var(--accent)'
+                        : player.seasonStats.averageRating >= 6.0 ? 'var(--text-secondary)'
+                        : 'var(--danger)',
+                    }}>
+                      {player.seasonStats.averageRating.toFixed(1)}
+                    </span>★
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* CA / PA */}
             <div style={{
               marginTop: 20,
@@ -364,8 +404,7 @@ export function PlayerProfileContent({ player, isOwned = false }: PlayerProfileC
               { label: 'Mål', value: String(player.seasonStats.goals), isRating: false },
               { label: 'Assist', value: String(player.seasonStats.assists), isRating: false },
               { label: 'Hörnmål', value: String(player.seasonStats.cornerGoals), isRating: false },
-              { label: 'Gula kort', value: String(player.seasonStats.yellowCards), isRating: false },
-              { label: 'Röda kort', value: String(player.seasonStats.redCards), isRating: false },
+              { label: 'Utvisningar', value: String(player.seasonStats.redCards), isRating: false },
               {
                 label: 'Snittbetyg',
                 value: player.seasonStats.gamesPlayed > 0

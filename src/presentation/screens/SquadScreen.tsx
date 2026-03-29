@@ -27,6 +27,12 @@ function caColor(ca: number): string {
   return 'var(--text-secondary)'
 }
 
+function ratingColor(r: number): string {
+  if (r >= 7.5) return 'var(--accent)'
+  if (r >= 6.0) return 'var(--text-secondary)'
+  return 'var(--danger)'
+}
+
 function barColor(value: number): string {
   if (value > 65) return 'var(--success)'
   if (value >= 40) return 'var(--warning)'
@@ -236,6 +242,23 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
           </span>
         )}
       </div>
+
+      {/* Stat row */}
+      {player.seasonStats.gamesPlayed > 0 && (
+        <div style={{ display: 'flex', gap: 12, paddingLeft: 38, fontSize: 11, color: 'var(--text-muted)' }}>
+          <span>{player.seasonStats.gamesPlayed}M</span>
+          <span style={{ color: player.seasonStats.goals > 0 ? 'var(--text-primary)' : undefined }}>
+            {player.seasonStats.goals}G
+          </span>
+          <span>{player.seasonStats.assists}A</span>
+          <span style={{ color: ratingColor(player.seasonStats.averageRating) }}>
+            {player.seasonStats.averageRating.toFixed(1)}★
+          </span>
+          {player.seasonStats.redCards > 0 && (
+            <span style={{ color: 'var(--danger)' }}>{player.seasonStats.redCards}utv</span>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -287,6 +310,12 @@ export function SquadScreen() {
   const selectedPlayer = selectedPlayerId ? players.find(p => p.id === selectedPlayerId) ?? null : null
   const clubName = club?.name ?? ''
   const doctorQuestionsLeft = Math.max(0, 5 - (game?.doctorQuestionsUsed ?? 0))
+
+  const topScorer = players.filter(p => p.seasonStats.goals > 0).sort((a, b) => b.seasonStats.goals - a.seasonStats.goals)[0]
+  const topAssist = players.filter(p => p.seasonStats.assists > 0).sort((a, b) => b.seasonStats.assists - a.seasonStats.assists)[0]
+  const topRating = players.filter(p => p.seasonStats.gamesPlayed >= 3).sort((a, b) => b.seasonStats.averageRating - a.seasonStats.averageRating)[0]
+  const topSuspensions = players.filter(p => p.seasonStats.redCards > 0).sort((a, b) => b.seasonStats.redCards - a.seasonStats.redCards)[0]
+  const hasSeasonData = topScorer || topAssist || topRating || topSuspensions
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg)' }}>
@@ -373,6 +402,48 @@ export function SquadScreen() {
               🩺 {players.filter(p => p.fitness < 35 && !p.isInjured).length} spelare med kritisk fitness
             </span>
             <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Fråga doktorn →</span>
+          </div>
+        )}
+
+        {/* Squad summary card */}
+        {hasSeasonData && (
+          <div style={{
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border)',
+            borderRadius: 10,
+            padding: '12px',
+            marginBottom: 12,
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 8,
+          }}>
+            {[
+              { emoji: '⚽', label: 'Toppskytt', player: topScorer, value: topScorer?.seasonStats.goals },
+              { emoji: '🅰️', label: 'Flest assist', player: topAssist, value: topAssist?.seasonStats.assists },
+              { emoji: '⭐', label: 'Bäst betyg', player: topRating, value: topRating ? topRating.seasonStats.averageRating.toFixed(1) : undefined },
+              { emoji: '🔴', label: 'Utvisningar', player: topSuspensions, value: topSuspensions?.seasonStats.redCards },
+            ].map(({ emoji, label, player: p, value }) => (
+              <div
+                key={label}
+                onClick={p ? () => setSelectedPlayerId(p.id) : undefined}
+                style={{
+                  padding: '8px 10px',
+                  background: 'var(--bg-surface)',
+                  borderRadius: 8,
+                  border: '1px solid var(--border)',
+                  cursor: p ? 'pointer' : 'default',
+                }}
+              >
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 3 }}>{emoji} {label}</p>
+                {p ? (
+                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+                    {p.lastName} <span style={{ color: 'var(--accent)', fontWeight: 800 }}>{value}</span>
+                  </p>
+                ) : (
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>—</p>
+                )}
+              </div>
+            ))}
           </div>
         )}
 
