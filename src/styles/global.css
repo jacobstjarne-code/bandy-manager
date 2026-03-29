@@ -500,6 +500,11 @@ a {
   animation: copperBorderPulse 3s ease-in-out infinite;
 }
 
+@keyframes pitchSlotPulse {
+  0%, 100% { opacity: 0.45; transform: translate(-50%, -50%) scale(1); }
+  50%       { opacity: 0.8;  transform: translate(-50%, -50%) scale(1.1); }
+}
+
 /* Gradient background re-mapped */
 .gradient-bg {
   background: linear-gradient(160deg, var(--bg) 0%, var(--bg-surface) 60%, var(--bg) 100%);
