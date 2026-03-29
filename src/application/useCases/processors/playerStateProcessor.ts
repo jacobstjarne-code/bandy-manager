@@ -167,16 +167,21 @@ export function applyPlayerStateUpdates(
     }
   }
 
-  // Player development every 2 rounds
+  // Player development every 2 rounds (AI clubs only — managed club is handled per-round
+  // by applyRoundDevelopment in roundProcessor with match context)
   let finalPlayers = updatedPlayers
   if (nextRound % 2 === 0) {
     const clubFacilities = Object.fromEntries(game.clubs.map(c => [c.id, c.facilities]))
+    const aiPlayers = updatedPlayers.filter(p => p.clubId !== game.managedClubId)
     const devResult = developPlayers({
-      players: updatedPlayers,
+      players: aiPlayers,
       clubFacilities,
       weekNumber: nextRound,
     })
-    finalPlayers = devResult.updatedPlayers
+    finalPlayers = [
+      ...devResult.updatedPlayers,
+      ...updatedPlayers.filter(p => p.clubId === game.managedClubId),
+    ]
   }
 
   return {

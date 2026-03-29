@@ -256,3 +256,87 @@ export function developPlayers(input: DevelopmentInput): DevelopmentResult {
 
   return { updatedPlayers, notableChanges }
 }
+
+// ── Per-round development for managed club players ─────────────────────────
+
+interface RoundDevelopmentContext {
+  trainingFocus: string   // 'physical' | 'technical' | 'tactical'
+  played: boolean
+  wasStarter: boolean
+  matchRating: number
+  trainingIntensity: string // 'light' | 'normal' | 'heavy'
+}
+
+function calculateRoundDevelopment(
+  player: Player,
+  context: RoundDevelopmentContext,
+): number {
+  const age = player.age
+  const devRate = player.developmentRate ?? 50
+  const gap = player.potentialAbility - player.currentAbility
+
+  let baseDelta = 0
+
+  if (age <= 20) {
+    baseDelta = context.played ? 0.15 + (devRate / 500) : 0.05
+    if (context.wasStarter && context.matchRating >= 7.0) baseDelta += 0.1
+  } else if (age <= 23) {
+    baseDelta = context.played ? 0.08 + (devRate / 800) : 0.02
+    if (context.wasStarter) baseDelta += 0.05
+  } else if (age <= 29) {
+    baseDelta = context.played ? 0.02 : -0.01
+    if (context.matchRating >= 8.0) baseDelta += 0.03
+  } else if (age <= 33) {
+    baseDelta = context.played ? -0.02 : -0.05
+    if (context.trainingIntensity === 'heavy') baseDelta += 0.02
+  } else {
+    baseDelta = -0.08 - (age - 33) * 0.02
+    if (context.played) baseDelta += 0.03
+  }
+
+  // Cap growth by potential gap
+  if (baseDelta > 0 && gap <= 2) baseDelta *= 0.1
+  else if (baseDelta > 0 && gap <= 5) baseDelta *= 0.5
+
+  // Training intensity modifier
+  if (context.trainingIntensity === 'heavy') baseDelta += 0.02
+  if (context.trainingIntensity === 'light') baseDelta -= 0.01
+
+  return clamp(baseDelta, -0.3, 0.5)
+}
+
+/**
+ * Apply per-round development to managed club players based on match context and training.
+ * AI club players are handled separately by developPlayers (generic, every 2 rounds).
+ */
+export function applyRoundDevelopment(
+  players: Player[],
+  managedClubId: string,
+  trainingFocus: string,
+  trainingIntensity: string,
+  playedPlayerIds: Set<string>,
+  starterPlayerIds: Set<string>,
+  playerRatings: Record<string, number>,
+): Player[] {
+  return players.map(player => {
+    if (player.clubId !== managedClubId) return player
+    if (player.isInjured) return player
+
+    const context: RoundDevelopmentContext = {
+      trainingFocus,
+      played: playedPlayerIds.has(player.id),
+      wasStarter: starterPlayerIds.has(player.id),
+      matchRating: playerRatings[player.id] ?? 0,
+      trainingIntensity,
+    }
+
+    const caChange = calculateRoundDevelopment(player, context)
+    if (Math.abs(caChange) < 0.001) return player
+
+    const newCA = clamp(player.currentAbility + caChange, 15, player.potentialAbility)
+    return {
+      ...player,
+      currentAbility: Math.round(newCA * 10) / 10,
+    }
+  })
+}

@@ -44,6 +44,7 @@ import type { AdvanceResult } from './advanceTypes'
 import { applyRoundTraining } from './processors/trainingProcessor'
 import { applyPlayerStateUpdates } from './processors/playerStateProcessor'
 import { updatePlayerMatchStats } from './processors/statsProcessor'
+import { applyRoundDevelopment } from '../../domain/services/playerDevelopmentService'
 
 export type { AdvanceResult }
 
@@ -393,6 +394,53 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // Push milestone inbox items
   newInboxItems.push(...milestoneInboxItems)
+
+  // ── Per-round development for managed club players ────────────────────────
+  {
+    const managedFixture = simulatedFixtures.find(
+      f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId
+    )
+    const playedIds = new Set<string>()
+    const starterIds = new Set<string>()
+    const ratings: Record<string, number> = {}
+
+    if (managedFixture) {
+      const isHome = managedFixture.homeClubId === game.managedClubId
+      const lineup = isHome ? managedFixture.homeLineup : managedFixture.awayLineup
+      if (lineup) {
+        for (const id of lineup.startingPlayerIds ?? []) { starterIds.add(id); playedIds.add(id) }
+        for (const id of lineup.benchPlayerIds ?? []) { playedIds.add(id) }
+      }
+      if (managedFixture.report?.playerRatings) {
+        Object.assign(ratings, managedFixture.report.playerRatings)
+      }
+    }
+
+    // Map TrainingType to the three focus buckets used by applyRoundDevelopment
+    const trainingType = game.managedClubTraining?.type
+    const focusBucket = (trainingType === TrainingType.Tactical || trainingType === TrainingType.MatchPrep)
+      ? 'tactical'
+      : (trainingType === TrainingType.Physical || trainingType === TrainingType.Skating)
+        ? 'physical'
+        : (trainingType === TrainingType.BallControl || trainingType === TrainingType.Passing || trainingType === TrainingType.Shooting)
+          ? 'technical'
+          : 'physical'
+
+    const intensityRaw = game.managedClubTraining?.intensity
+    const intensityBucket = intensityRaw === TrainingIntensity.Light ? 'light'
+      : (intensityRaw === TrainingIntensity.Hard || intensityRaw === TrainingIntensity.Extreme) ? 'heavy'
+      : 'normal'
+
+    finalPlayers = applyRoundDevelopment(
+      finalPlayers,
+      game.managedClubId,
+      focusBucket,
+      intensityBucket,
+      playedIds,
+      starterIds,
+      ratings,
+    )
+  }
 
   // Match results for managed club
   for (const fixture of simulatedFixtures) {
