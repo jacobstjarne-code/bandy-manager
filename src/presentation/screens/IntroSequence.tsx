@@ -209,11 +209,15 @@ export function IntroSequence() {
               onClick={() => navigate('/game')}
               style={{
                 width: '100%', maxWidth: 300, padding: '14px 24px',
-                background: 'transparent',
-                border: '1px solid rgba(196,186,168,0.25)',
-                borderRadius: 10, color: 'rgba(245,241,235,0.7)',
+                background: 'rgba(196,122,58,0.15)',
+                border: '1.5px solid rgba(196,122,58,0.5)',
+                borderRadius: 10,
+                color: 'rgba(245,241,235,0.85)',
                 fontSize: 13, fontWeight: 600, letterSpacing: '2px',
                 textTransform: 'uppercase', cursor: 'pointer',
+                opacity: s1 ? 1 : 0,
+                transition: 'opacity 700ms ease',
+                transitionDelay: s1 ? '1800ms' : '0ms',
               }}
             >
               FORTSÄTT
