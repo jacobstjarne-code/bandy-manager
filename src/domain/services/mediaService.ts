@@ -101,3 +101,77 @@ export function generateMediaHeadlines(
 
   return []
 }
+
+export function generateTrendArticles(
+  game: SaveGame,
+  roundNumber: number,
+  rand: () => number,
+): InboxItem[] {
+  const managedClubId = game.managedClubId
+  const club = game.clubs.find(c => c.id === managedClubId)
+  if (!club) return []
+
+  const completedManaged = game.fixtures
+    .filter(f =>
+      f.status === FixtureStatus.Completed &&
+      !f.isCup &&
+      (f.homeClubId === managedClubId || f.awayClubId === managedClubId)
+    )
+    .sort((a, b) => b.roundNumber - a.roundNumber)
+
+  const lastResults = completedManaged.slice(0, 5).map(f => {
+    const isHome = f.homeClubId === managedClubId
+    const myScore = isHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
+    const theirScore = isHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
+    return myScore > theirScore ? 'W' : myScore < theirScore ? 'L' : 'D'
+  })
+
+  const winStreak = lastResults.findIndex(r => r !== 'W')
+  const lossStreak = lastResults.findIndex(r => r !== 'L')
+
+  const standing = game.standings?.find(s => s.clubId === managedClubId)
+  const position = standing?.position ?? 6
+
+  const articles: InboxItem[] = []
+  const id = `media_trend_r${roundNumber}_${game.currentSeason}`
+
+  if (winStreak >= 3 && rand() < 0.6) {
+    articles.push({
+      id: `${id}_win`,
+      date: game.currentDate,
+      type: InboxItemType.Media,
+      title: `${club.shortName} på vinnarkurs — ${winStreak} raka segrar`,
+      body: `Det går som tåget för ${club.name}. Med ${winStreak} raka vinster i ryggen klättrar laget i tabellen och fansen börjar drömma stort.`,
+      isRead: false,
+    })
+  } else if (lossStreak >= 3 && rand() < 0.6) {
+    articles.push({
+      id: `${id}_loss`,
+      date: game.currentDate,
+      type: InboxItemType.Media,
+      title: `Mörka tider i ${club.shortName} — ${lossStreak} raka förluster`,
+      body: `Formkurvan pekar stadigt neråt. Supportrarna börjar ifrågasätta ledarskapet efter ännu en förlust.`,
+      isRead: false,
+    })
+  } else if (position <= 3 && roundNumber >= 10 && rand() < 0.3) {
+    articles.push({
+      id: `${id}_top`,
+      date: game.currentDate,
+      type: InboxItemType.Media,
+      title: `Kan ${club.shortName} utmana om guldet?`,
+      body: `Med plats ${position} efter ${roundNumber} omgångar börjar det bli svårt att ignorera ${club.name}. Frågan är om truppen håller hela vägen.`,
+      isRead: false,
+    })
+  } else if (position >= 10 && roundNumber >= 10 && rand() < 0.3) {
+    articles.push({
+      id: `${id}_bot`,
+      date: game.currentDate,
+      type: InboxItemType.Media,
+      title: `${club.shortName} kämpar — men räcker det?`,
+      body: `Plats ${position} efter ${roundNumber} omgångar. Nedflyttningshotet hänger tungt över ${club.name}. Styrelsen är tyst — men hur länge?`,
+      isRead: false,
+    })
+  }
+
+  return articles.slice(0, 1)
+}

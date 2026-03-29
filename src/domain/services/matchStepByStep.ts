@@ -152,7 +152,7 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
 
   function buildSHWeights(isHome: boolean): number[] {
     const tactic = isHome ? homeLineup.tactic : awayLineup.tactic
-    let wA = 40, wT = 15, wC = 20, wH = 10, wF = 12, wL = 8
+    let wA = 40, wT = 15, wC = 28, wH = 10, wF = 12, wL = 8
     if (tactic.tempo === 'high') { wA += 5; wC += 3; wF += 2 }
     else if (tactic.tempo === 'low') { wA -= 5; wL += 5 }
     if (tactic.press === 'high') { wF += 5; wT += 3 }
@@ -249,7 +249,7 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
     if (seqType === 'attack') {
       const base = attAttack * 0.6 - defDefense * 0.4 + randRange(rand, -0.2, 0.2)
       const cq = clamp(base * 1.2 + 0.15 + 0.15 + derbyChanceMult, 0.05, 0.95)
-      if (cq > 0.15) {
+      if (cq > 0.10) {
         if (isHomeAttacking) shotsHome++; else shotsAway++
         const r = rand()
         const gt = cq * 0.45 * (1 - defGK * 0.35) * stepGoalMod
@@ -626,7 +626,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
 
     let wAttack = 40
     let wTransition = 15
-    let wCorner = 20
+    let wCorner = 28
     let wHalfchance = 10
     let wFoul = 12
     let wLostball = 8
@@ -756,7 +756,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       const base = attAttack * 0.6 - defDefense * 0.4 + randRange(rand, -0.2, 0.2)
       const chanceQuality = clamp(base * 1.2 + 0.15 + 0.15 + derbyChanceMult, 0.05, 0.95)
 
-      if (chanceQuality > 0.15) {
+      if (chanceQuality > 0.10) {
         if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
 
         const shotResult = rand()

@@ -25,7 +25,7 @@ import { processScoutAssignment } from '../../domain/services/scoutingService'
 import { updateAllMarketValues } from '../../domain/services/marketValueService'
 import { generateIncomingBids, resolveOutgoingBid } from '../../domain/services/transferService'
 import { generatePostAdvanceEvents, generateEvents } from '../../domain/services/eventService'
-import { generateMediaHeadlines } from '../../domain/services/mediaService'
+import { generateMediaHeadlines, generateTrendArticles } from '../../domain/services/mediaService'
 import type { TransferBid } from '../../domain/entities/GameEvent'
 import type { ScoutReport, ScoutAssignment } from '../../domain/entities/Scouting'
 import { evaluateBoard, generateBoardMessage } from '../../domain/services/boardService'
@@ -1383,6 +1383,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Media headlines
   const mediaHeadlines = generateMediaHeadlines(preEventGame, simulatedFixtures, nextRound, localRand)
   newInboxItems.push(...mediaHeadlines)
+
+  // Trend articles (win/loss streaks, standings position)
+  const trendArticles = generateTrendArticles(preEventGame, nextRound, localRand)
+  newInboxItems.push(...trendArticles)
 
   // Trim accumulated data to prevent localStorage bloat
   const MAX_INBOX = 50

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { PlayerLink } from '../components/PlayerLink'
 import { ordinal } from '../utils/formatters'
+import type { SeasonSummary } from '../../domain/entities/SeasonSummary'
 
 function playoffLabel(result: string | null | undefined): string {
   if (result === 'champion') return '🏆 SVENSKA MÄSTARE!'
@@ -25,6 +26,72 @@ function formatFinances(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} mkr`
   if (Math.abs(n) >= 1_000) return `${Math.round(n / 1_000)} tkr`
   return `${n} kr`
+}
+
+function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
+  if (summaries.length < 2) return null
+
+  const chronological = [...summaries].reverse()
+  const W = 300
+  const H = 100
+  const padL = 28
+  const padR = 12
+  const padT = 10
+  const padB = 24
+
+  const maxPos = Math.max(...chronological.map(s => s.finalPosition), 6)
+  const minPos = 1
+
+  const xStep = (W - padL - padR) / (chronological.length - 1)
+
+  function xOf(i: number) { return padL + i * xStep }
+  function yOf(pos: number) {
+    return padT + ((pos - minPos) / (maxPos - minPos)) * (H - padT - padB)
+  }
+
+  const points = chronological.map((s, i) => `${xOf(i)},${yOf(s.finalPosition)}`).join(' ')
+
+  return (
+    <div className="card-round" style={{ padding: '14px 16px 10px', marginBottom: 14 }}>
+      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+        Resan — tabellposition per säsong
+      </p>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
+        {/* Horizontal grid lines for pos 1, middle, maxPos */}
+        {[1, Math.ceil((maxPos + 1) / 2), maxPos].map(pos => (
+          <line key={pos} x1={padL} x2={W - padR} y1={yOf(pos)} y2={yOf(pos)}
+            stroke="var(--border)" strokeWidth="0.8" strokeDasharray="3,3" />
+        ))}
+        {/* Y axis labels */}
+        {[1, Math.ceil((maxPos + 1) / 2), maxPos].map(pos => (
+          <text key={pos} x={padL - 4} y={yOf(pos) + 3.5} textAnchor="end"
+            fontSize="7" fill="var(--text-muted)" fontFamily="system-ui,sans-serif">
+            {pos}
+          </text>
+        ))}
+        {/* Line */}
+        <polyline points={points} fill="none" stroke="rgba(196,122,58,0.7)" strokeWidth="1.8" strokeLinejoin="round" />
+        {/* Dots + season labels */}
+        {chronological.map((s, i) => {
+          const cx = xOf(i)
+          const cy = yOf(s.finalPosition)
+          const isChamp = s.playoffResult === 'champion'
+          return (
+            <g key={s.season}>
+              <circle cx={cx} cy={cy} r={isChamp ? 5 : 3.5}
+                fill={isChamp ? 'rgba(196,122,58,0.9)' : 'var(--bg-elevated)'}
+                stroke={isChamp ? 'rgba(196,122,58,1)' : 'rgba(196,122,58,0.6)'}
+                strokeWidth="1.5" />
+              <text x={cx} y={H - 4} textAnchor="middle"
+                fontSize="6.5" fill="var(--text-muted)" fontFamily="system-ui,sans-serif">
+                {s.season}
+              </text>
+            </g>
+          )
+        })}
+      </svg>
+    </div>
+  )
 }
 
 export function HistoryScreen() {
@@ -75,6 +142,8 @@ export function HistoryScreen() {
           </p>
         </div>
       </div>
+
+      <JourneyGraph summaries={game.seasonSummaries ?? []} />
 
       {summaries.length === 0 ? (
         <div className="card-round" style={{
