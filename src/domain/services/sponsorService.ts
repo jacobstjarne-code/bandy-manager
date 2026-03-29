@@ -54,7 +54,7 @@ export function generateSponsorOffer(
   }
 
   const { name, category } = generateSponsorName(rand)
-  const baseIncome = 1500 + Math.round(clubReputation * 50 + rand() * 2000)
+  const baseIncome = 300 + Math.round(clubReputation * 10 + rand() * 700)
   const contractRounds = 8 + Math.floor(rand() * 9)
 
   return {
