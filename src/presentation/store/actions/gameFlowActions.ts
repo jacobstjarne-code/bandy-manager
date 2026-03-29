@@ -9,7 +9,7 @@ interface GetState {
   lastAdvanceResult: AdvanceResult | null
   resolveEvent: (eventId: string, choiceId: string) => void
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string) => { success: boolean; error?: string }
-  advance: () => AdvanceResult | null
+  advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
 }
 
 type Get = () => GetState
@@ -17,7 +17,7 @@ type Set = (partial: Partial<{ game: SaveGame | null; roundSummary: RoundSummary
 
 export function gameFlowActions(get: Get, set: Set) {
   return {
-    advance: (): AdvanceResult | null => {
+    advance: (suppressMatchNavigation?: boolean): AdvanceResult | null => {
       const { game } = get()
       if (!game) return null
 
@@ -131,10 +131,12 @@ export function gameFlowActions(get: Get, set: Set) {
         } else if (result.game.showPreSeason) {
           navigateTo('/game/pre-season', { replace: true })
         }
-      } else if (pendingCount > 0) {
-        navigateTo('/game/events', { replace: true })
-      } else if (summary.matchPlayed) {
-        navigateTo('/game/round-summary', { replace: true })
+      } else if (!suppressMatchNavigation) {
+        if (pendingCount > 0) {
+          navigateTo('/game/events', { replace: true })
+        } else if (summary.matchPlayed) {
+          navigateTo('/game/round-summary', { replace: true })
+        }
       }
 
       return result

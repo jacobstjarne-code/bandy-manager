@@ -3,36 +3,38 @@ import type { Fixture } from '../entities/Fixture'
 import { FixtureStatus } from '../enums'
 
 // Round numbers for cup fixtures (interleaved with league rounds)
+// Effective round = roundNumber - 100
 const CUP_ROUND_NUMBERS: Record<number, number> = {
-  1: 103,  // quarterfinals
-  2: 107,  // semifinals
-  3: 111,  // final
+  1: 101,  // first round (bottom 8 teams play; top 4 get byes)
+  2: 103,  // quarterfinals
+  3: 107,  // semifinals
+  4: 111,  // final
 }
 
 export function generateCupFixtures(
-  teamIds: string[],
+  teamIds: string[],  // should be sorted by reputation desc — first 4 are top seeds (get byes)
   season: number,
   rand: () => number,
 ): { bracket: CupBracket; fixtures: Fixture[] } {
-  const clubIds = [...teamIds]
+  // Top 4 teams get byes into round 2 (quarterfinals)
+  // Bottom 8 teams play round 1 (play-in)
+  const byeTeams = teamIds.slice(0, 4)
+  const playInTeams = [...teamIds.slice(4)]
 
-  // Shuffle clubs using seeded random
-  for (let i = clubIds.length - 1; i > 0; i--) {
+  // Shuffle play-in teams for random round 1 pairings
+  for (let i = playInTeams.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1))
-    ;[clubIds[i], clubIds[j]] = [clubIds[j], clubIds[i]]
+    ;[playInTeams[i], playInTeams[j]] = [playInTeams[j], playInTeams[i]]
   }
 
   const matches: CupMatch[] = []
   const fixtures: Fixture[] = []
 
-  // Generate quarterfinal pairings
-  // If odd number of clubs, the last one gets a bye (handled by having fewer quarterfinals)
-  const numQFMatches = Math.floor(clubIds.length / 2)
-  const byeClubId = clubIds.length % 2 !== 0 ? clubIds[clubIds.length - 1] : null
-
-  for (let i = 0; i < numQFMatches; i++) {
-    const homeClubId = clubIds[i * 2]
-    const awayClubId = clubIds[i * 2 + 1]
+  // Round 1: 4 matches among the bottom 8 teams
+  const numR1Matches = Math.floor(playInTeams.length / 2)
+  for (let i = 0; i < numR1Matches; i++) {
+    const homeClubId = playInTeams[i * 2]
+    const awayClubId = playInTeams[i * 2 + 1]
     const fixtureId = `cup-r1-m${i}`
 
     const fixture: Fixture = {
@@ -65,17 +67,16 @@ export function generateCupFixtures(
     fixtures.push(fixture)
   }
 
-  // If there's a bye club, add a placeholder match to represent the automatic advancement
-  // This is handled implicitly — the bye club will be seeded into semifinals when QFs are complete.
-  // Store byeClubId as a special match with no fixture needed.
-  if (byeClubId) {
+  // Byes for top 4 teams — auto-advance to round 2
+  for (let i = 0; i < byeTeams.length; i++) {
+    const byeId = byeTeams[i]
     const byeMatch: CupMatch = {
-      id: `cup-r1-bye`,
+      id: `cup-r1-bye${i}`,
       round: 1,
-      fixtureId: `cup-r1-bye`,
-      homeClubId: byeClubId,
-      awayClubId: byeClubId,
-      winnerId: byeClubId,  // auto-advance
+      fixtureId: `cup-r1-bye${i}`,
+      homeClubId: byeId,
+      awayClubId: byeId,
+      winnerId: byeId,
     }
     matches.push(byeMatch)
   }
@@ -95,7 +96,7 @@ export function generateNextCupRound(
   season: number,
 ): { updatedBracket: CupBracket; newFixtures: Fixture[] } {
   const nextRound = completedRound + 1
-  if (nextRound > 3) {
+  if (nextRound > 4) {
     return { updatedBracket: bracket, newFixtures: [] }
   }
 
@@ -194,14 +195,16 @@ export function updateCupBracketAfterRound(
 }
 
 export function getCupRoundName(round: number): string {
-  if (round === 1) return 'kvartsfinalen'
-  if (round === 2) return 'semifinalen'
+  if (round === 1) return 'förstarundan'
+  if (round === 2) return 'kvartsfinalen'
+  if (round === 3) return 'semifinalen'
   return 'finalen'
 }
 
 export function getCupRoundLabel(round: number): string {
-  if (round === 1) return 'KVARTSFINAL'
-  if (round === 2) return 'SEMIFINAL'
+  if (round === 1) return 'FÖRSTARUNDA'
+  if (round === 2) return 'KVARTSFINAL'
+  if (round === 3) return 'SEMIFINAL'
   return 'FINAL'
 }
 
@@ -224,8 +227,8 @@ export function getManagedClubCupStatus(
     }
   }
 
-  // Check if in final (round 3 match exists with managed club)
-  const finalMatch = bracket.matches.find(m => m.round === 3 && !m.winnerId &&
+  // Check if in final (round 4 match exists with managed club)
+  const finalMatch = bracket.matches.find(m => m.round === 4 && !m.winnerId &&
     (m.homeClubId === managedClubId || m.awayClubId === managedClubId))
   if (finalMatch) {
     return { eliminated: false, isInFinal: true, won: false }

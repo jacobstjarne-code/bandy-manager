@@ -378,7 +378,7 @@ export function MatchScreen() {
   const theirWins = playoffSeries ? (isSeriesHome ? playoffSeries.awayWins : playoffSeries.homeWins) : 0
   const isCupFixture = nextFixture.isCup === true
   const cupMatchEntry = isCupFixture ? game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id) : null
-  const isCupFinal = cupMatchEntry?.round === 3
+  const isCupFinal = cupMatchEntry?.round === 4
   const isFinalMatch = playoffSeries?.round === PlayoffRound.Final
   const playoffRoundLabel = playoffSeries
     ? playoffSeries.round === PlayoffRound.QuarterFinal ? 'KVARTSFINAL'

@@ -220,8 +220,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const roundMatchWeathers: MatchWeather[] = []
   const newInboxItems: InboxItem[] = []
 
-  // Determine if this round is a playoff round (cup fixtures have IDs containing 'cup_')
-  const isCupRound = roundFixtures.some(f => f.id.includes('cup_'))
+  // Determine if this round contains cup fixtures
+  const isCupRound = roundFixtures.some(f => f.isCup)
   const isPlayoffRound = !isCupRound && game.playoffBracket !== null && nextRound > 22
 
   // ── Apply training for all clubs this round ────────────────────────────
@@ -770,7 +770,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const currentRoundComplete = currentRoundMatches.every(m => m.winnerId)
 
       if (currentRoundComplete) {
-        if (maxRound === 3) {
+        if (maxRound === 4) {
           // Final is complete — set winner and mark completed
           const finalMatch = currentRoundMatches[0]
           updatedCupBracket = {

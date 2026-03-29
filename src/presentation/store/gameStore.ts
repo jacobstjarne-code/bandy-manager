@@ -35,7 +35,7 @@ interface GameState {
   // Actions
   newGame: (managerName: string, clubId: string) => void
   loadGame: (id: string) => Promise<boolean>
-  advance: () => AdvanceResult | null
+  advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string) => { success: boolean; error?: string }
   updateTactic: (tactic: Tactic) => void
   setTraining: (focus: TrainingFocus) => void

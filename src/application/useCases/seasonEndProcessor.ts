@@ -321,8 +321,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // Generate cup fixtures for next season
   const cupSeasonSeed = nextSeason * 7919 + 42
   const cupSeasonRand = mulberry32(cupSeasonSeed)
+  const clubsSortedByRep = [...updatedClubs].sort((a, b) => (b.reputation ?? 50) - (a.reputation ?? 50))
   const { bracket: newCupBracket, fixtures: newCupFixtures } = generateCupFixtures(
-    updatedClubs.map(c => c.id),
+    clubsSortedByRep.map(c => c.id),
     nextSeason,
     cupSeasonRand,
   )

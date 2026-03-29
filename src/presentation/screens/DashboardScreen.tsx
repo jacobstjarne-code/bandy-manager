@@ -164,7 +164,7 @@ function CupCard({ bracket, game }: CupCardProps) {
       </div>
     )
   } else if (cupStatus.eliminated) {
-    const roundName = cupStatus.eliminatedInRound === 1 ? 'kvartsfinalen' : cupStatus.eliminatedInRound === 2 ? 'semifinalen' : 'finalen'
+    const roundName = cupStatus.eliminatedInRound === 1 ? 'förstarundan' : cupStatus.eliminatedInRound === 2 ? 'kvartsfinalen' : cupStatus.eliminatedInRound === 3 ? 'semifinalen' : 'finalen'
     const winner = bracket.winnerId ? game.clubs.find(c => c.id === bracket.winnerId) : null
     statusContent = (
       <div>
@@ -261,7 +261,7 @@ export function DashboardScreen() {
     const managedCupNext = scheduled.some(f => batchEffRound(f) === nextEff && f.isCup && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
     if (managedCupNext) { setIsBatchSim(false); return }
     const t = setTimeout(() => {
-      const result = advance()
+      const result = advance(true)
       if (result?.seasonEnded || result?.playoffStarted) { setIsBatchSim(false); return }
     }, 80)
     return () => clearTimeout(t)
@@ -405,7 +405,7 @@ export function DashboardScreen() {
       if (nextManaged.isCup) {
         const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextManaged.id)
         const cupRound = cupMatch?.round ?? 1
-        const cupLabel = cupRound === 1 ? 'Kvartsfinal' : cupRound === 2 ? 'Semifinal' : 'Final'
+        const cupLabel = cupRound === 1 ? 'Förstarunda' : cupRound === 2 ? 'Kvartsfinal' : cupRound === 3 ? 'Semifinal' : 'Final'
         return `Spela Cup-${cupLabel} →`
       }
       if (game.playoffBracket) {
@@ -732,9 +732,20 @@ export function DashboardScreen() {
             </button>
           )}
           {isBatchSim && (
-            <div style={{ marginBottom: 8, padding: '10px 14px', background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.2)', borderRadius: 10, textAlign: 'center' }}>
-              <div style={{ fontSize: 13, color: 'var(--accent-dark)', fontWeight: 700, fontFamily: 'var(--font-body)' }}>⏩ Simulerar säsongen...</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3, fontFamily: 'var(--font-body)' }}>{remainingOtherFixtures} omgångar kvar</div>
+            <div style={{ marginBottom: 8, padding: '10px 14px', background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.2)', borderRadius: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontSize: 13, color: 'var(--accent-dark)', fontWeight: 700, fontFamily: 'var(--font-body)' }}>⏩ Simulerar säsongen...</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3, fontFamily: 'var(--font-body)' }}>{remainingOtherFixtures} omgångar kvar</div>
+                </div>
+                <button
+                  onClick={() => setIsBatchSim(false)}
+                  className="btn btn-ghost"
+                  style={{ fontSize: 11, padding: '4px 10px' }}
+                >
+                  Stopp
+                </button>
+              </div>
             </div>
           )}
 
