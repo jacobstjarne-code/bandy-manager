@@ -22,7 +22,7 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
 
   return (
     <div style={{
-      margin: '0 16px 12px',
+      margin: '0 16px 8px',
       background: 'var(--bg-elevated)',
       border: '1px solid var(--border)',
       borderRadius: 12,

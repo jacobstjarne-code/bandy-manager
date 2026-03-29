@@ -408,7 +408,7 @@ export function MatchScreen() {
           style={{
             border: isPlayoffRound ? '1px solid rgba(196,122,58,0.3)' : isCupFixture ? '1px solid rgba(196,122,58,0.25)' : rivalry ? '1px solid rgba(220,80,30,0.3)' : undefined,
             padding: '12px 16px',
-            marginBottom: 16,
+            marginBottom: 8,
           }}
         >
           <p style={{ fontSize: 11, color: isPlayoffRound ? 'var(--accent)' : isCupFixture ? 'var(--accent)' : rivalry ? 'var(--danger)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
@@ -423,7 +423,7 @@ export function MatchScreen() {
         </div>
 
         {/* Step indicator */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16, gap: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', margin: '10px 0 8px', gap: 0 }}>
           {(['lineup', 'tactic', 'start'] as const).map((s, i) => {
             const labels = ['Välj trupp', 'Välj taktik', 'Starta']
             const isActive = matchStep === s

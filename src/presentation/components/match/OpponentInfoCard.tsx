@@ -24,7 +24,7 @@ export function OpponentInfoCard({ opponent, game }: OpponentInfoCardProps) {
 
   return (
     <div style={{
-      margin: '0 16px 12px',
+      margin: '0 16px 8px',
       background: 'var(--bg-surface)',
       border: '1px solid var(--border)',
       borderRadius: 'var(--radius)',
