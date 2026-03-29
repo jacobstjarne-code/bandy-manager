@@ -76,7 +76,6 @@ export function MatchLiveScreen() {
   const [htPress, setHtPress] = useState<TacticPress | null>(null)
   const [tacticChanged, setTacticChanged] = useState(false)
   const [htSubs, setHtSubs] = useState<{ outId: string; inId: string }[]>([])
-  const [liveSubsUsed, setLiveSubsUsed] = useState(0)
   const [liveSubs, setLiveSubs] = useState<{ outId: string; inId: string; minute: number }[]>([])
   const [showSubModal, setShowSubModal] = useState(false)
   const [ceremonySlide, setCeremonySlide] = useState(0)
@@ -439,7 +438,6 @@ export function MatchLiveScreen() {
   // but are stored and shown in the commentary feed.
   function handleLiveSub(outId: string, inId: string) {
     setLiveSubs(prev => [...prev, { outId, inId, minute: currentMinute }])
-    setLiveSubsUsed(prev => prev + 1)
     setShowSubModal(false)
     setIsPaused(false)
   }
@@ -577,7 +575,7 @@ export function MatchLiveScreen() {
         >
           ⏩
         </button>
-        {currentStep >= 10 && currentStep <= 50 && liveSubsUsed < 2 && !matchDone && (
+        {!matchDone && (
           <button
             onClick={() => { setIsPaused(true); setShowSubModal(true) }}
             className="btn btn-outline"
