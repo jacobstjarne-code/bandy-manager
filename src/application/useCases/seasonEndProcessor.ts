@@ -17,6 +17,7 @@ import { calculateKommunBidrag, generateNewPolitician } from '../../domain/servi
 import { generateSeasonVerdict, generatePreSeasonMessage } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
 import { updateLoyaltyScores } from '../../domain/services/characterPlayerService'
+import { processAITransfers } from '../../domain/services/aiTransferService'
 import type { LicenseReview } from '../../domain/entities/SaveGame'
 import type { AdvanceResult } from './advanceTypes'
 
@@ -646,6 +647,32 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     } else {
       char.age = age + 1
     }
+  }
+
+  // ── AI transfers between seasons ─────────────────────────────────────────
+  const aiTransferResult = processAITransfers(
+    playersAfterLicense,
+    clubsAfterLicense,
+    nextSeason,
+    game.managedClubId,
+    baseSeed + 55555,
+  )
+  playersAfterLicense = aiTransferResult.updatedPlayers
+  clubsAfterLicense = aiTransferResult.updatedClubs
+
+  const notableTransfers = aiTransferResult.transfers.filter(t => t.fee > 50000).slice(0, 3)
+  if (notableTransfers.length > 0) {
+    const transferText = notableTransfers
+      .map(t => `${t.playerName}: ${t.fromClubName} → ${t.toClubName}${t.fee > 0 ? ` (${Math.round(t.fee / 1000)} tkr)` : ' (fri agent)'}`)
+      .join('\n')
+    newInboxItems.push({
+      id: `inbox_ai_transfers_${nextSeason}`,
+      date: game.currentDate,
+      type: InboxItemType.Transfer,
+      title: `Övergångar inför säsong ${nextSeason}`,
+      body: `Några anmärkningsvärda övergångar:\n${transferText}`,
+      isRead: false,
+    } as InboxItem)
   }
 
   // Generate season summary with the final communityStanding (after all season-end adjustments)

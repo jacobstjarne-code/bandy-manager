@@ -97,6 +97,7 @@ export enum InboxItemType {
   SponsorNetwork = 'sponsorNetwork',
   PatronInfluence = 'patronInfluence',
   MediaEvent = 'mediaEvent',
+  Transfer = 'transfer',
 }
 
 export enum TrainingType {
