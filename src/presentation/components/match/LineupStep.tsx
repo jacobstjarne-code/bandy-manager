@@ -98,11 +98,15 @@ export function LineupStep({
         </span>
         <button
           onClick={onAutoFill}
-          className="btn btn-outline"
           style={{
             padding: '8px 16px',
             fontSize: 13,
             fontWeight: 700,
+            background: 'rgba(196,122,58,0.08)',
+            border: '1.5px solid var(--accent)',
+            color: 'var(--accent)',
+            borderRadius: 'var(--radius-sm)',
+            cursor: 'pointer',
           }}
         >
           ✨ Generera bästa elvan
