@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { setGlobalNavigate } from './globalNavigate'
-import { StartScreen } from '../screens/StartScreen'
 
 function NavigateSetter() {
   const nav = useNavigate()
@@ -37,8 +36,7 @@ export function AppRouter() {
     <BrowserRouter>
       <NavigateSetter />
       <Routes>
-        <Route path="/" element={<StartScreen />} />
-        <Route path="/intro" element={<IntroSequence />} />
+        <Route path="/" element={<IntroSequence />} />
         <Route path="/new-game" element={<NewGameScreen />} />
         <Route path="/game" element={<GameShell />}>
           <Route index element={<Navigate to="dashboard" replace />} />

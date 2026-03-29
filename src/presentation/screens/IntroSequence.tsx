@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useGameStore } from '../store/gameStore'
 
 // 23 particles — faster cycles (2–4 s), many negative delays so snow is mid-flight from frame 1
 function SnowParticles() {
@@ -52,6 +53,7 @@ function SnowParticles() {
 
 export function IntroSequence() {
   const navigate = useNavigate()
+  const hasSave = useGameStore(s => s.game !== null)
   const [slide, setSlide] = useState(0)   // 0 = S0, 1 = S1
   const [s0Phase, setS0Phase] = useState(-1) // drives S0 content stagger
 
@@ -202,6 +204,21 @@ export function IntroSequence() {
           >
             STARTA KARRIÄREN
           </button>
+          {hasSave && (
+            <button
+              onClick={() => navigate('/game')}
+              style={{
+                width: '100%', maxWidth: 300, padding: '14px 24px',
+                background: 'transparent',
+                border: '1px solid rgba(196,186,168,0.25)',
+                borderRadius: 10, color: 'rgba(245,241,235,0.7)',
+                fontSize: 13, fontWeight: 600, letterSpacing: '2px',
+                textTransform: 'uppercase', cursor: 'pointer',
+              }}
+            >
+              FORTSÄTT
+            </button>
+          )}
           <img
             src="/buryfen-logo-transparent.png"
             alt="Bury Fen"
