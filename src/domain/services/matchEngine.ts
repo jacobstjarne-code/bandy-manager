@@ -140,10 +140,6 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     playerAssists[playerId] = (playerAssists[playerId] ?? 0) + 1
   }
 
-  function trackYellow(playerId: string) {
-    playerYellowCards[playerId] = (playerYellowCards[playerId] ?? 0) + 1
-  }
-
   function trackRed(playerId: string) {
     playerRedCards[playerId] = (playerRedCards[playerId] ?? 0) + 1
   }
@@ -539,18 +535,6 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
             clubId: defendingClubId,
             playerId: suspPlayer.id,
             description: `Red card for ${suspPlayer.firstName} ${suspPlayer.lastName}`,
-          })
-        }
-      } else if (r < foulProb * 0.6 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
-        const yellowPlayer = getDefendingPlayer(defendingStarters)
-        if (yellowPlayer) {
-          trackYellow(yellowPlayer.id)
-          addEvent({
-            minute,
-            type: MatchEventType.YellowCard,
-            clubId: defendingClubId,
-            playerId: yellowPlayer.id,
-            description: `Yellow card for ${yellowPlayer.firstName} ${yellowPlayer.lastName}`,
           })
         }
       }

@@ -20,11 +20,11 @@ export const commentary = {
   fullTime: [
     "SLUTSIGNAL! Domaren avslutar matchen. Slutresultat: {score}.",
     "Det är slut! {score} — {team} tar med sig {result} hem.",
-    "Tre visslar — matchen är över. {score} efter 90 engagerade minuter.",
+    "Slutsignal — matchen är över. {score} efter 90 rafflande minuter.",
     "Slutvisslat! En dramatisk match når sitt slut. {score}.",
-    "Och det var det! {score}. Spelarna skakar hand efter ett hårt kämpat match.",
+    "Och det var det! {score}. Spelarna skakar näve efter en tuff match.",
     "FULLTID! En match som gav publiken det de kom för. {score}.",
-    "Tre visslar och det är klart. {score}. Spelarna samlas på mitten.",
+    "Slutvisslat och det är klart. {score}. Spelarna samlas på mitten.",
     "Slutvisslat. {team} kan andas ut. {score} — allt är sagt.",
   ],
 
@@ -33,10 +33,9 @@ export const commentary = {
     "MÅÅÅL! Strålande avslut av {player} — {team} jublar! {score}!",
     "IN I NÄTET! {player} var på rätt plats i rätt tid. {score}!",
     "MÅÅÅL! {player} placerar in det med vänsterpinnen! {score}!",
-    "Det sitter! {player} nuddar in bollen vid bortre stolpen. {score}!",
+    "Det sitter! {player} kommer sopren med målvakten och gör inga misstag. {score}!",
     "MÅÅÅL FÖR {team}! {player} är iskall och sätter dit den! {score}!",
     "MÅÅÅL! Vad en match det har blivit! {player} sätter dit {score}!",
-    "{player} tar emot, vänder och skjuter — inget som kan stoppa det! {score}!",
     "Avslut — inne! {player} med ett kontrat avslut. {score}.",
     "MÅÅÅL! {team} exploderar i jubel! {player} med en drömmatch! {score}!",
     "Det händer snabbt i bandy — {player} bryter och sätter dit {score}!",
@@ -91,7 +90,7 @@ export const commentary = {
 
   save: [
     "{goalkeeper} räddar med vadden! Vilken reflex!",
-    "Utanför! {goalkeeper} klockar ut — strålande räddning!",
+    "Utanför! {goalkeeper} får sträcka på sig. Strålande räddning!",
     "NEJ! {goalkeeper} var i vägen! {team} slipper ifrån!",
     "{goalkeeper} sträcker ut och räddar vid stolpen. Fantastiskt!",
     "Räddning! {goalkeeper} kastar sig åt rätt håll. Han har läst skottet.",
@@ -99,7 +98,8 @@ export const commentary = {
     "Strålande insats av {goalkeeper} — höll {team} kvar i matchen där!",
     "Jätteräddning! {goalkeeper} hindrar säkert mål. Publikens favorit i dag.",
     "{goalkeeper} med reflexräddningen! Det gick fort som ett ögonblick.",
-    "Bollen bränner i kassen — men {goalkeeper} var framme. Klockren teknik.",
+    "Alla lösa går om, skrockar {goalkeeper}.",
+    "{goalkeeper} styr ut bollen nere vid stolproten. Det är inte möjligt!",
   ],
 
   miss: [
@@ -107,16 +107,17 @@ export const commentary = {
     "Skott — vid sidan om. {team} gnider sina händer.",
     "Avslutet gick precis utanför. Centimetrar från mål.",
     "Stolpe! Bollen studsar ut. {team} hade tur.",
-    "Inte tillräckligt nördigt placerat — målvakten plockar upp.",
+    "Inte riktigt nära med det avslutet.",
+    "I RIBBAN! Frustrerat nu i {team}.",
     "Avslut — upp i ribban! Frustrerade ansikten på {team}.",
     "Bollen seglar högt och brett. Inte spelarens bästa dag.",
     "Nära — men inte tillräckligt! Ribban vibrerar men tavlan står stilla.",
   ],
 
   suspension: [
-    "{player} får 10 minuter för sen tackling! {team} spelar med 10 man.",
+    "{player} får 10 minuter för bentackling! {team} spelar med 10 man.",
     "Utvisning! Domaren pekar mot bänken — {player} av isen i 10 minuter.",
-    "Sen foul av {player} — ut med honom! {opponent} spelar i numerärt överläge.",
+    "Sent brytningsförsök av {player} — ut med honom! {opponent} spelar i numerärt överläge.",
     "{player} protesterar men domaren är bestämd. Tio minuter utanför.",
     "Hårt ingripande — {player} skickas av med utvisning. Kritiskt läge för {team}.",
     "Domaren hade inget val. {player} fick inte bollen — utvisning.",
@@ -128,7 +129,7 @@ export const commentary = {
     "Hörna till {team}. Slås in hårt — rensas av försvaret.",
     "Hörna för {team}. Bollen kurvar in men målvakten boxar ut den i sista stund.",
     "Hörna till {team}. Kort variant — tillbaka till hörnläggaren som skjuter! Utanför.",
-    "{team} får hörna. Hård insvingare framför mål — rensning av {opponent}.",
+    "{team} får hörna. Boll på sista skytten, men ingen lycka.",
     "Hörna {team}. Insvingad direkt mot mål — stolpe! Nära att sitta.",
     "Ny hörna till {team}. Kort uppspel, passning tillbaka, skott! Blockerat.",
     "{team} tar hörna. Bollen snurrar in mot bortre stolpen men seglar över.",
@@ -137,6 +138,9 @@ export const commentary = {
     "Hörna för {team}. Tredje hörnan på kort tid — trycket börjar märkas.",
     "{team} med ännu en hörna. De styr spelet nu.",
     "Hörna. Insvingad mot mitten — {opponent}s försvar reder ut det.",
+    "Hörna till {team}. En variant! Kort spel med skott i dödvinkel. Långt utanför!",
+    "{team} får hörna. Bollen studsar lite, men det blir ändå till ett skott i ruset.",
+    "Hörna. Inslagen mot tredjeskytt, som skjuter rakt i {opponent}s rus.",
   ],
 
   powerPlayGood: [
@@ -179,13 +183,6 @@ export const commentary = {
     "Halvchans för {team} — men för svagt placerat för att hota på riktigt.",
   ],
 
-  yellowCard: [
-    "Gult kort till {player} efter en hård foul. Varning.",
-    "Domaren visar gult mot {player} — tredje gången hen protesterar.",
-    "Gult kort! {player} av {team} måste se upp nu.",
-    "Varningskort till {player}. Nästa foul kan kosta mer.",
-  ],
-
   weather_heavySnow: [
     "Snön faller ymnigt nu — bollen försvinner i virvlarna.",
     "Svårt att se tio meter framåt i det här snöfallet.",
@@ -196,16 +193,16 @@ export const commentary = {
   ],
   weather_thaw: [
     "Isen är seg och blöt — varje passning dör lite för tidigt.",
-    "Bollen fastnar i slush. Det här är inte bandyväder.",
+    "Bollen fastnar i slushen. Det här är vad som gör bandyn vacker!",
     "Töväder gör spelet trögt — fysiska lag har fördel.",
     "Vatten sprutar vid varje skridskoslag. Isen lider.",
-    "Blidväder i mars — spelarnas värsta mardröm.",
+    "Vattenpolo. Spelarnas värsta mardröm.",
     "Tekniska spelare kämpar — bollen lyder inte på den här isen.",
   ],
   weather_cold: [
     "Minus tjugo och andedräkten syns som dimma. Kort passningsspel dominerar.",
     "Kylan biter. Spelarna klappar händerna under avbrottet.",
-    "Perfekt kyla för perfekt is — bollen flyger som en kula.",
+    "Kylan gör isen stenhård. Bollen studsar som en flipperkula.",
     "De som klarat uppvärmningen är redan vinnare i den här kylan.",
     "Publiken kurar under filtar. Men de är här. Respekt.",
   ],
@@ -276,7 +273,7 @@ export const commentary = {
   ],
 
   final_kickoff: [
-    "SM-FINALEN! Det här är vad alla har väntat på. Hela Sverige tittar.",
+    "SM-FINALEN! Det här är vad alla har väntat på. Sveriges svar på Superbowl.",
     "Domaren blåser igång SM-finalen! Vilken stämning!",
     "Det största ögonblicket i svensk bandy. SM-final. Avspark!",
   ],
@@ -305,7 +302,7 @@ export const commentary = {
   ],
 
   derby_kickoff: [
-    "DERBY! {rivalry}! Det kribblar på läktarna. Den här matchen betyder mer än tre poäng.",
+    "DERBY! {rivalry}! Det kribblar på läktarna. Den här matchen betyder mer än två poäng.",
     "DERBYDAGS! {team} mot {opponent} — {rivalry}. Rivalerna möts igen!",
     "{rivalry} är igång! Publiken har väntat på det här länge.",
     "Det är derby ikväll! {team} mot {opponent}. Stämningen är elektrisk!",

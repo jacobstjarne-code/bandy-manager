@@ -4,7 +4,7 @@ import type { Fixture } from '../entities/Fixture'
 import { getRivalry } from '../data/rivalries'
 import { MatchEventType } from '../enums'
 
-export const JOURNALISTS = ['SVT Nyheter', 'Bandyplay', 'Lokaltidningen', 'Sportbladet', 'Bandypuls']
+export const JOURNALISTS = ['SVT Nyheter', 'Bandyplay', 'Lokaltidningen', 'Sportbladet', 'Bandypuls', 'Expressen', 'DN', 'Radiosporten']
 
 // ── Journalist questions (per context, no choices) ────────────────────────────
 
@@ -12,44 +12,44 @@ const QUESTIONS: Record<string, string[]> = {
   bigWin: [
     'Imponerande seger. Var det ert bästa spel den här säsongen?',
     'Laget spelade otroligt idag. Vad är hemligheten?',
-    'Tretalet idag — är det ett mönster eller en engångsgrej?',
-    'Er offensiv ser ostoppbar ut. Fruktar du inte att bli läst av motståndarna?',
+    'Tvåsiffrigt idag — är det ett mönster eller en engångsgrej?',
+    'Ert anfallsspel ser ostoppbart ut. Fruktar du inte att bli läst av motståndarna?',
     'Bortalaget verkade chockade av er intensitet. Avsiktlig taktik?',
-    'Fem mål är ovanligt. Hade ni kunnat vinna ännu mer?',
+    'Bra match. Hade ni kunnat vinna med ännu mer?',
     'Publiken var i extas. Hur mycket spelar hemmafansen in?',
   ],
   win: [
     'Seger — berätta om matchen.',
-    'Tre viktiga poäng. Hur påverkar det stämningen i laget?',
+    'Två viktiga poäng. Hur påverkar det stämningen i laget?',
     'Vilken spelare stack ut idag?',
     'Hur håller ni den här formen uppe?',
     'Ni vände underläge till seger. Vad hände i pausen?',
-    'En avancemang i tabellen. Kan ni utmana toppen nu?',
+    'Ni avancerar i tabellen. Kan ni utmana toppen nu?',
     'Ni dominerade mittfältet idag. Är det er styrka just nu?',
   ],
   loss: [
     'Tung förlust. Vad gick fel?',
     'Laget såg trötta ut i andra halvlek. Kondition?',
     'Supportrarna är besvikna. Vad säger du till dem?',
-    'Ni hamnade bakom motståndarna taktiskt. Vad gör du annorlunda nästa match?',
+    'Ni hamnade efter motståndarna tidigt. Vad gör du annorlunda nästa match?',
     'Hur pratar du med spelarna i omklädningsrummet efter en sådan här match?',
     'Tappar ni tron på er spelstil nu?',
     'Ni hade chanser men konverterade inte. Stressar det er?',
     'Bortalaget körde över er i perioderna. Vad händer med er defensiv?',
-    'Säsongen är svår just nu. Hur håller du moralen uppe?',
+    'Ni har det tufft just nu. Hur håller du moralen uppe?',
   ],
   bigLoss: [
-    'En mörk kväll. Hur tar ni er vidare?',
+    'En mörk kväll. Hur tar ni er vidare härifrån?',
     'Är du orolig för lagets form?',
     'Det här resultatet kan kosta er dyrt i tabellen. Hur reagerar styrelsen?',
     'Motståndarna verkade veta exakt vad ni skulle göra. Läckta planer?',
-    'Fem insläppta mål. Var det ett systemproblem?',
+    'En jävla massa mål i röven. Var det ett systemproblem?',
     'Behöver du ta in ny spetskompetens för att vända skutan?',
   ],
   draw: [
     'Oavgjort — nöjd eller besviken?',
     'Ni kvitterade sent. Vad säger det om lagets karaktär?',
-    'En poäng i bortamatchen — räknas det som bra?',
+    'En poäng på bortaplan — räknas det som bra?',
     'Matchen avgjordes av detaljer. Vilken detalj är viktigast att förbättra?',
     'Ert spel var ojämnt idag. Vad berodde det på?',
     'Ni har oavgjort i tre raka. Är det en trend att oroa sig för?',

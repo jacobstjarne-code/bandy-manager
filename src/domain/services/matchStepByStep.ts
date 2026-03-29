@@ -241,12 +241,10 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
     let cornerGoalScored = false
     let saveOccurred = false
     let suspensionOccurred = false
-    let yellowCardOccurred = false
     let cornerOccurred = false
     let scorerPlayerId: string | undefined
     let gkPlayerId: string | undefined
     let suspendedPlayerId: string | undefined
-    let yellowPlayerId: string | undefined
 
     if (seqType === 'attack') {
       const base = attAttack * 0.6 - defDefense * 0.4 + randRange(rand, -0.2, 0.2)
@@ -328,20 +326,14 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
     } else if (seqType === 'foul') {
       const fp = attDiscipline * 0.4 + defDiscipline * 0.3
       const r = rand()
-      if (r < fp * 0.15 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
+      if (r < fp * 0.55 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
         const sp = getDefendingPlayer(defendingStarters)
         if (sp) {
           suspendedPlayerId = sp.id; suspensionOccurred = true
-          const dur = 3 + Math.floor(rand() * 3)
+          const dur = 3 + Math.floor(rand() * 4)
           if (isHomeAttacking) { awayActiveSuspensions++; awaySuspensionTimers.push(dur) } else { homeActiveSuspensions++; homeSuspensionTimers.push(dur) }
           trackRed(sp.id)
-          const e: MatchEvent = { minute, type: MatchEventType.RedCard, clubId: defendingClubId, playerId: sp.id, description: `Red card for ${sp.firstName} ${sp.lastName}` }; stepEvents.push(e); allEvents.push(e)
-        }
-      } else if (r < fp * 0.6 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
-        const yp = getDefendingPlayer(defendingStarters)
-        if (yp) {
-          yellowPlayerId = yp.id; yellowCardOccurred = true; trackYellow(yp.id)
-          const e: MatchEvent = { minute, type: MatchEventType.YellowCard, clubId: defendingClubId, playerId: yp.id, description: `Yellow card for ${yp.firstName} ${yp.lastName}` }; stepEvents.push(e); allEvents.push(e)
+          const e: MatchEvent = { minute, type: MatchEventType.RedCard, clubId: defendingClubId, playerId: sp.id, description: `Suspension for ${sp.firstName} ${sp.lastName}` }; stepEvents.push(e); allEvents.push(e)
         }
       }
     }
@@ -368,9 +360,6 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
     } else if (suspensionOccurred && suspendedPlayerId) {
       tvars = { ...tvars, player: findName(suspendedPlayerId) }
       commentaryText = fillTemplate(pickCommentary(commentary.suspension, rand), tvars)
-    } else if (yellowCardOccurred && yellowPlayerId) {
-      tvars = { ...tvars, player: findName(yellowPlayerId) }
-      commentaryText = fillTemplate(pickCommentary(commentary.yellowCard, rand), tvars)
     } else if (cornerOccurred && !goalScored) {
       commentaryText = fillTemplate(pickCommentary(commentary.corner, rand), tvars)
     } else if (step === 31) {
@@ -565,7 +554,6 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
   // Per-player tracking for ratings (needed for final report)
   const playerGoals: Record<string, number> = {}
   const playerAssists: Record<string, number> = {}
-  const playerYellowCards: Record<string, number> = {}
   const playerRedCards: Record<string, number> = {}
   const playerSaves: Record<string, number> = {}
 
@@ -586,10 +574,6 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
 
   function trackAssist(playerId: string) {
     playerAssists[playerId] = (playerAssists[playerId] ?? 0) + 1
-  }
-
-  function trackYellow(playerId: string) {
-    playerYellowCards[playerId] = (playerYellowCards[playerId] ?? 0) + 1
   }
 
   function trackRed(playerId: string) {
@@ -763,12 +747,10 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     let cornerGoalScored = false
     let saveOccurred = false
     let suspensionOccurred = false
-    let yellowCardOccurred = false
     let cornerOccurred = false
     let scorerPlayerId: string | undefined
     let gkPlayerId: string | undefined
     let suspendedPlayerId: string | undefined
-    let yellowPlayerId: string | undefined
 
     if (seqType === 'attack') {
       const base = attAttack * 0.6 - defDefense * 0.4 + randRange(rand, -0.2, 0.2)
@@ -995,15 +977,17 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
         }
       }
     } else if (seqType === 'foul') {
+      // In bandy: no yellow cards, only 10-minute suspensions
       const foulProb = (attDiscipline) * 0.4 + (defDiscipline) * 0.3
 
       const r = rand()
-      if (r < foulProb * 0.15 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
+      // ~35% chance of suspension per foul sequence (gives 2-4 per match)
+      if (r < foulProb * 0.55 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
         const suspPlayer = getDefendingPlayer(defendingStarters)
         if (suspPlayer) {
           suspendedPlayerId = suspPlayer.id
           suspensionOccurred = true
-          const duration = 3 + Math.floor(rand() * 3)
+          const duration = 3 + Math.floor(rand() * 4) // 3-6 steps ≈ 5-10 min
           if (isHomeAttacking) {
             awayActiveSuspensions++
             awaySuspensionTimers.push(duration)
@@ -1017,28 +1001,13 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
             type: MatchEventType.RedCard,
             clubId: defendingClubId,
             playerId: suspPlayer.id,
-            description: `Red card for ${suspPlayer.firstName} ${suspPlayer.lastName}`,
-          }
-          stepEvents.push(event)
-          allEvents.push(event)
-        }
-      } else if (r < foulProb * 0.6 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
-        const yellowPlayer = getDefendingPlayer(defendingStarters)
-        if (yellowPlayer) {
-          yellowPlayerId = yellowPlayer.id
-          yellowCardOccurred = true
-          trackYellow(yellowPlayer.id)
-          const event: MatchEvent = {
-            minute,
-            type: MatchEventType.YellowCard,
-            clubId: defendingClubId,
-            playerId: yellowPlayer.id,
-            description: `Yellow card for ${yellowPlayer.firstName} ${yellowPlayer.lastName}`,
+            description: `Suspension for ${suspPlayer.firstName} ${suspPlayer.lastName}`,
           }
           stepEvents.push(event)
           allEvents.push(event)
         }
       }
+      // No yellow cards in bandy — only suspensions
     }
 
     // Build score string
@@ -1116,9 +1085,6 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       } else {
         commentaryText = fillTemplate(pickCommentary(commentary.suspension, rand), templateVars)
       }
-    } else if (yellowCardOccurred && yellowPlayerId) {
-      templateVars = { ...templateVars, player: findPlayerName(yellowPlayerId) }
-      commentaryText = fillTemplate(pickCommentary(commentary.yellowCard, rand), templateVars)
     } else if (cornerOccurred && !goalScored) {
       commentaryText = fillTemplate(pickCommentary(commentary.corner, rand), templateVars)
     } else if ((homeActiveSuspensions > 0 || awayActiveSuspensions > 0) && (seqType === 'attack' || seqType === 'transition')) {
