@@ -144,7 +144,7 @@ export function BoardMeetingScreen() {
 
       {/* Förra säsongen / Välkommen */}
       {isFirstSeason ? (
-        <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px' }}>
+        <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px', background: 'rgba(196,122,58,0.06)', borderColor: 'rgba(196,122,58,0.18)' }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             👋 Välkommen
           </p>
@@ -155,7 +155,7 @@ export function BoardMeetingScreen() {
           </p>
         </div>
       ) : (
-        <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px' }}>
+        <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px', background: 'rgba(196,122,58,0.06)', borderColor: 'rgba(196,122,58,0.18)' }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             {verdictEmoji} Förra säsongen
           </p>
@@ -232,7 +232,11 @@ export function BoardMeetingScreen() {
 
       {/* Styrelsemedlemmarnas röster */}
       {boardMembers.length > 0 && (
-        <div className="card-sharp" style={{ marginBottom: 24, padding: '12px 14px' }}>
+        <div className="card-sharp" style={{
+          marginBottom: 24, padding: '14px 16px',
+          background: 'rgba(196,122,58,0.04)',
+          borderColor: 'rgba(196,122,58,0.15)',
+        }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             💬 Styrelsemedlemmarna om läget
           </p>
