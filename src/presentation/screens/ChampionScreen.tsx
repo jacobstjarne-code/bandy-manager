@@ -132,13 +132,18 @@ export function ChampionScreen() {
               Säsong {game.currentSeason}/{game.currentSeason + 1}
             </p>
           </>
-        ) : (
+        ) : (() => {
+          const lostInFinal = bracket.final?.loserId === game.managedClubId
+          const lostInSemi = bracket.semiFinals.some(s => s.loserId === game.managedClubId)
+          const icon = lostInFinal ? '🥈' : lostInSemi ? '🏅' : '🏋️'
+          const title = lostInFinal ? 'Silvermedaljör' : lostInSemi ? 'Semifinalist' : 'Säsongen är slut'
+          return (
           <>
             <div style={{ fontSize: 60, marginBottom: 16 }}>
-              <span role="img" aria-label="silver medal">🥈</span>
+              <span role="img" aria-label="medal">{icon}</span>
             </div>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-light)', marginBottom: 8, fontFamily: 'var(--font-display)' }}>
-              En stark säsong
+              {title}
             </h1>
             <p style={{ fontSize: 14, color: 'var(--text-light-secondary)', marginBottom: 8 }}>
               {champion?.name ?? 'Motståndet'} tog SM-guldet säsong {game.currentSeason}/{game.currentSeason + 1}.
@@ -147,7 +152,7 @@ export function ChampionScreen() {
               {club.name} · Säsong {game.currentSeason}/{game.currentSeason + 1}
             </p>
           </>
-        )}
+        )})()}
 
         {/* Playoff run summary */}
         <div style={{

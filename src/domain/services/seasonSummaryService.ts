@@ -129,8 +129,8 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     switch (e) {
       case ClubExpectation.AvoidBottom: return 10
       case ClubExpectation.MidTable: return 7
-      case ClubExpectation.ChallengeTop: return 3
-      case ClubExpectation.WinLeague: return 1
+      case ClubExpectation.ChallengeTop: return 5
+      case ClubExpectation.WinLeague: return 2
     }
   }
 
@@ -141,7 +141,7 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   const exceededThresholds: Record<ClubExpectation, number> = {
     [ClubExpectation.AvoidBottom]: 6,
     [ClubExpectation.MidTable]: 3,
-    [ClubExpectation.ChallengeTop]: 1,
+    [ClubExpectation.ChallengeTop]: 2,
     [ClubExpectation.WinLeague]: 1,
   }
   const exceeded = finalPosition <= exceededThresholds[boardExpectation] || (boardExpectation === ClubExpectation.WinLeague && isChampion)

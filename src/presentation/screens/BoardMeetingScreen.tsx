@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { BOARD_QUOTES, BOARD_MEETING_OPENERS } from '../../domain/data/boardData'
 import type { BoardPersonality } from '../../domain/entities/SaveGame'
-import { GameHeader } from '../components/GameHeader'
 
 export function BoardMeetingScreen() {
   const navigate = useNavigate()
@@ -134,7 +133,6 @@ export function BoardMeetingScreen() {
       flexDirection: 'column',
       background: 'var(--bg)',
     }}>
-      <GameHeader />
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px 90px' }}>
       {/* Header */}
       <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 4 }}>

@@ -89,7 +89,7 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
           borderRadius: 8, padding: '8px 12px', fontSize: 12, color: 'var(--accent)',
           marginTop: 4, marginBottom: 12,
         }}>
-          📐 {cornerSpec.firstName} {cornerSpec.lastName} är hörnspecialist (hörnfärdighet {cornerSpec.attributes.cornerSkill}) — aggressiv hörnstrategi rekommenderas!
+          📐 {cornerSpec.firstName} {cornerSpec.lastName} är hörnspecialist (hörnfärdighet {Math.round(cornerSpec.attributes.cornerSkill)}) — aggressiv hörnstrategi rekommenderas!
         </div>
       ) : tacticState.cornerStrategy === 'aggressive' ? (
         <div style={{
