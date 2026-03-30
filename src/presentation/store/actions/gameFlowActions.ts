@@ -38,7 +38,7 @@ export function gameFlowActions(get: Get, set: Set) {
         ? resultGame.fixtures.find(f =>
             (f.homeClubId === resultGame.managedClubId || f.awayClubId === resultGame.managedClubId) &&
             f.status === 'completed' &&
-            (f.isCup ? f.roundNumber - 100 : f.roundNumber) === result.roundPlayed
+            f.matchday === result.roundPlayed
           )
         : undefined
 

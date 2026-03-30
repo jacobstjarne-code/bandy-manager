@@ -7,6 +7,7 @@ import type { TrainingFocus } from '../../domain/entities/Training'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entities/Fixture'
 import { FixtureStatus, PlayoffStatus, InboxItemType, PlayerPosition } from '../../domain/enums'
 import { createNewGame } from '../../application/useCases/createNewGame'
+import { buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
 import { resolveEvent as resolveEventFn } from '../../domain/services/eventService'
 import { type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
@@ -115,6 +116,26 @@ export const useGameStore = create<GameState>()(
         if (!loaded) return false
         // Migrate old club names — strip suffixes like BK, IF, GoIF, IK, FK
         // Migrate Midfielder position → Half (merged positions)
+        // Migrate matchday field — fixtures created before this field was added
+        if (loaded.fixtures.some((f: any) => f.matchday === undefined)) {
+          const CUP_MATCHDAYS: Record<number, number> = { 1: 3, 2: 8, 3: 13, 4: 19 }
+          const calendar = buildSeasonCalendar(loaded.currentSeason)
+          loaded.fixtures = loaded.fixtures.map((f: any) => {
+            if (f.matchday !== undefined) return f
+            if (f.isCup) {
+              const match = loaded.cupBracket?.matches.find((m: any) => m.fixtureId === f.id)
+              const cupRound = match?.round ?? (f.roundNumber >= 100 ? f.roundNumber - 100 : 1)
+              return { ...f, matchday: CUP_MATCHDAYS[cupRound as number] ?? f.roundNumber }
+            }
+            if (f.roundNumber > 22) {
+              // Playoff: matchday = roundNumber + 4 (liga 22 = matchday 26, so round 23 → matchday 27)
+              return { ...f, matchday: f.roundNumber + 4 }
+            }
+            const slot = calendar.find((s: any) => s.type === 'league' && s.leagueRound === f.roundNumber)
+            return { ...f, matchday: slot?.matchday ?? f.roundNumber }
+          })
+        }
+
         const migrated = {
           ...loaded,
           clubs: loaded.clubs.map(c => ({
@@ -359,11 +380,7 @@ export const useNextFixture = () => {
       (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
       f.status === 'scheduled'
     )
-    .sort((a, b) => {
-      const ra = a.isCup ? a.roundNumber - 100 : a.roundNumber
-      const rb = b.isCup ? b.roundNumber - 100 : b.roundNumber
-      return ra - rb
-    })[0] ?? null
+    .sort((a, b) => a.matchday - b.matchday)[0] ?? null
 }
 
 // Returns true if the managed club has a valid pending lineup (11 starters, no injured)

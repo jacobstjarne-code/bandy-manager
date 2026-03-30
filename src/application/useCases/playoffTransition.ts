@@ -21,10 +21,12 @@ export function handlePlayoffStart(game: SaveGame, _seed?: number): AdvanceResul
   const bracket = generatePlayoffBracket(standings, game.currentSeason)
   const allQFFixtures: ReturnType<typeof generatePlayoffFixtures> = []
 
+  const startMatchday = Math.max(0, ...game.fixtures.map(f => f.matchday ?? 0)) + 1
+
   const bracketWithFixtures = {
     ...bracket,
     quarterFinals: bracket.quarterFinals.map(series => {
-      const fixtures = generatePlayoffFixtures(series, game.currentSeason, 23)
+      const fixtures = generatePlayoffFixtures(series, game.currentSeason, 23, startMatchday)
       allQFFixtures.push(...fixtures)
       return { ...series, fixtures: fixtures.map(f => f.id) }
     }),

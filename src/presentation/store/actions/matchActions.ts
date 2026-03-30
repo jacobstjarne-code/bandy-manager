@@ -74,8 +74,9 @@ export function matchActions(get: Get, set: Set) {
         if (phaseComplete) {
           const nextRoundStart = updatedPlayoffBracket.status === PlayoffStatus.QuarterFinals ? 26
             : updatedPlayoffBracket.status === PlayoffStatus.SemiFinals ? 29 : 32
+          const currentMaxMatchday = Math.max(0, ...updatedFixtures.map(f => f.matchday ?? 0))
           const { bracket: advancedBracket, newFixtures: newPlayoffFixtures } =
-            advancePlayoffRound(updatedPlayoffBracket, game.currentSeason, nextRoundStart)
+            advancePlayoffRound(updatedPlayoffBracket, game.currentSeason, nextRoundStart, currentMaxMatchday + 1)
           updatedPlayoffBracket = advancedBracket
           if (newPlayoffFixtures.length > 0) {
             updatedFixtures.push(...newPlayoffFixtures)

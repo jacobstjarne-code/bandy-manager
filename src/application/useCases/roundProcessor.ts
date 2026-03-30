@@ -224,22 +224,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // effectiveRound: cup fixtures use roundNumber - 100 so they interleave with league rounds
-  // (cup QF at 103 → effective 3, SF at 107 → effective 7, Final at 111 → effective 11)
-  function effectiveRound(f: { roundNumber: number; isCup?: boolean }): number {
-    return f.isCup ? f.roundNumber - 100 : f.roundNumber
-  }
+  // nextMatchday is the global play order index — sort by matchday, not roundNumber
+  const nextMatchday = Math.min(...scheduledFixtures.map(f => f.matchday))
 
-  // nextRound is the effective round number (league round for league phases)
-  const nextRound = Math.min(...scheduledFixtures.map(effectiveRound))
-
-  // Include cup fixtures at the same effective round + already-completed live-played fixtures
+  // Collect fixtures for this matchday (scheduled + already-completed live-played)
   const roundFixtures = game.fixtures.filter(f =>
-    effectiveRound(f) === nextRound &&
+    f.matchday === nextMatchday &&
     (f.status === FixtureStatus.Scheduled || f.status === FixtureStatus.Completed)
   )
 
-  const baseSeed = seed ?? (nextRound * 1000 + game.currentSeason * 7)
+  const baseSeed = seed ?? (nextMatchday * 1000 + game.currentSeason * 7)
   const localRand = mulberry32(baseSeed + 9999)
 
   // Collect player IDs who played in this round (for fitness updates)
@@ -255,12 +249,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Detect if there is a pending (unplayed) cup match for the managed club this round
   let hasManagedCupPending = false
 
-  // Determine if this round contains cup fixtures
+  // Determine if this round contains cup or playoff fixtures
   const isCupRound = roundFixtures.some(f => f.isCup)
-  const isPlayoffRound = !isCupRound && game.playoffBracket !== null && nextRound > 22
+  const isPlayoffRound = !isCupRound && game.playoffBracket !== null && nextMatchday > 26
+
+  // League round number (1-22) for board milestones and training — null during cup/playoff rounds
+  const currentLeagueRound = roundFixtures.find(f => !f.isCup && f.roundNumber <= 22)?.roundNumber ?? null
 
   // ── Apply training for all clubs this round ────────────────────────────
-  const trainingResult = applyRoundTraining(game, baseSeed, nextRound)
+  const trainingResult = applyRoundTraining(game, baseSeed, currentLeagueRound ?? nextMatchday)
   let trainingPlayers = trainingResult.players
   const updatedTrainingHistory = trainingResult.trainingHistory
   newInboxItems.push(...trainingResult.inboxItems)
@@ -303,7 +300,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     // Generate weather
     const matchWeather = generateMatchWeather(
       game.currentSeason,
-      nextRound,
+      nextMatchday,
       homeClub,
       fixture.id,
       baseSeed + i * 7919
@@ -440,7 +437,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     managedFixtureWeather,
     managedClubForTactic,
     baseSeed,
-    nextRound,
+    nextMatchday,
     simulatedFixtures,
   )
   const updatedPlayers = playerStateResult.updatedPlayers
@@ -450,7 +447,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // Update seasonStats and careerStats for all players in completed fixtures this round
   // Also detect career milestones for managed club players
-  const statsResult = updatePlayerMatchStats(finalPlayers, simulatedFixtures, game, nextRound)
+  const statsResult = updatePlayerMatchStats(finalPlayers, simulatedFixtures, game, nextMatchday)
   finalPlayers = statsResult.finalPlayers
   const milestoneInboxItems = statsResult.milestoneInboxItems
 
@@ -538,9 +535,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // ── Board milestone messages at rounds 7, 14, 22 ─────────────────────
+  // ── Board milestone messages at league rounds 7, 14, 22 ──────────────
   const BOARD_MILESTONES = [7, 14, 22]
-  if (!isPlayoffRound && BOARD_MILESTONES.includes(nextRound)) {
+  if (!isCupRound && !isPlayoffRound && currentLeagueRound !== null && BOARD_MILESTONES.includes(currentLeagueRound)) {
     const managedClub = game.clubs.find(c => c.id === game.managedClubId)
     const managedStanding = standings.find(s => s.clubId === game.managedClubId)
     if (managedClub && managedStanding) {
@@ -549,16 +546,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         managedClub.boardExpectation,
         managedStanding,
         game.clubs.length,
-        nextRound,
+        currentLeagueRound,
         totalRounds,
       )
-      const { title, body } = generateBoardMessage(evaluation, managedClub.name, nextRound)
+      const { title, body } = generateBoardMessage(evaluation, managedClub.name, currentLeagueRound)
       const alreadySent = game.inbox.some(
-        i => i.id === `inbox_board_r${nextRound}_${game.currentSeason}`
+        i => i.id === `inbox_board_r${currentLeagueRound}_${game.currentSeason}`
       )
       if (!alreadySent) {
         newInboxItems.push({
-          id: `inbox_board_r${nextRound}_${game.currentSeason}`,
+          id: `inbox_board_r${currentLeagueRound}_${game.currentSeason}`,
           date: game.currentDate,
           type: InboxItemType.BoardFeedback,
           title,
@@ -582,7 +579,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const target = finalPlayers.find(p => p.id === updatedScoutAssignment!.targetPlayerId)
       if (target) {
         const scoutAccuracy = 70   // default accuracy; could vary by club facilities later
-        const scoutSeed = baseSeed + nextRound * 17 + target.id.charCodeAt(0)
+        const scoutSeed = baseSeed + nextMatchday * 17 + target.id.charCodeAt(0)
         const report: ScoutReport = processScoutAssignment(
           updatedScoutAssignment,
           target,
@@ -593,7 +590,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         updatedScoutReports = { ...updatedScoutReports, [target.id]: report }
         const targetClub = game.clubs.find(c => c.id === updatedScoutAssignment!.targetClubId)
         newInboxItems.push({
-          id: `inbox_scout_${target.id}_${game.currentSeason}_r${nextRound}`,
+          id: `inbox_scout_${target.id}_${game.currentSeason}_r${nextMatchday}`,
           date: game.currentDate,
           type: InboxItemType.ScoutReport,
           title: `Scoutrapport: ${target.firstName} ${target.lastName}`,
@@ -620,7 +617,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         game.managedClubId,
         localRand,
         game.currentSeason,
-        nextRound,
+        nextMatchday,
       )
       updatedTalentResults = [...updatedTalentResults, result].slice(-3)
       updatedTalentSearch = null
@@ -636,7 +633,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // Date from season calendar table (grundserie okt-feb, slutspel mars)
-  const newDate = getRoundDate(game.currentSeason, nextRound)
+  const newDate = getRoundDate(game.currentSeason, nextMatchday)
 
   const justCompletedManagedFixture = simulatedFixtures.find(
     f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
@@ -700,7 +697,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     if (totalMeetings >= 4) {
       const rival = game.clubs.find(c => c.id === opponentId)
       const managedClub = game.clubs.find(c => c.id === game.managedClubId)
-      const alreadySentId = `inbox_rivalry_context_${opponentId}_r${nextRound}_${game.currentSeason}`
+      const alreadySentId = `inbox_rivalry_context_${opponentId}_r${nextMatchday}_${game.currentSeason}`
       if (!game.inbox.some(i => i.id === alreadySentId)) {
         let rivalryBody = ''
         if (newWins > newLosses + newLosses * 0.5 && won) {
@@ -781,7 +778,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const nextRoundStart = updatedBracket.status === PlayoffStatus.QuarterFinals ? 28
         : updatedBracket.status === PlayoffStatus.SemiFinals ? 33
         : 36
-      const { bracket: newBracket, newFixtures } = advancePlayoffRound(updatedBracket, game.currentSeason, nextRoundStart)
+      const currentMaxMatchday = Math.max(0, ...allFixtures.map(f => f.matchday ?? 0))
+      const nextMatchdayStart = currentMaxMatchday + 1
+      const { bracket: newBracket, newFixtures } = advancePlayoffRound(updatedBracket, game.currentSeason, nextRoundStart, nextMatchdayStart)
       updatedBracket = newBracket
       bracketNewFixtures = newFixtures
     }
@@ -960,12 +959,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Merge new playoff fixtures and cup fixtures
   const finalAllFixtures = [...allFixtures, ...bracketNewFixtures, ...cupNewFixtures]
 
-  // Derby notification: if next round has a derby for managed club
+  // Derby notification: if next matchday has a derby for managed club
   const remainingScheduled = finalAllFixtures.filter(f => f.status === FixtureStatus.Scheduled)
   if (remainingScheduled.length > 0) {
-    const upcomingRound = Math.min(...remainingScheduled.map(f => f.roundNumber))
+    const upcomingMatchday = Math.min(...remainingScheduled.map(f => f.matchday))
     const upcomingManagedFixture = remainingScheduled.find(
-      f => f.roundNumber === upcomingRound &&
+      f => f.matchday === upcomingMatchday &&
       (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
     )
 
@@ -1129,7 +1128,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       : 0
 
     if (c.id === game.managedClubId) {
-      console.log(`[ECONOMY] Round ${nextRound}:`, {
+      console.log(`[ECONOMY] Round ${nextMatchday}:`, {
         matchRevenue, weeklySponsorship, sponsorIncome, lotteryIncome, weeklyWages,
         total: matchRevenue + weeklySponsorship + sponsorIncome + lotteryIncome - weeklyWages,
         previousFinances: c.finances,
@@ -1176,7 +1175,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // Social media reputation boost (+1 var 5:e omgång)
-  const socialMediaBoostedClubs = (game.communityActivities?.socialMedia && nextRound % 5 === 0)
+  const socialMediaBoostedClubs = (game.communityActivities?.socialMedia && nextMatchday % 5 === 0)
     ? cupPrizedClubs.map(c =>
         c.id === game.managedClubId
           ? { ...c, reputation: Math.min(100, c.reputation + 1) }
@@ -1188,12 +1187,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Resolve pending outgoing bids (1 round to answer)
   const existingBids: TransferBid[] = game.transferBids ?? []
   const resolvedBids: TransferBid[] = existingBids.map(b => {
-    if (b.direction === 'outgoing' && b.status === 'pending' && nextRound >= b.expiresRound) {
+    if (b.direction === 'outgoing' && b.status === 'pending' && nextMatchday >= b.expiresRound) {
       const outcome = resolveOutgoingBid(b, game, localRand)
       return { ...b, status: outcome }
     }
     // Expire stale bids (incoming bids expire at expiresRound, outgoing already resolved above)
-    if (b.status === 'pending' && nextRound >= b.expiresRound) {
+    if (b.status === 'pending' && nextMatchday >= b.expiresRound) {
       return { ...b, status: 'expired' as const }
     }
     return b
@@ -1206,12 +1205,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     transferBids: resolvedBids,
   }
 
-  const newBids = generateIncomingBids(preEventGame, nextRound, localRand)
+  const newBids = generateIncomingBids(preEventGame, nextMatchday, localRand)
   const allBids: TransferBid[] = [...resolvedBids, ...newBids]
 
   // Transfer rumour: newly active outgoing bids get a 50% chance of inbox rumour
   const newlyActiveBids = resolvedBids.filter(
-    b => b.direction === 'outgoing' && b.status === 'pending' && b.createdRound === nextRound
+    b => b.direction === 'outgoing' && b.status === 'pending' && b.createdRound === nextMatchday
   )
   for (const bid of newlyActiveBids) {
     if (localRand() > 0.50) continue
@@ -1259,20 +1258,20 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // ── Post-advance events ──────────────────────────────────────────────────
-  const newEvents = generatePostAdvanceEvents(preEventGame, newBids, nextRound, localRand, justCompletedManagedFixture ?? undefined)
+  const newEvents = generatePostAdvanceEvents(preEventGame, newBids, nextMatchday, localRand, justCompletedManagedFixture ?? undefined)
   const communityEvents = generateEvents(
     { ...preEventGame, communityActivities: game.communityActivities },
-    nextRound,
+    nextMatchday,
     localRand,
   )
   const allNewEvents = [...newEvents, ...communityEvents]
 
   // ── P19 Youth match simulation (every other round) ──────────────────────
   let updatedYouthTeam = game.youthTeam
-  if (nextRound % 2 === 0 && game.youthTeam && game.youthTeam.players.length > 0) {
-    const youthSeed = baseSeed + nextRound * 97
+  if (nextMatchday % 2 === 0 && game.youthTeam && game.youthTeam.players.length > 0) {
+    const youthSeed = baseSeed + nextMatchday * 97
     const youthRand = mulberry32(youthSeed)
-    const youthSim = simulateYouthMatch(game.youthTeam, game.academyLevel ?? 'basic', youthRand, nextRound)
+    const youthSim = simulateYouthMatch(game.youthTeam, game.academyLevel ?? 'basic', youthRand, nextMatchday)
 
     updatedYouthTeam = {
       ...game.youthTeam,
@@ -1301,7 +1300,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       : ''
 
     newInboxItems.push({
-      id: `inbox_p17_r${nextRound}_${game.currentSeason}`,
+      id: `inbox_p17_r${nextMatchday}_${game.currentSeason}`,
       date: newDate,
       type: InboxItemType.YouthP17,
       title: `📋 P19 ${resultStr} mot ${matchResult.opponentName} ${scoreStr}`,
@@ -1332,11 +1331,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // ── Loan deal processing ─────────────────────────────────────────────────
   let loanUpdatedPlayers = [...marketUpdatedPlayers]
-  const activeLoanDeals = (game.loanDeals ?? []).filter(d => nextRound <= d.endRound)
+  const activeLoanDeals = (game.loanDeals ?? []).filter(d => nextMatchday <= d.endRound)
   const returnedLoanPlayerIds: string[] = []
 
   for (const deal of activeLoanDeals) {
-    if (nextRound >= deal.endRound) {
+    if (nextMatchday >= deal.endRound) {
       returnedLoanPlayerIds.push(deal.playerId)
       loanUpdatedPlayers = loanUpdatedPlayers.map(p => p.id === deal.playerId
         ? { ...p, isOnLoan: false, loanClubName: undefined }
@@ -1357,7 +1356,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           : participationRate >= 0.5 ? 'fick speltid och har utvecklats'
           : 'satt mest på bänken och är lite besviken'
         newInboxItems.push({
-          id: `inbox_loan_return_${deal.playerId}_${nextRound}`,
+          id: `inbox_loan_return_${deal.playerId}_${nextMatchday}`,
           date: newDate,
           type: InboxItemType.YouthIntake,
           title: `🏒 ${returnedPlayer.firstName} ${returnedPlayer.lastName} är tillbaka från lån`,
@@ -1380,7 +1379,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const updatedLoanDeals = (game.loanDeals ?? [])
     .filter(d => !returnedLoanPlayerIds.includes(d.playerId))
     .map(d => {
-      if (nextRound % 2 === 0 && nextRound < d.endRound) {
+      if (nextMatchday % 2 === 0 && nextMatchday < d.endRound) {
         const played = localRand() > 0.25
         const rating = played ? Math.round((5 + localRand() * 3) * 10) / 10 : 0
         const goals = played && localRand() > 0.6 ? 1 : 0
@@ -1391,19 +1390,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           averageRating: newMatchesPlayed > 0
             ? Math.round(((d.averageRating * d.matchesPlayed + rating) / newMatchesPlayed) * 10) / 10
             : rating,
-          reports: [...d.reports.slice(-5), { round: nextRound, played, rating, goals, assists: 0 }],
+          reports: [...d.reports.slice(-5), { round: nextMatchday, played, rating, goals, assists: 0 }],
         }
       }
       return d
     })
 
   // ── Academy events ───────────────────────────────────────────────────────
-  if (game.youthTeam && nextRound >= 3 && nextRound <= 18) {
+  if (game.youthTeam && nextMatchday >= 3 && nextMatchday <= 18) {
     const conflictPlayers = updatedYouthTeam?.players.filter(p => p.schoolConflict) ?? []
     if (conflictPlayers.length > 0 && localRand() < 0.12) {
       const player = conflictPlayers[Math.floor(localRand() * conflictPlayers.length)]
       allNewEvents.push({
-        id: `event_school_conflict_${player.id}_${nextRound}`,
+        id: `event_school_conflict_${player.id}_${nextMatchday}`,
         type: 'communityEvent',
         title: `Skolkonflikt — ${player.firstName} ${player.lastName}`,
         body: `${player.firstName} har nationellt prov imorgon. Han missar träningen om han pluggar.`,
@@ -1424,14 +1423,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  if (game.youthTeam && (nextRound === 8 || nextRound === 15)) {
+  if (game.youthTeam && (nextMatchday === 8 || nextMatchday === 15)) {
     const callupCandidates = updatedYouthTeam?.players.filter(p => p.potentialAbility > 50) ?? []
     if (callupCandidates.length >= 1) {
       const selected = callupCandidates.slice(0, Math.min(2, callupCandidates.length))
       const names = selected.map(p => `${p.firstName} ${p.lastName}`).join(' och ')
       const districtName = ['Gävleborgs', 'Hälsinglands', 'Västmanlands', 'Dalarnas', 'Upplands'][Math.floor(localRand() * 5)]
       allNewEvents.push({
-        id: `event_district_callup_${nextRound}_${game.currentSeason}`,
+        id: `event_district_callup_${nextMatchday}_${game.currentSeason}`,
         type: 'communityEvent',
         title: `Juniorlandslagssamling — ${names}`,
         body: `${names} är kallade till ${districtName} P19-samling. De missar 2 P19-matcher men kan få värdefull erfarenhet.`,
@@ -1468,11 +1467,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     : managedClubAfterLoan
 
   // Media headlines
-  const mediaHeadlines = generateMediaHeadlines(preEventGame, simulatedFixtures, nextRound, localRand)
+  const mediaHeadlines = generateMediaHeadlines(preEventGame, simulatedFixtures, nextMatchday, localRand)
   newInboxItems.push(...mediaHeadlines)
 
   // Trend articles (win/loss streaks, standings position)
-  const trendArticles = generateTrendArticles(preEventGame, nextRound, localRand)
+  const trendArticles = generateTrendArticles(preEventGame, nextMatchday, localRand)
   newInboxItems.push(...trendArticles)
 
   // Trim accumulated data to prevent localStorage bloat
@@ -1491,7 +1490,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     .filter(mw => activeFixtureIds.has(mw.fixtureId))
 
   const trimmedBids = allBids.filter(b =>
-    b.status === 'pending' || (nextRound - b.createdRound) < 5
+    b.status === 'pending' || (nextMatchday - b.createdRound) < 5
   )
 
   const managedFixtureId = justCompletedManagedFixture?.id
@@ -1514,7 +1513,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           : s
       )
       newInboxItems.push({
-        id: `inbox_sponsor_chain_${nextRound}_${game.currentSeason}`,
+        id: `inbox_sponsor_chain_${nextMatchday}_${game.currentSeason}`,
         date: newDate,
         type: InboxItemType.SponsorNetwork,
         title: 'Sponsornätverket oroligt',
@@ -1537,7 +1536,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         s.id === leavingSponsor.id ? { ...s, contractRounds: 0 } : s
       )
       newInboxItems.push({
-        id: `inbox_sponsor_license_leave_${nextRound}_${game.currentSeason}`,
+        id: `inbox_sponsor_license_leave_${nextMatchday}_${game.currentSeason}`,
         date: newDate,
         type: InboxItemType.SponsorNetwork,
         title: `${leavingSponsor.name} drar sig ur`,
@@ -1555,7 +1554,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const wonMatch = (myScore ?? 0) > (theirScore ?? 0)
     if (wonMatch && v09Rand() < 0.05) {
       newInboxItems.push({
-        id: `inbox_sponsor_win_${nextRound}_${game.currentSeason}`,
+        id: `inbox_sponsor_win_${nextMatchday}_${game.currentSeason}`,
         date: newDate,
         type: InboxItemType.SponsorNetwork,
         title: 'Spontant sponsorintresse',
@@ -1613,7 +1612,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     },
   ]
   for (const nudge of communityNudges) {
-    if (nextRound === nudge.round && !game.inbox.some(i => i.id === nudge.id)) {
+    if (nextMatchday === nudge.round && !game.inbox.some(i => i.id === nudge.id)) {
       newInboxItems.push({
         id: nudge.id,
         date: newDate,
@@ -1626,7 +1625,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // BandySchool nudge: round 12, if not started and academyLevel > basic
-  if (nextRound === 12 && !game.communityActivities?.bandySchool && (game.academyLevel ?? 'basic') !== 'basic') {
+  if (nextMatchday === 12 && !game.communityActivities?.bandySchool && (game.academyLevel ?? 'basic') !== 'basic') {
     const id = `inbox_nudge_bandyschool_${game.currentSeason}`
     if (!game.inbox.some(i => i.id === id)) {
       newInboxItems.push({
@@ -1641,7 +1640,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // Training nudge: if user hasn't changed default training after round 3
-  if (nextRound === 3) {
+  if (nextMatchday === 3) {
     const defaultTraining =
       (game.managedClubTraining?.type === TrainingType.Physical || game.managedClubTraining?.type === undefined) &&
       (game.managedClubTraining?.intensity === TrainingIntensity.Normal || game.managedClubTraining?.intensity === undefined)
@@ -1659,8 +1658,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // Sponsor nudge: every 4th round, 25% chance if sponsors < maxSponsors
-  if (nextRound % 4 === 0 && activeSponsorsCount < nudgeMaxSponsors && localRand() < 0.25) {
-    const id = `inbox_nudge_sponsor_${nextRound}_${game.currentSeason}`
+  if (nextMatchday % 4 === 0 && activeSponsorsCount < nudgeMaxSponsors && localRand() < 0.25) {
+    const id = `inbox_nudge_sponsor_${nextMatchday}_${game.currentSeason}`
     if (!game.inbox.some(i => i.id === id)) {
       const sponsorNames = ['Johanssons Bygg AB', 'Karlssons Bil', 'Bergström El & Installation', 'Lindströms Åkeri', 'Erikssons Redovisning']
       const sponsorName = sponsorNames[Math.floor(localRand() * sponsorNames.length)]
@@ -1680,7 +1679,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Morale nudge: if any managed squad player drops below 30
   const managedSquadIds = nudgeManagedClub?.squadPlayerIds ?? []
   for (const player of finalPlayers.filter(p => managedSquadIds.includes(p.id) && (p.morale ?? 50) < 30)) {
-    const id = `inbox_morale_${player.id}_r${nextRound}_${game.currentSeason}`
+    const id = `inbox_morale_${player.id}_r${nextMatchday}_${game.currentSeason}`
     if (!game.inbox.some(i => i.id === id)) {
       newInboxItems.push({
         id,
@@ -1756,11 +1755,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     loanDeals: updatedLoanDeals,
   }
 
-  // Pre-generate weather for next round so dashboard/matchScreen can show it
+  // Pre-generate weather for next matchday so dashboard/matchScreen can show it
   const nextScheduled = finalAllFixtures.filter(f => f.status === FixtureStatus.Scheduled)
   if (nextScheduled.length > 0) {
-    const upcomingRound = Math.min(...nextScheduled.map(f => f.roundNumber))
-    const upcomingFixtures = nextScheduled.filter(f => f.roundNumber === upcomingRound)
+    const upcomingMatchdayNum = Math.min(...nextScheduled.map(f => f.matchday))
+    const upcomingFixtures = nextScheduled.filter(f => f.matchday === upcomingMatchdayNum)
     const nextWeathers: MatchWeather[] = []
     for (let i = 0; i < upcomingFixtures.length; i++) {
       const f = upcomingFixtures[i]
@@ -1769,7 +1768,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       if (!homeClub) continue
       const weather = generateMatchWeather(
         game.currentSeason,
-        upcomingRound,
+        upcomingMatchdayNum,
         homeClub,
         f.id,
         baseSeed + 50000 + i * 7919,
@@ -1784,7 +1783,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Auto-advance playoff rounds when managed club is eliminated
   if (isPlayoffRound && updatedBracket !== null && updatedBracket.status !== PlayoffStatus.Completed) {
     const managedHasMorePlayoffFixtures = finalAllFixtures.some(f =>
-      f.status === FixtureStatus.Scheduled && !f.isCup && f.roundNumber > 22 &&
+      f.status === FixtureStatus.Scheduled && !f.isCup && f.matchday > 26 &&
       (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
     )
     if (!managedHasMorePlayoffFixtures) {
@@ -1792,6 +1791,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  return { game: updatedGame, roundPlayed: nextRound, seasonEnded: false, pendingEvents: allNewEvents, hasManagedCupMatch: hasManagedCupPending }
+  return { game: updatedGame, roundPlayed: nextMatchday, seasonEnded: false, pendingEvents: allNewEvents, hasManagedCupMatch: hasManagedCupPending }
 }
 

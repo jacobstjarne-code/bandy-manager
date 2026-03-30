@@ -106,10 +106,6 @@ export function MatchScreen() {
 
   const canPlay = startingIds.length === 11 && injuredInStarting.length === 0
 
-  function effectiveRound(f: { roundNumber: number; isCup?: boolean }): number {
-    return f.isCup ? f.roundNumber - 100 : f.roundNumber
-  }
-
   const eliminatedBracket = game.playoffBracket
   const eliminatedSeries = eliminatedBracket ? [
     ...(eliminatedBracket.quarterFinals ?? []),
@@ -122,10 +118,10 @@ export function MatchScreen() {
     .filter(f => {
       if (f.status !== FixtureStatus.Scheduled) return false
       if (f.homeClubId !== managedClubId && f.awayClubId !== managedClubId) return false
-      if (eliminated && f.roundNumber > 22 && !f.isCup) return false
+      if (eliminated && f.matchday > 26 && !f.isCup) return false
       return true
     })
-    .sort((a, b) => effectiveRound(a) - effectiveRound(b))[0] ?? null
+    .sort((a, b) => a.matchday - b.matchday)[0] ?? null
 
   const rivalry = nextFixture ? getRivalry(nextFixture.homeClubId, nextFixture.awayClubId) : null
 
@@ -134,7 +130,7 @@ export function MatchScreen() {
       (f.homeClubId === managedClubId || f.awayClubId === managedClubId) &&
       f.status === FixtureStatus.Completed
     )
-    .sort((a, b) => b.roundNumber - a.roundNumber)[0] ?? null
+    .sort((a, b) => b.matchday - a.matchday)[0] ?? null
 
   function togglePlayer(playerId: string) {
     const player = squadPlayers.find(p => p.id === playerId)

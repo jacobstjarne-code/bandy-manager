@@ -175,17 +175,16 @@ function CupCard({ bracket, game }: CupCardProps) {
   } else if (nextCupFixture) {
     const opponent = game.clubs.find(c => c.id === (nextCupFixture.homeClubId === managedClubId ? nextCupFixture.awayClubId : nextCupFixture.homeClubId))
     const isHome = nextCupFixture.homeClubId === managedClubId
-    const cupLeagueRound = nextCupFixture.roundNumber - 100
-    const lastLeagueRound = Math.max(0, ...game.fixtures.filter(f => !f.isCup && f.status === 'completed').map(f => f.roundNumber))
-    const roundsUntil = cupLeagueRound - lastLeagueRound
+    const lastMatchday = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed').map(f => f.matchday))
+    const isNextMatchday = nextCupFixture.matchday === lastMatchday + 1
     statusContent = (
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
           <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600, fontFamily: 'var(--font-body)' }}>vs {opponent?.shortName ?? opponent?.name ?? '?'}</span>
           <span className={isHome ? 'tag tag-green' : 'tag tag-ice'}>{isHome ? 'Hemma' : 'Borta'}</span>
         </div>
-        <p style={{ fontSize: 11, color: roundsUntil <= 1 ? 'var(--warning)' : 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-body)' }}>
-          {roundsUntil <= 1 ? '⚡ Spelas NÄSTA omgång!' : `Spelas vid serieomgång ${cupLeagueRound} (om ${roundsUntil} omgångar)`}
+        <p style={{ fontSize: 11, color: isNextMatchday ? 'var(--warning)' : 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-body)' }}>
+          {isNextMatchday ? '⚡ Spelas NÄSTA omgång!' : `Spelas matchdag ${nextCupFixture.matchday}`}
         </p>
       </div>
     )
@@ -260,9 +259,8 @@ export function DashboardScreen() {
     }
     const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
     if (scheduled.length === 0) { setIsBatchSim(false); return }
-    const batchEffRound = (f: { roundNumber: number; isCup?: boolean }) => f.isCup ? f.roundNumber - 100 : f.roundNumber
-    const nextEff = Math.min(...scheduled.map(batchEffRound))
-    const managedCupNext = scheduled.some(f => batchEffRound(f) === nextEff && f.isCup && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+    const nextEff = Math.min(...scheduled.map(f => f.matchday))
+    const managedCupNext = scheduled.some(f => f.matchday === nextEff && f.isCup && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
     if (managedCupNext) { setIsBatchSim(false); return }
     const t = setTimeout(() => {
       const result = advance(true)
@@ -288,10 +286,6 @@ export function DashboardScreen() {
     </div>
   )
 
-  function effectiveRound(f: { roundNumber: number; isCup?: boolean }): number {
-    return f.isCup ? f.roundNumber - 100 : f.roundNumber
-  }
-
   function isManagedTeamEliminated(g: SaveGame): boolean {
     const bracket = g.playoffBracket
     if (!bracket) return false
@@ -306,10 +300,10 @@ export function DashboardScreen() {
     .filter(f => {
       if (f.status !== 'scheduled') return false
       if (f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId) return false
-      if (eliminated && f.roundNumber > 22 && !f.isCup) return false
+      if (eliminated && f.matchday > 26 && !f.isCup) return false
       return true
     })
-    .sort((a, b) => effectiveRound(a) - effectiveRound(b))[0]
+    .sort((a, b) => a.matchday - b.matchday)[0]
 
   const matchWeather = nextFixture ? (game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id) : undefined
   const opponent = nextFixture ? game.clubs.find(c => c.id === (nextFixture.homeClubId === game.managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId)) : null
@@ -407,9 +401,9 @@ export function DashboardScreen() {
     }
     const nextManaged = scheduled.filter(f => {
       if (f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId) return false
-      if (eliminated && f.roundNumber > 22 && !f.isCup) return false
+      if (eliminated && f.matchday > 26 && !f.isCup) return false
       return true
-    }).sort((a, b) => effectiveRound(a) - effectiveRound(b))[0]
+    }).sort((a, b) => a.matchday - b.matchday)[0]
     if (nextManaged) {
       if (nextManaged.isCup) {
         const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextManaged.id)
@@ -438,9 +432,8 @@ export function DashboardScreen() {
       } catch (err) { console.error('advance() failed:', err) }
       return
     }
-    const effRound = (f: { roundNumber: number; isCup?: boolean }) => f.isCup ? f.roundNumber - 100 : f.roundNumber
-    const nextSimEff = Math.min(...scheduledFixtures.map(effRound))
-    const managedMatchInNextRound = scheduledFixtures.find(f => effRound(f) === nextSimEff && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+    const nextSimEff = Math.min(...scheduledFixtures.map(f => f.matchday))
+    const managedMatchInNextRound = scheduledFixtures.find(f => f.matchday === nextSimEff && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
     if (managedMatchInNextRound) { navigate('/game/match'); return }
     try {
       const result = advance()

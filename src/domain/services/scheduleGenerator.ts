@@ -62,6 +62,56 @@ export function generateSchedule(teamIds: string[], _season: number): ScheduleFi
   return enforceAnnandagenDerbies(allFixtures, teamIds, rounds)
 }
 
+export interface MatchdaySlot {
+  matchday: number
+  type: 'league' | 'cup' | 'playoff'
+  leagueRound?: number
+  cupRound?: number
+  date: string
+}
+
+// Cup rounds are inserted after these league rounds
+const CUP_AFTER_LEAGUE_ROUND: Record<number, number> = {
+  2: 1,   // Cup förstarunda after liga omg 2 → matchday 3
+  6: 2,   // Cup kvartsfinal after liga omg 6 → matchday 8
+  10: 3,  // Cup semifinal after liga omg 10 → matchday 13
+  15: 4,  // Cup final after liga omg 15 → matchday 19
+}
+
+/**
+ * Builds an ordered calendar of matchdays for a full season.
+ * Liga omg 1-22 + 4 cup rounds = 26 matchdays. Playoff starts at 27+.
+ */
+export function buildSeasonCalendar(season: number): MatchdaySlot[] {
+  const calendar: MatchdaySlot[] = []
+  let day = 0
+
+  for (let round = 1; round <= 22; round++) {
+    day++
+    calendar.push({
+      matchday: day,
+      type: 'league',
+      leagueRound: round,
+      date: getRoundDate(season, round),
+    })
+
+    const cupRound = CUP_AFTER_LEAGUE_ROUND[round]
+    if (cupRound) {
+      day++
+      const d = new Date(getRoundDate(season, round))
+      d.setDate(d.getDate() + 3)
+      calendar.push({
+        matchday: day,
+        type: 'cup',
+        cupRound,
+        date: d.toISOString().slice(0, 10),
+      })
+    }
+  }
+
+  return calendar
+}
+
 /**
  * Returns the match date for a given round number and season.
  * Grundserie (rounds 1-22): okt-feb, tätare schema jan-feb.

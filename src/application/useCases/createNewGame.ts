@@ -5,7 +5,7 @@ import type { Player } from '../../domain/entities/Player'
 import { FixtureStatus, TrainingType, TrainingIntensity, PlayerPosition, ClubStyle } from '../../domain/enums'
 import { generateWorld } from '../../domain/services/worldGenerator'
 import { generateYouthTeam } from '../../domain/services/academyService'
-import { generateSchedule } from '../../domain/services/scheduleGenerator'
+import { generateSchedule, buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
 import { calculateStandings } from '../../domain/services/standingsService'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import type { MatchWeather } from '../../domain/entities/Weather'
@@ -115,12 +115,14 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   const players = initCharacterPlayers(rawPlayers, input.seed ?? 42)
 
   const scheduleFixtures = generateSchedule(clubs.map(c => c.id), season)
+  const calendar = buildSeasonCalendar(season)
 
   const fixtures: Fixture[] = scheduleFixtures.map(sf => ({
     id: `fixture_${season}_r${sf.roundNumber}_${sf.homeClubId}_vs_${sf.awayClubId}`,
     leagueId: `league_${season}`,
     season,
     roundNumber: sf.roundNumber,
+    matchday: calendar.find(s => s.type === 'league' && s.leagueRound === sf.roundNumber)?.matchday ?? sf.roundNumber,
     homeClubId: sf.homeClubId,
     awayClubId: sf.awayClubId,
     status: FixtureStatus.Scheduled,

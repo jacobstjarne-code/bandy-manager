@@ -2,13 +2,12 @@ import type { CupBracket, CupMatch } from '../entities/Cup'
 import type { Fixture } from '../entities/Fixture'
 import { FixtureStatus } from '../enums'
 
-// Round numbers for cup fixtures (interleaved with league rounds)
-// Effective round = roundNumber - 100
-const CUP_ROUND_NUMBERS: Record<number, number> = {
-  1: 101,  // first round (bottom 8 teams play; top 4 get byes)
-  2: 103,  // quarterfinals
-  3: 107,  // semifinals
-  4: 111,  // final
+// Matchdays for cup rounds — between liga rounds, never overlapping
+const CUP_MATCHDAYS: Record<number, number> = {
+  1: 3,   // förstarunda: after liga omg 2
+  2: 8,   // kvartsfinal: after liga omg 6
+  3: 13,  // semifinal: after liga omg 10
+  4: 19,  // final: after liga omg 15
 }
 
 export function generateCupFixtures(
@@ -41,7 +40,8 @@ export function generateCupFixtures(
       id: fixtureId,
       leagueId: `league_${season}`,
       season,
-      roundNumber: CUP_ROUND_NUMBERS[1],
+      roundNumber: 1,
+      matchday: CUP_MATCHDAYS[1],
       homeClubId,
       awayClubId,
       status: FixtureStatus.Scheduled,
@@ -121,7 +121,6 @@ export function generateNextCupRound(
 
   const newMatches: CupMatch[] = []
   const newFixtures: Fixture[] = []
-  const roundNumber = CUP_ROUND_NUMBERS[nextRound]
 
   for (let i = 0; i < Math.floor(winners.length / 2); i++) {
     const homeClubId = winners[i * 2]
@@ -132,7 +131,8 @@ export function generateNextCupRound(
       id: fixtureId,
       leagueId: `league_${season}`,
       season,
-      roundNumber,
+      roundNumber: nextRound,
+      matchday: CUP_MATCHDAYS[nextRound],
       homeClubId,
       awayClubId,
       status: FixtureStatus.Scheduled,

@@ -41,6 +41,7 @@ export function generatePlayoffFixtures(
   series: PlayoffSeries,
   season: number,
   startRound: number,
+  startMatchday: number,
 ): Fixture[] {
   const isFinal = series.round === PlayoffRound.Final
   if (isFinal) {
@@ -50,6 +51,7 @@ export function generatePlayoffFixtures(
       leagueId: `league_${season}`,
       season,
       roundNumber: startRound,
+      matchday: startMatchday,
       homeClubId: series.homeClubId,
       awayClubId: series.awayClubId,
       status: FixtureStatus.Scheduled,
@@ -77,6 +79,7 @@ export function generatePlayoffFixtures(
     leagueId: `league_${season}`,
     season,
     roundNumber: startRound + i,
+    matchday: startMatchday + i,
     homeClubId: m.home,
     awayClubId: m.away,
     status: FixtureStatus.Scheduled,
@@ -149,6 +152,7 @@ export function advancePlayoffRound(
   bracket: PlayoffBracket,
   season: number,
   nextRoundStart: number,
+  nextMatchdayStart: number,
 ): { bracket: PlayoffBracket; newFixtures: Fixture[] } {
   if (bracket.status === PlayoffStatus.QuarterFinals) {
     if (!bracket.quarterFinals.every(s => isSeriesDecided(s))) {
@@ -177,8 +181,8 @@ export function advancePlayoffRound(
       winnerId: null,
       loserId: null,
     }
-    const sf1Fixtures = generatePlayoffFixtures(sf1, season, nextRoundStart)
-    const sf2Fixtures = generatePlayoffFixtures(sf2, season, nextRoundStart)
+    const sf1Fixtures = generatePlayoffFixtures(sf1, season, nextRoundStart, nextMatchdayStart)
+    const sf2Fixtures = generatePlayoffFixtures(sf2, season, nextRoundStart, nextMatchdayStart)
     sf1.fixtures = sf1Fixtures.map(f => f.id)
     sf2.fixtures = sf2Fixtures.map(f => f.id)
     return {
@@ -202,7 +206,7 @@ export function advancePlayoffRound(
       winnerId: null,
       loserId: null,
     }
-    const finalFixtures = generatePlayoffFixtures(final, season, nextRoundStart)
+    const finalFixtures = generatePlayoffFixtures(final, season, nextRoundStart, nextMatchdayStart)
     final.fixtures = finalFixtures.map(f => f.id)
     return {
       bracket: { ...bracket, status: PlayoffStatus.Final, final },

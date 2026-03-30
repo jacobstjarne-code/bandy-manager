@@ -5,7 +5,7 @@ import { FixtureStatus, InboxItemType, PlayerPosition } from '../../domain/enums
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../domain/data/playerNames'
 import { calculateStandings } from '../../domain/services/standingsService'
 import { generateYouthIntake } from '../../domain/services/youthIntakeService'
-import { generateSchedule } from '../../domain/services/scheduleGenerator'
+import { generateSchedule, buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
 import {
   generateCupFixtures,
 } from '../../domain/services/cupService'
@@ -304,11 +304,13 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   // Generate new schedule for next season
   const newScheduleFixtures = generateSchedule(updatedClubs.map(c => c.id), nextSeason)
+  const nextSeasonCalendar = buildSeasonCalendar(nextSeason)
   const leagueFixtures = newScheduleFixtures.map(sf => ({
     id: `fixture_${nextSeason}_r${sf.roundNumber}_${sf.homeClubId}_vs_${sf.awayClubId}`,
     leagueId: `league_${nextSeason}`,
     season: nextSeason,
     roundNumber: sf.roundNumber,
+    matchday: nextSeasonCalendar.find(s => s.type === 'league' && s.leagueRound === sf.roundNumber)?.matchday ?? sf.roundNumber,
     homeClubId: sf.homeClubId,
     awayClubId: sf.awayClubId,
     status: FixtureStatus.Scheduled,

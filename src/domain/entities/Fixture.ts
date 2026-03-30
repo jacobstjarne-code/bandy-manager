@@ -36,6 +36,7 @@ export interface Fixture {
   leagueId: string
   season: number
   roundNumber: number
+  matchday: number  // global play order — sort by this, set once at fixture creation
 
   homeClubId: string
   awayClubId: string
