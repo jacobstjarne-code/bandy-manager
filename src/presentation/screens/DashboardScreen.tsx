@@ -405,7 +405,7 @@ export function DashboardScreen() {
       if (f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId) return false
       if (eliminated && f.roundNumber > 22 && !f.isCup) return false
       return true
-    }).sort((a, b) => a.roundNumber - b.roundNumber)[0]
+    }).sort((a, b) => effectiveRound(a) - effectiveRound(b))[0]
     if (nextManaged) {
       if (nextManaged.isCup) {
         const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextManaged.id)
@@ -495,9 +495,9 @@ export function DashboardScreen() {
               style={{ flex: 1, cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
               onClick={() => navigate('/game/tabell')}
             >
-              {standing.position <= 8 && (
+              {standing.position <= 8 && currentRound > 0 && (
                 <span className="tag tag-fill" style={{ position: 'absolute', top: -1, right: 8, borderRadius: '0 0 8px 8px', letterSpacing: '1px' }}>
-                  SLUTSPEL
+                  TOPP 8
                 </span>
               )}
               <div style={{ padding: '14px 12px 10px' }}>

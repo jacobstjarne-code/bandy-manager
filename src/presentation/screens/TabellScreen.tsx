@@ -110,6 +110,11 @@ export function TabellScreen() {
 
       {activeTab === 'statistik' && (() => {
         const allPlayers = game!.players.filter(p => p.seasonStats.gamesPlayed > 0)
+        if (allPlayers.length === 0) return (
+          <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 13, padding: '32px 16px' }}>
+            Statistiken fylls på efter första omgången.
+          </p>
+        )
         const topScorers = [...allPlayers].sort((a, b) => b.seasonStats.goals - a.seasonStats.goals).slice(0, 10)
         const topAssisters = [...allPlayers].sort((a, b) => b.seasonStats.assists - a.seasonStats.assists).slice(0, 10)
         const topCornerGoals = [...allPlayers].sort((a, b) => b.seasonStats.cornerGoals - a.seasonStats.cornerGoals).slice(0, 10)
