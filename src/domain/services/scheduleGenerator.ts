@@ -63,6 +63,55 @@ export function generateSchedule(teamIds: string[], _season: number): ScheduleFi
 }
 
 /**
+ * Returns the match date for a given round number and season.
+ * Grundserie (rounds 1-22): okt-feb, tätare schema jan-feb.
+ * Slutspel (rounds 23+): mars, 3-4 dagar mellan matcher.
+ */
+export function getRoundDate(season: number, roundNumber: number): string {
+  const ROUND_DATES: Record<number, string> = {
+    1:  `${season}-10-08`,
+    2:  `${season}-10-15`,
+    3:  `${season}-10-22`,
+    4:  `${season}-10-29`,
+    5:  `${season}-11-05`,
+    6:  `${season}-11-12`,
+    7:  `${season}-11-26`,
+    8:  `${season}-12-26`,
+    9:  `${season}-12-30`,
+    10: `${season + 1}-01-04`,
+    11: `${season + 1}-01-09`,
+    12: `${season + 1}-01-14`,
+    13: `${season + 1}-01-18`,
+    14: `${season + 1}-01-23`,
+    15: `${season + 1}-01-28`,
+    16: `${season + 1}-02-01`,
+    17: `${season + 1}-02-05`,
+    18: `${season + 1}-02-09`,
+    19: `${season + 1}-02-13`,
+    20: `${season + 1}-02-17`,
+    21: `${season + 1}-02-21`,
+    22: `${season + 1}-02-25`,
+    23: `${season + 1}-02-28`,
+    24: `${season + 1}-03-02`,
+    25: `${season + 1}-03-04`,
+    26: `${season + 1}-03-06`,
+    27: `${season + 1}-03-08`,
+    28: `${season + 1}-03-09`,
+    29: `${season + 1}-03-11`,
+    30: `${season + 1}-03-13`,
+    31: `${season + 1}-03-15`,
+    32: `${season + 1}-03-16`,
+  }
+
+  if (roundNumber in ROUND_DATES) return ROUND_DATES[roundNumber]
+
+  const lastKnownRound = Math.max(...Object.keys(ROUND_DATES).map(Number))
+  const lastDate = new Date(ROUND_DATES[lastKnownRound])
+  lastDate.setDate(lastDate.getDate() + (roundNumber - lastKnownRound) * 3)
+  return lastDate.toISOString().slice(0, 10)
+}
+
+/**
  * Post-processes fixtures to ensure rivalry pairs meet in round 8 (Annandagen).
  * Uses a three-way swap: moves rivalry match to round 8, displaces the two
  * incumbent round-8 matches to vacated slots.

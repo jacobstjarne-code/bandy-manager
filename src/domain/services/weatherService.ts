@@ -5,12 +5,12 @@ import { getClimateForRegionAndMonth } from '../data/regionalClimate'
 import { mulberry32 } from '../utils/random'
 
 function roundToMonth(roundNumber: number): number {
-  if (roundNumber <= 4) return 10
-  if (roundNumber <= 8) return 11
-  if (roundNumber <= 12) return 12
-  if (roundNumber <= 16) return 1
-  if (roundNumber <= 19) return 2
-  return 3
+  if (roundNumber <= 4)  return 10  // okt: r1-4
+  if (roundNumber <= 7)  return 11  // nov: r5-7
+  if (roundNumber <= 9)  return 12  // dec: r8-9 (Annandagen + r9)
+  if (roundNumber <= 15) return 1   // jan: r10-15
+  if (roundNumber <= 22) return 2   // feb: r16-22
+  return 3                          // mar: slutspel r23+
 }
 
 export function generateMatchWeather(

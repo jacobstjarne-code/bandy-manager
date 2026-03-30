@@ -37,6 +37,7 @@ import {
 } from '../../domain/services/cupService'
 import type { CupBracket } from '../../domain/entities/Cup'
 import { mulberry32 } from '../../domain/utils/random'
+import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { simulateYouthMatch } from '../../domain/services/academyService'
 import { handleSeasonEnd } from './seasonEndProcessor'
 import { handlePlayoffStart } from './playoffTransition'
@@ -149,11 +150,6 @@ function generateAiLineup(club: Club, allPlayers: Player[], rand: () => number =
   }
 }
 
-function advanceDate(dateStr: string, days: number): string {
-  const date = new Date(dateStr)
-  date.setDate(date.getDate() + days)
-  return date.toISOString().slice(0, 10)
-}
 
 function stripCompletedFixture(f: Fixture, managedFixtureId?: string): Fixture {
   // Keep full data for the most recent managed match (for match report)
@@ -638,9 +634,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // Advance date by 7 days per round; round 8 is always Annandagen (26 dec)
-  let newDate = advanceDate(game.currentDate, 7)
-  if (nextRound === 8) newDate = `${game.currentSeason}-12-26`
+  // Date from season calendar table (grundserie okt-feb, slutspel mars)
+  const newDate = getRoundDate(game.currentSeason, nextRound)
 
   const justCompletedManagedFixture = simulatedFixtures.find(
     f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
