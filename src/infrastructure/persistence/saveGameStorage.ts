@@ -2,6 +2,63 @@ import { get, set, del } from 'idb-keyval'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { migrateSaveGame } from './saveGameMigration'
 
+export function exportSaveAsJson(game: SaveGame): void {
+  const json = JSON.stringify(game)
+  const blob = new Blob([json], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  const safeName = game.managerName.replace(/[^a-zA-ZåäöÅÄÖ0-9]/g, '_')
+  a.download = `bandy-${safeName}-s${game.currentSeason}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export async function importSaveFromJson(): Promise<SaveGame | null> {
+  return new Promise((resolve) => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json'
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file) { resolve(null); return }
+      try {
+        const text = await file.text()
+        const parsed = JSON.parse(text) as SaveGame
+        const migrated = migrateSaveGame(parsed)
+        await saveSaveGame(migrated)
+        resolve(migrated)
+      } catch {
+        resolve(null)
+      }
+    }
+    input.click()
+  })
+}
+
+/** One-time migration: if old Zustand localStorage key exists and no IndexedDB saves, migrate it. */
+export async function migrateLocalStorageIfNeeded(): Promise<SaveGame | null> {
+  if (typeof localStorage === 'undefined') return null
+  const raw = localStorage.getItem('bandy-game-store')
+  if (!raw) return null
+  const existing = listSaveGames()
+  if (existing.length > 0) {
+    localStorage.removeItem('bandy-game-store')
+    return null
+  }
+  try {
+    const parsed = JSON.parse(raw) as { state?: { game?: SaveGame } }
+    const game = parsed?.state?.game
+    if (!game || !game.id) return null
+    const migrated = migrateSaveGame(game)
+    await saveSaveGame(migrated)
+    localStorage.removeItem('bandy-game-store')
+    return migrated
+  } catch {
+    return null
+  }
+}
+
 export interface SaveGameSummary {
   id: string
   managerName: string

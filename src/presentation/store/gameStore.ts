@@ -11,7 +11,7 @@ import { resolveEvent as resolveEventFn } from '../../domain/services/eventServi
 import { type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
 import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
-import { loadSaveGame, listSaveGames, deleteSaveGame } from '../../infrastructure/persistence/saveGameStorage'
+import { loadSaveGame, listSaveGames, deleteSaveGame, migrateLocalStorageIfNeeded } from '../../infrastructure/persistence/saveGameStorage'
 
 export interface SaveGameSummary {
   id: string
@@ -313,9 +313,13 @@ export const useGameStore = create<GameState>()(
       name: 'bandy-game-store',
       storage: createJSONStorage(() => indexedDBStorage),
       partialize: (state) => ({ game: state.game }),
-      onRehydrateStorage: () => (_state, error) => {
+      onRehydrateStorage: () => (state, error) => {
         if (error) {
           console.warn('persist rehydration misslyckades, återställer till tomt spel', error)
+        }
+        // One-time migration: move old localStorage Zustand save to IndexedDB
+        if (!state?.game) {
+          migrateLocalStorageIfNeeded().catch(() => {})
         }
       },
     }

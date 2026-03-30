@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import type { NavigateFunction } from 'react-router-dom'
 import type { Club } from '../../../domain/entities/Club'
 import type { SaveGame, StandingRow } from '../../../domain/entities/SaveGame'
 import { ClubExpectation, ClubStyle } from '../../../domain/enums'
 import { StatBar } from '../StatBar'
 import { SectionCard } from '../SectionCard'
+import { exportSaveAsJson, importSaveFromJson } from '../../../infrastructure/persistence/saveGameStorage'
 
 function expectationLabel(e: ClubExpectation): string {
   const map: Record<ClubExpectation, string> = {
@@ -62,6 +64,20 @@ interface KlubbTabProps {
 }
 
 export function KlubbTab({ club, game, standing, navigate }: KlubbTabProps) {
+  const [importStatus, setImportStatus] = useState<'idle' | 'ok' | 'error'>('idle')
+
+  async function handleImport() {
+    setImportStatus('idle')
+    const imported = await importSaveFromJson()
+    if (imported) {
+      setImportStatus('ok')
+      setTimeout(() => setImportStatus('idle'), 3000)
+    } else {
+      setImportStatus('error')
+      setTimeout(() => setImportStatus('idle'), 3000)
+    }
+  }
+
   return (
     <>
       <SectionCard title="🏟️ Faciliteter" stagger={1}>
@@ -138,6 +154,35 @@ export function KlubbTab({ club, game, standing, navigate }: KlubbTabProps) {
       >
         🩺 Bandydoktorn →
       </button>
+
+      <SectionCard title="💾 Hantera sparat spel" stagger={5}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            className="btn btn-outline"
+            onClick={() => exportSaveAsJson(game)}
+            style={{ flex: 1, fontSize: 13 }}
+          >
+            Exportera save
+          </button>
+          <button
+            className="btn btn-outline"
+            onClick={handleImport}
+            style={{ flex: 1, fontSize: 13 }}
+          >
+            Importera save
+          </button>
+        </div>
+        {importStatus === 'ok' && (
+          <p style={{ fontSize: 12, color: 'var(--success)', marginTop: 8 }}>
+            Spelet importerades. Gå till startmenyn och ladda ditt spel.
+          </p>
+        )}
+        {importStatus === 'error' && (
+          <p style={{ fontSize: 12, color: 'var(--danger)', marginTop: 8 }}>
+            Kunde inte läsa filen. Kontrollera att det är en giltig save-fil.
+          </p>
+        )}
+      </SectionCard>
     </>
   )
 }
