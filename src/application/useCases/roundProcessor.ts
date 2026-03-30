@@ -778,9 +778,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     })()
 
     if (currentPhaseComplete) {
-      const nextRoundStart = updatedBracket.status === PlayoffStatus.QuarterFinals ? 26
-        : updatedBracket.status === PlayoffStatus.SemiFinals ? 29
-        : 32
+      const nextRoundStart = updatedBracket.status === PlayoffStatus.QuarterFinals ? 28
+        : updatedBracket.status === PlayoffStatus.SemiFinals ? 33
+        : 36
       const { bracket: newBracket, newFixtures } = advancePlayoffRound(updatedBracket, game.currentSeason, nextRoundStart)
       updatedBracket = newBracket
       bracketNewFixtures = newFixtures
@@ -1127,6 +1127,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const lotteryIncome = c.id === game.managedClubId
       ? calculateLotteryIncome(game.communityActivities, localRand)
       : 0
+
+    if (c.id === game.managedClubId) {
+      console.log(`[ECONOMY] Round ${nextRound}:`, {
+        matchRevenue, weeklySponsorship, sponsorIncome, lotteryIncome, weeklyWages,
+        total: matchRevenue + weeklySponsorship + sponsorIncome + lotteryIncome - weeklyWages,
+        previousFinances: c.finances,
+        newFinances: c.finances + matchRevenue + weeklySponsorship + sponsorIncome + lotteryIncome - weeklyWages,
+      })
+    }
 
     return {
       ...c,
@@ -1769,6 +1778,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
     if (nextWeathers.length > 0) {
       updatedGame = { ...updatedGame, matchWeathers: [...updatedGame.matchWeathers, ...nextWeathers] }
+    }
+  }
+
+  // Auto-advance playoff rounds when managed club is eliminated
+  if (isPlayoffRound && updatedBracket !== null && updatedBracket.status !== PlayoffStatus.Completed) {
+    const managedHasMorePlayoffFixtures = finalAllFixtures.some(f =>
+      f.status === FixtureStatus.Scheduled && !f.isCup && f.roundNumber > 22 &&
+      (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+    )
+    if (!managedHasMorePlayoffFixtures) {
+      return advanceToNextEvent(updatedGame, (seed ?? baseSeed) + 1)
     }
   }
 

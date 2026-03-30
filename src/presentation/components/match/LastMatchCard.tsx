@@ -13,8 +13,15 @@ export function LastMatchCard({ fixture, game, managedClubId }: LastMatchCardPro
   const isHome = fixture.homeClubId === managedClubId
   const myScore = isHome ? fixture.homeScore : fixture.awayScore
   const theirScore = isHome ? fixture.awayScore : fixture.homeScore
-  const resultColor = myScore > theirScore ? 'var(--success)' : myScore < theirScore ? 'var(--danger)' : 'var(--warning)'
-  const resultLabel = myScore > theirScore ? 'V' : myScore < theirScore ? 'F' : 'O'
+  const penaltyWon = fixture.penaltyResult && (
+    (isHome && fixture.penaltyResult.home > fixture.penaltyResult.away) ||
+    (!isHome && fixture.penaltyResult.away > fixture.penaltyResult.home)
+  )
+  const overtimeWon = fixture.overtimeResult === (isHome ? 'home' : 'away')
+  const actualWon = myScore > theirScore || (myScore === theirScore && !!(penaltyWon || overtimeWon))
+  const actualLost = myScore < theirScore || (myScore === theirScore && !penaltyWon && !overtimeWon && !!(fixture.penaltyResult || fixture.overtimeResult))
+  const resultColor = actualWon ? 'var(--success)' : actualLost ? 'var(--danger)' : 'var(--warning)'
+  const resultLabel = actualWon ? 'V' : actualLost ? 'F' : 'O'
 
   return (
     <div style={{

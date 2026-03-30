@@ -530,7 +530,7 @@ export function DashboardScreen() {
                       const lastSummary = (game.seasonSummaries ?? []).slice(-1)[0]
                       const lastPos = lastSummary?.finalPosition ?? null
                       const posDiff = lastPos != null ? lastPos - standing.position : null
-                      return posDiff !== null && posDiff !== 0 ? (
+                      return posDiff !== null && posDiff !== 0 && standing.played > 0 ? (
                         <span style={{ fontSize: 12, fontWeight: 700, color: posDiff > 0 ? 'var(--success)' : 'var(--danger)', fontFamily: 'var(--font-body)' }}>
                           {posDiff > 0 ? `↑${posDiff}` : `↓${Math.abs(posDiff)}`}
                         </span>

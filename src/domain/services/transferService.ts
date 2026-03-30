@@ -95,11 +95,11 @@ export function createOutgoingBid(
     return { success: false, error: 'Transferfönstret är stängt' }
   }
 
-  const hasOutgoing = (game.transferBids ?? []).some(
+  const outgoingCount = (game.transferBids ?? []).filter(
     b => b.direction === 'outgoing' && b.status === 'pending',
-  )
-  if (hasOutgoing) {
-    return { success: false, error: 'Du har redan ett aktivt bud' }
+  ).length
+  if (outgoingCount >= 3) {
+    return { success: false, error: 'Du har redan 3 aktiva bud (max)' }
   }
 
   const target = game.players.find(p => p.id === playerId)

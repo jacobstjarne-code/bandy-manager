@@ -234,12 +234,11 @@ export function TransfersScreen() {
       setRenewError(`${currentPlayer.firstName} avslår — kräver minst ${formatCurrency(minSalary)}/mån`)
       return
     }
-    // Budget check
+    // Budget warning (non-blocking)
     const currentWageBill = squadPlayers.reduce((sum, p) => sum + p.salary, 0)
     const projectedWageBill = currentWageBill - currentPlayer.salary + newSalary
     if (projectedWageBill > managedClub.wageBudget) {
-      setRenewError(`Lönebudgeten överskrids. Kvar: ${formatCurrency(managedClub.wageBudget - currentWageBill + currentPlayer.salary)}/mån`)
-      return
+      setRenewError(`⚠️ Lönebudgeten överskrids med ${formatCurrency(projectedWageBill - managedClub.wageBudget)}/mån — kontraktet sparas ändå`)
     }
     const updatedPlayers = game.players.map(p =>
       p.id === playerId ? { ...p, contractUntilSeason: game.currentSeason + years, salary: newSalary } : p

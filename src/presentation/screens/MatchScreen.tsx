@@ -479,17 +479,22 @@ export function MatchScreen() {
             const slot = FORMATIONS[formation].slots.find(s => s.id === slotId)
             if (!slot) return
             const current = { ...(tacticState.positionAssignments ?? {}) }
+            let displacedId: string | null = null
             for (const pid of Object.keys(current)) {
-              if (current[pid].id === slotId) delete current[pid]
+              if (current[pid].id === slotId) { displacedId = pid; delete current[pid]; break }
             }
             delete current[playerId]
             current[playerId] = slot
-            if (!startingIds.includes(playerId) && startingIds.length < 11) {
-              setStartingIds(prev => [...prev, playerId])
-              setBenchIds(prev => prev.filter(id => id !== playerId))
-            } else if (!startingIds.includes(playerId)) {
-              setStartingIds(prev => [...prev, playerId])
+            setStartingIds(prev => {
+              let ids = [...prev]
+              if (displacedId && displacedId !== playerId) ids = ids.filter(id => id !== displacedId)
+              if (!ids.includes(playerId)) ids.push(playerId)
+              return ids
+            })
+            if (displacedId && displacedId !== playerId) {
+              setBenchIds(prev => prev.includes(displacedId!) ? prev : [...prev, displacedId!])
             }
+            setBenchIds(prev => prev.filter(id => id !== playerId))
             const newTactic = { ...tacticState, positionAssignments: current }
             setTacticState(newTactic)
             updateTactic(newTactic)
