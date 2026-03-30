@@ -678,9 +678,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const replenishedClubs = clubsAfterLicense.map(club => {
     if (club.id === game.managedClubId) return club
     const squadSize = club.squadPlayerIds.length
-    if (squadSize >= 18) return club
+    if (squadSize >= 20) return club
 
-    const needed = 18 - squadSize
+    const needed = 20 - squadSize
     const newIds: string[] = []
     for (let i = 0; i < needed; i++) {
       const posIndex = i % replenishPositions.length
