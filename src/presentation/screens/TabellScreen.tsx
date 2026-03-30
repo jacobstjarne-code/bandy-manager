@@ -98,7 +98,7 @@ export function TabellScreen() {
               flex: 1, padding: '8px 0',
               background: activeTab === tab ? 'var(--accent)' : 'transparent',
               color: activeTab === tab ? 'var(--text-light)' : 'var(--text-muted)',
-              border: 'none', borderRadius: 6,
+              border: 'none', borderRadius: 6, outline: 'none',
               fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase',
               cursor: 'pointer',
             }}

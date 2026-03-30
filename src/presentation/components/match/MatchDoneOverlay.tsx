@@ -71,7 +71,7 @@ export function MatchDoneOverlay({
   }
   const managedWon = actualWinner === (managedIsHome ? 'home' : 'away')
   const managedLost = actualWinner !== 'draw' && !managedWon
-  const resultColor = managedWon ? '#5A9A4A' : managedLost ? '#B05040' : '#C47A3A'
+  const resultColor = managedWon ? 'var(--success)' : managedLost ? 'var(--danger)' : 'var(--accent)'
 
   const allStarters = [...(homeLineup.startingPlayerIds ?? []), ...(awayLineup.startingPlayerIds ?? [])]
   const allEvents = steps.flatMap(s => s.events)

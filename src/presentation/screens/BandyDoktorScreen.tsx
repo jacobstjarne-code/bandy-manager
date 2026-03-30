@@ -239,7 +239,9 @@ export function BandyDoktorScreen() {
             fontSize: 12,
             color: 'var(--danger)',
           }}>
-            {error}
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Något gick fel</div>
+            <div>{error}</div>
+            <div style={{ marginTop: 6, color: 'var(--text-muted)' }}>Kontrollera din internetanslutning och försök igen.</div>
           </div>
         )}
 

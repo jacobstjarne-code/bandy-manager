@@ -578,7 +578,7 @@ export function MatchLiveScreen() {
         {!matchDone && (
           <button
             onClick={() => { setIsPaused(true); setShowSubModal(true) }}
-            className="btn btn-outline"
+            className="btn btn-ghost"
             style={{ padding: '6px 10px', fontSize: 14 }}
           >
             🔄
