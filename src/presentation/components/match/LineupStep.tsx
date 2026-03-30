@@ -1,14 +1,11 @@
-import { useState, useEffect } from 'react'
 import type { Club, Tactic } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import { FORMATIONS } from '../../../domain/entities/Formation'
-import type { FormationType } from '../../../domain/entities/Formation'
+import { PlayerPosition } from '../../../domain/enums'
 import { OpponentInfoCard } from './OpponentInfoCard'
 import { OpponentAnalysisCard } from './OpponentAnalysisCard'
-import { PitchLineupView } from './PitchLineupView'
-import { SlotLineupView } from './SlotLineupView'
+import { LineupFormationView } from './LineupFormationView'
 
 interface GroupedPlayers {
   position: string
@@ -39,155 +36,125 @@ interface LineupStepProps {
   onNext: () => void
 }
 
+const GROUP_LABELS: Partial<Record<string, string>> = {
+  [PlayerPosition.Goalkeeper]: 'Målvakter',
+  [PlayerPosition.Defender]: 'Backar',
+  [PlayerPosition.Half]: 'Halvbackar',
+  [PlayerPosition.Midfielder]: 'Halvbackar',
+  [PlayerPosition.Forward]: 'Forwards',
+}
+
 export function LineupStep({
   opponent,
   nextFixture,
   game,
   squadPlayers,
-  groupedPlayers: _groupedPlayers,
+  groupedPlayers,
   startingIds,
   benchIds: _benchIds,
   captainId: _captainId,
-  selectedSlotId: _selectedSlotId,
+  selectedSlotId,
   tacticState,
   canPlay,
   injuredInStarting,
   onTogglePlayer,
   onSetCaptain: _onSetCaptain,
   onAutoFill,
-  onSlotClick: _onSlotClick,
+  onSlotClick,
   onFormationChange,
   onAssignPlayer,
-  onRemovePlayer,
+  onRemovePlayer: _onRemovePlayer,
   onError,
   onNext,
 }: LineupStepProps) {
-  const [viewMode, setViewMode] = useState<'list' | 'pitch'>(() => {
-    return (localStorage.getItem('bm_lineup_view') as 'list' | 'pitch') ?? 'list'
-  })
-
-  useEffect(() => {
-    localStorage.setItem('bm_lineup_view', viewMode)
-  }, [viewMode])
-
-  // ── PitchLineupView callbacks ──────────────────────────────────────────────
-
-  function handleAssignPlayer(playerId: string, slotId: string) {
-    const formationType = (tacticState.formation ?? '3-3-4') as FormationType
-    const template = FORMATIONS[formationType]
-    const slot = template.slots.find(s => s.id === slotId)
-    if (!slot) return
-
-    // Add to startingIds if not already starting
-    if (!startingIds.includes(playerId)) {
-      onTogglePlayer(playerId)
+  function handlePlayerClick(player: Player) {
+    if (player.isInjured || player.suspensionGamesRemaining > 0) return
+    if (selectedSlotId) {
+      onAssignPlayer(player.id, selectedSlotId)
+    } else {
+      onTogglePlayer(player.id)
     }
-
-    // Remove any player already in this slot, then assign
-    const existingEntries = Object.entries(tacticState.positionAssignments ?? {})
-    const newAssignments: Record<string, typeof slot> = {}
-    for (const [pid, s] of existingEntries) {
-      if (s.id !== slotId) {
-        newAssignments[pid] = s
-      }
-    }
-    newAssignments[playerId] = slot
-    onFormationChange({ ...tacticState, positionAssignments: newAssignments })
-  }
-
-  function handleRemovePlayer(playerId: string) {
-    const newAssignments = { ...(tacticState.positionAssignments ?? {}) }
-    delete newAssignments[playerId]
-    onFormationChange({ ...tacticState, positionAssignments: newAssignments })
-    // Also remove from startingIds
-    onTogglePlayer(playerId)
-  }
-
-  function handleSwapPlayers(fromSlotId: string, toSlotId: string) {
-    const assignments = tacticState.positionAssignments ?? {}
-    const fromPid = Object.entries(assignments).find(([, s]) => s.id === fromSlotId)?.[0]
-    const toPid = Object.entries(assignments).find(([, s]) => s.id === toSlotId)?.[0]
-    if (!fromPid || !toPid) return
-
-    const fromSlot = assignments[fromPid]
-    const toSlot = assignments[toPid]
-    const newAssignments = { ...assignments, [fromPid]: toSlot, [toPid]: fromSlot }
-    onFormationChange({ ...tacticState, positionAssignments: newAssignments })
   }
 
   return (
     <>
-      {opponent && (
-        <OpponentInfoCard opponent={opponent} game={game} />
-      )}
-
+      {opponent && <OpponentInfoCard opponent={opponent} game={game} />}
       {nextFixture && opponent && (
-        <OpponentAnalysisCard
-          fixture={nextFixture}
-          opponent={opponent}
-          game={game}
-          onError={onError}
-        />
+        <OpponentAnalysisCard fixture={nextFixture} opponent={opponent} game={game} onError={onError} />
       )}
 
-      {/* View toggle */}
-      <div style={{
-        display: 'flex', margin: '0 16px 12px',
-        background: 'var(--bg-elevated)',
-        borderRadius: 'var(--radius-sm)',
-        border: '1px solid var(--border)',
-        overflow: 'hidden',
-      }}>
+      <LineupFormationView
+        tacticState={tacticState}
+        startingIds={startingIds}
+        squadPlayers={squadPlayers}
+        selectedSlotId={selectedSlotId}
+        onSlotClick={onSlotClick}
+        onFormationChange={onFormationChange}
+      />
+
+      {/* Player list */}
+      <div style={{ padding: '0 16px 8px' }}>
+        {groupedPlayers.map(group => (
+          <div key={group.position} style={{ marginBottom: 10 }}>
+            <p style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: '1.5px',
+              textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4,
+            }}>
+              {GROUP_LABELS[group.position] ?? group.position}
+            </p>
+            {group.players.map(player => {
+              const isStarting = startingIds.includes(player.id)
+              const isUnavailable = player.isInjured || player.suspensionGamesRemaining > 0
+              return (
+                <div
+                  key={player.id}
+                  onClick={() => handlePlayerClick(player)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '7px 10px', marginBottom: 3,
+                    background: isStarting ? 'var(--bg-elevated)' : 'transparent',
+                    border: selectedSlotId && !isUnavailable
+                      ? '1px solid var(--accent)'
+                      : isStarting ? '1px solid var(--border)' : '1px dashed rgba(196,122,58,0.2)',
+                    borderRadius: 'var(--radius-sm)',
+                    cursor: isUnavailable ? 'default' : 'pointer',
+                    opacity: isUnavailable ? 0.4 : 1,
+                  }}
+                >
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', minWidth: 26 }}>
+                    {player.shirtNumber != null ? `#${player.shirtNumber}` : ''}
+                  </span>
+                  <span style={{ flex: 1, fontSize: 13, fontWeight: isStarting ? 700 : 400, color: isStarting ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                    {player.lastName}
+                  </span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                    {Math.round(player.currentAbility)} CA
+                  </span>
+                  <span style={{ fontSize: 10, fontWeight: 600, minWidth: 34, textAlign: 'right', color: isUnavailable ? 'var(--danger)' : isStarting ? 'var(--success)' : 'var(--text-muted)' }}>
+                    {isUnavailable ? (player.isInjured ? '🩹' : '🚫') : isStarting ? 'START' : 'BÄNK'}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        ))}
+      </div>
+
+      {/* Auto-fill */}
+      <div style={{ padding: '0 16px 8px', display: 'flex', justifyContent: 'flex-end' }}>
         <button
-          onClick={() => setViewMode('list')}
+          onClick={onAutoFill}
           style={{
-            flex: 1, padding: '10px', fontSize: 13, fontWeight: 600,
-            border: 'none', cursor: 'pointer',
-            background: viewMode === 'list' ? 'rgba(196,122,58,0.15)' : 'transparent',
-            color: viewMode === 'list' ? 'var(--accent)' : 'var(--text-muted)',
-            borderRight: '1px solid var(--border)',
-            transition: 'background 150ms, color 150ms',
+            padding: '8px 16px', fontSize: 13, fontWeight: 700,
+            background: 'rgba(196,122,58,0.08)', border: '1.5px solid var(--accent)',
+            color: 'var(--accent)', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
           }}
         >
-          📋 Lista
-        </button>
-        <button
-          onClick={() => setViewMode('pitch')}
-          style={{
-            flex: 1, padding: '10px', fontSize: 13, fontWeight: 600,
-            border: 'none', cursor: 'pointer',
-            background: viewMode === 'pitch' ? 'rgba(196,122,58,0.15)' : 'transparent',
-            color: viewMode === 'pitch' ? 'var(--accent)' : 'var(--text-muted)',
-            transition: 'background 150ms, color 150ms',
-          }}
-        >
-          🏒 Planvy
+          ✨ Generera bästa elvan
         </button>
       </div>
 
-      {viewMode === 'list' ? (
-        <SlotLineupView
-          tacticState={tacticState}
-          startingIds={startingIds}
-          squadPlayers={squadPlayers}
-          onAssignPlayer={onAssignPlayer}
-          onRemovePlayer={onRemovePlayer}
-          onAutoFill={onAutoFill}
-          onFormationChange={onFormationChange}
-        />
-      ) : (
-        <PitchLineupView
-          tacticState={tacticState}
-          startingIds={startingIds}
-          squadPlayers={squadPlayers}
-          onAssignPlayer={handleAssignPlayer}
-          onRemovePlayer={handleRemovePlayer}
-          onSwapPlayers={handleSwapPlayers}
-          onFormationChange={onFormationChange}
-        />
-      )}
-
-      <div style={{ padding: '16px 16px 24px' }}>
+      <div style={{ padding: '8px 16px 24px' }}>
         {!canPlay && (
           <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', fontSize: 12, color: 'var(--danger)', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
             {startingIds.length !== 11 && <span>Välj exakt 11 startspelare (du har {startingIds.length})</span>}

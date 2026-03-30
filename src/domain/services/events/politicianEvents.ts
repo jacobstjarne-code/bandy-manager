@@ -133,7 +133,17 @@ export function generatePoliticianEvents(
       const eid = `politician_warning_r${currentRound}`
       if (!alreadyQueued.has(eid)) {
         const headlineIdx = Math.floor(rand() * NEWSPAPER_HEADLINES.length)
-        const headline = NEWSPAPER_HEADLINES[headlineIdx]
+        const papers = ['Lokaltidningen', 'Sportbladet', 'Bandypuls']
+        const paper = papers[Math.floor(rand() * papers.length)]
+        const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+        const clubName = managedClub?.name ?? 'Klubben'
+        const bidrag = politician.kommunBidrag?.toLocaleString('sv-SE') ?? '30 000'
+        let headline = NEWSPAPER_HEADLINES[headlineIdx]
+        headline = headline
+          .replace(/\{politician\}/g, politician.name)
+          .replace(/\{paper\}/g, paper)
+          .replace(/\{club\}/g, clubName)
+          .replace(/\{amount\}/g, `${bidrag} kr`)
         events.push({
           id: eid,
           type: 'politicianEvent',

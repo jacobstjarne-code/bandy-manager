@@ -191,8 +191,12 @@ function CupCard({ bracket, game }: CupCardProps) {
     )
   } else {
     const playedAndWon = bracket.matches.filter(m => (m.homeClubId === managedClubId || m.awayClubId === managedClubId) && m.winnerId === managedClubId)
+    const highestWonRound = Math.max(0, ...playedAndWon.map(m => m.round))
+    const nextRoundName = highestWonRound === 1 ? 'kvartsfinalen'
+      : highestWonRound === 2 ? 'semifinalen'
+      : highestWonRound === 3 ? 'finalen' : 'nästa omgång'
     statusContent = playedAndWon.length > 0
-      ? <p style={{ fontSize: 13, color: 'var(--success)', fontWeight: 600, fontFamily: 'var(--font-body)' }}>✅ Klar för {playedAndWon.length >= 2 ? 'finalen' : 'semifinalen'}</p>
+      ? <p style={{ fontSize: 13, color: 'var(--success)', fontWeight: 600, fontFamily: 'var(--font-body)' }}>✅ Klar för {nextRoundName}</p>
       : <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Drar igång under säsongen</p>
   }
 

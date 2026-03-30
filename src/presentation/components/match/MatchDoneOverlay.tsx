@@ -61,7 +61,17 @@ export function MatchDoneOverlay({
   const managedIsHome = fixture.homeClubId === managedClubId
   const managedGoals = managedIsHome ? homeScore : awayScore
   const oppGoals = managedIsHome ? awayScore : homeScore
-  const resultColor = managedGoals > oppGoals ? '#5A9A4A' : managedGoals < oppGoals ? '#B05040' : '#C47A3A'
+  let actualWinner: 'home' | 'away' | 'draw' = 'draw'
+  if (managedGoals > oppGoals) actualWinner = managedIsHome ? 'home' : 'away'
+  else if (managedGoals < oppGoals) actualWinner = managedIsHome ? 'away' : 'home'
+  else if (fixture.penaltyResult) {
+    actualWinner = fixture.penaltyResult.home > fixture.penaltyResult.away ? 'home' : 'away'
+  } else if (fixture.overtimeResult) {
+    actualWinner = fixture.overtimeResult
+  }
+  const managedWon = actualWinner === (managedIsHome ? 'home' : 'away')
+  const managedLost = actualWinner !== 'draw' && !managedWon
+  const resultColor = managedWon ? '#5A9A4A' : managedLost ? '#B05040' : '#C47A3A'
 
   const allStarters = [...(homeLineup.startingPlayerIds ?? []), ...(awayLineup.startingPlayerIds ?? [])]
   const allEvents = steps.flatMap(s => s.events)
@@ -106,6 +116,12 @@ export function MatchDoneOverlay({
             <span style={{ fontSize: 40, fontWeight: 800 }}>{awayScore}</span>
           </div>
         </div>
+
+        {fixture.penaltyResult && homeScore === awayScore && (
+          <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginTop: -8, marginBottom: 8 }}>
+            str. {fixture.penaltyResult.home}–{fixture.penaltyResult.away}
+          </p>
+        )}
 
         {allGoalEvents.length > 0 && (
           <div style={{ marginBottom: 14, textAlign: 'left' }}>

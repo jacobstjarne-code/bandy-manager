@@ -239,7 +239,7 @@ export function NextMatchCard({
       <div style={{ padding: '10px 12px' }}>
         {isDerby && (
           <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--danger)', fontWeight: 600, marginBottom: 6, fontFamily: 'var(--font-body)' }}>
-            🔥 {rivalry!.name} · Intensitet {rivalry!.intensity}
+            🔥 {rivalry!.name}
           </p>
         )}
         {/* Crests + vs */}
@@ -306,8 +306,7 @@ export function NextMatchCard({
           <div style={{ display: 'flex', gap: 4, justifyContent: 'center', marginTop: 6 }}>
             {isDerby && (
               <>
-                <span className="tag tag-red" style={{ fontSize: 8 }}>🔥 Intensitet {rivalry!.intensity}</span>
-                <span className="tag tag-outline" style={{ fontSize: 8 }}>Derby</span>
+                <span className="tag tag-red" style={{ fontSize: 8 }}>🔥 Derby</span>
               </>
             )}
             {isAnnandagen && (

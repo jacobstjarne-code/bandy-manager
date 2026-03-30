@@ -89,7 +89,7 @@ export const commentary = {
   ],
 
   save: [
-    "{goalkeeper} räddar med vadden! Vilken reflex!",
+    "{goalkeeper} räddar med vaden! Vilken reflex!",
     "Utanför! {goalkeeper} får sträcka på sig. Strålande räddning!",
     "NEJ! {goalkeeper} var i vägen! {team} slipper ifrån!",
     "{goalkeeper} sträcker ut och räddar vid stolpen. Fantastiskt!",
@@ -115,7 +115,7 @@ export const commentary = {
   ],
 
   suspension: [
-    "{player} får 10 minuter för bentackling! {team} spelar med 10 man.",
+    "{player} får 10 minuter för benbrytning! {team} spelar med 10 man.",
     "Utvisning! Domaren pekar mot bänken — {player} av isen i 10 minuter.",
     "Sent brytningsförsök av {player} — ut med honom! {opponent} spelar i numerärt överläge.",
     "{player} protesterar men domaren är bestämd. Tio minuter utanför.",
