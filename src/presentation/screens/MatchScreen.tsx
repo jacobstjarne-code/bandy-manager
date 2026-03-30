@@ -200,16 +200,23 @@ export function MatchScreen() {
     for (const sid of Object.keys(current)) {
       if (current[sid] === playerId) current[sid] = null
     }
-    // Clear the target slot's previous occupant from startingIds if needed
+    // Clear the target slot's previous occupant and add new player — single atomic update
     const previousPid = current[slotId]
     current[slotId] = playerId
     if (previousPid && previousPid !== playerId) {
-      setStartingIds(prev => prev.filter(id => id !== previousPid))
       setBenchIds(prev => prev.includes(previousPid) ? prev : [...prev, previousPid])
     }
-    if (!startingIds.includes(playerId) && startingIds.length < 11) {
-      setStartingIds(prev => [...prev, playerId])
+    if (!startingIds.includes(playerId)) {
+      // Use functional updater so we always work with latest state
+      setStartingIds(prev => {
+        const withoutPrev = previousPid && previousPid !== playerId
+          ? prev.filter(id => id !== previousPid)
+          : prev
+        return withoutPrev.includes(playerId) ? withoutPrev : [...withoutPrev, playerId]
+      })
       setBenchIds(prev => prev.filter(id => id !== playerId))
+    } else if (previousPid && previousPid !== playerId) {
+      setStartingIds(prev => prev.filter(id => id !== previousPid))
     }
     const newTactic = { ...tacticState, lineupSlots: current }
     setTacticState(newTactic)
