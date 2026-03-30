@@ -88,7 +88,7 @@ export function BoardMeetingScreen() {
         return '"Det är tufft just nu. Men jag tror på laget. Vi vänder det."'
       }
       if (myPosition >= 9) {
-        return '"Vi behöver ta tre poäng. Det är dags att mobilisera."'
+        return '"Vi behöver ta två poäng. Det är dags att mobilisera."'
       }
       const quotes = BOARD_QUOTES.supporter
       return quotes[baseIdx % quotes.length]

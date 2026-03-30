@@ -237,7 +237,7 @@ function generateScoutText(tier: PotentialTier, archetype: PlayerArchetype): str
         case PlayerArchetype.DefensiveWorker:
           return 'Taktiskt mogen för sin ålder och med intensitet som imponerar. Stor potential som defensiv ledare.'
         case PlayerArchetype.CornerSpecialist:
-          return 'Exceptionell teknik vid hörnor och frisparkar. En spelares som kan avgöra matcher på elitnivå.'
+          return 'Exceptionell teknik vid hörnor och frislag. En spelare som kan avgöra matcher på elitnivå.'
         case PlayerArchetype.ReflexGoalkeeper:
           return 'Reflexer som man inte hittar i den här åldersgruppen. Kan bli en riktigt stor målvakt.'
         case PlayerArchetype.PositionalGoalkeeper:
