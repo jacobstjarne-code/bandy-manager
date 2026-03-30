@@ -3,6 +3,23 @@ import { useGameStore } from '../store/gameStore'
 import { PlayerLink } from '../components/PlayerLink'
 import { ordinal } from '../utils/formatters'
 import type { SeasonSummary } from '../../domain/entities/SeasonSummary'
+import { shareSeasonImage } from '../utils/seasonShareImage'
+
+function RecordRow({ label, value, sub, isLast }: { label: string; value: string; sub: string; isLast?: boolean }) {
+  return (
+    <div style={{
+      display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+      paddingBottom: isLast ? 0 : 10, marginBottom: isLast ? 0 : 10,
+      borderBottom: isLast ? 'none' : '1px solid var(--border)',
+    }}>
+      <div>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 2 }}>{label}</p>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{sub}</p>
+      </div>
+      <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--accent)' }}>{value}</span>
+    </div>
+  )
+}
 
 function playoffLabel(result: string | null | undefined): string {
   if (result === 'champion') return '🏆 SVENSKA MÄSTARE!'
@@ -145,6 +162,19 @@ export function HistoryScreen() {
 
       <JourneyGraph summaries={game.seasonSummaries ?? []} />
 
+      {summaries.length > 0 && (
+        <button
+          onClick={() => shareSeasonImage(summaries[0])}
+          style={{
+            width: '100%', padding: '13px', marginBottom: 14,
+            background: 'transparent', border: '1px solid rgba(196,122,58,0.4)',
+            borderRadius: 12, color: 'var(--accent)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+          }}
+        >
+          📤 Dela senaste säsongen
+        </button>
+      )}
+
       {summaries.length === 0 ? (
         <div className="card-round" style={{
           padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)',
@@ -222,6 +252,37 @@ export function HistoryScreen() {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* All-time Records */}
+      {game.allTimeRecords && (
+        <div className="card-round" style={{ padding: '18px 16px', marginBottom: 14 }}>
+          <p style={{
+            fontSize: 12, fontWeight: 700, letterSpacing: '2px',
+            textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 18,
+            borderBottom: '1px solid rgba(196,122,58,0.25)', paddingBottom: 10,
+          }}>
+            ── Rekord ──
+          </p>
+          {game.allTimeRecords.bestFinish && (
+            <RecordRow label="Bästa tabellplacering" value={`${ordinal(game.allTimeRecords.bestFinish.position)} plats`} sub={`Säsong ${game.allTimeRecords.bestFinish.season}`} />
+          )}
+          {game.allTimeRecords.mostGoalsSeason && (
+            <RecordRow label="Flest mål en säsong" value={`${game.allTimeRecords.mostGoalsSeason.goals} mål`} sub={`${game.allTimeRecords.mostGoalsSeason.playerName} · ${game.allTimeRecords.mostGoalsSeason.season}`} />
+          )}
+          {game.allTimeRecords.mostAssistsSeason && (
+            <RecordRow label="Flest assist en säsong" value={`${game.allTimeRecords.mostAssistsSeason.assists} assist`} sub={`${game.allTimeRecords.mostAssistsSeason.playerName} · ${game.allTimeRecords.mostAssistsSeason.season}`} />
+          )}
+          {game.allTimeRecords.highestRatingSeason && (
+            <RecordRow label="Högst snittbetyg en säsong" value={`${game.allTimeRecords.highestRatingSeason.rating.toFixed(1)}`} sub={`${game.allTimeRecords.highestRatingSeason.playerName} · ${game.allTimeRecords.highestRatingSeason.season}`} />
+          )}
+          {game.allTimeRecords.biggestWin && (
+            <RecordRow label="Största seger" value={game.allTimeRecords.biggestWin.score} sub={`vs ${game.allTimeRecords.biggestWin.opponent} · ${game.allTimeRecords.biggestWin.season}`} />
+          )}
+          {game.allTimeRecords.championSeasons.length > 0 && (
+            <RecordRow label="SM-guld" value={`${game.allTimeRecords.championSeasons.length}×`} sub={game.allTimeRecords.championSeasons.join(', ')} isLast />
+          )}
         </div>
       )}
 

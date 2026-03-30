@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
@@ -5,6 +6,7 @@ import { ClubBadge } from '../components/ClubBadge'
 import { Card } from '../components/Card'
 import { SectionLabel } from '../components/SectionLabel'
 import { csColor, formatCurrency } from '../utils/formatters'
+import { shareSeasonImage } from '../utils/seasonShareImage'
 
 export function SeasonSummaryScreen() {
   const navigate = useNavigate()
@@ -122,6 +124,15 @@ export function SeasonSummaryScreen() {
         })}
       </svg>
     )
+  }
+
+  const [sharing, setSharing] = useState(false)
+
+  async function handleShare() {
+    if (!summary) return
+    setSharing(true)
+    await shareSeasonImage(summary)
+    setSharing(false)
   }
 
   const handleNextSeason = () => {
@@ -413,6 +424,17 @@ export function SeasonSummaryScreen() {
         {/* NEXT SEASON BUTTON (only if not historical view) */}
         {!isHistorical && (
           <div style={{ padding: '0 0 20px' }}>
+            <button
+              onClick={handleShare}
+              disabled={sharing}
+              style={{
+                width: '100%', padding: '13px', marginBottom: 10,
+                background: 'transparent', border: '1px solid rgba(196,122,58,0.4)',
+                borderRadius: 12, color: 'var(--accent)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+              }}
+            >
+              {sharing ? 'Genererar bild...' : '📤 Dela din säsong'}
+            </button>
             <button
               onClick={() => navigate('/game/history')}
               style={{

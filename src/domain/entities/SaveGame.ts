@@ -303,4 +303,15 @@ export interface SaveGame {
   // Sprint 5: named characters
   namedCharacters?: NamedCharacter[]
 
+  // All-time records
+  allTimeRecords?: AllTimeRecords
+}
+
+export interface AllTimeRecords {
+  mostGoalsSeason: { playerName: string; goals: number; season: number } | null
+  mostAssistsSeason: { playerName: string; assists: number; season: number } | null
+  highestRatingSeason: { playerName: string; rating: number; season: number } | null
+  bestFinish: { position: number; season: number } | null
+  biggestWin: { score: string; opponent: string; season: number; round: number } | null
+  championSeasons: number[]
 }

@@ -1,4 +1,4 @@
-import type { SaveGame, InboxItem } from '../../domain/entities/SaveGame'
+import type { SaveGame, InboxItem, AllTimeRecords } from '../../domain/entities/SaveGame'
 import type { Player } from '../../domain/entities/Player'
 import type { GameEvent } from '../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType, PlayerPosition } from '../../domain/enums'
@@ -350,7 +350,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     fitness: Math.min(100, player.fitness + 15),
     startSeasonCA: player.currentAbility,
     careerStats: {
-      ...player.careerStats,
+      totalGames: (player.careerStats?.totalGames ?? 0) + (player.seasonStats?.gamesPlayed ?? 0),
+      totalGoals: (player.careerStats?.totalGoals ?? 0) + (player.seasonStats?.goals ?? 0),
+      totalAssists: (player.careerStats?.totalAssists ?? 0) + (player.seasonStats?.assists ?? 0),
       seasonsPlayed: (player.careerStats?.seasonsPlayed ?? 0) + 1,
     },
     caHistory: [
@@ -843,5 +845,59 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     ].slice(-200),
   }
 
-  return { game: updatedGame, roundPlayed: null, seasonEnded: true }
+  return { game: { ...updatedGame, allTimeRecords: updateAllTimeRecords(updatedGame, seasonSummary) }, roundPlayed: null, seasonEnded: true }
+}
+
+function updateAllTimeRecords(
+  game: SaveGame,
+  summary: ReturnType<typeof generateSeasonSummary>,
+): AllTimeRecords {
+  const prev = game.allTimeRecords ?? {
+    mostGoalsSeason: null,
+    mostAssistsSeason: null,
+    highestRatingSeason: null,
+    bestFinish: null,
+    biggestWin: null,
+    championSeasons: [],
+  }
+
+  const season = summary.season
+
+  let mostGoalsSeason = prev.mostGoalsSeason
+  if (summary.topScorer && (!mostGoalsSeason || summary.topScorer.goals > mostGoalsSeason.goals)) {
+    mostGoalsSeason = { playerName: summary.topScorer.name, goals: summary.topScorer.goals, season }
+  }
+
+  let mostAssistsSeason = prev.mostAssistsSeason
+  if (summary.topAssister && (!mostAssistsSeason || summary.topAssister.assists > mostAssistsSeason.assists)) {
+    mostAssistsSeason = { playerName: summary.topAssister.name, assists: summary.topAssister.assists, season }
+  }
+
+  let highestRatingSeason = prev.highestRatingSeason
+  if (summary.topRated && (!highestRatingSeason || summary.topRated.avgRating > highestRatingSeason.rating)) {
+    highestRatingSeason = { playerName: summary.topRated.name, rating: summary.topRated.avgRating, season }
+  }
+
+  let bestFinish = prev.bestFinish
+  if (!bestFinish || summary.finalPosition < bestFinish.position) {
+    bestFinish = { position: summary.finalPosition, season }
+  }
+
+  let biggestWin = prev.biggestWin
+  if (summary.biggestWin) {
+    const [homeGoals, awayGoals] = summary.biggestWin.score.split('–').map(Number)
+    const margin = Math.abs((homeGoals ?? 0) - (awayGoals ?? 0))
+    const prevMargin = biggestWin
+      ? Math.abs((Number(biggestWin.score.split('–')[0]) || 0) - (Number(biggestWin.score.split('–')[1]) || 0))
+      : -1
+    if (margin > prevMargin) {
+      biggestWin = { score: summary.biggestWin.score, opponent: summary.biggestWin.opponent, season, round: summary.biggestWin.round }
+    }
+  }
+
+  const championSeasons = summary.playoffResult === 'champion'
+    ? [...prev.championSeasons, season]
+    : prev.championSeasons
+
+  return { mostGoalsSeason, mostAssistsSeason, highestRatingSeason, bestFinish, biggestWin, championSeasons }
 }

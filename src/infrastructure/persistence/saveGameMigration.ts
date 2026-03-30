@@ -33,6 +33,7 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.cupBracket === undefined) data.cupBracket = null
   if (data.showSeasonSummary === undefined) data.showSeasonSummary = false
   if (data.activeScoutAssignment === undefined) data.activeScoutAssignment = null
+  if (data.allTimeRecords === undefined) data.allTimeRecords = null
 
   // ── players: ensure each player has newer optional fields ──────────────
   if (Array.isArray(data.players)) {
