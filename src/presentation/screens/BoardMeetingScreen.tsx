@@ -145,7 +145,7 @@ export function BoardMeetingScreen() {
 
       {/* Förra säsongen / Välkommen */}
       {isFirstSeason ? (
-        <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px', background: 'rgba(196,122,58,0.06)', borderColor: 'rgba(196,122,58,0.18)' }}>
+        <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px', background: 'rgba(196,122,58,0.06)', borderColor: 'rgba(196,122,58,0.18)' }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             👋 Välkommen
           </p>
@@ -156,7 +156,7 @@ export function BoardMeetingScreen() {
           </p>
         </div>
       ) : (
-        <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px', background: 'rgba(196,122,58,0.06)', borderColor: 'rgba(196,122,58,0.18)' }}>
+        <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px', background: 'rgba(196,122,58,0.06)', borderColor: 'rgba(196,122,58,0.18)' }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             {verdictEmoji} Förra säsongen
           </p>
@@ -167,7 +167,7 @@ export function BoardMeetingScreen() {
       )}
 
       {/* Säsongens mål */}
-      <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px' }}>
+      <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
         <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
           📋 Säsongens mål
         </p>
@@ -180,11 +180,11 @@ export function BoardMeetingScreen() {
       </div>
 
       {/* Ekonomi */}
-      <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px' }}>
+      <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
         <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
           💰 Ekonomi
         </p>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
           <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Klubbkassa</span>
           <span style={{ fontSize: 13, fontWeight: 600,
             color: club.finances > 0 ? 'var(--success)' : 'var(--danger)' }}>
@@ -193,7 +193,7 @@ export function BoardMeetingScreen() {
               : `${Math.round(club.finances / 1000)} tkr`}
           </span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
           <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Transferbudget</span>
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)' }}>
             {club.transferBudget >= 1000000
@@ -213,7 +213,7 @@ export function BoardMeetingScreen() {
       </div>
 
       {/* Trupp */}
-      <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px' }}>
+      <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
         <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
           👥 Trupp
         </p>
@@ -234,7 +234,7 @@ export function BoardMeetingScreen() {
       {/* Styrelsemedlemmarnas röster */}
       {boardMembers.length > 0 && (
         <div className="card-sharp" style={{
-          marginBottom: 24, padding: '14px 16px',
+          marginBottom: 12, padding: '10px 14px',
           background: 'rgba(196,122,58,0.04)',
           borderColor: 'rgba(196,122,58,0.15)',
         }}>
@@ -249,8 +249,8 @@ export function BoardMeetingScreen() {
             if (!quote) return null
             return (
               <div key={member.name + i} style={{
-                marginBottom: i < boardMembers.length - 1 ? 14 : 0,
-                paddingBottom: i < boardMembers.length - 1 ? 14 : 0,
+                marginBottom: i < boardMembers.length - 1 ? 10 : 0,
+                paddingBottom: i < boardMembers.length - 1 ? 10 : 0,
                 borderBottom: i < boardMembers.length - 1 ? '1px solid var(--border)' : 'none',
               }}>
                 <p style={{
