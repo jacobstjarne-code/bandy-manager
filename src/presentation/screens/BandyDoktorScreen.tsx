@@ -69,7 +69,11 @@ export function BandyDoktorScreen() {
       incrementDoctorQuestions()
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Okänt fel'
-      setError(`Doktorn är inte tillgänglig just nu. ${msg}`)
+      if (msg.includes('API key') || msg.includes('not configured') || msg.includes('500') || msg.includes('API-fel: 500')) {
+        setError('Bandydoktorn kräver en Anthropic API-nyckel. Konfigurera ANTHROPIC_API_KEY i Render-miljön.')
+      } else {
+        setError(`Bandydoktorn kunde inte svara just nu. (${msg})`)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -143,6 +147,10 @@ export function BandyDoktorScreen() {
         {/* Quick question buttons */}
         {questionsLeft > 0 && messages.length === 0 && (
           <div>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 12, padding: '0 2px' }}>
+              Bandydoktorn är din AI-rådgivare. Fråga om taktik, spelarval och matchförberedelser.
+              {' '}{questionsLeft} {questionsLeft === 1 ? 'fråga' : 'frågor'} kvar denna omgång.
+            </p>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600, letterSpacing: '0.3px' }}>
               SNABBFRÅGOR
             </div>
