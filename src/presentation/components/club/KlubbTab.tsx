@@ -147,14 +147,6 @@ export function KlubbTab({ club, game, standing, navigate }: KlubbTabProps) {
         </SectionCard>
       )}
 
-      <button
-        className="btn btn-ghost"
-        onClick={() => navigate('/game/doctor')}
-        style={{ width: '100%' }}
-      >
-        🩺 Bandydoktorn →
-      </button>
-
       <SectionCard title="💾 Hantera sparat spel" stagger={5}>
         <div style={{ display: 'flex', gap: 8 }}>
           <button

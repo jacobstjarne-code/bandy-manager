@@ -266,13 +266,15 @@ export function MatchScreen() {
       return
     }
     setLineupError(null)
+    // Cup matches always use live mode — snabbsim skips cup fixtures
+    const effectiveLiveMode = useLiveMode || isCupFixture
     try {
       const lineupResult = setPlayerLineup(startingIds, benchIds, captainId)
       if (!lineupResult.success) {
         setLineupError(lineupResult.error ?? 'Ogiltig uppställning')
         return
       }
-      if (useLiveMode && nextFixture) {
+      if (effectiveLiveMode && nextFixture) {
         const homeClub = game!.clubs.find(c => c.id === nextFixture.homeClubId)
         const awayClub = game!.clubs.find(c => c.id === nextFixture.awayClubId)
         const isHome = nextFixture.homeClubId === managedClubId
@@ -497,6 +499,7 @@ export function MatchScreen() {
           tacticState={tacticState}
           matchWeatherData={matchWeatherData}
           useLiveMode={useLiveMode}
+          isCupMatch={isCupFixture}
           lineupError={lineupError}
           onSetLiveMode={setUseLiveMode}
           onBack={() => setMatchStep('tactic')}

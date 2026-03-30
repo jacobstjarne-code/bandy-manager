@@ -313,10 +313,17 @@ export function TransfersScreen() {
   function handleScout(player: Player) {
     const targetClub = game!.clubs.find(c => c.id === player.clubId)
     const sameRegion = !!managedClub && !!targetClub && managedClub.region === targetClub.region
-    const result = startEvaluation(player.id, player.clubId, sameRegion)
+    const hasPlayedAgainst = game!.fixtures.some(f =>
+      f.status === 'completed' &&
+      ((f.homeClubId === game!.managedClubId && f.awayClubId === player.clubId) ||
+       (f.awayClubId === game!.managedClubId && f.homeClubId === player.clubId))
+    )
+    const result = startEvaluation(player.id, player.clubId, sameRegion, hasPlayedAgainst)
     if (result.success) {
-      const rounds = sameRegion ? 1 : 2
-      setScoutMessage(`Scout utsänd till ${targetClub?.name ?? 'okänd klubb'}. Rapport om ${rounds} omgång${rounds > 1 ? 'ar' : ''}.`)
+      const rounds = hasPlayedAgainst || sameRegion ? 0 : 1
+      setScoutMessage(rounds === 0
+        ? `Rapport om ${player.firstName} ${player.lastName} klar direkt!`
+        : `Scout utsänd till ${targetClub?.name ?? 'okänd klubb'}. Rapport om ${rounds} omgång.`)
       setTimeout(() => setScoutMessage(null), 4000)
     } else {
       setScoutMessage(result.error ?? 'Kunde inte skicka scout.')

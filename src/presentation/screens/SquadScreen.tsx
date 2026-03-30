@@ -155,6 +155,9 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
             overflow: 'hidden',
             textOverflow: 'ellipsis',
           }}>
+            {player.shirtNumber != null && (
+              <span style={{ fontSize: 12, color: 'var(--text-muted)', marginRight: 4 }}>#{player.shirtNumber}</span>
+            )}
             {player.firstName} {player.lastName}
           </p>
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>

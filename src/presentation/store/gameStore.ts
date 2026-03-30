@@ -5,7 +5,7 @@ import type { SaveGame, RoundSummaryData, Sponsor } from '../../domain/entities/
 import type { Tactic } from '../../domain/entities/Club'
 import type { TrainingFocus } from '../../domain/entities/Training'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entities/Fixture'
-import { FixtureStatus, PlayoffStatus, InboxItemType } from '../../domain/enums'
+import { FixtureStatus, PlayoffStatus, InboxItemType, PlayerPosition } from '../../domain/enums'
 import { createNewGame } from '../../application/useCases/createNewGame'
 import { resolveEvent as resolveEventFn } from '../../domain/services/eventService'
 import { type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
@@ -42,7 +42,7 @@ interface GameState {
   markTutorialSeen: () => void
   markInboxRead: (itemId: string) => void
   markAllInboxRead: () => void
-  startEvaluation: (playerId: string, clubId: string, sameRegion: boolean) => { success: boolean; error?: string }
+  startEvaluation: (playerId: string, clubId: string, sameRegion: boolean, hasPlayedAgainst?: boolean) => { success: boolean; error?: string }
   placeOutgoingBid: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => { success: boolean; error?: string }
   resolveEvent: (eventId: string, choiceId: string) => void
   saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection, overtimeResult?: 'home' | 'away', penaltyResult?: { home: number; away: number }) => void
@@ -114,6 +114,7 @@ export const useGameStore = create<GameState>()(
         const loaded = await loadSaveGame(id)
         if (!loaded) return false
         // Migrate old club names — strip suffixes like BK, IF, GoIF, IK, FK
+        // Migrate Midfielder position → Half (merged positions)
         const migrated = {
           ...loaded,
           clubs: loaded.clubs.map(c => ({
@@ -121,6 +122,11 @@ export const useGameStore = create<GameState>()(
             name: c.name.replace(/\s+(BK|IF|GoIF|IK|FK|SK)$/i, '').trim(),
             shortName: c.shortName.replace(/\s+(BK|IF|GoIF|IK|FK|SK)$/i, '').trim(),
           })),
+          players: loaded.players.map(p =>
+            (p.position as string) === 'midfielder'
+              ? { ...p, position: PlayerPosition.Half }
+              : p
+          ),
         }
         set({ game: migrated, lastAdvanceResult: null })
         return true

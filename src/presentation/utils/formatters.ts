@@ -9,7 +9,7 @@ export function positionShort(pos: PlayerPosition): string {
     [PlayerPosition.Goalkeeper]: 'MV',
     [PlayerPosition.Defender]: 'DEF',
     [PlayerPosition.Half]: 'HALF',
-    [PlayerPosition.Midfielder]: 'MID',
+    [PlayerPosition.Midfielder]: 'HALF',  // Midfielder merged into Half
     [PlayerPosition.Forward]: 'FWD',
   }
   return map[pos] ?? pos
@@ -19,7 +19,7 @@ export const POSITION_ORDER: Record<PlayerPosition, number> = {
   [PlayerPosition.Goalkeeper]: 0,
   [PlayerPosition.Defender]: 1,
   [PlayerPosition.Half]: 2,
-  [PlayerPosition.Midfielder]: 3,
+  [PlayerPosition.Midfielder]: 2,  // Same as Half
   [PlayerPosition.Forward]: 4,
 }
 

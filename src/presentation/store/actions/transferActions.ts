@@ -9,13 +9,13 @@ type Set = (partial: Partial<{ game: SaveGame | null }>) => void
 
 export function transferActions(get: Get, set: Set) {
   return {
-    startEvaluation: (playerId: string, clubId: string, sameRegion: boolean) => {
+    startEvaluation: (playerId: string, clubId: string, sameRegion: boolean, hasPlayedAgainst = false) => {
       const { game } = get()
       if (!game) return { success: false, error: 'Inget spel laddat' }
       if (game.activeTalentSearch) return { success: false, error: 'Spaning pågår — vänta tills den är klar' }
       if (game.activeScoutAssignment) return { success: false, error: 'Scout är redan utsänd' }
       if (game.scoutBudget <= 0) return { success: false, error: 'Scoutbudgeten är slut för säsongen' }
-      const assignment = startScoutAssignment(playerId, clubId, game.currentDate, sameRegion)
+      const assignment = startScoutAssignment(playerId, clubId, game.currentDate, sameRegion, hasPlayedAgainst)
       set({ game: { ...game, activeScoutAssignment: assignment, scoutBudget: game.scoutBudget - 1 } })
       return { success: true }
     },

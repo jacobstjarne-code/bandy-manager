@@ -1,7 +1,7 @@
 import type { Player } from '../entities/Player'
 import type { PlayerAttributes } from '../entities/Player'
 import type { ScoutReport, ScoutAssignment } from '../entities/Scouting'
-import { PlayerArchetype } from '../enums'
+import { PlayerArchetype, PlayerPosition } from '../enums'
 
 const ALL_ATTRIBUTE_KEYS: (keyof PlayerAttributes)[] = [
   'skating', 'acceleration', 'stamina', 'ballControl', 'passing',
@@ -35,12 +35,14 @@ export function startScoutAssignment(
   clubId: string,
   currentDate: string,
   sameRegion: boolean,
+  hasPlayedAgainst = false,
 ): ScoutAssignment {
+  const rounds = hasPlayedAgainst ? 0 : sameRegion ? 0 : 1
   return {
     targetPlayerId: playerId,
     targetClubId: clubId,
     startedDate: currentDate,
-    roundsRemaining: sameRegion ? 1 : 2,
+    roundsRemaining: rounds,
   }
 }
 
@@ -93,11 +95,11 @@ export function getScoutReportAge(_report: ScoutReport, currentSeason: number, s
 const ARCHETYPE_STRENGTHS: Record<PlayerArchetype, string> = {
   [PlayerArchetype.Finisher]: 'dödligt avslut',
   [PlayerArchetype.Playmaker]: 'suverän passning',
-  [PlayerArchetype.DefensiveWorker]: 'järnhård försvarsspel',
-  [PlayerArchetype.TwoWaySkater]: 'imponerande löpkapacitet',
+  [PlayerArchetype.DefensiveWorker]: 'järnhård i försvarsarbetet',
+  [PlayerArchetype.TwoWaySkater]: 'imponerande skridskoåkning i båda riktningar',
   [PlayerArchetype.ReflexGoalkeeper]: 'reflexer i världsklass',
   [PlayerArchetype.PositionalGoalkeeper]: 'strålande positionsspel i målet',
-  [PlayerArchetype.Dribbler]: 'magisk dribbling',
+  [PlayerArchetype.Dribbler]: 'magisk teknik med bollen',
   [PlayerArchetype.CornerSpecialist]: 'farliga hörnor',
   [PlayerArchetype.RawTalent]: 'enorm potential',
 }
@@ -124,10 +126,19 @@ export function generateScoutNotes(player: Player, rand?: () => number): string 
 
   const strength = ARCHETYPE_STRENGTHS[player.archetype] ?? 'goda egenskaper'
 
-  // Find weakest attribute
-  const entries = Object.entries(player.attributes) as [keyof PlayerAttributes, number][]
+  // Find weakest attribute — exclude irrelevant keys per position
+  const excludeKeys = new Set<keyof PlayerAttributes>()
+  if (player.position !== PlayerPosition.Goalkeeper) {
+    excludeKeys.add('goalkeeping')
+  } else {
+    excludeKeys.add('shooting')
+    excludeKeys.add('dribbling')
+    excludeKeys.add('cornerSkill')
+  }
+  const entries = (Object.entries(player.attributes) as [keyof PlayerAttributes, number][])
+    .filter(([k]) => ATTRIBUTE_LABELS[k] && !excludeKeys.has(k))
   const weakest = entries.reduce((min, [k, v]) =>
-    (ATTRIBUTE_LABELS[k] && v < min[1]) ? [k, v] : min,
+    v < min[1] ? [k, v] : min,
     entries[0]
   )
   const weakLabel = ATTRIBUTE_LABELS[weakest[0]] ?? 'okänd egenskap'
