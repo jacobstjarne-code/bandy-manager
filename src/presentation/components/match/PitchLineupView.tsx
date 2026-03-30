@@ -190,7 +190,7 @@ export function PitchLineupView({
                     top: `${topPct}%`,
                     transform: 'translate(-50%, -50%)',
                     width: 44,
-                    height: 44,
+                    height: 58,
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -207,8 +207,8 @@ export function PitchLineupView({
                   {/* Position label above circle */}
                   <span style={{
                     position: 'absolute',
-                    top: 1,
-                    fontSize: 7,
+                    top: -2,
+                    fontSize: 8,
                     fontWeight: 700,
                     color: isEmpty ? 'rgba(26,26,24,0.55)' : 'rgba(26,26,24,0.65)',
                     letterSpacing: '0.3px',
@@ -222,8 +222,8 @@ export function PitchLineupView({
 
                   {/* Circle */}
                   <div style={{
-                    width: 30,
-                    height: 30,
+                    width: 32,
+                    height: 32,
                     borderRadius: '50%',
                     background: isEmpty
                       ? 'transparent'
@@ -253,8 +253,8 @@ export function PitchLineupView({
                   {!isDraggingFrom && player && (
                     <span style={{
                       position: 'absolute',
-                      bottom: 1,
-                      fontSize: 7,
+                      bottom: -2,
+                      fontSize: 8,
                       fontWeight: 600,
                       color: 'rgba(26,26,24,0.7)',
                       whiteSpace: 'nowrap',
