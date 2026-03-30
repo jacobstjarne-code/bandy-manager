@@ -268,11 +268,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   for (let i = 0; i < roundFixtures.length; i++) {
     const fixture = roundFixtures[i]
 
-    // Skip scheduled cup fixtures for the managed club — they must be played live
+    // Skip scheduled cup fixtures for the managed club unless they have a saved lineup
     if (
       fixture.isCup &&
       fixture.status === FixtureStatus.Scheduled &&
-      (fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId)
+      (fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId) &&
+      game.managedClubPendingLineup === undefined
     ) {
       hasManagedCupPending = true
       continue

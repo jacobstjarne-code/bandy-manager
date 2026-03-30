@@ -14,14 +14,13 @@ interface StartStepProps {
   tacticState: Tactic
   matchWeatherData: MatchWeather | undefined
   useLiveMode: boolean
-  isCupMatch?: boolean
   lineupError: string | null
   onSetLiveMode: (v: boolean) => void
   onBack: () => void
   onPlay: () => void
 }
 
-export function StartStep({ startingIds, tacticState, matchWeatherData, isCupMatch, lineupError, onSetLiveMode, onBack, onPlay }: StartStepProps) {
+export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveMode, lineupError, onSetLiveMode, onBack, onPlay }: StartStepProps) {
   return (
     <div style={{ padding: '0 16px 24px' }}>
       {/* Summary */}
@@ -61,37 +60,31 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, isCupMat
 
       {/* Live / Snabbsim toggle */}
       <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>🎮 Spelläge</p>
-      <div style={{ display: 'flex', gap: 8, marginBottom: isCupMatch ? 6 : 14 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
         <button onClick={() => onSetLiveMode(true)} style={{
           flex: 1, padding: '12px 8px',
-          background: 'rgba(196,122,58,0.12)',
-          border: '2px solid var(--accent)',
+          background: useLiveMode ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
+          border: `2px solid ${useLiveMode ? 'var(--accent)' : 'var(--border)'}`,
           borderRadius: 'var(--radius)', cursor: 'pointer',
         }}>
           <div style={{ fontSize: 20, marginBottom: 4 }}>🎙</div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>Live</div>
+          <div style={{ fontSize: 13, fontWeight: useLiveMode ? 700 : 500, color: useLiveMode ? 'var(--accent)' : 'var(--text-secondary)' }}>Live</div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Följ händelserna</div>
         </button>
         <button
-          onClick={() => !isCupMatch && onSetLiveMode(false)}
+          onClick={() => onSetLiveMode(false)}
           style={{
             flex: 1, padding: '12px 8px',
-            background: 'var(--bg-elevated)',
-            border: '2px solid var(--border)',
+            background: !useLiveMode ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
+            border: `2px solid ${!useLiveMode ? 'var(--accent)' : 'var(--border)'}`,
             borderRadius: 'var(--radius)',
-            cursor: isCupMatch ? 'not-allowed' : 'pointer',
-            opacity: isCupMatch ? 0.4 : 1,
+            cursor: 'pointer',
           }}>
           <div style={{ fontSize: 20, marginBottom: 4 }}>⏩</div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>Snabbsim</div>
+          <div style={{ fontSize: 13, fontWeight: !useLiveMode ? 700 : 500, color: !useLiveMode ? 'var(--accent)' : 'var(--text-secondary)' }}>Snabbsim</div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Direkt resultat</div>
         </button>
       </div>
-      {isCupMatch && (
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 14 }}>
-          Cupmatcher spelas alltid med livekommentering.
-        </p>
-      )}
 
       {lineupError && (
         <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', fontSize: 12, color: 'var(--danger)', marginBottom: 12 }}>

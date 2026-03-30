@@ -266,15 +266,13 @@ export function MatchScreen() {
       return
     }
     setLineupError(null)
-    // Cup matches always use live mode — snabbsim skips cup fixtures
-    const effectiveLiveMode = useLiveMode || isCupFixture
     try {
       const lineupResult = setPlayerLineup(startingIds, benchIds, captainId)
       if (!lineupResult.success) {
         setLineupError(lineupResult.error ?? 'Ogiltig uppställning')
         return
       }
-      if (effectiveLiveMode && nextFixture) {
+      if (useLiveMode && nextFixture) {
         const homeClub = game!.clubs.find(c => c.id === nextFixture.homeClubId)
         const awayClub = game!.clubs.find(c => c.id === nextFixture.awayClubId)
         const isHome = nextFixture.homeClubId === managedClubId
@@ -476,6 +474,35 @@ export function MatchScreen() {
           onAutoFill={handleAutoFill}
           onSlotClick={slotId => setSelectedSlotId(prev => prev === slotId ? null : slotId)}
           onFormationChange={newTactic => { setTacticState(newTactic); updateTactic(newTactic); setSelectedSlotId(null) }}
+          onAssignPlayer={(playerId, slotId) => {
+            const formation = tacticState.formation ?? '3-3-4'
+            const slot = FORMATIONS[formation].slots.find(s => s.id === slotId)
+            if (!slot) return
+            const current = { ...(tacticState.positionAssignments ?? {}) }
+            for (const pid of Object.keys(current)) {
+              if (current[pid].id === slotId) delete current[pid]
+            }
+            delete current[playerId]
+            current[playerId] = slot
+            if (!startingIds.includes(playerId) && startingIds.length < 11) {
+              setStartingIds(prev => [...prev, playerId])
+              setBenchIds(prev => prev.filter(id => id !== playerId))
+            } else if (!startingIds.includes(playerId)) {
+              setStartingIds(prev => [...prev, playerId])
+            }
+            const newTactic = { ...tacticState, positionAssignments: current }
+            setTacticState(newTactic)
+            updateTactic(newTactic)
+          }}
+          onRemovePlayer={(playerId) => {
+            const newAssignments = { ...(tacticState.positionAssignments ?? {}) }
+            delete newAssignments[playerId]
+            const newTactic = { ...tacticState, positionAssignments: newAssignments }
+            setTacticState(newTactic)
+            updateTactic(newTactic)
+            setStartingIds(prev => prev.filter(id => id !== playerId))
+            setBenchIds(prev => [...prev, playerId])
+          }}
           onError={setLineupError}
           onNext={() => canPlay && setMatchStep('tactic')}
         />
@@ -499,7 +526,6 @@ export function MatchScreen() {
           tacticState={tacticState}
           matchWeatherData={matchWeatherData}
           useLiveMode={useLiveMode}
-          isCupMatch={isCupFixture}
           lineupError={lineupError}
           onSetLiveMode={setUseLiveMode}
           onBack={() => setMatchStep('tactic')}
