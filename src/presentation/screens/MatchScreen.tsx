@@ -224,6 +224,16 @@ export function MatchScreen() {
     setSelectedSlotId(null)
   }, [tacticState, startingIds, updateTactic])
 
+  const swapSlots = useCallback((fromSlotId: string, toSlotId: string) => {
+    const current = { ...(tacticState.lineupSlots ?? {}) }
+    const tmp = current[fromSlotId] ?? null
+    current[fromSlotId] = current[toSlotId] ?? null
+    current[toSlotId] = tmp
+    const newTactic = { ...tacticState, lineupSlots: current }
+    setTacticState(newTactic)
+    updateTactic(newTactic)
+  }, [tacticState, updateTactic])
+
   function handleTacticChange<K extends keyof Tactic>(key: K, value: Tactic[K]) {
     const newTactic = { ...tacticState, [key]: value }
     setTacticState(newTactic)
@@ -530,6 +540,7 @@ export function MatchScreen() {
             setSelectedSlotId(null)
           }}
           onAssignPlayer={assignPlayerToSlot}
+          onSwapPlayers={swapSlots}
           onRemovePlayer={(playerId) => {
             const current = { ...(tacticState.lineupSlots ?? {}) }
             for (const sid of Object.keys(current)) {
