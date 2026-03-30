@@ -113,7 +113,16 @@ export const useGameStore = create<GameState>()(
         if (game !== null && game.id === id) return true
         const loaded = await loadSaveGame(id)
         if (!loaded) return false
-        set({ game: loaded, lastAdvanceResult: null })
+        // Migrate old club names — strip suffixes like BK, IF, GoIF, IK, FK
+        const migrated = {
+          ...loaded,
+          clubs: loaded.clubs.map(c => ({
+            ...c,
+            name: c.name.replace(/\s+(BK|IF|GoIF|IK|FK|SK)$/i, '').trim(),
+            shortName: c.shortName.replace(/\s+(BK|IF|GoIF|IK|FK|SK)$/i, '').trim(),
+          })),
+        }
+        set({ game: migrated, lastAdvanceResult: null })
         return true
       },
 

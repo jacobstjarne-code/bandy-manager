@@ -1,7 +1,8 @@
 import type { SaveGame, InboxItem } from '../../domain/entities/SaveGame'
 import type { Player } from '../../domain/entities/Player'
 import type { GameEvent } from '../../domain/entities/GameEvent'
-import { FixtureStatus, InboxItemType } from '../../domain/enums'
+import { FixtureStatus, InboxItemType, PlayerPosition } from '../../domain/enums'
+import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../domain/data/playerNames'
 import { calculateStandings } from '../../domain/services/standingsService'
 import { generateYouthIntake } from '../../domain/services/youthIntakeService'
 import { generateSchedule } from '../../domain/services/scheduleGenerator'
@@ -659,6 +660,67 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   )
   playersAfterLicense = aiTransferResult.updatedPlayers
   clubsAfterLicense = aiTransferResult.updatedClubs
+
+  // ── AI squad replenishment: ensure every AI club has ≥ 18 players ─────────
+  const replenishRand = mulberry32(baseSeed + 77777)
+  const replenishPositions = [
+    PlayerPosition.Goalkeeper,
+    PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender,
+    PlayerPosition.Midfielder, PlayerPosition.Midfielder,
+    PlayerPosition.Forward, PlayerPosition.Forward,
+  ]
+  const emptySeasonStats = { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0 }
+  const emptyCareerStats = { totalGames: 0, totalGoals: 0, totalAssists: 0, seasonsPlayed: 0 }
+
+  const replenishedPlayers: Player[] = []
+  const replenishedClubs = clubsAfterLicense.map(club => {
+    if (club.id === game.managedClubId) return club
+    const squadSize = club.squadPlayerIds.length
+    if (squadSize >= 18) return club
+
+    const needed = 18 - squadSize
+    const newIds: string[] = []
+    for (let i = 0; i < needed; i++) {
+      const posIndex = i % replenishPositions.length
+      const pos = replenishPositions[posIndex]
+      const caBase = Math.round(club.reputation * 0.45 + 15)
+      const ca = Math.max(20, Math.min(70, caBase + Math.floor(replenishRand() * 16) - 8))
+      const age = 20 + Math.floor(replenishRand() * 12)
+      const attrs = { skating: ca - 5, acceleration: ca - 5, stamina: ca - 3, ballControl: ca - 5, passing: ca - 5, shooting: ca - 5, dribbling: ca - 5, vision: ca - 5, decisions: ca - 5, workRate: ca, positioning: ca - 5, defending: ca - 5, cornerSkill: ca - 10, goalkeeping: pos === PlayerPosition.Goalkeeper ? ca : 10 }
+      const id = `replenish_${club.id}_s${nextSeason}_${squadSize + i}`
+      const player: Player = {
+        id,
+        firstName: PLAYER_FIRST_NAMES[Math.floor(replenishRand() * PLAYER_FIRST_NAMES.length)],
+        lastName: PLAYER_LAST_NAMES[Math.floor(replenishRand() * PLAYER_LAST_NAMES.length)],
+        age,
+        nationality: 'svenska',
+        clubId: club.id,
+        isHomegrown: age <= 23,
+        position: pos,
+        archetype: 'TwoWaySkater' as Player['archetype'],
+        salary: Math.round(ca * 120 + 2000),
+        contractUntilSeason: nextSeason + 2 + Math.floor(replenishRand() * 2),
+        marketValue: ca * 1500,
+        morale: 60, form: 55, fitness: 70, sharpness: 50,
+        isFullTimePro: ca >= 50,
+        currentAbility: ca,
+        potentialAbility: Math.min(90, ca + 5 + Math.floor(replenishRand() * 15)),
+        developmentRate: age <= 22 ? 60 : 35,
+        injuryProneness: 25, discipline: 65,
+        attributes: attrs,
+        isInjured: false, injuryDaysRemaining: 0, suspensionGamesRemaining: 0,
+        seasonStats: emptySeasonStats, careerStats: emptyCareerStats,
+      }
+      replenishedPlayers.push(player)
+      newIds.push(id)
+    }
+    return { ...club, squadPlayerIds: [...club.squadPlayerIds, ...newIds] }
+  })
+
+  if (replenishedPlayers.length > 0) {
+    playersAfterLicense = [...playersAfterLicense, ...replenishedPlayers]
+    clubsAfterLicense = replenishedClubs
+  }
 
   const notableTransfers = aiTransferResult.transfers.filter(t => t.fee > 50000).slice(0, 3)
   if (notableTransfers.length > 0) {

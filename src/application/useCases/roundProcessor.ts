@@ -78,7 +78,7 @@ function createRegenPlayer(club: Club, index: number, rand: () => number): Playe
   }
 }
 
-function generateAiLineup(club: Club, allPlayers: Player[], rand: () => number = Math.random): TeamSelection {
+function generateAiLineup(club: Club, allPlayers: Player[], rand: () => number = Math.random): { selection: TeamSelection; regenPlayers: Player[] } {
   const available = allPlayers.filter(
     p =>
       club.squadPlayerIds.includes(p.id) &&
@@ -94,6 +94,7 @@ function generateAiLineup(club: Club, allPlayers: Player[], rand: () => number =
   const outfieldPool = sorted.filter(p => p.position !== PlayerPosition.Goalkeeper)
 
   const starters: Player[] = []
+  const regenPlayers: Player[] = []
 
   if (gkPool.length > 0) {
     starters.push(gkPool[0])
@@ -113,10 +114,12 @@ function generateAiLineup(club: Club, allPlayers: Player[], rand: () => number =
     }
   }
 
-  // If still under 11, generate regen filler players
+  // If still under 11, generate regen filler players and track them
   let regenIndex = 0
   while (starters.length < 11) {
-    starters.push(createRegenPlayer(club, regenIndex++, rand))
+    const regen = createRegenPlayer(club, regenIndex++, rand)
+    starters.push(regen)
+    regenPlayers.push(regen)
   }
 
   // Bench: next 5 best available not in starters
@@ -136,10 +139,13 @@ function generateAiLineup(club: Club, allPlayers: Player[], rand: () => number =
   )
 
   return {
-    startingPlayerIds: starters.map(p => p.id),
-    benchPlayerIds: bench.map(p => p.id),
-    captainPlayerId: captain?.id,
-    tactic: { ...club.activeTactic, formation: AI_FORMATIONS[club.preferredStyle] ?? '5-3-2' },
+    selection: {
+      startingPlayerIds: starters.map(p => p.id),
+      benchPlayerIds: bench.map(p => p.id),
+      captainPlayerId: captain?.id,
+      tactic: { ...club.activeTactic, formation: AI_FORMATIONS[club.preferredStyle] ?? '5-3-2' },
+    },
+    regenPlayers,
   }
 }
 
@@ -243,6 +249,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Collect player IDs who played in this round (for fitness updates)
   const startersThisRound = new Set<string>()
   const benchThisRound = new Set<string>()
+  // Regen players created this round (for AI squads short on players) — persisted to game state
+  const allRoundRegenPlayers: Player[] = []
 
   const simulatedFixtures: Fixture[] = []
   const roundMatchWeathers: MatchWeather[] = []
@@ -295,9 +303,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const homeClub = game.clubs.find(c => c.id === fixture.homeClubId)!
     const awayClub = game.clubs.find(c => c.id === fixture.awayClubId)!
 
-    const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
-    const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
-
     // Generate weather
     const matchWeather = generateMatchWeather(
       game.currentSeason,
@@ -330,13 +335,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       continue
     }
 
+    // Generate lineups — AI lineup may produce regen players if squad < 11
+    let homeRegenPlayers: Player[] = []
+    let awayRegenPlayers: Player[] = []
+
     if (
       fixture.homeClubId === game.managedClubId &&
       game.managedClubPendingLineup !== undefined
     ) {
       homeLineup = game.managedClubPendingLineup
     } else {
-      homeLineup = generateAiLineup(homeClub, game.players, localRand)
+      const { selection, regenPlayers } = generateAiLineup(homeClub, game.players, localRand)
+      homeLineup = selection
+      homeRegenPlayers = regenPlayers
     }
 
     if (
@@ -345,8 +356,22 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     ) {
       awayLineup = game.managedClubPendingLineup
     } else {
-      awayLineup = generateAiLineup(awayClub, game.players, localRand)
+      const { selection, regenPlayers } = generateAiLineup(awayClub, game.players, localRand)
+      awayLineup = selection
+      awayRegenPlayers = regenPlayers
     }
+
+    // Accumulate regen players for persistence at end of round
+    for (const regen of [...homeRegenPlayers, ...awayRegenPlayers]) {
+      if (!allRoundRegenPlayers.find(r => r.id === regen.id)) {
+        allRoundRegenPlayers.push(regen)
+      }
+    }
+
+    // Players for simulation — include this match's regen players
+    const matchPlayers = [...game.players, ...homeRegenPlayers, ...awayRegenPlayers]
+    const homePlayers = matchPlayers.filter(p => p.clubId === fixture.homeClubId)
+    const awayPlayers = matchPlayers.filter(p => p.clubId === fixture.awayClubId)
 
     // Track starters/bench
     for (const id of homeLineup.startingPlayerIds) startersThisRound.add(id)
@@ -1664,9 +1689,26 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // Persist regen players created this round: add to player list + club squads
+  let loanAndRegenPlayers = loanUpdatedPlayers
+  let regenUpdatedClubs = academyUpdatedClubs
+  if (allRoundRegenPlayers.length > 0) {
+    const existingIds = new Set(loanAndRegenPlayers.map(p => p.id))
+    const newRegens = allRoundRegenPlayers.filter(r => !existingIds.has(r.id))
+    loanAndRegenPlayers = [...loanAndRegenPlayers, ...newRegens]
+    // Add regen IDs to their clubs' squadPlayerIds
+    regenUpdatedClubs = regenUpdatedClubs.map(c => {
+      const clubRegens = newRegens.filter(r => r.clubId === c.id).map(r => r.id)
+      if (clubRegens.length === 0) return c
+      const existing = new Set(c.squadPlayerIds)
+      const toAdd = clubRegens.filter(id => !existing.has(id))
+      return toAdd.length > 0 ? { ...c, squadPlayerIds: [...c.squadPlayerIds, ...toAdd] } : c
+    })
+  }
+
   // Apply accepted transfer bids to final player/club state
-  let postTransferPlayers = loanUpdatedPlayers
-  let postTransferClubs = academyUpdatedClubs
+  let postTransferPlayers = loanAndRegenPlayers
+  let postTransferClubs = regenUpdatedClubs
   for (const bid of resolvedBids) {
     if (bid.direction !== 'outgoing' || bid.status !== 'accepted') continue
     const wasPending = existingBids.find(b => b.id === bid.id)?.status === 'pending'
