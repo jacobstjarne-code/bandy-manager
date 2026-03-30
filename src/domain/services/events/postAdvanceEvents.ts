@@ -175,8 +175,8 @@ export function generatePostAdvanceEvents(
 
   if (events.length >= 2) return events
 
-  // 5. Day job conflict
-  if (events.length < 2) {
+  // 5. Day job conflict (~15% chance per round, max one per 5-round period per player)
+  if (events.length < 2 && rand() < 0.15) {
     const recentCompleted = game.fixtures
       .filter(f =>
         f.status === 'completed' &&

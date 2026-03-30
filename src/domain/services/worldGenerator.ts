@@ -125,7 +125,7 @@ interface ClubTemplate {
 export const CLUB_TEMPLATES: ClubTemplate[] = [
   {
     id: 'club_sandviken',
-    name: 'Forsbacka BK',
+    name: 'Forsbacka',
     shortName: 'Forsbacka',
     region: 'Gävleborg',
     reputation: 85,
@@ -142,7 +142,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
   },
   {
     id: 'club_sirius',
-    name: 'Söderfors BK',
+    name: 'Söderfors',
     shortName: 'Söderfors',
     region: 'Uppland',
     reputation: 55,
@@ -159,7 +159,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
   },
   {
     id: 'club_vasteras',
-    name: 'Västanfors IF',
+    name: 'Västanfors',
     shortName: 'Västanfors',
     region: 'Västmanland',
     reputation: 78,
@@ -176,9 +176,9 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
   },
   {
     id: 'club_broberg',
-    name: 'Karlsborgs BK',
+    name: 'Karlsborg',
     shortName: 'Karlsborg',
-    region: 'Dalarna',
+    region: 'Norrbotten',
     reputation: 68,
     finances: 400000,
     wageBudget: 75000,
@@ -193,7 +193,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
   },
   {
     id: 'club_villa',
-    name: 'Målilla GoIF',
+    name: 'Målilla',
     shortName: 'Målilla',
     region: 'Småland',
     reputation: 65,
@@ -210,7 +210,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
   },
   {
     id: 'club_falun',
-    name: 'Gagnefs IF',
+    name: 'Gagnef',
     shortName: 'Gagnef',
     region: 'Dalarna',
     reputation: 63,
@@ -227,7 +227,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
   },
   {
     id: 'club_ljusdal',
-    name: 'Hälleforsnäs IF',
+    name: 'Hälleforsnäs',
     shortName: 'Hälleforsnäs',
     region: 'Södermanland',
     reputation: 60,
@@ -244,7 +244,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
   },
   {
     id: 'club_edsbyn',
-    name: 'Lesjöfors IF',
+    name: 'Lesjöfors',
     shortName: 'Lesjöfors',
     region: 'Värmland',
     reputation: 62,
@@ -261,7 +261,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
   },
   {
     id: 'club_tillberga',
-    name: 'Rögle BK',
+    name: 'Rögle',
     shortName: 'Rögle',
     region: 'Skåne',
     reputation: 50,
@@ -278,7 +278,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
   },
   {
     id: 'club_kungalv',
-    name: 'Slottsbrons IF',
+    name: 'Slottsbron',
     shortName: 'Slottsbron',
     region: 'Värmland',
     reputation: 48,
@@ -295,7 +295,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
   },
   {
     id: 'club_skutskar',
-    name: 'Skutskärs IF',
+    name: 'Skutskär',
     shortName: 'Skutskär',
     region: 'Uppland',
     reputation: 52,
@@ -312,9 +312,9 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
   },
   {
     id: 'club_soderhamns',
-    name: 'Heros BK',
+    name: 'Heros',
     shortName: 'Heros',
-    region: 'Hälsingland',
+    region: 'Dalarna',
     reputation: 45,
     finances: 160000,
     wageBudget: 42000,

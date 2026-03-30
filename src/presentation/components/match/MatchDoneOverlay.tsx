@@ -153,7 +153,7 @@ export function MatchDoneOverlay({
         {pressQuestion && !pressAnswered && (
           <div style={{
             marginBottom: 14, padding: '12px', textAlign: 'left',
-            background: 'rgba(255,255,255,0.03)', borderRadius: 8, border: '1px solid var(--border)',
+            background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border)',
           }}>
             <p style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 6 }}>
               🎤 {pressQuestion.journalist}
@@ -184,7 +184,7 @@ export function MatchDoneOverlay({
           </div>
         )}
         {pressQuestion && pressAnswered && pressQuote && (
-          <div style={{ marginBottom: 14, padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, border: '1px solid var(--border)', textAlign: 'left' }}>
+          <div style={{ marginBottom: 14, padding: '8px 12px', background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border)', textAlign: 'left' }}>
             <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>📰 Presskonferens</p>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic' }}>{pressQuote}</p>
           </div>

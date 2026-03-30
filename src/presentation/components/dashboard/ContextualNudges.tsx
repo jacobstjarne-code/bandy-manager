@@ -64,8 +64,8 @@ export function ContextualNudges({ game, currentRound: _r }: Props) {
           style={{
             display: 'flex', alignItems: 'center', gap: 10,
             padding: '9px 12px', marginBottom: 6,
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.06)',
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border)',
             borderRadius: 8, cursor: 'pointer',
           }}
         >

@@ -67,9 +67,9 @@ export const tacticExplanations: Record<string, Record<string, string>> = {
     high: 'Intensiv press. Fler bollvinster men mer kort och fatigue.',
   },
   passingRisk: {
-    safe: 'Korta säkra passningar. Rekommenderas i dåligt väder.',
+    safe: 'Korta, kontrollerade passningar. Minskar risken men kan bli förutsägbart.',
     mixed: 'Varierat passningsspel. Balanserad risk.',
-    direct: 'Långa direkta bollar. Fler chanser, men fler tappar.',
+    direct: 'Långbollar och snabba omställningar. Effektivt i dåligt väder men fler tappade bollar.',
   },
   width: {
     narrow: 'Smalt spel. Bättre centralt försvar, färre hörnor.',
@@ -77,12 +77,12 @@ export const tacticExplanations: Record<string, Record<string, string>> = {
     wide: 'Brett spel. Fler hörnor och kantsituationer.',
   },
   cornerStrategy: {
-    safe: 'Kort hörna, säkra passningar. Lägre målrisk.',
-    standard: 'Varierade hörnor. Balanserat upplägg.',
-    aggressive: 'Alla framåt på hörnan! Hög målchans men sårbar i omställning.',
+    safe: 'Få skyttar (1–2). Säkert hörnspel med låg risk.',
+    standard: 'Tre skyttar. Klassiskt hörnupplägg, balanserat.',
+    aggressive: 'Full arsenal + varianter. Alla skyttar framme, hög risk och hög belöning.',
   },
   penaltyKillStyle: {
-    passive: 'Håller sig i egen zon vid utvisning. Säkert men passivt.',
+    passive: 'Håller sig på egen planhalva vid utvisning. Säkert men passivt.',
     active: 'Balanserat utvisningsspel med lätt press.',
     aggressive: 'Pressar även med man mindre. Hög risk, hög belöning.',
   },

@@ -158,7 +158,7 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
             {player.firstName} {player.lastName}
           </p>
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 1 }}>
-            {positionShort(player.position)} · {player.age}v
+            {positionShort(player.position)} · {player.age} år
           </p>
         </div>
 

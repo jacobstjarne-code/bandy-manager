@@ -200,8 +200,8 @@ export function generateCommunityActivitiesEvents(
       events.push({
         id: eid,
         type: 'communityEvent',
-        title: 'Isberedningsmaskin på gång',
-        body: 'Isberedningsmaskinens motor börjar krångla. Reparation kostar 15 000 kr. Skjuter ni upp det riskerar ni sämre is.',
+        title: 'Ismaskinen krånglar',
+        body: 'Ismaskinens motor börjar krångla. Reparation kostar 15 000 kr. Skjuter ni upp det riskerar ni sämre is.',
         choices: [
           {
             id: 'repair',
