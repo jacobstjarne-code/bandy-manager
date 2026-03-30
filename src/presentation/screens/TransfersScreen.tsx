@@ -251,15 +251,17 @@ export function TransfersScreen() {
 
   function handleSignFreeAgent(agentId: string) {
     if (!game) return
-    const updatedPlayers = game.players.map(p => p.id === agentId ? { ...p, clubId: game.managedClubId } : p)
+    const agent = game.transferState.freeAgents.find(p => p.id === agentId)
+    if (!agent) return
+    const agentWithClub = { ...agent, clubId: game.managedClubId, contractUntilSeason: game.currentSeason + 2 }
+    const updatedPlayers = [...game.players, agentWithClub]
     const updatedFreeAgents = game.transferState.freeAgents.filter(p => p.id !== agentId)
     const updatedClubs = game.clubs.map(c =>
       c.id === game.managedClubId
         ? { ...c, squadPlayerIds: [...c.squadPlayerIds, agentId] }
         : c
     )
-    const updatedGame = { ...game, players: updatedPlayers, clubs: updatedClubs, transferState: { ...game.transferState, freeAgents: updatedFreeAgents } }
-    useGameStore.setState({ game: updatedGame })
+    useGameStore.setState({ game: { ...game, players: updatedPlayers, clubs: updatedClubs, transferState: { ...game.transferState, freeAgents: updatedFreeAgents } } })
   }
 
   function handleListForSale(playerId: string) {

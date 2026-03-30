@@ -23,7 +23,7 @@ import {
 } from '../../domain/services/inboxService'
 import { processScoutAssignment } from '../../domain/services/scoutingService'
 import { updateAllMarketValues } from '../../domain/services/marketValueService'
-import { generateIncomingBids, resolveOutgoingBid } from '../../domain/services/transferService'
+import { generateIncomingBids, resolveOutgoingBid, executeTransfer } from '../../domain/services/transferService'
 import { generatePostAdvanceEvents, generateEvents } from '../../domain/services/eventService'
 import { generateMediaHeadlines, generateTrendArticles } from '../../domain/services/mediaService'
 import type { TransferBid } from '../../domain/entities/GameEvent'
@@ -57,7 +57,28 @@ const AI_FORMATIONS: Record<ClubStyle, FormationType> = {
   [ClubStyle.Technical]: '3-4-3',
 }
 
-function generateAiLineup(club: Club, allPlayers: Player[]): TeamSelection {
+function createRegenPlayer(club: Club, index: number, rand: () => number): Player {
+  const positions = [PlayerPosition.Defender, PlayerPosition.Midfielder, PlayerPosition.Forward]
+  const pos = positions[Math.floor(rand() * positions.length)]
+  const emptyStats = { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0 }
+  const emptyCareer = { totalGames: 0, totalGoals: 0, totalAssists: 0, seasonsPlayed: 0 }
+  const attrs = { skating: 40, acceleration: 40, stamina: 40, ballControl: 40, passing: 40, shooting: 40, dribbling: 40, vision: 40, decisions: 40, workRate: 50, positioning: 40, defending: 40, cornerSkill: 30, goalkeeping: 10 }
+  return {
+    id: `regen_${club.id}_${index}_${Math.floor(rand() * 99999)}`,
+    firstName: 'Regen', lastName: `Spelare`, age: 20 + Math.floor(rand() * 10),
+    nationality: 'svenska', clubId: club.id, isHomegrown: false,
+    position: pos, archetype: 'TwoWaySkater' as Player['archetype'],
+    salary: 3000, contractUntilSeason: 9999, marketValue: 10000,
+    morale: 60, form: 50, fitness: 70, sharpness: 50,
+    isFullTimePro: false, currentAbility: 25 + Math.floor(rand() * 15),
+    potentialAbility: 40, developmentRate: 30,
+    injuryProneness: 30, discipline: 60, attributes: attrs,
+    isInjured: false, injuryDaysRemaining: 0, suspensionGamesRemaining: 0,
+    seasonStats: emptyStats, careerStats: emptyCareer,
+  }
+}
+
+function generateAiLineup(club: Club, allPlayers: Player[], rand: () => number = Math.random): TeamSelection {
   const available = allPlayers.filter(
     p =>
       club.squadPlayerIds.includes(p.id) &&
@@ -90,6 +111,12 @@ function generateAiLineup(club: Club, allPlayers: Player[]): TeamSelection {
       if (starters.length >= 11) break
       starters.push(p)
     }
+  }
+
+  // If still under 11, generate regen filler players
+  let regenIndex = 0
+  while (starters.length < 11) {
+    starters.push(createRegenPlayer(club, regenIndex++, rand))
   }
 
   // Bench: next 5 best available not in starters
@@ -309,7 +336,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     ) {
       homeLineup = game.managedClubPendingLineup
     } else {
-      homeLineup = generateAiLineup(homeClub, game.players)
+      homeLineup = generateAiLineup(homeClub, game.players, localRand)
     }
 
     if (
@@ -318,7 +345,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     ) {
       awayLineup = game.managedClubPendingLineup
     } else {
-      awayLineup = generateAiLineup(awayClub, game.players)
+      awayLineup = generateAiLineup(awayClub, game.players, localRand)
     }
 
     // Track starters/bench
@@ -1171,6 +1198,36 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     })
   }
 
+  // Bid resolution notifications + execute accepted transfers
+  for (const bid of resolvedBids) {
+    if (bid.direction !== 'outgoing') continue
+    const wasPending = existingBids.find(b => b.id === bid.id)?.status === 'pending'
+    if (!wasPending) continue
+
+    const target = preEventGame.players.find(p => p.id === bid.playerId)
+    const sellingClub = preEventGame.clubs.find(c => c.id === bid.sellingClubId)
+
+    if (bid.status === 'accepted' && target) {
+      newInboxItems.push({
+        id: `inbox_bid_accepted_${bid.id}`,
+        date: newDate,
+        type: InboxItemType.Transfer,
+        title: `Bud accepterat — ${target.firstName} ${target.lastName}`,
+        body: `${sellingClub?.name ?? 'Klubben'} accepterar ditt bud på ${target.firstName} ${target.lastName}! Spelaren ansluter till truppen.`,
+        isRead: false,
+      })
+    } else if (bid.status === 'rejected' && target) {
+      newInboxItems.push({
+        id: `inbox_bid_rejected_${bid.id}`,
+        date: newDate,
+        type: InboxItemType.Transfer,
+        title: `Bud avslaget — ${target.firstName} ${target.lastName}`,
+        body: `${sellingClub?.name ?? 'Klubben'} avslår ditt bud på ${target.firstName} ${target.lastName}.`,
+        isRead: false,
+      })
+    }
+  }
+
   // ── Post-advance events ──────────────────────────────────────────────────
   const newEvents = generatePostAdvanceEvents(preEventGame, newBids, nextRound, localRand, justCompletedManagedFixture ?? undefined)
   const communityEvents = generateEvents(
@@ -1607,11 +1664,24 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // Apply accepted transfer bids to final player/club state
+  let postTransferPlayers = loanUpdatedPlayers
+  let postTransferClubs = academyUpdatedClubs
+  for (const bid of resolvedBids) {
+    if (bid.direction !== 'outgoing' || bid.status !== 'accepted') continue
+    const wasPending = existingBids.find(b => b.id === bid.id)?.status === 'pending'
+    if (!wasPending) continue
+    const tmpGame = { ...preEventGame, players: postTransferPlayers, clubs: postTransferClubs }
+    const result = executeTransfer(tmpGame, bid)
+    postTransferPlayers = result.players
+    postTransferClubs = result.clubs
+  }
+
   let updatedGame: SaveGame = {
     ...game,
-    clubs: academyUpdatedClubs,
+    clubs: postTransferClubs,
     fixtures: strippedFixtures,
-    players: loanUpdatedPlayers,
+    players: postTransferPlayers,
     standings,
     inbox: trimmedInbox,
     currentDate: newDate,

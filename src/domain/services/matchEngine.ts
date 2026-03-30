@@ -124,7 +124,6 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   // Per-player tracking for ratings
   const playerGoals: Record<string, number> = {}
   const playerAssists: Record<string, number> = {}
-  const playerYellowCards: Record<string, number> = {}
   const playerRedCards: Record<string, number> = {}
   const playerSaves: Record<string, number> = {}
 
@@ -192,7 +191,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
 
     let wAttack = 40
     let wTransition = 15
-    let wCorner = 13
+    let wCorner = 28
     let wHalfchance = 10
     let wFoul = 12
     let wLostball = 8
@@ -326,7 +325,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
       const base = attAttack * 0.6 - defDefense * 0.4 + randRange(rand, -0.2, 0.2)
       const chanceQuality = clamp(base * 1.2 + 0.15 + derbyChanceMult, 0.05, 0.95)
 
-      if (chanceQuality > 0.15) {
+      if (chanceQuality > 0.10) {
         if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
 
         const shotResult = rand()
@@ -516,11 +515,11 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
       const foulProb = defDiscipline * 0.6 + attDiscipline * 0.1
 
       const r = rand()
-      if (r < foulProb * 0.15 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
+      if (r < foulProb * 0.55 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
         // Suspension (red card equivalent)
         const suspPlayer = getDefendingPlayer(defendingStarters)
         if (suspPlayer) {
-          const duration = 3 + Math.floor(rand() * 3) // 3-5 steps
+          const duration = 3 + Math.floor(rand() * 4) // 3-6 steps
           if (isHomeAttacking) {
             awayActiveSuspensions++
             awaySuspensionTimers.push(duration)
@@ -534,7 +533,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
             type: MatchEventType.RedCard,
             clubId: defendingClubId,
             playerId: suspPlayer.id,
-            description: `Red card for ${suspPlayer.firstName} ${suspPlayer.lastName}`,
+            description: `Suspension for ${suspPlayer.firstName} ${suspPlayer.lastName}`,
           })
         }
       }
@@ -568,11 +567,6 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   for (const [playerId, assists] of Object.entries(playerAssists)) {
     if (playerRatings[playerId] !== undefined) {
       playerRatings[playerId] += assists * 0.5
-    }
-  }
-  for (const [playerId, yellows] of Object.entries(playerYellowCards)) {
-    if (playerRatings[playerId] !== undefined) {
-      playerRatings[playerId] -= yellows * 0.4
     }
   }
   for (const [playerId, reds] of Object.entries(playerRedCards)) {
