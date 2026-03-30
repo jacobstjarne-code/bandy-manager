@@ -1403,7 +1403,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       allNewEvents.push({
         id: `event_district_callup_${nextRound}_${game.currentSeason}`,
         type: 'communityEvent',
-        title: `Distriktslagsuttag — ${names}`,
+        title: `Juniorlandslagssamling — ${names}`,
         body: `${names} är kallade till ${districtName} P19-samling. De missar 2 P19-matcher men kan få värdefull erfarenhet.`,
         choices: [
           {

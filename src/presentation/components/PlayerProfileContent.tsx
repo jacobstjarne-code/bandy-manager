@@ -341,7 +341,7 @@ export function PlayerProfileContent({ player, isOwned = false }: PlayerProfileC
               rows={[
                 { label: 'Bollkontroll', value: player.attributes.ballControl },
                 { label: 'Passning', value: player.attributes.passing },
-                { label: 'Skjutning', value: player.attributes.shooting },
+                { label: 'Skott', value: player.attributes.shooting },
                 { label: 'Dribbling', value: player.attributes.dribbling },
               ]}
             />

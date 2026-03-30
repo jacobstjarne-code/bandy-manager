@@ -68,7 +68,7 @@ export function eventIcon(type: MatchEventType): string {
 export function attributeLabel(key: string): string {
   const map: Record<string, string> = {
     skating: 'Skridskoåkning', acceleration: 'Acceleration', stamina: 'Kondition',
-    ballControl: 'Bollkontroll', passing: 'Passning', shooting: 'Skjutning',
+    ballControl: 'Bollkontroll', passing: 'Passning', shooting: 'Skott',
     dribbling: 'Dribbling', vision: 'Vision', decisions: 'Spelsinne',
     workRate: 'Arbetsinsats', positioning: 'Positionering', defending: 'Försvar',
     cornerSkill: 'Hörnspel', goalkeeping: 'Målvaktsspel',

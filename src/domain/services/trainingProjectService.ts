@@ -36,7 +36,7 @@ export const PROJECT_DEFINITIONS: ProjectDefinition[] = [
     roundsNormal: 4,
     roundsHard: 2,
     description: 'Fokus på avslut och skotteknik.',
-    effectDescription: '+2 Skjutning på 8 spelare',
+    effectDescription: '+2 Skott på 8 spelare',
     injuryRisk: 'low',
     affectedAttribute: 'shooting',
     attributeBoost: 2,
