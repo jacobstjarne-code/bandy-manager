@@ -195,6 +195,7 @@ export function LineupStep({
           onRemovePlayer={onRemovePlayer}
           onSwapPlayers={onSwapPlayers}
           onFormationChange={onFormationChange}
+          onAutoFill={onAutoFill}
         />
       )}
 

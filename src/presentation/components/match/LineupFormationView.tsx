@@ -1,6 +1,6 @@
 import type { Player } from '../../../domain/entities/Player'
 import type { Tactic } from '../../../domain/entities/Club'
-import { FORMATIONS, autoAssignFormation } from '../../../domain/entities/Formation'
+import { FORMATIONS } from '../../../domain/entities/Formation'
 import type { FormationType } from '../../../domain/entities/Formation'
 import { BandyPitch } from '../BandyPitch'
 
@@ -49,13 +49,7 @@ export function LineupFormationView({
         <select
           value={formationType}
           onChange={e => {
-            const f = e.target.value as FormationType
-            const tmpl = FORMATIONS[f]
-            const currentStarters = startingIds
-              .map(id => squadPlayers.find(p => p.id === id))
-              .filter((p): p is Player => !!p)
-            const newLineupSlots = autoAssignFormation(tmpl, currentStarters)
-            onFormationChange({ ...tacticState, formation: f, lineupSlots: newLineupSlots })
+            onFormationChange({ ...tacticState, formation: e.target.value as FormationType })
           }}
           style={{
             flex: 1, padding: '7px 10px',

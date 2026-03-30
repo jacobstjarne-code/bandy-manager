@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import type { Player } from '../../../domain/entities/Player'
 import type { Tactic } from '../../../domain/entities/Club'
 import type { FormationType } from '../../../domain/entities/Formation'
-import { FORMATIONS, autoAssignFormation } from '../../../domain/entities/Formation'
+import { FORMATIONS } from '../../../domain/entities/Formation'
 import { BandyPitch } from '../BandyPitch'
 import { DraggablePlayerPill } from './DraggablePlayerPill'
 
@@ -14,6 +14,7 @@ interface PitchLineupViewProps {
   onRemovePlayer: (playerId: string) => void
   onSwapPlayers: (fromSlotId: string, toSlotId: string) => void
   onFormationChange: (newTactic: Tactic) => void
+  onAutoFill: () => void
 }
 
 interface DragState {
@@ -31,6 +32,7 @@ export function PitchLineupView({
   onRemovePlayer,
   onSwapPlayers,
   onFormationChange,
+  onAutoFill,
 }: PitchLineupViewProps) {
   const [drag, setDrag] = useState<DragState | null>(null)
   const [hoverSlotId, setHoverSlotId] = useState<string | null>(null)
@@ -128,15 +130,7 @@ export function PitchLineupView({
         <select
           value={formationType}
           onChange={e => {
-            const f = e.target.value as FormationType
-            const starters = startingIds
-              .map(id => squadPlayers.find(p => p.id === id))
-              .filter((p): p is Player => !!p)
-            onFormationChange({
-              ...tacticState,
-              formation: f,
-              lineupSlots: autoAssignFormation(FORMATIONS[f], starters),
-            })
+            onFormationChange({ ...tacticState, formation: e.target.value as FormationType })
           }}
           style={{
             flex: 1, padding: '7px 10px',
@@ -306,15 +300,7 @@ export function PitchLineupView({
           {startingIds.length}/11 startande
         </span>
         <button
-          onClick={() => {
-            const starters = startingIds
-              .map(id => squadPlayers.find(p => p.id === id))
-              .filter((p): p is Player => !!p)
-            onFormationChange({
-              ...tacticState,
-              lineupSlots: autoAssignFormation(template, starters),
-            })
-          }}
+          onClick={onAutoFill}
           style={{
             padding: '8px 16px', fontSize: 13, fontWeight: 700,
             background: 'rgba(196,122,58,0.08)', border: '1.5px solid var(--accent)',
