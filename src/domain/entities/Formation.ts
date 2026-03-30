@@ -130,39 +130,43 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
 }
 
 // ── Auto-assign players to formation slots ─────────────────────────────────
-// Returns positionAssignments mapping: playerId → FormationSlot
+// Returns lineupSlots mapping: slotId → playerId | null
 export function autoAssignFormation(
   template: FormationTemplate,
   players: Player[],
-): Record<string, FormationSlot> {
-  const assignments: Record<string, FormationSlot> = {}
-  const usedIds = new Set<string>()
-  const filledSlotIndices = new Set<number>()
+): Record<string, string | null> {
+  const lineupSlots: Record<string, string | null> = {}
+  // Initialise all slots to null
+  for (const slot of template.slots) {
+    lineupSlots[slot.id] = null
+  }
 
-  for (let i = 0; i < template.slots.length; i++) {
-    const slot = template.slots[i]
+  const usedIds = new Set<string>()
+  const filledSlotIds = new Set<string>()
+
+  // First pass: match by exact position, best CA first
+  for (const slot of template.slots) {
     const best = players
       .filter(p => p.position === slot.position && !usedIds.has(p.id))
       .sort((a, b) => b.currentAbility - a.currentAbility)[0]
     if (best) {
-      assignments[best.id] = slot
+      lineupSlots[slot.id] = best.id
       usedIds.add(best.id)
-      filledSlotIndices.add(i)
+      filledSlotIds.add(slot.id)
     }
   }
 
   // Second pass: fill unfilled slots with best remaining player by CA
-  for (let i = 0; i < template.slots.length; i++) {
-    if (filledSlotIndices.has(i)) continue
-    const slot = template.slots[i]
+  for (const slot of template.slots) {
+    if (filledSlotIds.has(slot.id)) continue
     const fallback = players
       .filter(p => !usedIds.has(p.id))
       .sort((a, b) => b.currentAbility - a.currentAbility)[0]
     if (fallback) {
-      assignments[fallback.id] = slot
+      lineupSlots[slot.id] = fallback.id
       usedIds.add(fallback.id)
     }
   }
 
-  return assignments
+  return lineupSlots
 }

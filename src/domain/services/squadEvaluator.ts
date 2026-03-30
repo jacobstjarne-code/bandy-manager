@@ -2,6 +2,7 @@ import type { Player } from '../entities/Player'
 import type { Tactic } from '../entities/Club'
 import { PlayerPosition } from '../enums'
 import { clamp } from '../utils/clamp'
+import { FORMATIONS } from '../entities/Formation'
 
 const ADJACENT: Record<PlayerPosition, PlayerPosition[]> = {
   [PlayerPosition.Goalkeeper]: [],
@@ -36,7 +37,12 @@ function playerModifier(player: Player): number {
 
 function effectivePlayerModifier(player: Player, tactic: Tactic): number {
   const base = playerModifier(player)
-  const slot = tactic.positionAssignments?.[player.id]
+  const lineupSlots = tactic.lineupSlots
+  if (!lineupSlots) return base
+  const slotId = Object.entries(lineupSlots).find(([, pid]) => pid === player.id)?.[0]
+  if (!slotId) return base
+  const formation = tactic.formation ?? '3-3-4'
+  const slot = FORMATIONS[formation]?.slots.find(s => s.id === slotId)
   if (!slot) return base
   return base * getPositionFit(player.position, slot.position)
 }

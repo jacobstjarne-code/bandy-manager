@@ -140,6 +140,14 @@ export function MatchScreen() {
       return
     }
     if (startingIds.includes(playerId)) {
+      // Remove from starting — also clear their slot
+      const current = { ...(tacticState.lineupSlots ?? {}) }
+      for (const sid of Object.keys(current)) {
+        if (current[sid] === playerId) current[sid] = null
+      }
+      const newTactic = { ...tacticState, lineupSlots: current }
+      setTacticState(newTactic)
+      updateTactic(newTactic)
       setStartingIds(prev => prev.filter(id => id !== playerId))
       setBenchIds(prev => [...prev, playerId])
     } else if (benchIds.includes(playerId)) {
@@ -172,8 +180,8 @@ export function MatchScreen() {
     const bench = sorted.filter(p => !starterSet.has(p.id)).slice(0, 5)
     const formation = tacticState.formation ?? '3-3-4'
     const template = FORMATIONS[formation]
-    const newAssignments = autoAssignFormation(template, starters)
-    const newTactic = { ...tacticState, positionAssignments: newAssignments }
+    const newLineupSlots = autoAssignFormation(template, starters)
+    const newTactic = { ...tacticState, lineupSlots: newLineupSlots }
     setTacticState(newTactic)
     updateTactic(newTactic)
     setStartingIds(starterIds)
@@ -185,19 +193,25 @@ export function MatchScreen() {
 
   const assignPlayerToSlot = useCallback((playerId: string, slotId: string) => {
     const formation = tacticState.formation ?? '3-3-4'
-    const slot = FORMATIONS[formation].slots.find(s => s.id === slotId)
-    if (!slot) return
-    const current = { ...(tacticState.positionAssignments ?? {}) }
-    for (const pid of Object.keys(current)) {
-      if (current[pid].id === slotId) delete current[pid]
+    const slotExists = FORMATIONS[formation].slots.some(s => s.id === slotId)
+    if (!slotExists) return
+    const current = { ...(tacticState.lineupSlots ?? {}) }
+    // Clear any slot that already has this player
+    for (const sid of Object.keys(current)) {
+      if (current[sid] === playerId) current[sid] = null
     }
-    delete current[playerId]
-    current[playerId] = slot
+    // Clear the target slot's previous occupant from startingIds if needed
+    const previousPid = current[slotId]
+    current[slotId] = playerId
+    if (previousPid && previousPid !== playerId) {
+      setStartingIds(prev => prev.filter(id => id !== previousPid))
+      setBenchIds(prev => prev.includes(previousPid) ? prev : [...prev, previousPid])
+    }
     if (!startingIds.includes(playerId) && startingIds.length < 11) {
       setStartingIds(prev => [...prev, playerId])
       setBenchIds(prev => prev.filter(id => id !== playerId))
     }
-    const newTactic = { ...tacticState, positionAssignments: current }
+    const newTactic = { ...tacticState, lineupSlots: current }
     setTacticState(newTactic)
     updateTactic(newTactic)
     setSelectedSlotId(null)
@@ -469,36 +483,52 @@ export function MatchScreen() {
           onSetCaptain={id => setCaptainId(id)}
           onAutoFill={handleAutoFill}
           onSlotClick={slotId => setSelectedSlotId(prev => prev === slotId ? null : slotId)}
-          onFormationChange={newTactic => { setTacticState(newTactic); updateTactic(newTactic); setSelectedSlotId(null) }}
-          onAssignPlayer={(playerId, slotId) => {
-            const formation = tacticState.formation ?? '3-3-4'
-            const slot = FORMATIONS[formation].slots.find(s => s.id === slotId)
-            if (!slot) return
-            const current = { ...(tacticState.positionAssignments ?? {}) }
-            let displacedId: string | null = null
-            for (const pid of Object.keys(current)) {
-              if (current[pid].id === slotId) { displacedId = pid; delete current[pid]; break }
+          onFormationChange={newTactic => {
+            // Migrate: preserve players whose slotId exists in the new formation
+            const newFormation = newTactic.formation ?? '3-3-4'
+            const newSlotIds = new Set(FORMATIONS[newFormation].slots.map(s => s.id))
+            const oldSlots = tacticState.lineupSlots ?? {}
+            const migrated: Record<string, string | null> = {}
+            // Initialise all new slots to null
+            for (const slotId of newSlotIds) migrated[slotId] = null
+            // Keep assignments whose slotId still exists in the new formation
+            const keptPids = new Set<string>()
+            for (const [slotId, pid] of Object.entries(oldSlots)) {
+              if (newSlotIds.has(slotId) && pid) {
+                migrated[slotId] = pid
+                keptPids.add(pid)
+              }
             }
-            delete current[playerId]
-            current[playerId] = slot
-            setStartingIds(prev => {
-              let ids = [...prev]
-              if (displacedId && displacedId !== playerId) ids = ids.filter(id => id !== displacedId)
-              if (!ids.includes(playerId)) ids.push(playerId)
-              return ids
-            })
-            if (displacedId && displacedId !== playerId) {
-              setBenchIds(prev => prev.includes(displacedId!) ? prev : [...prev, displacedId!])
+            // Auto-assign remaining starters into empty slots
+            const unplacedStarters = startingIds
+              .map(id => squadPlayers.find(p => p.id === id))
+              .filter((p): p is Player => !!p && !keptPids.has(p.id))
+            const emptySlots = FORMATIONS[newFormation].slots.filter(s => !migrated[s.id])
+            const usedInFill = new Set<string>()
+            for (const slot of emptySlots) {
+              const best = unplacedStarters
+                .filter(p => !usedInFill.has(p.id) && p.position === slot.position)
+                .sort((a, b) => b.currentAbility - a.currentAbility)[0]
+                ?? unplacedStarters
+                  .filter(p => !usedInFill.has(p.id))
+                  .sort((a, b) => b.currentAbility - a.currentAbility)[0]
+              if (best) {
+                migrated[slot.id] = best.id
+                usedInFill.add(best.id)
+              }
             }
-            setBenchIds(prev => prev.filter(id => id !== playerId))
-            const newTactic = { ...tacticState, positionAssignments: current }
-            setTacticState(newTactic)
-            updateTactic(newTactic)
+            const merged = { ...newTactic, lineupSlots: migrated }
+            setTacticState(merged)
+            updateTactic(merged)
+            setSelectedSlotId(null)
           }}
+          onAssignPlayer={assignPlayerToSlot}
           onRemovePlayer={(playerId) => {
-            const newAssignments = { ...(tacticState.positionAssignments ?? {}) }
-            delete newAssignments[playerId]
-            const newTactic = { ...tacticState, positionAssignments: newAssignments }
+            const current = { ...(tacticState.lineupSlots ?? {}) }
+            for (const sid of Object.keys(current)) {
+              if (current[sid] === playerId) current[sid] = null
+            }
+            const newTactic = { ...tacticState, lineupSlots: current }
             setTacticState(newTactic)
             updateTactic(newTactic)
             setStartingIds(prev => prev.filter(id => id !== playerId))

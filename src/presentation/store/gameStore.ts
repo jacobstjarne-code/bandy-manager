@@ -138,12 +138,25 @@ export const useGameStore = create<GameState>()(
 
         const migrated = {
           ...loaded,
-          clubs: loaded.clubs.map(c => ({
-            ...c,
-            name: c.name.replace(/\s+(BK|IF|GoIF|IK|FK|SK)$/i, '').trim(),
-            shortName: c.shortName.replace(/\s+(BK|IF|GoIF|IK|FK|SK)$/i, '').trim(),
-          })),
-          players: loaded.players.map(p =>
+          clubs: loaded.clubs.map((c: any) => {
+            const tactic = c.activeTactic ?? {}
+            // Migrate positionAssignments (playerId → FormationSlot) → lineupSlots (slotId → playerId)
+            if (tactic.positionAssignments && !tactic.lineupSlots) {
+              const lineupSlots: Record<string, string | null> = {}
+              for (const [pid, slot] of Object.entries(tactic.positionAssignments as Record<string, { id: string }>)) {
+                lineupSlots[slot.id] = pid
+              }
+              tactic.lineupSlots = lineupSlots
+              delete tactic.positionAssignments
+            }
+            return {
+              ...c,
+              name: c.name.replace(/\s+(BK|IF|GoIF|IK|FK|SK)$/i, '').trim(),
+              shortName: c.shortName.replace(/\s+(BK|IF|GoIF|IK|FK|SK)$/i, '').trim(),
+              activeTactic: tactic,
+            }
+          }),
+          players: loaded.players.map((p: any) =>
             (p.position as string) === 'midfielder'
               ? { ...p, position: PlayerPosition.Half }
               : p

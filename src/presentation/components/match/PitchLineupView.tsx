@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import type { Player } from '../../../domain/entities/Player'
 import type { Tactic } from '../../../domain/entities/Club'
-import type { FormationSlot, FormationType } from '../../../domain/entities/Formation'
+import type { FormationType } from '../../../domain/entities/Formation'
 import { FORMATIONS, autoAssignFormation } from '../../../domain/entities/Formation'
 import { BandyPitch } from '../BandyPitch'
 import { DraggablePlayerPill } from './DraggablePlayerPill'
@@ -39,20 +39,17 @@ export function PitchLineupView({
   const formationType = (tacticState.formation ?? '3-3-4') as FormationType
   const template = FORMATIONS[formationType]
 
-  // Build slot → player mapping (only from startingIds)
-  const rawAssignments = tacticState.positionAssignments ?? {}
-  const assignments: Record<string, FormationSlot> = Object.fromEntries(
-    Object.entries(rawAssignments).filter(([pid]) => startingIds.includes(pid))
-  )
+  // lineupSlots is the canonical mapping: slotId → playerId | null
   const slotToPlayer: Record<string, string> = {}
-  for (const [pid, slot] of Object.entries(assignments)) {
-    slotToPlayer[slot.id] = pid
+  for (const [slotId, pid] of Object.entries(tacticState.lineupSlots ?? {})) {
+    if (pid && startingIds.includes(pid)) slotToPlayer[slotId] = pid
   }
 
-  // Players not yet placed on the pitch (available to drag)
-  const assignedPids = new Set(Object.keys(assignments))
+  // Players in startingIds but not yet placed on the pitch
+  const placedPids = new Set(Object.values(slotToPlayer))
   const pillPlayers = squadPlayers.filter(p =>
-    !assignedPids.has(p.id) &&
+    startingIds.includes(p.id) &&
+    !placedPids.has(p.id) &&
     !p.isInjured &&
     p.suspensionGamesRemaining === 0
   )
@@ -138,7 +135,7 @@ export function PitchLineupView({
             onFormationChange({
               ...tacticState,
               formation: f,
-              positionAssignments: autoAssignFormation(FORMATIONS[f], starters),
+              lineupSlots: autoAssignFormation(FORMATIONS[f], starters),
             })
           }}
           style={{
@@ -315,7 +312,7 @@ export function PitchLineupView({
               .filter((p): p is Player => !!p)
             onFormationChange({
               ...tacticState,
-              positionAssignments: autoAssignFormation(template, starters),
+              lineupSlots: autoAssignFormation(template, starters),
             })
           }}
           style={{

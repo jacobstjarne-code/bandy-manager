@@ -32,13 +32,10 @@ export function LineupFormationView({
   const formationType = tacticState.formation ?? '3-3-4'
   const template = FORMATIONS[formationType]
 
-  const rawAssignments = tacticState.positionAssignments ?? {}
-  const assignments = Object.fromEntries(
-    Object.entries(rawAssignments).filter(([pid]) => startingIds.includes(pid))
-  )
+  // lineupSlots is the canonical mapping: slotId → playerId | null
   const slotToPlayer: Record<string, string> = {}
-  for (const [pid, slot] of Object.entries(assignments)) {
-    slotToPlayer[slot.id] = pid
+  for (const [slotId, pid] of Object.entries(tacticState.lineupSlots ?? {})) {
+    if (pid && startingIds.includes(pid)) slotToPlayer[slotId] = pid
   }
 
   const PW = 220, PH = 130
@@ -57,8 +54,8 @@ export function LineupFormationView({
             const currentStarters = startingIds
               .map(id => squadPlayers.find(p => p.id === id))
               .filter((p): p is Player => !!p)
-            const newAssignments = autoAssignFormation(tmpl, currentStarters)
-            onFormationChange({ ...tacticState, formation: f, positionAssignments: newAssignments })
+            const newLineupSlots = autoAssignFormation(tmpl, currentStarters)
+            onFormationChange({ ...tacticState, formation: f, lineupSlots: newLineupSlots })
           }}
           style={{
             flex: 1, padding: '7px 10px',

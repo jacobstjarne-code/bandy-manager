@@ -41,15 +41,12 @@ export function SlotLineupView({
 
   const formation = (tacticState.formation ?? '5-3-2') as FormationType
   const template = FORMATIONS[formation]
-  const assignments = tacticState.positionAssignments ?? {}
 
-  // Reverse map: slotId → playerId
+  // lineupSlots is the canonical mapping: slotId → playerId | null
   const slotToPlayer: Record<string, string> = {}
-  for (const [pid, slot] of Object.entries(assignments)) {
-    slotToPlayer[slot.id] = pid
+  for (const [slotId, pid] of Object.entries(tacticState.lineupSlots ?? {})) {
+    if (pid) slotToPlayer[slotId] = pid
   }
-
-  void Object.keys(assignments) // used via slotToPlayer
 
   const availablePlayers = squadPlayers.filter(
     p => !p.isInjured && p.suspensionGamesRemaining <= 0
