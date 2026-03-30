@@ -140,7 +140,7 @@ function CupCard({ bracket, game }: CupCardProps) {
   const nextCupFixture = game.fixtures
     .filter(f => f.isCup && f.status === 'scheduled' &&
       (f.homeClubId === managedClubId || f.awayClubId === managedClubId))
-    .sort((a, b) => a.roundNumber - b.roundNumber)[0]
+    .sort((a, b) => a.matchday - b.matchday)[0]
   const roundsWithMatches = [...new Set(bracket.matches.map(m => m.round))]
   const currentRound = Math.max(...roundsWithMatches)
   const stageLabel = getCupRoundLabel(currentRound)
@@ -175,27 +175,40 @@ function CupCard({ bracket, game }: CupCardProps) {
   } else if (nextCupFixture) {
     const opponent = game.clubs.find(c => c.id === (nextCupFixture.homeClubId === managedClubId ? nextCupFixture.awayClubId : nextCupFixture.homeClubId))
     const isHome = nextCupFixture.homeClubId === managedClubId
+    const cupMatch = bracket.matches.find(m => m.fixtureId === nextCupFixture.id)
+    const cupRound = cupMatch?.round ?? nextCupFixture.roundNumber
+    const roundLabel = cupRound === 1 ? 'Förstarunda' : cupRound === 2 ? 'Kvartsfinal' : cupRound === 3 ? 'Semifinal' : 'Final'
     const lastMatchday = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed').map(f => f.matchday))
     const isNextMatchday = nextCupFixture.matchday === lastMatchday + 1
     statusContent = (
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
-          <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600, fontFamily: 'var(--font-body)' }}>vs {opponent?.shortName ?? opponent?.name ?? '?'}</span>
+          <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600, fontFamily: 'var(--font-body)' }}>
+            {roundLabel} vs {opponent?.shortName ?? opponent?.name ?? '?'}
+          </span>
           <span className={isHome ? 'tag tag-green' : 'tag tag-ice'}>{isHome ? 'Hemma' : 'Borta'}</span>
         </div>
         <p style={{ fontSize: 11, color: isNextMatchday ? 'var(--warning)' : 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-body)' }}>
-          {isNextMatchday ? '⚡ Spelas NÄSTA omgång!' : `Spelas matchdag ${nextCupFixture.matchday}`}
+          {isNextMatchday ? '⚡ Spelas nästa omgång' : `Matchdag ${nextCupFixture.matchday}`}
         </p>
       </div>
     )
   } else {
     const playedAndWon = bracket.matches.filter(m => (m.homeClubId === managedClubId || m.awayClubId === managedClubId) && m.winnerId === managedClubId)
     const highestWonRound = Math.max(0, ...playedAndWon.map(m => m.round))
-    const nextRoundName = highestWonRound === 1 ? 'kvartsfinalen'
-      : highestWonRound === 2 ? 'semifinalen'
-      : highestWonRound === 3 ? 'finalen' : 'nästa omgång'
-    statusContent = playedAndWon.length > 0
-      ? <p style={{ fontSize: 13, color: 'var(--success)', fontWeight: 600, fontFamily: 'var(--font-body)' }}>✅ Klar för {nextRoundName}</p>
+    // Matchdays for each cup round (must match CUP_MATCHDAYS in cupService.ts)
+    const CUP_ROUND_MATCHDAYS: Record<number, number> = { 1: 3, 2: 8, 3: 13, 4: 19 }
+    const nextCupRound = highestWonRound + 1
+    const nextRoundName = highestWonRound === 1 ? 'Kvartsfinal'
+      : highestWonRound === 2 ? 'Semifinal'
+      : highestWonRound === 3 ? 'Final' : ''
+    const nextRoundMatchday = CUP_ROUND_MATCHDAYS[nextCupRound]
+    statusContent = playedAndWon.length > 0 && nextRoundName
+      ? (
+        <p style={{ fontSize: 13, color: 'var(--success)', fontWeight: 600, fontFamily: 'var(--font-body)' }}>
+          ✅ Klar för {nextRoundName.toLowerCase()}{nextRoundMatchday ? ` — matchdag ${nextRoundMatchday}` : ''}
+        </p>
+      )
       : <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Drar igång under säsongen</p>
   }
 
