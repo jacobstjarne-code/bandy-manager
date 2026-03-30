@@ -22,7 +22,7 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
   '5-3-2': {
     type: '5-3-2',
     label: '5-3-2 (Klassisk)',
-    description: 'Traditionell. Libero, två backar, två ytterhalvor, tre mittfältare, två forwards.',
+    description: 'Traditionell. Libero, två backar, två ytterhalvor, tre halvbacks, två forwards.',
     slots: [
       { id: 'gk',     label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
       { id: 'def-l',  label: 'VB',  position: PlayerPosition.Defender,   x: 25, y: 15 },
@@ -75,8 +75,8 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
   },
   '3-4-3': {
     type: '3-4-3',
-    label: '3-4-3 (Mittfält)',
-    description: 'Starkt mittfält med fyra halvar. Bra bollinnehav.',
+    label: '3-4-3 (Halvlinje)',
+    description: 'Stark halvlinje med fyra halvar. Bra bollinnehav.',
     slots: [
       { id: 'gk',      label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
       { id: 'def-l',   label: 'VB',  position: PlayerPosition.Defender,   x: 20, y: 20 },

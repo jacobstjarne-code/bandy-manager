@@ -624,7 +624,7 @@ export function TransfersScreen() {
                 >
                   <option value="any">Alla positioner</option>
                   <option value="forward">Forward</option>
-                  <option value="midfielder">Mittfältare</option>
+                  <option value="midfielder">Halvback</option>
                   <option value="defender">Back</option>
                   <option value="goalkeeper">Målvakt</option>
                 </select>

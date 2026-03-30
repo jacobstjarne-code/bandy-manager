@@ -25,7 +25,7 @@ const QUESTIONS: Record<string, string[]> = {
     'Hur håller ni den här formen uppe?',
     'Ni vände underläge till seger. Vad hände i pausen?',
     'Ni avancerar i tabellen. Kan ni utmana toppen nu?',
-    'Ni dominerade mittfältet idag. Är det er styrka just nu?',
+    'Ni dominerade mitten idag. Är det er styrka just nu?',
   ],
   loss: [
     'Tung förlust. Vad gick fel?',
@@ -123,7 +123,7 @@ const PLAYER_RESPONSES: ManagerResponse[] = [
   { id: 'w_d5', tag: 'any', label: '"Vi justerade ett par detaljer taktiskt."', moraleEffect: 2, mediaQuote: 'Tränaren: "Vi justerade taktiken och det gav utdelning."' },
   { id: 'w_c6', tag: 'win_top3', label: '"Vi är med i matchen om det. Absolut."', moraleEffect: 5, mediaQuote: 'Tränaren var frimodig: "Vi är med i matchen om toppen. Absolut."' },
   { id: 'w_h6', tag: 'win_any', label: '"Det är för tidigt att prata om toppen."', moraleEffect: 3, mediaQuote: 'Tränaren bromsade: "Det är för tidigt att prata om tabelltoppen."' },
-  { id: 'w_c7', tag: 'win_any', label: '"Mittfältet är vårt hjärta. Det stämmer."', moraleEffect: 5, mediaQuote: 'Tränaren: "Mittfältet är vårt hjärta. Och det slog starkt ikväll."' },
+  { id: 'w_c7', tag: 'win_any', label: '"Halvlinjen är vårt hjärta. Det stämmer."', moraleEffect: 5, mediaQuote: 'Tränaren: "Halvlinjen är vårt hjärta. Och den slog starkt ikväll."' },
   { id: 'w_h7', tag: 'win_any', label: '"Vi fick hjälp av att motståndarna tappade sin form."', moraleEffect: 3, mediaQuote: 'Tränaren var generös: "Vi fick hjälp av att motståndarna tappade."' },
 
   // ── Befintliga svar: loss ──

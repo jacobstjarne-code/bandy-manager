@@ -96,18 +96,18 @@ export function generateDetailedAnalysis(
   if (fwdAvg > avgCA + 5) strengths.push('Stark anfallslinje')
   if (defAvg > avgCA + 5) strengths.push('Stabilt försvar')
   if (gkAvg > avgCA + 8) strengths.push('Bra målvakt')
-  if (midAvg > avgCA + 5) strengths.push('Dominant mittfält')
+  if (midAvg > avgCA + 5) strengths.push('Stark halvlinje')
 
   if (fwdAvg > 0 && fwdAvg < avgCA - 5) weaknesses.push('Svag attack')
   if (defAvg > 0 && defAvg < avgCA - 5) weaknesses.push('Sårbart försvar')
-  if (midAvg > 0 && midAvg < avgCA - 5) weaknesses.push('Svagt mittfält')
+  if (midAvg > 0 && midAvg < avgCA - 5) weaknesses.push('Svag halvlinje')
 
   const injured = opponentPlayers.filter(p => p.isInjured)
   if (injured.length >= 3) weaknesses.push(`Skadeproblem (${injured.length} skadade)`)
 
   let recommendation = 'Jämn motståndare. Spelplanen avgör.'
-  if (weaknesses.some(w => w.includes('Svagt mittfält'))) {
-    recommendation = 'Pressa högt och dominera mittfältet.'
+  if (weaknesses.some(w => w.includes('Svag halvlinje'))) {
+    recommendation = 'Pressa högt och dominera mitten.'
   } else if (weaknesses.some(w => w.includes('Sårbart försvar'))) {
     recommendation = 'Spela offensivt — deras försvar är sårbart.'
   } else if (strengths.some(s => s.includes('Stark anfallslinje'))) {

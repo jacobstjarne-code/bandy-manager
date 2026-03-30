@@ -3,7 +3,7 @@ export type CommentaryTemplate = string
 export const commentary = {
   kickoff: [
     "Domaren blåser igång matchen! {team} tar emot på hemmaplan.",
-    "Avspark! {team} möter {opponent} i kvällens match.",
+    "Avslag! {team} möter {opponent} i kvällens match.",
     "Och så drar det igång! {opponent} inleder matchen.",
     "Vissling — matchen börjar. En hel säsong kan avgöras i kväll.",
     "Och vi är igång! Spelarna har värmt upp, publiken är på plats, nu kör vi.",
@@ -152,20 +152,20 @@ export const commentary = {
   ],
 
   neutral: [
-    "Bollen rullas runt i mittfältet. Båda lagen söker öppningar.",
+    "Bollen rullas runt i mitten. Båda lagen söker öppningar.",
     "{team} bygger upp spelet tålmodigt bakifrån.",
     "Högt tempo just nu — bollen far snabbt fram och tillbaka.",
     "Fint spel av {team}, men {opponent} ligger bra i sin defensiv.",
-    "Mittfältsstrid. Ingen vill ge bort bollen.",
+    "Strid i mitten. Ingen vill ge bort bollen.",
     "{team} håller bollen, söker kanterna.",
-    "Intensivt mittfältsspel. Det är tätt här.",
+    "Intensivt spel i mitten. Det är tätt här.",
     "Snabb bana i dag — bollen studsar länge.",
     "{opponent} pressar högt och {team} stressas.",
     "{team} byter om och spelar bakåt för att hitta ett nytt angreppssätt.",
     "Spelet flödar fram och tillbaka utan att något konkret uppstår.",
     "Snyggt kombinationsspel av {team} — men {opponent} är välorganiserat.",
     "Tränarna på båda bänkar ger instruktioner. Taktiken justeras.",
-    "{team} vinner bollen i mittfältet och drar igång ett anfall.",
+    "{team} vinner bollen i mitten och drar igång ett anfall.",
     "Lång boll bakåt — {team} startar om.",
     "Nästan! En bra rörelse av {team}, men bollen fastnar.",
     "Matchen flödar. Spelet är öppet och snabbt.",
@@ -275,7 +275,7 @@ export const commentary = {
   final_kickoff: [
     "SM-FINALEN! Det här är vad alla har väntat på. Sveriges svar på Superbowl.",
     "Domaren blåser igång SM-finalen! Vilken stämning!",
-    "Det största ögonblicket i svensk bandy. SM-final. Avspark!",
+    "Det största ögonblicket i svensk bandy. SM-final. Avslag!",
   ],
 
   final_goal: [
@@ -297,7 +297,7 @@ export const commentary = {
 
   playoff_general: [
     "Slutspelstempot är något helt annat. Varje duell är på liv och död.",
-    "Playoffbandy. Hårdare tacklingar, mer intensitet, högre insatser.",
+    "Playoffbandy. Hårdare dueller, mer intensitet, högre insatser.",
     "Det märks att det är slutspel. Spelarna ger allt de har.",
   ],
 
@@ -306,7 +306,7 @@ export const commentary = {
     "DERBYDAGS! {team} mot {opponent} — {rivalry}. Rivalerna möts igen!",
     "{rivalry} är igång! Publiken har väntat på det här länge.",
     "Det är derby ikväll! {team} mot {opponent}. Stämningen är elektrisk!",
-    "Avspark i {rivalry}! Spelarna har väntat på den här matchen hela säsongen.",
+    "Avslag i {rivalry}! Spelarna har väntat på den här matchen hela säsongen.",
   ],
 
   derby_goal: [

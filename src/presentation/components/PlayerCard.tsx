@@ -34,7 +34,7 @@ function positionFullLabel(pos: PlayerPosition): string {
     [PlayerPosition.Goalkeeper]: 'Målvakt',
     [PlayerPosition.Defender]: 'Försvarare',
     [PlayerPosition.Half]: 'Halvback',
-    [PlayerPosition.Midfielder]: 'Mittfältare',
+    [PlayerPosition.Midfielder]: 'Halvback',
     [PlayerPosition.Forward]: 'Forward',
   }
   return map[pos] ?? pos
