@@ -105,7 +105,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
   const weeklyWages = Math.round(totalSalary / 4)
 
   // ── Weekly base (reputation) ───────────────────────────────────────────────
-  const weeklyBase = Math.round(club.reputation * 250)
+  const weeklyBase = Math.round(club.reputation * 120)
 
   // ── Sponsors ──────────────────────────────────────────────────────────────
   const sponsorIncome = sponsors
@@ -117,7 +117,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
   let communityMatchIncome = 0
 
   if (isHomeMatch) {
-    const capacity = club.arenaCapacity ?? Math.round(club.reputation * 25 + 600)
+    const capacity = club.arenaCapacity ?? Math.round(club.reputation * 12 + 300)
     const position = standing?.position ?? 8
     const attendanceRate = Math.min(0.95, 0.40 + (fanMood / 100) * 0.45 + (position <= 3 ? 0.10 : 0))
     const ticketPrice = 60 + Math.round((club.reputation ?? 50) * 0.4)
@@ -207,7 +207,7 @@ export function calcWeeklyEconomy(
   communityActivities: CommunityActivities | undefined,
   monthlySalaryTotal: number,
 ): WeeklyEconomy {
-  const weeklyBase = Math.round(reputation * 250)
+  const weeklyBase = Math.round(reputation * 120)
 
   const activeSponsors = sponsors.filter(s => s.contractRounds > 0)
   const sponsorIncome = activeSponsors.reduce((sum, s) => sum + s.weeklyIncome, 0)

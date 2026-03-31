@@ -342,8 +342,9 @@ export function DashboardScreen() {
   const morale = game.fanMood ?? 50
   const sharpness = Math.round((avgForm * 0.6 + avgFitness * 0.4))
 
-  // Current round
-  const currentRound = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max, f) => Math.max(max, f.roundNumber), 0)
+  // Current round — visa NÄSTA omgång (konsekvent med knappen "Spela omgång X")
+  const lastPlayedRound = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max, f) => Math.max(max, f.roundNumber), 0)
+  const currentRound = nextFixture && !nextFixture.isCup ? nextFixture.roundNumber : lastPlayedRound
 
   // Current date for display
   const currentDateObj = new Date(game.currentDate)

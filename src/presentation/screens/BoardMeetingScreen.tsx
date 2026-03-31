@@ -181,7 +181,7 @@ export function BoardMeetingScreen() {
 
       {/* Ekonomi */}
       <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
-        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
           💰 Ekonomi
         </p>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -214,7 +214,7 @@ export function BoardMeetingScreen() {
 
       {/* Trupp */}
       <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
-        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
           👥 Trupp
         </p>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -249,8 +249,8 @@ export function BoardMeetingScreen() {
             if (!quote) return null
             return (
               <div key={member.name + i} style={{
-                marginBottom: i < boardMembers.length - 1 ? 10 : 0,
-                paddingBottom: i < boardMembers.length - 1 ? 10 : 0,
+                marginBottom: i < boardMembers.length - 1 ? 8 : 0,
+                paddingBottom: i < boardMembers.length - 1 ? 8 : 0,
                 borderBottom: i < boardMembers.length - 1 ? '1px solid var(--border)' : 'none',
               }}>
                 <p style={{
