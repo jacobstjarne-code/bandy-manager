@@ -3,6 +3,7 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 interface LastResultCardProps {
   lastResult: { scoreFor: number; scoreAgainst: number; opponentName: string }
   lastCompletedFixture: Fixture | null
+  managedClubId: string
   recentForm: Array<'V' | 'O' | 'F'>
   onNavigateToReport: () => void
 }
@@ -16,11 +17,35 @@ const formColors = {
 export function LastResultCard({
   lastResult,
   lastCompletedFixture,
+  managedClubId,
   recentForm,
   onNavigateToReport,
 }: LastResultCardProps) {
   const isWin = lastResult.scoreFor > lastResult.scoreAgainst
   const isLoss = lastResult.scoreFor < lastResult.scoreAgainst
+
+  const f = lastCompletedFixture
+  const isHome = f ? f.homeClubId === managedClubId : false
+  const penaltyWon = f?.wentToPenalties && f.penaltyResult
+    ? (isHome ? f.penaltyResult.home > f.penaltyResult.away : f.penaltyResult.away > f.penaltyResult.home)
+    : null
+  const overtimeWon = f?.wentToOvertime && !f.wentToPenalties && f.overtimeResult
+    ? f.overtimeResult === (isHome ? 'home' : 'away')
+    : null
+
+  const actualWin = isWin || penaltyWon === true || overtimeWon === true
+  const actualLoss = isLoss || penaltyWon === false || overtimeWon === false
+
+  let resultText = 'oavgjort'
+  if (actualWin) {
+    resultText = f?.wentToPenalties ? 'vinst på straffar'
+      : f?.wentToOvertime ? 'vinst på övertid'
+      : 'vinst'
+  } else if (actualLoss) {
+    resultText = f?.wentToPenalties ? 'förlust på straffar'
+      : f?.wentToOvertime ? 'förlust på övertid'
+      : 'förlust'
+  }
 
   return (
     <div
@@ -54,19 +79,19 @@ export function LastResultCard({
           {lastResult.scoreAgainst}
         </p>
 
-        {lastCompletedFixture?.wentToPenalties && lastCompletedFixture.penaltyResult && (
+        {f?.wentToPenalties && f.penaltyResult && (
           <p style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 600, marginTop: 2, fontFamily: 'var(--font-body)' }}>
-            str. {lastCompletedFixture.penaltyResult.home}-{lastCompletedFixture.penaltyResult.away}
+            str. {f.penaltyResult.home}-{f.penaltyResult.away}
           </p>
         )}
-        {lastCompletedFixture?.wentToOvertime && !lastCompletedFixture.wentToPenalties && (
+        {f?.wentToOvertime && !f.wentToPenalties && (
           <p style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 600, marginTop: 2, fontFamily: 'var(--font-body)' }}>
             förlängning
           </p>
         )}
 
         <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '3px 0 0', fontFamily: 'var(--font-body)' }}>
-          {isWin ? 'vinst' : isLoss ? 'förlust' : 'oavgjort'} mot {lastResult.opponentName}
+          {resultText} mot {lastResult.opponentName}
         </p>
 
         {/* Form squares */}

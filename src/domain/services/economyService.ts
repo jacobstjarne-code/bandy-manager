@@ -117,19 +117,18 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
   let communityMatchIncome = 0
 
   if (isHomeMatch) {
-    const capacity = club.arenaCapacity ?? Math.round(club.reputation * 12 + 300)
+    const capacity = club.arenaCapacity ?? Math.round(club.reputation * 7 + 150)
     const position = standing?.position ?? 8
-    const attendanceRate = Math.min(0.95, 0.40 + (fanMood / 100) * 0.45 + (position <= 3 ? 0.10 : 0))
-    const ticketPrice = 60 + Math.round((club.reputation ?? 50) * 0.4)
+    const attendanceRate = Math.min(0.90, 0.35 + (fanMood / 100) * 0.40 + (position <= 3 ? 0.08 : 0))
+    const ticketPrice = 50 + Math.round((club.reputation ?? 50) * 0.3)
     const baseRevenue = Math.round(capacity * attendanceRate * ticketPrice)
 
-    const formBonus = position <= 3 ? 1.30 : position <= 6 ? 1.10 : position >= 10 ? 0.80 : 1.0
-    const moodBonus = 0.85 + (fanMood / 100) * 0.30
-    const eventBonus = matchIsKnockout ? 1.50 : matchIsCup ? 1.25 : 1.0
-    const derbyBonus = matchHasRivalry ? 1.40 : 1.0
+    const formBonus = position <= 3 ? 1.15 : position <= 6 ? 1.05 : position >= 10 ? 0.88 : 1.0
+    const eventBonus = matchIsKnockout ? 1.40 : matchIsCup ? 1.20 : 1.0
+    const derbyBonus = matchHasRivalry ? 1.25 : 1.0
 
     matchRevenue = Math.round(
-      baseRevenue * formBonus * moodBonus * eventBonus * derbyBonus + rand() * 5000
+      baseRevenue * formBonus * eventBonus * derbyBonus + rand() * 2000
     )
 
     // Community income tied to a home match

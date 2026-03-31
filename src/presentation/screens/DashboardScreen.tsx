@@ -10,7 +10,7 @@ import {
   usePlayoffInfo,
 } from '../store/gameStore'
 import { TutorialOverlay } from '../components/TutorialOverlay'
-import { PlayoffStatus } from '../../domain/enums'
+import { PlayoffStatus, PlayoffRound } from '../../domain/enums'
 import type { PlayoffBracket, PlayoffSeries } from '../../domain/entities/Playoff'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import type { EventChoice } from '../../domain/entities/GameEvent'
@@ -427,8 +427,19 @@ export function DashboardScreen() {
         return `Spela Cup-${cupLabel} →`
       }
       if (game.playoffBracket) {
-        const r = nextManaged.roundNumber
-        return `Spela ${r <= 25 ? 'Kvartsfinal' : r <= 28 ? 'Semifinal' : 'Final'} →`
+        const allSeries = [
+          ...game.playoffBracket.quarterFinals,
+          ...game.playoffBracket.semiFinals,
+          ...(game.playoffBracket.final ? [game.playoffBracket.final] : []),
+        ]
+        const thisSeries = allSeries.find(s => s.fixtures.includes(nextManaged.id))
+        if (thisSeries) {
+          const label = thisSeries.round === PlayoffRound.QuarterFinal ? 'Kvartsfinal'
+            : thisSeries.round === PlayoffRound.SemiFinal ? 'Semifinal'
+            : 'SM-Final'
+          return `Spela ${label} →`
+        }
+        return 'Fortsätt slutspel →'
       }
       return `Spela omgång ${nextManaged.roundNumber} →`
     }
@@ -558,6 +569,7 @@ export function DashboardScreen() {
             <LastResultCard
               lastResult={lastResult}
               lastCompletedFixture={lastCompletedFixture}
+              managedClubId={game.managedClubId}
               recentForm={recentForm}
               onNavigateToReport={() => navigate('/game/match', { state: { showReport: true } })}
             />

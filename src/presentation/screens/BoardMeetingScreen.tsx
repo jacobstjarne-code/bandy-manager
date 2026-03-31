@@ -17,10 +17,10 @@ export function BoardMeetingScreen() {
   const isFirstSeason = !lastSummary
 
   const expectationText: Record<string, string> = {
-    'avoidBottom': 'undvika botten av tabellen',
-    'midTable': 'etablera oss i mitten av tabellen',
-    'challengeTop': 'utmana om topplaceringar',
-    'winLeague': 'vinna SM-guld',
+    'avoidBottom': 'Undvika botten av tabellen',
+    'midTable': 'Etablera oss i mitten av tabellen',
+    'challengeTop': 'Utmana om topplaceringar',
+    'winLeague': 'Vinna SM-guld',
   }
 
   const verdictEmoji = lastSummary?.expectationVerdict === 'exceeded' ? '😊'
