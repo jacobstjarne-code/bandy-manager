@@ -35,7 +35,7 @@ interface LocationState {
 export function MatchLiveScreen() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { game, saveLiveMatchResult, applyPressChoice } = useGameStore()
+  const { game, saveLiveMatchResult, applyPressChoice, advance } = useGameStore()
 
   const state = location.state as LocationState | null
   const fixture = state?.fixture
@@ -782,7 +782,12 @@ export function MatchLiveScreen() {
           players={game?.players ?? []}
           pressQuestion={pressQuestion ?? undefined}
           onSeeReport={handleSeeReport}
-          onContinue={() => navigate('/game', { replace: true })}
+          onContinue={() => {
+            const result = advance()
+            // advance() handles navigation to /game/events or /game/round-summary automatically.
+            // Fall back to dashboard only if no navigation was triggered (e.g. season-end path).
+            if (!result) navigate('/game', { replace: true })
+          }}
           onPressChoice={(moraleEffect, mediaQuote) => applyPressChoice(moraleEffect, mediaQuote)}
         />
       )}

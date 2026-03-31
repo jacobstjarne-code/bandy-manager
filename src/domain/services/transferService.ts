@@ -2,7 +2,8 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { TransferBid } from '../entities/GameEvent'
 import { getTransferWindowStatus } from './transferWindowService'
 import { InboxItemType } from '../enums'
-import { applyFinanceChange } from './economyService'
+import { applyFinanceChange, appendFinanceLog } from './economyService'
+import type { FinanceEntry } from './economyService'
 
 function bidId(round: number, playerId: string, buyingClubId: string): string {
   return `bid_${round}_${playerId}_${buyingClubId}`
@@ -213,11 +214,38 @@ export function executeTransfer(
 
   const fanMoodPenalty = isAcademyProduct && isSoldFromManagedClub ? -8 : 0
 
+  const latestRound = Math.max(0, ...game.fixtures
+    .filter(f => f.status === 'completed')
+    .map(f => f.roundNumber),
+  )
+  const soldPlayerName = soldPlayer ? `${soldPlayer.firstName} ${soldPlayer.lastName}` : 'spelaren'
+  const buyingClubName = game.clubs.find(c => c.id === buyingClubId)?.name ?? 'köparklubben'
+
+  let updatedFinanceLog = game.financeLog ?? []
+  if (isSoldFromManagedClub) {
+    const saleEntry: FinanceEntry = {
+      round: latestRound,
+      amount: offerAmount,
+      reason: 'transfer_out',
+      label: `Spelarförsäljning — ${soldPlayerName} till ${buyingClubName}`,
+    }
+    updatedFinanceLog = appendFinanceLog(updatedFinanceLog, saleEntry)
+  } else if (buyingClubId === game.managedClubId) {
+    const buyEntry: FinanceEntry = {
+      round: latestRound,
+      amount: -offerAmount,
+      reason: 'transfer_in',
+      label: `Spelarköp — ${soldPlayerName}`,
+    }
+    updatedFinanceLog = appendFinanceLog(updatedFinanceLog, buyEntry)
+  }
+
   return {
     ...game,
     players: updatedPlayers,
     clubs: updatedClubs,
     transferBids: updatedBids,
+    financeLog: updatedFinanceLog,
     inbox: fanInboxItems.length > 0 ? [...fanInboxItems, ...game.inbox] : game.inbox,
     fanMood: fanMoodPenalty !== 0 ? Math.max(0, (game.fanMood ?? 50) + fanMoodPenalty) : game.fanMood,
   }
