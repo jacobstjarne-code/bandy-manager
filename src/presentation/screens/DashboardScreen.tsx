@@ -200,14 +200,15 @@ function CupCard({ bracket, game }: CupCardProps) {
     // Matchdays for each cup round (must match CUP_MATCHDAYS in cupService.ts)
     const CUP_ROUND_MATCHDAYS: Record<number, number> = { 1: 3, 2: 8, 3: 13, 4: 19 }
     const nextCupRound = highestWonRound + 1
-    const nextRoundName = highestWonRound === 1 ? 'Kvartsfinal'
-      : highestWonRound === 2 ? 'Semifinal'
-      : highestWonRound === 3 ? 'Final' : ''
+    const nextRoundName = nextCupRound === 1 ? 'Förstarunda'
+      : nextCupRound === 2 ? 'Kvartsfinal'
+      : nextCupRound === 3 ? 'Semifinal'
+      : nextCupRound === 4 ? 'Final' : ''
     const nextRoundMatchday = CUP_ROUND_MATCHDAYS[nextCupRound]
-    statusContent = playedAndWon.length > 0 && nextRoundName
+    statusContent = nextRoundName
       ? (
-        <p style={{ fontSize: 13, color: 'var(--success)', fontWeight: 600, fontFamily: 'var(--font-body)' }}>
-          ✅ Klar för {nextRoundName.toLowerCase()}{nextRoundMatchday ? ` — matchdag ${nextRoundMatchday}` : ''}
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
+          {nextRoundName} spelas efter matchdag {nextRoundMatchday ?? '?'}
         </p>
       )
       : <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Drar igång under säsongen</p>
