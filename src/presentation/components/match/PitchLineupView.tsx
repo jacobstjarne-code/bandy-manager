@@ -47,10 +47,9 @@ export function PitchLineupView({
     if (pid && startingIds.includes(pid)) slotToPlayer[slotId] = pid
   }
 
-  // Players in startingIds but not yet placed on the pitch
+  // All available players not yet placed on the pitch
   const placedPids = new Set(Object.values(slotToPlayer))
   const pillPlayers = squadPlayers.filter(p =>
-    startingIds.includes(p.id) &&
     !placedPids.has(p.id) &&
     !p.isInjured &&
     p.suspensionGamesRemaining === 0
@@ -265,8 +264,29 @@ export function PitchLineupView({
         </div>
       </div>
 
-      {/* Bench / Unplaced players */}
-      <div style={{ padding: '10px 16px 4px', borderTop: '1px solid var(--border)', marginTop: 6 }}>
+      {/* Auto-fill — direkt efter planen */}
+      <div style={{ padding: '6px 16px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{
+          fontSize: 13,
+          color: startingIds.length === 11 ? 'var(--success)' : 'var(--warning)',
+          fontWeight: 600,
+        }}>
+          {startingIds.length}/11 startande
+        </span>
+        <button
+          onClick={onAutoFill}
+          style={{
+            padding: '8px 16px', fontSize: 13, fontWeight: 700,
+            background: 'rgba(196,122,58,0.08)', border: '1.5px solid var(--accent)',
+            color: 'var(--accent)', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+          }}
+        >
+          ✨ Generera bästa elvan
+        </button>
+      </div>
+
+      {/* Unplaced players — dra till planen */}
+      <div style={{ padding: '10px 16px 4px', borderTop: '1px solid var(--border)' }}>
         <p style={{
           fontSize: 10, fontWeight: 700, letterSpacing: '1.5px',
           textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8,
@@ -288,27 +308,6 @@ export function PitchLineupView({
             </p>
           )}
         </div>
-      </div>
-
-      {/* Count + auto-fill */}
-      <div style={{ padding: '8px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{
-          fontSize: 13,
-          color: startingIds.length === 11 ? 'var(--success)' : 'var(--warning)',
-          fontWeight: 600,
-        }}>
-          {startingIds.length}/11 startande
-        </span>
-        <button
-          onClick={onAutoFill}
-          style={{
-            padding: '8px 16px', fontSize: 13, fontWeight: 700,
-            background: 'rgba(196,122,58,0.08)', border: '1.5px solid var(--accent)',
-            color: 'var(--accent)', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
-          }}
-        >
-          ✨ Generera bästa elvan
-        </button>
       </div>
 
       {/* Drag ghost — follows pointer */}

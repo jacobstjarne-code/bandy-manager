@@ -96,7 +96,7 @@ export function LineupFormationView({
               <text
                 x={sx} y={sy - circleR - 3}
                 textAnchor="middle" dominantBaseline="auto"
-                fill="rgba(255,255,255,0.7)" fontSize={4} fontWeight="700"
+                fill="rgba(26,26,24,0.65)" fontSize={4} fontWeight="700"
                 fontFamily="system-ui, sans-serif" letterSpacing="0.5"
               >
                 {posLabel}
@@ -107,21 +107,23 @@ export function LineupFormationView({
                 stroke={isSelected ? 'var(--accent)' : ringColor}
                 strokeWidth={isSelected ? 2 : 1.5}
               />
-              {/* Shirt number or slot label in circle */}
-              <text
-                x={sx} y={sy}
-                textAnchor="middle" dominantBaseline="middle"
-                fill="#1A1A18" fontSize={assignedPlayer ? 7 : 6} fontWeight="700"
-                fontFamily="system-ui, sans-serif"
-              >
-                {assignedPlayer ? circleText : posLabel}
-              </text>
+              {/* Shirt number in circle (only when player assigned) */}
+              {assignedPlayer && (
+                <text
+                  x={sx} y={sy}
+                  textAnchor="middle" dominantBaseline="middle"
+                  fill="#1A1A18" fontSize={7} fontWeight="700"
+                  fontFamily="system-ui, sans-serif"
+                >
+                  {circleText}
+                </text>
+              )}
               {/* Player last name below circle */}
               {nameText && (
                 <text
                   x={sx} y={sy + circleR + 4}
                   textAnchor="middle" dominantBaseline="hanging"
-                  fill="rgba(255,255,255,0.85)" fontSize={4.5} fontFamily="system-ui, sans-serif"
+                  fill="rgba(26,26,24,0.7)" fontSize={4.5} fontFamily="system-ui, sans-serif"
                 >
                   {nameText}
                 </text>

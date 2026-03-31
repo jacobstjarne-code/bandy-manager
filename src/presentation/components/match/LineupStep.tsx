@@ -108,7 +108,7 @@ export function LineupStep({
               transition: 'background 0.15s, color 0.15s',
             }}
           >
-            {mode === 'list' ? '📋 Lista' : '⚽ Plan'}
+            {mode === 'list' ? '📋 Lista' : '🏒 Plan'}
           </button>
         ))}
       </div>
@@ -123,6 +123,20 @@ export function LineupStep({
             onSlotClick={onSlotClick}
             onFormationChange={onFormationChange}
           />
+
+          {/* Auto-fill — direkt efter plangrafiken */}
+          <div style={{ padding: '0 16px 8px', display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              onClick={onAutoFill}
+              style={{
+                padding: '8px 16px', fontSize: 13, fontWeight: 700,
+                background: 'rgba(196,122,58,0.08)', border: '1.5px solid var(--accent)',
+                color: 'var(--accent)', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+              }}
+            >
+              ✨ Generera bästa elvan
+            </button>
+          </div>
 
           {/* Player list */}
           <div style={{ padding: '0 16px 8px' }}>
@@ -172,19 +186,6 @@ export function LineupStep({
             ))}
           </div>
 
-          {/* Auto-fill */}
-          <div style={{ padding: '0 16px 8px', display: 'flex', justifyContent: 'flex-end' }}>
-            <button
-              onClick={onAutoFill}
-              style={{
-                padding: '8px 16px', fontSize: 13, fontWeight: 700,
-                background: 'rgba(196,122,58,0.08)', border: '1.5px solid var(--accent)',
-                color: 'var(--accent)', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
-              }}
-            >
-              ✨ Generera bästa elvan
-            </button>
-          </div>
         </>
       ) : (
         <PitchLineupView
