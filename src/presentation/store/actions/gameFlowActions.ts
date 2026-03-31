@@ -138,6 +138,8 @@ export function gameFlowActions(get: Get, set: Set) {
           navigateTo('/game/events', { replace: true })
         } else if (summary.matchPlayed) {
           navigateTo('/game/round-summary', { replace: true })
+        } else {
+          navigateTo('/game/dashboard', { replace: true })
         }
       }
 

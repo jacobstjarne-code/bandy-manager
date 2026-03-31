@@ -195,7 +195,7 @@ export function RoundSummaryScreen() {
           textTransform: 'uppercase', border: 'none',
           boxShadow: '0 4px 20px rgba(196,122,58,0.3)', cursor: 'pointer',
         }}>
-          Fortsätt →
+          Nästa omgång →
         </button>
       </div>
     </div>
