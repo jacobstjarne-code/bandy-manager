@@ -1,6 +1,7 @@
 import type { SaveGame, Sponsor, CommunityActivities } from '../../entities/SaveGame'
 import { InboxItemType } from '../../enums'
 import { executeTransfer } from '../transferService'
+import { applyFinanceChange } from '../economyService'
 
 // ── resolveEvent ───────────────────────────────────────────────────────────
 export function resolveEvent(
@@ -214,11 +215,7 @@ export function resolveEvent(
       if (effect.amount) {
         updatedGame = {
           ...updatedGame,
-          clubs: updatedGame.clubs.map(c =>
-            c.id === updatedGame.managedClubId
-              ? { ...c, finances: c.finances + (effect.amount ?? 0) }
-              : c
-          ),
+          clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, effect.amount),
         }
       }
       if (effect.communityKey === 'kiosk') {
@@ -276,11 +273,7 @@ export function resolveEvent(
     case 'kommunGamble': {
       updatedGame = {
         ...updatedGame,
-        clubs: updatedGame.clubs.map(c =>
-          c.id === updatedGame.managedClubId
-            ? { ...c, finances: c.finances + (effect.amount ?? 0) }
-            : c
-        ),
+        clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, effect.amount ?? 0),
       }
       break
     }
@@ -298,11 +291,7 @@ export function resolveEvent(
     case 'income': {
       updatedGame = {
         ...updatedGame,
-        clubs: updatedGame.clubs.map(c =>
-          c.id === updatedGame.managedClubId
-            ? { ...c, finances: c.finances + (effect.amount ?? 0) }
-            : c
-        ),
+        clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, effect.amount ?? 0),
       }
       break
     }
@@ -366,11 +355,7 @@ export function resolveEvent(
             if (sub.type === 'income') {
               updatedGame = {
                 ...updatedGame,
-                clubs: updatedGame.clubs.map(c =>
-                  c.id === updatedGame.managedClubId
-                    ? { ...c, finances: c.finances + (sub.amount ?? 0) }
-                    : c
-                ),
+                clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, sub.amount ?? 0),
               }
             } else if (sub.type === 'communityStanding') {
               updatedGame = {

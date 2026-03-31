@@ -256,6 +256,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     showBoardMeeting: true,
     tutorialSeen: true,
     seasonStartFinances: managedClub.finances,
+    financeLog: [],
     scoutReports: {},
     activeScoutAssignment: null,
     scoutBudget: 10,

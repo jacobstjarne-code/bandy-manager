@@ -13,6 +13,7 @@ import { type AdvanceResult } from '../../application/useCases/advanceToNextEven
 import { setLineup } from '../../application/useCases/setLineup'
 import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
 import { loadSaveGame, listSaveGames, deleteSaveGame, migrateLocalStorageIfNeeded } from '../../infrastructure/persistence/saveGameStorage'
+import { applyFinanceChange } from '../../domain/services/economyService'
 
 export interface SaveGameSummary {
   id: string
@@ -336,9 +337,7 @@ export const useGameStore = create<GameState>()(
         if (!game) return
         const club = game.clubs.find(c => c.id === game.managedClubId)
         if (!club || club.finances < 15000) return
-        const updatedClubs = game.clubs.map(c =>
-          c.id === game.managedClubId ? { ...c, finances: c.finances - 15000 } : c
-        )
+        const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -15000)
         set({ game: { ...game, clubs: updatedClubs, scoutBudget: (game.scoutBudget ?? 10) + 5 } })
       },
 

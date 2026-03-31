@@ -2,6 +2,7 @@ import type { SaveGame, TalentSearchRequest, Sponsor } from '../../../domain/ent
 import { startScoutAssignment } from '../../../domain/services/scoutingService'
 import { createOutgoingBid } from '../../../domain/services/transferService'
 import { generateSponsorOffer } from '../../../domain/services/sponsorService'
+import { applyFinanceChange } from '../../../domain/services/economyService'
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
@@ -67,7 +68,7 @@ export function transferActions(get: Get, set: Set) {
       if (activeSponsors.length >= maxSponsors) return { success: false, error: 'Alla sponsorplatser är fyllda' }
       const currentRound = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup).map(f => f.roundNumber))
       const rand = Math.random.bind(Math)
-      const updatedClubs = game.clubs.map(c => c.id === game.managedClubId ? { ...c, finances: c.finances - SEEK_COST } : c)
+      const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -SEEK_COST)
       const sponsor = generateSponsorOffer(club.reputation, activeSponsors.length, maxSponsors, currentRound, rand)
       if (!sponsor) {
         set({ game: { ...game, clubs: updatedClubs } })

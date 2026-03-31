@@ -305,6 +305,9 @@ export interface SaveGame {
 
   // All-time records
   allTimeRecords?: AllTimeRecords
+
+  // Finance log — last FINANCE_LOG_MAX entries for the managed club
+  financeLog?: import('../services/economyService').FinanceEntry[]
 }
 
 export interface AllTimeRecords {

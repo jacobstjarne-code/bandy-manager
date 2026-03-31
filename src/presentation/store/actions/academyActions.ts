@@ -1,6 +1,7 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { LoanDeal } from '../../../domain/entities/Academy'
 import { PlayerPosition, InboxItemType } from '../../../domain/enums'
+import { applyFinanceChange } from '../../../domain/services/economyService'
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
@@ -69,9 +70,7 @@ export function academyActions(get: Get, set: Set) {
         ? { ...ca, [key]: true }
         : { ...ca, [key]: level }
 
-      let updatedClubs = game.clubs.map(c =>
-        c.id === game.managedClubId ? { ...c, finances: c.finances - cost } : c
-      )
+      let updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -cost)
 
       if (key === 'bandySchool') {
         updatedClubs = updatedClubs.map(c =>
@@ -110,9 +109,7 @@ export function academyActions(get: Get, set: Set) {
         return { success: false, error: `Inte tillräckligt med pengar (kräver ${cost / 1000} tkr)` }
       }
 
-      const updatedClubs = game.clubs.map(c =>
-        c.id === game.managedClubId ? { ...c, finances: c.finances - cost } : c
-      )
+      const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -cost)
 
       set({
         game: {

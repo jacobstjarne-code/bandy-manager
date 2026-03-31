@@ -2,12 +2,57 @@ import { describe, it, expect } from 'vitest'
 import { createNewGame } from '../createNewGame'
 import { advanceToNextEvent } from '../advanceToNextEvent'
 import { executeTransfer } from '../../../domain/services/transferService'
-import { FixtureStatus, InboxItemType } from '../../../domain/enums'
+import { autoAssignFormation, FORMATIONS } from '../../../domain/entities/Formation'
+import type { FormationType } from '../../../domain/entities/Formation'
+import { FixtureStatus, InboxItemType, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle } from '../../../domain/enums'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { TransferBid } from '../../../domain/entities/GameEvent'
+import type { TeamSelection } from '../../../domain/entities/Fixture'
 
 function makeGame(): SaveGame {
   return createNewGame({ managerName: 'Test', clubId: 'club_sandviken', season: 2025, seed: 42 })
+}
+
+/**
+ * Cup matches for the managed club require a saved lineup (managedClubPendingLineup).
+ * This helper sets a lineup so `advanceToNextEvent` doesn't skip the cup fixture.
+ */
+function withAutoLineup(game: SaveGame): SaveGame {
+  const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId && !p.isInjured && p.suspensionGamesRemaining === 0)
+  const formation = (game.clubs.find(c => c.id === game.managedClubId)?.activeTactic.formation ?? '3-3-4') as FormationType
+  const lineupSlots = autoAssignFormation(FORMATIONS[formation], managedPlayers)
+  const startingIds = Object.values(lineupSlots).filter(Boolean) as string[]
+  const benchIds = managedPlayers.filter(p => !startingIds.includes(p.id)).map(p => p.id).slice(0, 6)
+  const lineup: TeamSelection = {
+    startingPlayerIds: startingIds,
+    benchPlayerIds: benchIds,
+    captainPlayerId: startingIds[0] ?? undefined,
+    tactic: {
+      mentality: TacticMentality.Balanced,
+      tempo: TacticTempo.Normal,
+      press: TacticPress.Medium,
+      passingRisk: TacticPassingRisk.Safe,
+      width: TacticWidth.Normal,
+      attackingFocus: TacticAttackingFocus.Center,
+      cornerStrategy: CornerStrategy.Short,
+      penaltyKillStyle: PenaltyKillStyle.Passive,
+      formation,
+      lineupSlots,
+    },
+  }
+  return { ...game, managedClubPendingLineup: lineup }
+}
+
+/**
+ * Advance one round, automatically providing a cup lineup if needed.
+ */
+function advanceWithLineup(game: SaveGame, seed: number) {
+  const result = advanceToNextEvent(game, seed)
+  if (result.hasManagedCupMatch) {
+    // Cup fixture was skipped — set lineup and retry
+    return advanceToNextEvent(withAutoLineup(result.game), seed + 1000)
+  }
+  return result
 }
 
 // ── Group 1: Suspension handling ─────────────────────────────────────────────
@@ -181,32 +226,35 @@ describe('roundProcessor — finances', () => {
 // ── Group 4: Playoff detection ────────────────────────────────────────────────
 
 describe('roundProcessor — playoff detection', () => {
-  it('after completing all 22 league rounds and entering playoff, advancing a playoff round does not throw', () => {
+  it('playoff bracket is created after all league rounds complete and game state remains valid', () => {
     let game = makeGame()
-
-    for (let r = 1; r <= 22; r++) {
-      game = advanceToNextEvent(game, r).game
-    }
-
-    // Trigger playoff start
-    const playoffStartResult = advanceToNextEvent(game, 999)
-    expect(playoffStartResult.playoffStarted).toBe(true)
-    game = playoffStartResult.game
-
-    // Advance the first playoff round — should not throw and should progress
+    let playoffBracketCreated = false
     let seasonEnded = false
-    let iterations = 0
-    const maxIter = 10
 
-    while (!seasonEnded && iterations < maxIter) {
-      const r = advanceToNextEvent(game, 1000 + iterations)
-      game = r.game
-      seasonEnded = r.seasonEnded
-      iterations++
-      if (r.roundPlayed !== null) break // a playoff round was played
+    // Advance up to 50 rounds. Cup matches for the managed club require a lineup,
+    // so we use advanceWithLineup which auto-provides one when needed.
+    for (let i = 0; i < 50 && !seasonEnded; i++) {
+      const result = advanceWithLineup(game, i + 1)
+      game = result.game
+      seasonEnded = result.seasonEnded
+      if (game.playoffBracket) {
+        playoffBracketCreated = true
+        break
+      }
     }
 
-    // Game should still have a valid state
+    // Playoff bracket should have been created during the season
+    expect(playoffBracketCreated).toBe(true)
+    expect(game.playoffBracket).not.toBeNull()
+
+    // Advance a few more rounds through playoff — should not throw
+    for (let i = 0; i < 15 && !seasonEnded; i++) {
+      const result = advanceWithLineup(game, 200 + i)
+      game = result.game
+      seasonEnded = result.seasonEnded
+    }
+
+    // Game should still be in a valid state after playoff rounds
     expect(game.players.length).toBeGreaterThan(0)
     expect(game.clubs.length).toBe(12)
   }, 60000)
@@ -216,50 +264,43 @@ describe('roundProcessor — playoff detection', () => {
 
 describe('roundProcessor — injuries over a full season', () => {
   it('players with high injury proneness get injured at a higher rate than low-proneness players', () => {
+    // Run 3 seasons to get enough statistical power. Within each season, high-proneness
+    // players should accumulate more injuries than low-proneness players on average.
     let game = makeGame()
 
-    // Identify high and low proneness players in the managed squad
     const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
-    const highProneness = managedPlayers.filter(p => p.injuryProneness > 70).map(p => p.id)
-    const lowProneness = managedPlayers.filter(p => p.injuryProneness < 30).map(p => p.id)
-
-    // Need enough players in both groups to make a meaningful comparison
-    // If the seeded game doesn't have enough, we relax the threshold
-    const highGroup = highProneness.length > 0 ? highProneness
-      : managedPlayers.filter(p => p.injuryProneness >= 50).map(p => p.id)
-    const lowGroup = lowProneness.length > 0 ? lowProneness
-      : managedPlayers.filter(p => p.injuryProneness <= 30).map(p => p.id)
+    // Use widest possible split to maximise group sizes
+    const highGroup = managedPlayers.filter(p => p.injuryProneness >= 60).map(p => p.id)
+    const lowGroup = managedPlayers.filter(p => p.injuryProneness <= 40).map(p => p.id)
 
     if (highGroup.length === 0 || lowGroup.length === 0) {
-      // Insufficient variance in this seed — test passes vacuously
+      // Insufficient variance in generated squad — pass vacuously
       return
     }
 
-    const highInjuries = new Set<string>()
-    const lowInjuries = new Set<string>()
+    let highInjuryCount = 0
+    let lowInjuryCount = 0
 
-    // Play all 22 rounds
-    for (let r = 1; r <= 22; r++) {
-      const result = advanceToNextEvent(game, r)
-      game = result.game
+    // Track cumulative injuries across 3 seasons
+    for (let season = 0; season < 3; season++) {
+      for (let r = 0; r < 40; r++) {
+        const result = advanceWithLineup(game, r + 1)
+        game = result.game
+        if (result.seasonEnded) break
 
-      for (const id of highGroup) {
-        const p = game.players.find(pl => pl.id === id)
-        if (p?.isInjured) highInjuries.add(id)
-      }
-      for (const id of lowGroup) {
-        const p = game.players.find(pl => pl.id === id)
-        if (p?.isInjured) lowInjuries.add(id)
+        for (const id of highGroup) {
+          if (game.players.find(p => p.id === id)?.isInjured) highInjuryCount++
+        }
+        for (const id of lowGroup) {
+          if (game.players.find(p => p.id === id)?.isInjured) lowInjuryCount++
+        }
       }
     }
 
-    // High-proneness players should accumulate more injuries than low-proneness.
-    // We compare injury rates (injured count / group size).
-    const highRate = highInjuries.size / highGroup.length
-    const lowRate = lowInjuries.size / lowGroup.length
-
-    // The high group should have an equal or higher rate over a full season.
-    // This is probabilistic, but with seed 42 and a 22-round season, it should hold.
+    // Over 3 seasons, the high-proneness group should accumulate at least as many
+    // injury-rounds as the low-proneness group (normalised by group size).
+    const highRate = highInjuryCount / highGroup.length
+    const lowRate = lowInjuryCount / lowGroup.length
     expect(highRate).toBeGreaterThanOrEqual(lowRate)
   }, 60000)
 })
@@ -364,15 +405,31 @@ describe('roundProcessor — inbox after round', () => {
 
   it('inbox accumulates match result items across multiple rounds', () => {
     let game = makeGame()
+    let totalManagedMatches = 0
 
-    for (let r = 1; r <= 3; r++) {
-      game = advanceToNextEvent(game, r).game
+    // Advance 5 matchdays and count how many the managed club actually played
+    for (let r = 1; r <= 5; r++) {
+      const before = game.fixtures.filter(
+        f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+          && f.status === FixtureStatus.Scheduled
+      )
+      game = advanceWithLineup(game, r).game
+      const completed = game.fixtures.filter(
+        f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+          && f.status === FixtureStatus.Completed
+      )
+      // If a managed fixture moved from scheduled to completed this round, count it
+      const newlyCompleted = completed.filter(cf =>
+        before.some(bf => bf.id === cf.id)
+      )
+      totalManagedMatches += newlyCompleted.length
     }
 
     const matchResultItems = game.inbox.filter(
       item => item.type === InboxItemType.MatchResult
     )
-    // After 3 rounds, there should be 3 match result items (one per round)
-    expect(matchResultItems.length).toBeGreaterThanOrEqual(3)
+    // Inbox should have exactly as many MatchResult items as matches the managed club played
+    expect(matchResultItems.length).toBe(totalManagedMatches)
+    expect(totalManagedMatches).toBeGreaterThan(0)
   })
 })
