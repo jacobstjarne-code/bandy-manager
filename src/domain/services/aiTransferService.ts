@@ -1,6 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { Player } from '../entities/Player'
 import { mulberry32 } from '../utils/random'
+import { applyFinanceChange } from './economyService'
 
 interface AITransferResult {
   updatedPlayers: Player[]
@@ -92,14 +93,11 @@ export function processAITransfers(
           }
         }
         if (c.id === target.clubId) {
-          return {
-            ...c,
-            squadPlayerIds: c.squadPlayerIds.filter(id => id !== target.id),
-            finances: c.finances + fee,
-          }
+          return { ...c, squadPlayerIds: c.squadPlayerIds.filter(id => id !== target.id) }
         }
         return c
       })
+      updatedClubs = applyFinanceChange(updatedClubs, target.clubId, fee)
 
       transfers.push({
         playerId: target.id,

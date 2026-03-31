@@ -2,6 +2,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { TransferBid } from '../entities/GameEvent'
 import { getTransferWindowStatus } from './transferWindowService'
 import { InboxItemType } from '../enums'
+import { applyFinanceChange } from './economyService'
 
 function bidId(round: number, playerId: string, buyingClubId: string): string {
   return `bid_${round}_${playerId}_${buyingClubId}`
@@ -175,24 +176,21 @@ export function executeTransfer(
     }
   })
 
-  const updatedClubs = game.clubs.map(c => {
+  const withSquadUpdates = game.clubs.map(c => {
     if (c.id === sellingClubId) {
-      return {
-        ...c,
-        finances: c.finances + offerAmount,
-        squadPlayerIds: c.squadPlayerIds.filter(id => id !== playerId),
-      }
+      return { ...c, squadPlayerIds: c.squadPlayerIds.filter(id => id !== playerId) }
     }
     if (c.id === buyingClubId) {
       return {
         ...c,
-        finances: c.finances - offerAmount,
         transferBudget: Math.max(0, c.transferBudget - offerAmount),
         squadPlayerIds: [...c.squadPlayerIds, playerId],
       }
     }
     return c
   })
+  let updatedClubs = applyFinanceChange(withSquadUpdates, sellingClubId, offerAmount)
+  updatedClubs = applyFinanceChange(updatedClubs, buyingClubId, -offerAmount)
 
   const updatedBids = (game.transferBids ?? []).map(b =>
     b.id === bid.id ? { ...b, status: 'accepted' as const } : b,

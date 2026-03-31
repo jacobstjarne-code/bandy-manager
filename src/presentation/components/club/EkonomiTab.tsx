@@ -3,6 +3,7 @@ import type { Club } from '../../../domain/entities/Club'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { SectionCard } from '../SectionCard'
 import { formatCurrency, formatFinance } from '../../utils/formatters'
+import { calcRoundIncome } from '../../../domain/services/economyService'
 
 interface EkonomiTabProps {
   club: Club
@@ -26,20 +27,28 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
   }
 
   const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
-  const actualMonthlyWages = managedPlayers.reduce((sum, p) => sum + p.salary, 0)
   const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
   const maxSponsors = Math.min(6, 2 + Math.floor(club.reputation / 20))
-  const weeklySponsors = activeSponsors.reduce((sum, s) => sum + s.weeklyIncome, 0)
   const ca = game.communityActivities
-  const kioskEst = ca?.kiosk === 'upgraded' ? 10000 : ca?.kiosk === 'basic' ? 5000 : 0
-  const lotteryEst = ca?.lottery === 'intensive' ? 4000 : ca?.lottery === 'basic' ? 1750 : 0
-  const bandyplayEst = ca?.bandyplay ? 1500 : 0
-  const functionariesEst = ca?.functionaries ? 4000 : 0
-  const communityEst = kioskEst + lotteryEst + functionariesEst + bandyplayEst
-  const weeklyBase = Math.round(club.reputation * 250)
-  const weeklyIncome = weeklyBase + weeklySponsors + communityEst
-  const weeklyWages = Math.round(actualMonthlyWages / 4)
+  const income = calcRoundIncome({
+    club,
+    players: managedPlayers,
+    sponsors: game.sponsors ?? [],
+    communityActivities: ca,
+    fanMood: game.fanMood ?? 50,
+    isHomeMatch: true,
+    matchIsKnockout: false,
+    matchIsCup: false,
+    matchHasRivalry: false,
+    standing: game.standings.find(s => s.clubId === game.managedClubId) ?? null,
+    rand: () => 0.5,
+  })
+  const weeklySponsors = income.sponsorIncome
+  const weeklyIncome = income.weeklyBase + income.sponsorIncome + income.communityMatchIncome + income.communityRoundIncome
+  const weeklyWages = income.weeklyWages
   const netPerRound = weeklyIncome - weeklyWages
+  const actualMonthlyWages = weeklyWages * 4
+  const communityTotal = income.communityMatchIncome + income.communityRoundIncome
   const patron = game.patron?.isActive ? game.patron : null
   const kommunBidrag = game.localPolitician?.kommunBidrag ?? 0
   const wagePressure = actualMonthlyWages > club.wageBudget
@@ -65,7 +74,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
 
   interface CommunityRow {
     icon: string; name: string; active: boolean; status: string
-    income: string; value: number
+    income: string
     actionKey?: string; actionLevel?: string; actionCost?: number; actionLabel?: string
     upgradeKey?: string; upgradeLevel?: string; upgradeCost?: number; upgradeLabel?: string
     noAction?: boolean
@@ -76,7 +85,6 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       active: ca?.kiosk !== 'none' && !!ca?.kiosk,
       status: ca?.kiosk === 'upgraded' ? 'Uppgraderad' : ca?.kiosk === 'basic' ? 'Aktiv' : 'Ej startad',
       income: ca?.kiosk === 'upgraded' ? '~8 500 netto/match' : ca?.kiosk === 'basic' ? '~3 500 netto/match' : '—',
-      value: kioskEst,
       ...(ca?.kiosk === 'none' || !ca?.kiosk
         ? { actionKey: 'kiosk', actionLevel: 'basic', actionCost: 3000, actionLabel: 'Starta kiosk — 3 tkr' }
         : ca?.kiosk === 'basic'
@@ -88,7 +96,6 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       active: ca?.lottery !== 'none' && !!ca?.lottery,
       status: ca?.lottery === 'intensive' ? 'Intensiv' : ca?.lottery === 'basic' ? 'Aktiv' : 'Ej startad',
       income: ca?.lottery === 'intensive' ? '~3 200 netto/omg' : ca?.lottery === 'basic' ? '~1 250 netto/omg' : '—',
-      value: lotteryEst,
       ...(ca?.lottery === 'none' || !ca?.lottery
         ? { actionKey: 'lottery', actionLevel: 'basic', actionCost: 1000, actionLabel: 'Starta lotteri — 1 tkr' }
         : ca?.lottery === 'basic'
@@ -100,7 +107,6 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       active: !!ca?.bandyplay,
       status: ca?.bandyplay ? 'Aktiv' : club.reputation < 40 ? 'Ingen intresserad ännu' : 'Möjligt',
       income: ca?.bandyplay ? '~1 500/match' : '—',
-      value: bandyplayEst,
       ...(!ca?.bandyplay
         ? { actionKey: 'bandyplay', actionLevel: 'active', actionCost: 0, actionLabel: 'Teckna avtal — gratis' }
         : {}),
@@ -110,7 +116,6 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       active: !!ca?.functionaries,
       status: ca?.functionaries ? 'Aktiv' : 'Ej rekryterade',
       income: ca?.functionaries ? '~4 000 besparing/match' : '—',
-      value: functionariesEst,
       ...(!ca?.functionaries
         ? { actionKey: 'functionaries', actionLevel: 'active', actionCost: 2000, actionLabel: 'Rekrytera — 2 tkr' }
         : {}),
@@ -120,7 +125,6 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       active: !!ca?.julmarknad,
       status: ca?.julmarknad ? 'Genomförd ✓' : 'Väntar (omg 8–12)',
       income: ca?.julmarknad ? 'Klar' : '~8–18 tkr (engång)',
-      value: 0,
       ...(!ca?.julmarknad
         ? { actionKey: 'julmarknad', actionLevel: 'active', actionCost: 2000, actionLabel: 'Anordna — 2 tkr' }
         : {}),
@@ -130,7 +134,6 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       active: !!ca?.bandySchool,
       status: ca?.bandySchool ? 'Aktiv' : 'Ej startad',
       income: ca?.bandySchool ? '~1 000/omg + ungdom' : '—',
-      value: ca?.bandySchool ? 1000 : 0,
       ...(!ca?.bandySchool
         ? { actionKey: 'bandySchool', actionLevel: 'active', actionCost: 5000, actionLabel: 'Starta bandyskola — 5 tkr' }
         : {}),
@@ -140,7 +143,6 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       active: !!ca?.socialMedia,
       status: ca?.socialMedia ? 'Aktiv' : 'Ej startad',
       income: ca?.socialMedia ? '+reputation' : '—',
-      value: 0,
       ...(!ca?.socialMedia
         ? { actionKey: 'socialMedia', actionLevel: 'active', actionCost: 2000, actionLabel: 'Starta konto — 2 tkr' }
         : {}),
@@ -150,15 +152,13 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
       active: !!ca?.vipTent,
       status: ca?.vipTent ? 'Aktiv' : club.facilities > 60 ? 'Ej startad' : 'Kräver anläggning > 60',
       income: ca?.vipTent ? '~10 000/match' : '—',
-      value: ca?.vipTent ? 10000 : 0,
       ...(!ca?.vipTent && club.facilities > 60
         ? { actionKey: 'vipTent', actionLevel: 'active', actionCost: 10000, actionLabel: 'Sätt upp VIP-tält — 10 tkr' }
         : {}),
     },
-    { icon: '🏪', name: 'Loppis', active: false, status: 'Slumpmässig händelse', income: '—', value: 0, noAction: true },
-    { icon: '🚗', name: 'Bilbingo', active: false, status: 'Försäsong', income: '—', value: 0, noAction: true },
+    { icon: '🏪', name: 'Loppis', active: false, status: 'Slumpmässig händelse', income: '—', noAction: true },
+    { icon: '🚗', name: 'Bilbingo', active: false, status: 'Försäsong', income: '—', noAction: true },
   ]
-  const communityTotal = communityRows.reduce((s, r) => s + r.value, 0)
 
   return (
     <>
@@ -397,8 +397,29 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
         })()}
       </SectionCard>
 
+      {/* Transaktionshistorik */}
+      {(game.financeLog ?? []).length > 0 && (
+        <SectionCard title="📋 Transaktionshistorik" stagger={6}>
+          {[...(game.financeLog ?? [])].reverse().slice(0, 12).map((entry, i, arr) => (
+            <div key={i} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '6px 0',
+              borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
+            }}>
+              <div>
+                <span style={{ fontSize: 12 }}>{entry.label}</span>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>omg {entry.round}</span>
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, color: entry.amount >= 0 ? 'var(--success)' : 'var(--danger)', whiteSpace: 'nowrap', marginLeft: 12 }}>
+                {entry.amount >= 0 ? '+' : ''}{formatCurrency(entry.amount)}
+              </span>
+            </div>
+          ))}
+        </SectionCard>
+      )}
+
       {/* Scouting */}
-      <SectionCard title="🔭 Scouting" stagger={6}>
+      <SectionCard title="🔭 Scouting" stagger={7}>
         {(() => {
           const scoutBudget = game.scoutBudget ?? 0
           const canBuyScout = club.finances >= 15000 && scoutBudget < 30
