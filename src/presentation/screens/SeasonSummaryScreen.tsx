@@ -39,7 +39,7 @@ export function SeasonSummaryScreen() {
 
   const isHistorical = !!params.season
   const isChampion = summary.playoffResult === 'champion'
-  const positionColor = summary.finalPosition <= 3 ? 'var(--accent)' : summary.finalPosition >= 10 ? 'var(--danger)' : 'var(--text-light)'
+  const positionColor = summary.finalPosition <= 3 ? 'var(--accent)' : summary.finalPosition >= 10 ? 'var(--danger)' : 'var(--text-primary)'
 
   function playoffResultLabel(r: SeasonSummary['playoffResult']): string {
     switch (r) {
@@ -66,9 +66,9 @@ export function SeasonSummaryScreen() {
 
   function StatRow({ label, value, color }: { label: string; value: string | number; color?: string }) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, marginBottom: 8, borderBottom: '1px solid rgba(196,186,168,0.15)' }}>
-        <span style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>{label}</span>
-        <span style={{ fontSize: 13, fontWeight: 600, color: color ?? 'var(--text-light)' }}>{value}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, marginBottom: 8, borderBottom: '1px solid var(--border)' }}>
+        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{label}</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: color ?? 'var(--text-primary)' }}>{value}</span>
       </div>
     )
   }
@@ -120,7 +120,7 @@ export function SeasonSummaryScreen() {
         {/* X-axis labels */}
         {[1, 6, 11, 16, 22].map(r => {
           const x = pad.l + ((r-1) / 21) * chartW
-          return <text key={r} x={x} y={h - 2} fontSize="8" fill="rgba(245,241,235,0.35)" textAnchor="middle">{r}</text>
+          return <text key={r} x={x} y={h - 2} fontSize="8" fill="rgba(26,26,24,0.35)" textAnchor="middle">{r}</text>
         })}
       </svg>
     )
@@ -148,28 +148,28 @@ export function SeasonSummaryScreen() {
     <div style={{
       height: '100%',
       overflowY: 'auto',
-      background: 'var(--bg-dark)',
+      background: 'var(--bg)',
     }}>
       <div style={{ padding: '0 16px 100px' }}>
 
         {/* HEADER */}
         <div style={{
-          background: 'linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-dark) 100%)',
+          background: 'var(--bg)',
           padding: '24px 0 20px',
           textAlign: 'center',
           marginBottom: 16,
           position: 'relative',
         }}>
-          <button onClick={() => navigate(-1)} style={{ position: 'absolute', top: 16, left: 0, background: 'none', border: 'none', color: 'var(--text-light-secondary)', fontSize: 22, cursor: 'pointer' }}>←</button>
+          <button onClick={() => navigate(-1)} style={{ position: 'absolute', top: 16, left: 0, background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 22, cursor: 'pointer' }}>←</button>
 
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(245,241,235,0.35)', marginBottom: 8 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             ÅRSBOK
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
             <ClubBadge clubId={summary.clubId} name={summary.clubName} size={56} />
           </div>
-          <p style={{ fontSize: 14, color: 'var(--text-light-secondary)', marginBottom: 4 }}>{summary.clubName}</p>
-          <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: '3px', color: 'var(--text-light)', marginBottom: 8, fontFamily: 'var(--font-display)' }}>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 4 }}>{summary.clubName}</p>
+          <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: '3px', color: 'var(--text-primary)', marginBottom: 8, fontFamily: 'var(--font-display)' }}>
             SÄSONG {summary.season}/{summary.season + 1}
           </h1>
 
@@ -184,8 +184,8 @@ export function SeasonSummaryScreen() {
               {summary.finalPosition}.
             </span>
             <div style={{ textAlign: 'left' }}>
-              <p style={{ fontSize: 11, color: 'rgba(245,241,235,0.35)', textTransform: 'uppercase', letterSpacing: '1px' }}>plats</p>
-              <p style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>{summary.points} poäng</p>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>plats</p>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{summary.points} poäng</p>
             </div>
           </div>
 
@@ -194,7 +194,7 @@ export function SeasonSummaryScreen() {
             <p style={{
               fontSize: 13,
               fontWeight: 700,
-              color: isChampion ? 'var(--accent)' : 'var(--text-light-secondary)',
+              color: isChampion ? 'var(--accent)' : 'var(--text-secondary)',
               marginBottom: 8,
             }}>
               {playoffResultLabel(summary.playoffResult)}
@@ -220,7 +220,7 @@ export function SeasonSummaryScreen() {
 
         {/* NARRATIVE */}
         <Card stagger={1} style={{ borderLeft: '3px solid var(--accent)', background: 'rgba(196,122,58,0.05)' }}>
-          <p style={{ fontSize: 15, fontStyle: 'italic', color: 'var(--text-light)', lineHeight: 1.6 }}>
+          <p style={{ fontSize: 15, fontStyle: 'italic', color: 'var(--text-primary)', lineHeight: 1.6 }}>
             "{summary.narrativeSummary}"
           </p>
         </Card>
@@ -276,18 +276,18 @@ export function SeasonSummaryScreen() {
           <Card style={{ marginBottom: 0 }}>
             <SectionLabel>HEMMA</SectionLabel>
             <p style={{ fontSize: 22, fontWeight: 800, color: 'var(--success)' }}>{summary.homeRecord.wins}</p>
-            <p style={{ fontSize: 11, color: 'var(--text-light-secondary)' }}>V</p>
+            <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>V</p>
             <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
-              <span style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>O: {summary.homeRecord.draws}</span>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>O: {summary.homeRecord.draws}</span>
               <span style={{ fontSize: 13, color: 'var(--danger)' }}>F: {summary.homeRecord.losses}</span>
             </div>
           </Card>
           <Card style={{ marginBottom: 0 }}>
             <SectionLabel>BORTA</SectionLabel>
             <p style={{ fontSize: 22, fontWeight: 800, color: 'var(--success)' }}>{summary.awayRecord.wins}</p>
-            <p style={{ fontSize: 11, color: 'var(--text-light-secondary)' }}>V</p>
+            <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>V</p>
             <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
-              <span style={{ fontSize: 13, color: 'var(--text-light-secondary)' }}>O: {summary.awayRecord.draws}</span>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>O: {summary.awayRecord.draws}</span>
               <span style={{ fontSize: 13, color: 'var(--danger)' }}>F: {summary.awayRecord.losses}</span>
             </div>
           </Card>
@@ -311,16 +311,16 @@ export function SeasonSummaryScreen() {
           <SectionLabel>POÄNGKURVA</SectionLabel>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <div>
-              <span style={{ fontSize: 11, color: 'var(--text-light-secondary)' }}>Första halvan: </span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: summary.formTrend === 'declining' ? 'var(--success)' : 'var(--text-light)' }}>{summary.firstHalfPoints} p</span>
+              <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Första halvan: </span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: summary.formTrend === 'declining' ? 'var(--success)' : 'var(--text-primary)' }}>{summary.firstHalfPoints} p</span>
             </div>
             <div>
-              <span style={{ fontSize: 11, color: 'var(--text-light-secondary)' }}>Andra halvan: </span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: summary.formTrend === 'improving' ? 'var(--success)' : 'var(--text-light)' }}>{summary.secondHalfPoints} p</span>
+              <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Andra halvan: </span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: summary.formTrend === 'improving' ? 'var(--success)' : 'var(--text-primary)' }}>{summary.secondHalfPoints} p</span>
             </div>
             <div>
-              <span style={{ fontSize: 11, color: 'var(--text-light-secondary)' }}>Trend: </span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: summary.formTrend === 'improving' ? 'var(--success)' : summary.formTrend === 'declining' ? 'var(--danger)' : 'var(--text-light)' }}>
+              <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Trend: </span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: summary.formTrend === 'improving' ? 'var(--success)' : summary.formTrend === 'declining' ? 'var(--danger)' : 'var(--text-primary)' }}>
                 {summary.formTrend === 'improving' ? '↑' : summary.formTrend === 'declining' ? '↓' : '→'}
               </span>
             </div>
@@ -332,14 +332,14 @@ export function SeasonSummaryScreen() {
         {summary.youthIntakeCount > 0 && (
           <Card stagger={6}>
             <SectionLabel>UNGDOMSKULL</SectionLabel>
-            <p style={{ fontSize: 14, color: 'var(--text-light)', marginBottom: 8 }}>
+            <p style={{ fontSize: 14, color: 'var(--text-primary)', marginBottom: 8 }}>
               {summary.youthIntakeCount} nya spelare rekryterades
             </p>
             {summary.bestYouthProspect && (
               <div style={{ background: 'rgba(196,122,58,0.08)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(196,122,58,0.2)' }}>
                 <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginBottom: 4 }}>BÄSTA PROSPEKT</p>
                 <p style={{ fontSize: 14, fontWeight: 700 }}>{summary.bestYouthProspect.name}</p>
-                <p style={{ fontSize: 12, color: 'var(--text-light-secondary)' }}>
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                   {summary.bestYouthProspect.position} · Potential: {summary.bestYouthProspect.potential}
                 </p>
               </div>
@@ -352,12 +352,12 @@ export function SeasonSummaryScreen() {
           <Card stagger={6}>
             <SectionLabel>ORTEN</SectionLabel>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <span style={{ fontSize: 12, color: 'rgba(245,241,235,0.35)' }}>Lokalstöd vid säsongsslut</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Lokalstöd vid säsongsslut</span>
               <span style={{ fontSize: 16, fontWeight: 700, color: csColor(summary.communityStandingEnd) }}>
                 {summary.communityStandingEnd}
               </span>
             </div>
-            <div style={{ height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 3 }}>
+            <div style={{ height: 6, background: 'rgba(26,26,24,0.08)', borderRadius: 3 }}>
               <div style={{
                 height: '100%',
                 width: `${summary.communityStandingEnd}%`,
@@ -367,7 +367,7 @@ export function SeasonSummaryScreen() {
               }} />
             </div>
             {(summary.communityHighlights ?? []).length > 0 && (
-              <p style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginTop: 8 }}>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8 }}>
                 {summary.communityHighlights.join(' · ')}
               </p>
             )}
@@ -379,14 +379,14 @@ export function SeasonSummaryScreen() {
           <SectionLabel>EKONOMI</SectionLabel>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <p style={{ fontSize: 12, color: 'rgba(245,241,235,0.35)' }}>Vid säsongsstart</p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Vid säsongsstart</p>
               <p style={{ fontSize: 16, fontWeight: 700 }}>{formatCurrency(summary.startFinances)}</p>
             </div>
             <span style={{ fontSize: 20, color: summary.financialChange >= 0 ? 'var(--success)' : 'var(--danger)' }}>
               →
             </span>
             <div style={{ textAlign: 'right' }}>
-              <p style={{ fontSize: 12, color: 'rgba(245,241,235,0.35)' }}>Vid säsongsslut</p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Vid säsongsslut</p>
               <p style={{ fontSize: 16, fontWeight: 700 }}>{formatCurrency(summary.endFinances)}</p>
             </div>
           </div>
@@ -404,15 +404,15 @@ export function SeasonSummaryScreen() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {(summary.storyTriggers ?? []).map((trigger, i) => (
                 <div key={i} style={{
-                  background: 'var(--bg-dark-surface)',
+                  background: 'var(--bg-surface)',
                   border: '1px solid rgba(196,122,58,0.2)',
                   borderRadius: 10,
                   padding: '12px 14px',
                 }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-light)', marginBottom: 4 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
                     {trigger.headline}
                   </p>
-                  <p style={{ fontSize: 12, color: 'var(--text-light-secondary)', lineHeight: 1.5 }}>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                     {trigger.body}
                   </p>
                 </div>
@@ -439,8 +439,8 @@ export function SeasonSummaryScreen() {
               onClick={() => navigate('/game/history')}
               style={{
                 width: '100%', padding: '13px', marginBottom: 10,
-                background: 'transparent', border: '1px solid rgba(196,186,168,0.15)',
-                borderRadius: 12, color: 'var(--text-light-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                background: 'transparent', border: '1px solid var(--border)',
+                borderRadius: 12, color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
               }}
             >
               📖 Se hela karriärhistoriken
@@ -451,7 +451,7 @@ export function SeasonSummaryScreen() {
                 width: '100%',
                 padding: '17px',
                 background: 'var(--accent)',
-                color: 'var(--bg-dark)',
+                color: '#fff',
                 borderRadius: 12,
                 fontSize: 16,
                 fontWeight: 800,
@@ -481,10 +481,10 @@ function AwardCard({ icon, title, name, value }: { icon: string; title: string; 
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
         <span style={{ fontSize: 12 }}>{icon}</span>
-        <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(245,241,235,0.35)' }}>{title}</span>
+        <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)' }}>{title}</span>
       </div>
-      <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-light)', marginBottom: 2 }}>{name}</p>
-      <p style={{ fontSize: 11, color: 'var(--text-light-secondary)' }}>{value}</p>
+      <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 2 }}>{name}</p>
+      <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{value}</p>
     </div>
   )
 }

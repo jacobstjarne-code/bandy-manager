@@ -42,7 +42,7 @@ export function GameOverScreen() {
     <div style={{
       position: 'fixed',
       inset: 0,
-      background: 'rgba(14,13,11,0.98)',
+      background: 'var(--bg)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -53,7 +53,7 @@ export function GameOverScreen() {
       margin: '0 auto',
     }}>
       <div style={{
-        background: 'var(--bg-dark-surface)',
+        background: 'var(--bg-surface)',
         border: '1px solid rgba(176,80,64,0.3)',
         borderRadius: 16,
         padding: '32px 24px',
@@ -91,7 +91,7 @@ export function GameOverScreen() {
         <h1 style={{
           fontSize: 26,
           fontWeight: 900,
-          color: 'var(--text-light)',
+          color: 'var(--text-primary)',
           fontFamily: 'var(--font-display)',
           marginBottom: 8,
           letterSpacing: '1px',
@@ -99,7 +99,7 @@ export function GameOverScreen() {
           DU HAR SPARKATS
         </h1>
 
-        <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', marginBottom: 24 }}>
+        <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 24 }}>
           {managedClub?.name ?? 'Klubben'}
         </p>
 
@@ -115,34 +115,34 @@ export function GameOverScreen() {
           <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--danger)', marginBottom: 8, letterSpacing: '1px', textTransform: 'uppercase' }}>
             Styrelsens uttalande
           </p>
-          <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', lineHeight: 1.6 }}>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
             {getBoardStatement()}
           </p>
         </div>
 
         {/* Final stats */}
         <div style={{
-          background: 'var(--bg-dark-elevated)',
-          border: '1px solid rgba(196,186,168,0.15)',
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border)',
           borderRadius: 10,
           padding: '14px 16px',
           marginBottom: 24,
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(245,241,235,0.35)', marginBottom: 12, letterSpacing: '2px', textTransform: 'uppercase' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 12, letterSpacing: '2px', textTransform: 'uppercase' }}>
             Din karriär
           </p>
           <div style={{ display: 'flex', justifyContent: 'space-around' }}>
             <div>
-              <p style={{ fontSize: 22, fontWeight: 900, color: 'var(--text-light)' }}>{totalSeasons}</p>
-              <p style={{ fontSize: 11, color: 'rgba(245,241,235,0.35)', textTransform: 'uppercase', letterSpacing: '1px' }}>Säsonger</p>
+              <p style={{ fontSize: 22, fontWeight: 900, color: 'var(--text-primary)' }}>{totalSeasons}</p>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Säsonger</p>
             </div>
             <div>
               <p style={{ fontSize: 22, fontWeight: 900, color: 'var(--accent)' }}>{bestPosition}.</p>
-              <p style={{ fontSize: 11, color: 'rgba(245,241,235,0.35)', textTransform: 'uppercase', letterSpacing: '1px' }}>Bästa plats</p>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Bästa plats</p>
             </div>
             <div>
               <p style={{ fontSize: 22, fontWeight: 900, color: 'var(--success)' }}>{totalWins}</p>
-              <p style={{ fontSize: 11, color: 'rgba(245,241,235,0.35)', textTransform: 'uppercase', letterSpacing: '1px' }}>Totala vinster</p>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Totala vinster</p>
             </div>
           </div>
         </div>
@@ -154,7 +154,7 @@ export function GameOverScreen() {
             width: '100%',
             padding: '17px',
             background: 'var(--accent)',
-            color: 'var(--bg-dark)',
+            color: '#fff',
             borderRadius: 12,
             fontSize: 15,
             fontWeight: 800,

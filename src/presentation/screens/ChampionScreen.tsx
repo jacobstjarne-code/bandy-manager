@@ -18,7 +18,7 @@ function Confetti() {
     left: (i * 37 + 11) % 100,
     delay: (i * 0.17) % 3,
     duration: 3 + (i * 0.13) % 3,
-    color: i % 2 === 0 ? 'var(--accent)' : 'var(--text-light)',
+    color: i % 2 === 0 ? 'var(--accent)' : 'var(--accent-dark)',
     size: 6 + (i % 6),
   }))
   return (
@@ -86,7 +86,7 @@ export function ChampionScreen() {
     <div style={{
       position: 'relative',
       height: '100%',
-      background: 'var(--bg-dark)',
+      background: 'var(--bg)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -125,10 +125,10 @@ export function ChampionScreen() {
             }}>
               Svenska Mästare!
             </h1>
-            <p style={{ fontSize: 16, color: 'var(--text-light)', fontWeight: 700, marginBottom: 4 }}>
+            <p style={{ fontSize: 16, color: 'var(--text-primary)', fontWeight: 700, marginBottom: 4 }}>
               {club.name}
             </p>
-            <p style={{ fontSize: 13, color: 'var(--text-light-secondary)', marginBottom: 24 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 24 }}>
               Säsong {game.currentSeason}/{game.currentSeason + 1}
             </p>
           </>
@@ -142,13 +142,13 @@ export function ChampionScreen() {
             <div style={{ fontSize: 60, marginBottom: 16 }}>
               <span role="img" aria-label="medal">{icon}</span>
             </div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-light)', marginBottom: 8, fontFamily: 'var(--font-display)' }}>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8, fontFamily: 'var(--font-display)' }}>
               {title}
             </h1>
-            <p style={{ fontSize: 14, color: 'var(--text-light-secondary)', marginBottom: 8 }}>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 8 }}>
               {champion?.name ?? 'Motståndet'} tog SM-guldet säsong {game.currentSeason}/{game.currentSeason + 1}.
             </p>
-            <p style={{ fontSize: 13, color: 'rgba(245,241,235,0.35)', marginBottom: 24 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
               {club.name} · Säsong {game.currentSeason}/{game.currentSeason + 1}
             </p>
           </>
@@ -156,14 +156,14 @@ export function ChampionScreen() {
 
         {/* Playoff run summary */}
         <div style={{
-          background: 'var(--bg-dark-elevated)',
-          border: '1px solid rgba(196,186,168,0.15)',
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border)',
           borderRadius: 12,
           padding: '16px',
           marginBottom: 24,
           textAlign: 'left',
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(245,241,235,0.35)', marginBottom: 12 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 12 }}>
             SLUTSPELSRESA
           </p>
           {managedSeries.length > 0 ? managedSeries.map(s => {
@@ -181,7 +181,7 @@ export function ChampionScreen() {
                 alignItems: 'center',
                 marginBottom: 8,
               }}>
-                <span style={{ fontSize: 12, color: 'var(--text-light-secondary)' }}>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                   {roundLabel} vs {opponent?.name ?? '?'}
                 </span>
                 <span style={{
@@ -194,7 +194,7 @@ export function ChampionScreen() {
               </div>
             )
           }) : (
-            <p style={{ fontSize: 12, color: 'rgba(245,241,235,0.35)' }}>Nådde inte slutspelet</p>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Nådde inte slutspelet</p>
           )}
         </div>
 
@@ -205,7 +205,7 @@ export function ChampionScreen() {
             width: '100%',
             padding: '17px',
             background: 'var(--accent)',
-            color: 'var(--bg-dark)',
+            color: '#fff',
             borderRadius: 12,
             fontSize: 16,
             fontWeight: 800,
