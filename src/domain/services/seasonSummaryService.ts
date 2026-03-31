@@ -72,11 +72,12 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   const club = game.clubs.find(c => c.id === managedClubId)!
   const managedPlayers = game.players.filter(p => p.clubId === managedClubId)
 
-  // Completed fixtures for managed club this season
+  // Completed league fixtures for managed club this season (no cup)
   const clubFixtures = game.fixtures.filter(f =>
     f.status === FixtureStatus.Completed &&
     f.season === game.currentSeason &&
-    f.roundNumber <= 22 &&  // only regular season
+    !f.isCup &&
+    f.roundNumber <= 22 &&
     (f.homeClubId === managedClubId || f.awayClubId === managedClubId)
   ).sort((a, b) => a.roundNumber - b.roundNumber)
 

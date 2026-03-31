@@ -28,13 +28,11 @@ describe('generateWorld', () => {
       const gkCount = squad.filter((p) => p.position === PlayerPosition.Goalkeeper).length
       const defCount = squad.filter((p) => p.position === PlayerPosition.Defender).length
       const halfCount = squad.filter((p) => p.position === PlayerPosition.Half).length
-      const midCount = squad.filter((p) => p.position === PlayerPosition.Midfielder).length
       const fwdCount = squad.filter((p) => p.position === PlayerPosition.Forward).length
 
       expect(gkCount).toBeGreaterThanOrEqual(1)
       expect(defCount).toBeGreaterThanOrEqual(3)
       expect(halfCount).toBeGreaterThanOrEqual(3)
-      expect(midCount).toBeGreaterThanOrEqual(3)
       expect(fwdCount).toBeGreaterThanOrEqual(3)
     }
   })

@@ -146,22 +146,22 @@ function makeFixture(overrides: Partial<Fixture> = {}): Fixture {
 
 describe('Rivalry data functions', () => {
 
-  it('1. isRivalryMatch returns true for known rival pair (Sandviken vs Edsbyn)', () => {
-    expect(isRivalryMatch('club_sandviken', 'club_edsbyn')).toBe(true)
+  it('1. isRivalryMatch returns true for known rival pair (Sirius vs Skutskär)', () => {
+    expect(isRivalryMatch('club_sirius', 'club_skutskar')).toBe(true)
   })
 
-  it('2. isRivalryMatch returns true regardless of order (Edsbyn vs Sandviken)', () => {
-    expect(isRivalryMatch('club_edsbyn', 'club_sandviken')).toBe(true)
+  it('2. isRivalryMatch returns true regardless of order (Skutskär vs Sirius)', () => {
+    expect(isRivalryMatch('club_skutskar', 'club_sirius')).toBe(true)
   })
 
   it('3. isRivalryMatch returns false for non-rival pair', () => {
     expect(isRivalryMatch('club_sandviken', 'club_sirius')).toBe(false)
   })
 
-  it('4. getRivalry returns correct name and intensity for Vasteras vs Tillberga', () => {
-    const r = getRivalry('club_vasteras', 'club_tillberga')
+  it('4. getRivalry returns correct name and intensity for Falun vs Söderhamn', () => {
+    const r = getRivalry('club_falun', 'club_soderhamns')
     expect(r).not.toBeNull()
-    expect(r!.name).toBe('Västmanlandsderbyt')
+    expect(r!.name).toBe('Daladerbyt')
     expect(r!.intensity).toBe(3)
   })
 
@@ -175,19 +175,19 @@ describe('Rivalry match simulation', () => {
 
   it('6. Derby matches produce more red cards on average than non-derby matches', () => {
     const N = 30
-    const homePlayers = makeSquad('h', 'club_sandviken', 65, 85)
-    const awayPlayers = makeSquad('a', 'club_edsbyn', 65, 85)
+    const homePlayers = makeSquad('h', 'club_sirius', 65, 85)
+    const awayPlayers = makeSquad('a', 'club_skutskar', 65, 85)
     const homeLineup = makeTeamSelection(homePlayers)
     const awayLineup = makeTeamSelection(awayPlayers)
 
-    const derbyRivalry = getRivalry('club_sandviken', 'club_edsbyn')!
+    const derbyRivalry = getRivalry('club_sirius', 'club_skutskar')!
 
     let derbyRedCards = 0
     let normalRedCards = 0
 
     for (let i = 0; i < N; i++) {
       const derbyResult = simulateMatch({
-        fixture: makeFixture({ id: `derby_${i}`, homeClubId: 'club_sandviken', awayClubId: 'club_edsbyn' }),
+        fixture: makeFixture({ id: `derby_${i}`, homeClubId: 'club_sirius', awayClubId: 'club_skutskar' }),
         homeLineup,
         awayLineup,
         homePlayers,
@@ -198,7 +198,7 @@ describe('Rivalry match simulation', () => {
       derbyRedCards += derbyResult.fixture.events.filter(e => e.type === MatchEventType.RedCard).length
 
       const normalResult = simulateMatch({
-        fixture: makeFixture({ id: `normal_${i}`, homeClubId: 'club_sandviken', awayClubId: 'club_edsbyn' }),
+        fixture: makeFixture({ id: `normal_${i}`, homeClubId: 'club_sirius', awayClubId: 'club_skutskar' }),
         homeLineup,
         awayLineup,
         homePlayers,
@@ -216,11 +216,11 @@ describe('Rivalry match simulation', () => {
   })
 
   it('7. Step 0 commentary in derby contains derby-related keyword', () => {
-    const homePlayers = makeSquad('h', 'club_sandviken')
-    const awayPlayers = makeSquad('a', 'club_edsbyn')
+    const homePlayers = makeSquad('h', 'club_sirius')
+    const awayPlayers = makeSquad('a', 'club_skutskar')
     const homeLineup = makeTeamSelection(homePlayers)
     const awayLineup = makeTeamSelection(awayPlayers)
-    const rivalry = getRivalry('club_sandviken', 'club_edsbyn')!
+    const rivalry = getRivalry('club_sirius', 'club_skutskar')!
 
     const gen = simulateMatchStepByStep({
       fixture: makeFixture(),

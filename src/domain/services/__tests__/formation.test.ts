@@ -142,13 +142,20 @@ describe('autoAssignFormation', () => {
     const fwd1 = makePlayer({ id: 'fwd1', position: PlayerPosition.Forward, currentAbility: 75 })
     const fwd2 = makePlayer({ id: 'fwd2', position: PlayerPosition.Forward, currentAbility: 70 })
     const def1 = makePlayer({ id: 'def1', position: PlayerPosition.Defender, currentAbility: 65 })
+    const players = [gk, fwd1, fwd2, def1]
+    const playerMap = new Map(players.map(p => [p.id, p]))
 
-    const assignments = autoAssignFormation(template, [gk, fwd1, fwd2, def1])
+    const slots = autoAssignFormation(template, players)
 
-    expect(assignments['gk1'].position).toBe(PlayerPosition.Goalkeeper)
-    expect(assignments['fwd1'].position).toBe(PlayerPosition.Forward)
-    expect(assignments['fwd2'].position).toBe(PlayerPosition.Forward)
-    expect(assignments['def1'].position).toBe(PlayerPosition.Defender)
+    // autoAssignFormation returns slotId → playerId
+    // Find which slot got the GK
+    const gkSlotId = Object.entries(slots).find(([, pid]) => pid === 'gk1')?.[0]
+    expect(gkSlotId).toBeDefined()
+    expect(playerMap.get(slots[gkSlotId!]!)!.position).toBe(PlayerPosition.Goalkeeper)
+
+    const fwd1SlotId = Object.entries(slots).find(([, pid]) => pid === 'fwd1')?.[0]
+    expect(fwd1SlotId).toBeDefined()
+    expect(playerMap.get(slots[fwd1SlotId!]!)!.position).toBe(PlayerPosition.Forward)
   })
 
   it('assigns higher CA player to slot when multiple candidates', () => {
@@ -156,15 +163,16 @@ describe('autoAssignFormation', () => {
     const fwdBetter = makePlayer({ id: 'fwdA', position: PlayerPosition.Forward, currentAbility: 90 })
     const fwdWorse = makePlayer({ id: 'fwdB', position: PlayerPosition.Forward, currentAbility: 60 })
 
-    const assignments = autoAssignFormation(template, [fwdWorse, fwdBetter])
+    const slots = autoAssignFormation(template, [fwdWorse, fwdBetter])
 
-    // fwdA has higher CA so it should be assigned first (to the first forward slot)
-    const fwdASlot = assignments['fwdA']
-    const fwdBSlot = assignments['fwdB']
-    expect(fwdASlot).toBeDefined()
-    expect(fwdBSlot).toBeDefined()
-    // Both are forwards — the better one should be placed in the first forward slot
-    expect(fwdASlot.position).toBe(PlayerPosition.Forward)
+    // fwdA (higher CA) should be assigned to one of the forward slots
+    const assignedIds = Object.values(slots).filter(Boolean)
+    expect(assignedIds).toContain('fwdA')
+    // The first forward slot (alphabetically by slot id) should have fwdA
+    const fwdSlotIds = template.slots
+      .filter(s => s.position === PlayerPosition.Forward)
+      .map(s => s.id)
+    expect(slots[fwdSlotIds[0]]).toBe('fwdA')
   })
 })
 

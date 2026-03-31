@@ -37,7 +37,7 @@ export function startScoutAssignment(
   sameRegion: boolean,
   hasPlayedAgainst = false,
 ): ScoutAssignment {
-  const rounds = hasPlayedAgainst ? 0 : sameRegion ? 0 : 1
+  const rounds = hasPlayedAgainst ? 0 : sameRegion ? 1 : 2
   return {
     targetPlayerId: playerId,
     targetClubId: clubId,
