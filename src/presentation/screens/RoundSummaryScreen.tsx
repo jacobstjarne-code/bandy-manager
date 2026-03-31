@@ -169,7 +169,7 @@ export function RoundSummaryScreen() {
         {injuries.length > 0 && (
           <TappableCard
             label="SKADOR"
-            summary={`${injuries.length} ny${injuries.length > 1 ? 'a' : ''} skada`}
+            summary={`${injuries.length} ny${injuries.length > 1 ? 'a skador' : ' skada'}`}
             detail={injuries.join(' · ')}
             accent="var(--danger)"
             onClick={() => navigate('/game/squad')}
