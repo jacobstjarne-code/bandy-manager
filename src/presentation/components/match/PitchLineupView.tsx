@@ -197,7 +197,7 @@ export function PitchLineupView({
                   {/* Position label above circle */}
                   <span style={{
                     position: 'absolute',
-                    top: -2,
+                    top: -5,
                     fontSize: 8,
                     fontWeight: 700,
                     color: isEmpty ? 'rgba(26,26,24,0.55)' : 'rgba(26,26,24,0.65)',
@@ -243,7 +243,7 @@ export function PitchLineupView({
                   {!isDraggingFrom && player && (
                     <span style={{
                       position: 'absolute',
-                      bottom: -2,
+                      bottom: -5,
                       fontSize: 8,
                       fontWeight: 600,
                       color: 'rgba(26,26,24,0.7)',

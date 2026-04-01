@@ -340,7 +340,7 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
 
     if (cornerGoalScored && scorerPlayerId) {
       tvars = { ...tvars, player: findName(scorerPlayerId) }
-      commentaryText = fillTemplate(pickCommentary(commentary.corner, rand), tvars) + ' ' + fillTemplate(pickCommentary(commentary.cornerGoal, rand), tvars)
+      commentaryText = fillTemplate(pickCommentary(commentary.cornerGoal, rand), tvars)
     } else if (goalScored && scorerPlayerId) {
       tvars = { ...tvars, player: findName(scorerPlayerId) }
       if (rivalry && rand() < 0.40) { commentaryText = fillTemplate(pickCommentary(commentary.derby_goal, rand), { ...tvars, rivalry: rivalry.name }); isDerbyStep = true }
@@ -357,7 +357,18 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
       commentaryText = fillTemplate(pickCommentary(commentary.secondHalf, rand), tvars)
     } else {
       if (rivalry && step % 10 === 0 && rand() < 0.30) { commentaryText = fillTemplate(pickCommentary(commentary.derby_neutral, rand), { ...tvars, rivalry: rivalry.name }); isDerbyStep = true }
-      else { commentaryText = fillTemplate(pickCommentary(commentary.neutral, rand), tvars) }
+      else {
+        const LATE_ONLY = [
+          'Publiken suckar. Spelet har tappat tempo de senaste minuterna.',
+          'Klockan tickar. Båda lagen verkar nöjda med att vänta ut varandra.',
+          'Spelarna verkar spara lite på krafterna. Ingen vill ta onödiga risker.',
+          'En stund av lugn innan nästa storm. {team} samlar sig.',
+        ]
+        const neutralPool = minute < 20
+          ? commentary.neutral.filter(c => !LATE_ONLY.includes(c))
+          : commentary.neutral
+        commentaryText = fillTemplate(pickCommentary(neutralPool, rand), tvars)
+      }
     }
 
     const intensity: 'low' | 'medium' | 'high' = goalScored || suspensionOccurred ? 'high' : saveOccurred || cornerOccurred ? 'medium' : 'low'

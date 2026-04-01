@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+
 import { useGameStore } from '../store/gameStore'
 import type { Player } from '../../domain/entities/Player'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
@@ -180,7 +180,7 @@ export function TransfersScreen() {
   const startEvaluation = useGameStore(s => s.startEvaluation)
   const placeOutgoingBid = useGameStore(s => s.placeOutgoingBid)
   const startTalentSearch = useGameStore(s => s.startTalentSearch)
-  const navigate = useNavigate()
+
   const [renewingPlayerId, setRenewingPlayerId] = useState<string | null>(null)
   const [renewError, setRenewError] = useState<string | null>(null)
   const [wageWarning, setWageWarning] = useState<string | null>(null)
@@ -295,7 +295,6 @@ export function TransfersScreen() {
       pendingEvents: [...(game.pendingEvents ?? []), event],
     }
     useGameStore.setState({ game: updatedGame })
-    navigate('/game/events')
   }
 
   function handleBid(playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) {

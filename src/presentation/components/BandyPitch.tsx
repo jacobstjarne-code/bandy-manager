@@ -3,11 +3,11 @@ interface BandyPitchProps {
   children?: React.ReactNode
 }
 
-// viewBox: 220 × 130 — proportional to a real bandy pitch (110m × 65m, scale 2px/m)
+// viewBox: 220 × 170 — taller aspect ratio gives room for player labels
 // Coordinate system: (0,0) = top-left, own goal at top, opponent goal at bottom
 export function BandyPitch({ width = '100%', children }: BandyPitchProps) {
   const W = 220
-  const H = 130
+  const H = 170
   const goalW = 7    // 3.5m * 2
   const goalD = 3    // depth of goal rectangle
   const penH = 26    // penalty area height from goal line (~13m)

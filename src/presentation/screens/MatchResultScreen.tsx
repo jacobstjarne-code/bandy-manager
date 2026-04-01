@@ -37,11 +37,7 @@ export function MatchResultScreen() {
   const resultLabel = won ? 'SEGER' : lost ? 'FÖRLUST' : 'OAVGJORT'
 
   function handleContinue() {
-    if ((game!.pendingEvents?.length ?? 0) > 0) {
-      navigate('/game/events')
-    } else {
-      navigate('/game')
-    }
+    navigate('/game')
   }
 
   const fadeIn = (delay: string) => ({
@@ -76,13 +72,13 @@ export function MatchResultScreen() {
       padding: '20px 16px 90px',
     }}>
       <div className="card-sharp" style={{
-        padding: '24px 20px',
+        padding: '16px 14px',
         width: '100%',
         maxWidth: 390,
         margin: '0 auto',
       }}>
         {/* Round label */}
-        <div style={{ marginBottom: 16, textAlign: 'center', ...fadeIn('0ms') }}>
+        <div style={{ marginBottom: 10, textAlign: 'center', ...fadeIn('0ms') }}>
           <span style={{
             fontSize: 11, fontWeight: 700, letterSpacing: '1.5px',
             textTransform: 'uppercase', color: 'var(--text-muted)',
@@ -110,17 +106,17 @@ export function MatchResultScreen() {
           display: 'flex', justifyContent: 'center', alignItems: 'center',
           gap: 16, marginBottom: 12, ...fadeIn('160ms'),
         }}>
-          <span style={{ fontSize: 52, fontWeight: 800, color: resultColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
+          <span style={{ fontSize: 40, fontWeight: 800, color: resultColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
             {fixture.homeScore}
           </span>
-          <span style={{ fontSize: 28, color: 'var(--text-muted)', fontWeight: 300 }}>–</span>
-          <span style={{ fontSize: 52, fontWeight: 800, color: resultColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
+          <span style={{ fontSize: 24, color: 'var(--text-muted)', fontWeight: 300 }}>–</span>
+          <span style={{ fontSize: 40, fontWeight: 800, color: resultColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
             {fixture.awayScore}
           </span>
         </div>
 
         {/* Result pill */}
-        <div style={{ textAlign: 'center', marginBottom: 20, ...fadeIn('280ms') }}>
+        <div style={{ textAlign: 'center', marginBottom: 12, ...fadeIn('280ms') }}>
           <span style={{
             fontSize: 12, fontWeight: 700, letterSpacing: '1px',
             padding: '4px 12px', borderRadius: 20,
@@ -133,7 +129,7 @@ export function MatchResultScreen() {
         </div>
 
         {/* B3: Flavor text */}
-        <div style={{ textAlign: 'center', marginBottom: 16, ...fadeIn('360ms') }}>
+        <div style={{ textAlign: 'center', marginBottom: 10, ...fadeIn('360ms') }}>
           <span style={{ fontSize: 13, color: won ? '#5A9A4A' : lost ? '#B05040' : 'var(--text-light-secondary)', fontWeight: 600 }}>
             {flavorText}
           </span>
@@ -141,7 +137,7 @@ export function MatchResultScreen() {
 
         {/* B2: Key moments mini-timeline */}
         {keyMoments.length > 0 && (
-          <div style={{ marginBottom: 20, ...fadeIn('480ms') }}>
+          <div style={{ marginBottom: 12, ...fadeIn('480ms') }}>
             <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>Nyckelmoment</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {keyMoments.map((e, i) => {
@@ -149,7 +145,7 @@ export function MatchResultScreen() {
                 const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
                 const scorerName = scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'
                 const icon = e.type === MatchEventType.Goal
-                  ? (e.isCornerGoal ? '📐' : '🔴')
+                  ? (e.isCornerGoal ? '📐' : '🏒')
                   : '🟥'
                 return (
                   <div key={i} style={{
@@ -170,7 +166,7 @@ export function MatchResultScreen() {
 
         {/* B1: Goal scorers with per-scorer stagger */}
         {goalEvents.length > 0 && (
-          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
             <div style={{ flex: 1 }}>
               {homeGoals.map((e, i) => {
                 const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null

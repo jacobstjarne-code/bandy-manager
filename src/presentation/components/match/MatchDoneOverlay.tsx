@@ -86,13 +86,14 @@ export function MatchDoneOverlay({
   return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: 'rgba(0,0,0,0.5)',
+      background: 'rgba(0,0,0,0.6)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
       paddingTop: '50px', zIndex: 200, overflowY: 'auto',
     }}>
       <div className="card-round" style={{
         padding: '24px 20px',
         textAlign: 'center', minWidth: 280, maxWidth: 340, width: '90%',
+        background: 'var(--bg-elevated)',
         border: 'none',
         boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
         marginBottom: 20,
@@ -135,7 +136,7 @@ export function MatchDoneOverlay({
                   justifyContent: isHome ? 'flex-start' : 'flex-end',
                   fontSize: 12, color: 'var(--text-secondary)', marginBottom: 3,
                 }}>
-                  <span>{e.minute}' 🔴 {playerName}</span>
+                  <span>{e.minute}' 🏒 {playerName}</span>
                 </div>
               )
             })}

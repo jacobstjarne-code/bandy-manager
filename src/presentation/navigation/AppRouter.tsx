@@ -22,7 +22,7 @@ import { TabellScreen } from '../screens/TabellScreen'
 import { ChampionScreen } from '../screens/ChampionScreen'
 import { SeasonSummaryScreen } from '../screens/SeasonSummaryScreen'
 import { InboxScreen } from '../screens/InboxScreen'
-import { EventScreen } from '../screens/EventScreen'
+
 import { MatchResultScreen } from '../screens/MatchResultScreen'
 import { BoardMeetingScreen } from '../screens/BoardMeetingScreen'
 import { GameOverScreen } from '../screens/GameOverScreen'
@@ -56,8 +56,7 @@ export function AppRouter() {
           <Route path="pre-season" element={<PreSeasonScreen />} />
         </Route>
         <Route element={<GameGuard />}>
-          <Route path="/game/events" element={<EventScreen />} />
-          <Route path="/game/round-summary" element={<RoundSummaryScreen />} />
+<Route path="/game/round-summary" element={<RoundSummaryScreen />} />
           <Route path="/game/match-result" element={<MatchResultScreen />} />
           <Route path="/game/board-meeting" element={<BoardMeetingScreen />} />
           <Route path="/game/game-over" element={<GameOverScreen />} />

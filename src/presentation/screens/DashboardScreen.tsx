@@ -465,7 +465,6 @@ export function DashboardScreen() {
       try {
         const result = advance()
         if (result?.playoffStarted || result?.seasonEnded) return
-        if ((result?.pendingEvents?.length ?? 0) > 0) { navigate('/game/events'); return }
         navigate('/game/round-summary')
       } catch (err) { console.error('advance() failed:', err) }
       return
@@ -474,8 +473,7 @@ export function DashboardScreen() {
     const managedMatchInNextRound = scheduledFixtures.find(f => f.matchday === nextSimEff && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
     if (managedMatchInNextRound) { navigate('/game/match'); return }
     try {
-      const result = advance()
-      if ((result?.pendingEvents?.length ?? 0) > 0) { navigate('/game/events'); return }
+      advance()
       navigate('/game/round-summary')
     } catch (err) { console.error('advance() failed:', err) }
   }

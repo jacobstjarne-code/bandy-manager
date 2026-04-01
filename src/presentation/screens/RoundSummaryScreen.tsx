@@ -62,9 +62,8 @@ export function RoundSummaryScreen() {
     onClick?: () => void; accent?: string
   }) {
     return (
-      <div onClick={onClick} style={{
-        background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 12,
-        padding: '14px 16px', marginBottom: 10,
+      <div onClick={onClick} className="card-sharp" style={{
+        padding: '10px 14px', marginBottom: 8,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
         cursor: onClick ? 'pointer' : 'default',
       }}>
@@ -79,9 +78,8 @@ export function RoundSummaryScreen() {
   }
 
   function handleContinue() {
-    const pendingCount = game?.pendingEvents?.length ?? 0
     clearRoundSummary()
-    navigate(pendingCount > 0 ? '/game/events' : '/game/dashboard', { replace: true })
+    navigate('/game/dashboard', { replace: true })
   }
 
   const trainingLabel: Record<string, string> = {
@@ -94,7 +92,7 @@ export function RoundSummaryScreen() {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
       {/* Header */}
       <div style={{
-        textAlign: 'center', padding: '20px 20px 14px', borderBottom: '1px solid var(--border)',
+        textAlign: 'center', padding: '14px 16px 10px', borderBottom: '1px solid var(--border)',
         opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease', flexShrink: 0,
       }}>
         <p style={{ fontSize: 10, letterSpacing: 2, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 4 }}>
@@ -112,30 +110,30 @@ export function RoundSummaryScreen() {
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px', paddingBottom: 120, opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease 0.1s' }}>
         {matchPlayed ? (
           <TappableCard
-            label="MATCHEN"
+            label="🏒 MATCHEN"
             summary={matchResult ?? 'Match spelad'}
             detail={matchScorers?.join(' · ')}
             accent="var(--accent)"
             onClick={() => navigate('/game/match-result')}
           />
         ) : (
-          <TappableCard label="MATCHEN" summary="Ingen match denna omgång" accent="var(--text-secondary)" />
+          <TappableCard label="🏒 MATCHEN" summary="Ingen match denna omgång" accent="var(--text-secondary)" />
         )}
 
         <TappableCard
-          label="TRÄNING"
+          label="🏋️ TRÄNING"
           summary={trainingLabel[trainingFocus?.type ?? ''] ?? 'Okänt fokus'}
           detail={activeProjects.length > 0 ? `${activeProjects.length} aktiva projekt` : 'Inga aktiva projekt'}
           onClick={() => navigate('/game/club')}
         />
 
         {youthMatchResult && (
-          <TappableCard label="AKADEMIN P19" summary={youthMatchResult} onClick={() => navigate('/game/club')} />
+          <TappableCard label="🎓 AKADEMIN" summary={youthMatchResult} onClick={() => navigate('/game/club')} />
         )}
 
         {loanDeals.length > 0 && (
           <TappableCard
-            label="UTLÅNADE"
+            label="🔄 UTLÅNADE"
             summary={`${loanDeals.length} spelare på lån`}
             detail={loanDeals.map(d => d.destinationClubName).join(', ')}
             onClick={() => navigate('/game/squad')}
@@ -143,7 +141,7 @@ export function RoundSummaryScreen() {
         )}
 
         <TappableCard
-          label="ORTEN"
+          label="🏘️ ORTEN"
           summary={
             <span>
               Lokalstöd: <span style={{ color: csColor(communityStandingAfter) }}>{communityStandingAfter}</span>
@@ -159,7 +157,7 @@ export function RoundSummaryScreen() {
         />
 
         <TappableCard
-          label="EKONOMI"
+          label="💰 EKONOMI"
           summary={formatFinanceAbs(financesAfter)}
           detail={financesDelta !== 0 ? formatFinance(financesDelta) + ' denna omgång' : undefined}
           accent={financesAfter < 0 ? 'var(--danger)' : 'var(--text-primary)'}
@@ -168,7 +166,7 @@ export function RoundSummaryScreen() {
 
         {injuries.length > 0 && (
           <TappableCard
-            label="SKADOR"
+            label="🩹 SKADOR"
             summary={`${injuries.length} ny${injuries.length > 1 ? 'a skador' : ' skada'}`}
             detail={injuries.join(' · ')}
             accent="var(--danger)"
@@ -177,7 +175,7 @@ export function RoundSummaryScreen() {
         )}
 
         {newInboxCount > 0 && (
-          <TappableCard label="INKORG" summary={`${newInboxCount} nya meddelanden`} onClick={() => navigate('/game/inbox')} />
+          <TappableCard label="📬 INKORG" summary={`${newInboxCount} nya meddelanden`} onClick={() => navigate('/game/inbox')} />
         )}
       </div>
 

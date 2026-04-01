@@ -119,7 +119,6 @@ export function gameFlowActions(get: Get, set: Set) {
       set({ game: gameToSave, lastAdvanceResult: result, roundSummary: summary })
       saveSaveGame(gameToSave).catch(e => console.warn('Autosave misslyckades:', e))
 
-      const pendingCount = result.game.pendingEvents?.length ?? 0
       const managerFired = result.game.managerFired
       if (managerFired) {
         navigateTo('/game/game-over', { replace: true })
@@ -134,8 +133,6 @@ export function gameFlowActions(get: Get, set: Set) {
       } else if (!suppressMatchNavigation) {
         if (result.hasManagedCupMatch) {
           navigateTo('/game/match', { replace: true })
-        } else if (pendingCount > 0) {
-          navigateTo('/game/events', { replace: true })
         } else if (summary.matchPlayed) {
           navigateTo('/game/round-summary', { replace: true })
         } else {

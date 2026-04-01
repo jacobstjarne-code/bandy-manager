@@ -25,9 +25,9 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
   )
 
   return (
-    <div style={{ padding: '0 16px 24px' }}>
+    <div style={{ padding: '0 14px 16px' }}>
       {adviceItems.length > 0 && (
-        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
           {adviceItems.map((item, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'flex-start', gap: 8, padding: '8px 12px',
@@ -63,13 +63,13 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
           const rows = tacticRows.filter(r => group.keys.includes(r.key as string))
           if (rows.length === 0) return null
           return (
-            <div key={gi} className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px' }}>
-              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+            <div key={gi} className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
                 {group.label}
               </p>
               {rows.map(({ label, key, options }, ri) => (
-                <div key={key as string} style={{ marginBottom: ri < rows.length - 1 ? 12 : 0 }}>
-                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 5, fontWeight: 500 }}>{label}</p>
+                <div key={key as string} style={{ marginBottom: ri < rows.length - 1 ? 8 : 0 }}>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4, fontWeight: 500 }}>{label}</p>
                   <SegmentedControl
                     options={options}
                     value={tacticState[key] as string}

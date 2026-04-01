@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Outlet, Navigate, useLocation } from 'react-router-dom'
 import { BottomNav } from './BottomNav'
 import { GameHeader } from '../components/GameHeader'
+import { EventOverlay } from '../components/EventOverlay'
 import { useGameStore } from '../store/gameStore'
 
 // Lightweight guard for full-screen routes that don't use BottomNav
@@ -14,6 +15,7 @@ export function GameGuard() {
       <div style={{ flex: 1, overflowY: 'auto' }}>
         <Outlet />
       </div>
+      <EventOverlay />
     </div>
   )
 }
@@ -38,6 +40,7 @@ export function GameShell() {
         </div>
       </div>
       <BottomNav />
+      <EventOverlay />
     </div>
   )
 }
