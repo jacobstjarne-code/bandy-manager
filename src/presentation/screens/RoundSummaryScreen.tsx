@@ -154,7 +154,7 @@ export function RoundSummaryScreen() {
               )}
             </span>
           }
-          detail={communityStandingChanges?.map((c: any) => c.reason).join(' · ') || undefined}
+          detail={communityStandingChanges?.map((c: { reason: string; delta: number }) => c.reason).join(' · ') || undefined}
           onClick={() => navigate('/game/club')}
         />
 

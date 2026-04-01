@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useManagedPlayers, useHasPendingLineup, useManagedClub, useGameStore } from '../store/gameStore'
 import { PlayerPosition, PlayerArchetype } from '../../domain/enums'
 import type { Player } from '../../domain/entities/Player'
+import type { LoanDeal } from '../../domain/entities/Academy'
 import { StatBar } from '../components/StatBar'
 import { PlayerCard } from '../components/PlayerCard'
 import { positionShort, POSITION_ORDER } from '../utils/formatters'
@@ -469,7 +470,7 @@ export function SquadScreen() {
         {/* Låneavtal */}
         {(game?.loanDeals ?? []).length > 0 && (
           <SectionCard title="UTLÅNADE SPELARE" variant="sharp" style={{ margin: '0 0 16px' }}>
-            {(game?.loanDeals ?? []).map((deal: any) => {
+            {(game?.loanDeals ?? []).map((deal: LoanDeal) => {
               const player = game?.players.find(p => p.id === deal.playerId)
               if (!player) return null
               const completedLeague = game?.fixtures.filter(f => f.status === 'completed' && !f.isCup).length ?? 0

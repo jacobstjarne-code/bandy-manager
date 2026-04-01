@@ -22,7 +22,7 @@ import { NextMatchCard } from '../components/dashboard/NextMatchCard'
 import { LastResultCard } from '../components/dashboard/LastResultCard'
 import { SquadStatusCard } from '../components/dashboard/SquadStatusCard'
 import { CommunityPulse } from '../components/dashboard/CommunityPulse'
-import { calcWeeklyEconomy } from '../../domain/services/economyService'
+import { calcRoundIncome } from '../../domain/services/economyService'
 
 
 interface PlayoffSeriesRowProps {
@@ -380,8 +380,19 @@ export function DashboardScreen() {
 
   // Economy
   const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
-  const monthlySalary = managedPlayers.reduce((s, p) => s + p.salary, 0)
-  const { netPerRound } = calcWeeklyEconomy(club.reputation ?? 50, game.sponsors ?? [], game.communityActivities, monthlySalary)
+  const { netPerRound } = calcRoundIncome({
+    club,
+    players: managedPlayers,
+    sponsors: game.sponsors ?? [],
+    communityActivities: game.communityActivities,
+    fanMood: game.fanMood ?? 50,
+    isHomeMatch: true,
+    matchIsKnockout: false,
+    matchIsCup: false,
+    matchHasRivalry: false,
+    standing: game.standings.find(s => s.clubId === game.managedClubId) ?? null,
+    rand: () => 0.5,
+  })
   const ca = game.communityActivities
   const finances = club.finances ?? 0
   const formatTkr = (n: number) => {

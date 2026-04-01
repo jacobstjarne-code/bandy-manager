@@ -108,19 +108,11 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
     return p ? `${p.firstName} ${p.lastName}` : id
   }
 
-  // Track for ratings (only second half events — combined with first half in MatchLiveScreen)
   const playerGoals: Record<string, number> = {}
   const playerAssists: Record<string, number> = {}
-  const playerYellowCards: Record<string, number> = {}
-  const playerRedCards: Record<string, number> = {}
-  const playerSaves: Record<string, number> = {}
   function trackGoal(id: string) { playerGoals[id] = (playerGoals[id] ?? 0) + 1 }
   function trackAssist(id: string) { playerAssists[id] = (playerAssists[id] ?? 0) + 1 }
-  function trackYellow(id: string) { playerYellowCards[id] = (playerYellowCards[id] ?? 0) + 1 }
-  function trackRed(id: string) { playerRedCards[id] = (playerRedCards[id] ?? 0) + 1 }
-  function trackSave(id: string) { playerSaves[id] = (playerSaves[id] ?? 0) + 1 }
-  void playerGoals; void playerAssists; void playerYellowCards; void playerRedCards; void playerSaves
-  void trackYellow; void trackRed; void trackSave
+  void playerGoals; void playerAssists
 
   function getGoalScorer(starters: Player[]): Player | undefined {
     const nonGK = starters.filter(p => p.position !== PlayerPosition.Goalkeeper)
@@ -265,7 +257,7 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
           }
         } else if (r < gt + 0.25) {
           const gk = getGK(defendingStarters)
-          if (gk) { gkPlayerId = gk.id; saveOccurred = true; trackSave(gk.id); const e: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Save by ${gk.firstName} ${gk.lastName}` }; stepEvents.push(e); allEvents.push(e) }
+          if (gk) { gkPlayerId = gk.id; saveOccurred = true; const e: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Save by ${gk.firstName} ${gk.lastName}` }; stepEvents.push(e); allEvents.push(e) }
         } else if (r < gt + 0.45) {
           cornerOccurred = true
           if (isHomeAttacking) cornersHome++; else cornersAway++
@@ -287,7 +279,7 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
           }
         } else if (r < gt + 0.25) {
           const gk = getGK(defendingStarters)
-          if (gk) { gkPlayerId = gk.id; saveOccurred = true; trackSave(gk.id); const e: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Save by ${gk.firstName} ${gk.lastName}` }; stepEvents.push(e); allEvents.push(e) }
+          if (gk) { gkPlayerId = gk.id; saveOccurred = true; const e: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Save by ${gk.firstName} ${gk.lastName}` }; stepEvents.push(e); allEvents.push(e) }
         }
       }
     } else if (seqType === 'corner') {
@@ -332,7 +324,6 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
           suspendedPlayerId = sp.id; suspensionOccurred = true
           const dur = 3 + Math.floor(rand() * 4)
           if (isHomeAttacking) { awayActiveSuspensions++; awaySuspensionTimers.push(dur) } else { homeActiveSuspensions++; homeSuspensionTimers.push(dur) }
-          trackRed(sp.id)
           const e: MatchEvent = { minute, type: MatchEventType.RedCard, clubId: defendingClubId, playerId: sp.id, description: `Suspension for ${sp.firstName} ${sp.lastName}` }; stepEvents.push(e); allEvents.push(e)
         }
       }
