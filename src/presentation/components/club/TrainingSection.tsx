@@ -3,7 +3,6 @@ import {
   getTrainingEffects,
   trainingTypeLabel,
   trainingTypeEmoji,
-  trainingTypeDescription,
   trainingIntensityLabel,
 } from '../../../domain/services/trainingService'
 import type { TrainingFocus } from '../../../domain/entities/Training'
@@ -61,70 +60,65 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
 
   return (
     <SectionCard title="🏋️ Daglig träning" stagger={1}>
-      <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.5 }}>
+      <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.5 }}>
         Grundträningen som sker <strong>automatiskt varje omgång</strong>.
       </p>
-      {/* Type grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 16 }}>
+      {/* Type list — each row: emoji + label + intensity segmented control */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
         {TRAINING_TYPES.map(type => {
-          const active = focus.type === type
+          const typeActive = focus.type === type
           return (
-            <button
+            <div
               key={type}
-              onClick={() => onChangeFocus({ ...focus, type })}
               style={{
-                background: active ? 'rgba(196,122,58,0.1)' : 'var(--bg-elevated)',
-                border: `1.5px solid ${active ? 'var(--accent)' : 'var(--border)'}`,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '6px 10px',
                 borderRadius: 'var(--radius-sm)',
-                padding: '10px 10px 8px',
-                textAlign: 'left',
-                cursor: 'pointer',
-                transition: 'border-color 0.15s, background 0.15s',
+                background: typeActive ? 'rgba(196,122,58,0.08)' : 'var(--bg-elevated)',
+                border: `1px solid ${typeActive ? 'var(--accent)' : 'var(--border)'}`,
               }}
             >
-              <div style={{ fontSize: 20, marginBottom: 3 }}>{trainingTypeEmoji(type)}</div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: active ? 'var(--accent)' : 'var(--text-primary)', marginBottom: 2 }}>
+              <span style={{ fontSize: 16, flexShrink: 0 }}>{trainingTypeEmoji(type)}</span>
+              <span style={{
+                fontSize: 12, fontWeight: 600, flexShrink: 0, minWidth: 80,
+                color: typeActive ? 'var(--accent)' : 'var(--text-primary)',
+              }}>
                 {trainingTypeLabel(type)}
+              </span>
+              {/* Segmented intensity control */}
+              <div style={{ display: 'flex', gap: 3, background: 'var(--bg)', borderRadius: 8, padding: 3, flex: 1 }}>
+                {TRAINING_INTENSITIES.map(intensity => {
+                  const active = typeActive && focus.intensity === intensity
+                  const color = INTENSITY_COLOR[intensity]
+                  return (
+                    <button
+                      key={intensity}
+                      onClick={() => onChangeFocus({ type, intensity })}
+                      style={{
+                        flex: 1,
+                        padding: '5px 2px',
+                        borderRadius: 6,
+                        background: active ? `${color}22` : 'transparent',
+                        border: active ? `1px solid ${color}` : '1px solid transparent',
+                        color: active ? color : 'var(--text-muted)',
+                        fontSize: 10,
+                        fontWeight: active ? 700 : 400,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {trainingIntensityLabel(intensity)}
+                    </button>
+                  )
+                })}
               </div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.3 }}>
-                {trainingTypeDescription(type)}
-              </div>
-            </button>
+            </div>
           )
         })}
       </div>
-
-      {/* Intensity segmented control */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.6px', flexShrink: 0 }}>
-          Intensitet
-        </span>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, flex: 1 }}>
-          {TRAINING_INTENSITIES.map(intensity => {
-            const active = focus.intensity === intensity
-            const color = INTENSITY_COLOR[intensity]
-            return (
-              <button
-                key={intensity}
-                onClick={() => onChangeFocus({ ...focus, intensity })}
-                style={{
-                  padding: '6px 4px',
-                  borderRadius: 'var(--radius-sm)',
-                  background: active ? `${color}22` : 'var(--bg-elevated)',
-                  border: `1.5px solid ${active ? color : 'var(--border)'}`,
-                  color: active ? color : 'var(--text-secondary)',
-                  fontSize: 11,
-                  fontWeight: active ? 700 : 400,
-                  cursor: 'pointer',
-                }}
-              >
-                {trainingIntensityLabel(intensity)}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-      <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 16, textAlign: 'center' }}>
+      <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12, textAlign: 'center' }}>
         {INTENSITY_TOOLTIP[focus.intensity]}
       </p>
 

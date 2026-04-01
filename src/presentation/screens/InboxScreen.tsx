@@ -8,7 +8,7 @@ import { SectionLabel } from '../components/SectionLabel'
 
 function inboxTypeIcon(type: InboxItemType): string {
   switch (type) {
-    case InboxItemType.MatchResult: return '🔴'
+    case InboxItemType.MatchResult: return '🏒'
     case InboxItemType.Injury: return '🩹'
     case InboxItemType.Recovery: return '💪'
     case InboxItemType.Suspension: return '🚫'
@@ -62,8 +62,8 @@ function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
   const hasBody = item.body && item.body.trim().length > 0
 
   function handleClick() {
-    if (!item.isRead) onRead(item.id)
     if (hasBody) setExpanded(e => !e)
+    if (!item.isRead) setTimeout(() => onRead(item.id), 300)
   }
 
   return (

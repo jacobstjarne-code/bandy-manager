@@ -153,7 +153,7 @@ export async function generateSeasonShareImage(summary: SeasonSummary): Promise<
 
     // Top scorer
     if (summary.topScorer) {
-      drawStat(ctx, '🔴 TOPPSKYTT', summary.topScorer.name, `${summary.topScorer.goals} mål`, pad, y, W)
+      drawStat(ctx, '🏒 TOPPSKYTT', summary.topScorer.name, `${summary.topScorer.goals} mål`, pad, y, W)
       y += 110
     }
 

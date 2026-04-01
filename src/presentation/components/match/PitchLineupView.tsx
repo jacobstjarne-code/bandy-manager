@@ -6,6 +6,14 @@ import { FORMATIONS } from '../../../domain/entities/Formation'
 import { BandyPitch } from '../BandyPitch'
 import { DraggablePlayerPill } from './DraggablePlayerPill'
 
+const ADJACENT_POS: Record<string, string[]> = {
+  goalkeeper: [],
+  defender: ['half'],
+  half: ['defender', 'midfielder'],
+  midfielder: ['half', 'forward'],
+  forward: ['midfielder'],
+}
+
 interface PitchLineupViewProps {
   tacticState: Tactic
   startingIds: string[]
@@ -145,7 +153,7 @@ export function PitchLineupView({
       </div>
 
       {/* Pitch with HTML slot overlay */}
-      <div style={{ padding: '0 16px', touchAction: 'none' }}>
+      <div style={{ padding: '0 16px', touchAction: 'none', marginBottom: 16 }}>
         <div style={{ position: 'relative' }}>
           <BandyPitch width="100%" />
 
@@ -163,7 +171,15 @@ export function PitchLineupView({
               const topPct = (1 - slot.y / 100) * 100
               const leftPct = slot.x
 
-              return (
+              // Position-match color
+              let ringColor = 'var(--accent)'
+              if (player && !isDraggingFrom) {
+                if (player.position === slot.position) ringColor = 'var(--success)'
+                else if (ADJACENT_POS[player.position]?.includes(slot.position)) ringColor = 'var(--warning)'
+                else ringColor = 'var(--danger)'
+              }
+
+            return (
                 <div
                   key={slot.id}
                   ref={el => {
@@ -218,11 +234,11 @@ export function PitchLineupView({
                     background: isEmpty
                       ? 'transparent'
                       : isHoverTarget
-                        ? 'rgba(196,122,58,0.35)'
-                        : 'rgba(196,122,58,0.18)',
+                        ? `color-mix(in srgb, ${ringColor} 35%, transparent)`
+                        : `color-mix(in srgb, ${ringColor} 18%, transparent)`,
                     border: isEmpty
                       ? `1.5px dashed rgba(26,26,24,${isHoverTarget ? '0.7' : '0.3'})`
-                      : `1.5px solid ${isHoverTarget ? 'rgba(196,122,58,0.9)' : 'rgba(196,122,58,0.55)'}`,
+                      : `1.5px solid ${isHoverTarget ? ringColor : `color-mix(in srgb, ${ringColor} 55%, transparent)`}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

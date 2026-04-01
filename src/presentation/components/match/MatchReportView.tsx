@@ -65,7 +65,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
 
   function getEventText(event: MatchEvent): string {
     const name = getPlayerName(event.playerId)
-    if (event.type === MatchEventType.Goal) return `${name} 🔴`
+    if (event.type === MatchEventType.Goal) return `${name} 🏒`
     if (event.type === MatchEventType.YellowCard) return `${name} ⚠️ Varning`
     if (event.type === MatchEventType.RedCard) return `${name} 🚫 Utvisning 10 min`
     return event.description
@@ -159,7 +159,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
                     ? <PlayerLink playerId={event.playerId} name={getPlayerName(event.playerId)} style={{ color: event.isCornerGoal ? 'var(--accent)' : undefined }} />
                     : getEventText(event)
                   }
-                  {event.playerId && event.type === MatchEventType.Goal && ' 🔴'}
+                  {event.playerId && event.type === MatchEventType.Goal && ' 🏒'}
                   {event.playerId && event.type === MatchEventType.YellowCard && ' ⚠️ Varning'}
                   {event.playerId && event.type === MatchEventType.RedCard && ' 🚫 Utvisning 10 min'}
                 </span>

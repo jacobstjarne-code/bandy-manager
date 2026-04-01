@@ -177,6 +177,18 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
   const netPerRound = weeklyBase + sponsorIncome + matchRevenue + communityMatchIncome
     + communityRoundIncome - weeklyWages
 
+  console.log('[Economy] calcRoundIncome breakdown:', {
+    rep: club.reputation,
+    capacity: club.arenaCapacity ?? Math.round(club.reputation * 7 + 150),
+    weeklyBase,
+    sponsorIncome,
+    matchRevenue,
+    communityMatchIncome,
+    communityRoundIncome,
+    weeklyWages,
+    netPerRound,
+  })
+
   return {
     weeklyBase,
     sponsorIncome,

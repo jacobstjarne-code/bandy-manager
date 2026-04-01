@@ -50,7 +50,7 @@ export function LineupFormationView({
   const PW = 220, PH = 130
 
   return (
-    <div style={{ padding: '0 16px 12px' }}>
+    <div style={{ padding: '0 16px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
         <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0, flexShrink: 0 }}>
           ⚙️ Formation

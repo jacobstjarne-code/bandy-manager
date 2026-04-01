@@ -25,10 +25,11 @@ function choiceStyle(choiceId: string): React.CSSProperties {
 
 export function EventOverlay() {
   const game = useGameStore(s => s.game)
+  const roundSummary = useGameStore(s => s.roundSummary)
   const resolveEvent = useGameStore(s => s.resolveEvent)
 
   const events = game?.pendingEvents ?? []
-  if (!game || events.length === 0) return null
+  if (!game || events.length === 0 || !!roundSummary) return null
 
   const event = events[0]
   if (!event) return null
