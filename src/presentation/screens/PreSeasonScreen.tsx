@@ -68,7 +68,7 @@ export function PreSeasonScreen() {
     }}>
       <div style={{
         width: '100%', maxWidth: 390,
-        display: 'flex', flexDirection: 'column', gap: 14,
+        display: 'flex', flexDirection: 'column', gap: 8,
       }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 8 }}>
@@ -88,7 +88,7 @@ export function PreSeasonScreen() {
         {youthCount > 0 && (
           <div style={{
             background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-            borderRadius: 12, padding: '14px 16px',
+            borderRadius: 'var(--radius)', padding: '10px 14px',
           }}>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--success)', marginBottom: 8 }}>
               🌱 Ungdomsintag
@@ -110,7 +110,7 @@ export function PreSeasonScreen() {
         {/* Truppen */}
         <div style={{
           background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-          borderRadius: 12, padding: '14px 16px',
+          borderRadius: 'var(--radius)', padding: '10px 14px',
         }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             📋 Truppen
@@ -123,7 +123,7 @@ export function PreSeasonScreen() {
         {/* Ekonomi */}
         <div style={{
           background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-          borderRadius: 12, padding: '14px 16px',
+          borderRadius: 'var(--radius)', padding: '10px 14px',
         }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             💰 Ekonomi
@@ -143,7 +143,7 @@ export function PreSeasonScreen() {
               ? 'rgba(176,80,64,0.06)' : 'var(--bg-elevated)',
             border: expiringPlayers.length > 3
               ? '1px solid rgba(176,80,64,0.3)' : '1px solid var(--border)',
-            borderRadius: 12, padding: '14px 16px',
+            borderRadius: 'var(--radius)', padding: '10px 14px',
           }}>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: expiringPlayers.length > 3 ? 'var(--danger)' : 'var(--text-muted)', marginBottom: 8 }}>
               📋 Kontraktssituation
@@ -163,7 +163,7 @@ export function PreSeasonScreen() {
         <div style={{
           background: 'rgba(196,122,58,0.06)',
           border: '1px solid rgba(196,122,58,0.2)',
-          borderRadius: 12, padding: '14px 16px',
+          borderRadius: 'var(--radius)', padding: '10px 14px',
         }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
             🔮 Styrelsens förväntning
@@ -176,7 +176,7 @@ export function PreSeasonScreen() {
         {/* Budget priority */}
         <div style={{
           background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-          borderRadius: 12, padding: '14px 16px',
+          borderRadius: 'var(--radius)', padding: '10px 14px',
         }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
             💼 Budgetprioritet

@@ -1,6 +1,8 @@
-# DESIGN & BUGG-SPRINT — 15 fixar
+# DESIGN & BUGG-SPRINT — 18 fixar
 
-Kör uppifrån och ner. `npm run build` efter varje. Committa gruppvis (design / buggar / events).
+Kör uppifrån och ner. `npm run build` efter varje. Committa gruppvis.
+
+**LÄS `docs/DESIGN_SYSTEM.md` FÖRST** — alla ändringar ska följa designsystemet.
 
 ---
 
@@ -20,195 +22,158 @@ BLI: color: 'rgba(245,241,235,0.65)'
 
 ## 2. Välj klubb-header — NewGameScreen.tsx
 
-Välj klubb-skärmens header har en annan layout än GameHeader. Gör den konsekvent:
-
-I `src/presentation/screens/NewGameScreen.tsx`, club selection step:
-
-Ersätt den custom headern med samma layout som GameHeader. Vänster: tillbaka-pil + "BANDY MANAGER". Höger: "Välj klubb" (bold) + "jacob · 2026/2027". Samma bakgrund, padding, border som GameHeader.
+Ersätt custom headern med samma layout som GameHeader. Vänster: tillbaka-pil + "BANDY MANAGER". Höger: "Välj klubb" (bold) + "jacob · 2026/2027". Samma bakgrund, padding, border.
 
 ---
 
 ## 3. Planvy spacing — PitchLineupView / LineupFormationView
 
-Cirklarna flyter ihop, speciellt i försvaret (5 backar + MV) och mittfältet (CH/VCH/HCH).
-
-**Fix:**
-- Öka planvyns höjd: `PH` från nuvarande värde (~130) till **170**
-- Justera Y-koordinaterna så att:
-  - MV: y = 5% (nere)
-  - Backar/LIB: y = 18-22%
-  - Halvar (VYH/HYH): y = 35-40%
-  - Centrala halvar (VCH/CH/HCH): y = 50-55%
-  - Forwards: y = 75-80%
-- Öka cirkelradien 1-2px om det behövs
-- Flytta positionslabel OVANFÖR cirkeln med lite mer avstånd (5px istället för 3px)
-- Flytta spelarnamn UNDER cirkeln med lite mer avstånd
-
-Kontrollera ALLA formationer (5-3-2, 3-3-4, 4-3-3, 2-3-2-3, 4-2-4, 3-4-3) — ingen ska ha överlappande cirklar/text.
+- Öka `PH` till **170** (från ~130)
+- Sprid Y-koordinater: MV 5%, Backar 18-22%, Halvar 35-40%, Centrala 50-55%, Forwards 75-80%
+- Mer avstånd mellan positionslabel, cirkel och namn
+- Kontrollera ALLA formationer
 
 ---
 
-## 4. Matchkommentarer: min-minut på "tröttnar"-kommentarer
+## 4. Matchkommentarer: min-minut
 
-I `src/domain/services/matchStepByStep.ts` (och/eller `matchUtils.ts`):
-
-Hitta var neutral-kommentarer väljs. Lägg till en min-minut-check för dessa kommentarer:
-
-```typescript
-const LATE_ONLY_COMMENTS = [
-  'Publiken suckar. Spelet har tappat tempo de senaste minuterna.',
-  'Klockan tickar. Båda lagen verkar nöjda med att vänta ut varandra.',
-  'Spelarna verkar spara lite på krafterna — ingen vill ta en onödig risk.',
-  'En stund av lugn innan nästa storm.',
-]
-```
-
-Enklaste lösningen: när en neutral kommentar ska plockas och `minute < 20`, filtrera bort dessa ur poolen.
+"Publiken suckar", "Klockan tickar", "Spelarna sparar" etc. kräver minute ≥ 20. Filtrera bort ur neutral-poolen om minute < 20.
 
 ---
 
-## 5. Dubbelhändelse minut 27 — matchStepByStep.ts
+## 5. Dubbelhändelse
 
-En hörna som missar OCH en hörnvariant som sitter genereras på samma minut och concateneras i samma textruta.
-
-**Fix:** I matchStepByStep, om en corner-sequence genererar både en miss och ett mål i samma steg → visa bara hörnmålet. Alternativt: separera dem till olika minuter.
+Corner-sequence som genererar miss + mål i samma steg → visa bara målet. Eller separera till olika minuter.
 
 ---
 
 ## 6. Taktik-skärmen — TacticStep.tsx
 
-Padding och spacing för generöst. Strama åt:
-- Yttre padding: `'0 16px 24px'` → `'0 14px 16px'`
-- Gruppkort padding: `'14px 16px'` → `'10px 14px'`
-- SegmentedControl knapp-padding: minska till `8px`
-- Förklaringstexter: `marginBottom` till 8px
-- Gap mellan grupper: 8-10px
+Yttre padding `'0 14px 16px'`, gruppkort `'10px 14px'`, knapp-padding `8px`, gap 8-10px.
 
 ---
 
-## 7. Matchsammanfattning (MatchResultScreen) — gles
+## 7. Matchsammanfattning — MatchResultScreen.tsx
 
-- Minska padding i huvudkortet: `24px 20px` → `16px 14px`
-- Minska poängsiffror: `fontSize: 40` → `fontSize: 32`
-- Tighta HÄNDELSER: minska radavstånd
-- Ersätt 🔴-emojin för mål med `🏒` (ser ut som röda cirklar)
-- Alla marginBottom minska 30-40%
+Padding `16px 14px`, poängsiffror fontSize 32, 🔴→🏒, alla marginBottom -30-40%.
 
 ---
 
-## 8. RoundSummaryScreen — gles, borde matcha dashboard
+## 8. RoundSummaryScreen
 
-- Använd `card-sharp` istället för inline `borderRadius: 12`
-- Minska card padding: `14px 16px` → `10px 14px`
-- Minska `marginBottom: 10` → `8`
-- Emojis i labels: "MATCHEN"→"🏒 MATCHEN", "TRÄNING"→"🏋️ TRÄNING", "ORTEN"→"🏘️ ORTEN", "EKONOMI"→"💰 EKONOMI", "INKORG"→"📬 INKORG", "SKADOR"→"🩹 SKADOR", "AKADEMIN P19"→"🎓 AKADEMIN", "UTLÅNADE"→"🔄 UTLÅNADE"
-- Headern: minska padding `20px 20px 14px` → `14px 16px 10px`
+`card-sharp`, padding `10px 14px`, emojis i labels (🏒 MATCHEN, 💰 EKONOMI etc.), header padding ner.
 
 ---
 
-## 9. MatchDoneOverlay — grått raster/blekning
+## 9. MatchDoneOverlay
 
-- Ge kortet solid bakgrund: `background: '#F5F1EB'` (INTE transparent)
-- Bakgrunds-overlay: `rgba(0,0,0,0.5)` → `rgba(0,0,0,0.6)`
-
----
-
-## 10. EventScreen → generell overlay/modal
-
-EventScreen navigeras till som egen route (`/game/events`) men borde vara en overlay ovanpå vilken vy som helst.
-
-**Fix:**
-1. Skapa `src/presentation/components/EventOverlay.tsx` — flytta EventScreen:s innehåll hit
-2. I GameShell/layout-wrapper: rendera `<EventOverlay />` om `game.pendingEvents.length > 0`
-3. Ta bort `/game/events`-routen
-4. Ta bort alla `navigate('/game/events')` — events visas automatiskt
-5. `zIndex: 300` (högre än MatchDoneOverlay:s 200)
+Solid bakgrund `#F5F1EB` på kortet. Overlay `rgba(0,0,0,0.6)`.
 
 ---
 
-## 11. ClubScreen — sponsorer, träning, intensitet, akademi
+## 10. EventScreen → generell overlay
 
-### 11a. Sponsorer: komprimera ledig-platser
-5 × "Ledig plats" tar halva skärmen. Visa istället EN rad:
-```
-0/5 platser · [Ragga sponsor — 2,5 tkr]
-```
-Ta bort alla "Ledig plats"-rader. Visa bara aktiva sponsorer + sammanfattning.
+Flytta till `EventOverlay.tsx` komponent, rendera i GameShell vid pending events, ta bort `/game/events`-routen, zIndex 300.
 
-### 11b. Daglig träning: emoji + rubrik på samma rad
-Varje träninsval tar för mycket höjd. Emoji och rubrik (t.ex. "🏋️ Fysik") ska vara på SAMMA RAD som SegmentedControl, inte ovanför:
+---
+
+## 11. ClubScreen
+
+### 11a. Sponsorer: komprimera
+Ta bort 5 × "Ledig plats". Visa "0/5 platser" som en rad + kompakt "Ragga sponsor"-knapp.
+
+### 11b. Daglig träning: emoji + rubrik på samma rad som SegmentedControl
 ```
 🏋️ Fysik     [Lätt] [Normal] [Hård]
 ```
-Sparar en rad i höjd per sektion.
 
-### 11c. Intensitet: rundade knappar
-Om intensitets-knapparna är fyrkantiga → byt till samma SegmentedControl-stil (rundade hörn) som resten av UI:t.
+### 11c. Intensitet: rundade SegmentedControl-knappar
 
 ### 11d. Träningsprojekt: linjera knappar
-Knappar under träningsprojekt ska linjera vertikalt under varandra.
 
-### 11e. Action-knappar: inte fullbredd
-"Ragga sponsor", "Uppgradera", "Starta lotteri", akademi-knappar → använd INTE fullbreddsknappar med stora marginaler. Använd samma kompakta knappstil som resten av appen. Knappar ska vara högerställda eller ha max-width, inte sträcka sig kant-till-kant.
+### 11e. Action-knappar: kompakta, inte fullbredd
 
 ---
 
-## 12. TabellScreen — rubrik + tillbaka bort, tighta
+## 12. TabellScreen
 
-- **Ta bort rubriken "Tabell"** — framgår av bottom nav
-- **Ta bort tillbaka-knappen** — TabellScreen nås via bottom nav, inte hierarkisk navigering
-- Tighta tabellraderna: minska row padding
-- Tighta statistik-fliken om den är gles
-
----
-
-## 13. SquadScreen — rubrik + tillbaka bort, tighta
-
-- **Ta bort rubriken "Trupp"** — framgår av bottom nav
-- **Ta bort tillbaka-knappen** — SquadScreen nås via bottom nav
-- Tighta spelarkorten/raderna: minska padding och marginaler
+- Ta bort rubrik "Tabell"
+- Ta bort tillbaka-knapp
+- Tighta tabellrader
 
 ---
 
-## 14. TransfersScreen — rubrik bort, scouts-info flytta, ikoner på flikar
+## 13. SquadScreen
 
-- **Ta bort rubriken "Transfers"/"Transfermarknad"** — framgår av bottom nav
-- **"X scouts kvar"**: flytta ner — antingen in i scouting-flikens yta, eller som en info-badge på scouting-fliken
-- **Ikoner på flikarna** för att matcha resten av spelet:
-  - "Trupp"/"Kontrakt" → "📋 Kontrakt"
-  - "Scouting" → "🔍 Scouting"
-  - "Bud" → "💰 Bud"
-  - "Marknad" → "📊 Marknad"
-  - (Justera efter faktiska fliknamn)
+- Ta bort rubrik "Trupp"
+- Ta bort tillbaka-knapp
+- Tighta spelarkort
 
 ---
 
-## 15. InboxScreen — rubrik bort, tighta, expandera på klick
+## 14. TransfersScreen
 
-### 15a. Ta bort rubriken
-Ta bort "Inkorg"-rubriken med Bell-ikonen. Oläst-badge och "Markera alla"-knappen ska istället ligga i en kompakt rad direkt under GameHeader:
-```tsx
-<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 16px', borderBottom: '1px solid var(--border)' }}>
-  {unreadCount > 0 && (
-    <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>
-      {unreadCount} olästa
-    </span>
-  )}
-  {unreadCount > 0 && (
-    <button onClick={markAllInboxRead} style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-      Markera alla som lästa
-    </button>
-  )}
-</div>
-```
+- Ta bort rubrik
+- Flytta "X scouts kvar" ner i scouting-flikens yta
+- Ikoner på flikar: 📋 Kontrakt, 🔍 Scouting, 💰 Bud, 📊 Marknad
 
-### 15b. Tightare meddelanden
-Minska radpadding: `14px 16px` → `10px 14px`. Minska ikoncirkelns storlek: `36px` → `28px`. Minska gap: `12` → `8`.
+---
 
-### 15c. Expand-on-click funkar redan
-Koden har redan `expanded`-state och visar body-text vid klick. Kontrollera att det FUNGERAR — Jacobs observation var att meddelanden "bara flyttas till läst" utan att expanderas. Möjlig orsak: `hasBody` returnerar false för meddelanden utan body-text. Fix: om `!hasBody`, visa ändå titeln tydligare vid klick (t.ex. bold → normal toggle, eller liten animering).
+## 15. InboxScreen
 
-Kontrollera också att "Tryck för att läsa mer" bara visas om det faktiskt finns mer att läsa (body-text existerar).
+- Ta bort "Inkorg"-rubrik + Bell-ikon
+- Kompakt rad med "X olästa" + "Markera alla"
+- Padding `10px 14px`, ikoncirkel 28px, gap 8
+- Verifiera expand-on-click fungerar
+
+---
+
+## 16. SeasonSummaryScreen
+
+I `src/presentation/screens/SeasonSummaryScreen.tsx`:
+
+Skärmen använder custom `Card`-komponent med inline `borderRadius: 12` istället för `card-sharp`. Generellt lite för gles.
+
+**Fix:**
+- Byt alla `<Card>` → `<div className="card-sharp">` med padding `10px 14px`
+- Header: minska padding `24px 0 20px` → `16px 0 12px`
+- Positionssiffra: `fontSize: 40` → `fontSize: 32`
+- StatRow: minska paddingBottom/marginBottom `8` → `6`
+- HEMMA/BORTA-grid: minska gap `8` → `6`
+- Alla kort: marginBottom `12` → `8`
+- Tillbaka-knapp FÅR vara kvar (hierarkisk navigering)
+- `🔴` (toppskyttar) → `🏒`
+
+---
+
+## 17. PreSeasonScreen
+
+I `src/presentation/screens/PreSeasonScreen.tsx`:
+
+Alla kort använder inline `borderRadius: 12` och `padding: '14px 16px'`.
+
+**Fix:**
+- Byt alla inline-kort till `className="card-sharp"` med padding `10px 14px`
+- Gap mellan kort: `14` → `8`
+- Header padding: `24px 0 20px` → `16px 0 12px`
+- Budgetprioritet-knapparna: verifiera att de använder SegmentedControl-stil (ser ut att göra det redan, men kontrollera borderRadius)
+
+---
+
+## 18. HistoryScreen
+
+I `src/presentation/screens/HistoryScreen.tsx`:
+
+Använder `card-round` klass. Generellt OK men kan tightas.
+
+**Fix:**
+- Byt `card-round` → `card-sharp` på alla kort
+- `🔴` (Toppskytt) → `🏒`
+- Gap mellan säsongskort: `14` → `8`
+- Kort padding: `16px` → `12px 14px`
+- JourneyGraph-kortet: padding `14px 16px 10px` → `10px 14px 8px`
+- Rekord/Hall of Fame-korten: padding `18px 16px` → `12px 14px`
+- Tillbaka-knapp FÅR vara kvar (hierarkisk navigering)
 
 ---
 
@@ -220,7 +185,7 @@ Kontrollera också att "Tryck för att läsa mer" bara visas om det faktiskt fin
 6-9: Design-tightening (20 min)
 10: EventOverlay-refaktor (30 min)
 11: ClubScreen (20 min)
-12-14: Rubrik + tillbaka bort + tighta (15 min)
-15: InboxScreen (10 min)
+12-15: Rubrik + tillbaka bort + tighta (20 min)
+16-18: Resterande vyer (15 min)
 
 `npm run build` efter varje punkt. Pusha efter sista.

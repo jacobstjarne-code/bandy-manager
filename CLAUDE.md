@@ -1,5 +1,15 @@
 # Bandy Manager — Project Instructions for Claude Code
 
+## DESIGN SYSTEM — LÄS FÖRST
+
+**`docs/DESIGN_SYSTEM.md`** — Komplett designsystem. LÄS DENNA INNAN du gör NÅGON visuell ändring. Reglerna är:
+- Tight layout (padding 10px 14px, margin 8px, gap 6-8px)
+- `card-sharp` för alla kort — INTE inline borderRadius
+- Emojis på alla sektionslabels (💰 EKONOMI, 🏒 MATCHEN, etc.)
+- Inga rubriker på BottomNav-skärmar
+- CSS-variabler ENBART — inga hårdkodade färger
+- Events som overlay (zIndex 300) — INTE egna routes
+
 ## ARCHITECTURE OVERVIEW
 
 ### Matchday-systemet (refaktorerat mars 2026)
@@ -32,16 +42,6 @@ Fixture-ordningen styrs av `fixture.matchday` — ett heltal som bestämmer glob
 - Scouting: 0-2 omgångar beroende på region/om man mött laget
 - Budrespons: 1 omgång
 
-## Key Design Rules
-
-1. **Leather-bar ONLY on NextMatchCard** — all other cards use inline `card-label` pattern (9px uppercase muted + emoji)
-2. **Every navigable card has a `›` button** — 18×18px, transparent bg, 1px border, copper accent
-3. **BandyPitch = white ice** — gradient #F5F1EB→#FAFAF8→#F0ECE4, NOT navy
-4. **Player circles on pitch = transparent** — `rgba(255,255,255,0.5)` fill, dark `#1A1A18` text
-5. **BottomNav** — NavLink needs `style={{ flex: 1, display: 'flex' }}` for equal tab widths
-6. **Dark headers** — only Dashboard, ClubScreen, BoardMeeting, NewGame. All other screens = light.
-7. **No hardcoded colors** — use CSS variables from global.css. Zero tolerance for `#C9A84C`, `#22c55e`, `#0a1e3a` etc.
-
 ## Bandyspecifika regler (VIKTIGT)
 
 - **Offside FINNS i bandy** — ta aldrig bort offside-kommentarer
@@ -51,6 +51,7 @@ Fixture-ordningen styrs av `fixture.matchday` — ett heltal som bestämmer glob
 - **Positioner:** MV, DEF (backar), HALF (halvbackar), FWD (forwards). Midfielder = Half i bandy.
 - **Hörnor** = centralt offensivt vapen
 - **Flygande byten** som i ishockey (inga begränsade byten)
+- 🏒 (INTE ⚽) i all UI
 
 ## Verification after ANY design change
 
@@ -92,11 +93,14 @@ Must return 0 results.
 - `matchCommentary.ts` — alla matchkommentarer (i src/domain/data/)
 
 ## Active Documentation
-- `docs/RESTLISTA.md` — enda aktiva spec-filen, kvarvarande buggar och teststatus
+- `docs/DESIGN_SYSTEM.md` — designregler, mönster, konventioner
+- `docs/DESIGN_BUGG_SPRINT.md` — aktuell design-sprint (15 fixar)
+- `docs/RESTLISTA.md` — gameplay-buggar och teststatus
 
 ## Commit Convention
 ```
 fix: [short description]
 feat: [short description]
+design: [short description]
 refactor: [short description]
 ```

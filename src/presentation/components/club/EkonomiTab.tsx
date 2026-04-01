@@ -52,8 +52,6 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
   const patron = game.patron?.isActive ? game.patron : null
   const kommunBidrag = game.localPolitician?.kommunBidrag ?? 0
   const wagePressure = actualMonthlyWages > club.wageBudget
-  const slots = Array.from({ length: maxSponsors })
-
   const licenseReview = game.licenseReview
   const licenseIcon = licenseReview?.status === 'approved' ? '✅'
     : licenseReview?.status === 'warning' ? '⚠️'
@@ -222,47 +220,45 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
             </span>
           )}
         </div>
-        {slots.map((_, i) => {
-          const sponsor = activeSponsors[i]
-          return sponsor ? (
-            <div key={sponsor.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: i < maxSponsors - 1 ? '1px solid var(--border)' : 'none' }}>
-              <div>
-                <span style={{ fontSize: 13, fontWeight: 600 }}>{sponsor.name}</span>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{sponsor.category}</span>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(sponsor.weeklyIncome)}/omg</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{sponsor.contractRounds} omg kvar</div>
-              </div>
+        {activeSponsors.map((sponsor, i) => (
+          <div key={sponsor.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: i < activeSponsors.length - 1 ? '1px solid var(--border)' : 'none' }}>
+            <div>
+              <span style={{ fontSize: 13, fontWeight: 600 }}>{sponsor.name}</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{sponsor.category}</span>
             </div>
-          ) : (
-            <div key={`empty-${i}`} style={{ padding: '7px 0', borderBottom: i < maxSponsors - 1 ? '1px solid var(--border)' : 'none' }}>
-              <span style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>Ledig plats</span>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(sponsor.weeklyIncome)}/omg</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{sponsor.contractRounds} omg kvar</div>
             </div>
-          )
-        })}
+          </div>
+        ))}
         {activeSponsors.length < maxSponsors && (
-          <div style={{ marginTop: 12, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+          <div style={{ marginTop: activeSponsors.length > 0 ? 10 : 0, paddingTop: activeSponsors.length > 0 ? 10 : 0, borderTop: activeSponsors.length > 0 ? '1px solid var(--border)' : 'none' }}>
             {sponsorFeedback && (
               <p style={{ fontSize: 12, color: sponsorFeedback.startsWith('✅') ? 'var(--success)' : 'var(--text-muted)', marginBottom: 8 }}>
                 {sponsorFeedback}
               </p>
             )}
-            <button
-              className="btn btn-outline"
-              onClick={() => {
-                const result = seekSponsor()
-                if (result.success && result.sponsor) {
-                  setSponsorFeedback(`✅ ${result.sponsor.name} tecknade avtal! +${formatCurrency(result.sponsor.weeklyIncome)}/omg`)
-                } else {
-                  setSponsorFeedback(`Ingen intresserad just nu. (2,5 tkr avdraget)`)
-                }
-                setTimeout(() => setSponsorFeedback(null), 4000)
-              }}
-              style={{ width: '100%' }}
-            >
-              📞 Ragga sponsor — 2,5 tkr
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                {maxSponsors - activeSponsors.length}/{maxSponsors} platser lediga
+              </span>
+              <button
+                className="btn btn-outline"
+                onClick={() => {
+                  const result = seekSponsor()
+                  if (result.success && result.sponsor) {
+                    setSponsorFeedback(`✅ ${result.sponsor.name} tecknade avtal! +${formatCurrency(result.sponsor.weeklyIncome)}/omg`)
+                  } else {
+                    setSponsorFeedback(`Ingen intresserad just nu. (2,5 tkr avdraget)`)
+                  }
+                  setTimeout(() => setSponsorFeedback(null), 4000)
+                }}
+                style={{ fontSize: 12, padding: '5px 10px' }}
+              >
+                📞 Ragga sponsor — 2,5 tkr
+              </button>
+            </div>
           </div>
         )}
       </SectionCard>
@@ -294,7 +290,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
                 className="btn btn-outline"
                 onClick={() => handleActivate(row.actionKey!, row.actionLevel!)}
                 disabled={club.finances < (row.actionCost ?? 0)}
-                style={{ width: '100%' }}
+                style={{ fontSize: 12, padding: '4px 10px', marginTop: 2 }}
               >
                 {row.actionLabel}
               </button>
@@ -304,7 +300,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
                 className="btn btn-ghost"
                 onClick={() => handleActivate(row.upgradeKey!, row.upgradeLevel!)}
                 disabled={club.finances < (row.upgradeCost ?? 0)}
-                style={{ width: '100%' }}
+                style={{ fontSize: 12, padding: '4px 10px', marginTop: 2 }}
               >
                 {row.upgradeLabel}
               </button>
@@ -444,7 +440,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
                 className="btn btn-outline"
                 onClick={() => { if (canBuyScout) buyScoutRounds() }}
                 disabled={!canBuyScout}
-                style={{ width: '100%' }}
+                style={{ fontSize: 13, padding: '7px 14px' }}
               >
                 Köp 5 scoutronder — 15 tkr
               </button>

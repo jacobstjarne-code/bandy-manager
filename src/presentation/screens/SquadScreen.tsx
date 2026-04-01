@@ -117,12 +117,12 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
         background: 'var(--bg-elevated)',
         border: '1px solid var(--border)',
         borderRadius: 10,
-        padding: '12px',
-        marginBottom: 8,
+        padding: '8px 12px',
+        marginBottom: 6,
         cursor: 'pointer',
         display: 'flex',
         flexDirection: 'column',
-        gap: 6,
+        gap: 5,
       }}
     >
       {/* Top row: badge + name + CA */}
@@ -324,19 +324,7 @@ export function SquadScreen() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg)' }}>
       {/* Header */}
-      <div style={{ padding: '20px 16px 12px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
-        <h2 style={{
-          fontSize: 20,
-          fontWeight: 800,
-          letterSpacing: '2px',
-          textTransform: 'uppercase',
-          color: 'var(--text-primary)',
-          fontFamily: 'var(--font-display)',
-          marginBottom: 14,
-        }}>
-          Trupp
-        </h2>
-
+      <div style={{ padding: '10px 16px 8px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
         {/* Lineup hint */}
         {!hasPendingLineup && (
           <div className="card-stagger-1" style={{

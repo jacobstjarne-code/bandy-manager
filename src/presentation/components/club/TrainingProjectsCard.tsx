@@ -95,23 +95,27 @@ export function TrainingProjectsCard({ projects, onStart, onCancel }: TrainingPr
                 padding: '8px 0',
               }}>
                 <span style={{ fontWeight: 700, fontSize: 13, flex: 1, minWidth: 0 }}>{def.emoji} {def.label}</span>
-                <button
-                  className="btn btn-copper"
-                  onClick={() => onStart(def.type, 'normal')}
-                  style={{ fontSize: 11, padding: '4px 10px', flexShrink: 0 }}
-                >
-                  Starta · {def.roundsNormal} omg
-                </button>
-                <button
-                  className="btn btn-ghost"
-                  onClick={() => onStart(def.type, 'hard')}
-                  style={{ fontSize: 11, padding: '4px 8px', color: 'var(--danger)', flexShrink: 0 }}
-                >
-                  ⚡ {def.roundsHard} omg
-                </button>
-                <span style={{ fontSize: 10, color: RISK_COLOR[def.injuryRisk], flexShrink: 0 }}>
-                  {RISK_LABEL[def.injuryRisk]}
-                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end', flexShrink: 0 }}>
+                  <button
+                    className="btn btn-copper"
+                    onClick={() => onStart(def.type, 'normal')}
+                    style={{ fontSize: 11, padding: '3px 8px' }}
+                  >
+                    Starta · {def.roundsNormal} omg
+                  </button>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <button
+                      className="btn btn-ghost"
+                      onClick={() => onStart(def.type, 'hard')}
+                      style={{ fontSize: 11, padding: '3px 8px', color: 'var(--danger)' }}
+                    >
+                      ⚡ {def.roundsHard} omg
+                    </button>
+                    <span style={{ fontSize: 10, color: RISK_COLOR[def.injuryRisk] }}>
+                      {RISK_LABEL[def.injuryRisk]}
+                    </span>
+                  </div>
+                </div>
               </div>
             )
           })}

@@ -333,15 +333,7 @@ export function TransfersScreen() {
   const currentRound = game.fixtures.filter(f => f.status === 'scheduled').sort((a, b) => a.roundNumber - b.roundNumber)[0]?.roundNumber ?? 1
 
   return (
-    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%', background: 'var(--bg)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 0, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
-        <h2 style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)' }}>Transfers</h2>
-        <span style={{ fontSize: 12, color: scoutBudget > 3 ? 'var(--text-muted)' : 'var(--danger)', fontWeight: 600 }}>
-          🔍 {scoutBudget} scouts kvar
-        </span>
-      </div>
-
-      <div style={{ height: 12 }} />
+    <div style={{ padding: '8px 16px', overflowY: 'auto', height: '100%', background: 'var(--bg)' }}>
 
       {/* Scout toast */}
       {scoutMessage && (
@@ -378,10 +370,10 @@ export function TransfersScreen() {
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid var(--border)', paddingBottom: 8 }}>
         {([
-          { key: 'scouting', label: 'Scouting' },
+          { key: 'scouting', label: '🔍 Scouting' },
           { key: 'spaning', label: '🔎 Spaning' },
-          { key: 'contracts', label: 'Kontrakt' },
-          { key: 'freeagents', label: 'Fria agenter' },
+          { key: 'contracts', label: '📋 Kontrakt' },
+          { key: 'freeagents', label: '👤 Fria agenter' },
           { key: 'sell', label: '💰 Sälj' },
         ] as const).map(tab => (
           <button

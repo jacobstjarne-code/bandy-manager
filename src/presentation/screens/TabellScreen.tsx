@@ -1,11 +1,9 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { ClubBadge } from '../components/ClubBadge'
 import { isRivalryMatch } from '../../domain/data/rivalries'
 
 export function TabellScreen() {
-  const navigate = useNavigate()
   const game = useGameStore(s => s.game)
   const [expandedClubId, setExpandedClubId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'tabell' | 'statistik'>('tabell')
@@ -67,27 +65,7 @@ export function TabellScreen() {
   const ptToPlayoff = myPos <= 8 ? null : eighthPoints - myPoints
 
   return (
-    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 0, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--text-secondary)',
-            fontSize: 22,
-            cursor: 'pointer',
-            padding: 0,
-            lineHeight: 1,
-          }}
-        >
-          ←
-        </button>
-        <h1 style={{ fontSize: 22, fontWeight: 700, fontFamily: 'var(--font-display)' }}>Tabell</h1>
-      </div>
-
-      <div style={{ height: 12 }} />
-
+    <div style={{ padding: '8px 16px', overflowY: 'auto', height: '100%' }}>
       {/* Tab switcher */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'var(--bg-elevated)', borderRadius: 8, padding: 4 }}>
         {(['tabell', 'statistik'] as const).map(tab => (
@@ -279,7 +257,7 @@ export function TabellScreen() {
                   display: 'grid',
                   gridTemplateColumns: '24px 32px 1fr 22px 52px 32px 28px',
                   gap: 4,
-                  padding: '10px 10px',
+                  padding: '7px 10px',
                   alignItems: 'center',
                   borderTop: i === 0 ? 'none' : '1px solid var(--border)',
                   borderLeft: `3px solid ${getRowBorderColor(row.position)}`,

@@ -69,7 +69,7 @@ function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
   const points = chronological.map((s, i) => `${xOf(i)},${yOf(s.finalPosition)}`).join(' ')
 
   return (
-    <div className="card-round" style={{ padding: '14px 16px 10px', marginBottom: 14 }}>
+    <div className="card-sharp" style={{ padding: '10px 14px 8px', marginBottom: 8 }}>
       <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
         Resan — tabellposition per säsong
       </p>
@@ -166,7 +166,7 @@ export function HistoryScreen() {
         <button
           onClick={() => shareSeasonImage(summaries[0])}
           style={{
-            width: '100%', padding: '13px', marginBottom: 14,
+            width: '100%', padding: '13px', marginBottom: 8,
             background: 'transparent', border: '1px solid rgba(196,122,58,0.4)',
             borderRadius: 12, color: 'var(--accent)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
           }}
@@ -176,7 +176,7 @@ export function HistoryScreen() {
       )}
 
       {summaries.length === 0 ? (
-        <div className="card-round" style={{
+        <div className="card-sharp" style={{
           padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)',
         }}>
           <p style={{ fontSize: 22, marginBottom: 12 }}>📖</p>
@@ -184,18 +184,18 @@ export function HistoryScreen() {
           <p style={{ fontSize: 13 }}>Spela din första säsong för att bygga klubbens historia.</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 32 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
           {summaries.map((s, i) => {
             const isGold = s.playoffResult === 'champion'
             const cup = cupLabel(s.cupResult)
             return (
               <div
                 key={s.season}
-                className={`card-round card-stagger-${Math.min(i + 1, 6)}`}
+                className={`card-sharp card-stagger-${Math.min(i + 1, 6)}`}
                 style={{
                   background: isGold ? 'linear-gradient(135deg, rgba(196,122,58,0.12), rgba(196,122,58,0.04))' : undefined,
                   border: isGold ? '1px solid rgba(196,122,58,0.4)' : undefined,
-                  padding: '16px',
+                  padding: '12px 14px',
                 }}
               >
                 <p style={{
@@ -220,7 +220,7 @@ export function HistoryScreen() {
                   {cup && <p style={{ fontSize: 14 }}>🏆 Cup: {cup}</p>}
                   {s.topScorer && (
                     <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                      🔴 Toppskytt:{' '}
+                      🏒 Toppskytt:{' '}
                       <PlayerLink playerId={s.topScorer.playerId} name={s.topScorer.name} />
                       {' '}({s.topScorer.goals} mål)
                     </p>
@@ -257,7 +257,7 @@ export function HistoryScreen() {
 
       {/* All-time Records */}
       {game.allTimeRecords && (
-        <div className="card-round" style={{ padding: '18px 16px', marginBottom: 14 }}>
+        <div className="card-sharp" style={{ padding: '12px 14px', marginBottom: 8 }}>
           <p style={{
             fontSize: 12, fontWeight: 700, letterSpacing: '2px',
             textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 18,
@@ -287,7 +287,7 @@ export function HistoryScreen() {
       )}
 
       {/* Hall of Fame */}
-      <div className="card-round" style={{ padding: '18px 16px' }}>
+      <div className="card-sharp" style={{ padding: '18px 16px' }}>
         <p style={{
           fontSize: 12, fontWeight: 700, letterSpacing: '2px',
           textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 18,

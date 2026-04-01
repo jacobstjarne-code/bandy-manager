@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
 import { ClubBadge } from '../components/ClubBadge'
-import { Card } from '../components/Card'
 import { SectionLabel } from '../components/SectionLabel'
 import { csColor, formatCurrency } from '../utils/formatters'
 import { shareSeasonImage } from '../utils/seasonShareImage'
@@ -66,7 +65,7 @@ export function SeasonSummaryScreen() {
 
   function StatRow({ label, value, color }: { label: string; value: string | number; color?: string }) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, marginBottom: 8, borderBottom: '1px solid var(--border)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 6, marginBottom: 6, borderBottom: '1px solid var(--border)' }}>
         <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{label}</span>
         <span style={{ fontSize: 13, fontWeight: 600, color: color ?? 'var(--text-primary)' }}>{value}</span>
       </div>
@@ -155,7 +154,7 @@ export function SeasonSummaryScreen() {
         {/* HEADER */}
         <div style={{
           background: 'var(--bg)',
-          padding: '24px 0 20px',
+          padding: '16px 0 12px',
           textAlign: 'center',
           marginBottom: 16,
           position: 'relative',
@@ -176,7 +175,7 @@ export function SeasonSummaryScreen() {
           {/* Position badge */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <span style={{
-              fontSize: 40,
+              fontSize: 32,
               fontWeight: 900,
               color: positionColor,
               textShadow: summary.finalPosition <= 3 ? '0 0 20px rgba(196,122,58,0.5)' : 'none',
@@ -219,18 +218,18 @@ export function SeasonSummaryScreen() {
         </div>
 
         {/* NARRATIVE */}
-        <Card stagger={1} style={{ borderLeft: '3px solid var(--accent)', background: 'rgba(196,122,58,0.05)' }}>
+        <div className="card-sharp card-stagger-1" style={{ padding: '10px 14px', marginBottom: 8, borderLeft: '3px solid var(--accent)', background: 'rgba(196,122,58,0.05)' }}>
           <p style={{ fontSize: 15, fontStyle: 'italic', color: 'var(--text-primary)', lineHeight: 1.6 }}>
             "{summary.narrativeSummary}"
           </p>
-        </Card>
+        </div>
 
         {/* SEASON'S BEST */}
-        <Card stagger={2}>
+        <div className="card-sharp card-stagger-2" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <SectionLabel>SÄSONGENS BÄSTA</SectionLabel>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {summary.topScorer && (
-              <AwardCard icon="🔴" title="Toppskyttar" name={summary.topScorer.name}
+              <AwardCard icon="🏒" title="Toppskyttar" name={summary.topScorer.name}
                 value={`${summary.topScorer.goals} mål, ${summary.topScorer.assists} ass`} />
             )}
             {summary.topAssister && (
@@ -250,10 +249,10 @@ export function SeasonSummaryScreen() {
                 value={`${summary.youngPlayer.goals} mål · ${summary.youngPlayer.avgRating} snitt`} />
             )}
           </div>
-        </Card>
+        </div>
 
         {/* STATISTICS */}
-        <Card stagger={3}>
+        <div className="card-sharp card-stagger-3" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <SectionLabel>STATISTIK</SectionLabel>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
             <div>
@@ -269,11 +268,11 @@ export function SeasonSummaryScreen() {
               <StatRow label="Nollor" value={summary.totalCleanSheets} />
             </div>
           </div>
-        </Card>
+        </div>
 
         {/* HOME vs AWAY */}
-        <div className="card-stagger-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
-          <Card style={{ marginBottom: 0 }}>
+        <div className="card-stagger-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
+          <div className="card-sharp" style={{ padding: '10px 14px' }}>
             <SectionLabel>HEMMA</SectionLabel>
             <p style={{ fontSize: 22, fontWeight: 800, color: 'var(--success)' }}>{summary.homeRecord.wins}</p>
             <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>V</p>
@@ -281,8 +280,8 @@ export function SeasonSummaryScreen() {
               <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>O: {summary.homeRecord.draws}</span>
               <span style={{ fontSize: 13, color: 'var(--danger)' }}>F: {summary.homeRecord.losses}</span>
             </div>
-          </Card>
-          <Card style={{ marginBottom: 0 }}>
+          </div>
+          <div className="card-sharp" style={{ padding: '10px 14px' }}>
             <SectionLabel>BORTA</SectionLabel>
             <p style={{ fontSize: 22, fontWeight: 800, color: 'var(--success)' }}>{summary.awayRecord.wins}</p>
             <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>V</p>
@@ -290,11 +289,11 @@ export function SeasonSummaryScreen() {
               <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>O: {summary.awayRecord.draws}</span>
               <span style={{ fontSize: 13, color: 'var(--danger)' }}>F: {summary.awayRecord.losses}</span>
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* STREAKS */}
-        <Card stagger={5}>
+        <div className="card-sharp card-stagger-5" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <SectionLabel>STREAKS OCH EXTREMER</SectionLabel>
           <StatRow label="Längsta vinstsvit" value={`${summary.longestWinStreak} matcher`} color="var(--success)" />
           <StatRow label="Längsta förlustsvit" value={`${summary.longestLossStreak} matcher`} color="var(--danger)" />
@@ -304,10 +303,10 @@ export function SeasonSummaryScreen() {
           {summary.worstLoss && (
             <StatRow label="Tyngsta förlust" value={`${summary.worstLoss.score} mot ${summary.worstLoss.opponent}`} color="var(--danger)" />
           )}
-        </Card>
+        </div>
 
         {/* POINTS CHART */}
-        <Card stagger={6}>
+        <div className="card-sharp card-stagger-6" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <SectionLabel>POÄNGKURVA</SectionLabel>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <div>
@@ -326,11 +325,11 @@ export function SeasonSummaryScreen() {
             </div>
           </div>
           <PointsChart />
-        </Card>
+        </div>
 
         {/* YOUTH INTAKE */}
         {summary.youthIntakeCount > 0 && (
-          <Card stagger={6}>
+          <div className="card-sharp card-stagger-6" style={{ padding: '10px 14px', marginBottom: 8 }}>
             <SectionLabel>UNGDOMSKULL</SectionLabel>
             <p style={{ fontSize: 14, color: 'var(--text-primary)', marginBottom: 8 }}>
               {summary.youthIntakeCount} nya spelare rekryterades
@@ -344,12 +343,12 @@ export function SeasonSummaryScreen() {
                 </p>
               </div>
             )}
-          </Card>
+          </div>
         )}
 
         {/* COMMUNITY STANDING */}
         {summary.communityStandingEnd !== undefined && (
-          <Card stagger={6}>
+          <div className="card-sharp card-stagger-6" style={{ padding: '10px 14px', marginBottom: 8 }}>
             <SectionLabel>ORTEN</SectionLabel>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Lokalstöd vid säsongsslut</span>
@@ -371,11 +370,11 @@ export function SeasonSummaryScreen() {
                 {summary.communityHighlights.join(' · ')}
               </p>
             )}
-          </Card>
+          </div>
         )}
 
         {/* FINANCES */}
-        <Card stagger={7}>
+        <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <SectionLabel>EKONOMI</SectionLabel>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
@@ -393,7 +392,7 @@ export function SeasonSummaryScreen() {
           <p style={{ fontSize: 13, fontWeight: 600, color: summary.financialChange >= 0 ? 'var(--success)' : 'var(--danger)', marginTop: 8, textAlign: 'center' }}>
             {summary.financialChange >= 0 ? '+' : ''}{formatCurrency(Math.abs(summary.financialChange))}
           </p>
-        </Card>
+        </div>
 
         {/* SÄSONGENS BERÄTTELSER */}
         {(summary.storyTriggers ?? []).length > 0 && (

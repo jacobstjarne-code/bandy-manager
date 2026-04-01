@@ -95,32 +95,34 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
       </div>
 
       {/* Intensity segmented control */}
-      <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.6px' }}>
-        Intensitet
-      </p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 6 }}>
-        {TRAINING_INTENSITIES.map(intensity => {
-          const active = focus.intensity === intensity
-          const color = INTENSITY_COLOR[intensity]
-          return (
-            <button
-              key={intensity}
-              onClick={() => onChangeFocus({ ...focus, intensity })}
-              style={{
-                padding: '8px 4px',
-                borderRadius: 'var(--radius-sm)',
-                background: active ? `${color}22` : 'var(--bg-elevated)',
-                border: `1.5px solid ${active ? color : 'var(--border)'}`,
-                color: active ? color : 'var(--text-secondary)',
-                fontSize: 12,
-                fontWeight: active ? 700 : 400,
-                cursor: 'pointer',
-              }}
-            >
-              {trainingIntensityLabel(intensity)}
-            </button>
-          )
-        })}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.6px', flexShrink: 0 }}>
+          Intensitet
+        </span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, flex: 1 }}>
+          {TRAINING_INTENSITIES.map(intensity => {
+            const active = focus.intensity === intensity
+            const color = INTENSITY_COLOR[intensity]
+            return (
+              <button
+                key={intensity}
+                onClick={() => onChangeFocus({ ...focus, intensity })}
+                style={{
+                  padding: '6px 4px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: active ? `${color}22` : 'var(--bg-elevated)',
+                  border: `1.5px solid ${active ? color : 'var(--border)'}`,
+                  color: active ? color : 'var(--text-secondary)',
+                  fontSize: 11,
+                  fontWeight: active ? 700 : 400,
+                  cursor: 'pointer',
+                }}
+              >
+                {trainingIntensityLabel(intensity)}
+              </button>
+            )
+          })}
+        </div>
       </div>
       <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 16, textAlign: 'center' }}>
         {INTENSITY_TOOLTIP[focus.intensity]}

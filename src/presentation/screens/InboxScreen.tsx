@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useGameStore } from '../store/gameStore'
 import { InboxItemType } from '../../domain/enums'
 import type { InboxItem } from '../../domain/entities/SaveGame'
-import { Bell, Check, CheckCheck } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { PlayerLink } from '../components/PlayerLink'
 import { SectionLabel } from '../components/SectionLabel'
 
@@ -72,8 +72,8 @@ function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
       style={{
         display: 'flex',
         alignItems: 'flex-start',
-        gap: 12,
-        padding: '14px 16px',
+        gap: 8,
+        padding: '10px 14px',
         borderBottom: '1px solid var(--border)',
         borderLeft: item.isRead ? '3px solid transparent' : '3px solid rgba(196,122,58,0.2)',
         background: item.isRead ? 'transparent' : 'rgba(196,122,58,0.04)',
@@ -82,17 +82,17 @@ function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
       }}
     >
       <div style={{
-        width: 36,
-        height: 36,
+        width: 28,
+        height: 28,
         borderRadius: '50%',
         background: `${color}18`,
         border: `1px solid ${color}40`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: 17,
+        fontSize: 13,
         flexShrink: 0,
-        marginTop: 2,
+        marginTop: 1,
       }}>
         {inboxTypeIcon(item.type)}
       </div>
@@ -175,46 +175,27 @@ export function InboxScreen() {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
-      <div className="card-stagger-1" style={{
-        padding: '16px 16px 12px',
-        borderBottom: '1px solid var(--border)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Bell size={20} color="var(--text-primary)" />
-          <h2 style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)' }}>Inkorg</h2>
-          {unreadCount > 0 && (
-            <div style={{
-              background: 'var(--accent)',
-              color: '#fff',
-              borderRadius: 99,
-              fontSize: 11,
-              fontWeight: 700,
-              padding: '1px 7px',
-            }}>
-              {unreadCount}
-            </div>
-          )}
-        </div>
-        {unreadCount > 0 && (
+      {/* Compact toolbar */}
+      {unreadCount > 0 && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '8px 16px',
+          borderBottom: '1px solid var(--border)',
+          flexShrink: 0,
+        }}>
+          <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>
+            {unreadCount} olästa
+          </span>
           <button
             onClick={markAllInboxRead}
-            className="btn btn-ghost"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 5,
-              fontSize: 13,
-            }}
+            style={{ fontSize: 12, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
           >
-            <CheckCheck size={15} />
-            Markera alla
+            Markera alla som lästa
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* List */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
