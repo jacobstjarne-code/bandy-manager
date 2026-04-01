@@ -24,15 +24,11 @@ export function GameHeader() {
       flexShrink: 0,
       minHeight: 44,
     }}>
-      <span style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: 12,
-        letterSpacing: '2.5px',
-        color: 'rgba(245,241,235,0.7)',
-        textTransform: 'uppercase',
-      }}>
-        Bandy Manager
-      </span>
+      <img
+        src="/bandymanager-logo.png"
+        alt="Bandy Manager"
+        style={{ height: 28, width: 'auto', opacity: 0.85 }}
+      />
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{
           width: 24, height: 24, borderRadius: 4,

@@ -168,23 +168,11 @@ export function NewGameScreen() {
         flexShrink: 0,
         minHeight: 44,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button
-            onClick={() => setStep('name')}
-            style={{ background: 'none', border: 'none', color: 'rgba(245,241,235,0.7)', padding: '0 4px 0 0', fontSize: 16, cursor: 'pointer', lineHeight: 1 }}
-          >
-            ←
-          </button>
-          <span style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 12,
-            letterSpacing: '2.5px',
-            color: 'rgba(245,241,235,0.7)',
-            textTransform: 'uppercase',
-          }}>
-            Bandy Manager
-          </span>
-        </div>
+        <img
+          src="/bandymanager-logo.png"
+          alt="Bandy Manager"
+          style={{ height: 28, width: 'auto', opacity: 0.85 }}
+        />
         <div style={{ textAlign: 'right' }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: 'rgba(245,241,235,0.85)', margin: 0, lineHeight: 1.2, fontFamily: 'var(--font-display)' }}>
             Välj klubb
@@ -197,6 +185,12 @@ export function NewGameScreen() {
 
       {/* Club list */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', paddingBottom: selectedClub ? 140 : 80 }}>
+        <button
+          onClick={() => setStep('name')}
+          style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', padding: '0 0 12px', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+        >
+          ← Tillbaka
+        </button>
         <p style={{ color: 'var(--text-secondary)', marginBottom: 16, fontSize: 14 }}>
           Varje klubb har sin historia. Välj din.
         </p>
