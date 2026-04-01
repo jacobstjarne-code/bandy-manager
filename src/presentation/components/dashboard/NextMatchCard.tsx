@@ -42,7 +42,7 @@ function SeriesBoxes({
               width: 13,
               height: 13,
               borderRadius: 3,
-              background: b === 'W' ? 'var(--accent-dark)' : b === 'L' ? 'var(--danger)' : 'transparent',
+              background: b === 'W' ? 'var(--success)' : b === 'L' ? 'var(--danger)' : 'transparent',
               border: b === 'empty' ? '1.5px solid var(--border-dark)' : 'none',
               display: 'flex',
               alignItems: 'center',
@@ -141,7 +141,7 @@ export function NextMatchCard({
   } else if (isPlayoff && playoffSeries) {
     headerIcon = '⚔️'
     headerLabel = getPlayoffLabel(playoffSeries.round)
-    headerTagText = 'SLUTSPEL'
+    headerTagText = 'TOPP 8'
     headerTagStyle = { background: 'rgba(196,168,76,0.15)', color: '#D4B860', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,168,76,0.25)' }
   } else if (isCup) {
     const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id)

@@ -95,7 +95,7 @@ export function AkademiTab({ club, game, upgradeAcademy, promoteYouthPlayer, ass
 
       {/* P17 team */}
       {youthTeam && (
-        <SectionCard title="⚽ Pojklaget (P19)" stagger={2}>
+        <SectionCard title="🏒 Pojklaget (P19)" stagger={2}>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 10, lineHeight: 1.4 }}>
             P19-laget spelar egna matcher. Talanger kan lyftas till A-laget när de är redo.
           </p>

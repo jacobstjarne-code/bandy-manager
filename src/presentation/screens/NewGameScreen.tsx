@@ -157,30 +157,39 @@ export function NewGameScreen() {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-      {/* Header — dark game header style */}
+      {/* Header — same layout as GameHeader */}
       <div style={{
-        background: 'var(--bg-dark)',
-        padding: '14px 16px',
         display: 'flex',
-        alignItems: 'center',
         justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '12px 16px',
+        background: 'var(--bg-dark)',
+        borderBottom: '2px solid var(--accent)',
+        flexShrink: 0,
+        minHeight: 44,
       }}>
-        <button
-          onClick={() => setStep('name')}
-          style={{ background: 'none', border: 'none', color: 'var(--text-light-secondary)', padding: 4, fontSize: 18, cursor: 'pointer' }}
-        >
-          ←
-        </button>
-        <div style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--text-light-secondary)', margin: 0 }}>
-            BANDY MANAGER
-          </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            onClick={() => setStep('name')}
+            style={{ background: 'none', border: 'none', color: 'rgba(245,241,235,0.7)', padding: '0 4px 0 0', fontSize: 16, cursor: 'pointer', lineHeight: 1 }}
+          >
+            ←
+          </button>
+          <span style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 12,
+            letterSpacing: '2.5px',
+            color: 'rgba(245,241,235,0.7)',
+            textTransform: 'uppercase',
+          }}>
+            Bandy Manager
+          </span>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-light)', margin: 0, fontFamily: 'var(--font-display)' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: 'rgba(245,241,235,0.85)', margin: 0, lineHeight: 1.2, fontFamily: 'var(--font-display)' }}>
             Välj klubb
           </p>
-          <p style={{ fontSize: 10, color: 'var(--text-light-secondary)', margin: 0 }}>
+          <p style={{ fontSize: 10, color: 'rgba(245,241,235,0.65)', margin: 0, lineHeight: 1.2 }}>
             {managerName} · 2026/2027
           </p>
         </div>

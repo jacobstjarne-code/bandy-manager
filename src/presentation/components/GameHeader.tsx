@@ -28,7 +28,7 @@ export function GameHeader() {
         fontFamily: 'var(--font-display)',
         fontSize: 12,
         letterSpacing: '2.5px',
-        color: 'rgba(245,241,235,0.45)',
+        color: 'rgba(245,241,235,0.7)',
         textTransform: 'uppercase',
       }}>
         Bandy Manager
@@ -56,7 +56,7 @@ export function GameHeader() {
           </p>
           <p style={{
             fontSize: 10,
-            color: 'rgba(245,241,235,0.4)',
+            color: 'rgba(245,241,235,0.65)',
             margin: 0,
             lineHeight: 1.2,
           }}>

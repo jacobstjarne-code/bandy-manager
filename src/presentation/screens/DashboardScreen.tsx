@@ -68,7 +68,7 @@ function PlayoffBracketCard({ bracket, game }: PlayoffBracketCardProps) {
     : bracket.status === PlayoffStatus.SemiFinals ? 'SEMIFINAL'
     : bracket.status === PlayoffStatus.Final ? 'SM-FINAL'
     : bracket.status === PlayoffStatus.Completed ? 'AVSLUTAD'
-    : 'SLUTSPEL'
+    : 'TOPP 8'
 
   const activeSeries = bracket.status === PlayoffStatus.QuarterFinals ? bracket.quarterFinals
     : bracket.status === PlayoffStatus.SemiFinals ? bracket.semiFinals
@@ -84,7 +84,7 @@ function PlayoffBracketCard({ bracket, game }: PlayoffBracketCardProps) {
       <div style={{ padding: '12px 14px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
-            ⚔️ SLUTSPEL
+            ⚔️ TOPP 8
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span className="tag tag-fill">{statusLabel}</span>

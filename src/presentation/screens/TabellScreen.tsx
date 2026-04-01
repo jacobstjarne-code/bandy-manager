@@ -115,11 +115,11 @@ export function TabellScreen() {
             Statistiken fylls på efter första omgången.
           </p>
         )
-        const topScorers = [...allPlayers].sort((a, b) => b.seasonStats.goals - a.seasonStats.goals).slice(0, 10)
-        const topAssisters = [...allPlayers].sort((a, b) => b.seasonStats.assists - a.seasonStats.assists).slice(0, 10)
-        const topCornerGoals = [...allPlayers].sort((a, b) => b.seasonStats.cornerGoals - a.seasonStats.cornerGoals).slice(0, 10)
-        const topRated = [...allPlayers].filter(p => p.seasonStats.gamesPlayed >= 5).sort((a, b) => b.seasonStats.averageRating - a.seasonStats.averageRating).slice(0, 10)
-        const topPenaltyMin = [...allPlayers].sort((a, b) => (b.seasonStats.yellowCards * 5 + b.seasonStats.redCards * 10) - (a.seasonStats.yellowCards * 5 + a.seasonStats.redCards * 10)).slice(0, 10)
+        const topScorers = [...allPlayers].sort((a, b) => b.seasonStats.goals - a.seasonStats.goals).slice(0, 5)
+        const topAssisters = [...allPlayers].sort((a, b) => b.seasonStats.assists - a.seasonStats.assists).slice(0, 5)
+        const topCornerGoals = [...allPlayers].sort((a, b) => b.seasonStats.cornerGoals - a.seasonStats.cornerGoals).slice(0, 5)
+        const topRated = [...allPlayers].filter(p => p.seasonStats.gamesPlayed >= 3).sort((a, b) => b.seasonStats.averageRating - a.seasonStats.averageRating).slice(0, 5)
+        const topPenaltyMin = [...allPlayers].sort((a, b) => (b.seasonStats.yellowCards * 5 + b.seasonStats.redCards * 10) - (a.seasonStats.yellowCards * 5 + a.seasonStats.redCards * 10)).slice(0, 5)
 
         function StatTable({ title, players, value, unit }: { title: string; players: typeof allPlayers; value: (p: typeof allPlayers[0]) => string | number; unit?: string }) {
           return (
@@ -158,10 +158,10 @@ export function TabellScreen() {
 
         return (
           <div>
-            <StatTable title="⚽ Toppskytt" players={topScorers} value={p => p.seasonStats.goals} unit=" mål" />
+            <StatTable title="🏒 Toppskytt" players={topScorers} value={p => p.seasonStats.goals} unit=" mål" />
             <StatTable title="🎯 Flest assist" players={topAssisters} value={p => p.seasonStats.assists} unit=" ast" />
             <StatTable title="🔄 Flest hörnmål" players={topCornerGoals} value={p => p.seasonStats.cornerGoals} unit=" hörn" />
-            <StatTable title="⭐ Bäst snittbetyg (min 5 matcher)" players={topRated} value={p => p.seasonStats.averageRating.toFixed(1)} />
+            <StatTable title="⭐ Bäst snittbetyg (min 3 matcher)" players={topRated} value={p => p.seasonStats.averageRating.toFixed(1)} />
             <StatTable title="🟨 Flest utvisningsminuter" players={topPenaltyMin} value={p => p.seasonStats.yellowCards * 5 + p.seasonStats.redCards * 10} unit=" min" />
           </div>
         )

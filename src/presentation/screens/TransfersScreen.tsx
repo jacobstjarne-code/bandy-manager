@@ -183,6 +183,7 @@ export function TransfersScreen() {
   const navigate = useNavigate()
   const [renewingPlayerId, setRenewingPlayerId] = useState<string | null>(null)
   const [renewError, setRenewError] = useState<string | null>(null)
+  const [wageWarning, setWageWarning] = useState<string | null>(null)
   const [scoutMessage, setScoutMessage] = useState<string | null>(null)
   const [biddingPlayerId, setBiddingPlayerId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'scouting' | 'spaning' | 'contracts' | 'freeagents' | 'sell'>('scouting')
@@ -238,7 +239,7 @@ export function TransfersScreen() {
     const currentWageBill = squadPlayers.reduce((sum, p) => sum + p.salary, 0)
     const projectedWageBill = currentWageBill - currentPlayer.salary + newSalary
     if (projectedWageBill > managedClub.wageBudget) {
-      setRenewError(`⚠️ Lönebudgeten överskrids med ${formatCurrency(projectedWageBill - managedClub.wageBudget)}/mån — kontraktet sparas ändå`)
+      setWageWarning(`OBS: Lönekostnaderna överstiger budgeten med ${formatCurrency(projectedWageBill - managedClub.wageBudget)}/mån`)
     }
     const updatedPlayers = game.players.map(p =>
       p.id === playerId ? { ...p, contractUntilSeason: game.currentSeason + years, salary: newSalary } : p
@@ -726,6 +727,18 @@ export function TransfersScreen() {
               </div>
             )
           })()}
+        </div>
+      )}
+
+      {/* Wage budget warning banner */}
+      {wageWarning && (
+        <div style={{
+          background: 'rgba(196,122,58,0.12)', border: '1px solid rgba(196,122,58,0.4)',
+          borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 12,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+        }}>
+          <p style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 600 }}>⚠️ {wageWarning}</p>
+          <button onClick={() => setWageWarning(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 16, cursor: 'pointer', flexShrink: 0 }}>✕</button>
         </div>
       )}
 

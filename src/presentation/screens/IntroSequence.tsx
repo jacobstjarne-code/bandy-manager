@@ -75,6 +75,21 @@ export function IntroSequence() {
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', background: '#0E0D0B', overflow: 'hidden' }}>
+      {/* Bakgrundsbild — Eriks illustration */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: 'url(/intro-bg.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center top',
+        zIndex: 0,
+      }} />
+      {/* Mörk overlay */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(to bottom, rgba(14,13,11,0.3) 0%, rgba(14,13,11,0.5) 50%, rgba(14,13,11,0.7) 100%)',
+        zIndex: 1,
+      }} />
+
       <SnowParticles />
 
       {/* Floodlight glow */}
@@ -84,6 +99,7 @@ export function IntroSequence() {
           'radial-gradient(ellipse 65% 45% at 18% 0%, rgba(196,122,58,0.14) 0%, transparent 60%)',
           'radial-gradient(ellipse 55% 40% at 82% 0%, rgba(196,122,58,0.11) 0%, transparent 60%)',
         ].join(', '),
+        zIndex: 2,
       }} />
 
       {/* ── S0 ── Logo + "presenterar" + atmosphere text */}
@@ -95,13 +111,13 @@ export function IntroSequence() {
         opacity: slide === 0 ? 1 : 0,
         transition: 'opacity 500ms ease',
         pointerEvents: slide === 0 ? 'auto' : 'none',
+        zIndex: 3,
       }}>
         <img
-          src="/buryfen-logo-transparent.png"
+          src="/buryfen-logo.png"
           alt="Bury Fen"
           style={{
             width: 110,
-            filter: 'invert(1) brightness(.85) sepia(.15)',
             opacity: s0Phase >= 0 ? 1 : 0,
             transform: s0Phase >= 0 ? 'none' : 'translateY(8px)',
             transition: 'opacity 700ms ease, transform 700ms ease',
@@ -143,25 +159,20 @@ export function IntroSequence() {
         alignItems: 'center', justifyContent: 'space-between',
         padding: '120px 40px 60px',
         pointerEvents: s1 ? 'auto' : 'none',
+        zIndex: 3,
       }}>
-        {/* Title block — fixed dimensions so letterSpacing changes don't reflow layout */}
+        {/* Title block */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18 }}>
-          <h1 style={{
-            fontSize: 34,
-            fontWeight: 400,
-            letterSpacing: '8px',
-            color: '#F5F1EB',
-            textTransform: 'uppercase',
-            fontFamily: 'Georgia, serif',
-            margin: 0,
-            textAlign: 'center',
-            lineHeight: 1.1,
-            opacity: s1 ? 1 : 0,
-            transform: s1 ? 'scale(1)' : 'scale(0.96)',
-            transition: 'opacity 1100ms ease, transform 1100ms ease',
-          }}>
-            BANDY MANAGER
-          </h1>
+          <img
+            src="/bandymanager-logo.png"
+            alt="Bandy Manager"
+            style={{
+              width: 160,
+              opacity: s1 ? 1 : 0,
+              transform: s1 ? 'scale(1)' : 'scale(0.92)',
+              transition: 'opacity 1100ms ease, transform 1100ms ease',
+            }}
+          />
           <p style={{
             fontSize: 16,
             color: 'rgba(245,241,235,0.60)',
@@ -224,11 +235,10 @@ export function IntroSequence() {
             </button>
           )}
           <img
-            src="/buryfen-logo-transparent.png"
+            src="/buryfen-logo.png"
             alt="Bury Fen"
             style={{
               width: 52,
-              filter: 'invert(1) brightness(.85) sepia(.15)',
               opacity: s1 ? 0.32 : 0,
               transition: 'opacity 700ms ease',
               transitionDelay: s1 ? '2000ms' : '0ms',

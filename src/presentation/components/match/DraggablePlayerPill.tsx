@@ -1,4 +1,13 @@
 import type { Player } from '../../../domain/entities/Player'
+import { PlayerPosition } from '../../../domain/enums'
+
+const POS_SHORT: Partial<Record<string, string>> = {
+  [PlayerPosition.Goalkeeper]: 'MV',
+  [PlayerPosition.Defender]: 'DEF',
+  [PlayerPosition.Half]: 'HALF',
+  [PlayerPosition.Midfielder]: 'HALF',
+  [PlayerPosition.Forward]: 'FWD',
+}
 
 interface DraggablePlayerPillProps {
   player: Player
@@ -45,6 +54,9 @@ export function DraggablePlayerPill({ player, isDragging, onPointerDown }: Dragg
       </span>
       <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
         {player.lastName}
+      </span>
+      <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.3px' }}>
+        {POS_SHORT[player.position] ?? player.position.toUpperCase()}
       </span>
       <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
         {Math.round(player.currentAbility)}

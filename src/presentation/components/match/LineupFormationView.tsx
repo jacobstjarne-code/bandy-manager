@@ -1,6 +1,6 @@
 import type { Player } from '../../../domain/entities/Player'
 import type { Tactic } from '../../../domain/entities/Club'
-import { FORMATIONS } from '../../../domain/entities/Formation'
+import { FORMATIONS, autoAssignFormation } from '../../../domain/entities/Formation'
 import type { FormationType } from '../../../domain/entities/Formation'
 import { BandyPitch } from '../BandyPitch'
 
@@ -36,6 +36,15 @@ export function LineupFormationView({
   const slotToPlayer: Record<string, string> = {}
   for (const [slotId, pid] of Object.entries(tacticState.lineupSlots ?? {})) {
     if (pid && startingIds.includes(pid)) slotToPlayer[slotId] = pid
+  }
+
+  // If startingIds exist but no assignments, auto-assign based on position
+  if (startingIds.length > 0 && Object.keys(slotToPlayer).length === 0) {
+    const startingPlayers = squadPlayers.filter(p => startingIds.includes(p.id))
+    const autoSlots = autoAssignFormation(template, startingPlayers)
+    for (const [slotId, pid] of Object.entries(autoSlots)) {
+      if (pid) slotToPlayer[slotId] = pid
+    }
   }
 
   const PW = 220, PH = 130
