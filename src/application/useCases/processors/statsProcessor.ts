@@ -166,8 +166,10 @@ export function updatePlayerMatchStats(
     const subInEvents = fixture.events.filter(
       e => e.type === MatchEventType.Substitution && e.secondaryPlayerId !== undefined
     )
+    const subInIds = new Set<string>()
     for (const subEvent of subInEvents) {
       const subInId = subEvent.secondaryPlayerId!
+      subInIds.add(subInId)
       const subInIdx = finalPlayers.findIndex(p => p.id === subInId)
       if (subInIdx === -1) continue
       const subPlayer = finalPlayers[subInIdx]
@@ -178,6 +180,28 @@ export function updatePlayerMatchStats(
         seasonStats: {
           ...subPlayer.seasonStats,
           minutesPlayed: subPlayer.seasonStats.minutesPlayed + subMinutes,
+        },
+      }
+    }
+
+    // Flygande byten — bänkspelare som INTE byttes in får ~30-40 min speltid
+    // (bandy använder löpande byten som ishockey)
+    const allBench = [
+      ...(fixture.homeLineup?.benchPlayerIds ?? []),
+      ...(fixture.awayLineup?.benchPlayerIds ?? []),
+    ]
+    for (const benchId of allBench) {
+      if (subInIds.has(benchId)) continue  // already tracked via sub event
+      if (allStarters.includes(benchId)) continue
+      const idx = finalPlayers.findIndex(p => p.id === benchId)
+      if (idx === -1) continue
+      const benchMinutes = 30 + Math.floor(Math.random() * 11)  // 30-40 min
+      finalPlayers[idx] = {
+        ...finalPlayers[idx],
+        seasonStats: {
+          ...finalPlayers[idx].seasonStats,
+          minutesPlayed: finalPlayers[idx].seasonStats.minutesPlayed + benchMinutes,
+          gamesPlayed: finalPlayers[idx].seasonStats.gamesPlayed + 1,
         },
       }
     }

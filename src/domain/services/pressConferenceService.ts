@@ -6,73 +6,78 @@ import { MatchEventType } from '../enums'
 
 export const JOURNALISTS = ['SVT Nyheter', 'Bandyplay', 'Lokaltidningen', 'Sportbladet', 'Bandypuls', 'Expressen', 'DN', 'Radiosporten']
 
-// ── Journalist questions (per context, no choices) ────────────────────────────
+// ── Journalist questions (per context, each paired with fitting response IDs) ──
 
-const QUESTIONS: Record<string, string[]> = {
+interface PressQuestion {
+  text: string
+  preferIds: string[]  // response IDs that directly answer this question
+}
+
+const QUESTIONS: Record<string, PressQuestion[]> = {
   bigWin: [
-    'Imponerande seger. Var det er bästa match den här säsongen?',
-    'Laget spelade otroligt idag. Vad är hemligheten?',
-    'Tvåsiffrigt idag — är det ett mönster eller en engångsgrej?',
-    'Ert anfallsspel ser ostoppbart ut. Fruktar du inte att bli läst av motståndarna?',
-    'Bortalaget verkade chockade av er intensitet. Avsiktlig taktik?',
-    'Bra match. Hade ni kunnat vinna med ännu mer?',
-    'Publiken var i extas. Hur mycket spelar fansen in i resultatet?',
+    { text: 'Imponerande seger. Var det er bästa match den här säsongen?', preferIds: ['bw_c1', 'bw_h2', 'cl01'] },
+    { text: 'Laget spelade otroligt idag. Vad är hemligheten?', preferIds: ['bw_c2', 'bw_h5', 'cl04'] },
+    { text: 'Tvåsiffrigt idag — är det ett mönster eller en engångsgrej?', preferIds: ['bw_c3', 'bw_h4', 'cl02'] },
+    { text: 'Ert anfallsspel ser ostoppbart ut. Fruktar du inte att bli läst av motståndarna?', preferIds: ['bw_c4', 'bw_h4', 'cl02'] },
+    { text: 'Bortalaget verkade chockade av er intensitet. Avsiktlig taktik?', preferIds: ['bw_c5', 'bw_h5', 'bw_d1'] },
+    { text: 'Bra match. Hade ni kunnat vinna med ännu mer?', preferIds: ['bw_c6', 'bw_h6', 'bw_d2'] },
+    { text: 'Publiken var i extas. Hur mycket spelar fansen in i resultatet?', preferIds: ['bw_p7', 'bw_h7', 'cl07'] },
   ],
   win: [
-    'Seger! Berätta om matchen.',
-    'Två viktiga poäng. Hur påverkar det stämningen i laget?',
-    'Vilken spelare stack ut idag?',
-    'Hur håller ni den här formen uppe?',
-    'Ni vände underläge till seger. Vad hände i pausen?',
-    'Ni avancerar i tabellen. Kan ni utmana toppen nu?',
-    'Ni dominerade mittfältet idag. Är det er styrka just nu?',
+    { text: 'Seger! Berätta om matchen.', preferIds: ['w_h1', 'w_c1', 'w_d1'] },
+    { text: 'Två viktiga poäng. Hur påverkar det stämningen i laget?', preferIds: ['w_p2', 'w_h2', 'w_p4'] },
+    { text: 'Vilken spelare stack ut idag?', preferIds: ['w_p3', 'w_h3', 'w_c3'] },
+    { text: 'Hur håller ni den här formen uppe?', preferIds: ['w_c4', 'w_d4', 'cl03'] },
+    { text: 'Ni vände underläge till seger. Vad hände i pausen?', preferIds: ['w_p5', 'w_h5', 'w_d5'] },
+    { text: 'Ni avancerar i tabellen. Kan ni utmana toppen nu?', preferIds: ['w_c6', 'w_h6', 'cl08'] },
+    { text: 'Ni dominerade mittfältet idag. Är det er styrka just nu?', preferIds: ['w_c7', 'w_h7', 'bw_d2'] },
   ],
   loss: [
-    'Tung förlust. Vad gick fel?',
-    'Laget såg trötta ut i andra halvlek. Kondition?',
-    'Supportrarna är besvikna. Vad säger du till dem?',
-    'Ni hamnade efter motståndarna tidigt. Vad gör ni annorlunda nästa match?',
-    'Vad säger du till spelarna i omklädningsrummet efter en sån här match?',
-    'Tappar ni tron på er spelstil nu?',
-    'Ni hade chanser men konverterade inte. Stressar det er?',
-    'Bortalaget körde över er i perioder. Vad händer med er defensiv?',
-    'Ni har det tufft just nu. Hur håller du moralen uppe?',
+    { text: 'Tung förlust. Vad gick fel?', preferIds: ['l_h1', 'l_c2', 'cl11'] },
+    { text: 'Laget såg trötta ut i andra halvlek. Kondition?', preferIds: ['l_h2', 'l_h1', 'l_d1'] },
+    { text: 'Supportrarna är besvikna. Vad säger du till dem?', preferIds: ['l_p3', 'l_h3', 'cl14'] },
+    { text: 'Ni hamnade efter motståndarna tidigt. Vad gör ni annorlunda nästa match?', preferIds: ['l_h4', 'l_d1', 'l_c4'] },
+    { text: 'Vad säger du till spelarna i omklädningsrummet efter en sån här match?', preferIds: ['l_p5', 'l_h5', 'cl11'] },
+    { text: 'Tappar ni tron på er spelstil nu?', preferIds: ['l_c6', 'l_h6', 'cl15'] },
+    { text: 'Ni hade chanser men konverterade inte. Stressar det er?', preferIds: ['l_c7', 'l_h7', 'cl16'] },
+    { text: 'Bortalaget körde över er i perioder. Vad händer med er försvarsspel?', preferIds: ['l_h8', 'l_h1', 'l_a1'] },
+    { text: 'Ni har det tufft just nu. Hur håller du moralen uppe?', preferIds: ['l_p9', 'l_h9', 'cl13'] },
   ],
   bigLoss: [
-    'En mörk kväll. Hur tar ni er vidare härifrån?',
-    'Är du orolig för lagets form?',
-    'Det här resultatet kan stå er dyrt i tabellen. Hur reagerar styrelsen?',
-    'Motståndarna verkade veta exakt vad ni skulle göra. Läckta planer?',
-    'En jävla massa mål i röven. Var det ett systemproblem?',
-    'Behöver du ta in ny spetskompetens för att vända skutan?',
+    { text: 'En mörk kväll. Hur tar ni er vidare härifrån?', preferIds: ['bl_h1', 'bl_p1', 'cl12'] },
+    { text: 'Är du orolig för lagets form?', preferIds: ['bl_h2', 'bl_c2', 'cl13'] },
+    { text: 'Det här resultatet kan stå er dyrt i tabellen. Hur reagerar styrelsen?', preferIds: ['bl_p3', 'bl_d2', 'bl_a1'] },
+    { text: 'Motståndarna verkade veta exakt vad ni skulle göra. Läckta planer?', preferIds: ['bl_h4', 'bl_c4', 'bl_h1'] },
+    { text: 'En jävla massa mål i röven. Var det ett systemproblem?', preferIds: ['bl_h5', 'bl_a1', 'bl_h1'] },
+    { text: 'Behöver du ta in ny spetskompetens för att vända skutan?', preferIds: ['bl_c6', 'bl_c2', 'bl_p1'] },
   ],
   draw: [
-    'Oavgjort — nöjd eller besviken?',
-    'Ni kvitterade sent. Vad säger det om lagets karaktär?',
-    'En poäng på bortaplan — räknas det som bra?',
-    'Matchen avgjordes av detaljer. Vilken detalj är viktigast att förbättra?',
-    'Ert spel var ojämnt idag. Vad berodde det på?',
-    'Ni har oavgjort i tre raka. Är det en trend att oroa sig för?',
+    { text: 'Oavgjort — nöjd eller besviken?', preferIds: ['dr_h1', 'dr_c1', 'dr_d1'] },
+    { text: 'Ni kvitterade sent. Vad säger det om lagets karaktär?', preferIds: ['dr_p2', 'dr_h2', 'dr_d1'] },
+    { text: 'En poäng på bortaplan — räknas det som bra?', preferIds: ['dr_c3', 'dr_h3', 'dr_d1'] },
+    { text: 'Matchen avgjordes av detaljer. Vilken detalj är viktigast att förbättra?', preferIds: ['dr_h4', 'dr_c4', 'dr_h6'] },
+    { text: 'Ert spel var ojämnt idag. Vad berodde det på?', preferIds: ['dr_h5', 'dr_h4', 'dr_c4'] },
+    { text: 'Ni har oavgjort i tre raka. Är det en trend att oroa sig för?', preferIds: ['dr_c6', 'dr_h6', 'dr_h3'] },
   ],
   derbyWin: [
-    'Derbyseger! Vad betyder det för laget?',
-    'Vad gör en derbyseger med truppen?',
-    'Hur förbereder man sig mentalt för ett derby jämfört med en vanlig match?',
-    'Fansen sjöng hela matchen. Spelade de in?',
-    'Rivaliteten är laddad. Hur hanterar du pressen inför den typen av match?',
-    'Ni dominerade klart. Var det planerat att ta kommandot tidigt?',
-    'Det här är ett resultat att fira. Hur länge tillåter du laget att njuta av det?',
-    'Vad säger den här segern om var ni befinner er som lag?',
+    { text: 'Derbyseger! Vad betyder det för laget?', preferIds: ['dw_p1', 'dw_c1', 'dw_p2'] },
+    { text: 'Vad gör en derbyseger med truppen?', preferIds: ['dw_p2', 'dw_c2', 'dw_p4'] },
+    { text: 'Hur förbereder man sig mentalt för ett derby jämfört med en vanlig match?', preferIds: ['dw_p3', 'dw_c3', 'cl07'] },
+    { text: 'Fansen sjöng hela matchen. Spelade de in?', preferIds: ['dw_p4', 'dw_c4', 'bw_p7'] },
+    { text: 'Rivaliteten är laddad. Hur hanterar du pressen inför den typen av match?', preferIds: ['dw_c5', 'dw_h2', 'dw_p3'] },
+    { text: 'Ni dominerade klart. Var det planerat att ta kommandot tidigt?', preferIds: ['dw_c6', 'dw_h6', 'dw_c3'] },
+    { text: 'Det här är ett resultat att fira. Hur länge tillåter du laget att njuta av det?', preferIds: ['dw_p7', 'dw_h2', 'dw_h6'] },
+    { text: 'Vad säger den här segern om var ni befinner er som lag?', preferIds: ['dw_p8', 'dw_c8', 'dw_c2'] },
   ],
   derbyLoss: [
-    'Smärtsam förlust i derbyt. Kommentar?',
-    'Hur stänger man av derbyförlusten mentalt?',
-    'Fansen är förkrossade. Vad säger du till dem efter det här?',
-    'Rivalerna kommer att leva på det här länge. Stör det dig?',
-    'Er prestation höll inte måttet. Varför?',
-    'Det är tungt att förlora just det här derbyt. Hur lyfter du laget nu?',
-    'Taktiken fungerade inte idag. Vad gör du annorlunda nästa gång ni möts?',
-    'Ni blir fullständigt dominerade av rivalerna. Är det ett psykologiskt problem?',
+    { text: 'Smärtsam förlust i derbyt. Kommentar?', preferIds: ['dl_h1', 'dl_p1', 'cl17'] },
+    { text: 'Hur stänger man av derbyförlusten mentalt?', preferIds: ['dl_p2', 'dl_d2', 'dl_h2'] },
+    { text: 'Fansen är förkrossade. Vad säger du till dem efter det här?', preferIds: ['dl_p3', 'dl_p1', 'cl17'] },
+    { text: 'Rivalerna kommer att leva på det här länge. Stör det dig?', preferIds: ['dl_p4', 'dl_h2', 'dl_d2'] },
+    { text: 'Er prestation höll inte måttet. Varför?', preferIds: ['dl_h5', 'dl_h1', 'dl_h7'] },
+    { text: 'Det är tungt att förlora just det här derbyt. Hur lyfter du laget nu?', preferIds: ['dl_p6', 'dl_p1', 'dl_h2'] },
+    { text: 'Taktiken fungerade inte idag. Vad gör du annorlunda nästa gång ni möts?', preferIds: ['dl_h7', 'dl_h5', 'dl_h2'] },
+    { text: 'Ni blir fullständigt dominerade av rivalerna. Är det ett psykologiskt problem?', preferIds: ['dl_h5', 'dl_p6', 'dl_p4'] },
   ],
 }
 
@@ -384,7 +389,8 @@ function isGenericMatch(tag: string, won: boolean, lost: boolean, draw: boolean)
 
 // ── Build 3 contextually-weighted responses ────────────────────────────────────
 
-function buildPressResponses(ctx: PressContext): ManagerResponse[] {
+function buildPressResponses(ctx: PressContext, preferIds: string[] = []): ManagerResponse[] {
+  const preferredById = new Map(PLAYER_RESPONSES.map(r => [r.id, r]))
   const contextMatched: ManagerResponse[] = []
   const generic: ManagerResponse[] = []
 
@@ -399,29 +405,48 @@ function buildPressResponses(ctx: PressContext): ManagerResponse[] {
   const result: ManagerResponse[] = []
   const used = new Set<string>()
 
-  // Slot 1: 80% contextMatched, 20% anything
-  const slot1pool = ctx.rand() < 0.80
-    ? contextMatched
-    : [...contextMatched, ...generic]
-  if (slot1pool.length > 0) {
-    const pick = slot1pool[Math.floor(ctx.rand() * slot1pool.length)]
+  // Slot 1: prefer question-specific IDs, fall back to context matching
+  const preferredAvail = preferIds.map(id => preferredById.get(id)).filter((r): r is ManagerResponse => !!r && !used.has(r.id))
+  if (preferredAvail.length > 0) {
+    const pick = preferredAvail[Math.floor(ctx.rand() * preferredAvail.length)]
     result.push(pick)
     used.add(pick.id)
+  } else {
+    const slot1pool = ctx.rand() < 0.80 ? contextMatched : [...contextMatched, ...generic]
+    if (slot1pool.length > 0) {
+      const pick = slot1pool[Math.floor(ctx.rand() * slot1pool.length)]
+      result.push(pick)
+      used.add(pick.id)
+    }
   }
 
-  // Slot 2: 50% context, 50% generic
-  const slot2pool = (ctx.rand() < 0.5 ? contextMatched : generic).filter(r => !used.has(r.id))
-  if (slot2pool.length > 0) {
-    const pick = slot2pool[Math.floor(ctx.rand() * slot2pool.length)]
+  // Slot 2: second preferred ID if available, otherwise context matching
+  const preferred2 = preferIds.map(id => preferredById.get(id)).filter((r): r is ManagerResponse => !!r && !used.has(r.id))
+  if (preferred2.length > 0) {
+    const pick = preferred2[Math.floor(ctx.rand() * preferred2.length)]
     result.push(pick)
     used.add(pick.id)
+  } else {
+    const slot2pool = (ctx.rand() < 0.5 ? contextMatched : generic).filter(r => !used.has(r.id))
+    if (slot2pool.length > 0) {
+      const pick = slot2pool[Math.floor(ctx.rand() * slot2pool.length)]
+      result.push(pick)
+      used.add(pick.id)
+    }
   }
 
-  // Slot 3: random from anything that loosely matches result type
-  const allPool = PLAYER_RESPONSES.filter(r => !used.has(r.id) && isGenericMatch(r.tag, ctx.won, ctx.lost, ctx.draw))
-  if (allPool.length > 0) {
-    const pick = allPool[Math.floor(ctx.rand() * allPool.length)]
+  // Slot 3: third preferred ID if available, otherwise random from loosely matching pool
+  const preferred3 = preferIds.map(id => preferredById.get(id)).filter((r): r is ManagerResponse => !!r && !used.has(r.id))
+  if (preferred3.length > 0) {
+    const pick = preferred3[Math.floor(ctx.rand() * preferred3.length)]
     result.push(pick)
+    used.add(pick.id)
+  } else {
+    const allPool = PLAYER_RESPONSES.filter(r => !used.has(r.id) && isGenericMatch(r.tag, ctx.won, ctx.lost, ctx.draw))
+    if (allPool.length > 0) {
+      const pick = allPool[Math.floor(ctx.rand() * allPool.length)]
+      result.push(pick)
+    }
   }
 
   // Fallback: fill from full pool if needed
@@ -464,7 +489,7 @@ export function generatePressConference(
   const journalist = JOURNALISTS[Math.floor(rand() * JOURNALISTS.length)]
 
   const ctx = buildPressContext(fixture, game, rand)
-  const responses = buildPressResponses(ctx)
+  const responses = buildPressResponses(ctx, question.preferIds)
 
   if (responses.length === 0) return null
 
@@ -482,7 +507,7 @@ export function generatePressConference(
     id: `event_press_r${fixture.roundNumber ?? 0}_${game.currentSeason}`,
     type: 'pressConference' as const,
     title: `🎤 Presskonferens — ${journalist}`,
-    body: `"${question}"`,
+    body: `"${question.text}"`,
     choices,
     resolved: false,
   }

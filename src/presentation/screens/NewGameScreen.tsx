@@ -11,18 +11,18 @@ function difficultyLabel(reputation: number): { label: string; color: string } {
 }
 
 const CLUB_FLAVOR: Record<string, string> = {
-  'club_sandviken':  'Hårda bollar. Hårda tag. Forsbacka ger sig aldrig.',
+  'club_sandviken':  'Hårda bollar. Hårda tag.',
   'club_sirius':     'Hungrig klubb med stora ambitioner.',
-  'club_vasteras':   'Här andas alla bandy. Förväntningarna är höga.',
+  'club_vasteras':   'Där alla andas bandy.',
   'club_broberg':    'Outsidern med de stora drömmarna.',
-  'club_villa':      'Målilla har allt att bevisa. Nykomlingens hunger.',
+  'club_villa':      'Nykomlingen med allt att bevisa.',
   'club_falun':      'Envisa masar med stor historia.',
-  'club_ljusdal':    'Brukets Blå. Ett knegarlag med hjärta.',
-  'club_edsbyn':     'Bandybaroner med bruksanda och byamentalitet.',
-  'club_tillberga':  'Underdog på alla sätt. Ingen tror på Rögle.',
+  'club_ljusdal':    'Brukets Blå knegar alltid på.',
+  'club_edsbyn':     'Bandybaroner. Eldsjälar. Byalag.',
+  'club_tillberga':  'Bandyklubb med udda bakgrund.',
   'club_kungalv':    'Blåtomtarna från Värmland.',
-  'club_skutskar':   'Skutskär. Upplands stolthet på isen.',
-  'club_soderhamns': 'Arbetarbandyns moderskepp.',
+  'club_skutskar':   'Upplands stolthet.',
+  'club_soderhamns': 'Arbetarbandyns urmoder.',
 }
 
 const CLUBS = CLUB_TEMPLATES.map(t => ({

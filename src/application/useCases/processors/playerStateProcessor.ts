@@ -116,19 +116,25 @@ export function applyPlayerStateUpdates(
     return updated
   })
 
-  // Process match events for suspensions
+  // Utvisning i bandy = 10 minuters penalty på isen (spelaren kommer tillbaka).
+  // Det är INTE en spelande avstängning. Ingen suspensionGamesRemaining sätts.
+  // Matchstraff är extremt sällsynt (~2% av utvisningar) och ger 1 match.
   const newlyInjured: Array<{ player: Player; days: number }> = []
   const newlySuspended: Array<{ player: Player }> = []
 
   for (const fixture of simulatedFixtures) {
     for (const event of fixture.events) {
       if (event.type === MatchEventType.RedCard && event.playerId) {
-        const idx = updatedPlayers.findIndex(p => p.id === event.playerId)
-        if (idx !== -1) {
-          const prev = updatedPlayers[idx].suspensionGamesRemaining
-          updatedPlayers[idx] = { ...updatedPlayers[idx], suspensionGamesRemaining: 3 }
-          if (prev === 0) {
-            newlySuspended.push({ player: updatedPlayers[idx] })
+        // ~2% sannolikhet för matchstraff (grovt foul) → 1 match avstängd
+        const isMatchPenalty = Math.random() < 0.02
+        if (isMatchPenalty) {
+          const idx = updatedPlayers.findIndex(p => p.id === event.playerId)
+          if (idx !== -1) {
+            const prev = updatedPlayers[idx].suspensionGamesRemaining
+            updatedPlayers[idx] = { ...updatedPlayers[idx], suspensionGamesRemaining: 1 }
+            if (prev === 0) {
+              newlySuspended.push({ player: updatedPlayers[idx] })
+            }
           }
         }
       }

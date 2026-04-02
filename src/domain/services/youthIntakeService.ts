@@ -298,7 +298,17 @@ export function generateYouthIntake(input: YouthIntakeInput): YouthIntakeResult 
   const { club, existingPlayers, season, date, seed } = input
   const rng = makeRng(seed ?? (season * 1000 + club.id.length * 7))
 
-  // Determine count
+  // Spelare under 20 med academyClubId === club.id är kvar i akademin.
+  // Räkna dem — begränsa nyintaget om akademin redan är full.
+  const academyUnder20 = existingPlayers.filter(
+    p => p.academyClubId === club.id && p.age < 20
+  ).length
+
+  // Max 12 akademispelare totalt. Generera bara om det finns plats.
+  const academyCap = 12
+  const availableSlots = Math.max(0, academyCap - academyUnder20)
+
+  // Determine base intake count
   let base: number
   let max: number
   if (club.youthRecruitment >= 70) {
@@ -313,7 +323,7 @@ export function generateYouthIntake(input: YouthIntakeInput): YouthIntakeResult 
   }
 
   const extra = rng.next() < (club.youthRecruitment % 10) / 10 ? 1 : 0
-  const count = Math.min(base + extra, max)
+  const count = Math.min(base + extra, max, availableSlots)
 
   const emptyStats: PlayerSeasonStats = {
     gamesPlayed: 0,
@@ -339,7 +349,7 @@ export function generateYouthIntake(input: YouthIntakeInput): YouthIntakeResult 
   const scoutTexts: Record<string, string> = {}
 
   for (let i = 0; i < count; i++) {
-    const age = rng.int(15, 17)
+    const age = 15  // Nya akademispelare börjar vid 15 och stannar till 20
     const position = pickPosition(rng, [...existingPlayers, ...newPlayers])
     const archetype = pickArchetype(rng, position)
 

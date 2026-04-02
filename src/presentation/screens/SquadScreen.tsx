@@ -58,10 +58,10 @@ function archetypeColor(arch: PlayerArchetype): string {
 const FILTER_TABS: { key: FilterKey; label: string }[] = [
   { key: 'all', label: 'Alla' },
   { key: 'mv', label: 'MV' },
-  { key: 'def', label: 'DEF' },
-  { key: 'half', label: 'HALF' },
-  { key: 'mid', label: 'MID' },
-  { key: 'fwd', label: 'FWD' },
+  { key: 'def', label: 'B' },
+  { key: 'half', label: 'H' },
+  { key: 'mid', label: 'H/M' },
+  { key: 'fwd', label: 'F' },
 ]
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [

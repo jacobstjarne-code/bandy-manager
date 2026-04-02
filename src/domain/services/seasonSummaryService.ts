@@ -372,7 +372,7 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
 
   let narrative = ''
   if (isChampion) {
-    narrative = `En historisk säsong! ${club.name} tog SM-guldet ${game.currentSeason} i en strålande slutspelskampanj.`
+    narrative = `En historisk säsong! ${club.name} tog SM-guldet ${game.currentSeason + 1} i en strålande slutspelskampanj.`
   } else if (expectationVerdict === 'exceeded') {
     narrative = `${club.name} överträffade alla förväntningar och slutade på ${ordinal(finalPosition)} plats — styrelsen förväntade sig bara att ${expectationText[boardExpectation]}.`
   } else if (expectationVerdict === 'met') {

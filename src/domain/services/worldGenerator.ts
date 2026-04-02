@@ -329,12 +329,12 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
   },
 ]
 
-// Position distribution: 2 GK, 5 DEF, 10 HALF (ytter + centerhalvor), 5 FWD = 22
+// Position distribution: 2 GK, 5 B (backar), 5 H (halvar), 5 M (innrar/yttar), 5 F (forwards) = 22
 const POSITION_POOL: PlayerPosition[] = [
   PlayerPosition.Goalkeeper, PlayerPosition.Goalkeeper,
   PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender,
   PlayerPosition.Half, PlayerPosition.Half, PlayerPosition.Half, PlayerPosition.Half, PlayerPosition.Half,
-  PlayerPosition.Half, PlayerPosition.Half, PlayerPosition.Half, PlayerPosition.Half, PlayerPosition.Half,
+  PlayerPosition.Midfielder, PlayerPosition.Midfielder, PlayerPosition.Midfielder, PlayerPosition.Midfielder, PlayerPosition.Midfielder,
   PlayerPosition.Forward, PlayerPosition.Forward, PlayerPosition.Forward, PlayerPosition.Forward, PlayerPosition.Forward,
 ]
 
@@ -683,10 +683,8 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     allPlayers.push(...clubPlayers)
   }
 
-  // Easter egg: Erik Ström always exists
-  const erikRand = mulberry32((seed ?? 42) + 777)
-  const erikClubIdx = Math.floor(erikRand() * clubs.length)
-  const erikClub = clubs[erikClubIdx]
+  // Easter egg: Erik Ström — alltid back i Forsbacka
+  const erikClub = clubs.find(c => c.id === 'club_sandviken') ?? clubs[0]
   const erikPlayer: Player = {
     id: `player_erik_strom_${season}`,
     firstName: 'Erik',
@@ -696,26 +694,26 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     clubId: erikClub.id,
     academyClubId: erikClub.id,
     isHomegrown: true,
-    position: PlayerPosition.Forward,
-    archetype: PlayerArchetype.Finisher,
-    salary: 15000,
+    position: PlayerPosition.Defender,
+    archetype: PlayerArchetype.TwoWaySkater,
+    salary: 12000,
     contractUntilSeason: season + 3,
-    marketValue: 350000,
+    marketValue: 280000,
     morale: 85,
     form: 75,
-    fitness: 80,
+    fitness: 82,
     sharpness: 70,
-    currentAbility: 72,
-    potentialAbility: 78,
-    developmentRate: 40,
-    injuryProneness: 25,
-    discipline: 80,
+    currentAbility: 68,
+    potentialAbility: 72,
+    developmentRate: 35,
+    injuryProneness: 20,
+    discipline: 85,
     attributes: {
-      skating: 70, acceleration: 75, stamina: 68,
-      ballControl: 74, passing: 65, shooting: 80,
-      dribbling: 72, vision: 68, decisions: 70,
-      workRate: 78, positioning: 75, defending: 40,
-      cornerSkill: 60, goalkeeping: 5,
+      skating: 72, acceleration: 65, stamina: 76,
+      ballControl: 62, passing: 68, shooting: 50,
+      dribbling: 55, vision: 64, decisions: 72,
+      workRate: 82, positioning: 74, defending: 78,
+      cornerSkill: 55, goalkeeping: 5,
     },
     isInjured: false,
     injuryDaysRemaining: 0,
@@ -725,7 +723,7 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     isFullTimePro: true,
   }
   const clubFwds = allPlayers
-    .filter(p => p.clubId === erikClub.id && p.position === PlayerPosition.Forward)
+    .filter(p => p.clubId === erikClub.id && p.position === PlayerPosition.Defender)
     .sort((a, b) => a.currentAbility - b.currentAbility)
   if (clubFwds.length > 0) {
     const replaced = clubFwds[0]

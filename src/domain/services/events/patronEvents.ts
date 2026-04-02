@@ -83,7 +83,13 @@ export function generatePatronEvents(
           choices: [
             {
               id: 'agree',
-              label: `Lova att spela mer ${patron.wantsStyle}`,
+              label: `Lova att spela mer ${
+                patron.wantsStyle === 'attacking' ? 'anfallsspel'
+                : patron.wantsStyle === 'defensive' ? 'defensivt'
+                : patron.wantsStyle === 'physical' ? 'fysiskt'
+                : patron.wantsStyle === 'technical' ? 'tekniskt'
+                : patron.wantsStyle
+              }`,
               effect: { type: 'patronHappiness', amount: 12 },
             },
             {

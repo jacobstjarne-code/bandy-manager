@@ -3,10 +3,10 @@ import { PlayerPosition } from '../../../domain/enums'
 
 const POS_SHORT: Partial<Record<string, string>> = {
   [PlayerPosition.Goalkeeper]: 'MV',
-  [PlayerPosition.Defender]: 'DEF',
-  [PlayerPosition.Half]: 'HALF',
-  [PlayerPosition.Midfielder]: 'HALF',
-  [PlayerPosition.Forward]: 'FWD',
+  [PlayerPosition.Defender]: 'B',
+  [PlayerPosition.Half]: 'H',
+  [PlayerPosition.Midfielder]: 'H',
+  [PlayerPosition.Forward]: 'F',
 }
 
 interface DraggablePlayerPillProps {

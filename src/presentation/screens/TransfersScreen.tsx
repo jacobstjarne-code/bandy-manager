@@ -235,6 +235,18 @@ export function TransfersScreen() {
       setRenewError(`${currentPlayer.firstName} avslår — kräver minst ${formatCurrency(minSalary)}/mån`)
       return
     }
+    // Spelaren kan avvisa exakt minlön om CA > 60, god form eller hög PA
+    if (newSalary === minSalary) {
+      let rejectChance = 0
+      if (currentPlayer.currentAbility > 60) rejectChance += 0.40
+      if (currentPlayer.form > 65) rejectChance += 0.20
+      if ((currentPlayer.potentialAbility ?? 0) > 70) rejectChance += 0.15
+      if (Math.random() < rejectChance) {
+        const counterSalary = Math.round(minSalary * 1.15 / 500) * 500
+        setRenewError(`${currentPlayer.firstName} avvisar erbjudandet — vill ha minst ${formatCurrency(counterSalary)}/mån`)
+        return
+      }
+    }
     // Budget warning (non-blocking)
     const currentWageBill = squadPlayers.reduce((sum, p) => sum + p.salary, 0)
     const projectedWageBill = currentWageBill - currentPlayer.salary + newSalary

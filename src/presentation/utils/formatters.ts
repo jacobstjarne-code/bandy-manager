@@ -7,10 +7,10 @@ export function truncate(s: string, n: number): string {
 export function positionShort(pos: PlayerPosition): string {
   const map: Record<PlayerPosition, string> = {
     [PlayerPosition.Goalkeeper]: 'MV',
-    [PlayerPosition.Defender]: 'DEF',
-    [PlayerPosition.Half]: 'HALF',
-    [PlayerPosition.Midfielder]: 'HALF',  // Midfielder merged into Half
-    [PlayerPosition.Forward]: 'FWD',
+    [PlayerPosition.Defender]: 'B',
+    [PlayerPosition.Half]: 'H',
+    [PlayerPosition.Midfielder]: 'H',
+    [PlayerPosition.Forward]: 'F',
   }
   return map[pos] ?? pos
 }

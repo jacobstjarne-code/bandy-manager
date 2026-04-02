@@ -728,6 +728,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // ── Update playoff bracket if active ─────────────────────────────────
   let updatedBracket = game.playoffBracket
   let bracketNewFixtures: Fixture[] = []
+  let playoffCsBoost = 0  // Bygdens puls-boost vid playoff-avancemang
 
   if (updatedBracket !== null) {
     const completedThisRound = simulatedFixtures.filter(f => f.status === FixtureStatus.Completed)
@@ -826,6 +827,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         const theirWins = isHome ? series.awayWins : series.homeWins
         const nextRoundName = series.round === 'quarterFinal' ? 'semifinalen' : 'SM-finalen'
         const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+        // Bygdens puls: playoff-avancemang ger boost
+        playoffCsBoost += series.round === 'quarterFinal' ? 5 : 10
         newInboxItems.push({
           id: `inbox_advance_${game.currentSeason}_${series.id}`,
           date: game.currentDate,
@@ -843,12 +846,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const champion = game.clubs.find(c => c.id === updatedBracket!.champion)
       const managedClubWon = updatedBracket.champion === game.managedClubId
       if (managedClubWon) {
+        playoffCsBoost += 20  // SM-guld: stor pulshöjning
         newInboxItems.push({
           id: `inbox_champion_${game.currentSeason}`,
           date: game.currentDate,
           type: InboxItemType.Playoff,
           title: 'SVENSKA MÄSTARE!',
-          body: `GRATTIS! ${champion?.name} är svenska mästare ${game.currentSeason}! En historisk säsong som aldrig glöms!`,
+          body: `GRATTIS! ${champion?.name} är svenska mästare ${game.currentSeason + 1}! En historisk säsong som aldrig glöms!`,
           isRead: false,
         } as InboxItem)
       } else {
@@ -857,7 +861,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           date: game.currentDate,
           type: InboxItemType.Playoff,
           title: `${champion?.name} är svenska mästare!`,
-          body: `${champion?.name} tar SM-guldet ${game.currentSeason}!`,
+          body: `${champion?.name} tar SM-guldet ${game.currentSeason + 1}!`,
           isRead: false,
         } as InboxItem)
       }
@@ -1646,6 +1650,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   let updatedGame: SaveGame = {
     ...game,
+    communityStanding: playoffCsBoost > 0
+      ? Math.min(100, (game.communityStanding ?? 50) + playoffCsBoost)
+      : game.communityStanding,
     clubs: postTransferClubs,
     fixtures: strippedFixtures,
     players: postTransferPlayers,

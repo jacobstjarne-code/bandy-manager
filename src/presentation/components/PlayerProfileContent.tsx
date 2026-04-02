@@ -13,10 +13,10 @@ interface PlayerProfileContentProps {
 function positionLabel(pos: PlayerPosition): string {
   const map: Record<PlayerPosition, string> = {
     [PlayerPosition.Goalkeeper]: 'MV',
-    [PlayerPosition.Defender]: 'DEF',
-    [PlayerPosition.Half]: 'HALF',
-    [PlayerPosition.Midfielder]: 'MID',
-    [PlayerPosition.Forward]: 'FWD',
+    [PlayerPosition.Defender]: 'B',
+    [PlayerPosition.Half]: 'H',
+    [PlayerPosition.Midfielder]: 'H',
+    [PlayerPosition.Forward]: 'F',
   }
   return map[pos] ?? pos
 }
