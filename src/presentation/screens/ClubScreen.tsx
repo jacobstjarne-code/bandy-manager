@@ -18,6 +18,7 @@ export function ClubScreen() {
   const setTraining = useGameStore(s => s.setTraining)
   const activateCommunity = useGameStore(s => s.activateCommunity)
   const upgradeAcademy = useGameStore(s => s.upgradeAcademy)
+  const upgradeFacilities = useGameStore(s => s.upgradeFacilities)
   const promoteYouthPlayer = useGameStore(s => s.promoteYouthPlayer)
   const assignMentor = useGameStore(s => s.assignMentor)
   const removeMentor = useGameStore(s => s.removeMentor)
@@ -133,6 +134,7 @@ export function ClubScreen() {
             club={club}
             game={game}
             upgradeAcademy={upgradeAcademy}
+            upgradeFacilities={upgradeFacilities}
             promoteYouthPlayer={promoteYouthPlayer}
             assignMentor={assignMentor}
             removeMentor={removeMentor}

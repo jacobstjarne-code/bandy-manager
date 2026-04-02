@@ -251,28 +251,9 @@ export function PitchLineupView({
                     fontFamily: 'system-ui, sans-serif',
                   }}>
                     {!isDraggingFrom && player
-                      ? (player.shirtNumber != null ? String(player.shirtNumber) : player.lastName.slice(0, 3))
+                      ? (player.shirtNumber != null ? String(player.shirtNumber) : '?')
                       : slot.label.slice(0, 2)}
                   </div>
-
-                  {/* Player last name below circle */}
-                  {!isDraggingFrom && player && (
-                    <span style={{
-                      position: 'absolute',
-                      bottom: -5,
-                      fontSize: 8,
-                      fontWeight: 600,
-                      color: 'rgba(26,26,24,0.7)',
-                      whiteSpace: 'nowrap',
-                      maxWidth: 46,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      fontFamily: 'system-ui, sans-serif',
-                      pointerEvents: 'none',
-                    }}>
-                      {player.lastName.slice(0, 6)}
-                    </span>
-                  )}
                 </div>
               )
             })}

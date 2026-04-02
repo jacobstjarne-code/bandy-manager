@@ -1353,12 +1353,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     if (callupCandidates.length >= 1) {
       const selected = callupCandidates.slice(0, Math.min(2, callupCandidates.length))
       const names = selected.map(p => `${p.firstName} ${p.lastName}`).join(' och ')
-      const districtName = ['Gävleborgs', 'Hälsinglands', 'Västmanlands', 'Dalarnas', 'Upplands'][Math.floor(localRand() * 5)]
       allNewEvents.push({
         id: `event_district_callup_${nextMatchday}_${game.currentSeason}`,
         type: 'communityEvent',
         title: `Juniorlandslagssamling — ${names}`,
-        body: `${names} är kallade till ${districtName} P19-samling. De missar 2 P19-matcher men kan få värdefull erfarenhet.`,
+        body: `${names} är kallade till Sveriges P19-samling. De missar 2 P19-matcher men kan få värdefull erfarenhet.`,
         choices: [
           {
             id: 'send',

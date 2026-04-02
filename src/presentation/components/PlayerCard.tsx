@@ -32,10 +32,10 @@ function archetypeColor(arch: PlayerArchetype): string {
 function positionFullLabel(pos: PlayerPosition): string {
   const map: Record<PlayerPosition, string> = {
     [PlayerPosition.Goalkeeper]: 'Målvakt',
-    [PlayerPosition.Defender]: 'Försvarare',
-    [PlayerPosition.Half]: 'Halvback',
-    [PlayerPosition.Midfielder]: 'Halvback',
-    [PlayerPosition.Forward]: 'Forward',
+    [PlayerPosition.Defender]: 'Back',
+    [PlayerPosition.Half]: 'Ytterhalv',
+    [PlayerPosition.Midfielder]: 'Mittfältare',
+    [PlayerPosition.Forward]: 'Anfallare',
   }
   return map[pos] ?? pos
 }

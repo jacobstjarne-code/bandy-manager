@@ -59,9 +59,9 @@ const FILTER_TABS: { key: FilterKey; label: string }[] = [
   { key: 'all', label: 'Alla' },
   { key: 'mv', label: 'MV' },
   { key: 'def', label: 'B' },
-  { key: 'half', label: 'H' },
-  { key: 'mid', label: 'H/M' },
-  { key: 'fwd', label: 'F' },
+  { key: 'half', label: 'YH' },
+  { key: 'mid', label: 'MF' },
+  { key: 'fwd', label: 'A' },
 ]
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [

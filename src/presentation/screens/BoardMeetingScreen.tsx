@@ -222,7 +222,7 @@ export function BoardMeetingScreen() {
           <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{players.length}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Snitt-Styrka</span>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Snittstyrka</span>
           <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{avgCA}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>

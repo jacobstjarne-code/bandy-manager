@@ -96,8 +96,8 @@ export function academyActions(get: Get, set: Set) {
 
       const cost = currentLevel === 'basic' ? 50000 : 150000
 
-      if (currentLevel === 'developing' && club.facilities <= 70) {
-        return { success: false, error: 'Elitnivå kräver anläggning > 70' }
+      if (currentLevel === 'developing' && club.facilities <= 50) {
+        return { success: false, error: 'Elitnivå kräver anläggning > 50' }
       }
       if (currentLevel === 'developing' && (club.youthQuality ?? 0) <= 65) {
         return { success: false, error: 'Elitnivå kräver ungdomskvalitet > 65' }
@@ -119,6 +119,34 @@ export function academyActions(get: Get, set: Set) {
           academyUpgradeSeason: game.currentSeason + 1,
         }
       })
+      return { success: true }
+    },
+
+    upgradeFacilities: () => {
+      const { game } = get()
+      if (!game) return { success: false, error: 'Inget spel laddat' }
+      const club = game.clubs.find(c => c.id === game.managedClubId)
+      if (!club) return { success: false, error: 'Ingen klubb hittad' }
+
+      if ((game.facilityUpgradeSeason ?? 0) >= game.currentSeason) {
+        return { success: false, error: 'Anläggningen kan bara uppgraderas en gång per säsong' }
+      }
+      if (club.facilities >= 100) {
+        return { success: false, error: 'Anläggningen är redan maximal' }
+      }
+      const cost = 200000
+      if (club.finances < cost) {
+        return { success: false, error: `Inte tillräckligt med pengar (kräver 200 tkr)` }
+      }
+
+      const updatedClubs = game.clubs.map(c =>
+        c.id === game.managedClubId
+          ? { ...c, facilities: Math.min(100, c.facilities + 15) }
+          : c
+      )
+      const updatedClubsWithFinance = applyFinanceChange(updatedClubs, game.managedClubId, -cost)
+
+      set({ game: { ...game, clubs: updatedClubsWithFinance, facilityUpgradeSeason: game.currentSeason } })
       return { success: true }
     },
 

@@ -8,9 +8,9 @@ export function positionShort(pos: PlayerPosition): string {
   const map: Record<PlayerPosition, string> = {
     [PlayerPosition.Goalkeeper]: 'MV',
     [PlayerPosition.Defender]: 'B',
-    [PlayerPosition.Half]: 'H',
-    [PlayerPosition.Midfielder]: 'H',
-    [PlayerPosition.Forward]: 'F',
+    [PlayerPosition.Half]: 'YH',
+    [PlayerPosition.Midfielder]: 'MF',
+    [PlayerPosition.Forward]: 'A',
   }
   return map[pos] ?? pos
 }
@@ -19,7 +19,7 @@ export const POSITION_ORDER: Record<PlayerPosition, number> = {
   [PlayerPosition.Goalkeeper]: 0,
   [PlayerPosition.Defender]: 1,
   [PlayerPosition.Half]: 2,
-  [PlayerPosition.Midfielder]: 2,  // Same as Half
+  [PlayerPosition.Midfielder]: 3,
   [PlayerPosition.Forward]: 4,
 }
 

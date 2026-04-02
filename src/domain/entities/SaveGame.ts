@@ -277,6 +277,7 @@ export interface SaveGame {
   academyLevel: AcademyLevel
   academyUpgradeInProgress?: boolean
   academyUpgradeSeason?: number
+  facilityUpgradeSeason?: number
   mentorships: Mentorship[]
   loanDeals: LoanDeal[]
   version: string

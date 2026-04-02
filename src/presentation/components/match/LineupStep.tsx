@@ -42,9 +42,9 @@ interface LineupStepProps {
 const GROUP_LABELS: Partial<Record<string, string>> = {
   [PlayerPosition.Goalkeeper]: 'Målvakter',
   [PlayerPosition.Defender]: 'Backar',
-  [PlayerPosition.Half]: 'Halvbackar',
-  [PlayerPosition.Midfielder]: 'Halvbackar',
-  [PlayerPosition.Forward]: 'Forwards',
+  [PlayerPosition.Half]: 'Ytterhalvar',
+  [PlayerPosition.Midfielder]: 'Mittfältare',
+  [PlayerPosition.Forward]: 'Anfallare',
 }
 
 export function LineupStep({

@@ -14,9 +14,9 @@ function positionLabel(pos: PlayerPosition): string {
   const map: Record<PlayerPosition, string> = {
     [PlayerPosition.Goalkeeper]: 'MV',
     [PlayerPosition.Defender]: 'B',
-    [PlayerPosition.Half]: 'H',
-    [PlayerPosition.Midfielder]: 'H',
-    [PlayerPosition.Forward]: 'F',
+    [PlayerPosition.Half]: 'YH',
+    [PlayerPosition.Midfielder]: 'MF',
+    [PlayerPosition.Forward]: 'A',
   }
   return map[pos] ?? pos
 }

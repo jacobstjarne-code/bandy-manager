@@ -116,7 +116,7 @@ export function PreSeasonScreen() {
             📋 Truppen
           </p>
           <p style={{ fontSize: 14, color: 'var(--text-primary)' }}>
-            {managedPlayers.length} spelare · Snitt-styrka: <strong style={{ color: 'var(--accent)' }}>{avgCA}</strong>
+            {managedPlayers.length} spelare · Snittstyrka: <strong style={{ color: 'var(--accent)' }}>{avgCA}</strong>
           </p>
         </div>
 

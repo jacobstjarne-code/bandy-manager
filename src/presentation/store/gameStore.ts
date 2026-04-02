@@ -62,6 +62,7 @@ interface GameState {
   buyScoutRounds: () => void
   activateCommunity: (key: string, level: string) => { success: boolean; error?: string }
   upgradeAcademy: () => { success: boolean; error?: string }
+  upgradeFacilities: () => { success: boolean; error?: string }
   promoteYouthPlayer: (youthPlayerId: string) => { success: boolean; error?: string; timing?: 'early' | 'good' | 'late' }
   assignMentor: (seniorPlayerId: string, youthPlayerId: string) => { success: boolean; error?: string }
   removeMentor: (youthPlayerId: string) => void
