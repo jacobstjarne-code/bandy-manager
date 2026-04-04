@@ -493,20 +493,37 @@ export function generatePressConference(
 
   if (responses.length === 0) return null
 
+  // Use named journalist character if available
+  const namedJournalist = game.journalist
+  const displayJournalist = namedJournalist
+    ? `${namedJournalist.name}, ${namedJournalist.outlet}`
+    : journalist
+
   const choices = responses.map(r => ({
     id: r.id,
     label: r.label,
     effect: {
       type: 'pressResponse' as const,
       value: r.moraleEffect,
-      mediaQuote: `${journalist}: ${r.mediaQuote}`,
+      mediaQuote: `${displayJournalist}: ${r.mediaQuote}`,
     },
   }))
+
+  // Add refuse option — always available but has consequences
+  choices.push({
+    id: 'refuse_press',
+    label: 'Vägra presskonferens',
+    effect: {
+      type: 'pressResponse' as const,
+      value: -3,
+      mediaQuote: `${displayJournalist}: Tränaren vägrade kommentera efter matchen. Det skickar en signal.`,
+    },
+  })
 
   return {
     id: `event_press_r${fixture.roundNumber ?? 0}_${game.currentSeason}`,
     type: 'pressConference' as const,
-    title: `🎤 Presskonferens — ${journalist}`,
+    title: `🎤 Presskonferens — ${displayJournalist}`,
     body: `"${question.text}"`,
     choices,
     resolved: false,

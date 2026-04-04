@@ -196,14 +196,14 @@ describe('appendFinanceLog', () => {
 // ── Group 3: calcRoundIncome — wages and base income ─────────────────────────
 
 describe('calcRoundIncome — wages and base income', () => {
-  it('weeklyBase = reputation × 250', () => {
+  it('weeklyBase = reputation × 120', () => {
     const club = makeClub({ reputation: 60 })
     const result = calcRoundIncome({
       club, players: [], sponsors: [], communityActivities: undefined,
       fanMood: 50, isHomeMatch: false, matchIsKnockout: false, matchIsCup: false,
       matchHasRivalry: false, standing: null, rand: deterministicRand,
     })
-    expect(result.weeklyBase).toBe(60 * 250)
+    expect(result.weeklyBase).toBe(60 * 120)
   })
 
   it('weeklyWages = Math.round(totalSalary / 4)', () => {

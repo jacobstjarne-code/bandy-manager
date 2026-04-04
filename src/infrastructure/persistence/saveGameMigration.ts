@@ -35,6 +35,14 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.activeScoutAssignment === undefined) data.activeScoutAssignment = null
   if (data.allTimeRecords === undefined) data.allTimeRecords = null
 
+  // V1.0 — Storylines, Legacy, Market tracking
+  if (data.storylines === undefined) data.storylines = []
+  if (data.clubLegends === undefined) data.clubLegends = []
+  if (data.previousMarketValues === undefined) data.previousMarketValues = {}
+  if (data.financeLog === undefined) data.financeLog = []
+  // V1.0 — Journalist character (created on-demand if missing)
+  if (data.journalist === undefined) data.journalist = null
+
   // ── players: ensure each player has newer optional fields ──────────────
   if (Array.isArray(data.players)) {
     data.players = (data.players as Record<string, unknown>[]).map(p => {

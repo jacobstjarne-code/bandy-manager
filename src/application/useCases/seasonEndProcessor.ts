@@ -398,6 +398,36 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
+  // ── Legacy — retiring managed club players become legends if 3+ seasons ──
+  const newLegends = [...(game.clubLegends ?? [])]
+  for (const pid of retiredPlayerIds) {
+    const player = resetPlayers.find(p => p.id === pid)
+    if (!player || player.clubId !== game.managedClubId) continue
+    const seasonsInClub = (player.careerStats?.seasonsPlayed ?? 1)
+    if (seasonsInClub >= 3) {
+      const storyline = (game.storylines ?? []).find(s => s.playerId === pid && s.resolved)
+      newLegends.push({
+        name: `${player.firstName[0]}. ${player.lastName}`,
+        position: player.position,
+        seasons: seasonsInClub,
+        totalGoals: player.careerStats?.totalGoals ?? 0,
+        totalAssists: player.careerStats?.totalAssists ?? 0,
+        titles: [],
+        memorableStory: storyline?.displayText,
+        retiredSeason: nextSeason,
+      })
+      // Special inbox for legend
+      retirementMessages.push({
+        id: `inbox_legend_${player.id}_${nextSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.BoardFeedback,
+        title: `🎖️ ${player.firstName} ${player.lastName} — en legend tackar för sig`,
+        body: `${seasonsInClub} säsonger, ${player.careerStats?.totalGoals ?? 0} mål. ${storyline ? `"${storyline.displayText}"` : 'En spelare som betydde mycket.'} Fansen: "Tack för allt!"`,
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
   // ── Contract expiry — players whose contracts have run out ───────────────
   const handledContractIds = new Set(game.handledContractPlayerIds ?? [])
   const contractExpiredIds = new Set<string>()
@@ -779,7 +809,10 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       ? Math.max(0, (game.fanMood ?? 50) - 15)
       : game.fanMood,
     seasonStartFinances: updatedClubs.find(c => c.id === game.managedClubId)?.finances,
-    scoutReports: game.scoutReports ?? {},
+    scoutReports: Object.fromEntries(
+      Object.entries(game.scoutReports ?? {})
+        .filter(([, r]) => nextSeason - r.scoutedSeason < 2)
+    ),
     activeScoutAssignment: null,
     scoutBudget: 10,
     transferBids: [],
@@ -792,6 +825,8 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     boardPatience: newBoardPatience,
     consecutiveFailures: newConsecutiveFailures,
     rivalryHistory: game.rivalryHistory ?? {},
+    clubLegends: newLegends,
+    storylines: game.storylines ?? [],
     trainingProjects: [],
     communityActivities: game.communityActivities
       ? { ...game.communityActivities, julmarknad: false }

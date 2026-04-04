@@ -807,7 +807,7 @@ export function DashboardScreen() {
               width: '100%',
               padding: '18px',
               background: canClickAdvance && !isBatchSim
-                ? 'linear-gradient(135deg, #B06830, #8B4820)'
+                ? 'linear-gradient(135deg, var(--accent-dark), var(--accent-deep))'
                 : 'var(--border)',
               color: canClickAdvance && !isBatchSim ? 'var(--text-light)' : 'var(--text-muted)',
               border: 'none',

@@ -10,8 +10,16 @@ import {
   contractRequestEvent,
   unhappyPlayerEvent,
   generateDayJobConflictEvent,
+  generatePromotionOfferEvent,
+  generateShiftConflictEvent,
+  generateCoworkerBondEvent,
+  generateVarselEvent,
+  generatePlayerMediaEvent,
+  generatePlayerPraiseEvent,
+  generateCaptainSpeechEvent,
   formatValue,
 } from './eventFactories'
+import { findEmployerForJob } from '../../data/localEmployers'
 
 // ── generatePostAdvanceEvents ──────────────────────────────────────────────
 export function generatePostAdvanceEvents(
@@ -203,6 +211,171 @@ export function generatePostAdvanceEvents(
         const eid = `event_dayjob_${p.id}_period${period}`
         if (!alreadyQueued.has(eid)) {
           events.push(generateDayJobConflictEvent(p, roundPlayed))
+        }
+      }
+    }
+  }
+
+  if (events.length >= 2) return events
+
+  // 5b. Promotion offer (~5% per round, player with dayJob, flexibility > 60, morale > 50)
+  if (events.length < 2 && rand() < 0.05) {
+    const promoCandidates = game.players.filter(p =>
+      p.clubId === game.managedClubId &&
+      !p.isFullTimePro &&
+      p.dayJob &&
+      (p.dayJob.flexibility ?? 75) > 60 &&
+      p.morale > 50
+    )
+    if (promoCandidates.length > 0) {
+      const pick = promoCandidates[Math.floor(rand() * promoCandidates.length)]
+      const eid = `event_promotion_${pick.id}_s${game.currentSeason}`
+      if (!alreadyQueued.has(eid)) {
+        events.push(generatePromotionOfferEvent(pick))
+      }
+    }
+  }
+
+  // 5c. Shift conflict (~8% per round, day job + low flexibility)
+  if (events.length < 2 && rand() < 0.08) {
+    const shiftCandidates = game.players.filter(p =>
+      p.clubId === game.managedClubId &&
+      !p.isFullTimePro &&
+      p.dayJob &&
+      (p.dayJob.flexibility ?? 75) < 65
+    )
+    if (shiftCandidates.length > 0) {
+      const pick = shiftCandidates[Math.floor(rand() * shiftCandidates.length)]
+      const eid = `event_shift_${pick.id}_r${roundPlayed}`
+      if (!alreadyQueued.has(eid)) {
+        events.push(generateShiftConflictEvent(pick, roundPlayed))
+      }
+    }
+  }
+
+  // 5d. Coworker bond (~3% per round, two non-pro players at same employer)
+  if (events.length < 2 && rand() < 0.03) {
+    const nonProPlayers = game.players.filter(p =>
+      p.clubId === game.managedClubId &&
+      !p.isFullTimePro &&
+      p.dayJob
+    )
+    for (let i = 0; i < nonProPlayers.length && events.length < 2; i++) {
+      for (let j = i + 1; j < nonProPlayers.length; j++) {
+        const emp1 = findEmployerForJob(game.managedClubId, nonProPlayers[i].dayJob!.title)
+        const emp2 = findEmployerForJob(game.managedClubId, nonProPlayers[j].dayJob!.title)
+        if (emp1 && emp2 && emp1.name === emp2.name) {
+          const eid = `event_bond_${nonProPlayers[i].id}_${nonProPlayers[j].id}`
+          if (!alreadyQueued.has(eid)) {
+            events.push(generateCoworkerBondEvent(nonProPlayers[i], nonProPlayers[j], emp1.name))
+            break
+          }
+        }
+      }
+    }
+  }
+
+  // 5e. Varsel (once per season, round 8-14, 10% chance, affects large employer)
+  if (events.length < 2 && roundPlayed >= 8 && roundPlayed <= 14 && rand() < 0.10) {
+    const eid = `event_varsel_s${game.currentSeason}`
+    if (!alreadyQueued.has(eid)) {
+      const nonProWithJob = game.players.filter(p =>
+        p.clubId === game.managedClubId &&
+        !p.isFullTimePro &&
+        p.dayJob
+      )
+      // Group by employer
+      const byEmployer = new Map<string, typeof nonProWithJob>()
+      for (const p of nonProWithJob) {
+        const emp = findEmployerForJob(game.managedClubId, p.dayJob!.title)
+        if (emp && emp.size !== 'small') {
+          const key = emp.name
+          if (!byEmployer.has(key)) byEmployer.set(key, [])
+          byEmployer.get(key)!.push(p)
+        }
+      }
+      // Pick the largest group
+      let bestKey = ''
+      let bestCount = 0
+      for (const [key, group] of byEmployer) {
+        if (group.length > bestCount) { bestKey = key; bestCount = group.length }
+      }
+      if (bestKey && bestCount >= 1) {
+        events.push(generateVarselEvent(byEmployer.get(bestKey)!, bestKey, game.currentSeason))
+      }
+    }
+  }
+
+  if (events.length >= 2) return events
+
+  // 5f. Player media comment — unhappy benched player talks to press
+  if (events.length < 2 && rand() < 0.12) {
+    const mediaCandidates = game.players.filter(p => {
+      if (p.clubId !== game.managedClubId) return false
+      if (p.morale >= 30) return false
+      if (p.currentAbility < 55) return false
+      // Check: played < 3 of last 10 fixtures
+      const recentFixtures = game.fixtures
+        .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+        .sort((a, b) => b.roundNumber - a.roundNumber)
+        .slice(0, 10)
+      const gamesStarted = recentFixtures.filter(f => {
+        const lineup = f.homeClubId === game.managedClubId ? f.homeLineup : f.awayLineup
+        return lineup?.startingPlayerIds?.includes(p.id)
+      }).length
+      return gamesStarted < 3
+    })
+    if (mediaCandidates.length > 0) {
+      const pick = mediaCandidates[Math.floor(rand() * mediaCandidates.length)]
+      const eid = `event_media_${pick.id}_r${roundPlayed}`
+      if (!alreadyQueued.has(eid)) {
+        const journalist = game.localPaperName ?? 'Lokaltidningen'
+        events.push(generatePlayerMediaEvent(pick, journalist))
+      }
+    }
+  }
+
+  // 5g. Player praise — happy player praises teammate (15% per match with goals)
+  if (events.length < 2 && justCompletedFixture && rand() < 0.15) {
+    const happyPlayers = game.players.filter(p =>
+      p.clubId === game.managedClubId && p.morale > 75
+    )
+    const goalScorers = justCompletedFixture.events
+      .filter(e => e.type === 'goal' && e.clubId === game.managedClubId && e.playerId)
+      .map(e => game.players.find(p => p.id === e.playerId))
+      .filter(Boolean)
+    if (happyPlayers.length > 0 && goalScorers.length > 0) {
+      const praiser = happyPlayers[Math.floor(rand() * happyPlayers.length)]
+      const praised = goalScorers[Math.floor(rand() * goalScorers.length)]!
+      if (praiser.id !== praised.id) {
+        const eid = `event_praise_${praiser.id}_${praised.id}_s${game.currentSeason}`
+        if (!alreadyQueued.has(eid)) {
+          events.push(generatePlayerPraiseEvent(praiser, praised))
+        }
+      }
+    }
+  }
+
+  // 5h. Captain speech — 3+ losses in a row, captain morale > 50, max 1 per season
+  if (events.length < 2) {
+    const recentResults = game.fixtures
+      .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup)
+      .sort((a, b) => b.roundNumber - a.roundNumber)
+      .slice(0, 3)
+    const allLosses = recentResults.length >= 3 && recentResults.every(f => {
+      const isHome = f.homeClubId === game.managedClubId
+      return isHome ? f.homeScore < f.awayScore : f.awayScore < f.homeScore
+    })
+    if (allLosses) {
+      const eid = `event_captain_speech_s${game.currentSeason}`
+      if (!alreadyQueued.has(eid)) {
+        const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+        const captain = game.players.find(p =>
+          p.clubId === game.managedClubId && p.morale > 50 &&
+          p.age >= 25 && p.currentAbility >= 50
+        )
+        if (captain && managedClub) {
+          events.push(generateCaptainSpeechEvent(captain, managedClub.name))
         }
       }
     }

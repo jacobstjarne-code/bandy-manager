@@ -44,7 +44,7 @@ export function LastMatchCard({ fixture, game, managedClubId }: LastMatchCardPro
         flexShrink: 0,
         fontSize: 12,
         fontWeight: 800,
-        color: '#000',
+        color: 'var(--text-primary)',
       }}>
         {resultLabel}
       </div>

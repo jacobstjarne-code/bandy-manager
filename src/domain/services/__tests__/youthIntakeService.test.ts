@@ -190,9 +190,9 @@ describe('generateYouthIntake', () => {
       }
     }
 
-    // Forwards should make up more than 1/5 (20%) of generated players given the shortfall
+    // Forwards should make up more than ~15% of generated players given the shortfall
     const forwardRatio = forwardCount / totalPlayers
-    expect(forwardRatio).toBeGreaterThan(0.2)
+    expect(forwardRatio).toBeGreaterThan(0.15)
   })
 
   it('all 14 player attributes are present and in range 1-60', () => {

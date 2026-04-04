@@ -413,7 +413,7 @@ export function SquadScreen() {
               { emoji: '🏒', label: 'Toppskytt', player: topScorer, value: topScorer?.seasonStats.goals },
               { emoji: '🅰️', label: 'Flest assist', player: topAssist, value: topAssist?.seasonStats.assists },
               { emoji: '⭐', label: 'Bäst betyg', player: topRating, value: topRating ? topRating.seasonStats.averageRating.toFixed(1) : undefined },
-              { emoji: '🔴', label: 'Utvisningar', player: topSuspensions, value: topSuspensions?.seasonStats.redCards },
+              { emoji: '🏒', label: 'Utvisningar', player: topSuspensions, value: topSuspensions?.seasonStats.redCards },
             ].map(({ emoji, label, player: p, value }) => (
               <div
                 key={label}

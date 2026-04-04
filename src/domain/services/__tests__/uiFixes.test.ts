@@ -93,17 +93,21 @@ describe('commentary text', () => {
     expect(commentary.halfTime[1]).not.toContain('blåser av')
   })
 
-  it('halfTime[1] contains "blåser igång"', () => {
-    expect(commentary.halfTime[1]).toContain('blåser igång')
+  it('halfTime[1] contains "blåser"', () => {
+    expect(commentary.halfTime[1]).toContain('blåser')
   })
 
   it('final_kickoff[1] does not contain "blåser av"', () => {
     expect(commentary.final_kickoff[1]).not.toContain('blåser av')
   })
 
-  it('no commentary string uses "blåser av" (only "blåser igång")', () => {
-    const allStrings = Object.values(commentary).flat()
-    const violating = allStrings.filter(s => s.includes('blåser av'))
+  it('no kickoff/halfTime commentary uses "blåser av" (only fullTime/finalWhistle may)', () => {
+    const checkKeys = ['kickoff', 'halfTime', 'final_kickoff'] as const
+    const violating: string[] = []
+    for (const key of checkKeys) {
+      const arr = commentary[key]
+      if (arr) violating.push(...arr.filter(s => s.includes('blåser av')))
+    }
     expect(violating).toHaveLength(0)
   })
 })

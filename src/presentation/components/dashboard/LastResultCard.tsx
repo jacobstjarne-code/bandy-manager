@@ -9,9 +9,9 @@ interface LastResultCardProps {
 }
 
 const formColors = {
-  V: { bg: 'var(--success)', letter: '#fff' },
-  O: { bg: 'var(--border-dark)', letter: '#fff' },
-  F: { bg: 'var(--danger)', letter: '#fff' },
+  V: { bg: 'var(--success)', letter: 'var(--text-light)' },
+  O: { bg: 'var(--border-dark)', letter: 'var(--text-light)' },
+  F: { bg: 'var(--danger)', letter: 'var(--text-light)' },
 }
 
 export function LastResultCard({

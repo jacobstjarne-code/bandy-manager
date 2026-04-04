@@ -57,6 +57,7 @@ export function MatchDoneOverlay({
   const [pressQuote, setPressQuote] = useState<string | null>(null)
 
   const allGoalEvents = steps.flatMap(s => s.events.filter(e => e.type === MatchEventType.Goal))
+  const allRedCardEvents = steps.flatMap(s => s.events.filter(e => e.type === MatchEventType.RedCard))
   const lastStep = steps[steps.length - 1]
   const managedIsHome = fixture.homeClubId === managedClubId
   const managedGoals = managedIsHome ? homeScore : awayScore
@@ -90,7 +91,7 @@ export function MatchDoneOverlay({
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
       paddingTop: '50px', zIndex: 200, overflowY: 'auto',
     }}>
-      <div className="card-round" style={{
+      <div className="card-sharp" style={{
         padding: '24px 20px',
         textAlign: 'center', minWidth: 280, maxWidth: 340, width: '90%',
         background: 'var(--bg-elevated)',
@@ -109,12 +110,12 @@ export function MatchDoneOverlay({
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 16 }}>
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(homeClubName, 12)}</p>
-            <span style={{ fontSize: 40, fontWeight: 800 }}>{homeScore}</span>
+            <span style={{ fontSize: 32, fontWeight: 800 }}>{homeScore}</span>
           </div>
           <span style={{ fontSize: 24, color: 'var(--text-muted)' }}>—</span>
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(awayClubName, 12)}</p>
-            <span style={{ fontSize: 40, fontWeight: 800 }}>{awayScore}</span>
+            <span style={{ fontSize: 32, fontWeight: 800 }}>{awayScore}</span>
           </div>
         </div>
 
@@ -124,19 +125,26 @@ export function MatchDoneOverlay({
           </p>
         )}
 
-        {allGoalEvents.length > 0 && (
+        {(allGoalEvents.length > 0 || allRedCardEvents.length > 0) && (
           <div style={{ marginBottom: 14, textAlign: 'left' }}>
-            {allGoalEvents.map((e, i) => {
+            {[...allGoalEvents, ...allRedCardEvents]
+              .sort((a, b) => a.minute - b.minute)
+              .map((e, i) => {
               const isHome = e.clubId === fixture.homeClubId
               const foundPlayer = e.playerId ? players.find(p => p.id === e.playerId) : undefined
-              const playerName = foundPlayer ? `${foundPlayer.firstName} ${foundPlayer.lastName}` : ''
+              const playerName = foundPlayer ? `${foundPlayer.firstName} ${foundPlayer.lastName}` : '?'
+              const shirtNum = foundPlayer?.shirtNumber != null ? `#${foundPlayer.shirtNumber} ` : ''
+              const isGoal = e.type === MatchEventType.Goal
               return (
                 <div key={i} style={{
                   display: 'flex',
                   justifyContent: isHome ? 'flex-start' : 'flex-end',
-                  fontSize: 12, color: 'var(--text-secondary)', marginBottom: 3,
+                  fontSize: 12, color: isGoal ? 'var(--text-secondary)' : 'var(--danger)', marginBottom: 3,
                 }}>
-                  <span>{e.minute}' 🏒 {playerName}</span>
+                  {isGoal
+                    ? <span>{e.minute}' 🏒 {playerName}</span>
+                    : <span>{e.minute}' ⏱️ {shirtNum}{playerName} (10 min)</span>
+                  }
                 </div>
               )
             })}
@@ -151,6 +159,11 @@ export function MatchDoneOverlay({
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>Hörnor:</span><span>{lastStep.cornersHome} — {lastStep.cornersAway}</span>
             </div>
+            {(allRedCardEvents.filter(e => e.clubId === fixture.homeClubId).length > 0 || allRedCardEvents.filter(e => e.clubId === fixture.awayClubId).length > 0) && (
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Utvisningar:</span><span>{allRedCardEvents.filter(e => e.clubId === fixture.homeClubId).length} — {allRedCardEvents.filter(e => e.clubId === fixture.awayClubId).length}</span>
+              </div>
+            )}
           </div>
         )}
 
@@ -210,7 +223,7 @@ export function MatchDoneOverlay({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <button
             onClick={onSeeReport}
-            style={{ padding: '14px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--radius)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}
+            style={{ padding: '14px', background: 'var(--accent)', border: 'none', borderRadius: 'var(--radius)', color: 'var(--text-light)', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}
           >
             Se rapport →
           </button>

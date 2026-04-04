@@ -379,6 +379,19 @@ export function TransfersScreen() {
         </div>
       )}
 
+      {/* Scout budget widget */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, padding: '4px 0' }}>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>🔍 Scoutbudget:</span>
+        <span style={{ fontSize: 12, letterSpacing: 1 }}>
+          {Array.from({ length: 10 }, (_, i) => (
+            <span key={i} style={{ color: i < scoutBudget ? 'var(--accent)' : 'var(--border)' }}>●</span>
+          ))}
+        </span>
+        <span style={{ fontSize: 11, color: scoutBudget > 3 ? 'var(--text-muted)' : 'var(--danger)', fontWeight: 600 }}>
+          {scoutBudget}/10
+        </span>
+      </div>
+
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid var(--border)', paddingBottom: 8, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}>
         {([
@@ -626,8 +639,9 @@ export function TransfersScreen() {
                   style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', fontSize: 14 }}
                 >
                   <option value="any">Alla positioner</option>
-                  <option value="forward">Forward</option>
-                  <option value="midfielder">Halvback</option>
+                  <option value="forward">Anfallare</option>
+                  <option value="midfielder">Mittfältare</option>
+                  <option value="half">Ytterhalv</option>
                   <option value="defender">Back</option>
                   <option value="goalkeeper">Målvakt</option>
                 </select>
@@ -791,7 +805,7 @@ export function TransfersScreen() {
                     {agent.firstName} {agent.lastName}
                   </p>
                   <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
-                    {positionShort(agent.position)} · Styrka {Math.round(agent.currentAbility)} · {formatCurrency(agent.salary)}/mån
+                    {positionShort(agent.position)} · Styrka {scoutReports[agent.id] ? `~${scoutReports[agent.id].estimatedCA}` : '?'} · {formatCurrency(agent.salary)}/mån
                   </p>
                 </div>
                 <button

@@ -117,7 +117,16 @@ export function buildSeasonCalendar(season: number): MatchdaySlot[] {
  * Grundserie (rounds 1-22): okt-feb, tätare schema jan-feb.
  * Slutspel (rounds 23+): mars, 3-4 dagar mellan matcher.
  */
+/** Returns the date of the third Saturday in March for a given year. */
+function thirdSaturdayInMarch(year: number): string {
+  const march1DayOfWeek = new Date(year, 2, 1).getDay() // 0=Sun, 6=Sat
+  const firstSatDay = 1 + ((6 - march1DayOfWeek + 7) % 7)
+  const thirdSatDay = firstSatDay + 14
+  return `${year}-03-${String(thirdSatDay).padStart(2, '0')}`
+}
+
 export function getRoundDate(season: number, roundNumber: number): string {
+  const smFinalDate = thirdSaturdayInMarch(season + 1)
   const ROUND_DATES: Record<number, string> = {
     1:  `${season}-10-08`,
     2:  `${season}-10-15`,
@@ -150,7 +159,7 @@ export function getRoundDate(season: number, roundNumber: number): string {
     29: `${season + 1}-03-11`,
     30: `${season + 1}-03-13`,
     31: `${season + 1}-03-15`,
-    32: `${season + 1}-03-16`,
+    32: smFinalDate,
   }
 
   if (roundNumber in ROUND_DATES) return ROUND_DATES[roundNumber]

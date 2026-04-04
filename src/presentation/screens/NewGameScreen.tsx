@@ -250,7 +250,7 @@ export function NewGameScreen() {
           maxWidth: 430,
           padding: '16px 20px',
           paddingBottom: 'calc(16px + var(--safe-bottom))',
-          background: 'linear-gradient(to top, #EDE8DF 70%, transparent)',
+          background: 'linear-gradient(to top, var(--bg) 70%, transparent)',
           borderTop: '1px solid rgba(196,122,58,0.15)',
         }}>
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 10, textAlign: 'center' }}>

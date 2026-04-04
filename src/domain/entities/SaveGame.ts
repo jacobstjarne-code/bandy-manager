@@ -294,6 +294,9 @@ export interface SaveGame {
   budgetPriority?: 'squad' | 'balanced' | 'youth'
   resolvedEventIds?: string[]  // event IDs that have been resolved — prevents re-triggering
 
+  // V1.0 — Named journalist with memory
+  journalist?: Journalist
+
   // V0.9 NÄTET fields
   licenseReview?: LicenseReview
   licenseWarningCount?: number   // consecutive seasons with warning/continued_review
@@ -309,6 +312,80 @@ export interface SaveGame {
 
   // Finance log — last FINANCE_LOG_MAX entries for the managed club
   financeLog?: import('../services/economyService').FinanceEntry[]
+
+  // V1.0 — Storylines + Legacy
+  storylines?: StorylineEntry[]
+  clubLegends?: ClubLegend[]
+
+  // V1.0 — Market value tracking (previous round values for delta display)
+  previousMarketValues?: Record<string, number>  // playerId → last known marketValue
+}
+
+// ── Journalist — named media character with persona and memory ───────────
+
+export type JournalistPersona = 'supportive' | 'critical' | 'analytical' | 'sensationalist'
+
+export interface JournalistMemory {
+  season: number
+  matchday: number
+  event: string       // 'refused_press', 'good_answer', 'bad_answer', 'big_win', 'crisis'
+  sentiment: number   // -10 to +10
+}
+
+export interface Journalist {
+  name: string
+  outlet: string        // e.g. "Gefle Dagblad", from localPaperName
+  persona: JournalistPersona
+  relationship: number  // 0-100, replaces journalistRelationship
+  memory: JournalistMemory[]  // last 10 interactions
+  pressRefusals: number       // times manager refused press conference
+  favoritePlayerId?: string   // player they write about most
+  lastInteractionMatchday?: number
+}
+
+// ── Storylines — cross-system event memory ───────────────────────────────────
+
+export type StorylineType =
+  | 'rescued_from_unemployment'
+  | 'went_fulltime_pro'
+  | 'refused_to_go_pro'
+  | 'left_for_bigger_club'
+  | 'returned_to_club'
+  | 'workplace_bond'
+  | 'journalist_feud'
+  | 'journalist_redemption'
+  | 'promotion_sacrifice'
+  | 'career_crossroads_stayed'
+  | 'underdog_season'
+  | 'relegation_escape'
+  | 'gala_winner'
+  | 'partner_moved_here'
+  | 'captain_rallied_team'
+  | 'captain_rallied_team'
+
+export interface StorylineEntry {
+  id: string
+  type: StorylineType
+  season: number
+  matchday: number
+  playerId?: string
+  clubId?: string
+  description: string
+  displayText: string
+  resolved: boolean
+}
+
+// ── Club Legends — retired players who mattered ──────────────────────────────
+
+export interface ClubLegend {
+  name: string
+  position: string
+  seasons: number
+  totalGoals: number
+  totalAssists: number
+  titles: string[]
+  memorableStory?: string
+  retiredSeason: number
 }
 
 export interface AllTimeRecords {

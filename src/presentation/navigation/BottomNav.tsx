@@ -24,7 +24,7 @@ function Badge({ count }: { count: number }) {
       minWidth: 16,
       height: 16,
       background: 'var(--danger)',
-      color: '#fff',
+      color: 'var(--text-light)',
       borderRadius: 99,
       fontSize: 10,
       fontWeight: 800,

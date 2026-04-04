@@ -9,38 +9,36 @@ const POS_SHORT: Partial<Record<string, string>> = {
   [PlayerPosition.Forward]: 'A',
 }
 
-interface DraggablePlayerPillProps {
+interface PlayerPillProps {
   player: Player
-  isDragging: boolean
-  onPointerDown: (e: React.PointerEvent, playerId: string) => void
+  isSelected: boolean
+  onTap: (playerId: string) => void
 }
 
-export function DraggablePlayerPill({ player, isDragging, onPointerDown }: DraggablePlayerPillProps) {
+export function PlayerPill({ player, isSelected, onTap }: PlayerPillProps) {
   return (
     <div
-      onPointerDown={e => onPointerDown(e, player.id)}
+      onClick={() => onTap(player.id)}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
         gap: 6,
         padding: '6px 10px',
         minHeight: 44,
-        background: isDragging ? 'rgba(196,122,58,0.2)' : 'var(--bg-elevated)',
-        border: `1px solid ${isDragging ? 'var(--accent)' : 'var(--border)'}`,
+        background: isSelected ? 'rgba(196,122,58,0.15)' : 'var(--bg-elevated)',
+        border: `1.5px solid ${isSelected ? 'var(--accent)' : 'var(--border)'}`,
         borderRadius: 8,
-        cursor: 'grab',
-        touchAction: 'none',
-        opacity: isDragging ? 0.5 : 1,
-        transition: 'opacity 100ms, background 100ms, border-color 100ms',
+        cursor: 'pointer',
         userSelect: 'none',
+        transition: 'background 100ms, border-color 100ms',
       }}
     >
       <span style={{
         width: 26,
         height: 26,
         borderRadius: '50%',
-        background: 'rgba(196,122,58,0.15)',
-        border: '1px solid rgba(196,122,58,0.3)',
+        background: isSelected ? 'rgba(196,122,58,0.25)' : 'rgba(196,122,58,0.15)',
+        border: `1px solid ${isSelected ? 'var(--accent)' : 'rgba(196,122,58,0.3)'}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

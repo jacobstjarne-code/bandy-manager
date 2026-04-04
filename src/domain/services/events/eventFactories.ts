@@ -211,3 +211,193 @@ export function generateDayJobConflictEvent(player: Player, roundNumber: number)
     resolved: false,
   }
 }
+
+// ── Player media comment — unhappy player talks to press ──────────────────
+export function generatePlayerMediaEvent(player: Player, journalistName: string): GameEvent {
+  const playerName = `${player.firstName} ${player.lastName}`
+  return {
+    id: `event_media_${player.id}_${Date.now()}`,
+    type: 'playerMediaComment',
+    title: `📰 ${playerName} till ${journalistName}: "Jag vill spela"`,
+    body: `${playerName} har pratat med ${journalistName} och uttryckt frustration över brist på speltid.\n\n"Jag tränar varje dag och gör mitt bästa. Men jag sitter bara på bänken. Det är klart att jag funderar på min framtid."`,
+    choices: [
+      {
+        id: 'talk',
+        label: 'Prata med spelaren privat',
+        effect: { type: 'boostMorale', value: 8, targetPlayerId: player.id },
+      },
+      {
+        id: 'confront',
+        label: 'Konfrontera honom om att gå till media',
+        effect: { type: 'boostMorale', value: -5, targetPlayerId: player.id },
+      },
+      {
+        id: 'ignore',
+        label: 'Ignorera — det blåser över',
+        effect: { type: 'boostMorale', value: -2, targetPlayerId: player.id },
+      },
+    ],
+    relatedPlayerId: player.id,
+    resolved: false,
+  }
+}
+
+// ── Player praise — player praises teammate to media ──────────────────────
+export function generatePlayerPraiseEvent(
+  praiser: Player,
+  praised: Player,
+): GameEvent {
+  const name1 = `${praiser.firstName} ${praiser.lastName}`
+  const name2 = `${praised.firstName} ${praised.lastName}`
+  return {
+    id: `event_praise_${praiser.id}_${praised.id}`,
+    type: 'playerPraise',
+    title: `📰 ${name1} om ${name2}: "Bästa jag spelat med"`,
+    body: `${name1} berättade för Bandypuls om sitt samarbete med ${name2}.\n\n"Vi har en förståelse på planen som inte kräver ord. ${name2} vet alltid var jag vill ha bollen."`,
+    choices: [
+      {
+        id: 'great',
+        label: 'Fint att höra!',
+        effect: { type: 'multiEffect', subEffects: JSON.stringify([
+          { type: 'boostMorale', value: 3, targetPlayerId: praiser.id },
+          { type: 'boostMorale', value: 3, targetPlayerId: praised.id },
+        ]) },
+      },
+    ],
+    resolved: false,
+  }
+}
+
+// ── Captain speech — captain rallies the team after losing streak ─────────
+export function generateCaptainSpeechEvent(captain: Player, clubName: string): GameEvent {
+  const captainName = `${captain.firstName} ${captain.lastName}`
+  return {
+    id: `event_captain_speech_s${Date.now()}`,
+    type: 'captainSpeech',
+    title: `📣 Kaptenen tar ton i omklädningsrummet`,
+    body: `${captainName} samlade laget efter träningen:\n\n"Det räcker nu. Vi är bättre än det här. Varenda en av er vet det. Imorgon börjar vi om."\n\nStämningen i ${clubName} har förändrats.`,
+    choices: [
+      {
+        id: 'support',
+        label: 'Bra initiativ — det behövdes',
+        effect: { type: 'boostMorale', value: 5 },
+      },
+    ],
+    resolved: false,
+  }
+}
+
+// ── Employer layoff (varsel) event ────────────────────────────────────────
+export function generateVarselEvent(
+  players: { id: string; firstName: string; lastName: string; dayJob?: { title: string } }[],
+  employerName: string,
+  season: number,
+): GameEvent {
+  const names = players.map(p => `${p.firstName} ${p.lastName} (${p.dayJob?.title ?? 'anställd'})`).join(', ')
+  return {
+    id: `event_varsel_${employerName}_${season}`,
+    type: 'varsel',
+    title: `Varsel på ${employerName}`,
+    body: `${employerName} har meddelat varsel. ${players.length === 1 ? 'En spelare' : `${players.length} spelare`} i truppen berörs: ${names}. De riskerar att förlora jobbet — och kanske behöva flytta.`,
+    choices: [
+      {
+        id: 'support',
+        label: 'Stöd spelarna — erbjud extra träning och stöd',
+        effect: { type: 'boostMorale', value: 5 },
+      },
+      {
+        id: 'offer_pro',
+        label: `Erbjud heltidskontrakt åt alla (lönekostnad ×1.5)`,
+        effect: { type: 'multiEffect', subEffects: JSON.stringify(
+          players.map(p => ({ type: 'makeFullTimePro', targetPlayerId: p.id, value: 0 }))
+        ) },
+      },
+      {
+        id: 'nothing',
+        label: 'Det är tråkigt, men inte vårt problem',
+        effect: { type: 'boostMorale', value: -8 },
+      },
+    ],
+    resolved: false,
+  }
+}
+
+// ── Promotion offer — player's boss offers career advancement ─────────────
+export function generatePromotionOfferEvent(player: Player): GameEvent {
+  const playerName = `${player.firstName} ${player.lastName}`
+  const jobTitle = player.dayJob?.title ?? 'jobbet'
+  return {
+    id: `event_promotion_${player.id}_${Date.now()}`,
+    type: 'dayJobConflict',
+    title: `${playerName} erbjuds befordran`,
+    body: `${playerName} har erbjudits en befordran som ${jobTitle}. Det innebär mer ansvar, bättre lön — men sämre flexibilitet för bandy. Han behöver ditt råd.`,
+    choices: [
+      {
+        id: 'encourage',
+        label: 'Uppmuntra honom — jobbet går först',
+        effect: { type: 'boostMorale', value: 8, targetPlayerId: player.id },
+      },
+      {
+        id: 'discourage',
+        label: 'Be honom tacka nej — bandyn behöver honom',
+        effect: { type: 'boostMorale', value: -3, targetPlayerId: player.id },
+      },
+    ],
+    relatedPlayerId: player.id,
+    resolved: false,
+  }
+}
+
+// ── Workplace scheduling conflict — specific shift/meeting clash ──────────
+export function generateShiftConflictEvent(player: Player, matchRound: number): GameEvent {
+  const playerName = `${player.firstName} ${player.lastName}`
+  const jobTitle = player.dayJob?.title ?? 'jobbet'
+  return {
+    id: `event_shift_${player.id}_r${matchRound}`,
+    type: 'dayJobConflict',
+    title: `Schemakrock för ${playerName}`,
+    body: `${playerName} har ett obligatoriskt möte på ${jobTitle} samma dag som nästa match. Han kan inte vara med på uppvärmningen.`,
+    choices: [
+      {
+        id: 'skip_warmup',
+        label: 'OK — han ansluter direkt till match',
+        effect: { type: 'boostMorale', value: -2, targetPlayerId: player.id },
+      },
+      {
+        id: 'bench',
+        label: 'Sätt honom på bänken istället',
+        effect: { type: 'boostMorale', value: -5, targetPlayerId: player.id },
+      },
+    ],
+    relatedPlayerId: player.id,
+    resolved: false,
+  }
+}
+
+// ── Coworker bond — two players who work together develop chemistry ───────
+export function generateCoworkerBondEvent(
+  player1: Player,
+  player2: Player,
+  employerName: string,
+): GameEvent {
+  const name1 = `${player1.firstName} ${player1.lastName}`
+  const name2 = `${player2.firstName} ${player2.lastName}`
+  return {
+    id: `event_bond_${player1.id}_${player2.id}`,
+    type: 'communityEvent',
+    title: `Arbetskamrater på ${employerName}`,
+    body: `${name1} och ${name2} jobbar båda på ${employerName}. De pendlar tillsammans och har börjat träna extra på lunchen. Kemin på planen har blivit bättre.`,
+    choices: [
+      {
+        id: 'great',
+        label: 'Fantastiskt — uppmuntra det',
+        effect: { type: 'multiEffect', subEffects: JSON.stringify([
+          { type: 'boostMorale', value: 5, targetPlayerId: player1.id },
+          { type: 'boostMorale', value: 5, targetPlayerId: player2.id },
+        ]) },
+      },
+    ],
+    relatedPlayerId: player1.id,
+    resolved: false,
+  }
+}

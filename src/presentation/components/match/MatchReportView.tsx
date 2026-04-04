@@ -265,7 +265,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
         style={{
           width: '100%', padding: '14px', background: 'var(--accent)',
           border: '1px solid var(--accent)', borderRadius: 'var(--radius)',
-          color: '#fff', fontSize: 15, fontWeight: 600, marginBottom: 20, cursor: 'pointer',
+          color: 'var(--text-light)', fontSize: 15, fontWeight: 600, marginBottom: 20, cursor: 'pointer',
         }}
       >
         Fortsätt →

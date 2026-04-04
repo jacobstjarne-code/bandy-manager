@@ -17,6 +17,7 @@ import { POLITICIAN_PROFILES } from '../../domain/data/politicianData'
 import { BOARD_PROFILES } from '../../domain/data/boardData'
 import { VOLUNTEER_FIRST_NAMES, LOCAL_PAPER_NAMES } from '../../domain/data/communityNames'
 import { initCharacterPlayers } from '../../domain/services/characterPlayerService'
+import { createJournalist } from '../../domain/services/journalistService'
 
 function pickRandom<T>(arr: T[], rand: () => number): T {
   return arr[Math.floor(rand() * arr.length)]
@@ -198,6 +199,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   const volunteers = pickUnique(VOLUNTEER_FIRST_NAMES, 6 + Math.floor(rand() * 3), rand)
   const localPaperName = pickRandom(LOCAL_PAPER_NAMES, rand)
 
+  const journalist = createJournalist(localPaperName, rand)
   const patron = generatePatron(managedClub.reputation, managedPlayers, rand)
   const localPolitician = generatePolitician(rand)
   const boardPersonalities = generateBoardMembers(rand)
@@ -257,6 +259,9 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     tutorialSeen: true,
     seasonStartFinances: managedClub.finances,
     financeLog: [],
+    storylines: [],
+    clubLegends: [],
+    previousMarketValues: {},
     scoutReports: {},
     activeScoutAssignment: null,
     scoutBudget: 10,
@@ -275,6 +280,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     communityActivities,
     volunteers,
     localPaperName,
+    journalist,
     patron,
     localPolitician,
     boardPersonalities,

@@ -5,6 +5,7 @@ import { MatchEventType } from '../../domain/enums'
 export function MatchResultScreen() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
+  const advance = useGameStore(s => s.advance)
 
   if (!game || !game.lastCompletedFixtureId) {
     navigate('/game', { replace: true })
@@ -33,11 +34,12 @@ export function MatchResultScreen() {
   const potm = potmId ? game.players.find(p => p.id === potmId) : null
   const potmRating = potmId ? fixture.report?.playerRatings[potmId] : null
 
-  const resultColor = won ? '#5A9A4A' : lost ? '#B05040' : '#C4BAA8'
+  const resultColor = won ? 'var(--success)' : lost ? 'var(--danger)' : 'var(--accent)'
   const resultLabel = won ? 'SEGER' : lost ? 'FÖRLUST' : 'OAVGJORT'
 
   function handleContinue() {
-    navigate('/game')
+    const result = advance()
+    if (!result) navigate('/game', { replace: true })
   }
 
   const fadeIn = (delay: string) => ({
@@ -106,11 +108,11 @@ export function MatchResultScreen() {
           display: 'flex', justifyContent: 'center', alignItems: 'center',
           gap: 16, marginBottom: 12, ...fadeIn('160ms'),
         }}>
-          <span style={{ fontSize: 40, fontWeight: 800, color: resultColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
+          <span style={{ fontSize: 32, fontWeight: 800, color: resultColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
             {fixture.homeScore}
           </span>
           <span style={{ fontSize: 24, color: 'var(--text-muted)', fontWeight: 300 }}>–</span>
-          <span style={{ fontSize: 40, fontWeight: 800, color: resultColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
+          <span style={{ fontSize: 32, fontWeight: 800, color: resultColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
             {fixture.awayScore}
           </span>
         </div>
@@ -130,7 +132,7 @@ export function MatchResultScreen() {
 
         {/* B3: Flavor text */}
         <div style={{ textAlign: 'center', marginBottom: 10, ...fadeIn('360ms') }}>
-          <span style={{ fontSize: 13, color: won ? '#5A9A4A' : lost ? '#B05040' : 'var(--text-light-secondary)', fontWeight: 600 }}>
+          <span style={{ fontSize: 13, color: won ? 'var(--success)' : lost ? 'var(--danger)' : 'var(--text-secondary)', fontWeight: 600 }}>
             {flavorText}
           </span>
         </div>
@@ -146,15 +148,15 @@ export function MatchResultScreen() {
                 const scorerName = scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'
                 const icon = e.type === MatchEventType.Goal
                   ? (e.isCornerGoal ? '📐' : '🏒')
-                  : '🟥'
+                  : '⏱️'
                 return (
                   <div key={i} style={{
                     display: 'flex', alignItems: 'center', gap: 6,
                     animation: `fadeInUp 400ms ease-out ${380 + i * 80}ms both`,
                   }}>
-                    <span style={{ fontSize: 10, color: 'var(--text-light-secondary)', width: 28, textAlign: 'right', flexShrink: 0 }}>{e.minute}'</span>
+                    <span style={{ fontSize: 10, color: 'var(--text-secondary)', width: 28, textAlign: 'right', flexShrink: 0 }}>{e.minute}'</span>
                     <span style={{ fontSize: 11 }}>{icon}</span>
-                    <span style={{ fontSize: 11, color: 'var(--text-light-secondary)', flex: 1, textAlign: isHome ? 'left' : 'right' }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-secondary)', flex: 1, textAlign: isHome ? 'left' : 'right' }}>
                       {scorerName}
                     </span>
                   </div>
@@ -171,7 +173,7 @@ export function MatchResultScreen() {
               {homeGoals.map((e, i) => {
                 const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
                 return (
-                  <div key={i} style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginBottom: 2, animation: `fadeInUp 400ms ease-out ${600 + i * 100}ms both` }}>
+                  <div key={i} style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2, animation: `fadeInUp 400ms ease-out ${600 + i * 100}ms both` }}>
                     {e.minute}' {scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'}
                     {e.isCornerGoal ? ' 📐' : ''}
                   </div>
@@ -182,7 +184,7 @@ export function MatchResultScreen() {
               {awayGoals.map((e, i) => {
                 const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
                 return (
-                  <div key={i} style={{ fontSize: 12, color: 'var(--text-light-secondary)', marginBottom: 2, animation: `fadeInUp 400ms ease-out ${600 + i * 100}ms both` }}>
+                  <div key={i} style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2, animation: `fadeInUp 400ms ease-out ${600 + i * 100}ms both` }}>
                     {e.isCornerGoal ? '📐 ' : ''}
                     {scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'} {e.minute}'
                   </div>
@@ -237,7 +239,7 @@ export function MatchResultScreen() {
             })()}
             <div style={{
               display: 'flex', justifyContent: 'center', gap: 16,
-              fontSize: 12, color: 'var(--text-light-secondary)',
+              fontSize: 12, color: 'var(--text-secondary)',
             }}>
               {fixture.report.cornersHome !== undefined && (
                 <span>Hörnor {fixture.report.cornersHome}–{fixture.report.cornersAway}</span>
@@ -245,6 +247,11 @@ export function MatchResultScreen() {
               {fixture.report.shotsHome !== undefined && (
                 <span>Skott {fixture.report.shotsHome}–{fixture.report.shotsAway}</span>
               )}
+              {(() => {
+                const homeReds = fixture.events.filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.homeClubId).length
+                const awayReds = fixture.events.filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.awayClubId).length
+                return (homeReds > 0 || awayReds > 0) ? <span>Utvisningar {homeReds}–{awayReds}</span> : null
+              })()}
             </div>
           </div>
         )}
@@ -268,7 +275,7 @@ export function MatchResultScreen() {
             style={{
               width: '100%', padding: '14px 16px', borderRadius: 10,
               fontSize: 14, fontWeight: 600, cursor: 'pointer',
-              background: 'var(--accent)', color: '#fff', border: 'none',
+              background: 'var(--accent)', color: 'var(--text-light)', border: 'none',
             }}
           >
             Fortsätt →

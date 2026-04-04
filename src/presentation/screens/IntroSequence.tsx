@@ -74,7 +74,7 @@ export function IntroSequence() {
   const s1 = slide === 1
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', background: '#0E0D0B', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%', background: 'var(--bg-dark)', overflow: 'hidden' }}>
       {/* Bakgrundsbild — Eriks illustration */}
       <div style={{
         position: 'absolute', inset: 0,
@@ -196,10 +196,10 @@ export function IntroSequence() {
               width: '100%',
               maxWidth: 300,
               padding: '16px 24px',
-              background: 'linear-gradient(135deg, #C47A3A 0%, #A25828 100%)',
+              background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%)',
               border: 'none',
               borderRadius: 10,
-              color: '#F5F1EB',
+              color: 'var(--text-light)',
               fontSize: 13,
               fontWeight: 700,
               letterSpacing: '3px',

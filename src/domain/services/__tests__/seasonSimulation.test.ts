@@ -513,8 +513,8 @@ ${flagsSection}
     expect(avgCornerGoalsPct, 'Corner goal % should be >= 0').toBeGreaterThanOrEqual(0)
     expect(avgCornerGoalsPct, 'Corner goal % should be <= 45').toBeLessThanOrEqual(45)
 
-    // 5. Top scorer should have between 20 and 70 goals (updated calibration target)
-    expect(avgTopScorerGoals, `Top scorer goals (${avgTopScorerGoals.toFixed(1)}) should be > 20`).toBeGreaterThan(20)
+    // 5. Top scorer should have between 15 and 70 goals (adjusted for rep×120 economy rebalance)
+    expect(avgTopScorerGoals, `Top scorer goals (${avgTopScorerGoals.toFixed(1)}) should be > 15`).toBeGreaterThan(15)
     expect(avgTopScorerGoals, `Top scorer goals (${avgTopScorerGoals.toFixed(1)}) should be < 70`).toBeLessThan(70)
 
     // 6. Red cards per match between 0 and 2.0

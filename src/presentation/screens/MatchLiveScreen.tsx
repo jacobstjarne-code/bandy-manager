@@ -556,6 +556,34 @@ export function MatchLiveScreen() {
         )}
       </div>
 
+      {/* Active suspensions below scoreboard */}
+      {currentMatchStep && (currentMatchStep.activeSuspensions.homeCount > 0 || currentMatchStep.activeSuspensions.awayCount > 0) && (() => {
+        // Find which players are currently suspended (RedCard within last 10 min)
+        const allEventsSoFar = displayedSteps.flatMap(s => s.events)
+        const currentMin = currentMatchStep.minute
+        const homeSusp = allEventsSoFar
+          .filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.homeClubId && currentMin - e.minute < 10)
+          .map(e => {
+            const p = e.playerId ? (game?.players ?? []).find(pl => pl.id === e.playerId) : null
+            return p?.shirtNumber != null ? `#${p.shirtNumber}` : (p ? p.lastName.slice(0, 5) : '?')
+          })
+        const awaySusp = allEventsSoFar
+          .filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.awayClubId && currentMin - e.minute < 10)
+          .map(e => {
+            const p = e.playerId ? (game?.players ?? []).find(pl => pl.id === e.playerId) : null
+            return p?.shirtNumber != null ? `#${p.shirtNumber}` : (p ? p.lastName.slice(0, 5) : '?')
+          })
+        return (
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', padding: '4px 16px',
+            fontSize: 11, fontWeight: 600, color: 'var(--danger)', flexShrink: 0,
+          }}>
+            <div>{homeSusp.map(s => `Utv ${s}`).join(' · ')}</div>
+            <div>{awaySusp.map(s => `Utv ${s}`).join(' · ')}</div>
+          </div>
+        )
+      })()}
+
       {/* Controls below scoreboard */}
       <div style={{
         display: 'flex', justifyContent: 'center', gap: 8,

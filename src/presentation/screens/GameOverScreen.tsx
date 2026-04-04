@@ -154,7 +154,7 @@ export function GameOverScreen() {
             width: '100%',
             padding: '17px',
             background: 'var(--accent)',
-            color: '#fff',
+            color: 'var(--text-light)',
             borderRadius: 12,
             fontSize: 15,
             fontWeight: 800,

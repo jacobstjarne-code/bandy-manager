@@ -450,7 +450,7 @@ export function SeasonSummaryScreen() {
                 width: '100%',
                 padding: '17px',
                 background: 'var(--accent)',
-                color: '#fff',
+                color: 'var(--text-light)',
                 borderRadius: 12,
                 fontSize: 16,
                 fontWeight: 800,

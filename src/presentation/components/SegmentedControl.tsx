@@ -16,10 +16,10 @@ export function SegmentedControl({ options, value, onChange, explanation }: Segm
             style={{
               flex: 1,
               padding: '6px 4px',
-              borderRadius: 'var(--radius-sm)',
+              borderRadius: 20,
               background: value === opt.value ? 'var(--accent)' : 'var(--bg-elevated)',
               border: '1px solid ' + (value === opt.value ? 'var(--accent)' : 'var(--border)'),
-              color: value === opt.value ? '#fff' : 'var(--text-secondary)',
+              color: value === opt.value ? 'var(--text-light)' : 'var(--text-secondary)',
               fontSize: 11,
               fontWeight: value === opt.value ? 600 : 400,
             }}

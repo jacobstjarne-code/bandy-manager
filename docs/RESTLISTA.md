@@ -1,67 +1,97 @@
-# RESTLISTA — Uppdaterad 1 april 2026
+# RESTLISTA — Uppdaterad 2 april 2026
+
+## ✅ KLART
+
+### Matchday-refaktor
+- matchday-fält, buildSeasonCalendar, roundProcessor, alla UI-komponenter
+
+### Gameplay-buggar (alla fixade)
+- Bytesbuggen 12→11, lönebudget varnar ej blockerar, max 3 transferbud
+- Cup-text, cupmatch penaltyResult, politiker-templates, intensitet borta
+- Slutspelfärger, default matchhastighet, "TOPP 8", statistik-flik
+- Cup-snabbsim, slutspelsrundor, rundgång efter eliminering
+- Spelarnummer, offside bevarad, terminologi
+
+### Positioner (MV, B, YH, MF, A)
+- positionShort() i formatters.ts — MV, B, YH, MF, A
+- POSITION_ORDER separerade (Goalkeeper 0, Defender 1, Half 2, Midfielder 3, Forward 4)
+- Fulla namn: Målvakt, Back, Ytterhalv, Mittfältare, Anfallare
+
+### Utvisningar
+- 10 min utvisning = spelaren kommer tillbaka (ingen avstängning)
+- Matchstraff = ~2% chans → 1 match avstängd
+- Inte längre 1-3 avstängda per match
+
+### Flygande byten
+- Bänkspelare får 30-40 min speltid och gamesPlayed +1 per match
+
+### Ekonomi-refaktor
+- applyFinanceChange på 9 ställen, EkonomiTab använder calcRoundIncome
+- Transaktionshistorik i EkonomiTab
+- capacity = rep×7+150, weeklyBase = rep×120
+
+### Playtest stor runda (KRITISKT + VIKTIGT + BÖR GÖRAS)
+- Klubbtexter kortade, Erik Ström → back i Forsbacka
+- SM-guld år = season+1, SM-final tredje lördagen i mars
+- Kontraktsförhandlingar svårare, Bygdens puls reagerar på slutspel
+- Presskonferenssvar matchar frågor, taktiktermer på svenska
+- Villa-referenser borta, Snittstyrka, juniorlandslag
+- Anläggningsuppgradering möjlig, planvy bara nummer
+- Styrelsekommentarer korrigerade
+- Intro-grafik (Eriks illustration + logotyper)
 
 ---
 
-## ✅ KLART (verifierat)
+## ❌ KVAR
 
-| # | Vad | Status |
-|---|-----|--------|
-| A | Matchday-refaktor (hela DEL A) | ✅ |
-| B1 | Dashboard omgångsräknare | ✅ |
-| B3 | Bytesbuggen 12→11 | ✅ |
-| B5 | Max 3 transferbud | ✅ |
-| B6 | Cup-text kvartsfinalen | ✅ |
-| B7 | "Intensitet 1" — borta | ✅ |
-| B8 | Cupmatch penaltyResult | ✅ |
-| B9 | Politiker-templates | ✅ |
-| B10 | Slutspelfärger (vinst→grön) | ✅ |
-| B11 | Default matchhastighet | ✅ |
-| B12 | "SLUTSPEL"→"TOPP 8" | ✅ |
-| B14 | Planvy spelarnamn | ✅ |
-| B15 | ⚽→🏒 | ✅ |
-| B18 | Bandydoktorn | ✅ |
-| B19 | Välj klubb-skärmen | ✅ |
-| O1 | Cup-snabbsim | ✅ |
-| O2 | Slutspelsrundor ej krock | ✅ |
-| O3 | Rundgång efter eliminering | ✅ |
-| O4 | Positionsförkortningar | ✅ |
-| O6 | Spelarnummer i listor | ✅ |
-| O8 | Offside bevarad | ✅ |
-| B16 | Terminologi (vadden etc) | ✅ |
+### Design Sprint R2 (docs/DESIGN_SPRINT_R2.md) — 11 punkter
+1. Planvy: samma utseende båda flikar (copper vs grön/orange/röd)
+2. Planvy: marginBottom under planvyn
+3. Daglig träning: emoji+rubrik på SAMMA rad som SegmentedControl (INTE grid)
+4. Intensitet: rundade SegmentedControl-knappar
+5. Akademi-knapp: inte fullbredd (maxWidth 200)
+6. Inkorg: expand-on-click fungerar inte (mail försvinner)
+7. Transfer-flikar: overflow (scrollbar eller kortare labels)
+8. RoundSummary: fortfarande otight
+9. Event-overlay timing vid snabbsim
+10. Ekonomi: verifiera intäktsnivåer
+11. 🔴→🏒 i MatchDoneOverlay + MatchResultScreen
 
-## ❌ KVAR ATT GÖRA
+### Design Sprint R1 (docs/DESIGN_BUGG_SPRINT.md) — kontrollera
+Oklart vilka av punkt 1-18 som faktiskt genomfördes. Verifiera:
+- Header-kontrast
+- Välj klubb-header konsistens
+- Taktik-skärmen tightare
+- Matchsammanfattningen tightare
+- MatchDoneOverlay blekning
+- EventScreen → overlay
+- TabellScreen/SquadScreen/TransfersScreen/InboxScreen rubrik bort
+- SeasonSummaryScreen/PreSeasonScreen/HistoryScreen card-sharp
 
-### R1. Lönebudget: varna, inte blockera
-Kontraktsförlängningar ska ALDRIG blockeras av wageBudget. Visa orange varning: "OBS: Lönekostnaderna överstiger budgeten med X kr" men tillåt förlängningen.
+### ALL_GAME_COPY.md
+Punkt E/21 i PLAYTEST_STOR_RUNDA.md — Jacob vill ha ALL genererad text i ett dokument. Inte skapat ännu.
 
-### R2. Statistik-flik
-Ingen StatisticsTab existerar. Behöver antingen byggas (toppskytt, assist, hörnmål, snittbetyg, utvisningar per lag) eller visa placeholder.
+### B2. Truppfördelning
+10 halvbackar/inga mittfältare — behöver verifieras att worldGenerator ger rimlig mix nu med separerade positioner.
+
+---
 
 ## ⚠️ BEHÖVER GAMEPLAY-TEST
 
-### R3. Matchintäkter — rätt nivå?
-Formeln ändrad. Behöver speltestas.
+| # | Vad |
+|---|-----|
+| T1 | Ekonomi — rimliga intäkter nu? |
+| T2 | Akademi — spelare kvar till 20? |
+| T3 | Kontraktsförhandlingar — avvisar spelaren ibland? |
+| T4 | Utvisningar — ingen massavstängning? |
+| T5 | Positioner — rätt fördelning i truppen? |
+| T6 | SM-final datum — tredje lördagen i mars? |
+| T7 | Bygdens puls — reagerar på slutspel? |
 
-### R4. Scoutrapport: goalkeeping för utespelare
-Behöver testas: scouta utespelare, kolla att "målvaktsspelet" inte nämns.
-
-### R5. Värvningstempo
-Behöver testas: klarar man en värvning inom januarifönstret?
-
-### R6. BoardMeeting tightare
-Behöver visuell jämförelse.
+---
 
 ## PARKERAT
 
 | # | Vad |
 |---|-----|
-| P1 | Drag-and-drop planvy (byggs separat) |
-| P2 | Positionsnamn från Jacobs dokument |
-| P3 | AI-lag med för få spelare |
-| P4 | Anläggning/hall |
-| P5 | Elitjuniorverksamhet |
-| P6 | Bandydoktorn API-nyckel (deploy-config) |
-
-## DOKUMENTATION
-
-CLAUDE.md behöver uppdateras med matchday-systemet. Gamla spec-filer bör arkiveras.
+| P1 | Bandydoktorn API-nyckel (deploy-config på Render) |

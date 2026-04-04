@@ -22,6 +22,10 @@ export type GameEventType =
   | 'spoksponsor'
   | 'presskonferens'
   | 'detOmojligaValet'
+  | 'varsel'
+  | 'playerMediaComment'
+  | 'playerPraise'
+  | 'captainSpeech'
 
 export interface EventChoice {
   id: string

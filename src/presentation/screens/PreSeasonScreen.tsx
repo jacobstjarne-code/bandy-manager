@@ -219,7 +219,7 @@ export function PreSeasonScreen() {
             background: 'var(--accent)',
             border: 'none',
             borderRadius: 12,
-            color: '#fff',
+            color: 'var(--text-light)',
             fontSize: 16,
             fontWeight: 700,
             cursor: 'pointer',

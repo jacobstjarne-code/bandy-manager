@@ -363,7 +363,7 @@ export function MatchScreen() {
       <MatchReportView
         fixture={completedFixture}
         game={game}
-        onClose={() => navigate('/game')}
+        onClose={() => navigate('/game/match-result', { replace: true })}
       />
     )
   }
@@ -463,7 +463,7 @@ export function MatchScreen() {
                     background: isDone ? 'var(--success)' : isActive ? 'var(--accent)' : 'var(--bg-elevated)',
                     border: `2px solid ${isDone ? 'var(--success)' : isActive ? 'var(--accent)' : 'var(--border)'}`,
                     fontSize: 12, fontWeight: 700,
-                    color: isDone || isActive ? '#fff' : 'var(--text-muted)',
+                    color: isDone || isActive ? 'var(--text-light)' : 'var(--text-muted)',
                     cursor: isDone ? 'pointer' : 'default',
                     transition: 'all 0.2s',
                   }} onClick={() => isDone && setMatchStep(s)}>

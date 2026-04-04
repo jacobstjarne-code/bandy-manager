@@ -5,7 +5,7 @@ function choiceStyle(choiceId: string): React.CSSProperties {
   if (choiceId === 'accept' || choiceId === 'extend3') {
     return {
       background: 'var(--accent)',
-      color: '#fff',
+      color: 'var(--text-light)',
       border: 'none',
     }
   }

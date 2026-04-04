@@ -104,7 +104,7 @@ export function TutorialOverlay({ managerName, clubName, onDone }: TutorialOverl
             width: '100%',
             padding: '13px',
             background: 'var(--accent)',
-            color: '#fff',
+            color: 'var(--text-light)',
             borderRadius: 'var(--radius)',
             fontSize: 15,
             fontWeight: 600,

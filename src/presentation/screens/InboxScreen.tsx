@@ -4,7 +4,6 @@ import { InboxItemType } from '../../domain/enums'
 import type { InboxItem } from '../../domain/entities/SaveGame'
 import { Check } from 'lucide-react'
 import { PlayerLink } from '../components/PlayerLink'
-import { SectionLabel } from '../components/SectionLabel'
 
 function inboxTypeIcon(type: InboxItemType): string {
   switch (type) {
@@ -59,7 +58,7 @@ interface InboxItemRowProps {
 function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
   const color = inboxTypeColor(item.type)
   const [expanded, setExpanded] = useState(false)
-  const hasBody = item.body && item.body.trim().length > 0
+  const hasBody = item.body && item.body.trim().length > 5
 
   function handleClick() {
     if (hasBody) setExpanded(e => !e)
@@ -167,11 +166,9 @@ export function InboxScreen() {
     return p ? `${p.firstName} ${p.lastName}` : undefined
   }
 
-  // Sort by date descending, split by read status
+  // Sort by date descending
   const sorted = [...game.inbox].sort((a, b) => b.date.localeCompare(a.date))
-  const unread = sorted.filter(i => !i.isRead)
-  const read = sorted.filter(i => i.isRead)
-  const unreadCount = unread.length
+  const unreadCount = sorted.filter(i => !i.isRead).length
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -214,26 +211,9 @@ export function InboxScreen() {
           </div>
         ) : (
           <>
-            {unread.length > 0 && (
-              <>
-                <div style={{ padding: '10px 16px 0' }}>
-                  <SectionLabel>Olästa</SectionLabel>
-                </div>
-                {unread.map((item, index) => (
-                  <InboxItemRow key={item.id} item={item} onRead={markInboxRead} index={index} playerName={getPlayerName(item.relatedPlayerId)} />
-                ))}
-              </>
-            )}
-            {read.length > 0 && (
-              <>
-                <div style={{ padding: '10px 16px 0' }}>
-                  <SectionLabel>Lästa</SectionLabel>
-                </div>
-                {read.map((item, index) => (
-                  <InboxItemRow key={item.id} item={item} onRead={markInboxRead} index={index} playerName={getPlayerName(item.relatedPlayerId)} />
-                ))}
-              </>
-            )}
+            {sorted.map((item, index) => (
+              <InboxItemRow key={item.id} item={item} onRead={markInboxRead} index={index} playerName={getPlayerName(item.relatedPlayerId)} />
+            ))}
           </>
         )}
       </div>

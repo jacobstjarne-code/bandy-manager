@@ -656,7 +656,7 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     preferredStyle: t.preferredStyle,
     activeTactic: buildTactic(t.preferredStyle),
     squadPlayerIds: [],
-    arenaCapacity: Math.round((t.reputation * 25 + 600) / 500) * 500,
+    arenaCapacity: Math.round((t.reputation * 7 + 150) / 50) * 50,
   }))
 
   const allPlayers: Player[] = []

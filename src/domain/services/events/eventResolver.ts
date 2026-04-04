@@ -2,6 +2,7 @@ import type { SaveGame, Sponsor, CommunityActivities } from '../../entities/Save
 import { InboxItemType } from '../../enums'
 import { executeTransfer } from '../transferService'
 import { applyFinanceChange } from '../economyService'
+import { recordInteraction, recordPressRefusal } from '../journalistService'
 
 // ── resolveEvent ───────────────────────────────────────────────────────────
 export function resolveEvent(
@@ -157,6 +158,23 @@ export function resolveEvent(
             : p
         ),
       }
+      // Update journalist memory
+      if (updatedGame.journalist) {
+        const matchday = updatedGame.fixtures
+          .filter(f => f.status === 'completed' && !f.isCup)
+          .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+        const isRefusal = choiceId === 'refuse_press'
+        updatedGame = {
+          ...updatedGame,
+          journalist: isRefusal
+            ? recordPressRefusal(updatedGame.journalist, updatedGame.currentSeason, matchday)
+            : recordInteraction(updatedGame.journalist, updatedGame.currentSeason, matchday,
+                moraleBoost > 0 ? 'good_answer' : 'bad_answer', moraleBoost > 0 ? 3 : -3),
+          journalistRelationship: isRefusal
+            ? Math.max(0, (updatedGame.journalistRelationship ?? 50) - 8)
+            : (updatedGame.journalistRelationship ?? 50) + (moraleBoost > 0 ? 3 : -3),
+        }
+      }
       // Add media quote to inbox if present
       if (effect.mediaQuote) {
         const mediaInboxItem = {
@@ -177,6 +195,8 @@ export function resolveEvent(
     case 'makeFullTimePro': {
       const pid = effect.targetPlayerId
       if (pid) {
+        const proPlayer = updatedGame.players.find(p => p.id === pid)
+        const oldJob = proPlayer?.dayJob?.title ?? 'jobbet'
         updatedGame = {
           ...updatedGame,
           players: updatedGame.players.map(p =>
@@ -190,6 +210,21 @@ export function resolveEvent(
                 }
               : p
           ),
+          storylines: [
+            ...(updatedGame.storylines ?? []),
+            {
+              id: `story_pro_${pid}_${updatedGame.currentSeason}`,
+              type: 'went_fulltime_pro' as const,
+              season: updatedGame.currentSeason,
+              matchday: updatedGame.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((m, f) => Math.max(m, f.roundNumber), 0),
+              playerId: pid,
+              description: 'went_fulltime_pro',
+              displayText: proPlayer
+                ? `${proPlayer.firstName} ${proPlayer.lastName} slutade som ${oldJob} för att satsa heltid på bandyn`
+                : 'Blev heltidsproffs',
+              resolved: true,
+            },
+          ],
         }
       }
       break
@@ -481,6 +516,47 @@ export function resolveEvent(
     ...updatedGame,
     pendingEvents: (updatedGame.pendingEvents ?? []).filter(e => e.id !== eventId),
     resolvedEventIds: [...(updatedGame.resolvedEventIds ?? []), eventId].slice(-200), // keep last 200
+  }
+
+  // ── Post-resolution storyline generation ────────────────────────────────
+  const currentMatchday = updatedGame.fixtures
+    .filter(f => f.status === 'completed' && !f.isCup)
+    .reduce((m, f) => Math.max(m, f.roundNumber), 0)
+
+  if (event.type === 'captainSpeech') {
+    updatedGame = {
+      ...updatedGame,
+      storylines: [
+        ...(updatedGame.storylines ?? []),
+        {
+          id: `story_captain_${updatedGame.currentSeason}`,
+          type: 'captain_rallied_team' as const,
+          season: updatedGame.currentSeason,
+          matchday: currentMatchday,
+          description: 'captain_rallied_team',
+          displayText: 'Kaptenen samlade laget efter en svår period',
+          resolved: true,
+        },
+      ],
+    }
+  }
+
+  if (event.type === 'varsel' && choiceId === 'offer_pro') {
+    updatedGame = {
+      ...updatedGame,
+      storylines: [
+        ...(updatedGame.storylines ?? []),
+        {
+          id: `story_varsel_rescue_${updatedGame.currentSeason}`,
+          type: 'rescued_from_unemployment' as const,
+          season: updatedGame.currentSeason,
+          matchday: currentMatchday,
+          description: 'rescued_from_unemployment',
+          displayText: 'Klubben räddade spelare från uppsägning genom att erbjuda heltidskontrakt',
+          resolved: true,
+        },
+      ],
+    }
   }
 
   return updatedGame

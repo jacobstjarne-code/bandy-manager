@@ -140,7 +140,7 @@ export function TabellScreen() {
             <StatTable title="🎯 Flest assist" players={topAssisters} value={p => p.seasonStats.assists} unit=" ast" />
             <StatTable title="🔄 Flest hörnmål" players={topCornerGoals} value={p => p.seasonStats.cornerGoals} unit=" hörn" />
             <StatTable title="⭐ Bäst snittbetyg (min 3 matcher)" players={topRated} value={p => p.seasonStats.averageRating.toFixed(1)} />
-            <StatTable title="🟨 Flest utvisningsminuter" players={topPenaltyMin} value={p => p.seasonStats.yellowCards * 5 + p.seasonStats.redCards * 10} unit=" min" />
+            <StatTable title="⏱️ Flest utvisningsminuter" players={topPenaltyMin} value={p => p.seasonStats.yellowCards * 5 + p.seasonStats.redCards * 10} unit=" min" />
           </div>
         )
       })()}

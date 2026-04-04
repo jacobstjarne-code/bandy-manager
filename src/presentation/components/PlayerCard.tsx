@@ -438,7 +438,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
             {player.seasonStats.yellowCards > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,0,0,0.04)', borderRadius: 5, padding: '4px 2px' }}>
                 <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--warning)', fontFamily: 'var(--font-display)' }}>{player.seasonStats.yellowCards}</span>
-                <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>GULA</span>
+                <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>VARNING</span>
               </div>
             )}
             {player.seasonStats.suspensions > 0 && (

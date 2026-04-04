@@ -188,7 +188,7 @@ export function RoundSummaryScreen() {
         zIndex: 50, opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease 0.3s',
       }}>
         <button onClick={handleContinue} style={{
-          width: '100%', padding: '17px', background: 'var(--accent)', color: '#F5F1EB',
+          width: '100%', padding: '17px', background: 'var(--accent)', color: 'var(--text-light)',
           borderRadius: 12, fontSize: 16, fontWeight: 800, letterSpacing: '1.5px',
           textTransform: 'uppercase', border: 'none',
           boxShadow: '0 4px 20px rgba(196,122,58,0.3)', cursor: 'pointer',

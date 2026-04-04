@@ -392,6 +392,27 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     narrative += ` ${topScorer.name} stod för ${topScorer.goals} mål och var lagets viktigaste offensiva kraft.`
   }
 
+  // Storyline references in narrative
+  const seasonStorylines = (game.storylines ?? []).filter(s => s.season === game.currentSeason && s.resolved)
+  if (seasonStorylines.length > 0) {
+    const storyTexts: string[] = []
+    const proStories = seasonStorylines.filter(s => s.type === 'went_fulltime_pro')
+    if (proStories.length > 0) {
+      storyTexts.push(`${proStories.length} spelare blev heltidsproffs — ett modigt steg.`)
+    }
+    const varselStories = seasonStorylines.filter(s => s.type === 'rescued_from_unemployment')
+    if (varselStories.length > 0) {
+      storyTexts.push('Klubben höll ihop trots varslet.')
+    }
+    const captainStories = seasonStorylines.filter(s => s.type === 'captain_rallied_team')
+    if (captainStories.length > 0) {
+      storyTexts.push('Kaptenen samlade laget i en svår period.')
+    }
+    if (storyTexts.length > 0) {
+      narrative += ' ' + storyTexts.join(' ')
+    }
+  }
+
   const storyTriggers = generateStoryTriggers(game)
 
   return {

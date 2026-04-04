@@ -2,6 +2,20 @@ import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent } from '../../entities/GameEvent'
 import { AGENDA_QUOTES, NEWSPAPER_HEADLINES } from '../../data/politicianData'
 
+const FEMALE_FIRST_NAMES = new Set([
+  'Anna', 'Maria', 'Eva', 'Karin', 'Sara', 'Lena', 'Emma', 'Kristina',
+  'Birgitta', 'Margareta', 'Ingrid', 'Elisabeth', 'Linda', 'Annika',
+  'Malin', 'Elin', 'Sofia', 'Johanna', 'Katarina', 'Helena', 'Susanne',
+  'Monica', 'Gunilla', 'Carina', 'Åsa', 'Marie', 'Ulrika', 'Jenny',
+  'Camilla', 'Hanna', 'Cecilia', 'Louise', 'Therese', 'Sandra',
+])
+
+function getPronouns(name: string) {
+  const first = name.split(' ')[0]
+  const isFemale = FEMALE_FIRST_NAMES.has(first)
+  return { subj: isFemale ? 'Hon' : 'Han', poss: isFemale ? 'Hennes' : 'Hans' }
+}
+
 export function generatePoliticianEvents(
   game: SaveGame,
   currentRound: number,
@@ -176,21 +190,22 @@ export function generatePoliticianEvents(
       let demandBody = ''
       let choices: GameEvent['choices'] = []
 
+      const pro2 = getPronouns(politician2.name)
       if (agenda === 'savings') {
-        demandBody = `${politician2.name} ringer och vill diskutera kommunens bidrag. Han oroar sig för föreningens ekonomi.`
+        demandBody = `${politician2.name} ringer och vill diskutera kommunens bidrag. ${pro2.subj} oroar sig för föreningens ekonomi.`
         choices = [
           { id: 'confirm', label: 'Lova inga löneökningar nästa år', effect: { type: 'politicianRelationship', amount: 10 } },
           { id: 'pushback', label: 'Vi investerar för framtiden', effect: { type: 'politicianRelationship', amount: -5 } },
         ]
       } else if (agenda === 'youth') {
         const hasSchool = game.communityActivities?.bandySchool
-        demandBody = `${politician2.name} vill att föreningen satsar mer på ungdomar. ${hasSchool ? 'Han ser positivt på bandyskolan.' : 'Han vill se en bandyskola.'}`
+        demandBody = `${politician2.name} vill att föreningen satsar mer på ungdomar. ${hasSchool ? `${pro2.subj} ser positivt på bandyskolan.` : `${pro2.subj} vill se en bandyskola.`}`
         choices = [
           { id: 'confirm', label: hasSchool ? 'Vi är stolta över bandyskolan' : 'Vi planerar en bandyskola', effect: { type: 'politicianRelationship', amount: hasSchool ? 15 : -5 } },
           { id: 'focus', label: 'A-laget är vår prioritet', effect: { type: 'politicianRelationship', amount: -8 } },
         ]
       } else if (agenda === 'prestige') {
-        demandBody = `${politician2.name} vill att kommunen syns med laget. Han ser er som ett varumärke för regionen.`
+        demandBody = `${politician2.name} vill att kommunen syns med laget. ${pro2.subj} ser er som ett varumärke för regionen.`
         choices = [
           { id: 'welcome', label: 'Välkomna samarbetet', effect: { type: 'politicianRelationship', amount: 12 } },
           { id: 'independent', label: 'Föreningen är fristående', effect: { type: 'politicianRelationship', amount: -5 } },
@@ -231,11 +246,11 @@ export function generatePoliticianEvents(
         id: eid,
         type: 'gentjanst',
         title: 'En gentjänst',
-        body: `${pol3.name} hör av sig diskret. Hans brorson är ett ungt talang och undrar om han kan komma och träna med truppen. "Inget officiellt, bara kolla läget."`,
+        body: `${pol3.name} hör av sig diskret. ${getPronouns(pol3.name).poss} ${getPronouns(pol3.name).subj === 'Hon' ? 'systerdotter' : 'brorson'} är en ung talang och undrar om ${getPronouns(pol3.name).subj.toLowerCase()} kan komma och träna med truppen. "Inget officiellt, bara kolla läget."`,
         choices: [
           {
             id: 'yes',
-            label: 'Klart han är välkommen',
+            label: 'Klart, välkommen att prova',
             effect: { type: 'politicianRelationship', amount: 20 },
           },
           {

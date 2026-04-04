@@ -1,10 +1,10 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import type { Player } from '../../../domain/entities/Player'
 import type { Tactic } from '../../../domain/entities/Club'
 import type { FormationType } from '../../../domain/entities/Formation'
 import { FORMATIONS } from '../../../domain/entities/Formation'
 import { BandyPitch } from '../BandyPitch'
-import { DraggablePlayerPill } from './DraggablePlayerPill'
+import { PlayerPill } from './DraggablePlayerPill'
 
 const ADJACENT_POS: Record<string, string[]> = {
   goalkeeper: [],
@@ -25,12 +25,10 @@ interface PitchLineupViewProps {
   onAutoFill: () => void
 }
 
-interface DragState {
-  playerId: string
-  fromSlotId: string | null
-  x: number
-  y: number
-}
+type Selection =
+  | { type: 'pill'; playerId: string }
+  | { type: 'slot'; slotId: string; playerId: string }
+  | null
 
 export function PitchLineupView({
   tacticState,
@@ -42,9 +40,7 @@ export function PitchLineupView({
   onFormationChange,
   onAutoFill,
 }: PitchLineupViewProps) {
-  const [drag, setDrag] = useState<DragState | null>(null)
-  const [hoverSlotId, setHoverSlotId] = useState<string | null>(null)
-  const slotRefs = useRef<Map<string, HTMLElement>>(new Map())
+  const [selection, setSelection] = useState<Selection>(null)
 
   const formationType = (tacticState.formation ?? '3-3-4') as FormationType
   const template = FORMATIONS[formationType]
@@ -63,69 +59,61 @@ export function PitchLineupView({
     p.suspensionGamesRemaining === 0
   )
 
-  const dragPlayer = drag ? squadPlayers.find(p => p.id === drag.playerId) ?? null : null
+  // ── Tap handlers ──────────────────────────────────────────────────────────
 
-  // ── Closest slot hit-test ─────────────────────────────────────────────────
-
-  function findClosestSlot(x: number, y: number): string | null {
-    let closest: string | null = null
-    let minDist = 60
-    for (const [slotId, el] of slotRefs.current) {
-      const r = el.getBoundingClientRect()
-      const cx = r.left + r.width / 2
-      const cy = r.top + r.height / 2
-      const dist = Math.hypot(x - cx, y - cy)
-      if (dist < minDist) {
-        minDist = dist
-        closest = slotId
-      }
+  function handlePillTap(playerId: string) {
+    if (selection?.type === 'pill' && selection.playerId === playerId) {
+      setSelection(null) // deselect
+    } else {
+      setSelection({ type: 'pill', playerId })
     }
-    return closest
   }
 
-  // ── Drag handlers ─────────────────────────────────────────────────────────
+  function handleSlotTap(slotId: string) {
+    const existingPid = slotToPlayer[slotId]
 
-  function handleStartDrag(e: React.PointerEvent, playerId: string, fromSlotId: string | null) {
-    e.preventDefault()
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-    setDrag({ playerId, fromSlotId, x: e.clientX, y: e.clientY })
-  }
+    if (selection === null) {
+      // Tapping an occupied slot selects that player for swap/move
+      if (existingPid) {
+        setSelection({ type: 'slot', slotId, playerId: existingPid })
+      }
+      return
+    }
 
-  function handlePointerMove(e: React.PointerEvent) {
-    if (!drag) return
-    e.preventDefault()
-    setDrag(d => d ? { ...d, x: e.clientX, y: e.clientY } : null)
-    setHoverSlotId(findClosestSlot(e.clientX, e.clientY))
-  }
+    if (selection.type === 'pill') {
+      // Place unplaced player into slot
+      onAssignPlayer(selection.playerId, slotId)
+      setSelection(null)
+      return
+    }
 
-  function handlePointerUp(e: React.PointerEvent) {
-    if (!drag) return
-    const target = findClosestSlot(e.clientX, e.clientY)
-    if (target) {
-      const existingPid = slotToPlayer[target]
-      if (existingPid && drag.fromSlotId && existingPid !== drag.playerId) {
-        onSwapPlayers(drag.fromSlotId, target)
+    if (selection.type === 'slot') {
+      if (selection.slotId === slotId) {
+        // Tap same slot → deselect
+        setSelection(null)
+        return
+      }
+      if (existingPid) {
+        // Both slots occupied → swap
+        onSwapPlayers(selection.slotId, slotId)
       } else {
-        onAssignPlayer(drag.playerId, target)
+        // Move selected player to empty slot
+        onAssignPlayer(selection.playerId, slotId)
       }
-      navigator.vibrate?.(10)
-    } else if (drag.fromSlotId) {
-      // Dropped outside any slot — unplace the player
-      onRemovePlayer(drag.playerId)
+      setSelection(null)
+      return
     }
-    setDrag(null)
-    setHoverSlotId(null)
+  }
+
+  function handleRemove(playerId: string) {
+    onRemovePlayer(playerId)
+    setSelection(null)
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
-      style={{ userSelect: 'none' }}
-    >
+    <div style={{ userSelect: 'none' }}>
       {/* Formation selector */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px', marginBottom: 10 }}>
         <p style={{
@@ -138,6 +126,7 @@ export function PitchLineupView({
           value={formationType}
           onChange={e => {
             onFormationChange({ ...tacticState, formation: e.target.value as FormationType })
+            setSelection(null)
           }}
           style={{
             flex: 1, padding: '7px 10px',
@@ -153,7 +142,7 @@ export function PitchLineupView({
       </div>
 
       {/* Pitch with HTML slot overlay */}
-      <div style={{ padding: '0 16px', touchAction: 'none', marginBottom: 16 }}>
+      <div style={{ padding: '0 16px', marginBottom: 16 }}>
         <div style={{ position: 'relative' }}>
           <BandyPitch width="100%" />
 
@@ -162,34 +151,26 @@ export function PitchLineupView({
             {template.slots.map(slot => {
               const pid = slotToPlayer[slot.id]
               const player = pid ? squadPlayers.find(p => p.id === pid) ?? null : null
-              const isDraggingFrom = drag?.fromSlotId === slot.id
-              const isHoverTarget = hoverSlotId === slot.id && !!drag && !isDraggingFrom
-              const isEmpty = !player || isDraggingFrom
+              const isEmpty = !player
+              const isSelected = selection?.type === 'slot' && selection.slotId === slot.id
+              const isTarget = selection !== null && !isSelected
 
               // Slot at top% = (1 - slot.y/100)*100%, left% = slot.x%
-              // Matches the SVG sy = (1 - slot.y/100) * PH calculation
               const topPct = (1 - slot.y / 100) * 100
               const leftPct = slot.x
 
               // Position-match color
               let ringColor = 'var(--accent)'
-              if (player && !isDraggingFrom) {
+              if (player) {
                 if (player.position === slot.position) ringColor = 'var(--success)'
                 else if (ADJACENT_POS[player.position]?.includes(slot.position)) ringColor = 'var(--warning)'
                 else ringColor = 'var(--danger)'
               }
 
-            return (
+              return (
                 <div
                   key={slot.id}
-                  ref={el => {
-                    if (el) slotRefs.current.set(slot.id, el)
-                    else slotRefs.current.delete(slot.id)
-                  }}
-                  onPointerDown={player && !isDraggingFrom
-                    ? e => handleStartDrag(e, player.id, slot.id)
-                    : undefined
-                  }
+                  onClick={() => handleSlotTap(slot.id)}
                   style={{
                     position: 'absolute',
                     left: `${leftPct}%`,
@@ -201,11 +182,9 @@ export function PitchLineupView({
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    cursor: player && !isDraggingFrom ? 'grab' : 'default',
-                    touchAction: 'none',
+                    cursor: 'pointer',
                     pointerEvents: 'auto',
-                    // Pulse animation for empty slots during drag
-                    animation: isEmpty && !!drag
+                    animation: isEmpty && selection !== null
                       ? 'pitchSlotPulse 1.2s ease-in-out infinite'
                       : 'none',
                   }}
@@ -233,12 +212,14 @@ export function PitchLineupView({
                     borderRadius: '50%',
                     background: isEmpty
                       ? 'transparent'
-                      : isHoverTarget
-                        ? `color-mix(in srgb, ${ringColor} 35%, transparent)`
+                      : isSelected
+                        ? `color-mix(in srgb, var(--accent) 40%, transparent)`
                         : `color-mix(in srgb, ${ringColor} 18%, transparent)`,
                     border: isEmpty
-                      ? `1.5px dashed rgba(26,26,24,${isHoverTarget ? '0.7' : '0.3'})`
-                      : `1.5px solid ${isHoverTarget ? ringColor : `color-mix(in srgb, ${ringColor} 55%, transparent)`}`,
+                      ? `1.5px dashed rgba(26,26,24,${isTarget ? '0.7' : '0.3'})`
+                      : isSelected
+                        ? '2px solid var(--accent)'
+                        : `1.5px solid color-mix(in srgb, ${ringColor} 55%, transparent)`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -246,20 +227,59 @@ export function PitchLineupView({
                     fontWeight: 800,
                     color: isEmpty ? 'rgba(26,26,24,0.4)' : '#1A1A18',
                     transition: 'background 120ms, border-color 120ms, transform 120ms',
-                    transform: isHoverTarget ? 'scale(1.18)' : 'scale(1)',
-                    boxShadow: isHoverTarget ? '0 0 6px rgba(196,122,58,0.45)' : 'none',
+                    transform: isSelected ? 'scale(1.18)' : isTarget ? 'scale(1.05)' : 'scale(1)',
+                    boxShadow: isSelected ? '0 0 8px rgba(196,122,58,0.5)' : 'none',
                     fontFamily: 'system-ui, sans-serif',
                   }}>
-                    {!isDraggingFrom && player
+                    {player
                       ? (player.shirtNumber != null ? String(player.shirtNumber) : '?')
                       : slot.label.slice(0, 2)}
                   </div>
+
+                  {/* Player name below */}
+                  {player && (
+                    <span style={{
+                      position: 'absolute',
+                      bottom: -2,
+                      fontSize: 7,
+                      fontWeight: 600,
+                      color: 'rgba(26,26,24,0.65)',
+                      fontFamily: 'system-ui, sans-serif',
+                      whiteSpace: 'nowrap',
+                      pointerEvents: 'none',
+                    }}>
+                      {player.lastName.slice(0, 5)}
+                    </span>
+                  )}
                 </div>
               )
             })}
           </div>
         </div>
       </div>
+
+      {/* Selection hint */}
+      {selection && (
+        <div style={{ padding: '0 16px 8px', textAlign: 'center' }}>
+          <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>
+            {selection.type === 'pill'
+              ? 'Tryck på en plats på planen för att placera spelaren'
+              : 'Tryck på annan plats för att flytta, eller tryck igen för att avmarkera'}
+          </p>
+          {selection.type === 'slot' && (
+            <button
+              onClick={() => handleRemove(selection.playerId)}
+              style={{
+                marginTop: 6, padding: '5px 14px', fontSize: 11, fontWeight: 600,
+                background: 'rgba(176,80,64,0.08)', border: '1px solid rgba(176,80,64,0.25)',
+                color: 'var(--danger)', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+              }}
+            >
+              Ta bort från planen
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Auto-fill — direkt efter planen */}
       <div style={{ padding: '6px 16px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -282,21 +302,21 @@ export function PitchLineupView({
         </button>
       </div>
 
-      {/* Unplaced players — dra till planen */}
+      {/* Unplaced players — tap to select */}
       <div style={{ padding: '10px 16px 4px', borderTop: '1px solid var(--border)' }}>
         <p style={{
           fontSize: 10, fontWeight: 700, letterSpacing: '1.5px',
           textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8,
         }}>
-          Oplacerade — dra till planen
+          Oplacerade — tryck för att välja
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {pillPlayers.map(p => (
-            <DraggablePlayerPill
+            <PlayerPill
               key={p.id}
               player={p}
-              isDragging={drag?.playerId === p.id}
-              onPointerDown={(e, pid) => handleStartDrag(e, pid, null)}
+              isSelected={selection?.type === 'pill' && selection.playerId === p.id}
+              onTap={handlePillTap}
             />
           ))}
           {pillPlayers.length === 0 && (
@@ -306,33 +326,6 @@ export function PitchLineupView({
           )}
         </div>
       </div>
-
-      {/* Drag ghost — follows pointer */}
-      {drag && dragPlayer && (
-        <div style={{
-          position: 'fixed',
-          left: drag.x - 22,
-          top: drag.y - 30,
-          width: 44,
-          height: 44,
-          borderRadius: '50%',
-          background: 'rgba(196,122,58,0.92)',
-          border: '2px solid var(--accent)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          pointerEvents: 'none',
-          zIndex: 1000,
-          transform: 'scale(1.15)',
-          boxShadow: '0 4px 18px rgba(196,122,58,0.5)',
-          fontFamily: 'system-ui, sans-serif',
-          fontSize: 13,
-          fontWeight: 800,
-          color: '#fff',
-        }}>
-          {dragPlayer.shirtNumber ?? '?'}
-        </div>
-      )}
     </div>
   )
 }

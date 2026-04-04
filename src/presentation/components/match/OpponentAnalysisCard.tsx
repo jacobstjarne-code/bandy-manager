@@ -93,9 +93,16 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
       )}
 
       {displayAnalysis.level === 'basic' && (
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>
-          🔎 Scouta för fördjupad analys (1 budget · kvar: {game.scoutBudget})
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+            🔎 Fördjupad analys (1 budget)
+          </span>
+          <span style={{ fontSize: 10, letterSpacing: 0.5 }}>
+            {Array.from({ length: 10 }, (_, i) => (
+              <span key={i} style={{ color: i < game.scoutBudget ? 'var(--accent)' : 'var(--border)' }}>●</span>
+            ))}
+          </span>
+        </div>
       )}
     </div>
   )

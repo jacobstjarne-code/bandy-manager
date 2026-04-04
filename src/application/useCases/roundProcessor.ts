@@ -1001,6 +1001,29 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   const marketUpdatedPlayers = updateAllMarketValues(finalPlayers, game.currentSeason)
 
+  // ── Market value change tracking — inbox for significant changes ──────────
+  const prevValues = game.previousMarketValues ?? {}
+  const newPrevValues: Record<string, number> = {}
+  const marketValueInbox: InboxItem[] = []
+  for (const p of marketUpdatedPlayers.filter(pp => pp.clubId === game.managedClubId)) {
+    const prev = prevValues[p.id] ?? p.marketValue
+    newPrevValues[p.id] = p.marketValue
+    const delta = p.marketValue - prev
+    const pct = prev > 0 ? Math.abs(delta) / prev : 0
+    if (pct >= 0.15 && Math.abs(delta) >= 10000) {
+      const arrow = delta > 0 ? '📈' : '📉'
+      const sign = delta > 0 ? '+' : ''
+      marketValueInbox.push({
+        id: `mv_${p.id}_${nextMatchday}`,
+        date: game.currentDate,
+        type: 'playerDevelopment' as InboxItemType,
+        title: `${arrow} ${p.firstName} ${p.lastName} — marknadsvärde ${sign}${Math.round(delta / 1000)} tkr`,
+        body: `Nytt värde: ${Math.round(p.marketValue / 1000)} tkr (${sign}${Math.round(pct * 100)}%)`,
+        isRead: false,
+      })
+    }
+  }
+
   const managedClubStanding = standings.find(s => s.clubId === game.managedClubId) ?? null
 
   // ── Economy: wages, match revenue, sponsorship per round ─────────────────
@@ -1684,6 +1707,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       (log, entry) => appendFinanceLog(log, entry),
       game.financeLog ?? []
     ),
+    previousMarketValues: newPrevValues,
+    storylines: game.storylines ?? [],
+    clubLegends: game.clubLegends ?? [],
+  }
+
+  // Append market value change notifications to inbox
+  if (marketValueInbox.length > 0) {
+    updatedGame = { ...updatedGame, inbox: [...updatedGame.inbox, ...marketValueInbox] }
   }
 
   // Pre-generate weather for next matchday so dashboard/matchScreen can show it

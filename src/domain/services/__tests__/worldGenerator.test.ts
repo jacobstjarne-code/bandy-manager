@@ -110,11 +110,11 @@ describe('generateWorld', () => {
     }
   })
 
-  it('all clubs have arenaCapacity between 1000 and 5000', () => {
+  it('all clubs have arenaCapacity between 200 and 1000 (bandyscale: rep*7+150)', () => {
     for (const club of world.clubs) {
       expect(club.arenaCapacity).toBeDefined()
-      expect(club.arenaCapacity).toBeGreaterThanOrEqual(1000)
-      expect(club.arenaCapacity).toBeLessThanOrEqual(5000)
+      expect(club.arenaCapacity).toBeGreaterThanOrEqual(200)
+      expect(club.arenaCapacity).toBeLessThanOrEqual(1000)
     }
   })
 })

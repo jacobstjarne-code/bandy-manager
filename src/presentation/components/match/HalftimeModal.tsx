@@ -181,7 +181,7 @@ export function HalftimeModal({
                 background: current === o.val ? 'var(--accent)' : 'rgba(196,122,58,0.08)',
                 border: `1px solid ${current === o.val ? 'var(--accent)' : 'rgba(196,122,58,0.2)'}`,
                 borderRadius: 6,
-                color: current === o.val ? '#fff' : 'var(--text-secondary)',
+                color: current === o.val ? 'var(--text-light)' : 'var(--text-secondary)',
                 cursor: 'pointer',
               }}
             >{o.label}</button>
@@ -308,7 +308,7 @@ export function HalftimeModal({
               { val: TacticPress.Medium, label: 'Medium' },
               { val: TacticPress.High, label: 'Hög' },
             ], press, v => onSetPress(v as TacticPress))}
-            <p style={{ fontSize: 10, color: '#6a7d8f', fontStyle: 'italic', marginBottom: 0 }}>
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 0 }}>
               💡 Rekommendation: {tacticRec}
             </p>
           </div>
@@ -319,27 +319,27 @@ export function HalftimeModal({
           <div style={{ textAlign: 'left' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, margin: 0 }}>Spelarbyte</p>
-              <span style={{ fontSize: 10, color: '#6a7d8f' }}>{htSubs.length}/3</span>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{htSubs.length}/3</span>
             </div>
 
             {/* Queued subs */}
             {htSubs.map((sub, idx) => (
               <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, padding: '5px 8px', background: 'var(--bg-elevated)', borderRadius: 6 }}>
                 <span style={{ fontSize: 11, color: 'var(--text-primary)' }}>
-                  <span style={{ color: '#f87171' }}>{getPlayerLabel(sub.outId)}</span>
-                  <span style={{ color: '#6a7d8f', margin: '0 4px' }}>→</span>
-                  <span style={{ color: '#4ade80' }}>{getPlayerLabel(sub.inId)}</span>
+                  <span style={{ color: 'var(--danger)' }}>{getPlayerLabel(sub.outId)}</span>
+                  <span style={{ color: 'var(--text-muted)', margin: '0 4px' }}>→</span>
+                  <span style={{ color: 'var(--success)' }}>{getPlayerLabel(sub.inId)}</span>
                 </span>
                 <button
                   onClick={() => removeSub(idx)}
-                  style={{ background: 'none', border: 'none', color: '#6a7d8f', fontSize: 14, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 14, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}
                 >✕</button>
               </div>
             ))}
 
             {htSubs.length < 3 && (
               <>
-                <p style={{ fontSize: 10, color: '#6a7d8f', marginBottom: 8 }}>
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 8 }}>
                   {pendingOutId
                     ? 'Välj avbytare att sätta in'
                     : 'Välj spelare att byta ut'}
@@ -358,7 +358,7 @@ export function HalftimeModal({
                           padding: '6px 8px', textAlign: 'left', fontSize: 11,
                           background: isOut ? 'rgba(248,113,113,0.15)' : 'var(--bg-elevated)',
                           border: `1px solid ${isOut ? 'rgba(248,113,113,0.5)' : 'var(--border)'}`,
-                          borderRadius: 5, color: isOut ? '#f87171' : 'var(--text-secondary)',
+                          borderRadius: 5, color: isOut ? 'var(--danger)' : 'var(--text-secondary)',
                           cursor: 'pointer', fontWeight: isOut ? 700 : 400,
                         }}
                       >
@@ -383,7 +383,7 @@ export function HalftimeModal({
                           background: canSelect ? 'rgba(74,222,128,0.10)' : 'var(--bg-elevated)',
                           border: `1px solid ${canSelect ? 'rgba(74,222,128,0.35)' : 'var(--border)'}`,
                           borderRadius: 5,
-                          color: canSelect ? '#4ade80' : '#4a5568',
+                          color: canSelect ? 'var(--success)' : '#4a5568',
                           cursor: canSelect ? 'pointer' : 'default',
                         }}
                       >
@@ -404,7 +404,7 @@ export function HalftimeModal({
             width: '100%', padding: '12px', marginTop: 16,
             background: isBigMatch ? 'var(--accent)' : 'var(--accent)',
             border: 'none', borderRadius: 'var(--radius)',
-            color: isBigMatch ? '#1A1A18' : '#fff', fontSize: 15, fontWeight: 700,
+            color: isBigMatch ? 'var(--text-primary)' : 'var(--text-light)', fontSize: 15, fontWeight: 700,
             cursor: 'pointer',
           }}
         >
