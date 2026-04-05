@@ -90,11 +90,9 @@ export function LineupStep({
         <OpponentAnalysisCard fixture={nextFixture} opponent={opponent} game={game} onError={onError} />
       )}
 
-      {/* Tab bar — same style as ClubScreen */}
+      {/* Tab bar */}
       <div style={{
         display: 'flex',
-        background: 'var(--bg-surface)',
-        borderBottom: '1px solid var(--border)',
         margin: '0 0 12px',
       }}>
         {(['list', 'pitch'] as const).map(mode => (
@@ -133,14 +131,10 @@ export function LineupStep({
 
           {/* Auto-fill — direkt efter plangrafiken */}
           <div style={{ padding: '0 16px 8px', display: 'flex', justifyContent: 'flex-end' }}>
-            <button
-              onClick={onAutoFill}
-              style={{
-                padding: '8px 16px', fontSize: 13, fontWeight: 700,
-                background: 'rgba(196,122,58,0.08)', border: '1.5px solid var(--accent)',
-                color: 'var(--accent)', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
-              }}
-            >
+            <button onClick={onAutoFill} className="btn btn-ghost" style={{
+              padding: '8px 16px', fontSize: 13, fontWeight: 600,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            }}>
               ✨ Generera bästa elvan
             </button>
           </div>

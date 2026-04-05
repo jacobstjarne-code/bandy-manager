@@ -32,13 +32,11 @@ export function LineupFormationView({
   const formationType = tacticState.formation ?? '3-3-4'
   const template = FORMATIONS[formationType]
 
-  // lineupSlots is the canonical mapping: slotId → playerId | null
   const slotToPlayer: Record<string, string> = {}
   for (const [slotId, pid] of Object.entries(tacticState.lineupSlots ?? {})) {
     if (pid && startingIds.includes(pid)) slotToPlayer[slotId] = pid
   }
 
-  // If startingIds exist but no assignments, auto-assign based on position
   if (startingIds.length > 0 && Object.keys(slotToPlayer).length === 0) {
     const startingPlayers = squadPlayers.filter(p => startingIds.includes(p.id))
     const autoSlots = autoAssignFormation(template, startingPlayers)
@@ -46,8 +44,6 @@ export function LineupFormationView({
       if (pid) slotToPlayer[slotId] = pid
     }
   }
-
-  const PW = 220, PH = 130
 
   return (
     <div style={{ padding: '0 16px', marginBottom: 16 }}>
@@ -73,74 +69,99 @@ export function LineupFormationView({
         </select>
       </div>
 
-      <BandyPitch width="100%">
-        {template.slots.map(slot => {
-          const assignedPid = slotToPlayer[slot.id]
-          const assignedPlayer = assignedPid ? squadPlayers.find(p => p.id === assignedPid) : null
-          const isSelected = selectedSlotId === slot.id
-          const sx = (slot.x / 100) * PW
-          const sy = (1 - slot.y / 100) * PH
+      {/* Pitch with HTML slot overlay — SAME technique as PitchLineupView */}
+      <div style={{ position: 'relative' }}>
+        <BandyPitch width="100%" />
 
-          let ringColor = 'var(--accent)'
-          if (assignedPlayer) {
-            if (assignedPlayer.position === slot.position) ringColor = 'var(--success)'
-            else if (ADJACENT_POS[assignedPlayer.position]?.includes(slot.position)) ringColor = 'var(--warning)'
-            else ringColor = 'var(--danger)'
-          }
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+          {template.slots.map(slot => {
+            const pid = slotToPlayer[slot.id]
+            const player = pid ? squadPlayers.find(p => p.id === pid) ?? null : null
+            const isEmpty = !player
+            const isSelected = selectedSlotId === slot.id
 
-          const circleR = 16
-          const posLabel = slot.label.toUpperCase()
-          const circleText = assignedPlayer
-            ? (assignedPlayer.shirtNumber != null ? String(assignedPlayer.shirtNumber) : assignedPlayer.lastName.slice(0, 4))
-            : ''
-          const nameText = assignedPlayer ? assignedPlayer.lastName.slice(0, 5) : ''
+            const topPct = (1 - slot.y / 100) * 100
+            const leftPct = slot.x
 
-          return (
-            <g
-              key={slot.id}
-              onClick={() => onSlotClick(slot.id)}
-              style={{ cursor: 'pointer' }}
-            >
-              {/* Position label above circle */}
-              <text
-                x={sx} y={sy - circleR - 3}
-                textAnchor="middle" dominantBaseline="auto"
-                fill="rgba(26,26,24,0.65)" fontSize={6} fontWeight="700"
-                fontFamily="system-ui, sans-serif" letterSpacing="0.5"
+            let ringColor = 'var(--accent)'
+            if (player) {
+              if (player.position === slot.position) ringColor = 'var(--success)'
+              else if (ADJACENT_POS[player.position]?.includes(slot.position)) ringColor = 'var(--warning)'
+              else ringColor = 'var(--danger)'
+            }
+
+            return (
+              <div
+                key={slot.id}
+                onClick={() => onSlotClick(slot.id)}
+                style={{
+                  position: 'absolute',
+                  left: `${leftPct}%`,
+                  top: `${topPct}%`,
+                  transform: 'translate(-50%, -50%)',
+                  width: 44,
+                  height: 58,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  pointerEvents: 'auto',
+                }}
               >
-                {posLabel}
-              </text>
-              <circle
-                cx={sx} cy={sy} r={circleR}
-                fill="rgba(255,255,255,0.5)"
-                stroke={isSelected ? 'var(--accent)' : ringColor}
-                strokeWidth={isSelected ? 2 : 1.5}
-              />
-              {/* Shirt number in circle (only when player assigned) */}
-              {assignedPlayer && (
-                <text
-                  x={sx} y={sy}
-                  textAnchor="middle" dominantBaseline="middle"
-                  fill="var(--text-primary)" fontSize={10} fontWeight="700"
-                  fontFamily="system-ui, sans-serif"
-                >
-                  {circleText}
-                </text>
-              )}
-              {/* Player last name below circle */}
-              {nameText && (
-                <text
-                  x={sx} y={sy + circleR + 4}
-                  textAnchor="middle" dominantBaseline="hanging"
-                  fill="rgba(26,26,24,0.7)" fontSize={4.5} fontFamily="system-ui, sans-serif"
-                >
-                  {nameText}
-                </text>
-              )}
-            </g>
-          )
-        })}
-      </BandyPitch>
+                {/* Position label above circle */}
+                <span style={{
+                  position: 'absolute',
+                  top: -5,
+                  fontSize: 8,
+                  fontWeight: 700,
+                  color: isEmpty ? 'rgba(26,26,24,0.55)' : 'rgba(26,26,24,0.65)',
+                  letterSpacing: '0.3px',
+                  fontFamily: 'system-ui, sans-serif',
+                  lineHeight: 1,
+                  whiteSpace: 'nowrap',
+                  pointerEvents: 'none',
+                }}>
+                  {slot.label.toUpperCase()}
+                </span>
+
+                {/* Circle — IDENTICAL to PitchLineupView */}
+                <div style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  background: isEmpty
+                    ? 'transparent'
+                    : isSelected
+                      ? `color-mix(in srgb, var(--accent) 40%, transparent)`
+                      : `color-mix(in srgb, ${ringColor} 18%, transparent)`,
+                  border: isEmpty
+                    ? '1.5px dashed rgba(26,26,24,0.3)'
+                    : isSelected
+                      ? '2px solid var(--accent)'
+                      : `1.5px solid color-mix(in srgb, ${ringColor} 55%, transparent)`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: isEmpty ? 7 : 10,
+                  fontWeight: 800,
+                  color: isEmpty ? 'rgba(26,26,24,0.4)' : 'var(--text-primary)',
+                  transition: 'background 120ms, border-color 120ms, transform 120ms',
+                  transform: isSelected ? 'scale(1.18)' : 'scale(1)',
+                  boxShadow: isSelected ? '0 0 8px rgba(196,122,58,0.5)' : 'none',
+                  fontFamily: 'system-ui, sans-serif',
+                }}>
+                  {player
+                    ? (player.shirtNumber != null ? String(player.shirtNumber) : '?')
+                    : slot.label.slice(0, 2)}
+                </div>
+
+                {/* NO name text — shown in legend/list below */}
+              </div>
+            )
+          })}
+        </div>
+      </div>
 
       {selectedSlotId && (
         <p style={{ fontSize: 12, color: 'var(--accent)', textAlign: 'center', marginTop: 6, fontWeight: 600 }}>

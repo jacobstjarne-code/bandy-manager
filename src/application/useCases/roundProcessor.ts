@@ -746,6 +746,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // Track which fixtures were already completed before this round (for dedup)
+  const fixturesCompletedBeforeRound = new Set(
+    game.fixtures.filter(f => f.status === FixtureStatus.Completed).map(f => f.id)
+  )
+
   // ── Update playoff bracket if active ─────────────────────────────────
   let updatedBracket = game.playoffBracket
   let bracketNewFixtures: Fixture[] = []
@@ -763,11 +768,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       }
     }
 
+    // Only update series for fixtures NEWLY completed this round
+    const newlyCompletedThisRound = simulatedFixtures.filter(f =>
+      f.status === FixtureStatus.Completed && !fixturesCompletedBeforeRound.has(f.id)
+    )
+
     type AnyPlayoffSeries = (typeof updatedBracket.quarterFinals)[0]
 
     const updateSeries = (series: AnyPlayoffSeries): AnyPlayoffSeries => {
       let s = { ...series }
-      for (const f of completedThisRound) {
+      for (const f of newlyCompletedThisRound) {
         if (s.fixtures.includes(f.id)) {
           s = updateSeriesAfterMatch(s, f)
         }
@@ -911,10 +921,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   let cupNewFixtures: Fixture[] = []
 
   if (updatedCupBracket !== null && !updatedCupBracket.completed) {
-    const completedThisRound = simulatedFixtures.filter(f => f.status === FixtureStatus.Completed && f.isCup)
+    // Only process cup fixtures NEWLY completed this round (not live-played ones
+    // that were already counted in saveLiveMatchResult)
+    const newlyCompletedCupThisRound = simulatedFixtures.filter(f =>
+      f.status === FixtureStatus.Completed && f.isCup && !fixturesCompletedBeforeRound.has(f.id)
+    )
 
-    if (completedThisRound.length > 0) {
-      updatedCupBracket = updateCupBracketAfterRound(updatedCupBracket, completedThisRound)
+    if (newlyCompletedCupThisRound.length > 0) {
+      updatedCupBracket = updateCupBracketAfterRound(updatedCupBracket, newlyCompletedCupThisRound)
 
       // Check if the current cup round is fully decided
       const roundsWithMatches = [...new Set(updatedCupBracket.matches.map(m => m.round))]
