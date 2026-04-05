@@ -68,6 +68,14 @@ export interface LocalPolitician {
   corruption?: number          // 0-100
 }
 
+export interface PoliticianInteractionLog {
+  invite?: number         // last round invited
+  budget?: number         // last round presented budget
+  budgetSeason?: number   // season of last budget presentation
+  apply?: number          // last round applied for grant
+  applySeason?: number    // season of last grant application
+}
+
 export interface StandingRow {
   clubId: string
   played: number
@@ -358,6 +366,7 @@ export interface SaveGame {
   localPaperName?: string
   patron?: Patron
   localPolitician?: LocalPolitician
+  politicianLastInteraction?: PoliticianInteractionLog
   boardPersonalities?: BoardMember[]
   hallDebateCount?: number
   lastHallDebateRound?: number
@@ -535,4 +544,5 @@ export interface AllTimeRecords {
   bestFinish: { position: number; season: number } | null
   biggestWin: { score: string; opponent: string; season: number; round: number } | null
   championSeasons: number[]
+  cupWinSeasons: number[]
 }

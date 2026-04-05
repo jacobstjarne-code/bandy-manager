@@ -1181,7 +1181,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Apply cup prizes to club budgets based on this round's cup results
   let cupPrizedClubs = financiallyUpdatedClubs
   if (updatedCupBracket && game.cupBracket) {
-    const CUP_PRIZES: Record<number, number> = { 1: 10000, 2: 30000, 3: 100000 }
+    const CUP_PRIZES: Record<number, number> = { 1: 10000, 2: 30000, 3: 50000, 4: 150000 }
     const RUNNER_UP_PRIZE = 50000
 
     const completedCupThisRound = simulatedFixtures.filter(
@@ -1195,7 +1195,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const winnerId = match.winnerId
       const loserId = fixture.homeClubId === winnerId ? fixture.awayClubId : fixture.homeClubId
       const winPrize = CUP_PRIZES[match.round] ?? 0
-      const losePrize = match.round === 3 ? RUNNER_UP_PRIZE : 0
+      const losePrize = match.round === 4 ? RUNNER_UP_PRIZE : 0
 
       cupPrizedClubs = applyFinanceChange(cupPrizedClubs, winnerId, winPrize)
       if (losePrize > 0) cupPrizedClubs = applyFinanceChange(cupPrizedClubs, loserId, losePrize)

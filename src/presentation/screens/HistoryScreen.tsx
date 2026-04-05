@@ -281,7 +281,13 @@ export function HistoryScreen() {
             <RecordRow label="Största seger" value={game.allTimeRecords.biggestWin.score} sub={`vs ${game.allTimeRecords.biggestWin.opponent} · ${game.allTimeRecords.biggestWin.season}`} />
           )}
           {game.allTimeRecords.championSeasons.length > 0 && (
-            <RecordRow label="SM-guld" value={`${game.allTimeRecords.championSeasons.length}×`} sub={game.allTimeRecords.championSeasons.join(', ')} isLast />
+            <RecordRow label="SM-guld" value={`${game.allTimeRecords.championSeasons.length}×`} sub={game.allTimeRecords.championSeasons.join(', ')} />
+          )}
+          {(game.allTimeRecords.cupWinSeasons ?? []).length > 0 && (
+            <RecordRow label="Cupsegrar" value={`${game.allTimeRecords.cupWinSeasons!.length}×`} sub={game.allTimeRecords.cupWinSeasons!.join(', ')} isLast />
+          )}
+          {game.allTimeRecords.championSeasons.length === 0 && (game.allTimeRecords.cupWinSeasons ?? []).length === 0 && (
+            <RecordRow label="Titlar" value="—" sub="Inga titlar ännu" isLast />
           )}
         </div>
       )}

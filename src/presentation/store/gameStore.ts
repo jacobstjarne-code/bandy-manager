@@ -58,6 +58,7 @@ interface GameState {
   talkToPlayer: (playerId: string, choice: 'encourage' | 'demand' | 'future', currentRound: number) => { moraleChange: number; formChange: number; feedback: string; inboxTriggered: boolean }
   clearPreSeason: () => void
   setBudgetPriority: (priority: 'squad' | 'balanced' | 'youth') => void
+  interactWithPolitician: (action: 'invite' | 'budget' | 'apply') => { success: boolean; message: string }
   setTransferBudget: (amount: number) => void
   buyScoutRounds: () => void
   activateCommunity: (key: string, level: string) => { success: boolean; error?: string }
@@ -340,6 +341,103 @@ export const useGameStore = create<GameState>()(
         if (!club || club.finances < 15000) return
         const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -15000)
         set({ game: { ...game, clubs: updatedClubs, scoutBudget: (game.scoutBudget ?? 10) + 5 } })
+      },
+
+      interactWithPolitician: (action: 'invite' | 'budget' | 'apply'): { success: boolean; message: string } => {
+        const { game } = get()
+        if (!game || !game.localPolitician) return { success: false, message: 'Ingen kommunföreträdare.' }
+
+        const pol = game.localPolitician
+        const club = game.clubs.find(c => c.id === game.managedClubId)!
+        const lastInteraction = game.politicianLastInteraction ?? {}
+        const currentRound = game.fixtures
+          .filter(f => f.status === 'completed' && !f.isCup)
+          .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+
+        if (action === 'invite') {
+          // Cooldown: 5 rounds between invites
+          if (lastInteraction.invite && currentRound - lastInteraction.invite < 5) {
+            return { success: false, message: `Vänta till omgång ${lastInteraction.invite + 5}.` }
+          }
+          const boost = 5 + Math.floor(Math.random() * 4)
+          const newRel = Math.min(100, pol.relationship + boost)
+          const updatedPol = { ...pol, relationship: newRel }
+          set({ game: {
+            ...game,
+            localPolitician: updatedPol,
+            politicianLastInteraction: { ...lastInteraction, invite: currentRound },
+            inbox: [{
+              id: `inbox_pol_invite_${currentRound}_${game.currentSeason}`,
+              date: game.currentDate,
+              type: InboxItemType.KommunBidrag,
+              title: `${pol.name} på besök`,
+              body: `${pol.name} tack at ja till inbjudan och såg matchen. "Imponerande engagemang från publiken." Relationen stärktes.`,
+              isRead: false,
+            }, ...game.inbox],
+          }})
+          return { success: true, message: `${pol.name} uppskattar inbjudan! Relation +${boost}.` }
+        }
+
+        if (action === 'budget') {
+          if (lastInteraction.budget && lastInteraction.budgetSeason === game.currentSeason) {
+            return { success: false, message: 'Ni har redan presenterat budget denna säsong.' }
+          }
+          const positive = club.finances > 0
+          const relChange = positive ? 3 + Math.floor(Math.random() * 3) : -(3 + Math.floor(Math.random() * 3))
+          const newRel = Math.max(0, Math.min(100, pol.relationship + relChange))
+          const updatedPol = { ...pol, relationship: newRel }
+          const msg = positive
+            ? `${pol.name} nickar godkännande. "Sund ekonomi. Det gillar jag." Relation +${relChange}.`
+            : `${pol.name} ser bekymrad ut. "Den här ekonomin oroar mig." Relation ${relChange}.`
+          set({ game: {
+            ...game,
+            localPolitician: updatedPol,
+            politicianLastInteraction: { ...lastInteraction, budget: currentRound, budgetSeason: game.currentSeason },
+            inbox: [{
+              id: `inbox_pol_budget_${game.currentSeason}`,
+              date: game.currentDate,
+              type: InboxItemType.KommunBidrag,
+              title: positive ? 'Budgetpresentation gick bra' : 'Budgetpresentation väckte oro',
+              body: msg,
+              isRead: false,
+            }, ...game.inbox],
+          }})
+          return { success: positive, message: msg }
+        }
+
+        if (action === 'apply') {
+          if (lastInteraction.apply && lastInteraction.applySeason === game.currentSeason) {
+            return { success: false, message: 'Ni har redan ansökt denna säsong.' }
+          }
+          if (pol.relationship < 50) {
+            const relDrop = 3
+            const updatedPol = { ...pol, relationship: Math.max(0, pol.relationship - relDrop) }
+            set({ game: {
+              ...game,
+              localPolitician: updatedPol,
+              politicianLastInteraction: { ...lastInteraction, apply: currentRound, applySeason: game.currentSeason },
+            }})
+            return { success: false, message: `${pol.name} avslår: "Relationen är inte stark nog. Jobba på förtroendet först."` }
+          }
+          const grant = 20000 + Math.floor(Math.random() * 20000)
+          const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, grant)
+          set({ game: {
+            ...game,
+            clubs: updatedClubs,
+            politicianLastInteraction: { ...lastInteraction, apply: currentRound, applySeason: game.currentSeason },
+            inbox: [{
+              id: `inbox_pol_grant_${game.currentSeason}`,
+              date: game.currentDate,
+              type: InboxItemType.KommunBidrag,
+              title: `Extra bidrag beviljat: ${Math.round(grant / 1000)} tkr`,
+              body: `${pol.name}: "Ni gör ett bra jobb för orten. Här är ett extra anslag på ${grant.toLocaleString('sv-SE')} kr."`,
+              isRead: false,
+            }, ...game.inbox],
+          }})
+          return { success: true, message: `Beviljat! +${Math.round(grant / 1000)} tkr till klubbkassan.` }
+        }
+
+        return { success: false, message: 'Okänd handling.' }
       },
 
       // Action slices — override inline implementations above

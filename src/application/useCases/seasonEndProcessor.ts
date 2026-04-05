@@ -926,6 +926,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
             : (game.localPolitician?.kommunBidrag ?? 0),
         }
       : game.localPolitician,
+    politicianLastInteraction: {},
     resolvedEventIds: [
       ...(game.resolvedEventIds ?? []),
       ...(licenseReview?.status !== 'denied' ? [] : []),
@@ -948,6 +949,7 @@ function updateAllTimeRecords(
     bestFinish: null,
     biggestWin: null,
     championSeasons: [],
+    cupWinSeasons: [],
   }
 
   const season = summary.season
@@ -988,5 +990,9 @@ function updateAllTimeRecords(
     ? [...prev.championSeasons, season]
     : prev.championSeasons
 
-  return { mostGoalsSeason, mostAssistsSeason, highestRatingSeason, bestFinish, biggestWin, championSeasons }
+  const cupWinSeasons = summary.cupResult === 'winner'
+    ? [...(prev.cupWinSeasons ?? []), season]
+    : (prev.cupWinSeasons ?? [])
+
+  return { mostGoalsSeason, mostAssistsSeason, highestRatingSeason, bestFinish, biggestWin, championSeasons, cupWinSeasons }
 }

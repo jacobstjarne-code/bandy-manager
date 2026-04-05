@@ -251,6 +251,30 @@ export function SeasonSummaryScreen() {
           </div>
         </div>
 
+        {/* CUP RESULT */}
+        {summary.cupResult && summary.cupResult !== 'eliminated' && (
+          <div className="card-sharp card-stagger-2" style={{ padding: '10px 14px', marginBottom: 8 }}>
+            <SectionLabel>SVENSKA CUPEN</SectionLabel>
+            <div style={{ textAlign: 'center', padding: '8px 0' }}>
+              <span style={{ fontSize: summary.cupResult === 'winner' ? 32 : 24 }}>
+                {summary.cupResult === 'winner' ? '🏆' : summary.cupResult === 'finalist' ? '🥈' : '🏒'}
+              </span>
+              <p style={{
+                fontSize: summary.cupResult === 'winner' ? 16 : 14,
+                fontWeight: 700,
+                color: summary.cupResult === 'winner' ? 'var(--accent)' : 'var(--text-primary)',
+                marginTop: 6,
+                fontFamily: 'var(--font-display)',
+              }}>
+                {summary.cupResult === 'winner' ? 'CUPVINNARE!' : summary.cupResult === 'finalist' ? 'Cupfinalist' : summary.cupResult === 'semifinal' ? 'Cupsemifinalist' : 'Cupkvartsfinalist'}
+              </p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                Svenska Cupen {summary.season}/{summary.season + 1}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* STATISTICS */}
         <div className="card-sharp card-stagger-3" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <SectionLabel>STATISTIK</SectionLabel>

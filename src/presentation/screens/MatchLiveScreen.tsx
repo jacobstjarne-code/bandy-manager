@@ -55,7 +55,7 @@ export function MatchLiveScreen() {
   const isCupFinal = fixture?.isCup === true && (() => {
     const bracket = game?.cupBracket
     if (!bracket) return false
-    const finalMatch = bracket.matches.find(m => m.round === 3)
+    const finalMatch = bracket.matches.find(m => m.round === 4)
     return finalMatch?.fixtureId === fixture.id
   })()
 

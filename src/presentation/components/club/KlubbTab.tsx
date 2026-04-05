@@ -5,7 +5,6 @@ import type { SaveGame, StandingRow } from '../../../domain/entities/SaveGame'
 import { ClubExpectation, ClubStyle } from '../../../domain/enums'
 import { StatBar } from '../StatBar'
 import { SectionCard } from '../SectionCard'
-import { exportSaveAsJson, importSaveFromJson } from '../../../infrastructure/persistence/saveGameStorage'
 
 function expectationLabel(e: ClubExpectation): string {
   const map: Record<ClubExpectation, string> = {
@@ -61,22 +60,11 @@ interface KlubbTabProps {
   game: SaveGame
   standing: StandingRow | null | undefined
   navigate: NavigateFunction
+  interactWithPolitician?: (action: 'invite' | 'budget' | 'apply') => { success: boolean; message: string }
 }
 
-export function KlubbTab({ club, game, standing, navigate }: KlubbTabProps) {
-  const [importStatus, setImportStatus] = useState<'idle' | 'ok' | 'error'>('idle')
-
-  async function handleImport() {
-    setImportStatus('idle')
-    const imported = await importSaveFromJson()
-    if (imported) {
-      setImportStatus('ok')
-      setTimeout(() => setImportStatus('idle'), 3000)
-    } else {
-      setImportStatus('error')
-      setTimeout(() => setImportStatus('idle'), 3000)
-    }
-  }
+export function KlubbTab({ club, game, standing, navigate, interactWithPolitician }: KlubbTabProps) {
+  const [polFeedback, setPolFeedback] = useState<{ text: string; ok: boolean } | null>(null)
 
   return (
     <>
@@ -121,7 +109,7 @@ export function KlubbTab({ club, game, standing, navigate }: KlubbTabProps) {
       {game.localPolitician && (
         <SectionCard title="🏛️ Kommun" stagger={2}>
           <div style={{ marginBottom: 10 }}>
-            <p style={{ fontSize: 13, fontWeight: 600 }}>{game.localPolitician.name} ({game.localPolitician.party})</p>
+            <p style={{ fontSize: 13, fontWeight: 600 }}>{game.localPolitician.name} ({game.localPolitician.party.replace(/[()]/g, '')})</p>
             <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
               Agenda: {game.localPolitician.agenda} · Relation: {game.localPolitician.relationship}/100
             </p>
@@ -130,17 +118,37 @@ export function KlubbTab({ club, game, standing, navigate }: KlubbTabProps) {
               {game.localPolitician.mandatExpires && ` · Nästa val: ${game.localPolitician.mandatExpires}`}
             </p>
           </div>
+          {polFeedback && (
+            <p style={{ fontSize: 12, color: polFeedback.ok ? 'var(--success)' : 'var(--danger)', marginBottom: 8, fontWeight: 600 }}>
+              {polFeedback.ok ? '✓' : '✗'} {polFeedback.text}
+            </p>
+          )}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             <button className="btn btn-ghost" style={{ flex: 1, padding: '8px 6px', fontSize: 11 }}
-              onClick={() => { /* TODO: bjud in */ }}>
+              onClick={() => {
+                if (!interactWithPolitician) return
+                const r = interactWithPolitician('invite')
+                setPolFeedback({ text: r.message, ok: r.success })
+                setTimeout(() => setPolFeedback(null), 4000)
+              }}>
               📋 Bjud in till match
             </button>
             <button className="btn btn-ghost" style={{ flex: 1, padding: '8px 6px', fontSize: 11 }}
-              onClick={() => { /* TODO: presentera budget */ }}>
+              onClick={() => {
+                if (!interactWithPolitician) return
+                const r = interactWithPolitician('budget')
+                setPolFeedback({ text: r.message, ok: r.success })
+                setTimeout(() => setPolFeedback(null), 4000)
+              }}>
               📊 Presentera budget
             </button>
             <button className="btn btn-ghost" style={{ flex: 1, padding: '8px 6px', fontSize: 11 }}
-              onClick={() => { /* TODO: ansök om bidrag */ }}>
+              onClick={() => {
+                if (!interactWithPolitician) return
+                const r = interactWithPolitician('apply')
+                setPolFeedback({ text: r.message, ok: r.success })
+                setTimeout(() => setPolFeedback(null), 4000)
+              }}>
               📝 Ansök om bidrag
             </button>
           </div>
@@ -168,10 +176,34 @@ export function KlubbTab({ club, game, standing, navigate }: KlubbTabProps) {
         <InfoRow label="Styrelseförväntning" value={expectationLabel(club.boardExpectation)} />
         <InfoRow label="Supporterförväntning" value={expectationLabel(club.fanExpectation)} />
         <InfoRow label="Spelstil" value={styleLabel(club.preferredStyle)} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10, marginBottom: (game.boardObjectives ?? []).length > 0 ? 10 : 0, borderBottom: (game.boardObjectives ?? []).length > 0 ? '1px solid var(--border)' : 'none' }}>
           <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Konstis</span>
           <span style={{ fontSize: 14, fontWeight: 600 }}>{club.hasArtificialIce ? 'Ja' : 'Nej'}</span>
         </div>
+        {(game.boardObjectives ?? []).length > 0 && (
+          <div>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+              📋 Styrelsens uppdrag
+            </p>
+            {(game.boardObjectives ?? []).map((obj, i) => {
+              const statusColor = obj.status === 'met' ? 'var(--success)' : obj.status === 'at_risk' ? 'var(--warning)' : obj.status === 'failed' ? 'var(--danger)' : 'var(--text-secondary)'
+              const statusIcon = obj.status === 'met' ? '✅' : obj.status === 'at_risk' ? '⚠️' : obj.status === 'failed' ? '❌' : '📌'
+              return (
+                <div key={obj.id} style={{ paddingBottom: 8, marginBottom: 8, borderBottom: i < (game.boardObjectives ?? []).length - 1 ? '1px solid var(--border)' : 'none' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{statusIcon} {obj.label}</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: statusColor }}>
+                      {obj.status === 'met' ? 'Uppfyllt' : obj.status === 'at_risk' ? 'I fara' : obj.status === 'failed' ? 'Missat' : 'Aktivt'}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                    {obj.ownerId} ({obj.ownerPersonality})
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </SectionCard>
 
       {standing && (
@@ -218,34 +250,7 @@ export function KlubbTab({ club, game, standing, navigate }: KlubbTabProps) {
         </SectionCard>
       )}
 
-      <SectionCard title="💾 Hantera sparat spel" stagger={5}>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button
-            className="btn btn-outline"
-            onClick={() => exportSaveAsJson(game)}
-            style={{ flex: 1, fontSize: 13 }}
-          >
-            Exportera save
-          </button>
-          <button
-            className="btn btn-outline"
-            onClick={handleImport}
-            style={{ flex: 1, fontSize: 13 }}
-          >
-            Importera save
-          </button>
-        </div>
-        {importStatus === 'ok' && (
-          <p style={{ fontSize: 12, color: 'var(--success)', marginTop: 8 }}>
-            Spelet importerades. Gå till startmenyn och ladda ditt spel.
-          </p>
-        )}
-        {importStatus === 'error' && (
-          <p style={{ fontSize: 12, color: 'var(--danger)', marginTop: 8 }}>
-            Kunde inte läsa filen. Kontrollera att det är en giltig save-fil.
-          </p>
-        )}
-      </SectionCard>
+
     </>
   )
 }

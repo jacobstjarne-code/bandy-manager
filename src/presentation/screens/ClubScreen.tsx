@@ -29,6 +29,7 @@ export function ClubScreen() {
   const seekSponsor = useGameStore(s => s.seekSponsor)
   const setTransferBudget = useGameStore(s => s.setTransferBudget)
   const buyScoutRounds = useGameStore(s => s.buyScoutRounds)
+  const interactWithPolitician = useGameStore(s => s.interactWithPolitician)
   const standing = useCurrentStanding()
   const navigate = useNavigate()
   const location = useLocation()
@@ -151,7 +152,7 @@ export function ClubScreen() {
 
         {/* ── Tab 3: Klubb ── */}
         {activeTab === 'orten' && (
-          <KlubbTab club={club} game={game} standing={standing} navigate={navigate} />
+          <KlubbTab club={club} game={game} standing={standing} navigate={navigate} interactWithPolitician={interactWithPolitician} />
         )}
 
         {/* ── Tab 4: Akademi ── */}

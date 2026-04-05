@@ -63,7 +63,14 @@ export function CeremonyCupFinal({
   const managedIsHome = fixture.homeClubId === managedClubId
   const managedScore = managedIsHome ? homeScore : awayScore
   const opponentScore = managedIsHome ? awayScore : homeScore
+
+  // Check penalty result: fixture from location state doesn't have it,
+  // so use cupBracket.winnerId which was set by saveLiveMatchResult
   const managedWon = managedScore > opponentScore
+    ? true
+    : managedScore < opponentScore
+    ? false
+    : cupBracket?.winnerId === managedClubId
   const managedClubName = managedIsHome ? homeClubName : awayClubName
   const opponentName = managedIsHome ? awayClubName : homeClubName
   const cupJourney = managedWon && cupBracket && managedClubId

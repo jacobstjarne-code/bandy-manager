@@ -59,16 +59,23 @@ export function MatchDoneOverlay({
   const allGoalEvents = steps.flatMap(s => s.events.filter(e => e.type === MatchEventType.Goal))
   const allRedCardEvents = steps.flatMap(s => s.events.filter(e => e.type === MatchEventType.RedCard))
   const lastStep = steps[steps.length - 1]
+
+  // Derive OT/penalty results from steps (fixture from location state doesn't have them)
+  const derivedOtStep = steps.find(s => s.phase === 'overtime' && s.overtimeResult)
+  const derivedPenStep = steps.find(s => s.penaltyDone && s.penaltyFinalResult)
+  const penaltyResult = fixture.penaltyResult ?? derivedPenStep?.penaltyFinalResult ?? null
+  const overtimeResult = fixture.overtimeResult ?? derivedOtStep?.overtimeResult ?? null
+
   const managedIsHome = fixture.homeClubId === managedClubId
   const managedGoals = managedIsHome ? homeScore : awayScore
   const oppGoals = managedIsHome ? awayScore : homeScore
   let actualWinner: 'home' | 'away' | 'draw' = 'draw'
   if (managedGoals > oppGoals) actualWinner = managedIsHome ? 'home' : 'away'
   else if (managedGoals < oppGoals) actualWinner = managedIsHome ? 'away' : 'home'
-  else if (fixture.penaltyResult) {
-    actualWinner = fixture.penaltyResult.home > fixture.penaltyResult.away ? 'home' : 'away'
-  } else if (fixture.overtimeResult) {
-    actualWinner = fixture.overtimeResult
+  else if (penaltyResult) {
+    actualWinner = penaltyResult.home > penaltyResult.away ? 'home' : 'away'
+  } else if (overtimeResult) {
+    actualWinner = overtimeResult
   }
   const managedWon = actualWinner === (managedIsHome ? 'home' : 'away')
   const managedLost = actualWinner !== 'draw' && !managedWon
@@ -119,9 +126,9 @@ export function MatchDoneOverlay({
           </div>
         </div>
 
-        {fixture.penaltyResult && homeScore === awayScore && (
+        {penaltyResult && homeScore === awayScore && (
           <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginTop: -8, marginBottom: 8 }}>
-            str. {fixture.penaltyResult.home}–{fixture.penaltyResult.away}
+            str. {penaltyResult.home}–{penaltyResult.away}
           </p>
         )}
 

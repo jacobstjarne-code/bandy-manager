@@ -98,8 +98,19 @@ export function gameFlowActions(get: Get, set: Set) {
       )
       const youthMatchResult = youthInbox ? youthInbox.title.replace(/^📋 /, '') : undefined
 
+      // Determine display round: use league round number, not matchday
+      // For cup-only rounds, show the most recently completed league round + context
+      const displayRound = (() => {
+        if (managedFixture && !managedFixture.isCup) return managedFixture.roundNumber
+        // No managed fixture or it was a cup match: show latest completed league round
+        const lastLeagueRound = resultGame.fixtures
+          .filter(f => f.status === 'completed' && !f.isCup && f.roundNumber <= 22)
+          .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+        return lastLeagueRound || result.roundPlayed || 0
+      })()
+
       const summary: RoundSummaryData = {
-        round: result.roundPlayed ?? 0,
+        round: displayRound,
         date: resultGame.currentDate,
         temperature,
         matchPlayed: !!managedFixture,

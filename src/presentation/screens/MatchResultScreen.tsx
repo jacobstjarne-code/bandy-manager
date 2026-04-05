@@ -23,8 +23,25 @@ export function MatchResultScreen() {
   const isHome = fixture.homeClubId === game.managedClubId
   const myScore = isHome ? fixture.homeScore : fixture.awayScore
   const theirScore = isHome ? fixture.awayScore : fixture.homeScore
-  const won = myScore > theirScore
-  const lost = myScore < theirScore
+
+  // Determine actual winner including OT/penalties
+  const penResult = fixture.penaltyResult
+  const otResult = fixture.overtimeResult
+  const wonByPenalties = penResult
+    ? (isHome ? penResult.home > penResult.away : penResult.away > penResult.home)
+    : false
+  const lostByPenalties = penResult
+    ? (isHome ? penResult.home < penResult.away : penResult.away < penResult.home)
+    : false
+  const wonByOT = otResult
+    ? (isHome ? otResult === 'home' : otResult === 'away')
+    : false
+  const lostByOT = otResult
+    ? (isHome ? otResult === 'away' : otResult === 'home')
+    : false
+
+  const won = myScore > theirScore || wonByOT || wonByPenalties
+  const lost = myScore < theirScore || lostByOT || lostByPenalties
 
   const goalEvents = fixture.events.filter(e => e.type === MatchEventType.Goal)
   const homeGoals = goalEvents.filter(e => e.clubId === fixture.homeClubId)
@@ -35,7 +52,11 @@ export function MatchResultScreen() {
   const potmRating = potmId ? fixture.report?.playerRatings[potmId] : null
 
   const resultColor = won ? 'var(--success)' : lost ? 'var(--danger)' : 'var(--accent)'
-  const resultLabel = won ? 'SEGER' : lost ? 'FÖRLUST' : 'OAVGJORT'
+  const resultLabel = wonByPenalties ? 'SEGER (straffar)'
+    : lostByPenalties ? 'FÖRLUST (straffar)'
+    : wonByOT ? 'SEGER (förl.)'
+    : lostByOT ? 'FÖRLUST (förl.)'
+    : won ? 'SEGER' : lost ? 'FÖRLUST' : 'OAVGJORT'
 
   function handleContinue() {
     const result = advance()
@@ -106,7 +127,7 @@ export function MatchResultScreen() {
         {/* Big score */}
         <div style={{
           display: 'flex', justifyContent: 'center', alignItems: 'center',
-          gap: 16, marginBottom: 12, ...fadeIn('160ms'),
+          gap: 16, marginBottom: penResult ? 4 : 12, ...fadeIn('160ms'),
         }}>
           <span style={{ fontSize: 32, fontWeight: 800, color: resultColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
             {fixture.homeScore}
@@ -116,6 +137,20 @@ export function MatchResultScreen() {
             {fixture.awayScore}
           </span>
         </div>
+
+        {/* OT / Penalty info */}
+        {(fixture.wentToOvertime || penResult) && (
+          <div style={{ textAlign: 'center', marginBottom: 12, ...fadeIn('200ms') }}>
+            {penResult && (
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 600 }}>
+                Straffar: {penResult.home}–{penResult.away}
+              </p>
+            )}
+            {fixture.wentToOvertime && !penResult && (
+              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Avgjort i förlängning</p>
+            )}
+          </div>
+        )}
 
         {/* Result pill */}
         <div style={{ textAlign: 'center', marginBottom: 12, ...fadeIn('280ms') }}>

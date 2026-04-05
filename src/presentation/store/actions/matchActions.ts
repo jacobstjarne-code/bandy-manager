@@ -43,6 +43,16 @@ export function matchActions(get: Get, set: Set) {
       let updatedCupBracket = game.cupBracket ?? null
       if (completedCupFixture && updatedCupBracket && !updatedCupBracket.completed) {
         updatedCupBracket = updateCupBracketAfterRound(updatedCupBracket, [completedCupFixture])
+
+        // Check if cup final (round 4) is now decided → set winnerId + completed
+        const finalMatch = updatedCupBracket.matches.find(m => m.round === 4 && m.winnerId)
+        if (finalMatch) {
+          updatedCupBracket = {
+            ...updatedCupBracket,
+            winnerId: finalMatch.winnerId,
+            completed: true,
+          }
+        }
       }
 
       const completedFixture = updatedFixtures.find(f => f.id === fixtureId)!

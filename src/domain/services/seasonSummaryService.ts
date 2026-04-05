@@ -344,11 +344,11 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   if (cup) {
     if (cup.winnerId === managedClubId) {
       cupResult = 'winner'
-    } else if (cup.matches.some(m => m.round === 3 && (m.homeClubId === managedClubId || m.awayClubId === managedClubId))) {
+    } else if (cup.matches.some(m => m.round === 4 && (m.homeClubId === managedClubId || m.awayClubId === managedClubId))) {
       cupResult = 'finalist'
-    } else if (cup.matches.some(m => m.round === 2 && m.winnerId === managedClubId)) {
+    } else if (cup.matches.some(m => m.round === 3 && (m.homeClubId === managedClubId || m.awayClubId === managedClubId))) {
       cupResult = 'semifinal'
-    } else if (cup.matches.some(m => m.round === 1 && (m.homeClubId === managedClubId || m.awayClubId === managedClubId))) {
+    } else if (cup.matches.some(m => m.round === 2 && (m.homeClubId === managedClubId || m.awayClubId === managedClubId))) {
       cupResult = 'quarter'
     } else {
       cupResult = 'eliminated'
@@ -411,6 +411,15 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     if (storyTexts.length > 0) {
       narrative += ' ' + storyTexts.join(' ')
     }
+  }
+
+  // Cup result in narrative
+  if (cupResult === 'winner' && isChampion) {
+    narrative += ' Dessutom säkrades Svenska Cupen — en magnifik dubbel!'
+  } else if (cupResult === 'winner') {
+    narrative += ' Svenska Cupen vanns — en bedrift som lyser upp säsongen.'
+  } else if (cupResult === 'finalist') {
+    narrative += ' I cupen nådde laget finalen men fick nöja sig med silver.'
   }
 
   const storyTriggers = generateStoryTriggers(game)
