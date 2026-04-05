@@ -322,6 +322,9 @@ export interface SaveGame {
 
   // V1.0 — Follow-up system for event consequences
   pendingFollowUps?: import('../entities/GameEvent').FollowUp[]
+
+  // V1.0 — Trainer narrative arc
+  trainerArc?: TrainerArc
 }
 
 // ── Journalist — named media character with persona and memory ───────────
@@ -344,6 +347,38 @@ export interface Journalist {
   pressRefusals: number       // times manager refused press conference
   favoritePlayerId?: string   // player they write about most
   lastInteractionMatchday?: number
+}
+
+// ── Trainer narrative arc ─────────────────────────────────────────────────
+
+export type ArcPhase =
+  | 'newcomer'
+  | 'honeymoon'
+  | 'grind'
+  | 'questioned'
+  | 'crisis'
+  | 'redemption'
+  | 'established'
+  | 'legendary'
+  | 'farewell'
+
+export interface ArcTransition {
+  from: ArcPhase
+  to: ArcPhase
+  matchday: number
+  season: number
+  reason: string
+}
+
+export interface TrainerArc {
+  current: ArcPhase
+  history: ArcTransition[]
+  seasonCount: number
+  bestFinish: number
+  titlesWon: number
+  consecutiveLosses: number
+  consecutiveWins: number
+  boardWarningGiven: boolean
 }
 
 // ── Storylines — cross-system event memory ───────────────────────────────────

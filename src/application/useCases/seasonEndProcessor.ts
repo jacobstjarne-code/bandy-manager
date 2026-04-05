@@ -20,6 +20,7 @@ import { generateSeasonSummary } from '../../domain/services/seasonSummaryServic
 import { updateLoyaltyScores } from '../../domain/services/characterPlayerService'
 import { processAITransfers } from '../../domain/services/aiTransferService'
 import { generateNominations, generateGalaEvent, generateGalaInbox } from '../../domain/services/bandyGalaService'
+import { checkSeasonEndArc } from '../../domain/services/trainerArcService'
 import type { LicenseReview } from '../../domain/entities/SaveGame'
 import type { AdvanceResult } from './advanceTypes'
 
@@ -837,6 +838,11 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     rivalryHistory: game.rivalryHistory ?? {},
     clubLegends: newLegends,
     storylines: game.storylines ?? [],
+    trainerArc: checkSeasonEndArc(
+      game.trainerArc ?? { current: 'newcomer', history: [], seasonCount: 0, bestFinish: 12, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 0, boardWarningGiven: false },
+      game.playoffBracket?.champion === game.managedClubId,
+      game.currentSeason
+    ),
     trainingProjects: [],
     communityActivities: game.communityActivities
       ? { ...game.communityActivities, julmarknad: false }

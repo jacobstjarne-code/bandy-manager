@@ -102,4 +102,14 @@ export interface Player {
   trait?: PlayerTrait
   loyaltyScore?: number  // 0–10
   shirtNumber?: number
+  availability?: PlayerAvailability
+  lowMoraleDays?: number  // consecutive matchdays with morale < 30
 }
+
+export type PlayerAvailability =
+  | 'unavailable'
+  | 'contract_expiring'
+  | 'unhappy'
+  | 'surplus'
+  | 'financial'
+  | 'want_to_leave'

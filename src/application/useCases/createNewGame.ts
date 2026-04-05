@@ -18,6 +18,7 @@ import { BOARD_PROFILES } from '../../domain/data/boardData'
 import { VOLUNTEER_FIRST_NAMES, LOCAL_PAPER_NAMES } from '../../domain/data/communityNames'
 import { initCharacterPlayers } from '../../domain/services/characterPlayerService'
 import { createJournalist } from '../../domain/services/journalistService'
+import { createTrainerArc } from '../../domain/services/trainerArcService'
 
 function pickRandom<T>(arr: T[], rand: () => number): T {
   return arr[Math.floor(rand() * arr.length)]
@@ -261,6 +262,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     financeLog: [],
     storylines: [],
     clubLegends: [],
+    trainerArc: createTrainerArc(),
     previousMarketValues: {},
     scoutReports: {},
     activeScoutAssignment: null,

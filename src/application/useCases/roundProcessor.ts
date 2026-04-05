@@ -48,6 +48,8 @@ import { updatePlayerMatchStats } from './processors/statsProcessor'
 import { applyRoundDevelopment } from '../../domain/services/playerDevelopmentService'
 import { calcRoundIncome, appendFinanceLog, applyFinanceChange } from '../../domain/services/economyService'
 import type { FinanceEntry } from '../../domain/services/economyService'
+import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/services/playerAvailabilityService'
+import { updateTrainerArc } from '../../domain/services/trainerArcService'
 
 export type { AdvanceResult }
 
@@ -999,13 +1001,20 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  const marketUpdatedPlayers = updateAllMarketValues(finalPlayers, game.currentSeason)
+  const marketUpdatedPlayers = updateAllMarketValues(
+    updateLowMoraleDays(finalPlayers),
+    game.currentSeason
+  )
+
+  // ── Player availability + trainer arc ──────────────────────────────────
+  const availabilityUpdatedPlayers = updatePlayerAvailability({ ...game, players: marketUpdatedPlayers })
+  const updatedArc = updateTrainerArc({ ...game, players: availabilityUpdatedPlayers, fixtures: finalAllFixtures, standings })
 
   // ── Market value change tracking — inbox for significant changes ──────────
   const prevValues = game.previousMarketValues ?? {}
   const newPrevValues: Record<string, number> = {}
   const marketValueInbox: InboxItem[] = []
-  for (const p of marketUpdatedPlayers.filter(pp => pp.clubId === game.managedClubId)) {
+  for (const p of availabilityUpdatedPlayers.filter(pp => pp.clubId === game.managedClubId)) {
     const prev = prevValues[p.id] ?? p.marketValue
     newPrevValues[p.id] = p.marketValue
     const delta = p.marketValue - prev
@@ -1033,7 +1042,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // Compute managed club income
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)!
-  const managedClubPlayers = marketUpdatedPlayers.filter(p => p.clubId === game.managedClubId)
+  const managedClubPlayers = availabilityUpdatedPlayers.filter(p => p.clubId === game.managedClubId)
   const managedHomeMatch = simulatedFixtures.find(
     f => f.homeClubId === game.managedClubId && f.status === FixtureStatus.Completed
   )
@@ -1084,7 +1093,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Apply AI club income: simplified flat estimate, no sponsor/community data
   for (const c of game.clubs) {
     if (c.id === game.managedClubId) continue
-    const clubPlayers = marketUpdatedPlayers.filter(p => p.clubId === c.id)
+    const clubPlayers = availabilityUpdatedPlayers.filter(p => p.clubId === c.id)
     const homeMatch = simulatedFixtures.find(
       f => f.homeClubId === c.id && f.status === FixtureStatus.Completed
     )
@@ -1149,7 +1158,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Partially updated game state for bid/event generation (with market-updated players)
   const preEventGame: SaveGame = {
     ...game,
-    players: marketUpdatedPlayers,
+    players: availabilityUpdatedPlayers,
     transferBids: resolvedBids,
   }
 
@@ -1261,7 +1270,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   let mentorUpdatedYouthPlayers = updatedYouthTeam?.players ?? []
   const activeMentorships = (game.mentorships ?? []).filter(m => m.isActive)
   for (const m of activeMentorships) {
-    const mentor = marketUpdatedPlayers.find(p => p.id === m.seniorPlayerId)
+    const mentor = availabilityUpdatedPlayers.find(p => p.id === m.seniorPlayerId)
     if (!mentor) continue
     const youthIdx = mentorUpdatedYouthPlayers.findIndex(p => p.id === m.youthPlayerId)
     if (youthIdx >= 0 && mentor.form >= 40) {
@@ -1278,7 +1287,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // ── Loan deal processing ─────────────────────────────────────────────────
-  let loanUpdatedPlayers = [...marketUpdatedPlayers]
+  let loanUpdatedPlayers = [...availabilityUpdatedPlayers]
   const activeLoanDeals = (game.loanDeals ?? []).filter(d => nextMatchday <= d.endRound)
   const returnedLoanPlayerIds: string[] = []
 
@@ -1710,6 +1719,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     previousMarketValues: newPrevValues,
     storylines: game.storylines ?? [],
     clubLegends: game.clubLegends ?? [],
+    trainerArc: updatedArc,
   }
 
   // Append market value change notifications to inbox

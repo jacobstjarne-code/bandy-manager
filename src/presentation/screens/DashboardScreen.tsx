@@ -770,6 +770,23 @@ export function DashboardScreen() {
           </div>
           <DiamondDivider />
 
+          {/* Trainer arc mood */}
+          {game.trainerArc && (() => {
+            const moodTexts: Record<string, string> = {
+              honeymoon: '☀️ Allt stämmer just nu',
+              questioned: '⛅ Media ställer frågor',
+              crisis: '⛈️ Styrelsen är orolig',
+              redemption: '🌤️ Vändningen har börjat',
+              legendary: '👑 Legendstatus',
+            }
+            const mood = moodTexts[game.trainerArc.current]
+            return mood ? (
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 6, fontStyle: 'italic' }}>
+                {mood}
+              </p>
+            ) : null
+          })()}
+
           {/* Batch sim */}
           {canSimulateRemaining && !isBatchSim && (
             <button

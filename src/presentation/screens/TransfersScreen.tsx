@@ -186,7 +186,7 @@ export function TransfersScreen() {
   const [wageWarning, setWageWarning] = useState<string | null>(null)
   const [scoutMessage, setScoutMessage] = useState<string | null>(null)
   const [biddingPlayerId, setBiddingPlayerId] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'scouting' | 'spaning' | 'contracts' | 'freeagents' | 'sell'>('scouting')
+  const [activeTab, setActiveTab] = useState<'marknad' | 'scouting' | 'spaning' | 'contracts' | 'freeagents' | 'sell'>('marknad')
   const [spaningPosition, setSpanningPosition] = useState<string>('any')
   const [spaningMaxAge, setSpanningMaxAge] = useState<number>(30)
   const [spaningMaxSalary, setSpanningMaxSalary] = useState<number>(16000)
@@ -395,6 +395,7 @@ export function TransfersScreen() {
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid var(--border)', paddingBottom: 8, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}>
         {([
+          { key: 'marknad', label: '🏪 Marknad' },
           { key: 'scouting', label: '🔍 Scouting' },
           { key: 'spaning', label: '🔎 Spaning' },
           { key: 'contracts', label: '📋 Kontrakt' },
@@ -429,6 +430,81 @@ export function TransfersScreen() {
         </p>
         <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{windowInfo.description}</p>
       </div>
+
+      {/* Marknad — available players grouped by reason */}
+      {activeTab === 'marknad' && (() => {
+        const availablePlayers = game.players.filter(p =>
+          p.clubId !== game.managedClubId &&
+          p.clubId !== 'free_agent' &&
+          p.availability && p.availability !== 'unavailable'
+        )
+        const groups: { key: string; label: string; emoji: string; desc: string; players: typeof availablePlayers }[] = [
+          { key: 'contract_expiring', label: 'Kontrakt går ut', emoji: '📋', desc: 'Kan värvas gratis efter säsongen. Förhandling möjlig nu.', players: availablePlayers.filter(p => p.availability === 'contract_expiring') },
+          { key: 'unhappy', label: 'Missnöjda', emoji: '😤', desc: 'Spelare som vill byta miljö. Kräver transferbud.', players: availablePlayers.filter(p => p.availability === 'unhappy') },
+          { key: 'surplus', label: 'Övertaliga', emoji: '🔻', desc: 'Klubben har för många på positionen. Kan sälja billigt.', players: availablePlayers.filter(p => p.availability === 'surplus') },
+          { key: 'financial', label: 'Ekonomiska skäl', emoji: '💰', desc: 'Klubben behöver sälja. Pruta hårt.', players: availablePlayers.filter(p => p.availability === 'financial') },
+        ].filter(g => g.players.length > 0)
+
+        return (
+          <div style={{ marginBottom: 24 }}>
+            {groups.length === 0 ? (
+              <div className="card-sharp" style={{ padding: '20px 16px', textAlign: 'center' }}>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Inga spelare tillgängliga på marknaden just nu.</p>
+              </div>
+            ) : groups.map(group => (
+              <div key={group.key} style={{ marginBottom: 16 }}>
+                <SectionLabel>{group.emoji} {group.label}</SectionLabel>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8, padding: '0 2px' }}>{group.desc}</p>
+                <div className="card-sharp" style={{ overflow: 'hidden' }}>
+                  {group.players.slice(0, 10).map((player, i) => {
+                    const club = game.clubs.find(c => c.id === player.clubId)
+                    const report = scoutReports[player.id]
+                    const isScouted = !!report
+                    const estimatedCA = report?.estimatedCA
+                    const isBargain = isScouted && estimatedCA && player.marketValue > 0 && (estimatedCA / (player.marketValue / 5000)) > 1.3
+                    return (
+                      <div key={player.id} style={{
+                        display: 'flex', alignItems: 'center', padding: '10px 14px',
+                        borderBottom: i < Math.min(group.players.length, 10) - 1 ? '1px solid var(--border)' : 'none',
+                        gap: 10,
+                      }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-display)' }}>
+                            {player.firstName} {player.lastName}
+                            {isBargain && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--success)', fontWeight: 700 }}>⭐ Fynd</span>}
+                          </p>
+                          <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
+                            {positionShort(player.position)} · {player.age} år · {club?.shortName ?? '?'} · {isScouted ? `Styrka ~${estimatedCA}` : 'Styrka ?'} · MV {formatValue(player.marketValue)}
+                          </p>
+                        </div>
+                        {windowOpen && (
+                          <button
+                            onClick={() => setBiddingPlayerId(player.id)}
+                            className="btn btn-outline"
+                            style={{ flexShrink: 0, padding: '5px 10px', fontSize: 11, fontWeight: 600 }}
+                          >
+                            💰 Bud
+                          </button>
+                        )}
+                        {!isScouted && (
+                          <button
+                            onClick={() => !activeAssignment && scoutBudget > 0 && handleScout(player)}
+                            disabled={!!activeAssignment || scoutBudget <= 0}
+                            className={`btn ${!activeAssignment && scoutBudget > 0 ? 'btn-ghost' : 'btn-ghost'}`}
+                            style={{ flexShrink: 0, padding: '5px 8px', fontSize: 11, opacity: !activeAssignment && scoutBudget > 0 ? 1 : 0.5 }}
+                          >
+                            🔍
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      })()}
 
       {/* Scouting section */}
       {activeTab === 'scouting' && <div className="card-stagger-2" style={{ marginBottom: 24 }}>
