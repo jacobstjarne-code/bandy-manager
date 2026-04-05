@@ -9,6 +9,7 @@ try { gitHash = execSync('git rev-parse --short HEAD').toString().trim() } catch
 export default defineConfig({
   define: {
     __GIT_HASH__: JSON.stringify(gitHash),
+    __BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 16)),
   },
   plugins: [
     react(),

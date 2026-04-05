@@ -2,6 +2,7 @@ import { AppRouter } from './presentation/navigation/AppRouter'
 import { ErrorBoundary } from './presentation/components/ErrorBoundary'
 
 declare const __GIT_HASH__: string
+declare const __BUILD_DATE__: string
 
 export default function App() {
   return (

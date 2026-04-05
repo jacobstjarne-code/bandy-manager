@@ -849,6 +849,11 @@ export function DashboardScreen() {
             {advanceButtonText}
           </button>
         </div>
+
+        {/* Build version */}
+        <p style={{ textAlign: 'center', fontSize: 9, color: 'var(--text-muted)', opacity: 0.5, marginTop: 16 }}>
+          build {(typeof __GIT_HASH__ !== 'undefined' ? __GIT_HASH__ : '?')} · {(typeof __BUILD_DATE__ !== 'undefined' ? __BUILD_DATE__ : '')}
+        </p>
       </div>
     </div>
   )
