@@ -4,6 +4,7 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { PlayerPosition } from '../../../domain/enums'
+import { positionShort } from '../../utils/formatters'
 import { OpponentInfoCard } from './OpponentInfoCard'
 import { OpponentAnalysisCard } from './OpponentAnalysisCard'
 import { LineupFormationView } from './LineupFormationView'
@@ -89,23 +90,29 @@ export function LineupStep({
         <OpponentAnalysisCard fixture={nextFixture} opponent={opponent} game={game} onError={onError} />
       )}
 
-      {/* Tab switcher */}
-      <div style={{ display: 'flex', margin: '0 16px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
+      {/* Tab bar — same style as ClubScreen */}
+      <div style={{
+        display: 'flex',
+        background: 'var(--bg-surface)',
+        borderBottom: '1px solid var(--border)',
+        margin: '0 0 12px',
+      }}>
         {(['list', 'pitch'] as const).map(mode => (
           <button
             key={mode}
             onClick={() => setViewMode(mode)}
             style={{
               flex: 1,
-              padding: '8px 0',
+              padding: '10px 4px',
+              background: 'none',
+              border: 'none',
+              borderBottom: viewMode === mode ? '2px solid var(--accent)' : '2px solid transparent',
+              color: viewMode === mode ? 'var(--accent)' : 'var(--text-muted)',
               fontSize: 12,
               fontWeight: 700,
-              letterSpacing: '0.5px',
-              border: 'none',
+              letterSpacing: '0.8px',
+              textTransform: 'uppercase',
               cursor: 'pointer',
-              background: viewMode === mode ? 'var(--accent)' : 'var(--bg-elevated)',
-              color: viewMode === mode ? 'var(--bg-dark)' : 'var(--text-muted)',
-              transition: 'background 0.15s, color 0.15s',
             }}
           >
             {mode === 'list' ? '📋 Lista' : '🏒 Plan'}
@@ -156,35 +163,40 @@ export function LineupStep({
                       key={player.id}
                       onClick={() => handlePlayerClick(player)}
                       style={{
-                        display: 'flex', alignItems: 'center', gap: 8,
-                        padding: '7px 10px', marginBottom: 3,
-                        background: isStarting ? 'var(--bg-elevated)' : 'transparent',
-                        border: selectedSlotId && !isUnavailable
-                          ? '1px solid var(--accent)'
-                          : isStarting ? '1px solid var(--border)' : '1px dashed rgba(196,122,58,0.2)',
-                        borderRadius: 'var(--radius-sm)',
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '8px 12px',
+                        background: isStarting ? 'var(--bg-surface)' : 'transparent',
+                        borderBottom: '1px solid var(--border)',
                         cursor: isUnavailable ? 'default' : 'pointer',
                         opacity: isUnavailable ? 0.4 : 1,
                       }}
                     >
-                      <span style={{
-                        width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                      <div style={{
+                        width: 32, height: 32, borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 11, fontWeight: 700,
-                        background: isStarting ? 'rgba(90,154,74,0.15)' : 'transparent',
-                        border: isStarting ? '2px solid var(--success)' : '1.5px dashed var(--border)',
-                        color: isStarting ? 'var(--text-primary)' : 'var(--text-muted)',
+                        fontSize: 12, fontWeight: 700,
+                        background: isStarting ? 'transparent' : 'transparent',
+                        border: isStarting ? '2px solid var(--success)' : '1.5px solid var(--border)',
+                        color: isStarting ? 'var(--success)' : 'var(--text-muted)',
                       }}>
                         {player.shirtNumber ?? '?'}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ fontSize: 13, fontWeight: isStarting ? 700 : 400 }}>
+                          {player.lastName}
+                        </span>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
+                          {positionShort(player.position)}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                        {Math.round(player.currentAbility)}
                       </span>
-                      <span style={{ flex: 1, fontSize: 13, fontWeight: isStarting ? 700 : 400, color: isStarting ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                        {player.lastName}
-                      </span>
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                        {Math.round(player.currentAbility)} CA
-                      </span>
-                      <span style={{ fontSize: 10, fontWeight: 600, minWidth: 34, textAlign: 'right', color: isUnavailable ? 'var(--danger)' : isStarting ? 'var(--success)' : 'var(--text-muted)' }}>
-                        {isUnavailable ? (player.isInjured ? '🩹' : '🚫') : isStarting ? 'START' : 'BÄNK'}
+                      <span style={{
+                        fontSize: 10, fontWeight: 600, minWidth: 34, textAlign: 'right',
+                        color: isUnavailable ? 'var(--danger)' : isStarting ? 'var(--success)' : 'var(--text-muted)',
+                      }}>
+                        {isUnavailable ? (player.isInjured ? '🩹' : '🚫') : isStarting ? 'START' : ''}
                       </span>
                     </div>
                   )

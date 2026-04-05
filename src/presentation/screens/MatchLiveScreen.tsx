@@ -16,6 +16,7 @@ import { PhaseOverlay } from '../components/match/PhaseOverlay'
 import { FinalIntroScreen } from '../components/match/FinalIntroScreen'
 import { HalftimeModal } from '../components/match/HalftimeModal'
 import { StatsFooter, calculateLiveStats } from '../components/match/StatsFooter'
+import { MomentumBar } from '../components/match/MomentumBar'
 import { MatchDoneOverlay, type PressQuestion } from '../components/match/MatchDoneOverlay'
 import { CeremonyCupFinal } from '../components/match/CeremonyCupFinal'
 import { CeremonySmFinal } from '../components/match/CeremonySmFinal'
@@ -639,17 +640,13 @@ export function MatchLiveScreen() {
         </button>
       </div>
 
-      {/* Intensity bar */}
+      {/* Momentum bar (replaces old intensity bar) */}
       {currentMatchStep && (
-        <div style={{ height: 3, background: 'var(--bg-dark-surface)', flexShrink: 0, overflow: 'hidden' }}>
-          <div style={{
-            height: '100%',
-            width: currentMatchStep.intensity === 'high' ? '100%' : currentMatchStep.intensity === 'medium' ? '66%' : '33%',
-            background: currentMatchStep.intensity === 'high' ? 'var(--accent)' : currentMatchStep.intensity === 'medium' ? 'var(--ice)' : 'rgba(245,241,235,0.15)',
-            transition: 'width 600ms ease-out, background-color 600ms ease-out',
-            borderRadius: '0 2px 2px 0',
-          }} />
-        </div>
+        <MomentumBar
+          homeActions={currentMatchStep.shotsHome + currentMatchStep.cornersHome}
+          awayActions={currentMatchStep.shotsAway + currentMatchStep.cornersAway}
+          intensity={currentMatchStep.intensity}
+        />
       )}
 
       {/* Live stats */}
@@ -664,11 +661,29 @@ export function MatchLiveScreen() {
         ref={feedRef}
         style={{
           flex: 1, overflowY: 'auto', padding: '8px 0', position: 'relative',
-          background: matchWeather?.weather.condition === WeatherCondition.Fog
-            ? 'linear-gradient(to bottom, rgba(200,210,220,0.04), transparent)'
-            : matchWeather?.weather.condition === WeatherCondition.Thaw
-            ? 'rgba(100,130,160,0.03)'
-            : undefined,
+          background: (() => {
+            if (!currentMatchStep) return undefined
+            const step = currentMatchStep
+            const hasSusp = step.activeSuspensions.homeCount > 0 || step.activeSuspensions.awayCount > 0
+            if (hasSusp) return 'rgba(176,80,64,0.03)'
+            const isLateAndTight = step.minute >= 55 && Math.abs(step.homeScore - step.awayScore) <= 1
+            if (isLateAndTight) return 'rgba(196,122,58,0.04)'
+            // Recent momentum from shots
+            const recentSteps = displayedSteps.slice(-5)
+            const recentHomeShots = recentSteps.length > 1
+              ? (recentSteps[recentSteps.length - 1]?.shotsHome ?? 0) - (recentSteps[0]?.shotsHome ?? 0)
+              : 0
+            const recentAwayShots = recentSteps.length > 1
+              ? (recentSteps[recentSteps.length - 1]?.shotsAway ?? 0) - (recentSteps[0]?.shotsAway ?? 0)
+              : 0
+            if (recentHomeShots >= 3 && recentAwayShots === 0) return 'rgba(196,122,58,0.03)'
+            if (recentAwayShots >= 3 && recentHomeShots === 0) return 'rgba(126,179,212,0.03)'
+            // Weather override
+            if (matchWeather?.weather.condition === WeatherCondition.Fog) return 'linear-gradient(to bottom, rgba(200,210,220,0.04), transparent)'
+            if (matchWeather?.weather.condition === WeatherCondition.Thaw) return 'rgba(100,130,160,0.03)'
+            return undefined
+          })(),
+          transition: 'background 2s ease',
         }}
       >
         {matchWeather?.weather.condition === WeatherCondition.HeavySnow && <SnowOverlay />}
