@@ -93,6 +93,18 @@ export function LastResultCard({
         <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '3px 0 0', fontFamily: 'var(--font-body)' }}>
           {resultText} mot {lastResult.opponentName}
         </p>
+        <p style={{ fontSize: 10, color: actualWin ? 'var(--success)' : actualLoss ? 'var(--danger)' : 'var(--text-muted)', marginTop: 3, fontStyle: 'italic', fontFamily: 'var(--font-display)' }}>
+          {(() => {
+            const diff = lastResult.scoreFor - lastResult.scoreAgainst
+            if (diff >= 4) return '🎉 Storstilat!'
+            if (diff >= 2) return '😊 Kontrollerad seger'
+            if (diff === 1 || penaltyWon || overtimeWon) return '😅 Tight vinst'
+            if (diff === 0) return '😐 Poängdelning'
+            if (diff === -1 || penaltyWon === false || overtimeWon === false) return '😤 Nära men inte nog'
+            if (diff >= -3) return '😞 Tungt'
+            return '💀 En kväll att glömma'
+          })()}
+        </p>
 
         {/* Form squares */}
         {recentForm.length > 0 && (

@@ -12,6 +12,35 @@ export function generatePatronEvents(
   const patron = game.patron
 
   if (patron?.isActive) {
+    // Patron intro — round 3, first time
+    if (currentRound === 3) {
+      const eid = `patron_intro_${game.currentSeason}`
+      if (!alreadyQueued.has(eid)) {
+        events.push({
+          id: eid,
+          type: 'patronEvent',
+          title: `💼 ${patron.name} visar intresse`,
+          sender: { name: patron.name, role: `ägare, ${patron.business}` },
+          body: `${patron.name} från ${patron.business} har hört om er förening och vill diskutera ett samarbete.\n\n"Jag har alltid brunnit för bandy. Ni gör ett fantastiskt jobb — jag vill hjälpa till."`,
+          choices: [
+            {
+              id: 'welcome',
+              label: 'Välkomna samarbetet',
+              subtitle: '🤝 Patron-relation startar · 💰 bidrag varje säsong',
+              effect: { type: 'patronHappiness', amount: 20 },
+            },
+            {
+              id: 'cautious',
+              label: 'Tack, men vi tar det lugnt',
+              subtitle: '🤝 Relation startar försiktigt',
+              effect: { type: 'patronHappiness', amount: 5 },
+            },
+          ],
+          resolved: false,
+        })
+      }
+    }
+
     // Patron unhappy — round 5–10, happiness < 60
     if (currentRound >= 5 && currentRound <= 10 && (patron.happiness ?? 50) < 60) {
       const eid = `patron_unhappy_r${currentRound}`

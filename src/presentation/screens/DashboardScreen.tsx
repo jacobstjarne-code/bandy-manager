@@ -568,6 +568,14 @@ export function DashboardScreen() {
                     <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '3px 0 0', fontFamily: 'var(--font-body)' }}>
                       {standing.points}p · {standing.goalDifference >= 0 ? '+' : ''}{standing.goalDifference} mål
                     </p>
+                    {standing.played > 0 && (
+                      <p style={{
+                        fontSize: 9, fontWeight: 600, marginTop: 2,
+                        color: standing.position <= 8 ? 'var(--success)' : standing.position <= 10 ? 'var(--text-muted)' : 'var(--danger)',
+                      }}>
+                        {standing.position <= 8 ? 'Slutspelszonen' : standing.position <= 10 ? 'Utanför slutspel' : 'Nedflyttningszonen'}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
