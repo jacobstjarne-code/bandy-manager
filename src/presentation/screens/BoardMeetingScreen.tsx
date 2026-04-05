@@ -128,18 +128,29 @@ export function BoardMeetingScreen() {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-    <header style={{
-      background: 'var(--bg-dark)', height: 48,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '10px 12px',
+      background: 'var(--bg-dark)',
+      borderBottom: '2px solid var(--accent)',
       flexShrink: 0,
+      minHeight: 44,
     }}>
+      <img
+        src="/bandymanager-logo.png"
+        alt="Bandy Manager"
+        style={{ height: 26, width: 'auto', opacity: 0.85 }}
+      />
       <span style={{
         color: 'var(--text-light)', fontSize: 11, letterSpacing: 3,
         textTransform: 'uppercase', fontFamily: 'var(--font-body)', fontWeight: 600,
       }}>
-        BANDY MANAGER
+        STYRELSEMÖTE
       </span>
-    </header>
+      <div style={{ width: 26 }} />
+    </div>
     <div style={{
       flex: 1,
       display: 'flex',
@@ -303,7 +314,7 @@ export function BoardMeetingScreen() {
       </div>
     </div>
     <footer style={{
-      height: 40, background: 'var(--bg)',
+      height: 40, background: 'var(--bg-surface)',
       borderTop: '1px solid var(--border)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexShrink: 0,

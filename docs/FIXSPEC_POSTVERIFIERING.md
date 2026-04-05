@@ -7,7 +7,142 @@ Commit-konvention: `fix: [kort beskrivning]`
 
 ---
 
-## FIX 1 — BoardMeetingScreen dubbelheader (KRITISK)
+## FIX 1 — OnboardingShell + BoardMeeting header/footer (KRITISK)
+
+### 1A — OnboardingShell matchar inte GameHeader
+
+**Problem:** OnboardingShell i NewGameScreen har en centrerad text
+"BANDY MANAGER" som header, och en footer med `background: var(--bg)`
+(= sidbakgrunden → ser transparent ut). Headern ska ha samma utseende
+som GameHeader: logotyp vänster, mörk bakgrund, accent-border.
+"← Tillbaka" ligger som textlänk i body — ska vara i headern.
+CTA-footern har gradient som gör att sista klubben syns igenom.
+
+**Fil:** `src/presentation/screens/NewGameScreen.tsx`
+
+**Fix — OnboardingShell header:** Ersätt hela `<header>`-blocket:
+
+```tsx
+const OnboardingShell = ({ children, onBack }: { children: React.ReactNode; onBack?: () => void }) => (
+  <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '10px 12px',
+      background: 'var(--bg-dark)',
+      borderBottom: '2px solid var(--accent)',
+      flexShrink: 0,
+      minHeight: 44,
+    }}>
+      {/* Left: back button or logo */}
+      {onBack ? (
+        <button
+          onClick={onBack}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'rgba(245,241,235,0.7)', fontSize: 13, fontWeight: 600,
+            display: 'flex', alignItems: 'center', gap: 4, padding: 0,
+          }}
+        >
+          ← Tillbaka
+        </button>
+      ) : (
+        <img
+          src="/bandymanager-logo.png"
+          alt="Bandy Manager"
+          style={{ height: 26, width: 'auto', opacity: 0.85 }}
+        />
+      )}
+
+      {/* Center: title */}
+      <span style={{
+        color: 'var(--text-light)', fontSize: 11, letterSpacing: 3,
+        textTransform: 'uppercase', fontFamily: 'var(--font-body)', fontWeight: 600,
+        position: 'absolute', left: '50%', transform: 'translateX(-50%)',
+      }}>
+        NYTT SPEL
+      </span>
+
+      {/* Right: spacer */}
+      <div style={{ width: 60 }} />
+    </div>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto', position: 'relative' }}>
+      {children}
+    </div>
+    <footer style={{
+      height: 40, background: 'var(--bg-surface)',
+      borderTop: '1px solid var(--border)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0,
+    }}>
+      <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2 }}>BURY FEN</span>
+    </footer>
+  </div>
+)
+```
+
+Nyckeländringar:
+- Header: `var(--bg-dark)` + `borderBottom: 2px solid var(--accent)` = samma som GameHeader
+- Logo till vänster (name-steget) ELLER "← Tillbaka" (club-steget)
+- `position: relative` på headern för centrerad text
+- Footer: `var(--bg-surface)` istället för `var(--bg)` → synlig bakgrund
+
+**Fix — Name step:** Anropa med `<OnboardingShell>` (ingen onBack).
+
+**Fix — Club step:**
+1. Anropa med `<OnboardingShell onBack={() => setStep('name')}>`
+2. TA BORT "← Tillbaka"-knappen ur body (textlänken i club list).
+3. TA BORT "Välj klubb" + namn/säsong-diven ur body — flytta till
+   OnboardingShell center-text, eller behåll som rubrik men ta bort
+   den redundanta toppen.
+
+**Fix — CTA footer (club step):** Ersätt den transparenta gradienten:
+```tsx
+// FÖRE:
+background: 'linear-gradient(to top, var(--bg) 70%, transparent)',
+
+// EFTER:
+background: 'var(--bg-surface)',
+borderTop: '1px solid var(--border)',
+```
+
+### 1B — BoardMeetingScreen samma fix
+
+**Fil:** `src/presentation/screens/BoardMeetingScreen.tsx`
+
+Samma problem: centrerad "BANDY MANAGER" + transparent footer.
+
+**Fix — Header:** Ersätt `<header>`-blocket med logotyp-variant:
+```tsx
+<div style={{
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '10px 12px',
+  background: 'var(--bg-dark)',
+  borderBottom: '2px solid var(--accent)',
+  flexShrink: 0,
+  minHeight: 44,
+}}>
+  <img
+    src="/bandymanager-logo.png"
+    alt="Bandy Manager"
+    style={{ height: 26, width: 'auto', opacity: 0.85 }}
+  />
+  <span style={{
+    color: 'var(--text-light)', fontSize: 11, letterSpacing: 3,
+    textTransform: 'uppercase', fontFamily: 'var(--font-body)', fontWeight: 600,
+  }}>
+    STYRELSEMÖTE
+  </span>
+  <div style={{ width: 26 }} />
+</div>
+```
+
+**Fix — Footer:** Ändra `background: 'var(--bg)'` → `background: 'var(--bg-surface)'`.
+
+### 1C — BoardMeetingScreen dubbelheader (APPLICERAD)
 
 **Problem:** `/game/board-meeting` ligger under `<GameGuard>` i
 AppRouter.tsx. GameGuard renderar `<GameHeader>`. BoardMeetingScreen
@@ -363,7 +498,71 @@ import { saveToLocalStorage } from '../../infrastructure/persistence/saveGameSto
 
 ---
 
-## FIX 8 — Ta bort oanvänd portraits.ts
+## FIX 8 — Dashboard-cards ojämn bredd (strukturell fix)
+
+**Problem:** Korten på dashboard har olika bredd/margin. Varje kort
+sätter sin egen `margin-bottom` (4px, 8px, 10px, 12px) och det
+glider isär. Att normalisera margin per kort är en slarvfix —
+samma problem uppstår nästa gång ett kort läggs till.
+
+### Steg 1 — Lägg till `.card-stack` i global.css
+
+**Fil:** `src/styles/global.css`
+
+Lägg till efter `.card-round` blocket:
+
+```css
+/* ── Card stack: vertical card layout with consistent spacing ── */
+.card-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+.card-stack > * {
+  margin-bottom: 0 !important;  /* override inline styles */
+}
+```
+
+### Steg 2 — Använd `.card-stack` i DashboardScreen
+
+**Fil:** `src/presentation/screens/DashboardScreen.tsx`
+
+Hitta den scrollbara containern som wrappar alla kort. Den har
+troligen en stil som `padding: '0 12px'`. Ersätt med:
+
+```tsx
+<div className="card-stack" style={{ paddingTop: 12, paddingBottom: 90 }}>
+  {/* alla kort här — NextMatchCard, Tabell, Cup, Trupp, etc. */}
+</div>
+```
+
+TA BORT `margin: '0 0 10px'` / `margin: '0 0 8px'` / `margin: '0 0 4px'`
+från varje enskilt kort inuti containern. `gap: 8px` hanterar
+all spacing. Behåll `padding` INUTI korten (10px 14px etc.).
+
+### Steg 3 — Använd `card-stack` även i andra skärmar
+
+Samma klass bör användas överallt där kort staplas vertikalt:
+- `ClubScreen.tsx` (träning/ekonomi/orten/akademi-tabbar)
+- `TransfersScreen.tsx` (marknad/scouting/kontrakt)
+- `BoardMeetingScreen.tsx` (kort-stapeln)
+
+Men gör det BARA på DashboardScreen nu. De andra kan migreras
+sedan utan risk.
+
+**Usecase att verifiera:**
+1. Öppna Dashboard.
+2. ALLA kort ska ha exakt 8px mellanrum, inga undantag.
+3. Inga kort som sticker ut eller är smalare/bredare.
+4. Lägg till ett nytt test-kort med bara
+   `<div className="card-sharp">test</div>` — det ska automatiskt
+   få rätt spacing utan någon inline margin.
+
+---
+
+## FIX 9 — Ta bort oanvänd portraits.ts
 
 **Problem:** Två portrait-filer finns:
 - `src/domain/services/portraitService.ts` (ANVÄNDS av PlayerCard + SquadScreen)
@@ -389,14 +588,16 @@ Om filen IMPORTERAS någonstans — ändra den importen till
 ## IMPLEMENTATIONSORDNING
 
 ```
-1. FIX 1 — BoardMeeting dubbelheader (5 min)
-2. FIX 2 — MatchHeader dubblering (2 min)
-3. FIX 3 — TabellScreen tab-beskrivningar (5 min)
-4. FIX 4 — Utvisning layouthopp (10 min)
-5. FIX 5 — Kontroller visuellt sammanhang (10 min)
-6. FIX 7 — Spara-knapp persist (5 min)
-7. FIX 8 — Ta bort portraits.ts (1 min)
-8. FIX 6 — Cup-lottning (15 min, berör spellogik — SIST)
+1. FIX 1A — OnboardingShell header/footer (10 min)
+2. FIX 1B — BoardMeetingScreen header/footer (5 min)
+3. FIX 2 — MatchHeader dubblering (2 min)
+4. FIX 3 — TabellScreen tab-beskrivningar (5 min)
+5. FIX 4 — Utvisning layouthopp (10 min)
+6. FIX 5 — Kontroller visuellt sammanhang (10 min)
+7. FIX 7 — Spara-knapp persist (5 min)
+8. FIX 8 — Dashboard-cards enhetlig bredd (10 min)
+9. FIX 9 — Ta bort portraits.ts (1 min)
+10. FIX 6 — Cup-lottning (15 min, berör spellogik — SIST)
 ```
 
 `npm run build && npm test` efter VARJE steg.
@@ -410,13 +611,21 @@ Jacob kör dessa usecases i ordning efter att alla fixar deployats:
 
 ### UC1: Nytt spel — onboarding-flöde
 1. Gå till startsidan → "Nytt spel"
-2. Skriv namn → "Gå vidare"
-3. ✅ "Välj klubb"-skärmen: BARA "BANDY MANAGER"-header. Ingen GameHeader.
-4. Välj klubb → "Acceptera uppdraget"
-5. ✅ Styrelsemötet: BARA "BANDY MANAGER"-header. Ingen GameHeader ovanför.
-6. ✅ Styrelsemål visar specifik text ("Håll er i övre halvan...")
-7. ✅ "BURY FEN" footer längst ner.
-8. Klicka "Kör igång!" → ✅ Dashboard utan problem.
+2. "Vad heter du"-skärmen:
+   ✅ Header: mörk bakgrund, logotyp vänster, accent-border under. Samma känsla som GameHeader.
+   ✅ Footer: "BURY FEN" med synlig bakgrund (inte transparent/samma som sidan).
+3. Skriv namn → "Gå vidare"
+4. "Välj klubb"-skärmen:
+   ✅ Header: "← Tillbaka" till vänster i headern (inte som textlänk i body).
+   ✅ Ingen dubbel rubrik — "Välj klubb" syns som rubrik i content.
+   ✅ CTA-footer ("Acceptera uppdraget") har solid bakgrund, inte gradient.
+   ✅ Footer: "BURY FEN" med synlig bakgrund.
+5. Välj klubb → "Acceptera uppdraget"
+6. Styrelsemötet:
+   ✅ Header: logotyp vänster, "STYRELSEMÖTE" i mitten. Ingen GameHeader.
+   ✅ Footer: synlig "BURY FEN".
+   ✅ Styrelsemål visar specifik text ("Håll er i övre halvan...")
+7. Klicka "Kör igång!" → ✅ Dashboard utan problem.
 
 ### UC2: Match-flöde — ingen dubblering
 1. Gå till Match-fliken.

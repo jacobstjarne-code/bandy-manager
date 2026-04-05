@@ -80,20 +80,54 @@ export function NewGameScreen() {
     }, 50)
   }
 
-  const OnboardingShell = ({ children }: { children: React.ReactNode }) => (
+  const OnboardingShell = ({ children, onBack }: { children: React.ReactNode; onBack?: () => void }) => (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-      <header style={{
-        background: 'var(--bg-dark)', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '10px 12px',
+        background: 'var(--bg-dark)',
+        borderBottom: '2px solid var(--accent)',
+        flexShrink: 0,
+        minHeight: 44,
+        position: 'relative',
       }}>
-        <span style={{ color: 'var(--text-light)', fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', fontFamily: 'var(--font-body)', fontWeight: 600 }}>
-          BANDY MANAGER
+        {onBack ? (
+          <button
+            onClick={onBack}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'rgba(245,241,235,0.7)', fontSize: 13, fontWeight: 600,
+              display: 'flex', alignItems: 'center', gap: 4, padding: 0,
+            }}
+          >
+            ← Tillbaka
+          </button>
+        ) : (
+          <img
+            src="/bandymanager-logo.png"
+            alt="Bandy Manager"
+            style={{ height: 26, width: 'auto', opacity: 0.85 }}
+          />
+        )}
+        <span style={{
+          color: 'var(--text-light)', fontSize: 11, letterSpacing: 3,
+          textTransform: 'uppercase', fontFamily: 'var(--font-body)', fontWeight: 600,
+          position: 'absolute', left: '50%', transform: 'translateX(-50%)',
+        }}>
+          NYTT SPEL
         </span>
-      </header>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+        <div style={{ width: 60 }} />
+      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto', position: 'relative' }}>
         {children}
       </div>
       <footer style={{
-        height: 40, background: 'var(--bg)', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        height: 40, background: 'var(--bg-surface)',
+        borderTop: '1px solid var(--border)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0,
       }}>
         <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2 }}>BURY FEN</span>
       </footer>
@@ -197,7 +231,7 @@ export function NewGameScreen() {
   const selectedClub = selectedClubId ? CLUBS.find(c => c.id === selectedClubId) : null
 
   return (
-    <OnboardingShell>
+    <OnboardingShell onBack={() => setStep('name')}>
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
       {/* Club selection heading */}
       <div style={{ padding: '14px 16px 10px' }}>
@@ -210,14 +244,8 @@ export function NewGameScreen() {
       </div>
 
       {/* Club list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', paddingBottom: selectedClub ? 140 : 80 }}>
-        <button
-          onClick={() => setStep('name')}
-          style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', padding: '0 0 12px', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-        >
-          ← Tillbaka
-        </button>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: 16, fontSize: 14 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px', paddingBottom: selectedClub ? 140 : 80 }}>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: 12, fontSize: 14 }}>
           Varje klubb har sin historia. Välj din.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -276,8 +304,8 @@ export function NewGameScreen() {
           maxWidth: 430,
           padding: '16px 20px',
           paddingBottom: 'calc(16px + var(--safe-bottom))',
-          background: 'linear-gradient(to top, var(--bg) 70%, transparent)',
-          borderTop: '1px solid rgba(196,122,58,0.15)',
+          background: 'var(--bg-surface)',
+          borderTop: '1px solid var(--border)',
         }}>
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 10, textAlign: 'center' }}>
             Starta karriären som tränare för {selectedClub.name}?

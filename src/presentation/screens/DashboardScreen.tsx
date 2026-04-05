@@ -485,7 +485,7 @@ export function DashboardScreen() {
       )}
 
       {/* ── CONTENT ── */}
-      <div className="texture-wood" style={{ padding: '12px 12px 120px' }}>
+      <div className="texture-wood card-stack" style={{ paddingTop: 12, paddingBottom: 120 }}>
 
         {/* Playoff just started banner */}
         {isPlayoffJustStarted && (
