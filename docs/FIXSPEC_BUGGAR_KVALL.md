@@ -1,3 +1,44 @@
+## BUG 4: Playoff-serieräkning dubbelräknas
+
+### Problem
+Serie visar 1–1 efter 1 spelad match (förlust). Ska visa 0–1.
+
+### Grundorsak
+`roundProcessor` inkluderar ALLA fixtures med `status === Completed`
+vid aktuell matchday i `roundFixtures`. Om advance() anropas två
+gånger för samma matchday (en gång efter live-match, en gång för
+AI-matcher), processas samma fixture igen och wins räknas upp.
+
+### Fix (två delar)
+
+**Del A: Guard i updateSeriesAfterMatch** — ✅ REDAN FIXAD av Opus.
+Kollar om totalWinsCounted > fixtureIndex innan inkrement.
+
+**Del B: roundProcessor** — Byt roundFixtures-filter:
+```typescript
+// BEFORE (bugg):
+const roundFixtures = game.fixtures.filter(f =>
+  f.matchday === nextMatchday &&
+  (f.status === FixtureStatus.Scheduled || f.status === FixtureStatus.Completed)
+)
+
+// AFTER (fix):
+const roundFixtures = game.fixtures.filter(f =>
+  f.matchday === nextMatchday && f.status === FixtureStatus.Scheduled
+).concat(
+  // Include live-played fixtures at this matchday (just completed this session)
+  game.fixtures.filter(f =>
+    f.matchday === nextMatchday &&
+    f.status === FixtureStatus.Completed &&
+    f.id === game.lastCompletedFixtureId
+  )
+)
+```
+
+Alternativt: spåra "justCompletedLiveFixtureIds" separat.
+
+---
+
 # FIXSPEC — Tre kritiska buggar (5 april kväll)
 
 ## BUG 1: Bygdens Puls uppdateras aldrig under säsongen

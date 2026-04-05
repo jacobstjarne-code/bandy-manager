@@ -126,7 +126,11 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     leagueId: `league_${season}`,
     season,
     roundNumber: sf.roundNumber,
-    matchday: calendar.find(s => s.type === 'league' && s.leagueRound === sf.roundNumber)?.matchday ?? sf.roundNumber,
+    matchday: (() => {
+      const slot = calendar.find(s => s.type === 'league' && s.leagueRound === sf.roundNumber)
+      if (!slot) console.error(`[SCHEDULE] No calendar slot for league round ${sf.roundNumber}`)
+      return slot?.matchday ?? sf.roundNumber
+    })(),
     homeClubId: sf.homeClubId,
     awayClubId: sf.awayClubId,
     status: FixtureStatus.Scheduled,

@@ -247,6 +247,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     (f.status === FixtureStatus.Scheduled || f.status === FixtureStatus.Completed)
   )
 
+  // Guard: detect cup+league collision on same matchday
+  const hasCup = roundFixtures.some(f => f.isCup)
+  const hasLeague = roundFixtures.some(f => !f.isCup && f.roundNumber <= 22)
+  if (hasCup && hasLeague) {
+    console.error(`[MATCHDAY CONFLICT] md${nextMatchday} has both cup and league fixtures!`)
+  }
+
   const baseSeed = seed ?? (nextMatchday * 1000 + game.currentSeason * 7)
   const localRand = mulberry32(baseSeed + 9999)
 

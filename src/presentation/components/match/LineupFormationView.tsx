@@ -88,7 +88,7 @@ export function LineupFormationView({
             else ringColor = 'var(--danger)'
           }
 
-          const circleR = 11
+          const circleR = 16
           const posLabel = slot.label.toUpperCase()
           const circleText = assignedPlayer
             ? (assignedPlayer.shirtNumber != null ? String(assignedPlayer.shirtNumber) : assignedPlayer.lastName.slice(0, 4))
@@ -105,7 +105,7 @@ export function LineupFormationView({
               <text
                 x={sx} y={sy - circleR - 3}
                 textAnchor="middle" dominantBaseline="auto"
-                fill="rgba(26,26,24,0.65)" fontSize={4} fontWeight="700"
+                fill="rgba(26,26,24,0.65)" fontSize={6} fontWeight="700"
                 fontFamily="system-ui, sans-serif" letterSpacing="0.5"
               >
                 {posLabel}
@@ -121,7 +121,7 @@ export function LineupFormationView({
                 <text
                   x={sx} y={sy}
                   textAnchor="middle" dominantBaseline="middle"
-                  fill="#1A1A18" fontSize={7} fontWeight="700"
+                  fill="var(--text-primary)" fontSize={10} fontWeight="700"
                   fontFamily="system-ui, sans-serif"
                 >
                   {circleText}
