@@ -51,6 +51,7 @@ import type { FinanceEntry } from '../../domain/services/economyService'
 import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/services/playerAvailabilityService'
 import { updateTrainerArc } from '../../domain/services/trainerArcService'
 import { checkInObjectives } from '../../domain/services/boardObjectiveService'
+import { checkProjectCompletion } from '../../domain/services/facilityService'
 
 export type { AdvanceResult }
 
@@ -1751,6 +1752,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     clubLegends: game.clubLegends ?? [],
     boardObjectives: updatedBoardObjectives,
     boardObjectiveHistory: game.boardObjectiveHistory ?? [],
+    facilityProjects: (game.facilityProjects ?? []).map(p => checkProjectCompletion(p, nextMatchday)),
     trainerArc: updatedArc,
   }
 

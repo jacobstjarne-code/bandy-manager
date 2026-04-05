@@ -93,7 +93,78 @@ export function KlubbTab({ club, game, standing, navigate }: KlubbTabProps) {
         </div>
       </SectionCard>
 
-      <SectionCard title="🎯 Förväntan & profil" stagger={2}>
+      {/* Mecenater */}
+      <SectionCard title="👥 Mecenater" stagger={2}>
+        {(game.mecenater ?? []).filter(m => m.isActive).length === 0 ? (
+          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Inga aktiva mecenater. De dyker upp om klubben lyckas.</p>
+        ) : (
+          (game.mecenater ?? []).filter(m => m.isActive).map(mec => (
+            <div key={mec.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--border)', marginBottom: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{mec.name}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>{mec.business}</span>
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 600, color: mec.happiness > 60 ? 'var(--success)' : mec.happiness > 40 ? 'var(--text-muted)' : 'var(--danger)' }}>
+                  {mec.happiness > 60 ? '🤝 Nöjd' : mec.happiness > 40 ? '😐 Neutral' : '😤 Missnöjd'}
+                </span>
+              </div>
+              <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>
+                Bidrag: {Math.round(mec.contribution / 1000)} tkr/säsong · Inflytande: {mec.influence}
+              </p>
+            </div>
+          ))
+        )}
+      </SectionCard>
+
+      {/* Kommun */}
+      {game.localPolitician && (
+        <SectionCard title="🏛️ Kommun" stagger={2}>
+          <div style={{ marginBottom: 10 }}>
+            <p style={{ fontSize: 13, fontWeight: 600 }}>{game.localPolitician.name} ({game.localPolitician.party})</p>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+              Agenda: {game.localPolitician.agenda} · Relation: {game.localPolitician.relationship}/100
+            </p>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+              Kommunbidrag: {Math.round((game.localPolitician.kommunBidrag ?? 0) / 1000)} tkr/säsong
+              {game.localPolitician.mandatExpires && ` · Nästa val: ${game.localPolitician.mandatExpires}`}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <button className="btn btn-ghost" style={{ flex: 1, padding: '8px 6px', fontSize: 11 }}
+              onClick={() => { /* TODO: bjud in */ }}>
+              📋 Bjud in till match
+            </button>
+            <button className="btn btn-ghost" style={{ flex: 1, padding: '8px 6px', fontSize: 11 }}
+              onClick={() => { /* TODO: presentera budget */ }}>
+              📊 Presentera budget
+            </button>
+            <button className="btn btn-ghost" style={{ flex: 1, padding: '8px 6px', fontSize: 11 }}
+              onClick={() => { /* TODO: ansök om bidrag */ }}>
+              📝 Ansök om bidrag
+            </button>
+          </div>
+        </SectionCard>
+      )}
+
+      {/* Anläggning */}
+      <SectionCard title="🏗️ Anläggning" stagger={2}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <span style={{ fontSize: 13, fontWeight: 600 }}>Faciliteter: {club.facilities}/100</span>
+          <StatBar value={club.facilities} color='var(--accent)' height={5} />
+        </div>
+        {(game.facilityProjects ?? []).filter(p => p.status === 'in_progress').map(proj => (
+          <div key={proj.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+            <p style={{ fontSize: 12, fontWeight: 600 }}>🚧 {proj.name}</p>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{proj.description}</p>
+          </div>
+        ))}
+        {(game.facilityProjects ?? []).filter(p => p.status === 'in_progress').length === 0 && (
+          <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>Inga pågående projekt.</p>
+        )}
+      </SectionCard>
+
+      <SectionCard title="🎯 Förväntan & profil" stagger={3}>
         <InfoRow label="Styrelseförväntning" value={expectationLabel(club.boardExpectation)} />
         <InfoRow label="Supporterförväntning" value={expectationLabel(club.fanExpectation)} />
         <InfoRow label="Spelstil" value={styleLabel(club.preferredStyle)} />
