@@ -114,6 +114,12 @@ export function ClubScreen() {
               recentSessions={recentSessions}
               trainingInjuriesThisSeason={trainingInjuriesThisSeason}
               onChangeFocus={setTraining}
+              proCount={game.players.filter(p => p.clubId === game.managedClubId && p.isFullTimePro).length}
+              partTimeCount={game.players.filter(p => p.clubId === game.managedClubId && !p.isFullTimePro).length}
+              avgFlexibility={(() => {
+                const partTime = game.players.filter(p => p.clubId === game.managedClubId && !p.isFullTimePro && p.dayJob)
+                return partTime.length > 0 ? Math.round(partTime.reduce((s, p) => s + (p.dayJob?.flexibility ?? 75), 0) / partTime.length) : undefined
+              })()}
             />
           </>
         )}

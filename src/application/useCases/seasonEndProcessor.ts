@@ -19,6 +19,7 @@ import { generateSeasonVerdict, generatePreSeasonMessage } from '../../domain/se
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
 import { updateLoyaltyScores } from '../../domain/services/characterPlayerService'
 import { processAITransfers } from '../../domain/services/aiTransferService'
+import { generateNominations, generateGalaEvent, generateGalaInbox } from '../../domain/services/bandyGalaService'
 import type { LicenseReview } from '../../domain/entities/SaveGame'
 import type { AdvanceResult } from './advanceTypes'
 
@@ -655,6 +656,15 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       resolved: false,
     }
     seasonEndPendingEvents.push(handlingsplanEvent)
+  }
+
+  // ── Bandygalan ────────────────────────────────────────────────────────────
+  const galaNominations = generateNominations(game)
+  if (galaNominations.length > 0) {
+    seasonEndPendingEvents.push(generateGalaEvent(game, galaNominations))
+    const { inboxItems: galaInbox, storylines: galaStorylines } = generateGalaInbox(galaNominations, game)
+    newInboxItems.push(...galaInbox)
+    galaStorylines.forEach(s => (game.storylines ?? []).push(s))
   }
 
   // ── Funktionärsdöd (2%/säsong vid age >= 65) ──────────────────────────────

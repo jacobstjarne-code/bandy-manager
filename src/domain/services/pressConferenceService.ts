@@ -485,8 +485,27 @@ export function generatePressConference(
   const questions = QUESTIONS[contextKey]
   if (!questions || questions.length === 0) return null
 
-  const question = questions[Math.floor(rand() * questions.length)]
+  let question = questions[Math.floor(rand() * questions.length)]
   const journalist = JOURNALISTS[Math.floor(rand() * JOURNALISTS.length)]
+
+  // Storyline-aware question override (30% chance if matching storyline exists)
+  const storylines = game.storylines ?? []
+  if (rand() < 0.30 && storylines.length > 0) {
+    const seasonStories = storylines.filter(s => s.season === game.currentSeason && s.resolved)
+    if (myScore > theirScore && seasonStories.some(s => s.type === 'underdog_season')) {
+      question = { text: 'Ingen trodde på er i augusti. Nu leder ni serien. Vad säger du till tvivlarna?', preferIds: question.preferIds }
+    } else if (seasonStories.some(s => s.type === 'captain_rallied_team') && rand() < 0.5) {
+      question = { text: 'Kaptenen tog ton i omklädningsrummet förra veckan. Har det gett effekt?', preferIds: question.preferIds }
+    } else if (seasonStories.some(s => s.type === 'rescued_from_unemployment') && rand() < 0.5) {
+      question = { text: 'Varslet drabbade era spelare hårt. Hur har klubben hanterat situationen?', preferIds: question.preferIds }
+    } else if (seasonStories.some(s => s.type === 'went_fulltime_pro') && rand() < 0.5) {
+      const proStory = seasonStories.find(s => s.type === 'went_fulltime_pro')
+      const proPlayer = proStory?.playerId ? game.players.find(p => p.id === proStory.playerId) : null
+      if (proPlayer) {
+        question = { text: `${proPlayer.firstName} ${proPlayer.lastName} slutade jobbet för att satsa på bandyn. Har det betalat sig?`, preferIds: question.preferIds }
+      }
+    }
+  }
 
   const ctx = buildPressContext(fixture, game, rand)
   const responses = buildPressResponses(ctx, question.preferIds)

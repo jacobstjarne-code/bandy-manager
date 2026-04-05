@@ -836,6 +836,12 @@ export function TransfersScreen() {
                 </p>
                 <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
                   {positionShort(player.position)} · Styrka {Math.round(player.currentAbility)} · MV {formatCurrency(player.marketValue ?? 0)}
+                  {(() => {
+                    const bidsForPlayer = (game.transferBids ?? []).filter(b => b.playerId === player.id && b.direction === 'incoming')
+                    return bidsForPlayer.length > 0
+                      ? <span style={{ color: 'var(--accent)', fontWeight: 600, marginLeft: 6 }}>🔥 {bidsForPlayer.length} klubb{bidsForPlayer.length > 1 ? 'ar' : ''} intresserad{bidsForPlayer.length > 1 ? 'e' : ''}</span>
+                      : null
+                  })()}
                 </p>
               </div>
               <button

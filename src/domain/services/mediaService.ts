@@ -1,13 +1,16 @@
 import type { SaveGame, InboxItem } from '../entities/SaveGame'
 import type { Fixture } from '../entities/Fixture'
 import { FixtureStatus, InboxItemType } from '../enums'
+import { getHeadlinePrefix } from './journalistService'
 
-function mediaItem(title: string, date: string, id: string): InboxItem {
+function mediaItem(title: string, date: string, id: string, game?: SaveGame): InboxItem {
+  // Prefix with journalist name if available
+  const prefix = game?.journalist ? getHeadlinePrefix(game.journalist, !title.includes('KOLLAPS') && !title.includes('Kris')) : ''
   return {
     id,
     date,
     type: InboxItemType.Media,
-    title,
+    title: prefix ? prefix + title : title,
     body: '',
     isRead: false,
   }
@@ -61,28 +64,28 @@ export function generateMediaHeadlines(
   if (myScore >= theirScore + 4) {
     return [mediaItem(
       `MÅLKALAS! ${myClub?.name} krossade ${opponentClub?.name} med ${myScore}–${theirScore}`,
-      game.currentDate, id
+      game.currentDate, id, game
     )]
   }
 
   if (theirScore >= myScore + 4) {
     return [mediaItem(
       `KOLLAPSEN: ${myClub?.name} förnedrade av ${opponentClub?.name} — ${myScore}–${theirScore}`,
-      game.currentDate, id
+      game.currentDate, id, game
     )]
   }
 
   if (myScore > theirScore && wins >= 4) {
     return [mediaItem(
       `${myClub?.name} i strålande form — ${wins} raka segrar`,
-      game.currentDate, id
+      game.currentDate, id, game
     )]
   }
 
   if (theirScore > myScore && losses >= 3) {
     return [mediaItem(
       `Kris i ${myClub?.name}? Tredje raka förlusten`,
-      game.currentDate, id
+      game.currentDate, id, game
     )]
   }
 

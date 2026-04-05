@@ -49,9 +49,12 @@ interface TrainingSectionProps {
   recentSessions?: { roundNumber: number; focus: TrainingFocus; injuryCount: number }[]
   trainingInjuriesThisSeason: number
   onChangeFocus: (focus: TrainingFocus) => void
+  proCount?: number       // number of full-time pros in squad
+  partTimeCount?: number  // number of part-time players
+  avgFlexibility?: number // average flexibility of part-time players
 }
 
-export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSeason, onChangeFocus }: TrainingSectionProps) {
+export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSeason, onChangeFocus, proCount, partTimeCount, avgFlexibility }: TrainingSectionProps) {
   const effects = getTrainingEffects(focus)
 
   const attrLines = Object.entries(effects.attributeBoosts)
@@ -163,6 +166,33 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
           )}
         </p>
       </div>
+
+      {/* Job impact on training */}
+      {partTimeCount != null && partTimeCount > 0 && (
+        <div style={{
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)',
+          padding: '10px 14px',
+          marginBottom: 12,
+          fontSize: 12,
+          color: 'var(--text-secondary)',
+        }}>
+          <p style={{ color: 'var(--text-muted)', fontWeight: 600, marginBottom: 4 }}>👷 Jobbpåverkan</p>
+          <p>
+            <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{proCount ?? 0}</span> heltidsproffs (full träningseffekt) · {' '}
+            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{partTimeCount}</span> deltidsspelare
+            {avgFlexibility != null && (
+              <span style={{ color: 'var(--text-muted)' }}> (snitt flex {avgFlexibility}%)</span>
+            )}
+          </p>
+          {avgFlexibility != null && avgFlexibility < 65 && (
+            <p style={{ fontSize: 11, color: 'var(--danger)', marginTop: 4 }}>
+              ⚠️ Låg flexibilitet — deltidsspelare får sämre träningseffekt
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Recent sessions */}
       {recentSessions && recentSessions.length > 0 && (
