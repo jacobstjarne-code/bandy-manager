@@ -380,7 +380,7 @@ export function SquadScreen() {
       </div>
 
       {/* Player list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }}>
         {/* Doktorn-banner vid kritisk fitness */}
         {players.filter(p => p.fitness < 35 && !p.isInjured).length >= 2 && (
           <div

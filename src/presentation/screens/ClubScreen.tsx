@@ -110,7 +110,7 @@ export function ClubScreen() {
       </div>
 
       {/* Scrollable content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 90px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px 90px', paddingTop: 12 }}>
 
         {/* ── Tab 1: Träning ── */}
         {activeTab === 'training' && (

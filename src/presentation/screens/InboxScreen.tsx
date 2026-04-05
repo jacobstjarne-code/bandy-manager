@@ -178,7 +178,7 @@ export function InboxScreen() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          padding: '8px 16px',
+          padding: '8px 12px',
           borderBottom: '1px solid var(--border)',
           flexShrink: 0,
         }}>

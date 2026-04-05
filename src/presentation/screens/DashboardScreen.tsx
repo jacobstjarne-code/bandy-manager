@@ -80,7 +80,7 @@ function PlayoffBracketCard({ bracket, game }: PlayoffBracketCardProps) {
   const navigate = useNavigate()
 
   return (
-    <div className="card-sharp card-stagger-3" style={{ margin: '0 12px 10px', overflow: 'hidden' }}>
+    <div className="card-sharp card-stagger-3" style={{ margin: '0 0 10px', overflow: 'hidden' }}>
       <div style={{ padding: '12px 14px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
@@ -215,7 +215,7 @@ function CupCard({ bracket, game }: CupCardProps) {
   }
 
   return (
-    <div className="card-sharp card-stagger-3" style={{ margin: '0 12px 10px', overflow: 'hidden' }}>
+    <div className="card-sharp card-stagger-3" style={{ margin: '0 0 10px', overflow: 'hidden' }}>
       <div style={{ padding: '12px 14px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
@@ -485,18 +485,18 @@ export function DashboardScreen() {
       )}
 
       {/* ── CONTENT ── */}
-      <div className="texture-wood" style={{ paddingTop: 12, paddingBottom: 120 }}>
+      <div className="texture-wood" style={{ padding: '12px 12px 120px' }}>
 
         {/* Playoff just started banner */}
         {isPlayoffJustStarted && (
-          <div style={{ margin: '0 12px 10px' }}>
+          <div style={{ margin: '0 0 10px' }}>
             <PlayoffBanner game={game} playoffInfo={playoffInfo} />
           </div>
         )}
 
         {/* Eliminated */}
         {eliminated && !nextFixture && game.playoffBracket && game.playoffBracket.status !== PlayoffStatus.Completed && (
-          <div className="card-round card-stagger-1" style={{ margin: '0 12px 10px', padding: '18px', textAlign: 'center' }}>
+          <div className="card-round card-stagger-1" style={{ margin: '0 0 10px', padding: '18px', textAlign: 'center' }}>
             <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 4, fontFamily: 'var(--font-body)' }}>Din säsong är slut</p>
             <p style={{ color: 'var(--text-muted)', fontSize: 13, fontFamily: 'var(--font-body)' }}>Väntar på att slutspelet ska avgöras...</p>
           </div>
@@ -520,7 +520,7 @@ export function DashboardScreen() {
         )}
 
         {/* Stats row: Tabell + Senast */}
-        <div style={{ display: 'flex', gap: 8, margin: '0 12px 10px' }}>
+        <div style={{ display: 'flex', gap: 8, margin: '0 0 10px' }}>
           {/* Tabell sharp card */}
           {standing && (
             <div
@@ -615,7 +615,7 @@ export function DashboardScreen() {
         {/* Ekonomi sharp card */}
         <div
           className="card-sharp"
-          style={{ margin: '0 12px 10px', cursor: 'pointer' }}
+          style={{ margin: '0 0 10px', cursor: 'pointer' }}
           onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}
         >
           <div style={{ padding: '12px 14px' }}>
@@ -667,7 +667,7 @@ export function DashboardScreen() {
         {latestUnread && (
           <div
             className="card-round"
-            style={{ margin: '0 12px 10px', cursor: 'pointer' }}
+            style={{ margin: '0 0 10px', cursor: 'pointer' }}
             onClick={() => navigate('/game/inbox')}
           >
             <div style={{ padding: '10px 14px' }}>
@@ -701,7 +701,7 @@ export function DashboardScreen() {
 
         {/* P19 sharp card */}
         {game.youthTeam && (
-          <div className="card-sharp" style={{ margin: '0 12px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'akademi' } })}>
+          <div className="card-sharp" style={{ margin: '0 0 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'akademi' } })}>
             <div style={{ padding: '10px 14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -734,7 +734,7 @@ export function DashboardScreen() {
           return (
             <div
               className="card-sharp"
-              style={{ margin: '0 12px 4px', cursor: 'pointer' }}
+              style={{ margin: '0 0 4px', cursor: 'pointer' }}
               onClick={() => navigate('/game/doctor')}
             >
               <div style={{ padding: '10px 14px' }}>

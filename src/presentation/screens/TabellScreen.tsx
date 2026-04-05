@@ -63,7 +63,7 @@ export function TabellScreen() {
   const ptToLeader = leaderPoints - myPoints
 
   return (
-    <div style={{ padding: '8px 16px', overflowY: 'auto', height: '100%' }}>
+    <div style={{ padding: '0 12px', paddingTop: 8, overflowY: 'auto', height: '100%' }}>
       {/* Tab switcher */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'var(--bg-elevated)', borderRadius: 8, padding: 4 }}>
         {(['tabell', 'statistik'] as const).map(tab => (

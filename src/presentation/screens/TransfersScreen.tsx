@@ -345,7 +345,7 @@ export function TransfersScreen() {
   const currentRound = game.fixtures.filter(f => f.status === 'scheduled').sort((a, b) => a.roundNumber - b.roundNumber)[0]?.roundNumber ?? 1
 
   return (
-    <div style={{ padding: '8px 16px', overflowY: 'auto', height: '100%', background: 'var(--bg)' }}>
+    <div style={{ padding: '0 12px', paddingTop: 8, overflowY: 'auto', height: '100%', background: 'var(--bg)' }}>
 
       {/* Scout toast */}
       {scoutMessage && (

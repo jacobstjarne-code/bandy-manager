@@ -63,7 +63,7 @@ export function RoundSummaryScreen() {
   }) {
     return (
       <div onClick={onClick} className="card-sharp" style={{
-        padding: '10px 14px', marginBottom: 8,
+        padding: '14px 16px', marginBottom: 10,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
         cursor: onClick ? 'pointer' : 'default',
       }}>
@@ -107,7 +107,7 @@ export function RoundSummaryScreen() {
       </div>
 
       {/* Scrollable cards */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px', paddingBottom: 120, opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease 0.1s' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px', paddingTop: 12, paddingBottom: 120, opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease 0.1s' }}>
         {matchPlayed ? (
           <TappableCard
             label="🏒 MATCHEN"

@@ -371,7 +371,7 @@ export function MatchScreen() {
 
   if (!nextFixture) {
     return (
-      <div style={{ padding: '20px 16px' }}>
+      <div style={{ padding: '12px 12px' }}>
         <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 16 }}>Match</h2>
         <div className="card-round" style={{ padding: '32px 20px', textAlign: 'center' }}>
           <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Säsongen är slut</p>
@@ -425,7 +425,7 @@ export function MatchScreen() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
       {/* Header */}
-      <div style={{ padding: '16px 16px 0' }}>
+      <div style={{ padding: '12px 12px 0' }}>
         {lastCompletedFixture && (
           <div style={{ marginBottom: 12 }}>
             <LastMatchCard fixture={lastCompletedFixture} game={game} managedClubId={managedClubId} />
@@ -435,7 +435,7 @@ export function MatchScreen() {
           className="card-round"
           style={{
             border: isPlayoffRound ? '1px solid rgba(196,122,58,0.3)' : isCupFixture ? '1px solid rgba(196,122,58,0.25)' : rivalry ? '1px solid rgba(220,80,30,0.3)' : undefined,
-            padding: '12px 16px',
+            padding: '12px 12px',
             marginBottom: 8,
           }}
         >

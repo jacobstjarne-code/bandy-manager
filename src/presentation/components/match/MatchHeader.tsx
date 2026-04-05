@@ -57,7 +57,7 @@ export function MatchHeader({ fixture, homeClubName, awayClubName, isHome, weath
 
   return (
     <div className="card-round" style={{
-      margin: '0 12px 10px',
+      margin: '0 0 10px',
       padding: '14px 16px',
       background: tint !== 'transparent' ? tint : undefined,
       borderLeft: atmo.borderAccent ? `3px solid ${atmo.borderAccent}` : undefined,
