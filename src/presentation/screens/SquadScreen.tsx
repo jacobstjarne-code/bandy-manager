@@ -123,6 +123,7 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
         display: 'flex',
         flexDirection: 'column',
         gap: 5,
+        overflow: 'hidden',
       }}
     >
       {/* Top row: badge + name + CA */}

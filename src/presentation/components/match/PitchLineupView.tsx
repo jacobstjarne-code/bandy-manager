@@ -236,21 +236,7 @@ export function PitchLineupView({
                       : slot.label.slice(0, 2)}
                   </div>
 
-                  {/* Player name below */}
-                  {player && (
-                    <span style={{
-                      position: 'absolute',
-                      bottom: -2,
-                      fontSize: 7,
-                      fontWeight: 600,
-                      color: 'rgba(26,26,24,0.65)',
-                      fontFamily: 'system-ui, sans-serif',
-                      whiteSpace: 'nowrap',
-                      pointerEvents: 'none',
-                    }}>
-                      {player.lastName.slice(0, 5)}
-                    </span>
-                  )}
+                  {/* Names removed — shown in legend below pitch */}
                 </div>
               )
             })}
@@ -278,6 +264,25 @@ export function PitchLineupView({
               Ta bort från planen
             </button>
           )}
+        </div>
+      )}
+
+      {/* Pitch legend — numbers + names */}
+      {Object.keys(slotToPlayer).length > 0 && (
+        <div style={{ padding: '4px 16px 8px', display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+          {template.slots.map(slot => {
+            const pid = slotToPlayer[slot.id]
+            const player = pid ? squadPlayers.find(p => p.id === pid) : null
+            if (!player) return null
+            return (
+              <span key={slot.id} style={{ fontSize: 10, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                <span style={{ fontWeight: 700 }}>{player.shirtNumber ?? '?'}</span>{' '}
+                {player.lastName.slice(0, 6)}
+                <span style={{ color: 'var(--text-muted)' }}> ({slot.label})</span>
+                {slot !== template.slots[template.slots.length - 1] && <span style={{ color: 'var(--border-dark)', margin: '0 2px' }}>·</span>}
+              </span>
+            )
+          })}
         </div>
       )}
 

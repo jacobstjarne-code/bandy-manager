@@ -80,11 +80,32 @@ export function NewGameScreen() {
     }, 50)
   }
 
+  const OnboardingShell = ({ children }: { children: React.ReactNode }) => (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+      <header style={{
+        background: 'var(--bg-dark)', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      }}>
+        <span style={{ color: 'var(--text-light)', fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', fontFamily: 'var(--font-body)', fontWeight: 600 }}>
+          BANDY MANAGER
+        </span>
+      </header>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+        {children}
+      </div>
+      <footer style={{
+        height: 40, background: 'var(--bg)', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      }}>
+        <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2 }}>BURY FEN</span>
+      </footer>
+    </div>
+  )
+
   // Name step
   if (step === 'name') {
     return (
+      <OnboardingShell>
       <div style={{
-        height: '100%',
+        flex: 1,
         display: 'flex',
         flexDirection: 'column',
         background: 'var(--bg)',
@@ -168,6 +189,7 @@ export function NewGameScreen() {
           </button>
         </div>
       </div>
+      </OnboardingShell>
     )
   }
 
@@ -175,14 +197,15 @@ export function NewGameScreen() {
   const selectedClub = selectedClubId ? CLUBS.find(c => c.id === selectedClubId) : null
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-      {/* Header — same layout as GameHeader */}
+    <OnboardingShell>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+      {/* Header — club selection */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '12px 16px',
-        background: 'var(--bg-dark)',
+        background: 'var(--bg-elevated)',
         borderBottom: '2px solid var(--accent)',
         flexShrink: 0,
         minHeight: 44,
@@ -293,5 +316,6 @@ export function NewGameScreen() {
         </div>
       )}
     </div>
+    </OnboardingShell>
   )
 }
