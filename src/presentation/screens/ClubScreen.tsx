@@ -10,7 +10,7 @@ import { AkademiTab } from '../components/club/AkademiTab'
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
 
-type ClubTab = 'training' | 'ekonomi' | 'klubb' | 'akademi'
+type ClubTab = 'training' | 'ekonomi' | 'orten' | 'akademi'
 
 export function ClubScreen() {
   const club = useManagedClub()
@@ -32,7 +32,7 @@ export function ClubScreen() {
   const standing = useCurrentStanding()
   const navigate = useNavigate()
   const location = useLocation()
-  const VALID_TABS: ClubTab[] = ['training', 'ekonomi', 'klubb', 'akademi']
+  const VALID_TABS: ClubTab[] = ['training', 'ekonomi', 'orten', 'akademi']
   const rawTab = (location.state as { tab?: string } | null)?.tab
   const [activeTab, setActiveTab] = useState<ClubTab>(
     rawTab && VALID_TABS.includes(rawTab as ClubTab) ? (rawTab as ClubTab) : 'training'
@@ -60,9 +60,15 @@ export function ClubScreen() {
   const TAB_LABELS: { key: ClubTab; label: string }[] = [
     { key: 'training', label: 'Träning' },
     { key: 'ekonomi', label: 'Ekonomi' },
-    { key: 'klubb', label: 'Klubb' },
+    { key: 'orten', label: 'Orten' },
     { key: 'akademi', label: 'Akademi' },
   ]
+
+  const tabDescriptions: Record<string, string> = {
+    ekonomi: 'Klubbkassa, budget, intäkter och utgifter.',
+    orten: 'Lokalstöd, sponsorer, patron och föreningsaktiviteter.',
+    akademi: 'Ungdomslag, talangutveckling och intag.',
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -98,8 +104,13 @@ export function ClubScreen() {
         ))}
       </div>
 
+      {/* Tab description */}
+      <div style={{ padding: '6px 16px', fontSize: 12, color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>
+        {tabDescriptions[activeTab] ?? ''}
+      </div>
+
       {/* Scrollable content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px 90px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 90px' }}>
 
         {/* ── Tab 1: Träning ── */}
         {activeTab === 'training' && (
@@ -130,7 +141,7 @@ export function ClubScreen() {
         )}
 
         {/* ── Tab 3: Klubb ── */}
-        {activeTab === 'klubb' && (
+        {activeTab === 'orten' && (
           <KlubbTab club={club} game={game} standing={standing} navigate={navigate} />
         )}
 

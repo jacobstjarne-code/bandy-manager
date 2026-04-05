@@ -121,9 +121,9 @@ function BidModal({ player, managedClub, onClose, onConfirm }: BidModalProps) {
       display: 'flex', alignItems: 'flex-end', maxWidth: 430, margin: '0 auto',
     }}>
       <div style={{
-        background: 'var(--bg-surface)', borderRadius: '16px 16px 0 0',
+        background: 'var(--bg-surface)', borderRadius: '14px 14px 0 0',
         border: '1px solid var(--border)', borderBottom: 'none',
-        padding: '24px 20px 32px', width: '100%',
+        padding: '20px 16px 28px', width: '100%',
         maxHeight: '85vh', overflowY: 'auto',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
@@ -186,7 +186,7 @@ export function TransfersScreen() {
   const [wageWarning, setWageWarning] = useState<string | null>(null)
   const [scoutMessage, setScoutMessage] = useState<string | null>(null)
   const [biddingPlayerId, setBiddingPlayerId] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'marknad' | 'scouting' | 'spaning' | 'contracts' | 'freeagents' | 'sell'>('marknad')
+  const [activeTab, setActiveTab] = useState<'marknad' | 'scouting' | 'contracts' | 'freeagents' | 'sell'>('marknad')
   const [spaningPosition, setSpanningPosition] = useState<string>('any')
   const [spaningMaxAge, setSpanningMaxAge] = useState<number>(30)
   const [spaningMaxSalary, setSpanningMaxSalary] = useState<number>(16000)
@@ -397,9 +397,8 @@ export function TransfersScreen() {
         {([
           { key: 'marknad', label: '🏪 Marknad' },
           { key: 'scouting', label: '🔍 Scouting' },
-          { key: 'spaning', label: '🔎 Spaning' },
           { key: 'contracts', label: '📋 Kontrakt' },
-          { key: 'freeagents', label: '👤 Fria agenter' },
+          { key: 'freeagents', label: '👤 Fria' },
           { key: 'sell', label: '💰 Sälj' },
         ] as const).map(tab => (
           <button
@@ -416,6 +415,16 @@ export function TransfersScreen() {
             {tab.label}
           </button>
         ))}
+      </div>
+
+      {/* Tab description */}
+      <div style={{ padding: '6px 16px 10px', fontSize: 12, color: 'var(--text-muted)', borderBottom: '1px solid var(--border)', marginBottom: 12 }}>
+        {{ marknad: 'Spelare som är tillgängliga för transfer just nu.',
+           scouting: 'Utvärdera spelare eller sök nya talanger.',
+           contracts: 'Förläng avtal med dina spelare innan de löper ut.',
+           freeagents: 'Kontraktslösa spelare som kan värvas utan transfersumma.',
+           sell: 'Sätt dina spelare till salu på marknaden.',
+        }[activeTab]}
       </div>
 
       {/* Transfer window status banner */}
@@ -679,8 +688,8 @@ export function TransfersScreen() {
         )
       })()}
 
-      {/* Spaning (Talent Search) section */}
-      {activeTab === 'spaning' && (
+      {/* Spaning (Talent Search) section — merged into scouting tab */}
+      {activeTab === 'scouting' && (
         <div className="card-stagger-2" style={{ marginBottom: 24 }}>
           {/* Explainer */}
           <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 12 }}>

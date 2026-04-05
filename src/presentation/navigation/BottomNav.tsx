@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { Home, Users, Swords, ArrowLeftRight, Bell, Building2, Table2 } from 'lucide-react'
-import { useInjuredInLineup, useExpiringContracts, useNextRoundNumber, useHasPendingLineup, useGameStore, useUnreadInboxCount } from '../store/gameStore'
+import { Home, Users, Swords, ArrowLeftRight, Table2, Building2 } from 'lucide-react'
+import { useInjuredInLineup, useExpiringContracts, useNextRoundNumber, useHasPendingLineup, useGameStore } from '../store/gameStore'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 
 const tabs = [
@@ -10,8 +10,7 @@ const tabs = [
   { to: '/game/match', label: 'Match', Icon: Swords },
   { to: '/game/tabell', label: 'Tabell', Icon: Table2 },
   { to: '/game/transfers', label: 'Transfers', Icon: ArrowLeftRight },
-  { to: '/game/inbox', label: 'Inkorg', Icon: Bell },
-  { to: '/game/club', label: 'Förening', Icon: Building2 },
+  { to: '/game/club', label: 'Klubb', Icon: Building2 },
 ]
 
 function Badge({ count }: { count: number }) {
@@ -43,7 +42,6 @@ export function BottomNav() {
   const expiringContracts = useExpiringContracts()
   const nextRoundNumber = useNextRoundNumber()
   const hasPendingLineup = useHasPendingLineup()
-  const unreadInbox = useUnreadInboxCount()
   const currentDate = useGameStore(s => s.game?.currentDate ?? '')
   const location = useLocation()
   const [lastActive, setLastActive] = useState<string>(location.pathname)
@@ -64,7 +62,6 @@ export function BottomNav() {
     '/game/squad': injuredInLineup,
     '/game/match': matchBadge,
     '/game/transfers': expiringContracts,
-    '/game/inbox': unreadInbox,
   }
 
   return (
@@ -97,9 +94,9 @@ export function BottomNav() {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 3,
+              gap: 2,
               color: isActive ? 'var(--accent)' : 'var(--text-muted)',
-              fontSize: 10,
+              fontSize: 9,
               fontWeight: isActive ? 600 : 400,
               transition: 'color 0.15s',
               width: '100%',
@@ -113,15 +110,15 @@ export function BottomNav() {
                   animation: isActive && (bounceKey[to] ?? 0) > 0 ? 'bounce 0.35s ease-out' : undefined,
                 }}
               >
-                <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
+                <Icon size={18} strokeWidth={isActive ? 2.2 : 1.8} />
                 <Badge count={badges[to] ?? 0} />
                 {to === '/game/transfers' && transferWindowOpen && (badges[to] ?? 0) === 0 && (
                   <div style={{
                     position: 'absolute',
                     top: 0,
                     right: 0,
-                    width: 7,
-                    height: 7,
+                    width: 6,
+                    height: 6,
                     borderRadius: '50%',
                     background: windowStatus === 'winter' ? 'var(--ice)' : 'var(--success)',
                     border: '1.5px solid var(--bg-surface)',
@@ -129,9 +126,6 @@ export function BottomNav() {
                 )}
               </div>
               <span>{label}</span>
-              {isActive && (
-                <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--accent)', marginTop: 1 }} />
-              )}
             </span>
           )}
         </NavLink>
