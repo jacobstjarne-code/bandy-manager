@@ -143,7 +143,7 @@ export function NewGameScreen() {
             marginBottom: 24,
             maxWidth: 280,
           }}>
-            Bandyn behöver folk som dig. Tränare som ställer sig på kalla rinkar i november, som håller ihop en trupp där hälften jobbar dagtid.
+            Bandyn behöver folk som dig. Tränare som trampar snö på väg till planen en tisdagskväll i november. Som vet att en hörna i 87:e kan vända allt. Som förstår att halva truppen har jobbat sedan sex på morgonen — och ändå ställer upp.
           </p>
           <input
             autoFocus
@@ -199,30 +199,14 @@ export function NewGameScreen() {
   return (
     <OnboardingShell>
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-      {/* Header — club selection */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '12px 16px',
-        background: 'var(--bg-elevated)',
-        borderBottom: '2px solid var(--accent)',
-        flexShrink: 0,
-        minHeight: 44,
-      }}>
-        <img
-          src="/bandymanager-logo.png"
-          alt="Bandy Manager"
-          style={{ height: 28, width: 'auto', opacity: 0.85 }}
-        />
-        <div style={{ textAlign: 'right' }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: 'rgba(245,241,235,0.85)', margin: 0, lineHeight: 1.2, fontFamily: 'var(--font-display)' }}>
-            Välj klubb
-          </p>
-          <p style={{ fontSize: 10, color: 'rgba(245,241,235,0.65)', margin: 0, lineHeight: 1.2 }}>
-            {managerName} · 2026/2027
-          </p>
-        </div>
+      {/* Club selection heading */}
+      <div style={{ padding: '14px 16px 10px' }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', margin: 0 }}>
+          Välj klubb
+        </h2>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+          {capitalizeName(managerName)} · 2026/2027
+        </p>
       </div>
 
       {/* Club list */}

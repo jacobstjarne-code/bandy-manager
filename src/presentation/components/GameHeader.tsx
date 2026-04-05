@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, Settings } from 'lucide-react'
 import { useGameStore, useManagedClub, useUnreadInboxCount } from '../store/gameStore'
@@ -7,6 +8,8 @@ export function GameHeader() {
   const game = useGameStore(s => s.game)
   const club = useManagedClub()
   const unreadInbox = useUnreadInboxCount()
+  const [showMenu, setShowMenu] = useState(false)
+  const [saveToast, setSaveToast] = useState(false)
   if (!game || !club) return null
 
   const lastPlayedRound = game.fixtures
@@ -22,6 +25,7 @@ export function GameHeader() {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
+      position: 'relative',
       padding: '10px 12px',
       background: 'var(--bg-dark)',
       borderBottom: '2px solid var(--accent)',
@@ -83,7 +87,7 @@ export function GameHeader() {
           )}
         </button>
         <button
-          onClick={() => navigate('/game/club')}
+          onClick={() => setShowMenu(!showMenu)}
           style={{
             background: 'none', border: 'none', cursor: 'pointer', padding: 4,
             color: 'rgba(245,241,235,0.5)',
@@ -92,6 +96,45 @@ export function GameHeader() {
           <Settings size={16} strokeWidth={2} />
         </button>
       </div>
+
+      {/* Save toast */}
+      {saveToast && (
+        <div style={{
+          position: 'absolute', top: 50, left: '50%', transform: 'translateX(-50%)',
+          background: 'var(--success)', color: 'var(--text-light)',
+          padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, zIndex: 201,
+        }}>
+          ✓ Sparat
+        </div>
+      )}
+
+      {/* Settings dropdown */}
+      {showMenu && (
+        <div style={{
+          position: 'absolute', top: 48, right: 12,
+          background: 'var(--bg-surface)', border: '1px solid var(--border)',
+          borderRadius: 8, padding: '4px 0',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+          zIndex: 200, minWidth: 160,
+        }}>
+          {[
+            { label: '💾 Spara spel', action: () => { setSaveToast(true); setTimeout(() => setSaveToast(false), 2000) } },
+            { label: '📂 Ladda spel', action: () => navigate('/') },
+            { label: '❓ Hjälp', action: () => navigate('/game/doctor') },
+            { label: '🏟️ Klubb', action: () => navigate('/game/club') },
+          ].map((item, i) => (
+            <button key={i} onClick={() => { item.action(); setShowMenu(false) }}
+              style={{
+                display: 'block', width: '100%', textAlign: 'left',
+                padding: '10px 14px', background: 'none', border: 'none',
+                fontSize: 13, color: 'var(--text-primary)',
+                cursor: 'pointer', fontFamily: 'var(--font-body)',
+              }}>
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -105,9 +105,18 @@ export function ClubScreen() {
       </div>
 
       {/* Tab description */}
-      <div style={{ padding: '6px 16px', fontSize: 12, color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>
-        {tabDescriptions[activeTab] ?? ''}
-      </div>
+      {tabDescriptions[activeTab] && (
+        <p style={{
+          padding: '6px 16px 10px',
+          fontSize: 11,
+          color: 'var(--text-muted)',
+          fontFamily: 'var(--font-body)',
+          borderBottom: '1px solid var(--border)',
+          marginBottom: 10,
+        }}>
+          {tabDescriptions[activeTab]}
+        </p>
+      )}
 
       {/* Scrollable content */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px 90px', paddingTop: 12 }}>

@@ -15,6 +15,7 @@ import { SnowOverlay } from '../components/match/SnowOverlay'
 import { PhaseOverlay } from '../components/match/PhaseOverlay'
 import { FinalIntroScreen } from '../components/match/FinalIntroScreen'
 import { HalftimeModal } from '../components/match/HalftimeModal'
+import { StatsFooter, calculateLiveStats } from '../components/match/StatsFooter'
 import { MatchDoneOverlay, type PressQuestion } from '../components/match/MatchDoneOverlay'
 import { CeremonyCupFinal } from '../components/match/CeremonyCupFinal'
 import { CeremonySmFinal } from '../components/match/CeremonySmFinal'
@@ -632,6 +633,11 @@ export function MatchLiveScreen() {
             borderRadius: '0 2px 2px 0',
           }} />
         </div>
+      )}
+
+      {/* Live stats footer */}
+      {currentMatchStep && (
+        <StatsFooter stats={calculateLiveStats(currentMatchStep)} />
       )}
 
       {/* Commentary feed */}

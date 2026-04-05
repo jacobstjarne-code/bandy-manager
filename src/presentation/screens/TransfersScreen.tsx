@@ -418,14 +418,28 @@ export function TransfersScreen() {
       </div>
 
       {/* Tab description */}
-      <div style={{ padding: '6px 16px 10px', fontSize: 12, color: 'var(--text-muted)', borderBottom: '1px solid var(--border)', marginBottom: 12 }}>
-        {{ marknad: 'Spelare som är tillgängliga för transfer just nu.',
-           scouting: 'Utvärdera spelare eller sök nya talanger.',
-           contracts: 'Förläng avtal med dina spelare innan de löper ut.',
-           freeagents: 'Kontraktslösa spelare som kan värvas utan transfersumma.',
-           sell: 'Sätt dina spelare till salu på marknaden.',
-        }[activeTab]}
-      </div>
+      {({ marknad: 'Spelare som är tillgängliga för transfer just nu.',
+          scouting: 'Utvärdera spelare eller sök nya talanger.',
+          contracts: 'Förläng avtal med dina spelare.',
+          freeagents: 'Kontraktslösa spelare. Ingen transfersumma.',
+          sell: 'Sälj spelare från din trupp.',
+      } as Record<string, string>)[activeTab] && (
+        <p style={{
+          padding: '6px 16px 10px',
+          fontSize: 11,
+          color: 'var(--text-muted)',
+          fontFamily: 'var(--font-body)',
+          borderBottom: '1px solid var(--border)',
+          marginBottom: 10,
+        }}>
+          {({ marknad: 'Spelare som är tillgängliga för transfer just nu.',
+              scouting: 'Utvärdera spelare eller sök nya talanger.',
+              contracts: 'Förläng avtal med dina spelare.',
+              freeagents: 'Kontraktslösa spelare. Ingen transfersumma.',
+              sell: 'Sälj spelare från din trupp.',
+          } as Record<string, string>)[activeTab]}
+        </p>
+      )}
 
       {/* Transfer window status banner */}
       <div className="card-sharp card-stagger-1" style={{

@@ -9,6 +9,7 @@ import { PlayerCard } from '../components/PlayerCard'
 import { positionShort, POSITION_ORDER } from '../utils/formatters'
 import { TRAIT_META } from '../../domain/data/playerTraits'
 import { SectionCard } from '../components/SectionCard'
+import { getPortraitPath } from '../../domain/services/portraitService'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
 type FilterKey = 'all' | 'mv' | 'def' | 'half' | 'mid' | 'fwd'
@@ -40,20 +41,6 @@ function barColor(value: number): string {
   return 'var(--danger)'
 }
 
-function archetypeColor(arch: PlayerArchetype): string {
-  const map: Partial<Record<PlayerArchetype, string>> = {
-    [PlayerArchetype.Finisher]: '#c0392b',
-    [PlayerArchetype.Playmaker]: '#2563EB',
-    [PlayerArchetype.DefensiveWorker]: '#1a5e3a',
-    [PlayerArchetype.TwoWaySkater]: '#5a2d7a',
-    [PlayerArchetype.ReflexGoalkeeper]: '#8B6914',
-    [PlayerArchetype.PositionalGoalkeeper]: '#7b5a14',
-    [PlayerArchetype.Dribbler]: '#1a5e8a',
-    [PlayerArchetype.CornerSpecialist]: '#4a3a8a',
-    [PlayerArchetype.RawTalent]: '#2d6e2d',
-  }
-  return map[arch] ?? '#1e4d8c'
-}
 
 const FILTER_TABS: { key: FilterKey; label: string }[] = [
   { key: 'all', label: 'Alla' },
@@ -93,8 +80,6 @@ function PlayerRowAnimated({ player, index, onClick }: PlayerRowAnimatedProps) {
 }
 
 function PlayerRow({ player, onClick }: PlayerRowProps) {
-  const archColor = archetypeColor(player.archetype)
-
   let statusPill: React.ReactNode = null
   if (player.isInjured) {
     statusPill = (
@@ -128,23 +113,16 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
     >
       {/* Top row: badge + name + CA */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {/* Archetype badge */}
-        <div style={{
-          width: 28,
-          height: 28,
-          borderRadius: '50%',
-          background: archColor + '22',
-          border: '1px solid rgba(196,122,58,0.2)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 11,
-          fontWeight: 800,
-          color: archColor,
-          flexShrink: 0,
-        }}>
-          {positionShort(player.position).charAt(0)}
-        </div>
+        {/* Player portrait */}
+        <img
+          src={getPortraitPath(player.id, player.age)}
+          alt=""
+          style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+          onError={(e) => {
+            const el = e.target as HTMLImageElement
+            el.style.display = 'none'
+          }}
+        />
 
         {/* Name */}
         <div style={{ flex: 1, minWidth: 0 }}>

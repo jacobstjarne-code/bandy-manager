@@ -127,10 +127,24 @@ export function BoardMeetingScreen() {
   }
 
   return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+    <header style={{
+      background: 'var(--bg-dark)', height: 48,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0,
+    }}>
+      <span style={{
+        color: 'var(--text-light)', fontSize: 11, letterSpacing: 3,
+        textTransform: 'uppercase', fontFamily: 'var(--font-body)', fontWeight: 600,
+      }}>
+        BANDY MANAGER
+      </span>
+    </header>
     <div style={{
-      height: '100%',
+      flex: 1,
       display: 'flex',
       flexDirection: 'column',
+      overflow: 'auto',
       background: 'var(--bg)',
     }}>
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px 90px' }}>
@@ -175,10 +189,11 @@ export function BoardMeetingScreen() {
           {expectationText[club.boardExpectation] ?? 'Gör ert bästa'}
         </p>
         <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-          {club.boardExpectation === 'winLeague' ? 'Styrelsen förväntar sig slutspel. Annat vore en besvikelse.'
-            : club.boardExpectation === 'challengeTop' ? 'Styrelsen hoppas på övre halvan. Nedflyttning vore oacceptabelt.'
-            : club.boardExpectation === 'midTable' ? 'Styrelsen vill se framsteg. Håll oss kvar i serien.'
-            : 'Styrelsen följer utvecklingen och utvärderar efter säsongen.'}
+          {{ avoidBottom: 'Styrelsen vill se framsteg. Håll oss kvar i serien.',
+             midTable: 'Håll er i övre halvan. Nedflyttning vore katastrofalt.',
+             challengeTop: 'Styrelsen förväntar sig slutspel. Gå så långt ni kan.',
+             winLeague: 'Styrelsen kräver guld. Annat vore en besvikelse.',
+          }[club.boardExpectation] ?? 'Styrelsen följer utvecklingen och utvärderar efter säsongen.'}
         </p>
       </div>
 
@@ -286,6 +301,15 @@ export function BoardMeetingScreen() {
         {isFirstSeason ? 'Kör igång! →' : 'Starta säsongen →'}
       </button>
       </div>
+    </div>
+    <footer style={{
+      height: 40, background: 'var(--bg)',
+      borderTop: '1px solid var(--border)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0,
+    }}>
+      <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2 }}>BURY FEN</span>
+    </footer>
     </div>
   )
 }

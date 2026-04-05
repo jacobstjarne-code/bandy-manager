@@ -3,7 +3,7 @@ import type { ScoutReport } from '../../domain/entities/Scouting'
 import { PlayerArchetype, PlayerPosition } from '../../domain/enums'
 import { getScoutReportAge } from '../../domain/services/scoutingService'
 import { ClubBadge } from './ClubBadge'
-import { getPortraitPath } from '../utils/portraits'
+import { getPortraitPath } from '../../domain/services/portraitService'
 
 export interface PlayerCardProps {
   player: Player
@@ -153,7 +153,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
 
   // Stale reports are treated as if no report exists for attribute display
   const effectiveReport = isStale ? undefined : scoutReport
-  const portraitPath = getPortraitPath(player)
+  const portraitPath = getPortraitPath(player.id, player.age)
 
   const topStats = isOwned
     ? getTopStats(player)
@@ -222,7 +222,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
         <img
           src={portraitPath}
           alt={`${player.firstName} ${player.lastName}`}
-          style={{ width: 100, height: 120, objectFit: 'cover', borderRadius: 8 }}
+          style={{ width: 72, height: 72, borderRadius: '50%', border: '2px solid var(--accent)', objectFit: 'cover', background: 'var(--bg)' }}
           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
         />
       </div>

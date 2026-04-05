@@ -593,6 +593,9 @@ export function MatchScreen() {
           onSetLiveMode={setUseLiveMode}
           onBack={() => setMatchStep('tactic')}
           onPlay={handlePlayMatch}
+          fixture={nextFixture ?? undefined}
+          isHome={isHome}
+          fanMood={game.fanMood ?? 50}
         />
       )}
     </div>

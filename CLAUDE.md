@@ -10,6 +10,78 @@
 - CSS-variabler ENBART — inga hårdkodade färger
 - Events som overlay (zIndex 300) — INTE egna routes
 
+## VERIFIERINGSPROTOKOLL — OBLIGATORISKT
+
+Gäller ALLA som granskar eller implementerar: Claude Code, 
+Opus, eller Jacob. Ingen genväg. Ingen "finns = funkar".
+
+### Vid kodgranskning / audit:
+
+**1. LÄS PARENT FÖRST, INTE CHILDREN.**
+Börja ALLTID med skärm-filen (t.ex. MatchScreen.tsx), inte 
+komponent-filerna. Följ renderingsflödet uppifrån och ner:
+- Vad renderas?
+- I vilken ordning?
+- Med vilka props?
+- Finns redundans (samma info visad två gånger)?
+
+**2. ALDRIG "✅ finns" — ALLTID "✅ renderas korrekt i kontext".**
+Att en komponent existerar som fil betyder INGENTING. 
+Den måste:
+- Importeras i rätt parent
+- Få rätt props
+- Renderas på rätt plats i DOM-trädet
+- INTE dupliceras av en annan komponent som gör samma sak
+
+**3. FÖR UI: FÖLJ VAD SPELAREN SER.**
+Tänk: "Om jag öppnar denna skärm, vad ser jag uppifrån 
+och ner?" Läs renderingsordningen i JSX:
+- Är det dubbel-header? (vanligaste felet)
+- Har alla kort samma margin/padding?
+- Klipps något av?
+- Är visuell hierarki konsekvent?
+
+**4. FÖR SPELLOGIK: TRACESA ETT KOMPLETT FLÖDE.**
+Säg aldrig "cupService finns ✅" — tracesa istället:
+- Vad händer vid säsongsstart? (scheduleGenerator)
+- Vilka fixtures skapas? (logga matchday, isCup, roundNumber)
+- Vad händer vid advance()? (roundProcessor)
+- I vilken ordning spelas matcher?
+
+Gör detta med PEN OCH PAPPER-logik — följ variablerna 
+steg för steg, inte "det ser rätt ut".
+
+**5. VID TVEKSAMHET: VISA KODEN, INTE SLUTSATSEN.**
+Om du inte kan verifiera 100% — visa den relevanta koden 
+och säg "jag ser X men kan inte bekräfta Y utan att köra". 
+ALDRIG "allt ser bra ut" om du inte har tracesat flödet.
+
+**6. CHECKLISTA EFTER VARJE IMPLEMENTATION:**
+```
+□ Läst PARENT-filen och bekräftat renderingsordning?
+□ Kollat att ingen annan komponent renderar samma sak?
+□ Kontrollerat margin/padding mot E9 (0 12px page, 14px 16px card)?
+□ Bekräftat att alla props skickas korrekt från parent?
+□ Kört npm run build && npm test?
+□ Verifierat med grep-kommandon (om specen har sådana)?
+```
+
+### Vanliga felmönster att ALLTID kolla:
+
+- **Dubbel-header:** Parent renderar matchinfo OCH child-komponent 
+  renderar matchinfo → spelaren ser samma info två gånger
+- **"finns = funkar":** Service-fil existerar men importeras aldrig 
+  eller anropas med fel parametrar
+- **Visuell inkonsistens:** Kort på samma skärm har olika margin 
+  p.g.a. att de skapats vid olika tillfällen
+- **Cup-scheduling:** matchday-nummer måste verifieras genom att 
+  LISTA alla fixtures i kronologisk ordning, inte bara "kolla att 
+  cupService existerar"
+- **Advance-hopp:** roundProcessor.ts anropas ibland dubbelt — 
+  kolla alla ställen som anropar advance()
+
+---
+
 ## ARCHITECTURE OVERVIEW
 
 ### Matchday-systemet (refaktorerat mars 2026)
@@ -52,6 +124,7 @@ Fixture-ordningen styrs av `fixture.matchday` — ett heltal som bestämmer glob
 - **Hörnor** = centralt offensivt vapen
 - **Flygande byten** som i ishockey (inga begränsade byten)
 - 🏒 (INTE ⚽) i all UI
+- **"Plan"** — ALDRIG "rink". Bandy spelas på plan, inte rink. Rink = ishockey.
 
 ## Verification after ANY design change
 
@@ -94,7 +167,7 @@ Must return 0 results.
 
 ## Active Documentation
 - `docs/DESIGN_SYSTEM.md` — designregler, mönster, konventioner
-- `docs/DESIGN_BUGG_SPRINT.md` — aktuell design-sprint (15 fixar)
+- `docs/VERIFIERAD_RESTLISTA.md` — aktuell restlista (verifierad mot kod)
 - `docs/RESTLISTA.md` — gameplay-buggar och teststatus
 
 ## Commit Convention
