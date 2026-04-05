@@ -109,10 +109,26 @@ export function generateNextCupRound(
     return { updatedBracket: bracket, newFixtures: [] }
   }
 
-  // Collect winners from completed round
-  const winners = bracket.matches
-    .filter(m => m.round === completedRound && m.winnerId)
+  // Collect winners from completed round — interleave bye-winners with match-winners
+  const roundMatches = bracket.matches.filter(m => m.round === completedRound && m.winnerId)
+  const byeWinners = roundMatches
+    .filter(m => m.homeClubId === m.awayClubId)
     .map(m => m.winnerId!)
+  const matchWinners = roundMatches
+    .filter(m => m.homeClubId !== m.awayClubId)
+    .map(m => m.winnerId!)
+
+  let winners: string[]
+  if (byeWinners.length > 0 && matchWinners.length > 0) {
+    winners = []
+    const maxLen = Math.max(byeWinners.length, matchWinners.length)
+    for (let i = 0; i < maxLen; i++) {
+      if (i < byeWinners.length) winners.push(byeWinners[i])
+      if (i < matchWinners.length) winners.push(matchWinners[i])
+    }
+  } else {
+    winners = roundMatches.map(m => m.winnerId!)
+  }
 
   if (winners.length < 2) {
     // Not enough winners — cup might be over or something went wrong

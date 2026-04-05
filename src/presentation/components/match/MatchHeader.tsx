@@ -50,10 +50,9 @@ const TEMPO_LABEL: Record<string, string> = {
   [TacticTempo.High]: 'Högt tempo', [TacticTempo.Normal]: 'Normalt', [TacticTempo.Low]: 'Lågt tempo',
 }
 
-export function MatchHeader({ fixture, homeClubName, awayClubName, isHome, weather, step, tactic }: MatchHeaderProps) {
+export function MatchHeader({ fixture, weather, step, tactic }: MatchHeaderProps) {
   const atmo = getMatchAtmosphere(fixture)
   const tint = getCardTint(atmo.tint)
-  const opponent = isHome ? awayClubName : homeClubName
 
   return (
     <div className="card-round" style={{
@@ -62,13 +61,6 @@ export function MatchHeader({ fixture, homeClubName, awayClubName, isHome, weath
       background: tint !== 'transparent' ? tint : undefined,
       borderLeft: atmo.borderAccent ? `3px solid ${atmo.borderAccent}` : undefined,
     }}>
-      {/* Match info */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>
-          Omgång {fixture.roundNumber} · vs {opponent} · {isHome ? 'HEMMA' : 'BORTA'}
-        </span>
-      </div>
-
       {atmo.label && (
         <p style={{ fontSize: 11, fontWeight: 700, color: atmo.borderAccent ?? 'var(--accent)', marginBottom: 6 }}>
           {atmo.label}

@@ -557,9 +557,16 @@ export function MatchLiveScreen() {
         )}
       </div>
 
-      {/* Active suspensions below scoreboard */}
-      {currentMatchStep && (currentMatchStep.activeSuspensions.homeCount > 0 || currentMatchStep.activeSuspensions.awayCount > 0) && (() => {
-        // Find which players are currently suspended (RedCard within last 10 min)
+      {/* Active suspensions below scoreboard — fixed height to prevent layout shift */}
+      {(() => {
+        const hasSusp = currentMatchStep &&
+          (currentMatchStep.activeSuspensions.homeCount > 0 ||
+           currentMatchStep.activeSuspensions.awayCount > 0)
+
+        if (!currentMatchStep) return (
+          <div style={{ height: 20, flexShrink: 0 }} />
+        )
+
         const allEventsSoFar = displayedSteps.flatMap(s => s.events)
         const currentMin = currentMatchStep.minute
         const homeSusp = allEventsSoFar
@@ -574,10 +581,14 @@ export function MatchLiveScreen() {
             const p = e.playerId ? (game?.players ?? []).find(pl => pl.id === e.playerId) : null
             return p?.shirtNumber != null ? `#${p.shirtNumber}` : (p ? p.lastName.slice(0, 5) : '?')
           })
+
         return (
           <div style={{
             display: 'flex', justifyContent: 'space-between', padding: '4px 16px',
             fontSize: 11, fontWeight: 600, color: 'var(--danger)', flexShrink: 0,
+            height: 20,
+            opacity: hasSusp ? 1 : 0,
+            transition: 'opacity 0.3s ease',
           }}>
             <div>{homeSusp.map(s => `Utv ${s}`).join(' · ')}</div>
             <div>{awaySusp.map(s => `Utv ${s}`).join(' · ')}</div>
@@ -585,10 +596,17 @@ export function MatchLiveScreen() {
         )
       })()}
 
-      {/* Controls below scoreboard */}
+      {/* Match controls container */}
+      <div style={{
+        background: 'var(--bg-surface)',
+        borderBottom: '1px solid var(--border)',
+        flexShrink: 0,
+      }}>
+
+      {/* Controls */}
       <div style={{
         display: 'flex', justifyContent: 'center', gap: 8,
-        padding: '6px 16px', flexShrink: 0,
+        padding: '6px 16px',
       }}>
         <button
           onClick={() => setIsPaused(prev => !prev)}
@@ -635,10 +653,12 @@ export function MatchLiveScreen() {
         </div>
       )}
 
-      {/* Live stats footer */}
+      {/* Live stats */}
       {currentMatchStep && (
         <StatsFooter stats={calculateLiveStats(currentMatchStep)} />
       )}
+
+      </div>{/* end match controls container */}
 
       {/* Commentary feed */}
       <div

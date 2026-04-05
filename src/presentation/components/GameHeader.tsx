@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, Settings } from 'lucide-react'
 import { useGameStore, useManagedClub, useUnreadInboxCount } from '../store/gameStore'
+import { saveSaveGame } from '../../infrastructure/persistence/saveGameStorage'
 
 export function GameHeader() {
   const navigate = useNavigate()
@@ -118,7 +119,11 @@ export function GameHeader() {
           zIndex: 200, minWidth: 160,
         }}>
           {[
-            { label: '💾 Spara spel', action: () => { setSaveToast(true); setTimeout(() => setSaveToast(false), 2000) } },
+            { label: '💾 Spara spel', action: () => {
+              const currentGame = useGameStore.getState().game
+              if (currentGame) saveSaveGame(currentGame)
+              setSaveToast(true); setTimeout(() => setSaveToast(false), 2000)
+            } },
             { label: '📂 Ladda spel', action: () => navigate('/') },
             { label: '❓ Hjälp', action: () => navigate('/game/doctor') },
             { label: '🏟️ Klubb', action: () => navigate('/game/club') },

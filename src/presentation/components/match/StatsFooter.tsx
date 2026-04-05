@@ -27,8 +27,6 @@ export function calculateLiveStats(
 export function StatsFooter({ stats }: { stats: LiveMatchStats }) {
   return (
     <div style={{
-      background: 'var(--bg-surface)',
-      borderTop: '1px solid var(--border)',
       padding: '6px 16px',
       flexShrink: 0,
       display: 'grid',

@@ -30,6 +30,13 @@ import { BandyDoktorScreen } from '../screens/BandyDoktorScreen'
 import { HistoryScreen } from '../screens/HistoryScreen'
 import { PreSeasonScreen } from '../screens/PreSeasonScreen'
 import { RoundSummaryScreen } from '../screens/RoundSummaryScreen'
+import { useGameStore } from '../store/gameStore'
+
+function BoardMeetingGuard() {
+  const game = useGameStore(s => s.game)
+  if (!game) return <Navigate to="/" replace />
+  return <BoardMeetingScreen />
+}
 
 export function AppRouter() {
   return (
@@ -56,11 +63,11 @@ export function AppRouter() {
           <Route path="pre-season" element={<PreSeasonScreen />} />
         </Route>
         <Route element={<GameGuard />}>
-<Route path="/game/round-summary" element={<RoundSummaryScreen />} />
+          <Route path="/game/round-summary" element={<RoundSummaryScreen />} />
           <Route path="/game/match-result" element={<MatchResultScreen />} />
-          <Route path="/game/board-meeting" element={<BoardMeetingScreen />} />
           <Route path="/game/game-over" element={<GameOverScreen />} />
         </Route>
+        <Route path="/game/board-meeting" element={<BoardMeetingGuard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

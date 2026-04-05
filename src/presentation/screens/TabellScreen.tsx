@@ -84,6 +84,32 @@ export function TabellScreen() {
         ))}
       </div>
 
+      {/* Tab description */}
+      {activeTab === 'tabell' && (
+        <p style={{
+          padding: '6px 16px 10px',
+          fontSize: 11,
+          color: 'var(--text-muted)',
+          fontFamily: 'var(--font-body)',
+          borderBottom: '1px solid var(--border)',
+          marginBottom: 10,
+        }}>
+          Aktuell tabell med form och målskillnad.
+        </p>
+      )}
+      {activeTab === 'statistik' && (
+        <p style={{
+          padding: '6px 16px 10px',
+          fontSize: 11,
+          color: 'var(--text-muted)',
+          fontFamily: 'var(--font-body)',
+          borderBottom: '1px solid var(--border)',
+          marginBottom: 10,
+        }}>
+          Ligans toppskyttar, assistkungar och betyg.
+        </p>
+      )}
+
       {activeTab === 'statistik' && (() => {
         const allPlayers = game!.players.filter(p => p.seasonStats.gamesPlayed > 0)
         if (allPlayers.length === 0) return (
