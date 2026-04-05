@@ -22,6 +22,7 @@ import { processAITransfers } from '../../domain/services/aiTransferService'
 import { generateNominations, generateGalaEvent, generateGalaInbox } from '../../domain/services/bandyGalaService'
 import { checkSeasonEndArc } from '../../domain/services/trainerArcService'
 import { evaluateObjective, generateBoardObjectives } from '../../domain/services/boardObjectiveService'
+import { updateSilentShout } from '../../domain/services/mecenatService'
 import type { LicenseReview } from '../../domain/entities/SaveGame'
 import type { AdvanceResult } from './advanceTypes'
 
@@ -865,6 +866,8 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     consecutiveFailures: newConsecutiveFailures,
     rivalryHistory: game.rivalryHistory ?? {},
     clubLegends: newLegends,
+    mecenater: (game.mecenater ?? []).map(m => m.isActive ? updateSilentShout(m) : m),
+    facilityProjects: game.facilityProjects ?? [],
     storylines: game.storylines ?? [],
     boardObjectives: newSeasonObjectives,
     boardObjectiveHistory: [

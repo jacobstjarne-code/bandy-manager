@@ -215,3 +215,173 @@ export function updateSilentShout(mecenat: Mecenat): Mecenat {
     totalContributed: mecenat.totalContributed + mecenat.contribution,
   }
 }
+
+// ── Silent shout events — triggered at influence thresholds ─────────────
+
+export function generateSilentShoutEvent(
+  mecenat: Mecenat,
+  playerName: string | undefined,
+  rand: () => number,
+): GameEvent | null {
+  const ss = mecenat.silentShout
+
+  // 30+: Media mentions
+  if (ss >= 30 && ss < 50 && rand() < 0.15) {
+    return {
+      id: `event_shout_media_${mecenat.id}_${Date.now()}`,
+      type: 'patronEvent',
+      title: `📰 ${mecenat.name} i media`,
+      sender: { name: mecenat.name, role: mecenat.business },
+      body: `Lokaltidningen nämner ${mecenat.name} i en artikel om klubben.\n\n"Enligt uppgifter nära klubben ska ${mecenat.name} vara nöjd med säsongens utveckling."`,
+      choices: [
+        { id: 'ok', label: 'Noterat', effect: { type: 'noOp' } },
+      ],
+      resolved: false,
+    }
+  }
+
+  // 50+: Transfer suggestion
+  if (ss >= 50 && ss < 70 && playerName && rand() < 0.20) {
+    return {
+      id: `event_shout_transfer_${mecenat.id}_${Date.now()}`,
+      type: 'patronEvent',
+      title: `💰 ${mecenat.name} har ett förslag`,
+      sender: { name: mecenat.name, role: mecenat.business },
+      body: `${mecenat.name} ringer.\n\n"Jag hörde att det finns en spelare som hade passat er. Jag kan tänka mig att bidra med halva kostnaden."`,
+      choices: [
+        {
+          id: 'accept',
+          label: 'Intressant — berätta mer',
+          subtitle: '🤝 +10 relation · 💰 mecenat bidrar',
+          effect: { type: 'patronHappiness', amount: 10 },
+        },
+        {
+          id: 'decline',
+          label: 'Jag sköter värvningarna',
+          subtitle: '🤝 -10 relation · oberoende',
+          effect: { type: 'patronHappiness', amount: -10 },
+        },
+      ],
+      resolved: false,
+    }
+  }
+
+  // 70+: Tactic pressure
+  if (ss >= 70 && ss < 90 && rand() < 0.15) {
+    return {
+      id: `event_shout_tactic_${mecenat.id}_${Date.now()}`,
+      type: 'patronEvent',
+      title: `⚠️ ${mecenat.name} har åsikter`,
+      sender: { name: mecenat.name, role: mecenat.business },
+      body: `${mecenat.name}: "Vi spelar för defensivt. Jag vill se anfall. Publiken vill se mål."`,
+      choices: [
+        {
+          id: 'agree',
+          label: 'Du har en poäng — vi ändrar',
+          subtitle: '🤝 +15 relation · taktikpress',
+          effect: { type: 'patronHappiness', amount: 15 },
+        },
+        {
+          id: 'refuse',
+          label: 'Taktiken bestämmer jag',
+          subtitle: '🤝 -15 relation · "Jaha. Vi får se."',
+          effect: { type: 'patronHappiness', amount: -15 },
+        },
+      ],
+      resolved: false,
+    }
+  }
+
+  // 90+: Board threat
+  if (ss >= 90 && rand() < 0.20) {
+    return {
+      id: `event_shout_threat_${mecenat.id}_${Date.now()}`,
+      type: 'patronEvent',
+      title: `🔴 ${mecenat.name} hotar`,
+      sender: { name: mecenat.name, role: mecenat.business },
+      body: `${mecenat.name}: "Om det inte blir ändringar överväger jag att dra mig tillbaka. Styrelsen borde lyssna."`,
+      choices: [
+        {
+          id: 'submit',
+          label: 'Vi lyssnar — vad vill du?',
+          subtitle: '🤝 +20 relation · silentShout ökar · kontrollfreak vinner',
+          effect: { type: 'patronHappiness', amount: 20 },
+        },
+        {
+          id: 'stand_firm',
+          label: 'Klubben styrs av styrelsen, inte av dig',
+          subtitle: '🤝 -30 relation · risk att mecenaten lämnar · men oberoende',
+          effect: { type: 'patronHappiness', amount: -30 },
+        },
+      ],
+      resolved: false,
+    }
+  }
+
+  return null
+}
+
+// ── Mecenat conflict — two mecenater disagree ───────────────────────────
+
+export function generateMecenatConflictEvent(
+  mec1: Mecenat,
+  mec2: Mecenat,
+): GameEvent {
+  return {
+    id: `event_conflict_${mec1.id}_${mec2.id}`,
+    type: 'patronEvent',
+    title: `⚡ Konflikt: ${mec1.name} vs ${mec2.name}`,
+    body: `${mec1.name} vill satsa på dyra värvningar. ${mec2.name} tycker ni ska fokusera på ungdomar.\n\nBåda väntar på ditt svar.`,
+    choices: [
+      {
+        id: 'side_mec1',
+        label: `Stöd ${mec1.name}`,
+        subtitle: `🤝 ${mec1.name} +15 · ${mec2.name} -10`,
+        effect: { type: 'patronHappiness', amount: 15 },
+      },
+      {
+        id: 'side_mec2',
+        label: `Stöd ${mec2.name}`,
+        subtitle: `🤝 ${mec2.name} +15 · ${mec1.name} -10`,
+        effect: { type: 'patronHappiness', amount: -10 },
+      },
+      {
+        id: 'neutral',
+        label: 'Medla — hitta en kompromiss',
+        subtitle: '🤝 Båda +3 · ingen blir riktigt nöjd',
+        effect: { type: 'patronHappiness', amount: 3 },
+      },
+    ],
+    resolved: false,
+  }
+}
+
+// ── Mecenat alliance — two mecenater cooperate ──────────────────────────
+
+export function generateMecenatAllianceEvent(
+  mec1: Mecenat,
+  mec2: Mecenat,
+  projectName: string,
+): GameEvent {
+  return {
+    id: `event_alliance_${mec1.id}_${mec2.id}`,
+    type: 'patronEvent',
+    title: `🤝 ${mec1.name} & ${mec2.name} samarbetar`,
+    body: `Både ${mec1.name} och ${mec2.name} har uttryckt intresse för att finansiera ${projectName}.\n\n"Vi kan dela på kostnaden om klubben tar resten."`,
+    choices: [
+      {
+        id: 'accept',
+        label: 'Fantastiskt — tack!',
+        subtitle: '💰 projekt finansieras · 🤝 +10 båda',
+        effect: { type: 'patronHappiness', amount: 10 },
+      },
+      {
+        id: 'decline',
+        label: 'Vi klarar oss själva',
+        subtitle: '🤝 -5 båda',
+        effect: { type: 'patronHappiness', amount: -5 },
+      },
+    ],
+    resolved: false,
+  }
+}

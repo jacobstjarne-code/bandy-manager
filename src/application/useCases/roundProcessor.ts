@@ -1710,11 +1710,37 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     postTransferClubs = result.clubs
   }
 
+  // ── Community standing update per round ────────────────────────────
+  let csBoost = playoffCsBoost
+  if (justCompletedManagedFixture) {
+    const isHomeCs = justCompletedManagedFixture.homeClubId === game.managedClubId
+    const myScoreCs = isHomeCs ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
+    const theirScoreCs = isHomeCs ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
+    const wonCs = (myScoreCs ?? 0) > (theirScoreCs ?? 0)
+    const lostCs = (myScoreCs ?? 0) < (theirScoreCs ?? 0)
+    const bigWinCs = wonCs && (myScoreCs ?? 0) >= (theirScoreCs ?? 0) + 3
+    if (bigWinCs) csBoost += 3
+    else if (wonCs) csBoost += 1
+    else if (lostCs) csBoost -= 1
+    const matchRivalryCs = getRivalry(justCompletedManagedFixture.homeClubId, justCompletedManagedFixture.awayClubId)
+    if (matchRivalryCs && wonCs) csBoost += 2
+  }
+  const csActivities = game.communityActivities
+  if (csActivities?.kiosk && csActivities.kiosk !== 'none') csBoost += 0.15
+  if (csActivities?.lottery && csActivities.lottery !== 'none') csBoost += 0.1
+  if (csActivities?.bandyplay) csBoost += 0.15
+  if (csActivities?.functionaries) csBoost += 0.1
+  if (csActivities?.bandySchool) csBoost += 0.15
+  if (csActivities?.socialMedia) csBoost += 0.05
+  const csPos = standings.find(s => s.clubId === game.managedClubId)?.position ?? 6
+  if (csPos <= 3) csBoost += 0.2
+  else if (csPos >= 10) csBoost -= 0.15
+
   let updatedGame: SaveGame = {
     ...game,
-    communityStanding: playoffCsBoost > 0
-      ? Math.min(100, (game.communityStanding ?? 50) + playoffCsBoost)
-      : game.communityStanding,
+    communityStanding: Math.min(100, Math.max(0,
+      Math.round((game.communityStanding ?? 50) + csBoost)
+    )),
     clubs: postTransferClubs,
     fixtures: strippedFixtures,
     players: postTransferPlayers,

@@ -20,7 +20,7 @@ import {
   formatValue,
 } from './eventFactories'
 import { findEmployerForJob } from '../../data/localEmployers'
-import { generateSocialEvent } from '../mecenatService'
+import { generateSocialEvent, generateSilentShoutEvent, generateMecenatConflictEvent } from '../mecenatService'
 
 // ── generatePostAdvanceEvents ──────────────────────────────────────────────
 export function generatePostAdvanceEvents(
@@ -396,8 +396,28 @@ export function generatePostAdvanceEvents(
     }
   }
 
-  // 5j. New mecenat appears (~5% per round if < 3 mecenater, round >= 5)
-  // Note: intro event only — actual mecenat added to game.mecenater via eventResolver when accepted
+  // 5j. Silent shout events (mecenat influence thresholds)
+  for (const mec of game.mecenater ?? []) {
+    if (events.length >= 2) break
+    if (!mec.isActive || mec.silentShout < 30) continue
+    const shoutEvent = generateSilentShoutEvent(mec, undefined, rand)
+    if (shoutEvent && !alreadyQueued.has(shoutEvent.id)) {
+      events.push(shoutEvent)
+    }
+  }
+
+  // 5k. Mecenat conflict (~3% if 2+ active mecenater)
+  if (events.length < 2) {
+    const activeMecs = (game.mecenater ?? []).filter(m => m.isActive)
+    if (activeMecs.length >= 2 && rand() < 0.03) {
+      const m1 = activeMecs[0]
+      const m2 = activeMecs[1]
+      const eid = `event_conflict_${m1.id}_${m2.id}_r${roundPlayed}`
+      if (!alreadyQueued.has(eid)) {
+        events.push(generateMecenatConflictEvent(m1, m2))
+      }
+    }
+  }
 
   if (events.length >= 2) return events
 

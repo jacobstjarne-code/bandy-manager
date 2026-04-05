@@ -80,6 +80,18 @@ function cupRun(owner: BoardMember, season: number): BoardObjective {
   )
 }
 
+function improveFacilities(owner: BoardMember, season: number): BoardObjective {
+  return makeObjective(
+    'improveFacilities', 'community',
+    'Förbättra anläggningen',
+    `${owner.name}: "Anläggningen är under all kritik. Starta minst ett projekt den här säsongen."`,
+    owner, 'improveFacilities', 1,
+    `${owner.name}: "Bra! Äntligen händer det något."`,
+    `${owner.name}: "Ingenting gjort med anläggningen. Igen."`,
+    true, season,
+  )
+}
+
 function beatRival(owner: BoardMember, rivalName: string, season: number): BoardObjective {
   return makeObjective(
     'beatRival', 'sporting',
@@ -126,6 +138,10 @@ export function generateBoardObjectives(
 
   if (modernist && (game.fanMood ?? 50) < 45) {
     candidates.push(growFanbase(modernist, season))
+  }
+
+  if (modernist && club.facilities < 40 && rand() < 0.5) {
+    candidates.push(improveFacilities(modernist, season))
   }
 
   if (supporter) {
@@ -197,6 +213,11 @@ export function evaluateObjective(
       const history = game.rivalryHistory ?? {}
       const won = Object.values(history).some(h => h.lastResult === 'win')
       return { value: won ? 1 : 0, status: won ? 'met' : 'active' }
+    }
+    case 'improveFacilities': {
+      const projects = game.facilityProjects ?? []
+      const started = projects.filter(p => p.status === 'in_progress' || p.status === 'completed').length
+      return { value: started, status: started >= 1 ? 'met' : 'active' }
     }
     default:
       return { value: 0, status: 'active' }
