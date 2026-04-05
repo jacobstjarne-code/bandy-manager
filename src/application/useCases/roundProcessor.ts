@@ -1717,6 +1717,38 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     updatedGame = { ...updatedGame, inbox: [...updatedGame.inbox, ...marketValueInbox] }
   }
 
+  // ── Process pending follow-ups ──────────────────────────────────────────
+  const followUps = updatedGame.pendingFollowUps ?? []
+  if (followUps.length > 0) {
+    const followUpInbox: InboxItem[] = []
+    const remaining = followUps.filter(fu => {
+      const elapsed = nextMatchday - fu.createdMatchday
+      if (elapsed >= fu.matchdaysDelay) {
+        // Follow-up triggered — create inbox notification
+        const text = (fu.data?.text as string) ?? 'Uppföljning från tidigare händelse.'
+        followUpInbox.push({
+          id: `inbox_fu_${fu.id}`,
+          date: updatedGame.currentDate,
+          type: InboxItemType.BoardFeedback,
+          title: '📬 Uppföljning',
+          body: text,
+          isRead: false,
+        })
+        return false // remove from pending
+      }
+      return true // keep
+    })
+    if (followUpInbox.length > 0) {
+      updatedGame = {
+        ...updatedGame,
+        inbox: [...updatedGame.inbox, ...followUpInbox],
+        pendingFollowUps: remaining,
+      }
+    } else {
+      updatedGame = { ...updatedGame, pendingFollowUps: remaining }
+    }
+  }
+
   // Pre-generate weather for next matchday so dashboard/matchScreen can show it
   const nextScheduled = finalAllFixtures.filter(f => f.status === FixtureStatus.Scheduled)
   if (nextScheduled.length > 0) {

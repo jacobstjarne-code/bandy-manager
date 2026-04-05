@@ -190,16 +190,19 @@ export function generateDayJobConflictEvent(player: Player, roundNumber: number)
       {
         id: 'vila',
         label: 'Ge honom vila',
+        subtitle: '😊 +10 morale',
         effect: { type: 'boostMorale', value: 10, targetPlayerId: player.id },
       },
       {
         id: 'press',
         label: 'Han klarar det',
+        subtitle: '😊 -3 morale · risk för skada',
         effect: { type: 'boostMorale', value: -3, targetPlayerId: player.id },
       },
       {
         id: 'goPro',
         label: `Erbjud heltidskontrakt (lön ×1.5 → ${Math.round(player.salary * 1.5).toLocaleString('sv-SE')} kr/mån)`,
+        subtitle: `💰 +${Math.round((player.salary * 0.5) / 1000)} tkr/mån · 😊 +15 morale · ⭐ bättre träningseffekt`,
         effect: {
           type: 'makeFullTimePro',
           targetPlayerId: player.id,
@@ -303,11 +306,13 @@ export function generateVarselEvent(
       {
         id: 'support',
         label: 'Stöd spelarna — erbjud extra träning och stöd',
+        subtitle: '😊 +5 morale alla · 🤝 laget håller ihop',
         effect: { type: 'boostMorale', value: 5 },
       },
       {
         id: 'offer_pro',
         label: `Erbjud heltidskontrakt åt alla (lönekostnad ×1.5)`,
+        subtitle: `💰 höjd lönekostnad · 😊 +15 morale · ⭐ storyline`,
         effect: { type: 'multiEffect', subEffects: JSON.stringify(
           players.map(p => ({ type: 'makeFullTimePro', targetPlayerId: p.id, value: 0 }))
         ) },
@@ -315,10 +320,12 @@ export function generateVarselEvent(
       {
         id: 'nothing',
         label: 'Det är tråkigt, men inte vårt problem',
+        subtitle: '😊 -8 morale · risk att spelare lämnar',
         effect: { type: 'boostMorale', value: -8 },
       },
     ],
     resolved: false,
+    followUpText: `Situationen efter varslet på ${employerName} har stabiliserats. Spelarna har hittat nya lösningar.`,
   }
 }
 

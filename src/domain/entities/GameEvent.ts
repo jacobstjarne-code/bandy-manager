@@ -30,7 +30,13 @@ export type GameEventType =
 export interface EventChoice {
   id: string
   label: string
+  subtitle?: string    // Consequence preview: "💛 +8 fanMood · ⭐ +3 reputation"
   effect: EventEffect
+}
+
+export interface EventSender {
+  name: string
+  role: string
 }
 
 export interface EventEffect {
@@ -81,11 +87,24 @@ export interface GameEvent {
   title: string
   body: string
   choices: EventChoice[]
+  sender?: EventSender       // Named person + role
   relatedPlayerId?: string
   relatedClubId?: string
   relatedBidId?: string
   sponsorData?: string
   resolved: boolean
+  followUpText?: string      // Simple follow-up inbox text (3-5 matchdays later)
+}
+
+// ── Follow-up system ──────────────────────────────────────────────────────
+
+export interface FollowUp {
+  id: string
+  triggerEventId: string
+  matchdaysDelay: number
+  createdMatchday: number
+  type: string
+  data?: Record<string, unknown>
 }
 
 export interface TransferBid {

@@ -40,6 +40,7 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.clubLegends === undefined) data.clubLegends = []
   if (data.previousMarketValues === undefined) data.previousMarketValues = {}
   if (data.financeLog === undefined) data.financeLog = []
+  if (data.pendingFollowUps === undefined) data.pendingFollowUps = []
   // V1.0 — Journalist character (created on-demand if missing)
   if (data.journalist === undefined) data.journalist = null
 

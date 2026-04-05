@@ -72,10 +72,17 @@ export function EventOverlay() {
           letterSpacing: '2.5px',
           textTransform: 'uppercase',
           color: 'var(--text-muted)',
-          marginBottom: 12,
+          marginBottom: event.sender ? 6 : 12,
         }}>
           Händelse
         </p>
+
+        {/* Sender */}
+        {event.sender && (
+          <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 10 }}>
+            {event.sender.name}, {event.sender.role}
+          </p>
+        )}
 
         {/* Title */}
         <h2 style={{
@@ -149,6 +156,11 @@ export function EventOverlay() {
               }}
             >
               {choice.label}
+              {choice.subtitle && (
+                <span style={{ display: 'block', fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', marginTop: 4 }}>
+                  {choice.subtitle}
+                </span>
+              )}
             </button>
           ))}
         </div>

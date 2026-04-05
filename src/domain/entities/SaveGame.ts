@@ -319,6 +319,9 @@ export interface SaveGame {
 
   // V1.0 — Market value tracking (previous round values for delta display)
   previousMarketValues?: Record<string, number>  // playerId → last known marketValue
+
+  // V1.0 — Follow-up system for event consequences
+  pendingFollowUps?: import('../entities/GameEvent').FollowUp[]
 }
 
 // ── Journalist — named media character with persona and memory ───────────

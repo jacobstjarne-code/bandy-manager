@@ -142,6 +142,14 @@ export function resolveEvent(
             updatedGame = {
               ...updatedGame,
               sponsors: [...(updatedGame.sponsors ?? []), sponsor],
+              inbox: [...updatedGame.inbox, {
+                id: `inbox_sponsor_${sponsor.id}`,
+                date: updatedGame.currentDate,
+                type: InboxItemType.BoardFeedback,
+                title: `🤝 Nytt sponsoravtal: ${sponsor.name}`,
+                body: `${sponsor.name} har tecknat avtal. +${sponsor.weeklyIncome} kr/omgång i ${sponsor.contractRounds} omgångar.`,
+                isRead: false,
+              }],
             }
           }
         } catch {}
@@ -556,6 +564,22 @@ export function resolveEvent(
           resolved: true,
         },
       ],
+    }
+  }
+
+  // ── Create follow-up if event has followUpText ──────────────────────────
+  if (event.followUpText) {
+    const followUp = {
+      id: `fu_${eventId}_${choiceId}`,
+      triggerEventId: eventId,
+      matchdaysDelay: 3 + Math.floor(Math.random() * 3), // 3-5 matchdays
+      createdMatchday: currentMatchday,
+      type: 'simple_inbox',
+      data: { text: event.followUpText } as Record<string, unknown>,
+    }
+    updatedGame = {
+      ...updatedGame,
+      pendingFollowUps: [...(updatedGame.pendingFollowUps ?? []), followUp],
     }
   }
 
