@@ -21,6 +21,8 @@ export function GameHeader() {
     .sort((a, b) => a.roundNumber - b.roundNumber)[0]
   const currentRound = nextLeagueFixture ? nextLeagueFixture.roundNumber : lastPlayedRound
 
+  const [showHelp, setShowHelp] = useState(false)
+
   return (
     <div style={{
       display: 'flex',

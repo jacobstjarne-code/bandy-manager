@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { Home, Users, Swords, ArrowLeftRight, Table2, Building2 } from 'lucide-react'
-import { useInjuredInLineup, useExpiringContracts, useNextRoundNumber, useHasPendingLineup, useGameStore } from '../store/gameStore'
+import { useInjuredInLineup, useExpiringContracts, useGameStore } from '../store/gameStore'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 
 const tabs = [
@@ -40,8 +40,6 @@ function Badge({ count }: { count: number }) {
 export function BottomNav() {
   const injuredInLineup = useInjuredInLineup()
   const expiringContracts = useExpiringContracts()
-  const nextRoundNumber = useNextRoundNumber()
-  const hasPendingLineup = useHasPendingLineup()
   const currentDate = useGameStore(s => s.game?.currentDate ?? '')
   const location = useLocation()
   const [lastActive, setLastActive] = useState<string>(location.pathname)
@@ -54,7 +52,7 @@ export function BottomNav() {
     }
   }, [location.pathname, lastActive])
 
-  const matchBadge = hasPendingLineup && nextRoundNumber !== null ? 1 : 0
+  const matchBadge = 0  // Removed: showed 1 when lineup was SET (not needed), dashboard CTA handles match flow
   const windowStatus = currentDate ? getTransferWindowStatus(currentDate).status : 'closed'
   const transferWindowOpen = windowStatus !== 'closed'
 

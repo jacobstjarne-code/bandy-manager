@@ -321,10 +321,10 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
           {patron && patron.contribution > 0 && (
             <div style={{ marginBottom: kommunBidrag > 0 ? 10 : 0, paddingBottom: kommunBidrag > 0 ? 10 : 0, borderBottom: kommunBidrag > 0 ? '1px solid var(--border)' : 'none' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Patron — {patron.name}</span>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Mecenat — {patron.name}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(patron.contribution)}/sä</span>
               </div>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>Dyker upp vid hög lokal ställning (&gt;60). Donerar en gång per säsong.</p>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>Se Orten-fliken för detaljer om mecenater och relationer.</p>
             </div>
           )}
           {kommunBidrag > 0 && (
