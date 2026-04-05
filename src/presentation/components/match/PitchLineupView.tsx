@@ -284,18 +284,22 @@ export function PitchLineupView({
       {/* Auto-fill — direkt efter planen */}
       <div style={{ padding: '6px 16px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{
-          fontSize: 13,
+          fontSize: 12,
           color: startingIds.length === 11 ? 'var(--success)' : 'var(--warning)',
           fontWeight: 600,
         }}>
-          {startingIds.length}/11 startande
+          {(() => {
+            const emptySlots = template.slots.filter(s => !slotToPlayer[s.id]).map(s => s.label)
+            if (emptySlots.length === 0) return '11/11 startande ✅'
+            return `${11 - emptySlots.length}/11 — saknas: ${emptySlots.join(', ')}`
+          })()}
         </span>
         <button
           onClick={onAutoFill}
+          className="btn btn-ghost"
           style={{
-            padding: '8px 16px', fontSize: 13, fontWeight: 700,
-            background: 'rgba(196,122,58,0.08)', border: '1.5px solid var(--accent)',
-            color: 'var(--accent)', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+            padding: '8px 16px', fontSize: 13, fontWeight: 600,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
           }}
         >
           ✨ Generera bästa elvan

@@ -156,7 +156,28 @@ export function autoAssignFormation(
     }
   }
 
-  // Second pass: fill unfilled slots with best remaining player by CA
+  // Second pass: adjacent position match (half↔midfielder, half↔defender, etc.)
+  const ADJACENT: Record<string, string[]> = {
+    goalkeeper: [],
+    defender: ['half'],
+    half: ['defender', 'midfielder'],
+    midfielder: ['half', 'forward'],
+    forward: ['midfielder'],
+  }
+  for (const slot of template.slots) {
+    if (filledSlotIds.has(slot.id)) continue
+    const adj = ADJACENT[slot.position] ?? []
+    const best = players
+      .filter(p => adj.includes(p.position) && !usedIds.has(p.id))
+      .sort((a, b) => b.currentAbility - a.currentAbility)[0]
+    if (best) {
+      lineupSlots[slot.id] = best.id
+      usedIds.add(best.id)
+      filledSlotIds.add(slot.id)
+    }
+  }
+
+  // Third pass: fill unfilled slots with best remaining player by CA
   for (const slot of template.slots) {
     if (filledSlotIds.has(slot.id)) continue
     const fallback = players

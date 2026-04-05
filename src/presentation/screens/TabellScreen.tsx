@@ -58,11 +58,9 @@ export function TabellScreen() {
 
   const myRow = standings.find(s => s.clubId === managedClubId)
   const leaderPoints = standings[0]?.points ?? 0
-  const eighthPoints = standings.find(s => s.position === 8)?.points ?? 0
   const myPoints = myRow?.points ?? 0
   const myPos = myRow?.position ?? 0
   const ptToLeader = leaderPoints - myPoints
-  const ptToPlayoff = myPos <= 8 ? null : eighthPoints - myPoints
 
   return (
     <div style={{ padding: '8px 16px', overflowY: 'auto', height: '100%' }}>
@@ -160,13 +158,20 @@ export function TabellScreen() {
         }}>
           <span style={{ fontWeight: 700 }}>{myPos}. plats</span>
           <span style={{ color: 'var(--text-muted)' }}>·</span>
-          {ptToPlayoff !== null && ptToPlayoff > 0 ? (
-            <span>{ptToPlayoff}p till topp-8</span>
-          ) : (
-            <span>I slutspelszonen</span>
-          )}
+          {(() => {
+            const hasPlayed = standings.some(s => s.played > 0)
+            if (!hasPlayed) return <span style={{ color: 'var(--text-muted)' }}>Säsongen har inte börjat</span>
+            if (myPos <= 8) return <span>I slutspelszonen</span>
+            if (myPos <= 10) return <span>Utanför slutspel</span>
+            return <span style={{ color: 'var(--danger)' }}>I nedflyttningszonen</span>
+          })()}
           <span style={{ color: 'var(--text-muted)' }}>·</span>
-          <span>{ptToLeader > 0 ? `${ptToLeader}p till ledaren` : 'Serieledare'}</span>
+          {(() => {
+            const hasPlayed = standings.some(s => s.played > 0)
+            if (!hasPlayed) return null
+            if (myPos === 1 && ptToLeader === 0) return <span style={{ color: 'var(--success)' }}>Serieledare</span>
+            return <span>{ptToLeader}p till ledaren</span>
+          })()}
         </div>
       )}
 

@@ -175,7 +175,10 @@ export function BoardMeetingScreen() {
           {expectationText[club.boardExpectation] ?? 'Gör ert bästa'}
         </p>
         <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-          Styrelsen förväntar sig att ni uppnår detta mål. Misslyckande kan få konsekvenser.
+          {club.boardExpectation === 'winLeague' ? 'Styrelsen förväntar sig slutspel. Annat vore en besvikelse.'
+            : club.boardExpectation === 'challengeTop' ? 'Styrelsen hoppas på övre halvan. Nedflyttning vore oacceptabelt.'
+            : club.boardExpectation === 'midTable' ? 'Styrelsen vill se framsteg. Håll oss kvar i serien.'
+            : 'Styrelsen följer utvecklingen och utvärderar efter säsongen.'}
         </p>
       </div>
 

@@ -56,15 +56,22 @@ export function NewGameScreen() {
   const { newGame } = useGameStore()
   const [step, setStep] = useState<'name' | 'club'>('name')
   const [managerName, setManagerName] = useState('')
-  const [selectedClubId, setSelectedClubId] = useState<string | null>(null)
+  const [selectedClubId, setSelectedClubId] = useState<string | null>(() => {
+    const idx = Math.floor(Math.random() * CLUBS.length)
+    return CLUBS[idx]?.id ?? null
+  })
   const [isStarting, setIsStarting] = useState(false)
+
+  function capitalizeName(name: string): string {
+    return name.split(' ').map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ')
+  }
 
   const handleStart = () => {
     if (!selectedClubId || !managerName.trim()) return
     setIsStarting(true)
     setTimeout(() => {
       try {
-        newGame(managerName.trim(), selectedClubId)
+        newGame(capitalizeName(managerName.trim()), selectedClubId)
         navigate('/game/dashboard')
       } catch (e) {
         console.error('handleStart misslyckades:', e)
@@ -100,11 +107,23 @@ export function NewGameScreen() {
             fontFamily: 'var(--font-display)',
             letterSpacing: '2px',
             textTransform: 'uppercase',
-            marginBottom: 32,
+            marginBottom: 16,
             textAlign: 'center',
           }}>
             VEM ÄR DU?
           </h2>
+          <p style={{
+            fontSize: 13,
+            fontFamily: 'var(--font-display)',
+            fontStyle: 'italic',
+            color: 'var(--text-secondary)',
+            textAlign: 'center',
+            lineHeight: 1.6,
+            marginBottom: 24,
+            maxWidth: 280,
+          }}>
+            Bandyn behöver folk som dig. Tränare som ställer sig på kalla rinkar i november, som håller ihop en trupp där hälften jobbar dagtid.
+          </p>
           <input
             autoFocus
             type="text"

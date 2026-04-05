@@ -26,6 +26,7 @@ import { MatchReportView } from '../components/match/MatchReportView'
 import { LineupStep } from '../components/match/LineupStep'
 import { TacticStep } from '../components/match/TacticStep'
 import { StartStep } from '../components/match/StartStep'
+import { MatchHeader } from '../components/match/MatchHeader'
 
 export function MatchScreen() {
   const { game, setPlayerLineup, advance, updateTactic } = useGameStore()
@@ -481,6 +482,19 @@ export function MatchScreen() {
           })}
         </div>
       </div>
+
+      {/* Progressive match header */}
+      {nextFixture && (
+        <MatchHeader
+          fixture={nextFixture}
+          homeClubName={isHome ? (game.clubs.find(c => c.id === game.managedClubId)?.name ?? '') : (opponent?.name ?? '')}
+          awayClubName={isHome ? (opponent?.name ?? '') : (game.clubs.find(c => c.id === game.managedClubId)?.name ?? '')}
+          isHome={isHome}
+          weather={(game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id)}
+          step={matchStep}
+          tactic={matchStep === 'start' ? tacticState : undefined}
+        />
+      )}
 
       {matchStep === 'lineup' && (
         <LineupStep
