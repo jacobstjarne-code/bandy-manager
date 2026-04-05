@@ -23,8 +23,8 @@ export function GameGuard() {
 function DoctorFAB() {
   const navigate = useNavigate()
   const location = useLocation()
-  // Don't show on doctor screen itself
-  if (location.pathname.includes('doctor')) return null
+  // Don't show on doctor screen itself or match flow
+  if (location.pathname.includes('doctor') || location.pathname.includes('match')) return null
   return (
     <button
       onClick={() => navigate('/game/doctor')}

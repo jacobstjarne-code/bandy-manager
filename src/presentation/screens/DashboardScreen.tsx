@@ -765,7 +765,7 @@ export function DashboardScreen() {
         })()}
 
         {/* Diamond ornament + CTA */}
-        <div style={{ margin: '8px 12px 0' }}>
+        <div style={{ margin: '8px 0 0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, padding: '0 2px' }}>
             <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', letterSpacing: '0.5px' }}>
               {currentDateStr}

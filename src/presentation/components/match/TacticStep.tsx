@@ -105,7 +105,7 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
         <button onClick={onBack} className="btn btn-outline" style={{
           flex: 1, padding: '13px', fontSize: 14,
         }}>
-          ← Tillbaka
+          ← Ändra uppställning
         </button>
         <button onClick={onNext} className="btn btn-copper" style={{
           flex: 2, padding: '13px', fontSize: 15, fontWeight: 700,

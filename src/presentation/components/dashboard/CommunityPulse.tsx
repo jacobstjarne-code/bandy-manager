@@ -30,7 +30,7 @@ export function CommunityPulse({ game, currentRound, onNavigate }: Props) {
   const prevCs = undefined // Could derive from roundSummary if passed in
 
   return (
-    <div className="card-sharp card-stagger-5" style={{ margin: '0 12px 10px' }}>
+    <div className="card-sharp card-stagger-5">
       <div style={{ padding: 14 }}>
         {/* Header row */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>

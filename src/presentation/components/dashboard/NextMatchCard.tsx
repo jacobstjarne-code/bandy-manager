@@ -211,7 +211,7 @@ export function NextMatchCard({
   return (
     <div
       className="card-stagger-1"
-      style={{ ...cardStyle, borderRadius: 14, margin: '0 12px 10px', overflow: 'hidden' }}
+      style={{ ...cardStyle, borderRadius: 14, overflow: 'hidden' }}
     >
       {/* Leather header bar */}
       <div

@@ -82,6 +82,87 @@ ALDRIG "allt ser bra ut" om du inte har tracesat flödet.
 
 ---
 
+## SPEC-LYDNAD — OBLIGATORISKA REGLER (Code)
+
+### 1. KOPIERA BOKSTAVLIGT
+När en spec ger kod att kopiera — kopiera den EXAKT.
+Ändra INGENTING utan att explicit fråga först.
+Om koden inte kompilerar, beskriv felet och föreslå
+en minimal ändring — men gör den inte själv utan godkännande.
+
+### 2. ÄNDRA ALDRIG SPEC-GIVNA VÄRDEN
+ALDRIG ändra spec-givna värden (px, färger, texter, props).
+`padding: 14px 16px` betyder 14px 16px, inte 12px 14px.
+`fontSize: 11` betyder 11, inte 12.
+Om ett värde skapar ett problem — rapportera problemet,
+ändra inte värdet.
+
+### 3. INGA "FÖRBÄTTRINGAR" AV SPEC-KOD
+Spec-kod ska inte "förbättras", "städas" eller "optimeras".
+Om specen ger props — behåll dem även om de verkar oanvända.
+Om specen ger en text — kopiera den bokstavligt, omformulera inte.
+Om TypeScript klagar på spec-kod — fixa typfelet, ta inte bort koden.
+
+### 4. DIFF-VERIFIERING EFTER VARJE EDIT
+Efter varje edit: visa exakt diff av vad du ändrade.
+Om diffen inte matchar specen — STOPPA och fråga.
+Gör ALDRIG flera edits utan att visa diff emellan.
+
+---
+
+## OPUS-REGLER (granskning + spec-skrivning)
+
+### 1. FIX DIREKT OM DU KAN
+Om du har workspace:edit_file — skriv koden själv.
+Skriv aldrig en spec för något du kan fixa direkt.
+En spec som Code halvimplementerar är värre än en
+direkt edit som fungerar.
+
+### 2. ALDRIG YTFIXAR
+Om problemet är strukturellt, lös det strukturellt.
+"Sätt margin X på alla element" är fel svar —
+"skapa en CSS-klass som hanterar spacing" är rätt svar.
+Fråga dig: "kommer detta problem tillbaka nästa gång
+någon lägger till ett element?" Om ja — lösningen är fel.
+
+### 3. VERIFIERA DINA EGNA VERKTYG
+create_file ≠ workspace:write_file. Kontrollera att
+filen hamnade rätt innan du säger att den är klar.
+Använd workspace:get_file_info efter skrivning.
+
+### 4. EN SANNING, ETT STÄLLE
+Matchinfo ska inte definieras i MatchScreen OCH
+MatchHeader. Väder ska inte renderas i MatchHeader
+OCH StartStep. Hitta dubbleringen INNAN du skriver
+specen — att skapa en spec som INTE adresserar
+dubblering är ett misslyckande.
+
+---
+
+## ARBETSFÖRDELNING: OPUS vs CODE
+
+Opus (claude-opus-4-6) drar mer kvot per meddelande.
+Code (claude-sonnet-4-6 via Claude Code) drar mindre.
+Fördela arbetet medvetet:
+
+**Opus fixar direkt** (via workspace:edit_file):
+- Kirurgiska fixar (< ~50 rader, 1-3 filer)
+- Textändringar, CSS-justeringar, prop-fixar
+- Saker som tar längre att beskriva än att göra
+
+**Opus skriver spec för Code:**
+- Nya features (ny komponent, ny service)
+- Refactors som berör > 5 filer
+- Arkitekturella ändringar (nytt mönster, ny klass)
+- Allt som kräver npm run build && npm test-iteration
+
+**Defaultregel:** Om Opus har workspace-åtkomst och
+ändringen är < 50 rader — gör den direkt.
+Om Opus skriver en spec — säg VARFÖR den inte
+fixades direkt ("berör 8 filer", "kräver test-iteration").
+
+---
+
 ## ARCHITECTURE OVERVIEW
 
 ### Matchday-systemet (refaktorerat mars 2026)

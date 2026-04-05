@@ -7,8 +7,8 @@ import { getMatchAtmosphere, getCardTint } from '../../utils/matchAtmosphere'
 
 interface MatchHeaderProps {
   fixture: Fixture
-  homeClubName: string
-  awayClubName: string
+  roundLabel: string
+  opponentName: string
   isHome: boolean
   weather?: MatchWeather
   step: 'lineup' | 'tactic' | 'start'
@@ -50,26 +50,30 @@ const TEMPO_LABEL: Record<string, string> = {
   [TacticTempo.High]: 'Högt tempo', [TacticTempo.Normal]: 'Normalt', [TacticTempo.Low]: 'Lågt tempo',
 }
 
-export function MatchHeader({ fixture, weather, step, tactic }: MatchHeaderProps) {
+export function MatchHeader({ fixture, roundLabel, opponentName, isHome, weather, step, tactic }: MatchHeaderProps) {
   const atmo = getMatchAtmosphere(fixture)
   const tint = getCardTint(atmo.tint)
 
   return (
     <div className="card-round" style={{
-      margin: '0 0 10px',
-      padding: '14px 16px',
+      padding: '12px 14px',
       background: tint !== 'transparent' ? tint : undefined,
       borderLeft: atmo.borderAccent ? `3px solid ${atmo.borderAccent}` : undefined,
     }}>
-      {atmo.label && (
-        <p style={{ fontSize: 11, fontWeight: 700, color: atmo.borderAccent ?? 'var(--accent)', marginBottom: 6 }}>
-          {atmo.label}
-        </p>
-      )}
+      {/* Match info — always visible */}
+      <p style={{ fontSize: 11, color: atmo.borderAccent ?? 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
+        {roundLabel}
+      </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: weather ? 8 : 0 }}>
+        <p style={{ fontSize: 17, fontWeight: 700, fontFamily: 'var(--font-display)' }}>vs {opponentName}</p>
+        <span className={isHome ? 'tag tag-copper' : 'tag tag-ghost'}>
+          {isHome ? 'Hemma' : 'Borta'}
+        </span>
+      </div>
 
       {/* Weather — step 1+ */}
       {weather && (
-        <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: step === 'lineup' ? 0 : 6 }}>
+        <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: (step === 'tactic' || step === 'start') ? 4 : 0 }}>
           {getWeatherEmoji(weather.weather.condition)}{' '}
           {weather.weather.temperature > 0 ? '+' : ''}{weather.weather.temperature}°C · {getIceQualityLabel(weather.weather.iceQuality)}
         </p>
@@ -79,7 +83,7 @@ export function MatchHeader({ fixture, weather, step, tactic }: MatchHeaderProps
       {(step === 'tactic' || step === 'start') && weather && (() => {
         const hint = getWeatherHint(weather.weather.condition)
         return hint ? (
-          <p style={{ fontSize: 11, color: 'var(--warning)', marginBottom: step === 'tactic' ? 0 : 6 }}>
+          <p style={{ fontSize: 11, color: 'var(--warning)', marginBottom: step === 'start' ? 4 : 0 }}>
             {hint}
           </p>
         ) : null

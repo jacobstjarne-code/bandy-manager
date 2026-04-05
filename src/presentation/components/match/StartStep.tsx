@@ -2,7 +2,7 @@ import type { Tactic } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import { WeatherCondition } from '../../../domain/enums'
-import { getWeatherEmoji, getIceQualityLabel, getConditionLabel } from '../../../domain/services/weatherService'
+// Weather display moved to MatchHeader
 import { getRivalry } from '../../../domain/data/rivalries'
 import { tacticRows } from '../../utils/tacticData'
 
@@ -101,22 +101,6 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
         ))}
       </div>
 
-      {/* Weather */}
-      {matchWeatherData && (
-        <div className="card-sharp" style={{ marginBottom: 10, padding: '10px 14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 20 }}>{getWeatherEmoji(matchWeatherData.weather.condition)}</span>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>
-                {matchWeatherData.weather.temperature > 0 ? '+' : ''}{matchWeatherData.weather.temperature}° · {getConditionLabel(matchWeatherData.weather.condition)}
-              </div>
-              <div style={{ fontSize: 11, color: matchWeatherData.weather.iceQuality === 'poor' ? 'var(--danger)' : 'var(--text-muted)' }}>
-                {getIceQualityLabel(matchWeatherData.weather.iceQuality)}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Live / Snabbsim toggle */}
       <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>🎮 Spelläge</p>
@@ -152,16 +136,18 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
         </div>
       )}
 
-      <button onClick={onBack} className="btn btn-outline" style={{
-        width: '100%', padding: '12px', fontSize: 13, marginBottom: 10,
-      }}>
-        ← Ändra taktik
-      </button>
-      <button onClick={onPlay} className="btn btn-copper" style={{
-        width: '100%', padding: '16px', fontSize: 17, fontWeight: 700, letterSpacing: '0.3px',
-      }}>
-        SPELA MATCHEN →
-      </button>
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button onClick={onBack} className="btn btn-outline" style={{
+          flex: 1, padding: '13px', fontSize: 14,
+        }}>
+          ← Ändra taktik
+        </button>
+        <button onClick={onPlay} className="btn btn-copper" style={{
+          flex: 2, padding: '13px', fontSize: 15, fontWeight: 700, letterSpacing: '0.3px',
+        }}>
+          SPELA MATCHEN →
+        </button>
+      </div>
     </div>
   )
 }

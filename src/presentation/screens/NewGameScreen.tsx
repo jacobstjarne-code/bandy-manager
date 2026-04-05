@@ -244,7 +244,7 @@ export function NewGameScreen() {
       </div>
 
       {/* Club list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px', paddingBottom: selectedClub ? 140 : 80 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px', paddingBottom: 20 }}>
         <p style={{ color: 'var(--text-secondary)', marginBottom: 12, fontSize: 14 }}>
           Varje klubb har sin historia. Välj din.
         </p>
@@ -293,20 +293,9 @@ export function NewGameScreen() {
         </div>
       </div>
 
-      {/* Footer CTA — fixed at bottom when club selected */}
+      {/* CTA — in content flow, same pattern as name step */}
       {selectedClub && (
-        <div style={{
-          position: 'fixed',
-          bottom: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '100%',
-          maxWidth: 430,
-          padding: '16px 20px',
-          paddingBottom: 'calc(16px + var(--safe-bottom))',
-          background: 'var(--bg-surface)',
-          borderTop: '1px solid var(--border)',
-        }}>
+        <div style={{ padding: '16px 20px' }}>
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 10, textAlign: 'center' }}>
             Starta karriären som tränare för {selectedClub.name}?
           </p>

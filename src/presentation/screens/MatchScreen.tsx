@@ -431,24 +431,20 @@ export function MatchScreen() {
             <LastMatchCard fixture={lastCompletedFixture} game={game} managedClubId={managedClubId} />
           </div>
         )}
-        <div
-          className="card-round"
-          style={{
-            border: isPlayoffRound ? '1px solid rgba(196,122,58,0.3)' : isCupFixture ? '1px solid rgba(196,122,58,0.25)' : rivalry ? '1px solid rgba(220,80,30,0.3)' : undefined,
-            padding: '12px 12px',
-            marginBottom: 8,
-          }}
-        >
-          <p style={{ fontSize: 11, color: isPlayoffRound ? 'var(--accent)' : isCupFixture ? 'var(--accent)' : rivalry ? 'var(--danger)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
-            {roundLabel}
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <p style={{ fontSize: 17, fontWeight: 700, fontFamily: 'var(--font-display)' }}>vs {opponent?.name ?? 'Okänd'}</p>
-            <span className={isHome ? 'tag tag-copper' : 'tag tag-ghost'}>
-              {isHome ? 'Hemma' : 'Borta'}
-            </span>
+        {/* Combined match info + weather card — ABOVE stepper */}
+        {nextFixture && (
+          <div style={{ marginBottom: 8 }}>
+            <MatchHeader
+              fixture={nextFixture}
+              roundLabel={roundLabel}
+              opponentName={opponent?.name ?? 'Okänd'}
+              isHome={isHome}
+              weather={(game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id)}
+              step={matchStep}
+              tactic={matchStep === 'start' ? tacticState : undefined}
+            />
           </div>
-        </div>
+        )}
 
         {/* Step indicator */}
         <div style={{ display: 'flex', alignItems: 'center', margin: '10px 0 8px', gap: 0 }}>
@@ -482,19 +478,6 @@ export function MatchScreen() {
           })}
         </div>
       </div>
-
-      {/* Progressive match header */}
-      {nextFixture && (
-        <MatchHeader
-          fixture={nextFixture}
-          homeClubName={isHome ? (game.clubs.find(c => c.id === game.managedClubId)?.name ?? '') : (opponent?.name ?? '')}
-          awayClubName={isHome ? (opponent?.name ?? '') : (game.clubs.find(c => c.id === game.managedClubId)?.name ?? '')}
-          isHome={isHome}
-          weather={(game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id)}
-          step={matchStep}
-          tactic={matchStep === 'start' ? tacticState : undefined}
-        />
-      )}
 
       {matchStep === 'lineup' && (
         <LineupStep

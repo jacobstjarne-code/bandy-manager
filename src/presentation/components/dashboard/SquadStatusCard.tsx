@@ -47,7 +47,7 @@ export function SquadStatusCard({
   return (
     <div
       className="card-sharp card-stagger-4"
-      style={{ margin: '0 12px 10px', overflow: 'hidden', cursor: onNavigateToSquad ? 'pointer' : undefined }}
+      style={{ overflow: 'hidden', cursor: onNavigateToSquad ? 'pointer' : undefined }}
       onClick={onNavigateToSquad}
     >
       {/* Stat bars */}

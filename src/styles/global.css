@@ -249,7 +249,7 @@ a {
 }
 
 .card-stack > * {
-  margin-bottom: 0 !important;
+  margin: 0 !important;
 }
 
 /* ── Leather bar: dark header strip inside cards ── */
