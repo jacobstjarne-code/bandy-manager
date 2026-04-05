@@ -41,6 +41,8 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.previousMarketValues === undefined) data.previousMarketValues = {}
   if (data.financeLog === undefined) data.financeLog = []
   if (data.pendingFollowUps === undefined) data.pendingFollowUps = []
+  if (data.mecenater === undefined) data.mecenater = []
+  if (data.facilityProjects === undefined) data.facilityProjects = []
   if (data.boardObjectives === undefined) data.boardObjectives = []
   if (data.boardObjectiveHistory === undefined) data.boardObjectiveHistory = []
   if (data.trainerArc === undefined) data.trainerArc = { current: 'established', history: [], seasonCount: 1, bestFinish: 6, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 0, boardWarningGiven: false }

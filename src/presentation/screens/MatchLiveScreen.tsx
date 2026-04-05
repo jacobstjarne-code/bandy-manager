@@ -569,25 +569,27 @@ export function MatchLiveScreen() {
             .filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.homeClubId && currentMin - e.minute < 10)
             .map(e => {
               const p = e.playerId ? (game?.players ?? []).find(pl => pl.id === e.playerId) : null
-              return p?.shirtNumber != null ? `#${p.shirtNumber}` : (p ? p.lastName.slice(0, 5) : '?')
+              const remaining = 10 - (currentMin - e.minute)
+              return p?.shirtNumber != null ? `#${p.shirtNumber} (${remaining}\u2032)` : '?'
             })
           const awaySusp = allEventsSoFar
             .filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.awayClubId && currentMin - e.minute < 10)
             .map(e => {
               const p = e.playerId ? (game?.players ?? []).find(pl => pl.id === e.playerId) : null
-              return p?.shirtNumber != null ? `#${p.shirtNumber}` : (p ? p.lastName.slice(0, 5) : '?')
+              const remaining = 10 - (currentMin - e.minute)
+              return p?.shirtNumber != null ? `#${p.shirtNumber} (${remaining}\u2032)` : '?'
             })
           return (
             <div style={{
               display: 'flex', justifyContent: 'space-between', padding: '4px 16px 0',
               fontSize: 11, fontWeight: 700, fontFamily: 'Courier New, monospace',
               color: '#FF6644',
-              height: 18,
+              minHeight: 18,
               opacity: hasSusp ? 1 : 0,
               transition: 'opacity 0.3s ease',
             }}>
-              <div>{homeSusp.map(s => `UTV ${s}`).join(' · ')}</div>
-              <div>{awaySusp.map(s => `UTV ${s}`).join(' · ')}</div>
+              <div>{homeSusp.length > 0 ? `UTV ${homeSusp.join(' ')}` : ''}</div>
+              <div>{awaySusp.length > 0 ? `UTV ${awaySusp.join(' ')}` : ''}</div>
             </div>
           )
         })()}

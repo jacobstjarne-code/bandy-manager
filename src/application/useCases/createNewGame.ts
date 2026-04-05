@@ -20,6 +20,7 @@ import { initCharacterPlayers } from '../../domain/services/characterPlayerServi
 import { createJournalist } from '../../domain/services/journalistService'
 import { createTrainerArc } from '../../domain/services/trainerArcService'
 import { generateBoardObjectives } from '../../domain/services/boardObjectiveService'
+import { generateMecenat } from '../../domain/services/mecenatService'
 
 function pickRandom<T>(arr: T[], rand: () => number): T {
   return arr[Math.floor(rand() * arr.length)]
@@ -202,6 +203,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   const localPaperName = pickRandom(LOCAL_PAPER_NAMES, rand)
 
   const journalist = createJournalist(localPaperName, rand)
+  const initialMecenater = rand() < 0.5 ? [generateMecenat(input.clubId, input.season ?? 2025, rand)] : []
   const patron = generatePatron(managedClub.reputation, managedPlayers, rand)
   const localPolitician = generatePolitician(rand)
   const boardPersonalities = generateBoardMembers(rand)
@@ -266,6 +268,8 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     trainerArc: createTrainerArc(),
     boardObjectives: generateBoardObjectives(managedClub, { managedClubId: input.clubId, players, clubs: clubsFixed, rivalryHistory: {}, fanMood: 50, communityActivities, boardPersonalities, currentSeason: input.season, communityStanding: 50, cupBracket: null, boardObjectiveHistory: [] } as any, boardPersonalities, rand),
     boardObjectiveHistory: [],
+    mecenater: initialMecenater,
+    facilityProjects: [],
     previousMarketValues: {},
     scoutReports: {},
     activeScoutAssignment: null,
