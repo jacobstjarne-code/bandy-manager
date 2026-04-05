@@ -426,7 +426,7 @@ export const useExpiringContracts = () => {
   const game = useGameStore(s => s.game)
   if (!game) return 0
   return game.players.filter(p =>
-    p.clubId === game.managedClubId && p.contractUntilSeason <= game.currentSeason + 1
+    p.clubId === game.managedClubId && p.contractUntilSeason <= game.currentSeason
   ).length
 }
 

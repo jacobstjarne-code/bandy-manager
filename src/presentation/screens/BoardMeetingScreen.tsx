@@ -208,6 +208,28 @@ export function BoardMeetingScreen() {
         </p>
       </div>
 
+      {/* Styrelsens uppdrag */}
+      {(game.boardObjectives ?? []).length > 0 && (
+        <div className="card-sharp" style={{ marginBottom: 8, padding: '14px 16px' }}>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+            📌 Styrelsens uppdrag
+          </p>
+          {(game.boardObjectives ?? []).map(obj => (
+            <div key={obj.id} className="card-round" style={{ padding: '12px 14px', marginBottom: 8 }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
+                {obj.ownerId} ({obj.ownerPersonality})
+              </p>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-display)' }}>
+                {obj.description.split(': "')[1]?.replace(/"$/, '') ?? obj.description}
+              </p>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+                Mål: {obj.label}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Ekonomi */}
       <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
         <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>

@@ -21,6 +21,7 @@ import { updateLoyaltyScores } from '../../domain/services/characterPlayerServic
 import { processAITransfers } from '../../domain/services/aiTransferService'
 import { generateNominations, generateGalaEvent, generateGalaInbox } from '../../domain/services/bandyGalaService'
 import { checkSeasonEndArc } from '../../domain/services/trainerArcService'
+import { evaluateObjective, generateBoardObjectives } from '../../domain/services/boardObjectiveService'
 import type { LicenseReview } from '../../domain/entities/SaveGame'
 import type { AdvanceResult } from './advanceTypes'
 
@@ -659,6 +660,33 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     seasonEndPendingEvents.push(handlingsplanEvent)
   }
 
+  // ── Board objectives — evaluate + generate new ────────────────────────────
+  const objectiveResults: Array<{ season: number; objectiveId: string; result: 'met' | 'failed'; ownerReaction: string }> = []
+  for (const obj of game.boardObjectives ?? []) {
+    const result = evaluateObjective(obj, game)
+    const finalStatus = result.status === 'met' ? 'met' as const : 'failed' as const
+    objectiveResults.push({
+      season: game.currentSeason,
+      objectiveId: obj.id,
+      result: finalStatus,
+      ownerReaction: finalStatus === 'met' ? obj.successReward : obj.failureConsequence,
+    })
+    newInboxItems.push({
+      id: `inbox_boardobj_end_${obj.id}_${game.currentSeason}`,
+      date: game.currentDate,
+      type: InboxItemType.BoardFeedback,
+      title: finalStatus === 'met' ? `✅ ${obj.label} — uppfyllt` : `❌ ${obj.label} — misslyckat`,
+      body: finalStatus === 'met' ? obj.successReward : obj.failureConsequence,
+      isRead: false,
+    } as InboxItem)
+  }
+
+  const objRand = mulberry32((seed ?? 42) + game.currentSeason * 777)
+  const managedClubForObj = updatedClubs.find(c => c.id === game.managedClubId)
+  const newSeasonObjectives = managedClubForObj && game.boardPersonalities
+    ? generateBoardObjectives(managedClubForObj, game, game.boardPersonalities, objRand)
+    : []
+
   // ── Bandygalan ────────────────────────────────────────────────────────────
   const galaNominations = generateNominations(game)
   if (galaNominations.length > 0) {
@@ -838,6 +866,11 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     rivalryHistory: game.rivalryHistory ?? {},
     clubLegends: newLegends,
     storylines: game.storylines ?? [],
+    boardObjectives: newSeasonObjectives,
+    boardObjectiveHistory: [
+      ...(game.boardObjectiveHistory ?? []),
+      ...objectiveResults,
+    ],
     trainerArc: checkSeasonEndArc(
       game.trainerArc ?? { current: 'newcomer', history: [], seasonCount: 0, bestFinish: 12, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 0, boardWarningGiven: false },
       game.playoffBracket?.champion === game.managedClubId,

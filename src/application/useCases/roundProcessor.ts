@@ -50,6 +50,7 @@ import { calcRoundIncome, appendFinanceLog, applyFinanceChange } from '../../dom
 import type { FinanceEntry } from '../../domain/services/economyService'
 import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/services/playerAvailabilityService'
 import { updateTrainerArc } from '../../domain/services/trainerArcService'
+import { checkInObjectives } from '../../domain/services/boardObjectiveService'
 
 export type { AdvanceResult }
 
@@ -1018,6 +1019,27 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const availabilityUpdatedPlayers = updatePlayerAvailability({ ...game, players: marketUpdatedPlayers })
   const updatedArc = updateTrainerArc({ ...game, players: availabilityUpdatedPlayers, fixtures: finalAllFixtures, standings })
 
+  // ── Board objectives check-in (round 7, 14, 22) ──────────────────────
+  const leagueRound = finalAllFixtures
+    .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
+    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+  let updatedBoardObjectives = game.boardObjectives ?? []
+  if ([7, 14, 22].includes(leagueRound) && updatedBoardObjectives.length > 0) {
+    const gameForEval = { ...game, players: availabilityUpdatedPlayers, fixtures: finalAllFixtures, standings }
+    const { updated, inboxMessages } = checkInObjectives(updatedBoardObjectives, gameForEval)
+    updatedBoardObjectives = updated
+    for (const msg of inboxMessages) {
+      newInboxItems.push({
+        id: `inbox_boardobj_${leagueRound}_${msg.title.slice(0, 10)}_${game.currentSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.BoardFeedback,
+        title: msg.title,
+        body: msg.body,
+        isRead: false,
+      })
+    }
+  }
+
   // ── Market value change tracking — inbox for significant changes ──────────
   const prevValues = game.previousMarketValues ?? {}
   const newPrevValues: Record<string, number> = {}
@@ -1727,6 +1749,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     previousMarketValues: newPrevValues,
     storylines: game.storylines ?? [],
     clubLegends: game.clubLegends ?? [],
+    boardObjectives: updatedBoardObjectives,
+    boardObjectiveHistory: game.boardObjectiveHistory ?? [],
     trainerArc: updatedArc,
   }
 

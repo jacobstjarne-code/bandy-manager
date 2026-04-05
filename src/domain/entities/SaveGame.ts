@@ -323,6 +323,15 @@ export interface SaveGame {
   // V1.0 — Follow-up system for event consequences
   pendingFollowUps?: import('../entities/GameEvent').FollowUp[]
 
+  // V1.0 — Board objectives (secondary goals)
+  boardObjectives?: BoardObjective[]
+  boardObjectiveHistory?: Array<{
+    season: number
+    objectiveId: string
+    result: 'met' | 'failed'
+    ownerReaction: string
+  }>
+
   // V1.0 — Trainer narrative arc
   trainerArc?: TrainerArc
 }
@@ -347,6 +356,25 @@ export interface Journalist {
   pressRefusals: number       // times manager refused press conference
   favoritePlayerId?: string   // player they write about most
   lastInteractionMatchday?: number
+}
+
+// ── Board Objectives — secondary goals per season ─────────────────────────
+
+export interface BoardObjective {
+  id: string
+  type: 'economic' | 'academy' | 'identity' | 'community' | 'sporting'
+  label: string
+  description: string
+  ownerId: string
+  ownerPersonality: BoardPersonality
+  targetValue: number
+  currentValue: number
+  measureFn: string
+  status: 'active' | 'met' | 'failed' | 'at_risk'
+  assignedSeason: number
+  successReward: string
+  failureConsequence: string
+  carryOver: boolean
 }
 
 // ── Trainer narrative arc ─────────────────────────────────────────────────
