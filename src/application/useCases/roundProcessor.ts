@@ -46,6 +46,8 @@ import { applyRoundTraining } from './processors/trainingProcessor'
 import { applyPlayerStateUpdates } from './processors/playerStateProcessor'
 import { updatePlayerMatchStats } from './processors/statsProcessor'
 import { applyRoundDevelopment } from '../../domain/services/playerDevelopmentService'
+// Playoff logic extracted to processors/playoffProcessor.ts — wiring pending
+// import { processPlayoffRound } from './processors/playoffProcessor'
 import { calcRoundIncome, appendFinanceLog, applyFinanceChange } from '../../domain/services/economyService'
 import type { FinanceEntry } from '../../domain/services/economyService'
 import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/services/playerAvailabilityService'
@@ -752,6 +754,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   if (updatedBracket !== null) {
     const completedThisRound = simulatedFixtures.filter(f => f.status === FixtureStatus.Completed)
 
+    // DIAGNOSTIC: Log playoff state for debugging match-skip bug
+    if (process.env.NODE_ENV !== 'production') {
+      const managedSeries = [...updatedBracket.quarterFinals, ...updatedBracket.semiFinals, ...(updatedBracket.final ? [updatedBracket.final] : [])]
+        .find(s => s.homeClubId === game.managedClubId || s.awayClubId === game.managedClubId)
+      if (managedSeries) {
+        console.log(`[PLAYOFF] md${nextMatchday} Series ${managedSeries.id}: ${managedSeries.homeWins}-${managedSeries.awayWins}, winnerId=${managedSeries.winnerId}, completed this round: ${completedThisRound.filter(f => managedSeries.fixtures.includes(f.id)).map(f => f.id).join(',')}`)  
+      }
+    }
+
     type AnyPlayoffSeries = (typeof updatedBracket.quarterFinals)[0]
 
     const updateSeries = (series: AnyPlayoffSeries): AnyPlayoffSeries => {
@@ -777,6 +788,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       ...updatedBracket.semiFinals,
       ...(updatedBracket.final ? [updatedBracket.final] : []),
     ]
+
+    // DIAGNOSTIC: Log series state after update
+    if (process.env.NODE_ENV !== 'production') {
+      const managedSeriesAfter = allSeriesNow.find(s => s.homeClubId === game.managedClubId || s.awayClubId === game.managedClubId)
+      if (managedSeriesAfter) {
+        console.log(`[PLAYOFF AFTER] ${managedSeriesAfter.id}: ${managedSeriesAfter.homeWins}-${managedSeriesAfter.awayWins}, winnerId=${managedSeriesAfter.winnerId}, loserId=${managedSeriesAfter.loserId}`)
+      }
+    }
     for (const series of allSeriesNow) {
       if (series.winnerId !== null) {
         allFixtures = allFixtures.map(f => {
