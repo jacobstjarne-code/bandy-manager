@@ -3,6 +3,7 @@ import type { ScoutReport } from '../../domain/entities/Scouting'
 import { PlayerArchetype, PlayerPosition } from '../../domain/enums'
 import { getScoutReportAge } from '../../domain/services/scoutingService'
 import { ClubBadge } from './ClubBadge'
+import { getPortraitPath } from '../utils/portraits'
 
 export interface PlayerCardProps {
   player: Player
@@ -97,68 +98,6 @@ function statValueColor(value: number): string {
   return 'var(--danger)'
 }
 
-interface PlayerSilhouetteProps {
-  jerseyNumber: number
-}
-
-function PlayerSilhouette({ jerseyNumber }: PlayerSilhouetteProps) {
-  return (
-    <svg viewBox="0 0 120 160" width="120" height="160" aria-hidden="true">
-      <defs>
-        <pattern id="stripes" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
-          <line x1="0" y1="0" x2="0" y2="8" stroke="white" strokeWidth="1" opacity="0.02"/>
-        </pattern>
-        <radialGradient id="player-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.15"/>
-          <stop offset="100%" stopColor="var(--accent)" stopOpacity="0"/>
-        </radialGradient>
-      </defs>
-      <rect width="120" height="160" fill="#0a1928" />
-      {/* Diagonal stripe texture */}
-      <rect width="120" height="160" fill="url(#stripes)"/>
-      {/* Radial glow behind player */}
-      <ellipse cx="60" cy="100" rx="40" ry="50" fill="url(#player-glow)"/>
-      {/* Snow particles */}
-      <circle cx="20" cy="30" r="1" fill="white" opacity="0.4" style={{ animation: 'snowfall 6s 0.5s infinite linear' }}/>
-      <circle cx="95" cy="50" r="0.8" fill="white" opacity="0.35" style={{ animation: 'snowfall 5s 2s infinite linear' }}/>
-      <circle cx="45" cy="15" r="1.2" fill="white" opacity="0.3" style={{ animation: 'snowfall 7s 1s infinite linear' }}/>
-      {/* Body / torso */}
-      <ellipse cx="60" cy="75" rx="18" ry="22" fill="var(--accent)" opacity="0.85" />
-      {/* Head with helmet */}
-      <circle cx="60" cy="46" r="14" fill="var(--accent)" opacity="0.9" />
-      <rect x="48" y="38" width="24" height="10" rx="3" fill="#8B6914" />
-      {/* Visor */}
-      <line x1="50" y1="48" x2="70" y2="48" stroke="#0a1928" strokeWidth="2" />
-      {/* Helmet visor detail */}
-      <path d="M50,48 Q60,52 70,48" stroke="#0a1928" strokeWidth="1.5" fill="none"/>
-      {/* Left arm / stick */}
-      <line x1="58" y1="80" x2="35" y2="110" stroke="var(--accent)" strokeWidth="5" strokeLinecap="round" />
-      {/* Right arm */}
-      <line x1="62" y1="80" x2="80" y2="95" stroke="var(--accent)" strokeWidth="4" strokeLinecap="round" />
-      {/* Stick shaft */}
-      <line x1="35" y1="110" x2="25" y2="140" stroke="#8B6914" strokeWidth="3" strokeLinecap="round" />
-      {/* Blade */}
-      <line x1="18" y1="140" x2="38" y2="142" stroke="#8B6914" strokeWidth="4" strokeLinecap="round" />
-      {/* Skate blade details */}
-      <line x1="35" y1="133" x2="50" y2="134" stroke="var(--accent)" strokeWidth="1" opacity="0.5"/>
-      <line x1="75" y1="128" x2="90" y2="129" stroke="var(--accent)" strokeWidth="1" opacity="0.5"/>
-      {/* Left leg */}
-      <line x1="55" y1="97" x2="45" y2="130" stroke="var(--accent)" strokeWidth="7" strokeLinecap="round" />
-      {/* Right leg */}
-      <line x1="65" y1="97" x2="80" y2="125" stroke="var(--accent)" strokeWidth="7" strokeLinecap="round" />
-      {/* Skates */}
-      <ellipse cx="42" cy="133" rx="10" ry="4" fill="#8B6914" />
-      <ellipse cx="82" cy="128" rx="10" ry="4" fill="#8B6914" />
-      {/* Ice reflection */}
-      <ellipse cx="60" cy="152" rx="35" ry="6" fill="#1a3a5c" opacity="0.3"/>
-      {/* Jersey number */}
-      <text x="60" y="82" textAnchor="middle" fill="#0a1928" fontSize="14" fontWeight="bold">
-        {jerseyNumber}
-      </text>
-    </svg>
-  )
-}
-
 function CaSparkline({ history, currentCa }: { history: Array<{ season: number; ca: number }>; currentCa: number }) {
   const points = [...history, { season: 9999, ca: currentCa }]
   if (points.length < 2) return null
@@ -214,6 +153,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
 
   // Stale reports are treated as if no report exists for attribute display
   const effectiveReport = isStale ? undefined : scoutReport
+  const portraitPath = getPortraitPath(player)
 
   const topStats = isOwned
     ? getTopStats(player)
@@ -269,7 +209,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
       {/* Gold divider */}
       <div style={{ height: 1, background: 'rgba(196,122,58,0.3)', margin: '0 14px' }} />
 
-      {/* Player illustration area */}
+      {/* Player portrait */}
       <div style={{
         display: 'flex',
         justifyContent: 'center',
@@ -279,17 +219,12 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
         position: 'relative',
         overflow: 'hidden',
       }}>
-        {/* Faint glow behind player */}
-        <div style={{
-          position: 'absolute',
-          bottom: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 100,
-          height: 40,
-          background: 'radial-gradient(ellipse, rgba(196,122,58,0.15) 0%, transparent 70%)',
-        }} />
-        <PlayerSilhouette jerseyNumber={jerseyNum} />
+        <img
+          src={portraitPath}
+          alt={`${player.firstName} ${player.lastName}`}
+          style={{ width: 100, height: 120, objectFit: 'cover', borderRadius: 8 }}
+          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+        />
       </div>
 
       {/* Gold divider */}
