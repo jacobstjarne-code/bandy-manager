@@ -231,6 +231,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // nextMatchday is the global play order index — sort by matchday, not roundNumber
   const nextMatchday = Math.min(...scheduledFixtures.map(f => f.matchday))
 
+  // Guard: detect matchday skips (diagnostic for omgångshopp bug)
+  const lastPlayedMatchday = game.fixtures
+    .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
+    .reduce((max, f) => Math.max(max, f.matchday ?? f.roundNumber), 0)
+  if (nextMatchday > lastPlayedMatchday + 2 && lastPlayedMatchday > 0) {
+    console.warn(`[MATCHDAY SKIP] last=${lastPlayedMatchday} next=${nextMatchday} — possible scheduling gap`)
+  }
+
   // Collect fixtures for this matchday (scheduled + already-completed live-played)
   const roundFixtures = game.fixtures.filter(f =>
     f.matchday === nextMatchday &&

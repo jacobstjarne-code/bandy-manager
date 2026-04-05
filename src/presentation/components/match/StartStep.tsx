@@ -100,7 +100,7 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
       <button onClick={onPlay} className="btn btn-copper" style={{
         width: '100%', padding: '16px', fontSize: 17, fontWeight: 700, letterSpacing: '0.3px',
       }}>
-        Lycka till! →
+        SPELA MATCHEN →
       </button>
     </div>
   )

@@ -111,7 +111,7 @@ interface BidModalProps {
 function BidModal({ player, managedClub, onClose, onConfirm }: BidModalProps) {
   const suggestedBid = Math.round((player.marketValue || 50000) / 5000) * 5000
   const [offerAmount, setOfferAmount] = useState(suggestedBid)
-  const [offeredSalary, setOfferedSalary] = useState(player.salary)
+  const [offeredSalary, setOfferedSalary] = useState(Math.round(player.salary / 500) * 500)
   const [contractYears, setContractYears] = useState(3)
   const canAfford = managedClub.transferBudget >= offerAmount
 

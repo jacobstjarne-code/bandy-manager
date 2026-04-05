@@ -167,8 +167,8 @@ export function generateCommunityActivitiesEvents(
     }
   }
 
-  // Bandyskola — round 2, one-time
-  if (currentRound === 2 && !ca?.bandyplay) {
+  // Bandyskola — round 2, one-time, only if not already active
+  if (currentRound === 2 && !ca?.bandyplay && !ca?.bandySchool) {
     const eid = 'community_bandyplay'
     if (!alreadyQueued.has(eid)) {
       events.push({
