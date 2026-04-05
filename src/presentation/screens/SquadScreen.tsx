@@ -545,6 +545,7 @@ export function SquadScreen() {
             player={selectedPlayer}
             clubName={clubName}
             onClick={undefined}
+            storylines={(game?.storylines ?? []).filter(s => s.playerId === selectedPlayer.id && s.resolved)}
           />
 
           {/* Karaktärsspelare badge */}

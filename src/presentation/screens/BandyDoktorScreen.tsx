@@ -144,6 +144,22 @@ export function BandyDoktorScreen() {
           </div>
         )}
 
+        {/* Intro — first time */}
+        {questionsLeft > 0 && messages.length === 0 && (
+          <div className="card-round" style={{ padding: '16px', textAlign: 'center', marginBottom: 8 }}>
+            <p style={{ fontSize: 24, marginBottom: 8 }}>🩺</p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', marginBottom: 8 }}>
+              Bandydoktorn
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 4 }}>
+              Din personliga rådgivare. Ställ frågor om truppen, taktik, transfermarknaden, eller spelets mekanik.
+            </p>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+              {questionsLeft} frågor kvar denna omgång.
+            </p>
+          </div>
+        )}
+
         {/* Quick question buttons */}
         {questionsLeft > 0 && messages.length === 0 && (
           <div>
@@ -178,6 +194,32 @@ export function BandyDoktorScreen() {
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Guide / FAQ */}
+        {messages.length === 0 && questionsLeft > 0 && (
+          <div style={{ marginTop: 8 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>
+              ❓ GUIDE
+            </p>
+            {[
+              { q: 'Scouting', a: 'Tre system, en budget (10/säsong). Talangspaning hittar nya spelare. Utvärdering ger attribut. Motståndaranalys inför match.' },
+              { q: 'Väder', a: 'Snö straffar bollkontroll. Dimma försvårar bredd. Töväder ökar skaderisk. Kyla ger hård, snabb is.' },
+              { q: 'Dubbelliv', a: 'De flesta spelare jobbar. Flexibilitet påverkar träning. Heltidsproffs kostar mer men tränar bättre.' },
+              { q: 'Transfers', a: 'Marknaden visar tillgängliga spelare. Scouta först för att hitta fynd. Bud baseras på marknadsvärde.' },
+              { q: 'Styrelsen', a: 'Styrelsen sätter säsongsmål. Resultat under förväntan sänker tålamodet. SM-guld ger legendstatus.' },
+              { q: 'Träning', a: 'Välj typ och intensitet. Hård träning ger snabbare utveckling men högre skaderisk.' },
+            ].map((item, i) => (
+              <details key={i} style={{ marginBottom: 4 }}>
+                <summary style={{ fontSize: 12, color: 'var(--text-primary)', cursor: 'pointer', padding: '6px 0', fontWeight: 600 }}>
+                  {item.q}
+                </summary>
+                <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5, padding: '4px 0 8px 12px' }}>
+                  {item.a}
+                </p>
+              </details>
+            ))}
           </div>
         )}
 

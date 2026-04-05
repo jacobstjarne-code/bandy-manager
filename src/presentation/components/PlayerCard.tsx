@@ -11,6 +11,7 @@ export interface PlayerCardProps {
   isOwned?: boolean           // true = managed club player (show real attributes)
   currentSeason?: number      // needed to calculate report age
   onClick?: () => void
+  storylines?: Array<{ displayText: string }>  // resolved storylines for this player
 }
 
 // Archetype color for badge circle
@@ -205,7 +206,7 @@ function formatMarketValue(v: number): string {
   return `${v} kr`
 }
 
-export function PlayerCard({ player, clubName, scoutReport, isOwned = true, currentSeason, onClick }: PlayerCardProps) {
+export function PlayerCard({ player, clubName, scoutReport, isOwned = true, currentSeason, onClick, storylines }: PlayerCardProps) {
   const reportAge = scoutReport && currentSeason
     ? getScoutReportAge(scoutReport, currentSeason, scoutReport.scoutedSeason)
     : scoutReport ? 'fresh' : null
@@ -331,6 +332,29 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
           </div>
         </div>
       </div>
+
+      {/* BAKGRUND section */}
+      {isOwned && (
+        <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)' }}>
+          <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+            BAKGRUND
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: 11, color: 'var(--text-secondary)' }}>
+            <span>🏟️ Fostrad i {player.academyClubId ? clubName : 'okänd klubb'}</span>
+            {player.dayJob ? (
+              <span>📋 {player.dayJob.title} (flex {player.dayJob.flexibility}%)</span>
+            ) : player.isFullTimePro ? (
+              <span>⭐ Heltidsproffs</span>
+            ) : null}
+            <span>📅 Kontrakt t.o.m. {player.contractUntilSeason + 1}</span>
+            {(storylines ?? []).length > 0 && (
+              <span style={{ fontStyle: 'italic', color: 'var(--accent)', marginTop: 2 }}>
+                📖 {storylines![0].displayText}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Gold divider */}
       <div style={{ height: 1, background: 'rgba(196,122,58,0.25)', margin: '0 14px' }} />

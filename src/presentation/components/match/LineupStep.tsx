@@ -167,8 +167,15 @@ export function LineupStep({
                         opacity: isUnavailable ? 0.4 : 1,
                       }}
                     >
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)', minWidth: 26 }}>
-                        {player.shirtNumber != null ? `#${player.shirtNumber}` : ''}
+                      <span style={{
+                        width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 11, fontWeight: 700,
+                        background: isStarting ? 'rgba(90,154,74,0.15)' : 'transparent',
+                        border: isStarting ? '2px solid var(--success)' : '1.5px dashed var(--border)',
+                        color: isStarting ? 'var(--text-primary)' : 'var(--text-muted)',
+                      }}>
+                        {player.shirtNumber ?? '?'}
                       </span>
                       <span style={{ flex: 1, fontSize: 13, fontWeight: isStarting ? 700 : 400, color: isStarting ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                         {player.lastName}
