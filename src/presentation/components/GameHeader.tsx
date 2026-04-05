@@ -127,7 +127,8 @@ export function GameHeader() {
               setSaveToast(true); setTimeout(() => setSaveToast(false), 2000)
             } },
             { label: '📂 Ladda spel', action: () => navigate('/') },
-            { label: '❓ Hjälp', action: () => navigate('/game/doctor') },
+            { label: '🩺 Bandydoktorn', action: () => navigate('/game/doctor') },
+            { label: '📖 Spelguide', action: () => setShowHelp(true) },
           ].map((item, i) => (
             <button key={i} onClick={() => { item.action(); setShowMenu(false) }}
               style={{
@@ -139,6 +140,50 @@ export function GameHeader() {
               {item.label}
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Spelguide overlay */}
+      {showHelp && (
+        <div
+          onClick={() => setShowHelp(false)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+            zIndex: 300, display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+            paddingTop: 60, overflowY: 'auto',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'var(--bg)', borderRadius: 12, padding: '20px 18px',
+              maxWidth: 380, width: '90%', maxHeight: 'calc(100vh - 120px)',
+              overflowY: 'auto', boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, fontFamily: 'var(--font-display)', margin: 0 }}>Spelguide</h2>
+              <button onClick={() => setShowHelp(false)} style={{ background: 'none', border: 'none', fontSize: 20, color: 'var(--text-muted)', cursor: 'pointer' }}>×</button>
+            </div>
+
+            {[
+              { q: 'Hur vinner jag?', a: 'Säsongen består av 22 ligaomgångar. De åtta bästa går till slutspel (bäst av 5). Vinnaren av slutspelet blir Svenska Mästare. Dessutom spelas Svenska Cupen parallellt.' },
+              { q: 'Dashen', a: 'Visar nästa match, tabellposition, ekonomi och bygdens puls. Den stora knappen längst ner tar dig vidare till nästa omgång eller match.' },
+              { q: 'Trupp', a: 'Alla spelare med form, fitness och styrka. Klicka på en spelare för detaljer, kontraktsförlängning eller spelarsamtal.' },
+              { q: 'Match', a: 'Välj 11 startspelare, sätt taktik (mentalitet, tempo, press) och spela live eller snabbsimulera.' },
+              { q: 'Transfers', a: 'Scouta spelare, lägg bud, förhandla. Transferfönstret är öppet under försäsongen och vintern.' },
+              { q: 'Klubb → Träning', a: 'Välj träningsfokus och intensitet. Påverkar spelarutveckling och skaderisk. Tunga pass ger mer men skadar fler.' },
+              { q: 'Klubb → Ekonomi', a: 'Sponsorer, matchintäkter och föreningsaktiviteter. Löner är största kostnaden. Håll kassan positiv — licensnämnden granskar vid säsongsslut.' },
+              { q: 'Klubb → Orten', a: 'Kommun-relation, mecenater, faciliteter och styrelseuppdrag. Bygdens puls (0–100) påverkar hemmaplansfördel, sponsorintresse och kommunbidrag.' },
+              { q: 'Bandydoktorn', a: 'AI-rådgivare för taktik, transfers och spelarutveckling. Fem frågor per säsong. Finns på dashen och här i menyn.' },
+              { q: 'Bandy vs fotboll', a: '2 poäng för vinst (inte 3). 10 min utvisning (inga kort). Hörnor är centralt offensivt vapen. Flygande byten. Spelas på is utomhus oktober–mars.' },
+            ].map((item, i) => (
+              <div key={i} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: i < 9 ? '1px solid var(--border)' : 'none' }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{item.q}</p>
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{item.a}</p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

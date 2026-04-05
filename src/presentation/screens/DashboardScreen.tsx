@@ -179,8 +179,10 @@ function CupCard({ bracket, game }: CupCardProps) {
     const cupRound = cupMatch?.round ?? nextCupFixture.roundNumber
     const roundLabel = cupRound === 1 ? 'Förstarunda' : cupRound === 2 ? 'Kvartsfinal' : cupRound === 3 ? 'Semifinal' : 'Final'
     const lastMatchday = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed').map(f => f.matchday))
+    const allScheduled = game.fixtures.filter(f => f.status === 'scheduled')
+    const globalNextMatchday = allScheduled.length > 0 ? Math.min(...allScheduled.map(f => f.matchday)) : 0
+    const isNextToPlay = nextCupFixture.matchday === globalNextMatchday
     const isThisMatchday = nextCupFixture.matchday === lastMatchday + 1
-    const isCurrentMatchday = nextCupFixture.matchday === lastMatchday
     statusContent = (
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
@@ -189,8 +191,8 @@ function CupCard({ bracket, game }: CupCardProps) {
           </span>
           <span className={isHome ? 'tag tag-green' : 'tag tag-ice'}>{isHome ? 'Hemma' : 'Borta'}</span>
         </div>
-        <p style={{ fontSize: 11, color: (isThisMatchday || isCurrentMatchday) ? 'var(--warning)' : 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-body)' }}>
-          {isCurrentMatchday ? '⚡ Spelas denna omgång' : isThisMatchday ? '⚡ Spelas nästa omgång' : `Matchdag ${nextCupFixture.matchday}`}
+        <p style={{ fontSize: 11, color: isNextToPlay ? 'var(--warning)' : 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-body)' }}>
+          {isNextToPlay ? '⚡ Spelas denna omgång' : isThisMatchday ? '⚡ Spelas snart' : `Matchdag ${nextCupFixture.matchday}`}
         </p>
       </div>
     )

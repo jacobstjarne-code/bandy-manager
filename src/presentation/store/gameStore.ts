@@ -359,7 +359,11 @@ export const useGameStore = create<GameState>()(
           if (lastInteraction.invite && currentRound - lastInteraction.invite < 5) {
             return { success: false, message: `Vänta till omgång ${lastInteraction.invite + 5}.` }
           }
-          const boost = 5 + Math.floor(Math.random() * 4)
+          let boost = 5 + Math.floor(Math.random() * 4)
+          // Agenda-bonus
+          const standing = game.standings.find(s => s.clubId === game.managedClubId)
+          if (pol.agenda === 'prestige' && standing && standing.position <= 4) boost += 3
+          if (pol.agenda === 'youth' && game.communityActivities?.bandySchool) boost += 2
           const newRel = Math.min(100, pol.relationship + boost)
           const updatedPol = { ...pol, relationship: newRel }
           set({ game: {
@@ -419,7 +423,15 @@ export const useGameStore = create<GameState>()(
             }})
             return { success: false, message: `${pol.name} avslår: "Relationen är inte stark nog. Jobba på förtroendet först."` }
           }
-          const grant = 20000 + Math.floor(Math.random() * 20000)
+          let grant = 15000 + Math.floor((pol.relationship - 50) * 700) // 15k-50k baserat på relation
+          if (pol.agenda === 'youth' && game.communityActivities?.bandySchool) grant += 20000
+          if ((game.communityStanding ?? 50) > 70) grant += 10000
+          if (pol.agenda === 'savings' && Math.random() < 0.5) {
+            const updatedPol2 = { ...pol, relationship: Math.max(0, pol.relationship - 3) }
+            set({ game: { ...game, localPolitician: updatedPol2, politicianLastInteraction: { ...lastInteraction, apply: currentRound, applySeason: game.currentSeason } } })
+            return { success: false, message: `${pol.name} avslår: "Vi måste vara restriktiva med bidrag just nu." Relation -3.` }
+          }
+          grant = Math.round(grant / 5000) * 5000 // Avrunda till närmaste 5k
           const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, grant)
           set({ game: {
             ...game,
