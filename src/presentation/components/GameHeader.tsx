@@ -126,7 +126,6 @@ export function GameHeader() {
             } },
             { label: '📂 Ladda spel', action: () => navigate('/') },
             { label: '❓ Hjälp', action: () => navigate('/game/doctor') },
-            { label: '🏟️ Klubb', action: () => navigate('/game/club') },
           ].map((item, i) => (
             <button key={i} onClick={() => { item.action(); setShowMenu(false) }}
               style={{

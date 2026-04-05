@@ -555,46 +555,42 @@ export function MatchLiveScreen() {
             {matchWeather.weather.temperature <= -15 && ' ❄'}
           </p>
         )}
+
+        {/* Suspensions — inside scoreboard like a real bandy board */}
+        {(() => {
+          const hasSusp = currentMatchStep &&
+            (currentMatchStep.activeSuspensions.homeCount > 0 ||
+             currentMatchStep.activeSuspensions.awayCount > 0)
+          if (!currentMatchStep) return null
+          const allEventsSoFar = displayedSteps.flatMap(s => s.events)
+          const currentMin = currentMatchStep.minute
+          const homeSusp = allEventsSoFar
+            .filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.homeClubId && currentMin - e.minute < 10)
+            .map(e => {
+              const p = e.playerId ? (game?.players ?? []).find(pl => pl.id === e.playerId) : null
+              return p?.shirtNumber != null ? `#${p.shirtNumber}` : (p ? p.lastName.slice(0, 5) : '?')
+            })
+          const awaySusp = allEventsSoFar
+            .filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.awayClubId && currentMin - e.minute < 10)
+            .map(e => {
+              const p = e.playerId ? (game?.players ?? []).find(pl => pl.id === e.playerId) : null
+              return p?.shirtNumber != null ? `#${p.shirtNumber}` : (p ? p.lastName.slice(0, 5) : '?')
+            })
+          return (
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', padding: '4px 16px 0',
+              fontSize: 11, fontWeight: 700, fontFamily: 'Courier New, monospace',
+              color: '#FF6644',
+              height: 18,
+              opacity: hasSusp ? 1 : 0,
+              transition: 'opacity 0.3s ease',
+            }}>
+              <div>{homeSusp.map(s => `UTV ${s}`).join(' · ')}</div>
+              <div>{awaySusp.map(s => `UTV ${s}`).join(' · ')}</div>
+            </div>
+          )
+        })()}
       </div>
-
-      {/* Active suspensions below scoreboard — fixed height to prevent layout shift */}
-      {(() => {
-        const hasSusp = currentMatchStep &&
-          (currentMatchStep.activeSuspensions.homeCount > 0 ||
-           currentMatchStep.activeSuspensions.awayCount > 0)
-
-        if (!currentMatchStep) return (
-          <div style={{ height: 20, flexShrink: 0 }} />
-        )
-
-        const allEventsSoFar = displayedSteps.flatMap(s => s.events)
-        const currentMin = currentMatchStep.minute
-        const homeSusp = allEventsSoFar
-          .filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.homeClubId && currentMin - e.minute < 10)
-          .map(e => {
-            const p = e.playerId ? (game?.players ?? []).find(pl => pl.id === e.playerId) : null
-            return p?.shirtNumber != null ? `#${p.shirtNumber}` : (p ? p.lastName.slice(0, 5) : '?')
-          })
-        const awaySusp = allEventsSoFar
-          .filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.awayClubId && currentMin - e.minute < 10)
-          .map(e => {
-            const p = e.playerId ? (game?.players ?? []).find(pl => pl.id === e.playerId) : null
-            return p?.shirtNumber != null ? `#${p.shirtNumber}` : (p ? p.lastName.slice(0, 5) : '?')
-          })
-
-        return (
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', padding: '4px 16px',
-            fontSize: 11, fontWeight: 600, color: 'var(--danger)', flexShrink: 0,
-            height: 20,
-            opacity: hasSusp ? 1 : 0,
-            transition: 'opacity 0.3s ease',
-          }}>
-            <div>{homeSusp.map(s => `Utv ${s}`).join(' · ')}</div>
-            <div>{awaySusp.map(s => `Utv ${s}`).join(' · ')}</div>
-          </div>
-        )
-      })()}
 
       {/* Match controls container */}
       <div style={{
@@ -605,9 +601,12 @@ export function MatchLiveScreen() {
 
       {/* Controls */}
       <div style={{
-        display: 'flex', justifyContent: 'center', gap: 8,
+        display: 'flex', alignItems: 'center', gap: 8,
         padding: '6px 16px',
       }}>
+        <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginRight: 'auto' }}>
+          🏛️ Match
+        </span>
         <button
           onClick={() => setIsPaused(prev => !prev)}
           className="btn btn-ghost"

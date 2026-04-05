@@ -73,13 +73,18 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
       {fixture && (
         <div className="card-round" style={{
           marginBottom: 12, padding: '14px 16px',
-          fontFamily: 'var(--font-display)',
-          fontStyle: 'italic',
-          fontSize: 14,
-          lineHeight: 1.6,
-          color: 'var(--text-secondary)',
         }}>
-          {getPreMatchAtmosphere(fixture, matchWeatherData, isHome ?? true, fanMood ?? 50)}
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>📣 Pep-talk</p>
+          <p style={{
+            fontFamily: 'var(--font-display)',
+            fontStyle: 'italic',
+            fontSize: 14,
+            lineHeight: 1.6,
+            color: 'var(--text-secondary)',
+            margin: 0,
+          }}>
+            {getPreMatchAtmosphere(fixture, matchWeatherData, isHome ?? true, fanMood ?? 50)}
+          </p>
         </div>
       )}
 

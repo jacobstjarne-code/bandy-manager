@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Outlet, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, Navigate, useLocation } from 'react-router-dom'
 import { BottomNav } from './BottomNav'
 import { GameHeader } from '../components/GameHeader'
 import { EventOverlay } from '../components/EventOverlay'
@@ -21,36 +21,8 @@ export function GameGuard() {
 }
 
 function DoctorFAB() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  // Don't show on doctor screen itself or match flow
-  if (location.pathname.includes('doctor') || location.pathname.includes('match')) return null
-  return (
-    <button
-      onClick={() => navigate('/game/doctor')}
-      style={{
-        position: 'fixed',
-        bottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + 12px)',
-        right: 16,
-        width: 44,
-        height: 44,
-        borderRadius: '50%',
-        background: 'var(--accent-dark)',
-        color: 'var(--text-light)',
-        boxShadow: '0 4px 16px rgba(162,88,40,0.35)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 20,
-        zIndex: 99,
-        border: 'none',
-        cursor: 'pointer',
-      }}
-      aria-label="Bandydoktorn"
-    >
-      🩺
-    </button>
-  )
+  // Removed: redundant with Bandydoktorn card on dashboard + settings menu
+  return null
 }
 
 export function GameShell() {
