@@ -1384,7 +1384,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         choices: [
           {
             id: 'send',
-            label: 'Skicka dem',
+            label: selected.length === 1 ? 'Skicka honom' : 'Skicka dem',
             effect: { type: 'noOp' },
           },
           {

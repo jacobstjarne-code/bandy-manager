@@ -118,26 +118,38 @@ export function generatePoliticianEvents(
     if (currentRound === 5 && agenda === 'inclusion') {
       const eid = 'politician_inclusion'
       if (!alreadyQueued.has(eid)) {
-        const quotes = AGENDA_QUOTES.inclusion
-        const quote = quotes[Math.floor(rand() * quotes.length)]
         events.push({
           id: eid,
           type: 'politicianEvent',
-          title: `${politician.name}: Bandy för alla`,
-          body: quote,
+          title: `🏟️ Förslag från kommunen`,
+          sender: { name: politician.name, role: `${politician.title}, kommunen` },
+          body: `${politician.name} har fått bidrag från Allmänna arvsfonden och kontaktar dig.\n\n"Vi har pengar för integration genom idrott. Ni har plats, ungdomar och en förening som folk litar på. Kan ni ta emot en grupp på 10–15 ungdomar två kvällar i veckan?"`,
           choices: [
             {
               id: 'start_program',
-              label: 'Starta inkluderingsprogram',
-              effect: { type: 'kommunBidragChange', amount: 6000 },
+              label: 'Starta programmet',
+              subtitle: '💛 +5 fanMood · ⭐ +3 communityStanding · 💰 +6 000 kr/sä kommunbidrag',
+              effect: { type: 'multiEffect', subEffects: JSON.stringify([
+                { type: 'kommunBidragChange', amount: 6000 },
+                { type: 'fanMood', amount: 5 },
+                { type: 'communityStanding', amount: 3 },
+              ]) },
+            },
+            {
+              id: 'counter',
+              label: 'Föreslå ungdomsgrupp istället — kommunen driver',
+              subtitle: '⭐ +1 communityStanding · ingen kostnad',
+              effect: { type: 'communityStanding', amount: 1 },
             },
             {
               id: 'already_open',
-              label: 'Vi är redan öppna för alla',
+              label: 'Tacka nej — vi har inte kapacitet',
+              subtitle: `🤝 -5 relation med ${politician.name}`,
               effect: { type: 'politicianRelationship', amount: -5 },
             },
           ],
           resolved: false,
+          followUpText: `Inkluderingsprogrammet har kommit igång. ${politician.name} tackar för samarbetet.`,
         })
       }
     }
