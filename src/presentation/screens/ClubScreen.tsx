@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useManagedClub, useGameStore, useCurrentStanding } from '../store/gameStore'
+import { useManagedClub, useGameStore } from '../store/gameStore'
 import { TrainingType, TrainingIntensity } from '../../domain/enums'
 import { TrainingProjectsCard } from '../components/club/TrainingProjectsCard'
 import { TrainingSection } from '../components/club/TrainingSection'
@@ -30,7 +30,6 @@ export function ClubScreen() {
   const setTransferBudget = useGameStore(s => s.setTransferBudget)
   const buyScoutRounds = useGameStore(s => s.buyScoutRounds)
   const interactWithPolitician = useGameStore(s => s.interactWithPolitician)
-  const standing = useCurrentStanding()
   const navigate = useNavigate()
   const location = useLocation()
   const VALID_TABS: ClubTab[] = ['training', 'ekonomi', 'orten', 'akademi']
@@ -152,7 +151,7 @@ export function ClubScreen() {
 
         {/* ── Tab 3: Klubb ── */}
         {activeTab === 'orten' && (
-          <KlubbTab club={club} game={game} standing={standing} navigate={navigate} interactWithPolitician={interactWithPolitician} />
+          <KlubbTab club={club} game={game} navigate={navigate} interactWithPolitician={interactWithPolitician} />
         )}
 
         {/* ── Tab 4: Akademi ── */}

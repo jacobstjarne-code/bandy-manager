@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { NavigateFunction } from 'react-router-dom'
 import type { Club } from '../../../domain/entities/Club'
-import type { SaveGame, StandingRow } from '../../../domain/entities/SaveGame'
+import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { ClubExpectation, ClubStyle } from '../../../domain/enums'
 import { StatBar } from '../StatBar'
 import { SectionCard } from '../SectionCard'
@@ -60,7 +60,6 @@ function FacilityRow({ label, value }: { label: string; value: number }) {
 interface KlubbTabProps {
   club: Club
   game: SaveGame
-  standing: StandingRow | null | undefined
   navigate: NavigateFunction
   interactWithPolitician?: (action: 'invite' | 'budget' | 'apply') => { success: boolean; message: string }
 }
@@ -205,8 +204,8 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician }: Klubb
             </p>
           )}
           {(() => {
-            const li = (game as any).politicianLastInteraction ?? {}
-            const currentRound = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max: number, f: any) => Math.max(max, f.roundNumber), 0)
+            const li = game.politicianLastInteraction ?? {}
+            const currentRound = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max, f) => Math.max(max, f.roundNumber), 0)
             const inviteCooldown = li.invite ? Math.max(0, li.invite + 5 - currentRound) : 0
             const budgetUsed = li.budgetSeason === game.currentSeason
             const applyUsed = li.applySeason === game.currentSeason

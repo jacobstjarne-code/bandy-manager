@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useGameStore } from '../store/gameStore'
+import { useLocation } from 'react-router-dom'
 import { ClubBadge } from '../components/ClubBadge'
 import { isRivalryMatch } from '../../domain/data/rivalries'
 import { calculateStandings } from '../../domain/services/standingsService'
@@ -10,6 +11,16 @@ export function TabellScreen() {
   const game = useGameStore(s => s.game)
   const [expandedClubId, setExpandedClubId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'tabell' | 'statistik' | 'cupen'>('tabell')
+  const location = useLocation()
+
+  // Handle deep-link from dashboard CupCard/PlayoffCard
+  useEffect(() => {
+    const tab = (location.state as any)?.tab
+    if (tab === 'cupen' || tab === 'statistik' || tab === 'tabell') {
+      setActiveTab(tab)
+      window.history.replaceState({ ...window.history.state, usr: {} }, '')
+    }
+  }, [location.state])
 
   if (!game) return null
 

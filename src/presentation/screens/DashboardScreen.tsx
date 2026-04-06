@@ -81,7 +81,11 @@ function PlayoffBracketCard({ bracket, game }: PlayoffBracketCardProps) {
   const navigate = useNavigate()
 
   return (
-    <div className="card-sharp card-stagger-3" style={{ margin: '0 0 10px', overflow: 'hidden' }}>
+    <div
+      className="card-sharp card-stagger-3"
+      style={{ margin: '0 0 10px', overflow: 'hidden', cursor: 'pointer' }}
+      onClick={() => navigate('/game/tabell', { state: { tab: 'cupen' } })}
+    >
       <div style={{ padding: '12px 14px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
@@ -136,6 +140,7 @@ interface CupCardProps {
 }
 
 function CupCard({ bracket, game }: CupCardProps) {
+  const navigate = useNavigate()
   const managedClubId = game.managedClubId
   const cupStatus = getManagedClubCupStatus(bracket, managedClubId)
   const nextCupFixture = game.fixtures
@@ -218,7 +223,11 @@ function CupCard({ bracket, game }: CupCardProps) {
   }
 
   return (
-    <div className="card-sharp card-stagger-3" style={{ margin: '0 0 10px', overflow: 'hidden' }}>
+    <div
+      className="card-sharp card-stagger-3"
+      style={{ margin: '0 0 10px', overflow: 'hidden', cursor: 'pointer' }}
+      onClick={() => navigate('/game/tabell', { state: { tab: 'cupen' } })}
+    >
       <div style={{ padding: '12px 14px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
