@@ -67,7 +67,7 @@ export function ClubScreen() {
 
   const tabDescriptions: Record<string, string> = {
     ekonomi: 'Klubbkassa, budget, intäkter och utgifter.',
-    orten: 'Lokalstöd, sponsorer, patron och föreningsaktiviteter.',
+    orten: 'Lokalstöd, mecenater, kommun och föreningsaktiviteter.',
     akademi: 'Ungdomslag, talangutveckling och intag.',
   }
 

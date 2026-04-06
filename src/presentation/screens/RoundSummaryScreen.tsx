@@ -75,7 +75,13 @@ export function RoundSummaryScreen() {
   // Flavor text
   const margin = myScore - theirScore
   const totalGoals = myScore + theirScore
+  const hasPenalties = lastFixture?.wentToPenalties
+  const hasOT = lastFixture?.wentToOvertime && !hasPenalties
   const flavorText = !matchPlayed ? null
+    : hasPenalties && won ? '🎯 Kalla nerver i straffarna'
+    : hasPenalties && lost ? '😔 Straffarna avgjorde'
+    : hasOT && won ? '⏱️ Avgjort i sista stund'
+    : hasOT && lost ? '⏱️ Förlängt lidande'
     : won
     ? margin >= 3 ? '💪 Dominant insats'
       : totalGoals >= 8 ? '🔥 Målrik historia'

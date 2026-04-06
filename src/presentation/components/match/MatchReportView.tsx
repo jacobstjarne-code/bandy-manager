@@ -80,6 +80,13 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
         MATCHSAMMANFATTNING
       </p>
 
+      {/* Arena + attendance */}
+      {fixture.attendance && (
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 10 }}>
+          {homeClub?.arenaName ?? `${homeClub?.shortName ?? '?'}s IP`} · {fixture.attendance} åskådare
+        </p>
+      )}
+
       {/* Score banner */}
       <div className="card-sharp" style={{ padding: '20px 16px', marginBottom: 10, textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>

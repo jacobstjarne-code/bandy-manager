@@ -1,14 +1,11 @@
 import { useState } from 'react'
+import type { FormResult } from '../utils/formUtils'
 
-interface FormResult {
-  result: 'V' | 'O' | 'F'
-  score?: string      // e.g. "3–1"
-  opponent?: string   // e.g. "Karlsborg"
-}
+export type { FormResult }
 
 interface FormDotsProps {
   results: FormResult[]
-  size?: number       // dot size, default 8
+  size?: number
 }
 
 const COLORS = {
