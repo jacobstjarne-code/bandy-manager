@@ -143,7 +143,9 @@ export function gameFlowActions(get: Get, set: Set) {
         }
       } else if (!suppressMatchNavigation) {
         if (result.hasManagedCupMatch) {
-          navigateTo('/game/match', { replace: true })
+          // Managed club has an unplayed match (cup or league) — go to dashboard
+          // so user sees between-round info and clicks "Spela omgång X" themselves
+          navigateTo('/game/dashboard', { replace: true })
         } else if (summary.matchPlayed) {
           navigateTo('/game/round-summary', { replace: true })
         } else {

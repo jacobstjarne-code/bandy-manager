@@ -157,8 +157,8 @@ export function LineupStep({
                       key={player.id}
                       onClick={() => handlePlayerClick(player)}
                       style={{
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        padding: '8px 12px',
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        padding: '5px 10px',
                         background: isStarting ? 'var(--bg-surface)' : 'transparent',
                         borderBottom: '1px solid var(--border)',
                         cursor: isUnavailable ? 'default' : 'pointer',
@@ -166,10 +166,9 @@ export function LineupStep({
                       }}
                     >
                       <div style={{
-                        width: 32, height: 32, borderRadius: '50%',
+                        width: 24, height: 24, borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 12, fontWeight: 700,
-                        background: isStarting ? 'transparent' : 'transparent',
+                        fontSize: 10, fontWeight: 700,
                         border: isStarting ? '2px solid var(--success)' : '1.5px solid var(--border)',
                         color: isStarting ? 'var(--success)' : 'var(--text-muted)',
                       }}>
@@ -179,7 +178,7 @@ export function LineupStep({
                         <span style={{ fontSize: 13, fontWeight: isStarting ? 700 : 400 }}>
                           {player.lastName}
                         </span>
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
+                        <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 5 }}>
                           {positionShort(player.position)}
                         </span>
                       </div>
@@ -187,7 +186,7 @@ export function LineupStep({
                         {Math.round(player.currentAbility)}
                       </span>
                       <span style={{
-                        fontSize: 10, fontWeight: 600, minWidth: 34, textAlign: 'right',
+                        fontSize: 10, fontWeight: 600, minWidth: 30, textAlign: 'right',
                         color: isUnavailable ? 'var(--danger)' : isStarting ? 'var(--success)' : 'var(--text-muted)',
                       }}>
                         {isUnavailable ? (player.isInjured ? '🩹' : '🚫') : isStarting ? 'START' : ''}

@@ -36,8 +36,8 @@ export function RoundSummaryScreen() {
 
   const {
     round, date, temperature,
-    matchPlayed, matchResult, matchScorers,
-    communityStandingBefore, communityStandingAfter, communityStandingChanges,
+    matchPlayed, matchScorers,
+    communityStandingBefore, communityStandingAfter,
     financesBefore, financesAfter,
     injuries, newInboxCount,
     youthMatchResult,
@@ -45,42 +45,57 @@ export function RoundSummaryScreen() {
 
   const financesDelta = financesAfter - financesBefore
   const csDelta = communityStandingAfter - (communityStandingBefore ?? communityStandingAfter)
+  const cs = communityStandingAfter
 
   const trainingFocus = game.managedClubTraining
   const activeProjects = (game.trainingProjects ?? []).filter(p => p.status === 'active')
-  const loanDeals = game.loanDeals ?? []
 
   const formattedDate = new Date(date).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long' })
 
-  const LABEL: React.CSSProperties = {
-    fontSize: 10, fontWeight: 700, letterSpacing: '1.5px',
-    textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4,
-  }
+  // Derive match details from last completed fixture
+  const lastFixture = game.lastCompletedFixtureId
+    ? game.fixtures.find(f => f.id === game.lastCompletedFixtureId)
+    : undefined
+  const isHome = lastFixture?.homeClubId === game.managedClubId
+  const myScore = lastFixture ? (isHome ? lastFixture.homeScore : lastFixture.awayScore) : 0
+  const theirScore = lastFixture ? (isHome ? lastFixture.awayScore : lastFixture.homeScore) : 0
+  const won = myScore > theirScore
+  const lost = myScore < theirScore
+  const homeClub = lastFixture ? game.clubs.find(c => c.id === lastFixture.homeClubId) : undefined
+  const awayClub = lastFixture ? game.clubs.find(c => c.id === lastFixture.awayClubId) : undefined
 
-  function TappableCard({ label, summary, detail, onClick, accent }: {
-    label: string; summary: React.ReactNode; detail?: React.ReactNode
-    onClick?: () => void; accent?: string
-  }) {
-    return (
-      <div onClick={onClick} className="card-sharp" style={{
-        padding: '14px 16px', marginBottom: 10,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-        cursor: onClick ? 'pointer' : 'default',
-      }}>
-        <div style={{ flex: 1 }}>
-          <div style={LABEL}>{label}</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: accent ?? 'var(--text-primary)' }}>{summary}</div>
-          {detail && <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 3 }}>{detail}</div>}
-        </div>
-        {onClick && <span style={{ fontSize: 18, color: 'var(--text-secondary)' }}>›</span>}
-      </div>
-    )
-  }
+  // Standing
+  const standing = game.standings.find(s => s.clubId === game.managedClubId)
 
-  function handleContinue() {
-    clearRoundSummary()
-    navigate('/game/dashboard', { replace: true })
-  }
+  // Recent form (last 5)
+  const recentForm: Array<'V' | 'O' | 'F'> = game.fixtures
+    .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup)
+    .sort((a, b) => b.roundNumber - a.roundNumber)
+    .slice(0, 5)
+    .map(f => {
+      const h = f.homeClubId === game.managedClubId
+      const s = h ? f.homeScore : f.awayScore
+      const c = h ? f.awayScore : f.homeScore
+      return s > c ? 'V' : s < c ? 'F' : 'O'
+    })
+
+  // Flavor text
+  const margin = myScore - theirScore
+  const totalGoals = myScore + theirScore
+  const flavorText = !matchPlayed ? null
+    : won
+    ? margin >= 3 ? '💪 Dominant insats'
+      : totalGoals >= 8 ? '🔥 Målrik historia'
+      : margin === 1 ? '😅 Knapp seger'
+      : '✅ Klar vinst'
+    : lost
+    ? margin <= -3 ? '💣 Svår dag på jobbet'
+      : margin === -1 ? '😤 Nära men inte nog'
+      : '❌ Klar förlust'
+    : totalGoals >= 8 ? '🎢 Dramatiskt kryss'
+    : '🤝 Rättvis poängdelning'
+
+  const resultColor = won ? 'var(--success)' : lost ? 'var(--danger)' : 'var(--accent)'
 
   const trainingLabel: Record<string, string> = {
     skating: 'Skridskoåkning', ballControl: 'Bollkontroll', passing: 'Passning',
@@ -88,98 +103,254 @@ export function RoundSummaryScreen() {
     physical: 'Fysik', tactical: 'Taktik', recovery: 'Återhämtning', matchPrep: 'Matchförberedelse',
   }
 
+  function handleContinue() {
+    clearRoundSummary()
+    navigate('/game/dashboard', { replace: true })
+  }
+
+  const fadeIn = (i: number) => ({
+    opacity: visible ? 1 : 0,
+    transform: visible ? 'translateY(0)' : 'translateY(12px)',
+    transition: `all 0.35s ease ${80 + i * 60}ms`,
+  })
+
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-      {/* Header */}
-      <div style={{
-        textAlign: 'center', padding: '14px 16px 10px', borderBottom: '1px solid var(--border)',
-        opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease', flexShrink: 0,
-      }}>
-        <p style={{ fontSize: 10, letterSpacing: 2, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 4 }}>
-          OMGÅNG {round}
-        </p>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)' }}>{formattedDate}</h1>
-        {temperature !== undefined && (
-          <p style={{ fontSize: 13, color: temperature <= 0 ? 'var(--ice)' : 'var(--text-secondary)', marginTop: 4 }}>
-            {temperature <= -5 ? '❄️ ' : temperature <= 0 ? '🌨 ' : '🌤 '}{temperature > 0 ? '+' : ''}{temperature}°C
-          </p>
-        )}
-      </div>
+      {/* Scrollable content */}
+      <div className="texture-wood card-stack" style={{ flex: 1, overflowY: 'auto', paddingTop: 12, paddingBottom: 120 }}>
 
-      {/* Scrollable cards */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px', paddingTop: 12, paddingBottom: 120, opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease 0.1s' }}>
-        {matchPlayed ? (
-          <TappableCard
-            label="🏒 MATCHEN"
-            summary={matchResult ?? 'Match spelad'}
-            detail={matchScorers?.join(' · ')}
-            accent="var(--accent)"
+        {/* Header pill */}
+        <div style={{ textAlign: 'center', marginBottom: 14, ...fadeIn(0) }}>
+          <span style={{
+            display: 'inline-block', fontSize: 10, fontWeight: 700, letterSpacing: '2px',
+            textTransform: 'uppercase', color: 'var(--text-muted)',
+            padding: '4px 14px', borderRadius: 99,
+            background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+          }}>
+            Omgång {round} · {formattedDate}
+            {temperature !== undefined && (
+              <span style={{ marginLeft: 6, color: temperature <= 0 ? 'var(--ice)' : 'var(--text-secondary)' }}>
+                {temperature <= -5 ? '❄️' : temperature <= 0 ? '🌨' : '🌤'} {temperature > 0 ? '+' : ''}{temperature}°C
+              </span>
+            )}
+          </span>
+        </div>
+
+        {/* ── MATCH HERO ── */}
+        {matchPlayed && lastFixture ? (
+          <div
+            className="card-sharp"
+            style={{ margin: '0 0 10px', overflow: 'hidden', cursor: 'pointer', ...fadeIn(1) }}
             onClick={() => navigate('/game/match-result')}
-          />
+          >
+            <div style={{ padding: '16px 14px 12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
+                  🏒 {lastFixture.isCup ? 'CUPMATCH' : 'MATCHEN'}
+                </p>
+                <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>›</span>
+              </div>
+
+              {/* Score */}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                <div style={{ textAlign: 'center', flex: 1 }}>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{homeClub?.shortName ?? homeClub?.name}</p>
+                  <span style={{ fontSize: 28, fontWeight: 800, color: resultColor, fontFamily: 'var(--font-display)' }}>
+                    {lastFixture.homeScore}
+                  </span>
+                </div>
+                <span style={{ fontSize: 20, color: 'var(--text-muted)', fontWeight: 300 }}>–</span>
+                <div style={{ textAlign: 'center', flex: 1 }}>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{awayClub?.shortName ?? awayClub?.name}</p>
+                  <span style={{ fontSize: 28, fontWeight: 800, color: resultColor, fontFamily: 'var(--font-display)' }}>
+                    {lastFixture.awayScore}
+                  </span>
+                </div>
+              </div>
+
+              {/* Flavor + scorers */}
+              {flavorText && (
+                <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 600, color: resultColor, marginBottom: 6 }}>
+                  {flavorText}
+                </p>
+              )}
+              {matchScorers && matchScorers.length > 0 && (
+                <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)' }}>
+                  {matchScorers.join(' · ')}
+                </p>
+              )}
+            </div>
+          </div>
         ) : (
-          <TappableCard label="🏒 MATCHEN" summary="Ingen match denna omgång" accent="var(--text-secondary)" />
+          <div className="card-sharp" style={{ margin: '0 0 10px', padding: '14px 16px', ...fadeIn(1) }}>
+            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
+              🏒 MATCHEN
+            </p>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Ingen match denna omgång</p>
+          </div>
         )}
 
-        <TappableCard
-          label="🏋️ TRÄNING"
-          summary={trainingLabel[trainingFocus?.type ?? ''] ?? 'Okänt fokus'}
-          detail={activeProjects.length > 0 ? `${activeProjects.length} aktiva projekt` : 'Inga aktiva projekt'}
+        {/* ── Two-column: Tabell + Form ── */}
+        {standing && (
+          <div style={{ display: 'flex', gap: 8, margin: '0 0 10px', ...fadeIn(2) }}>
+            <div className="card-sharp" style={{ flex: 1, padding: '12px 14px' }}>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+                📊 TABELL
+              </p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                <span style={{ fontSize: 28, fontWeight: 400, color: 'var(--accent-dark)', fontFamily: 'var(--font-display)' }}>
+                  {standing.position}
+                </span>
+                <div>
+                  <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: 0 }}>
+                    {standing.points}p · {standing.goalDifference >= 0 ? '+' : ''}{standing.goalDifference}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="card-sharp" style={{ flex: 1, padding: '12px 14px' }}>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+                📈 FORM
+              </p>
+              <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+                {recentForm.map((r, i) => (
+                  <span key={i} style={{
+                    width: 22, height: 22, borderRadius: 4,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 10, fontWeight: 700,
+                    background: r === 'V' ? 'rgba(90,154,74,0.15)' : r === 'F' ? 'rgba(176,80,64,0.15)' : 'rgba(196,186,168,0.15)',
+                    color: r === 'V' ? 'var(--success)' : r === 'F' ? 'var(--danger)' : 'var(--text-muted)',
+                    border: `1px solid ${r === 'V' ? 'rgba(90,154,74,0.3)' : r === 'F' ? 'rgba(176,80,64,0.3)' : 'rgba(196,186,168,0.3)'}`,
+                  }}>
+                    {r}
+                  </span>
+                ))}
+                {recentForm.length === 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>—</span>}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Träning ── */}
+        <div
+          className="card-sharp"
+          style={{ margin: '0 0 10px', padding: '12px 14px', cursor: 'pointer', ...fadeIn(3) }}
           onClick={() => navigate('/game/club')}
-        />
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
+                🏋️ TRÄNING
+              </p>
+              <span style={{ fontSize: 13, fontWeight: 600 }}>
+                {trainingLabel[trainingFocus?.type ?? ''] ?? 'Okänt fokus'}
+              </span>
+              {activeProjects.length > 0 && (
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>
+                  {activeProjects.length} projekt
+                </span>
+              )}
+            </div>
+            <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>›</span>
+          </div>
+        </div>
 
+        {/* ── Akademin (conditional) ── */}
         {youthMatchResult && (
-          <TappableCard label="🎓 AKADEMIN" summary={youthMatchResult} onClick={() => navigate('/game/club')} />
+          <div
+            className="card-sharp"
+            style={{ margin: '0 0 10px', padding: '12px 14px', cursor: 'pointer', ...fadeIn(4) }}
+            onClick={() => navigate('/game/club', { state: { tab: 'akademi' } })}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
+                  🎓 AKADEMIN
+                </p>
+                <span style={{ fontSize: 13, fontWeight: 600 }}>{youthMatchResult}</span>
+              </div>
+              <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>›</span>
+            </div>
+          </div>
         )}
 
-        {loanDeals.length > 0 && (
-          <TappableCard
-            label="🔄 UTLÅNADE"
-            summary={`${loanDeals.length} spelare på lån`}
-            detail={loanDeals.map(d => d.destinationClubName).join(', ')}
-            onClick={() => navigate('/game/squad')}
-          />
-        )}
-
-        <TappableCard
-          label="🏘️ ORTEN"
-          summary={
-            <span>
-              Lokalstöd: <span style={{ color: csColor(communityStandingAfter) }}>{communityStandingAfter}</span>
+        {/* ── Two-column: Orten + Ekonomi ── */}
+        <div style={{ display: 'flex', gap: 8, margin: '0 0 10px', ...fadeIn(5) }}>
+          {/* Orten */}
+          <div
+            className="card-sharp"
+            style={{ flex: 1, padding: '12px 14px', cursor: 'pointer' }}
+            onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}
+          >
+            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+              🏘️ ORTEN
+            </p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 6 }}>
+              <span style={{ fontSize: 20, fontWeight: 700, color: csColor(cs), fontFamily: 'var(--font-display)' }}>{cs}</span>
               {csDelta !== 0 && (
-                <span style={{ color: csDelta > 0 ? 'var(--success)' : 'var(--danger)', fontSize: 12, marginLeft: 6 }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: csDelta > 0 ? 'var(--success)' : 'var(--danger)' }}>
                   {csDelta > 0 ? `+${csDelta}` : String(csDelta)}
                 </span>
               )}
+            </div>
+            <div style={{ display: 'flex', gap: 2 }}>
+              <div style={{ flex: cs, height: 5, background: csColor(cs), borderRadius: '3px 0 0 3px' }} />
+              <div style={{ flex: 100 - cs, height: 5, background: 'var(--border-dark)', borderRadius: '0 3px 3px 0' }} />
+            </div>
+          </div>
+
+          {/* Ekonomi */}
+          <div
+            className="card-sharp"
+            style={{ flex: 1, padding: '12px 14px', cursor: 'pointer' }}
+            onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}
+          >
+            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+              💰 EKONOMI
+            </p>
+            <span style={{ fontSize: 20, fontWeight: 700, color: financesAfter < 0 ? 'var(--danger)' : 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+              {formatFinanceAbs(financesAfter)}
             </span>
-          }
-          detail={communityStandingChanges?.map((c: { reason: string; delta: number }) => c.reason).join(' · ') || undefined}
-          onClick={() => navigate('/game/club')}
-        />
+            {financesDelta !== 0 && (
+              <p style={{ fontSize: 11, fontWeight: 600, color: financesDelta > 0 ? 'var(--success)' : 'var(--danger)', marginTop: 2 }}>
+                {formatFinance(financesDelta)}/omg
+              </p>
+            )}
+          </div>
+        </div>
 
-        <TappableCard
-          label="💰 EKONOMI"
-          summary={formatFinanceAbs(financesAfter)}
-          detail={financesDelta !== 0 ? formatFinance(financesDelta) + ' denna omgång' : undefined}
-          accent={financesAfter < 0 ? 'var(--danger)' : 'var(--text-primary)'}
-          onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}
-        />
-
-        {injuries.length > 0 && (
-          <TappableCard
-            label="🩹 SKADOR"
-            summary={`${injuries.length} ny${injuries.length > 1 ? 'a skador' : ' skada'}`}
-            detail={injuries.join(' · ')}
-            accent="var(--danger)"
-            onClick={() => navigate('/game/squad')}
-          />
-        )}
-
-        {newInboxCount > 0 && (
-          <TappableCard label="📬 INKORG" summary={`${newInboxCount} nya meddelanden`} onClick={() => navigate('/game/inbox')} />
+        {/* ── Alerts: injuries + inbox ── */}
+        {(injuries.length > 0 || newInboxCount > 0) && (
+          <div style={{ display: 'flex', gap: 8, margin: '0 0 10px', ...fadeIn(6) }}>
+            {injuries.length > 0 && (
+              <div
+                className="card-sharp"
+                style={{ flex: 1, padding: '10px 14px', cursor: 'pointer', borderLeft: '3px solid var(--danger)' }}
+                onClick={() => navigate('/game/squad')}
+              >
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--danger)', marginBottom: 2 }}>
+                  🩹 {injuries.length} ny{injuries.length > 1 ? 'a skador' : ' skada'}
+                </p>
+                <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>{injuries.join(', ')}</p>
+              </div>
+            )}
+            {newInboxCount > 0 && (
+              <div
+                className="card-sharp"
+                style={{ flex: injuries.length > 0 ? 'none' : 1, padding: '10px 14px', cursor: 'pointer', minWidth: injuries.length > 0 ? 80 : undefined }}
+                onClick={() => navigate('/game/inbox')}
+              >
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', marginBottom: 2 }}>
+                  📬 {newInboxCount}
+                </p>
+                <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>nya</p>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
-      {/* Fixed bottom button */}
+      {/* Fixed bottom CTA */}
       <div style={{
         position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 430, padding: '12px 20px',
@@ -187,10 +358,12 @@ export function RoundSummaryScreen() {
         background: 'linear-gradient(to top, var(--bg) 80%, transparent)',
         zIndex: 50, opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease 0.3s',
       }}>
-        <button onClick={handleContinue} style={{
-          width: '100%', padding: '17px', background: 'var(--accent)', color: 'var(--text-light)',
-          borderRadius: 12, fontSize: 16, fontWeight: 800, letterSpacing: '1.5px',
-          textTransform: 'uppercase', border: 'none',
+        <button onClick={handleContinue} className="texture-leather" style={{
+          width: '100%', padding: '17px',
+          background: 'linear-gradient(135deg, var(--accent-dark), var(--accent-deep))',
+          color: 'var(--text-light)',
+          borderRadius: 12, fontSize: 15, fontWeight: 600, letterSpacing: '2px',
+          textTransform: 'uppercase', border: 'none', fontFamily: 'var(--font-body)',
           boxShadow: '0 4px 20px rgba(196,122,58,0.3)', cursor: 'pointer',
         }}>
           Nästa omgång →

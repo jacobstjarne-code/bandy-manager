@@ -135,8 +135,83 @@ Se även `docs/FEATURE_ORTENS_MAKTSPEL.md` för eventuell befintlig spec.
 
 ## Prioritetsordning
 
-1. **Straffar live-visning** (#1) — spelarupplevelsen bryts
-2. **Utvisningar lagsida** (#2) — enkelt att verifiera/fixa
-3. **Mecenater konsolidering** (#3) — designbeslut + refaktor
-4. **Faciliteter konsolidering** (#4) — strukturell omorganisering
-5. **Politiker fullständig** (#5) — mest arbete, redan fungerande grund
+1. **Omgångshopp — liga-omgångar hoppas över** (#8) — KRITISK spellogik-bugg
+2. **Spelarkort overlay-layout** (#7) — visuellt trasigt, spelaren ser det konstant
+3. **Straffar live-visning** (#1) — spelarupplevelsen bryts
+4. **Utvisningar lagsida** (#2) — enkelt att verifiera/fixa
+5. **Mecenater konsolidering** (#3) — designbeslut + refaktor
+6. **Faciliteter konsolidering** (#4) — strukturell omorganisering
+7. **Politiker fullständig** (#5) — mest arbete, redan fungerande grund
+
+---
+
+## 8. KRITISK: Ligarundan hoppas över vid cup-matchday
+
+### Symptom
+Efter att ha spelat liga omgång 1 live, hoppas liga omgång 2 över helt. Nästa match är liga omgång 3 (eller cup). Omgång 2 spelas aldrig.
+
+### Förväntad ordning (från buildSeasonCalendar)
+- matchday 1 = liga R1
+- matchday 2 = liga R2
+- matchday 3 = cup R1 (förstarunda)
+- matchday 4 = liga R3
+
+### Debugga
+1. Lägg till loggning i `roundProcessor.ts` vid `nextMatchday`-beräkningen:
+   ```
+   console.log('[ADVANCE] nextMatchday:', nextMatchday, 
+     'scheduled:', scheduledFixtures.map(f => ({ id: f.id, md: f.matchday, isCup: f.isCup, round: f.roundNumber })))
+   ```
+2. Verifiera att alla liga R2-fixtures har matchday 2 (inte matchday 3)
+3. Kolla `seasonEndProcessor.ts` där fixtures skapas:
+   ```
+   matchday: nextSeasonCalendar.find(s => s.type === 'league' && s.leagueRound === sf.roundNumber)?.matchday ?? sf.roundNumber
+   ```
+   Om `nextSeasonCalendar` inte hittar rätt entry, faller det tillbaka på `sf.roundNumber` som är 2 — samma som matchday 2. Så det borde funka.
+4. Kolla att `advance()` från MatchDoneOverlay VERKLIGEN processar matchday 2 och inte hoppar till matchday 3
+5. Kolla om `hasManagedCupPending`-logiken felaktigt triggar för liga-matcher
+
+### Misstanke
+Efter live-match (matchday 1) anropas `advance()` från MatchDoneOverlay. Advance processar matchday 2. Men något går fel:
+- Antingen processas inte matchday 2 alls (nästa matchday hittas som 3 istället för 2)
+- Eller processas matchday 2 men managde klubbens match läggs inte till (saknar fixture)
+- Eller processas korrekt men navigeringen hoppar över round-summary
+
+### Filer
+- `src/application/useCases/roundProcessor.ts` — advance-logiken
+- `src/application/useCases/seasonEndProcessor.ts` — fixture-generering med matchday
+- `src/domain/services/scheduleGenerator.ts` — buildSeasonCalendar
+- `src/presentation/store/actions/gameFlowActions.ts` — navigering efter advance
+
+---
+
+## 7. SPELARKORT — overlay, knappar, porträtt
+
+Tre separata problem i spelarkortet:
+
+### A. Overlay hänger löst
+När man klickar på en spelare i SquadScreen öppnas ett overlay med spelarinfo. Stängknappen (×) flyter ovanför utan visuell kontakt med overlayen. Hela kortet hänger löst i luften.
+
+**Lösning:** Wrappa hela overlayen i en sammanhållen yta:
+- Bakgrund: `var(--bg-surface)` med `border-radius: 12px`, `box-shadow`
+- Stängknapp INUTI ytan (övre högra hörnet), inte utanför
+- Max-height med scroll inuti
+
+### B. Aktionsknappar (Uppmuntra / Kräv mer / Framtid)
+Knapparna renderas UNDER kortet men hör visuellt till det. Feedback-text visas i "rymden" mellan ytor.
+
+**Lösning:** Knapparna ska vara INUTI spelarkortet, längst ner. Feedback visas inline i kortet, inte i en separat yta.
+
+### C. Porträtt felkeyade
+Spelarporträtten är ofta felkeyade — ansiktet är inte centrerat i cirkeln. `portraitService.ts` genererar en path baserad på spelar-ID + ålder.
+
+**Verifiera:**
+1. `getPortraitPath()` — vad returnerar den? Mappas det till rätt bild?
+2. `objectFit: 'cover'` på img — borde centrera, men om bilden har off-center ansikte krävs `objectPosition`
+3. Om porträtten genereras dynamiskt: kontrollera att face-region är centrerad i output
+
+### Filer
+- `src/presentation/screens/SquadScreen.tsx` — overlay-wrapper
+- `src/presentation/components/PlayerCard.tsx` — kort-layout
+- `src/presentation/components/PlayerProfileContent.tsx` — detaljer + knappar
+- `src/domain/services/portraitService.ts` — porträtt-generering

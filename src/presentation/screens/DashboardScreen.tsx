@@ -790,10 +790,21 @@ export function DashboardScreen() {
               legendary: '👑 Legendstatus',
             }
             const mood = moodTexts[game.trainerArc.current]
+            const lastTransition = game.trainerArc.history.length > 0
+              ? game.trainerArc.history[game.trainerArc.history.length - 1]
+              : null
+            const reason = lastTransition?.to === game.trainerArc.current ? lastTransition.reason : null
             return mood ? (
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 6, fontStyle: 'italic' }}>
-                {mood}
-              </p>
+              <div style={{ textAlign: 'center', marginBottom: 6 }}>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                  {mood}
+                </p>
+                {reason && (
+                  <p style={{ fontSize: 10, color: 'var(--text-muted)', opacity: 0.7, marginTop: 2 }}>
+                    {reason}
+                  </p>
+                )}
+              </div>
             ) : null
           })()}
 

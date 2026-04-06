@@ -299,6 +299,18 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       continue
     }
 
+    // Skip scheduled LEAGUE fixtures for the managed club unless they have a saved lineup
+    // (prevents auto-simulation with AI lineup when user hasn't set one)
+    if (
+      !fixture.isCup &&
+      fixture.status === FixtureStatus.Scheduled &&
+      (fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId) &&
+      game.managedClubPendingLineup === undefined
+    ) {
+      hasManagedCupPending = true  // reuse flag — signals "managed club has an unplayed match"
+      continue
+    }
+
     // Skip fixtures already played via live mode — track starters for fitness, don't re-simulate
     if (fixture.status === FixtureStatus.Completed) {
       simulatedFixtures.push(fixture)
