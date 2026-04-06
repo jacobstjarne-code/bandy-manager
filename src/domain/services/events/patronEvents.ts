@@ -56,11 +56,13 @@ export function generatePatronEvents(
             {
               id: 'promise',
               label: 'Lova att ta hänsyn',
+              subtitle: '🤝 +15 mecenat-relation',
               effect: { type: 'patronHappiness', amount: 15 },
             },
             {
               id: 'refuse',
               label: 'Jag tar egna beslut',
+              subtitle: '🤝 -10 mecenat-relation',
               effect: { type: 'patronHappiness', amount: -10 },
             },
           ],
@@ -82,11 +84,13 @@ export function generatePatronEvents(
             {
               id: 'meet',
               label: 'Boka ett möte',
+              subtitle: '🤝 +10 relation · chans att behålla',
               effect: { type: 'patronHappiness', amount: 30 },
             },
             {
               id: 'accept',
               label: 'Acceptera att han/hon lämnar',
+              subtitle: '💰 förlorar bidrag',
               effect: { type: 'patronHappiness', amount: -50 },
             },
           ],
@@ -124,11 +128,13 @@ export function generatePatronEvents(
             {
               id: 'diplomatic',
               label: 'Förklara taktiska skälen',
+              subtitle: '🤝 +5 relation',
               effect: { type: 'patronHappiness', amount: 3 },
             },
             {
               id: 'refuse',
               label: 'Taktiken är min sak',
+              subtitle: '🤝 -15 relation',
               effect: { type: 'patronHappiness', amount: -8 },
             },
           ],
@@ -152,6 +158,7 @@ export function generatePatronEvents(
             {
               id: 'thank',
               label: 'Tacka varmt',
+              subtitle: '🤝 +10 relation · 💰 bidrag mottaget',
               effect: { type: 'income', amount: 20000 },
             },
           ],
@@ -180,11 +187,13 @@ export function generatePatronEvents(
             {
               id: 'listen',
               label: 'Bjud in till styrelsemöte',
+              subtitle: '🤝 +20 relation · ⚠️ inflytande ökar',
               effect: { type: 'patronHappiness', amount: 15 },
             },
             {
               id: 'decline',
               label: 'Tacka men håll gränsen',
+              subtitle: '🤝 -5 relation',
               effect: { type: 'patronHappiness', amount: -5 },
             },
           ],
@@ -206,11 +215,13 @@ export function generatePatronEvents(
             {
               id: 'apologize',
               label: 'Be om ursäkt och bjud på lunch',
+              subtitle: '🤝 +15 relation',
               effect: { type: 'patronInfluence', amount: 0, value: 20 },
             },
             {
               id: 'ignore',
               label: 'Det är min klubb, inte hans',
+              subtitle: '🤝 -20 relation · ⚠️ risk att mecenaten lämnar',
               effect: { type: 'patronHappiness', amount: -50 },
             },
           ],

@@ -23,11 +23,13 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'start',
             label: 'Starta enkel kiosk (−3 000 kr)',
+            subtitle: '💰 -3 tkr · ⭐ intäkter per hemmamatch',
             effect: { type: 'setCommunity', amount: -3000, communityKey: 'kiosk', communityValue: 'basic' },
           },
           {
             id: 'skip',
             label: 'Skippa det',
+            subtitle: 'Inga effekter',
             effect: { type: 'noOp' },
           },
         ],
@@ -49,11 +51,13 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'invest',
             label: 'Investera (−8 000 kr)',
+            subtitle: '💰 -8 tkr · ⭐ dubblade kioskintäkter',
             effect: { type: 'setCommunity', amount: -8000, communityKey: 'kiosk', communityValue: 'upgraded' },
           },
           {
             id: 'keep',
             label: 'Behåll som det är',
+            subtitle: 'Inga effekter',
             effect: { type: 'noOp' },
           },
         ],
@@ -75,11 +79,13 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'start',
             label: 'Sätt igång (−1 000 kr)',
+            subtitle: '💰 -1 tkr · ⭐ intäkter per omgång',
             effect: { type: 'setCommunity', amount: -1000, communityKey: 'lottery', communityValue: 'basic' },
           },
           {
             id: 'skip',
             label: 'Inte nu',
+            subtitle: 'Inga effekter',
             effect: { type: 'noOp' },
           },
         ],
@@ -101,11 +107,13 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'push',
             label: 'Kör hårdare (−2 000 kr)',
+            subtitle: '💰 -2 tkr · ⭐ ökade lotteriintäkter',
             effect: { type: 'setCommunity', amount: -2000, communityKey: 'lottery', communityValue: 'intensive' },
           },
           {
             id: 'keep',
             label: 'Behåll lagom nivå',
+            subtitle: 'Inga effekter',
             effect: { type: 'noOp' },
           },
         ],
@@ -127,11 +135,13 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'arrange',
             label: 'Arrangera julmarknad',
+            subtitle: '💰 engångskostnad · ⭐ +8-18 tkr intäkt + fanMood',
             effect: { type: 'setCommunity', amount: 8000, communityKey: 'julmarknad', communityValue: 'true' },
           },
           {
             id: 'skip',
             label: 'Inte i år',
+            subtitle: 'Inga effekter',
             effect: { type: 'noOp' },
           },
         ],
@@ -154,11 +164,13 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'support',
             label: 'Stötta initiativet',
+            subtitle: '⭐ +streaming-intäkter per match',
             effect: { type: 'income', amount: loppisAmount },
           },
           {
             id: 'decline',
             label: 'Tack men nej',
+            subtitle: 'Inga effekter',
             effect: { type: 'noOp' },
           },
         ],
@@ -180,11 +192,13 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'start',
             label: 'Starta bandyskolan',
+            subtitle: '💰 -5 tkr · ⭐ ungdomsrekrytering + intäkter',
             effect: { type: 'setCommunity', amount: 6000, communityKey: 'bandyplay', communityValue: 'true' },
           },
           {
             id: 'pass',
             label: 'Inte kapacitet just nu',
+            subtitle: 'Inga effekter',
             effect: { type: 'noOp' },
           },
         ],
@@ -206,11 +220,13 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'repair',
             label: 'Reparera nu (−15 000 kr)',
+            subtitle: '💰 -15 tkr · 🏗️ anläggningen reparerad',
             effect: { type: 'tempFacilities', amount: 1 },
           },
           {
             id: 'postpone',
             label: 'Skjut upp det',
+            subtitle: '⚠️ risk för ytterligare skador',
             effect: { type: 'tempFacilities', amount: -1 },
           },
         ],
@@ -232,11 +248,13 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'arrange',
             label: 'Arrangera rekryteringsdag (−2 000 kr)',
+            subtitle: '💰 -2 tkr · ⭐ ungdomsrekrytering +5',
             effect: { type: 'setCommunity', amount: -2000, communityKey: 'functionaries', communityValue: 'true' },
           },
           {
             id: 'skip',
             label: 'Vi klarar oss',
+            subtitle: 'Inga effekter',
             effect: { type: 'noOp' },
           },
         ],
@@ -258,11 +276,13 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'fika',
             label: 'Klart vi fixar fika',
+            subtitle: '💛 +3 fanMood · 🤝 volontärer nöjda',
             effect: { type: 'fanMood', amount: 8 },
           },
           {
             id: 'skip',
             label: 'Inte just nu',
+            subtitle: 'Inga effekter',
             effect: { type: 'noOp' },
           },
         ],
@@ -284,11 +304,13 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'go',
             label: 'Vi kör bilbingo',
+            subtitle: '💰 engångsintäkt · 💛 +5 fanMood',
             effect: { type: 'income', amount: 20000 },
           },
           {
             id: 'pass',
             label: 'För krångligt',
+            subtitle: 'Inga effekter',
             effect: { type: 'noOp' },
           },
         ],
@@ -310,11 +332,13 @@ export function generateCommunityActivitiesEvents(
           {
             id: 'renovate',
             label: 'Renovera (−25 000 kr)',
+            subtitle: '💰 -25 tkr · 🏗️ +15 faciliteter',
             effect: { type: 'reputation', amount: 5 },
           },
           {
             id: 'wait',
             label: 'Får vänta',
+            subtitle: '⚠️ faciliteter försämras',
             effect: { type: 'noOp' },
           },
         ],
