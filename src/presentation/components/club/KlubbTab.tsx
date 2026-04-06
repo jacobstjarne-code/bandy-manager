@@ -132,7 +132,16 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician }: Klubb
       {/* Mecenater */}
       <SectionCard title="👥 Mecenater" stagger={2}>
         {(game.mecenater ?? []).filter(m => m.isActive).length === 0 ? (
-          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Inga aktiva mecenater. De dyker upp om klubben lyckas.</p>
+          <div>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>Inga mecenater ännu.</p>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              Mecenater är lokala företagare som stödjer klubben ekonomiskt.
+              De lockas av framgång (slutspelsplats) och hög Bygdens puls.
+            </p>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5, marginTop: 4, fontStyle: 'italic' }}>
+              Fokusera på att vinna matcher och engagera bygden — då kommer intresset.
+            </p>
+          </div>
         ) : (
           (game.mecenater ?? []).filter(m => m.isActive).map(mec => (
             <div key={mec.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--border)', marginBottom: 6 }}>
@@ -154,16 +163,44 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician }: Klubb
       </SectionCard>
 
       {/* Kommun */}
-      {game.localPolitician && (
+      {game.localPolitician && (() => {
+        const polData = game.localPolitician
+        const agendaText: Record<string, string> = {
+          youth: 'Vill se satsning på ungdomsverksamhet. Stärk akademin och kör bandyskola.',
+          prestige: 'Vill att klubben sätter orten på kartan. Slutspel och bra resultat imponerar.',
+          infrastructure: 'Vill se investeringar i anläggningar. Uppgradera faciliteter.',
+          inclusion: 'Vill att klubben engagerar sig i samhället. Kör föreningsaktiviteter.',
+          savings: 'Vill ha balanserad ekonomi. Inga underskott.',
+        }
+        const agendaLabel: Record<string, string> = {
+          youth: 'Ungdomssatsning', prestige: 'Prestige', infrastructure: 'Infrastruktur',
+          inclusion: 'Inkludering', savings: 'Ekonomi',
+        }
+        const rel = polData.relationship
+        const relColor = rel >= 70 ? 'var(--success)' : rel >= 40 ? 'var(--accent)' : 'var(--danger)'
+        return (
         <SectionCard title="🏛️ Kommun" stagger={2}>
           <div style={{ marginBottom: 10 }}>
-            <p style={{ fontSize: 13, fontWeight: 600 }}>{game.localPolitician.name} ({game.localPolitician.party.replace(/[()]/g, '')})</p>
-            <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-              Agenda: {game.localPolitician.agenda} · Relation: {game.localPolitician.relationship}/100
+            <p style={{ fontSize: 13, fontWeight: 600 }}>{polData.name} ({polData.party})</p>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+              Agenda: {agendaLabel[polData.agenda] ?? polData.agenda}
+            </p>
+            {/* Relationsbar */}
+            <div style={{ marginTop: 6, marginBottom: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>
+                <span>Relation</span>
+                <span style={{ color: relColor, fontWeight: 600 }}>{rel}/100</span>
+              </div>
+              <div style={{ height: 6, borderRadius: 3, background: 'var(--border)', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${rel}%`, background: relColor, borderRadius: 3, transition: 'width 0.5s ease' }} />
+              </div>
+            </div>
+            <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.4, marginBottom: 6 }}>
+              {agendaText[polData.agenda] ?? ''}
             </p>
             <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-              Kommunbidrag: {Math.round((game.localPolitician.kommunBidrag ?? 0) / 1000)} tkr/säsong
-              {game.localPolitician.mandatExpires && ` · Nästa val: ${game.localPolitician.mandatExpires}`}
+              Kommunbidrag: {Math.round((polData.kommunBidrag ?? 0) / 1000)} tkr/säsong
+              {polData.mandatExpires && ` · Nästa val: ${polData.mandatExpires}`}
             </p>
           </div>
           {polFeedback && (
@@ -201,7 +238,8 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician }: Klubb
             </button>
           </div>
         </SectionCard>
-      )}
+        )
+      })()}
 
       {/* Anläggning */}
       <SectionCard title="🏗️ Anläggning" stagger={2}>

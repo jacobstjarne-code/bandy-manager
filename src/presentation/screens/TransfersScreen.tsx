@@ -32,14 +32,14 @@ function RenewContractModal({ player, currentSeason, minSalary, error, onClose, 
       position: 'fixed',
       inset: 0,
       zIndex: 300,
-      background: 'rgba(0,0,0,0.85)',
+      background: 'rgba(0,0,0,0.6)',
       display: 'flex',
       alignItems: 'flex-end',
       maxWidth: 430,
       margin: '0 auto',
     }}>
       <div style={{
-        background: 'var(--bg-surface)',
+        background: 'var(--bg)',
         borderRadius: '16px 16px 0 0',
         border: '1px solid var(--border)',
         borderBottom: 'none',
@@ -47,6 +47,7 @@ function RenewContractModal({ player, currentSeason, minSalary, error, onClose, 
         width: '100%',
         maxHeight: '85vh',
         overflowY: 'auto',
+        boxShadow: '0 -8px 40px rgba(0,0,0,0.2)',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
           <div>
@@ -117,14 +118,15 @@ function BidModal({ player, managedClub, onClose, onConfirm }: BidModalProps) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.85)',
+      position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.6)',
       display: 'flex', alignItems: 'flex-end', maxWidth: 430, margin: '0 auto',
     }}>
       <div style={{
-        background: 'var(--bg-surface)', borderRadius: '14px 14px 0 0',
+        background: 'var(--bg)', borderRadius: '14px 14px 0 0',
         border: '1px solid var(--border)', borderBottom: 'none',
         padding: '20px 16px 28px', width: '100%',
         maxHeight: '85vh', overflowY: 'auto',
+        boxShadow: '0 -8px 40px rgba(0,0,0,0.2)',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <div>

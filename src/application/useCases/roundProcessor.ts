@@ -1797,6 +1797,39 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   if (csPos <= 3) csBoost += 0.2
   else if (csPos >= 10) csBoost -= 0.15
 
+  // ── Kommun/mecenat inbox-notiser ──────────────────────────────────────
+  const pol = game.localPolitician
+  if (pol && justCompletedManagedFixture && pol.relationship > 50) {
+    const isHomeNotif = justCompletedManagedFixture.homeClubId === game.managedClubId
+    const myScoreNotif = isHomeNotif ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
+    const theirScoreNotif = isHomeNotif ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
+    const wonNotif = (myScoreNotif ?? 0) > (theirScoreNotif ?? 0)
+    if (wonNotif) {
+    const opponent = game.clubs.find(c => c.id === (isHomeNotif ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId))
+    newInboxItems.push({
+      id: `inbox_pol_match_${nextMatchday}_${game.currentSeason}`,
+      date: game.currentDate,
+      type: InboxItemType.BoardFeedback,
+      title: `🏛️ ${pol.name} noterade segern`,
+      body: `Kommunalrådet ${pol.name} skickade ett meddelande: "Bra match mot ${opponent?.name ?? 'motståndaren'}. Fortsätt så."`,
+      isRead: false,
+    } as InboxItem)
+    }
+  }
+  for (const mec of game.mecenater ?? []) {
+    if (!mec.isActive) continue
+    if (mec.happiness < 30 && mec.happiness > 20) {
+      newInboxItems.push({
+        id: `inbox_mec_unhappy_${mec.id}_${nextMatchday}`,
+        date: game.currentDate,
+        type: InboxItemType.BoardFeedback,
+        title: `👥 ${mec.name} är missnöjd`,
+        body: `${mec.name} från ${mec.business} uttrycker oro. "Jag hade hoppats på bättre resultat."`,
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
   let updatedGame: SaveGame = {
     ...game,
     communityStanding: Math.min(100, Math.max(0,
