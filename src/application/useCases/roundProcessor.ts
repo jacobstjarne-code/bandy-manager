@@ -54,6 +54,8 @@ import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/serv
 import { updateTrainerArc } from '../../domain/services/trainerArcService'
 import { checkInObjectives } from '../../domain/services/boardObjectiveService'
 import { checkProjectCompletion } from '../../domain/services/facilityService'
+import { generateTransferRumor } from '../../domain/services/rumorService'
+import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventService'
 
 export type { AdvanceResult }
 
@@ -1530,6 +1532,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const trendArticles = generateTrendArticles(preEventGame, nextMatchday, localRand)
   newInboxItems.push(...trendArticles)
 
+  // Transfer rumors (matchday 5-18)
+  const rumor = generateTransferRumor(preEventGame, localRand)
+  if (rumor) newInboxItems.push(rumor)
+
+  // Mid-season events (narrative triggers at key matchdays)
+  const midSeasonItems = checkMidSeasonEvents(preEventGame)
+  newInboxItems.push(...midSeasonItems)
+
   // Trim accumulated data to prevent localStorage bloat
   const MAX_INBOX = 50
   const trimmedInbox = [...game.inbox, ...newInboxItems]
@@ -1958,6 +1968,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     if (!managedHasMorePlayoffFixtures) {
       return advanceToNextEvent(updatedGame, (seed ?? baseSeed) + 1)
     }
+  }
+
+  // Onboarding step progression (advances after first 3 managed matches)
+  const currentOnboarding = updatedGame.onboardingStep ?? 0
+  if (currentOnboarding < 4 && justCompletedManagedFixture) {
+    updatedGame = { ...updatedGame, onboardingStep: currentOnboarding + 1 }
   }
 
   return { game: updatedGame, roundPlayed: nextMatchday, seasonEnded: false, pendingEvents: allNewEvents, hasManagedCupMatch: hasManagedCupPending }

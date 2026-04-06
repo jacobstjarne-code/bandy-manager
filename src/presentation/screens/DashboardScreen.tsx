@@ -10,6 +10,10 @@ import {
   usePlayoffInfo,
 } from '../store/gameStore'
 import { TutorialOverlay } from '../components/TutorialOverlay'
+import { OnboardingHint } from '../components/dashboard/OnboardingHint'
+import { SeasonBarometer } from '../components/dashboard/SeasonBarometer'
+import { ContextualNudges } from '../components/dashboard/ContextualNudges'
+import { CareerStatsCard } from '../components/dashboard/CareerStatsCard'
 import { PlayoffStatus, PlayoffRound } from '../../domain/enums'
 import type { PlayoffBracket, PlayoffSeries } from '../../domain/entities/Playoff'
 import type { SaveGame } from '../../domain/entities/SaveGame'
@@ -264,7 +268,7 @@ function DiamondDivider() {
 }
 
 export function DashboardScreen() {
-  const { game, advance, markTutorialSeen, resolveEvent } = useGameStore()
+  const { game, advance, markTutorialSeen, dismissOnboarding, resolveEvent } = useGameStore()
   const club = useManagedClub()
   const standing = useCurrentStanding()
   const hasPendingLineup = useHasPendingLineup()
@@ -497,6 +501,15 @@ export function DashboardScreen() {
           </div>
         )}
 
+        {/* Onboarding hints — first 3 rounds */}
+        {(game.onboardingStep ?? 0) >= 1 && (game.onboardingStep ?? 0) <= 3 && (
+          <OnboardingHint
+            step={game.onboardingStep!}
+            clubName={club.name}
+            onDismiss={dismissOnboarding}
+          />
+        )}
+
         {/* Eliminated */}
         {eliminated && !nextFixture && game.playoffBracket && game.playoffBracket.status !== PlayoffStatus.Completed && (
           <div className="card-round card-stagger-1" style={{ margin: '0 0 10px', padding: '18px', textAlign: 'center' }}>
@@ -603,6 +616,9 @@ export function DashboardScreen() {
         ) : game.cupBracket ? (
           <CupCard bracket={game.cupBracket} game={game} />
         ) : null}
+
+        {/* Säsongsbarometer — shows after 3+ rounds */}
+        <SeasonBarometer game={game} />
 
         {/* Squad status (Trupp) */}
         <SquadStatusCard
@@ -767,6 +783,52 @@ export function DashboardScreen() {
             </div>
           </div>
         )}
+
+        {/* Karriärstatistik */}
+        <CareerStatsCard game={game} />
+
+        {/* Board objectives cross-promotion */}
+        {(game.boardObjectives ?? []).filter(o => o.status === 'active' || o.status === 'at_risk').length > 0 && (
+          <div
+            className="card-sharp"
+            style={{ margin: '0 0 10px', cursor: 'pointer' }}
+            onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}
+          >
+            <div style={{ padding: '10px 14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
+                  🎯 STYRELSEUPPDRAG
+                </p>
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate('/game/club', { state: { tab: 'ekonomi' } }) }}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                    background: 'transparent', border: '1px solid var(--border)',
+                    color: 'var(--accent)', fontSize: 12, lineHeight: 1,
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                    cursor: 'pointer',
+                  }}
+                >›</button>
+              </div>
+              <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {(game.boardObjectives ?? []).filter(o => o.status === 'active' || o.status === 'at_risk').slice(0, 2).map(obj => (
+                  <div key={obj.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 10, color: obj.status === 'at_risk' ? 'var(--danger)' : 'var(--text-muted)' }}>
+                      {obj.status === 'at_risk' ? '⚠️' : '○'}
+                    </span>
+                    <span style={{ fontSize: 11, color: obj.status === 'at_risk' ? 'var(--danger)' : 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
+                      {obj.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Contextual nudges — att tänka på */}
+        <ContextualNudges game={game} currentRound={currentRound} />
 
         {/* Bandydoktorn */}
         {(() => {

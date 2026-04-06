@@ -417,6 +417,9 @@ export interface SaveGame {
 
   // V1.0 — Trainer narrative arc
   trainerArc?: TrainerArc
+
+  // V1.1 — Onboarding (0 = not started, 1-3 = guided rounds, 4+ = done)
+  onboardingStep?: number
 }
 
 // ── Journalist — named media character with persona and memory ───────────

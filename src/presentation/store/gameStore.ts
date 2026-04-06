@@ -43,6 +43,7 @@ interface GameState {
   updateTactic: (tactic: Tactic) => void
   setTraining: (focus: TrainingFocus) => void
   markTutorialSeen: () => void
+  dismissOnboarding: () => void
   markInboxRead: (itemId: string) => void
   markAllInboxRead: () => void
   startEvaluation: (playerId: string, clubId: string, sameRegion: boolean, hasPlayedAgainst?: boolean) => { success: boolean; error?: string }
@@ -195,6 +196,12 @@ export const useGameStore = create<GameState>()(
         const { game } = get()
         if (!game) return
         set({ game: { ...game, tutorialSeen: true } })
+      },
+
+      dismissOnboarding: () => {
+        const { game } = get()
+        if (!game) return
+        set({ game: { ...game, onboardingStep: 99 } })
       },
 
       markInboxRead: (itemId) => {

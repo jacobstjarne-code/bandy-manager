@@ -41,8 +41,43 @@ function inboxTypeColor(type: InboxItemType): string {
   }
 }
 
+type InboxCategory = 'important' | 'news' | 'reports'
+
+function getCategory(item: InboxItem): InboxCategory {
+  switch (item.type) {
+    case InboxItemType.BoardFeedback:
+    case InboxItemType.LicenseReview:
+    case InboxItemType.TransferOffer:
+    case InboxItemType.TransferBidReceived:
+    case InboxItemType.ContractExpiring:
+    case InboxItemType.Injury:
+    case InboxItemType.Suspension:
+      return 'important'
+    case InboxItemType.MatchResult:
+    case InboxItemType.Playoff:
+    case InboxItemType.Derby:
+    case InboxItemType.Transfer:
+    case InboxItemType.TransferBidResult:
+    case InboxItemType.Media:
+    case InboxItemType.MediaEvent:
+    case InboxItemType.Community:
+    case InboxItemType.PatronInfluence:
+    case InboxItemType.KommunBidrag:
+    case InboxItemType.YouthIntake:
+    case InboxItemType.Recovery:
+      return 'news'
+    default:
+      return 'reports'
+  }
+}
+
+const CATEGORY_META: Record<InboxCategory, { label: string; color: string; dot: string }> = {
+  important: { label: 'VIKTIGT', color: 'var(--danger)', dot: '🔴' },
+  news: { label: 'NYHETER', color: 'var(--accent)', dot: '🟡' },
+  reports: { label: 'RAPPORTER', color: 'var(--text-muted)', dot: '⚪' },
+}
+
 function formatDate(iso: string): string {
-  // iso: 'YYYY-MM-DD'
   const months = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']
   const [, m, d] = iso.split('-')
   return `${parseInt(d)} ${months[parseInt(m) - 1]}`
@@ -141,6 +176,7 @@ export function InboxScreen() {
   const game = useGameStore(s => s.game)
   const markInboxRead = useGameStore(s => s.markInboxRead)
   const markAllInboxRead = useGameStore(s => s.markAllInboxRead)
+  const [viewMode, setViewMode] = useState<'grouped' | 'chrono'>('grouped')
 
   if (!game) return null
 
@@ -150,33 +186,50 @@ export function InboxScreen() {
     return p ? `${p.firstName} ${p.lastName}` : undefined
   }
 
-  // Sort by date descending
   const sorted = [...game.inbox].sort((a, b) => b.date.localeCompare(a.date))
   const unreadCount = sorted.filter(i => !i.isRead).length
 
+  // Group by category
+  const grouped: Record<InboxCategory, InboxItem[]> = { important: [], news: [], reports: [] }
+  for (const item of sorted) {
+    grouped[getCategory(item)].push(item)
+  }
+
+  const categoryOrder: InboxCategory[] = ['important', 'news', 'reports']
+
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Compact toolbar */}
-      {unreadCount > 0 && (
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '8px 12px',
-          borderBottom: '1px solid var(--border)',
-          flexShrink: 0,
-        }}>
-          <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>
-            {unreadCount} olästa
-          </span>
+      {/* Toolbar */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '8px 12px',
+        borderBottom: '1px solid var(--border)',
+        flexShrink: 0,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {unreadCount > 0 && (
+            <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>
+              {unreadCount} olästa
+            </span>
+          )}
+          <button
+            onClick={() => setViewMode(v => v === 'grouped' ? 'chrono' : 'grouped')}
+            style={{ fontSize: 11, color: 'var(--text-muted)', background: 'none', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}
+          >
+            {viewMode === 'grouped' ? 'Kronologiskt' : 'Grupperat'}
+          </button>
+        </div>
+        {unreadCount > 0 && (
           <button
             onClick={markAllInboxRead}
             style={{ fontSize: 12, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
           >
             Markera alla som lästa
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* List */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -191,13 +244,44 @@ export function InboxScreen() {
             color: 'var(--text-muted)',
           }}>
             <Check size={40} strokeWidth={1.5} />
-            <p style={{ fontSize: 15 }}>Inkorgen är tom</p>
+            <p style={{ fontSize: 15 }}>Lugnt i korridorerna — för tillfället</p>
           </div>
-        ) : (
+        ) : viewMode === 'chrono' ? (
           <>
             {sorted.map((item, index) => (
               <InboxItemRow key={item.id} item={item} onRead={markInboxRead} index={index} playerName={getPlayerName(item.relatedPlayerId)} />
             ))}
+          </>
+        ) : (
+          <>
+            {categoryOrder.map(cat => {
+              const items = grouped[cat]
+              if (items.length === 0) return null
+              const meta = CATEGORY_META[cat]
+              const unreadInCat = items.filter(i => !i.isRead).length
+              return (
+                <div key={cat}>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '8px 12px 4px',
+                    position: 'sticky', top: 0,
+                    background: 'var(--bg)',
+                    zIndex: 1,
+                  }}>
+                    <span style={{ fontSize: 10 }}>{meta.dot}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', color: meta.color, textTransform: 'uppercase' }}>
+                      {meta.label}
+                    </span>
+                    {unreadInCat > 0 && (
+                      <span style={{ fontSize: 10, color: meta.color, fontWeight: 600 }}>({unreadInCat})</span>
+                    )}
+                  </div>
+                  {items.map((item, index) => (
+                    <InboxItemRow key={item.id} item={item} onRead={markInboxRead} index={index} playerName={getPlayerName(item.relatedPlayerId)} />
+                  ))}
+                </div>
+              )
+            })}
           </>
         )}
       </div>

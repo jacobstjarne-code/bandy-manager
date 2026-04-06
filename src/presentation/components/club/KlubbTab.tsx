@@ -260,7 +260,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
           </div>
         ))}
         {(game.facilityProjects ?? []).filter(p => p.status === 'in_progress').length === 0 && (
-          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>Inga pågående projekt.</p>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>Starta ett projekt för att utveckla anläggningen.</p>
         )}
         {/* Available projects */}
         {(() => {
