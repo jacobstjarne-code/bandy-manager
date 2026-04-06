@@ -221,26 +221,26 @@ export function generatePoliticianEvents(
         const hasSchool = game.communityActivities?.bandySchool
         demandBody = `${politician2.name} vill att föreningen satsar mer på ungdomar. ${hasSchool ? `${pro2.subj} ser positivt på bandyskolan.` : `${pro2.subj} vill se en bandyskola.`}`
         choices = [
-          { id: 'confirm', label: hasSchool ? 'Vi är stolta över bandyskolan' : 'Vi planerar en bandyskola', effect: { type: 'politicianRelationship', amount: hasSchool ? 15 : -5 } },
+          { id: 'confirm', label: hasSchool ? 'Vi är stolta över bandyskolan' : 'Vi planerar en bandyskola', subtitle: hasSchool ? '🤝 +15 relation' : '🤝 -5 relation', effect: { type: 'politicianRelationship', amount: hasSchool ? 15 : -5 } },
           { id: 'focus', label: 'A-laget är vår prioritet', subtitle: '🤝 -8 relation', effect: { type: 'politicianRelationship', amount: -8 } },
         ]
       } else if (agenda === 'prestige') {
         demandBody = `${politician2.name} vill att kommunen syns med laget. ${pro2.subj} ser er som ett varumärke för regionen.`
         choices = [
-          { id: 'welcome', label: 'Välkomna samarbetet', effect: { type: 'politicianRelationship', amount: 12 } },
-          { id: 'independent', label: 'Föreningen är fristående', effect: { type: 'politicianRelationship', amount: -5 } },
+          { id: 'welcome', label: 'Välkomna samarbetet', subtitle: '🤝 +12 relation', effect: { type: 'politicianRelationship', amount: 12 } },
+          { id: 'independent', label: 'Föreningen är fristående', subtitle: '🤝 -5 relation', effect: { type: 'politicianRelationship', amount: -5 } },
         ]
       } else if (agenda === 'inclusion') {
         demandBody = `${politician2.name} vill att föreningen öppnar upp för fler grupper i samhället.`
         choices = [
-          { id: 'program', label: 'Starta ett inkluderingsprogram', effect: { type: 'communityStanding', amount: 5 } },
-          { id: 'already', label: 'Vi är redan öppna för alla', effect: { type: 'politicianRelationship', amount: -3 } },
+          { id: 'program', label: 'Starta ett inkluderingsprogram', subtitle: '⭐ +5 communityStanding', effect: { type: 'communityStanding', amount: 5 } },
+          { id: 'already', label: 'Vi är redan öppna för alla', subtitle: '🤝 -3 relation', effect: { type: 'politicianRelationship', amount: -3 } },
         ]
       } else if (agenda === 'infrastructure') {
         demandBody = `${politician2.name} vill säkerställa att era anläggningar håller hög standard.`
         choices = [
-          { id: 'confirm', label: 'Vi investerar i anläggningarna', effect: { type: 'politicianRelationship', amount: 10 } },
-          { id: 'later', label: 'Det får vänta', effect: { type: 'politicianRelationship', amount: -5 } },
+          { id: 'confirm', label: 'Vi investerar i anläggningarna', subtitle: '🤝 +10 relation', effect: { type: 'politicianRelationship', amount: 10 } },
+          { id: 'later', label: 'Det får vänta', subtitle: '🤝 -5 relation', effect: { type: 'politicianRelationship', amount: -5 } },
         ]
       }
 
@@ -271,16 +271,19 @@ export function generatePoliticianEvents(
           {
             id: 'yes',
             label: 'Klart, välkommen att prova',
+            subtitle: '🤝 +20 relation',
             effect: { type: 'politicianRelationship', amount: 20 },
           },
           {
             id: 'community',
             label: 'Bara i ungdomsverksamheten',
+            subtitle: '🤝 +5 relation',
             effect: { type: 'politicianRelationship', amount: 5 },
           },
           {
             id: 'no',
             label: 'Vi rekryterar efter merit — inga undantag',
+            subtitle: '🤝 -10 relation · ⭐ +3 styrelsens tålamod',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'politicianRelationship', amount: -10 },
               { type: 'boardPatience', amount: 3 },

@@ -174,6 +174,12 @@ export function MatchDoneOverlay({
           </div>
         )}
 
+        {fixture.attendance != null && (
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 10 }}>
+            🏟️ {fixture.attendance} åskådare
+          </p>
+        )}
+
         {bestPlayer && (
           <div style={{ marginBottom: 14, padding: '8px 12px', background: 'rgba(196,122,58,0.06)', borderRadius: 8, border: '1px solid rgba(196,122,58,0.15)' }}>
             <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginBottom: 2 }}>⭐ Matchens spelare</p>

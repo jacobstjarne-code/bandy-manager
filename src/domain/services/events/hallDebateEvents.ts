@@ -38,29 +38,38 @@ export function generateHallDebateEvents(
         const choices: EventChoice[] = debateData.choices.map(c => {
           const effectsStr = c.effects ?? ''
           let effect: EventEffect = { type: 'noOp' }
+          let subtitle: string | undefined
 
           if (effectsStr.includes('politicianRelationship')) {
             const match = effectsStr.match(/politicianRelationship ([+-]\d+)/)
             if (match) {
               effect = { type: 'politicianRelationship', amount: parseInt(match[1], 10) }
+              const val = parseInt(match[1], 10)
+              subtitle = `🤝 ${val >= 0 ? '+' : ''}${val} relation`
             }
           } else if (effectsStr.includes('facilitiesUpgrade')) {
             effect = { type: 'facilitiesUpgrade', amount: 1 }
+            subtitle = '🏗️ anläggningsuppgradering'
           } else if (effectsStr.includes('fanMood')) {
             const match = effectsStr.match(/fanMood ([+-]\d+)/)
             if (match) {
               effect = { type: 'fanMood', amount: parseInt(match[1], 10) }
+              const val = parseInt(match[1], 10)
+              subtitle = `💛 ${val >= 0 ? '+' : ''}${val} fanMood`
             }
           } else if (effectsStr.includes('finances')) {
             const match = effectsStr.match(/finances ([+-]\d+)/)
             if (match) {
               effect = { type: 'income', amount: parseInt(match[1], 10) }
+              const val = parseInt(match[1], 10)
+              subtitle = `💰 ${val >= 0 ? '+' : ''}${val} tkr`
             }
           }
 
           return {
             id: c.id,
             label: c.label,
+            subtitle,
             effect,
           }
         })
@@ -99,6 +108,7 @@ export function generateHallDebateEvents(
         {
           id: 'open_gates',
           label: 'Öppna grindarna — fri entré för barn under 15',
+          subtitle: '⭐ +8 communityStanding · 💛 +6 fanMood',
           effect: { type: 'multiEffect', subEffects: JSON.stringify([
             { type: 'communityStanding', amount: 8 },
             { type: 'fanMood', amount: 6 },
@@ -107,11 +117,13 @@ export function generateHallDebateEvents(
         {
           id: 'standard',
           label: 'Vanlig biljettförsäljning — maximera intäkterna',
+          subtitle: '💰 +12 tkr',
           effect: { type: 'income', amount: 12000 },
         },
         {
           id: 'sponsor_event',
           label: 'Gör det till ett sponsorevent — bjud in lokala företag',
+          subtitle: '💰 +8 tkr · ⭐ +4 communityStanding',
           effect: { type: 'multiEffect', subEffects: JSON.stringify([
             { type: 'income', amount: 8000 },
             { type: 'communityStanding', amount: 4 },

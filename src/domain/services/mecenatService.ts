@@ -234,7 +234,7 @@ export function generateSilentShoutEvent(
       sender: { name: mecenat.name, role: mecenat.business },
       body: `Lokaltidningen nämner ${mecenat.name} i en artikel om klubben.\n\n"Enligt uppgifter nära klubben ska ${mecenat.name} vara nöjd med säsongens utveckling."`,
       choices: [
-        { id: 'ok', label: 'Noterat', effect: { type: 'noOp' } },
+        { id: 'ok', label: 'Noterat', subtitle: 'Inga effekter', effect: { type: 'noOp' } },
       ],
       resolved: false,
     }

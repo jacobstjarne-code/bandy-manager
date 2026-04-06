@@ -521,6 +521,7 @@ export function generatePressConference(
   const choices = responses.map(r => ({
     id: r.id,
     label: r.label,
+    subtitle: r.moraleEffect > 0 ? `😊 +${r.moraleEffect} morale` : r.moraleEffect < 0 ? `😊 ${r.moraleEffect} morale` : undefined,
     effect: {
       type: 'pressResponse' as const,
       value: r.moraleEffect,
@@ -532,6 +533,7 @@ export function generatePressConference(
   choices.push({
     id: 'refuse_press',
     label: 'Vägra presskonferens',
+    subtitle: '😊 -3 morale · 🤝 journalisten irriterad',
     effect: {
       type: 'pressResponse' as const,
       value: -3,

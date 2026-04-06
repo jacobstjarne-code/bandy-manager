@@ -109,11 +109,13 @@ export function generateCharacterPlayerEvents(
             {
               id: 'honor',
               label: 'Ge honom en hedersbetygelse och be honom stanna ett år till',
+              subtitle: '⭐ +3 communityStanding',
               effect: { type: 'communityStanding', amount: 3 },
             },
             {
               id: 'plan',
               label: 'Planera för övergång — hitta en ersättare',
+              subtitle: 'Inga effekter',
               effect: { type: 'noOp' },
             },
           ],
@@ -136,6 +138,7 @@ export function generateCharacterPlayerEvents(
             {
               id: 'ceremony',
               label: 'Ordna en ceremoni inför hemmamatchen',
+              subtitle: '⭐ +5 communityStanding · 💰 -3 tkr',
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
                 { type: 'communityStanding', amount: 5 },
                 { type: 'income', amount: -3000 },
@@ -144,6 +147,7 @@ export function generateCharacterPlayerEvents(
             {
               id: 'quiet',
               label: 'Uppmärksamma det internt — han förtjänar det stilla',
+              subtitle: '⭐ +2 communityStanding',
               effect: { type: 'communityStanding', amount: 2 },
             },
           ],
@@ -166,11 +170,13 @@ export function generateCharacterPlayerEvents(
             {
               id: 'yes',
               label: `Utse ${player.firstName} till kapten`,
+              subtitle: '⭐ +2 communityStanding',
               effect: { type: 'communityStanding', amount: 2 },
             },
             {
               id: 'no',
               label: 'Ingen officiell kapten — laget avgör det själva',
+              subtitle: 'Inga effekter',
               effect: { type: 'noOp' },
             },
           ],
@@ -198,11 +204,13 @@ export function generateCharacterPlayerEvents(
             {
               id: 'support',
               label: 'Stötta hans ambitioner — öppen dörr om rätt erbjudande kommer',
+              subtitle: '🤝 +2 journalistrelation',
               effect: { type: 'journalistRelationship', amount: 2 },
             },
             {
               id: 'keep',
               label: 'Be honom stanna ytterligare en säsong',
+              subtitle: '⭐ +1 communityStanding',
               effect: { type: 'communityStanding', amount: 1 },
             },
           ],

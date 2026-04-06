@@ -313,9 +313,17 @@ export function MatchScreen() {
         }
         const aiLineup = generateAiLineupForOpponent()
         const liveMatchWeather = game!.matchWeathers?.find(mw => mw.fixtureId === nextFixture.id)
+        const liveAttendance = homeClub ? calcAttendance({
+          club: homeClub,
+          fanMood: game!.fanMood ?? 50,
+          position: game!.standings.find(s => s.clubId === nextFixture.homeClubId)?.position ?? 6,
+          isKnockout: !!nextFixture.isKnockout,
+          isCup: !!nextFixture.isCup,
+          isDerby: false,
+        }) : undefined
         navigate('/game/match/live', {
           state: {
-            fixture: nextFixture,
+            fixture: { ...nextFixture, attendance: liveAttendance },
             homeLineup: isHome ? myLineup : aiLineup,
             awayLineup: isHome ? aiLineup : myLineup,
             homeClubName: homeClub?.name ?? '',

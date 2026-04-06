@@ -74,6 +74,7 @@ export function generatePostAdvanceEvents(
           choices: [{
             id: 'confirm',
             label: `Genomför transfer (${formatValue(bid.offerAmount)})`,
+            subtitle: `💰 +${formatValue(bid.offerAmount)} · spelaren lämnar`,
             effect: { type: 'acceptTransfer', bidId: bid.id, targetPlayerId: bid.playerId, targetClubId: bid.buyingClubId },
           }],
           relatedPlayerId: bid.playerId,
@@ -89,6 +90,7 @@ export function generatePostAdvanceEvents(
           choices: [{
             id: 'ok',
             label: 'OK',
+            subtitle: 'Budet avslaget',
             effect: { type: 'rejectTransfer', bidId: bid.id, targetPlayerId: bid.playerId },
           }],
           relatedPlayerId: bid.playerId,
@@ -172,6 +174,7 @@ export function generatePostAdvanceEvents(
           {
             id: 'ok',
             label: 'Bra jobbat!',
+            subtitle: '😊 +5 morale',
             effect: { type: 'boostMorale', targetPlayerId: pid, value: 5 },
           },
         ],
@@ -483,6 +486,7 @@ export function generatePostAdvanceEvents(
           {
             id: 'accept',
             label: 'Tacka ja — desperatläget kräver det',
+            subtitle: '💰 +150 tkr · ⭐ -5 communityStanding',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'income', amount: 150000 },
               { type: 'communityStanding', amount: -5 },
@@ -491,6 +495,7 @@ export function generatePostAdvanceEvents(
           {
             id: 'decline',
             label: 'Tacka nej — vi klarar oss på annat sätt',
+            subtitle: '⚠️ -5 styrelsens tålamod',
             effect: { type: 'boardPatience', amount: -5 },
           },
         ],
@@ -525,6 +530,7 @@ export function generatePostAdvanceEvents(
             {
               id: 'sell',
               label: `Sälj ${playerName} — rädda klubben (180 000 kr)`,
+              subtitle: '💰 +180 tkr · ⭐ -12 communityStanding · 💛 -15 fanMood',
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
                 { type: 'income', amount: 180000 },
                 { type: 'communityStanding', amount: -12 },
@@ -535,6 +541,7 @@ export function generatePostAdvanceEvents(
             {
               id: 'keep',
               label: 'Behåll honom — riskera licensproblem',
+              subtitle: '⭐ +5 communityStanding · 💛 +8 fanMood',
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
                 { type: 'communityStanding', amount: 5 },
                 { type: 'fanMood', amount: 8 },
@@ -577,11 +584,13 @@ export function generatePostAdvanceEvents(
           {
             id: 'accept',
             label: `Acceptera (${weeklyFmt}/vecka)`,
+            subtitle: `💰 +${totalFmt} totalt`,
             effect: { type: 'acceptSponsor', sponsorData: JSON.stringify(offer) },
           },
           {
             id: 'reject',
             label: 'Avslå',
+            subtitle: 'Inga effekter',
             effect: { type: 'noOp' },
           },
         ],

@@ -1843,17 +1843,104 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     } as InboxItem)
     }
   }
+
+  // Politician relationship milestones (25, 50, 75)
+  if (pol) {
+    const relMilestones = [25, 50, 75]
+    for (const milestone of relMilestones) {
+      const milestoneId = `inbox_pol_rel_${milestone}_${game.currentSeason}`
+      if (pol.relationship >= milestone && pol.relationship < milestone + 5 && !game.inbox.some(i => i.id === milestoneId)) {
+        const milestoneTexts: Record<number, string> = {
+          25: `Kommunalrådet ${pol.name} börjar visa intresse för klubben. "Ni gör bra saker för ungdomarna i kommunen."`,
+          50: `${pol.name} ser klubben som en viktig samhällsaktör. "Vi borde prata om framtida satsningar."`,
+          75: `${pol.name} är en stark allierad. "Jag kommer att driva frågan om ökat kommunbidrag i nästa budgetomgång."`,
+        }
+        newInboxItems.push({
+          id: milestoneId,
+          date: game.currentDate,
+          type: InboxItemType.KommunBidrag,
+          title: `🏛️ Stärkt relation med ${pol.name}`,
+          body: milestoneTexts[milestone] ?? '',
+          isRead: false,
+        } as InboxItem)
+      }
+    }
+  }
+
+  // KommunBidrag change notification (check if bidrag differs from previous round snapshot)
+  if (pol) {
+    const prevKommunBidrag = game.previousKommunBidrag ?? pol.kommunBidrag
+    if (pol.kommunBidrag !== prevKommunBidrag) {
+      const direction = pol.kommunBidrag > prevKommunBidrag ? 'höjt' : 'sänkt'
+      const diff = pol.kommunBidrag - prevKommunBidrag
+      const diffStr = diff > 0 ? `+${diff}` : `${diff}`
+      newInboxItems.push({
+        id: `inbox_kommun_bidrag_${nextMatchday}_${game.currentSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.KommunBidrag,
+        title: `🏛️ Kommunbidraget ${direction}`,
+        body: `Kommunen har ${direction} bidraget till klubben (${diffStr} kr/månad). Nytt bidrag: ${pol.kommunBidrag} kr.`,
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
   for (const mec of game.mecenater ?? []) {
     if (!mec.isActive) continue
+
+    // Mecenat happiness thresholds: unhappy (<30) or very happy (>70)
     if (mec.happiness < 30 && mec.happiness > 20) {
       newInboxItems.push({
         id: `inbox_mec_unhappy_${mec.id}_${nextMatchday}`,
         date: game.currentDate,
-        type: InboxItemType.BoardFeedback,
+        type: InboxItemType.PatronInfluence,
         title: `👥 ${mec.name} är missnöjd`,
         body: `${mec.name} från ${mec.business} uttrycker oro. "Jag hade hoppats på bättre resultat."`,
         isRead: false,
       } as InboxItem)
+    }
+    if (mec.happiness <= 20) {
+      const critId = `inbox_mec_critical_${mec.id}_${game.currentSeason}`
+      if (!game.inbox.some(i => i.id === critId)) {
+        newInboxItems.push({
+          id: critId,
+          date: game.currentDate,
+          type: InboxItemType.PatronInfluence,
+          title: `⚠️ ${mec.name} överväger att lämna`,
+          body: `${mec.name} är allvarligt missnöjd. "Om inget förändras snart får ni klara er utan mig."`,
+          isRead: false,
+        } as InboxItem)
+      }
+    }
+    if (mec.happiness > 70) {
+      const happyId = `inbox_mec_happy_${mec.id}_${game.currentSeason}`
+      if (!game.inbox.some(i => i.id === happyId)) {
+        newInboxItems.push({
+          id: happyId,
+          date: game.currentDate,
+          type: InboxItemType.PatronInfluence,
+          title: `🤝 ${mec.name} är nöjd`,
+          body: `${mec.name} från ${mec.business} är mycket nöjd med klubbens utveckling. "Det här är precis vad jag ville se."`,
+          isRead: false,
+        } as InboxItem)
+      }
+    }
+  }
+
+  // New mecenat activated — notify
+  for (const mec of game.mecenater ?? []) {
+    if (mec.isActive && mec.arrivedSeason === game.currentSeason) {
+      const arrivalId = `inbox_mec_new_${mec.id}_${game.currentSeason}`
+      if (!game.inbox.some(i => i.id === arrivalId) && !newInboxItems.some(i => i.id === arrivalId)) {
+        newInboxItems.push({
+          id: arrivalId,
+          date: game.currentDate,
+          type: InboxItemType.PatronInfluence,
+          title: `💰 Ny mecenat: ${mec.name}`,
+          body: `${mec.name} (${mec.business}) vill stötta klubben ekonomiskt. Bidrag: ${mec.contribution} kr/månad.`,
+          isRead: false,
+        } as InboxItem)
+      }
     }
   }
 
@@ -1921,6 +2008,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     boardObjectiveHistory: game.boardObjectiveHistory ?? [],
     facilityProjects: updatedFacilityProjects,
     trainerArc: updatedArc,
+    previousKommunBidrag: game.localPolitician?.kommunBidrag,
   }
 
   // Append market value change notifications to inbox

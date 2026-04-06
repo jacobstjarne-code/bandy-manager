@@ -123,6 +123,7 @@ export function generatePatronEvents(
                 : patron.wantsStyle === 'technical' ? 'tekniskt'
                 : patron.wantsStyle
               }`,
+              subtitle: '🤝 +12 relation',
               effect: { type: 'patronHappiness', amount: 12 },
             },
             {

@@ -23,6 +23,7 @@ export function generateSponsorEvents(
           {
             id: 'send_player',
             label: 'Skicka en spelare till butiken',
+            subtitle: '💰 +5 tkr · ⭐ +2 communityStanding',
             effect: { type: 'multiEffect', subEffects: JSON.stringify([
               { type: 'income', amount: 5000 },
               { type: 'communityStanding', amount: 2 },
@@ -31,6 +32,7 @@ export function generateSponsorEvents(
           {
             id: 'decline',
             label: 'Avböj — laget behöver all träning',
+            subtitle: 'Inga effekter',
             effect: { type: 'noOp' },
           },
         ],

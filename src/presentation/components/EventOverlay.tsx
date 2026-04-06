@@ -157,9 +157,9 @@ export function EventOverlay() {
             >
               {choice.label}
               {choice.subtitle && (
-                <span style={{ display: 'block', fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', marginTop: 4 }}>
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>
                   {choice.subtitle}
-                </span>
+                </p>
               )}
             </button>
           ))}

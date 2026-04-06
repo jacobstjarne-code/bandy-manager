@@ -165,6 +165,15 @@ export function MatchResultScreen() {
           </div>
         )}
 
+        {/* Attendance */}
+        {fixture.attendance != null && (
+          <div style={{ textAlign: 'center', marginBottom: 10, ...fadeIn('240ms') }}>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+              🏟️ {fixture.attendance} åskådare
+            </span>
+          </div>
+        )}
+
         {/* Result pill */}
         <div style={{ textAlign: 'center', marginBottom: 12, ...fadeIn('280ms') }}>
           <span style={{

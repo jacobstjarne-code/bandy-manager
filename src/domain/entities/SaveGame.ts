@@ -366,6 +366,7 @@ export interface SaveGame {
   localPaperName?: string
   patron?: Patron
   localPolitician?: LocalPolitician
+  previousKommunBidrag?: number
   politicianLastInteraction?: PoliticianInteractionLog
   boardPersonalities?: BoardMember[]
   hallDebateCount?: number

@@ -24,11 +24,13 @@ export function bidWarEvent(bid: TransferBid, game: SaveGame): GameEvent {
       {
         id: 'raise',
         label: `Höj budet till ${formatValue(raisedAmount)}`,
+        subtitle: `💰 -${formatValue(raisedAmount)}`,
         effect: { type: 'raiseBid', bidId: bid.id, value: raisedAmount },
       },
       {
         id: 'hold',
         label: 'Stå fast vid ursprungsbudet',
+        subtitle: 'Inga effekter',
         effect: { type: 'noOp' },
       },
     ],
@@ -52,11 +54,13 @@ export function hesitantPlayerEvent(bid: TransferBid, game: SaveGame): GameEvent
       {
         id: 'convince',
         label: 'Lova en nyckelroll (+moral)',
+        subtitle: '😊 +15 morale',
         effect: { type: 'boostMorale', targetPlayerId: bid.playerId, value: 15 },
       },
       {
         id: 'accept',
         label: `Acceptera ändå — ${managedClub?.name ?? 'vi'} är rätt val`,
+        subtitle: 'Inga effekter',
         effect: { type: 'noOp' },
       },
     ],
@@ -85,16 +89,19 @@ export function bidReceivedEvent(bid: TransferBid, game: SaveGame): GameEvent {
     {
       id: 'accept',
       label: `Acceptera (${formatValue(bid.offerAmount)})`,
+      subtitle: `💰 +${formatValue(bid.offerAmount)} · spelaren lämnar`,
       effect: { type: 'acceptTransfer', bidId: bid.id, targetPlayerId: bid.playerId, targetClubId: bid.buyingClubId },
     },
     ...(canCounter ? [{
       id: 'counter',
       label: `Kräv mer (${formatValue(counterAmount)})`,
+      subtitle: `💰 kräver ${formatValue(counterAmount)}`,
       effect: { type: 'counterOffer' as const, bidId: bid.id, value: counterAmount },
     }] : []),
     {
       id: 'reject',
       label: 'Avslå',
+      subtitle: 'Spelaren stannar',
       effect: { type: 'rejectTransfer', bidId: bid.id, targetPlayerId: bid.playerId },
     },
   ]
@@ -122,16 +129,19 @@ export function contractRequestEvent(game: SaveGame, playerId: string): GameEven
     {
       id: 'extend3',
       label: `Förläng 3 år (+20% lön, ${formatValue(newSalaryHigh)}/mån)`,
+      subtitle: `💰 ${formatValue(newSalaryHigh)}/mån i 3 år`,
       effect: { type: 'extendContract', targetPlayerId: playerId, value: newSalaryHigh },
     },
     {
       id: 'extend1',
       label: `Förläng 1 år (samma lön, ${formatValue(newSalaryLow)}/mån)`,
+      subtitle: `💰 ${formatValue(newSalaryLow)}/mån i 1 år`,
       effect: { type: 'extendContract', targetPlayerId: playerId, value: newSalaryLow },
     },
     {
       id: 'reject',
       label: 'Avslå — vi diskuterar senare',
+      subtitle: '⚠️ spelaren kan bli missnöjd',
       effect: { type: 'rejectContract', targetPlayerId: playerId },
     },
   ]
@@ -155,11 +165,13 @@ export function unhappyPlayerEvent(game: SaveGame, playerId: string): GameEvent 
     {
       id: 'promise',
       label: 'Lova mer speltid',
+      subtitle: '😊 +10 morale',
       effect: { type: 'boostMorale', targetPlayerId: playerId, value: 10 },
     },
     {
       id: 'hold',
       label: 'Behåll linjen',
+      subtitle: 'Inga effekter',
       effect: { type: 'noOp' },
     },
   ]
@@ -227,16 +239,19 @@ export function generatePlayerMediaEvent(player: Player, journalistName: string)
       {
         id: 'talk',
         label: 'Prata med spelaren privat',
+        subtitle: '😊 +8 morale',
         effect: { type: 'boostMorale', value: 8, targetPlayerId: player.id },
       },
       {
         id: 'confront',
         label: 'Konfrontera honom om att gå till media',
+        subtitle: '😊 -5 morale',
         effect: { type: 'boostMorale', value: -5, targetPlayerId: player.id },
       },
       {
         id: 'ignore',
         label: 'Ignorera — det blåser över',
+        subtitle: '😊 -2 morale',
         effect: { type: 'boostMorale', value: -2, targetPlayerId: player.id },
       },
     ],
@@ -261,6 +276,7 @@ export function generatePlayerPraiseEvent(
       {
         id: 'great',
         label: 'Fint att höra!',
+        subtitle: '😊 +3 morale båda',
         effect: { type: 'multiEffect', subEffects: JSON.stringify([
           { type: 'boostMorale', value: 3, targetPlayerId: praiser.id },
           { type: 'boostMorale', value: 3, targetPlayerId: praised.id },
@@ -283,6 +299,7 @@ export function generateCaptainSpeechEvent(captain: Player, clubName: string): G
       {
         id: 'support',
         label: 'Bra initiativ — det behövdes',
+        subtitle: '😊 +5 morale hela laget',
         effect: { type: 'boostMorale', value: 5 },
       },
     ],
@@ -342,11 +359,13 @@ export function generatePromotionOfferEvent(player: Player): GameEvent {
       {
         id: 'encourage',
         label: 'Uppmuntra honom — jobbet går först',
+        subtitle: '😊 +8 morale',
         effect: { type: 'boostMorale', value: 8, targetPlayerId: player.id },
       },
       {
         id: 'discourage',
         label: 'Be honom tacka nej — bandyn behöver honom',
+        subtitle: '😊 -3 morale',
         effect: { type: 'boostMorale', value: -3, targetPlayerId: player.id },
       },
     ],
@@ -368,11 +387,13 @@ export function generateShiftConflictEvent(player: Player, matchRound: number): 
       {
         id: 'skip_warmup',
         label: 'OK — han ansluter direkt till match',
+        subtitle: '😊 -2 morale',
         effect: { type: 'boostMorale', value: -2, targetPlayerId: player.id },
       },
       {
         id: 'bench',
         label: 'Sätt honom på bänken istället',
+        subtitle: '😊 -5 morale',
         effect: { type: 'boostMorale', value: -5, targetPlayerId: player.id },
       },
     ],
@@ -398,6 +419,7 @@ export function generateCoworkerBondEvent(
       {
         id: 'great',
         label: 'Fantastiskt — uppmuntra det',
+        subtitle: '😊 +5 morale båda',
         effect: { type: 'multiEffect', subEffects: JSON.stringify([
           { type: 'boostMorale', value: 5, targetPlayerId: player1.id },
           { type: 'boostMorale', value: 5, targetPlayerId: player2.id },
