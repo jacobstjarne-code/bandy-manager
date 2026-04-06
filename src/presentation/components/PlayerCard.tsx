@@ -413,6 +413,23 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
         {isOwned && (player.caHistory ?? []).length >= 1 && (
           <CaSparkline history={player.caHistory ?? []} currentCa={player.currentAbility} />
         )}
+        {/* Season history */}
+        {isOwned && (player.seasonHistory ?? []).length > 0 && (
+          <div style={{ marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+            <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
+              KARRIÄR
+            </p>
+            {[...(player.seasonHistory ?? [])].reverse().map(s => (
+              <div key={s.season} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, padding: '3px 0', borderBottom: '1px solid var(--border)' }}>
+                <span style={{ color: 'var(--text-muted)', minWidth: 40 }}>{s.season}</span>
+                <span style={{ flex: 1, color: 'var(--text-secondary)' }}>{s.games} m · {s.goals} mål · {s.assists} ast</span>
+                <span style={{ fontWeight: 600, color: s.rating >= 7 ? 'var(--success)' : s.rating >= 6 ? 'var(--text-primary)' : 'var(--danger)' }}>
+                  {s.rating > 0 ? s.rating.toFixed(1) : '–'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
         </>}
       </div>
     </div>

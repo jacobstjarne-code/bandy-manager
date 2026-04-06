@@ -14,6 +14,7 @@ import { setLineup } from '../../application/useCases/setLineup'
 import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
 import { loadSaveGame, listSaveGames, deleteSaveGame, migrateLocalStorageIfNeeded } from '../../infrastructure/persistence/saveGameStorage'
 import { applyFinanceChange } from '../../domain/services/economyService'
+import { getAvailableProjects, startFacilityProject as startFacProj } from '../../domain/services/facilityService'
 
 export interface SaveGameSummary {
   id: string
@@ -61,6 +62,7 @@ interface GameState {
   interactWithPolitician: (action: 'invite' | 'budget' | 'apply') => { success: boolean; message: string }
   setTransferBudget: (amount: number) => void
   buyScoutRounds: () => void
+  startFacilityProject: (projectId: string) => { success: boolean; error?: string }
   activateCommunity: (key: string, level: string) => { success: boolean; error?: string }
   upgradeAcademy: () => { success: boolean; error?: string }
   upgradeFacilities: () => { success: boolean; error?: string }
@@ -341,6 +343,26 @@ export const useGameStore = create<GameState>()(
         if (!club || club.finances < 15000) return
         const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -15000)
         set({ game: { ...game, clubs: updatedClubs, scoutBudget: (game.scoutBudget ?? 10) + 5 } })
+      },
+
+      startFacilityProject: (projectId: string) => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel' }
+        const club = game.clubs.find(c => c.id === game.managedClubId)
+        if (!club) return { success: false, error: 'Ingen klubb' }
+        const available = getAvailableProjects(club.facilities, game.facilityProjects ?? [])
+        const project = available.find(p => p.id === projectId)
+        if (!project) return { success: false, error: 'Projektet är inte tillgängligt' }
+        if (club.finances < project.cost) return { success: false, error: `Inte tillräckligt med pengar (kräver ${Math.round(project.cost / 1000)} tkr)` }
+        const currentMatchday = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max, f) => Math.max(max, f.roundNumber), 0)
+        const started = startFacProj(project, currentMatchday)
+        const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -project.cost)
+        set({ game: {
+          ...game,
+          clubs: updatedClubs,
+          facilityProjects: [...(game.facilityProjects ?? []), started],
+        }})
+        return { success: true, error: undefined }
       },
 
       interactWithPolitician: (action: 'invite' | 'budget' | 'apply'): { success: boolean; message: string } => {

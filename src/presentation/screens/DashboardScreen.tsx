@@ -686,6 +686,23 @@ export function DashboardScreen() {
           )
         })()}
 
+        {/* Scouting nudge */}
+        {(() => {
+          const freshReports = Object.values(game.scoutReports ?? {}).filter(r => r.scoutedSeason === game.currentSeason).length
+          if (freshReports === 0) return null
+          return (
+            <div
+              className="card-sharp"
+              style={{ margin: '0 0 10px', padding: '10px 14px', cursor: 'pointer' }}
+              onClick={() => navigate('/game/transfers')}
+            >
+              <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>
+                🔍 Du har {freshReports} färdig{freshReports > 1 ? 'a' : ''} scoutrapport{freshReports > 1 ? 'er' : ''}. Se transfers →
+              </p>
+            </div>
+          )
+        })()}
+
         {/* Inkorg round card */}
         {latestUnread && (
           <div

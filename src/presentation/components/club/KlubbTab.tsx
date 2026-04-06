@@ -7,6 +7,7 @@ import { StatBar } from '../StatBar'
 import { SectionCard } from '../SectionCard'
 import { csColor } from '../../utils/formatters'
 import { getFunctionaryQuote } from '../../../domain/services/functionaryQuoteService'
+import { getAvailableProjects } from '../../../domain/services/facilityService'
 
 function expectationLabel(e: ClubExpectation): string {
   const map: Record<ClubExpectation, string> = {
@@ -62,9 +63,10 @@ interface KlubbTabProps {
   game: SaveGame
   navigate: NavigateFunction
   interactWithPolitician?: (action: 'invite' | 'budget' | 'apply') => { success: boolean; message: string }
+  startFacilityProject?: (projectId: string) => { success: boolean; error?: string }
 }
 
-export function KlubbTab({ club, game, navigate, interactWithPolitician }: KlubbTabProps) {
+export function KlubbTab({ club, game, navigate, interactWithPolitician, startFacilityProject }: KlubbTabProps) {
   const [polFeedback, setPolFeedback] = useState<{ text: string; ok: boolean } | null>(null)
 
   const cs = game.communityStanding ?? 50
@@ -258,8 +260,41 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician }: Klubb
           </div>
         ))}
         {(game.facilityProjects ?? []).filter(p => p.status === 'in_progress').length === 0 && (
-          <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>Inga pågående projekt.</p>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>Inga pågående projekt.</p>
         )}
+        {/* Available projects */}
+        {(() => {
+          const available = getAvailableProjects(club.facilities, game.facilityProjects ?? [])
+          if (available.length === 0) return null
+          return (
+            <div style={{ marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+                TILLGÄNGLIGA PROJEKT
+              </p>
+              {available.map(proj => (
+                <div key={proj.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 12, fontWeight: 600 }}>{proj.name}</p>
+                    <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                      {proj.description} · {Math.round(proj.cost / 1000)} tkr · {proj.duration} omg
+                    </p>
+                  </div>
+                  <button
+                    className="btn btn-ghost"
+                    disabled={club.finances < proj.cost}
+                    style={{ padding: '5px 10px', fontSize: 11, opacity: club.finances < proj.cost ? 0.5 : 1 }}
+                    onClick={() => {
+                      if (!startFacilityProject) return
+                      startFacilityProject(proj.id)
+                    }}
+                  >
+                    Starta
+                  </button>
+                </div>
+              ))}
+            </div>
+          )
+        })()}
       </SectionCard>
 
       <SectionCard title="🎯 Förväntan & profil" stagger={3}>

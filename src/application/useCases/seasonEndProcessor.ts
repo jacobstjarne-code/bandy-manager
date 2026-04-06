@@ -365,6 +365,17 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       ...(player.caHistory ?? []),
       { season: game.currentSeason, ca: player.currentAbility },
     ].slice(-10),
+    seasonHistory: [
+      ...(player.seasonHistory ?? []),
+      {
+        season: game.currentSeason,
+        goals: player.seasonStats?.goals ?? 0,
+        assists: player.seasonStats?.assists ?? 0,
+        games: player.seasonStats?.gamesPlayed ?? 0,
+        rating: Math.round((player.seasonStats?.averageRating ?? 0) * 10) / 10,
+        clubId: player.clubId,
+      },
+    ].slice(-10),
     seasonStats: {
       gamesPlayed: 0,
       goals: 0,
