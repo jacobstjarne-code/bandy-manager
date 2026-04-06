@@ -492,17 +492,40 @@ export function generatePressConference(
   const storylines = game.storylines ?? []
   if (rand() < 0.30 && storylines.length > 0) {
     const seasonStories = storylines.filter(s => s.season === game.currentSeason && s.resolved)
+    const clubStanding = game.standings.find(s => s.clubId === game.managedClubId)
     if (myScore > theirScore && seasonStories.some(s => s.type === 'underdog_season')) {
       question = { text: 'Ingen trodde på er i augusti. Nu leder ni serien. Vad säger du till tvivlarna?', preferIds: question.preferIds }
+    } else if (clubStanding && clubStanding.losses >= 3 && seasonStories.some(s => s.type === 'underdog_season')) {
+      question = { text: 'Ingen trodde på er i augusti. Vad hände?', preferIds: question.preferIds }
     } else if (seasonStories.some(s => s.type === 'captain_rallied_team') && rand() < 0.5) {
       question = { text: 'Kaptenen tog ton i omklädningsrummet förra veckan. Har det gett effekt?', preferIds: question.preferIds }
     } else if (seasonStories.some(s => s.type === 'rescued_from_unemployment') && rand() < 0.5) {
-      question = { text: 'Varslet drabbade era spelare hårt. Hur har klubben hanterat situationen?', preferIds: question.preferIds }
+      const rescueStory = seasonStories.find(s => s.type === 'rescued_from_unemployment')
+      const rescuePlayer = rescueStory?.playerId ? game.players.find(p => p.id === rescueStory.playerId) : null
+      const matchGoalEvents = (fixture.events ?? []).filter(e => e.type === MatchEventType.Goal && e.clubId === game.managedClubId)
+      const rescueScorerMatch = rescuePlayer && matchGoalEvents.some(e => e.playerId === rescuePlayer.id)
+      if (rescuePlayer && rescueScorerMatch) {
+        question = { text: `Berätta om ${rescuePlayer.firstName} ${rescuePlayer.lastName}s resa tillbaka.`, preferIds: question.preferIds }
+      } else {
+        question = { text: 'Varslet drabbade era spelare hårt. Hur har klubben hanterat situationen?', preferIds: question.preferIds }
+      }
     } else if (seasonStories.some(s => s.type === 'went_fulltime_pro') && rand() < 0.5) {
       const proStory = seasonStories.find(s => s.type === 'went_fulltime_pro')
       const proPlayer = proStory?.playerId ? game.players.find(p => p.id === proStory.playerId) : null
       if (proPlayer) {
         question = { text: `${proPlayer.firstName} ${proPlayer.lastName} slutade jobbet för att satsa på bandyn. Har det betalat sig?`, preferIds: question.preferIds }
+      }
+    } else if (seasonStories.some(s => s.type === 'returned_to_club') && rand() < 0.5) {
+      const returnStory = seasonStories.find(s => s.type === 'returned_to_club')
+      const returnPlayer = returnStory?.playerId ? game.players.find(p => p.id === returnStory.playerId) : null
+      if (returnPlayer) {
+        question = { text: `Berätta om ${returnPlayer.firstName} ${returnPlayer.lastName}s resa tillbaka till klubben.`, preferIds: question.preferIds }
+      }
+    } else if (seasonStories.some(s => s.type === 'gala_winner') && rand() < 0.5) {
+      const galaStory = seasonStories.find(s => s.type === 'gala_winner')
+      const galaPlayer = galaStory?.playerId ? game.players.find(p => p.id === galaStory.playerId) : null
+      if (galaPlayer) {
+        question = { text: `${galaPlayer.firstName} ${galaPlayer.lastName} vann galan. Hur viktigt är det för laget?`, preferIds: question.preferIds }
       }
     }
   }

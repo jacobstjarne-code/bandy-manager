@@ -117,6 +117,7 @@ export function MatchLiveScreen() {
       homeClubName: homeClubName || undefined,
       awayClubName: awayClubName || undefined,
       rivalry: rivalry ?? undefined,
+      storylines: game.storylines?.map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
     })
     const allSteps: MatchStep[] = []
     for (const step of gen) allSteps.push(step)
@@ -367,6 +368,7 @@ export function MatchLiveScreen() {
       initialAwaySuspensions: halftimeStep?.activeSuspensions.awayCount ?? 0,
       substitutions: htSubs.length > 0 ? htSubs.map(s => ({ outId: s.outId, inId: s.inId })) : undefined,
       managedIsHome,
+      storylines: game.storylines?.map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
     })
     const firstHalf = steps.slice(0, 31)
     const newSecondHalf: MatchStep[] = []

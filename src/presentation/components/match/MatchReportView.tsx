@@ -1,7 +1,7 @@
-import type { Fixture, MatchEvent } from '../../../domain/entities/Fixture'
+import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import { MatchEventType, PlayoffRound } from '../../../domain/enums'
+import { MatchEventType, PlayoffRound, PlayerPosition } from '../../../domain/enums'
 import { positionShort, eventIcon } from '../../utils/formatters'
 import { PlayerLink } from '../PlayerLink'
 
@@ -15,6 +15,17 @@ function ratingColor(r: number): string {
   if (r < 6) return 'var(--danger)'
   if (r < 7) return 'var(--warning)'
   return 'var(--success)'
+}
+
+function positionDotColor(pos: PlayerPosition): string {
+  switch (pos) {
+    case PlayerPosition.Goalkeeper: return 'var(--ice)'
+    case PlayerPosition.Defender: return 'var(--success)'
+    case PlayerPosition.Half: return 'var(--accent)'
+    case PlayerPosition.Midfielder: return 'var(--warning)'
+    case PlayerPosition.Forward: return 'var(--danger)'
+    default: return 'var(--text-muted)'
+  }
 }
 
 interface MatchReportViewProps {
@@ -63,33 +74,25 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
     return p ? `${p.firstName} ${p.lastName}` : ''
   }
 
-  function getEventText(event: MatchEvent): string {
-    const name = getPlayerName(event.playerId)
-    if (event.type === MatchEventType.Goal) return `${name} 🏒`
-    if (event.type === MatchEventType.YellowCard) return `${name} ⚠️ Varning`
-    if (event.type === MatchEventType.RedCard) return `${name} 🚫 Utvisning 10 min`
-    return event.description
-  }
-
   return (
-    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%', animation: 'fadeInUp 300ms ease-out both' }}>
+    <div style={{ padding: '12px 12px', overflowY: 'auto', height: '100%', animation: 'fadeInUp 300ms ease-out both' }}>
       <p style={{
         fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px',
-        color: 'var(--accent)', marginBottom: 16, textAlign: 'center',
+        color: 'var(--accent)', marginBottom: 12, textAlign: 'center',
       }}>
         MATCHSAMMANFATTNING
       </p>
 
       {/* Arena + attendance */}
       {fixture.attendance && (
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 10 }}>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
           {homeClub?.arenaName ?? `${homeClub?.shortName ?? '?'}s IP`} · {fixture.attendance} åskådare
         </p>
       )}
 
       {/* Score banner */}
-      <div className="card-sharp" style={{ padding: '20px 16px', marginBottom: 10, textAlign: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+      <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 8, textAlign: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', flex: 1, textAlign: 'left' }}>
             {homeClub?.shortName ?? homeClub?.name}
           </p>
@@ -132,12 +135,12 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
 
       {/* Events timeline */}
       {visibleEvents.length > 0 && (
-        <div className="card-sharp" style={{ overflow: 'hidden', marginBottom: 10 }}>
+        <div className="card-sharp" style={{ overflow: 'hidden', marginBottom: 8 }}>
           <p style={{
             fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2.5px',
-            color: 'var(--text-muted)', padding: '12px 14px 8px',
+            color: 'var(--text-muted)', padding: '10px 14px 6px',
           }}>
-            ⚡ Händelser
+            ⚡ HÄNDELSER
           </p>
           {visibleEvents.map((event, index) => {
             const isHome = event.clubId === fixture.homeClubId
@@ -145,7 +148,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
               <div
                 key={index}
                 style={{
-                  display: 'flex', alignItems: 'center', padding: '8px 14px',
+                  display: 'flex', alignItems: 'center', padding: '6px 14px',
                   borderTop: '1px solid var(--border)',
                   flexDirection: isHome ? 'row' : 'row-reverse',
                 }}
@@ -153,7 +156,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
                 <span style={{ fontSize: 12, color: 'var(--text-muted)', width: 30, flexShrink: 0, textAlign: isHome ? 'left' : 'right' }}>
                   {event.minute}'
                 </span>
-                <span style={{ fontSize: 16, margin: '0 8px', flexShrink: 0 }}>
+                <span style={{ fontSize: 16, margin: '0 6px', flexShrink: 0 }}>
                   {eventIcon(event.type)}
                 </span>
                 <span style={{
@@ -164,7 +167,13 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
                   {event.isCornerGoal ? '📐 ' : ''}
                   {event.playerId
                     ? <PlayerLink playerId={event.playerId} name={getPlayerName(event.playerId)} style={{ color: event.isCornerGoal ? 'var(--accent)' : undefined }} />
-                    : getEventText(event)
+                    : (() => {
+                        const name = getPlayerName(event.playerId)
+                        if (event.type === MatchEventType.Goal) return `${name} 🏒`
+                        if (event.type === MatchEventType.YellowCard) return `${name} ⚠️ Varning`
+                        if (event.type === MatchEventType.RedCard) return `${name} 🚫 Utvisning 10 min`
+                        return event.description
+                      })()
                   }
                   {event.playerId && event.type === MatchEventType.Goal && ' 🏒'}
                   {event.playerId && event.type === MatchEventType.YellowCard && ' ⚠️ Varning'}
@@ -176,24 +185,34 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
         </div>
       )}
 
-      {/* Match stats */}
+      {/* Match stats — hemma | label | borta */}
       {fixture.report && (
-        <div className="card-sharp" style={{ padding: '14px', marginBottom: 10 }}>
+        <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <p style={{
             fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2.5px',
-            color: 'var(--text-muted)', marginBottom: 12,
+            color: 'var(--text-muted)', marginBottom: 8,
           }}>
-            📊 Statistik
+            📊 STATISTIK
           </p>
+          {/* Column headers */}
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+            <span style={{ flex: 1, fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textAlign: 'right' }}>
+              {homeClub?.shortName ?? 'Hemma'}
+            </span>
+            <span style={{ width: 80, textAlign: 'center' }} />
+            <span style={{ flex: 1, fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textAlign: 'left' }}>
+              {awayClub?.shortName ?? 'Borta'}
+            </span>
+          </div>
           {[
-            { label: 'Hörnor', home: String(fixture.report.cornersHome), away: String(fixture.report.cornersAway) },
             { label: 'Skott', home: String(fixture.report.shotsHome), away: String(fixture.report.shotsAway) },
+            { label: 'Hörnor', home: String(fixture.report.cornersHome), away: String(fixture.report.cornersAway) },
             { label: 'Bollinnehav', home: fixture.report.possessionHome + '%', away: fixture.report.possessionAway + '%' },
           ].map(({ label, home, away }) => (
-            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, minWidth: 30 }}>{home}</span>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)', flex: 1, textAlign: 'center' }}>{label}</span>
-              <span style={{ fontSize: 14, fontWeight: 600, minWidth: 30, textAlign: 'right' }}>{away}</span>
+            <div key={label} style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
+              <span style={{ flex: 1, fontSize: 14, fontWeight: 600, textAlign: 'right', fontFamily: 'var(--font-display)' }}>{home}</span>
+              <span style={{ width: 80, textAlign: 'center', fontSize: 11, color: 'var(--text-muted)' }}>{label}</span>
+              <span style={{ flex: 1, fontSize: 14, fontWeight: 600, textAlign: 'left', fontFamily: 'var(--font-display)' }}>{away}</span>
             </div>
           ))}
         </div>
@@ -201,9 +220,9 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
 
       {/* Corner goals highlight */}
       {managedCornerGoals > 0 && (
-        <div style={{
+        <div className="card-sharp" style={{
           background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.3)',
-          borderRadius: 'var(--radius)', padding: '10px 14px', marginBottom: 16,
+          padding: '10px 14px', marginBottom: 8,
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <span style={{ fontSize: 16 }}>📐</span>
@@ -215,83 +234,96 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
 
       {/* Player ratings */}
       {ratedPlayers.length > 0 && (
-        <div className="card-sharp" style={{ overflow: 'hidden', marginBottom: 16 }}>
+        <div className="card-sharp" style={{ overflow: 'hidden', marginBottom: 8 }}>
           <p style={{
             fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2.5px',
-            color: 'var(--text-muted)', padding: '12px 14px 8px',
+            color: 'var(--text-muted)', padding: '10px 14px 6px',
           }}>
-            ⭐ Spelarbetyg
+            ⭐ SPELARBETYG
           </p>
+          {/* POTM highlight */}
           {(() => {
             const potmId = fixture.report?.playerOfTheMatchId
             const potm = potmId ? ratedPlayers.find(r => r.player.id === potmId) : ratedPlayers[0]
             if (!potm) return null
             return (
               <div style={{
-                display: 'flex', alignItems: 'center', padding: '10px 14px',
+                display: 'flex', alignItems: 'center', padding: '8px 14px',
                 background: 'linear-gradient(135deg, rgba(196,122,58,0.18) 0%, rgba(196,122,58,0.06) 100%)',
-                borderBottom: '1px solid rgba(196,122,58,0.3)', gap: 10,
+                borderBottom: '1px solid rgba(196,122,58,0.3)', gap: 8,
               }}>
-                <span style={{ fontSize: 20 }}>⭐</span>
+                <span style={{ fontSize: 18 }}>⭐</span>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--accent)', marginBottom: 2 }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--accent)', marginBottom: 1 }}>
                     Matchens spelare
                   </div>
-                  <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--accent)' }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent)' }}>
                     {potm.player.firstName} {potm.player.lastName}
                   </span>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 6 }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 4 }}>
                     {positionShort(potm.player.position)}
                   </span>
                 </div>
-                <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--accent)' }}>
+                <span style={{ fontSize: 17, fontWeight: 800, color: 'var(--accent)', fontFamily: 'var(--font-display)' }}>
                   {potm.rating.toFixed(1)}
                 </span>
               </div>
             )
           })()}
-          {ratedPlayers.map(({ player, rating, isHome }) => (
-            <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', borderTop: '1px solid var(--border)', gap: 8 }}>
-              <span style={{
-                fontSize: 10, color: 'var(--text-muted)', minWidth: 20, textAlign: 'right',
+          {/* Player rows with position color dot + rating bar */}
+          {ratedPlayers.map(({ player, rating, isHome }) => {
+            const barWidth = Math.max(0, Math.min(100, ((rating - 4) / 6) * 100))
+            return (
+              <div key={player.id} style={{
+                display: 'flex', alignItems: 'center', padding: '5px 14px',
+                borderTop: '1px solid var(--border)', gap: 6,
               }}>
-                #{player.shirtNumber ?? '?'}
-              </span>
-              <div style={{
-                width: 6, height: 6, borderRadius: '50%',
-                background: isHome ? 'var(--accent)' : 'var(--ice)', flexShrink: 0,
-              }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: 12, fontWeight: 600 }}>{player.lastName}</span>
-                <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 4 }}>
-                  {positionShort(player.position)}
+                {/* Position color dot */}
+                <div style={{
+                  width: 7, height: 7, borderRadius: '50%',
+                  background: positionDotColor(player.position), flexShrink: 0,
+                }} />
+                {/* Shirt number */}
+                <span style={{
+                  fontSize: 10, color: 'var(--text-muted)', minWidth: 18, textAlign: 'right', flexShrink: 0,
+                }}>
+                  #{player.shirtNumber ?? '?'}
+                </span>
+                {/* Name + position */}
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{
+                    fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                  }}>
+                    {player.lastName}
+                  </span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', flexShrink: 0 }}>
+                    {positionShort(player.position)}
+                  </span>
+                  {/* Home/away indicator */}
+                  <span style={{ fontSize: 9, color: 'var(--text-muted)', flexShrink: 0 }}>
+                    {isHome ? '(H)' : '(B)'}
+                  </span>
+                </div>
+                {/* Rating bar */}
+                <div style={{
+                  width: 40, height: 4, borderRadius: 2,
+                  background: 'var(--border-dark)', flexShrink: 0, overflow: 'hidden',
+                }}>
+                  <div style={{
+                    width: `${barWidth}%`, height: '100%',
+                    background: ratingColor(rating), borderRadius: 2,
+                  }} />
+                </div>
+                {/* Rating number */}
+                <span style={{
+                  fontSize: 13, fontWeight: 700, color: ratingColor(rating),
+                  fontFamily: 'var(--font-display)', minWidth: 26, textAlign: 'right', flexShrink: 0,
+                }}>
+                  {rating.toFixed(1)}
                 </span>
               </div>
-              <span style={{ fontSize: 13, fontWeight: 700, color: ratingColor(rating), fontFamily: 'var(--font-display)' }}>
-                {rating.toFixed(1)}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Statistics */}
-      {fixture.report && (
-        <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 10 }}>
-          <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
-            STATISTIK
-          </p>
-          {[
-            { label: 'Skott', home: fixture.report.shotsHome, away: fixture.report.shotsAway },
-            { label: 'Hörnor', home: fixture.report.cornersHome, away: fixture.report.cornersAway },
-            ...(fixture.attendance ? [{ label: 'Publik', home: fixture.attendance, away: null as number | null }] : []),
-          ].map(row => (
-            <div key={row.label} style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
-              <span style={{ flex: 1, fontSize: 12, fontWeight: 600, textAlign: 'right' }}>{row.home}</span>
-              <span style={{ width: 80, textAlign: 'center', fontSize: 10, color: 'var(--text-muted)' }}>{row.label}</span>
-              <span style={{ flex: 1, fontSize: 12, fontWeight: 600, textAlign: 'left' }}>{row.away ?? ''}</span>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 

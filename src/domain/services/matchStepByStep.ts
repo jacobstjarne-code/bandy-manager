@@ -344,6 +344,21 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
     } else if (goalScored && scorerPlayerId) {
       tvars = { ...tvars, player: findName(scorerPlayerId) }
       if (rivalry && rand() < 0.40) { commentaryText = fillTemplate(pickCommentary(commentary.derby_goal, rand), { ...tvars, rivalry: rivalry.name }); isDerbyStep = true }
+      else if (input.storylines && rand() < 0.30) {
+        const scorerStories = input.storylines.filter(s => s.playerId === scorerPlayerId)
+        const scorerName = findName(scorerPlayerId)
+        const storylineCommentary: Record<string, string> = {
+          rescued_from_unemployment: `MÅL! ${scorerName} — mannen som nästan förlorade allt. Nu gör han säsongens viktigaste mål!`,
+          went_fulltime_pro: `MÅL! ${scorerName} har gått hela vägen från deltid till proffs — och levererar!`,
+          returned_to_club: `MÅL! ${scorerName} — hemkomsten kunde inte ha börjat bättre!`,
+          captain_rallied_team: `MÅL! Kaptenen visar vägen — ${scorerName} sätter den!`,
+          gala_winner: `MÅL! Galafavoriten ${scorerName} fortsätter imponera!`,
+          underdog_season: `MÅL! I underdogens säsong kliver ${scorerName} fram igen!`,
+        }
+        const matchedStory = scorerStories.find(s => storylineCommentary[s.type])
+        if (matchedStory) { commentaryText = storylineCommentary[matchedStory.type] }
+        else { const ss = isHomeAttacking ? homeScore : awayScore; const os = isHomeAttacking ? awayScore : homeScore; commentaryText = fillTemplate(pickGoalCommentary(ss, os, rand, minute), tvars) }
+      }
       else { const ss = isHomeAttacking ? homeScore : awayScore; const os = isHomeAttacking ? awayScore : homeScore; commentaryText = fillTemplate(pickGoalCommentary(ss, os, rand, minute), tvars) }
     } else if (saveOccurred && gkPlayerId) {
       tvars = { ...tvars, goalkeeper: findName(gkPlayerId) }
@@ -1069,13 +1084,18 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
         isDerbyStep = true
       } else if (input.storylines && scorerPlayerId && rand() < 0.30) {
         const scorerStories = input.storylines.filter(s => s.playerId === scorerPlayerId)
-        const proStory = scorerStories.find(s => s.type === 'went_fulltime_pro')
-        const rescueStory = scorerStories.find(s => s.type === 'rescued_from_unemployment')
         const scorerName = findPlayerName(scorerPlayerId)
-        if (proStory) {
-          commentaryText = `MÅL! ${scorerName} — han slutade jobbet för att satsa heltid. Det har betalat sig!`
-        } else if (rescueStory) {
-          commentaryText = `MÅL! ${scorerName} — mannen som nästan förlorade allt vid varslet. Nu gör han mål!`
+        const storylineCommentary: Record<string, string> = {
+          rescued_from_unemployment: `MÅL! ${scorerName} — mannen som nästan förlorade allt. Nu gör han säsongens viktigaste mål!`,
+          went_fulltime_pro: `MÅL! ${scorerName} har gått hela vägen från deltid till proffs — och levererar!`,
+          returned_to_club: `MÅL! ${scorerName} — hemkomsten kunde inte ha börjat bättre!`,
+          captain_rallied_team: `MÅL! Kaptenen visar vägen — ${scorerName} sätter den!`,
+          gala_winner: `MÅL! Galafavoriten ${scorerName} fortsätter imponera!`,
+          underdog_season: `MÅL! I underdogens säsong kliver ${scorerName} fram igen!`,
+        }
+        const matchedStory = scorerStories.find(s => storylineCommentary[s.type])
+        if (matchedStory) {
+          commentaryText = storylineCommentary[matchedStory.type]
         } else {
           commentaryText = fillTemplate(pickGoalCommentary(isHomeAttacking ? homeScore : awayScore, isHomeAttacking ? awayScore : homeScore, rand, minute), templateVars)
         }
