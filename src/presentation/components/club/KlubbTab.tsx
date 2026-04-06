@@ -132,22 +132,29 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician }: Klubb
             </p>
           </div>
         ) : (
-          (game.mecenater ?? []).filter(m => m.isActive).map(mec => (
+          (game.mecenater ?? []).filter(m => m.isActive).map(mec => {
+            const happColor = mec.happiness > 60 ? 'var(--success)' : mec.happiness > 40 ? 'var(--accent)' : 'var(--danger)'
+            return (
             <div key={mec.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--border)', marginBottom: 6 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)' }}>{mec.name}</span>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>{mec.business}</span>
-                </div>
-                <span style={{ fontSize: 11, fontWeight: 600, color: mec.happiness > 60 ? 'var(--success)' : mec.happiness > 40 ? 'var(--text-muted)' : 'var(--danger)' }}>
+                <p style={{ fontSize: 13, fontWeight: 600 }}>{mec.name}</p>
+                <span style={{ fontSize: 11, fontWeight: 600, color: happColor }}>
                   {mec.happiness > 60 ? '🤝 Nöjd' : mec.happiness > 40 ? '😐 Neutral' : '😤 Missnöjd'}
                 </span>
               </div>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{mec.business}</p>
+              {/* Relation bar */}
+              <div style={{ marginTop: 4, marginBottom: 2 }}>
+                <div style={{ height: 4, borderRadius: 2, background: 'var(--border)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${mec.happiness}%`, background: happColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
+                </div>
+              </div>
               <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>
-                Bidrag: {Math.round(mec.contribution / 1000)} tkr/säsong · Inflytande: {mec.influence}
+                Bidrag: {Math.round(mec.contribution / 1000)} tkr/säsong
               </p>
             </div>
-          ))
+            )
+          })
         )}
       </SectionCard>
 
@@ -170,7 +177,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician }: Klubb
         return (
         <SectionCard title="🏛️ Kommun" stagger={2}>
           <div style={{ marginBottom: 10 }}>
-            <p style={{ fontSize: 13, fontWeight: 600 }}>{polData.name} ({polData.party})</p>
+            <p style={{ fontSize: 13, fontWeight: 600 }}>{polData.name} {polData.party.startsWith('(') ? polData.party : `(${polData.party})`}</p>
             <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
               Agenda: {agendaLabel[polData.agenda] ?? polData.agenda}
             </p>
