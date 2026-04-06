@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import type { Tactic } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { MatchWeather } from '../../../domain/entities/Weather'
@@ -67,6 +68,11 @@ interface StartStepProps {
 }
 
 export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveMode, lineupError, onSetLiveMode, onBack, onPlay, fixture, isHome, fanMood }: StartStepProps) {
+  const atmosphere = useMemo(
+    () => fixture ? getPreMatchAtmosphere(fixture, matchWeatherData, isHome ?? true, fanMood ?? 50) : '',
+    [fixture?.id]
+  )
+
   return (
     <div style={{ padding: '0 12px 24px' }}>
       {/* Atmosphere */}
@@ -83,7 +89,7 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
             color: 'var(--text-secondary)',
             margin: 0,
           }}>
-            {getPreMatchAtmosphere(fixture, matchWeatherData, isHome ?? true, fanMood ?? 50)}
+            {atmosphere}
           </p>
         </div>
       )}
