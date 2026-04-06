@@ -501,9 +501,8 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     newConsecutiveFailures = 0
   }
 
-  if (newBoardPatience <= 15 || newConsecutiveFailures >= 3) {
-    managerFired = true
-  }
+  // NOTE: Firing check moved AFTER board objectives evaluation (line ~699)
+  // so objective success/failure affects the decision
 
   // Remove retired and contract-expired players from all club squads
   const clubsWithRetirements = updatedClubs.map(club => ({
@@ -697,6 +696,11 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const objFailures = objectiveResults.filter(r => r.result === 'failed').length
   const objSuccesses = objectiveResults.filter(r => r.result === 'met').length
   newBoardPatience = Math.max(0, Math.min(100, newBoardPatience - objFailures * 5 + objSuccesses * 3))
+
+  // Firing check — AFTER objectives so success/failure affects the decision
+  if (newBoardPatience <= 15 || newConsecutiveFailures >= 3) {
+    managerFired = true
+  }
 
   const objRand = mulberry32((seed ?? 42) + game.currentSeason * 777)
   const managedClubForObj = updatedClubs.find(c => c.id === game.managedClubId)
