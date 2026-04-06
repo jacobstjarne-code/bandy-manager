@@ -1,17 +1,13 @@
 import type { Fixture } from '../../../domain/entities/Fixture'
+import { FormSquares } from '../FormDots'
+import type { FormResult } from '../../utils/formUtils'
 
 interface LastResultCardProps {
   lastResult: { scoreFor: number; scoreAgainst: number; opponentName: string }
   lastCompletedFixture: Fixture | null
   managedClubId: string
-  recentForm: Array<'V' | 'O' | 'F'>
+  recentForm: FormResult[]
   onNavigateToReport: () => void
-}
-
-const formColors = {
-  V: { bg: 'var(--success)', letter: 'var(--text-light)' },
-  O: { bg: 'var(--border-dark)', letter: 'var(--text-light)' },
-  F: { bg: 'var(--danger)', letter: 'var(--text-light)' },
 }
 
 export function LastResultCard({
@@ -108,21 +104,8 @@ export function LastResultCard({
 
         {/* Form squares */}
         {recentForm.length > 0 && (
-          <div style={{ display: 'flex', gap: 3, marginTop: 6 }}>
-            {recentForm.map((r, i) => (
-              <div
-                key={i}
-                style={{
-                  width: 14, height: 14, borderRadius: 3,
-                  background: formColors[r].bg,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 7, fontWeight: 700, color: formColors[r].letter,
-                  lineHeight: 1,
-                }}
-              >
-                {r}
-              </div>
-            ))}
+          <div style={{ marginTop: 6 }}>
+            <FormSquares results={recentForm} size={14} />
           </div>
         )}
       </div>

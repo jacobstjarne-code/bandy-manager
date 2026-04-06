@@ -43,10 +43,6 @@ export function MatchResultScreen() {
   const won = myScore > theirScore || wonByOT || wonByPenalties
   const lost = myScore < theirScore || lostByOT || lostByPenalties
 
-  const goalEvents = fixture.events.filter(e => e.type === MatchEventType.Goal)
-  const homeGoals = goalEvents.filter(e => e.clubId === fixture.homeClubId)
-  const awayGoals = goalEvents.filter(e => e.clubId === fixture.awayClubId)
-
   const potmId = fixture.report?.playerOfTheMatchId
   const potm = potmId ? game.players.find(p => p.id === potmId) : null
   const potmRating = potmId ? fixture.report?.playerRatings[potmId] : null
@@ -70,7 +66,11 @@ export function MatchResultScreen() {
   // B3: Result flavor text
   const margin = myScore - theirScore
   const totalGoals = (fixture.homeScore ?? 0) + (fixture.awayScore ?? 0)
-  const flavorText = won
+  const flavorText = wonByPenalties ? '🎯 Kalla nerver i straffarna'
+    : lostByPenalties ? '😔 Straffarna avgjorde'
+    : wonByOT ? '⏱️ Avgjort i sista stund'
+    : lostByOT ? '⏱️ Förlängt lidande'
+    : won
     ? margin >= 3 ? '💪 Dominant insats'
       : totalGoals >= 8 ? '🔥 Målrik historia'
       : margin === 1 ? '😅 Knapp seger'
@@ -125,18 +125,31 @@ export function MatchResultScreen() {
         </div>
 
         {/* Big score */}
-        <div style={{
-          display: 'flex', justifyContent: 'center', alignItems: 'center',
-          gap: 16, marginBottom: penResult ? 4 : 12, ...fadeIn('160ms'),
-        }}>
-          <span style={{ fontSize: 32, fontWeight: 800, color: resultColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
-            {fixture.homeScore}
-          </span>
-          <span style={{ fontSize: 24, color: 'var(--text-muted)', fontWeight: 300 }}>–</span>
-          <span style={{ fontSize: 32, fontWeight: 800, color: resultColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
-            {fixture.awayScore}
-          </span>
-        </div>
+        {(() => {
+          // Determine winner for individual score colors
+          const homeWon = penResult ? penResult.home > penResult.away
+            : otResult ? otResult === 'home'
+            : (fixture.homeScore ?? 0) > (fixture.awayScore ?? 0)
+          const awayWon = penResult ? penResult.away > penResult.home
+            : otResult ? otResult === 'away'
+            : (fixture.awayScore ?? 0) > (fixture.homeScore ?? 0)
+          const homeColor = homeWon ? 'var(--success)' : awayWon ? 'var(--danger)' : 'var(--accent)'
+          const awayColor = awayWon ? 'var(--success)' : homeWon ? 'var(--danger)' : 'var(--accent)'
+          return (
+            <div style={{
+              display: 'flex', justifyContent: 'center', alignItems: 'center',
+              gap: 16, marginBottom: penResult ? 4 : 12, ...fadeIn('160ms'),
+            }}>
+              <span style={{ fontSize: 32, fontWeight: 800, color: homeColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
+                {fixture.homeScore}
+              </span>
+              <span style={{ fontSize: 24, color: 'var(--text-muted)', fontWeight: 300 }}>–</span>
+              <span style={{ fontSize: 32, fontWeight: 800, color: awayColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
+                {fixture.awayScore}
+              </span>
+            </div>
+          )
+        })()}
 
         {/* OT / Penalty info */}
         {(fixture.wentToOvertime || penResult) && (
@@ -205,33 +218,6 @@ export function MatchResultScreen() {
           </div>
         )}
 
-        {/* B1: Goal scorers with per-scorer stagger */}
-        {goalEvents.length > 0 && (
-          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-            <div style={{ flex: 1 }}>
-              {homeGoals.map((e, i) => {
-                const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
-                return (
-                  <div key={i} style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2, animation: `fadeInUp 400ms ease-out ${600 + i * 100}ms both` }}>
-                    {e.minute}' {scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'}
-                    {e.isCornerGoal ? ' 📐' : ''}
-                  </div>
-                )
-              })}
-            </div>
-            <div style={{ flex: 1, textAlign: 'right' }}>
-              {awayGoals.map((e, i) => {
-                const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
-                return (
-                  <div key={i} style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2, animation: `fadeInUp 400ms ease-out ${600 + i * 100}ms both` }}>
-                    {e.isCornerGoal ? '📐 ' : ''}
-                    {scorer ? `${scorer.firstName[0]}. ${scorer.lastName}` : '?'} {e.minute}'
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
 
         {/* POTM */}
         {potm && potmRating !== null && potmRating !== undefined && (

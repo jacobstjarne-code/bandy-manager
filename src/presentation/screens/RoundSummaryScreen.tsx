@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { playSound } from '../audio/soundEffects'
 import { csColor, formatFinance, formatFinanceAbs } from '../utils/formatters'
+import { FormSquares } from '../components/FormDots'
+import { getFormResults } from '../utils/formUtils'
 
 export function RoundSummaryScreen() {
   const navigate = useNavigate()
@@ -68,16 +70,7 @@ export function RoundSummaryScreen() {
   const standing = game.standings.find(s => s.clubId === game.managedClubId)
 
   // Recent form (last 5)
-  const recentForm: Array<'V' | 'O' | 'F'> = game.fixtures
-    .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup)
-    .sort((a, b) => b.roundNumber - a.roundNumber)
-    .slice(0, 5)
-    .map(f => {
-      const h = f.homeClubId === game.managedClubId
-      const s = h ? f.homeScore : f.awayScore
-      const c = h ? f.awayScore : f.homeScore
-      return s > c ? 'V' : s < c ? 'F' : 'O'
-    })
+  const recentForm = getFormResults(game.managedClubId, game.fixtures, game.clubs)
 
   // Flavor text
   const margin = myScore - theirScore
@@ -212,21 +205,7 @@ export function RoundSummaryScreen() {
               <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
                 📈 FORM
               </p>
-              <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
-                {recentForm.map((r, i) => (
-                  <span key={i} style={{
-                    width: 22, height: 22, borderRadius: 4,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 10, fontWeight: 700,
-                    background: r === 'V' ? 'rgba(90,154,74,0.15)' : r === 'F' ? 'rgba(176,80,64,0.15)' : 'rgba(196,186,168,0.15)',
-                    color: r === 'V' ? 'var(--success)' : r === 'F' ? 'var(--danger)' : 'var(--text-muted)',
-                    border: `1px solid ${r === 'V' ? 'rgba(90,154,74,0.3)' : r === 'F' ? 'rgba(176,80,64,0.3)' : 'rgba(196,186,168,0.3)'}`,
-                  }}>
-                    {r}
-                  </span>
-                ))}
-                {recentForm.length === 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>—</span>}
-              </div>
+              <FormSquares results={recentForm} size={22} />
             </div>
           </div>
         )}

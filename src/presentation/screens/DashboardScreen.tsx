@@ -23,6 +23,7 @@ import { LastResultCard } from '../components/dashboard/LastResultCard'
 import { SquadStatusCard } from '../components/dashboard/SquadStatusCard'
 import { CommunityPulse } from '../components/dashboard/CommunityPulse'
 import { calcRoundIncome } from '../../domain/services/economyService'
+import { getFormResults } from '../utils/formUtils'
 
 
 interface PlayoffSeriesRowProps {
@@ -355,16 +356,7 @@ export function DashboardScreen() {
   const currentDateStr = `${currentDateObj.getDate()} ${MONTHS[currentDateObj.getMonth()]} ${currentDateObj.getFullYear()}`
 
   // Recent form (last 5)
-  const recentForm: Array<'V' | 'O' | 'F'> = game.fixtures
-    .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup)
-    .sort((a, b) => b.roundNumber - a.roundNumber)
-    .slice(0, 5)
-    .map(f => {
-      const isHomeTeam = f.homeClubId === game.managedClubId
-      const scored = isHomeTeam ? f.homeScore : f.awayScore
-      const conceded = isHomeTeam ? f.awayScore : f.homeScore
-      return scored > conceded ? 'V' : scored < conceded ? 'F' : 'O'
-    })
+  const recentForm = getFormResults(game.managedClubId, game.fixtures, game.clubs)
 
   // Playoff context
   const isPlayoffFixture = nextFixture && nextFixture.roundNumber > 22

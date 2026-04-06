@@ -3,6 +3,8 @@ import { useGameStore } from '../store/gameStore'
 import { ClubBadge } from '../components/ClubBadge'
 import { isRivalryMatch } from '../../domain/data/rivalries'
 import { calculateStandings } from '../../domain/services/standingsService'
+import { FormDots } from '../components/FormDots'
+import { getFormResults } from '../utils/formUtils'
 
 export function TabellScreen() {
   const game = useGameStore(s => s.game)
@@ -28,22 +30,6 @@ export function TabellScreen() {
       ?? clubId
   }
 
-  function getFormGuide(clubId: string): ('W' | 'D' | 'L')[] {
-    const completed = (game!.fixtures ?? [])
-      .filter(f => f.status === 'completed' && (f.homeClubId === clubId || f.awayClubId === clubId))
-      .sort((a, b) => b.roundNumber - a.roundNumber)
-      .slice(0, 5)
-    return completed.map(f => {
-      const isHome = f.homeClubId === clubId
-      const score = isHome ? f.homeScore : f.awayScore
-      const opp = isHome ? f.awayScore : f.homeScore
-      if (score > opp) return 'W'
-      if (score < opp) return 'L'
-      if (f.penaltyResult) return (isHome ? f.penaltyResult.home > f.penaltyResult.away : f.penaltyResult.away > f.penaltyResult.home) ? 'W' : 'L'
-      if (f.overtimeResult) return f.overtimeResult === (isHome ? 'home' : 'away') ? 'W' : 'L'
-      return 'D'
-    })
-  }
 
   function getNextMeeting(clubId: string) {
     return (game!.fixtures ?? [])
@@ -218,7 +204,7 @@ export function TabellScreen() {
             : String(row.goalDifference)
           const lastPos = prevStandings.find(s => s.clubId === row.clubId)?.position
           const posDiff = lastPos != null ? lastPos - row.position : null
-          const form = getFormGuide(row.clubId)
+          const form = getFormResults(row.clubId, game.fixtures, game.clubs)
 
           return (
             <div key={row.clubId}>
@@ -322,22 +308,7 @@ export function TabellScreen() {
                 </span>
 
                 {/* Form dots */}
-                <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                  {Array.from({ length: 5 }, (_, i) => {
-                    const result = form[i]
-                    return (
-                      <div key={i} style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: '50%',
-                        background: result === 'W' ? 'var(--success)'
-                          : result === 'L' ? 'var(--danger)'
-                          : result === 'D' ? 'var(--accent)'
-                          : 'var(--border)',
-                      }} />
-                    )
-                  })}
-                </div>
+                <FormDots results={form} size={8} />
 
                 {/* Goal diff */}
                 <span style={{
