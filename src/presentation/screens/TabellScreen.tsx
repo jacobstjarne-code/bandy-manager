@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useGameStore } from '../store/gameStore'
 import { ClubBadge } from '../components/ClubBadge'
 import { isRivalryMatch } from '../../domain/data/rivalries'
+import { calculateStandings } from '../../domain/services/standingsService'
 
 export function TabellScreen() {
   const game = useGameStore(s => s.game)
@@ -13,8 +14,13 @@ export function TabellScreen() {
   const standings = [...game.standings].sort((a, b) => a.position - b.position)
   const managedClubId = game.managedClubId
 
-  const lastSummary = (game.seasonSummaries ?? []).slice(-1)[0]
-  const lastSnapshot = lastSummary?.standingsSnapshot ?? []
+  // Calculate previous round standings for position movement arrows
+  const completedLeague = (game.fixtures ?? []).filter(f => f.status === 'completed' && !f.isCup)
+  const latestRound = completedLeague.reduce((max, f) => Math.max(max, f.roundNumber), 0)
+  const prevRoundFixtures = completedLeague.filter(f => f.roundNumber < latestRound)
+  const prevStandings = latestRound > 1
+    ? calculateStandings(game.league?.teamIds ?? game.clubs.map(c => c.id), prevRoundFixtures as any)
+    : []
 
   function clubName(clubId: string): string {
     return game!.clubs.find(c => c.id === clubId)?.shortName
@@ -210,7 +216,7 @@ export function TabellScreen() {
           const goalDiff = row.goalDifference >= 0
             ? `+${row.goalDifference}`
             : String(row.goalDifference)
-          const lastPos = lastSnapshot.find(s => s.clubId === row.clubId)?.position
+          const lastPos = prevStandings.find(s => s.clubId === row.clubId)?.position
           const posDiff = lastPos != null ? lastPos - row.position : null
           const form = getFormGuide(row.clubId)
 
@@ -360,6 +366,24 @@ export function TabellScreen() {
 
               {/* Expansion row */}
               {expandedClubId === row.clubId && (() => {
+                if (row.clubId === managedClubId) {
+                  // Own club: show season summary instead of h2h
+                  return (
+                    <div style={{
+                      padding: '8px 10px 10px 59px',
+                      fontSize: 12,
+                      color: 'var(--text-secondary)',
+                      background: 'rgba(196,122,58,0.04)',
+                      borderTop: '1px solid rgba(196,122,58,0.1)',
+                      display: 'flex',
+                      gap: 10,
+                    }}>
+                      <span>{row.wins}V {row.draws}O {row.losses}F</span>
+                      <span style={{ color: 'var(--text-muted)' }}>·</span>
+                      <span>Gjorda: {row.goalsFor} · Insläppta: {row.goalsAgainst}</span>
+                    </div>
+                  )
+                }
                 const fix = getNextMeeting(row.clubId)
                 const isDerby = isRivalryMatch(row.clubId, managedClubId)
                 const isHome = fix?.homeClubId === managedClubId
