@@ -26,7 +26,7 @@ import { InboxScreen } from '../screens/InboxScreen'
 import { MatchResultScreen } from '../screens/MatchResultScreen'
 import { BoardMeetingScreen } from '../screens/BoardMeetingScreen'
 import { GameOverScreen } from '../screens/GameOverScreen'
-import { BandyDoktorScreen } from '../screens/BandyDoktorScreen'
+
 import { HistoryScreen } from '../screens/HistoryScreen'
 import { PreSeasonScreen } from '../screens/PreSeasonScreen'
 import { RoundSummaryScreen } from '../screens/RoundSummaryScreen'
@@ -58,7 +58,7 @@ export function AppRouter() {
           <Route path="season-summary" element={<SeasonSummaryScreen />} />
           <Route path="season-summary/:season" element={<SeasonSummaryScreen />} />
           <Route path="inbox" element={<InboxScreen />} />
-          <Route path="doctor" element={<BandyDoktorScreen />} />
+
           <Route path="history" element={<HistoryScreen />} />
           <Route path="pre-season" element={<PreSeasonScreen />} />
         </Route>

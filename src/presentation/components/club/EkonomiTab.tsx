@@ -12,9 +12,10 @@ interface EkonomiTabProps {
   activateCommunity: (key: string, level: string) => { success: boolean; error?: string }
   setTransferBudget: (amount: number) => void
   buyScoutRounds: () => void
+  onNavigateTab?: (tab: string) => void
 }
 
-export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTransferBudget, buyScoutRounds }: EkonomiTabProps) {
+export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTransferBudget, buyScoutRounds, onNavigateTab }: EkonomiTabProps) {
   const [sponsorFeedback, setSponsorFeedback] = useState<string | null>(null)
   const [communityMsg, setCommunityMsg] = useState<{ key: string; text: string; ok: boolean } | null>(null)
   const [pendingTransferBudget, setPendingTransferBudget] = useState<number | null>(null)
@@ -49,8 +50,9 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
   const netPerRound = weeklyIncome - weeklyWages
   const actualMonthlyWages = weeklyWages * 4
   const communityTotal = income.communityMatchIncome + income.communityRoundIncome
-  const patron = game.patron?.isActive ? game.patron : null
-  const kommunBidrag = game.localPolitician?.kommunBidrag ?? 0
+  const activeMecenater = (game.mecenater ?? []).filter(m => m.isActive && m.contribution > 0)
+  const politician = game.localPolitician ?? null
+  const kommunBidrag = politician?.kommunBidrag ?? 0
   const wagePressure = actualMonthlyWages > club.wageBudget
   const licenseReview = game.licenseReview
   const licenseIcon = licenseReview?.status === 'approved' ? '✅'
@@ -315,26 +317,34 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
         )}
       </SectionCard>
 
-      {/* Patron & Kommunbidrag */}
-      {(patron || kommunBidrag > 0) && (
+      {/* Mecenater & Kommunbidrag */}
+      {(activeMecenater.length > 0 || kommunBidrag > 0) && (
         <SectionCard title="🏦 Övriga intäkter" stagger={4}>
-          {patron && patron.contribution > 0 && (
-            <div style={{ marginBottom: kommunBidrag > 0 ? 10 : 0, paddingBottom: kommunBidrag > 0 ? 10 : 0, borderBottom: kommunBidrag > 0 ? '1px solid var(--border)' : 'none' }}>
+          {activeMecenater.map((m, i) => (
+            <div key={m.id} style={{ marginBottom: (i < activeMecenater.length - 1 || kommunBidrag > 0) ? 10 : 0, paddingBottom: (i < activeMecenater.length - 1 || kommunBidrag > 0) ? 10 : 0, borderBottom: (i < activeMecenater.length - 1 || kommunBidrag > 0) ? '1px solid var(--border)' : 'none' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Mecenat — {patron.name}</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(patron.contribution)}/sä</span>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Mecenat — {m.name}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(m.contribution)}/sä</span>
               </div>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>Se Orten-fliken för detaljer om mecenater och relationer.</p>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{m.business}</p>
             </div>
-          )}
+          ))}
           {kommunBidrag > 0 && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Kommunbidrag</span>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Kommunbidrag{politician ? ` — ${politician.name}` : ''}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success)' }}>+{formatCurrency(kommunBidrag)}/sä</span>
               </div>
               <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>Baseras på lokal ställning och ungdomsverksamhet.</p>
             </div>
+          )}
+          {onNavigateTab && (
+            <button
+              onClick={() => onNavigateTab('orten')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginTop: 8, padding: 0 }}
+            >
+              Se Orten-fliken →
+            </button>
           )}
         </SectionCard>
       )}

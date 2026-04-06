@@ -30,6 +30,22 @@ const HINTS: Record<number, { icon: string; title: string; body: string; action:
     path: '/game/club',
     state: { tab: 'ekonomi' },
   },
+  3: {
+    icon: '🏘️',
+    title: 'Besök Orten-tabben',
+    body: 'Bygdens stöd spelar roll. Mecenater, kommun och lokala aktiviteter påverkar din ekonomi och hemmaplansfördel.',
+    action: 'Se Orten →',
+    path: '/game/club',
+    state: { tab: 'orten' },
+  },
+  4: {
+    icon: '📋',
+    title: 'Träningsplanering gör skillnad',
+    body: 'Rätt träningsfokus och intensitet utvecklar spelarna snabbare. Hög intensitet ger mer men ökar skaderisken.',
+    action: 'Se Träning →',
+    path: '/game/club',
+    state: { tab: 'training' },
+  },
 }
 
 export function OnboardingHint({ step, clubName: _cn, onDismiss }: Props) {
@@ -48,6 +64,9 @@ export function OnboardingHint({ step, clubName: _cn, onDismiss }: Props) {
       }}
     >
       <div style={{ padding: '10px 14px' }}>
+        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
+          👋 KOMMA IGÅNG
+        </p>
         <button
           onClick={onDismiss}
           style={{
@@ -75,7 +94,7 @@ export function OnboardingHint({ step, clubName: _cn, onDismiss }: Props) {
                 {hint.action}
               </button>
               <span style={{ fontSize: 10, color: 'var(--text-muted)', alignSelf: 'center' }}>
-                Steg {step + 1}/3
+                Tips {step + 1} av 5
               </span>
             </div>
           </div>

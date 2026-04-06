@@ -25,23 +25,27 @@ export function SubstitutionModal({ starters, bench, onConfirm, onClose }: Subst
       style={{
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        justifyContent: 'center', zIndex: 600, padding: '24px 16px',
+        justifyContent: 'flex-start', paddingTop: '40px',
+        zIndex: 600, overflowY: 'auto',
       }}
     >
       <div
         onClick={e => e.stopPropagation()}
         style={{
           background: 'var(--bg)', border: '1px solid var(--border)',
-          borderRadius: 12, padding: '16px', width: '100%', maxWidth: 380,
-          maxHeight: '80vh', overflowY: 'auto',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
+          borderRadius: 'var(--radius)', padding: '20px 20px 16px',
+          width: '90%', maxWidth: 330, minWidth: 260,
+          marginBottom: 24,
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
+          <span style={{
+            fontSize: 13, fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '1px', color: 'var(--text-muted)',
+          }}>
             🔄 {outId ? 'Välj in-spelare' : 'Välj ut-spelare'}
           </span>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 20, cursor: 'pointer' }}>×</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 18, cursor: 'pointer' }}>×</button>
         </div>
         {!outId ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

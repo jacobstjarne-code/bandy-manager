@@ -30,6 +30,11 @@ export const BOARD_QUOTES: Record<BoardPersonality, string[]> = {
     '"Folk pratar om oss i affären. Det händer grejer!"',
     '"Vi behöver fler sådana kvällar."',
     '"Min granne frågade om biljetter. Det har aldrig hänt förr."',
+    '"Jag tog med grabben på matchen. Han är fast nu."',
+    '"Vi har den bästa publiken i serien. Ingen kan säga annat."',
+    '"Sälj fler bufféar! Folk vill ha korv och kaffe."',
+    '"Det är inte bara resultat som räknas. Folk ska vilja komma."',
+    '"Jag hörde att ungdomslaget vann också. Det gör mig glad."',
   ],
   ekonom: [
     '"Vi blöder pengar. Vi måste prata lönekostnader."',
@@ -40,6 +45,10 @@ export const BOARD_QUOTES: Record<BoardPersonality, string[]> = {
     '"Jag sov inte i natt. Siffrorna oroar mig."',
     '"Kan vi frysa lönerna nästa säsong?"',
     '"Vi har råd med korv men inte kaviar. Tänk på det."',
+    '"Varje krona vi spenderar på transfers är en krona vi inte har till driften."',
+    '"Har vi kollat vad andra klubbar betalar i snittlön? Vi ligger högt."',
+    '"Mecenater är bra, men vi kan inte bygga verksamheten på dem."',
+    '"Om vi inte får in fler sponsorer snart blir det tufft."',
   ],
   traditionalist: [
     '"Varför spelar vi med fyra backar? Det har vi aldrig gjort."',
@@ -51,6 +60,9 @@ export const BOARD_QUOTES: Record<BoardPersonality, string[]> = {
     '"Det var bättre förr. Då kom folk för bandyns skull."',
     '"Vi ska inte försöka vara Sandviken. Vi ska vara oss själva."',
     '"Hörnspelet! Där vinner man matcher. Inte med datorer."',
+    '"Fokusera på grunderna. Skridskoteknik och passningsspel."',
+    '"Vi har alltid klarat oss med spelare härifrån. Varför ändra?"',
+    '"Tränaren ska vara på isen, inte framför en skärm."',
   ],
   modernist: [
     '"Vi behöver tänka nytt. Sociala medier, sponsorpaket."',
@@ -61,7 +73,94 @@ export const BOARD_QUOTES: Record<BoardPersonality, string[]> = {
     '"Data och analys — det är framtiden."',
     '"Vi borde ha en app. Alla lag har appar numera."',
     '"Hört talas om xG? Vi borde mäta det."',
+    '"Vi borde samarbeta med skolan. Rekrytera yngre."',
+    '"Jag läste att Västerås har en hel analysstab. Vi har noll."',
+    '"Sponsor-lounger vid planen. Det skulle dra in pengar."',
+    '"Vi måste nå nya målgrupper. Familjer, studenter."',
   ],
+}
+
+/** Context-aware quotes selected based on game situation */
+export const BOARD_CONTEXT_QUOTES: Record<BoardPersonality, Record<string, string[]>> = {
+  supporter: {
+    topPosition: [
+      '"Vi ligger i toppen! Jag får frossa bara jag tänker på det."',
+      '"Alla i stan pratar om oss. Det här är vårt år!"',
+      '"Folk köar för biljetter. Så ska det vara!"',
+    ],
+    bottomPosition: [
+      '"Det är tufft just nu. Men jag tror på laget. Vi vänder det."',
+      '"Vi behöver ta två poäng. Det är dags att mobilisera."',
+      '"Jag vet att det ser mörkt ut. Men vi ger aldrig upp."',
+    ],
+    lastSeasonGood: [
+      '"Förra säsongen var magisk. Nu gäller det att följa upp."',
+      '"Folk förväntar sig samma nivå som förra året. Leverera!"',
+    ],
+    lastSeasonBad: [
+      '"Förra året var en mardröm. Det får inte hända igen."',
+      '"Vi tappade publik förra säsongen. Det måste vi vinna tillbaka."',
+    ],
+  },
+  ekonom: {
+    goodEconomy: [
+      '"Ekonomin ser stabil ut. Klokt av oss att hålla ordning på kassan."',
+      '"Siffrorna är bra just nu. Men vi får inte slappna av."',
+      '"Vi har byggt en buffert. Det gör mig lugn."',
+    ],
+    badEconomy: [
+      '"Vi måste skära ner. Det finns inget alternativ."',
+      '"Kassan krymper för varje vecka. Vi behöver agera nu."',
+      '"Om vi inte vänder ekonomin snart riskerar vi hela verksamheten."',
+    ],
+    fewSponsors: [
+      '"Vi har för få sponsorer. Det borde vara prioritet ett."',
+      '"Sponsorintäkterna räcker inte. Vi måste ut och sälja."',
+    ],
+    lastSeasonGood: [
+      '"Förra årets resultat hjälpte kassan. Men vi kan inte leva på det."',
+    ],
+    lastSeasonBad: [
+      '"Förra säsongen kostade oss. Mindre publik, mindre intäkter."',
+    ],
+  },
+  traditionalist: {
+    nonTraditionalFormation: [
+      '"Varför spelar vi med fyra backar? Det har vi aldrig gjort."',
+      '"Den här nya taktiken... jag vet inte."',
+      '"Tre backar. Tre halvar. Fyra forwards. Svårare är det inte."',
+    ],
+    traditionalFormation: [
+      '"Vi kör 3-3-4 som sig bör. Det är bandyklubbens DNA."',
+      '"Bra att vi håller fast vid grunderna. Det lönar sig."',
+    ],
+    lastSeasonGood: [
+      '"Se där. Det klassiska spelet fungerar fortfarande."',
+      '"Förra säsongen visar att man inte behöver uppfinna hjulet."',
+    ],
+    lastSeasonBad: [
+      '"Förra året var dåligt, men lösningen är inte att ändra allt."',
+      '"Det var inte taktiken det var fel på förra säsongen. Det var inställningen."',
+    ],
+  },
+  modernist: {
+    hasCommunityActivities: [
+      '"Bandyskolan är ett bra steg framåt. Det är precis sånt vi behöver göra mer av."',
+      '"Bra att vi satsar på bredden. Det ger oss spelare om fem år."',
+    ],
+    noCommunityActivities: [
+      '"Vi gör ingenting utanför planen. Det måste ändras."',
+      '"Utan breddverksamhet dör klubben långsamt. Vi behöver engagera samhället."',
+    ],
+    lastSeasonGood: [
+      '"Bra resultat förra året. Nu kan vi investera i utveckling."',
+      '"Framgång ger oss utrymme att tänka långsiktigt. Gör det."',
+    ],
+    lastSeasonBad: [
+      '"Förra säsongen visar att vi måste tänka om. Nytt blod, nya idéer."',
+      '"Det räcker inte att göra samma sak och hoppas på bättre resultat."',
+    ],
+  },
 }
 
 export const BOARD_MEETING_OPENERS = [

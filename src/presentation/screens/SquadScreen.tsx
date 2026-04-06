@@ -292,8 +292,6 @@ export function SquadScreen() {
   const navigate = useNavigate()
   const selectedPlayer = selectedPlayerId ? players.find(p => p.id === selectedPlayerId) ?? null : null
   const clubName = club?.name ?? ''
-  const doctorQuestionsLeft = Math.max(0, 5 - (game?.doctorQuestionsUsed ?? 0))
-
   const topScorer = players.filter(p => p.seasonStats.goals > 0).sort((a, b) => b.seasonStats.goals - a.seasonStats.goals)[0]
   const topAssist = players.filter(p => p.seasonStats.assists > 0).sort((a, b) => b.seasonStats.assists - a.seasonStats.assists)[0]
   const topRating = players.filter(p => p.seasonStats.gamesPlayed >= 3).sort((a, b) => b.seasonStats.averageRating - a.seasonStats.averageRating)[0]
@@ -359,10 +357,10 @@ export function SquadScreen() {
 
       {/* Player list */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }}>
-        {/* Doktorn-banner vid kritisk fitness */}
+        {/* Fitness warning */}
         {players.filter(p => p.fitness < 35 && !p.isInjured).length >= 2 && (
           <div
-            onClick={() => navigate('/game/doctor')}
+            onClick={() => navigate('/game/club', { state: { tab: 'training' } })}
             style={{
               background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
               borderRadius: 10, padding: '10px 14px', marginBottom: 12,
@@ -370,9 +368,9 @@ export function SquadScreen() {
             }}
           >
             <span style={{ fontSize: 13, color: 'var(--danger)' }}>
-              🩺 {players.filter(p => p.fitness < 35 && !p.isInjured).length} spelare med kritisk fitness
+              ⚡ {players.filter(p => p.fitness < 35 && !p.isInjured).length} spelare med kritisk fitness
             </span>
-            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Fråga doktorn →</span>
+            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Se träning →</span>
           </div>
         )}
 
@@ -462,51 +460,40 @@ export function SquadScreen() {
           </SectionCard>
         )}
 
-        <button
-          onClick={() => navigate('/game/doctor')}
-          className="btn btn-ghost"
-          style={{
-            width: '100%', margin: '8px 0 90px',
-            padding: '12px',
-            color: 'var(--ice)',
-            fontSize: 13,
-            fontWeight: 600,
-            textAlign: 'center',
-          }}
-        >
-          🩺 Fråga Bandydoktorn · {doctorQuestionsLeft} frågor kvar
-        </button>
+        <div style={{ height: 90 }} />
       </div>
 
       {/* Player Card Modal */}
       {selectedPlayer && (
         <div
+          onClick={() => setSelectedPlayerId(null)}
           style={{
             position: 'fixed',
             inset: 0,
             zIndex: 200,
             background: 'rgba(0,0,0,0.6)',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
             maxWidth: 430,
             margin: '0 auto',
-            padding: '20px',
+            padding: '40px 20px 20px',
           }}
         >
-          {/* Unified card surface with close button inside */}
-          <div style={{
+          {/* Unified card surface — everything scrollable inside the overlay */}
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
             background: 'var(--bg)',
             borderRadius: 12,
             boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
-            maxHeight: '85vh',
-            overflowY: 'auto',
             width: '100%',
             maxWidth: 390,
             position: 'relative',
           }}>
-            {/* Close button inside card */}
+            {/* Close button pinned to top-right of card */}
             <button
               onClick={() => setSelectedPlayerId(null)}
               style={{

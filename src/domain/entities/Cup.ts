@@ -5,11 +5,13 @@ export interface CupMatch {
   homeClubId: string
   awayClubId: string
   winnerId?: string    // set after match is played
+  isBye?: boolean      // true for bye entries (auto-advance, no real match)
 }
 
 export interface CupBracket {
   season: number
   matches: CupMatch[]
+  byeTeamIds?: string[]  // teams that got byes in round 1
   winnerId?: string
   completed: boolean
 }

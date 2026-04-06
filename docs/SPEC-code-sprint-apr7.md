@@ -3,10 +3,107 @@
 ## Läs först
 - `CLAUDE.md` — obligatoriska regler
 - `docs/DESIGN_SYSTEM.md` — designregler
+- `docs/PLAYTEST_RAPPORT_20260406.md` — Jacobs playtest-feedback
 - `npm run build && npm test` efter VARJE steg
 
-## Befintliga specar (redan skrivna, redo att implementera)
-Dessa finns i `docs/` och är fullständiga. Implementera i denna ordning:
+---
+
+## SPRINT 0: KRITISKA BUGGAR (gör DESSA FÖRST)
+
+### 0.1 Cup-lottning: lag spelar mot sig själva
+**Problem:** Forsbacka vs Forsbacka, Västanfors vs Västanfors i bracket.
+**Fil:** `src/domain/services/cupService.ts` — `generateCupBracket()` eller motsvarande.
+**Fix:** Pairing-loopen måste säkerställa att homeClubId !== awayClubId. Shuffla + para i ordning: [0,1], [2,3], [4,5], etc.
+
+### 0.2 Cup: winnerId satt innan match spelats
+**Problem:** Bracket visar "Utslagen" + "Nästa cupmatch" samtidigt. Alla matcher 0-0.
+**Fil:** `src/domain/services/cupService.ts` eller bracket-generering
+**Fix:** `winnerId` ska vara `null` på alla matcher som inte har en completed fixture. Sätt winnerId BARA när `fixture.status === 'completed'`.
+
+### 0.3 Cup-vy: ospelade matcher visar "0–0" istf "vs"
+**Fil:** `src/presentation/screens/TabellScreen.tsx` cupen-sektionen
+**Fix:** Om match ej spelad (`!m.winnerId && fixture?.status !== 'completed'`): visa "vs" istället för `0–0`. Lägg till rubrik "LOTTNING" ovanför ospelad runda.
+
+### 0.4 Match bakgrundssimuleras plötsligt
+**Problem:** Managed match simuleras utan spelarinput efter omgång 10.
+**Orsak trolig:** `advance()` eller batch-sim kör managed match utan lineup.
+**Filer:** `roundProcessor.ts`, `DashboardScreen.tsx` (batch sim logic)
+**Fix:** Managed match (league + cup) ska ALLTID kräva lineup. Lägg till explicit guard: om managed club fixture finns i denna matchday, STOPPA och navigera till /game/match.
+
+### 0.5 "44 omgångar kvar" vid säsongssim
+**Fil:** `DashboardScreen.tsx` — `remainingOtherFixtures`
+**Fix:** Visa antal unika matchdays (`new Set(fixtures.map(f => f.matchday)).size`) istället för antal fixtures.
+
+### 0.6 Utvisningar centrerade på resultattavlan
+**Fil:** `src/presentation/screens/MatchLiveScreen.tsx`
+**Problem:** Utvisningsraden är centrerad, borde vara sidad (hemma vänster, borta höger) precis som mål.
+**Fix:** Kolla `event.clubId === homeClubId` och ställ `textAlign: 'left'` resp `'right'`.
+
+### 0.7 Spelarkort — stängknapp + knappar utanför kortet
+**Fil:** `src/presentation/components/PlayerCard.tsx`
+**Problem:** ×-knapp och Upppmuntra/Kräv/Framtid hamnar utanför scroll-området.
+**Fix:** Allt INUTI samma scrollbara container. ×-knapp i kortets övre högra hörn. Knappar i botten av kortet. Hela overlayen scrollbar.
+
+### 0.8 Byten under match vs halvtid — olika modaler
+**Problem:** SubstitutionModal (under match) och HalftimeModal har olika design.
+**Fix:** Använd HalftimeModal-designen även för byten under match. ELLER extrahera en gemensam SubPanel-komponent.
+
+### 0.9 Board meeting — repetitivt
+**Fil:** `src/domain/data/boardData.ts`
+**Fix:** Minst 8 citat per personlighet (istället för 3-4). Koppla citat till: förra säsongens resultat, tabellposition, ekonomi, mecenat-situation. Lägg till säsongs-specifik variation: "Förra året slutade vi 5:a. Det kan vi bättre."
+
+### 0.10 Onboarding-hint: saknar rubrik, "1/3" förvirrande
+**Fil:** `src/presentation/components/dashboard/OnboardingHint.tsx`
+**Fix:** Lägg till rubrik "👋 KOMMA IGÅNG". Byt "Steg 1/3" till "Tips 1 av 3".
+
+### 0.11 Ekonomi-tab: mecenat/kommun spegling
+**Fil:** `src/presentation/components/club/EkonomiTab.tsx`
+**Fix:** Hämta mecenat-data från `game.mecenater` och politiker från `game.localPolitician` direkt — inte hårdkodat. Visa namn + belopp. Lägg till "Se Orten-fliken →" som klickbar länk.
+
+### 0.12 Inkorg: saknar rubrik
+**Fil:** `src/presentation/screens/InboxScreen.tsx`
+**Fix:** Lägg till section-label högst upp: `📬 INKORG` eller integrera i befintlig header.
+
+### 0.13 Ta bort Bandydoktorn — ersätt med utbyggd hjälp
+
+**Problem:** Bandydoktorn (API-baserad AI-assistent) ger inte tillräckligt värde just nu. Den kostar API-anrop, är svår att underhålla, och ger generiska svar. Bättre att satsa på statisk hjälp som är specifik och alltid tillgänglig.
+
+**Ta bort:**
+- `src/presentation/screens/BandyDoktorScreen.tsx` — ta bort filen
+- Route `/game/doctor` i `AppRouter.tsx` — ta bort
+- `🩺 Bandydoktorn` i GameHeader dropdown — ta bort
+- `server.js` proxy-endpoint för Anthropic API — ta bort (om inget annat använder det)
+- ContextualNudges referens till `/game/doctor` — ta bort
+- DashboardScreen Bandydoktorn-kort — ta bort
+
+**Ersätt med: Utbyggd Spelguide**
+
+Spelguide-overlayen (redan implementerad i GameHeader) utökas:
+
+1. **Från 10 → 20+ FAQ-poster**, organiserade i sektioner:
+   - 🏁 **Komma igång** (5 poster): lineup, taktik, första matchen, spara, vad gör jag mellan matcher
+   - 🏆 **Tävling** (5 poster): tabell, cup, slutspel, poängsystem, uppflyttning/nedflyttning
+   - 💰 **Ekonomi & Orten** (5 poster): kassa, sponsorer, mecenater, kommun, bygdens puls
+   - 👥 **Trupp & Transfers** (5 poster): kontrakt, scouting, bud, akademi, dubbelliv
+   - ⚙️ **Tips** (3 poster): taktiktips, hörnstrategi, träningsfokus
+
+2. **Onboarding-hints utökas från 3 → 5 tips:**
+   - Tips 1: Sätt din startelva (befintlig)
+   - Tips 2: Välj taktik inför matchen (befintlig)
+   - Tips 3: Kolla inboxen efter matchen (befintlig)
+   - Tips 4: Besök Orten-tabben för att se bygdens stöd (NY)
+   - Tips 5: Träningsplanering gör skillnad — se Träning-tabben (NY)
+
+3. **GameHeader dropdown**: "🩺 Bandydoktorn" ersätts av "❓ Hjälp" (som den redan har) + behåll "📖 Spelguide"
+
+**Filer att ändra:**
+- `src/presentation/screens/BandyDoktorScreen.tsx` — TA BORT
+- `src/presentation/navigation/AppRouter.tsx` — ta bort route
+- `src/presentation/components/GameHeader.tsx` — ta bort Bandydoktorn-länk, utöka spelguide
+- `src/presentation/components/dashboard/ContextualNudges.tsx` — ta bort doctor-referens
+- `src/presentation/screens/DashboardScreen.tsx` — ta bort Bandydoktorn-kort
+- `src/presentation/components/dashboard/OnboardingHint.tsx` — utöka till 5 tips
+- `server.js` — ta bort `/api/doctor` endpoint (om den finns)
 
 ---
 

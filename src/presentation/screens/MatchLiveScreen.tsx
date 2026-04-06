@@ -9,6 +9,7 @@ import { MatchEventType, WeatherCondition, IceQuality, TacticMentality, TacticTe
 import { getWeatherEmoji, getIceQualityLabel } from '../../domain/services/weatherService'
 import { getRivalry } from '../../domain/data/rivalries'
 import { eventIcon } from '../utils/formatters'
+import { getEventAlignment } from './matchLiveHelpers'
 import { computePlayerRatings } from '../utils/matchRatings'
 import { playSound, isMuted, toggleMute } from '../audio/soundEffects'
 import { SnowOverlay } from '../components/match/SnowOverlay'
@@ -736,15 +737,26 @@ export function MatchLiveScreen() {
           )
           const icon = primaryEvent ? eventIcon(primaryEvent.type) : ''
 
+          // Bug 0.6: Side-align events by team (home=left, away=right)
+          const isSidedEvent = primaryEvent && (
+            primaryEvent.type === MatchEventType.Goal ||
+            primaryEvent.type === MatchEventType.RedCard
+          )
+          const isAwayEvent = isSidedEvent && getEventAlignment(primaryEvent.clubId, fixture.homeClubId) === 'away'
+
           const rows: React.ReactNode[] = [
             <div
               key={idx}
               style={{
                 display: 'flex', alignItems: 'flex-start',
+                flexDirection: isAwayEvent ? 'row-reverse' : 'row',
                 padding: `8px 16px 8px ${paddingLeft}px`,
-                borderLeft, background, gap: 8,
+                borderLeft: isAwayEvent ? 'none' : borderLeft,
+                borderRight: isAwayEvent ? borderLeft : 'none',
+                background, gap: 8,
                 animation: 'fadeInUp 250ms ease-out both',
-                boxShadow,
+                boxShadow: isAwayEvent ? (boxShadow ? boxShadow.replace('inset 3px', 'inset -3px') : undefined) : boxShadow,
+                textAlign: isAwayEvent ? 'right' : 'left',
               }}
             >
               <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 28, paddingTop: 1, flexShrink: 0 }}>

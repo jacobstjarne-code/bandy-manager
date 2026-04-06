@@ -467,7 +467,7 @@ export function TabellScreen() {
         const isManaged = (id: string) => id === managedId
 
         // Status
-        const managedMatches = bracket.matches.filter(m => m.homeClubId === managedId || m.awayClubId === managedId)
+        const managedMatches = bracket.matches.filter(m => !m.isBye && (m.homeClubId === managedId || m.awayClubId === managedId))
         const managedWon = managedMatches.filter(m => m.winnerId === managedId)
         const managedLost = managedMatches.find(m => m.winnerId && m.winnerId !== managedId)
         const cupWinner = bracket.completed && bracket.winnerId === managedId
@@ -507,7 +507,7 @@ export function TabellScreen() {
                   const home = clubName(m.homeClubId)
                   const away = clubName(m.awayClubId)
                   const won = m.winnerId === managedId
-                  const played = m.winnerId !== null
+                  const played = !!m.winnerId
                   return (
                     <div key={m.fixtureId ?? `${m.round}-${m.homeClubId}`} style={{
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -547,17 +547,19 @@ export function TabellScreen() {
 
             {/* Full bracket */}
             {rounds.map(round => {
-              const matches = bracket.matches.filter(m => m.round === round)
+              const matches = bracket.matches.filter(m => m.round === round && !m.isBye)
+              if (matches.length === 0) return null
+              const allUnplayed = matches.every(m => !m.winnerId)
               return (
                 <div key={round} style={{ marginBottom: 14 }}>
                   <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
-                    {roundNames[round] ?? `RUNDA ${round}`}
+                    {allUnplayed ? 'LOTTNING · ' : ''}{roundNames[round] ?? `RUNDA ${round}`}
                   </p>
                   <div className="card-sharp" style={{ overflow: 'hidden' }}>
                     {matches.map((m, i) => {
                       const home = clubName(m.homeClubId)
                       const away = clubName(m.awayClubId)
-                      const played = m.winnerId !== null
+                      const played = !!m.winnerId
                       const homeWon = m.winnerId === m.homeClubId
                       const awayWon = m.winnerId === m.awayClubId
                       const homeManaged = isManaged(m.homeClubId)
@@ -576,7 +578,7 @@ export function TabellScreen() {
                             {homeManaged ? '★ ' : ''}{home}
                           </span>
                           <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', minWidth: 40, textAlign: 'center' }}>
-                            {played ? `${(game.fixtures.find(f => f.id === m.fixtureId)?.homeScore ?? 0)}–${(game.fixtures.find(f => f.id === m.fixtureId)?.awayScore ?? 0)}` : '–'}
+                            {played ? `${(game.fixtures.find(f => f.id === m.fixtureId)?.homeScore ?? 0)}–${(game.fixtures.find(f => f.id === m.fixtureId)?.awayScore ?? 0)}` : 'vs'}
                           </span>
                           <span style={{
                             flex: 1, fontSize: 12, textAlign: 'right',

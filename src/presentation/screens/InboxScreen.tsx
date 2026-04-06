@@ -209,11 +209,9 @@ export function InboxScreen() {
         flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {unreadCount > 0 && (
-            <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>
-              {unreadCount} olästa
-            </span>
-          )}
+          <span style={{ fontSize: 12, color: unreadCount > 0 ? 'var(--accent)' : 'var(--text-muted)', fontWeight: 600 }}>
+            📬 INKORG{unreadCount > 0 ? ` · ${unreadCount} olästa` : ''}
+          </span>
           <button
             onClick={() => setViewMode(v => v === 'grouped' ? 'chrono' : 'grouped')}
             style={{ fontSize: 11, color: 'var(--text-muted)', background: 'none', border: '1px solid var(--border)', borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}

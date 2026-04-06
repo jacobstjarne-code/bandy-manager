@@ -67,7 +67,7 @@ export function generateCupFixtures(
     fixtures.push(fixture)
   }
 
-  // Byes for top 4 teams — auto-advance to round 2
+  // Byes for top 4 teams — auto-advance to round 2 (no real match)
   for (let i = 0; i < byeTeams.length; i++) {
     const byeId = byeTeams[i]
     const byeMatch: CupMatch = {
@@ -75,8 +75,9 @@ export function generateCupFixtures(
       round: 1,
       fixtureId: `cup-r1-bye${i}`,
       homeClubId: byeId,
-      awayClubId: byeId,
+      awayClubId: 'BYE',
       winnerId: byeId,
+      isBye: true,
     }
     matches.push(byeMatch)
   }
@@ -84,6 +85,7 @@ export function generateCupFixtures(
   const bracket: CupBracket = {
     season,
     matches,
+    byeTeamIds: [...byeTeams],
     completed: false,
   }
 
@@ -112,10 +114,10 @@ export function generateNextCupRound(
   // Collect winners from completed round — interleave bye-winners with match-winners
   const roundMatches = bracket.matches.filter(m => m.round === completedRound && m.winnerId)
   const byeWinners = roundMatches
-    .filter(m => m.homeClubId === m.awayClubId)
+    .filter(m => m.isBye)
     .map(m => m.winnerId!)
   const matchWinners = roundMatches
-    .filter(m => m.homeClubId !== m.awayClubId)
+    .filter(m => !m.isBye)
     .map(m => m.winnerId!)
 
   let winners: string[]

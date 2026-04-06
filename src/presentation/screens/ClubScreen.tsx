@@ -145,7 +145,7 @@ export function ClubScreen() {
 
         {/* ── Tab 2: Ekonomi ── */}
         {activeTab === 'ekonomi' && (
-          <EkonomiTab club={club} game={game} seekSponsor={seekSponsor} activateCommunity={activateCommunity} setTransferBudget={setTransferBudget} buyScoutRounds={buyScoutRounds} />
+          <EkonomiTab club={club} game={game} seekSponsor={seekSponsor} activateCommunity={activateCommunity} setTransferBudget={setTransferBudget} buyScoutRounds={buyScoutRounds} onNavigateTab={(tab) => setActiveTab(tab as ClubTab)} />
         )}
 
         {/* ── Tab 3: Klubb ── */}

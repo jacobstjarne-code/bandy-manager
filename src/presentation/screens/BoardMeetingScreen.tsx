@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
-import { BOARD_QUOTES, BOARD_MEETING_OPENERS } from '../../domain/data/boardData'
+import { BOARD_QUOTES, BOARD_CONTEXT_QUOTES, BOARD_MEETING_OPENERS } from '../../domain/data/boardData'
 import type { BoardPersonality } from '../../domain/entities/SaveGame'
 
 export function BoardMeetingScreen() {
@@ -62,48 +62,49 @@ export function BoardMeetingScreen() {
 
   function getContextualQuote(personality: BoardPersonality, memberIndex: number): string {
     const baseIdx = (gameIdSeed + game!.currentSeason * 7 + latestCompletedRound + memberIndex * 3)
+    const ctx = BOARD_CONTEXT_QUOTES[personality]
+    const lastSeasonGood = lastSummary?.expectationVerdict === 'exceeded' || lastSummary?.expectationVerdict === 'met'
+    const lastSeasonBad = lastSummary?.expectationVerdict === 'failed'
+
+    // Build a pool: context-specific quotes first, then generic quotes
+    let contextPool: string[] = []
+
+    if (personality === 'supporter') {
+      if (myPosition <= 3) contextPool = ctx.topPosition
+      else if (myPosition >= 9) contextPool = ctx.bottomPosition
+      if (lastSeasonGood) contextPool = [...contextPool, ...ctx.lastSeasonGood]
+      if (lastSeasonBad) contextPool = [...contextPool, ...ctx.lastSeasonBad]
+    }
 
     if (personality === 'ekonom') {
-      if (club!.finances > 500000) {
-        return '"Ekonomin ser stabil ut. Klokt av oss att hålla ordning på kassan."'
-      }
-      const quotes = BOARD_QUOTES.ekonom
-      return quotes[baseIdx % quotes.length]
+      if (club!.finances > 500000) contextPool = ctx.goodEconomy
+      else if (club!.finances < 50000) contextPool = ctx.badEconomy
+      if (sponsors.length < 2) contextPool = [...contextPool, ...ctx.fewSponsors]
+      if (lastSeasonGood) contextPool = [...contextPool, ...ctx.lastSeasonGood]
+      if (lastSeasonBad) contextPool = [...contextPool, ...ctx.lastSeasonBad]
     }
 
     if (personality === 'traditionalist') {
       const formation = club!.activeTactic?.formation
-      if (formation && formation !== '3-3-4') {
-        const complaints = BOARD_QUOTES.traditionalist.filter(q =>
-          q.includes('3-3-4') || q.includes('taktiken') || q.includes('backar') || q.includes('Varför')
-        )
-        const pool = complaints.length > 0 ? complaints : BOARD_QUOTES.traditionalist
-        return pool[baseIdx % pool.length]
-      }
-      return '"Vi kör 3-3-4 som sig bör. Det är bandyklubbens DNA."'
-    }
-
-    if (personality === 'supporter') {
-      if (myPosition >= 11) {
-        return '"Det är tufft just nu. Men jag tror på laget. Vi vänder det."'
-      }
-      if (myPosition >= 9) {
-        return '"Vi behöver ta två poäng. Det är dags att mobilisera."'
-      }
-      const quotes = BOARD_QUOTES.supporter
-      return quotes[baseIdx % quotes.length]
+      if (formation && formation !== '3-3-4') contextPool = ctx.nonTraditionalFormation
+      else contextPool = ctx.traditionalFormation
+      if (lastSeasonGood) contextPool = [...contextPool, ...ctx.lastSeasonGood]
+      if (lastSeasonBad) contextPool = [...contextPool, ...ctx.lastSeasonBad]
     }
 
     if (personality === 'modernist') {
-      if (game!.communityActivities?.bandyplay) {
-        return '"Bandyskolan är ett bra steg framåt. Det är precis sånt vi behöver göra mer av."'
-      }
-      const quotes = BOARD_QUOTES.modernist
-      return quotes[baseIdx % quotes.length]
+      if (game!.communityActivities?.bandyplay) contextPool = ctx.hasCommunityActivities
+      else contextPool = ctx.noCommunityActivities
+      if (lastSeasonGood) contextPool = [...contextPool, ...ctx.lastSeasonGood]
+      if (lastSeasonBad) contextPool = [...contextPool, ...ctx.lastSeasonBad]
     }
 
-    const quotes = BOARD_QUOTES[personality as BoardPersonality]
-    return quotes[baseIdx % quotes.length]
+    // Combine: 60% chance of context quote if available, else generic
+    const genericQuotes = BOARD_QUOTES[personality]
+    if (contextPool.length > 0 && (baseIdx % 5 < 3)) {
+      return contextPool[baseIdx % contextPool.length]
+    }
+    return genericQuotes[baseIdx % genericQuotes.length]
   }
 
   // Board meeting opener — deterministic based on season

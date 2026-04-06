@@ -110,6 +110,76 @@ Gör ALDRIG flera edits utan att visa diff emellan.
 
 ---
 
+## KVALITETSPORTAR — OBLIGATORISKT FÖRE COMMIT
+
+Dessa steg är INTE valfria. De körs efter VARJE deluppgift,
+inte bara i slutet. Att skippa dem = att leverera trasig kod.
+
+### PORT 1: Build + Test (efter varje ändring)
+```bash
+npm run build && npm test
+```
+OM build failar: FIXA OMEDELBART. Commit aldrig broken build.
+OM test failar: FIXA eller förklara varför testet är felaktigt.
+ALDRIG kommentera bort eller ta bort ett test för att det failar.
+
+### PORT 2: Manuell verifiering (efter varje UI-ändring)
+För VARJE UI-ändring, gör denna checklista i terminalen:
+```bash
+# 1. Inga hårdkodade färger
+grep -rn '#[0-9a-fA-F]\{3,8\}' src/ --include="*.tsx" | grep -v node_modules | grep -v ClubBadge | grep -v global.css | grep -v SVG
+# Ska returnera 0 relevanta resultat (exkludera badges, SVG, global.css)
+
+# 2. Inga "rink" kvar
+grep -rni 'rink' src/ --include="*.ts" --include="*.tsx" | grep -v node_modules
+# Ska returnera 0
+
+# 3. Import-verifiering: alla nya imports används
+# Kör build — TypeScript fångar unused imports
+```
+
+### PORT 3: Render-flöde (efter varje ny komponent)
+Innan du säger att en komponent är klar:
+1. Hitta PARENT-filen som renderar den
+2. Bekräfta att props skickas korrekt
+3. Bekräfta att ingen ANNAN komponent renderar samma information
+4. Visa: "Parent: X.tsx → renderar <MyComponent prop1={a} prop2={b} />"
+
+### PORT 4: Dupliceringskontroll (efter varje sprint)
+```bash
+# Sök efter duplicerad logik
+grep -rn 'getFormGuide\|getFormResults\|recentForm' src/ --include="*.tsx" --include="*.ts" | grep -v node_modules
+# Varje utility ska ha EN källa
+```
+För varje ny feature: kolla om samma sak redan implementeras
+någon annanstans. Om ja — ÅTERANVÄND, skapa inte dubblett.
+
+### PORT 5: Textgranskning (efter varje ny svensk text)
+Alla nya svenska strängar → `docs/textgranskning/TEXT_REVIEW_{feature}_{datum}.md`
+En fil per feature. Inte optional.
+
+### KONSEKVENSER VID SKIP
+Om en port skippas och buggen hittas i playtest:
+- Buggen går FÖRST i nästa sprint (före nya features)
+- En "post-mortem" rad läggs till i commit:
+  `fix: [bugg] — missad av port X, orsak: [förklaring]`
+
+---
+
+## ÅTERKOMMANDE BUGGAR — ESKALERINGSPOLICY
+
+Om samma bugg rapporteras IGEN efter att den "fixats":
+1. Skriv FÖRST ett test som reproducerar buggen
+2. Kör testet — bekräfta att det FAILAR
+3. Fixa buggen
+4. Kör testet — bekräfta att det PASSERAR
+5. Commit med: `fix: [bugg] — REGRESSION, added test`
+
+Exempel: "Utvisningar centrerade" har rapporterats 4 gånger.
+Nästa fix MÅSTE ha ett test som verifierar sidoplacering.
+
+---
+
 ## OPUS-REGLER (granskning + spec-skrivning)
 
 ### 1. FIX DIREKT OM DU KAN

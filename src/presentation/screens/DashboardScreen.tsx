@@ -291,8 +291,8 @@ export function DashboardScreen() {
     const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
     if (scheduled.length === 0) { setIsBatchSim(false); return }
     const nextEff = Math.min(...scheduled.map(f => f.matchday))
-    const managedCupNext = scheduled.some(f => f.matchday === nextEff && f.isCup && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
-    if (managedCupNext) { setIsBatchSim(false); return }
+    const managedMatchNext = scheduled.some(f => f.matchday === nextEff && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+    if (managedMatchNext) { setIsBatchSim(false); return }
     const t = setTimeout(() => {
       const result = advance(true)
       if (result?.seasonEnded || result?.playoffStarted) { setIsBatchSim(false); return }
@@ -424,7 +424,7 @@ export function DashboardScreen() {
   const canClickAdvance = canAdvance || hasScheduledFixtures
   const playedRounds = game.fixtures.filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup).length
   const canSimulateRemaining = hasScheduledFixtures && playedRounds >= 10 && !game.playoffBracket
-  const remainingOtherFixtures = game.fixtures.filter(f => f.status === 'scheduled').length
+  const remainingOtherFixtures = new Set(game.fixtures.filter(f => f.status === 'scheduled').map(f => f.matchday)).size
 
   const advanceButtonText = (() => {
     const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
@@ -502,7 +502,7 @@ export function DashboardScreen() {
         )}
 
         {/* Onboarding hints — first 3 rounds (skip for saves that predate the feature) */}
-        {game.onboardingStep !== undefined && game.onboardingStep >= 0 && game.onboardingStep <= 2 && (
+        {game.onboardingStep !== undefined && game.onboardingStep >= 0 && game.onboardingStep <= 4 && (
           <OnboardingHint
             step={game.onboardingStep}
             clubName={club.name}
@@ -829,42 +829,6 @@ export function DashboardScreen() {
 
         {/* Contextual nudges — att tänka på */}
         <ContextualNudges game={game} currentRound={currentRound} />
-
-        {/* Bandydoktorn */}
-        {(() => {
-          const questionsLeft = Math.max(0, 5 - (game.doctorQuestionsUsed ?? 0))
-          return (
-            <div
-              className="card-sharp"
-              style={{ margin: '0 0 8px', cursor: 'pointer' }}
-              onClick={() => navigate('/game/doctor')}
-            >
-              <div style={{ padding: '10px 14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
-                    🩺 Bandydoktorn
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
-                      {questionsLeft} frågor kvar
-                    </span>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); navigate('/game/doctor') }}
-                      style={{
-                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                        width: 18, height: 18, borderRadius: 4, flexShrink: 0,
-                        background: 'transparent', border: '1px solid var(--border)',
-                        color: 'var(--accent)', fontSize: 12, lineHeight: 1,
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-                        cursor: 'pointer',
-                      }}
-                    >›</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )
-        })()}
 
         {/* Diamond ornament + CTA */}
         <div style={{ margin: '8px 0 0' }}>

@@ -127,7 +127,7 @@ export function GameHeader() {
               setSaveToast(true); setTimeout(() => setSaveToast(false), 2000)
             } },
             { label: '📂 Ladda spel', action: () => navigate('/') },
-            { label: '🩺 Bandydoktorn', action: () => navigate('/game/doctor') },
+
             { label: '📖 Spelguide', action: () => setShowHelp(true) },
           ].map((item, i) => (
             <button key={i} onClick={() => { item.action(); setShowMenu(false) }}
@@ -167,21 +167,45 @@ export function GameHeader() {
             </div>
 
             {[
+              { section: '🏁 Komma igång' },
               { q: 'Hur vinner jag?', a: 'Säsongen består av 22 ligaomgångar. De åtta bästa går till slutspel (bäst av 5). Vinnaren av slutspelet blir Svenska Mästare. Dessutom spelas Svenska Cupen parallellt.' },
               { q: 'Dashen', a: 'Visar nästa match, tabellposition, ekonomi och bygdens puls. Den stora knappen längst ner tar dig vidare till nästa omgång eller match.' },
               { q: 'Trupp', a: 'Alla spelare med form, fitness och styrka. Klicka på en spelare för detaljer, kontraktsförlängning eller spelarsamtal.' },
               { q: 'Match', a: 'Välj 11 startspelare, sätt taktik (mentalitet, tempo, press) och spela live eller snabbsimulera.' },
-              { q: 'Transfers', a: 'Scouta spelare, lägg bud, förhandla. Transferfönstret är öppet under försäsongen och vintern.' },
-              { q: 'Klubb → Träning', a: 'Välj träningsfokus och intensitet. Påverkar spelarutveckling och skaderisk. Tunga pass ger mer men skadar fler.' },
-              { q: 'Klubb → Ekonomi', a: 'Sponsorer, matchintäkter och föreningsaktiviteter. Löner är största kostnaden. Håll kassan positiv — licensnämnden granskar vid säsongsslut.' },
-              { q: 'Klubb → Orten', a: 'Kommun-relation, mecenater, faciliteter och styrelseuppdrag. Bygdens puls (0–100) påverkar hemmaplansfördel, sponsorintresse och kommunbidrag.' },
-              { q: 'Bandydoktorn', a: 'AI-rådgivare för taktik, transfers och spelarutveckling. Fem frågor per säsong. Finns på dashen och här i menyn.' },
+              { q: 'Onboarding-tips', a: 'De första omgångarna visas tips om lineup, träning, styrelsen, orten och mer. Tipsen kan stängas med krysset.' },
+              { section: '🏆 Tävling' },
+              { q: 'Ligaspel', a: '22 omgångar, alla möts två gånger. 2 poäng för vinst, 1 för oavgjort. Topp 8 till slutspel.' },
+              { q: 'Slutspel', a: 'Kvartsfinal, semifinal och final spelas i bäst av 5. Högst placerad lag har hemmaplansfördel.' },
+              { q: 'Svenska Cupen', a: 'Cupmatcher inflikas mellan ligarunder. Förstarunda, kvartsfinal, semifinal och final. Vinst ger bonus och prestige.' },
               { q: 'Bandy vs fotboll', a: '2 poäng för vinst (inte 3). 10 min utvisning (inga kort). Hörnor är centralt offensivt vapen. Flygande byten. Spelas på is utomhus oktober–mars.' },
+              { q: 'Väder och underlag', a: 'Snö straffar bollkontroll. Dimma försvårar bredd. Töväder ökar skaderisk. Kyla ger hård, snabb is.' },
+              { section: '💰 Ekonomi & Orten' },
+              { q: 'Klubbekonomi', a: 'Sponsorer, matchintäkter och föreningsaktiviteter. Löner är största kostnaden. Håll kassan positiv — licensnämnden granskar vid säsongsslut.' },
+              { q: 'Mecenater', a: 'Lokala stöttepelare som bidrar ekonomiskt. Deras humör påverkas av resultat och uppmärksamhet. Besök Orten-tabben för detaljer.' },
+              { q: 'Kommun och bidrag', a: 'Lokal ställning (0–100) påverkar hemmaplansfördel, sponsorintresse och kommunbidrag. Bygg relationen via Orten-fliken.' },
+              { q: 'Föreningsaktiviteter', a: 'Kiosk, lotteri, bandyskola och mer. Startas under Ekonomi-tabben och ger löpande intäkter.' },
+              { q: 'Licensnämnden', a: 'Granskar ekonomin varje säsong. Negativ kassa eller svag ungdomsverksamhet kan ge varning som skrämmer sponsorer.' },
+              { section: '👥 Trupp & Transfers' },
+              { q: 'Transfers', a: 'Scouta spelare, lägg bud, förhandla. Transferfönstret är öppet under försäsongen och vintern. Max 3 samtidiga bud.' },
+              { q: 'Scouting', a: 'Tre system: talangspaning hittar nya spelare, utvärdering ger attribut, motståndaranalys inför match. Budget: 10 ronder per säsong, köp fler under Ekonomi.' },
+              { q: 'Kontrakt', a: 'Spelare med utgående kontrakt kan lämna gratis. Förläng i tid via spelarkortet. Lönebudgeten varnar men blockerar aldrig.' },
+              { q: 'Dubbelliv', a: 'De flesta spelare jobbar vid sidan av bandyn. Flexibilitet påverkar träning. Heltidsproffs kostar mer men tränar bättre.' },
+              { q: 'Ungdomsakademin', a: 'Varje säsong kan lovande ungdomar dyka upp. Utveckla dem i akademin och lyft upp till A-laget när de är redo.' },
+              { section: '⚙️ Tips' },
+              { q: 'Träning', a: 'Välj fokus (fysik, teknik, taktik) och intensitet. Hård träning ger snabbare utveckling men högre skaderisk. Träningsprojekt ger riktade lyft.' },
+              { q: 'Styrelsen', a: 'Styrelsen sätter säsongsmål. Resultat under förväntan sänker tålamodet. Uppfyll mål för att behålla jobbet och få bättre budget.' },
+              { q: 'Spara ofta', a: 'Spara via kugghjulet uppe till höger. Spelet autosparar inte — en missad sparning kan kosta en hel säsong.' },
             ].map((item, i) => (
-              <div key={i} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: i < 9 ? '1px solid var(--border)' : 'none' }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{item.q}</p>
-                <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{item.a}</p>
-              </div>
+              'section' in item && item.section ? (
+                <p key={i} style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1px', color: 'var(--accent)', marginTop: i > 0 ? 16 : 0, marginBottom: 8, fontFamily: 'var(--font-display)' }}>
+                  {item.section}
+                </p>
+              ) : (
+                <div key={i} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{item.q}</p>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{item.a}</p>
+                </div>
+              )
             ))}
           </div>
         </div>
