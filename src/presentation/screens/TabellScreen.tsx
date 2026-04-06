@@ -36,7 +36,7 @@ export function TabellScreen() {
       if (f.penaltyResult) return (isHome ? f.penaltyResult.home > f.penaltyResult.away : f.penaltyResult.away > f.penaltyResult.home) ? 'W' : 'L'
       if (f.overtimeResult) return f.overtimeResult === (isHome ? 'home' : 'away') ? 'W' : 'L'
       return 'D'
-    }).reverse()
+    })
   }
 
   function getNextMeeting(clubId: string) {
@@ -65,7 +65,7 @@ export function TabellScreen() {
   return (
     <div style={{ padding: '0 12px', paddingTop: 8, overflowY: 'auto', height: '100%' }}>
       {/* Tab switcher */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'var(--bg-elevated)', borderRadius: 8, padding: 4 }}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 10, background: 'var(--bg-elevated)', borderRadius: 8, padding: 4 }}>
         {(['tabell', 'statistik'] as const).map(tab => (
           <button
             key={tab}
@@ -83,32 +83,6 @@ export function TabellScreen() {
           </button>
         ))}
       </div>
-
-      {/* Tab description */}
-      {activeTab === 'tabell' && (
-        <p style={{
-          padding: '6px 16px 10px',
-          fontSize: 11,
-          color: 'var(--text-muted)',
-          fontFamily: 'var(--font-body)',
-          borderBottom: '1px solid var(--border)',
-          marginBottom: 10,
-        }}>
-          Aktuell tabell med form och målskillnad.
-        </p>
-      )}
-      {activeTab === 'statistik' && (
-        <p style={{
-          padding: '6px 16px 10px',
-          fontSize: 11,
-          color: 'var(--text-muted)',
-          fontFamily: 'var(--font-body)',
-          borderBottom: '1px solid var(--border)',
-          marginBottom: 10,
-        }}>
-          Ligans toppskyttar, assistkungar och betyg.
-        </p>
-      )}
 
       {activeTab === 'statistik' && (() => {
         const allPlayers = game!.players.filter(p => p.seasonStats.gamesPlayed > 0)
@@ -160,6 +134,7 @@ export function TabellScreen() {
 
         return (
           <div>
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 12 }}>Ligans toppskyttar, assistkungar och betyg.</p>
             <StatTable title="🏒 Toppskytt" players={topScorers} value={p => p.seasonStats.goals} unit=" mål" />
             <StatTable title="🎯 Flest assist" players={topAssisters} value={p => p.seasonStats.assists} unit=" ast" />
             <StatTable title="🔄 Flest hörnmål" players={topCornerGoals} value={p => p.seasonStats.cornerGoals} unit=" hörn" />
@@ -175,29 +150,27 @@ export function TabellScreen() {
       {myRow && (
         <div className="card-sharp" style={{
           padding: '10px 14px',
-          marginBottom: 12,
-          fontSize: 12,
-          color: 'var(--accent)',
-          display: 'flex',
-          gap: 6,
-          flexWrap: 'wrap',
+          marginBottom: 10,
         }}>
-          <span style={{ fontWeight: 700 }}>{myPos}. plats</span>
-          <span style={{ color: 'var(--text-muted)' }}>·</span>
-          {(() => {
-            const hasPlayed = standings.some(s => s.played > 0)
-            if (!hasPlayed) return <span style={{ color: 'var(--text-muted)' }}>Säsongen har inte börjat</span>
-            if (myPos <= 8) return <span>I slutspelszonen</span>
-            if (myPos <= 10) return <span>Utanför slutspel</span>
-            return <span style={{ color: 'var(--danger)' }}>I nedflyttningszonen</span>
-          })()}
-          <span style={{ color: 'var(--text-muted)' }}>·</span>
-          {(() => {
-            const hasPlayed = standings.some(s => s.played > 0)
-            if (!hasPlayed) return null
-            if (myPos === 1 && ptToLeader === 0) return <span style={{ color: 'var(--success)' }}>Serieledare</span>
-            return <span>{ptToLeader}p till ledaren</span>
-          })()}
+          <div style={{ fontSize: 12, color: 'var(--accent)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: 700 }}>{myPos}. plats</span>
+            <span style={{ color: 'var(--text-muted)' }}>·</span>
+            {(() => {
+              const hasPlayed = standings.some(s => s.played > 0)
+              if (!hasPlayed) return <span style={{ color: 'var(--text-muted)' }}>Säsongen har inte börjat</span>
+              if (myPos <= 8) return <span>I slutspelszonen</span>
+              if (myPos <= 10) return <span>Utanför slutspel</span>
+              return <span style={{ color: 'var(--danger)' }}>I nedflyttningszonen</span>
+            })()}
+            <span style={{ color: 'var(--text-muted)' }}>·</span>
+            {(() => {
+              const hasPlayed = standings.some(s => s.played > 0)
+              if (!hasPlayed) return null
+              if (myPos === 1 && ptToLeader === 0) return <span style={{ color: 'var(--success)' }}>Serieledare</span>
+              return <span>{ptToLeader}p till ledaren</span>
+            })()}
+          </div>
+          <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Aktuell tabell med form och målskillnad.</p>
         </div>
       )}
 

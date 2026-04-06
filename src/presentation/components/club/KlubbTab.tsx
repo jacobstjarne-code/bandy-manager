@@ -5,6 +5,8 @@ import type { SaveGame, StandingRow } from '../../../domain/entities/SaveGame'
 import { ClubExpectation, ClubStyle } from '../../../domain/enums'
 import { StatBar } from '../StatBar'
 import { SectionCard } from '../SectionCard'
+import { csColor } from '../../utils/formatters'
+import { getFunctionaryQuote } from '../../../domain/services/functionaryQuoteService'
 
 function expectationLabel(e: ClubExpectation): string {
   const map: Record<ClubExpectation, string> = {
@@ -63,12 +65,58 @@ interface KlubbTabProps {
   interactWithPolitician?: (action: 'invite' | 'budget' | 'apply') => { success: boolean; message: string }
 }
 
-export function KlubbTab({ club, game, standing, navigate, interactWithPolitician }: KlubbTabProps) {
+export function KlubbTab({ club, game, navigate, interactWithPolitician }: KlubbTabProps) {
   const [polFeedback, setPolFeedback] = useState<{ text: string; ok: boolean } | null>(null)
+
+  const cs = game.communityStanding ?? 50
+  const currentRound = game.fixtures
+    .filter(f => f.status === 'completed' && !f.isCup)
+    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+  const quote = getFunctionaryQuote(game, currentRound, game.lastCompletedFixtureId)
+  const ca = game.communityActivities
+  const activeActivities = [
+    ca?.kiosk && ca.kiosk !== 'none' ? '🏪 Kiosk' : null,
+    ca?.lottery && ca.lottery !== 'none' ? '🎫 Lotteri' : null,
+    ca?.functionaries ? '🤝 Funktionärer' : null,
+    ca?.bandyplay ? '🏒 Bandyskola' : null,
+    ca?.socialMedia ? '📱 Sociala medier' : null,
+  ].filter((x): x is string => x !== null)
 
   return (
     <>
-      <SectionCard title="🏟️ Faciliteter" stagger={1}>
+      {/* Bygdens puls */}
+      <SectionCard title="🏠 Bygdens puls" stagger={1}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
+          <span style={{ fontSize: 32, fontWeight: 400, color: csColor(cs), fontFamily: 'var(--font-display)' }}>{cs}</span>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>/ 100</span>
+        </div>
+        <div style={{ display: 'flex', gap: 2, marginBottom: 10 }}>
+          <div style={{ flex: cs, height: 7, background: csColor(cs), borderRadius: '4px 0 0 4px' }} />
+          <div style={{ flex: 100 - cs, height: 7, background: 'var(--border-dark)', borderRadius: '0 4px 4px 0' }} />
+        </div>
+        {activeActivities.length > 0 && (
+          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
+            {activeActivities.map(a => (
+              <span key={a} className="tag tag-outline">{a}</span>
+            ))}
+          </div>
+        )}
+        {quote && (
+          <div style={{ padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 8 }}>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-display)' }}>
+              “{quote.quote}”
+            </p>
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+              {quote.name}, {quote.role}
+            </p>
+          </div>
+        )}
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8, lineHeight: 1.5 }}>
+          Påverkas av matchresultat, föreningsaktiviteter och samhällsengagemang. Högt stöd ger bättre hemmaplansfördel och sponsorintresse.
+        </p>
+      </SectionCard>
+
+      <SectionCard title="🏟️ Faciliteter" stagger={2}>
         <FacilityRow label="Anläggningar" value={club.facilities} />
         <FacilityRow label="Ungdomskvalitet" value={club.youthQuality} />
         <FacilityRow label="Ungdomsrekrytering" value={club.youthRecruitment} />
@@ -206,16 +254,6 @@ export function KlubbTab({ club, game, standing, navigate, interactWithPoliticia
         )}
       </SectionCard>
 
-      {standing && (
-        <SectionCard title="📊 Tabellposition" stagger={3}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-            <span style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)' }}>{standing.position}:e</span>
-            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-              {standing.points}p · {standing.wins}V {standing.draws}O {standing.losses}F · MS {standing.goalDifference > 0 ? '+' : ''}{standing.goalDifference}
-            </span>
-          </div>
-        </SectionCard>
-      )}
 
       {game.seasonSummaries && game.seasonSummaries.length > 0 && (
         <SectionCard title="📅 Säsongshistorik" stagger={4}>

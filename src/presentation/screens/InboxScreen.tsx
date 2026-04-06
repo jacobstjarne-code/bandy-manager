@@ -72,24 +72,23 @@ function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
         display: 'flex',
         alignItems: 'flex-start',
         gap: 8,
-        padding: '10px 14px',
+        padding: '7px 12px',
         borderBottom: '1px solid var(--border)',
-        borderLeft: item.isRead ? '3px solid transparent' : '3px solid rgba(196,122,58,0.2)',
+        borderLeft: item.isRead ? '3px solid transparent' : '3px solid var(--accent)',
         background: item.isRead ? 'transparent' : 'rgba(196,122,58,0.04)',
         cursor: hasBody ? 'pointer' : (item.isRead ? 'default' : 'pointer'),
         animation: `fadeInUp 200ms ease-out ${Math.min(index, 14) * 30}ms both`,
       }}
     >
       <div style={{
-        width: 28,
-        height: 28,
+        width: 22,
+        height: 22,
         borderRadius: '50%',
         background: `${color}18`,
-        border: `1px solid ${color}40`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: 13,
+        fontSize: 11,
         flexShrink: 0,
         marginTop: 1,
       }}>
@@ -98,55 +97,40 @@ function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6 }}>
           <p style={{
-            fontSize: 14,
-            fontWeight: item.isRead ? 500 : 700,
+            fontSize: 13,
+            fontWeight: item.isRead ? 400 : 700,
             color: item.isRead ? 'var(--text-secondary)' : 'var(--text-primary)',
+            lineHeight: 1.3,
             ...(expanded ? {} : {
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
             }),
           }}>
+            {!item.isRead && <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', marginRight: 5, verticalAlign: 'middle' }} />}
             {item.title}
           </p>
-          <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>
+          <span style={{ fontSize: 10, color: 'var(--text-muted)', flexShrink: 0 }}>
             {formatDate(item.date)}
           </span>
         </div>
         {expanded && hasBody && (
           <p style={{
-            fontSize: 13,
+            fontSize: 12,
             color: 'var(--text-secondary)',
-            marginTop: 6,
+            marginTop: 4,
             lineHeight: 1.5,
             whiteSpace: 'pre-wrap',
           }}>
             {item.body}
           </p>
         )}
-        {!expanded && hasBody && (
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-            Tryck för att läsa mer
-          </p>
-        )}
         {playerName && item.relatedPlayerId && (
-          <div style={{ marginTop: 6 }}>
-            <PlayerLink
-              playerId={item.relatedPlayerId}
-              name={playerName}
-              style={{ fontSize: 12 }}
-            />
-          </div>
-        )}
-        {!item.isRead && (
-          <div style={{
-            display: 'inline-block',
-            width: 7,
-            height: 7,
-            borderRadius: '50%',
-            background: 'var(--accent)',
-            marginTop: 5,
-          }} />
+          <PlayerLink
+            playerId={item.relatedPlayerId}
+            name={playerName}
+            style={{ fontSize: 11, marginTop: 3, display: 'inline-block' }}
+          />
         )}
       </div>
     </div>

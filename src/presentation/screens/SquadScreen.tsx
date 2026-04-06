@@ -495,30 +495,32 @@ export function SquadScreen() {
             padding: '20px',
           }}
         >
-          {/* Close button */}
+          {/* Unified card surface with close button inside */}
           <div style={{
-            position: 'absolute',
-            top: 16,
-            right: 16,
+            background: 'var(--bg-surface)',
+            borderRadius: 12,
+            boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
+            maxHeight: '85vh',
+            overflowY: 'auto',
+            width: '100%',
+            maxWidth: 390,
+            position: 'relative',
           }}>
+            {/* Close button inside card */}
             <button
               onClick={() => setSelectedPlayerId(null)}
-              className="btn btn-ghost"
               style={{
-                width: 36,
-                height: 36,
-                fontSize: 18,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 0,
+                position: 'absolute', top: 10, right: 10, zIndex: 10,
+                width: 28, height: 28, borderRadius: '50%',
+                background: 'rgba(0,0,0,0.3)', border: 'none',
+                color: 'var(--text-light)', fontSize: 14,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
               }}
             >
               ✕
             </button>
-          </div>
 
-          {/* The premium PlayerCard */}
           <PlayerCard
             player={selectedPlayer}
             clubName={clubName}
@@ -612,6 +614,7 @@ export function SquadScreen() {
               </div>
             )
           })()}
+          </div>{/* end card surface */}
         </div>
       )}
     </div>

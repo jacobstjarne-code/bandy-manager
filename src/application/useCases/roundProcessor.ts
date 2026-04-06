@@ -235,6 +235,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // nextMatchday is the global play order index — sort by matchday, not roundNumber
   const nextMatchday = Math.min(...scheduledFixtures.map(f => f.matchday))
 
+  // Diagnostic: log advance state for omgångshopp debugging
+  if (typeof window !== 'undefined') {
+    console.log('[ADVANCE] nextMatchday:', nextMatchday,
+      'scheduled:', scheduledFixtures.slice(0, 8).map(f => ({ md: f.matchday, isCup: !!f.isCup, r: f.roundNumber })))
+  }
+
   // Guard: detect matchday skips (diagnostic for omgångshopp bug)
   const lastPlayedMatchday = game.fixtures
     .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
@@ -1771,19 +1777,22 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const wonCs = (myScoreCs ?? 0) > (theirScoreCs ?? 0)
     const lostCs = (myScoreCs ?? 0) < (theirScoreCs ?? 0)
     const bigWinCs = wonCs && (myScoreCs ?? 0) >= (theirScoreCs ?? 0) + 3
+    const bigLossCs = lostCs && (theirScoreCs ?? 0) >= (myScoreCs ?? 0) + 3
     if (bigWinCs) csBoost += 3
     else if (wonCs) csBoost += 1
-    else if (lostCs) csBoost -= 1
+    else if (bigLossCs) csBoost -= 3
+    else if (lostCs) csBoost -= 2
     const matchRivalryCs = getRivalry(justCompletedManagedFixture.homeClubId, justCompletedManagedFixture.awayClubId)
     if (matchRivalryCs && wonCs) csBoost += 2
+    if (matchRivalryCs && lostCs) csBoost -= 1
   }
   const csActivities = game.communityActivities
-  if (csActivities?.kiosk && csActivities.kiosk !== 'none') csBoost += 0.15
-  if (csActivities?.lottery && csActivities.lottery !== 'none') csBoost += 0.1
-  if (csActivities?.bandyplay) csBoost += 0.15
-  if (csActivities?.functionaries) csBoost += 0.1
-  if (csActivities?.bandySchool) csBoost += 0.15
-  if (csActivities?.socialMedia) csBoost += 0.05
+  if (csActivities?.kiosk && csActivities.kiosk !== 'none') csBoost += 0.08
+  if (csActivities?.lottery && csActivities.lottery !== 'none') csBoost += 0.05
+  if (csActivities?.bandyplay) csBoost += 0.08
+  if (csActivities?.functionaries) csBoost += 0.05
+  if (csActivities?.bandySchool) csBoost += 0.08
+  if (csActivities?.socialMedia) csBoost += 0.03
   const csPos = standings.find(s => s.clubId === game.managedClubId)?.position ?? 6
   if (csPos <= 3) csBoost += 0.2
   else if (csPos >= 10) csBoost -= 0.15

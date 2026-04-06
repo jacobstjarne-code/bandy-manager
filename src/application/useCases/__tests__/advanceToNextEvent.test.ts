@@ -74,8 +74,8 @@ describe('advanceToNextEvent', () => {
 
   it('after two advances: 12 fixtures are Completed or Postponed', () => {
     const game = makeGame()
-    const r1 = advanceToNextEvent(game, 1)
-    const r2 = advanceToNextEvent(r1.game, 2)
+    const r1 = advanceWithLineup(game, 1)
+    const r2 = advanceWithLineup(r1.game, 2)
     const resolved = r2.game.fixtures.filter(
       f => f.status === FixtureStatus.Completed || f.status === FixtureStatus.Postponed
     )
