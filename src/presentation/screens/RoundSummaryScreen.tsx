@@ -43,6 +43,7 @@ export function RoundSummaryScreen() {
     matchPlayed, matchScorers,
     communityStandingBefore, communityStandingAfter,
     financesBefore, financesAfter,
+    attendance,
     injuries, newInboxCount,
     youthMatchResult,
   } = roundSummary
@@ -217,6 +218,11 @@ export function RoundSummaryScreen() {
               {matchScorers && matchScorers.length > 0 && (
                 <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)' }}>
                   {matchScorers.join(' · ')}
+                </p>
+              )}
+              {attendance != null && (
+                <p style={{ textAlign: 'center', fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+                  🏟️ {attendance} åskådare
                 </p>
               )}
             </div>

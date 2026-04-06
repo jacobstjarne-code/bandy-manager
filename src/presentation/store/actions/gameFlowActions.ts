@@ -121,6 +121,7 @@ export function gameFlowActions(get: Get, set: Set) {
         communityStandingChanges,
         financesBefore,
         financesAfter,
+        attendance: managedFixture?.attendance,
         injuries,
         newInboxCount,
         youthMatchResult,

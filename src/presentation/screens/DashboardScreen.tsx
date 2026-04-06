@@ -207,9 +207,11 @@ function CupCard({ bracket, game }: CupCardProps) {
       </div>
     )
   } else {
-    const playedAndWon = bracket.matches.filter(m => (m.homeClubId === managedClubId || m.awayClubId === managedClubId) && m.winnerId === managedClubId)
-    const highestWonRound = Math.max(0, ...playedAndWon.map(m => m.round))
-    // Matchdays for each cup round (must match CUP_MATCHDAYS in cupService.ts)
+    // No scheduled cup fixture — determine next round based on ACTUALLY completed matches
+    const completedCupIds = new Set(game.fixtures.filter(f => f.isCup && f.status === 'completed').map(f => f.id))
+    const managedBracketMatches = bracket.matches.filter(m => m.homeClubId === managedClubId || m.awayClubId === managedClubId)
+    const actuallyWon = managedBracketMatches.filter(m => m.winnerId === managedClubId && m.fixtureId && completedCupIds.has(m.fixtureId))
+    const highestWonRound = actuallyWon.length > 0 ? Math.max(...actuallyWon.map(m => m.round)) : 0
     const CUP_ROUND_MATCHDAYS: Record<number, number> = { 1: 3, 2: 8, 3: 13, 4: 19 }
     const nextCupRound = highestWonRound + 1
     const nextRoundName = nextCupRound === 1 ? 'Förstarunda'
@@ -220,7 +222,7 @@ function CupCard({ bracket, game }: CupCardProps) {
     statusContent = nextRoundName
       ? (
         <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
-          {nextRoundName} spelas efter matchdag {nextRoundMatchday ?? '?'}
+          {nextRoundName} spelas matchdag {nextRoundMatchday ?? '?'}
         </p>
       )
       : <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Drar igång under säsongen</p>

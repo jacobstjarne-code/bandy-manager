@@ -181,6 +181,7 @@ export function MatchLiveScreen() {
     saveLiveMatchResult(
       fixture.id, lastStep.homeScore, lastStep.awayScore,
       allEvents, report, homeLineup, awayLineup, overtimeResult, penaltyResult,
+      fixture.attendance,
     )
 
     // Generate press conference question for normal matches (not finals — they have ceremony)

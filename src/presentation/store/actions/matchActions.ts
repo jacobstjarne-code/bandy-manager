@@ -21,6 +21,7 @@ export function matchActions(get: Get, set: Set) {
       awayLineup: TeamSelection,
       overtimeResult?: 'home' | 'away',
       penaltyResult?: { home: number; away: number },
+      attendance?: number,
     ) => {
       const { game } = get()
       if (!game) return
@@ -28,6 +29,7 @@ export function matchActions(get: Get, set: Set) {
         f.id === fixtureId
           ? {
               ...f, homeScore, awayScore, events, report, homeLineup, awayLineup,
+              attendance: attendance ?? f.attendance,
               status: FixtureStatus.Completed,
               wentToOvertime: (overtimeResult !== undefined || penaltyResult !== undefined) || undefined,
               wentToPenalties: penaltyResult !== undefined || undefined,
