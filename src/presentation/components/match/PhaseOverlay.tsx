@@ -6,7 +6,7 @@ export function PhaseOverlay({ phase }: PhaseOverlayProps) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 200,
-      background: 'rgba(14,13,11,0.92)',
+      background: 'rgba(0,0,0,0.6)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       textAlign: 'center',
     }}>

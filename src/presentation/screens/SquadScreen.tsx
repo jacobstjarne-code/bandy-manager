@@ -485,7 +485,7 @@ export function SquadScreen() {
             position: 'fixed',
             inset: 0,
             zIndex: 200,
-            background: 'rgba(0,0,0,0.5)',
+            background: 'rgba(0,0,0,0.6)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -497,7 +497,7 @@ export function SquadScreen() {
         >
           {/* Unified card surface with close button inside */}
           <div style={{
-            background: 'var(--bg-surface)',
+            background: 'var(--bg)',
             borderRadius: 12,
             boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
             maxHeight: '85vh',

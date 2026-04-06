@@ -101,7 +101,7 @@ export function MatchDoneOverlay({
       <div className="card-sharp" style={{
         padding: '24px 20px',
         textAlign: 'center', minWidth: 280, maxWidth: 340, width: '90%',
-        background: 'var(--bg-elevated)',
+        background: 'var(--bg)',
         border: 'none',
         boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
         marginBottom: 20,

@@ -41,21 +41,22 @@ export function PlayerPickerSheet({
     <div
       onClick={onClose}
       style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
+        position: 'fixed', inset: 0, zIndex: 300,
         background: 'rgba(0,0,0,0.6)',
-        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+        display: 'flex', flexDirection: 'column', justifyContent: 'center',
+        padding: 20,
       }}
     >
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: 'var(--bg-elevated)',
-          borderRadius: '16px 16px 0 0',
-          maxHeight: '75vh',
+          background: 'var(--bg)',
+          borderRadius: 12,
+          maxWidth: 380,
+          maxHeight: '85vh',
           display: 'flex',
           flexDirection: 'column',
           border: '1px solid var(--border)',
-          borderBottom: 'none',
         }}
       >
         {/* Header */}

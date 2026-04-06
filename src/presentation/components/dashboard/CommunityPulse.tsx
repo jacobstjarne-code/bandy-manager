@@ -35,7 +35,7 @@ export function CommunityPulse({ game, currentRound, onNavigate }: Props) {
         {/* Header row */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
-            🏘️ Bygdens puls
+            🏠 Bygdens puls
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {/* Metric plate */}

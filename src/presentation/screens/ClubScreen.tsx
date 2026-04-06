@@ -104,15 +104,14 @@ export function ClubScreen() {
         ))}
       </div>
 
-      {/* Tab description */}
+      {/* Tab description — integrated as subtle text, no border */}
       {tabDescriptions[activeTab] && (
         <p style={{
-          padding: '6px 16px 10px',
-          fontSize: 11,
+          padding: '4px 12px 6px',
+          fontSize: 10,
           color: 'var(--text-muted)',
           fontFamily: 'var(--font-body)',
-          borderBottom: '1px solid var(--border)',
-          marginBottom: 8,
+          margin: 0,
         }}>
           {tabDescriptions[activeTab]}
         </p>

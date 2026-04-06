@@ -57,7 +57,7 @@ export function TutorialOverlay({ managerName, clubName, onDone }: TutorialOverl
       <div style={{
         maxWidth: 340,
         width: '100%',
-        background: 'var(--bg-elevated)',
+        background: 'var(--bg)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius)',
         padding: '28px 24px',

@@ -205,7 +205,7 @@ export function HalftimeModal({
       paddingTop: '40px', zIndex: 200, overflowY: 'auto',
     }}>
       <div style={{
-        background: 'var(--bg-surface)',
+        background: 'var(--bg)',
         border: isBigMatch ? '1px solid rgba(196,122,58,0.4)' : '1px solid var(--border)',
         borderRadius: 'var(--radius)', padding: '20px 20px 16px',
         textAlign: 'center', minWidth: 260, maxWidth: 330, width: '90%',

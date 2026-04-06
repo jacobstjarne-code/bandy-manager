@@ -61,7 +61,7 @@ export function EventOverlay() {
         padding: '24px 20px',
         minWidth: 280, maxWidth: 360, width: '90%',
         marginBottom: 20,
-        background: 'var(--bg-elevated)',
+        background: 'var(--bg)',
         border: 'none',
         boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
       }}>
