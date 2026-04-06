@@ -56,6 +56,7 @@ import { checkInObjectives } from '../../domain/services/boardObjectiveService'
 import { checkProjectCompletion } from '../../domain/services/facilityService'
 import { generateTransferRumor } from '../../domain/services/rumorService'
 import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventService'
+import { generateSocialEvent, generateSilentShoutEvent } from '../../domain/services/mecenatService'
 
 export type { AdvanceResult }
 
@@ -1325,6 +1326,60 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   )
   const allNewEvents = [...newEvents, ...communityEvents]
 
+  // ── Mecenat social events, silent shout, and happiness decay ────────────
+  let updatedMecenater = (game.mecenater ?? []).map(mec => {
+    if (!mec.isActive) return mec
+
+    // Happiness decay: -1 per round if no interaction in last 4 rounds
+    const roundsSinceInteraction = nextMatchday - (mec.lastInteractionRound ?? 0)
+    const decayedHappiness = roundsSinceInteraction > 4
+      ? Math.max(0, mec.happiness - 1)
+      : mec.happiness
+
+    return { ...mec, happiness: decayedHappiness }
+  })
+
+  for (let i = 0; i < updatedMecenater.length; i++) {
+    const mec = updatedMecenater[i]
+    if (!mec.isActive) continue
+
+    // Social event every ~4 rounds
+    const roundsSinceLastSocial = nextMatchday - (mec.lastSocialRound ?? 0)
+    if (roundsSinceLastSocial >= 4 && localRand() < 0.35) {
+      const socialEvent = generateSocialEvent(mec, game.currentSeason, nextMatchday, localRand)
+      allNewEvents.push(socialEvent)
+      updatedMecenater = updatedMecenater.map((m, idx) =>
+        idx === i ? { ...m, lastSocialRound: nextMatchday } : m
+      )
+    }
+
+    // Silent shout event: unhappy mecenat with growing influence
+    if (mec.happiness < 30 || mec.silentShout >= 30) {
+      const randomPlayer = game.players.find(p => p.clubId === game.managedClubId)
+      const playerName = randomPlayer ? `${randomPlayer.firstName} ${randomPlayer.lastName}` : undefined
+      const shoutEvent = generateSilentShoutEvent(mec, playerName, localRand)
+      if (shoutEvent) {
+        allNewEvents.push(shoutEvent)
+      }
+    }
+
+    // Demand reminder: active demands not yet addressed
+    if (mec.demands.length > 0) {
+      const demandId = `inbox_mec_demand_${mec.id}_${nextMatchday}`
+      if (!game.inbox.some(item => item.id === demandId) && nextMatchday % 5 === 0) {
+        const demandTexts = mec.demands.map(d => d.description ?? d.type).join(', ')
+        newInboxItems.push({
+          id: demandId,
+          date: game.currentDate,
+          type: InboxItemType.PatronInfluence,
+          title: `📋 ${mec.name} påminner`,
+          body: `${mec.name} har fortfarande önskemål som inte hanterats: ${demandTexts}.`,
+          isRead: false,
+        } as InboxItem)
+      }
+    }
+  }
+
   // ── P19 Youth match simulation (every other round) ──────────────────────
   let updatedYouthTeam = game.youthTeam
   if (nextMatchday % 2 === 0 && game.youthTeam && game.youthTeam.players.length > 0) {
@@ -2009,6 +2064,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     facilityProjects: updatedFacilityProjects,
     trainerArc: updatedArc,
     previousKommunBidrag: game.localPolitician?.kommunBidrag,
+    mecenater: updatedMecenater,
   }
 
   // Append market value change notifications to inbox

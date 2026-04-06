@@ -275,12 +275,33 @@ export function resolveEvent(
       break
     }
     case 'patronHappiness': {
-      if (!updatedGame.patron || !updatedGame.patron.isActive) break
-      const newHappiness = Math.max(0, Math.min(100, (updatedGame.patron.happiness ?? 50) + (effect.amount ?? 0)))
-      const stillActive = newHappiness > 0
-      updatedGame = {
-        ...updatedGame,
-        patron: { ...updatedGame.patron, happiness: newHappiness, isActive: stillActive },
+      // Update singular patron
+      if (updatedGame.patron?.isActive) {
+        const newHappiness = Math.max(0, Math.min(100, (updatedGame.patron.happiness ?? 50) + (effect.amount ?? 0)))
+        const stillActive = newHappiness > 0
+        updatedGame = {
+          ...updatedGame,
+          patron: { ...updatedGame.patron, happiness: newHappiness, isActive: stillActive },
+        }
+      }
+      // Update matching mecenat (events from mecenatService contain mecenat ID)
+      if (updatedGame.mecenater?.length) {
+        const matchedMec = updatedGame.mecenater.find(m => m.isActive && eventId.includes(m.id))
+        if (matchedMec) {
+          const mNewHappiness = Math.max(0, Math.min(100, matchedMec.happiness + (effect.amount ?? 0)))
+          const completedFixtures = (updatedGame.fixtures ?? []).filter(f => (f.status as string) === 'completed')
+          const currentMatchday = completedFixtures.length > 0
+            ? Math.max(...completedFixtures.map(f => f.matchday))
+            : 0
+          updatedGame = {
+            ...updatedGame,
+            mecenater: updatedGame.mecenater.map(m =>
+              m.id === matchedMec.id
+                ? { ...m, happiness: mNewHappiness, isActive: mNewHappiness > 0, lastInteractionRound: currentMatchday }
+                : m
+            ),
+          }
+        }
       }
       break
     }

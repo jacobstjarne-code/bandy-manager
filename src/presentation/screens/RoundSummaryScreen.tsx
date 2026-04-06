@@ -5,6 +5,8 @@ import { playSound } from '../audio/soundEffects'
 import { csColor, formatFinance, formatFinanceAbs } from '../utils/formatters'
 import { FormSquares } from '../components/FormDots'
 import { getFormResults } from '../utils/formUtils'
+import { FixtureStatus, InboxItemType } from '../../domain/enums'
+import { getRivalry } from '../../domain/data/rivalries'
 
 export function RoundSummaryScreen() {
   const navigate = useNavigate()
@@ -101,6 +103,45 @@ export function RoundSummaryScreen() {
     shooting: 'Skott', defending: 'Försvar', cornerPlay: 'Hörnor',
     physical: 'Fysik', tactical: 'Taktik', recovery: 'Återhämtning', matchPrep: 'Matchförberedelse',
   }
+
+  // ── OTHER MATCHES this matchday ──
+  const currentMatchday = lastFixture?.matchday ?? 0
+  const otherResults = currentMatchday > 0
+    ? game.fixtures.filter(f =>
+        f.matchday === currentMatchday &&
+        f.status === FixtureStatus.Completed &&
+        f.homeClubId !== game.managedClubId &&
+        f.awayClubId !== game.managedClubId
+      )
+    : []
+
+  const getClubShort = (id: string) => {
+    const c = game.clubs.find(cl => cl.id === id)
+    return c?.shortName ?? c?.name ?? '?'
+  }
+
+  // Check if a club in this fixture is a rival or near us in standings
+  const myPosition = standing?.position ?? 99
+  const isRelevantFixture = (f: typeof otherResults[0]) => {
+    const isRival = !!getRivalry(game.managedClubId, f.homeClubId) || !!getRivalry(game.managedClubId, f.awayClubId)
+    const homePos = game.standings.find(s => s.clubId === f.homeClubId)?.position ?? 99
+    const awayPos = game.standings.find(s => s.clubId === f.awayClubId)?.position ?? 99
+    const isNearby = Math.abs(homePos - myPosition) <= 2 || Math.abs(awayPos - myPosition) <= 2
+    return isRival || isNearby
+  }
+
+  // ── PRESS CLIPS from inbox ──
+  const roundDate = date
+  const pressClips = game.inbox.filter(item =>
+    item.date === roundDate &&
+    (item.type === InboxItemType.Media || item.type === InboxItemType.MediaEvent || item.type === InboxItemType.MatchResult)
+  ).slice(0, 2)
+
+  // ── TRANSFER RUMORS from inbox ──
+  const transferRumors = game.inbox.filter(item =>
+    item.date === roundDate &&
+    (item.type === InboxItemType.Transfer || item.type === InboxItemType.TransferOffer || item.type === InboxItemType.TransferBidReceived || item.type === InboxItemType.TransferBidResult)
+  ).slice(0, 2)
 
   function handleContinue() {
     clearRoundSummary()
@@ -331,6 +372,81 @@ export function RoundSummaryScreen() {
                 <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>nya</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── ANDRA MATCHER ── */}
+        {otherResults.length > 0 && (
+          <div className="card-sharp" style={{ margin: '0 0 8px', padding: '10px 14px', ...fadeIn(7) }}>
+            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+              🏒 ANDRA MATCHER
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {otherResults.map(f => {
+                const relevant = isRelevantFixture(f)
+                return (
+                  <div key={f.id} style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '4px 0',
+                    borderLeft: relevant ? '2px solid var(--accent)' : '2px solid transparent',
+                    paddingLeft: 6,
+                  }}>
+                    <span style={{ fontSize: 12, color: relevant ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: relevant ? 600 : 400 }}>
+                      {getClubShort(f.homeClubId)}
+                    </span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', minWidth: 36, textAlign: 'center' }}>
+                      {f.homeScore}–{f.awayScore}
+                    </span>
+                    <span style={{ fontSize: 12, color: relevant ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: relevant ? 600 : 400, textAlign: 'right' }}>
+                      {getClubShort(f.awayClubId)}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── PRESSKLIPP ── */}
+        {pressClips.length > 0 && (
+          <div
+            className="card-sharp"
+            style={{ margin: '0 0 8px', padding: '10px 14px', cursor: 'pointer', ...fadeIn(8) }}
+            onClick={() => navigate('/game/inbox')}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>
+                📰 PRESSKLIPP
+              </p>
+              <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>›</span>
+            </div>
+            {pressClips.map(clip => (
+              <div key={clip.id} style={{ marginBottom: pressClips.indexOf(clip) < pressClips.length - 1 ? 6 : 0 }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', margin: 0, marginBottom: 2 }}>
+                  {clip.title}
+                </p>
+                {game.journalist && (clip.type === InboxItemType.Media || clip.type === InboxItemType.MediaEvent) && (
+                  <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: 0, fontStyle: 'italic' }}>
+                    {game.journalist.name}, {game.journalist.outlet}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── TRANSFERRYKTEN ── */}
+        {transferRumors.length > 0 && (
+          <div
+            className="card-sharp"
+            style={{ margin: '0 0 8px', padding: '10px 14px', cursor: 'pointer', ...fadeIn(9) }}
+            onClick={() => navigate('/game/inbox')}
+          >
+            {transferRumors.map(rumor => (
+              <p key={rumor.id} style={{ fontSize: 11, color: 'var(--text-secondary)', margin: 0, marginBottom: transferRumors.indexOf(rumor) < transferRumors.length - 1 ? 4 : 0 }}>
+                📰 Transferrykte: <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{rumor.title}</span>
+              </p>
+            ))}
           </div>
         )}
       </div>

@@ -179,24 +179,26 @@ Prioritera: `communityEvents.ts`, `politicianEvents.ts`, `playerEvents.ts`
 
 ### 2.3 Storylines i matchkommentarer + press
 
-**Problem:** `game.storylines[]` finns men refereras aldrig i kommentarer eller press.
+**Problem:** `game.storylines[]` finns och matchStepByStep.ts HAR storyline-kommentarer (6 typer). Men det är oklart om `storylines` faktiskt skickas till match engine.
 
-**Filer:**
-- `src/domain/data/matchCommentary.ts` — lägg till storyline-varianter
-- `src/domain/services/matchStepByStep.ts` — kolla storylines vid mål-kommentarer
-- Presskonferens-frågorna — referera storylines
-
-**Exempel:** Om målskytt har `rescued_from_unemployment`:
+**KRITISKT: Verifiera först:**
+```bash
+grep -n 'storylines' src/presentation/store/actions/matchActions.ts
 ```
-"MÅL! Martinsson — mannen som nästan förlorade allt vid varslet. Nu gör han säsongens viktigaste mål!"
-```
-
-Om 3+ förluster i rad och `underdog_season`:
-```
-Journalistfråga: "Ingen trodde på er i augusti. Vad hände?"
+Om resultatet är tomt → storylines skickas ALDRIG till matchen. Fixa:
+```typescript
+// I matchActions.ts där simulateMatchStepByStep anropas:
+storylines: game.storylines?.filter(s => s.resolved) ?? []
 ```
 
-Kolla `game.storylines.filter(s => s.playerId === scorer.id && s.resolved)` vid varje mål.
+**Sedan: Presskonferenser**
+Kolla `pressConferenceService.ts`. Refereras `game.storylines`? Om nej → lägg till storyline-baserade frågor:
+- `underdog_season`: "Ingen trodde på er i augusti. Vad hände?"
+- `rescued_from_unemployment`: "Martinsson — från varsel till målskytt. Hur känns det?"
+- `captain_rallied_team`: "Kaptenen samlade laget efter krisläget. Hur viktig var den insatsen?"
+
+**Sedan: Säsongssammanfattning**
+Kolla `seasonSummaryService.ts`. Inkludera storyline-höjdpunkter i narrativen.
 
 ---
 

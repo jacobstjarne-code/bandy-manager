@@ -264,6 +264,8 @@ export interface Mecenat {
   favoritePlayerId?: string
   wantsStyle?: string
   silentShout: number
+  lastSocialRound?: number
+  lastInteractionRound?: number
 }
 
 // ── Anläggningsprojekt ──────────────────────────────────────────────────

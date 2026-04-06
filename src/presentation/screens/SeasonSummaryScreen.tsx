@@ -444,6 +444,45 @@ export function SeasonSummaryScreen() {
           </div>
         )}
 
+        {/* STORYLINES */}
+        {(() => {
+          const seasonStorylines = game.storylines?.filter(s => s.season === summary.season) ?? []
+          if (seasonStorylines.length === 0) return null
+          const storylineEmoji = (type: string): string => {
+            switch (type) {
+              case 'rescued_from_unemployment': return '🏭'
+              case 'went_fulltime_pro': return '⭐'
+              case 'returned_to_club': return '🏠'
+              case 'captain_rallied_team': return '💪'
+              case 'underdog_season': return '🎯'
+              case 'gala_winner': return '🏆'
+              case 'left_for_bigger_club': return '👋'
+              case 'journalist_feud': return '📰'
+              case 'relegation_escape': return '😅'
+              default: return '📖'
+            }
+          }
+          return (
+            <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 8 }}>
+              <SectionLabel>📖 SÄSONGENS BERÄTTELSE</SectionLabel>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {seasonStorylines.map((sl) => (
+                  <div key={sl.id} style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 8,
+                    padding: '6px 0',
+                    borderBottom: '1px solid var(--border)',
+                  }}>
+                    <span style={{ fontSize: 14, flexShrink: 0 }}>{storylineEmoji(sl.type)}</span>
+                    <span style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.4 }}>{sl.displayText}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        })()}
+
         {/* NEXT SEASON BUTTON (only if not historical view) */}
         {!isHistorical && (
           <div style={{ padding: '0 0 20px' }}>
