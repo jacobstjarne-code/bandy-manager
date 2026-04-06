@@ -11,12 +11,12 @@ export function SectionLabel({ children, right }: SectionLabelProps) {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 12,
+      marginBottom: 4,
     }}>
       <p className="section-heading" style={{
-        fontSize: 11,
-        fontWeight: 700,
-        letterSpacing: '1.5px',
+        fontSize: 9,
+        fontWeight: 600,
+        letterSpacing: '2.5px',
         textTransform: 'uppercase',
         color: 'var(--text-muted)',
         margin: 0,

@@ -16,6 +16,7 @@ export interface ScoutReport {
     physical: number
     mental: number
   }
+  isRumorBased?: boolean  // true if generated from transfer rumor (low accuracy)
 }
 
 export interface ScoutAssignment {

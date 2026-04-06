@@ -158,7 +158,7 @@ export function BoardMeetingScreen() {
       overflow: 'auto',
       background: 'var(--bg)',
     }}>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px 90px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px 90px' }}>
       {/* Header */}
       <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 4 }}>
         Styrelsemöte
@@ -210,12 +210,12 @@ export function BoardMeetingScreen() {
 
       {/* Styrelsens uppdrag */}
       {(game.boardObjectives ?? []).length > 0 && (
-        <div className="card-sharp" style={{ marginBottom: 8, padding: '14px 16px' }}>
+        <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
             📌 Styrelsens uppdrag
           </p>
           {(game.boardObjectives ?? []).map(obj => (
-            <div key={obj.id} className="card-round" style={{ padding: '12px 14px', marginBottom: 8 }}>
+            <div key={obj.id} className="card-round" style={{ padding: '10px 14px', marginBottom: 8 }}>
               <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
                 {obj.ownerId} ({obj.ownerPersonality})
               </p>

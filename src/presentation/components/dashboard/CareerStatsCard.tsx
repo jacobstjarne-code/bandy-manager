@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 
 interface Props {
@@ -5,6 +6,7 @@ interface Props {
 }
 
 export function CareerStatsCard({ game }: Props) {
+  const navigate = useNavigate()
   const arc = game.trainerArc
   if (!arc) return null
 
@@ -45,16 +47,37 @@ export function CareerStatsCard({ game }: Props) {
 
   if (totalMatches < 5) return null
 
+  const hasPastSeasons = (game.seasonSummaries ?? []).length > 0
+
   return (
-    <div className="card-sharp" style={{ margin: '0 0 10px' }}>
+    <div
+      className="card-sharp"
+      style={{ margin: '0 0 8px', cursor: hasPastSeasons ? 'pointer' : undefined }}
+      onClick={hasPastSeasons ? () => navigate('/game/history') : undefined}
+    >
       <div style={{ padding: '10px 14px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
             🎖️ TRÄNARKARRIÄR
           </p>
-          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
-            {phaseLabels[arc.current] ?? arc.current}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
+              {phaseLabels[arc.current] ?? arc.current}
+            </span>
+            {hasPastSeasons && (
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate('/game/history') }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                  background: 'transparent', border: '1px solid var(--border)',
+                  color: 'var(--accent)', fontSize: 12, lineHeight: 1,
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                  cursor: 'pointer',
+                }}
+              >›</button>
+            )}
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: 0 }}>

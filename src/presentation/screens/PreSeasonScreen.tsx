@@ -90,7 +90,7 @@ export function PreSeasonScreen() {
             background: 'var(--bg-elevated)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius)', padding: '10px 14px',
           }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--success)', marginBottom: 8 }}>
+            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--success)', marginBottom: 8 }}>
               🌱 Ungdomsintag
             </p>
             <p style={{ fontSize: 14, color: 'var(--text-primary)', marginBottom: 4 }}>
@@ -112,7 +112,7 @@ export function PreSeasonScreen() {
           background: 'var(--bg-elevated)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius)', padding: '10px 14px',
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             📋 Truppen
           </p>
           <p style={{ fontSize: 14, color: 'var(--text-primary)' }}>
@@ -125,7 +125,7 @@ export function PreSeasonScreen() {
           background: 'var(--bg-elevated)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius)', padding: '10px 14px',
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             💰 Ekonomi
           </p>
           <p style={{ fontSize: 14, color: 'var(--text-primary)' }}>
@@ -145,7 +145,7 @@ export function PreSeasonScreen() {
               ? '1px solid rgba(176,80,64,0.3)' : '1px solid var(--border)',
             borderRadius: 'var(--radius)', padding: '10px 14px',
           }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: expiringPlayers.length > 3 ? 'var(--danger)' : 'var(--text-muted)', marginBottom: 8 }}>
+            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: expiringPlayers.length > 3 ? 'var(--danger)' : 'var(--text-muted)', marginBottom: 8 }}>
               📋 Kontraktssituation
             </p>
             <p style={{ fontSize: 14, color: 'var(--text-primary)' }}>
@@ -165,7 +165,7 @@ export function PreSeasonScreen() {
           border: '1px solid rgba(196,122,58,0.2)',
           borderRadius: 'var(--radius)', padding: '10px 14px',
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
             🔮 Styrelsens förväntning
           </p>
           <p style={{ fontSize: 14, color: 'var(--text-primary)', fontStyle: 'italic' }}>
@@ -178,7 +178,7 @@ export function PreSeasonScreen() {
           background: 'var(--bg-elevated)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius)', padding: '10px 14px',
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
             💼 Budgetprioritet
           </p>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>

@@ -1,5 +1,6 @@
 import type { SaveGame, InboxItem } from '../entities/SaveGame'
 import type { Player } from '../entities/Player'
+import type { ScoutReport } from '../entities/Scouting'
 import { InboxItemType } from '../enums'
 
 const RUMOR_TEMPLATES = [
@@ -28,7 +29,12 @@ function posLabel(pos: string): string {
   }
 }
 
-export function generateTransferRumor(game: SaveGame, rand: () => number): InboxItem | null {
+export interface RumorResult {
+  inboxItem: InboxItem
+  scoutHint?: ScoutReport  // partial report for rumored player
+}
+
+export function generateTransferRumor(game: SaveGame, rand: () => number): RumorResult | null {
   const matchday = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed').map(f => f.matchday))
 
   // Only generate between matchday 5-18
@@ -52,29 +58,58 @@ export function generateTransferRumor(game: SaveGame, rand: () => number): Inbox
     const club = game.clubs.find(c => c.id === player.clubId)
     if (!club) return null
 
+    // Don't duplicate existing scout reports
+    if (game.scoutReports[player.id]) return null
+
     const template = RUMOR_TEMPLATES[Math.floor(rand() * RUMOR_TEMPLATES.length)]
     const text = template(player, club.name)
 
+    // Generate a rough scout hint (low accuracy — it's a rumor, not a full report)
+    const noise = () => Math.round((rand() - 0.5) * 12)
+    const scoutHint: ScoutReport = {
+      playerId: player.id,
+      clubId: club.id,
+      scoutedDate: game.currentDate,
+      scoutedSeason: game.currentSeason,
+      accuracy: 50,  // low — just a rumor
+      revealedAttributes: {},  // no detailed attributes from a rumor
+      estimatedCA: Math.max(20, Math.min(99, (player.currentAbility ?? 50) + noise())),
+      estimatedPA: Math.max(30, Math.min(99, (player.potentialAbility ?? 60) + noise())),
+      attributeProfile: {
+        offensive: Math.round(((player.attributes?.shooting ?? 50) + (player.attributes?.passing ?? 50)) / 2),
+        defensive: Math.round(((player.attributes?.defending ?? 50) + (player.attributes?.positioning ?? 50)) / 2),
+        physical: Math.round(((player.attributes?.skating ?? 50) + (player.attributes?.stamina ?? 50)) / 2),
+        mental: Math.round(((player.attributes?.decisions ?? 50) + (player.attributes?.vision ?? 50)) / 2),
+      },
+      notes: `Ryktesrapport: ${text} Noggrannheten är låg — scouta för bättre bild.`,
+      isRumorBased: true,
+    }
+
     return {
-      id: `rumor-${matchday}-${player.id}`,
-      date: game.currentDate,
-      type: InboxItemType.Transfer,
-      title: '📰 Transferrykte',
-      body: text,
-      relatedPlayerId: player.id,
-      relatedClubId: club.id,
-      isRead: false,
+      inboxItem: {
+        id: `rumor-${matchday}-${player.id}`,
+        date: game.currentDate,
+        type: InboxItemType.Transfer,
+        title: '📰 Transferrykte',
+        body: `${text}\n\n🔍 En grov scoutbild har lagts till — du kan nu lägga bud direkt eller scouta för mer detaljer.`,
+        relatedPlayerId: player.id,
+        relatedClubId: club.id,
+        isRead: false,
+      },
+      scoutHint,
     }
   }
 
   // Atmosphere rumor
   const text = ATMOSPHERE_RUMORS[Math.floor(rand() * ATMOSPHERE_RUMORS.length)]
   return {
-    id: `rumor-atm-${matchday}`,
-    date: game.currentDate,
-    type: InboxItemType.Media,
-    title: '📰 Från pressplätten',
-    body: text,
-    isRead: false,
+    inboxItem: {
+      id: `rumor-atm-${matchday}`,
+      date: game.currentDate,
+      type: InboxItemType.Media,
+      title: '📰 Från pressplätten',
+      body: text,
+      isRead: false,
+    },
   }
 }

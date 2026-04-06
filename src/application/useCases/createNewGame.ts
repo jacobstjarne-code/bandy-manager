@@ -272,6 +272,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     trainerArc: createTrainerArc(),
     boardObjectives: generateBoardObjectives(managedClub, { managedClubId: input.clubId, players, clubs: clubsFixed, rivalryHistory: {}, fanMood: 50, communityActivities, boardPersonalities, currentSeason: input.season, communityStanding: 50, cupBracket: null, boardObjectiveHistory: [] } as any, boardPersonalities, rand),
     boardObjectiveHistory: [],
+    onboardingStep: 0,
     mecenater: initialMecenater,
     facilityProjects: [],
     previousMarketValues: {},

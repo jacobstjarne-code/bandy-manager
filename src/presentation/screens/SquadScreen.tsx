@@ -310,7 +310,7 @@ export function SquadScreen() {
             background: 'rgba(196,122,58,0.08)',
             border: '1px solid rgba(196,122,58,0.2)',
             borderRadius: 10,
-            padding: '12px 14px',
+            padding: '10px 14px',
             fontSize: 13,
             color: 'var(--text-secondary)',
             marginBottom: 12,
@@ -569,7 +569,7 @@ export function SquadScreen() {
                 </p>
                 {talkFeedback ? (
                   <div style={{
-                    padding: '12px 14px', background: 'var(--bg-surface)',
+                    padding: '10px 14px', background: 'var(--bg-surface)',
                     border: '1px solid var(--border)', borderRadius: 10,
                     animation: 'fadeInUp 200ms ease-out both',
                   }}>

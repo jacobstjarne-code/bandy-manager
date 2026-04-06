@@ -251,17 +251,17 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
           if (scorer) {
             if (isHomeAttacking) homeScore++; else awayScore++
             scorerPlayerId = scorer.id; goalScored = true; trackGoal(scorer.id)
-            const e: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Goal by ${scorer.firstName} ${scorer.lastName}` }
+            const e: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Mål av ${scorer.firstName} ${scorer.lastName}` }
             stepEvents.push(e); allEvents.push(e)
-            if (assister) { trackAssist(assister.id); const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, secondaryPlayerId: scorer.id, description: `Assist by ${assister.firstName} ${assister.lastName}` }; stepEvents.push(ae); allEvents.push(ae) }
+            if (assister) { trackAssist(assister.id); const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, secondaryPlayerId: scorer.id, description: `Assist av ${assister.firstName} ${assister.lastName}` }; stepEvents.push(ae); allEvents.push(ae) }
           }
         } else if (r < gt + 0.25) {
           const gk = getGK(defendingStarters)
-          if (gk) { gkPlayerId = gk.id; saveOccurred = true; const e: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Save by ${gk.firstName} ${gk.lastName}` }; stepEvents.push(e); allEvents.push(e) }
+          if (gk) { gkPlayerId = gk.id; saveOccurred = true; const e: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Räddning av ${gk.firstName} ${gk.lastName}` }; stepEvents.push(e); allEvents.push(e) }
         } else if (r < gt + 0.45) {
           cornerOccurred = true
           if (isHomeAttacking) cornersHome++; else cornersAway++
-          const e: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Corner kick' }; stepEvents.push(e); allEvents.push(e)
+          const e: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörnslag' }; stepEvents.push(e); allEvents.push(e)
         }
       }
     } else if (seqType === 'transition') {
@@ -274,12 +274,12 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
           if (scorer) {
             if (isHomeAttacking) homeScore++; else awayScore++
             scorerPlayerId = scorer.id; goalScored = true; trackGoal(scorer.id)
-            const e: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Transition goal by ${scorer.firstName} ${scorer.lastName}` }; stepEvents.push(e); allEvents.push(e)
+            const e: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Omställningsmål av ${scorer.firstName} ${scorer.lastName}` }; stepEvents.push(e); allEvents.push(e)
             if (assister) { trackAssist(assister.id); const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, description: `Assist` }; stepEvents.push(ae); allEvents.push(ae) }
           }
         } else if (r < gt + 0.25) {
           const gk = getGK(defendingStarters)
-          if (gk) { gkPlayerId = gk.id; saveOccurred = true; const e: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Save by ${gk.firstName} ${gk.lastName}` }; stepEvents.push(e); allEvents.push(e) }
+          if (gk) { gkPlayerId = gk.id; saveOccurred = true; const e: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Räddning av ${gk.firstName} ${gk.lastName}` }; stepEvents.push(e); allEvents.push(e) }
         }
       }
     } else if (seqType === 'corner') {
@@ -295,14 +295,14 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
         if (scorer) {
           if (isHomeAttacking) homeScore++; else awayScore++
           scorerPlayerId = scorer.id; goalScored = true; cornerGoalScored = true; cornerOccurred = true; trackGoal(scorer.id)
-          stepEvents.push({ minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Corner kick leads to goal' })
-          allEvents.push({ minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Corner kick leads to goal' })
-          const e: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Corner goal by ${scorer.firstName} ${scorer.lastName}`, isCornerGoal: true }; stepEvents.push(e); allEvents.push(e)
+          stepEvents.push({ minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörnmål' })
+          allEvents.push({ minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörnmål' })
+          const e: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Hörnmål av ${scorer.firstName} ${scorer.lastName}`, isCornerGoal: true }; stepEvents.push(e); allEvents.push(e)
           if (assister) { trackAssist(assister.id); const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, description: `Assist` }; stepEvents.push(ae); allEvents.push(ae) }
         }
       } else if (r < gt + 0.3) {
         cornerOccurred = true
-        const e: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Corner kick' }; stepEvents.push(e); allEvents.push(e)
+        const e: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörnslag' }; stepEvents.push(e); allEvents.push(e)
       }
     } else if (seqType === 'halfchance') {
       if (isHomeAttacking) shotsHome++; else shotsAway++
@@ -312,7 +312,7 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
         if (scorer) {
           if (isHomeAttacking) homeScore++; else awayScore++
           scorerPlayerId = scorer.id; goalScored = true; trackGoal(scorer.id)
-          const e: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, description: `Half-chance goal` }; stepEvents.push(e); allEvents.push(e)
+          const e: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, description: `Halvchans` }; stepEvents.push(e); allEvents.push(e)
         }
       }
     } else if (seqType === 'foul') {
@@ -324,7 +324,7 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
           suspendedPlayerId = sp.id; suspensionOccurred = true
           const dur = 3 + Math.floor(rand() * 4)
           if (isHomeAttacking) { awayActiveSuspensions++; awaySuspensionTimers.push(dur) } else { homeActiveSuspensions++; homeSuspensionTimers.push(dur) }
-          const e: MatchEvent = { minute, type: MatchEventType.RedCard, clubId: defendingClubId, playerId: sp.id, description: `Suspension for ${sp.firstName} ${sp.lastName}` }; stepEvents.push(e); allEvents.push(e)
+          const e: MatchEvent = { minute, type: MatchEventType.RedCard, clubId: defendingClubId, playerId: sp.id, description: `Utvisning av ${sp.firstName} ${sp.lastName}` }; stepEvents.push(e); allEvents.push(e)
         }
       }
     }
@@ -406,7 +406,7 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
       if (scorer) {
         if (isHomeAttacking) homeScore++; else awayScore++
         scorerPlayerId = scorer.id; goalScored = true; trackGoal(scorer.id)
-        allEvents.push({ minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Overtime goal by ${scorer.firstName} ${scorer.lastName}` })
+        allEvents.push({ minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Förlängningsmål av ${scorer.firstName} ${scorer.lastName}` })
         if (assister) allEvents.push({ minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, description: 'Assist' })
       }
     }
@@ -418,7 +418,7 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
         ? fillTemplate(pickCommentary(commentary.overtimeEnd, rand), { score: otScoreStr, team: '', opponent: '', minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
         : fillTemplate(pickCommentary(commentary.overtimeNoGoal, rand), { team: attackingTeam, opponent: '', score: otScoreStr, minute: String(minute), player: '', goalkeeper: '', rivalry: '', result: '' })
 
-    yield { step, minute, events: goalScored && scorerPlayerId ? [{ minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorerPlayerId, description: `Overtime goal` }] : [], homeScore, awayScore, commentary: commentaryText, intensity: goalScored ? 'high' : 'medium', activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions }, shotsHome, shotsAway, cornersHome, cornersAway, phase: 'overtime', overtimeResult: goalScored ? (isHomeAttacking ? 'home' : 'away') : undefined }
+    yield { step, minute, events: goalScored && scorerPlayerId ? [{ minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorerPlayerId, description: `Förlängningsmål` }] : [], homeScore, awayScore, commentary: commentaryText, intensity: goalScored ? 'high' : 'medium', activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions }, shotsHome, shotsAway, cornersHome, cornersAway, phase: 'overtime', overtimeResult: goalScored ? (isHomeAttacking ? 'home' : 'away') : undefined }
     if (goalScored) { yield { step: 82, minute: 120, events: [], homeScore, awayScore, commentary: `Matchen avgörs i förlängningen! ${homeScore}–${awayScore}.`, intensity: 'high', activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions }, shotsHome, shotsAway, cornersHome, cornersAway, phase: 'overtime', overtimeResult: isHomeAttacking ? 'home' : 'away' }; return }
   }
 
@@ -780,7 +780,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
               clubId: attackingClubId,
               playerId: scorer.id,
               secondaryPlayerId: assister?.id,
-              description: `Goal by ${scorer.firstName} ${scorer.lastName}`,
+              description: `Mål av ${scorer.firstName} ${scorer.lastName}`,
             }
             stepEvents.push(event)
             allEvents.push(event)
@@ -792,7 +792,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
                 clubId: attackingClubId,
                 playerId: assister.id,
                 secondaryPlayerId: scorer.id,
-                description: `Assist by ${assister.firstName} ${assister.lastName}`,
+                description: `Assist av ${assister.firstName} ${assister.lastName}`,
               }
               stepEvents.push(assistEvent)
               allEvents.push(assistEvent)
@@ -809,7 +809,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
               type: MatchEventType.Save,
               clubId: defendingClubId,
               playerId: gk.id,
-              description: `Save by ${gk.firstName} ${gk.lastName}`,
+              description: `Räddning av ${gk.firstName} ${gk.lastName}`,
             }
             stepEvents.push(event)
             allEvents.push(event)
@@ -821,7 +821,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
             minute,
             type: MatchEventType.Corner,
             clubId: attackingClubId,
-            description: 'Corner kick',
+            description: 'Hörnslag',
           }
           stepEvents.push(event)
           allEvents.push(event)
@@ -851,7 +851,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
               clubId: attackingClubId,
               playerId: scorer.id,
               secondaryPlayerId: assister?.id,
-              description: `Transition goal by ${scorer.firstName} ${scorer.lastName}`,
+              description: `Omställningsmål av ${scorer.firstName} ${scorer.lastName}`,
             }
             stepEvents.push(event)
             allEvents.push(event)
@@ -863,7 +863,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
                 clubId: attackingClubId,
                 playerId: assister.id,
                 secondaryPlayerId: scorer.id,
-                description: `Assist by ${assister.firstName} ${assister.lastName}`,
+                description: `Assist av ${assister.firstName} ${assister.lastName}`,
               }
               stepEvents.push(assistEvent)
               allEvents.push(assistEvent)
@@ -880,7 +880,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
               type: MatchEventType.Save,
               clubId: defendingClubId,
               playerId: gk.id,
-              description: `Save by ${gk.firstName} ${gk.lastName}`,
+              description: `Räddning av ${gk.firstName} ${gk.lastName}`,
             }
             stepEvents.push(event)
             allEvents.push(event)
@@ -913,7 +913,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
             minute,
             type: MatchEventType.Corner,
             clubId: attackingClubId,
-            description: 'Corner kick leads to goal',
+            description: 'Hörnmål',
           }
           stepEvents.push(cornerEvent)
           allEvents.push(cornerEvent)
@@ -924,7 +924,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
             clubId: attackingClubId,
             playerId: scorer.id,
             secondaryPlayerId: assister?.id,
-            description: `Corner goal by ${scorer.firstName} ${scorer.lastName}`,
+            description: `Hörnmål av ${scorer.firstName} ${scorer.lastName}`,
             isCornerGoal: true,
           }
           stepEvents.push(event)
@@ -937,7 +937,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
               clubId: attackingClubId,
               playerId: assister.id,
               secondaryPlayerId: scorer.id,
-              description: `Corner assist by ${assister.firstName} ${assister.lastName}`,
+              description: `Hörnassist av ${assister.firstName} ${assister.lastName}`,
             }
             stepEvents.push(assistEvent)
             allEvents.push(assistEvent)
@@ -949,7 +949,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
           minute,
           type: MatchEventType.Corner,
           clubId: attackingClubId,
-          description: 'Corner kick',
+          description: 'Hörnslag',
         }
         stepEvents.push(event)
         allEvents.push(event)
@@ -972,7 +972,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
             type: MatchEventType.Goal,
             clubId: attackingClubId,
             playerId: scorer.id,
-            description: `Half-chance goal by ${scorer.firstName} ${scorer.lastName}`,
+            description: `Halvchans av ${scorer.firstName} ${scorer.lastName}`,
           }
           stepEvents.push(event)
           allEvents.push(event)
@@ -1003,7 +1003,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
             type: MatchEventType.RedCard,
             clubId: defendingClubId,
             playerId: suspPlayer.id,
-            description: `Suspension for ${suspPlayer.firstName} ${suspPlayer.lastName}`,
+            description: `Utvisning av ${suspPlayer.firstName} ${suspPlayer.lastName}`,
           }
           stepEvents.push(event)
           allEvents.push(event)
@@ -1272,7 +1272,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
           clubId: attackingClubId,
           playerId: scorer.id,
           secondaryPlayerId: assister?.id,
-          description: `Overtime goal by ${scorer.firstName} ${scorer.lastName}`,
+          description: `Förlängningsmål av ${scorer.firstName} ${scorer.lastName}`,
         }
         stepEvents.push(event)
         allEvents.push(event)
@@ -1284,7 +1284,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
             clubId: attackingClubId,
             playerId: assister.id,
             secondaryPlayerId: scorer.id,
-            description: `Assist by ${assister.firstName} ${assister.lastName}`,
+            description: `Assist av ${assister.firstName} ${assister.lastName}`,
           }
           stepEvents.push(assistEvent)
           allEvents.push(assistEvent)

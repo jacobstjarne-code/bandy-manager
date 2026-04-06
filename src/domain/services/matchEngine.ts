@@ -346,7 +346,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
               clubId: attackingClubId,
               playerId: scorer.id,
               secondaryPlayerId: assister?.id,
-              description: `Goal by ${scorer.firstName} ${scorer.lastName}`,
+              description: `Mål av ${scorer.firstName} ${scorer.lastName}`,
             })
             if (assister) {
               trackAssist(assister.id)
@@ -356,7 +356,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
                 clubId: attackingClubId,
                 playerId: assister.id,
                 secondaryPlayerId: scorer.id,
-                description: `Assist by ${assister.firstName} ${assister.lastName}`,
+                description: `Assist av ${assister.firstName} ${assister.lastName}`,
               })
             }
           }
@@ -369,7 +369,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
               type: MatchEventType.Save,
               clubId: defendingClubId,
               playerId: gk.id,
-              description: `Save by ${gk.firstName} ${gk.lastName}`,
+              description: `Räddning av ${gk.firstName} ${gk.lastName}`,
             })
           }
         } else if (shotResult < goalThreshold + 0.45) {
@@ -379,7 +379,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
             minute,
             type: MatchEventType.Corner,
             clubId: attackingClubId,
-            description: 'Corner kick',
+            description: 'Hörnslag',
           })
         }
         // else: shot off target, no event
@@ -406,7 +406,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
               clubId: attackingClubId,
               playerId: scorer.id,
               secondaryPlayerId: assister?.id,
-              description: `Transition goal by ${scorer.firstName} ${scorer.lastName}`,
+              description: `Omställningsmål av ${scorer.firstName} ${scorer.lastName}`,
             })
             if (assister) {
               trackAssist(assister.id)
@@ -416,7 +416,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
                 clubId: attackingClubId,
                 playerId: assister.id,
                 secondaryPlayerId: scorer.id,
-                description: `Assist by ${assister.firstName} ${assister.lastName}`,
+                description: `Assist av ${assister.firstName} ${assister.lastName}`,
               })
             }
           }
@@ -429,7 +429,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
               type: MatchEventType.Save,
               clubId: defendingClubId,
               playerId: gk.id,
-              description: `Save by ${gk.firstName} ${gk.lastName}`,
+              description: `Räddning av ${gk.firstName} ${gk.lastName}`,
             })
           }
         }
@@ -457,7 +457,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
             minute,
             type: MatchEventType.Corner,
             clubId: attackingClubId,
-            description: 'Corner kick leads to goal',
+            description: 'Hörnmål',
           })
           trackGoal(scorer.id)
           addEvent({
@@ -466,7 +466,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
             clubId: attackingClubId,
             playerId: scorer.id,
             secondaryPlayerId: assister?.id,
-            description: `Corner goal by ${scorer.firstName} ${scorer.lastName}`,
+            description: `Hörnmål av ${scorer.firstName} ${scorer.lastName}`,
             isCornerGoal: true,
           })
           if (assister) {
@@ -477,7 +477,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
               clubId: attackingClubId,
               playerId: assister.id,
               secondaryPlayerId: scorer.id,
-              description: `Corner assist by ${assister.firstName} ${assister.lastName}`,
+              description: `Hörnassist av ${assister.firstName} ${assister.lastName}`,
             })
           }
         }
@@ -486,7 +486,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
           minute,
           type: MatchEventType.Corner,
           clubId: attackingClubId,
-          description: 'Corner kick',
+          description: 'Hörnslag',
         })
       }
       // else: defended away
@@ -506,7 +506,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
             type: MatchEventType.Goal,
             clubId: attackingClubId,
             playerId: scorer.id,
-            description: `Half-chance goal by ${scorer.firstName} ${scorer.lastName}`,
+            description: `Halvchans av ${scorer.firstName} ${scorer.lastName}`,
           })
         }
       }
@@ -533,7 +533,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
             type: MatchEventType.RedCard,
             clubId: defendingClubId,
             playerId: suspPlayer.id,
-            description: `Suspension for ${suspPlayer.firstName} ${suspPlayer.lastName}`,
+            description: `Utvisning av ${suspPlayer.firstName} ${suspPlayer.lastName}`,
           })
         }
       }
@@ -683,7 +683,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
             clubId: attackingClubId,
             playerId: scorer.id,
             secondaryPlayerId: assister?.id,
-            description: `Overtime goal by ${scorer.firstName} ${scorer.lastName}`,
+            description: `Förlängningsmål av ${scorer.firstName} ${scorer.lastName}`,
           })
           if (assister) {
             trackAssist(assister.id)
@@ -692,7 +692,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
               type: MatchEventType.Assist,
               clubId: attackingClubId,
               playerId: assister.id,
-              description: `Assist by ${assister.firstName} ${assister.lastName}`,
+              description: `Assist av ${assister.firstName} ${assister.lastName}`,
             })
           }
           overtimeResult = isHomeAttacking ? 'home' : 'away'

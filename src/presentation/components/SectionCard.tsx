@@ -18,9 +18,9 @@ export function SectionCard({ title, children, variant = 'sharp', stagger, actio
   return (
     <div
       className={cardClass}
-      style={{ margin: '0 0 10px', overflow: 'hidden', ...style }}
+      style={{ margin: '0 0 8px', overflow: 'hidden', ...style }}
     >
-      <div style={{ padding: '14px 16px' }}>
+      <div style={{ padding: '10px 14px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
           <span style={{
             color: 'var(--text-muted)',

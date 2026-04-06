@@ -46,7 +46,7 @@ export function buildDoctorContext(game: SaveGame): string {
     const won = isHome ? f.homeScore > f.awayScore : f.awayScore > f.homeScore
     const drew = f.homeScore === f.awayScore
     const result = won ? 'V' : drew ? 'O' : 'F'
-    return `  Rond ${f.roundNumber} ${venue} mot ${opponent}: ${score} (${result})`
+    return `  Omgång ${f.roundNumber} ${venue} mot ${opponent}: ${score} (${result})`
   }).join('\n')
 
   // Next opponent
@@ -97,7 +97,7 @@ export function buildDoctorContext(game: SaveGame): string {
   const fanMoodLabel = fanMood >= 70 ? 'hög' : fanMood >= 40 ? 'medel' : 'låg'
 
   return `Säsong: ${game.currentSeason}
-Rond: ${nextRound ?? 'säsongsslut'}
+Omgång: ${nextRound ?? 'säsongsslut'}
 Klubb: ${managedClub.name}
 Tabellplats: ${leaguePosition} av ${game.standings.length}
 Supporterstämning: ${fanMoodLabel} (${fanMood}/100)

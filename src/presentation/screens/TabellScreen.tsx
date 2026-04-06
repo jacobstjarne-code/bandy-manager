@@ -491,7 +491,7 @@ export function TabellScreen() {
         return (
           <div>
             {/* Status */}
-            <div className="card-sharp" style={{ padding: '14px 16px', marginBottom: 10 }}>
+            <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 10 }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: statusColor, fontFamily: 'var(--font-display)' }}>
                 {statusText}
               </p>
@@ -499,7 +499,7 @@ export function TabellScreen() {
 
             {/* Dina cupmatcher */}
             {managedMatches.length > 0 && (
-              <div className="card-sharp" style={{ padding: '14px 16px', marginBottom: 10 }}>
+              <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 10 }}>
                 <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
                   DINA CUPMATCHER
                 </p>
@@ -532,7 +532,7 @@ export function TabellScreen() {
 
             {/* Nästa cupmatch */}
             {nextCupFixture && (
-              <div className="card-round" style={{ padding: '14px 16px', marginBottom: 10 }}>
+              <div className="card-round" style={{ padding: '10px 14px', marginBottom: 10 }}>
                 <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 6 }}>
                   NÄSTA CUPMATCH
                 </p>

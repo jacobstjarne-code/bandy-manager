@@ -139,7 +139,7 @@ export function RoundSummaryScreen() {
         {matchPlayed && lastFixture ? (
           <div
             className="card-sharp"
-            style={{ margin: '0 0 10px', overflow: 'hidden', cursor: 'pointer', ...fadeIn(1) }}
+            style={{ margin: '0 0 8px', overflow: 'hidden', cursor: 'pointer', ...fadeIn(1) }}
             onClick={() => navigate('/game/match-result')}
           >
             <div style={{ padding: '16px 14px 12px' }}>
@@ -181,7 +181,7 @@ export function RoundSummaryScreen() {
             </div>
           </div>
         ) : (
-          <div className="card-sharp" style={{ margin: '0 0 10px', padding: '14px 16px', ...fadeIn(1) }}>
+          <div className="card-sharp" style={{ margin: '0 0 8px', padding: '10px 14px', ...fadeIn(1) }}>
             <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
               🏒 MATCHEN
             </p>
@@ -191,8 +191,8 @@ export function RoundSummaryScreen() {
 
         {/* ── Two-column: Tabell + Form ── */}
         {standing && (
-          <div style={{ display: 'flex', gap: 8, margin: '0 0 10px', ...fadeIn(2) }}>
-            <div className="card-sharp" style={{ flex: 1, padding: '12px 14px' }}>
+          <div style={{ display: 'flex', gap: 8, margin: '0 0 8px', ...fadeIn(2) }}>
+            <div className="card-sharp" style={{ flex: 1, padding: '10px 14px' }}>
               <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
                 📊 TABELL
               </p>
@@ -207,7 +207,7 @@ export function RoundSummaryScreen() {
                 </div>
               </div>
             </div>
-            <div className="card-sharp" style={{ flex: 1, padding: '12px 14px' }}>
+            <div className="card-sharp" style={{ flex: 1, padding: '10px 14px' }}>
               <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
                 📈 FORM
               </p>
@@ -219,7 +219,7 @@ export function RoundSummaryScreen() {
         {/* ── Träning ── */}
         <div
           className="card-sharp"
-          style={{ margin: '0 0 10px', padding: '12px 14px', cursor: 'pointer', ...fadeIn(3) }}
+          style={{ margin: '0 0 8px', padding: '10px 14px', cursor: 'pointer', ...fadeIn(3) }}
           onClick={() => navigate('/game/club')}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -244,7 +244,7 @@ export function RoundSummaryScreen() {
         {youthMatchResult && (
           <div
             className="card-sharp"
-            style={{ margin: '0 0 10px', padding: '12px 14px', cursor: 'pointer', ...fadeIn(4) }}
+            style={{ margin: '0 0 8px', padding: '10px 14px', cursor: 'pointer', ...fadeIn(4) }}
             onClick={() => navigate('/game/club', { state: { tab: 'akademi' } })}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -260,11 +260,11 @@ export function RoundSummaryScreen() {
         )}
 
         {/* ── Two-column: Orten + Ekonomi ── */}
-        <div style={{ display: 'flex', gap: 8, margin: '0 0 10px', ...fadeIn(5) }}>
+        <div style={{ display: 'flex', gap: 8, margin: '0 0 8px', ...fadeIn(5) }}>
           {/* Orten */}
           <div
             className="card-sharp"
-            style={{ flex: 1, padding: '12px 14px', cursor: 'pointer' }}
+            style={{ flex: 1, padding: '10px 14px', cursor: 'pointer' }}
             onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}
           >
             <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
@@ -287,7 +287,7 @@ export function RoundSummaryScreen() {
           {/* Ekonomi */}
           <div
             className="card-sharp"
-            style={{ flex: 1, padding: '12px 14px', cursor: 'pointer' }}
+            style={{ flex: 1, padding: '10px 14px', cursor: 'pointer' }}
             onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}
           >
             <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
@@ -306,7 +306,7 @@ export function RoundSummaryScreen() {
 
         {/* ── Alerts: injuries + inbox ── */}
         {(injuries.length > 0 || newInboxCount > 0) && (
-          <div style={{ display: 'flex', gap: 8, margin: '0 0 10px', ...fadeIn(6) }}>
+          <div style={{ display: 'flex', gap: 8, margin: '0 0 8px', ...fadeIn(6) }}>
             {injuries.length > 0 && (
               <div
                 className="card-sharp"

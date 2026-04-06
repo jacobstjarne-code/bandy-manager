@@ -430,7 +430,7 @@ export function SeasonSummaryScreen() {
                   background: 'var(--bg-surface)',
                   border: '1px solid rgba(196,122,58,0.2)',
                   borderRadius: 10,
-                  padding: '12px 14px',
+                  padding: '10px 14px',
                 }}>
                   <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
                     {trigger.headline}

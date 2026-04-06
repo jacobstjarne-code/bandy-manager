@@ -56,7 +56,7 @@ export function MatchHeader({ fixture, roundLabel, opponentName, isHome, weather
 
   return (
     <div className="card-round" style={{
-      padding: '12px 14px',
+      padding: '10px 14px',
       background: tint !== 'transparent' ? tint : undefined,
       borderLeft: atmo.borderAccent ? `3px solid ${atmo.borderAccent}` : undefined,
     }}>

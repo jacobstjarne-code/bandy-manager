@@ -80,7 +80,7 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
       {/* Atmosphere */}
       {fixture && (
         <div className="card-round" style={{
-          marginBottom: 12, padding: '14px 16px',
+          marginBottom: 12, padding: '10px 14px',
         }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>📣 Pep-talk</p>
           <p style={{
@@ -104,7 +104,7 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
       )}
 
       {/* Summary */}
-      <div className="card-sharp" style={{ marginBottom: 10, padding: '12px 14px' }}>
+      <div className="card-sharp" style={{ marginBottom: 10, padding: '10px 14px' }}>
         <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>📋 Sammanfattning</p>
         {[
           { label: 'Startspelare', value: `${startingIds.length} valda ✓`, color: 'var(--success)' },

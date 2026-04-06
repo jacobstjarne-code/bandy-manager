@@ -112,7 +112,7 @@ export function ClubScreen() {
           color: 'var(--text-muted)',
           fontFamily: 'var(--font-body)',
           borderBottom: '1px solid var(--border)',
-          marginBottom: 10,
+          marginBottom: 8,
         }}>
           {tabDescriptions[activeTab]}
         </p>

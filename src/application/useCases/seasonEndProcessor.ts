@@ -693,6 +693,11 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     } as InboxItem)
   }
 
+  // Board objectives affect patience: each failure costs -5, each success gives +3
+  const objFailures = objectiveResults.filter(r => r.result === 'failed').length
+  const objSuccesses = objectiveResults.filter(r => r.result === 'met').length
+  newBoardPatience = Math.max(0, Math.min(100, newBoardPatience - objFailures * 5 + objSuccesses * 3))
+
   const objRand = mulberry32((seed ?? 42) + game.currentSeason * 777)
   const managedClubForObj = updatedClubs.find(c => c.id === game.managedClubId)
   const newSeasonObjectives = managedClubForObj && game.boardPersonalities

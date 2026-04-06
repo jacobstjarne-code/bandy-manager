@@ -152,7 +152,7 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
         background: 'var(--bg-elevated)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius-sm)',
-        padding: '12px 14px',
+        padding: '10px 14px',
         marginBottom: (recentSessions && recentSessions.length > 0) ? 16 : 0,
       }}>
         {attrLines ? (

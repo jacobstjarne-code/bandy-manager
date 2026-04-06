@@ -270,7 +270,7 @@ export function PlayerProfileContent({ player, isOwned = false }: PlayerProfileC
                 </p>
                 {talkFeedback ? (
                   <div style={{
-                    padding: '12px 14px',
+                    padding: '10px 14px',
                     background: 'var(--bg-elevated)',
                     border: '1px solid var(--border)',
                     borderRadius: 'var(--radius)',
@@ -384,7 +384,7 @@ export function PlayerProfileContent({ player, isOwned = false }: PlayerProfileC
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '12px 14px',
+                  padding: '10px 14px',
                   background: 'var(--bg-elevated)',
                   borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--border)',

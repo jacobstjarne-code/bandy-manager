@@ -22,8 +22,8 @@ export function Card({ children, stagger, gold, danger, style, onClick }: CardPr
           ? '1px solid rgba(239,68,68,0.35)'
           : '1px solid var(--border)',
         borderRadius: 'var(--radius)',
-        padding: '14px 16px',
-        marginBottom: 12,
+        padding: '10px 14px',
+        marginBottom: 8,
         cursor: onClick ? 'pointer' : undefined,
         ...style,
       }}

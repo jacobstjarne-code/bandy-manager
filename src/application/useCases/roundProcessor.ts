@@ -1533,8 +1533,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   newInboxItems.push(...trendArticles)
 
   // Transfer rumors (matchday 5-18)
-  const rumor = generateTransferRumor(preEventGame, localRand)
-  if (rumor) newInboxItems.push(rumor)
+  const rumorResult = generateTransferRumor(preEventGame, localRand)
+  let rumorScoutReports = { ...game.scoutReports }
+  if (rumorResult) {
+    newInboxItems.push(rumorResult.inboxItem)
+    if (rumorResult.scoutHint) {
+      rumorScoutReports = { ...rumorScoutReports, [rumorResult.scoutHint.playerId]: rumorResult.scoutHint }
+    }
+  }
 
   // Mid-season events (narrative triggers at key matchdays)
   const midSeasonItems = checkMidSeasonEvents(preEventGame)
@@ -1851,6 +1857,26 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // ── Apply facility project completion bonuses ──────────────────────────
+  const updatedFacilityProjects = (game.facilityProjects ?? []).map(p => checkProjectCompletion(p, nextMatchday))
+  const oldFacilityProjects = game.facilityProjects ?? []
+  let facilityBonusTotal = 0
+  for (const up of updatedFacilityProjects) {
+    if (up.status === 'completed') {
+      const old = oldFacilityProjects.find(o => o.id === up.id)
+      if (old && old.status === 'in_progress') {
+        facilityBonusTotal += up.facilitiesBonus
+      }
+    }
+  }
+  if (facilityBonusTotal > 0) {
+    postTransferClubs = postTransferClubs.map(c =>
+      c.id === game.managedClubId
+        ? { ...c, facilities: Math.min(100, c.facilities + facilityBonusTotal) }
+        : c
+    )
+  }
+
   let updatedGame: SaveGame = {
     ...game,
     communityStanding: Math.min(100, Math.max(0,
@@ -1868,7 +1894,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     trainingHistory: trimmedTrainingHistory,
     playoffBracket: updatedBracket,
     cupBracket: updatedCupBracket,
-    scoutReports: updatedScoutReports,
+    scoutReports: { ...updatedScoutReports, ...rumorScoutReports },
     activeScoutAssignment: updatedScoutAssignment,
     scoutBudget: game.scoutBudget ?? 10,
     transferBids: trimmedBids,
@@ -1893,7 +1919,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     clubLegends: game.clubLegends ?? [],
     boardObjectives: updatedBoardObjectives,
     boardObjectiveHistory: game.boardObjectiveHistory ?? [],
-    facilityProjects: (game.facilityProjects ?? []).map(p => checkProjectCompletion(p, nextMatchday)),
+    facilityProjects: updatedFacilityProjects,
     trainerArc: updatedArc,
   }
 

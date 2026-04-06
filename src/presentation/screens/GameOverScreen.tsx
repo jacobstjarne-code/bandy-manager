@@ -108,7 +108,7 @@ export function GameOverScreen() {
           background: 'rgba(176,80,64,0.08)',
           border: '1px solid rgba(176,80,64,0.2)',
           borderRadius: 10,
-          padding: '14px 16px',
+          padding: '10px 14px',
           marginBottom: 24,
           textAlign: 'left',
         }}>
@@ -125,7 +125,7 @@ export function GameOverScreen() {
           background: 'var(--bg-elevated)',
           border: '1px solid var(--border)',
           borderRadius: 10,
-          padding: '14px 16px',
+          padding: '10px 14px',
           marginBottom: 24,
         }}>
           <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 12, letterSpacing: '2px', textTransform: 'uppercase' }}>

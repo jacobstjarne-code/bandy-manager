@@ -65,7 +65,7 @@ export function SeasonBarometer({ game }: Props) {
   }
 
   return (
-    <div className="card-sharp" style={{ margin: '0 0 10px' }}>
+    <div className="card-sharp" style={{ margin: '0 0 8px' }}>
       <div style={{ padding: '10px 14px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>

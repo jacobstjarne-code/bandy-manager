@@ -474,7 +474,7 @@ export function TransfersScreen() {
       <div className="card-sharp card-stagger-1" style={{
         background: windowInfo.status === 'open' ? 'rgba(34,197,94,0.08)' : windowInfo.status === 'winter' ? 'rgba(196,122,58,0.08)' : 'rgba(239,68,68,0.06)',
         border: `1px solid ${windowInfo.status === 'open' ? 'rgba(34,197,94,0.3)' : windowInfo.status === 'winter' ? 'rgba(196,122,58,0.25)' : 'rgba(239,68,68,0.2)'}`,
-        padding: '12px 14px',
+        padding: '10px 14px',
         marginBottom: 20,
       }}>
         <p style={{ fontSize: 13, fontWeight: 700, color: windowInfo.status === 'open' ? 'var(--success)' : windowInfo.status === 'winter' ? 'var(--accent)' : 'var(--danger)', marginBottom: 4 }}>
@@ -663,7 +663,7 @@ export function TransfersScreen() {
                   <div
                     key={report.playerId}
                     style={{
-                      padding: '12px 14px',
+                      padding: '10px 14px',
                       borderBottom: index < reportEntries.length - 1 ? '1px solid var(--border)' : 'none',
                       display: 'flex',
                       alignItems: 'flex-start',
@@ -834,7 +834,7 @@ export function TransfersScreen() {
                     const report = player ? (game.scoutReports ?? {})[player.id] : null
                     const isAlreadyScouted = !!report
                     return (
-                      <div key={suggestion.playerId} style={{ padding: '12px 14px', borderBottom: index < latestResult.players.length - 1 ? '1px solid var(--border)' : 'none', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                      <div key={suggestion.playerId} style={{ padding: '10px 14px', borderBottom: index < latestResult.players.length - 1 ? '1px solid var(--border)' : 'none', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', marginBottom: 2 }}>
                             {player ? `${player.firstName} ${player.lastName}` : suggestion.playerId}
@@ -895,7 +895,7 @@ export function TransfersScreen() {
         ) : (
           <div className="card-round" style={{ overflow: 'hidden' }}>
             {expiringPlayers.map((player, index) => (
-              <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', borderBottom: index < expiringPlayers.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
+              <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', borderBottom: index < expiringPlayers.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {player.firstName} {player.lastName}
@@ -927,7 +927,7 @@ export function TransfersScreen() {
         ) : (
           <div className="card-round" style={{ overflow: 'hidden' }}>
             {freeAgents.map((agent, index) => (
-              <div key={agent.id} style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', borderBottom: index < freeAgents.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
+              <div key={agent.id} style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', borderBottom: index < freeAgents.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {agent.firstName} {agent.lastName}
@@ -957,7 +957,7 @@ export function TransfersScreen() {
         )}
         <div className="card-round" style={{ overflow: 'hidden' }}>
           {managedClubPlayers.sort((a, b) => b.currentAbility - a.currentAbility).map((player, index) => (
-            <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '12px 14px', borderBottom: index < managedClubPlayers.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
+            <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', borderBottom: index < managedClubPlayers.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {player.firstName} {player.lastName}

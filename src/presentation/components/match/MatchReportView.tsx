@@ -228,7 +228,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
             if (!potm) return null
             return (
               <div style={{
-                display: 'flex', alignItems: 'center', padding: '12px 14px',
+                display: 'flex', alignItems: 'center', padding: '10px 14px',
                 background: 'linear-gradient(135deg, rgba(196,122,58,0.18) 0%, rgba(196,122,58,0.06) 100%)',
                 borderBottom: '1px solid rgba(196,122,58,0.3)', gap: 10,
               }}>
@@ -277,7 +277,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
 
       {/* Statistics */}
       {fixture.report && (
-        <div className="card-sharp" style={{ padding: '14px 16px', marginBottom: 10 }}>
+        <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 10 }}>
           <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             STATISTIK
           </p>

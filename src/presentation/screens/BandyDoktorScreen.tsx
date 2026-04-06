@@ -277,7 +277,7 @@ export function BandyDoktorScreen() {
             background: 'var(--bg-dark-surface)',
             border: '1px solid var(--danger)',
             borderRadius: 8,
-            padding: '12px 14px',
+            padding: '10px 14px',
             fontSize: 12,
             color: 'var(--danger)',
           }}>

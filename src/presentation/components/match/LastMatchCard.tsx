@@ -28,7 +28,7 @@ export function LastMatchCard({ fixture, game, managedClubId }: LastMatchCardPro
       background: 'var(--bg-surface)',
       border: '1px solid var(--border)',
       borderRadius: 'var(--radius)',
-      padding: '12px 14px',
+      padding: '10px 14px',
       display: 'flex',
       alignItems: 'center',
       gap: 12,

@@ -92,10 +92,10 @@ export function MatchResultScreen() {
       height: '100%',
       overflowY: 'auto',
       background: 'var(--bg)',
-      padding: '20px 16px 90px',
+      padding: '12px 12px 90px',
     }}>
       <div className="card-sharp" style={{
-        padding: '16px 14px',
+        padding: '10px 14px',
         width: '100%',
         maxWidth: 390,
         margin: '0 auto',
@@ -103,7 +103,7 @@ export function MatchResultScreen() {
         {/* Round label */}
         <div style={{ marginBottom: 10, textAlign: 'center', ...fadeIn('0ms') }}>
           <span style={{
-            fontSize: 11, fontWeight: 700, letterSpacing: '1.5px',
+            fontSize: 9, fontWeight: 700, letterSpacing: '1.5px',
             textTransform: 'uppercase', color: 'var(--text-muted)',
           }}>
             {fixture.roundNumber <= 22

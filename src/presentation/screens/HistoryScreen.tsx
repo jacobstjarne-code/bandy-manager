@@ -195,7 +195,7 @@ export function HistoryScreen() {
                 style={{
                   background: isGold ? 'linear-gradient(135deg, rgba(196,122,58,0.12), rgba(196,122,58,0.04))' : undefined,
                   border: isGold ? '1px solid rgba(196,122,58,0.4)' : undefined,
-                  padding: '12px 14px',
+                  padding: '10px 14px',
                 }}
               >
                 <p style={{
@@ -257,7 +257,7 @@ export function HistoryScreen() {
 
       {/* All-time Records */}
       {game.allTimeRecords && (
-        <div className="card-sharp" style={{ padding: '12px 14px', marginBottom: 8 }}>
+        <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <p style={{
             fontSize: 12, fontWeight: 700, letterSpacing: '2px',
             textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 18,
