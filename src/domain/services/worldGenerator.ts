@@ -120,6 +120,7 @@ interface ClubTemplate {
   hasArtificialIce: boolean
   boardExpectation: ClubExpectation
   preferredStyle: ClubStyle
+  arenaName?: string
 }
 
 export const CLUB_TEMPLATES: ClubTemplate[] = [
@@ -657,6 +658,7 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     activeTactic: buildTactic(t.preferredStyle),
     squadPlayerIds: [],
     arenaCapacity: Math.round((t.reputation * 7 + 150) / 50) * 50,
+    arenaName: t.arenaName ?? `${t.name.split(' ')[0]}s IP`,
   }))
 
   const allPlayers: Player[] = []

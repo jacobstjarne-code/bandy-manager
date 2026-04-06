@@ -27,6 +27,7 @@ import { LineupStep } from '../components/match/LineupStep'
 import { TacticStep } from '../components/match/TacticStep'
 import { StartStep } from '../components/match/StartStep'
 import { MatchHeader } from '../components/match/MatchHeader'
+import { calcAttendance } from '../../domain/services/economyService'
 
 export function MatchScreen() {
   const { game, setPlayerLineup, advance, updateTactic } = useGameStore()
@@ -579,6 +580,22 @@ export function MatchScreen() {
           fixture={nextFixture ?? undefined}
           isHome={isHome}
           fanMood={game.fanMood ?? 50}
+          expectedAttendance={nextFixture ? (() => {
+            const homeClub = game.clubs.find(c => c.id === nextFixture.homeClubId)
+            if (!homeClub) return undefined
+            return calcAttendance({
+              club: homeClub,
+              fanMood: game.fanMood ?? 50,
+              position: game.standings.find(s => s.clubId === nextFixture.homeClubId)?.position ?? 6,
+              isKnockout: !!nextFixture.isKnockout,
+              isCup: !!nextFixture.isCup,
+              isDerby: false,
+            })
+          })() : undefined}
+          arenaName={(() => {
+            const homeClub = nextFixture ? game.clubs.find(c => c.id === nextFixture.homeClubId) : undefined
+            return homeClub?.arenaName
+          })()}
         />
       )}
     </div>

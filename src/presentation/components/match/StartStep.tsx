@@ -65,9 +65,11 @@ interface StartStepProps {
   fixture?: Fixture
   isHome?: boolean
   fanMood?: number
+  expectedAttendance?: number
+  arenaName?: string
 }
 
-export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveMode, lineupError, onSetLiveMode, onBack, onPlay, fixture, isHome, fanMood }: StartStepProps) {
+export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveMode, lineupError, onSetLiveMode, onBack, onPlay, fixture, isHome, fanMood, expectedAttendance, arenaName }: StartStepProps) {
   const atmosphere = useMemo(
     () => fixture ? getPreMatchAtmosphere(fixture, matchWeatherData, isHome ?? true, fanMood ?? 50) : '',
     [fixture?.id]
@@ -92,6 +94,13 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
             {atmosphere}
           </p>
         </div>
+      )}
+
+      {/* Attendance info */}
+      {expectedAttendance != null && (
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>
+          🏟️ {arenaName ?? 'Bandyplanen'} · Förväntad publik: ~{expectedAttendance}
+        </p>
       )}
 
       {/* Summary */}

@@ -61,4 +61,5 @@ export interface Fixture {
 
   events: MatchEvent[]
   report?: MatchReport
+  attendance?: number
 }

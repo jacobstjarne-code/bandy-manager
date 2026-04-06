@@ -48,7 +48,7 @@ import { updatePlayerMatchStats } from './processors/statsProcessor'
 import { applyRoundDevelopment } from '../../domain/services/playerDevelopmentService'
 // Playoff logic extracted to processors/playoffProcessor.ts — wiring pending
 // import { processPlayoffRound } from './processors/playoffProcessor'
-import { calcRoundIncome, appendFinanceLog, applyFinanceChange } from '../../domain/services/economyService'
+import { calcRoundIncome, appendFinanceLog, applyFinanceChange, calcAttendance } from '../../domain/services/economyService'
 import type { FinanceEntry } from '../../domain/services/economyService'
 import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/services/playerAvailabilityService'
 import { updateTrainerArc } from '../../domain/services/trainerArcService'
@@ -437,7 +437,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       managedIsHome: isManagedHome,
     })
 
-    simulatedFixtures.push(result.fixture)
+    // Calculate attendance for home matches
+    const homeClubForAttendance = game.clubs.find(c => c.id === fixture.homeClubId)
+    const attendance = homeClubForAttendance ? calcAttendance({
+      club: homeClubForAttendance,
+      fanMood: game.fanMood ?? 50,
+      position: game.standings.find(s => s.clubId === fixture.homeClubId)?.position ?? 6,
+      isKnockout: !!fixture.isKnockout,
+      isCup: !!fixture.isCup,
+      isDerby: !!rivalry,
+    }) : undefined
+    simulatedFixtures.push({ ...result.fixture, attendance })
   }
 
   // Build updated fixtures list (mutable for cancelling decided series)

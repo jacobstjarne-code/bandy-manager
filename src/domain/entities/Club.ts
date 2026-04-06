@@ -35,6 +35,7 @@ export interface Club {
   hasArtificialIce: boolean   // förberedd för V0.2 vädersystem
   hasIndoorArena?: boolean
   arenaCapacity?: number
+  arenaName?: string
 
   activeTactic: Tactic
   squadPlayerIds: string[]

@@ -188,3 +188,22 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
   }
 }
 
+// ── Attendance calculator (exported for UI display) ──────────────────────────
+
+export function calcAttendance(params: {
+  club: { reputation: number; arenaCapacity?: number }
+  fanMood: number
+  position: number
+  isKnockout: boolean
+  isCup: boolean
+  isDerby: boolean
+}): number {
+  const { club, fanMood, position, isKnockout, isCup, isDerby } = params
+  const capacity = club.arenaCapacity ?? Math.round(club.reputation * 7 + 150)
+  const attendanceRate = Math.min(0.90, 0.35 + (fanMood / 100) * 0.40 + (position <= 3 ? 0.08 : 0))
+  const eventBonus = isKnockout ? 1.40 : isCup ? 1.20 : 1.0
+  const derbyBonus = isDerby ? 1.25 : 1.0
+  const base = Math.round(capacity * attendanceRate * eventBonus * derbyBonus)
+  return Math.min(capacity, Math.max(50, base))
+}
+
