@@ -116,18 +116,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician }: Klubb
         </p>
       </SectionCard>
 
-      <SectionCard title="🏟️ Faciliteter" stagger={2}>
-        <FacilityRow label="Anläggningar" value={club.facilities} />
-        <FacilityRow label="Ungdomskvalitet" value={club.youthQuality} />
-        <FacilityRow label="Ungdomsrekrytering" value={club.youthRecruitment} />
-        <div style={{ marginBottom: 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-            <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Ungdomsutveckling</span>
-            <span style={{ fontSize: 14, fontWeight: 600 }}>{club.youthDevelopment}</span>
-          </div>
-          <StatBar value={club.youthDevelopment} color='var(--accent)' height={5} />
-        </div>
-      </SectionCard>
+      {/* Faciliteter moved to combined Anläggning section below */}
 
       {/* Mecenater */}
       <SectionCard title="👥 Mecenater" stagger={2}>
@@ -208,45 +197,54 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician }: Klubb
               {polFeedback.ok ? '✓' : '✗'} {polFeedback.text}
             </p>
           )}
+          {(() => {
+            const li = (game as any).politicianLastInteraction ?? {}
+            const currentRound = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max: number, f: any) => Math.max(max, f.roundNumber), 0)
+            const inviteCooldown = li.invite ? Math.max(0, li.invite + 5 - currentRound) : 0
+            const budgetUsed = li.budgetSeason === game.currentSeason
+            const applyUsed = li.applySeason === game.currentSeason
+            return (
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button className="btn btn-ghost" style={{ flex: 1, padding: '8px 6px', fontSize: 11 }}
+            <button className="btn btn-ghost" disabled={inviteCooldown > 0} style={{ flex: 1, padding: '8px 6px', fontSize: 11, opacity: inviteCooldown > 0 ? 0.5 : 1 }}
               onClick={() => {
                 if (!interactWithPolitician) return
                 const r = interactWithPolitician('invite')
                 setPolFeedback({ text: r.message, ok: r.success })
                 setTimeout(() => setPolFeedback(null), 4000)
               }}>
-              📋 Bjud in till match
+              {inviteCooldown > 0 ? `📋 Omg ${currentRound + inviteCooldown}` : '📋 Bjud in'}
             </button>
-            <button className="btn btn-ghost" style={{ flex: 1, padding: '8px 6px', fontSize: 11 }}
+            <button className="btn btn-ghost" disabled={budgetUsed} style={{ flex: 1, padding: '8px 6px', fontSize: 11, opacity: budgetUsed ? 0.5 : 1 }}
               onClick={() => {
                 if (!interactWithPolitician) return
                 const r = interactWithPolitician('budget')
                 setPolFeedback({ text: r.message, ok: r.success })
                 setTimeout(() => setPolFeedback(null), 4000)
               }}>
-              📊 Presentera budget
+              {budgetUsed ? '📊 Gjort' : '📊 Budget'}
             </button>
-            <button className="btn btn-ghost" style={{ flex: 1, padding: '8px 6px', fontSize: 11 }}
+            <button className="btn btn-ghost" disabled={applyUsed || polData.relationship < 50} style={{ flex: 1, padding: '8px 6px', fontSize: 11, opacity: (applyUsed || polData.relationship < 50) ? 0.5 : 1 }}
               onClick={() => {
                 if (!interactWithPolitician) return
                 const r = interactWithPolitician('apply')
                 setPolFeedback({ text: r.message, ok: r.success })
                 setTimeout(() => setPolFeedback(null), 4000)
               }}>
-              📝 Ansök om bidrag
+              {applyUsed ? '📝 Gjort' : polData.relationship < 50 ? '📝 Kräver 50+' : '📝 Bidrag'}
             </button>
           </div>
+            )
+          })()}
         </SectionCard>
         )
       })()}
 
-      {/* Anläggning */}
-      <SectionCard title="🏗️ Anläggning" stagger={2}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <span style={{ fontSize: 13, fontWeight: 600 }}>Faciliteter: {club.facilities}/100</span>
-          <StatBar value={club.facilities} color='var(--accent)' height={5} />
-        </div>
+      {/* Anläggning + Faciliteter (merged) */}
+      <SectionCard title="🏟️ Anläggning & faciliteter" stagger={2}>
+        <FacilityRow label="Anläggningar" value={club.facilities} />
+        <FacilityRow label="Ungdomskvalitet" value={club.youthQuality} />
+        <FacilityRow label="Ungdomsrekrytering" value={club.youthRecruitment} />
+        <FacilityRow label="Ungdomsutveckling" value={club.youthDevelopment} />
         {(game.facilityProjects ?? []).filter(p => p.status === 'in_progress').map(proj => (
           <div key={proj.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
             <p style={{ fontSize: 12, fontWeight: 600 }}>🚧 {proj.name}</p>

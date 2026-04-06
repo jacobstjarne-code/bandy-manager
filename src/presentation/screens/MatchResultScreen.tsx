@@ -186,14 +186,18 @@ export function MatchResultScreen() {
                   : '⏱️'
                 return (
                   <div key={i} style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
+                    display: 'flex', alignItems: 'center',
+                    justifyContent: isHome ? 'flex-start' : 'flex-end',
+                    gap: 6,
                     animation: `fadeInUp 400ms ease-out ${380 + i * 80}ms both`,
                   }}>
-                    <span style={{ fontSize: 10, color: 'var(--text-secondary)', width: 28, textAlign: 'right', flexShrink: 0 }}>{e.minute}'</span>
-                    <span style={{ fontSize: 11 }}>{icon}</span>
-                    <span style={{ fontSize: 11, color: 'var(--text-secondary)', flex: 1, textAlign: isHome ? 'left' : 'right' }}>
+                    {isHome && <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 24, textAlign: 'right', flexShrink: 0 }}>{e.minute}'</span>}
+                    {isHome && <span style={{ fontSize: 11 }}>{icon}</span>}
+                    <span style={{ fontSize: 11, color: e.type === MatchEventType.RedCard ? 'var(--danger)' : 'var(--text-secondary)' }}>
                       {scorerName}
                     </span>
+                    {!isHome && <span style={{ fontSize: 11 }}>{icon}</span>}
+                    {!isHome && <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 24, textAlign: 'left', flexShrink: 0 }}>{e.minute}'</span>}
                   </div>
                 )
               })}

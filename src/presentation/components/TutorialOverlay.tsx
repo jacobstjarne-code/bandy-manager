@@ -48,7 +48,7 @@ export function TutorialOverlay({ managerName, clubName, onDone }: TutorialOverl
       position: 'fixed',
       inset: 0,
       zIndex: 300,
-      background: 'rgba(0,0,0,0.92)',
+      background: 'rgba(0,0,0,0.6)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',

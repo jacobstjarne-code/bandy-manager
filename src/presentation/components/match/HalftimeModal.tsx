@@ -200,7 +200,7 @@ export function HalftimeModal({
   return (
     <div style={{
       position: 'fixed', inset: 0,
-      background: 'rgba(0,0,0,0.5)',
+      background: 'rgba(0,0,0,0.6)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
       paddingTop: '40px', zIndex: 200, overflowY: 'auto',
     }}>

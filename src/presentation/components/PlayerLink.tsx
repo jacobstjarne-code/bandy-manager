@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useGameStore } from '../store/gameStore'
 
 interface PlayerLinkProps {
   playerId: string
@@ -8,11 +9,19 @@ interface PlayerLinkProps {
 
 export function PlayerLink({ playerId, name, style }: PlayerLinkProps) {
   const navigate = useNavigate()
+  const managedClubId = useGameStore(s => s.game?.managedClubId)
+  const player = useGameStore(s => s.game?.players.find(p => p.id === playerId))
+  const isOwned = player?.clubId === managedClubId
+
   return (
     <button
       onClick={e => {
         e.stopPropagation()
-        navigate('/game/squad', { state: { highlightPlayer: playerId } })
+        if (isOwned) {
+          navigate('/game/squad', { state: { highlightPlayer: playerId } })
+        } else {
+          navigate('/game/transfers', { state: { highlightPlayer: playerId } })
+        }
       }}
       style={{
         background: 'none',

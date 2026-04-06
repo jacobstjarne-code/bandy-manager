@@ -665,6 +665,26 @@ export function DashboardScreen() {
         {/* Bygdens Puls */}
         <CommunityPulse game={game} currentRound={currentRound} onNavigate={() => navigate('/game/club', { state: { tab: 'ekonomi' } })} />
 
+        {/* Dashboard alert — kommun/mecenat changes */}
+        {(() => {
+          const recentCommunity = game.inbox
+            .filter(i => !i.isRead && (i.title.startsWith('🏛️') || i.title.startsWith('👥')))
+            .slice(0, 1)[0]
+          if (!recentCommunity) return null
+          const isPositive = recentCommunity.title.includes('noterade') || recentCommunity.title.includes('ökade') || recentCommunity.title.includes('Ny mecenat')
+          return (
+            <div style={{
+              margin: '0 0 10px', padding: '8px 14px',
+              fontSize: 11, fontWeight: 600,
+              color: isPositive ? 'var(--success)' : 'var(--danger)',
+              background: isPositive ? 'rgba(90,154,74,0.06)' : 'rgba(176,80,64,0.06)',
+              borderRadius: 8, border: `1px solid ${isPositive ? 'rgba(90,154,74,0.2)' : 'rgba(176,80,64,0.2)'}`,
+            }}>
+              {recentCommunity.title}
+            </div>
+          )
+        })()}
+
         {/* Inkorg round card */}
         {latestUnread && (
           <div

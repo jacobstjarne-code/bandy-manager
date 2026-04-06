@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 
 import { useGameStore } from '../store/gameStore'
 import type { Player } from '../../domain/entities/Player'
@@ -28,27 +29,33 @@ function RenewContractModal({ player, currentSeason, minSalary, error, onClose, 
   const [years, setYears] = useState(1)
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      zIndex: 300,
-      background: 'rgba(0,0,0,0.6)',
-      display: 'flex',
-      alignItems: 'flex-end',
-      maxWidth: 430,
-      margin: '0 auto',
-    }}>
-      <div style={{
-        background: 'var(--bg)',
-        borderRadius: '16px 16px 0 0',
-        border: '1px solid var(--border)',
-        borderBottom: 'none',
-        padding: '24px 20px 32px',
-        width: '100%',
-        maxHeight: '85vh',
-        overflowY: 'auto',
-        boxShadow: '0 -8px 40px rgba(0,0,0,0.2)',
-      }}>
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 300,
+        background: 'rgba(0,0,0,0.6)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        maxWidth: 430,
+        margin: '0 auto',
+        padding: '20px',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: 'var(--bg)',
+          borderRadius: 12,
+          border: '1px solid var(--border)',
+          padding: '20px 18px 24px',
+          width: '100%',
+          maxHeight: '85vh',
+          overflowY: 'auto',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
+        }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
           <div>
             <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, fontFamily: 'var(--font-display)' }}>Förläng kontrakt</h3>
@@ -117,17 +124,23 @@ function BidModal({ player, managedClub, onClose, onConfirm }: BidModalProps) {
   const canAfford = managedClub.transferBudget >= offerAmount
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.6)',
-      display: 'flex', alignItems: 'flex-end', maxWidth: 430, margin: '0 auto',
-    }}>
-      <div style={{
-        background: 'var(--bg)', borderRadius: '14px 14px 0 0',
-        border: '1px solid var(--border)', borderBottom: 'none',
-        padding: '20px 16px 28px', width: '100%',
-        maxHeight: '85vh', overflowY: 'auto',
-        boxShadow: '0 -8px 40px rgba(0,0,0,0.2)',
-      }}>
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.6)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        maxWidth: 430, margin: '0 auto', padding: '20px',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: 'var(--bg)', borderRadius: 12,
+          border: '1px solid var(--border)',
+          padding: '20px 16px 24px', width: '100%',
+          maxHeight: '85vh', overflowY: 'auto',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
+        }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
           <div>
             <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, fontFamily: 'var(--font-display)' }}>Lägg bud</h3>
@@ -192,6 +205,20 @@ export function TransfersScreen() {
   const [spaningPosition, setSpanningPosition] = useState<string>('any')
   const [spaningMaxAge, setSpanningMaxAge] = useState<number>(30)
   const [spaningMaxSalary, setSpanningMaxSalary] = useState<number>(16000)
+  const location = useLocation()
+
+  // Handle deep-link from inbox scout report → open bid modal
+  useEffect(() => {
+    const highlightId = (location.state as any)?.highlightPlayer
+    if (highlightId && game) {
+      const player = game.players.find(p => p.id === highlightId)
+      if (player && player.clubId !== game.managedClubId) {
+        setBiddingPlayerId(highlightId)
+        setActiveTab('scouting')
+      }
+      window.history.replaceState({ ...window.history.state, usr: {} }, '')
+    }
+  }, [location.state])
 
   if (!game) return null
 
