@@ -680,7 +680,7 @@ export function DashboardScreen() {
         </div>
 
         {/* Bygdens Puls */}
-        <CommunityPulse game={game} currentRound={currentRound} onNavigate={() => navigate('/game/club', { state: { tab: 'ekonomi' } })} />
+        <CommunityPulse game={game} currentRound={currentRound} onNavigate={() => navigate('/game/club', { state: { tab: 'orten' } })} />
 
         {/* Dashboard alert — kommun/mecenat changes */}
         {(() => {

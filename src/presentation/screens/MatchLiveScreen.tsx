@@ -468,9 +468,9 @@ export function MatchLiveScreen() {
       )}
       {/* LED Scoreboard */}
       <div style={{
-        background: '#0A0A0A',
+        background: 'var(--led-bg)',
         borderRadius: 8,
-        border: '3px solid #1A1A1A',
+        border: '3px solid var(--led-border)',
         boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3)',
         padding: '12px 16px',
         margin: '8px 12px',
@@ -484,14 +484,14 @@ export function MatchLiveScreen() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', width: '100%' }}>
           <div style={{ flex: 1, textAlign: 'center' }}>
             <p style={{ fontFamily: 'Courier New, monospace', fontWeight: 700, fontSize: 13, color: 'rgba(255,255,255,0.85)', letterSpacing: '1.5px', margin: '0 0 2px', textTransform: 'uppercase' }}>
-              {homeShort} <span style={{ color: '#CCFF00', fontSize: 12, fontWeight: 700 }}>H</span>
+              {homeShort} <span style={{ color: 'var(--led-time)', fontSize: 12, fontWeight: 700 }}>H</span>
             </p>
             <span
               key={`home-${homeScore}`}
               style={{
                 display: 'block',
                 fontFamily: 'Courier New, monospace', fontWeight: 900, fontSize: 56,
-                color: homeScoreFlash ? '#FF9900' : '#FF1A1A',
+                color: homeScoreFlash ? 'var(--led-score-flash)' : 'var(--led-score)',
                 textShadow: homeScoreFlash
                   ? '0 0 20px rgba(255,153,0,0.8), 0 0 40px rgba(255,153,0,0.4)'
                   : '0 0 10px rgba(255,26,26,0.6), 0 0 20px rgba(255,26,26,0.3)',
@@ -504,10 +504,10 @@ export function MatchLiveScreen() {
             </span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <span style={{ color: '#FF1A1A', fontSize: 28, fontWeight: 900, opacity: 0.7, fontFamily: 'Courier New, monospace', lineHeight: 1 }}>–</span>
+            <span style={{ color: 'var(--led-score)', fontSize: 28, fontWeight: 900, opacity: 0.7, fontFamily: 'Courier New, monospace', lineHeight: 1 }}>–</span>
             <span style={{
               fontFamily: 'Courier New, monospace', fontWeight: 700, fontSize: 22,
-              color: '#CCFF00',
+              color: 'var(--led-time)',
               textShadow: '0 0 8px rgba(204,255,0,0.5)',
               lineHeight: 1,
             }}>
@@ -516,14 +516,14 @@ export function MatchLiveScreen() {
           </div>
           <div style={{ flex: 1, textAlign: 'center' }}>
             <p style={{ fontFamily: 'Courier New, monospace', fontWeight: 700, fontSize: 13, color: 'rgba(255,255,255,0.85)', letterSpacing: '1.5px', margin: '0 0 2px', textTransform: 'uppercase' }}>
-              <span style={{ color: '#CCFF00', fontSize: 12, fontWeight: 700 }}>G</span> {awayShort}
+              <span style={{ color: 'var(--led-time)', fontSize: 12, fontWeight: 700 }}>G</span> {awayShort}
             </p>
             <span
               key={`away-${awayScore}`}
               style={{
                 display: 'block',
                 fontFamily: 'Courier New, monospace', fontWeight: 900, fontSize: 56,
-                color: awayScoreFlash ? '#FF9900' : '#FF1A1A',
+                color: awayScoreFlash ? 'var(--led-score-flash)' : 'var(--led-score)',
                 textShadow: awayScoreFlash
                   ? '0 0 20px rgba(255,153,0,0.8), 0 0 40px rgba(255,153,0,0.4)'
                   : '0 0 10px rgba(255,26,26,0.6), 0 0 20px rgba(255,26,26,0.3)',
@@ -540,7 +540,7 @@ export function MatchLiveScreen() {
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px',
             borderRadius: 99, background: 'rgba(220,50,30,0.2)',
-            border: '1px solid rgba(220,100,30,0.4)', fontSize: 10, fontWeight: 700, color: '#FF6644',
+            border: '1px solid rgba(220,100,30,0.4)', fontSize: 10, fontWeight: 700, color: 'var(--led-warn)',
           }}>
             🔥 {rivalry.name}
           </div>
@@ -550,7 +550,7 @@ export function MatchLiveScreen() {
             {getWeatherEmoji(matchWeather.weather.condition)}{' '}
             {matchWeather.weather.temperature > 0 ? '+' : ''}{matchWeather.weather.temperature}°
             {' · '}
-            <span style={{ color: matchWeather.weather.iceQuality === IceQuality.Poor ? '#FF6644' : 'inherit' }}>
+            <span style={{ color: matchWeather.weather.iceQuality === IceQuality.Poor ? 'var(--led-warn)' : 'inherit' }}>
               {getIceQualityLabel(matchWeather.weather.iceQuality)}
             </span>
             {matchWeather.weather.temperature <= -15 && ' ❄'}
@@ -583,7 +583,7 @@ export function MatchLiveScreen() {
             <div style={{
               display: 'flex', justifyContent: 'space-between', padding: '4px 16px 0',
               fontSize: 11, fontWeight: 700, fontFamily: 'Courier New, monospace',
-              color: '#FF6644',
+              color: 'var(--led-warn)',
               minHeight: 18,
               opacity: hasSusp ? 1 : 0,
               transition: 'opacity 0.3s ease',

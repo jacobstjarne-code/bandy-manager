@@ -30,7 +30,7 @@ function SeriesBoxes({
   }
 
   return (
-    <div style={{ marginTop: 6, background: '#F0EDE6', borderRadius: 8, padding: '6px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ marginTop: 6, background: 'var(--match-home-bg)', borderRadius: 8, padding: '6px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
         Serie (bäst av {total})
       </span>
@@ -50,7 +50,7 @@ function SeriesBoxes({
             }}
           >
             {b !== 'empty' && (
-              <span style={{ fontSize: 7, color: '#F5F1EB', fontWeight: 700, fontFamily: 'var(--font-body)' }}>
+              <span style={{ fontSize: 7, color: 'var(--text-light)', fontWeight: 700, fontFamily: 'var(--font-body)' }}>
                 {b === 'W' ? 'V' : 'F'}
               </span>
             )}
@@ -116,72 +116,72 @@ export function NextMatchCard({
 
   // ── Leather bar bg per variant ──
   const leatherBg = isFinal
-    ? 'linear-gradient(135deg, #3D3520, #2A2418)'
+    ? 'linear-gradient(135deg, var(--match-bg-default), var(--match-bg-rain))'
     : isPlayoff
-    ? '#322E22'
+    ? 'var(--match-bg-snow)'
     : derbyIntense || isDerby
-    ? '#3D3228'
+    ? 'var(--match-bg-cold)'
     : isAnnandagen
-    ? '#2A3228'
+    ? 'var(--match-bg-fog)'
     : isCup
-    ? '#32301E'
+    ? 'var(--match-bg-wind)'
     : 'var(--bg-leather)'
 
   // ── Header label & tag ──
   let headerIcon = ''
   let headerLabel = 'Nästa match'
   let headerTagText = isHome ? 'HEMMA' : 'BORTA'
-  let headerTagStyle: React.CSSProperties = { background: 'var(--accent-dark)', color: '#F5F1EB', fontSize: 8, padding: '2px 7px' }
+  let headerTagStyle: React.CSSProperties = { background: 'var(--accent-dark)', color: 'var(--match-text-light)', fontSize: 8, padding: '2px 7px' }
 
   if (isFinal) {
     headerIcon = '🏆'
     headerLabel = 'SM-FINAL'
     headerTagText = 'Studenternas IP'
-    headerTagStyle = { background: 'rgba(196,168,76,0.2)', color: '#D4B860', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,168,76,0.3)' }
+    headerTagStyle = { background: 'rgba(196,168,76,0.2)', color: 'var(--match-gold)', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,168,76,0.3)' }
   } else if (isPlayoff && playoffSeries) {
     headerIcon = '⚔️'
     headerLabel = getPlayoffLabel(playoffSeries.round)
     headerTagText = 'TOPP 8'
-    headerTagStyle = { background: 'rgba(196,168,76,0.15)', color: '#D4B860', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,168,76,0.25)' }
+    headerTagStyle = { background: 'rgba(196,168,76,0.15)', color: 'var(--match-gold)', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,168,76,0.25)' }
   } else if (isCup) {
     const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id)
     const roundLabel = cupMatch ? getCupRoundLabel(cupMatch.round) : 'Cup'
     headerIcon = '🏆'
     headerLabel = `Cupen · ${roundLabel}`
     headerTagText = isHome ? 'HEMMA' : 'BORTA'
-    headerTagStyle = { background: 'rgba(196,122,58,0.15)', color: '#D4A850', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,122,58,0.2)' }
+    headerTagStyle = { background: 'rgba(196,122,58,0.15)', color: 'var(--match-copper)', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,122,58,0.2)' }
   } else if (isDerby) {
     headerIcon = derbyIntense ? '🔥' : '⚔️'
     headerLabel = 'Nästa match'
     headerTagText = 'DERBY'
-    headerTagStyle = { background: 'rgba(196,80,50,0.2)', color: '#E8A090', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,80,50,0.3)' }
+    headerTagStyle = { background: 'rgba(196,80,50,0.2)', color: 'var(--match-warn)', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,80,50,0.3)' }
   } else if (isAnnandagen) {
     headerIcon = '🎄'
     headerLabel = 'Annandagsrundan'
     const d = new Date(game.currentDate)
     headerTagText = `${d.getDate()} DEC`
-    headerTagStyle = { background: 'rgba(100,140,80,0.15)', color: '#A0C890', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(100,140,80,0.25)' }
+    headerTagStyle = { background: 'rgba(100,140,80,0.15)', color: 'var(--match-positive)', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(100,140,80,0.25)' }
   } else {
     // Normal: show home/away + round
     headerTagText = `${isHome ? 'HEMMA' : 'BORTA'} · Omg ${nextFixture.roundNumber}`
   }
 
   // Header label text color per variant
-  const headerLabelColor = isFinal ? '#D4B860'
-    : isPlayoff ? '#D4B860'
-    : isDerby ? '#E8A090'
-    : isAnnandagen ? '#A0C890'
-    : isCup ? '#D4A850'
+  const headerLabelColor = isFinal ? 'var(--match-gold)'
+    : isPlayoff ? 'var(--match-gold)'
+    : isDerby ? 'var(--match-warn)'
+    : isAnnandagen ? 'var(--match-positive)'
+    : isCup ? 'var(--match-copper)'
     : 'var(--text-light-secondary)'
 
   // Crest size — SM-Final gets 38px, others 36px
   const crestSize = isFinal ? 38 : 36
 
   // "vs" color
-  const vsColor = isFinal ? '#A25828'
-    : isPlayoff ? '#A25828'
-    : isDerby ? '#B05040'
-    : isAnnandagen ? '#4A6A3A'
+  const vsColor = isFinal ? 'var(--accent-dark)'
+    : isPlayoff ? 'var(--accent-dark)'
+    : isDerby ? 'var(--danger)'
+    : isAnnandagen ? 'var(--success-light)'
     : 'var(--accent-dark)'
 
   // Ice quality tag

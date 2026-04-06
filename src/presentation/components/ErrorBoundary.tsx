@@ -32,7 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
           textAlign: 'center',
         }}>
           <span style={{ fontSize: 40 }}>⚠️</span>
-          <p style={{ color: '#e8c96a', fontSize: 18, fontWeight: 700 }}>Något gick fel</p>
+          <p style={{ color: 'var(--warning)', fontSize: 18, fontWeight: 700 }}>Något gick fel</p>
           <p style={{ color: 'var(--text-secondary)', fontSize: 13, maxWidth: 280 }}>{this.state.message}</p>
           <button
             onClick={() => window.location.reload()}

@@ -383,7 +383,7 @@ export function HalftimeModal({
                           background: canSelect ? 'rgba(74,222,128,0.10)' : 'var(--bg-elevated)',
                           border: `1px solid ${canSelect ? 'rgba(74,222,128,0.35)' : 'var(--border)'}`,
                           borderRadius: 5,
-                          color: canSelect ? 'var(--success)' : '#4a5568',
+                          color: canSelect ? 'var(--success)' : 'var(--text-muted)',
                           cursor: canSelect ? 'pointer' : 'default',
                         }}
                       >

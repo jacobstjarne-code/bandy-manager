@@ -44,6 +44,40 @@
   --ice:            #7EB3D4;
   --ice-dark:       #5A7A8A;
 
+  /* LED scoreboard */
+  --led-bg:          #0A0A0A;
+  --led-border:      #1A1A1A;
+  --led-score:       #FF1A1A;
+  --led-score-flash: #FF9900;
+  --led-time:        #CCFF00;
+  --led-warn:        #FF6644;
+
+  /* Archetype badge colors */
+  --arch-finisher:    #c0392b;
+  --arch-playmaker:   #2563EB;
+  --arch-defensive:   #1a5e3a;
+  --arch-twoway:      #5a2d7a;
+  --arch-reflexgk:    #8B6914;
+  --arch-posgk:       #7b5a14;
+  --arch-dribbler:    #1a5e8a;
+  --arch-corner:      #4a3a8a;
+  --arch-raw:         #2d6e2d;
+  --arch-default:     #1e4d8c;
+
+  /* NextMatchCard atmosphere */
+  --match-bg-default: #3D3520;
+  --match-bg-rain:    #2A2418;
+  --match-bg-snow:    #322E22;
+  --match-bg-cold:    #3D3228;
+  --match-bg-fog:     #2A3228;
+  --match-bg-wind:    #32301E;
+  --match-text-light: #F5F1EB;
+  --match-gold:       #D4B860;
+  --match-warn:       #E8A090;
+  --match-positive:   #A0C890;
+  --match-copper:     #D4A850;
+  --match-home-bg:    #F0EDE6;
+
   /* Legacy aliases (keep for backward compat until screens migrated) */
   --accent-dim:         #A25828;
   --color-primary:      #C47A3A;

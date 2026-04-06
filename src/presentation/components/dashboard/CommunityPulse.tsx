@@ -56,7 +56,7 @@ export function CommunityPulse({ game, currentRound, onNavigate }: Props) {
           <div style={{
             flex: cs,
             height: 7,
-            background: cs > 70 ? 'linear-gradient(90deg, #D4945A, #A25828)' : cs > 40 ? 'linear-gradient(90deg, #C4945A, #A07838)' : 'linear-gradient(90deg, #B05040, #8B3E30)',
+            background: cs > 70 ? 'linear-gradient(90deg, var(--accent), var(--accent-dark))' : cs > 40 ? 'linear-gradient(90deg, var(--accent), var(--warning))' : 'linear-gradient(90deg, var(--danger), var(--danger-text))',
             borderRadius: '4px 0 0 4px',
           }} />
           <div style={{

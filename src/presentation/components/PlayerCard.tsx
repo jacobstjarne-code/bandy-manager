@@ -18,17 +18,17 @@ export interface PlayerCardProps {
 // Archetype color for badge circle
 function archetypeColor(arch: PlayerArchetype): string {
   const map: Partial<Record<PlayerArchetype, string>> = {
-    [PlayerArchetype.Finisher]: '#c0392b',
-    [PlayerArchetype.Playmaker]: '#2563EB',
-    [PlayerArchetype.DefensiveWorker]: '#1a5e3a',
-    [PlayerArchetype.TwoWaySkater]: '#5a2d7a',
-    [PlayerArchetype.ReflexGoalkeeper]: '#8B6914',
-    [PlayerArchetype.PositionalGoalkeeper]: '#7b5a14',
-    [PlayerArchetype.Dribbler]: '#1a5e8a',
-    [PlayerArchetype.CornerSpecialist]: '#4a3a8a',
-    [PlayerArchetype.RawTalent]: '#2d6e2d',
+    [PlayerArchetype.Finisher]: 'var(--arch-finisher)',
+    [PlayerArchetype.Playmaker]: 'var(--arch-playmaker)',
+    [PlayerArchetype.DefensiveWorker]: 'var(--arch-defensive)',
+    [PlayerArchetype.TwoWaySkater]: 'var(--arch-twoway)',
+    [PlayerArchetype.ReflexGoalkeeper]: 'var(--arch-reflexgk)',
+    [PlayerArchetype.PositionalGoalkeeper]: 'var(--arch-posgk)',
+    [PlayerArchetype.Dribbler]: 'var(--arch-dribbler)',
+    [PlayerArchetype.CornerSpecialist]: 'var(--arch-corner)',
+    [PlayerArchetype.RawTalent]: 'var(--arch-raw)',
   }
-  return map[arch] ?? '#1e4d8c'
+  return map[arch] ?? 'var(--arch-default)'
 }
 
 function positionFullLabel(pos: PlayerPosition): string {

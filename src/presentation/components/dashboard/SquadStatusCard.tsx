@@ -69,25 +69,25 @@ export function SquadStatusCard({
             label="Form"
             value={avgForm}
             valueColor="var(--success-light)"
-            barGradient="linear-gradient(90deg, #6BA04A, #5A9A4A)"
+            barGradient="linear-gradient(90deg, var(--success), var(--success-light))"
           />
           <StatBar
             label="Kondition"
             value={avgFitness}
             valueColor="var(--accent)"
-            barGradient="linear-gradient(90deg, #D4945A, #C47A3A)"
+            barGradient="linear-gradient(90deg, var(--accent), var(--accent-dark))"
           />
           <StatBar
             label="Moral"
             value={morale}
             valueColor="var(--ice-dark)"
-            barGradient="linear-gradient(90deg, #7EB3D4, #5A7A8A)"
+            barGradient="linear-gradient(90deg, var(--ice), var(--ice-dark))"
           />
           <StatBar
             label="Skärpa"
             value={sharpness}
             valueColor="var(--text-muted)"
-            barGradient="linear-gradient(90deg, #C4BAA8, #8A857A)"
+            barGradient="linear-gradient(90deg, var(--border-dark), var(--text-muted))"
           />
         </div>
       </div>

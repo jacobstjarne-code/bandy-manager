@@ -45,7 +45,7 @@ export function ContextualNudges({ game, currentRound: _r }: Props) {
 
   const readyYouth = game.youthTeam?.players?.find(p => p.readyForPromotion)
   if (readyYouth)
-    nudges.push({ icon: '⭐', text: `${readyYouth.firstName} ${readyYouth.lastName} kan vara redo för A-laget`, path: '/game/club' })
+    nudges.push({ icon: '⭐', text: `${readyYouth.firstName} ${readyYouth.lastName} kan vara redo för A-laget`, path: '/game/club', state: { tab: 'akademi' } })
 
   if (game.patron?.isActive && (game.patron.happiness ?? 50) < 30)
     nudges.push({ icon: '😤', text: `${game.patron.name} är missnöjd — agera`, path: '/game/club' })
