@@ -251,15 +251,23 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
             )
           })()}
           {ratedPlayers.map(({ player, rating, isHome }) => (
-            <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '9px 14px', borderTop: '1px solid var(--border)', gap: 10 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: isHome ? 'var(--accent)' : 'var(--warning)', flexShrink: 0 }} />
-              <div style={{ flex: 1 }}>
-                <PlayerLink playerId={player.id} name={`${player.firstName} ${player.lastName}`} style={{ fontSize: 13 }} />
-                <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 6 }}>
+            <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', borderTop: '1px solid var(--border)', gap: 8 }}>
+              <span style={{
+                fontSize: 10, color: 'var(--text-muted)', minWidth: 20, textAlign: 'right',
+              }}>
+                #{player.shirtNumber ?? '?'}
+              </span>
+              <div style={{
+                width: 6, height: 6, borderRadius: '50%',
+                background: isHome ? 'var(--accent)' : 'var(--ice)', flexShrink: 0,
+              }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: 12, fontWeight: 600 }}>{player.lastName}</span>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 4 }}>
                   {positionShort(player.position)}
                 </span>
               </div>
-              <span style={{ fontSize: 14, fontWeight: 700, color: ratingColor(rating) }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: ratingColor(rating), fontFamily: 'var(--font-display)' }}>
                 {rating.toFixed(1)}
               </span>
             </div>
