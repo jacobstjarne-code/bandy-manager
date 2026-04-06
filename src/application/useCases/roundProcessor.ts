@@ -435,6 +435,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       rivalry: rivalry ?? undefined,
       fanMood: game.fanMood ?? 50,
       managedIsHome: isManagedHome,
+      storylines: (game.storylines ?? []).filter(s => s.resolved),
     })
 
     // Calculate attendance for home matches

@@ -275,6 +275,26 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
         </div>
       )}
 
+      {/* Statistics */}
+      {fixture.report && (
+        <div className="card-sharp" style={{ padding: '14px 16px', marginBottom: 10 }}>
+          <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+            STATISTIK
+          </p>
+          {[
+            { label: 'Skott', home: fixture.report.shotsHome, away: fixture.report.shotsAway },
+            { label: 'Hörnor', home: fixture.report.cornersHome, away: fixture.report.cornersAway },
+            ...(fixture.attendance ? [{ label: 'Publik', home: fixture.attendance, away: null as number | null }] : []),
+          ].map(row => (
+            <div key={row.label} style={{ display: 'flex', alignItems: 'center', padding: '4px 0' }}>
+              <span style={{ flex: 1, fontSize: 12, fontWeight: 600, textAlign: 'right' }}>{row.home}</span>
+              <span style={{ width: 80, textAlign: 'center', fontSize: 10, color: 'var(--text-muted)' }}>{row.label}</span>
+              <span style={{ flex: 1, fontSize: 12, fontWeight: 600, textAlign: 'left' }}>{row.away ?? ''}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       <button
         onClick={onClose}
         style={{

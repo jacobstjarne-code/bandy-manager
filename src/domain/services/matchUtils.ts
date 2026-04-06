@@ -20,6 +20,7 @@ export interface SimulateMatchInput {
   rivalry?: Rivalry
   fanMood?: number
   managedIsHome?: boolean
+  storylines?: Array<{ playerId?: string; type: string; displayText: string }>
 }
 
 export function computeWeatherEffects(w: Weather) {
@@ -209,6 +210,7 @@ export interface StepByStepInput {
   rivalry?: Rivalry
   fanMood?: number
   managedIsHome?: boolean
+  storylines?: Array<{ playerId?: string; type: string; displayText: string }>
 }
 
 export interface SecondHalfInput extends StepByStepInput {

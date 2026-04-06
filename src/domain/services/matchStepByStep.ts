@@ -1067,6 +1067,18 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       if (rivalry && rand() < 0.40) {
         commentaryText = fillTemplate(pickCommentary(commentary.derby_goal, rand), { ...templateVars, player: findPlayerName(scorerPlayerId), rivalry: rivalry.name })
         isDerbyStep = true
+      } else if (input.storylines && scorerPlayerId && rand() < 0.30) {
+        const scorerStories = input.storylines.filter(s => s.playerId === scorerPlayerId)
+        const proStory = scorerStories.find(s => s.type === 'went_fulltime_pro')
+        const rescueStory = scorerStories.find(s => s.type === 'rescued_from_unemployment')
+        const scorerName = findPlayerName(scorerPlayerId)
+        if (proStory) {
+          commentaryText = `MÅL! ${scorerName} — han slutade jobbet för att satsa heltid. Det har betalat sig!`
+        } else if (rescueStory) {
+          commentaryText = `MÅL! ${scorerName} — mannen som nästan förlorade allt vid varslet. Nu gör han mål!`
+        } else {
+          commentaryText = fillTemplate(pickGoalCommentary(isHomeAttacking ? homeScore : awayScore, isHomeAttacking ? awayScore : homeScore, rand, minute), templateVars)
+        }
       } else if (weather && weather.condition === WeatherCondition.HeavySnow && rand() < 0.20) {
         commentaryText = fillTemplate(pickCommentary(commentary.weather_goal_heavySnow, rand), templateVars)
       } else if (weather && weather.condition === WeatherCondition.Thaw && rand() < 0.20) {

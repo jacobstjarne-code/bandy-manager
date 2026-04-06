@@ -222,7 +222,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
         <img
           src={portraitPath}
           alt={`${player.firstName} ${player.lastName}`}
-          style={{ width: 72, height: 72, borderRadius: '50%', border: '2px solid var(--accent)', objectFit: 'cover', background: 'var(--bg)' }}
+          style={{ width: 72, height: 72, borderRadius: '50%', border: '2px solid var(--accent)', objectFit: 'cover', objectPosition: 'center 20%', background: 'var(--bg)' }}
           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
         />
       </div>
