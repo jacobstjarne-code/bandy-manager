@@ -49,9 +49,9 @@ interface TrainingSectionProps {
   recentSessions?: { roundNumber: number; focus: TrainingFocus; injuryCount: number }[]
   trainingInjuriesThisSeason: number
   onChangeFocus: (focus: TrainingFocus) => void
-  proCount?: number       // number of full-time pros in squad
-  partTimeCount?: number  // number of part-time players
-  avgFlexibility?: number // average flexibility of part-time players
+  proCount?: number
+  partTimeCount?: number
+  avgFlexibility?: number
 }
 
 export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSeason, onChangeFocus, proCount, partTimeCount, avgFlexibility }: TrainingSectionProps) {
@@ -63,87 +63,97 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
 
   return (
     <SectionCard title="🏋️ Daglig träning" stagger={1}>
-      <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, lineHeight: 1.4 }}>
-        Välj område och intensitet. Högre = snabbare utveckling men ökad skaderisk.
-      </p>
+      {/* Current selection summary */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8,
+        padding: '6px 10px', borderRadius: 'var(--radius-sm)',
+        background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.2)',
+      }}>
+        <span style={{ fontSize: 18 }}>{trainingTypeEmoji(focus.type)}</span>
+        <div style={{ flex: 1 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)' }}>
+            {trainingTypeLabel(focus.type)}
+          </span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
+            · {trainingIntensityLabel(focus.intensity)}
+          </span>
+        </div>
+        <span style={{ fontSize: 10, color: INTENSITY_COLOR[focus.intensity], fontWeight: 600 }}>
+          {INTENSITY_TOOLTIP[focus.intensity]}
+        </span>
+      </div>
 
-      {/* Type list — each row: emoji + label + intensity segmented control */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 }}>
+      {/* Step 1: Choose training type */}
+      <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
+        TRÄNINGSOMRÅDE
+      </p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
         {TRAINING_TYPES.map(type => {
-          const typeActive = focus.type === type
+          const isActive = focus.type === type
           return (
-            <div
+            <button
               key={type}
+              onClick={() => onChangeFocus({ type, intensity: focus.intensity })}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '6px 10px',
-                borderRadius: 'var(--radius-sm)',
-                background: typeActive ? 'rgba(196,122,58,0.08)' : 'var(--bg-elevated)',
-                border: `1px solid ${typeActive ? 'var(--accent)' : 'var(--border)'}`,
+                display: 'flex', alignItems: 'center', gap: 4,
+                padding: '5px 8px', borderRadius: 6,
+                background: isActive ? 'rgba(196,122,58,0.15)' : 'var(--bg-elevated)',
+                border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}`,
+                color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
+                fontSize: 11, fontWeight: isActive ? 700 : 400,
+                cursor: 'pointer',
               }}
             >
-              <span style={{ fontSize: 16, flexShrink: 0 }}>{trainingTypeEmoji(type)}</span>
-              <span style={{
-                fontSize: 12, fontWeight: 600, flexShrink: 0, minWidth: 80,
-                color: typeActive ? 'var(--accent)' : 'var(--text-primary)',
-              }}>
-                {trainingTypeLabel(type)}
-              </span>
-              {/* Segmented intensity control */}
-              <div style={{ display: 'flex', gap: 3, background: 'var(--bg)', borderRadius: 8, padding: 3, flex: 1 }}>
-                {TRAINING_INTENSITIES.map(intensity => {
-                  const active = typeActive && focus.intensity === intensity
-                  const color = INTENSITY_COLOR[intensity]
-                  return (
-                    <button
-                      key={intensity}
-                      onClick={() => onChangeFocus({ type, intensity })}
-                      style={{
-                        flex: 1,
-                        padding: '5px 2px',
-                        borderRadius: 6,
-                        background: active ? `${color}22` : 'transparent',
-                        border: active ? `1px solid ${color}` : '1px solid transparent',
-                        color: active ? color : 'var(--text-muted)',
-                        fontSize: 10,
-                        fontWeight: active ? 700 : 400,
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {trainingIntensityLabel(intensity)}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
+              <span style={{ fontSize: 13 }}>{trainingTypeEmoji(type)}</span>
+              {trainingTypeLabel(type)}
+            </button>
           )
         })}
       </div>
-      <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12, textAlign: 'center' }}>
-        {INTENSITY_TOOLTIP[focus.intensity]}
+
+      {/* Step 2: Choose intensity */}
+      <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
+        INTENSITET
       </p>
+      <div style={{ display: 'flex', gap: 3, background: 'var(--bg)', borderRadius: 8, padding: 3, marginBottom: 8 }}>
+        {TRAINING_INTENSITIES.map(intensity => {
+          const active = focus.intensity === intensity
+          const color = INTENSITY_COLOR[intensity]
+          return (
+            <button
+              key={intensity}
+              onClick={() => onChangeFocus({ type: focus.type, intensity })}
+              style={{
+                flex: 1, padding: '7px 4px', borderRadius: 6,
+                background: active ? `${color}22` : 'transparent',
+                border: active ? `1px solid ${color}` : '1px solid transparent',
+                color: active ? color : 'var(--text-muted)',
+                fontSize: 11, fontWeight: active ? 700 : 400,
+                cursor: 'pointer',
+              }}
+            >
+              {trainingIntensityLabel(intensity)}
+            </button>
+          )
+        })}
+      </div>
 
       {/* Effects summary */}
       <div style={{
         background: 'var(--bg-elevated)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius-sm)',
-        padding: '10px 14px',
-        marginBottom: (recentSessions && recentSessions.length > 0) ? 16 : 0,
+        padding: '8px 14px',
+        marginBottom: (recentSessions && recentSessions.length > 0) ? 8 : 0,
       }}>
         {attrLines ? (
-          <p style={{ fontSize: 13, marginBottom: 6 }}>
+          <p style={{ fontSize: 12, marginBottom: 4 }}>
             <span style={{ color: 'var(--text-muted)' }}>Tränar: </span>{attrLines}
           </p>
         ) : (
-          <p style={{ fontSize: 13, marginBottom: 6, color: 'var(--text-muted)' }}>
-            Ingen attributträning
-          </p>
+          <p style={{ fontSize: 12, marginBottom: 4, color: 'var(--text-muted)' }}>Ingen attributträning</p>
         )}
-        <p style={{ fontSize: 13 }}>
+        <p style={{ fontSize: 12 }}>
           <span style={{ color: 'var(--text-muted)' }}>Kondition: </span>
           <span style={{ color: effects.fitnessChange >= 0 ? 'var(--success)' : 'var(--danger)' }}>
             {effects.fitnessChange >= 0 ? '+' : ''}{effects.fitnessChange}
@@ -158,39 +168,22 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
           <span style={{ color: effects.moraleEffect > 0 ? 'var(--success)' : effects.moraleEffect < 0 ? 'var(--danger)' : 'var(--text-secondary)' }}>
             {moraleLabel(effects.moraleEffect)}
           </span>
-          {effects.sharpnessEffect > 0 && (
-            <>
-              {'  '}
-              <span style={{ color: 'var(--text-muted)' }}>Skärpa: </span>
-              <span style={{ color: 'var(--success)' }}>+{effects.sharpnessEffect}</span>
-            </>
-          )}
         </p>
       </div>
 
-      {/* Job impact on training */}
+      {/* Job impact */}
       {partTimeCount != null && partTimeCount > 0 && (
         <div style={{
-          background: 'var(--bg-elevated)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-sm)',
-          padding: '10px 14px',
-          marginBottom: 12,
-          fontSize: 12,
-          color: 'var(--text-secondary)',
+          background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)', padding: '8px 14px', marginBottom: 8,
+          fontSize: 11, color: 'var(--text-secondary)',
         }}>
-          <p style={{ color: 'var(--text-muted)', fontWeight: 600, marginBottom: 4 }}>👷 Jobbpåverkan</p>
-          <p>
-            <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{proCount ?? 0}</span> heltidsproffs (full träningseffekt) · {' '}
-            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{partTimeCount}</span> deltidsspelare
-            {avgFlexibility != null && (
-              <span style={{ color: 'var(--text-muted)' }}> (snitt flex {avgFlexibility}%)</span>
-            )}
-          </p>
+          <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>👷 </span>
+          <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{proCount ?? 0}</span> heltid · {' '}
+          <span style={{ fontWeight: 600 }}>{partTimeCount}</span> deltid
+          {avgFlexibility != null && <span style={{ color: 'var(--text-muted)' }}> (flex {avgFlexibility}%)</span>}
           {avgFlexibility != null && avgFlexibility < 65 && (
-            <p style={{ fontSize: 11, color: 'var(--danger)', marginTop: 4 }}>
-              ⚠️ Låg flexibilitet — deltidsspelare får sämre träningseffekt
-            </p>
+            <span style={{ color: 'var(--danger)' }}> — sämre träningseffekt</span>
           )}
         </div>
       )}
@@ -198,19 +191,15 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
       {/* Recent sessions */}
       {recentSessions && recentSessions.length > 0 && (
         <div style={{
-          background: 'var(--bg-elevated)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-sm)',
-          padding: '10px 14px',
-          fontSize: 12,
-          color: 'var(--text-secondary)',
+          background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)', padding: '8px 14px', fontSize: 11, color: 'var(--text-secondary)',
         }}>
-          <p style={{ color: 'var(--text-muted)', fontWeight: 600, marginBottom: 8 }}>Senaste träningar</p>
+          <p style={{ color: 'var(--text-muted)', fontWeight: 600, marginBottom: 4 }}>Senaste</p>
           {recentSessions.map((session, i) => (
-            <p key={i} style={{ marginBottom: i < recentSessions.length - 1 ? 6 : 0 }}>
-              Omgång {session.roundNumber}: {trainingTypeLabel(session.focus.type)} ({trainingIntensityLabel(session.focus.intensity)})
+            <p key={i} style={{ marginBottom: i < recentSessions.length - 1 ? 3 : 0 }}>
+              Omg {session.roundNumber}: {trainingTypeLabel(session.focus.type)} ({trainingIntensityLabel(session.focus.intensity)})
               {session.injuryCount === 0
-                ? <span style={{ color: 'var(--text-muted)' }}> — Inga skador</span>
+                ? <span style={{ color: 'var(--text-muted)' }}> — ok</span>
                 : <span style={{ color: 'var(--warning)' }}> — ⚠️ {session.injuryCount} skada{session.injuryCount > 1 ? 'r' : ''}</span>}
             </p>
           ))}
@@ -221,13 +210,8 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
       <div style={{
         background: trainingInjuriesThisSeason > 0 ? 'rgba(176,80,64,0.06)' : 'var(--bg-elevated)',
         border: `1px solid ${trainingInjuriesThisSeason > 0 ? 'rgba(176,80,64,0.25)' : 'var(--border)'}`,
-        borderRadius: 'var(--radius-sm)',
-        padding: '8px 14px',
-        marginTop: 8,
-        fontSize: 12,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        borderRadius: 'var(--radius-sm)', padding: '6px 14px', marginTop: 6,
+        fontSize: 11, display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
         <span style={{ color: 'var(--text-muted)' }}>Träningsskador denna säsong</span>
         <span style={{ fontWeight: 600, color: trainingInjuriesThisSeason > 0 ? 'var(--danger)' : 'var(--success)' }}>

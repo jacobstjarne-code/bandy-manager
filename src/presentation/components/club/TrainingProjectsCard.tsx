@@ -84,42 +84,49 @@ export function TrainingProjectsCard({ projects, onStart, onCancel }: TrainingPr
 
       {/* Available projects — compact rows */}
       {freeSlots > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {PROJECT_DEFINITIONS.map(def => {
-            const alreadyActive = active.some(p => p.type === def.type)
-            if (alreadyActive) return null
-            return (
-              <div key={def.type} style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                borderTop: '1px solid var(--border)',
-                padding: '8px 0',
-              }}>
-                <span style={{ fontWeight: 700, fontSize: 13, flex: 1, minWidth: 0 }}>{def.emoji} {def.label}</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end', flexShrink: 0 }}>
+        <>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4, marginTop: 4 }}>
+            TILLGÄNGLIGA ({freeSlots} {freeSlots === 1 ? 'plats' : 'platser'})
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {PROJECT_DEFINITIONS.map(def => {
+              const alreadyActive = active.some(p => p.type === def.type)
+              if (alreadyActive) return null
+              return (
+                <div key={def.type} style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '5px 8px',
+                  borderBottom: '1px solid var(--border)',
+                }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {def.emoji} {def.label}
+                  </span>
+                  <span style={{ fontSize: 9, color: RISK_COLOR[def.injuryRisk], flexShrink: 0 }}>
+                    {RISK_LABEL[def.injuryRisk]} risk
+                  </span>
                   <button
-                    className="btn btn-copper"
+                    className="btn btn-ghost"
                     onClick={() => onStart(def.type, 'normal')}
-                    style={{ fontSize: 11, padding: '3px 8px' }}
+                    style={{ fontSize: 10, padding: '3px 8px', flexShrink: 0 }}
                   >
-                    Starta · {def.roundsNormal} omg
+                    {def.roundsNormal} omg
                   </button>
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <button
-                      className="btn btn-ghost"
-                      onClick={() => onStart(def.type, 'hard')}
-                      style={{ fontSize: 11, padding: '3px 8px', color: 'var(--danger)' }}
-                    >
-                      ⚡ {def.roundsHard} omg
-                    </button>
-                    <span style={{ fontSize: 10, color: RISK_COLOR[def.injuryRisk] }}>
-                      {RISK_LABEL[def.injuryRisk]}
-                    </span>
-                  </div>
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => onStart(def.type, 'hard')}
+                    style={{ fontSize: 10, padding: '3px 8px', flexShrink: 0, color: 'var(--danger)' }}
+                    title="Snabbare men högre skaderisk"
+                  >
+                    ⚡ {def.roundsHard}
+                  </button>
                 </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+          <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+            ⚡ = intensiv (snabbare, men högre skaderisk)
+          </p>
+        </>
       )}
     </SectionCard>
   )
