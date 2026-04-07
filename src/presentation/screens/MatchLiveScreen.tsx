@@ -592,8 +592,8 @@ export function MatchLiveScreen() {
               opacity: hasSusp ? 1 : 0,
               transition: 'opacity 0.3s ease',
             }}>
-              <div>{homeSusp.length > 0 ? `UTV ${homeSusp.join(' ')}` : ''}</div>
-              <div>{awaySusp.length > 0 ? `UTV ${awaySusp.join(' ')}` : ''}</div>
+              <div style={{ textAlign: 'left', flex: 1 }}>{homeSusp.length > 0 ? `UTV ${homeSusp.join(' ')}` : ''}</div>
+              <div style={{ textAlign: 'right', flex: 1 }}>{awaySusp.length > 0 ? `UTV ${awaySusp.join(' ')}` : ''}</div>
             </div>
           )
         })()}
@@ -741,11 +741,11 @@ export function MatchLiveScreen() {
           const icon = primaryEvent ? eventIcon(primaryEvent.type) : ''
 
           // Bug 0.6: Side-align events by team (home=left, away=right)
-          const isSidedEvent = primaryEvent && (
-            primaryEvent.type === MatchEventType.Goal ||
-            primaryEvent.type === MatchEventType.RedCard
+          // Goals AND suspensions (RedCard) are sided
+          const sidedEvent = s.events.find(e =>
+            (e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard) && e.clubId
           )
-          const isAwayEvent = isSidedEvent && getEventAlignment(primaryEvent.clubId, fixture.homeClubId) === 'away'
+          const isAwayEvent = sidedEvent ? getEventAlignment(sidedEvent.clubId, fixture.homeClubId) === 'away' : false
 
           const rows: React.ReactNode[] = [
             <div

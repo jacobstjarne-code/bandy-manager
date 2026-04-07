@@ -1169,10 +1169,9 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     // Weather note for step 0
     const stepWeatherNote = step === 0 ? openingWeatherNote : undefined
 
-    // Attendance announcement around minute 67 (step 45)
-    if (step === 45 && !goalScored && !suspensionOccurred) {
-      const estAttendance = 150 + Math.round(rand() * 250)
-      commentaryText = `Publiksiffran annonseras: ${estAttendance} åskådare på plats.`
+    // Attendance announcement around minute 72 (step 48)
+    if (step === 48 && !goalScored && !suspensionOccurred && input.fixture.attendance) {
+      commentaryText = `Publiksiffran annonseras: ${input.fixture.attendance} åskådare på plats.`
     }
 
     yield {

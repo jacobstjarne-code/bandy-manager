@@ -207,11 +207,12 @@ function CupCard({ bracket, game }: CupCardProps) {
       </div>
     )
   } else {
-    // No scheduled cup fixture — determine next round based on ACTUALLY completed matches
+    // No scheduled cup fixture — determine next round
+    const hasBye = bracket.matches.some(m => m.isBye && m.homeClubId === managedClubId)
     const completedCupIds = new Set(game.fixtures.filter(f => f.isCup && f.status === 'completed').map(f => f.id))
-    const managedBracketMatches = bracket.matches.filter(m => m.homeClubId === managedClubId || m.awayClubId === managedClubId)
+    const managedBracketMatches = bracket.matches.filter(m => (m.homeClubId === managedClubId || m.awayClubId === managedClubId) && !m.isBye)
     const actuallyWon = managedBracketMatches.filter(m => m.winnerId === managedClubId && m.fixtureId && completedCupIds.has(m.fixtureId))
-    const highestWonRound = actuallyWon.length > 0 ? Math.max(...actuallyWon.map(m => m.round)) : 0
+    const highestWonRound = actuallyWon.length > 0 ? Math.max(...actuallyWon.map(m => m.round)) : (hasBye ? 1 : 0)
     const CUP_ROUND_MATCHDAYS: Record<number, number> = { 1: 3, 2: 8, 3: 13, 4: 19 }
     const nextCupRound = highestWonRound + 1
     const nextRoundName = nextCupRound === 1 ? 'Förstarunda'
@@ -221,9 +222,16 @@ function CupCard({ bracket, game }: CupCardProps) {
     const nextRoundMatchday = CUP_ROUND_MATCHDAYS[nextCupRound]
     statusContent = nextRoundName
       ? (
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
-          {nextRoundName} spelas matchdag {nextRoundMatchday ?? '?'}
-        </p>
+        <div>
+          {hasBye && highestWonRound === 1 && (
+            <p style={{ fontSize: 11, color: 'var(--success)', fontWeight: 600, marginBottom: 4 }}>
+              ✓ Direktkvalificerade till kvartsfinal
+            </p>
+          )}
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
+            {nextRoundName} spelas matchdag {nextRoundMatchday ?? '?'}
+          </p>
+        </div>
       )
       : <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Drar igång under säsongen</p>
   }
