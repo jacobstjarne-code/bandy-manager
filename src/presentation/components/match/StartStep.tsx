@@ -96,16 +96,23 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
         </div>
       )}
 
-      {/* Attendance info */}
+      {/* Match context — attendance + arena */}
       {expectedAttendance != null && (
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>
-          🏟️ {arenaName ?? 'Bandyplanen'} · Förväntad publik: ~{expectedAttendance}
-        </p>
+        <div className="card-sharp" style={{ marginBottom: 8, padding: '8px 14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+              🏟️ {arenaName ?? 'Bandyplanen'}
+            </span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
+              ~{expectedAttendance} åskådare
+            </span>
+          </div>
+        </div>
       )}
 
       {/* Summary */}
-      <div className="card-sharp" style={{ marginBottom: 10, padding: '10px 14px' }}>
-        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>📋 Sammanfattning</p>
+      <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
+        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>📋 Sammanfattning</p>
         {[
           { label: 'Startspelare', value: `${startingIds.length} valda ✓`, color: 'var(--success)' },
           { label: 'Mentalitet', value: tacticLabel('mentality', tacticState.mentality) },
@@ -156,14 +163,14 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 10 }}>
+      <div style={{ display: 'flex', gap: 8 }}>
         <button onClick={onBack} className="btn btn-outline" style={{
-          flex: 1, padding: '13px', fontSize: 14,
+          flex: 1, padding: '13px', fontSize: 13,
         }}>
-          ← Ändra taktik
+          ← Taktik
         </button>
         <button onClick={onPlay} className="btn btn-copper" style={{
-          flex: 2, padding: '13px', fontSize: 15, fontWeight: 700, letterSpacing: '0.3px',
+          flex: 2, padding: '13px', fontSize: 14, fontWeight: 700, letterSpacing: '0.3px',
         }}>
           SPELA MATCHEN →
         </button>

@@ -585,15 +585,22 @@ export function MatchLiveScreen() {
             })
           return (
             <div style={{
-              display: 'flex', justifyContent: 'space-between', padding: '4px 16px 0',
+              display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center',
+              width: '100%', padding: '4px 0 0',
               fontSize: 11, fontWeight: 700, fontFamily: 'Courier New, monospace',
               color: 'var(--led-warn)',
-              minHeight: 18,
+              minHeight: 20,
               opacity: hasSusp ? 1 : 0,
               transition: 'opacity 0.3s ease',
             }}>
-              <div style={{ textAlign: 'left', flex: 1 }}>{homeSusp.length > 0 ? `UTV ${homeSusp.join(' ')}` : ''}</div>
-              <div style={{ textAlign: 'right', flex: 1 }}>{awaySusp.length > 0 ? `UTV ${awaySusp.join(' ')}` : ''}</div>
+              {/* Same 3-column layout as score row: home | center | away */}
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                {homeSusp.length > 0 && <span>⚠ {homeSusp.join(' ')}</span>}
+              </div>
+              <div style={{ width: 60, flexShrink: 0 }} />
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                {awaySusp.length > 0 && <span>{awaySusp.join(' ')} ⚠</span>}
+              </div>
             </div>
           )
         })()}

@@ -25,7 +25,7 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
   )
 
   return (
-    <div style={{ padding: '0 14px 16px' }}>
+    <div style={{ padding: '0 12px 24px' }}>
       {adviceItems.length > 0 && (
         <div style={{ marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
           {adviceItems.map((item, i) => (
@@ -101,14 +101,14 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
         </div>
       ) : null}
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
         <button onClick={onBack} className="btn btn-outline" style={{
-          flex: 1, padding: '13px', fontSize: 14,
+          flex: 1, padding: '13px', fontSize: 13,
         }}>
-          ← Ändra uppställning
+          ← Uppställning
         </button>
         <button onClick={onNext} className="btn btn-copper" style={{
-          flex: 2, padding: '13px', fontSize: 15, fontWeight: 700,
+          flex: 2, padding: '13px', fontSize: 14, fontWeight: 700,
         }}>
           Nästa →
         </button>

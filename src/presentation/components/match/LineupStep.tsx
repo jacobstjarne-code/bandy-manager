@@ -211,7 +211,7 @@ export function LineupStep({
       )}
 
       {/* Validation + next — always visible */}
-      <div style={{ padding: '8px 16px 24px' }}>
+      <div style={{ padding: '8px 12px 24px' }}>
         {!canPlay && (
           <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', fontSize: 12, color: 'var(--danger)', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
             {startingIds.length !== 11 && <span>Välj exakt 11 startspelare (du har {startingIds.length})</span>}
