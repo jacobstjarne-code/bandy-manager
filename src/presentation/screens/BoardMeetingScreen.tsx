@@ -301,8 +301,17 @@ export function BoardMeetingScreen() {
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16, fontStyle: 'italic', fontFamily: 'var(--font-display)' }}>
             {openerText}
           </p>
-          {boardMembers.map((member, i) => {
-            const quote = getContextualQuote(member.personality, i)
+          {(() => {
+            const usedQuotes = new Set<string>()
+            return boardMembers.map((member, i) => {
+            let quote = getContextualQuote(member.personality, i)
+            // If same quote already used, try next index
+            let attempts = 0
+            while (usedQuotes.has(quote) && attempts < 5) {
+              attempts++
+              quote = getContextualQuote(member.personality, i + attempts * 7)
+            }
+            usedQuotes.add(quote)
             if (!quote) return null
             return (
               <div key={member.name + i} style={{
@@ -322,7 +331,8 @@ export function BoardMeetingScreen() {
                 </p>
               </div>
             )
-          })}
+          })
+          })()}
         </div>
       )}
 

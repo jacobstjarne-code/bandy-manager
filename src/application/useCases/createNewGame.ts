@@ -91,10 +91,30 @@ function generateBoardMembers(rand: () => number): BoardMember[] {
   const kassorer = BOARD_PROFILES.filter(p => p.role === 'kassör')
   const ledamoter = BOARD_PROFILES.filter(p => p.role === 'ledamot')
 
+  // Pick chair first
   const chair = pickRandom(ordforanden, rand)
-  const treasurer = pickRandom(kassorer, rand)
-  const memberCount = 1 + Math.floor(rand() * 3)
-  const members = pickUnique(ledamoter, memberCount, rand)
+
+  // Treasurer must have DIFFERENT personality than chair
+  const treasurerCandidates = kassorer.filter(p => p.personality !== chair.personality)
+  const treasurer = treasurerCandidates.length > 0
+    ? pickRandom(treasurerCandidates, rand)
+    : pickRandom(kassorer, rand)
+
+  // Pick 1-3 ledamöter, ensuring personality diversity
+  const usedPersonalities = new Set([chair.personality, treasurer.personality])
+  const memberCount = 1 + Math.floor(rand() * 2) // 1-2 members
+
+  // First member: prefer a personality not yet used
+  const diverseCandidates = ledamoter.filter(p => !usedPersonalities.has(p.personality))
+  const firstMember = diverseCandidates.length > 0
+    ? pickRandom(diverseCandidates, rand)
+    : pickRandom(ledamoter, rand)
+
+  const members = [firstMember]
+  if (memberCount > 1) {
+    const remaining = ledamoter.filter(p => p.first !== firstMember.first || p.last !== firstMember.last)
+    members.push(pickRandom(remaining, rand))
+  }
 
   return [chair, treasurer, ...members].map(p => ({
     name: `${p.first} ${p.last}`,
