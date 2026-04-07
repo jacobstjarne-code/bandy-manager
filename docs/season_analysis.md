@@ -1,6 +1,6 @@
 # Säsongsanalys — Bandy Manager v0.1
 
-Genererad: 2026-04-07 11:39:48
+Genererad: 2026-04-07 11:46:54
 Simulerade säsonger: 5 (seeds: 42, 123, 456, 789, 1337)
 
 ## Före/efter-jämförelse (kalibreringsjusteringar 2026-03-22)

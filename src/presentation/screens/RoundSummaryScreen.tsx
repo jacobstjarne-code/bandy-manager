@@ -387,23 +387,32 @@ export function RoundSummaryScreen() {
             <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
               🏒 ANDRA MATCHER
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {otherResults.map(f => {
                 const relevant = isRelevantFixture(f)
                 return (
                   <div key={f.id} style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    padding: '4px 0',
+                    display: 'flex', alignItems: 'center',
+                    padding: '3px 0',
                     borderLeft: relevant ? '2px solid var(--accent)' : '2px solid transparent',
                     paddingLeft: 6,
                   }}>
-                    <span style={{ fontSize: 12, color: relevant ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: relevant ? 600 : 400 }}>
+                    <span style={{
+                      flex: 1, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      color: relevant ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: relevant ? 600 : 400,
+                    }}>
                       {getClubShort(f.homeClubId)}
                     </span>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', minWidth: 36, textAlign: 'center' }}>
+                    <span style={{
+                      fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)',
+                      width: 40, textAlign: 'center', flexShrink: 0,
+                    }}>
                       {f.homeScore}–{f.awayScore}
                     </span>
-                    <span style={{ fontSize: 12, color: relevant ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: relevant ? 600 : 400, textAlign: 'right' }}>
+                    <span style={{
+                      flex: 1, fontSize: 12, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      color: relevant ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: relevant ? 600 : 400,
+                    }}>
                       {getClubShort(f.awayClubId)}
                     </span>
                   </div>

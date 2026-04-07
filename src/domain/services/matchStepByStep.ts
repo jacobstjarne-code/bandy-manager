@@ -1169,9 +1169,42 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     // Weather note for step 0
     const stepWeatherNote = step === 0 ? openingWeatherNote : undefined
 
-    // Attendance announcement around minute 72 (step 48)
-    if (step === 48 && !goalScored && !suspensionOccurred && input.fixture.attendance) {
-      commentaryText = `Publiksiffran annonseras: ${input.fixture.attendance} åskådare på plats.`
+    // Attendance announcement — random step between 47-56 (minute ~70-84)
+    const attendanceStep = 47 + (seed ? (seed % 10) : 3)
+    if (step === attendanceStep && !goalScored && !suspensionOccurred && input.fixture.attendance) {
+      const att = input.fixture.attendance
+      const isDerby = !!input.rivalry
+      const isCold = input.weather && input.weather.temperature < -10
+      const isSnow = input.weather && (input.weather.condition as string) === 'heavySnow'
+
+      if (isDerby && att > 300) {
+        const derbyLines = [
+          `Publiksiffran annonseras: ${att} åskådare! Derbystämning på läktarna.`,
+          `${att} har trotsat kylan för derbyt. Stämningen är elektrisk.`,
+          `Fullsatt till bristningsgränsen — ${att} åskådare på ett derby som lever upp till förväntningarna.`,
+        ]
+        commentaryText = derbyLines[Math.floor(rand() * derbyLines.length)]
+      } else if (isCold) {
+        const coldLines = [
+          `${att} tappra har vågat sig ut trots kylan. Respekt.`,
+          `Publiksiffran annonseras: ${att} åskådare. Inte illa med ${input.weather!.temperature}°C.`,
+          `${att} åskådare hukar bakom termosarna. Det krävs kärlek för att stå här idag.`,
+        ]
+        commentaryText = coldLines[Math.floor(rand() * coldLines.length)]
+      } else if (isSnow) {
+        commentaryText = `${att} åskådare trotsade snöfallet. Bandyfolket är ett härdat släkte.`
+      } else if (att < 100) {
+        commentaryText = `Publiksiffran annonseras: ${att} åskådare. Tyst på läktarna idag.`
+      } else if (att > 500) {
+        commentaryText = `${att} åskådare! Planen sjuder. Det här är vad bandy handlar om.`
+      } else {
+        const defaultLines = [
+          `Publiksiffran annonseras: ${att} åskådare på plats.`,
+          `${att} har tagit sig till planen idag. Bra uppslutning.`,
+          `Speaker meddelar: ${att} åskådare. Bandyintresset lever.`,
+        ]
+        commentaryText = defaultLines[Math.floor(rand() * defaultLines.length)]
+      }
     }
 
     yield {
