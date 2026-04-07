@@ -173,15 +173,12 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
     <div
       onClick={onClick}
       style={{
-        width: 280,
-        borderRadius: 14,
+        width: '100%',
+        borderRadius: 0,
         background: 'var(--bg-surface)',
-        border: '1px solid var(--border)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
         overflow: 'hidden',
         cursor: onClick ? 'pointer' : 'default',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-        animation: 'fadeInUp 300ms ease-out both',
+        fontFamily: 'var(--font-body)',
       }}
     >
       {/* Top bar */}

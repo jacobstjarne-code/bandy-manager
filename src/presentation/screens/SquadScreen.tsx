@@ -521,9 +521,9 @@ export function SquadScreen() {
             const ls = selectedPlayer.loyaltyScore ?? 5
             return (
               <div style={{
-                width: '100%', maxWidth: 390, marginTop: 12,
-                background: 'var(--bg-surface)', border: `1px solid ${meta.color}44`,
-                borderRadius: 10, padding: '10px 14px',
+                margin: '0 14px 0', padding: '10px 14px',
+                background: 'var(--bg-elevated)', border: `1px solid ${meta.color}44`,
+                borderRadius: 8,
                 display: 'flex', alignItems: 'center', gap: 10,
               }}>
                 <span style={{ fontSize: 22 }}>{meta.emoji}</span>
@@ -547,7 +547,7 @@ export function SquadScreen() {
             const lastTalked = (game?.playerConversations ?? {})[selectedPlayer.id] ?? -Infinity
             const canTalk = currentRound - lastTalked >= 3
             return (
-              <div style={{ width: '100%', maxWidth: 390, padding: '0 4px', marginTop: 16 }}>
+              <div style={{ padding: '12px 14px 16px' }}>
                 <p style={{
                   fontSize: 10, fontWeight: 700, letterSpacing: '1.5px',
                   textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10,
