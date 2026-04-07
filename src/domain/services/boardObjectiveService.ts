@@ -128,54 +128,70 @@ export function generateBoardObjectives(
   boardMembers: BoardMember[],
   rand: () => number,
 ): BoardObjective[] {
-  const objectives: BoardObjective[] = []
   const season = game.currentSeason
   const kassör = boardMembers.find(m => m.role === 'kassör')
   const traditionalist = boardMembers.find(m => m.personality === 'traditionalist')
   const modernist = boardMembers.find(m => m.personality === 'modernist')
   const supporter = boardMembers.find(m => m.personality === 'supporter')
 
-  // Kassören ALLTID om ekonomin var dålig
-  if (club.finances < 0 && kassör) {
-    objectives.push(balanceBudget(kassör, season))
-  } else if (club.finances > 0 && club.finances < 200000 && kassör && rand() < 0.4) {
-    objectives.push(growFinances(kassör, season))
+  // All possible objectives — build candidates first, then pick 1-2
+  const allCandidates: BoardObjective[] = []
+
+  // Economy objectives (from kassör)
+  if (kassör) {
+    if (club.finances < 0) {
+      allCandidates.push(balanceBudget(kassör, season))
+    } else if (club.finances < 500000) {
+      allCandidates.push(growFinances(kassör, season))
+    }
   }
 
-  // Candidates for second objective
-  const candidates: BoardObjective[] = []
-
+  // Academy / homegrown (from traditionalist)
   if (traditionalist) {
-    const homegrown = game.players.filter(p =>
-      p.clubId === club.id && p.isHomegrown
-    ).length
-    if (homegrown >= 3) candidates.push(playHomegrown(traditionalist, season))
+    const homegrown = game.players.filter(p => p.clubId === club.id && p.isHomegrown).length
+    if (homegrown >= 2) allCandidates.push(playHomegrown(traditionalist, season))
   }
 
-  if (modernist && (game.fanMood ?? 50) < 45) {
-    candidates.push(growFanbase(modernist, season))
+  // Community / fans (from modernist)
+  if (modernist) {
+    if ((game.fanMood ?? 50) < 60) allCandidates.push(growFanbase(modernist, season))
+    if (club.facilities < 50) allCandidates.push(improveFacilities(modernist, season))
   }
 
-  if (modernist && club.facilities < 40 && rand() < 0.5) {
-    candidates.push(improveFacilities(modernist, season))
-  }
-
+  // Sporting (from supporter)
   if (supporter) {
+    allCandidates.push(cupRun(supporter, season))
     const rivalHistory = Object.entries(game.rivalryHistory ?? {})
       .find(([, h]) => h.currentStreak < -1)
     if (rivalHistory) {
       const rivalClub = game.clubs.find(c => c.id === rivalHistory[0])
-      if (rivalClub) candidates.push(beatRival(supporter, rivalClub.name, season))
+      if (rivalClub) allCandidates.push(beatRival(supporter, rivalClub.name, season))
     }
-    if (rand() < 0.3) candidates.push(cupRun(supporter, season))
   }
 
-  // Pick max 1 more (total 1-2)
-  if (objectives.length === 0 && candidates.length > 0) {
-    objectives.push(candidates[Math.floor(rand() * candidates.length)])
-  } else if (objectives.length === 1 && candidates.length > 0 && rand() < 0.5) {
-    const pick = candidates[Math.floor(rand() * candidates.length)]
-    if (pick.type !== objectives[0].type) objectives.push(pick)
+  // Shuffle candidates for variety
+  for (let i = allCandidates.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1))
+    ;[allCandidates[i], allCandidates[j]] = [allCandidates[j], allCandidates[i]]
+  }
+
+  // Pick 1-2 objectives with different types
+  const objectives: BoardObjective[] = []
+  for (const candidate of allCandidates) {
+    if (objectives.length >= 2) break
+    if (objectives.some(o => o.type === candidate.type)) continue
+    objectives.push(candidate)
+  }
+
+  // Guarantee at least 1 objective: fallback to cupRun or growFinances
+  if (objectives.length === 0) {
+    const fallbackOwner = supporter ?? kassör ?? boardMembers[0]
+    if (fallbackOwner) {
+      objectives.push(rand() < 0.5
+        ? cupRun(fallbackOwner, season)
+        : growFinances(fallbackOwner, season)
+      )
+    }
   }
 
   return objectives
