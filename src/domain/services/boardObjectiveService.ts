@@ -20,11 +20,19 @@ function makeObjective(
   }
 }
 
+const BALANCE_DESCRIPTIONS = [
+  (n: string) => `${n}: "Vi kan inte fortsätta blöda pengar. Jag vill se en klubbkassa som inte är röd vid säsongsslut. Det är mitt krav."`,
+  (n: string) => `${n}: "Siffrorna är röda. Det enda jag ber om är att vi inte ligger minus vid årets slut."`,
+  (n: string) => `${n}: "Jag har gått igenom räkenskaperna. Vi måste vända det här. Plusminusnoll — minst."`,
+  (n: string) => `${n}: "Varje krona räknas. Håll budgeten. Det är inte förhandlingsbart."`,
+]
+
 function balanceBudget(owner: BoardMember, season: number): BoardObjective {
+  const desc = BALANCE_DESCRIPTIONS[season % BALANCE_DESCRIPTIONS.length](owner.name)
   return makeObjective(
     'balanceBudget', 'economic',
     'Håll ekonomin i balans',
-    `${owner.name}: "Vi kan inte fortsätta blöda pengar. Jag vill se en klubbkassa som inte är röd vid säsongsslut. Det är mitt krav."`,
+    desc,
     owner, 'balanceBudget', 0,
     `${owner.name}: "Tack. Klokt hanterat."`,
     `${owner.name}: "Minus igen. Jag noterar mitt missnöje."`,
@@ -44,11 +52,19 @@ function growFinances(owner: BoardMember, season: number): BoardObjective {
   )
 }
 
+const HOMEGROWN_DESCRIPTIONS = [
+  (n: string) => `${n}: "Vi har pojkar från orten i truppen. Minst tre av dem ska starta regelbundet. Det är så vi bygger en klubb."`,
+  (n: string) => `${n}: "Jag vill se lokala grabbar på isen. Tre egenfostrade i startelvan — det borde vara självklart."`,
+  (n: string) => `${n}: "Vi fostrar spelare för att de ska spela. Tre stycken i elvan — minst."`,
+  (n: string) => `${n}: "Det finns talang i byn. Visa att ni ser den. Tre lokala förmågor i startelvan."`,
+]
+
 function playHomegrown(owner: BoardMember, season: number): BoardObjective {
+  const desc = HOMEGROWN_DESCRIPTIONS[season % HOMEGROWN_DESCRIPTIONS.length](owner.name)
   return makeObjective(
     'playHomegrown', 'academy',
     'Minst 3 egenfostrade i startelvan',
-    `${owner.name}: "Vi har pojkar från orten i truppen. Minst tre av dem ska starta regelbundet. Det är så vi bygger en klubb."`,
+    desc,
     owner, 'playHomegrown', 3,
     `${owner.name}: "Så ska det se ut. Pojkarna från orten i startelvan."`,
     `${owner.name}: "Inte en enda egenforstrad i startelvan. Det tar jag personligt."`,

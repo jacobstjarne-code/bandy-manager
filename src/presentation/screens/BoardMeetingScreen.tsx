@@ -215,19 +215,24 @@ export function BoardMeetingScreen() {
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
             📌 Styrelsens uppdrag
           </p>
-          {(game.boardObjectives ?? []).map(obj => (
-            <div key={obj.id} className="card-round" style={{ padding: '10px 14px', marginBottom: 8 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
-                {obj.ownerId} ({obj.ownerPersonality})
-              </p>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-display)' }}>
-                {obj.description.split(': "')[1]?.replace(/"$/, '') ?? obj.description}
-              </p>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
-                Mål: {obj.label}
-              </p>
-            </div>
-          ))}
+          {(game.boardObjectives ?? []).map(obj => {
+            const member = boardMembers.find(m => m.name === obj.ownerId)
+            const roleLabel = member?.role === 'ordförande' ? 'Ordförande' : member?.role === 'kassör' ? 'Kassör' : 'Ledamot'
+            return (
+              <div key={obj.id} className="card-round" style={{ padding: '10px 14px', marginBottom: 8 }}>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-display)', marginBottom: 6 }}>
+                  "{obj.description.split(': "')[1]?.replace(/"$/, '') ?? obj.description}"
+                </p>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{obj.ownerId}</span>
+                  {' · '}{roleLabel}
+                </p>
+                <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600, marginTop: 4 }}>
+                  → {obj.label}
+                </p>
+              </div>
+            )
+          })}
         </div>
       )}
 
