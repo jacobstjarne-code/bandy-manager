@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { playSound } from '../audio/soundEffects'
 
@@ -25,11 +26,13 @@ function choiceStyle(choiceId: string): React.CSSProperties {
 
 export function EventOverlay() {
   const game = useGameStore(s => s.game)
-  const roundSummary = useGameStore(s => s.roundSummary)
   const resolveEvent = useGameStore(s => s.resolveEvent)
+  const location = useLocation()
 
+  // Block events during live match and match setup — show on all other screens
+  const isMatchScreen = location.pathname.includes('/match/live') || location.pathname === '/game/match'
   const events = game?.pendingEvents ?? []
-  if (!game || events.length === 0 || !!roundSummary) return null
+  if (!game || events.length === 0 || isMatchScreen) return null
 
   const event = events[0]
   if (!event) return null

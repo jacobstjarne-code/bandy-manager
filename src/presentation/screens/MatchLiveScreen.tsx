@@ -205,6 +205,12 @@ export function MatchLiveScreen() {
         })
       }
     }
+
+    // Run advance() now so round data is ready for subsequent screens
+    // This ensures events, economy, etc. are processed immediately
+    if (!isSmFinal && !isCupFinal) {
+      advance(true) // suppressMatchNavigation — we handle navigation ourselves
+    }
   }, [matchDone]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-scroll feed
@@ -875,10 +881,8 @@ export function MatchLiveScreen() {
           pressQuestion={pressQuestion ?? undefined}
           onSeeReport={handleSeeReport}
           onContinue={() => {
-            const result = advance()
-            // advance() handles navigation to /game/events or /game/round-summary automatically.
-            // Fall back to dashboard only if no navigation was triggered (e.g. season-end path).
-            if (!result) navigate('/game', { replace: true })
+            // advance() already called at matchDone — just navigate to result screen
+            navigate('/game/match-result', { replace: true })
           }}
           onPressChoice={(moraleEffect, mediaQuote) => applyPressChoice(moraleEffect, mediaQuote)}
         />

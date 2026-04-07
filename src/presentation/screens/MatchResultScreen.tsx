@@ -5,7 +5,7 @@ import { MatchEventType } from '../../domain/enums'
 export function MatchResultScreen() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
-  const advance = useGameStore(s => s.advance)
+  // advance() already called at match end — this screen only reads data
 
   if (!game || !game.lastCompletedFixtureId) {
     navigate('/game', { replace: true })
@@ -55,8 +55,8 @@ export function MatchResultScreen() {
     : won ? 'SEGER' : lost ? 'FÖRLUST' : 'OAVGJORT'
 
   function handleContinue() {
-    const result = advance()
-    if (!result) navigate('/game', { replace: true })
+    // advance() already called at match end — navigate to round summary
+    navigate('/game/round-summary', { replace: true })
   }
 
   const fadeIn = (delay: string) => ({

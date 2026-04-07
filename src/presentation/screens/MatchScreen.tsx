@@ -336,7 +336,7 @@ export function MatchScreen() {
         })
       } else {
         try {
-          const result = advance()
+          const result = advance(true) // suppress auto-navigation — we navigate manually
           if (!result) {
             setLineupError('Kunde inte simulera matchen')
             return
