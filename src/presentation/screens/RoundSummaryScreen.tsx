@@ -161,7 +161,7 @@ export function RoundSummaryScreen() {
       <div className="texture-wood card-stack" style={{ flex: 1, overflowY: 'auto', paddingTop: 12, paddingBottom: 120 }}>
 
         {/* Header pill */}
-        <div style={{ textAlign: 'center', marginBottom: 14, ...fadeIn(0) }}>
+        <div style={{ textAlign: 'center', marginBottom: 10, ...fadeIn(0) }}>
           <span style={{
             display: 'inline-block', fontSize: 10, fontWeight: 700, letterSpacing: '2px',
             textTransform: 'uppercase', color: 'var(--text-muted)',
@@ -184,8 +184,8 @@ export function RoundSummaryScreen() {
             style={{ margin: '0 0 8px', overflow: 'hidden', cursor: 'pointer', ...fadeIn(1) }}
             onClick={() => navigate('/game/match-result')}
           >
-            <div style={{ padding: '16px 14px 12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <div style={{ padding: '12px 14px 10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
                   🏒 {lastFixture.isCup ? 'CUPMATCH' : 'MATCHEN'}
                 </p>
@@ -193,17 +193,17 @@ export function RoundSummaryScreen() {
               </div>
 
               {/* Score */}
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                 <div style={{ textAlign: 'center', flex: 1 }}>
-                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{homeClub?.shortName ?? homeClub?.name}</p>
-                  <span style={{ fontSize: 28, fontWeight: 800, color: resultColor, fontFamily: 'var(--font-display)' }}>
+                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 2 }}>{homeClub?.shortName ?? homeClub?.name}</p>
+                  <span style={{ fontSize: 24, fontWeight: 800, color: resultColor, fontFamily: 'var(--font-display)' }}>
                     {lastFixture.homeScore}
                   </span>
                 </div>
-                <span style={{ fontSize: 20, color: 'var(--text-muted)', fontWeight: 300 }}>–</span>
+                <span style={{ fontSize: 18, color: 'var(--text-muted)', fontWeight: 300 }}>–</span>
                 <div style={{ textAlign: 'center', flex: 1 }}>
-                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{awayClub?.shortName ?? awayClub?.name}</p>
-                  <span style={{ fontSize: 28, fontWeight: 800, color: resultColor, fontFamily: 'var(--font-display)' }}>
+                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 2 }}>{awayClub?.shortName ?? awayClub?.name}</p>
+                  <span style={{ fontSize: 24, fontWeight: 800, color: resultColor, fontFamily: 'var(--font-display)' }}>
                     {lastFixture.awayScore}
                   </span>
                 </div>
@@ -211,7 +211,7 @@ export function RoundSummaryScreen() {
 
               {/* Flavor + scorers */}
               {flavorText && (
-                <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 600, color: resultColor, marginBottom: 6 }}>
+                <p style={{ textAlign: 'center', fontSize: 12, fontWeight: 600, color: resultColor, marginBottom: 4 }}>
                   {flavorText}
                 </p>
               )}
@@ -244,7 +244,7 @@ export function RoundSummaryScreen() {
                 📊 TABELL
               </p>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span style={{ fontSize: 28, fontWeight: 400, color: 'var(--accent-dark)', fontFamily: 'var(--font-display)' }}>
+                <span style={{ fontSize: 24, fontWeight: 400, color: 'var(--accent-dark)', fontFamily: 'var(--font-display)' }}>
                   {standing.position}
                 </span>
                 <div>
@@ -318,7 +318,7 @@ export function RoundSummaryScreen() {
               🏘️ ORTEN
             </p>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 6 }}>
-              <span style={{ fontSize: 20, fontWeight: 700, color: csColor(cs), fontFamily: 'var(--font-display)' }}>{cs}</span>
+              <span style={{ fontSize: 18, fontWeight: 700, color: csColor(cs), fontFamily: 'var(--font-display)' }}>{cs}</span>
               {csDelta !== 0 && (
                 <span style={{ fontSize: 11, fontWeight: 600, color: csDelta > 0 ? 'var(--success)' : 'var(--danger)' }}>
                   {csDelta > 0 ? `+${csDelta}` : String(csDelta)}
@@ -340,7 +340,7 @@ export function RoundSummaryScreen() {
             <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
               💰 EKONOMI
             </p>
-            <span style={{ fontSize: 20, fontWeight: 700, color: financesAfter < 0 ? 'var(--danger)' : 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+            <span style={{ fontSize: 18, fontWeight: 700, color: financesAfter < 0 ? 'var(--danger)' : 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
               {formatFinanceAbs(financesAfter)}
             </span>
             {financesDelta !== 0 && (
@@ -466,7 +466,7 @@ export function RoundSummaryScreen() {
         zIndex: 50, opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease 0.3s',
       }}>
         <button onClick={handleContinue} className="texture-leather" style={{
-          width: '100%', padding: '17px',
+          width: '100%', padding: '15px',
           background: 'linear-gradient(135deg, var(--accent-dark), var(--accent-deep))',
           color: 'var(--text-light)',
           borderRadius: 12, fontSize: 15, fontWeight: 600, letterSpacing: '2px',

@@ -465,16 +465,22 @@ export function TabellScreen() {
         const managedId = game.managedClubId
         const clubName = (id: string) => game.clubs.find(c => c.id === id)?.shortName ?? '?'
         const isManaged = (id: string) => id === managedId
+        const completedCupIds = new Set(game.fixtures.filter(f => f.isCup && f.status === 'completed').map(f => f.id))
+        const isMatchPlayed = (m: typeof bracket.matches[0]) => m.fixtureId ? completedCupIds.has(m.fixtureId) : false
 
         // Status
-        const managedMatches = bracket.matches.filter(m => !m.isBye && (m.homeClubId === managedId || m.awayClubId === managedId))
-        const managedWon = managedMatches.filter(m => m.winnerId === managedId)
-        const managedLost = managedMatches.find(m => m.winnerId && m.winnerId !== managedId)
+        const managedMatches = bracket.matches.filter(m => (m.homeClubId === managedId || m.awayClubId === managedId))
+        const managedPlayed = managedMatches.filter(m => isMatchPlayed(m))
+        const managedWon = managedPlayed.filter(m => m.winnerId === managedId)
+        const managedLost = managedPlayed.find(m => m.winnerId && m.winnerId !== managedId)
         const cupWinner = bracket.completed && bracket.winnerId === managedId
+        const hasBye = managedMatches.length > 0 && managedMatches[0].round > 1 && managedPlayed.length === 0
 
         const statusText = cupWinner ? '🏆 Cupvinnare!'
-          : managedLost ? `Utslagen i ${['', 'förstarundan', 'kvartsfinalen', 'semifinalen', 'finalen'][managedLost.round] ?? 'cupen'}`
-          : `Kvar i cupen · ${managedWon.length} matcher vunna`
+          : managedLost ? `Utslagen i ${['', 'förstarundan', 'kvartsfinalen', 'semifinalen', 'finalen'][managedLost.round] ?? 'cupen'}` 
+          : hasBye ? `Kvar i cupen · Fri lott till ${['', '', 'kvartsfinal', 'semifinal', 'final'][managedMatches[0]?.round] ?? 'nästa runda'}`
+          : managedWon.length > 0 ? `Kvar i cupen · ${managedWon.length} ${managedWon.length === 1 ? 'match vunnen' : 'matcher vunna'}`
+          : 'Kvar i cupen'
 
         const statusColor = cupWinner ? 'var(--accent)' : managedLost ? 'var(--danger)' : 'var(--success)'
 
@@ -498,16 +504,16 @@ export function TabellScreen() {
             </div>
 
             {/* Dina cupmatcher */}
-            {managedMatches.length > 0 && (
+            {managedPlayed.length > 0 && (
               <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 10 }}>
                 <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
                   DINA CUPMATCHER
                 </p>
-                {managedMatches.map(m => {
+                {managedPlayed.map(m => {
                   const home = clubName(m.homeClubId)
                   const away = clubName(m.awayClubId)
                   const won = m.winnerId === managedId
-                  const played = !!m.winnerId
+                  const fix = game.fixtures.find(f => f.id === m.fixtureId)
                   return (
                     <div key={m.fixtureId ?? `${m.round}-${m.homeClubId}`} style={{
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -517,13 +523,11 @@ export function TabellScreen() {
                         {roundNames[m.round] ?? `Runda ${m.round}`}
                       </span>
                       <span style={{ fontSize: 12, fontWeight: 600, flex: 1 }}>
-                        {home} {played ? `${(game.fixtures.find(f => f.id === m.fixtureId)?.homeScore ?? 0)}–${(game.fixtures.find(f => f.id === m.fixtureId)?.awayScore ?? 0)}` : 'vs'} {away}
+                        {home} {fix ? `${fix.homeScore}–${fix.awayScore}` : 'vs'} {away}
                       </span>
-                      {played && (
-                        <span style={{ fontSize: 11, fontWeight: 600, color: won ? 'var(--success)' : 'var(--danger)' }}>
-                          {won ? '✓ Vidare' : '✗ Utslagen'}
-                        </span>
-                      )}
+                      <span style={{ fontSize: 11, fontWeight: 600, color: won ? 'var(--success)' : 'var(--danger)' }}>
+                        {won ? '✓ Vidare' : '✗ Utslagen'}
+                      </span>
                     </div>
                   )
                 })}
@@ -547,9 +551,9 @@ export function TabellScreen() {
 
             {/* Full bracket */}
             {rounds.map(round => {
-              const matches = bracket.matches.filter(m => m.round === round && !m.isBye)
+              const matches = bracket.matches.filter(m => m.round === round)
               if (matches.length === 0) return null
-              const allUnplayed = matches.every(m => !m.winnerId)
+              const allUnplayed = matches.every(m => !isMatchPlayed(m))
               return (
                 <div key={round} style={{ marginBottom: 14 }}>
                   <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
@@ -559,9 +563,10 @@ export function TabellScreen() {
                     {matches.map((m, i) => {
                       const home = clubName(m.homeClubId)
                       const away = clubName(m.awayClubId)
-                      const played = !!m.winnerId
-                      const homeWon = m.winnerId === m.homeClubId
-                      const awayWon = m.winnerId === m.awayClubId
+                      const played = isMatchPlayed(m)
+                      const fix = played ? game.fixtures.find(f => f.id === m.fixtureId) : null
+                      const homeWon = played && m.winnerId === m.homeClubId
+                      const awayWon = played && m.winnerId === m.awayClubId
                       const homeManaged = isManaged(m.homeClubId)
                       const awayManaged = isManaged(m.awayClubId)
                       return (
@@ -578,7 +583,7 @@ export function TabellScreen() {
                             {homeManaged ? '★ ' : ''}{home}
                           </span>
                           <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', minWidth: 40, textAlign: 'center' }}>
-                            {played ? `${(game.fixtures.find(f => f.id === m.fixtureId)?.homeScore ?? 0)}–${(game.fixtures.find(f => f.id === m.fixtureId)?.awayScore ?? 0)}` : 'vs'}
+                            {played && fix ? `${fix.homeScore}–${fix.awayScore}` : 'vs'}
                           </span>
                           <span style={{
                             flex: 1, fontSize: 12, textAlign: 'right',

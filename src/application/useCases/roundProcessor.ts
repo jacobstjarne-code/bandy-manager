@@ -1627,8 +1627,20 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const v09Rand = mulberry32(baseSeed + 999777)
   let v09Sponsors = (game.sponsors ?? []).map(s => ({ ...s, contractRounds: s.contractRounds - 1 }))
 
-  // Sponsor leaving chain effect: 30% chance another sponsor's income drops by 20%
+  // Notify about expiring sponsors
   const leavingSponsors = v09Sponsors.filter(s => s.contractRounds <= 0)
+  for (const leaving of leavingSponsors) {
+    newInboxItems.push({
+      id: `inbox_sponsor_expire_${leaving.id}_${nextMatchday}`,
+      date: newDate,
+      type: InboxItemType.SponsorNetwork,
+      title: `📋 ${leaving.name} avslutar`,
+      body: `Sponsoravtalet med ${leaving.name} har löpt ut. Intäkten på ${Math.round(leaving.weeklyIncome / 1000)} tkr/omg försvinner.`,
+      isRead: false,
+    } as InboxItem)
+  }
+
+  // Sponsor leaving chain effect: 30% chance another sponsor's income drops by 20%
   if (leavingSponsors.length > 0 && v09Rand() < 0.3) {
     const remaining = v09Sponsors.filter(s => s.contractRounds > 0)
     if (remaining.length > 0) {
