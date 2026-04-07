@@ -63,33 +63,12 @@ export function TrainingSection({ focus, recentSessions, trainingInjuriesThisSea
 
   return (
     <SectionCard title="🏋️ Daglig träning" stagger={1}>
-      <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, lineHeight: 1.5 }}>
-        Ställ in intensitet för varje träningsområde. Högre = snabbare utveckling men ökad skaderisk.
+      <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, lineHeight: 1.4 }}>
+        Välj område och intensitet. Högre = snabbare utveckling men ökad skaderisk.
       </p>
 
-      {/* Quick profiles */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 10 }}>
-        {[
-          { label: 'Lätt', type: focus.type, intensity: TrainingIntensity.Light },
-          { label: 'Balanserat', type: focus.type, intensity: TrainingIntensity.Normal },
-          { label: 'Intensivt', type: focus.type, intensity: TrainingIntensity.Hard },
-        ].map(profile => {
-          const isActive = focus.intensity === profile.intensity
-          return (
-            <button
-              key={profile.label}
-              onClick={() => onChangeFocus({ type: focus.type, intensity: profile.intensity })}
-              className={isActive ? 'btn btn-copper' : 'btn btn-ghost'}
-              style={{ flex: 1, padding: '6px 4px', fontSize: 10, fontWeight: 600 }}
-            >
-              {profile.label}
-            </button>
-          )
-        })}
-      </div>
-
       {/* Type list — each row: emoji + label + intensity segmented control */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 }}>
         {TRAINING_TYPES.map(type => {
           const typeActive = focus.type === type
           return (
