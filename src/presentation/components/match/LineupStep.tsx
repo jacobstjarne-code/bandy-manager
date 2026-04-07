@@ -5,7 +5,6 @@ import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { PlayerPosition } from '../../../domain/enums'
 import { positionShort } from '../../utils/formatters'
-import { OpponentInfoCard } from './OpponentInfoCard'
 import { OpponentAnalysisCard } from './OpponentAnalysisCard'
 import { LineupFormationView } from './LineupFormationView'
 import { PitchLineupView } from './PitchLineupView'
@@ -85,7 +84,7 @@ export function LineupStep({
 
   return (
     <>
-      {opponent && <OpponentInfoCard opponent={opponent} game={game} />}
+      {/* Opponent info — single combined card */}
       {nextFixture && opponent && (
         <OpponentAnalysisCard fixture={nextFixture} opponent={opponent} game={game} onError={onError} />
       )}
@@ -130,7 +129,7 @@ export function LineupStep({
           />
 
           {/* Auto-fill — direkt efter plangrafiken */}
-          <div style={{ padding: '0 16px 8px', display: 'flex', justifyContent: 'flex-end' }}>
+          <div style={{ padding: '0 12px 6px', display: 'flex', justifyContent: 'flex-end' }}>
             <button onClick={onAutoFill} className="btn btn-ghost" style={{
               padding: '8px 16px', fontSize: 13, fontWeight: 600,
               boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
@@ -140,12 +139,12 @@ export function LineupStep({
           </div>
 
           {/* Player list */}
-          <div style={{ padding: '0 16px 8px' }}>
+          <div style={{ padding: '0 12px 8px' }}>
             {groupedPlayers.map(group => (
-              <div key={group.position} style={{ marginBottom: 10 }}>
+              <div key={group.position} style={{ marginBottom: 6 }}>
                 <p style={{
-                  fontSize: 10, fontWeight: 700, letterSpacing: '1.5px',
-                  textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4,
+                  fontSize: 9, fontWeight: 600, letterSpacing: '2.5px',
+                  textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 2,
                 }}>
                   {GROUP_LABELS[group.position] ?? group.position}
                 </p>
@@ -157,36 +156,35 @@ export function LineupStep({
                       key={player.id}
                       onClick={() => handlePlayerClick(player)}
                       style={{
-                        display: 'flex', alignItems: 'center', gap: 8,
-                        padding: '5px 10px',
-                        background: isStarting ? 'var(--bg-surface)' : 'transparent',
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        padding: '4px 8px',
+                        background: isStarting ? 'rgba(90,154,74,0.06)' : 'transparent',
                         borderBottom: '1px solid var(--border)',
                         cursor: isUnavailable ? 'default' : 'pointer',
                         opacity: isUnavailable ? 0.4 : 1,
                       }}
                     >
                       <div style={{
-                        width: 24, height: 24, borderRadius: '50%',
+                        width: 22, height: 22, borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 10, fontWeight: 700,
+                        fontSize: 9, fontWeight: 700,
                         border: isStarting ? '2px solid var(--success)' : '1.5px solid var(--border)',
                         color: isStarting ? 'var(--success)' : 'var(--text-muted)',
+                        flexShrink: 0,
                       }}>
                         {player.shirtNumber ?? '?'}
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ fontSize: 13, fontWeight: isStarting ? 700 : 400 }}>
-                          {player.lastName}
-                        </span>
-                        <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 5 }}>
-                          {positionShort(player.position)}
-                        </span>
-                      </div>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 20, flexShrink: 0 }}>
+                        {positionShort(player.position)}
+                      </span>
+                      <span style={{ flex: 1, fontSize: 12, fontWeight: isStarting ? 700 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {player.lastName}
+                      </span>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', flexShrink: 0 }}>
                         {Math.round(player.currentAbility)}
                       </span>
                       <span style={{
-                        fontSize: 10, fontWeight: 600, minWidth: 30, textAlign: 'right',
+                        fontSize: 9, fontWeight: 600, width: 28, textAlign: 'right', flexShrink: 0,
                         color: isUnavailable ? 'var(--danger)' : isStarting ? 'var(--success)' : 'var(--text-muted)',
                       }}>
                         {isUnavailable ? (player.isInjured ? '🩹' : '🚫') : isStarting ? 'START' : ''}

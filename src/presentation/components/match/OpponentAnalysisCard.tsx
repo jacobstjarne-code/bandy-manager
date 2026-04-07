@@ -3,7 +3,7 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { useGameStore } from '../../store/gameStore'
 import { generateBasicAnalysis } from '../../../domain/services/opponentAnalysisService'
-import { ordinal } from '../../utils/formatters'
+// ordinal removed — no longer used in combined card
 
 interface OpponentAnalysisCardProps {
   fixture: Fixture
@@ -20,17 +20,34 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
   const basicAnalysis = generateBasicAnalysis(opponent, opponentPlayers, game.standings, game.fixtures, fixture.id)
   const displayAnalysis = savedAnalysis ?? basicAnalysis
 
+  const opponentStanding = game.standings.find(s => s.clubId === opponent.id)
+
   return (
-    <div style={{
-      margin: '0 16px 8px',
-      background: 'var(--bg-elevated)',
-      border: '1px solid var(--border)',
-      borderRadius: 12,
-      padding: '16px',
+    <div className="card-sharp" style={{
+      margin: '0 12px 8px',
+      padding: '10px 14px',
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
-          📋 VAD VET VI?
+      {/* Header with name + position */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+        <div>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0, marginBottom: 4 }}>
+            📋 MOTSTÅNDAREN
+          </p>
+          <p style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>{opponent.name}</p>
+        </div>
+        {opponentStanding && (
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: 18, fontWeight: 800, fontFamily: 'var(--font-display)', margin: 0 }}>#{opponentStanding.position}</p>
+            <p style={{ fontSize: 8, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Tabell</p>
+          </div>
+        )}
+      </div>
+
+      {/* Analysis section */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+        <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: 0 }}>
+          {displayAnalysis.recentForm && `${displayAnalysis.recentForm}`}
+          {displayAnalysis.level === 'detailed' && displayAnalysis.style && ` · ${displayAnalysis.style}`}
         </p>
         {displayAnalysis.level === 'basic' && (
           <button
@@ -48,22 +65,15 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
         )}
       </div>
 
-      <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 8 }}>
-        {opponent.name}
-        {displayAnalysis.tablePosition && ` · ${ordinal(displayAnalysis.tablePosition)} plats`}
-        {displayAnalysis.recentForm && ` · ${displayAnalysis.recentForm}`}
-      </p>
-
-      {displayAnalysis.level === 'detailed' && displayAnalysis.style && (
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
-          Spelstil: {displayAnalysis.style}
-          {displayAnalysis.formation && ` · Formation: ${displayAnalysis.formation}`}
+      {displayAnalysis.level === 'detailed' && displayAnalysis.formation && (
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>
+          Formation: {displayAnalysis.formation}
         </p>
       )}
 
       {displayAnalysis.keyPlayers.length > 0 && (
-        <div style={{ marginBottom: 10 }}>
-          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Nyckelspelare:</p>
+        <div style={{ marginBottom: 6 }}>
+          <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>Nyckelspelare:</p>
           {displayAnalysis.keyPlayers.map((kp, i) => (
             <div key={i} style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2 }}>
               {kp.name} ({kp.position.slice(0, 3).toUpperCase()}) · Styrka ~{kp.estimatedCA}
