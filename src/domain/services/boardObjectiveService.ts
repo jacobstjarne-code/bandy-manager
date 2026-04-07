@@ -21,14 +21,14 @@ function makeObjective(
 }
 
 const BALANCE_DESCRIPTIONS = [
-  (n: string) => `${n}: "Vi kan inte fortsätta blöda pengar. Jag vill se en klubbkassa som inte är röd vid säsongsslut. Det är mitt krav."`,
-  (n: string) => `${n}: "Siffrorna är röda. Det enda jag ber om är att vi inte ligger minus vid årets slut."`,
-  (n: string) => `${n}: "Jag har gått igenom räkenskaperna. Vi måste vända det här. Plusminusnoll — minst."`,
-  (n: string) => `${n}: "Varje krona räknas. Håll budgeten. Det är inte förhandlingsbart."`,
+  'Vi kan inte fortsätta blöda pengar. Jag vill se en klubbkassa som inte är röd vid säsongsslut. Det är mitt krav.',
+  'Siffrorna är röda. Det enda jag ber om är att vi inte ligger minus vid årets slut.',
+  'Jag har gått igenom räkenskaperna. Vi måste vända det här. Plusminusnoll — minst.',
+  'Varje krona räknas. Håll budgeten. Det är inte förhandlingsbart.',
 ]
 
 function balanceBudget(owner: BoardMember, season: number): BoardObjective {
-  const desc = BALANCE_DESCRIPTIONS[season % BALANCE_DESCRIPTIONS.length](owner.name)
+  const desc = `${owner.name}: "${BALANCE_DESCRIPTIONS[season % BALANCE_DESCRIPTIONS.length]}"`
   return makeObjective(
     'balanceBudget', 'economic',
     'Håll ekonomin i balans',
@@ -53,14 +53,14 @@ function growFinances(owner: BoardMember, season: number): BoardObjective {
 }
 
 const HOMEGROWN_DESCRIPTIONS = [
-  (n: string) => `${n}: "Vi har pojkar från orten i truppen. Minst tre av dem ska starta regelbundet. Det är så vi bygger en klubb."`,
-  (n: string) => `${n}: "Jag vill se lokala grabbar på isen. Tre egenfostrade i startelvan — det borde vara självklart."`,
-  (n: string) => `${n}: "Vi fostrar spelare för att de ska spela. Tre stycken i elvan — minst."`,
-  (n: string) => `${n}: "Det finns talang i byn. Visa att ni ser den. Tre lokala förmågor i startelvan."`,
+  'Vi har pojkar från orten i truppen. Minst tre av dem ska starta regelbundet. Det är så vi bygger en klubb.',
+  'Jag vill se lokala grabbar på isen. Tre egenfostrade i startelvan — det borde vara självklart.',
+  'Vi fostrar spelare för att de ska spela. Tre stycken i elvan — minst.',
+  'Det finns talang i byn. Visa att ni ser den. Tre lokala förmågor i startelvan.',
 ]
 
 function playHomegrown(owner: BoardMember, season: number): BoardObjective {
-  const desc = HOMEGROWN_DESCRIPTIONS[season % HOMEGROWN_DESCRIPTIONS.length](owner.name)
+  const desc = `${owner.name}: "${HOMEGROWN_DESCRIPTIONS[season % HOMEGROWN_DESCRIPTIONS.length]}"`
   return makeObjective(
     'playHomegrown', 'academy',
     'Minst 3 egenfostrade i startelvan',

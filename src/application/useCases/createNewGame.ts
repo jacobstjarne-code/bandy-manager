@@ -270,7 +270,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     storylines: [],
     clubLegends: [],
     trainerArc: createTrainerArc(),
-    boardObjectives: generateBoardObjectives(managedClub, { managedClubId: input.clubId, players, clubs: clubsFixed, rivalryHistory: {}, fanMood: 50, communityActivities, boardPersonalities, currentSeason: input.season, communityStanding: 50, cupBracket: null, boardObjectiveHistory: [] } as any, boardPersonalities, rand),
+    boardObjectives: generateBoardObjectives(managedClub, { managedClubId: input.clubId, players, clubs: clubsFixed, rivalryHistory: {}, fanMood: 50, communityActivities, boardPersonalities, currentSeason: season, communityStanding: 50, cupBracket: null, boardObjectiveHistory: [] } as any, boardPersonalities, rand),
     boardObjectiveHistory: [],
     onboardingStep: 0,
     mecenater: initialMecenater,
