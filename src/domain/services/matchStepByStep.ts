@@ -1177,13 +1177,27 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       const isCold = input.weather && input.weather.temperature < -10
       const isSnow = input.weather && (input.weather.condition as string) === 'heavySnow'
 
-      if (isDerby && att > 300) {
+      if (isDerby) {
         const derbyLines = [
           `Publiksiffran annonseras: ${att} åskådare! Derbystämning på läktarna.`,
-          `${att} har trotsat kylan för derbyt. Stämningen är elektrisk.`,
-          `Fullsatt till bristningsgränsen — ${att} åskådare på ett derby som lever upp till förväntningarna.`,
+          `${att} åskådare har samlats för derbyt. Stämningen är elektrisk.`,
+          `Det är derby — och ${att} har kommit för att se det. Underbara scener.`,
         ]
         commentaryText = derbyLines[Math.floor(rand() * derbyLines.length)]
+      } else if (att > 5000) {
+        const bigLines = [
+          `Lapp på luckan! ${att} åskådare — läktarna svämmar över.`,
+          `${att} åskådare! Arenan sjuder. Så här ska det vara.`,
+          `Speaker meddelar: ${att} åskådare. En av de största publiksiffrorna på länge.`,
+        ]
+        commentaryText = bigLines[Math.floor(rand() * bigLines.length)]
+      } else if (att > 1000) {
+        const goodLines = [
+          `Publiksiffran annonseras: ${att} åskådare. Fin uppslutning idag.`,
+          `${att} har tagit sig till planen. Bandyintresset är starkt.`,
+          `Speaker meddelar: ${att} åskådare. Det värmer.`,
+        ]
+        commentaryText = goodLines[Math.floor(rand() * goodLines.length)]
       } else if (isCold) {
         const coldLines = [
           `${att} tappra har vågat sig ut trots kylan. Respekt.`,
@@ -1193,10 +1207,12 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
         commentaryText = coldLines[Math.floor(rand() * coldLines.length)]
       } else if (isSnow) {
         commentaryText = `${att} åskådare trotsade snöfallet. Bandyfolket är ett härdat släkte.`
-      } else if (att < 100) {
-        commentaryText = `Publiksiffran annonseras: ${att} åskådare. Tyst på läktarna idag.`
-      } else if (att > 500) {
-        commentaryText = `${att} åskådare! Planen sjuder. Det här är vad bandy handlar om.`
+      } else if (att < 80) {
+        const quietLines = [
+          `Publiksiffran annonseras: ${att} åskådare. Tyst på läktarna idag.`,
+          `${att} åskådare. Man önskar att det var fler. Men de som kom är lojala.`,
+        ]
+        commentaryText = quietLines[Math.floor(rand() * quietLines.length)]
       } else {
         const defaultLines = [
           `Publiksiffran annonseras: ${att} åskådare på plats.`,

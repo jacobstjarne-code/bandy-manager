@@ -443,6 +443,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
     // Calculate attendance for home matches
     const homeClubForAttendance = game.clubs.find(c => c.id === fixture.homeClubId)
+    const isFinalFixture = fixture.roundNumber > 22 && game.playoffBracket?.final?.fixtures.includes(fixture.id)
+    const isSemiFixture = fixture.roundNumber > 22 && game.playoffBracket?.semiFinals.some(s => s.fixtures.includes(fixture.id))
     const attendance = homeClubForAttendance ? calcAttendance({
       club: homeClubForAttendance,
       fanMood: game.fanMood ?? 50,
@@ -450,6 +452,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       isKnockout: !!fixture.isKnockout,
       isCup: !!fixture.isCup,
       isDerby: !!rivalry,
+      isFinal: isFinalFixture || (fixture.isCup && fixture.roundNumber === 4),
+      isSemiFinal: isSemiFixture || (fixture.isCup && fixture.roundNumber === 3),
     }) : undefined
     simulatedFixtures.push({ ...result.fixture, attendance })
   }

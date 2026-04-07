@@ -197,13 +197,22 @@ export function calcAttendance(params: {
   isKnockout: boolean
   isCup: boolean
   isDerby: boolean
+  isFinal?: boolean
+  isSemiFinal?: boolean
 }): number {
-  const { club, fanMood, position, isKnockout, isCup, isDerby } = params
-  const capacity = club.arenaCapacity ?? Math.round(club.reputation * 7 + 150)
-  const attendanceRate = Math.min(0.90, 0.35 + (fanMood / 100) * 0.40 + (position <= 3 ? 0.08 : 0))
-  const eventBonus = isKnockout ? 1.40 : isCup ? 1.20 : 1.0
-  const derbyBonus = isDerby ? 1.25 : 1.0
-  const base = Math.round(capacity * attendanceRate * eventBonus * derbyBonus)
-  return Math.min(capacity, Math.max(50, base))
+  const { club, fanMood, position, isKnockout, isCup, isDerby, isFinal, isSemiFinal } = params
+  const baseCapacity = club.arenaCapacity ?? Math.round(club.reputation * 7 + 150)
+
+  // Finals get expanded capacity (temporary stands, like Studenternas)
+  // SM-final: 4x capacity (capped 20000), semifinal: 2x, cup final: 3x
+  const expandedCapacity = isFinal ? Math.min(20000, baseCapacity * 4)
+    : isSemiFinal ? Math.min(8000, baseCapacity * 2)
+    : baseCapacity
+
+  const attendanceRate = Math.min(0.95, 0.35 + (fanMood / 100) * 0.40 + (position <= 3 ? 0.08 : 0))
+  const eventBonus = isFinal ? 2.5 : isSemiFinal ? 1.8 : isKnockout ? 1.40 : isCup ? 1.20 : 1.0
+  const derbyBonus = isDerby ? 1.30 : 1.0
+  const base = Math.round(expandedCapacity * attendanceRate * eventBonus * derbyBonus)
+  return Math.min(expandedCapacity, Math.max(50, base))
 }
 

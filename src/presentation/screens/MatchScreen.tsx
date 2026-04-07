@@ -320,6 +320,8 @@ export function MatchScreen() {
           isKnockout: !!nextFixture.isKnockout,
           isCup: !!nextFixture.isCup,
           isDerby: false,
+          isFinal: nextFixture.roundNumber > 22 && game!.playoffBracket?.final?.fixtures.includes(nextFixture.id),
+          isSemiFinal: nextFixture.roundNumber > 22 && game!.playoffBracket?.semiFinals.some(s => s.fixtures.includes(nextFixture.id)),
         }) : undefined
         navigate('/game/match/live', {
           state: {
@@ -598,6 +600,8 @@ export function MatchScreen() {
               isKnockout: !!nextFixture.isKnockout,
               isCup: !!nextFixture.isCup,
               isDerby: false,
+              isFinal: nextFixture.roundNumber > 22 && game.playoffBracket?.final?.fixtures.includes(nextFixture.id),
+              isSemiFinal: nextFixture.roundNumber > 22 && game.playoffBracket?.semiFinals.some(s => s.fixtures.includes(nextFixture.id)),
             })
           })() : undefined}
           arenaName={(() => {
