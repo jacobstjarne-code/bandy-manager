@@ -73,8 +73,9 @@ export function NewGameScreen() {
       try {
         newGame(capitalizeName(managerName.trim()), selectedClubId)
         navigate('/game/dashboard')
-      } catch (e) {
+      } catch (e: unknown) {
         console.error('handleStart misslyckades:', e)
+        alert(`Fel vid spelstart: ${e instanceof Error ? e.message : String(e)}`)
         setIsStarting(false)
       }
     }, 50)
