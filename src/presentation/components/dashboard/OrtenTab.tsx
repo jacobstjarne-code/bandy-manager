@@ -22,22 +22,14 @@ export function OrtenTab({ game, currentRound, navigate }: OrtenTabProps) {
   const patron = game.patron
   const politician = game.localPolitician
 
-  // Build aktiviteter list
-  const activities: { name: string; label: string; active: boolean }[] = []
-  if (ca) {
-    if (ca.kiosk !== 'none') activities.push({ name: 'Kiosk', label: ca.kiosk === 'upgraded' ? 'Uppgraderad' : 'Aktiv', active: true })
-    else activities.push({ name: 'Kiosk', label: 'Ej startat', active: false })
-
-    if (ca.lottery !== 'none') activities.push({ name: 'Lotteri', label: ca.lottery === 'intensive' ? 'Intensiv' : 'Aktiv', active: true })
-    else activities.push({ name: 'Lotteri', label: 'Ej startat', active: false })
-
-    if (ca.bandyplay) activities.push({ name: 'Bandylek', label: 'Aktiv', active: true })
-    if (ca.functionaries) activities.push({ name: 'Funktionärer', label: 'Aktiv', active: true })
-    if (ca.julmarknad) activities.push({ name: 'Julmarknad', label: 'Aktiv', active: true })
-    if (ca.bandySchool) activities.push({ name: 'Bandyskola', label: 'Aktiv', active: true })
-    if (ca.socialMedia) activities.push({ name: 'Sociala medier', label: 'Aktiv', active: true })
-    if (ca.vipTent) activities.push({ name: 'VIP-tält', label: 'Aktiv', active: true })
-  }
+  // Build aktiviteter list — visa alltid alla 5 möjliga
+  const activities: { name: string; label: string; active: boolean }[] = [
+    { name: 'Kiosk', label: ca?.kiosk === 'upgraded' ? 'Uppgraderad' : ca?.kiosk === 'basic' ? 'Aktiv' : 'Ej startat', active: !!(ca?.kiosk && ca.kiosk !== 'none') },
+    { name: 'Lotteri', label: ca?.lottery === 'intensive' ? 'Intensiv' : ca?.lottery === 'basic' ? 'Aktiv' : 'Ej startat', active: !!(ca?.lottery && ca.lottery !== 'none') },
+    { name: 'Bandyskola', label: ca?.bandySchool ? 'Aktiv' : 'Ej startat', active: !!ca?.bandySchool },
+    { name: 'Sociala medier', label: ca?.socialMedia ? 'Aktiv' : 'Ej startat', active: !!ca?.socialMedia },
+    { name: 'Funktionärer', label: ca?.functionaries ? 'Aktiv' : 'Ej startat', active: !!ca?.functionaries },
+  ]
 
   // Kommun/mecenat alert
   const recentCommunity = game.inbox
@@ -51,19 +43,20 @@ export function OrtenTab({ game, currentRound, navigate }: OrtenTabProps) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
 
       {/* Bygdens puls */}
-      <CommunityPulse
-        game={game}
-        currentRound={currentRound}
-        onNavigate={() => navigate('/game/club', { state: { tab: 'orten' } })}
-      />
+      <div style={{ margin: '0 0 8px' }}>
+        <CommunityPulse
+          game={game}
+          currentRound={currentRound}
+          onNavigate={() => navigate('/game/club', { state: { tab: 'orten' } })}
+        />
+      </div>
 
       {/* Aktiviteter */}
-      {activities.length > 0 && (
-        <div
-          className="card-sharp"
-          style={{ margin: '0 0 8px', cursor: 'pointer' }}
-          onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}
-        >
+      <div
+        className="card-sharp"
+        style={{ margin: '0 0 8px', cursor: 'pointer' }}
+        onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}
+      >
           <div style={{ padding: '10px 14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
               <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
@@ -82,7 +75,6 @@ export function OrtenTab({ game, currentRound, navigate }: OrtenTabProps) {
             ))}
           </div>
         </div>
-      )}
 
       {/* Patron */}
       {patron && patron.isActive && (
@@ -121,8 +113,17 @@ export function OrtenTab({ game, currentRound, navigate }: OrtenTabProps) {
                 </div>
               </div>
             </div>
-            {patron.demands && patron.demands.length > 0 && (
-              <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4, fontFamily: 'var(--font-body)' }}>
+            {patron.wantsStyle && (
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 6, fontFamily: 'var(--font-body)' }}>
+                "{patron.wantsStyle === 'attacking' ? 'Jag vill se offensiv bandy. Det är det enda som fungerar.'
+                  : patron.wantsStyle === 'defensive' ? 'Stabilt försvar — det vinner matcher.'
+                  : patron.wantsStyle === 'physical' ? 'Fysiskt, hårt spel. Det är vad bandy handlar om.'
+                  : patron.wantsStyle === 'technical' ? 'Teknisk bandy vinner till slut.'
+                  : 'Jag bryr mig inte om taktiken. Bara vinn.'}"
+              </p>
+            )}
+            {!patron.wantsStyle && patron.demands && patron.demands.length > 0 && (
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 6, fontFamily: 'var(--font-body)' }}>
                 {patron.demands[0]}
               </p>
             )}
@@ -151,7 +152,7 @@ export function OrtenTab({ game, currentRound, navigate }: OrtenTabProps) {
               <div>
                 <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-body)', marginBottom: 2 }}>
                   {politician.name}
-                  <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 400, marginLeft: 6 }}>({politician.party})</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 400, marginLeft: 6 }}>({politician.party.replace(/^\(|\)$/g, '')})</span>
                 </p>
                 <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
                   Kommunbidrag: {Math.round((politician.kommunBidrag ?? 0) / 1000)} tkr · Relation {politician.relationship ?? 50}

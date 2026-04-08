@@ -240,7 +240,7 @@ export function DashboardScreen() {
       </div>
 
       {/* Tab content */}
-      <div className="texture-wood card-stack" style={{ paddingTop: 8, paddingBottom: 120 }}>
+      <div className="texture-wood card-stack" style={{ paddingTop: 8, paddingBottom: activeTab === 'match' ? 120 : 24 }}>
         {activeTab === 'match' && (
           <MatchTab
             game={game}

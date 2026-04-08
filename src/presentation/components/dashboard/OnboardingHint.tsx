@@ -54,52 +54,21 @@ export function OnboardingHint({ step, clubName: _cn, onDismiss }: Props) {
   if (!hint) return null
 
   return (
-    <div
-      className="card-sharp"
-      style={{
-        margin: '0 0 8px',
-        background: 'linear-gradient(135deg, rgba(196,122,58,0.08), rgba(196,122,58,0.03))',
-        border: '1px solid rgba(196,122,58,0.25)',
-        position: 'relative',
-      }}
-    >
-      <div style={{ padding: '10px 14px' }}>
-        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
-          👋 KOMMA IGÅNG
-        </p>
-        <button
-          onClick={onDismiss}
-          style={{
-            position: 'absolute', top: 8, right: 10,
-            background: 'none', border: 'none',
-            fontSize: 14, color: 'var(--text-muted)',
-            cursor: 'pointer', lineHeight: 1,
-          }}
-        >×</button>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-          <span style={{ fontSize: 24, lineHeight: 1, flexShrink: 0 }}>{hint.icon}</span>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
-              {hint.title}
-            </p>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 8 }}>
-              {hint.body}
-            </p>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button
-                onClick={() => navigate(hint.path, hint.state ? { state: hint.state } : undefined)}
-                className="btn btn-ghost"
-                style={{ fontSize: 12, padding: '5px 12px' }}
-              >
-                {hint.action}
-              </button>
-              <span style={{ fontSize: 10, color: 'var(--text-muted)', alignSelf: 'center' }}>
-                Tips {step + 1} av 5
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '6px 14px', background: 'var(--bg-surface)',
+      borderBottom: '1px solid var(--border)', margin: '0 0 4px',
+    }}>
+      <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
+        {hint.icon} {hint.title} —{' '}
+        <span
+          onClick={() => navigate(hint.path, hint.state ? { state: hint.state } : undefined)}
+          style={{ color: 'var(--accent)', cursor: 'pointer', textDecoration: 'underline' }}
+        >
+          {hint.action}
+        </span>
+      </span>
+      <button onClick={onDismiss} style={{ fontSize: 10, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', marginLeft: 8 }}>✕</button>
     </div>
   )
 }
