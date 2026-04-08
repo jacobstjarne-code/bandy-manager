@@ -1,6 +1,6 @@
 import { ClubBadge } from '../ClubBadge'
 import { IceQuality, PlayoffRound } from '../../../domain/enums'
-import { getIceQualityLabel } from '../../../domain/services/weatherService'
+import { getIceQualityLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
 import { getCupRoundLabel } from '../../../domain/services/cupService'
 import { getRivalry } from '../../../domain/data/rivalries'
 import type { PlayoffSeries } from '../../../domain/entities/Playoff'
@@ -351,6 +351,12 @@ export function NextMatchCard({
                 )}
                 {lineupTag.text}
               </span>
+              {matchWeather && (
+                <span className="tag tag-outline" style={{ fontSize: 8 }}>
+                  {getWeatherEmoji(matchWeather.weather.condition)}{' '}
+                  {matchWeather.weather.temperature > 0 ? '+' : ''}{matchWeather.weather.temperature}°
+                </span>
+              )}
               {iceTag}
             </div>
           )
