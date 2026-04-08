@@ -3,12 +3,15 @@ import type { Player } from '../../../domain/entities/Player'
 import type { Club } from '../../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { MatchWeather } from '../../../domain/entities/Weather'
+import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { FixtureStatus, PlayerPosition, InboxItemType, ClubStyle } from '../../../domain/enums'
 import type { FormationType } from '../../../domain/entities/Formation'
 import { simulateMatch } from '../../../domain/services/matchSimulator'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { generateMatchWeather } from '../../../domain/services/weatherService'
 import { calcAttendance } from '../../../domain/services/economyService'
+import { generatePressConference } from '../../../domain/services/pressConferenceService'
+import { mulberry32 } from '../../../domain/utils/random'
 
 const AI_FORMATIONS: Record<ClubStyle, FormationType> = {
   [ClubStyle.Defensive]: '4-3-3',
@@ -111,6 +114,7 @@ export interface MatchSimResult {
   roundMatchWeathers: MatchWeather[]
   hasManagedCupPending: boolean
   inboxItems: InboxItem[]
+  pressEvent: GameEvent | null
 }
 
 /**
@@ -286,6 +290,19 @@ export function simulateRound(
     simulatedFixtures.push({ ...result.fixture, attendance })
   }
 
+  // Generate press conference for the managed club's completed fixture (snabbsim path)
+  let pressEvent: GameEvent | null = null
+  const managedFixture = simulatedFixtures.find(f =>
+    f.status === FixtureStatus.Completed &&
+    (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
+    f.homeScore != null,
+  )
+  if (managedFixture) {
+    const pressSeed = managedFixture.id.split('').reduce((h, c) => h * 31 + c.charCodeAt(0), 0)
+    const pressRand = mulberry32(pressSeed + nextMatchday * 17)
+    pressEvent = generatePressConference(managedFixture, game, pressRand)
+  }
+
   return {
     simulatedFixtures,
     startersThisRound,
@@ -294,5 +311,6 @@ export function simulateRound(
     roundMatchWeathers,
     hasManagedCupPending,
     inboxItems,
+    pressEvent,
   }
 }

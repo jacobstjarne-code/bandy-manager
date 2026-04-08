@@ -619,6 +619,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     localRand,
   )
   const allNewEvents = [...newEvents, ...communityEvents]
+  if (simResult.pressEvent) allNewEvents.push(simResult.pressEvent)
 
   // ── Mecenat social events, silent shout, and happiness decay ────────────
   let updatedMecenater = (game.mecenater ?? []).map(mec => {

@@ -18,12 +18,10 @@ import { FinalIntroScreen } from '../components/match/FinalIntroScreen'
 import { HalftimeModal } from '../components/match/HalftimeModal'
 import { StatsFooter, calculateLiveStats } from '../components/match/StatsFooter'
 import { MomentumBar } from '../components/match/MomentumBar'
-import { MatchDoneOverlay, type PressQuestion } from '../components/match/MatchDoneOverlay'
+import { MatchDoneOverlay } from '../components/match/MatchDoneOverlay'
 import { CeremonyCupFinal } from '../components/match/CeremonyCupFinal'
 import { CeremonySmFinal } from '../components/match/CeremonySmFinal'
 import { SubstitutionModal } from '../components/match/SubstitutionModal'
-import { generatePressConference } from '../../domain/services/pressConferenceService'
-import { mulberry32 } from '../../domain/utils/random'
 
 interface LocationState {
   fixture: Fixture
@@ -38,7 +36,7 @@ interface LocationState {
 export function MatchLiveScreen() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { game, saveLiveMatchResult, applyPressChoice, advance } = useGameStore()
+  const { game, saveLiveMatchResult, advance } = useGameStore()
 
   const state = location.state as LocationState | null
   const fixture = state?.fixture
@@ -83,7 +81,6 @@ export function MatchLiveScreen() {
   const [showSubModal, setShowSubModal] = useState(false)
   const [ceremonySlide, setCeremonySlide] = useState(0)
   const [finalIntroSlide, setFinalIntroSlide] = useState(() => isSmFinal ? 1 : isCupFinal ? 1 : 0)
-  const [pressQuestion, setPressQuestion] = useState<PressQuestion | null>(null)
   const [homeScoreFlash, setHomeScoreFlash] = useState(false)
   const [awayScoreFlash, setAwayScoreFlash] = useState(false)
   const prevHomeScore = useRef(0)
@@ -184,29 +181,8 @@ export function MatchLiveScreen() {
       fixture.attendance,
     )
 
-    // Generate press conference question for normal matches (not finals — they have ceremony)
-    if (!isSmFinal && !isCupFinal && game) {
-      const completedFixture = { ...fixture, homeScore: lastStep.homeScore, awayScore: lastStep.awayScore, status: 'completed' as const }
-      const pressSeed = fixture.id.split('').reduce((h, c) => h * 31 + c.charCodeAt(0), 0)
-      const pressRand = mulberry32(pressSeed + (game.currentSeason ?? 2025) * 17)
-      const pressEvent = generatePressConference(completedFixture as typeof fixture, game, pressRand)
-      if (pressEvent) {
-        const journalist = pressEvent.title.replace('🎤 Presskonferens — ', '')
-        const question = pressEvent.body.replace(/^"|"$/g, '')
-        setPressQuestion({
-          journalist,
-          question,
-          choices: pressEvent.choices.map(c => ({
-            id: c.id,
-            label: c.label,
-            moraleEffect: (c.effect as { value: number }).value ?? 0,
-            mediaQuote: (c.effect as { mediaQuote?: string }).mediaQuote ?? '',
-          })),
-        })
-      }
-    }
-
     // Always run advance — finals need economy/injuries/events too
+    // Press conference is generated as a GameEvent in matchSimProcessor and shown via EventOverlay
     advance(true) // suppressMatchNavigation — we handle navigation ourselves
   }, [matchDone]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -312,10 +288,6 @@ export function MatchLiveScreen() {
   }, [currentStep, isPaused, isFastForward, steps])
 
   // Avbryt removed — once match starts, you're committed
-
-  function handleSeeReport() {
-    navigate('/game/match', { state: { showReport: true }, replace: true })
-  }
 
   function handleApplyTactic() {
     if (!fixture || !homeLineup || !awayLineup || !game) return
@@ -875,13 +847,9 @@ export function MatchLiveScreen() {
           steps={steps}
           managedClubId={game?.managedClubId}
           players={game?.players ?? []}
-          pressQuestion={pressQuestion ?? undefined}
-          onSeeReport={handleSeeReport}
           onContinue={() => {
-            // advance() already called at matchDone — just navigate to result screen
             navigate('/game/match-result', { replace: true })
           }}
-          onPressChoice={(moraleEffect, mediaQuote) => applyPressChoice(moraleEffect, mediaQuote)}
         />
       )}
 
