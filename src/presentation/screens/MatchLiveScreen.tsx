@@ -5,23 +5,20 @@ import { simulateMatchStepByStep, simulateSecondHalf, type MatchStep } from '../
 import type { Tactic } from '../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
-import { MatchEventType, WeatherCondition, IceQuality, TacticMentality, TacticTempo, TacticPress } from '../../domain/enums'
-import { getWeatherEmoji, getIceQualityLabel } from '../../domain/services/weatherService'
+import { MatchEventType, TacticMentality, TacticTempo, TacticPress } from '../../domain/enums'
 import { getRivalry } from '../../domain/data/rivalries'
-import { eventIcon } from '../utils/formatters'
-import { getEventAlignment } from './matchLiveHelpers'
 import { computePlayerRatings } from '../utils/matchRatings'
 import { playSound, isMuted, toggleMute } from '../audio/soundEffects'
-import { SnowOverlay } from '../components/match/SnowOverlay'
 import { PhaseOverlay } from '../components/match/PhaseOverlay'
 import { FinalIntroScreen } from '../components/match/FinalIntroScreen'
 import { HalftimeModal } from '../components/match/HalftimeModal'
-import { StatsFooter, calculateLiveStats } from '../components/match/StatsFooter'
-import { MomentumBar } from '../components/match/MomentumBar'
 import { MatchDoneOverlay } from '../components/match/MatchDoneOverlay'
 import { CeremonyCupFinal } from '../components/match/CeremonyCupFinal'
 import { CeremonySmFinal } from '../components/match/CeremonySmFinal'
 import { SubstitutionModal } from '../components/match/SubstitutionModal'
+import { Scoreboard } from '../components/match/Scoreboard'
+import { MatchControls } from '../components/match/MatchControls'
+import { CommentaryFeed } from '../components/match/CommentaryFeed'
 
 interface LocationState {
   fixture: Fixture
@@ -89,7 +86,6 @@ export function MatchLiveScreen() {
   const feedRef = useRef<HTMLDivElement>(null)
   const hasSimulated = useRef(false)
 
-  // Bug 3: If fixture already completed (browser back), redirect away
   useEffect(() => {
     if (!fixture || !game) return
     const liveFixture = game.fixtures.find(f => f.id === fixture.id)
@@ -98,7 +94,6 @@ export function MatchLiveScreen() {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Pre-generate all steps on mount
   useEffect(() => {
     if (hasSimulated.current) return
     if (!fixture || !homeLineup || !awayLineup || !game) return
@@ -122,17 +117,14 @@ export function MatchLiveScreen() {
     if (!isSmFinal && !isCupFinal) {
       setCurrentStep(0)
     }
-    // For finals: currentStep stays -1 until FinalIntroScreen onStart fires
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-advance ceremony slide 1 → 2 after 3s
   useEffect(() => {
     if (ceremonySlide !== 1) return
     const timer = setTimeout(() => setCeremonySlide(2), 3000)
     return () => clearTimeout(timer)
   }, [ceremonySlide])
 
-  // Champagne sound on ceremony slide 2 win
   useEffect(() => {
     if (ceremonySlide !== 2) return
     const lastStep = steps[steps.length - 1]
@@ -148,7 +140,6 @@ export function MatchLiveScreen() {
     if (managedWon) playSound('champagne')
   }, [ceremonySlide]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Save live match result when done
   useEffect(() => {
     if (!matchDone || !fixture || !homeLineup || !awayLineup || steps.length === 0) return
     const lastStep = steps[steps.length - 1]
@@ -180,24 +171,18 @@ export function MatchLiveScreen() {
       allEvents, report, homeLineup, awayLineup, overtimeResult, penaltyResult,
       fixture.attendance,
     )
-
-    // Always run advance — finals need economy/injuries/events too
-    // Press conference is generated as a GameEvent in matchSimProcessor and shown via EventOverlay
-    advance(true) // suppressMatchNavigation — we handle navigation ourselves
+    advance(true)
   }, [matchDone]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-scroll feed
   useEffect(() => {
     requestAnimationFrame(() => {
       feedRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
     })
   }, [currentStep])
 
-  // Score flash + event sounds
   useEffect(() => {
     if (currentStep < 0 || currentStep >= steps.length) return
     const step = steps[currentStep]
-
     const prevHome = prevHomeScore.current
     const prevAway = prevAwayScore.current
     prevHomeScore.current = step.homeScore
@@ -237,7 +222,6 @@ export function MatchLiveScreen() {
     }
   }, [currentStep, steps])
 
-  // Playback loop
   useEffect(() => {
     if (currentStep < 0 || currentStep >= steps.length) return
     if (isPaused && !isFastForward) return
@@ -287,8 +271,6 @@ export function MatchLiveScreen() {
     return () => clearTimeout(timer)
   }, [currentStep, isPaused, isFastForward, steps])
 
-  // Avbryt removed — once match starts, you're committed
-
   function handleApplyTactic() {
     if (!fixture || !homeLineup || !awayLineup || !game) return
     const managedIsHome = fixture.homeClubId === game.managedClubId
@@ -300,7 +282,6 @@ export function MatchLiveScreen() {
       press: htPress ?? currentTactic.press,
     }
 
-    // Apply substitutions to managed team's lineup
     const applySubstitutions = (lineup: TeamSelection): TeamSelection => {
       if (!htSubs.length) return lineup
       const starters = [...lineup.startingPlayerIds]
@@ -359,7 +340,6 @@ export function MatchLiveScreen() {
     return <div style={{ padding: 20, color: 'var(--text-secondary)' }}>Ingen matchdata tillgänglig.</div>
   }
 
-  // SM-final pre-match intro
   if (isSmFinal && finalIntroSlide > 0) {
     return (
       <FinalIntroScreen
@@ -383,7 +363,6 @@ export function MatchLiveScreen() {
     )
   }
 
-  // Cup final pre-match intro
   if (!isSmFinal && isCupFinal && finalIntroSlide > 0) {
     return (
       <FinalIntroScreen
@@ -415,8 +394,6 @@ export function MatchLiveScreen() {
   const homeShort = (homeClub?.shortName ?? homeClubName).substring(0, 6)
   const awayShort = (awayClub?.shortName ?? awayClubName).substring(0, 6)
 
-  // NOTE: Live substitutions don't affect the pre-computed match simulation outcome,
-  // but are stored and shown in the commentary feed.
   function handleLiveSub(outId: string, inId: string) {
     setLiveSubs(prev => [...prev, { outId, inId, minute: currentMinute }])
     setShowSubModal(false)
@@ -445,362 +422,46 @@ export function MatchLiveScreen() {
           onClose={() => { setShowSubModal(false); setIsPaused(false) }}
         />
       )}
-      {/* LED Scoreboard */}
-      <div style={{
-        background: 'var(--led-bg)',
-        borderRadius: 8,
-        border: '3px solid var(--led-border)',
-        boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3)',
-        padding: '12px 16px',
-        margin: '8px 12px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 6,
-        flexShrink: 0,
-      }}>
-        {/* Score row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center', width: '100%' }}>
-          <div style={{ flex: 1, textAlign: 'center' }}>
-            <p style={{ fontFamily: 'Courier New, monospace', fontWeight: 700, fontSize: 13, color: 'rgba(255,255,255,0.85)', letterSpacing: '1.5px', margin: '0 0 2px', textTransform: 'uppercase' }}>
-              {homeShort} <span style={{ color: 'var(--led-time)', fontSize: 12, fontWeight: 700 }}>H</span>
-            </p>
-            <span
-              key={`home-${homeScore}`}
-              style={{
-                display: 'block',
-                fontFamily: 'Courier New, monospace', fontWeight: 900, fontSize: 56,
-                color: homeScoreFlash ? 'var(--led-score-flash)' : 'var(--led-score)',
-                textShadow: homeScoreFlash
-                  ? '0 0 20px rgba(255,153,0,0.8), 0 0 40px rgba(255,153,0,0.4)'
-                  : '0 0 10px rgba(255,26,26,0.6), 0 0 20px rgba(255,26,26,0.3)',
-                lineHeight: 1, letterSpacing: '4px',
-                transition: 'color 0.3s ease, text-shadow 0.3s ease',
-                animation: homeScoreFlash ? 'scaleFlash 400ms ease-out both' : undefined,
-              }}
-            >
-              {homeScore}
-            </span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <span style={{ color: 'var(--led-score)', fontSize: 28, fontWeight: 900, opacity: 0.7, fontFamily: 'Courier New, monospace', lineHeight: 1 }}>–</span>
-            <span style={{
-              fontFamily: 'Courier New, monospace', fontWeight: 700, fontSize: 22,
-              color: 'var(--led-time)',
-              textShadow: '0 0 8px rgba(204,255,0,0.5)',
-              lineHeight: 1,
-            }}>
-              {matchDone ? 'FT' : `${currentMinute}'`}
-            </span>
-          </div>
-          <div style={{ flex: 1, textAlign: 'center' }}>
-            <p style={{ fontFamily: 'Courier New, monospace', fontWeight: 700, fontSize: 13, color: 'rgba(255,255,255,0.85)', letterSpacing: '1.5px', margin: '0 0 2px', textTransform: 'uppercase' }}>
-              <span style={{ color: 'var(--led-time)', fontSize: 12, fontWeight: 700 }}>G</span> {awayShort}
-            </p>
-            <span
-              key={`away-${awayScore}`}
-              style={{
-                display: 'block',
-                fontFamily: 'Courier New, monospace', fontWeight: 900, fontSize: 56,
-                color: awayScoreFlash ? 'var(--led-score-flash)' : 'var(--led-score)',
-                textShadow: awayScoreFlash
-                  ? '0 0 20px rgba(255,153,0,0.8), 0 0 40px rgba(255,153,0,0.4)'
-                  : '0 0 10px rgba(255,26,26,0.6), 0 0 20px rgba(255,26,26,0.3)',
-                lineHeight: 1, letterSpacing: '4px',
-                transition: 'color 0.3s ease, text-shadow 0.3s ease',
-                animation: awayScoreFlash ? 'scaleFlash 400ms ease-out both' : undefined,
-              }}
-            >
-              {awayScore}
-            </span>
-          </div>
-        </div>
-        {rivalry && (
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px',
-            borderRadius: 99, background: 'rgba(220,50,30,0.2)',
-            border: '1px solid rgba(220,100,30,0.4)', fontSize: 10, fontWeight: 700, color: 'var(--led-warn)',
-          }}>
-            🔥 {rivalry.name}
-          </div>
-        )}
-        {matchWeather && (
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: 0, fontFamily: 'Courier New, monospace' }}>
-            {getWeatherEmoji(matchWeather.weather.condition)}{' '}
-            {matchWeather.weather.temperature > 0 ? '+' : ''}{matchWeather.weather.temperature}°
-            {' · '}
-            <span style={{ color: matchWeather.weather.iceQuality === IceQuality.Poor ? 'var(--led-warn)' : 'inherit' }}>
-              {getIceQualityLabel(matchWeather.weather.iceQuality)}
-            </span>
-            {matchWeather.weather.temperature <= -15 && ' ❄'}
-          </p>
-        )}
 
-        {/* Suspensions — inside scoreboard like a real bandy board */}
-        {(() => {
-          const hasSusp = currentMatchStep &&
-            (currentMatchStep.activeSuspensions.homeCount > 0 ||
-             currentMatchStep.activeSuspensions.awayCount > 0)
-          if (!currentMatchStep) return null
-          const allEventsSoFar = displayedSteps.flatMap(s => s.events)
-          const currentMin = currentMatchStep.minute
-          const homeSusp = allEventsSoFar
-            .filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.homeClubId && currentMin - e.minute < 10)
-            .map(e => {
-              const p = e.playerId ? (game?.players ?? []).find(pl => pl.id === e.playerId) : null
-              const remaining = 10 - (currentMin - e.minute)
-              return p?.shirtNumber != null ? `#${p.shirtNumber} (${remaining}\u2032)` : '?'
-            })
-          const awaySusp = allEventsSoFar
-            .filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.awayClubId && currentMin - e.minute < 10)
-            .map(e => {
-              const p = e.playerId ? (game?.players ?? []).find(pl => pl.id === e.playerId) : null
-              const remaining = 10 - (currentMin - e.minute)
-              return p?.shirtNumber != null ? `#${p.shirtNumber} (${remaining}\u2032)` : '?'
-            })
-          return (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center',
-              width: '100%', padding: '4px 0 0',
-              fontSize: 11, fontWeight: 700, fontFamily: 'Courier New, monospace',
-              color: 'var(--led-warn)',
-              minHeight: 20,
-              opacity: hasSusp ? 1 : 0,
-              transition: 'opacity 0.3s ease',
-            }}>
-              {/* Same 3-column layout as score row: home | center | away */}
-              <div style={{ flex: 1, textAlign: 'center' }}>
-                {homeSusp.length > 0 && <span>⚠ {homeSusp.join(' ')}</span>}
-              </div>
-              <div style={{ width: 60, flexShrink: 0 }} />
-              <div style={{ flex: 1, textAlign: 'center' }}>
-                {awaySusp.length > 0 && <span>{awaySusp.join(' ')} ⚠</span>}
-              </div>
-            </div>
-          )
-        })()}
-      </div>
+      <Scoreboard
+        homeShort={homeShort}
+        awayShort={awayShort}
+        homeScore={homeScore}
+        awayScore={awayScore}
+        homeScoreFlash={homeScoreFlash}
+        awayScoreFlash={awayScoreFlash}
+        currentMinute={currentMinute}
+        matchDone={matchDone}
+        rivalry={rivalry}
+        matchWeather={matchWeather}
+        currentMatchStep={currentMatchStep}
+        displayedSteps={displayedSteps}
+        fixture={fixture}
+        game={game}
+      />
 
-      {/* Match controls container */}
-      <div style={{
-        background: 'var(--bg-surface)',
-        borderBottom: '1px solid var(--border)',
-        flexShrink: 0,
-      }}>
+      <MatchControls
+        isPaused={isPaused}
+        isFastForward={isFastForward}
+        matchDone={matchDone}
+        muted={muted}
+        currentMatchStep={currentMatchStep}
+        onTogglePause={() => setIsPaused(prev => !prev)}
+        onToggleFastForward={() => setIsFastForward(prev => !prev)}
+        onOpenSubModal={() => { setIsPaused(true); setShowSubModal(true) }}
+        onToggleMute={() => { toggleMute(); setMuted(isMuted()) }}
+      />
 
-      {/* Controls */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '6px 16px',
-      }}>
-        <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginRight: 'auto' }}>
-          🏛️ Match
-        </span>
-        <button
-          onClick={() => setIsPaused(prev => !prev)}
-          className="btn btn-ghost"
-          style={{ padding: '6px 12px', fontSize: 14 }}
-        >
-          {isPaused ? '▶' : '⏸'}
-        </button>
-        <button
-          onClick={() => setIsFastForward(prev => !prev)}
-          className={`btn ${isFastForward ? 'btn-copper' : 'btn-ghost'}`}
-          style={{ padding: '6px 12px', fontSize: 14 }}
-        >
-          ⏩
-        </button>
-        {!matchDone && (
-          <button
-            onClick={() => { setIsPaused(true); setShowSubModal(true) }}
-            className="btn btn-ghost"
-            style={{ padding: '6px 10px', fontSize: 14 }}
-          >
-            🔄
-          </button>
-        )}
-        <button
-          onClick={() => { toggleMute(); setMuted(isMuted()) }}
-          className="btn btn-ghost"
-          style={{ padding: '6px 10px', fontSize: 14 }}
-        >
-          {muted ? '🔇' : '🔊'}
-        </button>
-      </div>
+      <CommentaryFeed
+        displayedSteps={displayedSteps}
+        currentMatchStep={currentMatchStep}
+        matchWeather={matchWeather}
+        liveSubs={liveSubs}
+        fixture={fixture}
+        game={game}
+        feedRef={feedRef}
+      />
 
-      {/* Momentum bar (replaces old intensity bar) */}
-      {currentMatchStep && (
-        <MomentumBar
-          homeActions={currentMatchStep.shotsHome + currentMatchStep.cornersHome}
-          awayActions={currentMatchStep.shotsAway + currentMatchStep.cornersAway}
-          intensity={currentMatchStep.intensity}
-        />
-      )}
-
-      {/* Live stats */}
-      {currentMatchStep && (
-        <StatsFooter stats={calculateLiveStats(currentMatchStep)} />
-      )}
-
-      </div>{/* end match controls container */}
-
-      {/* Commentary feed */}
-      <div
-        ref={feedRef}
-        style={{
-          flex: 1, overflowY: 'auto', padding: '8px 0', position: 'relative',
-          background: (() => {
-            if (!currentMatchStep) return undefined
-            const step = currentMatchStep
-            const hasSusp = step.activeSuspensions.homeCount > 0 || step.activeSuspensions.awayCount > 0
-            if (hasSusp) return 'rgba(176,80,64,0.03)'
-            const isLateAndTight = step.minute >= 55 && Math.abs(step.homeScore - step.awayScore) <= 1
-            if (isLateAndTight) return 'rgba(196,122,58,0.04)'
-            // Recent momentum from shots
-            const recentSteps = displayedSteps.slice(-5)
-            const recentHomeShots = recentSteps.length > 1
-              ? (recentSteps[recentSteps.length - 1]?.shotsHome ?? 0) - (recentSteps[0]?.shotsHome ?? 0)
-              : 0
-            const recentAwayShots = recentSteps.length > 1
-              ? (recentSteps[recentSteps.length - 1]?.shotsAway ?? 0) - (recentSteps[0]?.shotsAway ?? 0)
-              : 0
-            if (recentHomeShots >= 3 && recentAwayShots === 0) return 'rgba(196,122,58,0.03)'
-            if (recentAwayShots >= 3 && recentHomeShots === 0) return 'rgba(126,179,212,0.03)'
-            // Weather override
-            if (matchWeather?.weather.condition === WeatherCondition.Fog) return 'linear-gradient(to bottom, rgba(200,210,220,0.04), transparent)'
-            if (matchWeather?.weather.condition === WeatherCondition.Thaw) return 'rgba(100,130,160,0.03)'
-            return undefined
-          })(),
-          transition: 'background 2s ease',
-        }}
-      >
-        {matchWeather?.weather.condition === WeatherCondition.HeavySnow && <SnowOverlay />}
-        {[...displayedSteps].reverse().flatMap((s, idx) => {
-          const hasGoal = s.events.some(e => e.type === MatchEventType.Goal)
-          const hasSuspension = s.events.some(e => e.type === MatchEventType.RedCard)
-          const hasCorner = s.events.some(e => e.type === MatchEventType.Corner) && !hasGoal
-          const hasYellow = s.events.some(e => e.type === MatchEventType.YellowCard)
-          const isDerby = s.isDerbyComment || s.commentary.toLowerCase().includes('derby')
-          const hasCornerGoal = s.events.some(e => e.type === MatchEventType.Goal && e.isCornerGoal)
-
-          let borderLeft = 'none'
-          let background = 'transparent'
-          let fontSize = 13
-          let fontWeight: number | string = 400
-          let color = 'var(--text-secondary)'
-          let paddingLeft = 16
-          let boxShadow: string | undefined = undefined
-
-          if (hasGoal) {
-            background = 'rgba(196, 122, 58, 0.12)'
-            borderLeft = '3px solid var(--accent)'
-            fontSize = 14
-            fontWeight = 600
-            color = 'var(--accent)'
-            paddingLeft = 12
-            boxShadow = 'inset 3px 0 0 var(--accent)'
-          } else if (hasSuspension) {
-            borderLeft = '3px solid var(--danger)'
-            color = 'var(--danger)'
-            fontWeight = 500
-          } else if (hasYellow) {
-            borderLeft = '3px solid var(--warning)'
-            color = 'var(--text-primary)'
-          } else if (hasCorner) {
-            borderLeft = '3px solid rgba(196,122,58,0.4)'
-            color = 'var(--text-primary)'
-            fontWeight = 500
-          } else if (isDerby) {
-            borderLeft = '3px solid rgba(220,80,30,0.7)'
-            paddingLeft = 8
-          }
-
-          const primaryEvent = s.events.find(e =>
-            e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard ||
-            e.type === MatchEventType.YellowCard || e.type === MatchEventType.Save ||
-            e.type === MatchEventType.Corner
-          )
-          const icon = primaryEvent ? eventIcon(primaryEvent.type) : ''
-
-          // Bug 0.6: Side-align events by team (home=left, away=right)
-          // Goals AND suspensions (RedCard) are sided
-          const sidedEvent = s.events.find(e =>
-            (e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard) && e.clubId
-          )
-          const isAwayEvent = sidedEvent ? getEventAlignment(sidedEvent.clubId, fixture.homeClubId) === 'away' : false
-
-          const rows: React.ReactNode[] = [
-            <div
-              key={idx}
-              style={{
-                display: 'flex', alignItems: 'flex-start',
-                flexDirection: isAwayEvent ? 'row-reverse' : 'row',
-                padding: `8px 16px 8px ${paddingLeft}px`,
-                borderLeft: isAwayEvent ? 'none' : borderLeft,
-                borderRight: isAwayEvent ? borderLeft : 'none',
-                background, gap: 8,
-                animation: 'fadeInUp 250ms ease-out both',
-                boxShadow: isAwayEvent ? (boxShadow ? boxShadow.replace('inset 3px', 'inset -3px') : undefined) : boxShadow,
-                textAlign: isAwayEvent ? 'right' : 'left',
-              }}
-            >
-              <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 28, paddingTop: 1, flexShrink: 0 }}>
-                {s.minute}'
-              </span>
-              {icon && <span style={{ fontSize: 14, flexShrink: 0 }}>{icon}</span>}
-              <span style={{ fontSize, fontWeight, color, lineHeight: 1.4 }}>
-                {hasCornerGoal ? `📐 HÖRNMÅL! ${s.commentary}` : s.commentary}
-              </span>
-            </div>
-          ]
-
-          // Halftime substitution events (from matchStepByStep, at minute 45)
-          s.events.filter(e => e.type === MatchEventType.Substitution).forEach((e, si) => {
-            rows.push(
-              <div
-                key={`htsub-${idx}-${si}`}
-                style={{
-                  display: 'flex', alignItems: 'center',
-                  padding: '6px 16px', gap: 8,
-                  borderLeft: '3px solid rgba(196,122,58,0.35)',
-                  animation: 'fadeInUp 250ms ease-out both',
-                }}
-              >
-                <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 28, flexShrink: 0 }}>{e.minute}'</span>
-                <span style={{ fontSize: 14, flexShrink: 0 }}>🔄</span>
-                <span style={{ fontSize: 13, color: 'var(--accent)' }}>{e.description.replace('🔄 ', '')}</span>
-              </div>
-            )
-          })
-
-          // Live substitutions made at this step's minute
-          liveSubs.filter(ls => ls.minute === s.minute).forEach((ls, si) => {
-            const inPlayer = game?.players.find(p => p.id === ls.inId)
-            const outPlayer = game?.players.find(p => p.id === ls.outId)
-            const inName = inPlayer ? `${inPlayer.firstName} ${inPlayer.lastName}` : '?'
-            const outName = outPlayer ? `${outPlayer.firstName} ${outPlayer.lastName}` : '?'
-            rows.push(
-              <div
-                key={`livesub-${idx}-${si}`}
-                style={{
-                  display: 'flex', alignItems: 'center',
-                  padding: '6px 16px', gap: 8,
-                  borderLeft: '3px solid rgba(196,122,58,0.35)',
-                  animation: 'fadeInUp 250ms ease-out both',
-                }}
-              >
-                <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 28, flexShrink: 0 }}>{ls.minute}'</span>
-                <span style={{ fontSize: 14, flexShrink: 0 }}>🔄</span>
-                <span style={{ fontSize: 13, color: 'var(--accent)' }}>{inName} IN för {outName}</span>
-              </div>
-            )
-          })
-
-          return rows
-        })}
-      </div>
-
-      {/* Halftime modal */}
       {showHalftime && !matchDone && (
         <HalftimeModal
           fixture={fixture}
@@ -830,11 +491,9 @@ export function MatchLiveScreen() {
         />
       )}
 
-      {/* Phase overlays */}
       {showOvertimeOverlay && <PhaseOverlay phase="overtime" />}
       {showPenaltiesOverlay && <PhaseOverlay phase="penalties" />}
 
-      {/* Normal match done overlay */}
       {matchDone && !isSmFinal && !isCupFinal && (
         <MatchDoneOverlay
           fixture={fixture}
@@ -847,13 +506,10 @@ export function MatchLiveScreen() {
           steps={steps}
           managedClubId={game?.managedClubId}
           players={game?.players ?? []}
-          onContinue={() => {
-            navigate('/game/match-result', { replace: true })
-          }}
+          onContinue={() => { navigate('/game/match-result', { replace: true }) }}
         />
       )}
 
-      {/* Cup final ceremony */}
       {!isSmFinal && isCupFinal && ceremonySlide >= 1 && (
         <CeremonyCupFinal
           slide={ceremonySlide as 1 | 2}
@@ -870,7 +526,6 @@ export function MatchLiveScreen() {
         />
       )}
 
-      {/* SM-final ceremony */}
       {isSmFinal && ceremonySlide >= 1 && (
         <CeremonySmFinal
           slide={ceremonySlide as 1 | 2 | 3}
