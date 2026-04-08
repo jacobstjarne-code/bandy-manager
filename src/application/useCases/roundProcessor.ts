@@ -11,11 +11,6 @@ import { getRivalry } from '../../domain/data/rivalries'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import { calculateStandings } from '../../domain/services/standingsService'
 import {
-  updateSeriesAfterMatch,
-  isSeriesDecided,
-  advancePlayoffRound,
-} from '../../domain/services/playoffService'
-import {
   createMatchResultItem,
   createInjuryItem,
   createSuspensionItem,
@@ -30,12 +25,6 @@ import type { TransferBid } from '../../domain/entities/GameEvent'
 import type { ScoutReport, ScoutAssignment } from '../../domain/entities/Scouting'
 import { evaluateBoard, generateBoardMessage } from '../../domain/services/boardService'
 import { executeTalentSearch } from '../../domain/services/talentScoutService'
-import {
-  updateCupBracketAfterRound,
-  generateNextCupRound,
-  getCupRoundName,
-} from '../../domain/services/cupService'
-import type { CupBracket } from '../../domain/entities/Cup'
 import { mulberry32 } from '../../domain/utils/random'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { simulateYouthMatch } from '../../domain/services/academyService'
@@ -46,8 +35,8 @@ import { applyRoundTraining } from './processors/trainingProcessor'
 import { applyPlayerStateUpdates } from './processors/playerStateProcessor'
 import { updatePlayerMatchStats } from './processors/statsProcessor'
 import { applyRoundDevelopment } from '../../domain/services/playerDevelopmentService'
-// Playoff logic extracted to processors/playoffProcessor.ts — wiring pending
-// import { processPlayoffRound } from './processors/playoffProcessor'
+import { processPlayoffRound } from './processors/playoffProcessor'
+import { processCupRound } from './processors/cupProcessor'
 import { calcRoundIncome, appendFinanceLog, applyFinanceChange, calcAttendance } from '../../domain/services/economyService'
 import type { FinanceEntry } from '../../domain/services/economyService'
 import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/services/playerAvailabilityService'
@@ -782,273 +771,45 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // Track which fixtures were already completed before this round (for dedup)
+  // Track which fixtures were already completed before this round (for dedup in processors)
   const fixturesCompletedBeforeRound = new Set(
     game.fixtures.filter(f => f.status === FixtureStatus.Completed).map(f => f.id)
   )
 
   // ── Update playoff bracket if active ─────────────────────────────────
-  let updatedBracket = game.playoffBracket
-  let bracketNewFixtures: Fixture[] = []
-  let playoffCsBoost = 0  // Bygdens puls-boost vid playoff-avancemang
+  // All fixtures completed this round (incl. live-played) — for advancement/elimination messages
+  const completedThisRound = simulatedFixtures.filter(f => f.status === FixtureStatus.Completed)
 
-  if (updatedBracket !== null) {
-    const completedThisRound = simulatedFixtures.filter(f => f.status === FixtureStatus.Completed)
+  const playoffResult = processPlayoffRound(
+    game,
+    simulatedFixtures,
+    allFixtures,
+    fixturesCompletedBeforeRound,
+    completedThisRound,
+  )
+  const updatedBracket = playoffResult.updatedBracket
+  const bracketNewFixtures = playoffResult.bracketNewFixtures
+  const playoffCsBoost = playoffResult.playoffCsBoost
+  newInboxItems.push(...playoffResult.inboxItems)
 
-    // DIAGNOSTIC: Log playoff state for debugging match-skip bug
-    if (process.env.NODE_ENV !== 'production') {
-      const managedSeries = [...updatedBracket.quarterFinals, ...updatedBracket.semiFinals, ...(updatedBracket.final ? [updatedBracket.final] : [])]
-        .find(s => s.homeClubId === game.managedClubId || s.awayClubId === game.managedClubId)
-      if (managedSeries) {
-        console.log(`[PLAYOFF] md${nextMatchday} Series ${managedSeries.id}: ${managedSeries.homeWins}-${managedSeries.awayWins}, winnerId=${managedSeries.winnerId}, completed this round: ${completedThisRound.filter(f => managedSeries.fixtures.includes(f.id)).map(f => f.id).join(',')}`)  
-      }
-    }
-
-    // Only update series for fixtures NEWLY completed this round
-    const newlyCompletedThisRound = simulatedFixtures.filter(f =>
-      f.status === FixtureStatus.Completed && !fixturesCompletedBeforeRound.has(f.id)
+  // Apply playoff fixture cancellations to allFixtures
+  if (playoffResult.cancelledFixtureIds.length > 0) {
+    const cancelledSet = new Set(playoffResult.cancelledFixtureIds)
+    allFixtures = allFixtures.map(f =>
+      cancelledSet.has(f.id) ? { ...f, status: FixtureStatus.Postponed } : f
     )
-
-    type AnyPlayoffSeries = (typeof updatedBracket.quarterFinals)[0]
-
-    const updateSeries = (series: AnyPlayoffSeries): AnyPlayoffSeries => {
-      let s = { ...series }
-      for (const f of newlyCompletedThisRound) {
-        if (s.fixtures.includes(f.id)) {
-          s = updateSeriesAfterMatch(s, f)
-        }
-      }
-      return s
-    }
-
-    updatedBracket = {
-      ...updatedBracket,
-      quarterFinals: updatedBracket.quarterFinals.map(updateSeries),
-      semiFinals: updatedBracket.semiFinals.map(updateSeries),
-      final: updatedBracket.final ? updateSeries(updatedBracket.final) : null,
-    }
-
-    // Cancel game 3 fixtures for decided series
-    const allSeriesNow = [
-      ...updatedBracket.quarterFinals,
-      ...updatedBracket.semiFinals,
-      ...(updatedBracket.final ? [updatedBracket.final] : []),
-    ]
-
-    // DIAGNOSTIC: Log series state after update
-    if (process.env.NODE_ENV !== 'production') {
-      const managedSeriesAfter = allSeriesNow.find(s => s.homeClubId === game.managedClubId || s.awayClubId === game.managedClubId)
-      if (managedSeriesAfter) {
-        console.log(`[PLAYOFF AFTER] ${managedSeriesAfter.id}: ${managedSeriesAfter.homeWins}-${managedSeriesAfter.awayWins}, winnerId=${managedSeriesAfter.winnerId}, loserId=${managedSeriesAfter.loserId}`)
-      }
-    }
-    for (const series of allSeriesNow) {
-      if (series.winnerId !== null) {
-        allFixtures = allFixtures.map(f => {
-          if (series.fixtures.includes(f.id) && f.status === FixtureStatus.Scheduled) {
-            return { ...f, status: FixtureStatus.Postponed }
-          }
-          return f
-        })
-      }
-    }
-
-    // Check if current phase is complete and advance
-    const currentPhaseComplete = (() => {
-      if (updatedBracket.status === PlayoffStatus.QuarterFinals) return updatedBracket.quarterFinals.every(s => s.winnerId !== null)
-      if (updatedBracket.status === PlayoffStatus.SemiFinals) return updatedBracket.semiFinals.every(s => s.winnerId !== null)
-      if (updatedBracket.status === PlayoffStatus.Final) return updatedBracket.final?.winnerId !== null
-      return false
-    })()
-
-    if (currentPhaseComplete) {
-      const nextRoundStart = updatedBracket.status === PlayoffStatus.QuarterFinals ? 28
-        : updatedBracket.status === PlayoffStatus.SemiFinals ? 33
-        : 36
-      const currentMaxMatchday = Math.max(0, ...allFixtures.map(f => f.matchday ?? 0))
-      const nextMatchdayStart = currentMaxMatchday + 1
-      const { bracket: newBracket, newFixtures } = advancePlayoffRound(updatedBracket, game.currentSeason, nextRoundStart, nextMatchdayStart)
-      updatedBracket = newBracket
-      bracketNewFixtures = newFixtures
-    }
-
-    // Check managed club advancement or elimination in this round
-    const allSeriesAfter = [
-      ...updatedBracket.quarterFinals,
-      ...updatedBracket.semiFinals,
-      ...(updatedBracket.final ? [updatedBracket.final] : []),
-    ]
-    for (const series of allSeriesAfter) {
-      const decidedThisRound = completedThisRound.some(f => series.fixtures.includes(f.id)) && isSeriesDecided(series)
-      if (!decidedThisRound) continue
-
-      const managedLost = series.loserId === game.managedClubId
-      const managedWon = series.winnerId === game.managedClubId
-
-      if (managedLost) {
-        const winner = game.clubs.find(c => c.id === series.winnerId)
-        const roundName = series.round === 'quarterFinal' ? 'kvartsfinalen'
-          : series.round === 'semiFinal' ? 'semifinalen'
-          : 'SM-finalen'
-        const isHome = series.homeClubId === game.managedClubId
-        const myWins = isHome ? series.homeWins : series.awayWins
-        const theirWins = isHome ? series.awayWins : series.homeWins
-        newInboxItems.push({
-          id: `inbox_elim_${game.currentSeason}_${series.id}`,
-          date: game.currentDate,
-          type: InboxItemType.Playoff,
-          title: `Utslagen ur ${roundName}`,
-          body: `${winner?.name ?? 'Motståndaren'} gick vidare med ${theirWins}-${myWins} i matcher. En stark insats, men slutspelet är nu över för er del.`,
-          isRead: false,
-        } as InboxItem)
-        break
-      }
-
-      if (managedWon && series.round !== 'final') {
-        const opponent = game.clubs.find(c => c.id === series.loserId)
-        const isHome = series.homeClubId === game.managedClubId
-        const myWins = isHome ? series.homeWins : series.awayWins
-        const theirWins = isHome ? series.awayWins : series.homeWins
-        const nextRoundName = series.round === 'quarterFinal' ? 'semifinalen' : 'SM-finalen'
-        const managedClub = game.clubs.find(c => c.id === game.managedClubId)
-        // Bygdens puls: playoff-avancemang ger boost
-        playoffCsBoost += series.round === 'quarterFinal' ? 5 : 10
-        newInboxItems.push({
-          id: `inbox_advance_${game.currentSeason}_${series.id}`,
-          date: game.currentDate,
-          type: InboxItemType.Playoff,
-          title: `Vidare till ${nextRoundName}!`,
-          body: `${managedClub?.name ?? 'Ni'} besegrade ${opponent?.name ?? 'motståndaren'} med ${myWins}-${theirWins} och går vidare till ${nextRoundName}!`,
-          isRead: false,
-        } as InboxItem)
-        break
-      }
-    }
-
-    // Check if the final is complete — announce champion
-    if (updatedBracket.status === PlayoffStatus.Completed && updatedBracket.champion) {
-      const champion = game.clubs.find(c => c.id === updatedBracket!.champion)
-      const managedClubWon = updatedBracket.champion === game.managedClubId
-      if (managedClubWon) {
-        playoffCsBoost += 20  // SM-guld: stor pulshöjning
-        newInboxItems.push({
-          id: `inbox_champion_${game.currentSeason}`,
-          date: game.currentDate,
-          type: InboxItemType.Playoff,
-          title: 'SVENSKA MÄSTARE!',
-          body: `GRATTIS! ${champion?.name} är svenska mästare ${game.currentSeason + 1}! En historisk säsong som aldrig glöms!`,
-          isRead: false,
-        } as InboxItem)
-      } else {
-        newInboxItems.push({
-          id: `inbox_champion_other_${game.currentSeason}`,
-          date: game.currentDate,
-          type: InboxItemType.Playoff,
-          title: `${champion?.name} är svenska mästare!`,
-          body: `${champion?.name} tar SM-guldet ${game.currentSeason + 1}!`,
-          isRead: false,
-        } as InboxItem)
-      }
-    }
   }
 
   // ── Update cup bracket if active ─────────────────────────────────────
-  let updatedCupBracket: CupBracket | null = game.cupBracket ?? null
-  let cupNewFixtures: Fixture[] = []
-
-  if (updatedCupBracket !== null && !updatedCupBracket.completed) {
-    // Only process cup fixtures NEWLY completed this round (not live-played ones
-    // that were already counted in saveLiveMatchResult)
-    const newlyCompletedCupThisRound = simulatedFixtures.filter(f =>
-      f.status === FixtureStatus.Completed && f.isCup && !fixturesCompletedBeforeRound.has(f.id)
-    )
-
-    if (newlyCompletedCupThisRound.length > 0) {
-      updatedCupBracket = updateCupBracketAfterRound(updatedCupBracket, newlyCompletedCupThisRound)
-
-      // Check if the current cup round is fully decided
-      const roundsWithMatches = [...new Set(updatedCupBracket.matches.map(m => m.round))]
-      const maxRound = Math.max(...roundsWithMatches)
-      const currentRoundMatches = updatedCupBracket.matches.filter(m => m.round === maxRound)
-      const currentRoundComplete = currentRoundMatches.every(m => m.winnerId)
-
-      if (currentRoundComplete) {
-        if (maxRound === 4) {
-          // Final is complete — set winner and mark completed
-          const finalMatch = currentRoundMatches[0]
-          updatedCupBracket = {
-            ...updatedCupBracket,
-            winnerId: finalMatch.winnerId,
-            completed: true,
-          }
-
-          // Prize money: winner +100k, runner-up +50k
-          const winnerId = finalMatch.winnerId!
-          const loserId = finalMatch.homeClubId === winnerId
-            ? finalMatch.awayClubId
-            : finalMatch.homeClubId
-
-          // Apply prize money (will be merged into financiallyUpdatedClubs later, but
-          // we must update before that block — do it inline here by mutating allFixtures indirectly
-          // We'll apply it to a separate clubs update after financiallyUpdatedClubs is built)
-
-          // Inbox for managed club
-          const managedIsWinner = winnerId === game.managedClubId
-          const managedIsRunnerUp = loserId === game.managedClubId
-          if (managedIsWinner) {
-            const winnerClub = game.clubs.find(c => c.id === winnerId)
-            newInboxItems.push({
-              id: `inbox_cup_winner_${game.currentSeason}`,
-              date: game.currentDate,
-              type: InboxItemType.Playoff,
-              title: '🏆 CUPVINNARE!',
-              body: `${winnerClub?.name} vinner Svenska Cupen ${game.currentSeason}! En fantastisk bedrift!`,
-              isRead: false,
-            } as InboxItem)
-          } else if (managedIsRunnerUp) {
-            const winnerClub = game.clubs.find(c => c.id === winnerId)
-            newInboxItems.push({
-              id: `inbox_cup_final_loss_${game.currentSeason}`,
-              date: game.currentDate,
-              type: InboxItemType.Playoff,
-              title: 'Cupfinalen förlorad',
-              body: `${winnerClub?.name ?? 'Motståndaren'} tog cuptiteln. En stark insats att ta sig till finalen.`,
-              isRead: false,
-            } as InboxItem)
-          }
-        } else {
-          // Generate next cup round fixtures
-          const { updatedBracket, newFixtures } = generateNextCupRound(
-            updatedCupBracket,
-            maxRound,
-            game.currentSeason,
-          )
-          updatedCupBracket = updatedBracket
-          cupNewFixtures = newFixtures
-        }
-      }
-
-      // Check if managed club was eliminated this round
-      if (!updatedCupBracket.completed) {
-        for (const match of currentRoundMatches) {
-          if (match.winnerId && match.winnerId !== game.managedClubId &&
-            (match.homeClubId === game.managedClubId || match.awayClubId === game.managedClubId)) {
-            const winner = game.clubs.find(c => c.id === match.winnerId)
-            const roundName = getCupRoundName(match.round)
-            newInboxItems.push({
-              id: `inbox_cup_elim_${game.currentSeason}_r${match.round}`,
-              date: game.currentDate,
-              type: InboxItemType.Playoff,
-              title: `Utslagna ur cup${roundName}`,
-              body: `${winner?.name ?? 'Motståndaren'} gick vidare. Cupäventyret är över för i år.`,
-              isRead: false,
-            } as InboxItem)
-            break
-          }
-        }
-      }
-    }
-  }
+  const cupResult = processCupRound(
+    game,
+    simulatedFixtures,
+    fixturesCompletedBeforeRound,
+    game.currentDate,
+  )
+  const updatedCupBracket = cupResult.updatedCupBracket
+  const cupNewFixtures = cupResult.cupNewFixtures
+  newInboxItems.push(...cupResult.cupInboxItems)
 
   // Merge new playoff fixtures and cup fixtures
   const finalAllFixtures = [...allFixtures, ...bracketNewFixtures, ...cupNewFixtures]
@@ -1143,8 +904,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const managedClubStanding = standings.find(s => s.clubId === game.managedClubId) ?? null
 
   // ── Economy: wages, match revenue, sponsorship per round ─────────────────
-  // Managed club uses calcRoundIncome (canonical, same function used by EkonomiTab display).
-  // AI clubs use a simplified flat estimate (no sponsor/community data available).
   let roundFinanceLog: FinanceEntry[] = []
 
   // Compute managed club income
@@ -1191,13 +950,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // Apply managed club income
-  // NOTE: Finances can go negative (salary drain, no revenue). This is intentional — don't add
-  // a hard floor here as it would mask the underlying economic problem. If finances drop below
-  // -500000, consider triggering a board crisis event in the future. The UI handles negative
-  // display with a warning label.
   let financiallyUpdatedClubs = applyFinanceChange(game.clubs, game.managedClubId, managedIncome.netPerRound)
 
-  // Apply AI club income: simplified flat estimate, no sponsor/community data
+  // Apply AI club income: simplified flat estimate
   for (const c of game.clubs) {
     if (c.id === game.managedClubId) continue
     const clubPlayers = availabilityUpdatedPlayers.filter(p => p.clubId === c.id)
@@ -1213,28 +968,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     financiallyUpdatedClubs = applyFinanceChange(financiallyUpdatedClubs, c.id, weeklySponsorship + aiMatchRevenue - weeklyWages)
   }
 
-  // ── Cup prize money ──────────────────────────────────────────────────────
-  // Apply cup prizes to club budgets based on this round's cup results
+  // ── Cup prize money (from cupProcessor result) ────────────────────────────
   let cupPrizedClubs = financiallyUpdatedClubs
-  if (updatedCupBracket && game.cupBracket) {
-    const CUP_PRIZES: Record<number, number> = { 1: 10000, 2: 30000, 3: 50000, 4: 150000 }
-    const RUNNER_UP_PRIZE = 50000
-
-    const completedCupThisRound = simulatedFixtures.filter(
-      f => f.status === FixtureStatus.Completed && f.isCup
-    )
-
-    for (const fixture of completedCupThisRound) {
-      const match = updatedCupBracket.matches.find(m => m.fixtureId === fixture.id)
-      if (!match || !match.winnerId) continue
-
-      const winnerId = match.winnerId
-      const loserId = fixture.homeClubId === winnerId ? fixture.awayClubId : fixture.homeClubId
-      const winPrize = CUP_PRIZES[match.round] ?? 0
-      const losePrize = match.round === 4 ? RUNNER_UP_PRIZE : 0
-
-      cupPrizedClubs = applyFinanceChange(cupPrizedClubs, winnerId, winPrize)
-      if (losePrize > 0) cupPrizedClubs = applyFinanceChange(cupPrizedClubs, loserId, losePrize)
+  for (const [clubId, amount] of Object.entries(cupResult.prizeMoneyByClub)) {
+    if (amount > 0) {
+      cupPrizedClubs = applyFinanceChange(cupPrizedClubs, clubId, amount)
     }
   }
 
@@ -1248,7 +986,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     : cupPrizedClubs
 
   // ── Transfer bids ────────────────────────────────────────────────────────
-  // Resolve pending outgoing bids (1 round to answer)
   const existingBids: TransferBid[] = game.transferBids ?? []
   const resolvedBids: TransferBid[] = existingBids.map(b => {
     if (b.direction === 'outgoing' && b.status === 'pending' && nextMatchday >= b.expiresRound) {
@@ -1938,7 +1675,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // KommunBidrag change notification (check if bidrag differs from previous round snapshot)
+  // KommunBidrag change notification
   if (pol) {
     const prevKommunBidrag = game.previousKommunBidrag ?? pol.kommunBidrag
     if (pol.kommunBidrag !== prevKommunBidrag) {
@@ -2164,4 +1901,3 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   return { game: updatedGame, roundPlayed: nextMatchday, seasonEnded: false, pendingEvents: allNewEvents, hasManagedCupMatch: hasManagedCupPending }
 }
-

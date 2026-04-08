@@ -29,8 +29,8 @@ export function EventOverlay() {
   const resolveEvent = useGameStore(s => s.resolveEvent)
   const location = useLocation()
 
-  // Block events during live match and match setup — show on all other screens
-  const isMatchScreen = location.pathname.includes('/match/live') || location.pathname === '/game/match'
+  // Block events during live match, match setup, and match result — show on round summary and beyond
+  const isMatchScreen = location.pathname.includes('/match/live') || location.pathname === '/game/match' || location.pathname === '/game/match-result'
   const events = game?.pendingEvents ?? []
   if (!game || events.length === 0 || isMatchScreen) return null
 
