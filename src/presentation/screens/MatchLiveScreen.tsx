@@ -206,11 +206,8 @@ export function MatchLiveScreen() {
       }
     }
 
-    // Run advance() now so round data is ready for subsequent screens
-    // This ensures events, economy, etc. are processed immediately
-    if (!isSmFinal && !isCupFinal) {
-      advance(true) // suppressMatchNavigation — we handle navigation ourselves
-    }
+    // Always run advance — finals need economy/injuries/events too
+    advance(true) // suppressMatchNavigation — we handle navigation ourselves
   }, [matchDone]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-scroll feed
