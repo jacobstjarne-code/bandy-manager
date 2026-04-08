@@ -1,7 +1,7 @@
 import { ClubBadge } from '../ClubBadge'
 import { IceQuality, PlayoffRound } from '../../../domain/enums'
 import { getIceQualityLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
-import { getCupRoundLabel } from '../../../domain/services/cupService'
+import { getCupRoundLabel, getCupRoundName } from '../../../domain/services/cupService'
 import { getRivalry } from '../../../domain/data/rivalries'
 import type { PlayoffSeries } from '../../../domain/entities/Playoff'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
@@ -317,12 +317,18 @@ export function NextMatchCard({
                 <span className="tag tag-outline" style={{ fontSize: 8 }}>Annandagen</span>
               </>
             )}
-            {isCup && !isDerby && (
-              <>
-                <span className="tag tag-copper" style={{ fontSize: 8 }}>En match avgör</span>
-                <span className="tag tag-outline" style={{ fontSize: 8 }}>Neutral plan</span>
-              </>
-            )}
+            {isCup && !isDerby && (() => {
+              const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id)
+              return (
+                <>
+                  <span className="tag tag-copper" style={{ fontSize: 8 }}>En match avgör</span>
+                  <span className="tag tag-outline" style={{ fontSize: 8 }}>Neutral plan</span>
+                  {cupMatch && cupMatch.round > 1 && (
+                    <span className="tag tag-outline" style={{ fontSize: 8 }}>Direktkval</span>
+                  )}
+                </>
+              )
+            })()}
             {isFinal && (
               <>
                 <span className="tag tag-copper" style={{ fontSize: 8 }}>En match avgör</span>
@@ -331,6 +337,17 @@ export function NextMatchCard({
             )}
           </div>
         )}
+
+        {/* Cup direktkvalificering — förklaring */}
+        {isCup && !isDerby && (() => {
+          const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id)
+          if (!cupMatch || cupMatch.round <= 1) return null
+          return (
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'center', marginTop: 4 }}>
+              Direktkvalificerade utifrån ranking · {getCupRoundName(cupMatch.round)}
+            </p>
+          )
+        })()}
 
         {/* Readiness + ice */}
         {(() => {

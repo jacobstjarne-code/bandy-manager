@@ -37,6 +37,26 @@ export function processCupRound(
 
   if (!result.updatedCupBracket || result.updatedCupBracket.completed) return result
 
+  // Direktkvalificering: if managed club's first cup match is in round > 1, notify once
+  const managedCupMatches = result.updatedCupBracket.matches.filter(m =>
+    m.homeClubId === game.managedClubId || m.awayClubId === game.managedClubId
+  )
+  const firstManagedRound = managedCupMatches.length > 0 ? Math.min(...managedCupMatches.map(m => m.round)) : 1
+  if (firstManagedRound > 1) {
+    const directQualId = `inbox_cup_directqual_${game.currentSeason}`
+    if (!game.inbox.some(i => i.id === directQualId)) {
+      const standing = game.standings.find(s => s.clubId === game.managedClubId)?.position ?? '?'
+      result.cupInboxItems.push({
+        id: directQualId,
+        date: currentDate,
+        type: InboxItemType.BoardFeedback,
+        title: '🏆 Svenska Cupen',
+        body: `Baserat på er ranking (${standing}:a) är ni direktkvalificerade till ${getCupRoundName(firstManagedRound)}.`,
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
   // Only update bracket with NEWLY completed cup fixtures (not live-played ones already counted
   // by saveLiveMatchResult → updateCupBracketAfterRound in matchActions)
   const newlyCompletedCupThisRound = simulatedFixtures.filter(f =>
