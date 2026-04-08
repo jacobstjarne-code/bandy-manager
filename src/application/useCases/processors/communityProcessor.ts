@@ -1,0 +1,196 @@
+import type { SaveGame, InboxItem, FacilityProject, StandingRow } from '../../../domain/entities/SaveGame'
+import type { Fixture } from '../../../domain/entities/Fixture'
+import { InboxItemType } from '../../../domain/enums'
+import { getRivalry } from '../../../domain/data/rivalries'
+import { checkProjectCompletion } from '../../../domain/services/facilityService'
+
+export interface CommunityProcessorResult {
+  csBoost: number
+  inboxItems: InboxItem[]
+  updatedFacilityProjects: FacilityProject[]
+  /** Total facilities bonus from newly completed projects this round */
+  facilityBonusTotal: number
+}
+
+/**
+ * Processes community standing boost, politician/mecenat inbox notifications,
+ * and facility project completion checks.
+ *
+ * @param justCompletedManagedFixture - The managed club's fixture completed this round (if any)
+ * @param playoffCsBoost - Community standing boost from playoff advancement (already computed)
+ * @param standings - Current league standings
+ * @param nextMatchday - The matchday number being processed
+ */
+export function processCommunity(
+  game: SaveGame,
+  justCompletedManagedFixture: Fixture | null,
+  playoffCsBoost: number,
+  standings: StandingRow[],
+  nextMatchday: number,
+): CommunityProcessorResult {
+  const inboxItems: InboxItem[] = []
+
+  // ── Community standing boost ───────────────────────────────────────────────
+  let csBoost = playoffCsBoost
+  if (justCompletedManagedFixture) {
+    const isHomeCs = justCompletedManagedFixture.homeClubId === game.managedClubId
+    const myScoreCs = isHomeCs ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
+    const theirScoreCs = isHomeCs ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
+    const wonCs = (myScoreCs ?? 0) > (theirScoreCs ?? 0)
+    const lostCs = (myScoreCs ?? 0) < (theirScoreCs ?? 0)
+    const bigWinCs = wonCs && (myScoreCs ?? 0) >= (theirScoreCs ?? 0) + 3
+    const bigLossCs = lostCs && (theirScoreCs ?? 0) >= (myScoreCs ?? 0) + 3
+    if (bigWinCs) csBoost += 3
+    else if (wonCs) csBoost += 1
+    else if (bigLossCs) csBoost -= 3
+    else if (lostCs) csBoost -= 2
+    const matchRivalryCs = getRivalry(justCompletedManagedFixture.homeClubId, justCompletedManagedFixture.awayClubId)
+    if (matchRivalryCs && wonCs) csBoost += 2
+    if (matchRivalryCs && lostCs) csBoost -= 1
+  }
+  const csActivities = game.communityActivities
+  if (csActivities?.kiosk && csActivities.kiosk !== 'none') csBoost += 0.08
+  if (csActivities?.lottery && csActivities.lottery !== 'none') csBoost += 0.05
+  if (csActivities?.bandyplay) csBoost += 0.08
+  if (csActivities?.functionaries) csBoost += 0.05
+  if (csActivities?.bandySchool) csBoost += 0.08
+  if (csActivities?.socialMedia) csBoost += 0.03
+  const csPos = standings.find(s => s.clubId === game.managedClubId)?.position ?? 6
+  if (csPos <= 3) csBoost += 0.2
+  else if (csPos >= 10) csBoost -= 0.15
+
+  // ── Politiker inbox-notiser ────────────────────────────────────────────────
+  const pol = game.localPolitician
+  if (pol && justCompletedManagedFixture && pol.relationship > 50) {
+    const isHomeNotif = justCompletedManagedFixture.homeClubId === game.managedClubId
+    const myScoreNotif = isHomeNotif ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
+    const theirScoreNotif = isHomeNotif ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
+    const wonNotif = (myScoreNotif ?? 0) > (theirScoreNotif ?? 0)
+    if (wonNotif) {
+      const opponent = game.clubs.find(c => c.id === (isHomeNotif ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId))
+      inboxItems.push({
+        id: `inbox_pol_match_${nextMatchday}_${game.currentSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.BoardFeedback,
+        title: `🏛️ ${pol.name} noterade segern`,
+        body: `Kommunalrådet ${pol.name} skickade ett meddelande: "Bra match mot ${opponent?.name ?? 'motståndaren'}. Fortsätt så."`,
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
+  // Politician relationship milestones (25, 50, 75)
+  if (pol) {
+    const relMilestones = [25, 50, 75]
+    for (const milestone of relMilestones) {
+      const milestoneId = `inbox_pol_rel_${milestone}_${game.currentSeason}`
+      if (pol.relationship >= milestone && pol.relationship < milestone + 5 && !game.inbox.some(i => i.id === milestoneId)) {
+        const milestoneTexts: Record<number, string> = {
+          25: `Kommunalrådet ${pol.name} börjar visa intresse för klubben. "Ni gör bra saker för ungdomarna i kommunen."`,
+          50: `${pol.name} ser klubben som en viktig samhällsaktör. "Vi borde prata om framtida satsningar."`,
+          75: `${pol.name} är en stark allierad. "Jag kommer att driva frågan om ökat kommunbidrag i nästa budgetomgång."`,
+        }
+        inboxItems.push({
+          id: milestoneId,
+          date: game.currentDate,
+          type: InboxItemType.KommunBidrag,
+          title: `🏛️ Stärkt relation med ${pol.name}`,
+          body: milestoneTexts[milestone] ?? '',
+          isRead: false,
+        } as InboxItem)
+      }
+    }
+  }
+
+  // KommunBidrag change notification
+  if (pol) {
+    const prevKommunBidrag = game.previousKommunBidrag ?? pol.kommunBidrag
+    if (pol.kommunBidrag !== prevKommunBidrag) {
+      const direction = pol.kommunBidrag > prevKommunBidrag ? 'höjt' : 'sänkt'
+      const diff = pol.kommunBidrag - prevKommunBidrag
+      const diffStr = diff > 0 ? `+${diff}` : `${diff}`
+      inboxItems.push({
+        id: `inbox_kommun_bidrag_${nextMatchday}_${game.currentSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.KommunBidrag,
+        title: `🏛️ Kommunbidraget ${direction}`,
+        body: `Kommunen har ${direction} bidraget till klubben (${diffStr} kr/månad). Nytt bidrag: ${pol.kommunBidrag} kr.`,
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
+  // ── Mecenat inbox-notiser ──────────────────────────────────────────────────
+  for (const mec of game.mecenater ?? []) {
+    if (!mec.isActive) continue
+
+    if (mec.happiness < 30 && mec.happiness > 20) {
+      inboxItems.push({
+        id: `inbox_mec_unhappy_${mec.id}_${nextMatchday}`,
+        date: game.currentDate,
+        type: InboxItemType.PatronInfluence,
+        title: `👥 ${mec.name} är missnöjd`,
+        body: `${mec.name} från ${mec.business} uttrycker oro. "Jag hade hoppats på bättre resultat."`,
+        isRead: false,
+      } as InboxItem)
+    }
+    if (mec.happiness <= 20) {
+      const critId = `inbox_mec_critical_${mec.id}_${game.currentSeason}`
+      if (!game.inbox.some(i => i.id === critId)) {
+        inboxItems.push({
+          id: critId,
+          date: game.currentDate,
+          type: InboxItemType.PatronInfluence,
+          title: `⚠️ ${mec.name} överväger att lämna`,
+          body: `${mec.name} är allvarligt missnöjd. "Om inget förändras snart får ni klara er utan mig."`,
+          isRead: false,
+        } as InboxItem)
+      }
+    }
+    if (mec.happiness > 70) {
+      const happyId = `inbox_mec_happy_${mec.id}_${game.currentSeason}`
+      if (!game.inbox.some(i => i.id === happyId)) {
+        inboxItems.push({
+          id: happyId,
+          date: game.currentDate,
+          type: InboxItemType.PatronInfluence,
+          title: `🤝 ${mec.name} är nöjd`,
+          body: `${mec.name} från ${mec.business} är mycket nöjd med klubbens utveckling. "Det här är precis vad jag ville se."`,
+          isRead: false,
+        } as InboxItem)
+      }
+    }
+  }
+
+  // New mecenat activated — notify
+  for (const mec of game.mecenater ?? []) {
+    if (mec.isActive && mec.arrivedSeason === game.currentSeason) {
+      const arrivalId = `inbox_mec_new_${mec.id}_${game.currentSeason}`
+      if (!game.inbox.some(i => i.id === arrivalId) && !inboxItems.some(i => i.id === arrivalId)) {
+        inboxItems.push({
+          id: arrivalId,
+          date: game.currentDate,
+          type: InboxItemType.PatronInfluence,
+          title: `💰 Ny mecenat: ${mec.name}`,
+          body: `${mec.name} (${mec.business}) vill stötta klubben ekonomiskt. Bidrag: ${mec.contribution} kr/månad.`,
+          isRead: false,
+        } as InboxItem)
+      }
+    }
+  }
+
+  // ── Facility project completion ────────────────────────────────────────────
+  const updatedFacilityProjects = (game.facilityProjects ?? []).map(p => checkProjectCompletion(p, nextMatchday))
+  const oldFacilityProjects = game.facilityProjects ?? []
+  let facilityBonusTotal = 0
+  for (const up of updatedFacilityProjects) {
+    if (up.status === 'completed') {
+      const old = oldFacilityProjects.find(o => o.id === up.id)
+      if (old && old.status === 'in_progress') {
+        facilityBonusTotal += up.facilitiesBonus
+      }
+    }
+  }
+
+  return { csBoost, inboxItems, updatedFacilityProjects, facilityBonusTotal }
+}

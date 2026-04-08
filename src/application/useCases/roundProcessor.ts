@@ -37,15 +37,15 @@ import { updatePlayerMatchStats } from './processors/statsProcessor'
 import { applyRoundDevelopment } from '../../domain/services/playerDevelopmentService'
 import { processPlayoffRound } from './processors/playoffProcessor'
 import { processCupRound } from './processors/cupProcessor'
-import { calcRoundIncome, appendFinanceLog, applyFinanceChange, calcAttendance } from '../../domain/services/economyService'
-import type { FinanceEntry } from '../../domain/services/economyService'
+import { appendFinanceLog, calcAttendance } from '../../domain/services/economyService'
 import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/services/playerAvailabilityService'
 import { updateTrainerArc } from '../../domain/services/trainerArcService'
 import { checkInObjectives } from '../../domain/services/boardObjectiveService'
-import { checkProjectCompletion } from '../../domain/services/facilityService'
 import { generateTransferRumor } from '../../domain/services/rumorService'
 import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventService'
 import { generateSocialEvent, generateSilentShoutEvent } from '../../domain/services/mecenatService'
+import { processEconomy } from './processors/economyProcessor'
+import { processCommunity } from './processors/communityProcessor'
 
 export type { AdvanceResult }
 
@@ -901,89 +901,18 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  const managedClubStanding = standings.find(s => s.clubId === game.managedClubId) ?? null
-
   // ── Economy: wages, match revenue, sponsorship per round ─────────────────
-  let roundFinanceLog: FinanceEntry[] = []
-
-  // Compute managed club income
-  const managedClub = game.clubs.find(c => c.id === game.managedClubId)!
-  const managedClubPlayers = availabilityUpdatedPlayers.filter(p => p.clubId === game.managedClubId)
-  const managedHomeMatch = simulatedFixtures.find(
-    f => f.homeClubId === game.managedClubId && f.status === FixtureStatus.Completed
+  const economyResult = processEconomy(
+    game,
+    simulatedFixtures,
+    availabilityUpdatedPlayers,
+    currentFanMood,
+    standings,
+    nextMatchday,
+    cupResult.prizeMoneyByClub,
+    localRand,
   )
-  const isHomeMatch = !!managedHomeMatch
-  const managedIncome = calcRoundIncome({
-    club: managedClub,
-    players: managedClubPlayers,
-    sponsors: game.sponsors ?? [],
-    communityActivities: game.communityActivities,
-    fanMood: currentFanMood,
-    isHomeMatch,
-    matchIsKnockout: managedHomeMatch?.isKnockout ?? false,
-    matchIsCup: managedHomeMatch?.isCup ?? false,
-    matchHasRivalry: managedHomeMatch
-      ? !!getRivalry(managedHomeMatch.homeClubId, managedHomeMatch.awayClubId)
-      : false,
-    standing: managedClubStanding,
-    rand: localRand,
-  })
-
-  // Build finance log entries for this round
-  if (managedIncome.weeklyBase !== 0) {
-    roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.weeklyBase, reason: 'sponsorship', label: 'Grundintäkt (reputation)' })
-  }
-  if (managedIncome.sponsorIncome !== 0) {
-    roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.sponsorIncome, reason: 'sponsorship', label: 'Sponsorintäkter' })
-  }
-  if (managedIncome.matchRevenue !== 0) {
-    roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.matchRevenue, reason: 'match_revenue', label: `Matchintäkt${isHomeMatch ? ' (hemma)' : ''}` })
-  }
-  if (managedIncome.communityMatchIncome !== 0) {
-    roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.communityMatchIncome, reason: 'community_round', label: 'Föreningsaktiviteter (match)' })
-  }
-  if (managedIncome.communityRoundIncome !== 0) {
-    roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.communityRoundIncome, reason: 'community_round', label: 'Föreningsaktiviteter (omgång)' })
-  }
-  if (managedIncome.weeklyWages !== 0) {
-    roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.weeklyWages, reason: 'wages', label: 'Löner' })
-  }
-
-  // Apply managed club income
-  let financiallyUpdatedClubs = applyFinanceChange(game.clubs, game.managedClubId, managedIncome.netPerRound)
-
-  // Apply AI club income: simplified flat estimate
-  for (const c of game.clubs) {
-    if (c.id === game.managedClubId) continue
-    const clubPlayers = availabilityUpdatedPlayers.filter(p => p.clubId === c.id)
-    const homeMatch = simulatedFixtures.find(
-      f => f.homeClubId === c.id && f.status === FixtureStatus.Completed
-    )
-    const totalWages = clubPlayers.reduce((sum, p) => sum + p.salary, 0)
-    const weeklyWages = Math.round(totalWages / 4)
-    const weeklySponsorship = Math.round(c.reputation * 60)
-    const aiMatchRevenue = homeMatch
-      ? Math.round(c.reputation * 600 + localRand() * 10000)
-      : 0
-    financiallyUpdatedClubs = applyFinanceChange(financiallyUpdatedClubs, c.id, weeklySponsorship + aiMatchRevenue - weeklyWages)
-  }
-
-  // ── Cup prize money (from cupProcessor result) ────────────────────────────
-  let cupPrizedClubs = financiallyUpdatedClubs
-  for (const [clubId, amount] of Object.entries(cupResult.prizeMoneyByClub)) {
-    if (amount > 0) {
-      cupPrizedClubs = applyFinanceChange(cupPrizedClubs, clubId, amount)
-    }
-  }
-
-  // Social media reputation boost (+1 var 5:e omgång)
-  const socialMediaBoostedClubs = (game.communityActivities?.socialMedia && nextMatchday % 5 === 0)
-    ? cupPrizedClubs.map(c =>
-        c.id === game.managedClubId
-          ? { ...c, reputation: Math.min(100, c.reputation + 1) }
-          : c
-      )
-    : cupPrizedClubs
+  const { roundFinanceLog, updatedClubs: socialMediaBoostedClubs } = economyResult
 
   // ── Transfer bids ────────────────────────────────────────────────────────
   const existingBids: TransferBid[] = game.transferBids ?? []
@@ -1603,167 +1532,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     postTransferClubs = result.clubs
   }
 
-  // ── Community standing update per round ────────────────────────────
-  let csBoost = playoffCsBoost
-  if (justCompletedManagedFixture) {
-    const isHomeCs = justCompletedManagedFixture.homeClubId === game.managedClubId
-    const myScoreCs = isHomeCs ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
-    const theirScoreCs = isHomeCs ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
-    const wonCs = (myScoreCs ?? 0) > (theirScoreCs ?? 0)
-    const lostCs = (myScoreCs ?? 0) < (theirScoreCs ?? 0)
-    const bigWinCs = wonCs && (myScoreCs ?? 0) >= (theirScoreCs ?? 0) + 3
-    const bigLossCs = lostCs && (theirScoreCs ?? 0) >= (myScoreCs ?? 0) + 3
-    if (bigWinCs) csBoost += 3
-    else if (wonCs) csBoost += 1
-    else if (bigLossCs) csBoost -= 3
-    else if (lostCs) csBoost -= 2
-    const matchRivalryCs = getRivalry(justCompletedManagedFixture.homeClubId, justCompletedManagedFixture.awayClubId)
-    if (matchRivalryCs && wonCs) csBoost += 2
-    if (matchRivalryCs && lostCs) csBoost -= 1
-  }
-  const csActivities = game.communityActivities
-  if (csActivities?.kiosk && csActivities.kiosk !== 'none') csBoost += 0.08
-  if (csActivities?.lottery && csActivities.lottery !== 'none') csBoost += 0.05
-  if (csActivities?.bandyplay) csBoost += 0.08
-  if (csActivities?.functionaries) csBoost += 0.05
-  if (csActivities?.bandySchool) csBoost += 0.08
-  if (csActivities?.socialMedia) csBoost += 0.03
-  const csPos = standings.find(s => s.clubId === game.managedClubId)?.position ?? 6
-  if (csPos <= 3) csBoost += 0.2
-  else if (csPos >= 10) csBoost -= 0.15
-
-  // ── Kommun/mecenat inbox-notiser ──────────────────────────────────────
-  const pol = game.localPolitician
-  if (pol && justCompletedManagedFixture && pol.relationship > 50) {
-    const isHomeNotif = justCompletedManagedFixture.homeClubId === game.managedClubId
-    const myScoreNotif = isHomeNotif ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
-    const theirScoreNotif = isHomeNotif ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
-    const wonNotif = (myScoreNotif ?? 0) > (theirScoreNotif ?? 0)
-    if (wonNotif) {
-    const opponent = game.clubs.find(c => c.id === (isHomeNotif ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId))
-    newInboxItems.push({
-      id: `inbox_pol_match_${nextMatchday}_${game.currentSeason}`,
-      date: game.currentDate,
-      type: InboxItemType.BoardFeedback,
-      title: `🏛️ ${pol.name} noterade segern`,
-      body: `Kommunalrådet ${pol.name} skickade ett meddelande: "Bra match mot ${opponent?.name ?? 'motståndaren'}. Fortsätt så."`,
-      isRead: false,
-    } as InboxItem)
-    }
-  }
-
-  // Politician relationship milestones (25, 50, 75)
-  if (pol) {
-    const relMilestones = [25, 50, 75]
-    for (const milestone of relMilestones) {
-      const milestoneId = `inbox_pol_rel_${milestone}_${game.currentSeason}`
-      if (pol.relationship >= milestone && pol.relationship < milestone + 5 && !game.inbox.some(i => i.id === milestoneId)) {
-        const milestoneTexts: Record<number, string> = {
-          25: `Kommunalrådet ${pol.name} börjar visa intresse för klubben. "Ni gör bra saker för ungdomarna i kommunen."`,
-          50: `${pol.name} ser klubben som en viktig samhällsaktör. "Vi borde prata om framtida satsningar."`,
-          75: `${pol.name} är en stark allierad. "Jag kommer att driva frågan om ökat kommunbidrag i nästa budgetomgång."`,
-        }
-        newInboxItems.push({
-          id: milestoneId,
-          date: game.currentDate,
-          type: InboxItemType.KommunBidrag,
-          title: `🏛️ Stärkt relation med ${pol.name}`,
-          body: milestoneTexts[milestone] ?? '',
-          isRead: false,
-        } as InboxItem)
-      }
-    }
-  }
-
-  // KommunBidrag change notification
-  if (pol) {
-    const prevKommunBidrag = game.previousKommunBidrag ?? pol.kommunBidrag
-    if (pol.kommunBidrag !== prevKommunBidrag) {
-      const direction = pol.kommunBidrag > prevKommunBidrag ? 'höjt' : 'sänkt'
-      const diff = pol.kommunBidrag - prevKommunBidrag
-      const diffStr = diff > 0 ? `+${diff}` : `${diff}`
-      newInboxItems.push({
-        id: `inbox_kommun_bidrag_${nextMatchday}_${game.currentSeason}`,
-        date: game.currentDate,
-        type: InboxItemType.KommunBidrag,
-        title: `🏛️ Kommunbidraget ${direction}`,
-        body: `Kommunen har ${direction} bidraget till klubben (${diffStr} kr/månad). Nytt bidrag: ${pol.kommunBidrag} kr.`,
-        isRead: false,
-      } as InboxItem)
-    }
-  }
-
-  for (const mec of game.mecenater ?? []) {
-    if (!mec.isActive) continue
-
-    // Mecenat happiness thresholds: unhappy (<30) or very happy (>70)
-    if (mec.happiness < 30 && mec.happiness > 20) {
-      newInboxItems.push({
-        id: `inbox_mec_unhappy_${mec.id}_${nextMatchday}`,
-        date: game.currentDate,
-        type: InboxItemType.PatronInfluence,
-        title: `👥 ${mec.name} är missnöjd`,
-        body: `${mec.name} från ${mec.business} uttrycker oro. "Jag hade hoppats på bättre resultat."`,
-        isRead: false,
-      } as InboxItem)
-    }
-    if (mec.happiness <= 20) {
-      const critId = `inbox_mec_critical_${mec.id}_${game.currentSeason}`
-      if (!game.inbox.some(i => i.id === critId)) {
-        newInboxItems.push({
-          id: critId,
-          date: game.currentDate,
-          type: InboxItemType.PatronInfluence,
-          title: `⚠️ ${mec.name} överväger att lämna`,
-          body: `${mec.name} är allvarligt missnöjd. "Om inget förändras snart får ni klara er utan mig."`,
-          isRead: false,
-        } as InboxItem)
-      }
-    }
-    if (mec.happiness > 70) {
-      const happyId = `inbox_mec_happy_${mec.id}_${game.currentSeason}`
-      if (!game.inbox.some(i => i.id === happyId)) {
-        newInboxItems.push({
-          id: happyId,
-          date: game.currentDate,
-          type: InboxItemType.PatronInfluence,
-          title: `🤝 ${mec.name} är nöjd`,
-          body: `${mec.name} från ${mec.business} är mycket nöjd med klubbens utveckling. "Det här är precis vad jag ville se."`,
-          isRead: false,
-        } as InboxItem)
-      }
-    }
-  }
-
-  // New mecenat activated — notify
-  for (const mec of game.mecenater ?? []) {
-    if (mec.isActive && mec.arrivedSeason === game.currentSeason) {
-      const arrivalId = `inbox_mec_new_${mec.id}_${game.currentSeason}`
-      if (!game.inbox.some(i => i.id === arrivalId) && !newInboxItems.some(i => i.id === arrivalId)) {
-        newInboxItems.push({
-          id: arrivalId,
-          date: game.currentDate,
-          type: InboxItemType.PatronInfluence,
-          title: `💰 Ny mecenat: ${mec.name}`,
-          body: `${mec.name} (${mec.business}) vill stötta klubben ekonomiskt. Bidrag: ${mec.contribution} kr/månad.`,
-          isRead: false,
-        } as InboxItem)
-      }
-    }
-  }
-
-  // ── Apply facility project completion bonuses ──────────────────────────
-  const updatedFacilityProjects = (game.facilityProjects ?? []).map(p => checkProjectCompletion(p, nextMatchday))
-  const oldFacilityProjects = game.facilityProjects ?? []
-  let facilityBonusTotal = 0
-  for (const up of updatedFacilityProjects) {
-    if (up.status === 'completed') {
-      const old = oldFacilityProjects.find(o => o.id === up.id)
-      if (old && old.status === 'in_progress') {
-        facilityBonusTotal += up.facilitiesBonus
-      }
-    }
-  }
+  // ── Community standing, politician/mecenat inbox, facility projects ────────
+  const communityResult = processCommunity(
+    game,
+    justCompletedManagedFixture ?? null,
+    playoffCsBoost,
+    standings,
+    nextMatchday,
+  )
+  newInboxItems.push(...communityResult.inboxItems)
+  const { csBoost, updatedFacilityProjects, facilityBonusTotal } = communityResult
   if (facilityBonusTotal > 0) {
     postTransferClubs = postTransferClubs.map(c =>
       c.id === game.managedClubId
