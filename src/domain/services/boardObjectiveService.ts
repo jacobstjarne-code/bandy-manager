@@ -108,6 +108,57 @@ function improveFacilities(owner: BoardMember, season: number): BoardObjective {
   )
 }
 
+function improveYouth(owner: BoardMember, season: number): BoardObjective {
+  const descs = [
+    'Vi lägger pengar på akademin. Jag vill se resultat — minst en spelare som tar klivet upp.',
+    'Akademin måste leverera. En spelare till A-laget den här säsongen. Det är rimligt.',
+    'Det finns pojkar i P19 som är redo. Ge dem chansen.',
+  ]
+  return makeObjective(
+    'improveYouth', 'academy',
+    'Lyft en spelare från akademin',
+    `${owner.name}: "${descs[season % descs.length]}"`,
+    owner, 'improveYouth', 1,
+    `${owner.name}: "Bra — akademin levererar."`,
+    `${owner.name}: "Ingen ny spelare från akademin. Vad gör vi egentligen där nere?"`,
+    false, season,
+  )
+}
+
+function reduceInjuries(owner: BoardMember, season: number): BoardObjective {
+  const descs = [
+    'Skadeläget var en katastrof. Håll truppen frisk den här säsongen.',
+    'Vi hade för många skador förra året. Max fem — det borde vara möjligt.',
+    'Träningen måste anpassas. Jag vill inte se halva truppen på skadelistan igen.',
+  ]
+  return makeObjective(
+    'reduceInjuries', 'sporting',
+    'Max 5 skador under säsongen',
+    `${owner.name}: "${descs[season % descs.length]}"`,
+    owner, 'reduceInjuries', 5,
+    `${owner.name}: "Friska spelare, bra säsong. Så enkelt är det."`,
+    `${owner.name}: "Skadeläget blev för dåligt. Vi måste se över träningen."`,
+    false, season,
+  )
+}
+
+function topHalfFinish(owner: BoardMember, season: number): BoardObjective {
+  const descs = [
+    'Jag begär inte SM-guld. Men topp 6 — det ska vi klara.',
+    'Vi hör hemma i övre halvan. Bevisa det.',
+    'Stabilt i toppen. Plats 1–6 vid säsongsslut.',
+  ]
+  return makeObjective(
+    'topHalf', 'sporting',
+    'Sluta topp 6',
+    `${owner.name}: "${descs[season % descs.length]}"`,
+    owner, 'topHalf', 6,
+    `${owner.name}: "Topp 6! Vi är på rätt väg."`,
+    `${owner.name}: "Under nedre halvan. Inte godkänt."`,
+    false, season,
+  )
+}
+
 function beatRival(owner: BoardMember, rivalName: string, season: number): BoardObjective {
   return makeObjective(
     'beatRival', 'sporting',
@@ -146,10 +197,22 @@ export function generateBoardObjectives(
     }
   }
 
-  // Academy / homegrown (from traditionalist)
+  // Objective IDs used last season (for variety)
+  const lastSeasonObjectiveIds = new Set(
+    (game.boardObjectiveHistory ?? [])
+      .filter(o => o.season === season - 1)
+      .map(o => o.objectiveId)
+  )
+
+  // Academy / homegrown (from traditionalist) — 50/50 between playHomegrown and improveYouth
   if (traditionalist) {
     const homegrown = game.players.filter(p => p.clubId === club.id && p.isHomegrown).length
-    if (homegrown >= 2) allCandidates.push(playHomegrown(traditionalist, season))
+    if (homegrown >= 2) {
+      const useImprove = rand() < 0.5 || lastSeasonObjectiveIds.has('playHomegrown')
+      allCandidates.push(useImprove ? improveYouth(traditionalist, season) : playHomegrown(traditionalist, season))
+    } else {
+      allCandidates.push(improveYouth(traditionalist, season))
+    }
   }
 
   // Community / fans (from modernist)
@@ -158,15 +221,22 @@ export function generateBoardObjectives(
     if (club.facilities < 50) allCandidates.push(improveFacilities(modernist, season))
   }
 
-  // Sporting (from supporter)
+  // Sporting (from supporter) — more variety
   if (supporter) {
-    allCandidates.push(cupRun(supporter, season))
+    const sportingCandidates: BoardObjective[] = []
+    if (!lastSeasonObjectiveIds.has('cupRun')) sportingCandidates.push(cupRun(supporter, season))
+    if (!lastSeasonObjectiveIds.has('topHalf')) sportingCandidates.push(topHalfFinish(supporter, season))
+    if (!lastSeasonObjectiveIds.has('reduceInjuries')) sportingCandidates.push(reduceInjuries(supporter, season))
+    // Always allow beatRival if on a losing streak
     const rivalHistory = Object.entries(game.rivalryHistory ?? {})
       .find(([, h]) => h.currentStreak < -1)
     if (rivalHistory) {
       const rivalClub = game.clubs.find(c => c.id === rivalHistory[0])
-      if (rivalClub) allCandidates.push(beatRival(supporter, rivalClub.name, season))
+      if (rivalClub) sportingCandidates.push(beatRival(supporter, rivalClub.name, season))
     }
+    // If all filtered out by history, fall back to the full pool
+    const pool = sportingCandidates.length > 0 ? sportingCandidates : [cupRun(supporter, season), topHalfFinish(supporter, season)]
+    allCandidates.push(pool[Math.floor(rand() * pool.length)])
   }
 
   // Shuffle candidates for variety
@@ -175,10 +245,11 @@ export function generateBoardObjectives(
     ;[allCandidates[i], allCandidates[j]] = [allCandidates[j], allCandidates[i]]
   }
 
-  // Pick 1-2 objectives with different types
+  // Pick 2-3 objectives with different types
+  const targetCount = 2 + (rand() < 0.3 ? 1 : 0)
   const objectives: BoardObjective[] = []
   for (const candidate of allCandidates) {
-    if (objectives.length >= 2) break
+    if (objectives.length >= targetCount) break
     if (objectives.some(o => o.type === candidate.type)) continue
     objectives.push(candidate)
   }
@@ -250,6 +321,23 @@ export function evaluateObjective(
       const projects = game.facilityProjects ?? []
       const started = projects.filter(p => p.status === 'in_progress' || p.status === 'completed').length
       return { value: started, status: started >= 1 ? 'met' : 'active' }
+    }
+    case 'improveYouth': {
+      const promoted = game.players.filter(p =>
+        p.clubId === game.managedClubId && p.isHomegrown && p.age <= 20 &&
+        (p.seasonStats?.gamesPlayed ?? 0) >= 3
+      ).length
+      return { value: promoted, status: promoted >= 1 ? 'met' : 'active' }
+    }
+    case 'reduceInjuries': {
+      const injuryCount = game.players.filter(p =>
+        p.clubId === game.managedClubId && p.isInjured
+      ).length
+      return { value: injuryCount, status: injuryCount <= 5 ? 'met' : injuryCount <= 8 ? 'active' : 'at_risk' }
+    }
+    case 'topHalf': {
+      const pos = game.standings?.find(s => s.clubId === game.managedClubId)?.position ?? 12
+      return { value: pos, status: pos <= 6 ? 'met' : pos <= 8 ? 'active' : 'at_risk' }
     }
     default:
       return { value: 0, status: 'active' }
