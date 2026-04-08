@@ -26,6 +26,7 @@ import { InboxScreen } from '../screens/InboxScreen'
 import { MatchResultScreen } from '../screens/MatchResultScreen'
 import { BoardMeetingScreen } from '../screens/BoardMeetingScreen'
 import { GameOverScreen } from '../screens/GameOverScreen'
+import { GranskaScreen } from '../screens/GranskaScreen'
 
 import { HistoryScreen } from '../screens/HistoryScreen'
 import { PreSeasonScreen } from '../screens/PreSeasonScreen'
@@ -63,6 +64,7 @@ export function AppRouter() {
           <Route path="pre-season" element={<PreSeasonScreen />} />
         </Route>
         <Route element={<GameGuard />}>
+          <Route path="/game/review" element={<GranskaScreen />} />
           <Route path="/game/round-summary" element={<RoundSummaryScreen />} />
           <Route path="/game/match-result" element={<MatchResultScreen />} />
           <Route path="/game/game-over" element={<GameOverScreen />} />

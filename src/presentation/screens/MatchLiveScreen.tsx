@@ -506,7 +506,7 @@ export function MatchLiveScreen() {
           steps={steps}
           managedClubId={game?.managedClubId}
           players={game?.players ?? []}
-          onContinue={() => { navigate('/game/match-result', { replace: true }) }}
+          onContinue={() => { navigate('/game/review', { replace: true }) }}
         />
       )}
 

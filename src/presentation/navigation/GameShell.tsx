@@ -3,6 +3,7 @@ import { Outlet, Navigate, useLocation } from 'react-router-dom'
 import { BottomNav } from './BottomNav'
 import { GameHeader } from '../components/GameHeader'
 import { EventOverlay } from '../components/EventOverlay'
+import { PhaseIndicatorAuto } from '../components/PhaseIndicator'
 import { useGameStore } from '../store/gameStore'
 
 // Lightweight guard for full-screen routes that don't use BottomNav
@@ -12,6 +13,7 @@ export function GameGuard() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <GameHeader />
+      <PhaseIndicatorAuto />
       <div style={{ flex: 1, overflowY: 'auto' }}>
         <Outlet />
       </div>
@@ -39,6 +41,7 @@ export function GameShell() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <GameHeader />
+      <PhaseIndicatorAuto />
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', paddingBottom: `calc(var(--bottom-nav-height) + var(--safe-bottom))` }}>
         <div key={location.pathname} className="screen-enter" style={{ minHeight: '100%' }}>
           <Outlet />

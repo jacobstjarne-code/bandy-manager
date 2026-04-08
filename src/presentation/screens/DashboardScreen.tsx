@@ -191,7 +191,7 @@ export function DashboardScreen() {
       try {
         const result = advance()
         if (result?.playoffStarted || result?.seasonEnded) return
-        navigate('/game/round-summary')
+        navigate('/game/review')
       } catch (err) { console.error('advance() failed:', err) }
       return
     }
@@ -200,7 +200,7 @@ export function DashboardScreen() {
     if (managedMatchInNextRound) { navigate('/game/match'); return }
     try {
       advance()
-      navigate('/game/round-summary')
+      navigate('/game/review')
     } catch (err) { console.error('advance() failed:', err) }
   }
 
