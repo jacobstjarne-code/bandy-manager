@@ -27,6 +27,7 @@ export function GranskaScreen() {
   const [visible, setVisible] = useState(false)
   const [resolvedEventIds, setResolvedEventIds] = useState<Set<string>>(new Set())
   const [chosenLabels, setChosenLabels] = useState<Record<string, string>>({})
+  const [soundsPlayed, setSoundsPlayed] = useState(false)
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80)
@@ -39,15 +40,14 @@ export function GranskaScreen() {
     }
   }, [roundSummary, game, navigate])
 
-  const soundsPlayed = useState(false)
   useEffect(() => {
-    if (!roundSummary || soundsPlayed[0]) return
-    soundsPlayed[1](true)
+    if (!roundSummary || soundsPlayed) return
+    setSoundsPlayed(true)
     const csDelta = (roundSummary.communityStandingAfter ?? 0) - (roundSummary.communityStandingBefore ?? roundSummary.communityStandingAfter ?? 0)
     if (csDelta > 0) setTimeout(() => playSound('communityUp'), 400)
     else if (csDelta < 0) setTimeout(() => playSound('communityDown'), 400)
     if (roundSummary.youthMatchResult?.includes('vann')) setTimeout(() => playSound('youthGoal'), 600)
-  }, [roundSummary])
+  }, [roundSummary, soundsPlayed])
 
   if (!game) return null
 
