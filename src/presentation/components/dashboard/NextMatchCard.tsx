@@ -76,6 +76,7 @@ interface NextMatchCardProps {
   dynamicAwayWins: number
   matchWeather: MatchWeather | undefined
   hasPendingLineup: boolean
+  lineupConfirmedThisRound?: boolean
 }
 
 export function NextMatchCard({
@@ -90,6 +91,7 @@ export function NextMatchCard({
   dynamicAwayWins,
   matchWeather,
   hasPendingLineup,
+  lineupConfirmedThisRound,
 }: NextMatchCardProps) {
   const rivalry = getRivalry(nextFixture.homeClubId, nextFixture.awayClubId)
   const isAnnandagen = nextFixture.roundNumber === 8
@@ -331,24 +333,28 @@ export function NextMatchCard({
         )}
 
         {/* Readiness + ice */}
-        <div style={{ marginTop: 8, paddingTop: 6, borderTop: '1px solid var(--border)', display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <span className="tag tag-green" style={{ gap: 3, fontSize: 8 }}>
-            <svg viewBox="0 0 6 6" width="6" height="6"><circle cx="3" cy="3" r="2.5" fill="var(--success)"/></svg>
-            Uppställning
-          </span>
-          <span className="tag tag-green" style={{ gap: 3, fontSize: 8 }}>
-            <svg viewBox="0 0 6 6" width="6" height="6"><circle cx="3" cy="3" r="2.5" fill="var(--success)"/></svg>
-            Taktik
-          </span>
-          <span
-            className="tag tag-copper"
-            style={{ gap: 3, fontSize: 8, animation: !hasPendingLineup ? 'pulseRing 2s ease-in-out infinite' : undefined }}
-          >
-            <svg viewBox="0 0 6 6" width="6" height="6"><circle cx="3" cy="3" r="2" fill="none" stroke="var(--accent)" strokeWidth="1.2"/></svg>
-            {hasPendingLineup ? 'Klar ✓' : 'Välj trupp'}
-          </span>
-          {iceTag}
-        </div>
+        {(() => {
+          const confirmed = lineupConfirmedThisRound === true
+          const lineupTag = !hasPendingLineup
+            ? { text: 'Välj trupp', cls: 'tag tag-copper', pulse: true }
+            : confirmed
+            ? { text: 'Redo ✓', cls: 'tag tag-green', pulse: false }
+            : { text: 'Förra uppst.', cls: 'tag tag-outline', pulse: false }
+          return (
+            <div style={{ marginTop: 8, paddingTop: 6, borderTop: '1px solid var(--border)', display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <span
+                className={lineupTag.cls}
+                style={{ gap: 3, fontSize: 8, animation: lineupTag.pulse ? 'pulseRing 2s ease-in-out infinite' : undefined }}
+              >
+                {!hasPendingLineup && (
+                  <svg viewBox="0 0 6 6" width="6" height="6"><circle cx="3" cy="3" r="2" fill="none" stroke="var(--accent)" strokeWidth="1.2"/></svg>
+                )}
+                {lineupTag.text}
+              </span>
+              {iceTag}
+            </div>
+          )
+        })()}
       </div>
     </div>
   )

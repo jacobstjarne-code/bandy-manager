@@ -542,6 +542,7 @@ export function DashboardScreen() {
             dynamicAwayWins={dynamicAwayWins}
             matchWeather={matchWeather}
             hasPendingLineup={hasPendingLineup}
+            lineupConfirmedThisRound={game.lineupConfirmedThisRound}
           />
         )}
 

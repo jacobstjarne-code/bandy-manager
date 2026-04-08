@@ -304,6 +304,7 @@ export interface SaveGame {
   matchWeathers: MatchWeather[]
 
   managedClubPendingLineup?: TeamSelection
+  lineupConfirmedThisRound?: boolean
   managedClubTraining: TrainingFocus
   trainingHistory: TrainingSession[]
   trainingProjects?: TrainingProject[]

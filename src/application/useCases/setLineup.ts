@@ -92,6 +92,7 @@ export function setLineup(input: SetLineupInput): SetLineupResult {
   const updatedGame: SaveGame = {
     ...game,
     managedClubPendingLineup: lineup,
+    lineupConfirmedThisRound: true,
   }
 
   return { success: true, game: updatedGame }
