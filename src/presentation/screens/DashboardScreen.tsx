@@ -15,7 +15,7 @@ import { playSound } from '../audio/soundEffects'
 import { getFormResults } from '../utils/formUtils'
 import { calcRoundIncome } from '../../domain/services/economyService'
 import { csColor, formatFinanceAbs } from '../utils/formatters'
-import { getRivalry } from '../../domain/data/rivalries'
+import { DailyBriefing } from '../components/dashboard/DailyBriefing'
 import { NextMatchCard } from '../components/dashboard/NextMatchCard'
 import { PlayoffBracketCard } from '../components/dashboard/PlayoffBracketCard'
 import { CupCard } from '../components/dashboard/CupCard'
@@ -223,9 +223,6 @@ export function DashboardScreen() {
   // ── Community standing ─────────────────────────────────────────
   const cs = game.communityStanding ?? 50
 
-  // ── Derby check for dagboken ────────────────────────────────────
-  const nextDerby = nextFixture ? getRivalry(nextFixture.homeClubId, nextFixture.awayClubId) : null
-
   // ── Trupp single-row data ──────────────────────────────────────
   const readyCount = Math.max(0, squadPlayers.length - injuredCount)
   const avgForm = squadPlayers.length > 0 ? Math.round(squadPlayers.reduce((s, p) => s + p.form, 0) / squadPlayers.length) : 0
@@ -330,16 +327,7 @@ export function DashboardScreen() {
         )}
 
         {/* ③ DAGBOKEN */}
-        {nextDerby && nextFixture && (
-          <div className="card-round" style={{ margin: '0 0 6px', padding: '8px 12px' }}>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: 'var(--font-body)', margin: 0 }}>
-              🔥 Derby. {nextDerby.name}. {(() => {
-                const h = game.rivalryHistory?.[nextFixture.homeClubId === game.managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId]
-                return h ? `V${h.wins} O${h.draws} F${h.losses} i historiken.` : 'Historiken börjar nu.'
-              })()}
-            </p>
-          </div>
-        )}
+        <DailyBriefing game={game} />
 
         {/* ④ ÖVERBLICK 2×2 grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, margin: '0 0 6px' }}>
