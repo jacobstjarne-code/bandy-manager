@@ -28,6 +28,7 @@ import { SquadStatusCard } from '../components/dashboard/SquadStatusCard'
 import { CommunityPulse } from '../components/dashboard/CommunityPulse'
 import { calcRoundIncome } from '../../domain/services/economyService'
 import { getFormResults } from '../utils/formUtils'
+import { FormSquares } from '../components/FormDots'
 
 
 interface PlayoffSeriesRowProps {
@@ -593,7 +594,7 @@ export function DashboardScreen() {
                       ) : null
                     })()}
                     <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '3px 0 0', fontFamily: 'var(--font-body)' }}>
-                      {standing.points}p · {standing.goalDifference >= 0 ? '+' : ''}{standing.goalDifference} mål
+                      {standing.points}p · {standing.goalDifference >= 0 ? '+' : ''}{standing.goalDifference}
                     </p>
                     {standing.played > 0 && (
                       <p style={{
@@ -605,6 +606,31 @@ export function DashboardScreen() {
                     )}
                   </div>
                 </div>
+                {/* Form */}
+                {recentForm.length > 0 && (
+                  <div style={{ marginTop: 6 }}>
+                    <FormSquares results={recentForm} size={12} />
+                  </div>
+                )}
+                {/* Avstånd till grannar */}
+                {standing.played > 0 && (() => {
+                  const myIdx = game.standings.findIndex(s => s.clubId === game.managedClubId)
+                  const above = myIdx > 0 ? game.standings[myIdx - 1] : null
+                  const below = myIdx < game.standings.length - 1 ? game.standings[myIdx + 1] : null
+                  const myPts = standing.points
+                  const gapAbove = above ? above.points - myPts : null
+                  const gapBelow = below ? myPts - below.points : null
+                  return (
+                    <div style={{ marginTop: 5, fontSize: 9, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                      {above && gapAbove !== null && (
+                        <div>↑ {gapAbove === 0 ? 'Lika med' : `${gapAbove}p till`} {above.clubId === game.managedClubId ? '' : (game.clubs.find(c => c.id === above.clubId)?.shortName ?? above.clubId)} ({above.position}:a)</div>
+                      )}
+                      {below && gapBelow !== null && (
+                        <div>↓ {gapBelow === 0 ? 'Lika med' : `${gapBelow}p ned till`} {game.clubs.find(c => c.id === below.clubId)?.shortName ?? below.clubId} ({below.position}:a)</div>
+                      )}
+                    </div>
+                  )
+                })()}
               </div>
             </div>
           )}
