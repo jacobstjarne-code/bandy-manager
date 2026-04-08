@@ -16,15 +16,11 @@ import {
   createSuspensionItem,
   createRecoveryItem,
 } from '../../domain/services/inboxService'
-import { processScoutAssignment } from '../../domain/services/scoutingService'
 import { updateAllMarketValues } from '../../domain/services/marketValueService'
-import { generateIncomingBids, resolveOutgoingBid, executeTransfer } from '../../domain/services/transferService'
+import { executeTransfer } from '../../domain/services/transferService'
 import { generatePostAdvanceEvents, generateEvents } from '../../domain/services/eventService'
 import { generateMediaHeadlines, generateTrendArticles } from '../../domain/services/mediaService'
-import type { TransferBid } from '../../domain/entities/GameEvent'
-import type { ScoutReport, ScoutAssignment } from '../../domain/entities/Scouting'
 import { evaluateBoard, generateBoardMessage } from '../../domain/services/boardService'
-import { executeTalentSearch } from '../../domain/services/talentScoutService'
 import { mulberry32 } from '../../domain/utils/random'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { simulateYouthMatch } from '../../domain/services/academyService'
@@ -46,6 +42,8 @@ import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventServic
 import { generateSocialEvent, generateSilentShoutEvent } from '../../domain/services/mecenatService'
 import { processEconomy } from './processors/economyProcessor'
 import { processCommunity } from './processors/communityProcessor'
+import { processScouts } from './processors/scoutProcessor'
+import { processTransferBids, processLoans } from './processors/transferProcessor'
 
 export type { AdvanceResult }
 
@@ -614,71 +612,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // ── Process active scout assignment ───────────────────────────────────
-  let updatedScoutReports = game.scoutReports ?? {}
-  let updatedScoutAssignment: ScoutAssignment | null = game.activeScoutAssignment ?? null
-
-  if (updatedScoutAssignment) {
-    updatedScoutAssignment = {
-      ...updatedScoutAssignment,
-      roundsRemaining: updatedScoutAssignment.roundsRemaining - 1,
-    }
-    if (updatedScoutAssignment.roundsRemaining <= 0) {
-      const target = finalPlayers.find(p => p.id === updatedScoutAssignment!.targetPlayerId)
-      if (target) {
-        const scoutAccuracy = 70   // default accuracy; could vary by club facilities later
-        const scoutSeed = baseSeed + nextMatchday * 17 + target.id.charCodeAt(0)
-        const report: ScoutReport = processScoutAssignment(
-          updatedScoutAssignment,
-          target,
-          scoutAccuracy,
-          scoutSeed,
-          game.currentSeason,
-        )
-        updatedScoutReports = { ...updatedScoutReports, [target.id]: report }
-        const targetClub = game.clubs.find(c => c.id === updatedScoutAssignment!.targetClubId)
-        newInboxItems.push({
-          id: `inbox_scout_${target.id}_${game.currentSeason}_r${nextMatchday}`,
-          date: game.currentDate,
-          type: InboxItemType.ScoutReport,
-          title: `Scoutrapport: ${target.firstName} ${target.lastName}`,
-          body: `${report.notes} Beräknad styrka: ${report.estimatedCA}. Spelar i ${targetClub?.name ?? 'okänd klubb'}.`,
-          relatedPlayerId: target.id,
-          relatedClubId: updatedScoutAssignment.targetClubId,
-          isRead: false,
-        })
-      }
-      updatedScoutAssignment = null
-    }
-  }
-
-  // ── Process active talent search ──────────────────────────────────────
-  let updatedTalentSearch = game.activeTalentSearch ?? null
-  let updatedTalentResults = [...(game.talentSearchResults ?? [])]
-  if (updatedTalentSearch) {
-    updatedTalentSearch = { ...updatedTalentSearch, roundsRemaining: updatedTalentSearch.roundsRemaining - 1 }
-    if (updatedTalentSearch.roundsRemaining <= 0) {
-      const result = executeTalentSearch(
-        updatedTalentSearch,
-        finalPlayers,
-        game.clubs,
-        game.managedClubId,
-        localRand,
-        game.currentSeason,
-        nextMatchday,
-      )
-      updatedTalentResults = [...updatedTalentResults, result].slice(-3)
-      updatedTalentSearch = null
-      newInboxItems.push({
-        id: `inbox_talent_${result.id}`,
-        date: game.currentDate,
-        type: InboxItemType.ScoutReport,
-        title: 'Spaningsrapport klar',
-        body: `Din scout har hittat ${result.players.length} intressanta spelare. Se Transfermarknaden för detaljer.`,
-        isRead: false,
-      })
-    }
-  }
+  // ── Process active scout assignment + talent search ───────────────────
+  const scoutResult = processScouts(game, finalPlayers, nextMatchday, baseSeed, localRand)
+  newInboxItems.push(...scoutResult.inboxItems)
+  const updatedScoutReports = { ...scoutResult.updatedScoutReports }
+  const updatedScoutAssignment = scoutResult.updatedScoutAssignment
+  const updatedTalentSearch = scoutResult.updatedTalentSearch
+  const updatedTalentResults = scoutResult.updatedTalentResults
 
   // Date from season calendar table (grundserie okt-feb, slutspel mars)
   const newDate = getRoundDate(game.currentSeason, nextMatchday)
@@ -915,76 +855,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const { roundFinanceLog, updatedClubs: socialMediaBoostedClubs } = economyResult
 
   // ── Transfer bids ────────────────────────────────────────────────────────
-  const existingBids: TransferBid[] = game.transferBids ?? []
-  const resolvedBids: TransferBid[] = existingBids.map(b => {
-    if (b.direction === 'outgoing' && b.status === 'pending' && nextMatchday >= b.expiresRound) {
-      const outcome = resolveOutgoingBid(b, game, localRand)
-      return { ...b, status: outcome }
-    }
-    // Expire stale bids (incoming bids expire at expiresRound, outgoing already resolved above)
-    if (b.status === 'pending' && nextMatchday >= b.expiresRound) {
-      return { ...b, status: 'expired' as const }
-    }
-    return b
-  })
+  const transferResult = processTransferBids(game, availabilityUpdatedPlayers, nextMatchday, newDate, localRand)
+  newInboxItems.push(...transferResult.inboxItems)
+  const { resolvedBids, newBids, allBids } = transferResult
 
-  // Partially updated game state for bid/event generation (with market-updated players)
+  // Partially updated game state for event generation
   const preEventGame: SaveGame = {
     ...game,
     players: availabilityUpdatedPlayers,
     transferBids: resolvedBids,
-  }
-
-  const newBids = generateIncomingBids(preEventGame, nextMatchday, localRand)
-  const allBids: TransferBid[] = [...resolvedBids, ...newBids]
-
-  // Transfer rumour: newly active outgoing bids get a 50% chance of inbox rumour
-  const newlyActiveBids = resolvedBids.filter(
-    b => b.direction === 'outgoing' && b.status === 'pending' && b.createdRound === nextMatchday
-  )
-  for (const bid of newlyActiveBids) {
-    if (localRand() > 0.50) continue
-    const target = game.players.find(p => p.id === bid.playerId)
-    const sellingClub = game.clubs.find(c => c.id === bid.sellingClubId)
-    if (!target || !sellingClub) continue
-    newInboxItems.push({
-      id: `inbox_rumour_${bid.id}`,
-      date: newDate,
-      type: InboxItemType.Media,
-      title: `📰 Rykten: ${target.firstName} ${target.lastName} på väg?`,
-      body: `Det florera rykten om att ${target.firstName} ${target.lastName} från ${sellingClub.name} kan vara på väg mot en ny utmaning. Inga officiella kommentarer ännu.`,
-      isRead: false,
-    })
-  }
-
-  // Bid resolution notifications + execute accepted transfers
-  for (const bid of resolvedBids) {
-    if (bid.direction !== 'outgoing') continue
-    const wasPending = existingBids.find(b => b.id === bid.id)?.status === 'pending'
-    if (!wasPending) continue
-
-    const target = preEventGame.players.find(p => p.id === bid.playerId)
-    const sellingClub = preEventGame.clubs.find(c => c.id === bid.sellingClubId)
-
-    if (bid.status === 'accepted' && target) {
-      newInboxItems.push({
-        id: `inbox_bid_accepted_${bid.id}`,
-        date: newDate,
-        type: InboxItemType.Transfer,
-        title: `Bud accepterat — ${target.firstName} ${target.lastName}`,
-        body: `${sellingClub?.name ?? 'Klubben'} accepterar ditt bud på ${target.firstName} ${target.lastName}! Spelaren ansluter till truppen.`,
-        isRead: false,
-      })
-    } else if (bid.status === 'rejected' && target) {
-      newInboxItems.push({
-        id: `inbox_bid_rejected_${bid.id}`,
-        date: newDate,
-        type: InboxItemType.Transfer,
-        title: `Bud avslaget — ${target.firstName} ${target.lastName}`,
-        body: `${sellingClub?.name ?? 'Klubben'} avslår ditt bud på ${target.firstName} ${target.lastName}.`,
-        isRead: false,
-      })
-    }
   }
 
   // ── Post-advance events ──────────────────────────────────────────────────
@@ -1114,71 +993,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // ── Loan deal processing ─────────────────────────────────────────────────
-  let loanUpdatedPlayers = [...availabilityUpdatedPlayers]
-  const activeLoanDeals = (game.loanDeals ?? []).filter(d => nextMatchday <= d.endRound)
-  const returnedLoanPlayerIds: string[] = []
-
-  for (const deal of activeLoanDeals) {
-    if (nextMatchday >= deal.endRound) {
-      returnedLoanPlayerIds.push(deal.playerId)
-      loanUpdatedPlayers = loanUpdatedPlayers.map(p => p.id === deal.playerId
-        ? { ...p, isOnLoan: false, loanClubName: undefined }
-        : p
-      )
-      const participationRate = deal.totalMatches > 0 ? deal.matchesPlayed / deal.totalMatches : 0
-      const caBoost = participationRate >= 0.75 ? 3 + Math.floor(localRand() * 3)
-        : participationRate >= 0.5 ? 1 + Math.floor(localRand() * 2) : 0
-      if (caBoost > 0) {
-        loanUpdatedPlayers = loanUpdatedPlayers.map(p => p.id === deal.playerId
-          ? { ...p, currentAbility: Math.min(p.potentialAbility, p.currentAbility + caBoost), morale: Math.min(100, (p.morale ?? 50) + 10) }
-          : p
-        )
-      }
-      const returnedPlayer = loanUpdatedPlayers.find(p => p.id === deal.playerId)
-      if (returnedPlayer) {
-        const confStr = participationRate >= 0.75 ? 'spelade regelbundet och kom tillbaka stärkt'
-          : participationRate >= 0.5 ? 'fick speltid och har utvecklats'
-          : 'satt mest på bänken och är lite besviken'
-        newInboxItems.push({
-          id: `inbox_loan_return_${deal.playerId}_${nextMatchday}`,
-          date: newDate,
-          type: InboxItemType.YouthIntake,
-          title: `🏒 ${returnedPlayer.firstName} ${returnedPlayer.lastName} är tillbaka från lån`,
-          body: `${returnedPlayer.firstName} ${returnedPlayer.lastName} återvänder från ${deal.destinationClubName}. Han ${confStr}.${caBoost > 0 ? ` CA +${caBoost}.` : ''}`,
-          isRead: false,
-        })
-      }
-    }
-  }
-
-  // Return loaned players to squad
-  const managedClubAfterLoan = returnedLoanPlayerIds.length > 0
-    ? socialMediaBoostedClubs.map(c => {
-        if (c.id !== game.managedClubId) return c
-        const newIds = returnedLoanPlayerIds.filter(id => !c.squadPlayerIds.includes(id))
-        return newIds.length > 0 ? { ...c, squadPlayerIds: [...c.squadPlayerIds, ...newIds] } : c
-      })
-    : socialMediaBoostedClubs
-
-  const updatedLoanDeals = (game.loanDeals ?? [])
-    .filter(d => !returnedLoanPlayerIds.includes(d.playerId))
-    .map(d => {
-      if (nextMatchday % 2 === 0 && nextMatchday < d.endRound) {
-        const played = localRand() > 0.25
-        const rating = played ? Math.round((5 + localRand() * 3) * 10) / 10 : 0
-        const goals = played && localRand() > 0.6 ? 1 : 0
-        const newMatchesPlayed = d.matchesPlayed + (played ? 1 : 0)
-        return {
-          ...d,
-          matchesPlayed: newMatchesPlayed,
-          averageRating: newMatchesPlayed > 0
-            ? Math.round(((d.averageRating * d.matchesPlayed + rating) / newMatchesPlayed) * 10) / 10
-            : rating,
-          reports: [...d.reports.slice(-5), { round: nextMatchday, played, rating, goals, assists: 0 }],
-        }
-      }
-      return d
-    })
+  const loanResult = processLoans(game, availabilityUpdatedPlayers, socialMediaBoostedClubs, nextMatchday, newDate, localRand)
+  newInboxItems.push(...loanResult.inboxItems)
+  const loanUpdatedPlayers = loanResult.loanUpdatedPlayers
+  const managedClubAfterLoan = loanResult.updatedClubs
+  const updatedLoanDeals = loanResult.updatedLoanDeals
 
   // ── Academy events ───────────────────────────────────────────────────────
   if (game.youthTeam && nextMatchday >= 3 && nextMatchday <= 18) {
@@ -1520,11 +1339,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // Apply accepted transfer bids to final player/club state
+  const prevBids = game.transferBids ?? []
   let postTransferPlayers = loanAndRegenPlayers
   let postTransferClubs = regenUpdatedClubs
   for (const bid of resolvedBids) {
     if (bid.direction !== 'outgoing' || bid.status !== 'accepted') continue
-    const wasPending = existingBids.find(b => b.id === bid.id)?.status === 'pending'
+    const wasPending = prevBids.find(b => b.id === bid.id)?.status === 'pending'
     if (!wasPending) continue
     const tmpGame = { ...preEventGame, players: postTransferPlayers, clubs: postTransferClubs }
     const result = executeTransfer(tmpGame, bid)
