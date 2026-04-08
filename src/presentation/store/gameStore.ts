@@ -78,6 +78,7 @@ interface GameState {
   applyPressChoice: (moraleEffect: number, mediaQuote: string) => void
   simulateRemainingStep: () => AdvanceResult | null
   clearRoundSummary: () => void
+  markScreenVisited: (screen: string) => void
 }
 
 const indexedDBStorage = {

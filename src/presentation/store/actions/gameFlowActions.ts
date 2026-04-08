@@ -177,6 +177,15 @@ export function gameFlowActions(get: Get, set: Set) {
 
     clearRoundSummary: () => set({ roundSummary: null }),
 
+    markScreenVisited: (screen: string) => {
+      const { game } = get()
+      if (!game) return
+      const visited = game.visitedScreensThisRound ?? []
+      if (!visited.includes(screen)) {
+        set({ game: { ...game, visitedScreensThisRound: [...visited, screen] } })
+      }
+    },
+
     simulateRemainingStep: (): AdvanceResult | null => {
       const state = get()
       const { game, resolveEvent, setPlayerLineup, advance } = state

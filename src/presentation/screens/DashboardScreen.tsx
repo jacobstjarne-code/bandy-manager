@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   useGameStore,
@@ -11,24 +11,35 @@ import {
 } from '../store/gameStore'
 import { TutorialOverlay } from '../components/TutorialOverlay'
 import { PlayoffStatus, PlayoffRound } from '../../domain/enums'
-import type { EventChoice } from '../../domain/entities/GameEvent'
 import { playSound } from '../audio/soundEffects'
 import { getFormResults } from '../utils/formUtils'
+import { calcRoundIncome } from '../../domain/services/economyService'
+import { csColor, formatFinanceAbs } from '../utils/formatters'
+import { getRivalry } from '../../domain/data/rivalries'
+import { NextMatchCard } from '../components/dashboard/NextMatchCard'
+import { PlayoffBracketCard } from '../components/dashboard/PlayoffBracketCard'
+import { CupCard } from '../components/dashboard/CupCard'
+import { DiamondDivider } from '../components/dashboard/DiamondDivider'
+import { FormSquares } from '../components/FormDots'
 
-import { MatchTab } from '../components/dashboard/MatchTab'
-import { KlubbTab } from '../components/dashboard/KlubbTab'
-import { OrtenTab } from '../components/dashboard/OrtenTab'
 
-function pickBatchSimChoice(choices: EventChoice[]): string {
-  const noOp = choices.find(c => c.effect.type === 'noOp')
-  if (noOp) return noOp.id
-  const rejectTransfer = choices.find(c => c.effect.type === 'rejectTransfer')
-  if (rejectTransfer) return rejectTransfer.id
-  return choices[0].id
+const NAV_BTN: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  width: 16, height: 16, borderRadius: 4, flexShrink: 0,
+  background: 'transparent', border: '1px solid var(--border)',
+  color: 'var(--accent)', fontSize: 11, lineHeight: 1,
+  cursor: 'pointer',
+}
+
+const LABEL: React.CSSProperties = {
+  fontSize: 8, fontWeight: 600, letterSpacing: '2px',
+  textTransform: 'uppercase', color: 'var(--text-muted)',
+  fontFamily: 'var(--font-body)', margin: 0,
 }
 
 export function DashboardScreen() {
-  const { game, advance, markTutorialSeen, dismissOnboarding, resolveEvent } = useGameStore()
+  const { game, advance, markTutorialSeen, dismissOnboarding } = useGameStore()
+  const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const club = useManagedClub()
   const standing = useCurrentStanding()
   const hasPendingLineup = useHasPendingLineup()
@@ -36,36 +47,14 @@ export function DashboardScreen() {
   const lastCompletedFixture = useLastCompletedFixture()
   const playoffInfo = usePlayoffInfo()
   const navigate = useNavigate()
-  const location = useLocation()
+  useLocation() // reset scroll on route change
 
-  const [activeTab, setActiveTab] = useState<'match' | 'klubb' | 'orten'>(
-    (location.state as any)?.tab ?? 'match'
-  )
-  const [isBatchSim, setIsBatchSim] = useState(false)
+  // Mark dashboard visited (for possible future tracking)
+  useEffect(() => { markScreenVisited('dashboard') }, [])
 
-  useEffect(() => {
-    if (!isBatchSim || !game) return
-    if ((game.pendingEvents?.length ?? 0) > 0) {
-      const event = game.pendingEvents![0]
-      if (event.choices.length > 0) {
-        const choiceId = pickBatchSimChoice(event.choices)
-        const t = setTimeout(() => resolveEvent(event.id, choiceId), 0)
-        return () => clearTimeout(t)
-      }
-    }
-    const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
-    if (scheduled.length === 0) { setIsBatchSim(false); return }
-    const nextEff = Math.min(...scheduled.map(f => f.matchday))
-    const managedMatchNext = scheduled.some(f => f.matchday === nextEff && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
-    if (managedMatchNext) { setIsBatchSim(false); return }
-    const t = setTimeout(() => {
-      const result = advance(true)
-      if (result?.seasonEnded || result?.playoffStarted) { setIsBatchSim(false); return }
-    }, 80)
-    return () => clearTimeout(t)
-  }, [isBatchSim, game])
 
   useEffect(() => {
+    if (!game) return
     if (game?.managerFired) navigate('/game/game-over', { replace: true })
     else if (game?.showSeasonSummary) navigate('/game/season-summary', { replace: true })
     else if (game?.showBoardMeeting) navigate('/game/board-meeting', { replace: true })
@@ -135,15 +124,11 @@ export function DashboardScreen() {
   const dynamicHomeWins = playoffSeries ? (managedIsSeriesHome ? playoffSeries.homeWins : playoffSeries.awayWins) : 0
   const dynamicAwayWins = playoffSeries ? (managedIsSeriesHome ? playoffSeries.awayWins : playoffSeries.homeWins) : 0
 
-  const isPlayoffJustStarted = !!(playoffInfo && playoffInfo.status === PlayoffStatus.QuarterFinals &&
-    playoffInfo.quarterFinals.every(s => game.fixtures.filter(f => s.fixtures.includes(f.id) && f.status === 'completed').length === 0))
-
   // CTA logic
   const hasScheduledFixtures = game.fixtures.some(f => f.status === 'scheduled')
   const canClickAdvance = canAdvance || hasScheduledFixtures
   const playedRounds = game.fixtures.filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup).length
   const canSimulateRemaining = hasScheduledFixtures && playedRounds >= 10 && !game.playoffBracket
-  const remainingOtherFixtures = new Set(game.fixtures.filter(f => f.status === 'scheduled').map(f => f.matchday)).size
 
   const advanceButtonText = (() => {
     const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
@@ -175,11 +160,11 @@ export function DashboardScreen() {
           const label = thisSeries.round === PlayoffRound.QuarterFinal ? 'Kvartsfinal'
             : thisSeries.round === PlayoffRound.SemiFinal ? 'Semifinal'
             : 'SM-Final'
-          return `Spela ${label} →`
+          return `Redo — spela ${label} →`
         }
         return 'Fortsätt slutspel →'
       }
-      return `Spela omgång ${nextManaged.roundNumber} →`
+      return `Redo — spela omgång ${nextManaged.roundNumber} →`
     }
     return 'Fortsätt →'
   })()
@@ -204,6 +189,58 @@ export function DashboardScreen() {
     } catch (err) { console.error('advance() failed:', err) }
   }
 
+  // ── Nudge-agenda ───────────────────────────────────────────────
+  const visited = game.visitedScreensThisRound ?? []
+  const squadPlayers = game.players.filter(p => p.clubId === game.managedClubId)
+  const injuredCount = squadPlayers.filter(p => p.isInjured).length
+  const expiringPlayer = squadPlayers.find(p => p.contractUntilSeason <= game.currentSeason + 1)
+
+  const nudges: { text: string; screen: string; done: boolean; color: 'red' | 'yellow' | 'green' }[] = []
+  if (injuredCount > 0) nudges.push({ text: `Kontrollera truppen (${injuredCount} skadad${injuredCount > 1 ? 'e' : ''})`, screen: 'squad', done: visited.includes('squad'), color: 'red' })
+  if (expiringPlayer && nudges.length < 3) nudges.push({ text: `Förläng kontrakt: ${expiringPlayer.firstName} ${expiringPlayer.lastName}`, screen: 'transfers', done: visited.includes('transfers'), color: 'red' })
+  const atRisk = (game.boardObjectives ?? []).find(o => o.status === 'at_risk')
+  const active = (game.boardObjectives ?? []).find(o => o.status === 'active')
+  const obj = atRisk ?? active
+  if (obj && nudges.length < 3) nudges.push({ text: `Styrelseuppdrag: ${obj.label}`, screen: 'club', done: visited.includes('club'), color: atRisk ? 'red' : 'yellow' })
+  const doneCount = nudges.filter(n => n.done).length
+
+  // ── Ekonomi data ───────────────────────────────────────────────
+  const finances = club.finances ?? 0
+  const { netPerRound } = calcRoundIncome({
+    club,
+    players: squadPlayers,
+    sponsors: game.sponsors ?? [],
+    communityActivities: game.communityActivities,
+    fanMood: game.fanMood ?? 50,
+    isHomeMatch: true,
+    matchIsKnockout: false,
+    matchIsCup: false,
+    matchHasRivalry: false,
+    standing: standing ?? null,
+    rand: () => 0.5,
+  })
+
+  // ── Community standing ─────────────────────────────────────────
+  const cs = game.communityStanding ?? 50
+
+  // ── Derby check for dagboken ────────────────────────────────────
+  const nextDerby = nextFixture ? getRivalry(nextFixture.homeClubId, nextFixture.awayClubId) : null
+
+  // ── Trupp single-row data ──────────────────────────────────────
+  const readyCount = Math.max(0, squadPlayers.length - injuredCount)
+  const avgForm = squadPlayers.length > 0 ? Math.round(squadPlayers.reduce((s, p) => s + p.form, 0) / squadPlayers.length) : 0
+  const avgFitness = squadPlayers.length > 0 ? Math.round(squadPlayers.reduce((s, p) => s + (p.fitness ?? 75), 0) / squadPlayers.length) : 0
+
+  // ── Trainer arc ────────────────────────────────────────────────
+  const moodTexts: Record<string, string> = {
+    honeymoon: '☀️ Allt stämmer just nu',
+    questioned: '⛅ Media ställer frågor',
+    crisis: '⛈️ Styrelsen är orolig',
+    redemption: '🌤️ Vändningen har börjat',
+    legendary: '👑 Legendstatus',
+  }
+  const arcMood = game.trainerArc ? moodTexts[game.trainerArc.current] : null
+
   // ── Render ─────────────────────────────────────────────────────
 
   return (
@@ -212,83 +249,307 @@ export function DashboardScreen() {
         <TutorialOverlay managerName={game.managerName} clubName={club.name} onDone={markTutorialSeen} />
       )}
 
-      {/* Tab bar */}
-      <div style={{
-        display: 'flex', gap: 4, padding: '8px 12px',
-        borderBottom: '1px solid var(--border)',
-        background: 'var(--bg)',
-        position: 'sticky', top: 0, zIndex: 10,
-      }}>
-        {(['match', 'klubb', 'orten'] as const).map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-              flex: 1, padding: '8px 4px', borderRadius: 8,
-              background: activeTab === tab ? 'rgba(196,168,76,0.12)' : 'transparent',
-              border: `1.5px solid ${activeTab === tab ? 'var(--accent)' : 'transparent'}`,
-              color: activeTab === tab ? 'var(--accent-dark)' : 'var(--text-muted)',
-              fontSize: 12, fontWeight: activeTab === tab ? 700 : 400,
-              fontFamily: 'var(--font-body)',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
-            }}
-          >
-            {tab === 'match' ? '🏒 Match' : tab === 'klubb' ? '🏛️ Klubb' : '🏘️ Orten'}
-          </button>
-        ))}
-      </div>
+      {/* Onboarding hint — thin banner */}
+      {game.onboardingStep !== undefined && game.onboardingStep >= 0 && game.onboardingStep <= 4 && (() => {
+        const hints: Record<number, { icon: string; title: string; path: string; state?: Record<string, unknown> }> = {
+          0: { icon: '👥', title: 'Sätt din startelva', path: '/game/match' },
+          1: { icon: '🏋️', title: 'Justera träningen', path: '/game/club', state: { tab: 'training' } },
+          2: { icon: '🏛️', title: 'Kolla styrelsens uppdrag', path: '/game/club', state: { tab: 'ekonomi' } },
+          3: { icon: '🏘️', title: 'Besök Orten', path: '/game/club', state: { tab: 'orten' } },
+          4: { icon: '📋', title: 'Träningsplanering', path: '/game/club', state: { tab: 'training' } },
+        }
+        const h = hints[game.onboardingStep]
+        if (!h) return null
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 14px', background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)', marginBottom: 4 }}>
+            <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
+              {h.icon} {h.title} —{' '}
+              <span onClick={() => navigate(h.path, h.state ? { state: h.state } : undefined)} style={{ color: 'var(--accent)', cursor: 'pointer', textDecoration: 'underline' }}>
+                Gå dit →
+              </span>
+            </span>
+            <button onClick={dismissOnboarding} style={{ fontSize: 10, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', marginLeft: 8 }}>✕</button>
+          </div>
+        )
+      })()}
 
-      {/* Tab content */}
-      <div className="texture-wood card-stack" style={{ paddingTop: 8, paddingBottom: activeTab === 'match' ? 120 : 24 }}>
-        {activeTab === 'match' && (
-          <MatchTab
-            game={game}
-            club={club}
-            standing={standing}
+      <div className="texture-wood card-stack" style={{ paddingTop: 8, paddingBottom: 120 }}>
+
+        {/* ① AGENDA */}
+        {nudges.length > 0 && (
+          <div style={{ margin: '0 0 6px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2px', marginBottom: 4 }}>
+              <span style={{ ...LABEL }}>Inför matchen</span>
+              <span style={{ fontSize: 8, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{doneCount} av {nudges.length} klart</span>
+            </div>
+            {nudges.map((n, i) => (
+              <div
+                key={i}
+                onClick={() => !n.done && navigate(`/game/${n.screen}`)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '7px 10px', borderRadius: 8,
+                  background: 'var(--bg-surface)', border: '0.5px solid var(--border)',
+                  cursor: n.done ? 'default' : 'pointer',
+                  fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)',
+                  opacity: n.done ? 0.5 : 1, marginBottom: i < nudges.length - 1 ? 3 : 0,
+                }}
+              >
+                <span style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: n.done ? 'var(--success)' : n.color === 'red' ? 'var(--danger)' : 'var(--warning)' }} />
+                <span style={{ flex: 1, textDecoration: n.done ? 'line-through' : 'none' }}>{n.text}</span>
+                {n.done && <span style={{ fontSize: 9, color: 'var(--success)', marginLeft: 'auto' }}>✓</span>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ② MATCHKORT */}
+        {nextFixture && opponent && (
+          <NextMatchCard
             nextFixture={nextFixture}
             opponent={opponent}
             isHome={isHome}
-            matchWeather={matchWeather}
-            hasPendingLineup={hasPendingLineup}
+            club={club}
+            game={game}
             isPlayoffFixture={isPlayoffFixture}
-            playoffInfo={playoffInfo}
             playoffSeries={playoffSeries}
             dynamicHomeWins={dynamicHomeWins}
             dynamicAwayWins={dynamicAwayWins}
-            isPlayoffJustStarted={isPlayoffJustStarted}
-            eliminated={eliminated}
-            lastResult={lastResult}
-            lastCompletedFixture={lastCompletedFixture}
-            recentForm={recentForm}
-            currentRound={currentRound}
-            currentDateStr={currentDateStr}
-            canClickAdvance={canClickAdvance}
-            isBatchSim={isBatchSim}
-            setIsBatchSim={setIsBatchSim}
-            advanceButtonText={advanceButtonText}
-            canSimulateRemaining={canSimulateRemaining}
-            remainingOtherFixtures={remainingOtherFixtures}
-            onAdvance={handleAdvance}
-            onDismissOnboarding={dismissOnboarding}
-            navigate={navigate}
+            matchWeather={matchWeather}
+            hasPendingLineup={hasPendingLineup}
+            lineupConfirmedThisRound={game.lineupConfirmedThisRound}
           />
         )}
-        {activeTab === 'klubb' && (
-          <KlubbTab
-            game={game}
-            club={club}
-            standing={standing}
-            navigate={navigate}
-          />
+
+        {/* Eliminated */}
+        {eliminated && !nextFixture && game.playoffBracket && game.playoffBracket.status !== PlayoffStatus.Completed && (
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '14px', textAlign: 'center' }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 2 }}>Din säsong är slut</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 11 }}>Väntar på att slutspelet ska avgöras...</p>
+          </div>
         )}
-        {activeTab === 'orten' && (
-          <OrtenTab
-            game={game}
-            currentRound={currentRound}
-            navigate={navigate}
-          />
+
+        {/* ③ DAGBOKEN */}
+        {nextDerby && nextFixture && (
+          <div className="card-round" style={{ margin: '0 0 6px', padding: '8px 12px' }}>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: 'var(--font-body)', margin: 0 }}>
+              🔥 Derby. {nextDerby.name}. {(() => {
+                const h = game.rivalryHistory?.[nextFixture.homeClubId === game.managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId]
+                return h ? `V${h.wins} O${h.draws} F${h.losses} i historiken.` : 'Historiken börjar nu.'
+              })()}
+            </p>
+          </div>
         )}
+
+        {/* ④ ÖVERBLICK 2×2 grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, margin: '0 0 6px' }}>
+
+          {/* Tabell */}
+          {standing ? (
+            <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer', position: 'relative', overflow: 'hidden' }} onClick={() => navigate('/game/tabell')}>
+              {standing.position <= 8 && currentRound > 0 && (
+                <span className="tag tag-fill" style={{ position: 'absolute', top: -1, right: 6, borderRadius: '0 0 6px 6px', letterSpacing: '1px', fontSize: 8 }}>
+                  TOPP 8
+                </span>
+              )}
+              <p style={{ ...LABEL, marginBottom: 6 }}>📊 Tabell</p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                <span style={{ fontSize: 30, fontWeight: 400, color: 'var(--accent-dark)', lineHeight: 1, fontFamily: 'var(--font-display)' }}>
+                  {standing.position}
+                </span>
+                <div>
+                  <p style={{ fontSize: 9, color: 'var(--text-muted)', margin: 0 }}>{standing.points}p · {standing.goalDifference >= 0 ? '+' : ''}{standing.goalDifference}</p>
+                  {standing.played > 0 && (
+                    <p style={{ fontSize: 8, fontWeight: 600, marginTop: 2, color: standing.position <= 8 ? 'var(--success)' : standing.position <= 10 ? 'var(--text-muted)' : 'var(--danger)' }}>
+                      {standing.position <= 8 ? 'Slutspelszonen' : standing.position <= 10 ? 'Utanför' : 'Nedflyttning'}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {recentForm.length > 0 && (
+                <div style={{ marginTop: 5 }}>
+                  <FormSquares results={recentForm} size={10} />
+                </div>
+              )}
+            </div>
+          ) : <div />}
+
+          {/* Senast */}
+          {lastResult ? (
+            <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/match', { state: { showReport: true } })}>
+              <p style={{ ...LABEL, marginBottom: 6 }}>Senast</p>
+              {(() => {
+                const won = lastResult!.scoreFor > lastResult!.scoreAgainst
+                const lost = lastResult!.scoreFor < lastResult!.scoreAgainst
+                const rc = won ? 'var(--success)' : lost ? 'var(--danger)' : 'var(--accent)'
+                return (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                      <span style={{ fontSize: 22, fontWeight: 800, color: rc, fontFamily: 'var(--font-display)', lineHeight: 1 }}>
+                        {lastResult!.scoreFor}–{lastResult!.scoreAgainst}
+                      </span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: rc, padding: '1px 6px', borderRadius: 99, border: `1px solid ${rc}` }}>
+                        {won ? 'V' : lost ? 'F' : 'O'}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-body)' }}>
+                      vs {lastResult!.opponentName.split(' ')[0]}
+                    </p>
+                    {lastCompletedFixture?.report?.playerOfTheMatchId && (() => {
+                      const potm = game.players.find(p => p.id === lastCompletedFixture.report?.playerOfTheMatchId)
+                      return potm ? <p style={{ fontSize: 10, color: 'var(--accent)', marginTop: 2 }}>⭐ {potm.lastName}</p> : null
+                    })()}
+                  </>
+                )
+              })()}
+            </div>
+          ) : <div />}
+
+          {/* Orten */}
+          <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}>
+            <p style={{ ...LABEL, marginBottom: 6 }}>🏘 Orten</p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 5 }}>
+              <span style={{ fontSize: 22, fontWeight: 700, color: csColor(cs), fontFamily: 'var(--font-display)', lineHeight: 1 }}>{cs}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 2 }}>
+              <div style={{ flex: cs, height: 5, background: csColor(cs), borderRadius: '3px 0 0 3px' }} />
+              <div style={{ flex: 100 - cs, height: 5, background: 'var(--border-dark)', borderRadius: '0 3px 3px 0' }} />
+            </div>
+          </div>
+
+          {/* Ekonomi */}
+          <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}>
+            <p style={{ ...LABEL, marginBottom: 6 }}>💰 Ekonomi</p>
+            <span style={{ fontSize: 18, fontWeight: 700, color: finances < 0 ? 'var(--danger)' : 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
+              {formatFinanceAbs(finances)}
+            </span>
+            <p style={{ fontSize: 10, fontWeight: 600, color: netPerRound >= 0 ? 'var(--success)' : 'var(--danger)', marginTop: 3, fontFamily: 'var(--font-body)' }}>
+              {netPerRound >= 0 ? '+' : ''}{Math.round(netPerRound / 1000)} tkr/omg
+            </p>
+          </div>
+        </div>
+
+        {/* ⑤ ENRADERS-KORT */}
+
+        {/* Trupp */}
+        <div className="card-sharp" style={{ margin: '0 0 4px', cursor: 'pointer' }} onClick={() => navigate('/game/squad')}>
+          <div style={{ padding: '7px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ ...LABEL }}>👥 Trupp</span>
+              <span style={{ fontSize: 11, color: injuredCount > 0 ? 'var(--danger)' : 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
+                {readyCount} redo{injuredCount > 0 ? ` · ${injuredCount} skadad` : ''} · Form {avgForm} · Kond {avgFitness}
+              </span>
+            </div>
+            <button style={NAV_BTN}>›</button>
+          </div>
+        </div>
+
+        {/* Cup eller Slutspel */}
+        {game.playoffBracket ? (
+          <div className="card-sharp" style={{ margin: '0 0 4px', cursor: 'pointer' }} onClick={() => navigate('/game/tabell')}>
+            <div style={{ padding: '7px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ ...LABEL }}>⚔️ Slutspel</span>
+                {playoffSeries ? (
+                  <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
+                    {playoffSeries.round === PlayoffRound.QuarterFinal ? 'Kvartsfinal' : playoffSeries.round === PlayoffRound.SemiFinal ? 'Semifinal' : 'SM-Final'} · {dynamicHomeWins}–{dynamicAwayWins} i matcher
+                  </span>
+                ) : (
+                  <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>Topp 8</span>
+                )}
+              </div>
+              <button style={NAV_BTN}>›</button>
+            </div>
+          </div>
+        ) : game.cupBracket ? (
+          <div className="card-sharp" style={{ margin: '0 0 4px', cursor: 'pointer' }} onClick={() => navigate('/game/tabell')}>
+            <div style={{ padding: '7px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ ...LABEL }}>🏆 Cupen</span>
+                {nextFixture?.isCup && (() => {
+                  const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id)
+                  const cupRound = cupMatch?.round ?? 1
+                  const label = cupRound === 1 ? 'Förstarunda' : cupRound === 2 ? 'Kvartsfinal' : cupRound === 3 ? 'Semifinal' : 'Final'
+                  return <span style={{ fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--font-body)' }}>{label} ›</span>
+                })()}
+              </div>
+              <button style={NAV_BTN}>›</button>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Akademi */}
+        {game.youthTeam && (
+          <div className="card-sharp" style={{ margin: '0 0 4px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'akademi' } })}>
+            <div style={{ padding: '7px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ ...LABEL }}>🎓 Akademi</span>
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
+                  P19 · {game.youthTeam.tablePosition}:a · {game.youthTeam.seasonRecord.w}V {game.youthTeam.seasonRecord.d}O {game.youthTeam.seasonRecord.l}F
+                </span>
+              </div>
+              <button style={NAV_BTN}>›</button>
+            </div>
+          </div>
+        )}
+
+        {/* Playoff bracket eller cup (kompakt) */}
+        {playoffInfo ? (
+          <div style={{ margin: '0 0 6px' }}>
+            <PlayoffBracketCard bracket={playoffInfo} game={game} />
+          </div>
+        ) : game.cupBracket ? (
+          <div style={{ margin: '0 0 6px' }}>
+            <CupCard bracket={game.cupBracket} game={game} />
+          </div>
+        ) : null}
+
+        {/* ⑥ CTA-SEKTION */}
+        <div style={{ margin: '8px 0 0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, padding: '0 2px' }}>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{currentDateStr}</span>
+            {currentRound > 0 && (
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Omgång {currentRound}</span>
+            )}
+          </div>
+          <DiamondDivider />
+
+          {arcMood && (
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', margin: '0 0 6px' }}>
+              {arcMood}
+            </p>
+          )}
+
+          {canSimulateRemaining && (
+            <button onClick={() => {}} className="btn btn-ghost" style={{ width: '100%', marginBottom: 8, justifyContent: 'center' }}>
+              ⏩ Simulera resterande säsong
+            </button>
+          )}
+
+          <button
+            onClick={handleAdvance}
+            disabled={!canClickAdvance}
+            className="texture-leather"
+            style={{
+              width: '100%', padding: '18px',
+              background: canClickAdvance
+                ? 'linear-gradient(135deg, var(--accent-dark), var(--accent-deep))'
+                : 'var(--border)',
+              color: canClickAdvance ? 'var(--text-light)' : 'var(--text-muted)',
+              border: 'none', borderRadius: 12,
+              fontSize: 15, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase',
+              fontFamily: 'var(--font-body)',
+              cursor: canClickAdvance ? 'pointer' : 'not-allowed',
+              animation: canClickAdvance ? 'pulseCTA 3s ease-in-out infinite' : undefined,
+            }}
+          >
+            {advanceButtonText}
+          </button>
+        </div>
+
+        <p style={{ textAlign: 'center', fontSize: 9, color: 'var(--text-muted)', opacity: 0.5, marginTop: 16 }}>
+          build {(typeof __GIT_HASH__ !== 'undefined' ? __GIT_HASH__ : '?')} · {(typeof __BUILD_DATE__ !== 'undefined' ? __BUILD_DATE__ : '')}
+        </p>
       </div>
     </div>
   )

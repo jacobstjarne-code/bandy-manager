@@ -25,6 +25,8 @@ export function TransfersScreen() {
   const startEvaluation = useGameStore(s => s.startEvaluation)
   const placeOutgoingBid = useGameStore(s => s.placeOutgoingBid)
   const startTalentSearch = useGameStore(s => s.startTalentSearch)
+  const markScreenVisited = useGameStore(s => s.markScreenVisited)
+  useEffect(() => { markScreenVisited('transfers') }, [])
 
   const [renewingPlayerId, setRenewingPlayerId] = useState<string | null>(null)
   const [renewError, setRenewError] = useState<string | null>(null)

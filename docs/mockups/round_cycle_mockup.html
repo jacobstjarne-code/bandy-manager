@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bandy Manager — Round Cycle Mockup</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f1eb;color:#2c2a28;padding:16px}
+.wrap{max-width:400px;margin:0 auto}
+h1{font-size:16px;font-weight:600;margin:0 0 4px;text-align:center}
+.sub{font-size:11px;color:#888;text-align:center;margin:0 0 20px;line-height:1.6}
+.phone{border:1px solid #d3d1c7;border-radius:14px;overflow:hidden;background:#faf8f4;margin:0 0 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.hdr{background:#1a1a1a;color:#eee;padding:6px 14px;display:flex;justify-content:space-between;align-items:center;font-size:11px}
+.hdr b{font-size:12px}
+.hdr .m{font-size:8px;opacity:0.5}
+.phase-bar{display:flex;align-items:center;padding:6px 20px 8px;background:#1a1a1a;border-bottom:1px solid rgba(255,255,255,0.08)}
+.phase{display:flex;align-items:center;gap:4px;flex:1;justify-content:center}
+.phase .dot{width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);background:transparent;flex-shrink:0}
+.phase .dot.done{background:#8b7332;border-color:#8b7332}
+.phase .dot.active{border-color:#8b7332;background:rgba(139,115,50,0.3);box-shadow:0 0 0 3px rgba(139,115,50,0.15)}
+.phase .lb{font-size:9px;letter-spacing:0.8px;text-transform:uppercase;color:rgba(255,255,255,0.35)}
+.phase .lb.active{color:#c9a84c;font-weight:700}
+.phase .lb.done{color:#c9a84c}
+.phase-line{flex:0 0 20px;height:1.5px;background:rgba(255,255,255,0.1);margin:0 2px}
+.phase-line.done{background:#8b7332}
+.scroll{padding:8px 12px 14px;display:flex;flex-direction:column;gap:6px}
+.c{border:1px solid #e8e4dc;border-radius:8px;padding:10px 12px;background:#fff}
+.c-a{border-color:rgba(180,140,60,0.3);background:rgba(180,140,60,0.03)}
+.c-r{border:1px solid #e8e4dc;border-radius:10px;padding:8px 12px;background:#fff}
+.lbl{font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#aaa;margin:0 0 4px}
+.row{display:flex;align-items:center;justify-content:space-between}
+.sm{font-size:11px;color:#777}
+.xs{font-size:10px;color:#aaa}
+.pill{font-size:8px;padding:2px 7px;border-radius:99px;font-weight:600;display:inline-block}
+.p-g{background:#eaf3de;color:#3b6d11}.p-y{background:#faeeda;color:#854f0b}.p-r{background:#fcebeb;color:#a32d2d}.p-o{background:#f1efe8;color:#888}
+.nudge{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:#f5f3ee;font-size:11px;color:#666;border:0.5px solid #e8e4dc;cursor:pointer}
+.nudge.ok{opacity:0.5}
+.nudge.ok span:first-of-type+span{text-decoration:line-through}
+.dot-i{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.cta{width:100%;padding:14px;border-radius:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:linear-gradient(135deg,#8b7332,#6b5522);color:#f5f1eb;letter-spacing:1.5px;text-transform:uppercase}
+.cta-ghost{background:transparent;color:#8b7332;border:1.5px solid rgba(139,115,50,0.3)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.bar{height:4px;border-radius:2px;background:#e8e4dc;overflow:hidden}
+.bar-f{height:100%;border-radius:2px}
+.nav{display:flex;border-top:1px solid #e8e4dc;background:#faf8f4}
+.nav div{flex:1;text-align:center;padding:8px 0;font-size:9px;color:#aaa}
+.nav .on{color:#8b7332;font-weight:600}
+.match-r{display:flex;align-items:center;justify-content:center;gap:10px;padding:4px 0}
+.crest{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;border:0.5px solid #ddd}
+.cn{font-size:10px;font-weight:600;text-align:center;margin-top:2px}
+.arrow{text-align:center;padding:8px 0;font-size:18px;color:#ccc}
+.section-title{font-size:12px;font-weight:600;color:#6b5522;margin:16px 0 8px;display:flex;align-items:center;gap:6px}
+.section-title span{font-size:14px}
+.note{background:#f5f3ee;padding:10px 14px;border-radius:8px;font-size:10px;color:#888;line-height:1.6;margin:6px 0}
+.sep{border:none;border-top:1px dashed #e0dcd4;margin:12px 0 8px}
+.nb{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:3px;background:transparent;border:0.5px solid #ddd;color:#8b7332;font-size:10px;flex-shrink:0;cursor:pointer}
+.form-sq{display:flex;gap:2px}
+.form-sq div{width:9px;height:9px;border-radius:2px}
+</style>
+</head><body>
+<div class="wrap">
+
+<h1>Omgångscykeln — Förbered → Spela → Granska</h1>
+<p class="sub">Visuell referens för Code. Implementera exakt detta.</p>
+
+<!-- ═══════════ PHASE 1: FÖRBERED ═══════════ -->
+<div class="section-title"><span>①</span> FÖRBERED</div>
+
+<div class="phone">
+<div class="hdr"><div><b>Karlsborg</b><br><span class="m">Ajcob · 2026/27 · Omg 5 · 23 nov</span></div><span style="font-size:10px">🔔3 ⚙</span></div>
+
+<div class="phase-bar">
+<div class="phase"><div class="dot active"></div><span class="lb active">Förbered</span></div>
+<div class="phase-line"></div>
+<div class="phase"><div class="dot"></div><span class="lb">Spela</span></div>
+<div class="phase-line"></div>
+<div class="phase"><div class="dot"></div><span class="lb">Granska</span></div>
+</div>
+
+<div class="scroll">
+
+<!-- AGENDA -->
+<div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 4px">
+<span style="font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#aaa">Inför matchen</span>
+<span style="font-size:9px;color:#aaa">2 av 3 klart</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:3px">
+<div class="nudge ok"><span class="dot-i" style="background:#3b6d11"></span><span>Kontrollera truppen</span><span style="margin-left:auto;font-size:9px;color:#3b6d11">✓</span></div>
+<div class="nudge"><span class="dot-i" style="background:#a32d2d"></span><span>Förläng kontrakt: Grahn (1 säs kvar) →</span></div>
+<div class="nudge ok"><span class="dot-i" style="background:#3b6d11"></span><span>Granska motståndaranalys</span><span style="margin-left:auto;font-size:9px;color:#3b6d11">✓</span></div>
+</div>
+</div>
+
+<!-- MATCH CARD -->
+<div class="c c-a">
+<div class="row"><span class="lbl" style="margin:0">Nästa match · hemma</span><span class="pill p-o" style="font-size:7px">Förra uppst.</span></div>
+<div class="match-r">
+<div style="text-align:center"><div class="crest" style="background:rgba(180,80,60,0.08);color:rgba(180,80,60,0.7)">K</div><div class="cn">Karlsborg</div><div class="xs">7:a</div></div>
+<span style="font-size:10px;color:#bbb;font-style:italic;font-family:Georgia,serif">vs</span>
+<div style="text-align:center"><div class="crest" style="background:rgba(60,120,80,0.08);color:rgba(60,120,80,0.7)">H</div><div class="cn">Hälleforsnäs</div><div class="xs">6:a</div></div>
+</div>
+<div style="display:flex;gap:3px;justify-content:center"><span class="pill p-o" style="font-size:7px">❄ -4° · Bra is</span><span class="pill p-o" style="font-size:7px">Omg 5</span></div>
+</div>
+
+<!-- DAGBOK (dynamic briefing) -->
+<div class="c-r" style="margin:0;background:rgba(250,248,244,0.8)">
+<p style="font-size:11px;color:#777;line-height:1.5;margin:0">📈 Björk i glödande form — 3 mål senaste 4 matcherna.</p>
+</div>
+
+<!-- 2x2 GRID -->
+<div class="g2">
+<div class="c" style="padding:8px 10px;cursor:pointer">
+<div class="row" style="margin-bottom:3px"><span class="lbl" style="margin:0">📊 Tabell</span><span class="nb">›</span></div>
+<div style="display:flex;align-items:baseline;gap:4px">
+<span style="font-size:22px;font-family:Georgia,serif;color:#6b5522;line-height:1">7</span>
+<div><div class="xs">18p · +3</div><div class="xs" style="color:#3b6d11">Topp 8</div></div>
+</div>
+<div class="form-sq" style="margin-top:3px">
+<div style="background:#c0dd97"></div><div style="background:#f7c1c1"></div><div style="background:#c0dd97"></div><div style="background:#c0dd97"></div><div style="background:#fac775"></div>
+</div>
+<div style="margin-top:3px;font-size:9px;color:#aaa;line-height:1.5">↑ 3p till Storvik (6:a)<br>↓ Lika med Rögle (8:a)</div>
+</div>
+<div class="c" style="padding:8px 10px;cursor:pointer">
+<div class="row" style="margin-bottom:3px"><span class="lbl" style="margin:0">Senast</span><span class="nb">›</span></div>
+<div style="font-size:18px;font-weight:500;font-family:Georgia,serif;margin-top:2px">3–1 <span class="pill p-g">V</span></div>
+<div class="xs" style="margin-top:2px">vs Rögle (hemma)</div>
+<div class="xs">⭐ Björk (7.8)</div>
+</div>
+</div>
+
+<div class="g2">
+<div class="c" style="padding:8px 10px;cursor:pointer">
+<div class="row" style="margin-bottom:3px"><span class="lbl" style="margin:0">🏘 Orten</span><span style="font-size:12px;font-weight:500;font-family:Georgia,serif;color:#2c2a28">72</span></div>
+<div class="bar"><div class="bar-f" style="width:72%;background:#5dca55"></div></div>
+<div class="xs" style="font-style:italic;margin-top:3px">"Tre nya i bandyskolan"</div>
+</div>
+<div class="c" style="padding:8px 10px;cursor:pointer">
+<div class="row" style="margin-bottom:3px"><span class="lbl" style="margin:0">💰 Ekonomi</span><span class="nb">›</span></div>
+<div style="font-size:14px;font-weight:500;font-family:Georgia,serif">182 tkr</div>
+<div class="xs" style="color:#3b6d11">+2 tkr/omg</div>
+</div>
+</div>
+
+<!-- ONE-LINERS -->
+<div class="c" style="padding:7px 10px;margin:0 0 4px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:6px"><span class="lbl" style="margin:0">👥 Trupp</span><span class="xs">21 redo · 1 skadad · Form 58 · Kond 73</span></div>
+<span class="nb">›</span>
+</div>
+</div>
+<div class="c" style="padding:7px 10px;margin:0 0 4px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:6px"><span class="lbl" style="margin:0">🏆 Cupen</span><span class="xs">Kvartsfinal md 8 · Direktkval.</span></div>
+<span class="nb">›</span>
+</div>
+</div>
+<div class="c" style="padding:7px 10px;margin:0 0 4px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:6px"><span class="lbl" style="margin:0">🎓 Akademi</span><span class="xs">P19 · 5:a · 2V 1O 0F</span></div>
+<span class="nb">›</span>
+</div>
+</div>
+
+<!-- CTA -->
+<div>
+<div style="display:flex;justify-content:space-between;margin:0 0 4px;padding:0 2px">
+<span style="font-size:10px;color:#aaa">23 november 2026</span>
+<span style="font-size:10px;color:#aaa">Omgång 5</span>
+</div>
+<div style="display:flex;align-items:center;gap:8px;margin:0 0 6px">
+<div style="flex:1;height:0.5px;background:linear-gradient(90deg,transparent,#ddd)"></div>
+<svg viewBox="0 0 20 8" width="16" height="6"><polygon points="10,0.5 19,4 10,7.5 1,4" fill="none" stroke="#c9a84c" stroke-width="0.6" opacity="0.4"/></svg>
+<div style="flex:1;height:0.5px;background:linear-gradient(90deg,#ddd,transparent)"></div>
+</div>
+<p style="font-size:10px;color:#aaa;font-style:italic;text-align:center;margin:0 0 6px">☀️ Allt stämmer just nu</p>
+<button class="cta">Redo — spela omgång 5 →</button>
+</div>
+
+</div>
+<div class="nav"><div class="on">Hem</div><div>Trupp</div><div>Match</div><div>Tabell</div><div>Transfers</div><div>Klubb</div></div>
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- ═══════════ PHASE 2: SPELA ═══════════ -->
+<div class="section-title"><span>②</span> SPELA (befintligt matchflöde)</div>
+
+<div class="phone">
+<div class="hdr"><div><b>Karlsborg vs Hälleforsnäs</b><br><span class="m">Omgång 5 · Hemma</span></div></div>
+<div class="phase-bar">
+<div class="phase"><div class="dot done"></div><span class="lb done">Förbered</span></div>
+<div class="phase-line done"></div>
+<div class="phase"><div class="dot active"></div><span class="lb active">Spela</span></div>
+<div class="phase-line"></div>
+<div class="phase"><div class="dot"></div><span class="lb">Granska</span></div>
+</div>
+<div class="scroll">
+<div style="display:flex;gap:4px;margin:0 0 8px">
+<div style="flex:1;padding:7px;border-radius:6px;background:#8b7332;color:#faf8f4;font-size:10px;font-weight:600;text-align:center">1. Uppställning ✓</div>
+<div style="flex:1;padding:7px;border-radius:6px;background:#8b7332;color:#faf8f4;font-size:10px;font-weight:600;text-align:center">2. Taktik ✓</div>
+<div style="flex:1;padding:7px;border-radius:6px;background:rgba(139,115,50,0.12);color:#6b5522;font-size:10px;font-weight:600;text-align:center;border:1.5px solid #8b7332">3. Spela</div>
+</div>
+<div style="background:#111;border-radius:8px;padding:12px;text-align:center">
+<div style="display:flex;justify-content:center;align-items:center;gap:16px">
+<div><div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1px">KARL</div><div style="font-size:32px;font-weight:900;color:#ff3333;font-family:'Courier New',monospace">2</div></div>
+<div><div style="font-size:14px;font-weight:700;color:#ccff00;font-family:'Courier New',monospace">67'</div></div>
+<div><div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1px">HÄLL</div><div style="font-size:32px;font-weight:900;color:#ff3333;font-family:'Courier New',monospace">1</div></div>
+</div>
+</div>
+<div style="padding:6px 0;font-size:11px;color:#777;line-height:1.7">
+<div style="border-left:3px solid rgba(180,140,60,0.4);padding:3px 0 3px 10px;margin:2px 0">67' — Björk slår in 2-1!</div>
+<div style="padding:3px 0 3px 14px;margin:2px 0;color:#aaa">63' — Hörnor i serie.</div>
+</div>
+</div>
+<div class="nav"><div>Hem</div><div>Trupp</div><div class="on">Match</div><div>Tabell</div><div>Transfers</div><div>Klubb</div></div>
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- ═══════════ PHASE 3: GRANSKA ═══════════ -->
+<div class="section-title"><span>③</span> GRANSKA</div>
+
+<div class="phone">
+<div class="hdr"><div><b>Karlsborg</b><br><span class="m">Omgång 5 avklarad</span></div></div>
+<div class="phase-bar">
+<div class="phase"><div class="dot done"></div><span class="lb done">Förbered</span></div>
+<div class="phase-line done"></div>
+<div class="phase"><div class="dot done"></div><span class="lb done">Spela</span></div>
+<div class="phase-line done"></div>
+<div class="phase"><div class="dot active"></div><span class="lb active">Granska</span></div>
+</div>
+<div class="scroll">
+
+<!-- Result hero -->
+<div style="text-align:center;padding:8px 0 4px">
+<div style="font-size:8px;font-weight:600;letter-spacing:2px;color:#aaa;text-transform:uppercase;margin-bottom:3px">Slutresultat</div>
+<div style="font-size:36px;font-weight:800;font-family:Georgia,serif;color:#2c2a28;line-height:1">3 <span style="font-weight:300;color:#ccc">–</span> 1</div>
+<div style="margin:4px 0"><span class="pill p-g" style="font-size:9px">SEGER</span></div>
+<div class="xs">⭐ E. Björk (7.8) · 🏟️ 1 240 åskådare</div>
+</div>
+
+<!-- Key moments -->
+<div style="display:flex;flex-direction:column;gap:2px;padding:0 0 6px">
+<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#777"><span class="xs" style="width:22px;text-align:right;flex-shrink:0">12'</span><span>🏒</span>Björk (1-0)</div>
+<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#777;justify-content:flex-end"><span>Ström (1-1)</span><span>🏒</span><span class="xs" style="width:22px;flex-shrink:0">34'</span></div>
+<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#777"><span class="xs" style="width:22px;text-align:right;flex-shrink:0">56'</span><span>🏒</span>Lindqvist (2-1)</div>
+<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#777"><span class="xs" style="width:22px;text-align:right;flex-shrink:0">67'</span><span>🏒</span>Björk (3-1)</div>
+</div>
+
+<!-- Press conference INLINE -->
+<div class="c" style="border-color:rgba(180,140,60,0.3);padding:12px">
+<div style="font-size:8px;font-weight:600;letter-spacing:2px;color:#aaa;margin-bottom:5px">🎤 PRESSKONFERENS</div>
+<div style="font-size:11px;color:#666;font-style:italic;margin-bottom:8px">"Ni vände underläge till seger. Vad hände i pausen?"</div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="padding:8px 10px;border-radius:6px;background:#8b7332;color:#faf8f4;font-size:11px;font-weight:600;cursor:pointer;text-align:center">Vi justerade taktiken och killarna levererade</div>
+<div style="padding:8px 10px;border-radius:6px;background:#f5f3ee;color:#666;font-size:11px;border:0.5px solid #e8e4dc;cursor:pointer;text-align:center">Halvtid är till för att tänka om</div>
+<div style="padding:8px 10px;border-radius:6px;background:transparent;color:#aaa;font-size:11px;border:0.5px solid #e8e4dc;cursor:pointer;text-align:center">Vägra presskonferens</div>
+</div>
+</div>
+
+<!-- Round summary rows -->
+<div class="c" style="padding:8px 10px">
+<div class="lbl" style="margin-bottom:6px">Omgångssammanfattning</div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<div class="row"><span class="xs">📊 Tabellplacering</span><span class="sm">7 → 6 <span style="color:#3b6d11">↑</span></span></div>
+<div class="row"><span class="xs">💰 Ekonomi</span><span class="sm" style="color:#3b6d11">+8 400 kr</span></div>
+<div class="row"><span class="xs">🏘 Bygdens puls</span><span class="sm">72 → 74 <span style="color:#3b6d11">↑</span></span></div>
+<div class="row"><span class="xs">🩹 Skador</span><span class="sm" style="color:#a32d2d">Ström (2v)</span></div>
+<div class="row"><span class="xs">🎓 P19</span><span class="sm">Vann 3–1 mot Alfta</span></div>
+<div class="row"><span class="xs">📬 Inkorg</span><span class="sm">3 nya</span></div>
+</div>
+</div>
+
+<!-- CTA -->
+<button class="cta" style="margin-top:2px">Nästa omgång →</button>
+<button class="cta cta-ghost" style="margin-top:4px;padding:10px;font-size:10px">Se fullständig rapport →</button>
+
+</div>
+<div class="nav"><div class="on">Hem</div><div>Trupp</div><div>Match</div><div>Tabell</div><div>Transfers</div><div>Klubb</div></div>
+</div>
+
+<div class="arrow">↺</div>
+<div style="text-align:center;padding:4px 0;font-size:11px;color:#8b7332;font-weight:600">Tillbaka till ① FÖRBERED</div>
+
+</div>
+</body></html>

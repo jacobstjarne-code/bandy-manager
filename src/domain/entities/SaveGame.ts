@@ -278,4 +278,7 @@ export interface SaveGame {
 
   // V1.1 — Onboarding (0 = not started, 1-3 = guided rounds, 4+ = done)
   onboardingStep?: number
+
+  // V1.2 — Screen visit tracking (for nudge progress in dashboard agenda)
+  visitedScreensThisRound?: string[]  // e.g. ['squad', 'transfers', 'club']
 }

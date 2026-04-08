@@ -10,7 +10,8 @@
       "Bash(grep -n \"onFormationChange\\\\|formation.*change\" /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/presentation/components/match/*.tsx)",
       "Bash(head -15 grep -rn \"homeAdvantage\\\\|communityStanding\" /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/domain/services/matchSimulator.ts)",
       "Bash(grep -E \"\\\\.ts$\")",
-      "Read(//Users/jacobstjarne/Desktop/code_projects/**)"
+      "Read(//Users/jacobstjarne/Desktop/code_projects/**)",
+      "Bash(python3 -c ':*)"
     ]
   }
 }

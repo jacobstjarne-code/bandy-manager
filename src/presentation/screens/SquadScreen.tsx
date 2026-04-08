@@ -253,6 +253,8 @@ export function SquadScreen() {
   const location = useLocation()
   const game = useGameStore(s => s.game)
   const talkToPlayer = useGameStore(s => s.talkToPlayer)
+  const markScreenVisited = useGameStore(s => s.markScreenVisited)
+  useEffect(() => { markScreenVisited('squad') }, [])
   const [sort, setSort] = useState<SortKey>('position')
   const [filter, setFilter] = useState<FilterKey>('all')
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)

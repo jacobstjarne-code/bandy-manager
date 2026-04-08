@@ -818,6 +818,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     currentDate: newDate,
     managedClubPendingLineup: undefined,
     lineupConfirmedThisRound: false,
+    visitedScreensThisRound: [],
     lastCompletedFixtureId: justCompletedManagedFixture?.id ?? game.lastCompletedFixtureId,
     matchWeathers: trimmedWeathers,
     trainingHistory: trimmedTrainingHistory,
