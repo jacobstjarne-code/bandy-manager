@@ -596,8 +596,8 @@ export function TabellScreen() {
                     })}
                   </div>
                   {byeMatches.length > 0 && (
-                    <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, fontStyle: 'italic' }}>
-                      Fria till kvartsfinal: {byeMatches.map(m => clubName(m.homeClubId)).join(', ')}
+                    <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6 }}>
+                      Fria till kvartsfinal utifrån ranking: {byeMatches.map(m => clubName(m.homeClubId)).join(', ')}
                     </p>
                   )}
                 </div>
