@@ -1,4 +1,5 @@
 import type { SaveGame } from '../entities/SaveGame'
+import type { ArcType } from '../entities/Narrative'
 import { getRivalry } from '../data/rivalries'
 import { getTransferWindowStatus } from './transferWindowService'
 import { FixtureStatus } from '../enums'
@@ -75,6 +76,28 @@ function getLatestHeadline(game: SaveGame): string | null {
 }
 
 export function generateBriefing(game: SaveGame): Briefing | null {
+  // 0. Arc (building phase) — between derby and hot player priority
+  const buildingArc = (game.activeArcs ?? []).find(a => a.phase === 'building' && a.playerId)
+  if (buildingArc) {
+    const arcPlayer = game.players.find(p => p.id === buildingArc.playerId)
+    if (arcPlayer) {
+      const texts: Partial<Record<ArcType, string>> = {
+        hungrig_breakthrough: `🔥 ${arcPlayer.firstName} ${arcPlayer.lastName} har inte gjort mål på ${buildingArc.data?.gamesWithoutGoal ?? '?'} matcher.`,
+        veteran_farewell: `🏅 ${arcPlayer.firstName} ${arcPlayer.lastName}s kontrakt går ut. ${arcPlayer.age} år gammal.`,
+        contract_drama: `📋 ${arcPlayer.firstName} ${arcPlayer.lastName} i blåsväder — kontraktet löper ut snart.`,
+        lokal_hero: `🏠 Hela orten pratar om ${arcPlayer.firstName} ${arcPlayer.lastName}.`,
+        ledare_crisis: `🦁 ${arcPlayer.firstName} ${arcPlayer.lastName} har samlat laget — krisläget kräver ledarskap.`,
+      }
+      const t = texts[buildingArc.type]
+      if (t) {
+        return {
+          text: t,
+          navigateTo: { path: '/game/squad', state: { highlightPlayer: arcPlayer.id } },
+        }
+      }
+    }
+  }
+
   // 1. Derby?
   const nextFixture = getNextManagedFixture(game)
   if (nextFixture) {

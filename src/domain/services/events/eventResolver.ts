@@ -133,6 +133,19 @@ export function resolveEvent(
       }
       break
     }
+    case 'teamBoostMorale': {
+      const boost = effect.value ?? 5
+      const clubId = effect.targetClubId
+      updatedGame = {
+        ...updatedGame,
+        players: updatedGame.players.map(p =>
+          (!clubId || p.clubId === clubId)
+            ? { ...p, morale: Math.min(100, Math.max(0, p.morale + boost)) }
+            : p,
+        ),
+      }
+      break
+    }
     case 'acceptSponsor': {
       const rawData = effect.sponsorData ?? event.sponsorData
       if (rawData) {

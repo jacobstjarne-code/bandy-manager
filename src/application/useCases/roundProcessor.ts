@@ -43,6 +43,7 @@ import { processTransferBids, processLoans } from './processors/transferProcesso
 import { processSponsors } from './processors/sponsorProcessor'
 import { simulateRound } from './processors/matchSimProcessor'
 import { processYouth } from './processors/youthProcessor'
+import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
 
 export type { AdvanceResult }
 
@@ -890,6 +891,30 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Append market value change notifications to inbox
   if (marketValueInbox.length > 0) {
     updatedGame = { ...updatedGame, inbox: [...updatedGame.inbox, ...marketValueInbox] }
+  }
+
+  // ── Arc processing ──────────────────────────────────────────────────────
+  {
+    const existingArcs = updatedGame.activeArcs ?? []
+    const newTriggers = detectArcTriggers(updatedGame, justCompletedManagedFixture ?? undefined)
+    const allArcs = [...existingArcs, ...newTriggers]
+    const arcResult = progressArcs(
+      { ...updatedGame, activeArcs: allArcs },
+      nextMatchday,
+      justCompletedManagedFixture ?? undefined,
+    )
+    const arcInbox: InboxItem[] = arcResult.newInboxItems.map(item => ({
+      ...item,
+      date: updatedGame.currentDate,
+      isRead: false,
+    }))
+    updatedGame = {
+      ...updatedGame,
+      activeArcs: arcResult.updatedArcs,
+      pendingEvents: [...(updatedGame.pendingEvents ?? []), ...arcResult.newEvents],
+      storylines: [...(updatedGame.storylines ?? []), ...arcResult.newStorylines],
+      inbox: [...updatedGame.inbox, ...arcInbox],
+    }
   }
 
   // ── Process pending follow-ups ──────────────────────────────────────────

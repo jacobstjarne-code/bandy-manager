@@ -488,6 +488,25 @@ export function generatePressConference(
   let question = questions[Math.floor(rand() * questions.length)]
   const journalist = JOURNALISTS[Math.floor(rand() * JOURNALISTS.length)]
 
+  // Arc-aware question override (40% chance if arc in peak phase)
+  const peakArcs = (game.activeArcs ?? []).filter(a => a.phase === 'peak' && a.playerId)
+  if (rand() < 0.40 && peakArcs.length > 0) {
+    const arc = peakArcs[0]
+    const arcPlayer = game.players.find(p => p.id === arc.playerId)
+    if (arcPlayer) {
+      const arcQuestions: Partial<Record<import('../entities/Narrative').ArcType, string>> = {
+        hungrig_breakthrough: `${arcPlayer.firstName} ${arcPlayer.lastName} har det tungt. Tror du fortfarande på honom?`,
+        joker_redemption: `${arcPlayer.firstName} ${arcPlayer.lastName} delar fansen. Kostar han mer än han ger?`,
+        veteran_farewell: `Blir det här ${arcPlayer.firstName} ${arcPlayer.lastName}s sista säsong?`,
+        contract_drama: `Rykten säger att ${arcPlayer.firstName} ${arcPlayer.lastName} kan lämna. Kommentar?`,
+      }
+      const q = arcQuestions[arc.type]
+      if (q) {
+        question = { text: q, preferIds: question.preferIds }
+      }
+    }
+  }
+
   // Storyline-aware question override (30% chance if matching storyline exists)
   const storylines = game.storylines ?? []
   if (rand() < 0.30 && storylines.length > 0) {

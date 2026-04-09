@@ -26,6 +26,7 @@ export type GameEventType =
   | 'playerMediaComment'
   | 'playerPraise'
   | 'captainSpeech'
+  | 'playerArc'
 
 export interface EventChoice {
   id: string
@@ -68,6 +69,7 @@ export interface EventEffect {
     | 'patronInfluence'
     | 'boardPatience'
     | 'multiEffect'
+    | 'teamBoostMorale'
   value?: number
   amount?: number
   targetPlayerId?: string

@@ -73,6 +73,14 @@ export type StorylineType =
   | 'gala_winner'
   | 'partner_moved_here'
   | 'captain_rallied_team'
+  // Arc resolutions
+  | 'hungrig_breakthrough'
+  | 'joker_vindicated'
+  | 'veteran_farewell'
+  | 'veteran_stayed'
+  | 'lokal_hero_moment'
+  | 'contract_drama_resolved'
+  | 'derby_echo_resolved'
 
 export interface StorylineEntry {
   id: string
@@ -105,4 +113,26 @@ export interface AllTimeRecords {
   biggestWin: { score: string; opponent: string; season: number; round: number } | null
   championSeasons: number[]
   cupWinSeasons: number[]
+}
+
+export type ArcType =
+  | 'hungrig_breakthrough'    // Ung hungrig spelare som kämpar för genombrott
+  | 'joker_redemption'        // Joker som kostar/räddar — oförutsägbar
+  | 'veteran_farewell'        // Veteran med utgående kontrakt, sista säsongen?
+  | 'ledare_crisis'           // Kapten/ledare under krisperiod
+  | 'lokal_hero'              // Lokalhjälte som gör något stort
+  | 'contract_drama'          // Bygger på transfer-spekulationsinkorg
+  | 'derby_echo'              // POST-derby efterdyningar (2 omgångar)
+
+export interface ActiveArc {
+  id: string
+  type: ArcType
+  playerId?: string
+  opponentClubId?: string     // derby_echo
+  startedMatchday: number
+  phase: 'building' | 'peak' | 'resolving'
+  eventsFired: string[]       // event IDs redan genererade
+  decisionsMade: string[]     // choice IDs spelaren valt
+  expiresMatchday: number
+  data?: Record<string, unknown>
 }

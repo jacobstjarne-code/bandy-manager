@@ -537,7 +537,26 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   }
 
   const storyTriggers = generateStoryTriggers(game)
-  const keyMoments = computeKeyMoments(game, clubFixtures, managedPlayers)
+  const baseKeyMoments = computeKeyMoments(game, clubFixtures, managedPlayers)
+
+  // Merge resolved arc storylines into keyMoments (max 7 total, arcs ranked at 80 impact)
+  const arcStorylineTypes = new Set([
+    'hungrig_breakthrough', 'joker_vindicated', 'veteran_farewell', 'veteran_stayed',
+    'lokal_hero_moment', 'captain_rallied_team', 'contract_drama_resolved', 'derby_echo_resolved',
+  ])
+  const resolvedArcStories = (game.storylines ?? []).filter(
+    s => s.season === game.currentSeason && arcStorylineTypes.has(s.type as string) && s.resolved
+  )
+  type KeyMoment = NonNullable<SeasonSummary['keyMoments']>[number]
+  const arcMoments: KeyMoment[] = resolvedArcStories.slice(0, 2).map(arc => ({
+    round: arc.matchday,
+    type: 'bigWin' as const, // placeholder type — displayed via displayText
+    headline: arc.displayText,
+    body: arc.description,
+    relatedPlayerId: arc.playerId,
+  }))
+  const allMoments = [...baseKeyMoments, ...arcMoments]
+  const keyMoments = allMoments.slice(0, 7)
 
   return {
     season: game.currentSeason,
