@@ -42,10 +42,6 @@ function generateMatchSummary(
       scorerNames[e.playerId] = p ? p.lastName : 'Okänd'
     }
   })
-  const topScorerId = Object.entries(scorerCounts).sort((a, b) => b[1] - a[1])[0]
-  const topScorerName = topScorerId ? scorerNames[topScorerId[0]] : null
-  const topScorerGoals = topScorerId ? topScorerId[1] : 0
-
   // Kolla vändning (trailed at halftime)
   const htStep = steps.find(s => s.step === 30)
   const htHome = htStep?.homeScore ?? 0
