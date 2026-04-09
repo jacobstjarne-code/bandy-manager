@@ -136,7 +136,10 @@ export function DashboardScreen() {
   const advanceButtonText = (() => {
     const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
     if (scheduled.length === 0) {
-      if (!game.playoffBracket) return 'Starta slutspel →'
+      if (!game.playoffBracket) {
+        const standing = game.standings.find(s => s.clubId === game.managedClubId)
+        return standing && standing.position <= 8 ? 'Starta slutspel →' : 'Avsluta grundserien →'
+      }
       if (game.playoffBracket.status === PlayoffStatus.Completed) return 'Avsluta säsongen →'
       return 'Fortsätt slutspel →'
     }

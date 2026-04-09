@@ -7,13 +7,7 @@ import { csColor, formatFinance } from '../utils/formatters'
 import { FixtureStatus } from '../../domain/enums'
 import type { EventChoice } from '../../domain/entities/GameEvent'
 
-function choiceStyle(choiceId: string): React.CSSProperties {
-  if (choiceId === 'accept' || choiceId === 'extend3') {
-    return { background: 'var(--accent)', color: 'var(--text-light)', border: 'none' }
-  }
-  if (choiceId === 'reject') {
-    return { background: 'rgba(239,68,68,0.1)', color: 'var(--danger)', border: '1px solid rgba(239,68,68,0.35)' }
-  }
+function choiceStyle(_choiceId: string): React.CSSProperties {
   return { background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)' }
 }
 
@@ -109,10 +103,18 @@ export function GranskaScreen() {
   const pendingEvents = game.pendingEvents ?? []
 
   function handleChoice(eventId: string, choiceId: string, choiceLabel: string) {
+    console.log('[GranskaScreen] handleChoice:', { eventId, choiceId, choiceLabel })
+    const event = pendingEvents.find(e => e.id === eventId)
+    console.log('[GranskaScreen] event type:', event?.type, 'choices:', event?.choices?.length)
     playSound('click')
     setResolvedEventIds(prev => new Set([...prev, eventId]))
     setChosenLabels(prev => ({ ...prev, [eventId]: choiceLabel }))
-    resolveEvent(eventId, choiceId)
+    try {
+      resolveEvent(eventId, choiceId)
+      console.log('[GranskaScreen] resolveEvent succeeded')
+    } catch (err) {
+      console.error('[GranskaScreen] resolveEvent CRASHED:', err)
+    }
   }
 
   function handleContinue() {
@@ -354,6 +356,7 @@ export function GranskaScreen() {
         background: 'linear-gradient(to top, var(--bg) 80%, transparent)',
         zIndex: 50, opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease 0.3s',
         display: 'flex', flexDirection: 'column', gap: 8,
+        pointerEvents: 'none',
       }}>
         {(() => {
           const unresolved = pendingEvents.filter(e => !resolvedEventIds.has(e.id)).length
@@ -368,7 +371,7 @@ export function GranskaScreen() {
           <button
             onClick={() => navigate('/game/match', { state: { showReport: true } })}
             className="btn btn-ghost"
-            style={{ width: '100%', padding: '11px', justifyContent: 'center', fontSize: 13 }}
+            style={{ width: '100%', padding: '11px', justifyContent: 'center', fontSize: 13, pointerEvents: 'auto' }}
           >
             Se fullständig matchrapport →
           </button>
@@ -379,7 +382,7 @@ export function GranskaScreen() {
           color: 'var(--text-light)',
           borderRadius: 12, fontSize: 15, fontWeight: 600, letterSpacing: '2px',
           textTransform: 'uppercase', border: 'none', fontFamily: 'var(--font-body)',
-          cursor: 'pointer',
+          cursor: 'pointer', pointerEvents: 'auto',
         }}>
           Nästa omgång →
         </button>

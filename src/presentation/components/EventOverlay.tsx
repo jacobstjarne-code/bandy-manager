@@ -2,21 +2,7 @@ import { useLocation } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { playSound } from '../audio/soundEffects'
 
-function choiceStyle(choiceId: string): React.CSSProperties {
-  if (choiceId === 'accept' || choiceId === 'extend3') {
-    return {
-      background: 'var(--accent)',
-      color: 'var(--text-light)',
-      border: 'none',
-    }
-  }
-  if (choiceId === 'reject') {
-    return {
-      background: 'rgba(239,68,68,0.1)',
-      color: 'var(--danger)',
-      border: '1px solid rgba(239,68,68,0.35)',
-    }
-  }
+function choiceStyle(_choiceId: string): React.CSSProperties {
   return {
     background: 'var(--bg-elevated)',
     color: 'var(--text-primary)',
