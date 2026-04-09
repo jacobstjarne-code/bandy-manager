@@ -51,32 +51,32 @@ const PERSONALITIES: MecenatPersonality[] = ['tyst_kraft', 'showman', 'kalkylato
 
 const BACKSTORIES: Record<MecenatType, { male: string[]; female: string[] }> = {
   brukspatron: {
-    male: ['Tredje generationens bruksägare. Farfadern grundade sågverket.', 'Köpte bruket vid konkursen 2008. Vände det på tre år.'],
-    female: ['Tog över efter fadern. Moderniserade hela produktionslinjen.', 'Skogsbolagets VD sedan 15 år. Känd för att hålla vad hon lovar.'],
+    male: ['Tredje generationen i kommunen. Farfadern byggde det mesta av det som finns kvar.', 'Tog över vid en konkurs 2008. Vände det på tre år med envishet och tålamod.'],
+    female: ['Tog över efter fadern och moderniserade från grunden. Respekterad för det.', 'VD sedan 15 år. Känd i bygden för att hålla vad hon lovar.'],
   },
   skogsägare: {
-    male: ['Äger 800 hektar skog norr om orten. Jagar älg varje höst.', 'Skogsmaskinsentreprenör som blev markägare. Pragmatisk.'],
-    female: ['Ärvde skogen av mormodern. Driver den som ett modernt företag.', 'Biolog som blev skogsägare. Kombinerar naturvård med avverkning.'],
+    male: ['Äger 800 hektar norr om orten. Jagar älg varje höst. Pragmatisk till sitt väsen.', 'Blev markägare efter ett liv i fält. Känner varje meter av sin mark.'],
+    female: ['Ärvde av mormodern och förvaltar med omsorg. Driver det som ett modernt företag.', 'Utbildad biolog som tog över familjens mark. Kombinerar naturvård med affärssinne.'],
   },
   it_miljonär: {
-    male: ['Sålde sin startup för 40 miljoner. Flyttade hem till orten.', 'Techbolag i Stockholm men hjärtat är kvar här.'],
-    female: ['Grundade en SaaS-firma i garaget. Nu 30 anställda.', 'Lämnade Google för att bygga något eget. Tillbaka i bygden.'],
+    male: ['Sålde sitt bolag för 40 miljoner vid 35. Flyttade hem till orten.', 'Byggt och sålt tre gånger. Saknar aldrig kapital — men söker mening.'],
+    female: ['Byggde sin verksamhet från grunden i ett garage. Nu 30 anställda.', 'Lämnade storstaden för att bygga något eget på hemmaplan. Ångrar ingenting.'],
   },
   entrepreneur: {
-    male: ['Äger tre bilhallar i länet. Sponsrar allt som rör sig.', 'Startade som lärling. Nu största byggfirman i kommunen.'],
-    female: ['Driver regionens största eventbyrå. Vet hur man skapar stämning.', 'Från bageri till restaurangkedja. Affärssinne i blodet.'],
+    male: ['Startade som lärling. Nu störst i kommunen. Envis som få.', 'Äger tre verksamheter i länet. Sponsrar allt som rör sig i bygden.'],
+    female: ['Från enmansfirma till 20 anställda. Affärssinne i blodet.', 'Byggde sin verksamhet från grunden. Känd för att alltid leverera.'],
   },
   fastigheter: {
-    male: ['Äger halva centrumkvarteret. Tyst men inflytelserik.', 'Byggde 200 lägenheter under 2010-talet. Kommunens största hyresvärd.'],
-    female: ['Fastighetsmäklare som blev investerare. Känner varje hus i orten.', 'Arkitekt som blev byggherre. Formger ortens framtid.'],
+    male: ['Äger halva centrumkvarteret. Tyst men inflytelserik. Föredrar handling framför ord.', 'Investerade tidigt och klokt. Kommunens tyngste privata ägare av lokaler.'],
+    female: ['Började som mäklare och blev investerare. Känner varje fastighet i orten.', 'Formger ortens framtid med tålamod och precision. Har alltid haft god timing.'],
   },
   lokal_handlare: {
-    male: ['Tredje generationens ICA-handlare. Alla i orten känner honom.', 'Öppnade Handlarn när alla sa att det var omöjligt. Finns kvar.'],
-    female: ['Driver ortens enda mataffär. Navet i bygden.', 'Tog över butiken från föräldrarna. Moderniserade och expanderade.'],
+    male: ['Tredje generationens handlare. Alla i orten känner honom — och han känner alla.', 'Öppnade när alla sa det var omöjligt. Finns kvar när de som tvivlade är borta.'],
+    female: ['Driver det lokala navet. Vet vad folk behöver innan de vet det själva.', 'Tog över efter föräldrarna och moderniserade utan att tappa det lokala.'],
   },
   jordbrukare: {
-    male: ['Mjölkbonde med 120 kor. Sponsrar P19 sedan 2018.', 'Spannmålsodlare som diversifierade. Nu också vindkraft.'],
-    female: ['Driver ekologiskt jordbruk. Säljer direkt till restauranger i stan.', 'Mjölkbonde i tredje generationen. Envis och rak.'],
+    male: ['Bedriver lantbruk utanför orten. Sponsrar P19 sedan 2018. Jordnära och trovärdig.', 'Har diversifierat sin verksamhet under åren. Pragmatisk och uthållig.'],
+    female: ['Driver ekologisk verksamhet med starka lokala band. Säljer direkt till kunder i regionen.', 'Tredje generationen på gården. Envis och rak — precis som marken kräver.'],
   },
 }
 
