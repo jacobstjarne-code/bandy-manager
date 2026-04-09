@@ -62,71 +62,9 @@ export function AkademiTab({ club, game, upgradeAcademy, upgradeFacilities, prom
 
   return (
     <div>
-      {/* Academy level card */}
-      <SectionCard title="🏫 Akademinivå" stagger={1}>
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 10, lineHeight: 1.4 }}>
-          Akademin utvecklar unga spelare. Uppgradera nivån för bättre rekrytering och utveckling.
-        </p>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-          <span style={{ fontSize: 15, fontWeight: 700 }}>{levelLabel}</span>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{(levelDrift / 1000)} tkr/omg</span>
-        </div>
-        {club.academyReputation !== undefined && (
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
-            Akademirykte: {club.academyReputation}/100
-          </p>
-        )}
-        {game.academyUpgradeInProgress && (
-          <p style={{ fontSize: 12, color: 'var(--warning)', marginBottom: 8 }}>
-            Uppgradering pågår — klar säsong {game.academyUpgradeSeason}
-          </p>
-        )}
-        {upgradeMsg && (
-          <p style={{ fontSize: 12, color: 'var(--success)', marginBottom: 8 }}>✓ {upgradeMsg}</p>
-        )}
-        {nextLevelLabel && !game.academyUpgradeInProgress && (
-          <button
-            className="btn btn-outline"
-            onClick={handleUpgrade}
-            style={{ maxWidth: 200 }}
-          >
-            Uppgradera till {nextLevelLabel}
-          </button>
-        )}
-      </SectionCard>
-
-      {/* Facility upgrade */}
-      <SectionCard title="🏗️ Anläggning" stagger={1}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-          <span style={{ fontSize: 14, fontWeight: 600 }}>Nivå {club.facilities}/100</span>
-          {(game.facilityUpgradeSeason ?? 0) >= game.currentSeason && (
-            <span style={{ fontSize: 11, color: 'var(--success)' }}>Uppgraderad denna säsong</span>
-          )}
-        </div>
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10, lineHeight: 1.4 }}>
-          Bättre anläggning ger bättre träning, spelarutveckling och möjlighet att uppgradera akademin.
-        </p>
-        {facilityMsg && (
-          <p style={{ fontSize: 12, color: facilityMsg.startsWith('✓') ? 'var(--success)' : 'var(--danger)', marginBottom: 8 }}>{facilityMsg}</p>
-        )}
-        {club.facilities < 100 && (game.facilityUpgradeSeason ?? 0) < game.currentSeason && (
-          <button
-            className="btn btn-outline"
-            onClick={() => {
-              const result = upgradeFacilities()
-              setFacilityMsg(result.error ? result.error : `✓ Anläggning uppgraderad till ${Math.min(100, club.facilities + 15)}/100`)
-              setTimeout(() => setFacilityMsg(null), 4000)
-            }}
-            style={{ maxWidth: 200 }}
-          >
-            Uppgradera (+15) — 200 tkr
-          </button>
-        )}
-      </SectionCard>
-
-      {/* P17 team */}
+      {/* P19 team — first since it's the most actionable */}
       {youthTeam && (
-        <SectionCard title="🏒 Pojklaget (P19)" stagger={2}>
+        <SectionCard title="🏒 Pojklaget (P19)" stagger={1}>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 10, lineHeight: 1.4 }}>
             P19-laget spelar egna matcher. Talanger kan lyftas till A-laget när de är redo.
           </p>
@@ -206,8 +144,70 @@ export function AkademiTab({ club, game, upgradeAcademy, upgradeFacilities, prom
         </SectionCard>
       )}
 
+      {/* Academy level card */}
+      <SectionCard title="🏫 Akademinivå" stagger={2}>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 10, lineHeight: 1.4 }}>
+          Akademin utvecklar unga spelare. Uppgradera nivån för bättre rekrytering och utveckling.
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+          <span style={{ fontSize: 15, fontWeight: 700 }}>{levelLabel}</span>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{(levelDrift / 1000)} tkr/omg</span>
+        </div>
+        {club.academyReputation !== undefined && (
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
+            Akademirykte: {club.academyReputation}/100
+          </p>
+        )}
+        {game.academyUpgradeInProgress && (
+          <p style={{ fontSize: 12, color: 'var(--warning)', marginBottom: 8 }}>
+            Uppgradering pågår — klar säsong {game.academyUpgradeSeason}
+          </p>
+        )}
+        {upgradeMsg && (
+          <p style={{ fontSize: 12, color: 'var(--success)', marginBottom: 8 }}>✓ {upgradeMsg}</p>
+        )}
+        {nextLevelLabel && !game.academyUpgradeInProgress && (
+          <button
+            className="btn btn-outline"
+            onClick={handleUpgrade}
+            style={{ maxWidth: 200 }}
+          >
+            Uppgradera till {nextLevelLabel}
+          </button>
+        )}
+      </SectionCard>
+
+      {/* Facility upgrade */}
+      <SectionCard title="🏗️ Anläggning" stagger={3}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+          <span style={{ fontSize: 14, fontWeight: 600 }}>Nivå {club.facilities}/100</span>
+          {(game.facilityUpgradeSeason ?? 0) >= game.currentSeason && (
+            <span style={{ fontSize: 11, color: 'var(--success)' }}>Uppgraderad denna säsong</span>
+          )}
+        </div>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10, lineHeight: 1.4 }}>
+          Bättre anläggning ger bättre träning, spelarutveckling och möjlighet att uppgradera akademin.
+        </p>
+        {facilityMsg && (
+          <p style={{ fontSize: 12, color: facilityMsg.startsWith('✓') ? 'var(--success)' : 'var(--danger)', marginBottom: 8 }}>{facilityMsg}</p>
+        )}
+        {club.facilities < 100 && (game.facilityUpgradeSeason ?? 0) < game.currentSeason && (
+          <button
+            className="btn btn-outline"
+            onClick={() => {
+              const result = upgradeFacilities()
+              setFacilityMsg(result.error ? result.error : `✓ Anläggning uppgraderad till ${Math.min(100, club.facilities + 15)}/100`)
+              setTimeout(() => setFacilityMsg(null), 4000)
+            }}
+            style={{ maxWidth: 200 }}
+          >
+            Uppgradera (+15) — 200 tkr
+          </button>
+        )}
+      </SectionCard>
+
       {/* Mentorskap */}
-      <SectionCard title="🤝 Mentorskap" stagger={3}>
+      <SectionCard title="🤝 Mentorskap" stagger={4}>
         <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 10, lineHeight: 1.4 }}>
           Para ihop en senior med en junior för snabbare utveckling.
         </p>
@@ -289,7 +289,7 @@ export function AkademiTab({ club, game, upgradeAcademy, upgradeFacilities, prom
       </SectionCard>
 
       {/* Lån */}
-      <SectionCard title="📤 Lån (U23)" stagger={4}>
+      <SectionCard title="📤 Lån (U23)" stagger={5}>
         <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 10, lineHeight: 1.4 }}>
           Låna ut unga spelare för att ge dem speltid och utveckling.
         </p>
