@@ -469,8 +469,17 @@ export function DashboardScreen() {
           {/* Orten */}
           <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}>
             <p style={{ ...LABEL, marginBottom: 6 }}>🏘 Orten</p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 5 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 5 }}>
               <span style={{ fontSize: 22, fontWeight: 700, color: csColor(cs), fontFamily: 'var(--font-display)', lineHeight: 1 }}>{cs}</span>
+              {(() => {
+                const delta = game.communityStandingDelta
+                if (!delta) return null
+                return (
+                  <span style={{ fontSize: 10, fontWeight: 700, color: delta > 0 ? 'var(--success)' : 'var(--danger)', lineHeight: 1 }}>
+                    {delta > 0 ? `+${delta} ↑` : `${delta} ↓`}
+                  </span>
+                )
+              })()}
             </div>
             <div style={{ display: 'flex', gap: 2 }}>
               <div style={{ flex: cs, height: 5, background: csColor(cs), borderRadius: '3px 0 0 3px' }} />

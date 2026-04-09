@@ -159,7 +159,7 @@ export function NextMatchCard({
     headerTagStyle = { background: 'rgba(196,80,50,0.2)', color: 'var(--match-warn)', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,80,50,0.3)' }
   } else if (isAnnandagen) {
     headerIcon = '🎄'
-    headerLabel = 'Annandagsrundan'
+    headerLabel = 'Annandagsbandyn'
     const d = new Date(game.currentDate)
     headerTagText = `${d.getDate()} DEC`
     headerTagStyle = { background: 'rgba(100,140,80,0.15)', color: 'var(--match-positive)', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(100,140,80,0.25)' }

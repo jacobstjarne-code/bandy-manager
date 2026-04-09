@@ -286,6 +286,7 @@ export function simulateRound(
       isDerby: !!rivalry,
       isFinal: isFinalFixture || (fixture.isCup && fixture.roundNumber === 4),
       isSemiFinal: isSemiFixture || (fixture.isCup && fixture.roundNumber === 3),
+      isAnnandagen: nextMatchday === 7 || nextMatchday === 8,
     }) : undefined
     simulatedFixtures.push({ ...result.fixture, attendance })
   }

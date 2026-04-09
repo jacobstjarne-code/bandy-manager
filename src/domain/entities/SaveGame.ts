@@ -238,6 +238,7 @@ export interface SaveGame {
   licenseReview?: LicenseReview
   licenseWarningCount?: number   // consecutive seasons with warning/continued_review
   communityStanding?: number     // 0-100, starts 50
+  communityStandingDelta?: number  // delta since last round (positive = up, negative = down)
   journalistRelationship?: number  // 0-100, starts 50
   sponsorNetworkMood?: number    // 0-100, collective mood
 

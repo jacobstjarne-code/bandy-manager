@@ -8,6 +8,43 @@ interface MidSeasonTrigger {
 }
 
 const TRIGGERS: MidSeasonTrigger[] = [
+  // Annandagen halvtidsrapport — matchday 7-8, fires once per season
+  {
+    matchday: 7,
+    check: (_g, _s) => true, // always fires (conditions handled in generate)
+    generate: (g, s) => {
+      const managedClub = g.clubs.find(c => c.id === g.managedClubId)
+      const managedPlayers = g.players.filter(p => p.clubId === g.managedClubId)
+      const pos = s?.position ?? 12
+      const pts = s?.points ?? 0
+      const wins = s?.wins ?? 0
+      const draws = s?.draws ?? 0
+      const losses = s?.losses ?? 0
+      const gf = s?.goalsFor ?? 0
+      const ga = s?.goalsAgainst ?? 0
+      const topScorer = [...managedPlayers].sort((a, b) => b.seasonStats.goals - a.seasonStats.goals)[0]
+      const topScorerStr = topScorer && topScorer.seasonStats.goals > 0
+        ? `\n\n⚡ Skyttekung hittills: ${topScorer.firstName} ${topScorer.lastName} med ${topScorer.seasonStats.goals} mål.`
+        : ''
+      const assessment = pos <= 3
+        ? 'Bättre start kan man knappt ha. Laget är med i toppen och hålls ihop av bra lagkänsla och resultat.'
+        : pos <= 6
+        ? 'En godkänd inledning med marginaler åt båda håll. Andra halvan av serien avgör om det blir ett bra år.'
+        : pos <= 9
+        ? 'Halva serien klar och laget har inte riktigt hittat sin form ännu. Andra halvan måste ge mer.'
+        : 'Svag inledning — poängen räcker inte. Laget behöver ändra kurs om slutspelet ska bli aktuellt.'
+      const clubName = managedClub?.shortName ?? managedClub?.name ?? 'Laget'
+
+      return {
+        id: `mse-halvtid-${g.currentSeason}`,
+        date: g.currentDate,
+        type: InboxItemType.BoardFeedback,
+        title: `🎄 Halvtidsrapport — ${clubName}`,
+        body: `Annandagen markerar säsongens mittfåra. Efter ${wins + draws + losses} omgångar: ${pos}:a platsen med ${pts} poäng (${wins}V ${draws}O ${losses}F).\n\nMål: ${gf} gjorda · ${ga} insläppta · ${gf - ga >= 0 ? '+' : ''}${gf - ga} målskillnad.\n\n${assessment}${topScorerStr}`,
+        isRead: false,
+      }
+    },
+  },
   // Round ~10, top 3 — local paper takes notice
   {
     matchday: 10,

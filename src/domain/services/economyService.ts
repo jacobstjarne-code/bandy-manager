@@ -199,20 +199,25 @@ export function calcAttendance(params: {
   isDerby: boolean
   isFinal?: boolean
   isSemiFinal?: boolean
+  isAnnandagen?: boolean
 }): number {
-  const { club, fanMood, position, isKnockout, isCup, isDerby, isFinal, isSemiFinal } = params
+  const { club, fanMood, position, isKnockout, isCup, isDerby, isFinal, isSemiFinal, isAnnandagen } = params
   const baseCapacity = club.arenaCapacity ?? Math.round(club.reputation * 7 + 150)
 
   // Finals get expanded capacity (temporary stands, like Studenternas)
   // SM-final: 4x capacity (capped 20000), semifinal: 2x, cup final: 3x
+  // Annandagen: 2x (whole region shows up)
   const expandedCapacity = isFinal ? Math.min(20000, baseCapacity * 4)
     : isSemiFinal ? Math.min(8000, baseCapacity * 2)
+    : isAnnandagen ? Math.min(15000, baseCapacity * 2)
     : baseCapacity
 
   const attendanceRate = Math.min(0.95, 0.35 + (fanMood / 100) * 0.40 + (position <= 3 ? 0.08 : 0))
   const eventBonus = isFinal ? 2.5 : isSemiFinal ? 1.8 : isKnockout ? 1.40 : isCup ? 1.20 : 1.0
   const derbyBonus = isDerby ? 1.30 : 1.0
-  const base = Math.round(expandedCapacity * attendanceRate * eventBonus * derbyBonus)
+  // Annandagen is the most-attended league match of the year — whole village turns up
+  const annandagenBonus = isAnnandagen ? 1.80 : 1.0
+  const base = Math.round(expandedCapacity * attendanceRate * eventBonus * derbyBonus * annandagenBonus)
   return Math.min(expandedCapacity, Math.max(50, base))
 }
 
