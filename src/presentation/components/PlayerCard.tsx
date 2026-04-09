@@ -14,6 +14,7 @@ export interface PlayerCardProps {
   onClick?: () => void
   storylines?: Array<{ displayText: string; matchday?: number }>  // resolved storylines for this player
   onExtendContract?: () => void
+  onClose?: () => void
 }
 
 // Archetype color for badge circle
@@ -146,7 +147,7 @@ function formatMarketValue(v: number): string {
   return `${v} kr`
 }
 
-export function PlayerCard({ player, clubName, scoutReport, isOwned = true, currentSeason, onClick, storylines, onExtendContract }: PlayerCardProps) {
+export function PlayerCard({ player, clubName, scoutReport, isOwned = true, currentSeason, onClick, storylines, onExtendContract, onClose }: PlayerCardProps) {
   const reportAge = scoutReport && currentSeason
     ? getScoutReportAge(scoutReport, currentSeason, scoutReport.scoutedSeason)
     : scoutReport ? 'fresh' : null
@@ -185,16 +186,16 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
       {/* Top bar */}
       <div style={{
         display: 'flex',
-        justifyContent: 'space-between',
         alignItems: 'center',
         padding: '12px 14px 8px',
         background: 'rgba(0,0,0,0.2)',
+        gap: 8,
       }}>
         {/* Club badge */}
         <ClubBadge clubId={player.clubId} name={clubName} size={32} />
 
-        {/* Position + number */}
-        <div style={{ textAlign: 'right' }}>
+        {/* Position + number — centred when close button present */}
+        <div style={{ flex: 1, textAlign: onClose ? 'center' : 'right' }}>
           <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, letterSpacing: '1px' }}>
             #{jerseyNum}
           </p>
@@ -202,6 +203,22 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
             {posLabel}
           </p>
         </div>
+
+        {/* Close button — integrated, same visual weight as badge */}
+        {onClose && (
+          <button
+            onClick={e => { e.stopPropagation(); onClose() }}
+            style={{
+              width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+              background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)',
+              color: 'var(--text-muted)', fontSize: 14,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       {/* Gold divider */}
@@ -284,7 +301,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
               <button
                 onClick={e => { e.stopPropagation(); onExtendContract() }}
                 style={{
-                  marginTop: 4, padding: '6px 12px', borderRadius: 8,
+                  marginTop: 4, padding: '8px 16px', borderRadius: 8,
                   background: 'rgba(196,122,58,0.15)', border: '1px solid rgba(196,122,58,0.4)',
                   color: 'var(--accent)', fontSize: 11, fontWeight: 600, cursor: 'pointer',
                   alignSelf: 'flex-start',

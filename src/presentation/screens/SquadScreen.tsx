@@ -490,21 +490,6 @@ export function SquadScreen() {
             maxWidth: 390,
             position: 'relative',
           }}>
-            {/* Close button pinned to top-right of card */}
-            <button
-              onClick={() => setSelectedPlayerId(null)}
-              style={{
-                position: 'absolute', top: 10, right: 10, zIndex: 10,
-                width: 28, height: 28, borderRadius: '50%',
-                background: 'rgba(0,0,0,0.3)', border: 'none',
-                color: 'var(--text-light)', fontSize: 14,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
-              }}
-            >
-              ✕
-            </button>
-
           <PlayerCard
             player={selectedPlayer}
             clubName={clubName}
@@ -512,6 +497,7 @@ export function SquadScreen() {
             currentSeason={game?.currentSeason}
             storylines={(game?.storylines ?? []).filter(s => s.playerId === selectedPlayer.id && s.resolved)}
             onExtendContract={() => navigate('/game/transfers', { state: { tab: 'contracts', renewPlayerId: selectedPlayer.id } })}
+            onClose={() => setSelectedPlayerId(null)}
           />
 
           {/* Karaktärsspelare badge */}
@@ -574,17 +560,17 @@ export function SquadScreen() {
                     </div>
                   </div>
                 ) : canTalk ? (
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                     {([
                       { id: 'encourage' as const, label: '👍 Uppmuntra' },
-                      { id: 'demand' as const, label: '💪 Kräv mer' },
+                      { id: 'demand' as const, label: '💪 Ställ krav' },
                       { id: 'future' as const, label: '🤝 Framtid' },
                     ]).map(opt => (
                       <button
                         key={opt.id}
                         onClick={() => handleTalk(selectedPlayer.id, opt.id)}
                         className="btn btn-outline"
-                        style={{ flex: 1, padding: '10px 6px', fontSize: 12 }}
+                        style={{ padding: '8px 16px', fontSize: 12 }}
                       >
                         {opt.label}
                       </button>
