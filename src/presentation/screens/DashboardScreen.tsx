@@ -236,11 +236,14 @@ export function DashboardScreen() {
 
   const nudges: { text: string; screen: string; state?: Record<string, unknown>; done: boolean; color: 'red' | 'yellow' | 'green' }[] = []
   if (injuredCount > 0) nudges.push({ text: `Kontrollera truppen (${injuredCount} skadad${injuredCount > 1 ? 'e' : ''})`, screen: 'squad', done: visited.includes('squad'), color: 'red' })
-  if (expiringPlayer && nudges.length < 3) nudges.push({ text: `Förläng kontrakt: ${expiringPlayer.firstName} ${expiringPlayer.lastName}`, screen: 'squad', done: visited.includes('squad'), color: 'red' })
+  if (expiringPlayer && nudges.length < 3) nudges.push({ text: `Förläng kontrakt: ${expiringPlayer.firstName} ${expiringPlayer.lastName}`, screen: 'transfers', done: visited.includes('transfers'), color: 'red' })
   const atRisk = (game.boardObjectives ?? []).find(o => o.status === 'at_risk')
   const active = (game.boardObjectives ?? []).find(o => o.status === 'active')
   const obj = atRisk ?? active
-  if (obj && nudges.length < 3) nudges.push({ text: `Styrelseuppdrag: ${obj.label}`, screen: 'club', state: { tab: 'orten' }, done: visited.includes('club'), color: atRisk ? 'red' : 'yellow' })
+  if (obj && nudges.length < 3) {
+    const objTab = obj.type === 'academy' ? 'akademi' : obj.type === 'economic' ? 'ekonomi' : obj.type === 'community' ? 'orten' : 'ekonomi'
+    nudges.push({ text: `Styrelseuppdrag: ${obj.label}`, screen: 'club', state: { tab: objTab }, done: visited.includes('club'), color: atRisk ? 'red' : 'yellow' })
+  }
   if (!isFirstRound && game.onboardingStep !== undefined && game.onboardingStep <= 4 && nudges.length < 3) {
     const onboardingHints: Record<number, { text: string; screen: string; state?: Record<string, unknown> }> = {
       1: { text: 'Justera träningen', screen: 'club', state: { tab: 'training' } },

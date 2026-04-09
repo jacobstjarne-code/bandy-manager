@@ -1,40 +1,45 @@
 import type { Tactic } from '../../../domain/entities/Club'
-import { TacticMentality, TacticPress, TacticWidth, TacticAttackingFocus } from '../../../domain/enums'
+import { TacticMentality, TacticPress, TacticWidth, TacticAttackingFocus, PlayerPosition } from '../../../domain/enums'
+import { FORMATIONS, type FormationType } from '../../../domain/entities/Formation'
 
 interface TacticPreviewProps {
   tacticState: Tactic
 }
 
-// Base positions as percentages of pitch (5-3-2: GK + 5 DEF + 3 MID + 2 FWD)
-const BASE: { x: number; y: number }[] = [
-  { x: 50, y: 90 },                                                                                      // 0: GK
-  { x: 12, y: 74 }, { x: 30, y: 72 }, { x: 50, y: 70 }, { x: 70, y: 72 }, { x: 88, y: 74 },           // 1-5: DEF
-  { x: 24, y: 52 }, { x: 50, y: 48 }, { x: 76, y: 52 },                                                 // 6-8: MID
-  { x: 36, y: 28 }, { x: 64, y: 28 },                                                                    // 9-10: FWD
-]
+function getBasePositions(formation: FormationType): { x: number; y: number; pos: PlayerPosition }[] {
+  const template = FORMATIONS[formation] ?? FORMATIONS['5-3-2']
+  return template.slots.map(slot => ({
+    x: slot.x,
+    y: 95 - slot.y * 0.9,  // invert: Formation 0=own goal→Preview 95(bottom), Formation 80→Preview 23(top)
+    pos: slot.position,
+  }))
+}
 
-function calcPositions(t: Tactic): { x: number; y: number }[] {
+function calcPositions(t: Tactic): { x: number; y: number; isGK: boolean }[] {
+  const formation = (t.formation ?? '5-3-2') as FormationType
+  const base = getBasePositions(formation)
+
   const yShift = t.mentality === TacticMentality.Offensive ? -8 : t.mentality === TacticMentality.Defensive ? 8 : 0
   const pressShift = t.press === TacticPress.High ? -5 : t.press === TacticPress.Low ? 5 : 0
   const wScale = t.width === TacticWidth.Wide ? 1.15 : t.width === TacticWidth.Narrow ? 0.75 : 1.0
   const af = t.attackingFocus
 
-  return BASE.map((b, i) => {
+  return base.map((b) => {
     let x = b.x
     let y = b.y
 
-    if (i === 0) return { x, y } // GK stays put
+    if (b.pos === PlayerPosition.Goalkeeper) return { x, y, isGK: true }
 
     y += yShift
-    if (i <= 5) y += pressShift // defenders shift with press
+    if (b.pos === PlayerPosition.Defender) y += pressShift
 
     x = 50 + (x - 50) * wScale
 
-    if (af === TacticAttackingFocus.Central && i >= 9) x = 50 + (x - 50) * 0.5
-    if (af === TacticAttackingFocus.Wings && i >= 9) x = 50 + (x - 50) * 1.4
-    if (af === TacticAttackingFocus.Wings && (i === 6 || i === 8)) x = 50 + (x - 50) * 1.2
+    if (af === TacticAttackingFocus.Central && b.pos === PlayerPosition.Forward) x = 50 + (x - 50) * 0.5
+    if (af === TacticAttackingFocus.Wings && b.pos === PlayerPosition.Forward) x = 50 + (x - 50) * 1.4
+    if (af === TacticAttackingFocus.Wings && b.pos === PlayerPosition.Half) x = 50 + (x - 50) * 1.2
 
-    return { x: Math.max(5, Math.min(95, x)), y: Math.max(8, Math.min(88, y)) }
+    return { x: Math.max(5, Math.min(95, x)), y: Math.max(8, Math.min(92, y)), isGK: false }
   })
 }
 
@@ -106,7 +111,7 @@ export function TacticPreview({ tacticState }: TacticPreviewProps) {
             width: 14,
             height: 14,
             borderRadius: '50%',
-            background: i === 0 ? '#5a8a4a' : 'var(--accent)',
+            background: pos.isGK ? '#5a8a4a' : 'var(--accent)',
             border: '2px solid var(--bg)',
             boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
             transition: 'all 0.4s cubic-bezier(0.25,0.46,0.45,0.94)',

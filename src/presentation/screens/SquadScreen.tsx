@@ -509,7 +509,9 @@ export function SquadScreen() {
             player={selectedPlayer}
             clubName={clubName}
             onClick={undefined}
+            currentSeason={game?.currentSeason}
             storylines={(game?.storylines ?? []).filter(s => s.playerId === selectedPlayer.id && s.resolved)}
+            onExtendContract={() => navigate('/game/transfers', { state: { tab: 'contracts', renewPlayerId: selectedPlayer.id } })}
           />
 
           {/* Karaktärsspelare badge */}

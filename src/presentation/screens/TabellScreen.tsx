@@ -514,9 +514,9 @@ export function TabellScreen() {
                   return (
                     <div key={m.fixtureId ?? `${m.round}-${m.homeClubId}`} style={{
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      padding: '6px 0', borderBottom: '1px solid var(--border)',
+                      padding: '6px 0', borderBottom: '1px solid var(--border)', gap: 8,
                     }}>
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)', minWidth: 80 }}>
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)', flexShrink: 0 }}>
                         {roundNames[m.round] ?? `Runda ${m.round}`}
                       </span>
                       <span style={{ fontSize: 12, fontWeight: 600, flex: 1 }}>

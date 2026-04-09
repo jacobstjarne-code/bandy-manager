@@ -1,17 +1,24 @@
 # SPEC: Player Arc Controller
 
-**Datum:** 9 april 2026  
+**Datum:** 9 april 2026 (uppdaterad efter Codes feature-push)  
 **Typ:** Ny feature — Code  
 **Berör:** Ny service + SaveGame entity + roundProcessor hook + presskonferens-integration  
-**Krockar INTE med:** pep-talk (separat CTA-text), dead file cleanup, transfer-inbox (inbox-notiser ≠ arc-events)
+**Bygger på:** Codes trait-vikter i match, transfer-spekulationsinkorg, derby H2H-kort, "Säsongens stunder"
+
+---
+
+## Vad Code redan gjort (rör det inte)
+
+1. **Trait-vikter i matchmotorn** — `hungrig` ×1.4 målchans, `joker` 30% ×2.8 / 70% ×0.6. Arcs rör INTE matchmotorn.
+2. **Transfer-spekulationsinkorg** — 40% chans per omgång att generera inbox-meddelande vid olöst bud. Arc-systemet bygger OVANPÅ detta.
+3. **Derby pre-match** — H2H i NextMatchCard + pre-derby inbox. Arc-systemet hanterar bara POST-match echo.
+4. **Säsongens stunder** — SeasonSummaryScreen visar 5 matchögonblick rankade efter impact. Arc-resolutioner matar IN i detta system.
 
 ---
 
 ## Sammanfattning
 
-Spelet har traits (veteran, hungrig, ledare, lokal, joker) och storylines men de kopplar inte ihop. Traits är etiketter — de genererar inga händelser, kräver inga beslut, skapar inga minnen.
-
-Arc controllern detekterar när trait + situation skapar ett narrativt tillfälle, driver det genom 2-3 beslutspunkter över 3-6 omgångar, och resolver det till en StorylineEntry som matar säsongssammanfattningen.
+Traits påverkar nu matcher (Code). Men spelaren fattar inga BESLUT kring dem. Arc controllern skapar beslutspunkter: trait + situation → 3-6 omgångars narrativ → val → konsekvens → minne.
 
 ---
 
@@ -26,20 +33,20 @@ export type ArcType =
   | 'veteran_farewell'        // Veteran med utgående kontrakt, sista säsongen?
   | 'ledare_crisis'           // Kapten/ledare under krisperiod
   | 'lokal_hero'              // Lokalhjälte som gör något stort
-  | 'contract_drama'          // Spelare med utgående kontrakt + hög form
-  | 'derby_echo'              // Post-derby efterdyningar (2 omgångar)
+  | 'contract_drama'          // Bygger på Codes transfer-spekulationsinkorg
+  | 'derby_echo'              // POST-derby efterdyningar (2 omgångar)
 
 export interface ActiveArc {
   id: string
   type: ArcType
-  playerId?: string           // de flesta arcs knutna till spelare
-  opponentClubId?: string     // derby_echo knutet till rival
+  playerId?: string
+  opponentClubId?: string     // derby_echo
   startedMatchday: number
   phase: 'building' | 'peak' | 'resolving'
   eventsFired: string[]       // event IDs redan genererade
   decisionsMade: string[]     // choice IDs spelaren valt
-  expiresMatchday: number     // auto-resolve om inget händer
-  data?: Record<string, unknown>  // arc-specifik data (t.ex. derbyresultat)
+  expiresMatchday: number
+  data?: Record<string, unknown>
 }
 ```
 
@@ -55,25 +62,23 @@ activeArcs?: ActiveArc[]
 
 ### 2.1 Trigger-detektion
 
-Körs varje omgång EFTER matchsimulering. Max 2 aktiva arcs samtidigt (annars översvämning).
+Max 2 aktiva arcs samtidigt (derby_echo undantaget). Max 1 arc per spelare.
 
 ```typescript
 export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture): ActiveArc[]
 ```
 
-**Triggerregler:**
+**Triggerregler (uppdaterade):**
 
-| Arc | Trigger | Krav |
-|-----|---------|------|
-| `hungrig_breakthrough` | Hungrig spelare, ålder ≤ 21, 3+ matcher utan mål | `trait === 'hungrig'`, ej redan aktiv arc på spelaren |
-| `joker_redemption` | Joker som fick utvisning ELLER orsakade mål emot | `trait === 'joker'`, just completed fixture har event med spelaren |
-| `veteran_farewell` | Veteran 30+ med kontrakt som går ut denna säsong | `trait === 'veteran'`, `contractUntilSeason <= currentSeason`, omgång ≥ 15 |
-| `ledare_crisis` | Ledare/kapten under förlustsvit (3+) | `trait === 'ledare'` ELLER `captainPlayerId`, standing.losses − standing.wins ≥ 3 |
-| `lokal_hero` | Lokal spelare gör mål i derby ELLER POTM i stor vinst | `trait === 'lokal'`, just completed fixture = derby + mål AV spelaren |
-| `contract_drama` | Spelare med `availability === 'contract_expiring'`, form > 65, CA > 55 | Ej character player (undvik dubblering med veteran_farewell) |
-| `derby_echo` | Just spelat derby | justCompletedFixture + `getRivalry()` ≠ null |
-
-**Begränsning:** Max 1 arc per spelare. Max 2 aktiva arcs totalt. Derby-echo räknas inte mot limiten.
+| Arc | Trigger | Relation till Codes features |
+|-----|---------|------------------------------|
+| `hungrig_breakthrough` | `trait === 'hungrig'`, ålder ≤ 21, 3+ matcher utan mål | Codes trait-vikter gör att genombrott KAN ske (×1.4), men arcs ger spelaren KONTROLL via beslut |
+| `joker_redemption` | `trait === 'joker'`, just completed fixture har utvisning/eget mål av spelaren | Codes ×2.8/×0.6 skapar dramat i matchen, arcen ger konsekvenserna mellan matcher |
+| `veteran_farewell` | `trait === 'veteran'`, 30+, kontrakt ut denna säsong, omgång ≥ 15 | Nytt — ingen överlapp |
+| `ledare_crisis` | `trait === 'ledare'` ELLER kapten, förlustsvit ≥ 3 | Nytt — ingen överlapp |
+| `lokal_hero` | `trait === 'lokal'`, mål i just spelat derby | Codes derby-kort visar H2H, arcs ger karaktären en story |
+| `contract_drama` | Codes transfer-inkorg har genererat ≥ 2 spekulationsmeddelanden om SAMMA spelare + form > 65 | **Bygger PÅ** Codes feature — triggar först när passiv drama redan existerar, eskalerar till aktiv beslutspunkt |
+| `derby_echo` | Just spelat derby (getRivalry ≠ null) | **Bara post-match.** Codes pre-match H2H + inbox hanterar uppbyggnaden. Arc = efterdyningar. |
 
 ### 2.2 Fas-progression
 
@@ -82,60 +87,86 @@ export function progressArcs(game: SaveGame, justCompletedFixture?: Fixture): {
   updatedArcs: ActiveArc[]
   newEvents: GameEvent[]
   newStorylines: StorylineEntry[]
+  newSeasonMoments: Array<{ type: string; headline: string; body: string; matchday: number; relatedPlayerId?: string }>
 }
 ```
 
-Varje arc har 3 faser:
+**NYTT vs tidigare spec:** `newSeasonMoments` — arc-resolutioner genererar moment som matas in i Codes "Säsongens stunder". Format matchar Codes befintliga storyTriggers-format.
 
-**building** (1-2 omgångar): Scensättning. Genererar ett inbox-meddelande eller en DailyBriefing-hint. Ingen beslutspunkt.
+Tre faser:
 
-**peak** (1-2 omgångar): Beslutspunkten. Genererar ett `pendingEvent` med 2-3 val. Pressfrågor triggas om journalisten matchar (befintlig storyline-aware logik i pressConferenceService).
+**building** (1-2 omgångar): DailyBriefing-hint. Inget val.
 
-**resolving** (1 omgång): Konsekvens baserad på spelarens prestationer + dina val. Genererar en StorylineEntry + inbox-meddelande.
+**peak** (1-2 omgångar): `pendingEvent` med 2-3 val. Presskonferens 40% arc-aware fråga.
 
-**Auto-resolve:** Om `expiresMatchday` passeras utan att peak nåtts, resolva tyst (ingen StorylineEntry, bara cleanup).
+**resolving** (1 omgång): Konsekvens. StorylineEntry + seasonMoment om resolution var dramatisk.
 
 ### 2.3 Arc-specifika events
 
-Varje arc-typ har event-templates. Nedan exempel — fullständig text skrivs i implementationen.
-
 #### hungrig_breakthrough
 
-- **building:** DailyBriefing: "🔥 {namn} har inte gjort mål på {N} matcher. Pressen börjar fråga."
+- **building:** DailyBriefing: "🔥 {namn} har inte gjort mål på {N} matcher. Publiken väntar."
 - **peak:** Event: "{Journalist}: Tror du fortfarande på {namn}?"
-  - Val 1: "Han får tiden han behöver" → morale +5, +15% målchans nästa 3 matcher
-  - Val 2: "Han måste leverera nu" → morale −5, +25% målchans nästa match (press)
-  - Val 3: "Vi har andra alternativ" → morale −15, bench hint
-- **resolving:** Om spelaren gör mål inom 3 omgångar → StorylineEntry `hungrig_breakthrough` + inbox "🔥 {namn} bröt isen!". Om inte → tyst resolve.
+  - Val 1: "Han får tiden han behöver" → morale +5
+  - Val 2: "Han måste leverera nu" → morale −5, form +10 (adrenalinkick)
+  - Val 3: "Vi har andra alternativ" → morale −15
+- **resolving:** Om spelaren gör mål inom 3 omgångar (Codes ×1.4 hungrig-vikt ökar sannolikheten) → StorylineEntry + seasonMoment "🔥 {namn} bröt isen". Om inte → tyst resolve.
 
 #### joker_redemption
 
-- **building:** Inbox: "📰 {journalist}: '{namn} kostar laget poäng — hur länge har tränaren tålamod?'"
+- **building:** Inbox: "📰 {journalist}: '{namn} — geni eller risk?'"
 - **peak:** Event: "Styrelsen frågar om {namn}"
-  - Val 1: "Jag tror på honom" → morale +8, joker trait kvar
-  - Val 2: "Bänka tills vidare" → morale −10, bench
-- **resolving:** Om spelaren gör något avgörande (mål/assist i nästa 3 matcher) → StorylineEntry `joker_vindicated`. Om bänkad → tyst resolve.
+  - Val 1: "Jag tror på honom" → morale +8
+  - Val 2: "Bänka tills vidare" → morale −10
+- **resolving:** Om spelaren avgör nästa match (Codes ×2.8 joker-bonus kan slå till) → StorylineEntry `joker_vindicated` + seasonMoment. Om bänkad → tyst.
 
 #### veteran_farewell
 
 - **building:** DailyBriefing: "🏅 {namn}s kontrakt går ut. {N} säsonger i klubben."
-- **peak:** Event: "Presskonferens: 'Hur ser framtiden ut för {namn}?'"
+- **peak:** Event: presskonferens: "'Hur ser framtiden ut för {namn}?'"
   - Val 1: "Han är en legend — vi förlänger" → trigger kontraktsförhandling
-  - Val 2: "Alla goda ting har ett slut" → morale −20 men ärlig
-  - Val 3: "Vi utvärderar efter säsongen" → diplomatiskt, ingen effekt
-- **resolving:** Vid säsongsslut — om förlängd: StorylineEntry `veteran_stayed`. Om inte: StorylineEntry `veteran_farewell` + emotionellt inbox-meddelande.
+  - Val 2: "Alla goda ting har ett slut" → morale −20
+  - Val 3: "Vi utvärderar efter säsongen" → ingen effekt
+- **resolving:** Vid säsongsslut — om förlängd: StorylineEntry `veteran_stayed`. Om inte: StorylineEntry `veteran_farewell` + emotionellt inbox + seasonMoment.
+
+#### ledare_crisis
+
+- **building:** Inbox: "Kaptenen har samlat spelarna till möte."
+- **peak:** Event: "Kaptenen vill prata"
+  - Val 1: "Ge honom ordet" → om lagets form > 40: morale +10 alla. Om form < 40: morale +3 (orden räcker inte).
+  - Val 2: "Jag sköter det" → morale +0, kaptenens lojalitet −2
+- **resolving:** StorylineEntry `captain_rallied_team` (redan existerande typ).
+
+#### lokal_hero
+
+- **building:** DailyBriefing: "🏠 Hela orten pratar om {namn}s derby-mål."
+- **peak:** Inbox: "📰 {lokaltidning}: '{namn} — ortens hjälte'" + communityStanding +3
+- **resolving:** Auto-resolve. seasonMoment om det var derbymål.
+
+#### contract_drama
+
+**Triggar BARA om Codes transfer-spekulationsinkorg redan genererat ≥ 2 meddelanden för samma spelare.**
+
+- **building:** Ingen extra output (Codes inkorg täcker det).
+- **peak:** Event: "{Spelare} ber om ett möte"
+  - Val 1: "Erbjud förlängning nu" → öppnar förhandling, spekulationer upphör
+  - Val 2: "Vänta till säsongsslut" → risk att spelaren tappar morale, 30% chans att rival lägger bud
+  - Val 3: "Du får gå" → morale −25, transferlista
+- **resolving:** Baserat på val + utfall → StorylineEntry + seasonMoment vid dramatisk upplösning.
 
 #### derby_echo
 
-- **building:** Direkt efter derby. communityStanding +5/−5 beroende på resultat.
-- **peak:** Inbox: "📰 {lokaltidning}: '{headline baserat på resultat}'"
-- **resolving:** Nästa omgång. fanMood-boost/dip. Om vinst: DailyBriefing refererar till det 2 omgångar. Auto-resolve.
+**Bara POST-match. Codes pre-match H2H + inbox hanterar uppbyggnaden.**
+
+- **building:** Direkt efter derby. communityStanding +5 (vinst) / −3 (förlust). fanMood +8 / −5.
+- **peak:** Inbox: "📰 {lokaltidning}: '{headline}'" — t.ex. "Derbyseger ger hela orten energi" / "Tung förlust — men nästa gång..."
+- **resolving:** Auto-resolve efter 2 omgångar. DailyBriefing refererar till derbyt en omgång efter ("Efterdyningarna av derbyt märks fortfarande").
 
 ---
 
 ## 3. Hook i roundProcessor.ts
 
-EFTER `updatedGame` byggs (ca rad 380), FÖRE `return`:
+EFTER `updateTrainerArc` och `processCommunity`, FÖRE return:
 
 ```typescript
 import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
@@ -154,93 +185,83 @@ updatedGame = {
 }
 ```
 
-**VIKTIGT:** Placera EFTER `updateTrainerArc` och EFTER `processEconomy`/`processCommunity` — arcs behöver uppdaterad standing och fanMood.
-
 ---
 
 ## 4. Presskonferens-integration
 
-I `pressConferenceService.ts`, den befintliga storyline-aware question override-sektionen (rad ~290, `if (rand() < 0.30 && storylines.length > 0)`):
-
-**Utöka** med arc-aware frågor:
+I `pressConferenceService.ts`, FÖRE befintliga storyline-aware overrides:
 
 ```typescript
-// Arc-aware press question (40% chance if active arc in peak phase)
 const peakArcs = (game.activeArcs ?? []).filter(a => a.phase === 'peak' && a.playerId)
 if (rand() < 0.40 && peakArcs.length > 0) {
   const arc = peakArcs[0]
   const arcPlayer = game.players.find(p => p.id === arc.playerId)
   if (arcPlayer) {
-    switch (arc.type) {
-      case 'hungrig_breakthrough':
-        question = { text: `${arcPlayer.firstName} ${arcPlayer.lastName} har det tungt. Tror du fortfarande på honom?`, preferIds: question.preferIds }
-        break
-      case 'joker_redemption':
-        question = { text: `${arcPlayer.firstName} ${arcPlayer.lastName} delar fansen. Kostar han mer än han ger?`, preferIds: question.preferIds }
-        break
-      case 'veteran_farewell':
-        question = { text: `Blir det här ${arcPlayer.firstName} ${arcPlayer.lastName}s sista säsong?`, preferIds: question.preferIds }
-        break
-      case 'contract_drama':
-        question = { text: `Rykten säger att ${arcPlayer.firstName} ${arcPlayer.lastName} kan lämna. Kommentar?`, preferIds: question.preferIds }
-        break
+    const arcQuestions: Partial<Record<ArcType, string>> = {
+      hungrig_breakthrough: `${arcPlayer.firstName} ${arcPlayer.lastName} har det tungt. Tror du fortfarande på honom?`,
+      joker_redemption: `${arcPlayer.firstName} ${arcPlayer.lastName} delar fansen. Kostar han mer än han ger?`,
+      veteran_farewell: `Blir det här ${arcPlayer.firstName} ${arcPlayer.lastName}s sista säsong?`,
+      contract_drama: `Rykten säger att ${arcPlayer.firstName} ${arcPlayer.lastName} kan lämna. Kommentar?`,
     }
+    const q = arcQuestions[arc.type]
+    if (q) question = { text: q, preferIds: question.preferIds }
   }
 }
 ```
-
-Placera FÖRE den befintliga `if (rand() < 0.30 && storylines.length > 0)` — arcs har prioritet.
 
 ---
 
-## 5. Säsongssammanfattning
+## 5. Säsongssammanfattning — integration med Codes "Säsongens stunder"
 
-I `seasonSummaryService.ts`, `generateStoryTriggers()`:
+**INTE ett parallellt system.** Arc-resolutioner genererar samma format som Codes befintliga stunder.
 
-Lägg till i slutet, EFTER befintliga triggers:
+I `seasonSummaryService.ts` eller var "Säsongens stunder" genereras:
+
+Efter Codes impact-rankade matchmoment, lägg till resolved arcs:
 
 ```typescript
-// Resolved arcs from this season
-const resolvedArcs = (game.storylines ?? []).filter(s =>
+const resolvedArcStories = (game.storylines ?? []).filter(s =>
   s.season === game.currentSeason &&
-  ['hungrig_breakthrough', 'joker_vindicated', 'veteran_farewell', 'veteran_stayed', 'lokal_hero_moment', 'contract_drama_resolved'].includes(s.type as string)
+  ['hungrig_breakthrough', 'joker_vindicated', 'veteran_farewell', 'veteran_stayed',
+   'lokal_hero_moment', 'captain_rallied_team'].includes(s.type as string)
 )
-for (const arc of resolvedArcs) {
-  if (triggers.length >= 6) break
-  const player = arc.playerId ? game.players.find(p => p.id === arc.playerId) : null
-  if (player) {
-    triggers.push({
-      type: 'comebackKing' as any, // reuse existing type, or add new
-      headline: arc.displayText,
-      body: arc.description,
-      relatedPlayerId: arc.playerId,
-    })
-  }
+for (const arc of resolvedArcStories) {
+  if (moments.length >= 7) break  // max 7 stunder (5 match + 2 arc)
+  moments.push({
+    type: arc.type,
+    headline: arc.displayText,
+    body: arc.description,
+    matchday: arc.matchday,
+    impact: 80,  // arcs rankas högt men under hattricks/derbysegrar
+    relatedPlayerId: arc.playerId,
+  })
 }
+// Re-sort by impact
+moments.sort((a, b) => b.impact - a.impact)
+moments = moments.slice(0, 7)
 ```
+
+**OBS:** Kolla exakt format i Codes implementation. Ovanstående är konceptuellt — anpassa fältnamn till vad Code faktiskt byggt.
 
 ---
 
 ## 6. DailyBriefing-integration
 
-I `dailyBriefingService.ts`, `generateBriefing()`:
-
-Lägg till en ny prioritet (mellan derby-check och form-check):
+I `dailyBriefingService.ts`, ny prioritet (mellan derby och form):
 
 ```typescript
-// Active arc in building phase
 const buildingArc = (game.activeArcs ?? []).find(a => a.phase === 'building' && a.playerId)
 if (buildingArc) {
   const arcPlayer = game.players.find(p => p.id === buildingArc.playerId)
   if (arcPlayer) {
-    switch (buildingArc.type) {
-      case 'hungrig_breakthrough':
-        return { text: `🔥 ${arcPlayer.firstName} ${arcPlayer.lastName} har inte gjort mål på ${buildingArc.data?.gamesWithoutGoal ?? '?'} matcher.`, navigateTo: { path: '/game/squad', state: { highlightPlayer: arcPlayer.id } } }
-      case 'veteran_farewell':
-        return { text: `🏅 ${arcPlayer.firstName} ${arcPlayer.lastName}s kontrakt går ut. ${arcPlayer.age} år och ${(arcPlayer.careerStats?.seasonsPlayed ?? 1)} säsonger i klubben.`, navigateTo: { path: '/game/squad', state: { highlightPlayer: arcPlayer.id } } }
-      case 'contract_drama':
-        return { text: `📋 ${arcPlayer.firstName} ${arcPlayer.lastName} i blåsväder. Kontraktet löper ut — flera klubbar bevakar.`, navigateTo: { path: '/game/transfers' } }
+    const texts: Partial<Record<ArcType, string>> = {
+      hungrig_breakthrough: `🔥 ${arcPlayer.firstName} ${arcPlayer.lastName} har inte gjort mål på ${buildingArc.data?.gamesWithoutGoal ?? '?'} matcher.`,
+      veteran_farewell: `🏅 ${arcPlayer.firstName} ${arcPlayer.lastName}s kontrakt går ut. ${arcPlayer.age} år i klubben.`,
+      contract_drama: `📋 ${arcPlayer.firstName} ${arcPlayer.lastName} i blåsväder — kontraktet löper ut.`,
+      lokal_hero: `🏠 Hela orten pratar om ${arcPlayer.firstName} ${arcPlayer.lastName}.`,
     }
+    const t = texts[buildingArc.type]
+    if (t) return { text: t, navigateTo: { path: '/game/squad', state: { highlightPlayer: arcPlayer.id } } }
   }
 }
 ```
@@ -249,10 +270,11 @@ if (buildingArc) {
 
 ## 7. Saker att INTE göra
 
-- **Rör inte matchmotorn.** Arcs påverkar morale och form — det räcker. Ingen "arc-aware" målgenerering.
-- **Rör inte transferService.** `contract_drama` genererar events via pendingEvents, inte via transfer-logiken. Codes transfer-inbox-arbete (InboxItemType-notiser) är separat och kompletterande.
-- **Max 2 aktiva arcs.** Mer = noise. Derby-echo är undantag (auto-resolve efter 2 omgångar).
-- **Inga nya StorylineTypes ännu.** Använd befintliga typer där det går. Om en ny typ behövs, lägg till den i Narrative.ts — men bara om den behövs för resolution.
+- **Rör inte matchmotorn.** Code har lagt trait-vikter. Arcs påverkar morale/form — det räcker.
+- **Rör inte NextMatchCard.** Code har lagt derby H2H. Arcs hanterar bara post-match.
+- **Rör inte transfer-inkorgen.** Code genererar spekulationsmeddelanden. `contract_drama` BYGGER PÅ dessa (triggar efter ≥ 2 meddelanden), ersätter dem inte.
+- **Skapa inte parallell "Stunder"-sektion.** Mata in i Codes befintliga system.
+- **Max 2 aktiva arcs + derby_echo.** Mer = noise.
 
 ---
 
@@ -269,18 +291,20 @@ Starta nytt spel. Spela 5-6 omgångar. Bekräfta:
 - [ ] Presskonferens frågar om arc-spelaren (40% chans)
 - [ ] StorylineEntry skapas vid resolution
 - [ ] Max 2 aktiva arcs (exkl derby-echo)
-- [ ] Derby-echo: communityStanding ändras, inbox-meddelande, auto-resolve
+- [ ] derby_echo: communityStanding ändras, fanMood ändras, inbox, auto-resolve efter 2 omgångar
+- [ ] Resolved arcs syns i "Säsongens stunder" (max 7 totalt)
+- [ ] contract_drama triggar INTE förrän Codes spekulationsinkorg genererat ≥ 2 meddelanden
 
 ---
 
 ## 9. Implementationsordning
 
-1. Entity (`ActiveArc` i Narrative.ts, `activeArcs` i SaveGame)
+1. Entity (`ActiveArc` + `ArcType` i Narrative.ts, `activeArcs` i SaveGame)
 2. `arcService.ts` — `detectArcTriggers` + `progressArcs`
-3. roundProcessor hook
+3. roundProcessor hook (efter trainer arc, före return)
 4. DailyBriefing-integration
 5. Presskonferens-integration
-6. Säsongssammanfattning-integration
+6. Säsongssammanfattning — mata in i Codes "stunder"
 7. Testa ett komplett flöde
 
 Committa per steg. `npm run build && npm test` efter varje.

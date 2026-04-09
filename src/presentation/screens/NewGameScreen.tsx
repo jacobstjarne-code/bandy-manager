@@ -177,7 +177,7 @@ export function NewGameScreen() {
             marginBottom: 24,
             maxWidth: 280,
           }}>
-            Bandyn behöver folk som dig. Tränare som trampar snö på väg till planen en tisdagskväll i november. Som vet att en hörna i 87:e kan vända allt. Som förstår att halva truppen har jobbat sedan sex på morgonen — och ändå ställer upp.
+            Bandyn behöver folk som dig. Som ställer upp en regnig tisdagkväll i december. Som vet att en hörna i 87:e kan vända allt. Som förstår att halva laget gick upp vid 6 i morse för att gå till jobbet, men ändå är redo att ge allt här och nu.
           </p>
           <input
             autoFocus

@@ -90,6 +90,13 @@ export function MatchScreen() {
   })
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
 
+  // Persist default formation to store on mount (so it's available across sessions)
+  useEffect(() => {
+    if (!managedClub?.activeTactic?.formation) {
+      updateTactic(tacticState)
+    }
+  }, [])
+
   useEffect(() => {
     const hasInvalid = startingIds.some(id => {
       const p = squadPlayers.find(pl => pl.id === id)

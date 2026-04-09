@@ -13,6 +13,7 @@ export interface PlayerCardProps {
   currentSeason?: number      // needed to calculate report age
   onClick?: () => void
   storylines?: Array<{ displayText: string; matchday?: number }>  // resolved storylines for this player
+  onExtendContract?: () => void
 }
 
 // Archetype color for badge circle
@@ -145,7 +146,7 @@ function formatMarketValue(v: number): string {
   return `${v} kr`
 }
 
-export function PlayerCard({ player, clubName, scoutReport, isOwned = true, currentSeason, onClick, storylines }: PlayerCardProps) {
+export function PlayerCard({ player, clubName, scoutReport, isOwned = true, currentSeason, onClick, storylines, onExtendContract }: PlayerCardProps) {
   const reportAge = scoutReport && currentSeason
     ? getScoutReportAge(scoutReport, currentSeason, scoutReport.scoutedSeason)
     : scoutReport ? 'fresh' : null
@@ -279,6 +280,19 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
               <span>⭐ Heltidsproffs</span>
             ) : null}
             <span>📅 Kontrakt t.o.m. {player.contractUntilSeason + 1}</span>
+            {onExtendContract && currentSeason !== undefined && player.contractUntilSeason <= currentSeason + 1 && (
+              <button
+                onClick={e => { e.stopPropagation(); onExtendContract() }}
+                style={{
+                  marginTop: 4, padding: '6px 12px', borderRadius: 8,
+                  background: 'rgba(196,122,58,0.15)', border: '1px solid rgba(196,122,58,0.4)',
+                  color: 'var(--accent)', fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                  alignSelf: 'flex-start',
+                }}
+              >
+                Förläng kontrakt →
+              </button>
+            )}
             {player.trait && (
               <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.4, marginTop: 2 }}>
                 {player.trait === 'hungrig' && `🔥 ${player.seasonStats.goals} mål på ${player.seasonStats.gamesPlayed} matcher${player.startSeasonCA && player.currentAbility > player.startSeasonCA ? `, CA +${Math.round(player.currentAbility - player.startSeasonCA)} denna säsong` : ''}`}
@@ -409,7 +423,7 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
             )}
           </div>
         ) : (
-          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Inga matcher spelat</p>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Har inte spelat några matcher än</p>
         )}
         {isOwned && (player.caHistory ?? []).length >= 1 && (
           <CaSparkline history={player.caHistory ?? []} currentCa={player.currentAbility} />

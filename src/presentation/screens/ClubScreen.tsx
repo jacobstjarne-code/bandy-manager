@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useManagedClub, useGameStore } from '../store/gameStore'
 import { TrainingType, TrainingIntensity } from '../../domain/enums'
@@ -30,6 +30,7 @@ export function ClubScreen() {
   const setTransferBudget = useGameStore(s => s.setTransferBudget)
   const buyScoutRounds = useGameStore(s => s.buyScoutRounds)
   const interactWithPolitician = useGameStore(s => s.interactWithPolitician)
+  const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const navigate = useNavigate()
   const location = useLocation()
   const VALID_TABS: ClubTab[] = ['training', 'ekonomi', 'orten', 'akademi']
@@ -37,6 +38,8 @@ export function ClubScreen() {
   const [activeTab, setActiveTab] = useState<ClubTab>(
     rawTab && VALID_TABS.includes(rawTab as ClubTab) ? (rawTab as ClubTab) : 'training'
   )
+
+  useEffect(() => { markScreenVisited('club') }, [])
 
   if (!club || !game) return null
 

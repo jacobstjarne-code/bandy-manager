@@ -105,7 +105,7 @@ export function generateBriefing(game: SaveGame): Briefing | null {
     if (rivalry) {
       const opponentId = nextFixture.homeClubId === game.managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId
       const h = game.rivalryHistory?.[opponentId]
-      const histText = h ? `V${h.wins} O${h.draws} F${h.losses} i historiken.` : 'Historiken börjar nu.'
+      const histText = h ? `V${h.wins} O${h.draws} F${h.losses} i historiken.` : 'Historien börjar nu.'
       return { text: `🔥 Derby. ${rivalry.name}. ${histText}` }
     }
   }

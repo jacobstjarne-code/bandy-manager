@@ -39,7 +39,7 @@ function generateMatchSummary(
     if (e.playerId) {
       scorerCounts[e.playerId] = (scorerCounts[e.playerId] ?? 0) + 1
       const p = game?.players.find(pl => pl.id === e.playerId)
-      scorerNames[e.playerId] = p ? p.lastName : (e.description?.split(' ')[0] ?? 'Spelaren')
+      scorerNames[e.playerId] = p ? p.lastName : 'Okänd'
     }
   })
   const topScorerId = Object.entries(scorerCounts).sort((a, b) => b[1] - a[1])[0]
