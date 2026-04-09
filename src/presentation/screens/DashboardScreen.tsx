@@ -22,6 +22,7 @@ import { CupCard } from '../components/dashboard/CupCard'
 import { DiamondDivider } from '../components/dashboard/DiamondDivider'
 import { FormSquares } from '../components/FormDots'
 import { getManagedClubCupStatus, getCupRoundLabel } from '../../domain/services/cupService'
+import { CareerStatsCard } from '../components/dashboard/CareerStatsCard'
 
 
 const NAV_BTN: React.CSSProperties = {
@@ -270,14 +271,6 @@ export function DashboardScreen() {
   const showExpandedCup = !!(game.cupBracket && !cupEliminated && nextCupFixture)
 
   // ── Trainer arc ────────────────────────────────────────────────
-  const moodTexts: Record<string, string> = {
-    honeymoon: '☀️ Allt stämmer just nu',
-    questioned: '⛅ Media ställer frågor',
-    crisis: '⛈️ Styrelsen är orolig',
-    redemption: '🌤️ Vändningen har börjat',
-    legendary: '👑 Legendstatus',
-  }
-  const arcMood = game.trainerArc ? moodTexts[game.trainerArc.current] : null
 
   // ── Render ─────────────────────────────────────────────────────
 
@@ -561,7 +554,10 @@ export function DashboardScreen() {
           </div>
         ) : null}
 
-        {/* ⑥ CTA-SEKTION */}
+        {/* ⑥ TRÄNARKARRIÄR */}
+        <CareerStatsCard game={game} />
+
+        {/* ⑦ CTA-SEKTION */}
         <div style={{ margin: '8px 0 0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, padding: '0 2px' }}>
             <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{currentDateStr}</span>
@@ -570,12 +566,6 @@ export function DashboardScreen() {
             )}
           </div>
           <DiamondDivider />
-
-          {arcMood && (
-            <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', margin: '0 0 6px' }}>
-              {arcMood}
-            </p>
-          )}
 
           {canSimulateRemaining && (
             <button onClick={handleSimulateRemaining} className="btn btn-ghost" style={{ width: '100%', marginBottom: 8, justifyContent: 'center' }}>

@@ -1,6 +1,6 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../../domain/entities/Fixture'
-import { FixtureStatus, PlayoffStatus, InboxItemType } from '../../../domain/enums'
+import { FixtureStatus, PlayoffStatus } from '../../../domain/enums'
 import { calculateStandings } from '../../../domain/services/standingsService'
 import { updateCupBracketAfterRound } from '../../../domain/services/cupService'
 import { updateSeriesAfterMatch, advancePlayoffRound } from '../../../domain/services/playoffService'
@@ -97,26 +97,6 @@ export function matchActions(get: Get, set: Set) {
       }
 
       set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings, cupBracket: updatedCupBracket, playoffBracket: updatedPlayoffBracket } })
-    },
-
-    applyPressChoice: (moraleEffect: number, mediaQuote: string) => {
-      const { game } = get()
-      if (!game) return
-      const updatedPlayers = game.players.map(p =>
-        p.clubId === game.managedClubId
-          ? { ...p, morale: Math.max(0, Math.min(100, p.morale + moraleEffect)) }
-          : p
-      )
-      const personalizedQuote = mediaQuote.replace(/tränaren/gi, game.managerName)
-      const inboxItem = {
-        id: `inbox_press_live_${Date.now()}`,
-        date: game.currentDate,
-        type: InboxItemType.Media,
-        title: `📰 ${personalizedQuote}`,
-        body: '',
-        isRead: false,
-      }
-      set({ game: { ...game, players: updatedPlayers, inbox: [...game.inbox, inboxItem] } })
     },
   }
 }

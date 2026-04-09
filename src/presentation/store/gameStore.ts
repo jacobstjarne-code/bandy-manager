@@ -75,7 +75,6 @@ interface GameState {
   startTrainingProject: (type: string, intensity: 'normal' | 'hard') => { success: boolean; error?: string }
   cancelTrainingProject: (projectId: string) => void
   seekSponsor: () => { success: boolean; sponsor?: Sponsor; error?: string }
-  applyPressChoice: (moraleEffect: number, mediaQuote: string) => void
   simulateRemainingStep: () => AdvanceResult | null
   clearRoundSummary: () => void
   markScreenVisited: (screen: string) => void
