@@ -4,7 +4,7 @@ import { MatchEventType, PlayerPosition, PlayerArchetype, WeatherCondition } fro
 import { evaluateSquad } from './squadEvaluator'
 import { getTacticModifiers } from './tacticModifiers'
 import { mulberry32 } from '../utils/random'
-import { commentary, fillTemplate, pickCommentary } from '../data/matchCommentary'
+import { commentary, fillTemplate, pickCommentary, getTraitCommentary } from '../data/matchCommentary'
 import { getConditionLabel, getIceQualityLabel } from './weatherService'
 import {
   clamp, randRange, weightedPick, pickWeightedPlayer,
@@ -1123,6 +1123,11 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
         const otherTeamScore = isHomeAttacking ? awayScore : homeScore
         commentaryText = fillTemplate(pickGoalCommentary(scoringTeamScore, otherTeamScore, rand, minute), templateVars)
       }
+      // Trait override (50% chance)
+      if (scorerPlayerId && rand() < 0.5) {
+        const traitComment = getTraitCommentary(scorerPlayerId, 'goal', allPlayers)
+        if (traitComment) commentaryText = traitComment
+      }
     } else if (saveOccurred && gkPlayerId) {
       templateVars = { ...templateVars, goalkeeper: findPlayerName(gkPlayerId) }
       commentaryText = fillTemplate(pickCommentary(commentary.save, rand), templateVars)
@@ -1133,6 +1138,11 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
         isDerbyStep = true
       } else {
         commentaryText = fillTemplate(pickCommentary(commentary.suspension, rand), templateVars)
+      }
+      // Trait override (50% chance)
+      if (rand() < 0.5) {
+        const traitComment = getTraitCommentary(suspendedPlayerId, 'suspension', allPlayers)
+        if (traitComment) commentaryText = traitComment
       }
     } else if (cornerOccurred && !goalScored) {
       commentaryText = fillTemplate(pickCommentary(commentary.corner, rand), templateVars)

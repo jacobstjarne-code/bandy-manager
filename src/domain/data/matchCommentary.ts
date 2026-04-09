@@ -1,3 +1,5 @@
+import type { Player } from '../entities/Player'
+
 export type CommentaryTemplate = string
 
 export const commentary = {
@@ -406,4 +408,65 @@ export function fillTemplate(template: string, vars: Record<string, string>): st
 // Pick a random item from an array deterministically
 export function pickCommentary(arr: CommentaryTemplate[], rng: () => number): CommentaryTemplate {
   return arr[Math.floor(rng() * arr.length)]
+}
+
+export function getTraitCommentary(
+  playerId: string,
+  eventType: 'goal' | 'assist' | 'suspension',
+  players: Player[],
+): string | null {
+  const player = players.find(p => p.id === playerId)
+  if (!player?.trait) return null
+
+  const name = player.lastName
+
+  const traitGoals: Record<string, string[]> = {
+    hungrig: [
+      `Den hungriga forwarden bryter igenom! ${name} har väntat på det här.`,
+      `${name} ger sig aldrig. Hungern driver honom framåt.`,
+      `Där satt den! ${name} har jagat det här målet i veckor.`,
+    ],
+    joker: [
+      `${name} ur ingenstans! Oförutsägbar som alltid.`,
+      `Geni eller galenskap? ${name} bestämde sig för geni ikväll.`,
+      `Ingen visste vad ${name} tänkte — inte ens han själv. Men bollen gick in.`,
+    ],
+    veteran: [
+      `Rutin i avgörande läge. ${name} har gjort det här hundra gånger.`,
+      `${name} med den gamla vanliga. Klass är permanent.`,
+      `Veteranen levererar. ${name} visar vägen.`,
+    ],
+    lokal: [
+      `Hela orten jublar! ${name} — en av deras egna.`,
+      `Lokalhjälten ${name}! Det kan inte bli bättre på hemmaplan.`,
+      `${name} med ett mål som orten kommer prata om länge.`,
+    ],
+    ledare: [
+      `Kaptenen kliver fram! ${name} tar ansvar när det behövs.`,
+      `${name} leder med handling, inte bara armband.`,
+      `Ledaren ${name} visar att ord inte räcker — det krävs mål.`,
+    ],
+  }
+
+  const traitSuspensions: Record<string, string[]> = {
+    joker: [
+      `${name} gör det igen. Briljant ena sekunden, utvisad nästa.`,
+      `10 minuter utanför. ${name}s temperament kostar laget.`,
+    ],
+    hungrig: [
+      `Frustrationen kokar över. ${name} åker ut efter en onödig tackling.`,
+    ],
+  }
+
+  if (eventType === 'goal') {
+    const pool = traitGoals[player.trait]
+    if (!pool) return null
+    return pool[Math.floor(Math.random() * pool.length)]
+  }
+  if (eventType === 'suspension') {
+    const pool = traitSuspensions[player.trait]
+    if (!pool) return null
+    return pool[Math.floor(Math.random() * pool.length)]
+  }
+  return null
 }
