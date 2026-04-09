@@ -523,7 +523,7 @@ export function DashboardScreen() {
             </div>
           </div>
         ) : game.cupBracket && !showExpandedCup ? (
-          <div className="card-sharp" style={{ margin: '0 0 4px', cursor: 'pointer' }} onClick={() => navigate('/game/tabell')}>
+          <div className="card-sharp" style={{ margin: '0 0 4px', cursor: 'pointer' }} onClick={() => navigate('/game/tabell', { state: { tab: 'cupen' } })}>
             <div style={{ padding: '7px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ ...LABEL }}>🏆 Cupen</span>
