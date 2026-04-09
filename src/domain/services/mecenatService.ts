@@ -49,6 +49,37 @@ const YOUNG_FEMALE = ['Sara', 'Emma', 'Malin', 'Anna', 'Elin']
 
 const PERSONALITIES: MecenatPersonality[] = ['tyst_kraft', 'showman', 'kalkylator', 'nostalgiker', 'kontrollfreak', 'filantropen']
 
+const BACKSTORIES: Record<MecenatType, { male: string[]; female: string[] }> = {
+  brukspatron: {
+    male: ['Tredje generationens bruksägare. Farfadern grundade sågverket.', 'Köpte bruket vid konkursen 2008. Vände det på tre år.'],
+    female: ['Tog över efter fadern. Moderniserade hela produktionslinjen.', 'Skogsbolagets VD sedan 15 år. Känd för att hålla vad hon lovar.'],
+  },
+  skogsägare: {
+    male: ['Äger 800 hektar skog norr om orten. Jagar älg varje höst.', 'Skogsmaskinsentreprenör som blev markägare. Pragmatisk.'],
+    female: ['Ärvde skogen av mormodern. Driver den som ett modernt företag.', 'Biolog som blev skogsägare. Kombinerar naturvård med avverkning.'],
+  },
+  it_miljonär: {
+    male: ['Sålde sin startup för 40 miljoner. Flyttade hem till orten.', 'Techbolag i Stockholm men hjärtat är kvar här.'],
+    female: ['Grundade en SaaS-firma i garaget. Nu 30 anställda.', 'Lämnade Google för att bygga något eget. Tillbaka i bygden.'],
+  },
+  entrepreneur: {
+    male: ['Äger tre bilhallar i länet. Sponsrar allt som rör sig.', 'Startade som lärling. Nu största byggfirman i kommunen.'],
+    female: ['Driver regionens största eventbyrå. Vet hur man skapar stämning.', 'Från bageri till restaurangkedja. Affärssinne i blodet.'],
+  },
+  fastigheter: {
+    male: ['Äger halva centrumkvarteret. Tyst men inflytelserik.', 'Byggde 200 lägenheter under 2010-talet. Kommunens största hyresvärd.'],
+    female: ['Fastighetsmäklare som blev investerare. Känner varje hus i orten.', 'Arkitekt som blev byggherre. Formger ortens framtid.'],
+  },
+  lokal_handlare: {
+    male: ['Tredje generationens ICA-handlare. Alla i orten känner honom.', 'Öppnade Handlarn när alla sa att det var omöjligt. Finns kvar.'],
+    female: ['Driver ortens enda mataffär. Navet i bygden.', 'Tog över butiken från föräldrarna. Moderniserade och expanderade.'],
+  },
+  jordbrukare: {
+    male: ['Mjölkbonde med 120 kor. Sponsrar P19 sedan 2018.', 'Spannmålsodlare som diversifierade. Nu också vindkraft.'],
+    female: ['Driver ekologiskt jordbruk. Säljer direkt till restauranger i stan.', 'Mjölkbonde i tredje generationen. Envis och rak.'],
+  },
+}
+
 // ── Generate a mecenat ──────────────────────────────────────────────────
 
 export function generateMecenat(
@@ -61,7 +92,7 @@ export function generateMecenat(
   const template = templates[Math.floor(rand() * templates.length)]
   const business = template.businesses[Math.floor(rand() * template.businesses.length)]
   const personality = PERSONALITIES[Math.floor(rand() * PERSONALITIES.length)]
-  const isFemale = rand() < 0.3
+  const isFemale = rand() < 0.5
   const isYoung = template.type === 'it_miljonär' && rand() < 0.5
 
   const firstName = isYoung
@@ -77,6 +108,8 @@ export function generateMecenat(
     : 1 + Math.floor(rand() * 2)
 
   const contribution = wealth * 20000 + Math.floor(rand() * 20000)
+  const backstoryPool = BACKSTORIES[template.type]?.[isFemale ? 'female' : 'male'] ?? []
+  const backstory = backstoryPool[Math.floor(rand() * backstoryPool.length)] ?? ''
 
   return {
     id: `mecenat_${firstName.toLowerCase()}_${season}`,
@@ -96,6 +129,7 @@ export function generateMecenat(
     isActive: true,
     arrivedSeason: season,
     silentShout: 0,
+    backstory: backstory || undefined,
   }
 }
 

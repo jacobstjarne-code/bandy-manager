@@ -50,4 +50,5 @@ export interface Mecenat {
   silentShout: number
   lastSocialRound?: number
   lastInteractionRound?: number
+  backstory?: string
 }
