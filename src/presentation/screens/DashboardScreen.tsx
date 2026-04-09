@@ -195,13 +195,13 @@ export function DashboardScreen() {
   const injuredCount = squadPlayers.filter(p => p.isInjured).length
   const expiringPlayer = squadPlayers.find(p => p.contractUntilSeason <= game.currentSeason + 1)
 
-  const nudges: { text: string; screen: string; done: boolean; color: 'red' | 'yellow' | 'green' }[] = []
+  const nudges: { text: string; screen: string; state?: Record<string, unknown>; done: boolean; color: 'red' | 'yellow' | 'green' }[] = []
   if (injuredCount > 0) nudges.push({ text: `Kontrollera truppen (${injuredCount} skadad${injuredCount > 1 ? 'e' : ''})`, screen: 'squad', done: visited.includes('squad'), color: 'red' })
-  if (expiringPlayer && nudges.length < 3) nudges.push({ text: `Förläng kontrakt: ${expiringPlayer.firstName} ${expiringPlayer.lastName}`, screen: 'transfers', done: visited.includes('transfers'), color: 'red' })
+  if (expiringPlayer && nudges.length < 3) nudges.push({ text: `Förläng kontrakt: ${expiringPlayer.firstName} ${expiringPlayer.lastName}`, screen: 'squad', done: visited.includes('squad'), color: 'red' })
   const atRisk = (game.boardObjectives ?? []).find(o => o.status === 'at_risk')
   const active = (game.boardObjectives ?? []).find(o => o.status === 'active')
   const obj = atRisk ?? active
-  if (obj && nudges.length < 3) nudges.push({ text: `Styrelseuppdrag: ${obj.label}`, screen: 'club', done: visited.includes('club'), color: atRisk ? 'red' : 'yellow' })
+  if (obj && nudges.length < 3) nudges.push({ text: `Styrelseuppdrag: ${obj.label}`, screen: 'club', state: { tab: 'orten' }, done: visited.includes('club'), color: atRisk ? 'red' : 'yellow' })
   const doneCount = nudges.filter(n => n.done).length
 
   // ── Ekonomi data ───────────────────────────────────────────────
@@ -227,6 +227,13 @@ export function DashboardScreen() {
   const readyCount = Math.max(0, squadPlayers.length - injuredCount)
   const avgForm = squadPlayers.length > 0 ? Math.round(squadPlayers.reduce((s, p) => s + p.form, 0) / squadPlayers.length) : 0
   const avgFitness = squadPlayers.length > 0 ? Math.round(squadPlayers.reduce((s, p) => s + (p.fitness ?? 75), 0) / squadPlayers.length) : 0
+
+  // ── Cup visibility ─────────────────────────────────────────────
+  const nextCupFixture = game.fixtures.find(f =>
+    f.isCup && f.status === 'scheduled' &&
+    (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+  )
+  const showExpandedCup = !!(game.cupBracket && nextCupFixture)
 
   // ── Trainer arc ────────────────────────────────────────────────
   const moodTexts: Record<string, string> = {
@@ -276,13 +283,13 @@ export function DashboardScreen() {
         {nudges.length > 0 && (
           <div style={{ margin: '0 0 6px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2px', marginBottom: 4 }}>
-              <span style={{ ...LABEL }}>Inför matchen</span>
+              <span style={{ ...LABEL }}>Att göra</span>
               <span style={{ fontSize: 8, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{doneCount} av {nudges.length} klart</span>
             </div>
             {nudges.map((n, i) => (
               <div
                 key={i}
-                onClick={() => !n.done && navigate(`/game/${n.screen}`)}
+                onClick={() => !n.done && navigate(`/game/${n.screen}`, n.state ? { state: n.state } : undefined)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
                   padding: '7px 10px', borderRadius: 8,
@@ -449,17 +456,11 @@ export function DashboardScreen() {
               <button style={NAV_BTN}>›</button>
             </div>
           </div>
-        ) : game.cupBracket ? (
+        ) : game.cupBracket && !showExpandedCup ? (
           <div className="card-sharp" style={{ margin: '0 0 4px', cursor: 'pointer' }} onClick={() => navigate('/game/tabell')}>
             <div style={{ padding: '7px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ ...LABEL }}>🏆 Cupen</span>
-                {nextFixture?.isCup && (() => {
-                  const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id)
-                  const cupRound = cupMatch?.round ?? 1
-                  const label = cupRound === 1 ? 'Förstarunda' : cupRound === 2 ? 'Kvartsfinal' : cupRound === 3 ? 'Semifinal' : 'Final'
-                  return <span style={{ fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--font-body)' }}>{label} ›</span>
-                })()}
               </div>
               <button style={NAV_BTN}>›</button>
             </div>
@@ -486,9 +487,9 @@ export function DashboardScreen() {
           <div style={{ margin: '0 0 6px' }}>
             <PlayoffBracketCard bracket={playoffInfo} game={game} />
           </div>
-        ) : game.cupBracket ? (
+        ) : showExpandedCup ? (
           <div style={{ margin: '0 0 6px' }}>
-            <CupCard bracket={game.cupBracket} game={game} />
+            <CupCard bracket={game.cupBracket!} game={game} />
           </div>
         ) : null}
 

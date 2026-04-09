@@ -16,6 +16,19 @@ interface CommentaryFeedProps {
   fixture: Fixture
   game: SaveGame | null
   feedRef: RefObject<HTMLDivElement | null>
+  matchDone?: boolean
+  managedIsHome?: boolean
+  onNavigateToReview?: () => void
+}
+
+function generateMatchSummary(home: number, away: number, managedIsHome: boolean): string {
+  const myScore = managedIsHome ? home : away
+  const theirScore = managedIsHome ? away : home
+  if (myScore > theirScore + 2) return 'Dominant insats. Tre poäng utan diskussion.'
+  if (myScore > theirScore) return 'Tre viktiga poäng. Bra insats av laget.'
+  if (myScore === theirScore) return 'Rättvis poängdelning. Båda lagen hade sina chanser.'
+  if (myScore < theirScore - 2) return 'Tung dag. Mycket att jobba på inför nästa match.'
+  return 'Snävt. Det kunde gått åt båda hållen.'
 }
 
 export function CommentaryFeed({
@@ -26,6 +39,9 @@ export function CommentaryFeed({
   fixture,
   game,
   feedRef,
+  matchDone,
+  managedIsHome,
+  onNavigateToReview,
 }: CommentaryFeedProps) {
   const background = (() => {
     if (!currentMatchStep) return undefined
@@ -58,6 +74,39 @@ export function CommentaryFeed({
       }}
     >
       {matchWeather?.weather.condition === WeatherCondition.HeavySnow && <SnowOverlay />}
+      {matchDone && (() => {
+        const lastStep = displayedSteps[displayedSteps.length - 1]
+        const home = lastStep?.homeScore ?? 0
+        const away = lastStep?.awayScore ?? 0
+        const summary = generateMatchSummary(home, away, managedIsHome ?? false)
+        return (
+          <div style={{ padding: '0 12px 8px' }}>
+            <div style={{
+              padding: '12px 16px', textAlign: 'center',
+              borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)',
+              margin: '8px 0',
+            }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                Domaren blåser av!
+              </p>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, margin: '4px 0 0' }}>
+                {summary}
+              </p>
+            </div>
+            <button
+              onClick={onNavigateToReview}
+              style={{
+                width: '100%', padding: '14px', margin: '8px 0',
+                background: 'var(--accent)', color: 'var(--bg)',
+                border: 'none', borderRadius: 0, fontSize: 15, fontWeight: 700,
+                cursor: 'pointer', letterSpacing: '0.02em',
+              }}
+            >
+              Se resultat →
+            </button>
+          </div>
+        )
+      })()}
       {[...displayedSteps].reverse().flatMap((s, idx) => {
         const hasGoal = s.events.some(e => e.type === MatchEventType.Goal)
         const hasSuspension = s.events.some(e => e.type === MatchEventType.RedCard)

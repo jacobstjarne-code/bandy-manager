@@ -341,7 +341,7 @@ export function GranskaScreen() {
               {otherResults.map(f => {
                 const relevant = isRelevantFixture(f)
                 return (
-                  <div key={f.id} style={{ display: 'flex', alignItems: 'center', padding: '3px 0 3px 6px', borderLeft: relevant ? '2px solid var(--accent)' : '2px solid transparent' }}>
+                  <div key={f.id} style={{ display: 'flex', alignItems: 'center', padding: '3px 0' }}>
                     <span style={{ flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: relevant ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: relevant ? 600 : 400 }}>{getClubShort(f.homeClubId)}</span>
                     <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', width: 40, textAlign: 'center', flexShrink: 0 }}>{f.homeScore}–{f.awayScore}</span>
                     <span style={{ flex: 1, fontSize: 11, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: relevant ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: relevant ? 600 : 400 }}>{getClubShort(f.awayClubId)}</span>
@@ -368,7 +368,7 @@ export function GranskaScreen() {
             className="btn btn-ghost"
             style={{ width: '100%', padding: '11px', justifyContent: 'center', fontSize: 13 }}
           >
-            Se fullständig rapport →
+            Se fullständig matchrapport →
           </button>
         )}
         <button onClick={handleContinue} className="texture-leather" style={{

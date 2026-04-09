@@ -273,16 +273,16 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
               </p>
               {available.map(proj => (
                 <div key={proj.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 12, fontWeight: 600 }}>{proj.name}</p>
-                    <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                  <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{proj.name}</p>
+                    <p style={{ fontSize: 10, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {proj.description} · {Math.round(proj.cost / 1000)} tkr · {proj.duration} omg
                     </p>
                   </div>
                   <button
                     className="btn btn-ghost"
                     disabled={club.finances < proj.cost}
-                    style={{ padding: '5px 10px', fontSize: 11, opacity: club.finances < proj.cost ? 0.5 : 1 }}
+                    style={{ padding: '5px 10px', fontSize: 11, opacity: club.finances < proj.cost ? 0.5 : 1, flexShrink: 0 }}
                     onClick={() => {
                       if (!startFacilityProject) return
                       startFacilityProject(proj.id)

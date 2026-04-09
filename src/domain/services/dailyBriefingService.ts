@@ -5,6 +5,7 @@ import { FixtureStatus } from '../enums'
 
 export interface Briefing {
   text: string
+  navigateTo?: { path: string; state?: Record<string, unknown> }
 }
 
 function getNextManagedFixture(game: SaveGame) {
@@ -36,7 +37,7 @@ function findAcademyProspect(game: SaveGame): { name: string; ca: number } | nul
   const youth = game.youthTeam
   if (!youth?.players?.length) return null
   const top = youth.players
-    .filter(p => p.currentAbility >= 18)
+    .filter(p => p.currentAbility >= 35)
     .sort((a, b) => b.currentAbility - a.currentAbility)[0]
   if (!top) return null
   return { name: `${top.firstName} ${top.lastName}`, ca: top.currentAbility }
@@ -100,7 +101,10 @@ export function generateBriefing(game: SaveGame): Briefing | null {
   // 4. Akademispelare hög CA
   const prospect = findAcademyProspect(game)
   if (prospect) {
-    return { text: `🎓 ${prospect.name} (P19) visar A-lagsklass. Styrka ${prospect.ca}.` }
+    return {
+      text: `🎓 ${prospect.name} (P19) börjar visa A-lagsklass — befordra?`,
+      navigateTo: { path: '/game/club', state: { tab: 'akademi' } },
+    }
   }
 
   // 5. Transferfönster nära

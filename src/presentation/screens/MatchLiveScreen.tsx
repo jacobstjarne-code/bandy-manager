@@ -12,7 +12,6 @@ import { playSound, isMuted, toggleMute } from '../audio/soundEffects'
 import { PhaseOverlay } from '../components/match/PhaseOverlay'
 import { FinalIntroScreen } from '../components/match/FinalIntroScreen'
 import { HalftimeModal } from '../components/match/HalftimeModal'
-import { MatchDoneOverlay } from '../components/match/MatchDoneOverlay'
 import { CeremonyCupFinal } from '../components/match/CeremonyCupFinal'
 import { CeremonySmFinal } from '../components/match/CeremonySmFinal'
 import { SubstitutionModal } from '../components/match/SubstitutionModal'
@@ -175,10 +174,11 @@ export function MatchLiveScreen() {
   }, [matchDone]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    if (matchDone) return
     requestAnimationFrame(() => {
       feedRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
     })
-  }, [currentStep])
+  }, [currentStep, matchDone])
 
   useEffect(() => {
     if (currentStep < 0 || currentStep >= steps.length) return
@@ -460,6 +460,9 @@ export function MatchLiveScreen() {
         fixture={fixture}
         game={game}
         feedRef={feedRef}
+        matchDone={matchDone && !isSmFinal && !isCupFinal}
+        managedIsHome={managedIsHomeForSubs}
+        onNavigateToReview={() => navigate('/game/review', { replace: true })}
       />
 
       {showHalftime && !matchDone && (
@@ -494,21 +497,6 @@ export function MatchLiveScreen() {
       {showOvertimeOverlay && <PhaseOverlay phase="overtime" />}
       {showPenaltiesOverlay && <PhaseOverlay phase="penalties" />}
 
-      {matchDone && !isSmFinal && !isCupFinal && (
-        <MatchDoneOverlay
-          fixture={fixture}
-          homeClubName={homeClubName}
-          awayClubName={awayClubName}
-          homeScore={homeScore}
-          awayScore={awayScore}
-          homeLineup={homeLineup}
-          awayLineup={awayLineup}
-          steps={steps}
-          managedClubId={game?.managedClubId}
-          players={game?.players ?? []}
-          onContinue={() => { navigate('/game/review', { replace: true }) }}
-        />
-      )}
 
       {!isSmFinal && isCupFinal && ceremonySlide >= 1 && (
         <CeremonyCupFinal
