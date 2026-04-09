@@ -194,7 +194,7 @@ export function GameHeader() {
               { section: '⚙️ Tips' },
               { q: 'Träning', a: 'Välj fokus (fysik, teknik, taktik) och intensitet. Hård träning ger snabbare utveckling men högre skaderisk. Träningsprojekt ger riktade lyft.' },
               { q: 'Styrelsen', a: 'Styrelsen sätter säsongsmål. Resultat under förväntan sänker tålamodet. Uppfyll mål för att behålla jobbet och få bättre budget.' },
-              { q: 'Spara ofta', a: 'Spara via kugghjulet uppe till höger. Spelet autosparar inte — en missad sparning kan kosta en hel säsong.' },
+              { q: 'Autospar', a: 'Spelet sparar automatiskt efter varje omgång. Du kan också spara manuellt via kugghjulet uppe till höger.' },
             ].map((item, i) => (
               'section' in item && item.section ? (
                 <p key={i} style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1px', color: 'var(--accent)', marginTop: i > 0 ? 16 : 0, marginBottom: 8, fontFamily: 'var(--font-display)' }}>
