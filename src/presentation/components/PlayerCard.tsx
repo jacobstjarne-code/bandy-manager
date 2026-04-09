@@ -12,7 +12,7 @@ export interface PlayerCardProps {
   isOwned?: boolean           // true = managed club player (show real attributes)
   currentSeason?: number      // needed to calculate report age
   onClick?: () => void
-  storylines?: Array<{ displayText: string }>  // resolved storylines for this player
+  storylines?: Array<{ displayText: string; matchday?: number }>  // resolved storylines for this player
 }
 
 // Archetype color for badge circle
@@ -279,10 +279,14 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
               <span>⭐ Heltidsproffs</span>
             ) : null}
             <span>📅 Kontrakt t.o.m. {player.contractUntilSeason + 1}</span>
-            {(storylines ?? []).length > 0 && (
-              <span style={{ fontStyle: 'italic', color: 'var(--accent)', marginTop: 2 }}>
-                📖 {storylines![0].displayText}
-              </span>
+            {player.trait && (
+              <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.4, marginTop: 2 }}>
+                {player.trait === 'hungrig' && `🔥 ${player.seasonStats.goals} mål på ${player.seasonStats.gamesPlayed} matcher${player.startSeasonCA && player.currentAbility > player.startSeasonCA ? `, CA +${Math.round(player.currentAbility - player.startSeasonCA)} denna säsong` : ''}`}
+                {player.trait === 'veteran' && `🏅 ${(player.careerStats?.seasonsPlayed ?? 1)} säsonger i karriären.${player.contractUntilSeason <= (currentSeason ?? 0) ? ' Kontraktet löper ut.' : ''}`}
+                {player.trait === 'joker' && `🎭 Oförutsägbar. ${player.seasonStats.goals} mål och ${player.seasonStats.suspensions} utvisningar.`}
+                {player.trait === 'lokal' && `🏘️ Född och uppvuxen här. Publiken älskar honom.`}
+                {player.trait === 'ledare' && `🦁 Lagets ansikte utåt. ${player.seasonStats.gamesPlayed} matcher som ledare.`}
+              </p>
             )}
           </div>
         </div>
@@ -427,6 +431,37 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
             ))}
           </div>
         )}
+        {/* Säsongens händelser */}
+        {isOwned && (() => {
+          const events: Array<{ round: number; text: string; icon: string }> = []
+          for (const m of player.careerMilestones ?? []) {
+            if (currentSeason !== undefined && m.season !== currentSeason) continue
+            if (m.type === 'debutGoal') events.push({ round: m.round, text: 'Första A-lagsmålet', icon: '⚡' })
+            if (m.type === 'hatTrick') events.push({ round: m.round, text: 'Hattrick', icon: '🎩' })
+            if (m.type === 'games100') events.push({ round: m.round, text: '100 A-lagsmatcher', icon: '🏅' })
+          }
+          for (const s of storylines ?? []) {
+            events.push({ round: s.matchday ?? 99, text: s.displayText, icon: '📖' })
+          }
+          if (events.length === 0) return null
+          events.sort((a, b) => a.round - b.round)
+          return (
+            <div style={{ padding: '0 14px 12px', marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 8 }}>
+                📖 DENNA SÄSONG
+              </p>
+              {events.slice(0, 4).map((e, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '4px 0', borderBottom: i < events.length - 1 ? '1px solid var(--border)' : 'none',
+                }}>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', minWidth: 28 }}>Omg {e.round}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{e.icon} {e.text}</span>
+                </div>
+              ))}
+            </div>
+          )
+        })()}
         </>}
       </div>
     </div>
