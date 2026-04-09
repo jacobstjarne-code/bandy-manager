@@ -103,18 +103,10 @@ export function GranskaScreen() {
   const pendingEvents = game.pendingEvents ?? []
 
   function handleChoice(eventId: string, choiceId: string, choiceLabel: string) {
-    console.log('[GranskaScreen] handleChoice:', { eventId, choiceId, choiceLabel })
-    const event = pendingEvents.find(e => e.id === eventId)
-    console.log('[GranskaScreen] event type:', event?.type, 'choices:', event?.choices?.length)
     playSound('click')
     setResolvedEventIds(prev => new Set([...prev, eventId]))
     setChosenLabels(prev => ({ ...prev, [eventId]: choiceLabel }))
-    try {
-      resolveEvent(eventId, choiceId)
-      console.log('[GranskaScreen] resolveEvent succeeded')
-    } catch (err) {
-      console.error('[GranskaScreen] resolveEvent CRASHED:', err)
-    }
+    setTimeout(() => resolveEvent(eventId, choiceId), 600)
   }
 
   function handleContinue() {
@@ -251,6 +243,7 @@ export function GranskaScreen() {
                           key={choice.id}
                           onClick={() => handleChoice(event.id, choice.id, choice.label)}
                           style={{
+                            position: 'relative', zIndex: 1,
                             width: '100%', padding: '12px 14px', borderRadius: 10,
                             fontSize: 13, fontWeight: 600, textAlign: 'left', cursor: 'pointer',
                             ...choiceStyle(choice.id),
