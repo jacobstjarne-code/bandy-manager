@@ -6,9 +6,88 @@ import { MatchEventType } from '../../domain/enums'
 import { csColor, formatFinance } from '../utils/formatters'
 import { FixtureStatus } from '../../domain/enums'
 import type { EventChoice } from '../../domain/entities/GameEvent'
+import type { Fixture } from '../../domain/entities/Fixture'
+import type { Player } from '../../domain/entities/Player'
 
 function choiceStyle(_choiceId: string): React.CSSProperties {
   return { background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)' }
+}
+
+function generateQuickSummary(fixture: Fixture, managedIsHome: boolean, players: Player[]): string {
+  const homeScore = fixture.homeScore
+  const awayScore = fixture.awayScore
+  const myScore = managedIsHome ? homeScore : awayScore
+  const theirScore = managedIsHome ? awayScore : homeScore
+  const margin = myScore - theirScore
+  const totalGoals = homeScore + awayScore
+
+  const goals = fixture.events.filter(e => e.type === MatchEventType.Goal)
+  const lateGoals = goals.filter(e => (e.minute ?? 0) >= 55)
+  const lateDecider = lateGoals.length > 0 && Math.abs(margin) <= 1
+
+  // Scorer summary
+  const scorerCounts: Record<string, number> = {}
+  const scorerNames: Record<string, string> = {}
+  goals.forEach(e => {
+    if (e.playerId) {
+      scorerCounts[e.playerId] = (scorerCounts[e.playerId] ?? 0) + 1
+      const p = players.find(pl => pl.id === e.playerId)
+      scorerNames[e.playerId] = p ? p.lastName : 'Okänd'
+    }
+  })
+  const allScorers = Object.entries(scorerCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([pid, n]) => ({ name: scorerNames[pid] ?? 'Okänd', n }))
+
+  function scorerLine(): string | null {
+    if (allScorers.length === 0) return null
+    if (allScorers.length === 1 && allScorers[0].n === 1) return `${allScorers[0].name} satte det enda målet.`
+    if (allScorers.length === 1) return `${allScorers[0].name} svarade för samtliga ${allScorers[0].n} mål.`
+    const top = allScorers[0]
+    if (top.n >= 3) return `${top.name} dominerade målprotokollen med ${top.n} mål.`
+    if (top.n === 2) return `${top.name} sköt två. Övriga: ${allScorers.slice(1).map(s => s.name).join(', ')}.`
+    return allScorers.slice(0, 4).map(s => `${s.name} (${s.n})`).join(', ') + '.'
+  }
+
+  const lines: string[] = []
+
+  if (myScore > theirScore) {
+    if (margin >= 4) {
+      lines.push(`Stormatch. ${myScore}–${theirScore} och det var aldrig i närheten av en dramatisk avslutning.`)
+      if (totalGoals >= 10) lines.push(`${totalGoals} mål totalt — publiken fick valuta för pengarna.`)
+    } else if (margin >= 2) {
+      lines.push(`Kontrollerad seger, ${myScore}–${theirScore}. Laget tog täten och höll den.`)
+    } else if (lateDecider) {
+      lines.push(`Nervpirrande till det sista. Avgörandet kom sent och slutade ${myScore}–${theirScore}.`)
+    } else {
+      lines.push(`Knapp seger, ${myScore}–${theirScore}. Jämnt länge men laget hade den avgörande kvaliteten när det gällde.`)
+    }
+  } else if (myScore < theirScore) {
+    if (margin <= -4) {
+      lines.push(`Tungt. ${myScore}–${theirScore} och motståndarna visade varför de är ett hot.`)
+    } else if (margin <= -2) {
+      lines.push(`${myScore}–${theirScore}. Motståndarna var ett snäpp bättre i de flesta delar av spelet.`)
+    } else if (lateDecider) {
+      lines.push(`Länge jämnt, men ett sent mål fällde avgörandet till motståndarnas fördel. ${myScore}–${theirScore}.`)
+    } else {
+      lines.push(`${myScore}–${theirScore}. Motståndarna var starkare idag — det är svårt att säga något annat.`)
+    }
+  } else {
+    if (totalGoals >= 8) {
+      lines.push(`Målfest och rättvis poängdelning, ${myScore}–${theirScore}. ${totalGoals} mål och publiken var med hela vägen.`)
+    } else if (totalGoals === 0) {
+      lines.push(`Mållöst kryss. Båda lagen var defensivt solida men offensivt utan genomslag.`)
+    } else if (lateDecider) {
+      lines.push(`Utjämning sent höll kryss vid liv — ${myScore}–${theirScore}.`)
+    } else {
+      lines.push(`Rättvis poängdelning, ${myScore}–${theirScore}. Båda lagen hade sina perioder.`)
+    }
+  }
+
+  const sc = scorerLine()
+  if (sc) lines.push(sc)
+
+  return lines.join(' ')
 }
 
 export function GranskaScreen() {
@@ -168,6 +247,21 @@ export function GranskaScreen() {
               {fixture.attendance != null && (
                 <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>🏟️ {fixture.attendance} åskådare</p>
               )}
+
+              {/* Match summary */}
+              {(() => {
+                const summary = generateQuickSummary(fixture, isHome, game.players)
+                return summary ? (
+                  <p style={{
+                    fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5,
+                    marginTop: 12, padding: '10px 12px',
+                    background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)',
+                    textAlign: 'left',
+                  }}>
+                    {summary}
+                  </p>
+                ) : null
+              })()}
             </div>
           </div>
         )}
