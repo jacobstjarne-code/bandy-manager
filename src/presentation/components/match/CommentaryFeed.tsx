@@ -21,28 +21,85 @@ interface CommentaryFeedProps {
   onNavigateToReview?: () => void
 }
 
-function generateMatchSummary(home: number, away: number, managedIsHome: boolean, steps: MatchStep[]): string {
+function generateMatchSummary(
+  home: number, away: number, managedIsHome: boolean, steps: MatchStep[],
+  game: SaveGame | null, _fixture: Fixture,
+): string {
   const myScore = managedIsHome ? home : away
   const theirScore = managedIsHome ? away : home
   const totalGoals = home + away
   const margin = myScore - theirScore
+  const allEvents = steps.flatMap(s => s.events)
+  const goals = allEvents.filter(e => e.type === MatchEventType.Goal)
+
+  // Hitta målskyttar
+  const scorerCounts: Record<string, number> = {}
+  const scorerNames: Record<string, string> = {}
+  goals.forEach(e => {
+    if (e.playerId) {
+      scorerCounts[e.playerId] = (scorerCounts[e.playerId] ?? 0) + 1
+      const p = game?.players.find(pl => pl.id === e.playerId)
+      scorerNames[e.playerId] = p ? p.lastName : (e.description?.split(' ')[0] ?? 'Spelaren')
+    }
+  })
+  const topScorerId = Object.entries(scorerCounts).sort((a, b) => b[1] - a[1])[0]
+  const topScorerName = topScorerId ? scorerNames[topScorerId[0]] : null
+  const topScorerGoals = topScorerId ? topScorerId[1] : 0
+
+  // Kolla vändning (trailed at halftime)
+  const htStep = steps.find(s => s.step === 30)
+  const htHome = htStep?.homeScore ?? 0
+  const htAway = htStep?.awayScore ?? 0
+  const myHt = managedIsHome ? htHome : htAway
+  const theirHt = managedIsHome ? htAway : htHome
+  const wasComeback = myScore > theirScore && myHt < theirHt
+
+  // Sent avgörande (mål efter minut 55)
+  const lateGoals = goals.filter(e => (e.minute ?? 0) >= 55)
+  const lateDecider = lateGoals.length > 0 && Math.abs(myScore - theirScore) <= 1
+
+  // Bygg sammanfattning
+  const lines: string[] = []
 
   if (myScore > theirScore) {
-    if (margin >= 3) return `Dominant insats från start till slut. ${totalGoals} mål totalt — publiken fick valuta för pengarna.`
-    if (totalGoals >= 8) return `Vild match med ${totalGoals} mål. Offensivt spel som kunde gått åt båda hållen.`
-    if (margin === 1) return `Jämn match som avgjordes sent. Nerverna höll hela vägen.`
-    return `Kontrollerad seger. Laget visade mognad i de avgörande lägena.`
+    if (wasComeback) {
+      lines.push(`Laget låg under i paus men vände till ${myScore}–${theirScore}.`)
+    } else if (margin >= 3) {
+      lines.push(`Dominant insats. ${myScore}–${theirScore} — aldrig hotat.`)
+    } else if (lateDecider) {
+      lines.push(`Sent avgörande! ${myScore}–${theirScore} efter en nervös avslutning.`)
+    } else {
+      lines.push(`Kontrollerad seger, ${myScore}–${theirScore}.`)
+    }
+  } else if (myScore < theirScore) {
+    if (margin <= -3) {
+      lines.push(`Tung förlust, ${myScore}–${theirScore}. Mycket att jobba med.`)
+    } else if (myHt > theirHt) {
+      lines.push(`Ledde i paus men tappade. ${myScore}–${theirScore} i slutändan.`)
+    } else {
+      lines.push(`${myScore}–${theirScore}. Motståndarna var starkare idag.`)
+    }
+  } else {
+    if (totalGoals >= 6) {
+      lines.push(`Målrikt kryss, ${myScore}–${theirScore}. Drama åt båda hållen.`)
+    } else if (totalGoals === 0) {
+      lines.push(`Mållöst. Defensivt stabilt men offensivt tamt.`)
+    } else {
+      lines.push(`Rättvis poängdelning, ${myScore}–${theirScore}.`)
+    }
   }
-  if (myScore < theirScore) {
-    if (margin <= -3) return `Motståndarna dominerade från start. Mycket att jobba med inför nästa.`
-    if (margin === -1) return `Nära men inte nog. Laget skapade chanser men saknade skärpa framför mål.`
-    return `Motståndarna var starkare idag. Laget kämpade men det räckte inte.`
+
+  if (topScorerName && topScorerGoals >= 2) {
+    lines.push(`${topScorerName} med ${topScorerGoals} mål.`)
+  } else if (topScorerName && topScorerGoals === 1 && totalGoals <= 3) {
+    lines.push(`${topScorerName} med det avgörande målet.`)
   }
-  if (totalGoals >= 6) return `Målrikt kryss — ${totalGoals} mål och drama från båda sidor.`
-  if (totalGoals === 0) return `Mållöst. Båda lagen var defensivt stabila men saknade den sista gnistan.`
-  // steps param available for future use
-  void steps
-  return `Rättvis poängdelning. Båda lagen hade sina perioder.`
+
+  if (totalGoals >= 8) {
+    lines.push(`${totalGoals} mål totalt — publiken fick valuta.`)
+  }
+
+  return lines.join(' ')
 }
 
 export function CommentaryFeed({
@@ -92,28 +149,31 @@ export function CommentaryFeed({
         const lastStep = displayedSteps[displayedSteps.length - 1]
         const home = lastStep?.homeScore ?? 0
         const away = lastStep?.awayScore ?? 0
-        const summary = generateMatchSummary(home, away, managedIsHome ?? false, displayedSteps)
+        const summary = generateMatchSummary(home, away, managedIsHome ?? false, displayedSteps, game, fixture)
         return (
           <div style={{ padding: '0 12px 8px' }}>
-            <div style={{
-              padding: '12px 16px', textAlign: 'center',
-              borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)',
+            <div className="card-sharp" style={{
+              padding: '14px 16px', textAlign: 'center',
               margin: '8px 0',
             }}>
               <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
                 Domaren blåser av!
               </p>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, margin: '4px 0 0' }}>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '6px 0 0' }}>
                 {summary}
               </p>
             </div>
             <button
               onClick={onNavigateToReview}
+              className="texture-leather"
               style={{
-                width: '100%', padding: '14px', margin: '8px 0',
-                background: 'var(--accent)', color: 'var(--bg)',
-                border: 'none', borderRadius: 0, fontSize: 15, fontWeight: 700,
-                cursor: 'pointer', letterSpacing: '0.02em',
+                width: '100%', padding: '16px', margin: '8px 0',
+                background: 'linear-gradient(135deg, var(--accent-dark), var(--accent-deep))',
+                color: 'var(--text-light)',
+                border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 600,
+                letterSpacing: '2px', textTransform: 'uppercase',
+                fontFamily: 'var(--font-body)',
+                cursor: 'pointer',
               }}
             >
               Se sammanfattning →
