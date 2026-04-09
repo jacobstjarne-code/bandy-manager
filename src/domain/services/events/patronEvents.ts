@@ -144,9 +144,9 @@ export function generatePatronEvents(
       }
     }
 
-    // Patron bonus — round 10–14, happiness > 80
+    // Patron bonus — once per season, round 10–14, happiness > 80
     if (currentRound >= 10 && currentRound <= 14 && (patron.happiness ?? 50) > 80) {
-      const eid = `patron_bonus_r${currentRound}`
+      const eid = `patron_bonus_${game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         const quoteIdx = Math.floor(rand() * PATRON_HAPPY_QUOTES.length)
         const quote = PATRON_HAPPY_QUOTES[quoteIdx]
