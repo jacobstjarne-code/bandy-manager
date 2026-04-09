@@ -207,8 +207,8 @@ export function GranskaScreen() {
 
           return (
             <div key={event.id} className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(2 + ei) }}>
-              <div style={{ padding: '12px 12px' }}>
-                <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: resolved ? 6 : 10 }}>
+              <div style={{ padding: '10px 12px' }}>
+                <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: resolved ? 4 : 6 }}>
                   {event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}
                 </p>
 
@@ -219,38 +219,38 @@ export function GranskaScreen() {
                   </div>
                 ) : (
                   <>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8, lineHeight: 1.3 }}>{event.title}</p>
-                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 12, whiteSpace: 'pre-line' }}>{event.body}</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 5, lineHeight: 1.3 }}>{event.title}</p>
+                    <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: 8, whiteSpace: 'pre-line' }}>{event.body}</p>
 
                     {(relatedPlayer || relatedClub) && (
-                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
                         {relatedPlayer && (
-                          <span style={{ fontSize: 12, background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.3)', borderRadius: 20, padding: '4px 10px', color: 'var(--accent)', fontWeight: 600 }}>
+                          <span style={{ fontSize: 11, background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.3)', borderRadius: 20, padding: '3px 8px', color: 'var(--accent)', fontWeight: 600 }}>
                             {relatedPlayer.firstName} {relatedPlayer.lastName} · Styrka {Math.round(relatedPlayer.currentAbility)}
                           </span>
                         )}
                         {relatedClub && (
-                          <span style={{ fontSize: 12, background: 'rgba(126,179,212,0.10)', border: '1px solid rgba(126,179,212,0.25)', borderRadius: 20, padding: '4px 10px', color: 'var(--ice)', fontWeight: 600 }}>
+                          <span style={{ fontSize: 11, background: 'rgba(126,179,212,0.10)', border: '1px solid rgba(126,179,212,0.25)', borderRadius: 20, padding: '3px 8px', color: 'var(--ice)', fontWeight: 600 }}>
                             {relatedClub.name}
                           </span>
                         )}
                       </div>
                     )}
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                       {event.choices.map((choice: EventChoice) => (
                         <button
                           key={choice.id}
                           onClick={() => handleChoice(event.id, choice.id, choice.label)}
                           style={{
                             position: 'relative', zIndex: 1,
-                            width: '100%', padding: '12px 14px', borderRadius: 10,
-                            fontSize: 13, fontWeight: 600, textAlign: 'left', cursor: 'pointer',
+                            width: '100%', padding: '9px 12px', borderRadius: 8,
+                            fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer',
                             ...choiceStyle(choice.id),
                           }}
                         >
                           {choice.label}
-                          {choice.subtitle && <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>{choice.subtitle}</p>}
+                          {choice.subtitle && <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{choice.subtitle}</p>}
                         </button>
                       ))}
                     </div>
