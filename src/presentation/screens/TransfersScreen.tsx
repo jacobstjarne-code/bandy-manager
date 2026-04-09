@@ -40,13 +40,24 @@ export function TransfersScreen() {
   const location = useLocation()
 
   useEffect(() => {
-    const highlightId = (location.state as any)?.highlightPlayer
+    const state = location.state as any
+    const highlightId = state?.highlightPlayer
+    const tabOverride = state?.tab as typeof activeTab | undefined
+    const renewId = state?.renewPlayerId as string | undefined
+    if (tabOverride) {
+      setActiveTab(tabOverride)
+    }
+    if (renewId) {
+      setRenewingPlayerId(renewId)
+    }
     if (highlightId && game) {
       const player = game.players.find(p => p.id === highlightId)
       if (player && player.clubId !== game.managedClubId) {
         setBiddingPlayerId(highlightId)
         setActiveTab('scouting')
       }
+    }
+    if (highlightId || tabOverride || renewId) {
       window.history.replaceState({ ...window.history.state, usr: {} }, '')
     }
   }, [location.state])

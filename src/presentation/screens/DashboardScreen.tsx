@@ -236,7 +236,7 @@ export function DashboardScreen() {
 
   const nudges: { text: string; screen: string; state?: Record<string, unknown>; done: boolean; color: 'red' | 'yellow' | 'green' }[] = []
   if (injuredCount > 0) nudges.push({ text: `Kontrollera truppen (${injuredCount} skadad${injuredCount > 1 ? 'e' : ''})`, screen: 'squad', done: visited.includes('squad'), color: 'red' })
-  if (expiringPlayer && nudges.length < 3) nudges.push({ text: `Förläng kontrakt: ${expiringPlayer.firstName} ${expiringPlayer.lastName}`, screen: 'transfers', done: visited.includes('transfers'), color: 'red' })
+  if (expiringPlayer && nudges.length < 3) nudges.push({ text: `Förläng kontrakt: ${expiringPlayer.firstName} ${expiringPlayer.lastName}`, screen: 'transfers', state: { tab: 'contracts' }, done: visited.includes('transfers'), color: 'red' })
   const atRisk = (game.boardObjectives ?? []).find(o => o.status === 'at_risk')
   const active = (game.boardObjectives ?? []).find(o => o.status === 'active')
   const obj = atRisk ?? active
