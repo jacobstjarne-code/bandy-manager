@@ -78,6 +78,26 @@ export function processTransferBids(
     })
   }
 
+  // Press speculation: existing pending incoming bids generate saga rumours (40% chance per round)
+  const existingPendingIncoming = existingBids.filter(
+    b => b.direction === 'incoming' && b.status === 'pending' && !newBids.some(nb => nb.id === b.id),
+  )
+  for (const bid of existingPendingIncoming) {
+    if (localRand() > 0.40) continue
+    const target = preEventGame.players.find(p => p.id === bid.playerId)
+    const buyingClub = preEventGame.clubs.find(c => c.id === bid.buyingClubId)
+    if (!target || !buyingClub) continue
+    const sagaRumourId = `inbox_saga_speculation_${bid.id}_r${nextMatchday}`
+    inboxItems.push({
+      id: sagaRumourId,
+      date: newDate,
+      type: InboxItemType.Media,
+      title: `📰 Spekulationer kring ${target.firstName} ${target.lastName}`,
+      body: `Medierna skriver om budet från ${buyingClub.name}. ${target.firstName} ${target.lastName} är tyst men omgivningen märker av oro i laget. Affären är ännu olöst.`,
+      isRead: false,
+    })
+  }
+
   // Transfer rumour: newly active outgoing bids get a 50% chance of inbox rumour
   const newlyActiveBids = resolvedBids.filter(
     b => b.direction === 'outgoing' && b.status === 'pending' && b.createdRound === nextMatchday,

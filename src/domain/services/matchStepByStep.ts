@@ -117,11 +117,19 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
   function getGoalScorer(starters: Player[]): Player | undefined {
     const nonGK = starters.filter(p => p.position !== PlayerPosition.Goalkeeper)
     if (nonGK.length === 0) return undefined
-    const weights = nonGK.map(p =>
-      p.position === PlayerPosition.Forward ? 3 :
-      p.position === PlayerPosition.Midfielder ? 2 :
-      p.position === PlayerPosition.Half ? 1 : 0.5
-    )
+    const weights = nonGK.map(p => {
+      let w = p.position === PlayerPosition.Forward ? 3 :
+        p.position === PlayerPosition.Midfielder ? 2 :
+        p.position === PlayerPosition.Half ? 1 : 0.5
+      if (p.isCharacterPlayer) {
+        if (p.trait === 'hungrig') w *= 1.4
+        else if (p.trait === 'veteran') w *= 1.2
+        else if (p.trait === 'lokal') w *= 1.2
+        else if (p.trait === 'ledare') w *= 1.1
+        else if (p.trait === 'joker') w *= rand() < 0.3 ? 2.8 : 0.6
+      }
+      return w
+    })
     return pickWeightedPlayer(rand, nonGK, weights)
   }
   function getAssistProvider(starters: Player[], excludeId?: string): Player | undefined {
@@ -605,10 +613,17 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     const nonGK = starters.filter(p => p.position !== PlayerPosition.Goalkeeper)
     if (nonGK.length === 0) return undefined
     const weights = nonGK.map(p => {
-      if (p.position === PlayerPosition.Forward) return 3
-      if (p.position === PlayerPosition.Midfielder) return 2
-      if (p.position === PlayerPosition.Half) return 1
-      return 0.5
+      let w = p.position === PlayerPosition.Forward ? 3 :
+        p.position === PlayerPosition.Midfielder ? 2 :
+        p.position === PlayerPosition.Half ? 1 : 0.5
+      if (p.isCharacterPlayer) {
+        if (p.trait === 'hungrig') w *= 1.4
+        else if (p.trait === 'veteran') w *= 1.2
+        else if (p.trait === 'lokal') w *= 1.2
+        else if (p.trait === 'ledare') w *= 1.1
+        else if (p.trait === 'joker') w *= rand() < 0.3 ? 2.8 : 0.6
+      }
+      return w
     })
     return pickWeightedPlayer(rand, nonGK, weights)
   }

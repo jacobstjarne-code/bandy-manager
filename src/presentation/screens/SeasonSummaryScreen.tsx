@@ -418,6 +418,43 @@ export function SeasonSummaryScreen() {
           </p>
         </div>
 
+        {/* SÄSONGENS FEM STUNDER */}
+        {(summary.keyMoments ?? []).length > 0 && (
+          <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 8 }}>
+            <SectionLabel>⚡ SÄSONGENS STUNDER</SectionLabel>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+              {(summary.keyMoments ?? []).map((m, i) => {
+                const icon = m.type === 'derbyWin' ? '🔥'
+                  : m.type === 'derbyLoss' ? '😶'
+                  : m.type === 'hatTrick' ? '🎯'
+                  : m.type === 'bigWin' ? '✅'
+                  : m.type === 'bigLoss' ? '❌'
+                  : m.type === 'comeback' ? '💪'
+                  : '⏱️'
+                const isLast = i === (summary.keyMoments ?? []).length - 1
+                return (
+                  <div key={i} style={{
+                    display: 'flex',
+                    gap: 10,
+                    paddingBottom: isLast ? 0 : 8,
+                    marginBottom: isLast ? 0 : 8,
+                    borderBottom: isLast ? 'none' : '1px solid var(--border)',
+                  }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 28, flexShrink: 0 }}>
+                      <span style={{ fontSize: 13 }}>{icon}</span>
+                      <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginTop: 2 }}>O{m.round}</span>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 2px' }}>{m.headline}</p>
+                      <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.4, margin: 0 }}>{m.body}</p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
         {/* SÄSONGENS BERÄTTELSER */}
         {(summary.storyTriggers ?? []).length > 0 && (
           <div style={{ marginTop: 20 }}>

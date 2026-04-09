@@ -240,9 +240,25 @@ export function NextMatchCard({
       {/* Match body */}
       <div style={{ padding: '10px 12px' }}>
         {isDerby && (
-          <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--danger)', fontWeight: 600, marginBottom: 6, fontFamily: 'var(--font-body)' }}>
-            🔥 {rivalry!.name}
-          </p>
+          <div style={{ marginBottom: 6 }}>
+            <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--danger)', fontWeight: 600, margin: '0 0 2px', fontFamily: 'var(--font-body)' }}>
+              🔥 {rivalry!.name}
+            </p>
+            {(() => {
+              const h2h = game.rivalryHistory?.[opponent.id]
+              if (!h2h || h2h.wins + h2h.losses + h2h.draws < 2) return null
+              const streakStr = h2h.currentStreak >= 2
+                ? ` · ${h2h.currentStreak} raka segrar 🔥`
+                : h2h.currentStreak <= -2
+                ? ` · ${Math.abs(h2h.currentStreak)} raka förluster`
+                : ''
+              return (
+                <p style={{ textAlign: 'center', fontSize: 10, color: 'var(--text-muted)', margin: 0, fontFamily: 'var(--font-body)' }}>
+                  H2H: {h2h.wins}V – {h2h.draws}O – {h2h.losses}F{streakStr}
+                </p>
+              )
+            })()}
+          </div>
         )}
         {/* Crests + vs */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 0' }}>

@@ -67,4 +67,13 @@ export interface SeasonSummary {
     relatedPlayerId?: string
     relatedClubId?: string
   }>
+
+  keyMoments?: Array<{
+    round: number
+    type: 'bigWin' | 'bigLoss' | 'hatTrick' | 'derbyWin' | 'derbyLoss' | 'comeback' | 'lateWinner'
+    headline: string
+    body: string
+    fixtureId?: string
+    relatedPlayerId?: string
+  }>
 }

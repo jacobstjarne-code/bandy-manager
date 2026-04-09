@@ -456,6 +456,38 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // Pre-derby preview: if the next unplayed managed fixture is a derby, fire one inbox item per season
+  {
+    const nextManagedFixture = simulatedFixtures
+      .filter(f => f.status === FixtureStatus.Scheduled &&
+        (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+      .sort((a, b) => a.matchday - b.matchday)[0]
+    if (nextManagedFixture) {
+      const upcomingRivalry = getRivalry(nextManagedFixture.homeClubId, nextManagedFixture.awayClubId)
+      if (upcomingRivalry) {
+        const opponentId = nextManagedFixture.homeClubId === game.managedClubId
+          ? nextManagedFixture.awayClubId : nextManagedFixture.homeClubId
+        const rival = game.clubs.find(c => c.id === opponentId)
+        const previewId = `inbox_derby_preview_${opponentId}_s${game.currentSeason}`
+        const alreadySent = newInboxItems.some(i => i.id === previewId) || game.inbox.some(i => i.id === previewId)
+        if (!alreadySent && rival) {
+          const h2h = updatedRivalryHistory[opponentId]
+          const historyStr = h2h && h2h.wins + h2h.losses + h2h.draws >= 2
+            ? ` H2H: ${h2h.wins}V–${h2h.draws}O–${h2h.losses}F.`
+            : ''
+          newInboxItems.push({
+            id: previewId,
+            date: newDate,
+            type: InboxItemType.Derby,
+            title: `Derby: ${upcomingRivalry.name} väntar`,
+            body: `${rival.name} är nästa motståndare.${historyStr} Stämningen är hög i stan — derbyt avgör mer än tre poäng.`,
+            isRead: false,
+          } as InboxItem)
+        }
+      }
+    }
+  }
+
   // Track which fixtures were already completed before this round (for dedup in processors)
   const fixturesCompletedBeforeRound = new Set(
     game.fixtures.filter(f => f.status === FixtureStatus.Completed).map(f => f.id)

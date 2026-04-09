@@ -1,6 +1,8 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { SeasonSummary } from '../entities/SeasonSummary'
+import type { Fixture } from '../entities/Fixture'
 import { ClubExpectation, FixtureStatus, MatchEventType, PlayoffRound } from '../enums'
+import { getRivalry } from '../data/rivalries'
 
 function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
   const managedClubId = game.managedClubId
@@ -57,6 +59,118 @@ function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
   }
 
   return triggers.length > 0 ? triggers : undefined
+}
+
+type MomentWithScore = NonNullable<SeasonSummary['keyMoments']>[number] & { score: number }
+
+function computeKeyMoments(
+  game: SaveGame,
+  clubFixtures: Fixture[],
+  managedPlayers: { id: string; firstName: string; lastName: string }[],
+): NonNullable<SeasonSummary['keyMoments']> {
+  const moments: MomentWithScore[] = []
+
+  for (const f of clubFixtures) {
+    const isHome = f.homeClubId === game.managedClubId
+    const myScore = isHome ? f.homeScore : f.awayScore
+    const theirScore = isHome ? f.awayScore : f.homeScore
+    const margin = myScore - theirScore
+    const opponentId = isHome ? f.awayClubId : f.homeClubId
+    const opponent = game.clubs.find(c => c.id === opponentId)
+    const oppName = opponent?.shortName ?? opponent?.name ?? '?'
+    const scoreStr = isHome ? `${myScore}–${theirScore}` : `${theirScore}–${myScore}`
+    const rivalry = getRivalry(f.homeClubId, f.awayClubId)
+    const isDerby = !!rivalry
+
+    // Big win (3+ goal margin)
+    if (margin >= 3) {
+      moments.push({ round: f.roundNumber, type: 'bigWin', fixtureId: f.id,
+        headline: `Stor seger mot ${oppName} (${scoreStr})`,
+        body: `Omgång ${f.roundNumber}: En övertygande seger med ${margin} måls marginal. Laget visade klass.`,
+        score: margin * 10 + (isDerby ? 20 : 0) })
+    }
+
+    // Big loss (3+ goal margin)
+    if (margin <= -3) {
+      moments.push({ round: f.roundNumber, type: 'bigLoss', fixtureId: f.id,
+        headline: `Tung förlust mot ${oppName} (${scoreStr})`,
+        body: `Omgång ${f.roundNumber}: En svår dag på plan. ${Math.abs(margin)} måls förlust var svår att smälta.`,
+        score: Math.abs(margin) * 8 + (isDerby ? 20 : 0) })
+    }
+
+    // Derby result
+    if (isDerby && margin !== 0) {
+      if (margin > 0) {
+        moments.push({ round: f.roundNumber, type: 'derbyWin', fixtureId: f.id,
+          headline: `Derbyvinst! ${rivalry!.name} (${scoreStr})`,
+          body: `Omgång ${f.roundNumber}: En seger som laget och supportrarna länge minns. Derbyt vann vi.`,
+          score: 35 + margin * 5 })
+      } else {
+        moments.push({ round: f.roundNumber, type: 'derbyLoss', fixtureId: f.id,
+          headline: `Derbyförlust — ${rivalry!.name} (${scoreStr})`,
+          body: `Omgång ${f.roundNumber}: Ett derby vi gärna glömmer. Rivalen vann och fansen var besvikna.`,
+          score: 25 })
+      }
+    }
+
+    // Hat trick: 3+ goals by one managed player
+    const goalsByPlayer: Record<string, number> = {}
+    for (const evt of f.events) {
+      if (evt.type === MatchEventType.Goal && evt.playerId && evt.clubId === game.managedClubId) {
+        goalsByPlayer[evt.playerId] = (goalsByPlayer[evt.playerId] ?? 0) + 1
+      }
+    }
+    for (const [pid, goals] of Object.entries(goalsByPlayer)) {
+      if (goals >= 3) {
+        const p = managedPlayers.find(pl => pl.id === pid)
+        const name = p ? `${p.firstName} ${p.lastName}` : 'Okänd'
+        moments.push({ round: f.roundNumber, type: 'hatTrick', fixtureId: f.id, relatedPlayerId: pid,
+          headline: `Hattrick — ${name} mot ${oppName}`,
+          body: `Omgång ${f.roundNumber}: ${name} satte ${goals} mål. En prestation att minnas länge.`,
+          score: 30 + (goals - 3) * 10 })
+        break
+      }
+    }
+
+    // Late winner: won by 1, scoring goal in minute >= 80
+    if (margin === 1) {
+      const lateGoals = f.events.filter(e =>
+        e.type === MatchEventType.Goal && e.clubId === game.managedClubId && (e.minute ?? 0) >= 80)
+      if (lateGoals.length > 0) {
+        const scorer = lateGoals[lateGoals.length - 1]
+        const p = scorer.playerId ? managedPlayers.find(pl => pl.id === scorer.playerId) : null
+        moments.push({ round: f.roundNumber, type: 'lateWinner', fixtureId: f.id, relatedPlayerId: scorer.playerId,
+          headline: `Sent avgörande mot ${oppName} (${scoreStr})`,
+          body: `Omgång ${f.roundNumber}: ${p ? `${p.firstName} ${p.lastName}` : 'Avslutning'} satte avgörande sent. Tre poäng trots allt.`,
+          score: 25 + (isDerby ? 20 : 0) })
+      }
+    }
+
+    // Comeback: we trailed (first goal was opponent's) but won
+    if (margin > 0) {
+      const firstGoal = f.events.find(e => e.type === MatchEventType.Goal)
+      if (firstGoal && firstGoal.clubId !== game.managedClubId) {
+        moments.push({ round: f.roundNumber, type: 'comeback', fixtureId: f.id,
+          headline: `Comeback mot ${oppName} (${scoreStr})`,
+          body: `Omgång ${f.roundNumber}: Laget vände ett underläge och tog tre poäng. Mental styrka.`,
+          score: 28 + margin * 5 })
+      }
+    }
+  }
+
+  // One moment per fixture (highest score wins), then top 5 chronologically
+  const byFixture = new Map<string, MomentWithScore>()
+  for (const m of moments) {
+    const key = m.fixtureId ?? `${m.round}_${m.type}`
+    const existing = byFixture.get(key)
+    if (!existing || m.score > existing.score) byFixture.set(key, m)
+  }
+
+  return [...byFixture.values()]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+    .sort((a, b) => a.round - b.round)
+    .map(({ score: _s, ...rest }) => rest)
 }
 
 function ordinal(n: number): string {
@@ -423,6 +537,7 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
   }
 
   const storyTriggers = generateStoryTriggers(game)
+  const keyMoments = computeKeyMoments(game, clubFixtures, managedPlayers)
 
   return {
     season: game.currentSeason,
@@ -470,6 +585,7 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     cupResult,
     standingsSnapshot,
     storyTriggers,
+    keyMoments: keyMoments.length > 0 ? keyMoments : undefined,
     communityStandingStart: game.communityStanding ?? 50,
     communityStandingEnd: communityStandingEnd ?? game.communityStanding ?? 50,
     communityHighlights: [],
