@@ -80,12 +80,33 @@ export function HalftimeModal({
   const managedGoals = managedIsHome ? htHomeGoals : htAwayGoals
   const oppGoals = managedIsHome ? htAwayGoals : htHomeGoals
   const diff = managedGoals - oppGoals
-  const analysis =
-    diff >= 2 ? 'Stark insats. Fortsätt kontrollera tempot.' :
-    diff === 1 ? 'Ledningen är skör. Var uppmärksam defensivt.' :
-    diff === 0 ? 'Jämnt — allt avgörs i andra halvlek.' :
-    diff === -1 ? 'Hänger med. En omgång kan vända det.' :
-    'Tufft läge. Överväg taktikbyte.'
+  const HT_WIN_BIG = [
+    'Vi vann inte för att vi var bäst. Vi vann för att vi ville mest.',
+    'Dominant. Men match är match tills domaren blåser av.',
+    'Bra. Men vi har sett lag slösa bort tre mål på 30 minuter. Det gör inte vi.',
+  ]
+  const HT_WIN_ONE = [
+    'Ledningen är skör. En utvisning, ett dåligt frislag — och det är jämnt.',
+    'Ett mål är ingenting. Vi fortsätter pressa, vi fortsätter jobba.',
+    'Exakt så här vi vill ha det. Nu håller vi det.',
+  ]
+  const HT_DRAW = [
+    'Jämnt — allt avgörs i andra halvlek. Det är bra. Det är vår halvlek.',
+    'Ingenting är avgjort. Det gillar jag.',
+    'Ingen vinner på halvtid. Men vi vinner på slutsignal.',
+  ]
+  const HT_DOWN_ONE = [
+    'Hänger med. Ett mål är ingenting — det vet ni.',
+    'Nära men inte nog. Andra halvlek börjar vi om från noll.',
+    'Ibland lär man sig mer av en förlust än tio vinster. Men vi förlorar inte än.',
+  ]
+  const HT_DOWN_BIG = [
+    'Tufft läge. Ingen räddare kommer — vi är räddarna. Nu.',
+    'Om ni vill ge upp kan ni stanna i omklädningsrummet. Annars åker vi ut och jobbar.',
+    'Det enda jag inte accepterar är att ge upp.',
+  ]
+  const pool = diff >= 2 ? HT_WIN_BIG : diff === 1 ? HT_WIN_ONE : diff === 0 ? HT_DRAW : diff === -1 ? HT_DOWN_ONE : HT_DOWN_BIG
+  const analysis = pool[Math.floor(Math.random() * pool.length)]
 
   const currentTactic = managedIsHome ? homeLineup.tactic : awayLineup.tactic
   const mentality = htMentality ?? currentTactic.mentality

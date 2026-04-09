@@ -104,7 +104,7 @@ export function TabellScreen() {
           return (
             <div style={{ marginBottom: 20 }}>
               <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>{title}</p>
-              <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+              <div className="card-sharp" style={{ overflow: 'hidden' }}>
                 {players.map((p, i) => {
                   const club = game!.clubs.find(c => c.id === p.clubId)
                   const isManaged = p.clubId === game!.managedClubId
@@ -201,10 +201,7 @@ export function TabellScreen() {
         <span style={{ textAlign: 'right' }}>P</span>
       </div>
 
-      <div className="card-stagger-1" style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius)',
+      <div className="card-stagger-1 card-sharp" style={{
         overflow: 'hidden',
       }}>
         {standings.map((row, i) => {
@@ -264,7 +261,7 @@ export function TabellScreen() {
                   display: 'grid',
                   gridTemplateColumns: '24px 32px 1fr 22px 52px 32px 28px',
                   gap: 4,
-                  padding: '7px 10px',
+                  padding: '6px 10px',
                   alignItems: 'center',
                   borderTop: i === 0 ? 'none' : '1px solid var(--border)',
                   borderLeft: `3px solid ${getRowBorderColor(row.position)}`,
