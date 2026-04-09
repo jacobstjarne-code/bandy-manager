@@ -247,7 +247,7 @@ export function TransfersScreen() {
           freeagents: 'Kontraktslösa spelare. Ingen transfersumma.',
           sell: 'Sälj spelare från din trupp.',
       } as Record<string, string>)[activeTab] && (
-        <p style={{ padding: '6px 16px 10px', fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', borderBottom: '1px solid var(--border)', marginBottom: 10 }}>
+        <p style={{ padding: '6px 12px 10px', fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', borderBottom: '1px solid var(--border)', marginBottom: 10 }}>
           {({ marknad: 'Spelare som är tillgängliga för transfer just nu.',
               scouting: 'Utvärdera spelare eller sök nya talanger.',
               contracts: 'Förläng avtal med dina spelare.',

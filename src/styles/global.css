@@ -278,7 +278,7 @@ a {
 .card-stack {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   padding: 0 12px;
 }
 

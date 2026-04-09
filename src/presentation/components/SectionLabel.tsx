@@ -13,12 +13,13 @@ export function SectionLabel({ children, right }: SectionLabelProps) {
       alignItems: 'center',
       marginBottom: 4,
     }}>
-      <p className="section-heading" style={{
-        fontSize: 9,
+      <p style={{
+        fontSize: 8,
         fontWeight: 600,
-        letterSpacing: '2.5px',
+        letterSpacing: '2px',
         textTransform: 'uppercase',
         color: 'var(--text-muted)',
+        fontFamily: 'var(--font-body)',
         margin: 0,
       }}>
         {children}

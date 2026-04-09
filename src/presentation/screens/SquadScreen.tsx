@@ -98,11 +98,9 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
   return (
     <div
       onClick={onClick}
+      className="card-sharp"
       style={{
-        background: 'var(--bg-elevated)',
-        border: '1px solid var(--border)',
-        borderRadius: 10,
-        padding: '8px 12px',
+        padding: '10px 12px',
         marginBottom: 6,
         cursor: 'pointer',
         display: 'flex',
@@ -117,7 +115,7 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
         <img
           src={getPortraitPath(player.id, player.age)}
           alt=""
-          style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+          style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', objectPosition: 'center 20%', border: '2px solid var(--border)', flexShrink: 0 }}
           onError={(e) => {
             const el = e.target as HTMLImageElement
             el.style.display = 'none'
@@ -188,15 +186,15 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
         {/* Nav button */}
         <button style={{
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+          width: 16, height: 16, borderRadius: 4, flexShrink: 0,
           background: 'transparent', border: '1px solid var(--border)',
           color: 'var(--accent)', fontSize: 11, lineHeight: 1,
-          boxShadow: '0 1px 2px rgba(0,0,0,0.03)', cursor: 'pointer',
+          cursor: 'pointer',
         }}>›</button>
       </div>
 
       {/* Bottom row: form + fitness bars + status pill */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 38 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 46 }}>
         <div style={{ width: 50, flexShrink: 0 }}>
           <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 3 }}>Form</p>
           <StatBar value={player.form} color={barColor(player.form)} height={5} />
@@ -228,7 +226,7 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
 
       {/* Stat row */}
       {player.seasonStats.gamesPlayed > 0 && (
-        <div style={{ display: 'flex', gap: 12, paddingLeft: 38, fontSize: 11, color: 'var(--text-muted)' }}>
+        <div style={{ display: 'flex', gap: 12, paddingLeft: 46, fontSize: 11, color: 'var(--text-muted)' }}>
           <span>{player.seasonStats.gamesPlayed}M</span>
           <span style={{ color: player.seasonStats.goals > 0 ? 'var(--text-primary)' : undefined }}>
             {player.seasonStats.goals}G
@@ -378,10 +376,7 @@ export function SquadScreen() {
 
         {/* Squad summary card */}
         {hasSeasonData && (
-          <div style={{
-            background: 'var(--bg-elevated)',
-            border: '1px solid var(--border)',
-            borderRadius: 10,
+          <div className="card-sharp" style={{
             padding: '12px',
             marginBottom: 12,
             display: 'grid',
