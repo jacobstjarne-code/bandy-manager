@@ -236,32 +236,107 @@ export const useGameStore = create<GameState>()(
         let inboxTriggered = false
         const name = player.firstName
 
+        const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
+
         if (choice === 'encourage') {
           moraleChange = 5
           formChange = 2
-          feedback = `${name}: "Tack, det värmer."`
+          const trait = player.trait
+          const highForm = player.form >= 65
+          const lowForm = player.form < 35
+          const pool = trait === 'hungrig'
+            ? [
+                `${name}: "Det ger bränsle. Jag är inte klar än."`,
+                `${name}: "Tack. Men jag vill ha mer — det är bara en början."`,
+                `${name}: "Bra att du ser det. Nu kör vi."`,
+              ]
+            : trait === 'veteran'
+            ? [
+                `${name}: "Det betyder mer än du tror, efter alla år."`,
+                `${name}: "Jag har hört det förut — men från dig sitter det."`,
+                `${name}: "Tack. Jag vet fortfarande vad jag är värd."`,
+              ]
+            : trait === 'joker'
+            ? [
+                `${name}: "Äntligen lite uppskattning! Jag brukar bara höra om mina utvisningar."`,
+                `${name}: "Tack chef. Ska fira med en fullträff nästa match."`,
+                `${name}: "Hörde du det? Chefen gillar mig." *(vänd mot omklädningsrummet)*`,
+              ]
+            : trait === 'lokal'
+            ? [
+                `${name}: "Det är därför man spelar — för den här klubben, inte för pengarna."`,
+                `${name}: "Jag är hemma här. Det räcker för mig."`,
+                `${name}: "Tack. Den här orten betyder allt."`,
+              ]
+            : trait === 'ledare'
+            ? [
+                `${name}: "Laget hör det också — det är bra för hela gruppen."`,
+                `${name}: "Tack. Vi är på rätt väg, jag känner det."`,
+                `${name}: "Det ger mig energi att driva de andra framåt."`,
+              ]
+            : highForm
+            ? [
+                `${name}: "Tack, det värmer."`,
+                `${name}: "Känslan är bra just nu — vi håller den."`,
+                `${name}: "Bra att du ser det. Jag är i bra slag."`,
+              ]
+            : lowForm
+            ? [
+                `${name}: "Tack… jag kämpar, men jag ger inte upp."`,
+                `${name}: "Det behövde jag höra. Jag hittar tillbaka."`,
+                `${name}: "Inte lätt just nu, men det hjälper att du säger det."`,
+              ]
+            : [
+                `${name}: "Tack, det värmer."`,
+                `${name}: "Uppskattat — jag gör mitt bästa."`,
+                `${name}: "Bra att höra. Jag kör på."`,
+                `${name}: "Det ger lite extra."`,
+                `${name}: "Tack. Vi tar en match i taget."`,
+              ]
+          feedback = pick(pool)
         } else if (choice === 'demand') {
           if (player.form >= 50) {
             moraleChange = 3
             formChange = 5
-            feedback = `${name}: "Jag ska bevisa att du har rätt."`
+            feedback = pick([
+              `${name}: "Jag ska bevisa att du har rätt."`,
+              `${name}: "Okej. Jag höjer nivån."`,
+              `${name}: "Förstått. Mer av mig härnäst."`,
+              `${name}: "Det är just det jag behöver höra."`,
+            ])
           } else {
             moraleChange = -5
             formChange = -2
-            feedback = `${name}: "Jag vet inte om jag orkar mer..."`
+            feedback = pick([
+              `${name}: "Jag vet inte om jag orkar mer..."`,
+              `${name}: "Jag försöker. Det är tyngre än det ser ut."`,
+              `${name}: "Krav hjälper inte just nu, men jag hör dig."`,
+            ])
           }
         } else if (choice === 'future') {
           const seasons = player.contractUntilSeason - game.currentSeason
           if (seasons > 2) {
             moraleChange = 3
-            feedback = `${name}: "Jag trivs bra här, inga planer på att lämna."`
+            feedback = pick([
+              `${name}: "Jag trivs bra här, inga planer på att lämna."`,
+              `${name}: "Det här är min klubb. Självklart stannar jag."`,
+              `${name}: "Vi är inne i något bra — jag vill vara med hela vägen."`,
+            ])
           } else if (seasons === 1) {
             moraleChange = -3
-            feedback = `${name}: "Jag behöver veta vad som gäller. Kontraktet går ut snart."`
+            feedback = pick([
+              `${name}: "Jag behöver veta vad som gäller. Kontraktet går ut snart."`,
+              `${name}: "Det börjar bli dags att prata förlängning på allvar."`,
+              `${name}: "Jag vill stanna — men jag behöver ett konkret erbjudande."`,
+            ])
             inboxTriggered = true
           } else {
             moraleChange = -8
-            feedback = `${name}: "Jag har inte hört ett ord om förlängning. Det säger mig allt."`
+            feedback = pick([
+              `${name}: "Jag har inte hört ett ord om förlängning. Det säger mig allt."`,
+              `${name}: "Ska jag läsa in något i den här tystnaden?"`,
+              `${name}: "Om inget händer snart börjar jag titta mig omkring."`,
+            ])
             inboxTriggered = true
           }
         }
