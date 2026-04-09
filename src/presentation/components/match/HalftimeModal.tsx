@@ -299,12 +299,12 @@ export function HalftimeModal({
             </p>
             {isSmFinal && (
               <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: 0, lineHeight: 1.5 }}>
-                Laget samlas i omklädningsrummet. Det är 30 minuter kvar till SM-guld.
+                Laget samlas i omklädningsrummet. Det är 45 minuter kvar till SM-guld.
               </p>
             )}
             {isCupFinal && !isSmFinal && (
               <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: 0, lineHeight: 1.5 }}>
-                Laget samlas i omklädningsrummet. Det är 30 minuter kvar till cuptiteln.
+                Laget samlas i omklädningsrummet. Det är 45 minuter kvar till cuptiteln.
               </p>
             )}
           </>

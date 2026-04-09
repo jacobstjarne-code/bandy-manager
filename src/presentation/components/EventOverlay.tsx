@@ -145,11 +145,6 @@ export function EventOverlay() {
               }}
             >
               {choice.label}
-              {choice.subtitle && (
-                <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>
-                  {choice.subtitle}
-                </p>
-              )}
             </button>
           ))}
         </div>

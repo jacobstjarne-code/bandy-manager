@@ -5,8 +5,6 @@ import { generateCommunityActivitiesEvents } from './communityActivitiesEvents'
 import { generatePatronEvents } from './patronEvents'
 import { generatePoliticianEvents } from './politicianEvents'
 import { generateSponsorEvents } from './sponsorEvents'
-import { generateHallDebateEvents } from './hallDebateEvents'
-
 // ── generateEvents ─────────────────────────────────────────────────────────
 export function generateEvents(
   game: SaveGame,
@@ -23,7 +21,6 @@ export function generateEvents(
     ...generatePatronEvents(game, currentRound, alreadyQueued, rand),
     ...generatePoliticianEvents(game, currentRound, alreadyQueued, rand),
     ...generateSponsorEvents(game, currentRound, alreadyQueued, rand),
-    ...generateHallDebateEvents(game, currentRound, alreadyQueued, rand),
     ...generateCharacterPlayerEvents(game.players ?? [], currentRound, alreadyQueued, rand),
   ]
 }

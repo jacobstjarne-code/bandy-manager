@@ -182,6 +182,21 @@ export function DashboardScreen() {
 
   const handleSimulateRemaining = () => {
     playSound('click')
+
+    // Snapshot state before simulation
+    const gameBeforeSim = useGameStore.getState().game
+    if (!gameBeforeSim) return
+    const managedId = gameBeforeSim.managedClubId
+    const standingBefore = gameBeforeSim.standings.find(s => s.clubId === managedId)
+    const positionBefore = standingBefore?.position ?? 0
+    const pointsBefore = standingBefore?.points ?? 0
+    // Record which managed fixtures were already completed before simulation
+    const completedBefore = new Set(
+      gameBeforeSim.fixtures
+        .filter(f => f.status === 'completed' && (f.homeClubId === managedId || f.awayClubId === managedId))
+        .map(f => f.id)
+    )
+
     let safetyLimit = 100  // 22 liga + ~4 cup + ~10 playoff = need headroom
     while (safetyLimit-- > 0) {
       const currentGame = useGameStore.getState().game
@@ -191,15 +206,31 @@ export function DashboardScreen() {
         .filter(f => f.status === 'scheduled' && (f.homeClubId === currentGame.managedClubId || f.awayClubId === currentGame.managedClubId))
         .sort((a, b) => a.matchday - b.matchday)[0]
       if (nextManaged?.isCup) break
+      if (nextManaged?.isKnockout) break
       const result = simulateRemainingStep()
       if (!result) break
       if (result.seasonEnded) break
+      if (result.playoffStarted) break
       // Stop if no more scheduled fixtures (season end / playoff start handled by dashboard)
       const hasMore = useGameStore.getState().game?.fixtures.some(f => f.status === 'scheduled')
       if (!hasMore) break
     }
-    // Navigate to dashboard — it handles season-end / playoff / next-round redirects
-    navigate('/game/dashboard', { replace: true })
+
+    // Collect newly completed managed fixtures
+    const gameAfterSim = useGameStore.getState().game
+    const standingAfter = gameAfterSim?.standings.find(s => s.clubId === managedId)
+    const positionAfter = standingAfter?.position ?? positionBefore
+    const pointsAfter = standingAfter?.points ?? pointsBefore
+    const simulatedFixtures = (gameAfterSim?.fixtures ?? []).filter(
+      f => f.status === 'completed'
+        && (f.homeClubId === managedId || f.awayClubId === managedId)
+        && !completedBefore.has(f.id)
+    ).sort((a, b) => a.matchday - b.matchday)
+
+    navigate('/game/sim-summary', {
+      replace: true,
+      state: { simulatedFixtures, positionBefore, positionAfter, pointsBefore, pointsAfter },
+    })
   }
 
   const handleAdvance = () => {

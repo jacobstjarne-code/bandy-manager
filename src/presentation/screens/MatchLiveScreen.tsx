@@ -236,16 +236,14 @@ export function MatchLiveScreen() {
     if (step.phase === 'overtime' && prevPhase.current !== 'overtime' && !isFastForward) {
       prevPhase.current = 'overtime'
       setShowOvertimeOverlay(true)
-      const timer = setTimeout(() => setShowOvertimeOverlay(false), 3000)
-      return () => clearTimeout(timer)
+      return // wait for user to click "Spela förlängning"
     }
     if (step.phase === 'overtime') prevPhase.current = 'overtime'
 
     if (step.phase === 'penalties' && prevPhase.current !== 'penalties' && !isFastForward) {
       prevPhase.current = 'penalties'
       setShowPenaltiesOverlay(true)
-      const timer = setTimeout(() => setShowPenaltiesOverlay(false), 3000)
-      return () => clearTimeout(timer)
+      return // wait for user to click "Påbörja straffläggning"
     }
     if (step.phase === 'penalties') prevPhase.current = 'penalties'
 
@@ -494,8 +492,18 @@ export function MatchLiveScreen() {
         />
       )}
 
-      {showOvertimeOverlay && <PhaseOverlay phase="overtime" />}
-      {showPenaltiesOverlay && <PhaseOverlay phase="penalties" />}
+      {showOvertimeOverlay && (
+        <PhaseOverlay
+          phase="overtime"
+          onContinue={() => { setShowOvertimeOverlay(false); setCurrentStep(prev => prev + 1) }}
+        />
+      )}
+      {showPenaltiesOverlay && (
+        <PhaseOverlay
+          phase="penalties"
+          onContinue={() => { setShowPenaltiesOverlay(false); setCurrentStep(prev => prev + 1) }}
+        />
+      )}
 
 
       {!isSmFinal && isCupFinal && ceremonySlide >= 1 && (

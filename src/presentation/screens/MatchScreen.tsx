@@ -209,29 +209,41 @@ export function MatchScreen() {
     for (const sid of Object.keys(current)) {
       if (current[sid] === playerId) current[sid] = null
     }
-    // Clear the target slot's previous occupant and add new player — single atomic update
-    const previousPid = current[slotId]
+    // Read previous occupant before overwriting
+    const previousPid = current[slotId] ?? null
     current[slotId] = playerId
-    if (previousPid && previousPid !== playerId) {
-      setBenchIds(prev => prev.includes(previousPid) ? prev : [...prev, previousPid])
-    }
-    if (!startingIds.includes(playerId)) {
-      // Use functional updater so we always work with latest state
-      setStartingIds(prev => {
-        const withoutPrev = previousPid && previousPid !== playerId
-          ? prev.filter(id => id !== previousPid)
-          : prev
-        return withoutPrev.includes(playerId) ? withoutPrev : [...withoutPrev, playerId]
-      })
-      setBenchIds(prev => prev.filter(id => id !== playerId))
-    } else if (previousPid && previousPid !== playerId) {
-      setStartingIds(prev => prev.filter(id => id !== previousPid))
-    }
     const newTactic = { ...tacticState, lineupSlots: current }
     setTacticState(newTactic)
     updateTactic(newTactic)
+
+    // Update starting/bench atomically using functional updaters (always fresh prev)
+    setStartingIds(prev => {
+      const isAlreadyStarting = prev.includes(playerId)
+      let next = [...prev]
+      // Remove previous occupant from starting
+      if (previousPid && previousPid !== playerId) {
+        next = next.filter(id => id !== previousPid)
+      }
+      // Add new player to starting if not already there
+      if (!isAlreadyStarting) {
+        next.push(playerId)
+      }
+      return next
+    })
+
+    setBenchIds(prev => {
+      let next = [...prev]
+      // Move previous occupant to bench if they're not already there
+      if (previousPid && previousPid !== playerId && !next.includes(previousPid)) {
+        next.push(previousPid)
+      }
+      // Remove new player from bench
+      next = next.filter(id => id !== playerId)
+      return next
+    })
+
     setSelectedSlotId(null)
-  }, [tacticState, startingIds, updateTactic])
+  }, [tacticState, updateTactic])
 
   const swapSlots = useCallback((fromSlotId: string, toSlotId: string) => {
     const current = { ...(tacticState.lineupSlots ?? {}) }
@@ -613,7 +625,10 @@ export function MatchScreen() {
             })
           })() : undefined}
           arenaName={(() => {
-            const homeClub = nextFixture ? game.clubs.find(c => c.id === nextFixture.homeClubId) : undefined
+            if (!nextFixture) return undefined
+            const isFinal = nextFixture.roundNumber > 22 && game.playoffBracket?.final?.fixtures.includes(nextFixture.id)
+            if (isFinal) return 'Studenternas IP, Uppsala'
+            const homeClub = game.clubs.find(c => c.id === nextFixture.homeClubId)
             return homeClub?.arenaName
           })()}
         />

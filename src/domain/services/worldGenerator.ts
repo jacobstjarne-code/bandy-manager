@@ -330,11 +330,11 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
   },
 ]
 
-// Position distribution: 2 GK, 5 B (backar), 5 H (halvar), 5 M (innrar/yttar), 5 F (forwards) = 22
+// Position distribution: 2 GK, 6 B (backar), 4 H (halvar), 5 M (innrar/yttar), 5 F (forwards) = 22
 const POSITION_POOL: PlayerPosition[] = [
   PlayerPosition.Goalkeeper, PlayerPosition.Goalkeeper,
-  PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender,
-  PlayerPosition.Half, PlayerPosition.Half, PlayerPosition.Half, PlayerPosition.Half, PlayerPosition.Half,
+  PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender,
+  PlayerPosition.Half, PlayerPosition.Half, PlayerPosition.Half, PlayerPosition.Half,
   PlayerPosition.Midfielder, PlayerPosition.Midfielder, PlayerPosition.Midfielder, PlayerPosition.Midfielder, PlayerPosition.Midfielder,
   PlayerPosition.Forward, PlayerPosition.Forward, PlayerPosition.Forward, PlayerPosition.Forward, PlayerPosition.Forward,
 ]

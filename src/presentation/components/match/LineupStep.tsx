@@ -220,6 +220,11 @@ export function LineupStep({
             ))}
           </div>
         )}
+        {canPlay && !startingIds.some(id => squadPlayers.find(p => p.id === id)?.position === PlayerPosition.Goalkeeper) && (
+          <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', fontSize: 12, color: 'var(--warning)', marginBottom: 10 }}>
+            ⚠️ Ingen målvakt i startelvan — en utespelare får gå i mål.
+          </div>
+        )}
         <button onClick={onNext} disabled={!canPlay} className={`btn ${canPlay ? 'btn-copper' : 'btn-ghost'}`} style={{
           width: '100%', padding: '15px', fontSize: 16, fontWeight: 600,
           cursor: canPlay ? 'pointer' : 'not-allowed',

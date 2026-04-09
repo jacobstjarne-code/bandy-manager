@@ -274,8 +274,12 @@ const SOCIAL_BODIES: Record<SocialEvent['type'], (name: string) => string> = {
 }
 
 export function generateSocialEvent(mecenat: Mecenat, season: number, matchday: number, rand: () => number): GameEvent {
-  const types = SOCIAL_TYPES[mecenat.businessType] ?? ['middag']
-  const type = types[Math.floor(rand() * types.length)]
+  // Jakt (älgjakt) only happens in Swedish hunting season: September–October = matchdays 1–3
+  const isHuntingSeason = matchday <= 3
+  const allTypes = SOCIAL_TYPES[mecenat.businessType] ?? (['middag'] as SocialEvent['type'][])
+  const types = allTypes.filter(t => t !== 'jakt' || isHuntingSeason)
+  const pool = types.length > 0 ? types : (['middag'] as SocialEvent['type'][])
+  const type = pool[Math.floor(rand() * pool.length)]
   const label = SOCIAL_LABELS[type]
   const body = SOCIAL_BODIES[type](mecenat.name)
 

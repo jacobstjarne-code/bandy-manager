@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { playSound } from '../audio/soundEffects'
@@ -95,11 +95,13 @@ export function GranskaScreen() {
   const game = useGameStore(s => s.game)
   const roundSummary = useGameStore(s => s.roundSummary)
   const clearRoundSummary = useGameStore(s => s.clearRoundSummary)
+  const advance = useGameStore(s => s.advance)
   const resolveEvent = useGameStore(s => s.resolveEvent)
   const [visible, setVisible] = useState(false)
   const [resolvedEventIds, setResolvedEventIds] = useState<Set<string>>(new Set())
   const [chosenLabels, setChosenLabels] = useState<Record<string, string>>({})
   const [soundsPlayed, setSoundsPlayed] = useState(false)
+  const didAdvance = useRef(false)
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80)
@@ -107,10 +109,17 @@ export function GranskaScreen() {
   }, [])
 
   useEffect(() => {
-    if (!roundSummary && !game?.lastCompletedFixtureId) {
+    if (roundSummary) return
+    if (!game?.lastCompletedFixtureId) {
       navigate('/game/dashboard', { replace: true })
+      return
     }
-  }, [roundSummary, game, navigate])
+    // Live match: advance() was never called. Process the remaining matchday now.
+    if (!didAdvance.current) {
+      didAdvance.current = true
+      advance(true)
+    }
+  }, [roundSummary, game, navigate, advance])
 
   useEffect(() => {
     if (!roundSummary || soundsPlayed) return
@@ -344,7 +353,6 @@ export function GranskaScreen() {
                           }}
                         >
                           {choice.label}
-                          {choice.subtitle && <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{choice.subtitle}</p>}
                         </button>
                       ))}
                     </div>

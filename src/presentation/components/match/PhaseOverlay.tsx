@@ -1,12 +1,13 @@
 interface PhaseOverlayProps {
   phase: 'overtime' | 'penalties'
+  onContinue: () => void
 }
 
-export function PhaseOverlay({ phase }: PhaseOverlayProps) {
+export function PhaseOverlay({ phase, onContinue }: PhaseOverlayProps) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 200,
-      background: 'rgba(0,0,0,0.6)',
+      background: 'rgba(0,0,0,0.75)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       textAlign: 'center',
     }}>
@@ -18,6 +19,15 @@ export function PhaseOverlay({ phase }: PhaseOverlayProps) {
           </h2>
           <p style={{ fontSize: 15, color: 'var(--text-light-secondary)' }}>Oavgjort efter 90 minuter.</p>
           <p style={{ fontSize: 14, color: 'rgba(245,241,235,0.45)', marginTop: 4 }}>Ytterligare 2 × 15 minuter spelas.</p>
+          <button onClick={onContinue} style={{
+            marginTop: 28, padding: '13px 36px',
+            background: 'var(--accent)', color: 'var(--bg)',
+            border: 'none', borderRadius: 0, cursor: 'pointer',
+            fontSize: 14, fontWeight: 700, letterSpacing: '1px',
+            fontFamily: 'var(--font-display)',
+          }}>
+            Spela förlängning →
+          </button>
         </>
       ) : (
         <>
@@ -27,6 +37,15 @@ export function PhaseOverlay({ phase }: PhaseOverlayProps) {
           </h2>
           <p style={{ fontSize: 15, color: 'var(--text-light-secondary)' }}>Fortfarande oavgjort efter förlängning.</p>
           <p style={{ fontSize: 14, color: 'rgba(245,241,235,0.45)', marginTop: 4 }}>Nu avgör straffarna!</p>
+          <button onClick={onContinue} style={{
+            marginTop: 28, padding: '13px 36px',
+            background: 'var(--danger)', color: '#fff',
+            border: 'none', borderRadius: 0, cursor: 'pointer',
+            fontSize: 14, fontWeight: 700, letterSpacing: '1px',
+            fontFamily: 'var(--font-display)',
+          }}>
+            Påbörja straffläggning →
+          </button>
         </>
       )}
     </div>

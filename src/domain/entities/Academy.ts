@@ -6,7 +6,7 @@ export interface YouthPlayer {
   id: string
   firstName: string
   lastName: string
-  age: number                 // 15-17
+  age: number                 // 15-19
   position: PlayerPosition
   archetype: PlayerArchetype
   currentAbility: number      // 10-30 typically

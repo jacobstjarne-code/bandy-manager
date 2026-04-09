@@ -74,7 +74,7 @@ export function generateYouthTeam(
   const players: YouthPlayer[] = []
   for (let i = 0; i < count; i++) {
     const position = YOUTH_POSITION_POOL[i % YOUTH_POSITION_POOL.length]
-    const age = 15 + Math.floor(rand() * 3)  // 15, 16 or 17
+    const age = 15 + Math.floor(rand() * 5)  // 15–19
     const pa = getPADistribution(academyLevel, club.youthQuality, rand)
     const ca = clamp(Math.round(caFloor + rand() * (caCeiling - caFloor)), caFloor, Math.min(pa - 5, caCeiling + 5))
     const devRate = clamp(Math.round(30 + rand() * 50 + (club.youthDevelopment - 50) / 5), 20, 80)

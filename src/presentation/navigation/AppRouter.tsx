@@ -32,6 +32,7 @@ import { HistoryScreen } from '../screens/HistoryScreen'
 import { PreSeasonScreen } from '../screens/PreSeasonScreen'
 import { HalfTimeSummaryScreen } from '../screens/HalfTimeSummaryScreen'
 import { RoundSummaryScreen } from '../screens/RoundSummaryScreen'
+import { SimSummaryScreen } from '../screens/SimSummaryScreen'
 import { useGameStore } from '../store/gameStore'
 
 function BoardMeetingGuard() {
@@ -64,6 +65,7 @@ export function AppRouter() {
           <Route path="history" element={<HistoryScreen />} />
           <Route path="pre-season" element={<PreSeasonScreen />} />
           <Route path="half-time-summary" element={<HalfTimeSummaryScreen />} />
+          <Route path="sim-summary" element={<SimSummaryScreen />} />
         </Route>
         <Route element={<GameGuard />}>
           <Route path="/game/review" element={<GranskaScreen />} />

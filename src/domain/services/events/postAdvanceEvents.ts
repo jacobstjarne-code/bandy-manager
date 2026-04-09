@@ -20,7 +20,7 @@ import {
   formatValue,
 } from './eventFactories'
 import { findEmployerForJob } from '../../data/localEmployers'
-import { generateSocialEvent, generateSilentShoutEvent, generateMecenatConflictEvent } from '../mecenatService'
+import { generateSilentShoutEvent, generateMecenatConflictEvent } from '../mecenatService'
 
 // ── generatePostAdvanceEvents ──────────────────────────────────────────────
 export function generatePostAdvanceEvents(
@@ -386,18 +386,6 @@ export function generatePostAdvanceEvents(
   }
 
   if (events.length >= 2) return events
-
-  // 5i. Mecenat social event (~10% per round per active mecenat)
-  for (const mec of game.mecenater ?? []) {
-    if (events.length >= 2) break
-    if (!mec.isActive) continue
-    if (rand() < 0.10) {
-      const eid = `event_social_${mec.id}_r${roundPlayed}`
-      if (!alreadyQueued.has(eid)) {
-        events.push(generateSocialEvent(mec, game.currentSeason, roundPlayed, rand))
-      }
-    }
-  }
 
   // 5j. Silent shout events (mecenat influence thresholds)
   for (const mec of game.mecenater ?? []) {
