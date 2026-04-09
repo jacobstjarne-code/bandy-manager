@@ -233,7 +233,7 @@ export function TransfersScreen() {
         </span>
       </div>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid var(--border)', paddingBottom: 8, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}>
+      <div style={{ display: 'flex', gap: 4, marginBottom: 10, borderBottom: '1px solid var(--border)', paddingBottom: 6, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}>
         {([
           { key: 'marknad', label: '🏪 Marknad' },
           { key: 'scouting', label: '🔍 Scouting' },
@@ -252,33 +252,42 @@ export function TransfersScreen() {
         ))}
       </div>
 
-      {({ marknad: 'Spelare som är tillgängliga för transfer just nu.',
-          scouting: 'Utvärdera spelare eller sök nya talanger.',
-          contracts: 'Förläng avtal med dina spelare.',
-          freeagents: 'Kontraktslösa spelare. Ingen transfersumma.',
-          sell: 'Sälj spelare från din trupp.',
-      } as Record<string, string>)[activeTab] && (
-        <p style={{ padding: '6px 12px 10px', fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', borderBottom: '1px solid var(--border)', marginBottom: 10 }}>
-          {({ marknad: 'Spelare som är tillgängliga för transfer just nu.',
-              scouting: 'Utvärdera spelare eller sök nya talanger.',
-              contracts: 'Förläng avtal med dina spelare.',
-              freeagents: 'Kontraktslösa spelare. Ingen transfersumma.',
-              sell: 'Sälj spelare från din trupp.',
-          } as Record<string, string>)[activeTab]}
-        </p>
-      )}
-
-      <div className="card-sharp card-stagger-1" style={{
+      <div className="card-sharp" style={{
         background: windowInfo.status === 'open' ? 'rgba(34,197,94,0.08)' : windowInfo.status === 'winter' ? 'rgba(196,122,58,0.08)' : 'rgba(239,68,68,0.06)',
         border: `1px solid ${windowInfo.status === 'open' ? 'rgba(34,197,94,0.3)' : windowInfo.status === 'winter' ? 'rgba(196,122,58,0.25)' : 'rgba(239,68,68,0.2)'}`,
-        padding: '10px 14px',
-        marginBottom: 20,
+        padding: '8px 12px',
+        marginBottom: 10,
       }}>
-        <p style={{ fontSize: 13, fontWeight: 700, color: windowInfo.status === 'open' ? 'var(--success)' : windowInfo.status === 'winter' ? 'var(--accent)' : 'var(--danger)', marginBottom: 4 }}>
-          {windowInfo.status === 'open' ? '🟢' : windowInfo.status === 'winter' ? '🟡' : '🔴'} {windowInfo.label}
+        <p style={{ fontSize: 12, fontWeight: 700, color: windowInfo.status === 'open' ? 'var(--success)' : windowInfo.status === 'winter' ? 'var(--accent)' : 'var(--danger)' }}>
+          {windowInfo.status === 'open' ? '🟢' : windowInfo.status === 'winter' ? '🟡' : '🔴'} {windowInfo.label} · <span style={{ fontWeight: 400, color: 'var(--text-secondary)' }}>{windowInfo.description}</span>
         </p>
-        <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{windowInfo.description}</p>
       </div>
+
+      {/* Aktiva bud (outgoing) — alltid synliga i marknad */}
+      {activeTab === 'marknad' && (() => {
+        const outgoing = (game.transferBids ?? []).filter(b => b.direction === 'outgoing' && b.status === 'pending')
+        if (outgoing.length === 0) return null
+        return (
+          <div style={{ marginBottom: 10 }}>
+            <SectionLabel>📤 Dina aktiva bud</SectionLabel>
+            <div className="card-sharp" style={{ overflow: 'hidden' }}>
+              {outgoing.map((bid, i) => {
+                const player = game.players.find(p => p.id === bid.playerId)
+                const club = game.clubs.find(c => c.id === bid.sellingClubId)
+                return (
+                  <div key={bid.id} style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', borderBottom: i < outgoing.length - 1 ? '1px solid var(--border)' : 'none', gap: 8 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 600 }}>{player ? `${player.firstName} ${player.lastName}` : '?'}</p>
+                      <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{club?.name ?? '?'} · Bud: {formatValue(bid.offerAmount)}</p>
+                    </div>
+                    <span style={{ fontSize: 11, color: 'var(--warning)', fontWeight: 600 }}>Väntar på svar</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Marknad tab */}
       {activeTab === 'marknad' && (() => {
@@ -360,20 +369,20 @@ export function TransfersScreen() {
           )}
           <SectionLabel>Utgående kontrakt</SectionLabel>
           {expiringPlayers.length === 0 ? (
-            <p style={{ fontSize: 14, color: 'var(--text-secondary)', padding: '12px 0' }}>Inga kontrakt utgår snart.</p>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', padding: '8px 0' }}>Inga kontrakt utgår snart.</p>
           ) : (
-            <div className="card-round" style={{ overflow: 'hidden' }}>
+            <div className="card-sharp" style={{ overflow: 'hidden' }}>
               {expiringPlayers.map((player, index) => (
-                <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', borderBottom: index < expiringPlayers.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
+                <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', borderBottom: index < expiringPlayers.length - 1 ? '1px solid var(--border)' : 'none', gap: 8 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {player.firstName} {player.lastName}
                     </p>
-                    <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+                    <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 1 }}>
                       {positionShort(player.position)} · {formatValue(player.marketValue)} · {formatCurrency(player.salary)}/mån · t.o.m. {player.contractUntilSeason}
                     </p>
                   </div>
-                  <button onClick={() => setRenewingPlayerId(player.id)} className="btn btn-outline" style={{ flexShrink: 0, padding: '6px 12px', fontSize: 12, fontWeight: 600 }}>
+                  <button onClick={() => setRenewingPlayerId(player.id)} className="btn btn-outline" style={{ flexShrink: 0, padding: '6px 10px', fontSize: 12, fontWeight: 600 }}>
                     Förläng
                   </button>
                 </div>
@@ -401,16 +410,16 @@ export function TransfersScreen() {
         <div className="card-stagger-2" style={{ marginBottom: 24 }}>
           <SectionLabel>Sätt spelare till salu</SectionLabel>
           {!windowOpen && (
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12 }}>Transferfönstret är stängt. Försäljning möjlig sommaren och vintern.</p>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>Transferfönstret är stängt. Försäljning möjlig sommaren och vintern.</p>
           )}
-          <div className="card-round" style={{ overflow: 'hidden' }}>
+          <div className="card-sharp" style={{ overflow: 'hidden' }}>
             {managedClubPlayers.sort((a, b) => b.currentAbility - a.currentAbility).map((player, index) => (
-              <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', borderBottom: index < managedClubPlayers.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
+              <div key={player.id} style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', borderBottom: index < managedClubPlayers.length - 1 ? '1px solid var(--border)' : 'none', gap: 8 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {player.firstName} {player.lastName}
                   </p>
-                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 1 }}>
                     {positionShort(player.position)} · Styrka {Math.round(player.currentAbility)} · MV {formatCurrency(player.marketValue ?? 0)}
                     {(() => {
                       const bidsForPlayer = (game.transferBids ?? []).filter(b => b.playerId === player.id && b.direction === 'incoming')
@@ -424,9 +433,9 @@ export function TransfersScreen() {
                   onClick={() => windowOpen && handleListForSale(player.id)}
                   disabled={!windowOpen}
                   className={`btn ${windowOpen ? 'btn-outline' : 'btn-ghost'}`}
-                  style={{ flexShrink: 0, padding: '6px 12px', fontSize: 12, fontWeight: 600, cursor: windowOpen ? 'pointer' : 'not-allowed', opacity: windowOpen ? 1 : 0.6 }}
+                  style={{ flexShrink: 0, padding: '6px 10px', fontSize: 12, fontWeight: 600, cursor: windowOpen ? 'pointer' : 'not-allowed', opacity: windowOpen ? 1 : 0.6 }}
                 >
-                  Sätt till salu
+                  Till salu
                 </button>
               </div>
             ))}
