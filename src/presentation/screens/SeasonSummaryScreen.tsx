@@ -224,6 +224,108 @@ export function SeasonSummaryScreen() {
           </p>
         </div>
 
+        {/* DIN SÄSONG — merged timeline */}
+        {(() => {
+          type TimelineItem = {
+            round: number
+            icon: string
+            headline: string
+            body: string
+            relatedPlayerName?: string
+          }
+          const items: TimelineItem[] = []
+
+          // keyMoments
+          for (const m of summary.keyMoments ?? []) {
+            const icon = m.type === 'derbyWin' ? '🔥'
+              : m.type === 'derbyLoss' ? '😶'
+              : m.type === 'hatTrick' ? '🎩'
+              : m.type === 'bigWin' ? '✅'
+              : m.type === 'bigLoss' ? '❌'
+              : m.type === 'comeback' ? '💪'
+              : m.type === 'lateWinner' ? '⚡'
+              : '🏒'
+            const relatedPlayer = m.relatedPlayerId ? game.players.find(p => p.id === m.relatedPlayerId) : null
+            items.push({
+              round: m.round,
+              icon,
+              headline: m.headline,
+              body: m.body,
+              relatedPlayerName: relatedPlayer ? `${relatedPlayer.firstName} ${relatedPlayer.lastName}` : undefined,
+            })
+          }
+
+          // arc storylines
+          const seasonStorylines = game.storylines?.filter(s => s.season === summary.season) ?? []
+          const storylineEmoji = (type: string): string => {
+            switch (type) {
+              case 'rescued_from_unemployment': return '🏭'
+              case 'went_fulltime_pro': return '⭐'
+              case 'returned_to_club': return '🏠'
+              case 'captain_rallied_team': return '💪'
+              case 'underdog_season': return '🎯'
+              case 'gala_winner': return '🏆'
+              case 'left_for_bigger_club': return '👋'
+              case 'journalist_feud': return '📰'
+              case 'relegation_escape': return '😅'
+              default: return '📖'
+            }
+          }
+          for (const sl of seasonStorylines) {
+            const p = sl.playerId ? game.players.find(pl => pl.id === sl.playerId) : null
+            items.push({
+              round: sl.matchday ?? 99,
+              icon: storylineEmoji(sl.type),
+              headline: sl.displayText,
+              body: '',
+              relatedPlayerName: p ? `${p.firstName} ${p.lastName}` : undefined,
+            })
+          }
+
+          items.sort((a, b) => a.round - b.round)
+          const topItems = items.slice(0, 7)
+
+          if (topItems.length === 0) return null
+
+          return (
+            <div style={{ marginBottom: 8 }}>
+              <p style={{
+                fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase',
+                color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 6,
+              }}>
+                🏒 DIN SÄSONG
+              </p>
+              {topItems.map((item, i) => (
+                <div key={i} className="card-round" style={{ padding: '10px 12px', marginBottom: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <div style={{
+                      width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                      background: 'var(--bg-dark)', color: 'var(--text-light)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 10, fontWeight: 700, fontFamily: 'var(--font-body)',
+                    }}>
+                      O{item.round}
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                        {item.icon} {item.headline}
+                      </p>
+                      {item.body && (
+                        <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 2, lineHeight: 1.4 }}>
+                          {item.body}
+                        </p>
+                      )}
+                      {item.relatedPlayerName && (
+                        <span style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 600 }}>{item.relatedPlayerName}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        })()}
+
         {/* SEASON'S BEST */}
         <div className="card-sharp card-stagger-2" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <SectionLabel>SÄSONGENS BÄSTA</SectionLabel>
@@ -418,107 +520,6 @@ export function SeasonSummaryScreen() {
           </p>
         </div>
 
-        {/* SÄSONGENS FEM STUNDER */}
-        {(summary.keyMoments ?? []).length > 0 && (
-          <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 8 }}>
-            <SectionLabel>⚡ SÄSONGENS STUNDER</SectionLabel>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {(summary.keyMoments ?? []).map((m, i) => {
-                const icon = m.type === 'derbyWin' ? '🔥'
-                  : m.type === 'derbyLoss' ? '😶'
-                  : m.type === 'hatTrick' ? '🎯'
-                  : m.type === 'bigWin' ? '✅'
-                  : m.type === 'bigLoss' ? '❌'
-                  : m.type === 'comeback' ? '💪'
-                  : '⏱️'
-                const isLast = i === (summary.keyMoments ?? []).length - 1
-                return (
-                  <div key={i} style={{
-                    display: 'flex',
-                    gap: 10,
-                    paddingBottom: isLast ? 0 : 8,
-                    marginBottom: isLast ? 0 : 8,
-                    borderBottom: isLast ? 'none' : '1px solid var(--border)',
-                  }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 28, flexShrink: 0 }}>
-                      <span style={{ fontSize: 13 }}>{icon}</span>
-                      <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginTop: 2 }}>O{m.round}</span>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 2px' }}>{m.headline}</p>
-                      <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.4, margin: 0 }}>{m.body}</p>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* SÄSONGENS BERÄTTELSER */}
-        {(summary.storyTriggers ?? []).length > 0 && (
-          <div style={{ marginTop: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>
-              SÄSONGENS BERÄTTELSER
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {(summary.storyTriggers ?? []).map((trigger, i) => (
-                <div key={i} style={{
-                  background: 'var(--bg-surface)',
-                  border: '1px solid rgba(196,122,58,0.2)',
-                  borderRadius: 10,
-                  padding: '10px 14px',
-                }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
-                    {trigger.headline}
-                  </p>
-                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                    {trigger.body}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* STORYLINES */}
-        {(() => {
-          const seasonStorylines = game.storylines?.filter(s => s.season === summary.season) ?? []
-          if (seasonStorylines.length === 0) return null
-          const storylineEmoji = (type: string): string => {
-            switch (type) {
-              case 'rescued_from_unemployment': return '🏭'
-              case 'went_fulltime_pro': return '⭐'
-              case 'returned_to_club': return '🏠'
-              case 'captain_rallied_team': return '💪'
-              case 'underdog_season': return '🎯'
-              case 'gala_winner': return '🏆'
-              case 'left_for_bigger_club': return '👋'
-              case 'journalist_feud': return '📰'
-              case 'relegation_escape': return '😅'
-              default: return '📖'
-            }
-          }
-          return (
-            <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 8 }}>
-              <SectionLabel>📖 SÄSONGENS BERÄTTELSE</SectionLabel>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {seasonStorylines.map((sl) => (
-                  <div key={sl.id} style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 8,
-                    padding: '6px 0',
-                    borderBottom: '1px solid var(--border)',
-                  }}>
-                    <span style={{ fontSize: 14, flexShrink: 0 }}>{storylineEmoji(sl.type)}</span>
-                    <span style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.4 }}>{sl.displayText}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )
-        })()}
 
         {/* NEXT SEASON BUTTON (only if not historical view) */}
         {!isHistorical && (
