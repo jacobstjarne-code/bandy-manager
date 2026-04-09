@@ -187,7 +187,7 @@ export function MatchScreen() {
     const starterIds = starters.map(p => p.id)
     const starterSet = new Set(starterIds)
     const bench = sorted.filter(p => !starterSet.has(p.id)).slice(0, 5)
-    const formation = tacticState.formation ?? '3-3-4'
+    const formation = tacticState.formation ?? '5-3-2'
     const template = FORMATIONS[formation]
     const newLineupSlots = autoAssignFormation(template, starters)
     const newTactic = { ...tacticState, lineupSlots: newLineupSlots }
@@ -201,7 +201,7 @@ export function MatchScreen() {
   }
 
   const assignPlayerToSlot = useCallback((playerId: string, slotId: string) => {
-    const formation = tacticState.formation ?? '3-3-4'
+    const formation = tacticState.formation ?? '5-3-2'
     const slotExists = FORMATIONS[formation].slots.some(s => s.id === slotId)
     if (!slotExists) return
     const current = { ...(tacticState.lineupSlots ?? {}) }
@@ -517,7 +517,7 @@ export function MatchScreen() {
           onSlotClick={slotId => setSelectedSlotId(prev => prev === slotId ? null : slotId)}
           onFormationChange={newTactic => {
             // Migrate: preserve players whose slotId exists in the new formation
-            const newFormation = newTactic.formation ?? '3-3-4'
+            const newFormation = newTactic.formation ?? '5-3-2'
             const newSlotIds = new Set(FORMATIONS[newFormation].slots.map(s => s.id))
             const oldSlots = tacticState.lineupSlots ?? {}
             const migrated: Record<string, string | null> = {}
