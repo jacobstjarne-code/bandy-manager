@@ -1,528 +1,470 @@
 # Bandy Manager — Design System
 
-Dokumenterar de designprinciper och mönster som etablerats under utvecklingen. Alla nya vyer och ändringar ska följa dessa regler.
+Dokumenterar de designprinciper och mönster som etablerats under utvecklingen. Alla nya vyer och ändringar MÅSTE följa dessa regler. Brott kräver omskrivning.
 
-**Uppdaterad:** 6 april 2026
+**Uppdaterad:** 9 april 2026
+
+**Mockups:** Se `docs/mockups/` för visuella referensfiler (HTML). Öppna i webbläsaren. Implementera det du ser, inte vad du tror det ska se ut som.
 
 ---
 
 ## 1. LAYOUTPRINCIPER
 
 ### Tight, inte luftig
-Spelet spelas på mobil. Varje pixel vertikal plats är värdefull. Generellt:
-- Card padding: `10px 14px` (inte 14px 16px, 16px 20px, 24px 20px)
-- Card margin-bottom: `8px` (inte 10px, 12px, 16px)
-- Gap mellan element: `6-8px` (inte 10px, 12px)
-- Sektions-labels: 0 eller max 4px marginBottom
+Spelet spelas på mobil (375px). Varje pixel vertikal plats är värdefull.
+
+| Element | Mått | INTE |
+|---------|------|------|
+| Card padding | `10px 12px` | 14px 16px, 16px 20px |
+| Card margin-bottom | `6px` (i grids), `4px` (enrader) | 8px, 10px, 12px |
+| Gap i grids | `6px` | 8px, 10px |
+| Gap i flex-columns | `4-6px` | 8px, 10px |
+| Sektions-label marginBottom | `4-6px` | 8px, 10px |
 
 ### Ingen onödig rubrik
-Skärmar som nås via BottomNav (Dashboard, Trupp, Tabell, Transfers, Inkorg, Förening) ska INTE ha en rubrik-rad med sidnamn — det framgår av navigationen. Ingen tillbaka-knapp på dessa skärmar heller.
-
-Undantag: Skärmar med hierarkisk navigering (SeasonSummary, MatchReport, History, BandyDoktorn) får ha tillbaka-knapp.
+Skärmar via BottomNav ska INTE ha rubrik-rad. Undantag: hierarkisk navigering (SeasonSummary, MatchReport, History).
 
 ### Knappar
-- Action-knappar (Ragga sponsor, Uppgradera, etc.) ska INTE vara fullbredd kant-till-kant
-- Använd kompakt knappstil: `padding: '8px 16px'`, `borderRadius: 8`, högerställd eller med max-width
-- CTA-knappar i footer (Spela omgång, Välj taktik, Starta säsong) FÅR vara fullbredd
-
-### Tab-beskrivningar
-Beskrivande text för flikar ska INTE vara egna sektioner med border-bottom.
-De ska integreras i befintliga kort (t.ex. som undertext i sammanfattningskortet).
-Storlek: `fontSize: 10, color: 'var(--text-muted)'`.
+- Action-knappar: INTE fullbredd. `padding: '8px 16px'`, `borderRadius: 8`, högerställd
+- CTA-knappar (Spela omgång, Välj taktik): FÅR vara fullbredd
 
 ---
 
 ## 2. KORTSYSTEM
 
-### `card-sharp` (standard)
-Alla informationskort ska använda CSS-klassen `card-sharp`. INTE inline `borderRadius: 12` med egna borders.
-
+### `card-sharp` (standard — ALL information)
 ```tsx
-<div className="card-sharp" style={{ padding: '10px 14px' }}>
+<div className="card-sharp" style={{ padding: '10px 12px' }}>
 ```
+Enraders-kort: `padding: '7px 10px'`
 
-### `card-round` (atmosfär/citat)
-Mjukare kort för stämningssättande text (pep-talk, funktionärsquotes):
-
+### `card-round` (atmosfär — BARA citat/stämning)
 ```tsx
-<div className="card-round" style={{ padding: '14px 16px' }}>
+<div className="card-round" style={{ padding: '8px 12px' }}>
 ```
+Används för: dagboken, funktionärsquotes, pep-talk. INTE för funktionella kort.
 
-### Section labels
-Sektions-rubriker i kort: 9px, fontWeight 600-700, letterSpacing 2.5px, textTransform uppercase, color `var(--text-muted)`. Alltid med emoji:
+### INGA andra korttyper
+Inga inline borderRadius. Inga egna border/background. CSS-klassen sköter allt.
 
+### Sektions-labels
 ```tsx
-<p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+<p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
   💰 EKONOMI
 </p>
 ```
+fontSize **8** (inte 9). letterSpacing **2px** (inte 2.5px). Alltid med emoji.
+
+### ›-knapp (navigeringsknapp)
+```tsx
+<button style={{
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  width: 16, height: 16, borderRadius: 4, flexShrink: 0,
+  background: 'transparent', border: '1px solid var(--border)',
+  color: 'var(--accent)', fontSize: 11, lineHeight: 1,
+  cursor: 'pointer',
+}}>›</button>
+```
+**16×16px.** Exakt denna styling. Kopiera. Ändra inget.
 
 ### Emoji-konventioner
-Samma emoji för samma koncept överallt:
-- 🏒 Match/spel (ALDRIG ⚽)
-- 💰 Ekonomi
-- 👥 Mecenater / Trupp
-- 🏋️ Träning
-- 🏠 Bygdens puls
-- 🏘️ Orten (i RoundSummary)
-- 🏛️ Kommun
-- 🏟️ Anläggning & faciliteter
-- 🏆 Cup/Slutspel
-- ⚔️ Topp 8 / Slutspel
-- 📬 Inkorg
-- 🩹 Skador
-- 🎓 Akademi
-- 🔄 Utlånade
-- 🔍 Scouting
-- 📋 Kontrakt / Styrelsens uppdrag
-- 💼 Transfers/Bud
-- 🔥 Derby
-- ⭐ Betyg/Prestation
-- 📊 Tabell
-- 📈 Form
-- 🩺 Bandydoktorn
-- 📖 Spelguide
-- 📣 Pep-talk
-- 🎮 Spelläge
-- 🎯 Förväntan & profil
-
-### ›-knapp
-Varje kort som leder vidare har en `›`-knapp: 18×18px, transparent bg, 1px border `var(--border)`, copper accent text, borderRadius 4.
+| Emoji | Betydelse |
+|-------|-----------|
+| 🏒 | Match/spel (ALDRIG ⚽) |
+| 💰 | Ekonomi |
+| 👥 | Trupp |
+| 👤 | Patron |
+| 🏋️ | Träning |
+| 🏠 | Bygdens puls |
+| 🏘️ | Orten |
+| 🏛️ | Kommun |
+| 🏟️ | Anläggning |
+| 🏆 | Cup |
+| ⚔️ | Topp 8 / Slutspel |
+| 📬 | Inkorg |
+| 🩹 | Skador |
+| 🎓 | Akademi |
+| 🔍 | Scouting |
+| 📋 | Kontrakt / Styrelsens uppdrag |
+| 💼 | Transfers/Bud |
+| 🔥 | Derby |
+| ⭐ | Betyg/Prestation |
+| 📊 | Tabell |
+| 📈 | Form |
+| 🩺 | Bandydoktorn |
+| 📖 | Spelguide |
+| 📣 | Pep-talk |
+| 🎤 | Presskonferens |
 
 ---
 
-## 3. GLOBAL HEADER (GameHeader)
+## 3. OMGÅNGSCYKELN — Förbered → Spela → Granska
 
-Mörk bakgrund (`var(--bg-dark)`), copper accent underline.
+### Fasindikator (PhaseIndicator)
+Placeras i GameShell under GameHeader. ALLTID synlig. Mörk bakgrund (del av header-zonen).
 
-Innehåll:
-- Vänster: Bandy Manager-logotyp (img, 26px hög)
-- Mitten: Klubbnamn (12px, font-display, fontWeight 700) + "Spelarnamn · Säsong · Omg X" (9px)
-- Höger: 🔔 Inkorg-knapp (med badge) + ⚙️ Inställningar-dropdown
+Tre prickar + labels + linjer. States:
+- **done**: filled copper, copper text
+- **active**: copper border + glow, bold copper text
+- **pending**: faint border, faint text
 
-### Inställningar-dropdown
-Kugghjulet öppnar en dropdown med:
-- 💾 Spara spel
-- 📂 Ladda spel
-- 🩺 Bandydoktorn
-- 📖 Spelguide (öppnar inline overlay)
-
-Dropdown: `position: absolute, top: 48, right: 12, var(--bg-surface), border, borderRadius: 8, zIndex: 200`
-
-### Spelguide-overlay
-10 FAQ-poster i scrollbar overlay. Design: `position: fixed, inset: 0, rgba(0,0,0,0.6), zIndex: 300`.
-Kort: `var(--bg), borderRadius: 12, maxWidth: 380, maxHeight: calc(100vh - 120px)`.
-
----
-
-## 4. FÄRGSYSTEM
-
-Använd ENBART CSS-variabler:
-- `var(--accent)` — copper, primär accent
-- `var(--accent-dark)` — mörkare copper
-- `var(--accent-deep)` — djupaste copper (CTA-gradient)
-- `var(--success)` — grön (vinst, positiv)
-- `var(--danger)` — röd (förlust, skada, negativ)
-- `var(--warning)` — orange/gul (varning)
-- `var(--ice)` — isblå (väder, borta-match, unga spelare)
-- `var(--text-primary)` — huvudtext
-- `var(--text-secondary)` — sekundärtext
-- `var(--text-muted)` — svag text, labels
-- `var(--text-light)` — ljus text på mörk bakgrund
-- `var(--bg)` — huvudbakgrund
-- `var(--bg-surface)` — kortbakgrund
-- `var(--bg-elevated)` — upphöjd bakgrund
-- `var(--bg-dark)` — mörk bakgrund (header, LED-tavla)
-- `var(--border)` — kantlinje
-- `var(--border-dark)` — mörkare kantlinje (bars, dividers)
-
-**Noll tolerans** för hårdkodade färger (#22c55e, #f59e0b, etc.)
-
-### Färgfunktioner (utility)
+Fas bestäms av route:
 ```typescript
-// Community standing: grön → accent → warning → danger
-csColor(cs: number): string  // i formatters.ts
-
-// Fitness: grön → warning → danger
-fitnessColor(f: number): string  // 70+ grön, 40+ warning, <40 danger
+'/match' → 'play'
+'/review' → 'review'
+allt annat → 'prepare'
 ```
+
+Renderas INTE under: intro, new-game, board-meeting, pre-season, champion, game-over, season-summary.
+
+Se mockup: `docs/mockups/round_cycle_mockup.html`
 
 ---
 
-## 5. TYPOGRAFI
+## 4. DASHBOARD — Förbered-fasen
 
-- `var(--font-display)` — rubriker, klubbnamn, poäng, citat
-- `var(--font-body)` (system-ui) — brödtext, labels, knappar
+### Layout (uppifrån och ner)
+1. **Välkomstkort** (omgång 1) ELLER **Nudge-agenda** (övriga)
+2. **NextMatchCard** (befintlig)
+3. **DailyBriefing** (dynamiskt enradskort)
+4. **2×2 grid** (Tabell | Senast | Orten | Ekonomi)
+5. **Enraders-kort** (Trupp, Cup/Playoff, Akademi)
+6. **CupCard/PlayoffCard** (expanded, om relevant)
+7. **CTA-sektion** (datum, DiamondDivider, trainer arc, knapp)
 
-Storlekar:
-- Sektions-label: 9-10px uppercase, letterSpacing 2-2.5px
-- Brödtext: 12-13px
-- Rubriker i kort: 14-15px
-- Stora siffror (poäng, score): 22-32px, font-display
-- Sidrubriker: 18-22px, font-display
+### Välkomstkort (omgång 1)
+`card-sharp` (INTE card-round). Sektionslabel "🏒 SÄSONGSSTART". Kort text + nudges med prickar och →.
+
+### Nudge-agenda (omgång 2+)
+Rubrik: "ATT GÖRA" + "N av M klart"
+
+Nudgar trackar `visitedScreensThisRound`. Done = opacity 0.5, line-through, grön ✓.
+Max 3 nudgar. Om inga: visa INTE sektionen.
+
+```tsx
+<div style={{
+  display: 'flex', alignItems: 'center', gap: 8,
+  padding: '7px 10px', borderRadius: 8,
+  background: 'var(--bg-surface)', border: '0.5px solid var(--border)',
+  cursor: 'pointer', fontSize: 12, color: 'var(--text-secondary)',
+}}>
+  <span style={{ width: 6, height: 6, borderRadius: '50%', background: color }} />
+  {text}
+  <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--accent)' }}>→</span>
+</div>
+```
+
+### DailyBriefing (dagboken)
+`card-round`, fontSize 11, EN rad. Visar det mest intressanta per omgång:
+1. Derby? → "🔥 Derby. {rivalryName}. V{w} O{d} F{l}."
+2. Spelare i form? → "📈 {namn} — {N} mål senaste {M}."
+3. Patron krav? → "👤 {namn}: \"{demand}\""
+4. Akademiprospekt? → "🎓 {namn} (P19) visar A-lagsklass."
+5. Transferfönster? → "💼 Fönstret {öppnar/stänger} om {N} omg."
+6. Tidningsrubrik? → "📰 {localPaperName}: {headline}"
+
+### 2×2 grid
+```tsx
+<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, margin: '0 0 6px' }}>
+```
+Varje cell: `card-sharp`, padding `8px 10px`, klickbar.
+
+**Tabell:** Position (stor Georgia) + poäng + ms + form-prickar + avstånd grannar.
+**Senast:** Score + pill (V/F/O) + motståndare + POTM.
+**Orten:** Puls-siffra (Georgia) + bar + citat.
+**Ekonomi:** Kassa (Georgia) + netto/omg.
+
+Omgång 1: Tabell visar "12 lag · 22 omg". Senast visar styrelsens mål.
+
+### Enraders-kort
+`card-sharp`, padding `7px 10px`, margin-bottom `4px`. EN rad.
+```
+EMOJI LABEL     info-text     ›
+```
+
+### CTA
+Datum + Omgång → DiamondDivider → Trainer arc mood (11px italic) → CTA-knapp.
+CTA-text: "Redo — spela omgång {N} →".
 
 ---
 
-## 6. OVERLAYS & MODALER
+## 5. GRANSKA-FASEN (GranskaScreen)
 
-### Grundregel
-ALLA overlays (events, matchresultat, kontrakt, byten, spelguide) ska vara **overlays** — inte egna routes. Centrerade, inte bottom-sheets.
+### Route: `/game/review`
 
-### Backdrop
-```css
-position: fixed;
-inset: 0;
-background: rgba(0,0,0,0.6);  /* ALDRIG 0.85 eller 0.96 */
-display: flex;
-align-items: center;       /* CENTRERAD, inte flex-end */
-justify-content: center;
-z-index: 300;              /* events 300, matchdone 200 */
-padding: 20px;
+Ersätter MatchResultScreen + RoundSummaryScreen. EN vy med allt post-match.
+
+### Layout
+1. **Resultat-hero** — "SLUTRESULTAT", score 36px Georgia 800, vinst/förlust-pill, POTM, attendance
+2. **Nyckelmoment** — mini-timeline (hem vänster, borta höger)
+3. **Events inline** — presskonferens och andra events som kort med val. Kollapsar till ✓ vid val.
+4. **Omgångssammanfattning** — rader med FÖRÄNDRING ("7 → 6 ↑", "+8 400 kr", "72 → 74 ↑"). Klickbara → deep-link.
+5. **Andra matcher** — vinnande lag bold (inte "relevanta" lag)
+6. **CTA** — "Nästa omgång →" (primär) + "Se fullständig matchrapport →" (ghost)
+
+### Inline events
+INTE overlay. Kort med val-knappar. resolveEvent() direkt vid klick. Ohanterade events → carry over till dashboard.
+
+### EventOverlay blockering
+EventOverlay renderas INTE under `/game/review`:
+```typescript
+const isReviewScreen = location.pathname === '/game/review'
+if (isReviewScreen) return null
 ```
 
-### Kort inuti overlay
-```css
-background: var(--bg);     /* INTE var(--bg-surface) eller var(--bg-dark-surface) */
-border-radius: 12px;       /* INTE 16px 16px 0 0 (bottom-sheet-stil) */
-border: 1px solid var(--border);
-box-shadow: 0 8px 40px rgba(0,0,0,0.3);
-max-height: 85vh;
-overflow-y: auto;
-width: 100%;
-max-width: 380px;
+Se mockup: `docs/mockups/round_cycle_mockup.html` (fas ③)
+
+---
+
+## 6. TAKTIKVY — Interaktiv pitch
+
+### TacticPreview.tsx
+11 prickar (5-3-2) på en isyta. Reagerar i realtid på taktikval.
+
+**Sticky:** position sticky, top 0, z-index 5. Scrollar inte bort.
+
+**Prickar:** 14px, koppar (#8b7332), 2px vit border, box-shadow. GK grön.
+
+**Effekter per taktikval:**
+| Inställning | Effekt |
+|-------------|--------|
+| Mentalitet offensiv | Hela laget glider uppåt |
+| Mentalitet defensiv | Kompakt bakåt |
+| Bredd bred | Prickar sprider ut horisontellt |
+| Bredd smal | Prickar klumpar centralt |
+| Press hög | Försvarslinjen skjuts uppåt |
+| Press låg | Djupt försvar |
+| Anfallsfokus kanter | Anfallare + ytterhalvar breddar |
+| Anfallsfokus centralt | Anfallare klumpar ihop |
+
+**Animation:** `transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)`
+
+**Konsekvens-taggar** under relevanta val:
+```tsx
+<span className="con-tag con-pos">+10% försvar</span>
+<span className="con-tag con-neg">-15% skottchanser</span>
 ```
 
-### Stäng-beteende
-- Klick på backdrop stänger: `onClick={onClose}` på yttre div
-- `onClick={e => e.stopPropagation()}` på inre kortet
-- ×-knapp INUTI kortet (övre högra hörnet), inte utanför
+Se mockup: `docs/mockups/tactic_view_mockup.html`
 
-### Overlay-hierarki (zIndex)
+---
+
+## 7. MATCH — Slutsignal
+
+Vid matchDone:
+1. Auto-scroll stannar
+2. "Domaren blåser av!" infogad i feeden (13px bold + 2-3 raders sammanfattning)
+3. "Se sammanfattning →" knapp UNDER feeden (inte overlay)
+4. Spelaren kan scrolla upp och läsa hela matchen
+5. MatchDoneOverlay renderas INTE — ersatt av in-feed slutsignal
+
+---
+
+## 8. GLOBAL HEADER (GameHeader) + FASINDIKATOR
+
+Mörk bakgrund. Två rader:
+1. Logotyp | Klubbnamn + "Namn · Säsong · Omg X" | 🔔 ⚙
+2. **PhaseIndicator** — Förbered → Spela → Granska (se avsnitt 3)
+
+---
+
+## 9. FÄRGSYSTEM
+
+ENBART CSS-variabler. **Noll tolerans för hårdkodade hex-koder.**
+
+| Variabel | Användning |
+|----------|-----------|
+| `var(--accent)` | Copper, primär accent |
+| `var(--accent-dark)` | Mörkare copper |
+| `var(--accent-deep)` | Djupaste copper (CTA) |
+| `var(--success)` | Grön (vinst, positiv) |
+| `var(--danger)` | Röd (förlust, skada) |
+| `var(--warning)` | Orange (varning) |
+| `var(--ice)` | Isblå (väder, borta) |
+| `var(--text-primary)` | Huvudtext |
+| `var(--text-secondary)` | Sekundärtext |
+| `var(--text-muted)` | Svag text, labels |
+| `var(--text-light)` | Ljus text på mörk bg |
+| `var(--bg)` | Huvudbakgrund |
+| `var(--bg-surface)` | Kortbakgrund |
+| `var(--bg-elevated)` | Upphöjd bakgrund |
+| `var(--bg-dark)` | Mörk bakgrund |
+| `var(--border)` | Kantlinje |
+| `var(--border-dark)` | Mörkare kantlinje |
+| `var(--font-display)` | Georgia — siffror, rubriker, citat |
+| `var(--font-body)` | system-ui — allt annat |
+
+### Verifiering
+```bash
+grep -rn "#[0-9a-fA-F]\{6\}" src/presentation/ --include="*.tsx" | grep -v node_modules | grep -v ".svg"
+```
+Ska returnera NOLL rader (utom SVG-illustrationer).
+
+---
+
+## 10. TYPOGRAFI
+
+| Användning | Font | Storlek | Vikt |
+|------------|------|---------|------|
+| Sektions-label | body | 8px | 600 |
+| Brödtext | body | 11-12px | 400 |
+| Kort-rubrik | body | 13-14px | 600-700 |
+| Stora siffror (poäng, score) | display | 22-36px | 400-800 |
+| Matchresultat | display | 36px | 800 |
+| Tabellposition | display | 22-30px | 400 |
+| Ekonomi-siffra | display | 14-18px | 500-700 |
+
+---
+
+## 11. OVERLAYS & MODALER
+
+Centrerade, INTE bottom-sheets.
+
+```css
+backdrop: rgba(0,0,0,0.6)
+align-items: center (centrerad)
+kort: var(--bg), borderRadius 12, max-width 380px
+```
+
 | Overlay | zIndex |
 |---------|--------|
 | EventOverlay | 300 |
-| Spelguide | 300 |
 | SubstitutionModal | 600 |
 | MatchDoneOverlay | 200 |
-| BidModal / RenewModal | 300 |
-| FormDots tooltip | 100 |
 
 ---
 
-## 7. FORMGUIDE (FormDots / FormSquares)
+## 12. FORMGUIDE
 
-### Delad komponent
-All formvisning ska använda `FormDots` (cirklar) eller `FormSquares` (fyrkanter med bokstav) från `src/presentation/components/FormDots.tsx`.
+Komponent: `FormSquares` / `FormDots`. Data: `getFormResults()`.
+Nyast till VÄNSTER. Tap-tooltip med resultat + motståndare.
 
-### Data
-All formdata ska använda `getFormResults()` från `src/presentation/utils/formUtils.ts`.
-Returnerar `{ result: 'V'|'O'|'F', score: string, opponent: string }`.
-
-### Ordning
-Nyast till VÄNSTER. Sorteras `b.roundNumber - a.roundNumber`.
-
-### Färger
-| Result | Färg | Bakgrund (squares) | Border (squares) |
-|--------|------|-------------------|-------------------|
-| V (vinst) | `var(--success)` | `rgba(90,154,74,0.15)` | `rgba(90,154,74,0.3)` |
-| F (förlust) | `var(--danger)` | `rgba(176,80,64,0.15)` | `rgba(176,80,64,0.3)` |
-| O (oavgjort) | `var(--accent)` | `rgba(196,186,168,0.15)` | `rgba(196,186,168,0.3)` |
-
-### Tap-tooltip
-Tap på en prick/fyrkant visar resultat + motståndare:
-- Dark bakgrund: `var(--bg-dark)`
-- Position: ovanför (`bottom: size + 6`)
-- Stängs vid tap utanför (fixed inset 0 transparent lager)
-
-### Varianter
-| Variant | Storlek | Används i |
-|---------|---------|-----------|
-| FormDots (cirklar) | 8px | TabellScreen |
-| FormSquares (fyrkanter) | 22px | RoundSummaryScreen |
-| FormSquares (fyrkanter) | 14px | LastResultCard (dashboard) |
+| Variant | Storlek | Var |
+|---------|---------|-----|
+| Dots | 8px | TabellScreen |
+| Squares | 22px | RoundSummaryScreen |
+| Squares | 10-14px | Dashboard |
 
 ---
 
-## 8. MATCHRESULTAT — Score-färg
+## 13. MATCHRESULTAT — Score-färg + Flavor text
 
-### Vid normal vinst/förlust
-Båda siffror i samma färg: `var(--success)` vid vinst, `var(--danger)` vid förlust, `var(--accent)` vid oavgjort.
+Se avsnitt 5 (GranskaScreen). Per-lag-färger vid OT/straffar.
 
-### Vid straffar/förlängning (score oavgjort)
-Individuell färg per lag:
-- Vinnande lag: `var(--success)`
-- Förlorande lag: `var(--danger)`
+### Andra matcher (i GranskaScreen)
+Vinnande lag = bold 700, `var(--text-primary)`.
+Förlorande lag = normal 400, `var(--text-muted)`.
+Oavgjort = båda 400.
 
-Beräkning:
-```typescript
-const homeWon = penResult ? penResult.home > penResult.away
-  : otResult ? otResult === 'home'
-  : homeScore > awayScore
-const homeColor = homeWon ? 'var(--success)' : awayWon ? 'var(--danger)' : 'var(--accent)'
-```
-
-### Flavor text
-| Scenario | Text |
-|----------|------|
-| Straffvinst | 🎯 Kalla nerver i straffarna |
-| Straffförlust | 😔 Straffarna avgjorde |
-| OT-vinst | ⏱️ Avgjort i sista stund |
-| OT-förlust | ⏱️ Förlängt lidande |
-| Storvinst (3+) | 💪 Dominant insats |
-| Målrikt (8+ mål) | 🔥 Målrik historia |
-| Knapp vinst (1 mål) | 😅 Knapp seger |
-| Klar vinst | ✅ Klar vinst |
-| Storförlust (3+) | 💣 Svår dag på jobbet |
-| Knapp förlust | 😤 Nära men inte nog |
-| Klar förlust | ❌ Klar förlust |
-| Målrikt kryss (8+) | 🎢 Dramatiskt kryss |
-| Rättvis kryss | 🤝 Rättvis poängdelning |
+INTE "relevanta lag" bold — det är förvirrande.
 
 ---
 
-## 9. INKORG
-
-### Raddesign
-- Padding: `7px 12px` (tight)
-- Ikon-cirkel: 22px (inte 28px)
-- Titel: 13px
-- Oläst-prick: 6px cirkel INLINE före titeln (inte egen rad)
-- Oläst border-left: `3px solid var(--accent)` (tydlig)
-- "Tryck för att läsa mer": BORTTAGEN (klickbarhet är signal nog)
-- PlayerLink: inline, inte i wrapper-div
-
----
-
-## 10. LINEUP-LISTA (Match → Lista)
-
-### Spelarrad
-- Nummerscirkel: 24px (inte 32px)
-- Padding: `5px 10px` (inte 8px 12px)
-- Gap: 8px (inte 10px)
-- Position-text: 10px (inte 11px)
-- START-label: 10px, `var(--success)` för startspelare
-
----
-
-## 11. BYGDENS PULS / RELATIONSBAR
-
-### Standard bar-mönster
-Används för: community standing, mecenat-happiness, politiker-relation.
+## 14. SPELARPORTRÄTT
 
 ```tsx
-<div style={{ display: 'flex', gap: 2 }}>
-  <div style={{ flex: value, height: H, background: color, borderRadius: 'Rpx 0 0 Rpx' }} />
-  <div style={{ flex: 100 - value, height: H, background: 'var(--border-dark)', borderRadius: '0 Rpx Rpx 0' }} />
-</div>
+<img
+  src={getPortraitPath(player.id, player.age)}
+  style={{
+    width: 36, height: 36, borderRadius: '50%',
+    objectFit: 'cover',
+    objectPosition: 'center 20%',  // Centrera ansiktet, inte mitten av bilden
+    border: '2px solid var(--border)',
+  }}
+/>
 ```
 
-| Användning | Height | Border-radius |
-|------------|--------|---------------|
-| Bygdens puls (KlubbTab) | 7px | 4px |
-| Bygdens puls (RoundSummary) | 5px | 3px |
-| Bygdens puls (Dashboard) | 7px | 4px |
-| Mecenat happiness | 4px | 2px |
-| Politiker relation | 6px | 3px |
-
-### Färglogik
-```typescript
-// Community standing
-csColor(cs) — grön >70, accent >50, warning >30, danger ≤30
-
-// Mecenat/politiker relation
-relColor — success ≥70, accent ≥40, danger <40
-```
+`object-position: center 20%` — ansiktet sitter ofta i övre tredjedelen av bilden.
 
 ---
 
-## 12. TRAINER ARC (Stämningstext)
+## 15. MECENAT & PATRON
 
-Visas ovanför CTA-knappen på dashboard. Centrerad, italic.
+### Terminologi
+- **Patron** = enskild maktfigur (en per klubb). Label: "PATRON" + typ ("Brukspatron", "IT-entreprenör" etc.)
+- **Mecenat** = bidragsgivare (kan vara flera). Label: "MECENATER"
 
+### Generering
+- 50% chans kvinnor (`rand() < 0.5`)
+- Varje mecenat har `backstory` — en rad om bakgrund
+
+### Orten-vy
+Patron-kort och mecenat-kort ska visa backstory:
 ```tsx
-<div style={{ textAlign: 'center', marginBottom: 6 }}>
-  <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
-    {moodText}
+{mecenat.backstory && (
+  <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 2 }}>
+    {mecenat.backstory}
   </p>
-  {reason && (
-    <p style={{ fontSize: 10, color: 'var(--text-muted)', opacity: 0.7, marginTop: 2 }}>
-      {reason}
-    </p>
-  )}
-</div>
-```
-
-Reason hämtas från `trainerArc.history` (senaste transitionens reason).
-
----
-
-## 13. CTA-KNAPPAR (Huvudknapp)
-
-### Dashboard CTA ("Spela omgång X →")
-```css
-width: 100%;
-padding: 18px;
-background: linear-gradient(135deg, var(--accent-dark), var(--accent-deep));
-color: var(--text-light);
-border-radius: 12px;
-font-size: 15px;
-font-weight: 600;
-letter-spacing: 2px;
-text-transform: uppercase;
-font-family: var(--font-body);
-animation: pulseCTA 3s ease-in-out infinite;
-```
-
-### RoundSummary CTA ("Nästa omgång →")
-Samma som dashboard CTA men med `texture-leather` klass.
-
-### Match CTA ("SPELA MATCHEN →")
-`btn-copper` klass, `flex: 2`, `padding: 13px`.
-
----
-
-## 14. STAGGER-ANIMATIONER
-
-### RoundSummaryScreen
-Element fadar in med fördröjning:
-```typescript
-const fadeIn = (i: number) => ({
-  opacity: visible ? 1 : 0,
-  transform: visible ? 'translateY(0)' : 'translateY(12px)',
-  transition: `all 0.35s ease ${80 + i * 60}ms`,
-})
-```
-
-### Inbox
-```css
-animation: fadeInUp 200ms ease-out ${Math.min(index, 14) * 30}ms both;
-```
-
-### Spelarlista
-Max 8 animerade:
-```css
-animation: index < 8 ? `fadeInUp 250ms ease-out ${index * 40}ms both` : 'none';
+)}
 ```
 
 ---
 
-## 15. TABELL
+## 16. NUDGE-NAVIGERING
 
-### Positionspilar
-Jämför mot FÖRRA OMGÅNGENS tabellposition (inte förra säsongen).
-Beräknas via `calculateStandings()` med fixtures exkl. senaste omgången.
-- ▲ grön = klättrat
-- ▼ röd = fallit
-
-### Zonindelning
-- Position 1-3: accent border-left
-- Position 4-8: svag accent border-left
-- Position 9-10: transparent
-- Position 11-12: danger border-left
-- Slutspelsstrecket: divider efter pos 8
-- Nedflyttning: divider efter pos 10
-
-### Utfällning (klick på lag)
-- Eget lag: visar V/O/F, gjorda/insläppta mål
-- Andra lag: nästa möte, H2H denna säsong, karriärstatistik
+Nudges navigerar till RÄTT skärm:
+| Nudge | Navigerar till |
+|-------|---------------|
+| Kontrollera truppen | /game/squad |
+| Förläng kontrakt | /game/squad (INTE /game/transfers) |
+| Styrelseuppdrag: Fan mood | /game/club med tab 'orten' (INTE 'training') |
+| Styrelseuppdrag: Ekonomi | /game/club med tab 'ekonomi' |
+| Scouting | /game/transfers |
 
 ---
 
-## 16. ORTEN-TABBEN (KlubbTab)
+## 17. LINEUP-STATES (Dashboard)
 
-### Sektionsordning
-1. 🏠 Bygdens puls (stort nummer + bar + aktiviteter + funktionärsquote)
-2. 👥 Mecenater (namn + business + happiness-bar + bidrag)
-3. 🏛️ Kommun (namn + parti + agenda + relationsbar + knappar)
-4. 🏟️ Anläggning & faciliteter (StatBar-rader + projekt)
-5. 🎯 Förväntan & profil (förväntningar + spelstil + styrelsemål)
-6. 📅 Säsongshistorik
+Tre states i NextMatchCard:
 
-### Mecenat och kommun — matchande typografi
-Båda sektioner följer samma mönster:
-- Namn: `fontSize: 13, fontWeight: 600`
-- Undertext: `fontSize: 11, color: 'var(--text-muted)'`
-- Bar: segmented bar (se avsnitt 11)
-- Status/emoji högerställd
+| State | Tag-text | Klass | Pulse |
+|-------|----------|-------|-------|
+| Ingen lineup | "Välj trupp" | tag-copper | ja |
+| Auto-carryover | "Förra uppst." | tag-outline | nej |
+| Aktivt vald | "Redo ✓" | tag-green | nej |
 
-### Kommun-knappar
-Tre knappar i flexrad med cooldown-hantering:
-- Disabled om cooldown/redan använd
-- Opacity 0.5 vid disabled
-- Feedback visas inline (4 sekunder timeout)
-
-### Dubbla parenteser
-`polData.party` kan redan innehålla parenteser.
-Kolla: `party.startsWith('(') ? party : \`(${party})\``
+Trackas via `lineupConfirmedThisRound` i SaveGame.
 
 ---
 
-## 17. PEP-TALK (StartStep)
-
-Atmosfärtext memoiseras med `useMemo([fixture?.id])` för att undvika
-byte vid re-render (t.ex. vid live/snabbsim-toggle).
-
----
-
-## 18. PLANVY (PITCH)
-
-- Bakgrund: vit is-gradient (`#F5F1EB→#FAFAF8→#F0ECE4`)
-- Spelarcirklar: `rgba(255,255,255,0.5)` fill, mörk text `#1A1A18`
-- Ring-färg: grön (rätt position), orange (intill), röd (fel)
-- Positionslabel OVANFÖR cirkeln, spelarnamn UNDER
-- Tillräcklig höjd (PH ≥ 170) så cirklarna inte flyter ihop
-
----
-
-## 19. BANDYSPECIFIKT
+## 18. BANDYSPECIFIKT
 
 - 🏒 (inte ⚽) överallt
-- Offside FINNS — ta aldrig bort
 - Inga gula/röda kort — 10 min utvisning
-- 2 poäng för vinst (inte 3)
-- Termer: avslag, brytning, frislag, vaden (inte vadden)
-- Positioner: MV, B (back), YH (ytterhalv), MF (mittfältare), A (anfallare)
-- "Plan" — ALDRIG "rink" (rink = ishockey)
-- Flygande byten (som ishockey, inga begränsade byten)
+- 2 poäng för vinst
+- Positioner: MV, B, YH, MF, A
+- "Plan" — ALDRIG "rink"
+- Flygande byten
 - Hörnor = centralt offensivt vapen
 
 ---
 
-## 20. MATCHKOMMENTARER
+## 19. VERIFIERING — obligatorisk efter varje implementationssteg
 
-- Kommentarer som antyder trötthet/tid ("publiken suckar", "klockan tickar") kräver minute ≥ 20
-- Max EN texthändelse per minut
-- Hörnmål ska vara tydligt separerade från missade hörnor
+```bash
+# Inga hardkodade hex:
+grep -rn "#[0-9a-fA-F]\{6\}" src/presentation/ --include="*.tsx" | grep -v node_modules | grep -v ".svg"
+
+# card-sharp/card-round används (inte inline borderRadius):
+grep -n "borderRadius:" src/presentation/screens/*.tsx | grep -v "tab\|button\|nudge\|bar\|pill\|99\|50%\|cta\|phase\|pitch"
+
+# Alla sektions-labels har rätt format:
+grep -B1 "letterSpacing" src/presentation/screens/*.tsx src/presentation/components/dashboard/*.tsx
+
+# fontSize under 8 (för litet):
+grep -n "fontSize: [0-7][^0-9]" src/presentation/screens/*.tsx
+
+# Build + tester:
+npm run build && npm test
+```
 
 ---
 
-## 21. SegmentedControl-stil
+## 20. MOCKUPS — referensfiler
 
-Alla toggle/val-knappar (taktik, intensitet, budget, kontraktslängd):
-- Bakgrunds-container med padding 3px, borderRadius 8
-- Knappar med borderRadius 6, padding 8px
-- Aktiv: `btn-copper` eller `background: rgba(196,122,58,0.2)`, border, accent color
-- Inaktiv: transparent, `color: var(--text-muted)`
+| Fil | Beskrivning |
+|-----|-------------|
+| `docs/mockups/round_cycle_mockup.html` | Hela omgångscykeln: Förbered → Spela → Granska |
+| `docs/mockups/tactic_view_mockup.html` | Interaktiv taktikvy med rörliga prickar |
 
----
-
-## 22. NAVIGATION / DEEP-LINKS
-
-### Location state-mönster
-Skärmar som ska öppna en specifik vy via navigation:
-```typescript
-navigate('/game/tabell', { state: { tab: 'cupen' } })
-navigate('/game/club', { state: { tab: 'orten' } })
-navigate('/game/squad', { state: { highlightPlayer: playerId } })
-navigate('/game/transfers', { state: { highlightPlayer: playerId } })
-```
-
-Mottagande skärm läser state i `useEffect` och rensar med:
-```typescript
-window.history.replaceState({ ...window.history.state, usr: {} }, '')
-```
-
-### PlayerLink
-Navigerar smart baserat på ägarskap:
-- Egna spelare → `/game/squad` med `highlightPlayer`
-- Andra lags spelare → `/game/transfers` med `highlightPlayer`
+Öppna i webbläsaren. Implementera det du ser.
