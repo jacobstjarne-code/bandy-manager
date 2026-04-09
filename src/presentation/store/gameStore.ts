@@ -16,13 +16,6 @@ import { loadSaveGame, listSaveGames, deleteSaveGame, migrateLocalStorageIfNeede
 import { applyFinanceChange } from '../../domain/services/economyService'
 import { getAvailableProjects, startFacilityProject as startFacProj } from '../../domain/services/facilityService'
 
-export interface SaveGameSummary {
-  id: string
-  managerName: string
-  clubName: string
-  season: number
-  lastSavedAt: string
-}
 import { matchActions } from './actions/matchActions'
 import { trainingActions } from './actions/trainingActions'
 import { transferActions } from './actions/transferActions'
@@ -43,20 +36,16 @@ interface GameState {
   updateTactic: (tactic: Tactic) => void
   setTraining: (focus: TrainingFocus) => void
   markTutorialSeen: () => void
-  dismissOnboarding: () => void
   markInboxRead: (itemId: string) => void
   markAllInboxRead: () => void
   startEvaluation: (playerId: string, clubId: string, sameRegion: boolean, hasPlayedAgainst?: boolean) => { success: boolean; error?: string }
   placeOutgoingBid: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => { success: boolean; error?: string }
   resolveEvent: (eventId: string, choiceId: string) => void
   saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection, overtimeResult?: 'home' | 'away', penaltyResult?: { home: number; away: number }, attendance?: number) => void
-  clearGame: () => void
-  listSaves: () => SaveGameSummary[]
   clearSeasonSummary: () => void
   clearBoardMeeting: () => void
   requestDetailedAnalysis: (opponentClubId: string, fixtureId: string) => { success: boolean; error?: string }
   startTalentSearch: (position: string, maxAge: number, maxSalary: number, currentRound: number) => { success: boolean; error?: string }
-  incrementDoctorQuestions: () => void
   talkToPlayer: (playerId: string, choice: 'encourage' | 'demand' | 'future', currentRound: number) => { moraleChange: number; formChange: number; feedback: string; inboxTriggered: boolean }
   clearPreSeason: () => void
   setBudgetPriority: (priority: 'squad' | 'balanced' | 'youth') => void
@@ -198,12 +187,6 @@ export const useGameStore = create<GameState>()(
         set({ game: { ...game, tutorialSeen: true } })
       },
 
-      dismissOnboarding: () => {
-        const { game } = get()
-        if (!game) return
-        set({ game: { ...game, onboardingStep: 99 } })
-      },
-
       markInboxRead: (itemId) => {
         const { game } = get()
         if (!game) return
@@ -222,11 +205,6 @@ export const useGameStore = create<GameState>()(
         set({ game: resolveEventFn(game, eventId, choiceId) })
       },
 
-      clearGame: () => set({ game: null, lastAdvanceResult: null, roundSummary: null }),
-      listSaves: () => {
-        return listSaveGames()
-      },
-
       requestDetailedAnalysis: (opponentClubId, fixtureId) => {
         const { game } = get()
         if (!game) return { success: false, error: 'Inget spel laddat' }
@@ -243,12 +221,6 @@ export const useGameStore = create<GameState>()(
           }
         })
         return { success: true }
-      },
-
-      incrementDoctorQuestions: () => {
-        const { game } = get()
-        if (!game) return
-        set({ game: { ...game, doctorQuestionsUsed: (game.doctorQuestionsUsed ?? 0) + 1 } })
       },
 
       talkToPlayer: (playerId, choice, currentRound) => {

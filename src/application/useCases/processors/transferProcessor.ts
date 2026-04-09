@@ -62,6 +62,22 @@ export function processTransferBids(
   const newBids = generateIncomingBids(preEventGame, nextMatchday, localRand)
   const allBids: TransferBid[] = [...resolvedBids, ...newBids]
 
+  // Incoming bid notifications
+  for (const bid of newBids) {
+    if (bid.direction !== 'incoming') continue
+    const target = preEventGame.players.find(p => p.id === bid.playerId)
+    const buyingClub = preEventGame.clubs.find(c => c.id === bid.buyingClubId)
+    if (!target || !buyingClub) continue
+    inboxItems.push({
+      id: `inbox_incoming_bid_${bid.id}`,
+      date: newDate,
+      type: InboxItemType.TransferBidReceived,
+      title: `Inkommande bud — ${target.firstName} ${target.lastName}`,
+      body: `${buyingClub.name} lägger ett bud på ${target.firstName} ${target.lastName}. Erbjuder ${bid.offerAmount.toLocaleString('sv-SE')} kr. Du har tre omgångar på dig att svara.`,
+      isRead: false,
+    })
+  }
+
   // Transfer rumour: newly active outgoing bids get a 50% chance of inbox rumour
   const newlyActiveBids = resolvedBids.filter(
     b => b.direction === 'outgoing' && b.status === 'pending' && b.createdRound === nextMatchday,
@@ -94,7 +110,7 @@ export function processTransferBids(
       inboxItems.push({
         id: `inbox_bid_accepted_${bid.id}`,
         date: newDate,
-        type: InboxItemType.Transfer,
+        type: InboxItemType.TransferBidResult,
         title: `Bud accepterat — ${target.firstName} ${target.lastName}`,
         body: `${sellingClub?.name ?? 'Klubben'} accepterar ditt bud på ${target.firstName} ${target.lastName}! Spelaren ansluter till truppen.`,
         isRead: false,
@@ -103,7 +119,7 @@ export function processTransferBids(
       inboxItems.push({
         id: `inbox_bid_rejected_${bid.id}`,
         date: newDate,
-        type: InboxItemType.Transfer,
+        type: InboxItemType.TransferBidResult,
         title: `Bud avslaget — ${target.firstName} ${target.lastName}`,
         body: `${sellingClub?.name ?? 'Klubben'} avslår ditt bud på ${target.firstName} ${target.lastName}.`,
         isRead: false,
