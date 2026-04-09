@@ -5,6 +5,9 @@ services:
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     pullRequestPreviewsEnabled: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.0
     routes:
       - type: rewrite
         source: /*
