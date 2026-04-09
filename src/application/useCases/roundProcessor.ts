@@ -985,6 +985,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // ── Halvtidssummering — trigger efter liga-omgång 11 ───────────────────────
+  if (
+    justCompletedManagedFixture &&
+    !justCompletedManagedFixture.isCup &&
+    justCompletedManagedFixture.roundNumber === 11 &&
+    !game.showHalfTimeSummary
+  ) {
+    updatedGame = { ...updatedGame, showHalfTimeSummary: true }
+  }
+
   // Onboarding step progression (advances after first 3 managed matches)
   const currentOnboarding = updatedGame.onboardingStep ?? 0
   if (currentOnboarding < 4 && justCompletedManagedFixture) {

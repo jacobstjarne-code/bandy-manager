@@ -30,6 +30,7 @@ import { GranskaScreen } from '../screens/GranskaScreen'
 
 import { HistoryScreen } from '../screens/HistoryScreen'
 import { PreSeasonScreen } from '../screens/PreSeasonScreen'
+import { HalfTimeSummaryScreen } from '../screens/HalfTimeSummaryScreen'
 import { RoundSummaryScreen } from '../screens/RoundSummaryScreen'
 import { useGameStore } from '../store/gameStore'
 
@@ -62,6 +63,7 @@ export function AppRouter() {
 
           <Route path="history" element={<HistoryScreen />} />
           <Route path="pre-season" element={<PreSeasonScreen />} />
+          <Route path="half-time-summary" element={<HalfTimeSummaryScreen />} />
         </Route>
         <Route element={<GameGuard />}>
           <Route path="/game/review" element={<GranskaScreen />} />

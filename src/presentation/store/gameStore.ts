@@ -48,6 +48,7 @@ interface GameState {
   startTalentSearch: (position: string, maxAge: number, maxSalary: number, currentRound: number) => { success: boolean; error?: string }
   talkToPlayer: (playerId: string, choice: 'encourage' | 'demand' | 'future', currentRound: number) => { moraleChange: number; formChange: number; feedback: string; inboxTriggered: boolean }
   clearPreSeason: () => void
+  clearHalfTimeSummary: () => void
   setBudgetPriority: (priority: 'squad' | 'balanced' | 'youth') => void
   interactWithPolitician: (action: 'invite' | 'budget' | 'apply') => { success: boolean; message: string }
   setTransferBudget: (amount: number) => void

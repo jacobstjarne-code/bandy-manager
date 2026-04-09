@@ -169,6 +169,12 @@ export function gameFlowActions(get: Get, set: Set) {
       set({ game: { ...game, showPreSeason: false } })
     },
 
+    clearHalfTimeSummary: () => {
+      const { game } = get()
+      if (!game) return
+      set({ game: { ...game, showHalfTimeSummary: false } })
+    },
+
     clearSeasonSummary: () => {
       const { game } = get()
       if (!game) return

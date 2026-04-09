@@ -284,4 +284,7 @@ export interface SaveGame {
 
   // V1.3 — Player Arc Controller
   activeArcs?: ActiveArc[]
+
+  // V1.3 — Halvtidssummering (visas efter liga-omgång 11)
+  showHalfTimeSummary?: boolean
 }

@@ -60,6 +60,7 @@ export function DashboardScreen() {
     if (!game) return
     if (game?.managerFired) navigate('/game/game-over', { replace: true })
     else if (game?.showSeasonSummary) navigate('/game/season-summary', { replace: true })
+    else if (game?.showHalfTimeSummary) navigate('/game/half-time-summary', { replace: true })
     else if (game?.showBoardMeeting) navigate('/game/board-meeting', { replace: true })
     else if (game?.showPreSeason) navigate('/game/pre-season', { replace: true })
     else if (playoffInfo?.status === PlayoffStatus.Completed) navigate('/game/champion', { replace: true })
