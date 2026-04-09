@@ -119,6 +119,21 @@ export function TacticPreview({ tacticState }: TacticPreviewProps) {
           }}
         />
       ))}
+
+      {/* Legend */}
+      <div style={{
+        position: 'absolute', bottom: 6, right: 8,
+        display: 'flex', gap: 8, zIndex: 3,
+      }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 9, color: 'rgba(100,90,70,0.6)' }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#5a8a4a', display: 'inline-block', flexShrink: 0 }} />
+          MV
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 9, color: 'rgba(100,90,70,0.6)' }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', flexShrink: 0 }} />
+          Utespelare
+        </span>
+      </div>
     </div>
   )
 }

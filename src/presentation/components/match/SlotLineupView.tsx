@@ -142,11 +142,11 @@ export function SlotLineupView({
 
       {/* Slot groups */}
       {groupedSlots.map(group => (
-        <div key={group.groupLabel} style={{ marginBottom: 12 }}>
+        <div key={group.groupLabel} style={{ marginBottom: 8 }}>
           <p style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: '1.5px',
+            fontSize: 9, fontWeight: 700, letterSpacing: '1.5px',
             textTransform: 'uppercase', color: 'var(--text-muted)',
-            marginBottom: 6,
+            marginBottom: 4,
           }}>
             {group.groupLabel}
           </p>
@@ -158,9 +158,9 @@ export function SlotLineupView({
               <div
                 key={slot.id}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '8px 10px',
-                  marginBottom: 6,
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '6px 8px',
+                  marginBottom: 4,
                   background: player ? 'var(--bg-elevated)' : 'transparent',
                   border: player ? '1px solid var(--border)' : '1.5px dashed rgba(196,122,58,0.35)',
                   borderRadius: 'var(--radius-sm)',
@@ -168,11 +168,11 @@ export function SlotLineupView({
               >
                 {/* Slot badge */}
                 <div style={{
-                  width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                  width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
                   background: player ? 'rgba(196,122,58,0.15)' : 'rgba(196,122,58,0.06)',
                   border: `1px solid ${player ? 'rgba(196,122,58,0.4)' : 'rgba(196,122,58,0.2)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 9, fontWeight: 800, color: 'var(--accent)',
+                  fontSize: 8, fontWeight: 800, color: 'var(--accent)',
                 }}>
                   {slot.label}
                 </div>
@@ -183,13 +183,13 @@ export function SlotLineupView({
                     onClick={() => handleSlotTap(slot)}
                     style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
                   >
-                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
                       {player.shirtNumber != null && (
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginRight: 4 }}>#{player.shirtNumber}</span>
+                        <span style={{ fontSize: 10, color: 'var(--text-muted)', marginRight: 4 }}>#{player.shirtNumber}</span>
                       )}
                       {player.lastName}
                     </p>
-                    <p style={{ fontSize: 11, color: player.position !== slot.position ? 'var(--warning)' : 'var(--text-muted)', marginTop: 1 }}>
+                    <p style={{ fontSize: 10, color: player.position !== slot.position ? 'var(--warning)' : 'var(--text-muted)', marginTop: 1 }}>
                       {positionShort(player.position)} · {Math.round(player.currentAbility)} CA
                       {player.position !== slot.position && ' · felpos'}
                     </p>
@@ -199,7 +199,7 @@ export function SlotLineupView({
                     onClick={() => handleSlotTap(slot)}
                     style={{ flex: 1, cursor: 'pointer' }}
                   >
-                    <p style={{ fontSize: 13, color: 'rgba(196,122,58,0.6)', fontStyle: 'italic' }}>
+                    <p style={{ fontSize: 12, color: 'rgba(196,122,58,0.6)', fontStyle: 'italic' }}>
                       välj spelare ›
                     </p>
                   </div>
@@ -211,8 +211,8 @@ export function SlotLineupView({
                     onClick={(e) => { e.stopPropagation(); handleClearSlot(slot) }}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
-                      fontSize: 14, color: 'var(--text-muted)',
-                      padding: '4px', lineHeight: 1, flexShrink: 0,
+                      fontSize: 13, color: 'var(--text-muted)',
+                      padding: '2px', lineHeight: 1, flexShrink: 0,
                     }}
                   >
                     ✕
