@@ -4,7 +4,6 @@ import { useGameStore } from '../store/gameStore'
 import { playSound } from '../audio/soundEffects'
 import { MatchEventType } from '../../domain/enums'
 import { csColor, formatFinance } from '../utils/formatters'
-import { getRivalry } from '../../domain/data/rivalries'
 import { FixtureStatus } from '../../domain/enums'
 import type { EventChoice } from '../../domain/entities/GameEvent'
 
@@ -104,13 +103,6 @@ export function GranskaScreen() {
         f.awayClubId !== game.managedClubId
       )
     : []
-  const myPosition = standing?.position ?? 99
-  const isRelevantFixture = (f: typeof otherResults[0]) => {
-    const isRival = !!getRivalry(game.managedClubId, f.homeClubId) || !!getRivalry(game.managedClubId, f.awayClubId)
-    const homePos = game.standings.find(s => s.clubId === f.homeClubId)?.position ?? 99
-    const awayPos = game.standings.find(s => s.clubId === f.awayClubId)?.position ?? 99
-    return isRival || Math.abs(homePos - myPosition) <= 2 || Math.abs(awayPos - myPosition) <= 2
-  }
   const getClubShort = (id: string) => game.clubs.find(c => c.id === id)?.shortName ?? game.clubs.find(c => c.id === id)?.name ?? '?'
 
   // Pending events (inline)
@@ -339,12 +331,13 @@ export function GranskaScreen() {
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {otherResults.map(f => {
-                const relevant = isRelevantFixture(f)
+                const homeWon = (f.homeScore ?? 0) > (f.awayScore ?? 0)
+                const awayWon = (f.awayScore ?? 0) > (f.homeScore ?? 0)
                 return (
                   <div key={f.id} style={{ display: 'flex', alignItems: 'center', padding: '3px 0' }}>
-                    <span style={{ flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: relevant ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: relevant ? 600 : 400 }}>{getClubShort(f.homeClubId)}</span>
+                    <span style={{ flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: homeWon ? 700 : 400, color: homeWon ? 'var(--text-primary)' : 'var(--text-muted)' }}>{getClubShort(f.homeClubId)}</span>
                     <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', width: 40, textAlign: 'center', flexShrink: 0 }}>{f.homeScore}–{f.awayScore}</span>
-                    <span style={{ flex: 1, fontSize: 11, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: relevant ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: relevant ? 600 : 400 }}>{getClubShort(f.awayClubId)}</span>
+                    <span style={{ flex: 1, fontSize: 11, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: awayWon ? 700 : 400, color: awayWon ? 'var(--text-primary)' : 'var(--text-muted)' }}>{getClubShort(f.awayClubId)}</span>
                   </div>
                 )
               })}
@@ -362,6 +355,15 @@ export function GranskaScreen() {
         zIndex: 50, opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease 0.3s',
         display: 'flex', flexDirection: 'column', gap: 8,
       }}>
+        {(() => {
+          const unresolved = pendingEvents.filter(e => !resolvedEventIds.has(e.id)).length
+          if (unresolved === 0) return null
+          return (
+            <p style={{ fontSize: 10, color: 'var(--warning)', textAlign: 'center', margin: '0 0 4px' }}>
+              {unresolved} ohanterad{unresolved > 1 ? 'e' : ''} händelse{unresolved > 1 ? 'r' : ''} — du kan hantera dem senare
+            </p>
+          )
+        })()}
         {fixture && (
           <button
             onClick={() => navigate('/game/match', { state: { showReport: true } })}
