@@ -296,9 +296,13 @@ export function GranskaScreen() {
                   </span>
                 </div>
                 {rs.injuries && rs.injuries.length > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/squad')}>
+                  <div style={{ padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/squad')}>
                     <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>🩹 Skador</span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--danger)' }}>{rs.injuries.join(', ')}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 3 }}>
+                      {rs.injuries.map((inj, i) => (
+                        <span key={i} style={{ fontSize: 12, fontWeight: 600, color: 'var(--danger)' }}>{inj}</span>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {rs.youthMatchResult && (
