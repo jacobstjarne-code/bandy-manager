@@ -498,7 +498,7 @@ export function DashboardScreen() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ ...LABEL }}>👥 Trupp</span>
               <span style={{ fontSize: 11, color: injuredCount > 0 ? 'var(--danger)' : 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
-                {readyCount} redo{injuredCount > 0 ? ` · ${injuredCount} skadad` : ''} · Form {avgForm} · Kond {avgFitness}
+                {readyCount} redo{injuredCount > 0 ? ` · ${injuredCount} skadad${injuredCount > 1 ? 'e' : ''}` : ''} · Form {avgForm} · Kond {avgFitness}
               </span>
             </div>
             <button style={NAV_BTN}>›</button>
