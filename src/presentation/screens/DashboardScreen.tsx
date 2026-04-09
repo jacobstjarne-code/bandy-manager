@@ -39,7 +39,7 @@ const LABEL: React.CSSProperties = {
 }
 
 export function DashboardScreen() {
-  const { game, advance, markTutorialSeen, dismissOnboarding } = useGameStore()
+  const { game, advance, markTutorialSeen } = useGameStore()
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const club = useManagedClub()
   const standing = useCurrentStanding()
@@ -196,6 +196,12 @@ export function DashboardScreen() {
   const injuredCount = squadPlayers.filter(p => p.isInjured).length
   const expiringPlayer = squadPlayers.find(p => p.contractUntilSeason <= game.currentSeason + 1)
 
+  // ── First round ────────────────────────────────────────────────
+  const isFirstRound = !game.fixtures.some(f =>
+    f.status === 'completed' &&
+    (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+  )
+
   const nudges: { text: string; screen: string; state?: Record<string, unknown>; done: boolean; color: 'red' | 'yellow' | 'green' }[] = []
   if (injuredCount > 0) nudges.push({ text: `Kontrollera truppen (${injuredCount} skadad${injuredCount > 1 ? 'e' : ''})`, screen: 'squad', done: visited.includes('squad'), color: 'red' })
   if (expiringPlayer && nudges.length < 3) nudges.push({ text: `Förläng kontrakt: ${expiringPlayer.firstName} ${expiringPlayer.lastName}`, screen: 'squad', done: visited.includes('squad'), color: 'red' })
@@ -203,6 +209,15 @@ export function DashboardScreen() {
   const active = (game.boardObjectives ?? []).find(o => o.status === 'active')
   const obj = atRisk ?? active
   if (obj && nudges.length < 3) nudges.push({ text: `Styrelseuppdrag: ${obj.label}`, screen: 'club', state: { tab: 'orten' }, done: visited.includes('club'), color: atRisk ? 'red' : 'yellow' })
+  if (!isFirstRound && game.onboardingStep !== undefined && game.onboardingStep <= 4 && nudges.length < 3) {
+    const onboardingHints: Record<number, { text: string; screen: string; state?: Record<string, unknown> }> = {
+      1: { text: 'Justera träningen', screen: 'club', state: { tab: 'training' } },
+      2: { text: 'Kolla styrelsens uppdrag', screen: 'club', state: { tab: 'ekonomi' } },
+      3: { text: 'Besök Orten', screen: 'club', state: { tab: 'orten' } },
+    }
+    const oh = onboardingHints[game.onboardingStep]
+    if (oh) nudges.push({ text: oh.text, screen: oh.screen, state: oh.state, done: visited.includes(oh.screen), color: 'green' })
+  }
   const doneCount = nudges.filter(n => n.done).length
 
   // ── Ekonomi data ───────────────────────────────────────────────
@@ -238,12 +253,6 @@ export function DashboardScreen() {
   const cupEliminated = cupStatus?.eliminated ?? false
   const showExpandedCup = !!(game.cupBracket && !cupEliminated && nextCupFixture)
 
-  // ── First round ────────────────────────────────────────────────
-  const isFirstRound = !game.fixtures.some(f =>
-    f.status === 'completed' &&
-    (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-  )
-
   // ── Trainer arc ────────────────────────────────────────────────
   const moodTexts: Record<string, string> = {
     honeymoon: '☀️ Allt stämmer just nu',
@@ -262,35 +271,12 @@ export function DashboardScreen() {
         <TutorialOverlay managerName={game.managerName} clubName={club.name} onDone={markTutorialSeen} />
       )}
 
-      {/* Onboarding hint — thin banner (döljs omgång 1) */}
-      {!isFirstRound && game.onboardingStep !== undefined && game.onboardingStep >= 0 && game.onboardingStep <= 4 && (() => {
-        const hints: Record<number, { icon: string; title: string; path: string; state?: Record<string, unknown> }> = {
-          0: { icon: '👥', title: 'Sätt din startelva', path: '/game/match' },
-          1: { icon: '🏋️', title: 'Justera träningen', path: '/game/club', state: { tab: 'training' } },
-          2: { icon: '🏛️', title: 'Kolla styrelsens uppdrag', path: '/game/club', state: { tab: 'ekonomi' } },
-          3: { icon: '🏘️', title: 'Besök Orten', path: '/game/club', state: { tab: 'orten' } },
-          4: { icon: '📋', title: 'Träningsplanering', path: '/game/club', state: { tab: 'training' } },
-        }
-        const h = hints[game.onboardingStep]
-        if (!h) return null
-        return (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 14px', background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)', marginBottom: 4 }}>
-            <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
-              {h.icon} {h.title} —{' '}
-              <span onClick={() => navigate(h.path, h.state ? { state: h.state } : undefined)} style={{ color: 'var(--accent)', cursor: 'pointer', textDecoration: 'underline' }}>
-                Gå dit →
-              </span>
-            </span>
-            <button onClick={dismissOnboarding} style={{ fontSize: 10, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', marginLeft: 8 }}>✕</button>
-          </div>
-        )
-      })()}
 
       <div className="texture-wood card-stack" style={{ paddingTop: 8, paddingBottom: 120 }}>
 
         {/* ① VÄLKOMSTKORT (omgång 1) eller AGENDA (övriga omgångar) */}
         {isFirstRound ? (
-          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '14px' }}>
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
             <p style={{ ...LABEL, marginBottom: 8 }}>🏒 SÄSONGSSTART {game.currentSeason}</p>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 10, fontFamily: 'var(--font-body)' }}>
               {club.name} väntar. Sätt din startelva och kör.
