@@ -209,7 +209,7 @@ export function gameFlowActions(get: Get, set: Set) {
           available[0]?.id,
         )
       }
-      return advance()
+      return advance(true) // suppress navigation — caller handles it
     },
   }
 }

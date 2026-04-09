@@ -39,7 +39,7 @@ const LABEL: React.CSSProperties = {
 }
 
 export function DashboardScreen() {
-  const { game, advance, markTutorialSeen } = useGameStore()
+  const { game, advance, markTutorialSeen, simulateRemainingStep } = useGameStore()
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const club = useManagedClub()
   const standing = useCurrentStanding()
@@ -169,6 +169,22 @@ export function DashboardScreen() {
     }
     return 'Fortsätt →'
   })()
+
+  const handleSimulateRemaining = () => {
+    playSound('click')
+    let safetyLimit = 30
+    while (safetyLimit-- > 0) {
+      const result = simulateRemainingStep()
+      if (!result) break
+      if (result.seasonEnded) break
+      // Stop if season ended or no more scheduled fixtures
+      const currentGame = useGameStore.getState().game
+      if (!currentGame) break
+      const hasMore = currentGame.fixtures.some(f => f.status === 'scheduled')
+      if (!hasMore) break
+    }
+    navigate('/game/review')
+  }
 
   const handleAdvance = () => {
     playSound('click')
@@ -562,7 +578,7 @@ export function DashboardScreen() {
           )}
 
           {canSimulateRemaining && (
-            <button onClick={() => {}} className="btn btn-ghost" style={{ width: '100%', marginBottom: 8, justifyContent: 'center' }}>
+            <button onClick={handleSimulateRemaining} className="btn btn-ghost" style={{ width: '100%', marginBottom: 8, justifyContent: 'center' }}>
               ⏩ Simulera resterande säsong
             </button>
           )}
