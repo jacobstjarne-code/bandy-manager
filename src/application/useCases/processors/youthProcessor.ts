@@ -105,9 +105,10 @@ export function processYouth(
         type: 'communityEvent',
         title: `Skolkonflikt — ${player.firstName} ${player.lastName}`,
         body: `${player.firstName} har nationellt prov imorgon. Han missar träningen om han pluggar.`,
+        relatedPlayerId: player.id,
         choices: [
-          { id: 'let_study', label: 'Låt honom plugga', effect: { type: 'noOp' } },
-          { id: 'train', label: 'Han bör komma på träningen', effect: { type: 'noOp' } },
+          { id: 'let_study', label: 'Låt honom plugga', subtitle: '📚 +confidence', effect: { type: 'noOp' } },
+          { id: 'train', label: 'Han bör komma på träningen', subtitle: '⚠️ −confidence', effect: { type: 'noOp' } },
         ],
         resolved: false,
       })
@@ -119,14 +120,25 @@ export function processYouth(
     if (callupCandidates.length >= 1) {
       const selected = callupCandidates.slice(0, Math.min(2, callupCandidates.length))
       const names = selected.map(p => `${p.firstName} ${p.lastName}`).join(' och ')
+      const pronoun = selected.length === 1 ? 'Han' : 'De'
       gameEvents.push({
         id: `event_district_callup_${nextMatchday}_${game.currentSeason}`,
         type: 'communityEvent',
         title: `Juniorlandslagssamling — ${names}`,
-        body: `${names} är kallade till Sveriges P19-samling. De missar 2 P19-matcher men kan få värdefull erfarenhet.`,
+        body: `${names} är kallade till Sveriges P19-samling. ${pronoun} missar 2 P19-matcher men kan få värdefull landslagserfarenhet.`,
         choices: [
-          { id: 'send', label: selected.length === 1 ? 'Skicka honom' : 'Skicka dem', effect: { type: 'noOp' } },
-          { id: 'keep', label: 'Behåll i klubben', effect: { type: 'noOp' } },
+          {
+            id: 'send',
+            label: selected.length === 1 ? 'Skicka honom' : 'Skicka dem',
+            subtitle: `🏆 +confidence, +utveckling · Ej tillgänglig 2 omg`,
+            effect: { type: 'noOp' },
+          },
+          {
+            id: 'keep',
+            label: 'Behåll i klubben',
+            subtitle: '⚠️ −confidence (missad landslagschans)',
+            effect: { type: 'noOp' },
+          },
         ],
         resolved: false,
       })

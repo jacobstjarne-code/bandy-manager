@@ -541,6 +541,47 @@ export function resolveEvent(
     }
   }
 
+  // Special: school conflict — affect youth player confidence
+  if (eventId.startsWith('event_school_conflict_') && updatedGame.youthTeam && event.relatedPlayerId) {
+    const youthPlayerId = event.relatedPlayerId
+    const confidenceDelta = choiceId === 'let_study' ? 8 : -8
+    updatedGame = {
+      ...updatedGame,
+      youthTeam: {
+        ...updatedGame.youthTeam,
+        players: updatedGame.youthTeam.players.map(p =>
+          p.id === youthPlayerId
+            ? { ...p, confidence: Math.max(0, Math.min(100, p.confidence + confidenceDelta)) }
+            : p
+        ),
+      },
+    }
+  }
+
+  // Special: district callup — affect confidence + development of high-potential youth players
+  if (eventId.startsWith('event_district_callup_') && updatedGame.youthTeam) {
+    const candidates = updatedGame.youthTeam.players.filter(p => p.potentialAbility > 50)
+    if (candidates.length > 0) {
+      const confidenceDelta = choiceId === 'send' ? 15 : -5
+      const devDelta = choiceId === 'send' ? 2 : 0
+      updatedGame = {
+        ...updatedGame,
+        youthTeam: {
+          ...updatedGame.youthTeam,
+          players: updatedGame.youthTeam.players.map(p =>
+            candidates.some(c => c.id === p.id)
+              ? {
+                  ...p,
+                  confidence: Math.max(0, Math.min(100, p.confidence + confidenceDelta)),
+                  developmentRate: Math.min(100, p.developmentRate + devDelta),
+                }
+              : p
+          ),
+        },
+      }
+    }
+  }
+
   // If this was a hall debate event, increment counters
   if (eventId.startsWith('hall_')) {
     const lastFixtureRound = updatedGame.lastCompletedFixtureId
