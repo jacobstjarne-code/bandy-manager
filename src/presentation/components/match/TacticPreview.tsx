@@ -1,4 +1,3 @@
-import { useState, useEffect, useRef } from 'react'
 import type { Tactic } from '../../../domain/entities/Club'
 import { TacticMentality, TacticPress, TacticWidth, TacticAttackingFocus } from '../../../domain/enums'
 
@@ -13,29 +12,6 @@ const BASE: { x: number; y: number }[] = [
   { x: 24, y: 52 }, { x: 50, y: 48 }, { x: 76, y: 52 },                                                 // 6-8: MID
   { x: 36, y: 28 }, { x: 64, y: 28 },                                                                    // 9-10: FWD
 ]
-
-const EFFECT_TEXTS: Record<string, Record<string, string>> = {
-  mentality: {
-    offensive: 'Laget skjuts framåt',
-    defensive: 'Kompakt försvar',
-    balanced: 'Balanserad formation',
-  },
-  press: {
-    high: 'Högt försvarssätt',
-    low: 'Djupt försvar',
-    medium: 'Normalt försvar',
-  },
-  width: {
-    wide: 'Bredare spel',
-    narrow: 'Smalare formation',
-    normal: 'Normal bredd',
-  },
-  attackingFocus: {
-    central: 'Centralt anfall',
-    wings: 'Kantanfall',
-    mixed: 'Blandat anfall',
-  },
-}
 
 function calcPositions(t: Tactic): { x: number; y: number }[] {
   const yShift = t.mentality === TacticMentality.Offensive ? -8 : t.mentality === TacticMentality.Defensive ? 8 : 0
@@ -63,41 +39,6 @@ function calcPositions(t: Tactic): { x: number; y: number }[] {
 }
 
 export function TacticPreview({ tacticState }: TacticPreviewProps) {
-  const [effectText, setEffectText] = useState('')
-  const [showEffect, setShowEffect] = useState(false)
-  const prevRef = useRef({
-    mentality: tacticState.mentality,
-    press: tacticState.press,
-    width: tacticState.width,
-    attackingFocus: tacticState.attackingFocus,
-  })
-
-  useEffect(() => {
-    const prev = prevRef.current
-    const checks: [string, string, string][] = [
-      ['mentality', prev.mentality, tacticState.mentality],
-      ['press', prev.press, tacticState.press],
-      ['width', prev.width, tacticState.width],
-      ['attackingFocus', prev.attackingFocus, tacticState.attackingFocus],
-    ]
-    let timer: ReturnType<typeof setTimeout> | undefined
-    for (const [key, oldVal, newVal] of checks) {
-      if (oldVal !== newVal && EFFECT_TEXTS[key]?.[newVal]) {
-        setEffectText(EFFECT_TEXTS[key][newVal])
-        setShowEffect(true)
-        timer = setTimeout(() => setShowEffect(false), 1500)
-        break
-      }
-    }
-    prevRef.current = {
-      mentality: tacticState.mentality,
-      press: tacticState.press,
-      width: tacticState.width,
-      attackingFocus: tacticState.attackingFocus,
-    }
-    return () => { if (timer !== undefined) clearTimeout(timer) }
-  }, [tacticState.mentality, tacticState.press, tacticState.width, tacticState.attackingFocus])
-
   const positions = calcPositions(tacticState)
 
   return (
@@ -107,7 +48,7 @@ export function TacticPreview({ tacticState }: TacticPreviewProps) {
       height: 220,
       borderRadius: 8,
       overflow: 'hidden',
-      marginBottom: 6,
+      marginBottom: 0,
       border: '1px solid var(--border)',
     }}>
       {/* Ice gradient background */}
@@ -143,7 +84,6 @@ export function TacticPreview({ tacticState }: TacticPreviewProps) {
         position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
         fontSize: 9, color: 'rgba(100,90,70,0.5)', fontWeight: 600,
         letterSpacing: '1px', textTransform: 'uppercase', whiteSpace: 'nowrap',
-        transition: 'all 0.4s ease',
       }}>
         MOTSTÅNDARENS MÅL
       </div>
@@ -151,7 +91,6 @@ export function TacticPreview({ tacticState }: TacticPreviewProps) {
         position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
         fontSize: 9, color: 'rgba(100,90,70,0.5)', fontWeight: 600,
         letterSpacing: '1px', textTransform: 'uppercase', whiteSpace: 'nowrap',
-        transition: 'all 0.4s ease',
       }}>
         VÅRT MÅL
       </div>
@@ -175,23 +114,6 @@ export function TacticPreview({ tacticState }: TacticPreviewProps) {
           }}
         />
       ))}
-
-      {/* Effect text */}
-      <div style={{
-        position: 'absolute',
-        bottom: 8, left: 0, right: 0,
-        textAlign: 'center',
-        fontSize: 10,
-        color: 'var(--accent)',
-        fontWeight: 600,
-        fontStyle: 'italic',
-        opacity: showEffect ? 1 : 0,
-        transition: 'opacity 0.3s',
-        pointerEvents: 'none',
-        zIndex: 3,
-      }}>
-        {effectText}
-      </div>
     </div>
   )
 }

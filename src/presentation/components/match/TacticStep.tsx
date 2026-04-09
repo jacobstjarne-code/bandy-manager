@@ -53,8 +53,10 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
         </div>
       )}
 
-      {/* Mini-pitch preview */}
-      <TacticPreview tacticState={tacticState} />
+      {/* Mini-pitch preview — sticky så prickarna syns medan man scrollar */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg)', paddingBottom: 4 }}>
+        <TacticPreview tacticState={tacticState} />
+      </div>
 
       {/* Taktik-grupper i kort */}
       {(() => {
