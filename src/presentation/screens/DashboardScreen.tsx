@@ -21,6 +21,7 @@ import { PlayoffBracketCard } from '../components/dashboard/PlayoffBracketCard'
 import { CupCard } from '../components/dashboard/CupCard'
 import { DiamondDivider } from '../components/dashboard/DiamondDivider'
 import { FormSquares } from '../components/FormDots'
+import { getManagedClubCupStatus, getCupRoundLabel } from '../../domain/services/cupService'
 
 
 const NAV_BTN: React.CSSProperties = {
@@ -233,7 +234,15 @@ export function DashboardScreen() {
     f.isCup && f.status === 'scheduled' &&
     (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
   )
-  const showExpandedCup = !!(game.cupBracket && nextCupFixture)
+  const cupStatus = game.cupBracket ? getManagedClubCupStatus(game.cupBracket, game.managedClubId) : null
+  const cupEliminated = cupStatus?.eliminated ?? false
+  const showExpandedCup = !!(game.cupBracket && !cupEliminated && nextCupFixture)
+
+  // ── First round ────────────────────────────────────────────────
+  const isFirstRound = !game.fixtures.some(f =>
+    f.status === 'completed' &&
+    (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+  )
 
   // ── Trainer arc ────────────────────────────────────────────────
   const moodTexts: Record<string, string> = {
@@ -253,8 +262,8 @@ export function DashboardScreen() {
         <TutorialOverlay managerName={game.managerName} clubName={club.name} onDone={markTutorialSeen} />
       )}
 
-      {/* Onboarding hint — thin banner */}
-      {game.onboardingStep !== undefined && game.onboardingStep >= 0 && game.onboardingStep <= 4 && (() => {
+      {/* Onboarding hint — thin banner (döljs omgång 1) */}
+      {!isFirstRound && game.onboardingStep !== undefined && game.onboardingStep >= 0 && game.onboardingStep <= 4 && (() => {
         const hints: Record<number, { icon: string; title: string; path: string; state?: Record<string, unknown> }> = {
           0: { icon: '👥', title: 'Sätt din startelva', path: '/game/match' },
           1: { icon: '🏋️', title: 'Justera träningen', path: '/game/club', state: { tab: 'training' } },
@@ -279,8 +288,29 @@ export function DashboardScreen() {
 
       <div className="texture-wood card-stack" style={{ paddingTop: 8, paddingBottom: 120 }}>
 
-        {/* ① AGENDA */}
-        {nudges.length > 0 && (
+        {/* ① VÄLKOMSTKORT (omgång 1) eller AGENDA (övriga omgångar) */}
+        {isFirstRound ? (
+          <div className="card-round" style={{ margin: '0 0 6px', padding: '14px' }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', marginBottom: 6 }}>
+              Välkommen, {game.managerName}.
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 10, fontFamily: 'var(--font-body)' }}>
+              Säsongen {game.currentSeason}/{String(game.currentSeason + 1).slice(2)} börjar. {club.name} förväntar sig att du bygger något att vara stolt över. Börja med att sätta din startelva.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {nudges.map((n, i) => (
+                <div
+                  key={i}
+                  onClick={() => !n.done && navigate(`/game/${n.screen}`, n.state ? { state: n.state } : undefined)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', cursor: n.done ? 'default' : 'pointer', fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}
+                >
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: n.done ? 'var(--success)' : 'var(--danger)' }} />
+                  <span style={{ textDecoration: n.done ? 'line-through' : 'none', opacity: n.done ? 0.5 : 1 }}>{n.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : nudges.length > 0 ? (
           <div style={{ margin: '0 0 6px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2px', marginBottom: 4 }}>
               <span style={{ ...LABEL }}>Att göra</span>
@@ -305,7 +335,7 @@ export function DashboardScreen() {
               </div>
             ))}
           </div>
-        )}
+        ) : null}
 
         {/* ② MATCHKORT */}
         {nextFixture && opponent && (
@@ -348,23 +378,30 @@ export function DashboardScreen() {
                 </span>
               )}
               <p style={{ ...LABEL, marginBottom: 6 }}>📊 Tabell</p>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: 30, fontWeight: 400, color: 'var(--accent-dark)', lineHeight: 1, fontFamily: 'var(--font-display)' }}>
-                  {standing.position}
-                </span>
-                <div>
-                  <p style={{ fontSize: 9, color: 'var(--text-muted)', margin: 0 }}>{standing.points}p · {standing.goalDifference >= 0 ? '+' : ''}{standing.goalDifference}</p>
-                  {standing.played > 0 && (
-                    <p style={{ fontSize: 8, fontWeight: 600, marginTop: 2, color: standing.position <= 8 ? 'var(--success)' : standing.position <= 10 ? 'var(--text-muted)' : 'var(--danger)' }}>
-                      {standing.position <= 8 ? 'Slutspelszonen' : standing.position <= 10 ? 'Utanför' : 'Nedflyttning'}
-                    </p>
+              {standing.played === 0 ? (
+                <>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3, fontFamily: 'var(--font-display)' }}>12 lag · 22 omg</p>
+                  <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-body)' }}>Okt – Mar</p>
+                </>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                    <span style={{ fontSize: 30, fontWeight: 400, color: 'var(--accent-dark)', lineHeight: 1, fontFamily: 'var(--font-display)' }}>
+                      {standing.position}
+                    </span>
+                    <div>
+                      <p style={{ fontSize: 9, color: 'var(--text-muted)', margin: 0 }}>{standing.points}p · {standing.goalDifference >= 0 ? '+' : ''}{standing.goalDifference}</p>
+                      <p style={{ fontSize: 8, fontWeight: 600, marginTop: 2, color: standing.position <= 8 ? 'var(--success)' : standing.position <= 10 ? 'var(--text-muted)' : 'var(--danger)' }}>
+                        {standing.position <= 8 ? 'Slutspelszonen' : standing.position <= 10 ? 'Utanför' : 'Nedflyttning'}
+                      </p>
+                    </div>
+                  </div>
+                  {recentForm.length > 0 && (
+                    <div style={{ marginTop: 5 }}>
+                      <FormSquares results={recentForm} size={10} />
+                    </div>
                   )}
-                </div>
-              </div>
-              {recentForm.length > 0 && (
-                <div style={{ marginTop: 5 }}>
-                  <FormSquares results={recentForm} size={10} />
-                </div>
+                </>
               )}
             </div>
           ) : <div />}
@@ -398,7 +435,17 @@ export function DashboardScreen() {
                 )
               })()}
             </div>
-          ) : <div />}
+          ) : (
+            <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}>
+              <p style={{ ...LABEL, marginBottom: 6 }}>🎯 Styrelsens mål</p>
+              {(game.boardObjectives ?? []).slice(0, 2).map((o, i) => (
+                <p key={i} style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)', marginBottom: 2, lineHeight: 1.4 }}>"{o.label}"</p>
+              ))}
+              {(game.boardObjectives ?? []).length === 0 && (
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Inga uppdrag ännu</p>
+              )}
+            </div>
+          )}
 
           {/* Orten */}
           <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}>
@@ -461,6 +508,19 @@ export function DashboardScreen() {
             <div style={{ padding: '7px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ ...LABEL }}>🏆 Cupen</span>
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
+                  {cupEliminated ? 'Utslagna' : (() => {
+                    const hasBye = game.cupBracket!.matches.some(m => m.isBye && (m.homeClubId === game.managedClubId || m.awayClubId === game.managedClubId))
+                    if (hasBye) return 'Direktkval. till kvartsfinal'
+                    const nextScheduled = game.fixtures.filter(f => f.isCup && f.status === 'scheduled').sort((a, b) => a.matchday - b.matchday)[0]
+                    if (nextScheduled) {
+                      const cupMatch = game.cupBracket!.matches.find(m => m.fixtureId === nextScheduled.id)
+                      const round = cupMatch?.round ?? 1
+                      return `${getCupRoundLabel(round)} md ${nextScheduled.matchday}`
+                    }
+                    return 'Startar snart'
+                  })()}
+                </span>
               </div>
               <button style={NAV_BTN}>›</button>
             </div>
