@@ -51,32 +51,102 @@ const PERSONALITIES: MecenatPersonality[] = ['tyst_kraft', 'showman', 'kalkylato
 
 const BACKSTORIES: Record<MecenatType, { male: string[]; female: string[] }> = {
   brukspatron: {
-    male: ['Tredje generationen i kommunen. Farfadern byggde det mesta av det som finns kvar.', 'Tog över vid en konkurs 2008. Vände det på tre år med envishet och tålamod.'],
-    female: ['Tog över efter fadern och moderniserade från grunden. Respekterad för det.', 'VD sedan 15 år. Känd i bygden för att hålla vad hon lovar.'],
+    male: [
+      'Tredje generationen i kommunen. Farfadern byggde fabriken, fadern utvidgade den, han håller den vid liv. Sysselsätter var fjärde familj på orten och pratar aldrig om det.',
+      'Tog över vid en konkurs 2008 och vände det på tre år med envishet och tålamod. Folk vet att han inte backar. Ortens tyngste arbetsgivare sedan dess.',
+      'Kör samma Volvo som 2003. Pengarna sitter i maskiner och fastigheter, inte i garaget. Känd för att betala löner i tid — varje fredag, utan undantag.',
+      'Hans stålverk och sågverk täcker tre kommuner. Det pratar han aldrig om på egen hand, men alla vet. Orten bär hans stämpel på ett sätt som inte syns på kartan.',
+    ],
+    female: [
+      'Tog över efter fadern och moderniserade från grunden — ny produktionslinje, nya avtal, nytt folk. Respekterad för att hon levererade utan att skrika om det.',
+      'VD sedan 15 år. Sitter i tre styrelser, driver juniorprogrammet på fritiden och har aldrig kallat det välgörenhet.',
+      'Uppvuxen i fabriken, bokstavligen — föräldrarna jobbade tidigt morgon och hon lekte i matsalen som barn. Tillbaka nu som chef. Menar allvar med varje beslut.',
+      'Äger produktionsanläggningen utanför orten, tre hyreshus i centrum och ungefär hälften av det som kallas framtid i den här kommunen.',
+    ],
   },
   skogsägare: {
-    male: ['Äger 800 hektar norr om orten. Jagar älg varje höst. Pragmatisk till sitt väsen.', 'Blev markägare efter ett liv i fält. Känner varje meter av sin mark.'],
-    female: ['Ärvde av mormodern och förvaltar med omsorg. Driver det som ett modernt företag.', 'Utbildad biolog som tog över familjens mark. Kombinerar naturvård med affärssinne.'],
+    male: [
+      'Äger 800 hektar norr om orten. Vad som växer där inne vet han i detalj — vilken trakt som ska avverkas om tre år, vilken som ska vila i tio. Jagar älg varje höst, på sin egen mark.',
+      'Ärver inte — köpte. Varje skog han äger är ett avtal han slöt när priset var lågt och andra tvivlade. Pragmatisk som få, tålmodig som marken.',
+      'Slog sitt första skogsbud 1997 med lånat kapital. Nu är det han som lånar ut. Säger ingenting om det, men ortens bank vet.',
+      'Fem generationer av familjen har brukat mark i länet. Han är den som satte det i bolagsform. Lever på kalender och karta och tycker om det.',
+    ],
+    female: [
+      'Ärvde av mormodern — 400 hektar och ett arvode hon inte förstod priset på förrän tio år senare. Driver det nu som ett modernt skogsbolag med miljöcertifikat och vinst.',
+      'Utbildad biolog. Kombinerar naturvård med affärssinne på ett sätt som gör folk obekväma. Vann en regional miljöpris 2019. Pratar aldrig om det.',
+      'Kände varenda träd på familjens mark som barn. Nu känner hon rättighetslagstiftningen lika väl. Ortens skogsägare respekterar henne, om än motvilligt.',
+      'Sköter 600 hektar och vet exakt vad varje del är värd. Har sagt nej till tre bud från ett multinationellt bolag. Vill inte sälja det som familjen planterat.',
+    ],
   },
   it_miljonär: {
-    male: ['Sålde sitt bolag för 40 miljoner vid 35. Flyttade hem till orten.', 'Byggt och sålt tre gånger. Saknar aldrig kapital — men söker mening.'],
-    female: ['Byggde sin verksamhet från grunden i ett garage. Nu 30 anställda.', 'Lämnade storstaden för att bygga något eget på hemmaplan. Ångrar ingenting.'],
+    male: [
+      'Sålde sitt analysprogram för logistik — 42 miljoner netto vid 34. Åkte hem till orten veckan efter. Letar fortfarande efter vad som ska komma härnäst.',
+      'Byggt och sålt tre gånger. Aldrig bott mer än 15 mil från där han växte upp. Kapital saknar han aldrig — mening är en annan sak.',
+      'Grundade sin startup i en källare i Uppsala. Sju år senare såldes bolaget till ett tyskt teknikföretag för en summa som inte publicerats, men ryktet stämmer.',
+      'Rik sedan tio år. Har finansierat en bandyhall, en förskola och ett bryggeri i orten. Funderar på att starta ett nytt bolag igen om han hittar rätt folk.',
+    ],
+    female: [
+      'Byggde sin verksamhet från grunden i ett garage utanför samhället — mjukvara för regional transport. Tio år och trettio anställda senare sålde hon till ett PE-bolag. Stannade kvar på orten.',
+      'Lämnade storstaden 2015 efter sju år på ett konsultbolag. Ville bygga något eget på hemmaplan. Ångrar ingenting och säger det utan att verka arrogant.',
+      'Hennes mjukvarubolag automatiserade kommunal administration i sex regioner. Tråkigt i beskrivning, lysande i siffror. Sålde för 28 miljoner netto.',
+      'Spelar bandy på torsdagarna med ortens veteraner. Är den rikaste personen på planen och den sista att lämna isen.',
+    ],
   },
   entrepreneur: {
-    male: ['Startade som lärling. Nu störst i kommunen. Envis som få.', 'Äger tre verksamheter i länet. Sponsrar allt som rör sig i bygden.'],
-    female: ['Från enmansfirma till 20 anställda. Affärssinne i blodet.', 'Byggde sin verksamhet från grunden. Känd för att alltid leverera.'],
+    male: [
+      'Startade som lärling i en rörmokeriaffär 1989. Öppnade eget 1997. Har nu 23 anställda, tre firmabilar och en förväntning på sig att sponsra allt i orten. Lever upp till den.',
+      'Äger tre verksamheter i länet — el, bygg och städ. Sponsrar allt som rör sig i bygden. "Om jag inte ger tillbaka är det ingen idé", sa han en gång i lokaltidningen.',
+      'Hans firma tar alla jobb de andra tackar nej till. Det är affärsidén. Ortens mest anlitade hantverkare sedan femton år — och det enda han är stolt över.',
+      'Gick ur skolan direkt till en byggarbetsplats. Läste tre kvällskurser under tio år. Nu föreläser han om finansiering för nystartade företagare. Gör det gratis.',
+    ],
+    female: [
+      'Från enmansfirma till tjugo anställda på elva år. Städbolag specialiserat på vård och omsorg — ett segment alla andra ignorerade. Affärssinne i blodet.',
+      'Byggde sin verksamhet utan externt kapital. En kund i taget, ett avtal i taget. Känd för att alltid leverera och aldrig överlova.',
+      'Driver Ortens Trädgård & Utemiljö sedan 2011. Anlitad av kommunen, skolan och halva villaägarna i trakten. Tycker att sponsring är ett verb, inte en siffra.',
+      'Öppnade boutiquebutik 2009 när alla sa det var fel tid. Finns kvar. De som tvivlade är borta. Numera äger hon tre ställen i länet och funderar på ett fjärde.',
+    ],
   },
   fastigheter: {
-    male: ['Äger halva centrumkvarteret. Tyst men inflytelserik. Föredrar handling framför ord.', 'Investerade tidigt och klokt. Kommunens tyngste privata ägare av lokaler.'],
-    female: ['Började som mäklare och blev investerare. Känner varje fastighet i orten.', 'Formger ortens framtid med tålamod och precision. Har alltid haft god timing.'],
+    male: [
+      'Äger halva centrumkvarteret och sex hyresrätter i utkanten. Tyst men inflytelserik. Föredrar handling framför ord, och kontanter framför löften.',
+      'Investerade i orten 2001 när folk lämnade. Nu när folk kommer tillbaka sitter han på nycklarna. Kommunens tyngste privata fastighetsägare och tänker inte sälja.',
+      'Köpte sitt första objekt med ett lån han aldrig ska prata om igen. Nu är det han som beviljar. Har inga fastigheter utanför länet — geografin är hans fördel.',
+      'Satt i kommunens byggnadsnämnd i tolv år. Vet exakt vad som är planlagt och varför. Den kunskapen är hans verkliga tillgång — och alla misstänker det.',
+    ],
+    female: [
+      'Började som mäklare 2003 och förstod snabbt att det lönsamma var att äga, inte sälja. Köpte sitt första hus 2006. Nu är det hon som anlitar mäklare.',
+      'Formger ortens framtid med tålamod och precision. Köper när andra säljer, säljer när alla vill köpa. Har alltid haft rätt timing — eller arbetat sig till den.',
+      'Äger tretton fastigheter i fyra kommuner. Kontoret i centrum ser inte ut som det kostar vad det kostar. Det är poängen.',
+      'Renoverade sin första fastighet med egna händer. Nu har hon entreprenörer. Skillnaden är att hon vet exakt vad varje moment ska kosta — och vad det ska inbringa.',
+    ],
   },
   lokal_handlare: {
-    male: ['Tredje generationens handlare. Alla i orten känner honom — och han känner alla.', 'Öppnade när alla sa det var omöjligt. Finns kvar när de som tvivlade är borta.'],
-    female: ['Driver det lokala navet. Vet vad folk behöver innan de vet det själva.', 'Tog över efter föräldrarna och moderniserade utan att tappa det lokala.'],
+    male: [
+      'Tredje generationens handlare. Morfadern öppnade, fadern utvidgade, han moderniserade. Alla i orten känner honom — och han känner alla. Det är inte en kliché, det är ett levande kundregister.',
+      'Öppnade sin butik när alla sa att e-handeln hade vunnit. Finns kvar. De som tvivlade handlar hos honom nu — han levererar och vet vad de heter.',
+      'Kombinerar dagligvaror med bredbandsförsäljning och postombud. Ortens nav. Om det stänger är det inte en butik som försvinner, det är infrastruktur.',
+      'Hans far sa att butiken var ett kall, inte ett jobb. Han trodde inte på det då. Tror på det nu. Stänger aldrig på sportlovet.',
+    ],
+    female: [
+      'Driver det lokala navet sedan 2009. Öppnar kl 6, stänger kl 20. Vet vad folk behöver innan de vet det själva. Satte in bankomat när kommunen tog bort den sista.',
+      'Tog över efter föräldrarna och moderniserade utan att tappa det lokala — nytt kassasystem, gammalt bemötande. Grannarna märkte skillnaden, på rätt sätt.',
+      'Hennes lokala sylt säljs fortfarande för 49 kronor. Priset är ett politiskt ställningstagande. Omsättningen klarar det gott.',
+      'Butiken har funnits i 47 år. Hon tog över 2018 och bestämde att den ska finnas i 47 till. Ingen affärsplan, bara vilja och öppettider.',
+    ],
   },
   jordbrukare: {
-    male: ['Bedriver lantbruk utanför orten. Sponsrar P19 sedan 2018. Jordnära och trovärdig.', 'Har diversifierat sin verksamhet under åren. Pragmatisk och uthållig.'],
-    female: ['Driver ekologisk verksamhet med starka lokala band. Säljer direkt till kunder i regionen.', 'Tredje generationen på gården. Envis och rak — precis som marken kräver.'],
+    male: [
+      'Bedriver lantbruk utanför orten — 180 hektar, mjölkkor och spannmål. Sponsrar P19 sedan 2018 och är med på varje match. Jordnära och trovärdig som marken han brukar.',
+      'Femte generationen på gården. Har sett konjunkturer komma och gå utan att sälja. Lever på marginalen som alla jordbrukare men kallar det frihet, inte fattigdom.',
+      'Har diversifierat: lantbruk, maskinuthyrning och naturturism som ingen riktigt vet om. Pragmatisk och uthållig. Röstar på centerpartiet och är öppen med det.',
+      'Kör traktorn själv. Tre anställda på deltid och ett sidobolag som säljer flis till kommunen. Grovt undervärderad av alla som inte bor på landet.',
+    ],
+    female: [
+      'Driver ekologisk verksamhet med starka lokala band — säljer direkt till kunder i regionen och levererar till tre restauranger i länet. Vann Gröna Näringens pris 2021.',
+      'Tredje generationen på gården. Envis och rak, precis som marken kräver. Sitter i LRF:s distriktsstyrelse och har tydliga åsikter om allt som rör mat och mark.',
+      'Läste agronomutbildningen i Uppsala och kom tillbaka. Alla trodde hon skulle stanna i storstaden. Hon trodde det med, en kort stund.',
+      'Sköter gård, barn och styrelseuppdrag med ett lugn som imponerar. Planerar tre år framåt, alltid. Säger att det handlar om planering. Det gör det.',
+    ],
   },
 }
 

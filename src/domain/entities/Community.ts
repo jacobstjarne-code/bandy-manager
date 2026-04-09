@@ -35,6 +35,7 @@ export interface Patron {
   patience?: number           // 0-100, decreases when ignored
   totalContributed?: number   // running total
   demands?: string[]
+  backstory?: string
 }
 
 export type PoliticalAgenda = 'youth' | 'inclusion' | 'prestige' | 'savings' | 'infrastructure'

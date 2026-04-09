@@ -133,7 +133,12 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
                 </span>
               </div>
               <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{p.business}</p>
-              <div style={{ marginTop: 4, marginBottom: 2 }}>
+              {p.backstory && (
+                <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: 6 }}>
+                  {p.backstory}
+                </p>
+              )}
+              <div style={{ marginTop: 6, marginBottom: 2 }}>
                 <div style={{ height: 4, borderRadius: 2, background: 'var(--border)', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${p.happiness ?? 50}%`, background: happColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
                 </div>
@@ -184,7 +189,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
                     {typeLabels[mec.businessType] ?? mec.businessType} · {mec.business}
                   </p>
                   {mec.backstory && (
-                    <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 2 }}>
+                    <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: 6 }}>
                       {mec.backstory}
                     </p>
                   )}

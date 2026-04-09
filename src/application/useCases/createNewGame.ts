@@ -62,6 +62,7 @@ function generatePatron(
     wantsStyle,
     isActive: true,
     hasBeenWarned: false,
+    backstory: profile.backstory,
   }
 }
 
