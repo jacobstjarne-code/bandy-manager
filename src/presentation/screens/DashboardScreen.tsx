@@ -290,22 +290,28 @@ export function DashboardScreen() {
 
         {/* ① VÄLKOMSTKORT (omgång 1) eller AGENDA (övriga omgångar) */}
         {isFirstRound ? (
-          <div className="card-round" style={{ margin: '0 0 6px', padding: '14px' }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', marginBottom: 6 }}>
-              Välkommen, {game.managerName}.
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '14px' }}>
+            <p style={{ ...LABEL, marginBottom: 8 }}>🏒 SÄSONGSSTART {game.currentSeason}</p>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 10, fontFamily: 'var(--font-body)' }}>
+              {club.name} väntar. Sätt din startelva och kör.
             </p>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 10, fontFamily: 'var(--font-body)' }}>
-              Säsongen {game.currentSeason}/{String(game.currentSeason + 1).slice(2)} börjar. {club.name} förväntar sig att du bygger något att vara stolt över. Börja med att sätta din startelva.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {nudges.map((n, i) => (
                 <div
                   key={i}
                   onClick={() => !n.done && navigate(`/game/${n.screen}`, n.state ? { state: n.state } : undefined)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', cursor: n.done ? 'default' : 'pointer', fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '7px 10px', borderRadius: 8,
+                    background: 'var(--bg-surface)', border: '0.5px solid var(--border)',
+                    cursor: n.done ? 'default' : 'pointer',
+                    fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)',
+                    opacity: n.done ? 0.5 : 1,
+                  }}
                 >
                   <span style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: n.done ? 'var(--success)' : 'var(--danger)' }} />
-                  <span style={{ textDecoration: n.done ? 'line-through' : 'none', opacity: n.done ? 0.5 : 1 }}>{n.text}</span>
+                  <span style={{ flex: 1, textDecoration: n.done ? 'line-through' : 'none' }}>{n.text}</span>
+                  <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--accent)' }}>→</span>
                 </div>
               ))}
             </div>
