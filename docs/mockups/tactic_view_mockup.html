@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Taktikvy — mockup</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f1eb;color:#2c2a28;padding:16px}
+.wrap{max-width:400px;margin:0 auto}
+.phone{border:1px solid #d3d1c7;border-radius:14px;overflow:hidden;background:#faf8f4;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.hdr{background:#1a1a1a;color:#eee;padding:6px 14px;display:flex;justify-content:space-between;align-items:center;font-size:11px}
+.hdr b{font-size:12px}
+.phase-bar{display:flex;align-items:center;padding:6px 20px 8px;background:#1a1a1a}
+.phase{display:flex;align-items:center;gap:4px;flex:1;justify-content:center}
+.phase .dot{width:8px;height:8px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2)}
+.phase .dot.done{background:#8b7332;border-color:#8b7332}
+.phase .dot.active{border-color:#8b7332;background:rgba(139,115,50,0.3);box-shadow:0 0 0 3px rgba(139,115,50,0.15)}
+.phase .lb{font-size:9px;letter-spacing:0.8px;text-transform:uppercase;color:rgba(255,255,255,0.35)}
+.phase .lb.done{color:#c9a84c}
+.phase .lb.active{color:#c9a84c;font-weight:700}
+.phase-line{flex:0 0 20px;height:1.5px;background:rgba(255,255,255,0.1);margin:0 2px}
+.phase-line.done{background:#8b7332}
+
+/* Match sub-stepper */
+.steps{display:flex;gap:4px;padding:8px 12px 4px}
+.step{flex:1;padding:6px;border-radius:6px;font-size:10px;font-weight:600;text-align:center}
+.step-done{background:#8b7332;color:#faf8f4}
+.step-active{background:rgba(139,115,50,0.12);color:#6b5522;border:1.5px solid #8b7332}
+.step-pending{background:#f1efe8;color:#bbb;border:1px solid #e8e4dc}
+
+.scroll{padding:8px 12px 16px}
+.c{border:1px solid #e8e4dc;border-radius:8px;padding:10px 12px;background:#fff;margin:0 0 6px}
+.lbl{font-size:8px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#aaa;margin:0 0 8px}
+
+/* Pitch */
+.pitch-wrap{position:relative;width:100%;height:220px;border-radius:8px;overflow:hidden;margin:0 0 6px;border:1px solid #e8e4dc}
+.pitch-bg{position:absolute;inset:0;background:linear-gradient(180deg,rgba(200,220,210,0.15) 0%,rgba(180,210,200,0.25) 50%,rgba(200,220,210,0.15) 100%)}
+.pitch-lines{position:absolute;inset:0}
+.pitch-lines svg{width:100%;height:100%}
+.player-dot{position:absolute;width:14px;height:14px;border-radius:50%;background:#8b7332;border:2px solid #faf8f4;box-shadow:0 1px 4px rgba(0,0,0,0.2);transition:all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);z-index:2}
+.player-dot.gk{background:#5a8a4a;border-color:#faf8f4}
+.player-dot::after{content:attr(data-num);position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:700;color:#6b5522;white-space:nowrap}
+.pitch-label{position:absolute;font-size:9px;color:rgba(100,90,70,0.5);font-weight:600;letter-spacing:1px;text-transform:uppercase;transition:all 0.4s ease}
+.effect-label{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:10px;color:#8b7332;font-weight:600;font-style:italic;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.effect-label.show{opacity:1}
+
+/* Tactic buttons */
+.tac-row{margin:0 0 10px}
+.tac-label{font-size:11px;font-weight:600;color:#555;margin:0 0 4px}
+.tac-opts{display:flex;gap:4px}
+.tac-btn{flex:1;padding:8px 4px;border-radius:6px;font-size:11px;font-weight:500;text-align:center;cursor:pointer;border:1px solid #e8e4dc;background:#fff;color:#888;transition:all 0.15s}
+.tac-btn:hover{border-color:#ccc}
+.tac-btn.on{background:#8b7332;color:#faf8f4;border-color:#8b7332}
+.tac-desc{font-size:10px;color:#aaa;font-style:italic;margin:3px 0 0;min-height:14px}
+
+/* Consequence tags */
+.cons{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0 0}
+.con-tag{font-size:8px;padding:2px 6px;border-radius:99px;font-weight:600}
+.con-pos{background:#eaf3de;color:#3b6d11}
+.con-neg{background:#fcebeb;color:#a32d2d}
+.con-neutral{background:#f1efe8;color:#888}
+
+.nav{display:flex;border-top:1px solid #e8e4dc;background:#faf8f4}
+.nav div{flex:1;text-align:center;padding:8px 0;font-size:9px;color:#aaa}
+.nav .on{color:#8b7332;font-weight:600}
+.note{background:#f5f3ee;padding:10px 14px;border-radius:8px;font-size:10px;color:#888;line-height:1.6;margin:8px 0}
+</style>
+</head><body>
+<div class="wrap">
+
+<p style="font-size:13px;font-weight:600;margin:0 0 4px">Taktikvy — interaktiv mock</p>
+<p style="font-size:11px;color:#888;margin:0 0 12px">Prickarna rör sig i realtid. Klicka på taktikval.</p>
+
+<div class="phone">
+<div class="hdr"><div><b>Gagnef vs Målilla</b><br><span style="font-size:8px;opacity:0.5">Omgång 3 · Borta</span></div></div>
+<div class="phase-bar">
+<div class="phase"><div class="dot done"></div><span class="lb done">Förbered</span></div>
+<div class="phase-line done"></div>
+<div class="phase"><div class="dot active"></div><span class="lb active">Spela</span></div>
+<div class="phase-line"></div>
+<div class="phase"><div class="dot"></div><span class="lb">Granska</span></div>
+</div>
+
+<div class="steps">
+<div class="step step-done">1. Uppställning ✓</div>
+<div class="step step-active">2. Taktik</div>
+<div class="step step-pending">3. Starta</div>
+</div>
+
+<div class="scroll">
+
+<!-- PITCH PREVIEW -->
+<div class="pitch-wrap" id="pitch">
+<div class="pitch-bg"></div>
+<div class="pitch-lines">
+<svg viewBox="0 0 300 220" fill="none" stroke="rgba(100,90,70,0.15)" stroke-width="1">
+<!-- Center line -->
+<line x1="0" y1="110" x2="300" y2="110"/>
+<!-- Center circle -->
+<circle cx="150" cy="110" r="30"/>
+<!-- Goal areas -->
+<rect x="100" y="0" width="100" height="30" rx="2"/>
+<rect x="100" y="190" width="100" height="30" rx="2"/>
+<!-- Penalty spots -->
+<circle cx="150" cy="20" r="2" fill="rgba(100,90,70,0.2)"/>
+<circle cx="150" cy="200" r="2" fill="rgba(100,90,70,0.2)"/>
+<!-- Corner arcs -->
+<path d="M 0 8 A 8 8 0 0 0 8 0"/>
+<path d="M 292 0 A 8 8 0 0 0 300 8"/>
+<path d="M 0 212 A 8 8 0 0 1 8 220"/>
+<path d="M 292 220 A 8 8 0 0 1 300 212"/>
+</svg>
+</div>
+
+<!-- Labels -->
+<div class="pitch-label" id="lbl-attack" style="top:8px;left:50%;transform:translateX(-50%)">MOTSTÅNDARENS MÅL</div>
+<div class="pitch-label" id="lbl-defend" style="bottom:8px;left:50%;transform:translateX(-50%)">VÅRT MÅL</div>
+
+<!-- Player dots (5-3-2 default) -->
+<!-- GK -->
+<div class="player-dot gk" id="p0" data-num="" style="left:143px;top:195px"></div>
+<!-- Defenders (5) -->
+<div class="player-dot" id="p1" data-num="" style="left:30px;top:160px"></div>
+<div class="player-dot" id="p2" data-num="" style="left:85px;top:155px"></div>
+<div class="player-dot" id="p3" data-num="" style="left:143px;top:152px"></div>
+<div class="player-dot" id="p4" data-num="" style="left:200px;top:155px"></div>
+<div class="player-dot" id="p5" data-num="" style="left:256px;top:160px"></div>
+<!-- Midfielders (3) -->
+<div class="player-dot" id="p6" data-num="" style="left:65px;top:110px"></div>
+<div class="player-dot" id="p7" data-num="" style="left:143px;top:105px"></div>
+<div class="player-dot" id="p8" data-num="" style="left:220px;top:110px"></div>
+<!-- Forwards (2) -->
+<div class="player-dot" id="p9" data-num="" style="left:100px;top:60px"></div>
+<div class="player-dot" id="p10" data-num="" style="left:186px;top:60px"></div>
+
+<div class="effect-label" id="effect-text"></div>
+</div>
+
+<!-- SPELPLAN -->
+<div class="c">
+<div class="lbl">⚔ SPELPLAN</div>
+
+<div class="tac-row">
+<div class="tac-label">Mentalitet</div>
+<div class="tac-opts" data-group="mentality">
+<div class="tac-btn" data-val="defensive" onclick="setTactic('mentality','defensive')">Defensiv</div>
+<div class="tac-btn on" data-val="balanced" onclick="setTactic('mentality','balanced')">Balanserad</div>
+<div class="tac-btn" data-val="offensive" onclick="setTactic('mentality','offensive')">Offensiv</div>
+</div>
+<div class="tac-desc" id="desc-mentality">Balanserat anfall och försvar.</div>
+<div class="cons" id="cons-mentality"></div>
+</div>
+
+<div class="tac-row">
+<div class="tac-label">Tempo</div>
+<div class="tac-opts" data-group="tempo">
+<div class="tac-btn" data-val="low" onclick="setTactic('tempo','low')">Lågt</div>
+<div class="tac-btn on" data-val="normal" onclick="setTactic('tempo','normal')">Normalt</div>
+<div class="tac-btn" data-val="high" onclick="setTactic('tempo','high')">Högt</div>
+</div>
+<div class="tac-desc" id="desc-tempo">Normalt matchspel.</div>
+</div>
+
+<div class="tac-row">
+<div class="tac-label">Press</div>
+<div class="tac-opts" data-group="press">
+<div class="tac-btn" data-val="low" onclick="setTactic('press','low')">Låg</div>
+<div class="tac-btn" data-val="medium" onclick="setTactic('press','medium')">Medium</div>
+<div class="tac-btn on" data-val="high" onclick="setTactic('press','high')">Hög</div>
+</div>
+<div class="tac-desc" id="desc-press">Intensiv press. Fler bollvinster men mer kort och fatigue.</div>
+<div class="cons" id="cons-press"></div>
+</div>
+</div>
+
+<!-- BOLLSPEL -->
+<div class="c">
+<div class="lbl">🏒 BOLLSPEL</div>
+
+<div class="tac-row">
+<div class="tac-label">Bredd</div>
+<div class="tac-opts" data-group="width">
+<div class="tac-btn" data-val="narrow" onclick="setTactic('width','narrow')">Smal</div>
+<div class="tac-btn on" data-val="normal" onclick="setTactic('width','normal')">Normal</div>
+<div class="tac-btn" data-val="wide" onclick="setTactic('width','wide')">Bred</div>
+</div>
+<div class="tac-desc" id="desc-width">Standardbredd.</div>
+</div>
+
+<div class="tac-row">
+<div class="tac-label">Anfallsfokus</div>
+<div class="tac-opts" data-group="attackFocus">
+<div class="tac-btn" data-val="central" onclick="setTactic('attackFocus','central')">Centralt</div>
+<div class="tac-btn on" data-val="mixed" onclick="setTactic('attackFocus','mixed')">Blandat</div>
+<div class="tac-btn" data-val="wings" onclick="setTactic('attackFocus','wings')">Kanter</div>
+</div>
+<div class="tac-desc" id="desc-attackFocus">Varierat anfallsspel.</div>
+</div>
+
+<div class="tac-row">
+<div class="tac-label">Passning</div>
+<div class="tac-opts" data-group="passing">
+<div class="tac-btn" data-val="safe" onclick="setTactic('passing','safe')">Säker</div>
+<div class="tac-btn on" data-val="mixed" onclick="setTactic('passing','mixed')">Blandat</div>
+<div class="tac-btn" data-val="direct" onclick="setTactic('passing','direct')">Direkt</div>
+</div>
+<div class="tac-desc" id="desc-passing">Blandad passningsstil.</div>
+</div>
+</div>
+
+<!-- FASTA SITUATIONER -->
+<div class="c">
+<div class="lbl">📐 FASTA SITUATIONER</div>
+
+<div class="tac-row">
+<div class="tac-label">Hörnstrategi</div>
+<div class="tac-opts" data-group="corner">
+<div class="tac-btn" data-val="safe" onclick="setTactic('corner','safe')">Säker</div>
+<div class="tac-btn on" data-val="standard" onclick="setTactic('corner','standard')">Standard</div>
+<div class="tac-btn" data-val="aggressive" onclick="setTactic('corner','aggressive')">Aggressiv</div>
+</div>
+<div class="tac-desc" id="desc-corner">Tre skyttar. Klassiskt hörnupplägg.</div>
+</div>
+
+<div class="tac-row">
+<div class="tac-label">Utvisningsspel</div>
+<div class="tac-opts" data-group="penalty">
+<div class="tac-btn" data-val="passive" onclick="setTactic('penalty','passive')">Passivt</div>
+<div class="tac-btn" data-val="active" onclick="setTactic('penalty','active')">Aktivt</div>
+<div class="tac-btn on" data-val="aggressive" onclick="setTactic('penalty','aggressive')">Aggressivt</div>
+</div>
+<div class="tac-desc" id="desc-penalty">Fullt tryck i numerärt överläge.</div>
+</div>
+</div>
+
+<button style="width:100%;padding:14px;border-radius:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:linear-gradient(135deg,#8b7332,#6b5522);color:#faf8f4;letter-spacing:1.5px;text-transform:uppercase;margin:4px 0 0">Lycka till →</button>
+
+</div>
+<div class="nav"><div>Hem</div><div>Trupp</div><div class="on">Match</div><div>Tabell</div><div>Transfers</div><div>Klubb</div></div>
+</div>
+
+<div class="note">
+<b>Nyckelprinciper:</b><br>
+- Mini-pitchen reagerar DIREKT på taktikval med mjuk animation (0.4s cubic-bezier)<br>
+- Prickarna representerar 5-3-2 (11 spelare) — GK grön, utespelare koppar<br>
+- Mentalitet = vertikal shift (hela laget upp/ner)<br>
+- Bredd = horisontell spread/compress<br>
+- Press = försvarslinjens höjd<br>
+- Anfallsfokus = anfallare centralt/brett<br>
+- Konsekvens-taggar under relevanta val<br>
+- Pitch 220px hög, mjuk isgrön gradient, linjer i 15% opacity<br>
+- Prickar 14px med vit border + shadow
+</div>
+
+</div>
+
+<script>
+var state = {
+  mentality: 'balanced',
+  tempo: 'normal',
+  press: 'high',
+  width: 'normal',
+  attackFocus: 'mixed',
+  passing: 'mixed',
+  corner: 'standard',
+  penalty: 'aggressive'
+}
+
+var descs = {
+  mentality: {
+    defensive: 'Kompakt försvar. Färre chanser men svårare att bryta ner.',
+    balanced: 'Balanserat anfall och försvar.',
+    offensive: 'Fokus på anfall. Fler chanser men sårbarare bak.',
+  },
+  tempo: {
+    low: 'Lugnt tempo. Sparar energi, kontrollerar matchen.',
+    normal: 'Normalt matchspel.',
+    high: 'Högt tempo. Skapar chanser men sliter på spelarna.',
+  },
+  press: {
+    low: 'Låg press. Sparar energi, ger motståndaren tid.',
+    medium: 'Mellanpress. Balanserat.',
+    high: 'Intensiv press. Fler bollvinster men mer kort och fatigue.',
+  },
+  width: {
+    narrow: 'Smalt spel. Bättre centralt försvar, färre hörnor.',
+    normal: 'Standardbredd.',
+    wide: 'Brett spel. Fler hörnor, öppnare mitt.',
+  },
+  attackFocus: {
+    central: 'Anfall centralt. Bättre möjligheter nära mål.',
+    mixed: 'Varierat anfallsspel.',
+    wings: 'Anfall via kanterna. Fler inlägg och hörnor.',
+  },
+  passing: {
+    safe: 'Korta säkra passningar. Färre misstag men långsammare.',
+    mixed: 'Blandad passningsstil.',
+    direct: 'Långbollar och snabba omställningar. Effektivt men riskfyllt.',
+  },
+  corner: {
+    safe: 'En skytt, resten täcker. Säkert men svagare anfallsvis.',
+    standard: 'Tre skyttar. Klassiskt hörnupplägg.',
+    aggressive: 'Fem spelare framåt. Hög risk, hög belöning.',
+  },
+  penalty: {
+    passive: 'Avvaktande i överläge. Säkert men skapar lite.',
+    active: 'Kontrollerad press i överläge.',
+    aggressive: 'Fullt tryck i numerärt överläge.',
+  }
+}
+
+var cons = {
+  mentality: {
+    defensive: [{t:'+10% försvar',c:'pos'},{t:'-15% skottchanser',c:'neg'},{t:'-Energi',c:'pos'}],
+    balanced: [],
+    offensive: [{t:'+15% skottchanser',c:'pos'},{t:'-10% försvar',c:'neg'},{t:'+Energi',c:'neg'}],
+  },
+  press: {
+    low: [{t:'-Energi',c:'pos'},{t:'-Bollvinster',c:'neg'}],
+    medium: [],
+    high: [{t:'+Bollvinster',c:'pos'},{t:'+Energi',c:'neg'},{t:'+Kort',c:'neg'}],
+  }
+}
+
+// Base positions (5-3-2, percentage of pitch)
+var base = [
+  {x:50,y:90},    // GK
+  {x:12,y:74},{x:30,y:72},{x:50,y:70},{x:70,y:72},{x:88,y:74}, // DEF
+  {x:24,y:52},{x:50,y:48},{x:76,y:52},  // MID
+  {x:36,y:28},{x:64,y:28},              // FWD
+]
+
+function calcPositions() {
+  var m = state.mentality
+  var w = state.width
+  var pr = state.press
+  var af = state.attackFocus
+
+  var yShift = m === 'offensive' ? -8 : m === 'defensive' ? 8 : 0
+  var pressShift = pr === 'high' ? -5 : pr === 'low' ? 5 : 0
+  var wScale = w === 'wide' ? 1.15 : w === 'narrow' ? 0.75 : 1.0
+
+  var pos = base.map(function(b, i) {
+    var x = b.x
+    var y = b.y
+
+    // GK stays put
+    if (i === 0) return {x:x, y:y}
+
+    // Vertical: mentality shifts whole team, press shifts defense
+    y += yShift
+    if (i <= 5) y += pressShift // defenders affected by press
+
+    // Width: scale x from center
+    x = 50 + (x - 50) * wScale
+
+    // Attack focus: affect forwards and wide mids
+    if (af === 'central' && i >= 9) {
+      x = 50 + (x - 50) * 0.5 // forwards closer together
+    }
+    if (af === 'wings' && i >= 9) {
+      x = 50 + (x - 50) * 1.4 // forwards wider
+    }
+    if (af === 'wings' && (i === 6 || i === 8)) {
+      x = 50 + (x - 50) * 1.2 // wide mids wider
+    }
+
+    return {x: Math.max(5, Math.min(95, x)), y: Math.max(8, Math.min(88, y))}
+  })
+
+  return pos
+}
+
+function updatePitch() {
+  var pos = calcPositions()
+  var pitch = document.getElementById('pitch')
+  var pw = pitch.offsetWidth - 14 // minus dot width
+  var ph = pitch.offsetHeight - 14
+
+  for (var i = 0; i < pos.length; i++) {
+    var dot = document.getElementById('p' + i)
+    dot.style.left = (pos[i].x / 100 * pw) + 'px'
+    dot.style.top = (pos[i].y / 100 * ph) + 'px'
+  }
+}
+
+function showEffect(text) {
+  var el = document.getElementById('effect-text')
+  el.textContent = text
+  el.classList.add('show')
+  clearTimeout(el._timer)
+  el._timer = setTimeout(function() { el.classList.remove('show') }, 1500)
+}
+
+function setTactic(group, val) {
+  state[group] = val
+
+  // Update button states
+  var btns = document.querySelectorAll('[data-group="'+group+'"] .tac-btn')
+  btns.forEach(function(b) {
+    b.classList.toggle('on', b.getAttribute('data-val') === val)
+  })
+
+  // Update description
+  var desc = document.getElementById('desc-' + group)
+  if (desc && descs[group]) desc.textContent = descs[group][val] || ''
+
+  // Update consequences
+  var conEl = document.getElementById('cons-' + group)
+  if (conEl && cons[group]) {
+    var tags = cons[group][val] || []
+    conEl.innerHTML = tags.map(function(t) {
+      return '<span class="con-tag con-'+t.c+'">'+t.t+'</span>'
+    }).join('')
+  }
+
+  // Show effect on pitch
+  var effects = {
+    'mentality:offensive': 'Laget skjuts framåt',
+    'mentality:defensive': 'Kompakt försvar',
+    'mentality:balanced': 'Balanserad formation',
+    'press:high': 'Högt försvarssätt',
+    'press:low': 'Djupt försvar',
+    'press:medium': 'Normalt försvar',
+    'width:wide': 'Bredare spel',
+    'width:narrow': 'Smalare formation',
+    'width:normal': 'Normal bredd',
+    'attackFocus:central': 'Centralt anfall',
+    'attackFocus:wings': 'Kantanfall',
+    'attackFocus:mixed': 'Blandat anfall',
+  }
+  var eff = effects[group+':'+val]
+  if (eff) showEffect(eff)
+
+  updatePitch()
+}
+
+// Init
+updatePitch()
+window.addEventListener('resize', updatePitch)
+</script>
+</body></html>

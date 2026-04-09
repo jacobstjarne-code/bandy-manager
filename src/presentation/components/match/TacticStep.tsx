@@ -5,6 +5,7 @@ import { PlayerArchetype } from '../../../domain/enums'
 import { SegmentedControl } from '../SegmentedControl'
 import { tacticRows, tacticExplanations } from '../../utils/tacticData'
 import { getDetailedWeatherAdvice } from '../../utils/weatherAdvice'
+import { TacticPreview } from './TacticPreview'
 
 interface TacticStepProps {
   tacticState: Tactic
@@ -52,6 +53,9 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
         </div>
       )}
 
+      {/* Mini-pitch preview */}
+      <TacticPreview tacticState={tacticState} />
+
       {/* Taktik-grupper i kort */}
       {(() => {
         const groups = [
@@ -59,6 +63,20 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
           { label: '🏒 Bollspel', keys: ['passingRisk', 'width', 'attackingFocus'] },
           { label: '📐 Fasta situationer', keys: ['cornerStrategy', 'penaltyKillStyle'] },
         ]
+
+        const consequenceTags: Record<string, Record<string, { t: string; c: 'pos' | 'neg' }[]>> = {
+          mentality: {
+            defensive: [{ t: '+10% försvar', c: 'pos' }, { t: '-15% skottchanser', c: 'neg' }, { t: '-Energi', c: 'pos' }],
+            balanced: [],
+            offensive: [{ t: '+15% skottchanser', c: 'pos' }, { t: '-10% försvar', c: 'neg' }, { t: '+Energi', c: 'neg' }],
+          },
+          press: {
+            low: [{ t: '-Energi', c: 'pos' }, { t: '-Bollvinster', c: 'neg' }],
+            medium: [],
+            high: [{ t: '+Bollvinster', c: 'pos' }, { t: '+Energi', c: 'neg' }, { t: '+Kort', c: 'neg' }],
+          },
+        }
+
         return groups.map((group, gi) => {
           const rows = tacticRows.filter(r => group.keys.includes(r.key as string))
           if (rows.length === 0) return null
@@ -67,17 +85,33 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
               <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
                 {group.label}
               </p>
-              {rows.map(({ label, key, options }, ri) => (
-                <div key={key as string} style={{ marginBottom: ri < rows.length - 1 ? 8 : 0 }}>
-                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4, fontWeight: 500 }}>{label}</p>
-                  <SegmentedControl
-                    options={options}
-                    value={tacticState[key] as string}
-                    onChange={v => onChange(key, v as Tactic[typeof key])}
-                    explanation={tacticExplanations[key as string]?.[tacticState[key] as string]}
-                  />
-                </div>
-              ))}
+              {rows.map(({ label, key, options }, ri) => {
+                const tags = consequenceTags[key as string]?.[tacticState[key] as string] ?? []
+                return (
+                  <div key={key as string} style={{ marginBottom: ri < rows.length - 1 ? 8 : 0 }}>
+                    <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4, fontWeight: 500 }}>{label}</p>
+                    <SegmentedControl
+                      options={options}
+                      value={tacticState[key] as string}
+                      onChange={v => onChange(key, v as Tactic[typeof key])}
+                      explanation={tacticExplanations[key as string]?.[tacticState[key] as string]}
+                    />
+                    {tags.length > 0 && (
+                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 4 }}>
+                        {tags.map((tag, ti) => (
+                          <span key={ti} style={{
+                            fontSize: 8, padding: '2px 6px', borderRadius: 99, fontWeight: 600,
+                            background: tag.c === 'pos' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+                            color: tag.c === 'pos' ? 'var(--success)' : 'var(--danger)',
+                          }}>
+                            {tag.t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )
         })
