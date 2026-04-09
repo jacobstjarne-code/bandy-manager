@@ -132,7 +132,11 @@ export function DashboardScreen() {
   const hasScheduledFixtures = game.fixtures.some(f => f.status === 'scheduled')
   const canClickAdvance = canAdvance || hasScheduledFixtures
   const playedRounds = game.fixtures.filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup).length
-  const canSimulateRemaining = hasScheduledFixtures && playedRounds >= 10 && !game.playoffBracket
+  const nextManagedScheduled = game.fixtures
+    .filter(f => f.status === 'scheduled' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+    .sort((a, b) => a.matchday - b.matchday)[0]
+  // Hide simulate button if next managed fixture is a cup match — user should play it themselves
+  const canSimulateRemaining = hasScheduledFixtures && playedRounds >= 10 && !game.playoffBracket && !nextManagedScheduled?.isCup
 
   const advanceButtonText = (() => {
     const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
@@ -178,18 +182,24 @@ export function DashboardScreen() {
 
   const handleSimulateRemaining = () => {
     playSound('click')
-    let safetyLimit = 30
+    let safetyLimit = 100  // 22 liga + ~4 cup + ~10 playoff = need headroom
     while (safetyLimit-- > 0) {
+      const currentGame = useGameStore.getState().game
+      if (!currentGame) break
+      // Stop if next managed fixture is a cup match — let user play it
+      const nextManaged = currentGame.fixtures
+        .filter(f => f.status === 'scheduled' && (f.homeClubId === currentGame.managedClubId || f.awayClubId === currentGame.managedClubId))
+        .sort((a, b) => a.matchday - b.matchday)[0]
+      if (nextManaged?.isCup) break
       const result = simulateRemainingStep()
       if (!result) break
       if (result.seasonEnded) break
-      // Stop if season ended or no more scheduled fixtures
-      const currentGame = useGameStore.getState().game
-      if (!currentGame) break
-      const hasMore = currentGame.fixtures.some(f => f.status === 'scheduled')
+      // Stop if no more scheduled fixtures (season end / playoff start handled by dashboard)
+      const hasMore = useGameStore.getState().game?.fixtures.some(f => f.status === 'scheduled')
       if (!hasMore) break
     }
-    navigate('/game/review')
+    // Navigate to dashboard — it handles season-end / playoff / next-round redirects
+    navigate('/game/dashboard', { replace: true })
   }
 
   const handleAdvance = () => {

@@ -617,5 +617,17 @@ export function resolveEvent(
     }
   }
 
+  // ── Record arc decisions ──────────────────────────────────────────────────
+  if (event.type === 'playerArc') {
+    updatedGame = {
+      ...updatedGame,
+      activeArcs: (updatedGame.activeArcs ?? []).map(arc =>
+        arc.eventsFired.includes(eventId)
+          ? { ...arc, decisionsMade: [...arc.decisionsMade, choiceId] }
+          : arc
+      ),
+    }
+  }
+
   return updatedGame
 }

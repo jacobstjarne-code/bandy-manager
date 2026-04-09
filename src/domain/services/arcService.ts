@@ -50,9 +50,20 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
       p => p.trait === 'hungrig' && p.age <= 21 && !activePlayerIds.has(p.id)
     )
     for (const p of hungrigPlayers) {
-      const gamesWithoutGoal = completedManagedFixtures.filter(f =>
-        !(f.events ?? []).some(e => e.type === 'goal' && e.playerId === p.id)
-      ).length
+      // Count consecutive games without a goal where player was in the lineup
+      const recentFixtures = completedManagedFixtures
+        .slice()
+        .sort((a, b) => (b.matchday ?? 0) - (a.matchday ?? 0))
+      let gamesWithoutGoal = 0
+      for (const f of recentFixtures) {
+        const isHome = f.homeClubId === game.managedClubId
+        const lineup = isHome ? f.homeLineup : f.awayLineup
+        const wasInLineup = lineup?.startingPlayerIds?.includes(p.id) || lineup?.benchPlayerIds?.includes(p.id)
+        if (!wasInLineup) continue
+        const scored = (f.events ?? []).some(e => e.type === 'goal' && e.playerId === p.id)
+        if (scored) break
+        gamesWithoutGoal++
+      }
       if (gamesWithoutGoal >= 3) {
         newArcs.push({
           id: genId('arc', currentMatchday, `hungrig_${p.id}`),
