@@ -21,14 +21,28 @@ interface CommentaryFeedProps {
   onNavigateToReview?: () => void
 }
 
-function generateMatchSummary(home: number, away: number, managedIsHome: boolean): string {
+function generateMatchSummary(home: number, away: number, managedIsHome: boolean, steps: MatchStep[]): string {
   const myScore = managedIsHome ? home : away
   const theirScore = managedIsHome ? away : home
-  if (myScore > theirScore + 2) return 'Dominant insats. Tre poäng utan diskussion.'
-  if (myScore > theirScore) return 'Tre viktiga poäng. Bra insats av laget.'
-  if (myScore === theirScore) return 'Rättvis poängdelning. Båda lagen hade sina chanser.'
-  if (myScore < theirScore - 2) return 'Tung dag. Mycket att jobba på inför nästa match.'
-  return 'Snävt. Det kunde gått åt båda hållen.'
+  const totalGoals = home + away
+  const margin = myScore - theirScore
+
+  if (myScore > theirScore) {
+    if (margin >= 3) return `Dominant insats från start till slut. ${totalGoals} mål totalt — publiken fick valuta för pengarna.`
+    if (totalGoals >= 8) return `Vild match med ${totalGoals} mål. Offensivt spel som kunde gått åt båda hållen.`
+    if (margin === 1) return `Jämn match som avgjordes sent. Nerverna höll hela vägen.`
+    return `Kontrollerad seger. Laget visade mognad i de avgörande lägena.`
+  }
+  if (myScore < theirScore) {
+    if (margin <= -3) return `Motståndarna dominerade från start. Mycket att jobba med inför nästa.`
+    if (margin === -1) return `Nära men inte nog. Laget skapade chanser men saknade skärpa framför mål.`
+    return `Motståndarna var starkare idag. Laget kämpade men det räckte inte.`
+  }
+  if (totalGoals >= 6) return `Målrikt kryss — ${totalGoals} mål och drama från båda sidor.`
+  if (totalGoals === 0) return `Mållöst. Båda lagen var defensivt stabila men saknade den sista gnistan.`
+  // steps param available for future use
+  void steps
+  return `Rättvis poängdelning. Båda lagen hade sina perioder.`
 }
 
 export function CommentaryFeed({
@@ -78,7 +92,7 @@ export function CommentaryFeed({
         const lastStep = displayedSteps[displayedSteps.length - 1]
         const home = lastStep?.homeScore ?? 0
         const away = lastStep?.awayScore ?? 0
-        const summary = generateMatchSummary(home, away, managedIsHome ?? false)
+        const summary = generateMatchSummary(home, away, managedIsHome ?? false, displayedSteps)
         return (
           <div style={{ padding: '0 12px 8px' }}>
             <div style={{
@@ -102,7 +116,7 @@ export function CommentaryFeed({
                 cursor: 'pointer', letterSpacing: '0.02em',
               }}
             >
-              Se resultat →
+              Se sammanfattning →
             </button>
           </div>
         )
