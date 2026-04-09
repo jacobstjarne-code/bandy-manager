@@ -23,6 +23,7 @@ import { DiamondDivider } from '../components/dashboard/DiamondDivider'
 import { FormSquares } from '../components/FormDots'
 import { getManagedClubCupStatus, getCupRoundLabel } from '../../domain/services/cupService'
 import { CareerStatsCard } from '../components/dashboard/CareerStatsCard'
+import { getPepTalk } from '../../domain/services/pepTalkService'
 
 
 const NAV_BTN: React.CSSProperties = {
@@ -566,6 +567,16 @@ export function DashboardScreen() {
             )}
           </div>
           <DiamondDivider />
+
+          {(() => {
+            const pepTalk = getPepTalk(game)
+            if (!pepTalk) return null
+            return (
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'center', margin: '0 0 6px', fontFamily: 'var(--font-display)' }}>
+                "{pepTalk}"
+              </p>
+            )
+          })()}
 
           {canSimulateRemaining && (
             <button onClick={handleSimulateRemaining} className="btn btn-ghost" style={{ width: '100%', marginBottom: 8, justifyContent: 'center' }}>
