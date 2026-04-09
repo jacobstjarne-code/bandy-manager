@@ -58,46 +58,73 @@ function generateMatchSummary(
   const lateGoals = goals.filter(e => (e.minute ?? 0) >= 55)
   const lateDecider = lateGoals.length > 0 && Math.abs(myScore - theirScore) <= 1
 
+  // Alla målskyttar sorterade
+  const allScorers = Object.entries(scorerCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([pid, n]) => ({ name: scorerNames[pid] ?? 'Okänd', n }))
+
+  function scorerSummary(): string | null {
+    if (allScorers.length === 0) return null
+    if (allScorers.length === 1 && allScorers[0].n === 1) return `${allScorers[0].name} satte det enda målet.`
+    if (allScorers.length === 1) return `${allScorers[0].name} svarade för samtliga ${allScorers[0].n} mål.`
+    const top = allScorers[0]
+    if (top.n >= 3) return `${top.name} dominerade målprotokollen med ${top.n} mål. ${allScorers.slice(1, 3).map(s => `${s.name} (${s.n})`).join(', ')} stod för resten.`
+    if (top.n === 2) {
+      const rest = allScorers.slice(1).map(s => s.name).join(', ')
+      return `${top.name} sköt två. Övriga mål: ${rest}.`
+    }
+    return allScorers.slice(0, 4).map(s => `${s.name} (${s.n})`).join(', ') + '.'
+  }
+
   // Bygg sammanfattning
   const lines: string[] = []
 
   if (myScore > theirScore) {
     if (wasComeback) {
-      lines.push(`Laget låg under i paus men vände till ${myScore}–${theirScore}.`)
-    } else if (margin >= 3) {
-      lines.push(`Dominant insats. ${myScore}–${theirScore} — aldrig hotat.`)
+      lines.push(`Laget låg under i paus men vände och tog hem det till ${myScore}–${theirScore}. En mental prestation lika mycket som en teknisk.`)
+    } else if (margin >= 4) {
+      lines.push(`Stormatch. ${myScore}–${theirScore} och det var aldrig i närheten av en dramatisk avslutning.`)
+      if (totalGoals >= 10) lines.push(`${totalGoals} mål totalt — en fest för alla som var på planen.`)
+    } else if (margin >= 2) {
+      lines.push(`Kontrollerad seger, ${myScore}–${theirScore}. Laget tog täten och höll den.`)
     } else if (lateDecider) {
-      lines.push(`Sent avgörande! ${myScore}–${theirScore} efter en nervös avslutning.`)
+      lines.push(`Nervpirrande till det sista. Avgörandet kom sent och slutade ${myScore}–${theirScore}.`)
     } else {
-      lines.push(`Kontrollerad seger, ${myScore}–${theirScore}.`)
+      lines.push(`Knapp seger, ${myScore}–${theirScore}. Jämnt länge men laget hade den avgörande kvaliteten när det gällde.`)
     }
   } else if (myScore < theirScore) {
-    if (margin <= -3) {
-      lines.push(`Tung förlust, ${myScore}–${theirScore}. Mycket att jobba med.`)
+    if (margin <= -4) {
+      lines.push(`Tungt. ${myScore}–${theirScore} och motståndarna visade varför de är ett hot. Det fanns sällan svar på deras press.`)
+    } else if (margin <= -2) {
+      lines.push(`${myScore}–${theirScore}. Motståndarna var ett snäpp bättre i de flesta delar av spelet — det syntes i slutresultatet.`)
     } else if (myHt > theirHt) {
-      lines.push(`Ledde i paus men tappade. ${myScore}–${theirScore} i slutändan.`)
+      lines.push(`Ledde i paus men tappade greppet i andra halvlek. Slutade ${myScore}–${theirScore} — ett resultat som svider mer än siffran visar.`)
+    } else if (lateDecider) {
+      lines.push(`Länge jämnt, men ett sent mål fällde avgörandet till motståndarnas fördel. ${myScore}–${theirScore}.`)
     } else {
-      lines.push(`${myScore}–${theirScore}. Motståndarna var starkare idag.`)
+      lines.push(`${myScore}–${theirScore}. Motståndarna var starkare idag — det är svårt att säga något annat.`)
     }
   } else {
-    if (totalGoals >= 6) {
-      lines.push(`Målrikt kryss, ${myScore}–${theirScore}. Drama åt båda hållen.`)
+    if (totalGoals >= 8) {
+      lines.push(`Målfest och rättvis poängdelning, ${myScore}–${theirScore}. ${totalGoals} mål och publiken var med hela vägen.`)
     } else if (totalGoals === 0) {
-      lines.push(`Mållöst. Defensivt stabilt men offensivt tamt.`)
+      lines.push(`Mållöst kryss. Båda lagen var defensivt solida men offensivt utan genomslag.`)
+    } else if (lateDecider) {
+      lines.push(`Utjämning sent höll kryss vid liv — ${myScore}–${theirScore}. Poängen känns rimlig.`)
     } else {
-      lines.push(`Rättvis poängdelning, ${myScore}–${theirScore}.`)
+      lines.push(`Rättvis poängdelning, ${myScore}–${theirScore}. Båda lagen hade sina perioder.`)
     }
   }
 
-  if (topScorerName && topScorerGoals >= 2) {
-    lines.push(`${topScorerName} med ${topScorerGoals} mål.`)
-  } else if (topScorerName && topScorerGoals === 1 && totalGoals <= 3) {
-    lines.push(`${topScorerName} med det avgörande målet.`)
+  // Halvtidsbild om den berättar något
+  if (myScore !== theirScore && !wasComeback) {
+    if (myHt === theirHt && myHt > 0) lines.push(`I paus stod det ${myHt}–${myHt}.`)
+    else if (Math.abs(myHt - theirHt) >= 2) lines.push(`Halvtidsläge ${myHt}–${theirHt} speglade det som hände i andra halvlek.`)
   }
 
-  if (totalGoals >= 8) {
-    lines.push(`${totalGoals} mål totalt — publiken fick valuta.`)
-  }
+  // Målskyttar
+  const sc = scorerSummary()
+  if (sc) lines.push(sc)
 
   return lines.join(' ')
 }
