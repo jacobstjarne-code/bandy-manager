@@ -1,6 +1,5 @@
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import type { TeamSelection } from '../../domain/entities/Fixture'
-import { PlayerPosition } from '../../domain/enums'
 
 export interface SetLineupInput {
   game: SaveGame
@@ -58,18 +57,6 @@ export function setLineup(input: SetLineupInput): SetLineupResult {
         success: false,
         error: `${player.firstName} ${player.lastName} är avstängd.`,
       }
-    }
-  }
-
-  // 3. Must have at least one goalkeeper
-  const hasGK = startingPlayerIds.some(id => {
-    const p = game.players.find(pl => pl.id === id)
-    return p?.position === PlayerPosition.Goalkeeper
-  })
-  if (!hasGK) {
-    return {
-      success: false,
-      error: 'Startelvan måste innehålla minst en målvakt.',
     }
   }
 

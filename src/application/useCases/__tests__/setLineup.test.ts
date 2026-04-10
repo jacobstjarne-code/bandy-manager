@@ -126,7 +126,7 @@ describe('setLineup', () => {
     }
   })
 
-  it('no goalkeeper in lineup returns error', () => {
+  it('no goalkeeper in lineup is allowed (warning shown in UI, not hard block)', () => {
     const game = makeGame()
     const clubPlayers = game.players.filter(
       p => p.clubId === 'club_sandviken' && !p.isInjured && p.suspensionGamesRemaining === 0,
@@ -149,10 +149,8 @@ describe('setLineup', () => {
       benchPlayerIds: [],
     })
 
-    expect(result.success).toBe(false)
-    if (!result.success) {
-      expect(result.error).toContain('målvakt')
-    }
+    // GK-less lineup is now allowed — warning shown in LineupStep UI instead of hard block
+    expect(result.success).toBe(true)
   })
 
   it('player from wrong club returns error', () => {
