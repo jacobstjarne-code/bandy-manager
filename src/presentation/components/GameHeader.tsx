@@ -16,10 +16,7 @@ export function GameHeader() {
   const lastPlayedRound = game.fixtures
     .filter(f => f.status === 'completed' && !f.isCup)
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
-  const nextLeagueFixture = game.fixtures
-    .filter(f => f.status === 'scheduled' && !f.isCup)
-    .sort((a, b) => a.roundNumber - b.roundNumber)[0]
-  const currentRound = nextLeagueFixture ? nextLeagueFixture.roundNumber : lastPlayedRound
+  const currentRound = lastPlayedRound
 
   const [showHelp, setShowHelp] = useState(false)
 

@@ -19,7 +19,7 @@ import { generatePostAdvanceEvents, generateEvents } from '../../domain/services
 import { generateMediaHeadlines, generateTrendArticles } from '../../domain/services/mediaService'
 import { evaluateBoard, generateBoardMessage } from '../../domain/services/boardService'
 import { mulberry32 } from '../../domain/utils/random'
-import { getRoundDate } from '../../domain/services/scheduleGenerator'
+import { getRoundDate, buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
 import { handleSeasonEnd } from './seasonEndProcessor'
 import { handlePlayoffStart } from './playoffTransition'
 import type { AdvanceResult } from './advanceTypes'
@@ -366,8 +366,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const updatedTalentSearch = scoutResult.updatedTalentSearch
   const updatedTalentResults = scoutResult.updatedTalentResults
 
-  // Date from season calendar table (grundserie okt-feb, slutspel mars)
-  const newDate = getRoundDate(game.currentSeason, nextMatchday)
+  // Date from season calendar — look up by matchday so cup rounds get correct dates
+  const calendar = buildSeasonCalendar(game.currentSeason)
+  const calendarSlot = calendar.find(s => s.matchday === nextMatchday)
+  const newDate = calendarSlot?.date ?? getRoundDate(game.currentSeason, nextMatchday)
 
   const justCompletedManagedFixture = simulatedFixtures.find(
     f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&

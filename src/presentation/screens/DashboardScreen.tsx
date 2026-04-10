@@ -136,7 +136,7 @@ export function DashboardScreen() {
     .filter(f => f.status === 'scheduled' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
     .sort((a, b) => a.matchday - b.matchday)[0]
   // Hide simulate button if next managed fixture is a cup match — user should play it themselves
-  const canSimulateRemaining = hasScheduledFixtures && playedRounds >= 10 && !game.playoffBracket && !nextManagedScheduled?.isCup
+  const canSimulateRemaining = hasScheduledFixtures && playedRounds >= 12 && !game.playoffBracket && !nextManagedScheduled?.isCup && !game.showHalfTimeSummary
 
   const advanceButtonText = (() => {
     const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
@@ -201,12 +201,7 @@ export function DashboardScreen() {
     while (safetyLimit-- > 0) {
       const currentGame = useGameStore.getState().game
       if (!currentGame) break
-      // Stop if next managed fixture is a cup match — let user play it
-      const nextManaged = currentGame.fixtures
-        .filter(f => f.status === 'scheduled' && (f.homeClubId === currentGame.managedClubId || f.awayClubId === currentGame.managedClubId))
-        .sort((a, b) => a.matchday - b.matchday)[0]
-      if (nextManaged?.isCup) break
-      if (nextManaged?.isKnockout) break
+      // advance() handles cup-skip internally — loop stops at playoffStarted or seasonEnded.
       const result = simulateRemainingStep()
       if (!result) break
       if (result.seasonEnded) break
