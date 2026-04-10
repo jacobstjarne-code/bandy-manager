@@ -13,6 +13,7 @@ import {
   createYouthIntakeItem,
 } from '../../domain/services/inboxService'
 import { mulberry32 } from '../../domain/utils/random'
+import { shouldRetire } from '../../domain/services/playerDevelopmentService'
 import { generateYouthTeam } from '../../domain/services/academyService'
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
 import { generateSeasonVerdict, generatePreSeasonMessage } from '../../domain/services/boardService'
@@ -390,13 +391,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     },
   }))
 
-  // Retirement check: age 34+ CA<40: 50%, age 37+: 70%, age 39+: always
+  // Retirement check — delegated to shouldRetire() in playerDevelopmentService
   for (const player of resetPlayers) {
-    const mustRetire = player.age >= 39
-    const r = retirementRand()
-    const retires = mustRetire
-      || (player.age >= 37 && r < 0.7)
-      || (player.age >= 34 && player.currentAbility < 40 && r < 0.5)
+    const retires = shouldRetire(player, retirementRand)
     if (retires) {
       retiredPlayerIds.add(player.id)
       if (player.clubId === game.managedClubId) {
