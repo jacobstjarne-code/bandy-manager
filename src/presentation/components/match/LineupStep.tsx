@@ -8,6 +8,7 @@ import { positionShort } from '../../utils/formatters'
 import { OpponentAnalysisCard } from './OpponentAnalysisCard'
 import { LineupFormationView } from './LineupFormationView'
 import { PitchLineupView } from './PitchLineupView'
+import { MatchDayProgram } from './MatchDayProgram'
 
 interface GroupedPlayers {
   position: string
@@ -84,6 +85,21 @@ export function LineupStep({
 
   return (
     <>
+      {/* Matchdagsprogram — expandable pre-match briefing */}
+      {nextFixture && opponent && (() => {
+        const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+        if (!managedClub) return null
+        return (
+          <MatchDayProgram
+            fixture={nextFixture}
+            opponent={opponent}
+            managedClub={managedClub}
+            game={game}
+            myPlayers={squadPlayers}
+          />
+        )
+      })()}
+
       {/* Opponent info — single combined card */}
       {nextFixture && opponent && (
         <OpponentAnalysisCard fixture={nextFixture} opponent={opponent} game={game} onError={onError} />

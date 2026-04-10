@@ -137,11 +137,21 @@ describe('resolveOutgoingBid', () => {
     expect(resolveOutgoingBid(bid, game, () => 0.5)).toBe('accepted')
   })
 
-  it('rejects below 90% of market value', () => {
+  it('counter-offers at 70-90% of market value (first attempt)', () => {
     const game = makeGame()
     const bid: TransferBid = {
       id: 'b1', playerId: 'p1', buyingClubId: 'c1', sellingClubId: 'c2',
       offerAmount: Math.round(200000 * 0.7), offeredSalary: 12000, contractYears: 3,
+      direction: 'outgoing', status: 'pending', createdRound: 3, expiresRound: 4,
+    }
+    expect(resolveOutgoingBid(bid, game, () => 0.5)).toBe('counter')
+  })
+
+  it('rejects below 70% of market value', () => {
+    const game = makeGame()
+    const bid: TransferBid = {
+      id: 'b1', playerId: 'p1', buyingClubId: 'c1', sellingClubId: 'c2',
+      offerAmount: Math.round(200000 * 0.5), offeredSalary: 12000, contractYears: 3,
       direction: 'outgoing', status: 'pending', createdRound: 3, expiresRound: 4,
     }
     expect(resolveOutgoingBid(bid, game, () => 0.5)).toBe('rejected')

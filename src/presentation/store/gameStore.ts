@@ -342,12 +342,38 @@ export const useGameStore = create<GameState>()(
           }
         }
 
+        // Add narrative entry for the conversation
+        const narrativeTexts: Record<string, string[]> = {
+          encourage: [
+            'Tränaren kallade till möte. Han tror på mig.',
+            'Chefen tog sig tid att prata. Det gav energi.',
+            'Fick beröm av tränaren. Bra tajming.',
+          ],
+          demand: player.form >= 50
+            ? ['Tränaren kräver mer av mig. Utmaningen gillar jag.', 'Chefen skärpte till sig. Dags att leverera.']
+            : ['Tränaren är missnöjd. Svårt att höra när formen sviker.', 'Press ovanifrån. Inte lätt just nu.'],
+          future: inboxTriggered
+            ? ['Pratade med chefen om framtiden. Ovissheten tär.', 'Kontrakt och framtid på tapeten. Inget besked ännu.']
+            : ['Tränaren bekräftade att jag är med i planerna. Skönt.', 'Framtiden känns trygg här. Går att fokusera på spelet.'],
+        }
+        const narrativePool = narrativeTexts[choice] ?? []
+        const narrativeText = narrativePool[Math.floor(Math.random() * narrativePool.length)]
+        const narrativeEntry = narrativeText ? {
+          season: game.currentSeason,
+          matchday: game.fixtures.filter(f => f.status === 'completed').length,
+          text: narrativeText,
+          type: 'storyline' as const,
+        } : null
+
         const updatedPlayers = game.players.map(p =>
           p.id === playerId
             ? {
                 ...p,
                 morale: Math.max(0, Math.min(100, p.morale + moraleChange)),
                 form: Math.max(0, Math.min(100, p.form + formChange)),
+                narrativeLog: narrativeEntry
+                  ? [...(p.narrativeLog ?? []), narrativeEntry].slice(-20)
+                  : p.narrativeLog,
               }
             : p
         )

@@ -4,7 +4,7 @@ import type { Club } from '../../../domain/entities/Club'
 import type { TransferBid } from '../../../domain/entities/GameEvent'
 import type { LoanDeal } from '../../../domain/entities/Academy'
 import { InboxItemType } from '../../../domain/enums'
-import { resolveOutgoingBid, generateIncomingBids } from '../../../domain/services/transferService'
+import { resolveOutgoingBid, generateIncomingBids, getCounterOfferAmount } from '../../../domain/services/transferService'
 
 export interface TransferProcessorResult {
   resolvedBids: TransferBid[]
@@ -45,6 +45,10 @@ export function processTransferBids(
   const resolvedBids: TransferBid[] = existingBids.map(b => {
     if (b.direction === 'outgoing' && b.status === 'pending' && nextMatchday >= b.expiresRound) {
       const outcome = resolveOutgoingBid(b, game, localRand)
+      if (outcome === 'counter') {
+        // Counter-offer: keep bid pending but mark counter received, extend expiry by 2
+        return { ...b, status: 'pending' as const, counterCount: (b.counterCount ?? 0) + 1, expiresRound: b.expiresRound + 2 }
+      }
       return { ...b, status: outcome }
     }
     if (b.status === 'pending' && nextMatchday >= b.expiresRound) {
@@ -142,6 +146,17 @@ export function processTransferBids(
         type: InboxItemType.TransferBidResult,
         title: `Bud avslaget — ${target.firstName} ${target.lastName}`,
         body: `${sellingClub?.name ?? 'Klubben'} avslår ditt bud på ${target.firstName} ${target.lastName}.`,
+        isRead: false,
+      })
+    } else if (bid.counterCount && bid.counterCount > (existingBids.find(b => b.id === bid.id)?.counterCount ?? 0) && target) {
+      // Counter-offer notification
+      const counter = getCounterOfferAmount(bid, preEventGame)
+      inboxItems.push({
+        id: `inbox_bid_counter_${bid.id}_c${bid.counterCount}`,
+        date: newDate,
+        type: InboxItemType.TransferBidResult,
+        title: `Motbud — ${target.firstName} ${target.lastName}`,
+        body: counter.message + ` Du kan höja ditt bud eller dra tillbaka det.`,
         isRead: false,
       })
     }

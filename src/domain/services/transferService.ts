@@ -135,16 +135,24 @@ export function createOutgoingBid(
 }
 
 // ── AI svarar på spelarens bud ─────────────────────────────────────────────
+export type BidResolution = 'accepted' | 'rejected' | 'counter'
+
+export interface CounterOffer {
+  amount: number   // what the AI wants instead
+  message: string
+}
+
 export function resolveOutgoingBid(
   bid: TransferBid,
   game: SaveGame,
   rand: () => number,
-): 'accepted' | 'rejected' {
+): BidResolution {
   const target = game.players.find(p => p.id === bid.playerId)
   if (!target) return 'rejected'
 
   const marketVal = target.marketValue ?? 50000
   const ratio = bid.offerAmount / marketVal
+  const countersDone = bid.counterCount ?? 0
 
   // Always accept at 120%+ of market value
   if (ratio >= 1.2) return 'accepted'
@@ -157,7 +165,22 @@ export function resolveOutgoingBid(
     if (!isTopPlayer) return rand() > 0.3 ? 'accepted' : 'rejected'
   }
 
+  // Counter-offer at 70-90%: AI proposes 105% of market if no prior counters
+  if (ratio >= 0.7 && countersDone === 0) return 'counter'
+
   return 'rejected'
+}
+
+export function getCounterOfferAmount(bid: TransferBid, game: SaveGame): CounterOffer {
+  const target = game.players.find(p => p.id === bid.playerId)
+  const marketVal = target?.marketValue ?? 50000
+  const counterAmount = Math.round(marketVal * 1.05 / 10000) * 10000
+  const sellerClub = game.clubs.find(c => c.id === bid.sellingClubId)
+  const sellerName = sellerClub?.shortName ?? sellerClub?.name ?? 'säljarlaget'
+  return {
+    amount: counterAmount,
+    message: `${sellerName} accepterar inte budet. De kräver ${counterAmount.toLocaleString('sv-SE')} kr.`,
+  }
 }
 
 // ── Genomför transfer ──────────────────────────────────────────────────────
