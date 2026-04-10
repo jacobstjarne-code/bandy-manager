@@ -42,6 +42,41 @@ export function generateReturnFromInjuryEntry(season: number, matchday: number):
   }
 }
 
+export function generateDebutEntry(opponent: string, season: number, matchday: number): NarrativeEntry {
+  return {
+    season, matchday, type: 'milestone',
+    text: `A-lagsdebut mot ${opponent}. Nerverna satt — men benen höll.`,
+  }
+}
+
+export function generateGoalStreakEntry(goals: number, season: number, matchday: number): NarrativeEntry {
+  return {
+    season, matchday, type: 'form',
+    text: `${goals} mål på ${goals + 1} matcher. Formen är het just nu.`,
+  }
+}
+
+export function generateMilestoneGoalEntry(total: number, season: number, matchday: number): NarrativeEntry {
+  return {
+    season, matchday, type: 'milestone',
+    text: `Mål nummer ${total} i karriären. En siffra att vara stolt över.`,
+  }
+}
+
+export function generateMilestoneGamesEntry(total: number, season: number, matchday: number): NarrativeEntry {
+  return {
+    season, matchday, type: 'milestone',
+    text: `Match nummer ${total} i A-laget. Lojalitet och uthållighet lönar sig.`,
+  }
+}
+
+export function generateAcademyPromotionEntry(season: number, matchday: number): NarrativeEntry {
+  return {
+    season, matchday, type: 'milestone',
+    text: 'Tar klivet upp till A-laget. Akademin levererade — nu gäller det att gripa chansen.',
+  }
+}
+
 export function generateGoodMatchEntry(rating: number, goals: number, opponent: string, season: number, matchday: number): NarrativeEntry {
   const goalText = goals > 0 ? ` Stod för ${goals} mål.` : ''
   return {

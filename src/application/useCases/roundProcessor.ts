@@ -858,6 +858,24 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const result = executeTransfer(tmpGame, bid)
     postTransferPlayers = result.players
     postTransferClubs = result.clubs
+
+    // Nemesis no more — om vi just värvat en nemesis-spelare
+    const nemesis = updatedNemesisTracker[bid.playerId]
+    if (nemesis && nemesis.goalsAgainstUs >= 3) {
+      const signedPlayer = postTransferPlayers.find(p => p.id === bid.playerId)
+      if (signedPlayer) {
+        updatedNemesisTracker[bid.playerId] = { ...nemesis, signedBy: game.managedClubId }
+        newInboxItems.push({
+          id: `inbox_nemesis_signed_${bid.playerId}_${game.currentSeason}`,
+          date: game.currentDate,
+          type: InboxItemType.Transfer,
+          title: `Nemesis värvad: ${signedPlayer.firstName} ${signedPlayer.lastName}`,
+          body: `${signedPlayer.firstName} ${signedPlayer.lastName} — som satte ${nemesis.goalsAgainstUs} mål MOT oss — bär nu våra färger. Välkommen till rätt sida.`,
+          relatedPlayerId: bid.playerId,
+          isRead: false,
+        } as InboxItem)
+      }
+    }
   }
 
   // ── Community standing, politician/mecenat inbox, facility projects ────────

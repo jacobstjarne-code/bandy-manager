@@ -8,6 +8,7 @@ import { computeWeatherTacticInteraction } from '../../../domain/services/matchS
 import { getTacticModifiers } from '../../../domain/services/tacticModifiers'
 import { developPlayers } from '../../../domain/services/playerDevelopmentService'
 import { mulberry32 } from '../../../domain/utils/random'
+import { generateInjuryEntry, generateReturnFromInjuryEntry } from '../../../domain/services/narrativeService'
 
 export interface PlayerStateResult {
   updatedPlayers: Player[]
@@ -49,6 +50,11 @@ export function applyPlayerStateUpdates(
         updated.isInjured = false
         updated.injuryDaysRemaining = 0
         updated.fitness = Math.max(30, updated.fitness - 15)
+        // Narrative: recovery entry for managed players
+        if (player.clubId === game.managedClubId) {
+          const recoveryEntry = generateReturnFromInjuryEntry(game.currentSeason, nextRound)
+          updated.narrativeLog = [...(updated.narrativeLog ?? []), recoveryEntry].slice(-20)
+        }
       }
     }
 
@@ -164,11 +170,13 @@ export function applyPlayerStateUpdates(
 
     if (localRand() < injuryChance) {
       const days = 7 + Math.floor(localRand() * 28)  // 1–5 weeks
-      updatedPlayers[idx] = {
-        ...player,
-        isInjured: true,
-        injuryDaysRemaining: days,
+      let injuredPlayer = { ...player, isInjured: true, injuryDaysRemaining: days }
+      // Narrative: injury entry for managed players
+      if (player.clubId === game.managedClubId) {
+        const injuryEntry = generateInjuryEntry(game.currentSeason, nextRound, days)
+        injuredPlayer.narrativeLog = [...(player.narrativeLog ?? []), injuryEntry].slice(-20)
       }
+      updatedPlayers[idx] = injuredPlayer
       newlyInjured.push({ player: updatedPlayers[idx], days })
     }
   }

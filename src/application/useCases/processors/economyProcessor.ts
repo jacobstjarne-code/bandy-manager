@@ -81,7 +81,14 @@ export function processEconomy(
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.weeklyWages, reason: 'wages', label: 'Löner' })
   }
 
-  let updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, managedIncome.netPerRound)
+  // Volunteer income
+  const volunteerCount = (game.volunteers ?? []).length
+  const volunteerIncome = volunteerCount * 600
+  if (volunteerIncome > 0) {
+    roundFinanceLog.push({ round: nextMatchday, amount: volunteerIncome, reason: 'community_round', label: `Frivilligas bidrag (${volunteerCount} st)` })
+  }
+
+  let updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, managedIncome.netPerRound + volunteerIncome)
 
   // AI clubs: simplified flat estimate
   for (const c of game.clubs) {

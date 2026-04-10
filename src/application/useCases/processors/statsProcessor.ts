@@ -2,7 +2,14 @@ import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { Player, CareerMilestone } from '../../../domain/entities/Player'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import { FixtureStatus, MatchEventType, InboxItemType } from '../../../domain/enums'
-import { generateHatTrickEntry, generateGoodMatchEntry, generatePoorMatchEntry } from '../../../domain/services/narrativeService'
+import {
+  generateHatTrickEntry,
+  generateGoodMatchEntry,
+  generatePoorMatchEntry,
+  generateDebutEntry,
+  generateMilestoneGoalEntry,
+  generateMilestoneGamesEntry,
+} from '../../../domain/services/narrativeService'
 
 export interface StatsProcessorResult {
   finalPlayers: Player[]
@@ -142,19 +149,44 @@ export function updatePlayerMatchStats(
 
       // Build narrative entries for managed players
       let updatedNarrativeLog = p.narrativeLog
-      if (isManaged && rating !== undefined) {
+      if (isManaged) {
         const isHome = fixture.homeClubId === game.managedClubId
         const opponentId = isHome ? fixture.awayClubId : fixture.homeClubId
         const opponent = game.clubs.find(c => c.id === opponentId)
         const oppName = opponent?.shortName ?? opponent?.name ?? 'motståndet'
         const newEntries: NonNullable<Player['narrativeLog']> = []
-        if (goals >= 3) {
-          newEntries.push(generateHatTrickEntry(p, oppName, goals, game.currentSeason, nextRound))
-        } else if (rating >= 8.0) {
-          newEntries.push(generateGoodMatchEntry(rating, goals, oppName, game.currentSeason, nextRound))
-        } else if (rating < 5.5 && prevGames >= 3) {
-          newEntries.push(generatePoorMatchEntry(rating, oppName, game.currentSeason, nextRound))
+
+        // Debut (first ever game)
+        if (prevCareerGames === 0) {
+          newEntries.push(generateDebutEntry(oppName, game.currentSeason, nextRound))
         }
+
+        if (rating !== undefined) {
+          if (goals >= 3) {
+            newEntries.push(generateHatTrickEntry(p, oppName, goals, game.currentSeason, nextRound))
+          } else if (rating >= 8.0) {
+            newEntries.push(generateGoodMatchEntry(rating, goals, oppName, game.currentSeason, nextRound))
+          } else if (rating < 5.5 && prevGames >= 3) {
+            newEntries.push(generatePoorMatchEntry(rating, oppName, game.currentSeason, nextRound))
+          }
+        }
+
+        // Career goal milestones: 10, 25, 50, 100
+        const goalMilestones = [10, 25, 50, 100]
+        for (const ms of goalMilestones) {
+          if (prevCareerGoals < ms && newCareerGoals >= ms) {
+            newEntries.push(generateMilestoneGoalEntry(ms, game.currentSeason, nextRound))
+          }
+        }
+
+        // Career game milestones: 50, 100, 200
+        const gameMilestones = [50, 100, 200]
+        for (const ms of gameMilestones) {
+          if (prevCareerGames < ms && newCareerGames >= ms) {
+            newEntries.push(generateMilestoneGamesEntry(ms, game.currentSeason, nextRound))
+          }
+        }
+
         if (newEntries.length > 0) {
           updatedNarrativeLog = [...(p.narrativeLog ?? []), ...newEntries].slice(-20)
         }

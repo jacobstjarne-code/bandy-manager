@@ -55,6 +55,12 @@ export function processCommunity(
   if (csActivities?.functionaries) csBoost += 0.05
   if (csActivities?.bandySchool) csBoost += 0.08
   if (csActivities?.socialMedia) csBoost += 0.03
+  // ── Frivilligbonus ────────────────────────────────────────────────────────
+  const volunteerCount = (game.volunteers ?? []).length
+  if (volunteerCount > 0) {
+    csBoost += Math.min(15, volunteerCount * 0.3)
+  }
+
   const csPos = standings.find(s => s.clubId === game.managedClubId)?.position ?? 6
   if (csPos <= 3) csBoost += 0.2
   else if (csPos >= 10) csBoost -= 0.15
