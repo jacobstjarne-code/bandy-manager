@@ -13,7 +13,7 @@ interface Nudge {
   state?: Record<string, string>
 }
 
-export function ContextualNudges({ game, currentRound: _r }: Props) {
+export function ContextualNudges({ game, currentRound }: Props) {
   const navigate = useNavigate()
   const nudges: Nudge[] = []
 
@@ -43,9 +43,14 @@ export function ContextualNudges({ game, currentRound: _r }: Props) {
       nudges.push({ icon: '🔍', text: `Scoutrapport klar: ${player.firstName} ${player.lastName}`, path: '/game/transfers' })
   }
 
-  const readyYouth = game.youthTeam?.players?.find(p => p.readyForPromotion)
-  if (readyYouth)
+  const readyYouthPlayers = game.youthTeam?.players?.filter(p => p.readyForPromotion) ?? []
+  // Show nudge only after round 5 and when 2+ players are ready — avoids false alarm at season start
+  if (readyYouthPlayers.length >= 2 && currentRound >= 5) {
+    nudges.push({ icon: '⭐', text: `${readyYouthPlayers.length} akademispelare redo för A-laget`, path: '/game/club', state: { tab: 'akademi' } })
+  } else if (readyYouthPlayers.length === 1 && currentRound >= 8) {
+    const readyYouth = readyYouthPlayers[0]
     nudges.push({ icon: '⭐', text: `${readyYouth.firstName} ${readyYouth.lastName} kan vara redo för A-laget`, path: '/game/club', state: { tab: 'akademi' } })
+  }
 
   if (game.patron?.isActive && (game.patron.happiness ?? 50) < 30)
     nudges.push({ icon: '😤', text: `${game.patron.name} är missnöjd — agera`, path: '/game/club' })
