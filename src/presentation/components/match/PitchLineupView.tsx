@@ -225,7 +225,7 @@ export function PitchLineupView({
                     justifyContent: 'center',
                     fontSize: isEmpty ? 7 : 10,
                     fontWeight: 800,
-                    color: isEmpty ? 'rgba(26,26,24,0.4)' : '#1A1A18',
+                    color: isEmpty ? 'var(--text-secondary)' : 'var(--bg)',
                     transition: 'background 120ms, border-color 120ms, transform 120ms',
                     transform: isSelected ? 'scale(1.18)' : isTarget ? 'scale(1.05)' : 'scale(1)',
                     boxShadow: isSelected ? '0 0 8px rgba(196,122,58,0.5)' : 'none',

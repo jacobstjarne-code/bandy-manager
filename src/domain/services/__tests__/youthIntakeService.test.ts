@@ -116,11 +116,11 @@ describe('generateYouthIntake', () => {
     }
   })
 
-  it('all players have age 15-17', () => {
+  it('all players have age 15-19', () => {
     const result = generateYouthIntake({ club, existingPlayers: [], season: 2026, date: '2026-07-01', seed: 42 })
     for (const p of result.newPlayers) {
       expect(p.age).toBeGreaterThanOrEqual(15)
-      expect(p.age).toBeLessThanOrEqual(17)
+      expect(p.age).toBeLessThanOrEqual(19)
     }
   })
 

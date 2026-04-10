@@ -39,7 +39,7 @@ export function PhaseOverlay({ phase, onContinue }: PhaseOverlayProps) {
           <p style={{ fontSize: 14, color: 'rgba(245,241,235,0.45)', marginTop: 4 }}>Nu avgör straffarna!</p>
           <button onClick={onContinue} style={{
             marginTop: 28, padding: '13px 36px',
-            background: 'var(--danger)', color: '#fff',
+            background: 'var(--danger)', color: 'var(--text-on-dark)',
             border: 'none', borderRadius: 0, cursor: 'pointer',
             fontSize: 14, fontWeight: 700, letterSpacing: '1px',
             fontFamily: 'var(--font-display)',

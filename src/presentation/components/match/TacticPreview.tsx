@@ -111,7 +111,7 @@ export function TacticPreview({ tacticState }: TacticPreviewProps) {
             width: 14,
             height: 14,
             borderRadius: '50%',
-            background: pos.isGK ? '#5a8a4a' : 'var(--accent)',
+            background: pos.isGK ? 'var(--success)' : 'var(--accent)',
             border: '2px solid var(--bg)',
             boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
             transition: 'all 0.4s cubic-bezier(0.25,0.46,0.45,0.94)',
@@ -126,7 +126,7 @@ export function TacticPreview({ tacticState }: TacticPreviewProps) {
         display: 'flex', gap: 8, zIndex: 3,
       }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 9, color: 'rgba(100,90,70,0.6)' }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#5a8a4a', display: 'inline-block', flexShrink: 0 }} />
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success)', display: 'inline-block', flexShrink: 0 }} />
           MV
         </span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 9, color: 'rgba(100,90,70,0.6)' }}>

@@ -174,7 +174,7 @@ export function generatePostAdvanceEvents(
           {
             id: 'ok',
             label: 'Bra jobbat!',
-            subtitle: '😊 +5 morale',
+            subtitle: '😊 +5 moral',
             effect: { type: 'boostMorale', targetPlayerId: pid, value: 5 },
           },
         ],

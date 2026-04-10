@@ -349,7 +349,7 @@ export function generateYouthIntake(input: YouthIntakeInput): YouthIntakeResult 
   const scoutTexts: Record<string, string> = {}
 
   for (let i = 0; i < count; i++) {
-    const age = 15  // Nya akademispelare börjar vid 15 och stannar till 20
+    const age = 15 + Math.floor(rng.next() * 5)  // 15–19
     const position = pickPosition(rng, [...existingPlayers, ...newPlayers])
     const archetype = pickArchetype(rng, position)
 

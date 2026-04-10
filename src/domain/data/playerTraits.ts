@@ -23,13 +23,13 @@ export const TRAIT_META: Record<PlayerTrait, TraitMeta> = {
   ledare: {
     label: 'Ledare',
     description: 'Naturlig kaptensfigur. Håller ihop gruppen.',
-    color: '#60a5fa',
+    color: 'var(--accent)',
     emoji: '⭐',
   },
   lokal: {
     label: 'Lokalhjälte',
     description: 'Född och uppvuxen här. Publiken älskar honom.',
-    color: '#a78bfa',
+    color: 'var(--text-secondary)',
     emoji: '🏠',
   },
   joker: {

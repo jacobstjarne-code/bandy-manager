@@ -109,7 +109,7 @@ export function generateCharacterPlayerEvents(
             {
               id: 'honor',
               label: 'Ge honom en hedersbetygelse och be honom stanna ett år till',
-              subtitle: '⭐ +3 communityStanding',
+              subtitle: '⭐ +3 samhällsstöd',
               effect: { type: 'communityStanding', amount: 3 },
             },
             {
@@ -138,7 +138,7 @@ export function generateCharacterPlayerEvents(
             {
               id: 'ceremony',
               label: 'Ordna en ceremoni inför hemmamatchen',
-              subtitle: '⭐ +5 communityStanding · 💰 -3 tkr',
+              subtitle: '⭐ +5 samhällsstöd · 💰 -3 tkr',
               effect: { type: 'multiEffect', subEffects: JSON.stringify([
                 { type: 'communityStanding', amount: 5 },
                 { type: 'income', amount: -3000 },
@@ -147,7 +147,7 @@ export function generateCharacterPlayerEvents(
             {
               id: 'quiet',
               label: 'Uppmärksamma det internt — han förtjänar det stilla',
-              subtitle: '⭐ +2 communityStanding',
+              subtitle: '⭐ +2 samhällsstöd',
               effect: { type: 'communityStanding', amount: 2 },
             },
           ],
@@ -170,7 +170,7 @@ export function generateCharacterPlayerEvents(
             {
               id: 'yes',
               label: `Utse ${player.firstName} till kapten`,
-              subtitle: '⭐ +2 communityStanding',
+              subtitle: '⭐ +2 samhällsstöd',
               effect: { type: 'communityStanding', amount: 2 },
             },
             {
@@ -210,7 +210,7 @@ export function generateCharacterPlayerEvents(
             {
               id: 'keep',
               label: 'Be honom stanna ytterligare en säsong',
-              subtitle: '⭐ +1 communityStanding',
+              subtitle: '⭐ +1 samhällsstöd',
               effect: { type: 'communityStanding', amount: 1 },
             },
           ],
