@@ -169,7 +169,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
               </div>
               <span style={{ fontSize: 11, fontWeight: 600, color: relColor }}>{relLabel}</span>
             </div>
-            <div style={{ height: 4, borderRadius: 2, background: 'var(--border)', overflow: 'hidden', marginBottom: 8 }}>
+            <div style={{ height: 6, borderRadius: 2, background: 'var(--border)', overflow: 'hidden', marginBottom: 8 }}>
               <div style={{ height: '100%', width: `${j.relationship}%`, background: relColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
             </div>
             <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: 8 }}>
@@ -177,7 +177,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
             </p>
             {recentMemories.length > 0 && (
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: 8 }}>
-                <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>SENASTE INTERAKTIONER</p>
+                <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>SENASTE INTERAKTIONER</p>
                 {recentMemories.map((m, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, padding: '3px 0', borderBottom: i < recentMemories.length - 1 ? '1px solid var(--border)' : 'none' }}>
                     <span style={{ color: 'var(--text-secondary)' }}>Omg {m.matchday} — {m.event}</span>
@@ -219,7 +219,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
             })}
           </div>
         )}
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+        <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
           TILLGÄNGLIGA ATT REKRYTERA
         </p>
         {volunteerRoster
@@ -445,7 +445,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
           if (available.length === 0) return null
           return (
             <div style={{ marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+              <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
                 TILLGÄNGLIGA PROJEKT
               </p>
               {available.map(proj => (
@@ -484,7 +484,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
         </div>
         {(game.boardObjectives ?? []).length > 0 && (
           <div>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
               📋 Styrelsens uppdrag
             </p>
             {(game.boardObjectives ?? []).map((obj, i) => {

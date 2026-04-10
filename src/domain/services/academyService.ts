@@ -105,6 +105,75 @@ export function generateYouthTeam(
   }
 }
 
+/**
+ * Carry over youth team between seasons:
+ * - Age all players +1
+ * - Remove players aged 20+ (they graduate or leave)
+ * - Remove players with readyForPromotion (promoted to A-squad in seasonEndProcessor)
+ * - Fill remaining slots with new players
+ */
+export function carryOverYouthTeam(
+  existingTeam: YouthTeam,
+  club: Club,
+  academyLevel: AcademyLevel,
+  season: number,
+  seed: number,
+): YouthTeam {
+  const rand = mulberry32(seed)
+  const targetCount = academyLevel === 'elite' ? 12 : academyLevel === 'developing' ? 10 : 8
+  const caFloor = academyLevel === 'elite' ? 20 : academyLevel === 'developing' ? 15 : 10
+  const caCeiling = academyLevel === 'elite' ? 30 : academyLevel === 'developing' ? 25 : 20
+
+  // Age up and filter out graduated/promoted players
+  const retained: YouthPlayer[] = existingTeam.players
+    .filter(p => !p.readyForPromotion)
+    .map(p => ({
+      ...p,
+      age: p.age + 1,
+      // Small CA boost each year (development)
+      currentAbility: Math.min(p.potentialAbility, p.currentAbility + Math.round(p.developmentRate / 20)),
+      // Reset season stats
+      seasonGoals: 0,
+      seasonAssists: 0,
+      readyForPromotion: false,
+      schoolConflict: (p.age + 1) <= 17 ? rand() < 0.40 : false,
+    }))
+    .filter(p => p.age < 20)  // 20+ must leave
+
+  // Fill up to target with new 15-year-olds
+  const needed = Math.max(0, targetCount - retained.length)
+  const newPlayers: YouthPlayer[] = []
+  for (let i = 0; i < needed; i++) {
+    const position = YOUTH_POSITION_POOL[(retained.length + i) % YOUTH_POSITION_POOL.length]
+    const pa = getPADistribution(academyLevel, club.youthQuality, rand)
+    const ca = clamp(Math.round(caFloor + rand() * (caCeiling - caFloor)), caFloor, Math.min(pa - 5, caCeiling + 5))
+    const devRate = clamp(Math.round(30 + rand() * 50 + (club.youthDevelopment - 50) / 5), 20, 80)
+    newPlayers.push({
+      id: `youth_${season}_${club.id}_new${i}`,
+      firstName: pickRand(PLAYER_FIRST_NAMES, rand),
+      lastName: pickRand(PLAYER_LAST_NAMES, rand),
+      age: 15,
+      position,
+      archetype: archetypeForPosition(position, rand),
+      currentAbility: ca,
+      potentialAbility: pa,
+      developmentRate: devRate,
+      confidence: clamp(Math.round(40 + rand() * 40), 30, 80),
+      schoolConflict: rand() < 0.40,
+      seasonGoals: 0,
+      seasonAssists: 0,
+      readyForPromotion: false,
+    })
+  }
+
+  return {
+    players: [...retained, ...newPlayers],
+    results: [],
+    seasonRecord: { w: 0, d: 0, l: 0, gf: 0, ga: 0 },
+    tablePosition: Math.ceil(rand() * 8),
+  }
+}
+
 export interface YouthSimResult {
   matchResult: YouthMatchResult
   updatedPlayers: YouthPlayer[]

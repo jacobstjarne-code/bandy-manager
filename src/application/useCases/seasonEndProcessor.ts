@@ -15,7 +15,7 @@ import {
 import { mulberry32 } from '../../domain/utils/random'
 import { shouldRetire } from '../../domain/services/playerDevelopmentService'
 import { generateRetirementData, generateFarewellQuote } from '../../domain/services/retirementService'
-import { generateYouthTeam } from '../../domain/services/academyService'
+import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/academyService'
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
 import { generateSeasonVerdict, generatePreSeasonMessage } from '../../domain/services/boardService'
 import { generateSeasonSummary } from '../../domain/services/seasonSummaryService'
@@ -906,17 +906,20 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     communityActivities: game.communityActivities
       ? { ...game.communityActivities, julmarknad: false }
       : game.communityActivities,
-    youthTeam: generateYouthTeam(
-      updatedClubs.find(c => c.id === game.managedClubId) ?? game.clubs.find(c => c.id === game.managedClubId)!,
-      (() => {
+    youthTeam: (() => {
+      const managedClub = updatedClubs.find(c => c.id === game.managedClubId) ?? game.clubs.find(c => c.id === game.managedClubId)!
+      const nextAcademyLevel = (() => {
         if (game.academyUpgradeInProgress && game.academyUpgradeSeason === nextSeason) {
           return game.academyLevel === 'basic' ? 'developing' : 'elite'
         }
         return game.academyLevel ?? 'basic'
-      })(),
-      nextSeason,
-      baseSeed + 77777,
-    ),
+      })()
+      // Carry over existing youth players (age them up, retain under-20s) rather than generating fresh
+      if (game.youthTeam && game.youthTeam.players.length > 0) {
+        return carryOverYouthTeam(game.youthTeam, managedClub, nextAcademyLevel, nextSeason, baseSeed + 77777)
+      }
+      return generateYouthTeam(managedClub, nextAcademyLevel, nextSeason, baseSeed + 77777)
+    })(),
     academyLevel: (() => {
       // If upgrade was scheduled for this season, apply it
       if (game.academyUpgradeInProgress && game.academyUpgradeSeason === nextSeason) {
