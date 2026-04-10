@@ -89,7 +89,7 @@ export function updateTrainerArc(game: SaveGame): TrainerArc {
       break
 
     case 'questioned':
-      if (arc.consecutiveLosses >= 2) {
+      if (arc.consecutiveLosses >= 4) {
         transition(arc, 'crisis', md, season, 'Fortsatt negativt')
         arc.boardWarningGiven = true
       } else if (arc.consecutiveWins >= 3) {

@@ -394,6 +394,79 @@ export function NextMatchCard({
             </div>
           )
         })()}
+
+        {/* H2H + Form — only for non-derby (derbies already show H2H above) */}
+        {!isDerby && (() => {
+          const h2h = game.rivalryHistory?.[opponent.id]
+          const h2hTotal = h2h ? h2h.wins + h2h.draws + h2h.losses : 0
+          const showH2H = h2hTotal >= 3
+
+          // Last 3 completed fixtures for managed club
+          const myRecent = [...game.fixtures]
+            .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+            .sort((a, b) => b.matchday - a.matchday)
+            .slice(0, 3)
+
+          // Last 3 completed fixtures for opponent
+          const oppRecent = [...game.fixtures]
+            .filter(f => f.status === 'completed' && (f.homeClubId === opponent.id || f.awayClubId === opponent.id))
+            .sort((a, b) => b.matchday - a.matchday)
+            .slice(0, 3)
+
+          const getResult = (f: typeof myRecent[0], clubId: string): 'W' | 'D' | 'L' => {
+            const isHome = f.homeClubId === clubId
+            if (f.homeScore === f.awayScore) return 'D'
+            const won = isHome ? f.homeScore > f.awayScore : f.awayScore > f.homeScore
+            return won ? 'W' : 'L'
+          }
+
+          const dotColor = (r: 'W' | 'D' | 'L') =>
+            r === 'W' ? 'var(--success)' : r === 'D' ? 'var(--text-muted)' : 'var(--danger)'
+
+          const showForm = myRecent.length >= 1 || oppRecent.length >= 1
+          if (!showH2H && !showForm) return null
+
+          return (
+            <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+              {showH2H && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showForm ? 6 : 0 }}>
+                  <span style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'var(--font-body)' }}>
+                    SENASTE MÖTET
+                  </span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
+                    V{h2h!.wins} O{h2h!.draws} F{h2h!.losses} mot {opponent.shortName ?? opponent.name.split(' ')[0]}
+                  </span>
+                </div>
+              )}
+              {showForm && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'var(--font-body)' }}>
+                    FORM
+                  </span>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: 3 }}>
+                      {myRecent.map(f => {
+                        const r = getResult(f, game.managedClubId)
+                        return (
+                          <div key={f.id} style={{ width: 8, height: 8, borderRadius: 2, background: dotColor(r) }} />
+                        )
+                      })}
+                    </div>
+                    <span style={{ fontSize: 8, color: 'var(--border)', fontFamily: 'var(--font-body)' }}>vs</span>
+                    <div style={{ display: 'flex', gap: 3 }}>
+                      {oppRecent.map(f => {
+                        const r = getResult(f, opponent.id)
+                        return (
+                          <div key={f.id} style={{ width: 8, height: 8, borderRadius: 2, background: dotColor(r) }} />
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })()}
       </div>
     </div>
   )

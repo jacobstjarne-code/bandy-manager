@@ -245,7 +245,7 @@ export function TransfersScreen() {
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`btn ${activeTab === tab.key ? 'btn-copper' : 'btn-ghost'}`}
-            style={{ padding: '6px 10px', fontSize: 12, fontWeight: activeTab === tab.key ? 600 : 400, whiteSpace: 'nowrap' }}
+            style={{ padding: '6px 10px', whiteSpace: 'nowrap' }}
           >
             {tab.label}
           </button>

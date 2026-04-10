@@ -8,10 +8,10 @@ interface MidSeasonTrigger {
 }
 
 const TRIGGERS: MidSeasonTrigger[] = [
-  // Annandagen halvtidsrapport — matchday 7-8, fires once per season
+  // Halvtidsrapport — matchday 11 (halftime of 22-round season), fires once per season
   {
-    matchday: 7,
-    check: (_g, _s) => true, // always fires (conditions handled in generate)
+    matchday: 11,
+    check: (_g, _s) => true,
     generate: (g, s) => {
       const managedClub = g.clubs.find(c => c.id === g.managedClubId)
       const managedPlayers = g.players.filter(p => p.clubId === g.managedClubId)
@@ -39,8 +39,8 @@ const TRIGGERS: MidSeasonTrigger[] = [
         id: `mse-halvtid-${g.currentSeason}`,
         date: g.currentDate,
         type: InboxItemType.BoardFeedback,
-        title: `🎄 Halvtidsrapport — ${clubName}`,
-        body: `Annandagen markerar säsongens mittfåra. Efter ${wins + draws + losses} omgångar: ${pos}:a platsen med ${pts} poäng (${wins}V ${draws}O ${losses}F).\n\nMål: ${gf} gjorda · ${ga} insläppta · ${gf - ga >= 0 ? '+' : ''}${gf - ga} målskillnad.\n\n${assessment}${topScorerStr}`,
+        title: `📋 Halvtidsrapport — ${clubName}`,
+        body: `Halva serien är spelad. Efter ${wins + draws + losses} omgångar: ${pos}:a platsen med ${pts} poäng (${wins}V ${draws}O ${losses}F).\n\nMål: ${gf} gjorda · ${ga} insläppta · ${gf - ga >= 0 ? '+' : ''}${gf - ga} målskillnad.\n\n${assessment}${topScorerStr}`,
         isRead: false,
       }
     },
@@ -142,8 +142,8 @@ export function checkMidSeasonEvents(game: SaveGame): InboxItem[] {
   const results: InboxItem[] = []
 
   for (const trigger of TRIGGERS) {
-    // Fire on the matchday or within 1 (in case it was skipped)
-    if (Math.abs(lastMatchday - trigger.matchday) > 1) continue
+    // Fire on the trigger matchday or 1 round late (in case it was skipped) — never early
+    if (lastMatchday < trigger.matchday || lastMatchday > trigger.matchday + 1) continue
 
     // Check not already sent
     const candidate = trigger.generate(game, standing)

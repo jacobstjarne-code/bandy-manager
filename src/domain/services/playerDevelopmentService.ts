@@ -1,5 +1,5 @@
 import type { Player, PlayerAttributes } from '../entities/Player'
-import { PlayerArchetype } from '../enums'
+import { PlayerArchetype, PlayerPosition } from '../enums'
 import { mulberry32 } from '../utils/random'
 import { clamp } from '../utils/clamp'
 
@@ -339,4 +339,15 @@ export function applyRoundDevelopment(
       currentAbility: Math.round(newCA * 10) / 10,
     }
   })
+}
+
+export function shouldRetire(player: Player, rand: () => number): boolean {
+  const age = player.age
+  // Position-based base retirement age
+  const baseAge = player.position === PlayerPosition.Goalkeeper ? 39 : 37
+  if (age < baseAge - 2) return false
+  // Probability ramps up from baseAge-2 to baseAge+3
+  const yearsOver = age - (baseAge - 2)
+  const prob = Math.min(0.95, yearsOver * 0.20)
+  return rand() < prob
 }

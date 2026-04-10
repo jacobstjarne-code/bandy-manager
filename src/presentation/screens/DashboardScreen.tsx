@@ -416,6 +416,9 @@ export function DashboardScreen() {
         {/* ③ DAGBOKEN */}
         <DailyBriefing game={game} />
 
+        {/* ③b TRÄNARKARRIÄR */}
+        <CareerStatsCard game={game} />
+
         {/* ④ ÖVERBLICK 2×2 grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, margin: '0 0 6px' }}>
 
@@ -504,7 +507,10 @@ export function DashboardScreen() {
               <span style={{ fontSize: 22, fontWeight: 700, color: csColor(cs), fontFamily: 'var(--font-display)', lineHeight: 1 }}>{cs}</span>
               {(() => {
                 const delta = game.communityStandingDelta
-                if (!delta) return null
+                if (delta == null) return null
+                if (delta === 0) return (
+                  <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', lineHeight: 1 }}>→</span>
+                )
                 return (
                   <span style={{ fontSize: 10, fontWeight: 700, color: delta > 0 ? 'var(--success)' : 'var(--danger)', lineHeight: 1 }}>
                     {delta > 0 ? `+${delta} ↑` : `${delta} ↓`}
@@ -611,9 +617,6 @@ export function DashboardScreen() {
             <CupCard bracket={game.cupBracket!} game={game} />
           </div>
         ) : null}
-
-        {/* ⑥ TRÄNARKARRIÄR */}
-        <CareerStatsCard game={game} />
 
         {/* ⑦ CTA-SEKTION */}
         <div style={{ margin: '8px 0 0' }}>

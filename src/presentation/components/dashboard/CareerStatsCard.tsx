@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
+import { getArcMoodText } from '../../../domain/services/trainerArcService'
 
 interface Props {
   game: SaveGame
@@ -45,7 +46,7 @@ export function CareerStatsCard({ game }: Props) {
     farewell: 'Avsked',
   }
 
-  if (totalMatches < 5) return null
+  if (arc.seasonCount === 0 && totalMatches === 0) return null
 
   const hasPastSeasons = (game.seasonSummaries ?? []).length > 0
 
@@ -87,6 +88,16 @@ export function CareerStatsCard({ game }: Props) {
           {bestFinish && <CareerStat label="Bästa" value={`${bestFinish}:a`} />}
           {trophies > 0 && <CareerStat label="Titlar" value={`${trophies}`} color="var(--accent)" />}
         </div>
+
+        {(() => {
+          const moodText = getArcMoodText(arc.current)
+          if (!moodText) return null
+          return (
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 6, fontFamily: 'var(--font-body)' }}>
+              {moodText}
+            </p>
+          )
+        })()}
 
         {/* Trophy shelf */}
         {trophies > 0 && (
