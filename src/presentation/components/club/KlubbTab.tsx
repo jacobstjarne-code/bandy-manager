@@ -8,6 +8,8 @@ import { SectionCard } from '../SectionCard'
 import { csColor } from '../../utils/formatters'
 import { getFunctionaryQuote } from '../../../domain/services/functionaryQuoteService'
 import { getAvailableProjects } from '../../../domain/services/facilityService'
+import { OrtenMap } from './OrtenMap'
+import { generateVolunteerRoster, getActiveVolunteerBonus } from '../../../domain/services/volunteerService'
 
 function expectationLabel(e: ClubExpectation): string {
   const map: Record<ClubExpectation, string> = {
@@ -64,9 +66,10 @@ interface KlubbTabProps {
   navigate: NavigateFunction
   interactWithPolitician?: (action: 'invite' | 'budget' | 'apply') => { success: boolean; message: string }
   startFacilityProject?: (projectId: string) => { success: boolean; error?: string }
+  recruitVolunteer?: (name: string) => void
 }
 
-export function KlubbTab({ club, game, navigate, interactWithPolitician, startFacilityProject }: KlubbTabProps) {
+export function KlubbTab({ club, game, navigate, interactWithPolitician, startFacilityProject, recruitVolunteer }: KlubbTabProps) {
   const [polFeedback, setPolFeedback] = useState<{ text: string; ok: boolean } | null>(null)
 
   const cs = game.communityStanding ?? 50
@@ -83,8 +86,30 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
     ca?.socialMedia ? '📱 Sociala medier' : null,
   ].filter((x): x is string => x !== null)
 
+  // Volunteer roster — generated from seed based on clubId + season
+  const seedNum = game.managedClubId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) + game.currentSeason * 17
+  const volunteerRoster = generateVolunteerRoster(seedNum, 4)
+  const activeVolunteers = game.volunteers ?? []
+  const volunteerBonus = getActiveVolunteerBonus(activeVolunteers)
+
+  // Journalist persona labels
+  function personaLabel(p: string): string {
+    const map: Record<string, string> = {
+      supportive: 'Välvillig — skriver gärna positivt',
+      critical: 'Kritisk — granskar hårt',
+      analytical: 'Analytisk — fokus på fakta',
+      sensationalist: 'Sensationslystnad — älskar dramatik',
+    }
+    return map[p] ?? p
+  }
+
   return (
     <>
+      {/* Ortskarta */}
+      <SectionCard title="🗺️ Ortskartan" stagger={1}>
+        <OrtenMap club={club} game={game} />
+      </SectionCard>
+
       {/* Bygdens puls */}
       <SectionCard title="🏠 Bygdens puls" stagger={1}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
@@ -118,6 +143,93 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
       </SectionCard>
 
       {/* Faciliteter moved to combined Anläggning section below */}
+
+      {/* Lokaltidningen */}
+      {game.journalist && (() => {
+        const j = game.journalist
+        const relColor = j.relationship >= 70 ? 'var(--success)' : j.relationship >= 40 ? 'var(--accent)' : 'var(--danger)'
+        const relLabel = j.relationship >= 70 ? '😊 Positiv' : j.relationship >= 40 ? '😐 Neutral' : '😤 Kritisk'
+        const recentMemories = [...(j.memory ?? [])].reverse().slice(0, 2)
+        return (
+          <SectionCard title="📰 Lokaltidningen" stagger={2}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 600 }}>{j.name}</p>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{j.outlet}</p>
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 600, color: relColor }}>{relLabel}</span>
+            </div>
+            <div style={{ height: 4, borderRadius: 2, background: 'var(--border)', overflow: 'hidden', marginBottom: 8 }}>
+              <div style={{ height: '100%', width: `${j.relationship}%`, background: relColor, borderRadius: 2, transition: 'width 0.5s ease' }} />
+            </div>
+            <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: 8 }}>
+              {personaLabel(j.persona)}
+            </p>
+            {recentMemories.length > 0 && (
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+                <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>SENASTE INTERAKTIONER</p>
+                {recentMemories.map((m, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, padding: '3px 0', borderBottom: i < recentMemories.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Omg {m.matchday} — {m.event}</span>
+                    <span style={{ color: m.sentiment >= 0 ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>{m.sentiment >= 0 ? '+' : ''}{m.sentiment}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {j.pressRefusals > 0 && (
+              <p style={{ fontSize: 11, color: 'var(--warning)', marginTop: 6 }}>
+                ⚠️ {j.pressRefusals} presskonferens{j.pressRefusals > 1 ? 'er' : ''} avvisad
+              </p>
+            )}
+          </SectionCard>
+        )
+      })()}
+
+      {/* Frivilligpool */}
+      <SectionCard title="👥 Frivilliga" stagger={2}>
+        {activeVolunteers.length > 0 && (
+          <div style={{ marginBottom: 10, padding: '8px 10px', background: 'rgba(90,154,74,0.08)', borderRadius: 8, border: '1px solid rgba(90,154,74,0.2)' }}>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--success)', marginBottom: 4 }}>
+              {activeVolunteers.length} aktiva frivilliga
+            </p>
+            <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+              +{Math.round(volunteerBonus.weeklyIncome / 1000)} tkr/omgång · +{volunteerBonus.csBoostPerRound} Bygdens puls
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+              {activeVolunteers.slice(0, 6).map((name, i) => (
+                <span key={i} style={{ fontSize: 10, padding: '2px 8px', background: 'rgba(90,154,74,0.15)', borderRadius: 99, color: 'var(--success)', fontWeight: 600 }}>
+                  {name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+          TILLGÄNGLIGA ATT REKRYTERA
+        </p>
+        {volunteerRoster
+          .filter(v => !activeVolunteers.includes(v.name))
+          .map((v, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
+              <div>
+                <p style={{ fontSize: 12, fontWeight: 600 }}>{v.name}</p>
+                <p style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                  {v.role} · {v.csBoost} puls/omg{v.weeklyContrib > 0 ? ` · +${Math.round(v.weeklyContrib / 1000)} tkr` : ''}
+                </p>
+              </div>
+              <button
+                className="btn btn-ghost"
+                onClick={() => recruitVolunteer?.(v.name)}
+                style={{ padding: '5px 10px', fontSize: 11, flexShrink: 0 }}
+              >
+                Rekrytera
+              </button>
+            </div>
+          ))}
+        {volunteerRoster.filter(v => !activeVolunteers.includes(v.name)).length === 0 && (
+          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Alla tillgängliga frivilliga är redan rekryterade.</p>
+        )}
+      </SectionCard>
 
       {/* Patron (äldre system) */}
       {game.patron?.isActive && (() => {

@@ -53,6 +53,7 @@ interface GameState {
   interactWithPolitician: (action: 'invite' | 'budget' | 'apply') => { success: boolean; message: string }
   setTransferBudget: (amount: number) => void
   buyScoutRounds: () => void
+  recruitVolunteer: (name: string) => void
   startFacilityProject: (projectId: string) => { success: boolean; error?: string }
   activateCommunity: (key: string, level: string) => { success: boolean; error?: string }
   upgradeAcademy: () => { success: boolean; error?: string }
@@ -398,6 +399,14 @@ export const useGameStore = create<GameState>()(
         if (!club || club.finances < 15000) return
         const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -15000)
         set({ game: { ...game, clubs: updatedClubs, scoutBudget: (game.scoutBudget ?? 10) + 5 } })
+      },
+
+      recruitVolunteer: (name: string) => {
+        const { game } = get()
+        if (!game) return
+        const existing = game.volunteers ?? []
+        if (existing.includes(name)) return
+        set({ game: { ...game, volunteers: [...existing, name] } })
       },
 
       startFacilityProject: (projectId: string) => {
