@@ -343,11 +343,12 @@ export function applyRoundDevelopment(
 
 export function shouldRetire(player: Player, rand: () => number): boolean {
   const age = player.age
-  // Position-based base retirement age
   const baseAge = player.position === PlayerPosition.Goalkeeper ? 39 : 37
   if (age < baseAge - 2) return false
-  // Probability ramps up from baseAge-2 to baseAge+3
   const yearsOver = age - (baseAge - 2)
-  const prob = Math.min(0.95, yearsOver * 0.20)
+  let prob = Math.min(0.95, yearsOver * 0.20)
+  // High CA players hang on longer
+  const caFactor = Math.max(0.5, 1.2 - player.currentAbility / 100)
+  prob *= caFactor
   return rand() < prob
 }

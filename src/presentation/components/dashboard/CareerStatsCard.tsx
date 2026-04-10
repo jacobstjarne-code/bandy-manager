@@ -58,7 +58,7 @@ export function CareerStatsCard({ game }: Props) {
     >
       <div style={{ padding: '10px 14px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
+          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
             🎖️ TRÄNARKARRIÄR
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -70,7 +70,7 @@ export function CareerStatsCard({ game }: Props) {
                 onClick={(e) => { e.stopPropagation(); navigate('/game/history') }}
                 style={{
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                  width: 16, height: 16, borderRadius: 4, flexShrink: 0,
                   background: 'transparent', border: '1px solid var(--border)',
                   color: 'var(--accent)', fontSize: 12, lineHeight: 1,
                   boxShadow: '0 1px 2px rgba(0,0,0,0.03)',

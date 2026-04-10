@@ -41,7 +41,8 @@ export function updateTrainerArc(game: SaveGame): TrainerArc {
     .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup)
     .sort((a, b) => b.roundNumber - a.roundNumber)
   const last = lastFixtures[0]
-  if (last) {
+  if (last && last.id !== arc.lastCountedFixtureId) {
+    arc.lastCountedFixtureId = last.id
     const isHome = last.homeClubId === game.managedClubId
     const myScore = isHome ? last.homeScore : last.awayScore
     const theirScore = isHome ? last.awayScore : last.homeScore
@@ -157,11 +158,15 @@ export function checkSeasonEndArc(arc: TrainerArc, isChampion: boolean, season: 
 
 export function getArcMoodText(phase: ArcPhase): string | null {
   switch (phase) {
-    case 'honeymoon': return '☀️ Allt stämmer just nu'
+    case 'newcomer':   return '🆕 Första säsongen'
+    case 'honeymoon':  return '☀️ Allt stämmer just nu'
+    case 'grind':      return '⚙️ Dag för dag'
     case 'questioned': return '⛅ Media ställer frågor'
-    case 'crisis': return '⛈️ Styrelsen är orolig'
+    case 'crisis':     return '⛈️ Styrelsen är orolig'
     case 'redemption': return '🌤️ Vändningen har börjat'
-    case 'legendary': return '👑 Legendstatus'
-    default: return null
+    case 'established':return '🏠 Del av möblerna'
+    case 'legendary':  return '👑 Legendstatus'
+    case 'farewell':   return '👋 Sista chansen'
+    default:           return null
   }
 }

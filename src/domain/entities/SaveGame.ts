@@ -288,4 +288,14 @@ export interface SaveGame {
 
   // V1.3 — Halvtidssummering (visas efter liga-omgång 11)
   showHalfTimeSummary?: boolean
+
+  // V1.4 — Nemesis tracker (opponent player who keeps scoring against us)
+  nemesisTracker?: Record<string, {
+    playerId: string
+    name: string
+    clubId: string
+    goalsAgainstUs: number
+    inboxSentAt?: number  // goalsAgainstUs count when inbox was last sent
+    signedBy?: string     // our clubId if signed
+  }>
 }

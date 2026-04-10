@@ -105,6 +105,14 @@ export interface Player {
   availability?: PlayerAvailability
   lowMoraleDays?: number  // consecutive matchdays with morale < 30
   seasonHistory?: Array<{ season: number; goals: number; assists: number; games: number; rating: number; clubId: string }>
+
+  // V1.4 — Player narrative diary (auto-generated)
+  narrativeLog?: Array<{
+    season: number
+    matchday: number
+    text: string
+    type: 'milestone' | 'form' | 'injury' | 'transfer' | 'storyline'
+  }>
 }
 
 export type PlayerAvailability =

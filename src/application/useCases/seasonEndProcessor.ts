@@ -14,6 +14,7 @@ import {
 } from '../../domain/services/inboxService'
 import { mulberry32 } from '../../domain/utils/random'
 import { shouldRetire } from '../../domain/services/playerDevelopmentService'
+import { generateRetirementData, generateFarewellQuote } from '../../domain/services/retirementService'
 import { generateYouthTeam } from '../../domain/services/academyService'
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
 import { generateSeasonVerdict, generatePreSeasonMessage } from '../../domain/services/boardService'
@@ -392,18 +393,20 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   }))
 
   // Retirement check — delegated to shouldRetire() in playerDevelopmentService
+  const retiredManagedPlayers: ReturnType<typeof generateRetirementData>[] = []
   for (const player of resetPlayers) {
     const retires = shouldRetire(player, retirementRand)
     if (retires) {
       retiredPlayerIds.add(player.id)
       if (player.clubId === game.managedClubId) {
-        const seasonsActive = player.age - 18  // rough career length estimate
+        const retData = generateRetirementData(player, game.managedClubId)
+        retiredManagedPlayers.push(retData)
         retirementMessages.push({
           id: `inbox_retirement_${player.id}_${nextSeason}`,
           date: game.currentDate,
           type: InboxItemType.Retirement,
           title: `${player.firstName} ${player.lastName} avslutar karriären`,
-          body: `${player.firstName} ${player.lastName} (${player.age} år) meddelar att han lägger skridskorna på hyllan efter ${Math.max(1, seasonsActive)} säsonger i bandyn. Tack för allt!`,
+          body: `${player.firstName} ${player.lastName} (${player.age} år) lägger skridskorna på hyllan. ${retData.totalGames > 0 ? `${retData.totalGames} matcher, ${retData.totalGoals} mål. ` : ''}${generateFarewellQuote(player)}`,
           isRead: false,
         } as InboxItem)
       }
@@ -829,10 +832,13 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   }
 
   // Generate season summary with the final communityStanding (after all season-end adjustments)
-  seasonSummary = generateSeasonSummary(
-    { ...game, clubs: updatedClubs },
-    Math.min(100, newCommunityStanding + communityStandingDelta),
-  )
+  seasonSummary = {
+    ...generateSeasonSummary(
+      { ...game, clubs: updatedClubs },
+      Math.min(100, newCommunityStanding + communityStandingDelta),
+    ),
+    retiredPlayers: retiredManagedPlayers.length > 0 ? retiredManagedPlayers : undefined,
+  }
 
   const updatedGame: SaveGame = {
     ...game,

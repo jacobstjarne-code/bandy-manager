@@ -30,9 +30,9 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
       { id: 'def-r',  label: 'HB',  position: PlayerPosition.Defender,   x: 75, y: 18 },
       { id: 'half-l', label: 'VYH', position: PlayerPosition.Half,       x: 10, y: 38 },
       { id: 'half-r', label: 'HYH', position: PlayerPosition.Half,       x: 90, y: 38 },
-      { id: 'mid-l',  label: 'VCH', position: PlayerPosition.Midfielder, x: 30, y: 52 },
-      { id: 'mid-c',  label: 'CH',  position: PlayerPosition.Midfielder, x: 50, y: 50 },
-      { id: 'mid-r',  label: 'HCH', position: PlayerPosition.Midfielder, x: 70, y: 52 },
+      { id: 'mid-l',  label: 'VMF', position: PlayerPosition.Midfielder, x: 30, y: 52 },
+      { id: 'mid-c',  label: 'CMF', position: PlayerPosition.Midfielder, x: 50, y: 50 },
+      { id: 'mid-r',  label: 'HMF', position: PlayerPosition.Midfielder, x: 70, y: 52 },
       { id: 'fwd-l',  label: 'VF',  position: PlayerPosition.Forward,    x: 35, y: 77 },
       { id: 'fwd-r',  label: 'HF',  position: PlayerPosition.Forward,    x: 65, y: 77 },
     ],
@@ -47,7 +47,7 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
       { id: 'def-c',  label: 'CB', position: PlayerPosition.Defender,   x: 50, y: 18 },
       { id: 'def-r',  label: 'HB', position: PlayerPosition.Defender,   x: 80, y: 20 },
       { id: 'half-l', label: 'VH', position: PlayerPosition.Half,       x: 20, y: 52 },
-      { id: 'half-c', label: 'CH', position: PlayerPosition.Midfielder,  x: 50, y: 50 },
+      { id: 'half-c', label: 'CMF', position: PlayerPosition.Midfielder,  x: 50, y: 50 },
       { id: 'half-r', label: 'HR', position: PlayerPosition.Half,       x: 80, y: 52 },
       { id: 'fwd-il', label: 'VI', position: PlayerPosition.Forward,    x: 30, y: 72 },
       { id: 'fwd-ir', label: 'HI', position: PlayerPosition.Forward,    x: 70, y: 72 },
@@ -66,7 +66,7 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
       { id: 'def-rc',  label: 'HCB', position: PlayerPosition.Defender,   x: 62, y: 18 },
       { id: 'def-rr',  label: 'HB',  position: PlayerPosition.Defender,   x: 85, y: 20 },
       { id: 'half-l',  label: 'VH',  position: PlayerPosition.Half,       x: 25, y: 52 },
-      { id: 'half-c',  label: 'CH',  position: PlayerPosition.Midfielder,  x: 50, y: 50 },
+      { id: 'half-c',  label: 'CMF', position: PlayerPosition.Midfielder,  x: 50, y: 50 },
       { id: 'half-r',  label: 'HR',  position: PlayerPosition.Half,       x: 75, y: 52 },
       { id: 'fwd-l',   label: 'VY',  position: PlayerPosition.Forward,    x: 20, y: 78 },
       { id: 'fwd-c',   label: 'CF',  position: PlayerPosition.Forward,    x: 50, y: 76 },
@@ -83,8 +83,8 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
       { id: 'def-c',   label: 'CB',  position: PlayerPosition.Defender,   x: 50, y: 18 },
       { id: 'def-r',   label: 'HB',  position: PlayerPosition.Defender,   x: 80, y: 20 },
       { id: 'half-ll', label: 'VH',  position: PlayerPosition.Half,       x: 15, y: 52 },
-      { id: 'half-lc', label: 'VCH', position: PlayerPosition.Midfielder,  x: 38, y: 50 },
-      { id: 'half-rc', label: 'HCH', position: PlayerPosition.Midfielder,  x: 62, y: 50 },
+      { id: 'half-lc', label: 'VMF', position: PlayerPosition.Midfielder,  x: 38, y: 50 },
+      { id: 'half-rc', label: 'HMF', position: PlayerPosition.Midfielder,  x: 62, y: 50 },
       { id: 'half-rr', label: 'HR',  position: PlayerPosition.Half,       x: 85, y: 52 },
       { id: 'fwd-l',   label: 'VY',  position: PlayerPosition.Forward,    x: 20, y: 78 },
       { id: 'fwd-c',   label: 'CF',  position: PlayerPosition.Forward,    x: 50, y: 76 },
@@ -100,7 +100,7 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
       { id: 'def-l',  label: 'VB', position: PlayerPosition.Defender,   x: 30, y: 18 },
       { id: 'def-r',  label: 'HB', position: PlayerPosition.Defender,   x: 70, y: 18 },
       { id: 'half-l', label: 'VH', position: PlayerPosition.Half,       x: 20, y: 38 },
-      { id: 'half-c', label: 'CH', position: PlayerPosition.Midfielder,  x: 50, y: 36 },
+      { id: 'half-c', label: 'CMF', position: PlayerPosition.Midfielder,  x: 50, y: 36 },
       { id: 'half-r', label: 'HR', position: PlayerPosition.Half,       x: 80, y: 38 },
       { id: 'mid-l',  label: 'VM', position: PlayerPosition.Midfielder, x: 30, y: 58 },
       { id: 'mid-r',  label: 'HM', position: PlayerPosition.Midfielder, x: 70, y: 58 },
@@ -157,6 +157,7 @@ export function autoAssignFormation(
   }
 
   // Second pass: adjacent position match (half↔midfielder, half↔defender, etc.)
+  // Only place a player in an adjacent slot if no unfilled slots match their own position.
   const ADJACENT: Record<string, string[]> = {
     goalkeeper: [],
     defender: ['half'],
@@ -168,7 +169,15 @@ export function autoAssignFormation(
     if (filledSlotIds.has(slot.id)) continue
     const adj = ADJACENT[slot.position] ?? []
     const best = players
-      .filter(p => adj.includes(p.position) && !usedIds.has(p.id))
+      .filter(p => {
+        if (!adj.includes(p.position)) return false
+        if (usedIds.has(p.id)) return false
+        // Only use this player here if there are no unfilled slots for their own position
+        const hasOwnSlotOpen = template.slots.some(
+          s => !filledSlotIds.has(s.id) && s.id !== slot.id && s.position === p.position
+        )
+        return !hasOwnSlotOpen
+      })
       .sort((a, b) => b.currentAbility - a.currentAbility)[0]
     if (best) {
       lineupSlots[slot.id] = best.id

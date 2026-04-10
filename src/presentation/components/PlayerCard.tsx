@@ -462,32 +462,55 @@ export function PlayerCard({ player, clubName, scoutReport, isOwned = true, curr
             ))}
           </div>
         )}
-        {/* Säsongens händelser */}
+        {/* 📖 DAGBOK */}
         {isOwned && (() => {
-          const events: Array<{ round: number; text: string; icon: string }> = []
+          type DiaryEntry = { matchday: number; text: string; type: string }
+          const entries: DiaryEntry[] = []
+
+          // From narrativeLog (current season)
+          for (const n of player.narrativeLog ?? []) {
+            if (currentSeason !== undefined && n.season !== currentSeason) continue
+            entries.push({ matchday: n.matchday, text: n.text, type: n.type })
+          }
+
+          // From careerMilestones (current season) — if no narrativeLog entry covers it
           for (const m of player.careerMilestones ?? []) {
             if (currentSeason !== undefined && m.season !== currentSeason) continue
-            if (m.type === 'debutGoal') events.push({ round: m.round, text: 'Första A-lagsmålet', icon: '⚡' })
-            if (m.type === 'hatTrick') events.push({ round: m.round, text: 'Hattrick', icon: '🎩' })
-            if (m.type === 'games100') events.push({ round: m.round, text: '100 A-lagsmatcher', icon: '🏅' })
+            if (m.type === 'debutGoal') entries.push({ matchday: m.round, text: 'Första A-lagsmålet', type: 'milestone' })
+            if (m.type === 'hatTrick') entries.push({ matchday: m.round, text: 'Hattrick', type: 'milestone' })
+            if (m.type === 'games100') entries.push({ matchday: m.round, text: '100 A-lagsmatcher', type: 'milestone' })
           }
+
+          // From storylines
           for (const s of storylines ?? []) {
-            events.push({ round: s.matchday ?? 99, text: s.displayText, icon: '📖' })
+            entries.push({ matchday: s.matchday ?? 99, text: s.displayText, type: 'storyline' })
           }
-          if (events.length === 0) return null
-          events.sort((a, b) => a.round - b.round)
+
+          if (entries.length === 0) return null
+          entries.sort((a, b) => a.matchday - b.matchday)
+
+          function typeIcon(t: string) {
+            if (t === 'milestone') return '🏅'
+            if (t === 'injury') return '🩹'
+            if (t === 'form' ) return '📈'
+            if (t === 'storyline') return '📖'
+            return '•'
+          }
+
           return (
-            <div style={{ padding: '0 14px 12px', marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+            <div style={{ marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
               <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 8 }}>
-                📖 DENNA SÄSONG
+                📖 DAGBOK
               </p>
-              {events.slice(0, 4).map((e, i) => (
+              {entries.slice(0, 5).map((e, i) => (
                 <div key={i} style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '4px 0', borderBottom: i < events.length - 1 ? '1px solid var(--border)' : 'none',
+                  display: 'flex', alignItems: 'flex-start', gap: 8,
+                  padding: '5px 0', borderBottom: i < Math.min(entries.length, 5) - 1 ? '1px solid var(--border)' : 'none',
                 }}>
-                  <span style={{ fontSize: 10, color: 'var(--text-muted)', minWidth: 28 }}>Omg {e.round}</span>
-                  <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{e.icon} {e.text}</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', minWidth: 28, flexShrink: 0 }}>O{e.matchday}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                    {typeIcon(e.type)} {e.text}
+                  </span>
                 </div>
               ))}
             </div>

@@ -252,7 +252,7 @@ export function SimSummaryScreen() {
             style={{
               width: '100%', padding: '13px 0',
               background: 'var(--accent)', color: 'var(--bg)',
-              border: 'none', borderRadius: 0, cursor: 'pointer',
+              border: 'none', borderRadius: 8, cursor: 'pointer',
               fontSize: 14, fontWeight: 700, letterSpacing: '1px',
               fontFamily: 'var(--font-display)',
             }}

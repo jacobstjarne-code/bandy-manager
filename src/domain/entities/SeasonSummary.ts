@@ -76,4 +76,16 @@ export interface SeasonSummary {
     fixtureId?: string
     relatedPlayerId?: string
   }>
+
+  retiredPlayers?: Array<{
+    playerId: string
+    name: string
+    age: number
+    position: string
+    seasons: number
+    totalGoals: number
+    totalGames: number
+    farewell: string
+    isLegend: boolean
+  }>
 }

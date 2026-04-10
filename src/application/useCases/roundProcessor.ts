@@ -457,6 +457,46 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // ── Nemesis tracker ──────────────────────────────────────────────────────
+  let updatedNemesisTracker = { ...(game.nemesisTracker ?? {}) }
+  if (justCompletedManagedFixture) {
+    const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
+    const opponentClubId = isHome ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId
+    const opponentGoalEvents = justCompletedManagedFixture.events.filter(
+      e => e.type === MatchEventType.Goal && e.clubId === opponentClubId && e.playerId,
+    )
+    const goalsByOpponent: Record<string, number> = {}
+    for (const evt of opponentGoalEvents) {
+      if (evt.playerId) goalsByOpponent[evt.playerId] = (goalsByOpponent[evt.playerId] ?? 0) + 1
+    }
+    for (const [playerId, matchGoals] of Object.entries(goalsByOpponent)) {
+      const opponentPlayer = game.players.find(p => p.id === playerId)
+      if (!opponentPlayer) continue
+      const prev = updatedNemesisTracker[playerId] ?? {
+        playerId,
+        name: `${opponentPlayer.firstName} ${opponentPlayer.lastName}`,
+        clubId: opponentClubId,
+        goalsAgainstUs: 0,
+      }
+      const newTotal = prev.goalsAgainstUs + matchGoals
+      const shouldSendInbox = newTotal >= 3 && (prev.inboxSentAt == null || prev.inboxSentAt < 3)
+      updatedNemesisTracker[playerId] = { ...prev, goalsAgainstUs: newTotal, clubId: opponentClubId }
+      if (shouldSendInbox) {
+        updatedNemesisTracker[playerId].inboxSentAt = newTotal
+        const nemesisClub = game.clubs.find(c => c.id === opponentClubId)
+        newInboxItems.push({
+          id: `inbox_nemesis_${playerId}_${game.currentSeason}`,
+          date: game.currentDate,
+          type: InboxItemType.BoardFeedback,
+          title: `⚠️ Nemesis: ${opponentPlayer.firstName} ${opponentPlayer.lastName}`,
+          body: `${opponentPlayer.firstName} ${opponentPlayer.lastName} (${nemesisClub?.name ?? 'motst.'}) har nu gjort ${newTotal} mål mot oss. Är det dags att värva honom istället?`,
+          relatedPlayerId: playerId,
+          isRead: false,
+        } as import('../../domain/entities/SaveGame').InboxItem)
+      }
+    }
+  }
+
   // Pre-derby preview: if the next unplayed managed fixture is a derby, fire one inbox item per season
   {
     const nextManagedFixture = simulatedFixtures
@@ -868,6 +908,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     talentSearchResults: updatedTalentResults,
     fanMood: newFanMood,
     rivalryHistory: updatedRivalryHistory,
+    nemesisTracker: updatedNemesisTracker,
     doctorQuestionsUsed: 0,
     trainingProjects: trainingResult.trainingProjects,
     youthTeam: updatedYouthTeam,

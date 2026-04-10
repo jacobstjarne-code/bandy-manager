@@ -499,6 +499,37 @@ export function SeasonSummaryScreen() {
           </div>
         )}
 
+        {/* AVSLUTADE KARRIÄRER */}
+        {(summary.retiredPlayers ?? []).length > 0 && (
+          <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>
+            <SectionLabel>👋 AVSLUTADE KARRIÄRER</SectionLabel>
+            {(summary.retiredPlayers ?? []).map(p => (
+              <div key={p.playerId} style={{
+                borderBottom: '1px solid var(--border)',
+                paddingBottom: 10,
+                marginBottom: 10,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                  <div>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: p.isLegend ? 'var(--accent)' : 'var(--text-primary)' }}>
+                      {p.isLegend ? '🎖️ ' : ''}{p.name}
+                    </span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
+                      {p.age} år · {p.position}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                    {p.seasons} sás · {p.totalGoals} mål
+                  </span>
+                </div>
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5, margin: 0 }}>
+                  {p.farewell}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* FINANCES */}
         <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <SectionLabel>EKONOMI</SectionLabel>

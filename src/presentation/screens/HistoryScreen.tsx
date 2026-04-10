@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { PlayerLink } from '../components/PlayerLink'
@@ -114,6 +115,7 @@ function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
 export function HistoryScreen() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
+  const [expandedSeason, setExpandedSeason] = useState<number | null>(null)
 
   if (!game) return null
 
@@ -245,6 +247,42 @@ export function HistoryScreen() {
                       ({s.financialChange >= 0 ? '+' : ''}{formatFinances(s.financialChange)})
                     </span>
                   </p>
+                  {s.standingsSnapshot && s.standingsSnapshot.length > 0 && (
+                    <button
+                      onClick={() => setExpandedSeason(expandedSeason === s.season ? null : s.season)}
+                      style={{
+                        marginTop: 4, background: 'none', border: 'none',
+                        color: 'var(--accent)', fontSize: 11, cursor: 'pointer',
+                        padding: 0, textAlign: 'left', fontWeight: 600,
+                      }}
+                    >
+                      {expandedSeason === s.season ? '▲ Dölj tabell' : '▼ Visa ligatabell'}
+                    </button>
+                  )}
+                  {expandedSeason === s.season && s.standingsSnapshot && (
+                    <div style={{ marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+                      {s.standingsSnapshot
+                        .slice()
+                        .sort((a, b) => a.position - b.position)
+                        .map(row => {
+                          const club = game.clubs.find(c => c.id === row.clubId)
+                          const isManaged = row.clubId === game.managedClubId
+                          return (
+                            <div key={row.clubId} style={{
+                              display: 'flex', alignItems: 'center', gap: 6,
+                              padding: '3px 0', borderBottom: '1px solid rgba(26,26,24,0.06)',
+                              background: isManaged ? 'rgba(196,122,58,0.06)' : 'transparent',
+                            }}>
+                              <span style={{ fontSize: 10, color: 'var(--text-muted)', minWidth: 16, textAlign: 'right' }}>{row.position}.</span>
+                              <span style={{ fontSize: 11, flex: 1, color: isManaged ? 'var(--accent)' : 'var(--text-secondary)', fontWeight: isManaged ? 700 : 400 }}>
+                                {club?.shortName ?? club?.name ?? row.clubId}
+                              </span>
+                              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)', minWidth: 24, textAlign: 'right' }}>{row.points}p</span>
+                            </div>
+                          )
+                        })}
+                    </div>
+                  )}
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.5 }}>
                     📋 {s.narrativeSummary}
                   </p>
@@ -259,7 +297,7 @@ export function HistoryScreen() {
       {game.allTimeRecords && (
         <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <p style={{
-            fontSize: 12, fontWeight: 700, letterSpacing: '2px',
+            fontSize: 8, fontWeight: 700, letterSpacing: '2px',
             textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 18,
             borderBottom: '1px solid rgba(196,122,58,0.25)', paddingBottom: 10,
           }}>
@@ -295,7 +333,7 @@ export function HistoryScreen() {
       {/* Hall of Fame */}
       <div className="card-sharp" style={{ padding: '18px 16px' }}>
         <p style={{
-          fontSize: 12, fontWeight: 700, letterSpacing: '2px',
+          fontSize: 8, fontWeight: 700, letterSpacing: '2px',
           textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 18,
           borderBottom: '1px solid rgba(196,122,58,0.25)', paddingBottom: 10,
         }}>

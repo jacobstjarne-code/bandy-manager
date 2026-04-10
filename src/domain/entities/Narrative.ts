@@ -55,6 +55,7 @@ export interface TrainerArc {
   consecutiveLosses: number
   consecutiveWins: number
   boardWarningGiven: boolean
+  lastCountedFixtureId?: string
 }
 
 export type StorylineType =
