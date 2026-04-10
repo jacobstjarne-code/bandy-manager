@@ -42,13 +42,13 @@ export function processCommunity(
     const lostCs = (myScoreCs ?? 0) < (theirScoreCs ?? 0)
     const bigWinCs = wonCs && (myScoreCs ?? 0) >= (theirScoreCs ?? 0) + 3
     const bigLossCs = lostCs && (theirScoreCs ?? 0) >= (myScoreCs ?? 0) + 3
-    if (bigWinCs) csBoost += 3
-    else if (wonCs) csBoost += 1
-    else if (bigLossCs) csBoost -= 3
-    else if (lostCs) csBoost -= 2
+    if (bigWinCs) csBoost += 5
+    else if (wonCs) csBoost += 2
+    else if (bigLossCs) csBoost -= 6
+    else if (lostCs) csBoost -= 4
     const matchRivalryCs = getRivalry(justCompletedManagedFixture.homeClubId, justCompletedManagedFixture.awayClubId)
     if (matchRivalryCs && wonCs) csBoost += 2
-    if (matchRivalryCs && lostCs) csBoost -= 1
+    if (matchRivalryCs && lostCs) csBoost -= 2
   }
   const csActivities = game.communityActivities
   if (csActivities?.kiosk && csActivities.kiosk !== 'none') csBoost += 0.08
@@ -204,9 +204,12 @@ export function processCommunity(
   const volunteers = game.volunteers ?? []
   let volunteerMorale = { ...(game.volunteerMorale ?? {}) }
 
-  // Initialise morale for new volunteers
+  // Initialise morale for new volunteers — name-seeded variation (55–80)
   for (const name of volunteers) {
-    if (volunteerMorale[name] === undefined) volunteerMorale[name] = 70
+    if (volunteerMorale[name] === undefined) {
+      const nameSeed = name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+      volunteerMorale[name] = 55 + (nameSeed % 26)  // 55–80
+    }
   }
 
   // Shift morale based on managed match result
@@ -216,14 +219,18 @@ export function processCommunity(
     const theirScore = isHome ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
     const won = (myScore ?? 0) > (theirScore ?? 0)
     const bigLoss = (theirScore ?? 0) - (myScore ?? 0) >= 3
-    const shift = won ? 5 : bigLoss ? -8 : -2
+    const baseShift = won ? 5 : bigLoss ? -8 : -2
     for (const name of volunteers) {
+      // Individual noise: ±3 based on name + matchday seed
+      const noise = ((name.charCodeAt(0) + nextMatchday) % 7) - 3  // -3 to +3
+      const shift = baseShift + noise
       volunteerMorale[name] = Math.min(100, Math.max(0, (volunteerMorale[name] ?? 70) + shift))
     }
   } else {
-    // No match this round — small natural decay
+    // No match this round — small natural decay with individual variation
     for (const name of volunteers) {
-      volunteerMorale[name] = Math.max(0, (volunteerMorale[name] ?? 70) - 1)
+      const noise = (name.charCodeAt(0) + nextMatchday) % 3  // 0–2
+      volunteerMorale[name] = Math.max(0, (volunteerMorale[name] ?? 70) - noise)
     }
   }
 
