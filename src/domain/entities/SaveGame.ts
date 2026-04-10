@@ -220,6 +220,7 @@ export interface SaveGame {
 
   communityActivities?: CommunityActivities
   volunteers?: string[]
+  volunteerMorale?: Record<string, number>  // name → morale 0-100
   localPaperName?: string
   patron?: Patron
   localPolitician?: LocalPolitician

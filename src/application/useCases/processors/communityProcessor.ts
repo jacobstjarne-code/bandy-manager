@@ -10,6 +10,8 @@ export interface CommunityProcessorResult {
   updatedFacilityProjects: FacilityProject[]
   /** Total facilities bonus from newly completed projects this round */
   facilityBonusTotal: number
+  updatedVolunteers: string[]
+  updatedVolunteerMorale: Record<string, number>
 }
 
 /**
@@ -198,5 +200,47 @@ export function processCommunity(
     }
   }
 
-  return { csBoost, inboxItems, updatedFacilityProjects, facilityBonusTotal }
+  // ── Frivillig moral + attrition ───────────────────────────────────────────
+  const volunteers = game.volunteers ?? []
+  let volunteerMorale = { ...(game.volunteerMorale ?? {}) }
+
+  // Initialise morale for new volunteers
+  for (const name of volunteers) {
+    if (volunteerMorale[name] === undefined) volunteerMorale[name] = 70
+  }
+
+  // Shift morale based on managed match result
+  if (justCompletedManagedFixture) {
+    const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
+    const myScore = isHome ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
+    const theirScore = isHome ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
+    const won = (myScore ?? 0) > (theirScore ?? 0)
+    const bigLoss = (theirScore ?? 0) - (myScore ?? 0) >= 3
+    const shift = won ? 5 : bigLoss ? -8 : -2
+    for (const name of volunteers) {
+      volunteerMorale[name] = Math.min(100, Math.max(0, (volunteerMorale[name] ?? 70) + shift))
+    }
+  } else {
+    // No match this round — small natural decay
+    for (const name of volunteers) {
+      volunteerMorale[name] = Math.max(0, (volunteerMorale[name] ?? 70) - 1)
+    }
+  }
+
+  // Attrition: remove volunteers with morale <= 10
+  const quitters = volunteers.filter(name => (volunteerMorale[name] ?? 70) <= 10)
+  const updatedVolunteers = volunteers.filter(name => (volunteerMorale[name] ?? 70) > 10)
+  for (const name of quitters) {
+    delete volunteerMorale[name]
+    inboxItems.push({
+      id: `inbox_volunteer_quit_${name.replace(/\s/g, '_')}_r${nextMatchday}`,
+      date: game.currentDate,
+      type: InboxItemType.BoardFeedback,
+      title: `👥 ${name} slutar som frivillig`,
+      body: `${name} har tröttnat och drar sig tillbaka. Dåliga resultat på sistone har tagit på humöret.`,
+      isRead: false,
+    } as InboxItem)
+  }
+
+  return { csBoost, inboxItems, updatedFacilityProjects, facilityBonusTotal, updatedVolunteers, updatedVolunteerMorale: volunteerMorale }
 }

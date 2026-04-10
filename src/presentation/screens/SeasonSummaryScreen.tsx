@@ -512,19 +512,24 @@ export function SeasonSummaryScreen() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
                   <div>
                     <span style={{ fontSize: 13, fontWeight: 700, color: p.isLegend ? 'var(--accent)' : 'var(--text-primary)' }}>
-                      {p.isLegend ? '🎖️ ' : ''}{p.name}
+                      {p.isLegend ? '🎖️ ' : '👋 '}{p.name}
                     </span>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
                       {p.age} år · {p.position}
                     </span>
                   </div>
                   <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                    {p.seasons} sás · {p.totalGoals} mål
+                    {p.seasons} sás · {p.totalGoals} mål · {p.totalGames ?? '?'} matcher
                   </span>
                 </div>
                 <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5, margin: 0 }}>
                   {p.farewell}
                 </p>
+                {p.bestMoment && (
+                  <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.4 }}>
+                    ⭐ {p.bestMoment}
+                  </p>
+                )}
               </div>
             ))}
           </div>

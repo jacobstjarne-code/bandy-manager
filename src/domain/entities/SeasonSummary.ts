@@ -86,6 +86,7 @@ export interface SeasonSummary {
     totalGoals: number
     totalGames: number
     farewell: string
+    bestMoment?: string
     isLegend: boolean
   }>
 }

@@ -10,6 +10,7 @@ export interface RetirementData {
   totalAssists: number
   totalGames: number
   farewell: string
+  bestMoment?: string
   isLegend: boolean
 }
 
@@ -38,12 +39,38 @@ const FAREWELL_TEMPLATES_LEGEND = [
   (name: string) => `"Om vi gav publiken lika mycket glädje som de gav oss — då lyckades vi." — ${name}`,
 ]
 
+const FAREWELL_TEMPLATES_DAYJOB = [
+  (name: string, job: string) => `"${job} och bandyn. Det gick att kombinera — precis." — ${name}`,
+  (name: string, job: string) => `"Måndag: ${job.toLowerCase()}. Lördag: plan. Det var mitt liv." — ${name}`,
+  (name: string, job: string) => `"Chefen på ${job.toLowerCase()} var tålmodig. Utan honom hade det inte gått." — ${name}`,
+  (name: string) => `"Halvtid på jobbet, heltid på hjärtat." — ${name}`,
+]
+
+const BEST_MOMENT_TEMPLATES = [
+  (_name: string) => `Hattricket mot rivalerna stannade länge i minnet.`,
+  (_name: string) => `En säsong med laget som tog sig hela vägen till semifinal.`,
+  (name: string) => `Den avgörande straffen i cupfinalen — ${name} satte den säkert.`,
+  (name: string) => `En bortamatch i snöyran där ${name} avgjorde med fem minuter kvar.`,
+  (_name: string) => `Kampanjen när laget kämpade sig kvar i serien mot alla odds.`,
+  (_name: string) => `Debuten i A-laget — nervig, men minnet sitter kvar.`,
+]
+
 export function generateFarewellQuote(player: Player): string {
   const name = `${player.firstName} ${player.lastName}`
   const goals = player.careerStats?.totalGoals ?? 0
   const seasons = player.careerStats?.seasonsPlayed ?? 1
+  const games = player.careerStats?.totalGames ?? 0
+  const hasLegendStats = games >= 100 || goals >= 50
 
-  if (seasons >= 6) {
+  // Day job players get a specific quote type (roughly 40% of the time when eligible)
+  const dayJobTitle = player.dayJob?.title
+  if (dayJobTitle && !hasLegendStats && ((player.age + goals) % 3 !== 0)) {
+    const pool = FAREWELL_TEMPLATES_DAYJOB
+    const fn = pool[Math.floor((player.age * 3 + seasons) % pool.length)]
+    return fn(name, dayJobTitle)
+  }
+
+  if (hasLegendStats || seasons >= 6) {
     const pool = FAREWELL_TEMPLATES_LEGEND
     return pool[Math.floor((player.age + goals) % pool.length)](name)
   }
@@ -59,6 +86,15 @@ export function generateFarewellQuote(player: Player): string {
   }
   const pool = FAREWELL_TEMPLATES_SHORT
   return pool[Math.floor((player.age + seasons * 3) % pool.length)](name)
+}
+
+function generateBestMoment(player: Player): string | undefined {
+  const goals = player.careerStats?.totalGoals ?? 0
+  const games = player.careerStats?.totalGames ?? 0
+  if (games < 10) return undefined  // Too few games to have a standout moment
+  const pool = BEST_MOMENT_TEMPLATES
+  const name = `${player.firstName} ${player.lastName}`
+  return pool[Math.floor((player.age + goals * 3) % pool.length)](name)
 }
 
 export function generateRetirementData(player: Player, managedClubId: string): RetirementData {
@@ -77,6 +113,7 @@ export function generateRetirementData(player: Player, managedClubId: string): R
     totalAssists: assists,
     totalGames: games,
     farewell: generateFarewellQuote(player),
-    isLegend: player.clubId === managedClubId && seasons >= 3,
+    bestMoment: player.clubId === managedClubId ? generateBestMoment(player) : undefined,
+    isLegend: player.clubId === managedClubId && (games >= 100 || goals >= 50),
   }
 }

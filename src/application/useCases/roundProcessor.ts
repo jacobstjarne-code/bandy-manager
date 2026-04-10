@@ -887,7 +887,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     nextMatchday,
   )
   newInboxItems.push(...communityResult.inboxItems)
-  const { csBoost, updatedFacilityProjects, facilityBonusTotal } = communityResult
+  const { csBoost, updatedFacilityProjects, facilityBonusTotal, updatedVolunteers, updatedVolunteerMorale } = communityResult
   if (facilityBonusTotal > 0) {
     postTransferClubs = postTransferClubs.map(c =>
       c.id === game.managedClubId
@@ -943,6 +943,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     boardObjectives: updatedBoardObjectives,
     boardObjectiveHistory: game.boardObjectiveHistory ?? [],
     facilityProjects: updatedFacilityProjects,
+    volunteers: updatedVolunteers,
+    volunteerMorale: updatedVolunteerMorale,
     trainerArc: updatedArc,
     previousKommunBidrag: game.localPolitician?.kommunBidrag,
     mecenater: updatedMecenater,

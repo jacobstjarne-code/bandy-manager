@@ -7,9 +7,10 @@ interface SectionCardProps {
   stagger?: number
   action?: ReactNode
   style?: React.CSSProperties
+  id?: string
 }
 
-export function SectionCard({ title, children, variant = 'sharp', stagger, action, style }: SectionCardProps) {
+export function SectionCard({ title, children, variant = 'sharp', stagger, action, style, id }: SectionCardProps) {
   const cardClass = [
     variant === 'sharp' ? 'card-sharp' : 'card-round',
     stagger ? `card-stagger-${stagger}` : '',
@@ -17,6 +18,7 @@ export function SectionCard({ title, children, variant = 'sharp', stagger, actio
 
   return (
     <div
+      id={id}
       className={cardClass}
       style={{ margin: '0 0 8px', overflow: 'hidden', ...style }}
     >
