@@ -51,6 +51,7 @@ export function processEconomy(
     players: managedClubPlayers,
     sponsors: game.sponsors ?? [],
     communityActivities: game.communityActivities,
+    volunteers: game.volunteers ?? [],
     fanMood: currentFanMood,
     isHomeMatch,
     matchIsKnockout: managedHomeMatch?.isKnockout ?? false,
@@ -77,18 +78,15 @@ export function processEconomy(
   if (managedIncome.communityRoundIncome !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.communityRoundIncome, reason: 'community_round', label: 'Föreningsaktiviteter (omgång)' })
   }
+  if (managedIncome.volunteerIncome !== 0) {
+    const volunteerCount = (game.volunteers ?? []).length
+    roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.volunteerIncome, reason: 'community_round', label: `Frivilligas bidrag (${volunteerCount} st)` })
+  }
   if (managedIncome.weeklyWages !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.weeklyWages, reason: 'wages', label: 'Löner' })
   }
 
-  // Volunteer income
-  const volunteerCount = (game.volunteers ?? []).length
-  const volunteerIncome = volunteerCount * 600
-  if (volunteerIncome > 0) {
-    roundFinanceLog.push({ round: nextMatchday, amount: volunteerIncome, reason: 'community_round', label: `Frivilligas bidrag (${volunteerCount} st)` })
-  }
-
-  let updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, managedIncome.netPerRound + volunteerIncome)
+  let updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, managedIncome.netPerRound)
 
   // AI clubs: simplified flat estimate
   for (const c of game.clubs) {

@@ -1,6 +1,7 @@
 import type { CommunityActivities, Sponsor, StandingRow } from '../entities/SaveGame'
 import type { Club } from '../entities/Club'
 import type { Player } from '../entities/Player'
+import { getActiveVolunteerBonus } from './volunteerService'
 
 // ── Finance log types ─────────────────────────────────────────────────────────
 
@@ -66,6 +67,7 @@ export interface RoundIncomeBreakdown {
   matchRevenue: number           // ticket/gate revenue for a home match (0 if away/no match)
   communityMatchIncome: number   // kiosk/vipTent/functionaries/bandyplay per home match, net
   communityRoundIncome: number   // lottery/bandySchool/socialMedia per round, net
+  volunteerIncome: number        // active volunteers × 600 per round
   weeklyWages: number            // monthly salary total / 4
   netPerRound: number            // sum of all income − wages
 }
@@ -75,6 +77,7 @@ export interface CalcRoundIncomeParams {
   players: Player[]
   sponsors: Sponsor[]
   communityActivities: CommunityActivities | undefined
+  volunteers?: string[]
   fanMood: number
   isHomeMatch: boolean
   matchIsKnockout: boolean
@@ -97,7 +100,7 @@ export interface CalcRoundIncomeParams {
  * This matches the existing roundProcessor behaviour and is preserved intentionally.
  */
 export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreakdown {
-  const { club, players, sponsors, communityActivities, fanMood, isHomeMatch,
+  const { club, players, sponsors, communityActivities, volunteers, fanMood, isHomeMatch,
     matchIsKnockout, matchIsCup, matchHasRivalry, standing, rand } = params
 
   // ── Wages ─────────────────────────────────────────────────────────────────
@@ -174,8 +177,10 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     }
   }
 
+  const volunteerIncome = getActiveVolunteerBonus(volunteers ?? []).weeklyIncome
+
   const netPerRound = weeklyBase + sponsorIncome + matchRevenue + communityMatchIncome
-    + communityRoundIncome - weeklyWages
+    + communityRoundIncome + volunteerIncome - weeklyWages
 
   return {
     weeklyBase,
@@ -183,6 +188,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     matchRevenue,
     communityMatchIncome,
     communityRoundIncome,
+    volunteerIncome,
     weeklyWages,
     netPerRound,
   }

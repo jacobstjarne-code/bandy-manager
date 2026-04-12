@@ -160,9 +160,9 @@ export function generatePoliticianEvents(
       }
     }
 
-    // Low relationship warning — round >= 10, relationship < 30
+    // Low relationship warning — round >= 10, relationship < 30, max once per season
     if (currentRound >= 10 && rel < 30) {
-      const eid = `politician_warning_r${currentRound}`
+      const eid = `politician_warning_${game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         const headlineIdx = Math.floor(rand() * NEWSPAPER_HEADLINES.length)
         const papers = ['Lokaltidningen', 'Sportbladet', 'Bandypuls']
@@ -189,8 +189,23 @@ export function generatePoliticianEvents(
               effect: { type: 'politicianRelationship', amount: 20 },
             },
             {
+              id: 'open_letter',
+              label: 'Skriv ett öppet brev i tidningen',
+              subtitle: '⭐ +3 communityStanding',
+              effect: { type: 'communityStanding', amount: 3 },
+            },
+            {
+              id: 'board_contact',
+              label: 'Be styrelsen ta kontakt',
+              subtitle: '📋 +2 styrelsens tålamod · 🤝 -3 relation',
+              effect: { type: 'multiEffect', subEffects: JSON.stringify([
+                { type: 'boardPatience', amount: 2 },
+                { type: 'politicianRelationship', amount: -3 },
+              ]) },
+            },
+            {
               id: 'low_profile',
-              label: 'Håll låg profil',
+              label: 'Ignorera',
               subtitle: 'Inga effekter',
               effect: { type: 'noOp' },
             },
@@ -205,7 +220,10 @@ export function generatePoliticianEvents(
   const politician2 = game.localPolitician
   if (politician2 && !politician2.demandsMet) {
     const eid = `kommot_demand_${politician2.mandatExpires ?? game.currentSeason}_${game.currentSeason}`
-    if (!alreadyQueued.has(eid) && currentRound === 3) {
+    const agendaEid = `politician_${politician2.agenda}`
+    // Skip demand if player has already seen the agenda-specific event for this topic
+    const agendaAlreadySeen = alreadyQueued.has(agendaEid)
+    if (!alreadyQueued.has(eid) && !agendaAlreadySeen && currentRound === 3) {
       const agenda = politician2.agenda
       let demandBody = ''
       let choices: GameEvent['choices'] = []

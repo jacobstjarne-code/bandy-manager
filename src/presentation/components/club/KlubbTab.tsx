@@ -385,7 +385,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
           {(() => {
             const li = game.politicianLastInteraction ?? {}
             const currentRound = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max, f) => Math.max(max, f.roundNumber), 0)
-            const inviteCooldown = li.invite ? Math.max(0, li.invite + 5 - currentRound) : 0
+            const inviteCooldown = li.invite ? Math.max(0, li.invite + 8 - currentRound) : 0
             const budgetUsed = li.budgetSeason === game.currentSeason
             const applyUsed = li.applySeason === game.currentSeason
             return (

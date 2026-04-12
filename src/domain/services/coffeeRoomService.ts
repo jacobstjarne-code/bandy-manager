@@ -12,7 +12,8 @@ const GENERIC_EXCHANGES: Array<[string, string, string, string]> = [
   ['Webbredaktören', 'Hemsidan hade 400 besök igår.', 'Kioskvakten', 'Hur många köpte korv?'],
   ['Vaktmästaren', 'Jag var ute klockan fem imorse.', 'Materialaren', 'Du säger det varje dag.'],
   ['Kassören', 'Sponsoravtalet med ICA går ut.', 'Ordföranden', 'Ring dom. Bjud på kaffe. Och korv.'],
-  ['Ungdomstränaren', 'Lindberg i P19 börjar likna något.', 'Materialaren', 'Ge honom inte för stora tröjor.'],
+  // Placeholder — byts ut mot dynamisk ungdomsspelare i getCoffeeRoomQuote
+  ['Ungdomstränaren', '{youthName} i P19 börjar likna något.', 'Materialaren', 'Ge honom inte för stora tröjor.'],
 ]
 
 const RESULT_EXCHANGES: Record<'win' | 'loss' | 'draw', Array<[string, string]>> = {
@@ -62,8 +63,15 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     ? volunteers[Math.abs(seed + 3) % volunteers.length]
     : exchange[0]
 
-  return {
-    speaker: speakerName,
-    text: `"${exchange[1]}" — ${exchange[2]}: "${exchange[3]}"`,
+  // Resolve dynamic placeholders
+  let text = `"${exchange[1]}" — ${exchange[2]}: "${exchange[3]}"`
+  if (text.includes('{youthName}')) {
+    const youthPlayers = game.youthTeam?.players ?? []
+    const youthName = youthPlayers.length > 0
+      ? youthPlayers[Math.abs(seed + 5) % youthPlayers.length].lastName
+      : 'någon i P19'
+    text = text.replace('{youthName}', youthName)
   }
+
+  return { speaker: speakerName, text }
 }
