@@ -26,6 +26,8 @@ import { CareerStatsCard } from '../components/dashboard/CareerStatsCard'
 import { getPepTalk } from '../../domain/services/pepTalkService'
 import { getCoffeeRoomQuote } from '../../domain/services/coffeeRoomService'
 import { getTrainingScene } from '../../domain/services/trainingSceneService'
+import { getSupporterMoodLabel } from '../../domain/services/supporterService'
+import { getRitualText } from '../../domain/services/supporterRituals'
 
 
 const NAV_BTN: React.CSSProperties = {
@@ -696,6 +698,47 @@ export function DashboardScreen() {
               <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-body)' }}>
                 {coffee.speaker}: {coffee.text}
               </p>
+            </div>
+          )
+        })()}
+
+        {/* ⑩ KLACKEN */}
+        {(() => {
+          const sg = game.supporterGroup
+          if (!sg) return null
+          const ritualText = getRitualText(game, 'preMatch')
+          const moodLabel = getSupporterMoodLabel(sg.mood)
+          const ROLE_EMOJI: Record<string, string> = { leader: '📣', veteran: '🏆', youth: '🎨', family: '👨‍👩‍👧' }
+          const chars = [sg.leader, sg.veteran, sg.youth, sg.family]
+          const favPlayer = game.players.find(p => p.id === sg.favoritePlayerId)
+          return (
+            <div style={{ margin: '12px 4px 0', padding: '10px 12px', borderTop: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>
+                  📯 {sg.name.toUpperCase()}
+                </p>
+                <span style={{ fontSize: 9, color: sg.mood >= 65 ? 'var(--success)' : sg.mood >= 40 ? 'var(--text-muted)' : 'var(--danger)', fontFamily: 'var(--font-body)' }}>
+                  {moodLabel} · {sg.members} st
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: ritualText ? 8 : 0 }}>
+                {chars.map(c => (
+                  <div key={c.role} style={{ flex: 1, textAlign: 'center' }}>
+                    <p style={{ fontSize: 14, margin: '0 0 2px' }}>{ROLE_EMOJI[c.role]}</p>
+                    <p style={{ fontSize: 9, color: 'var(--text-secondary)', margin: 0, fontFamily: 'var(--font-body)', fontWeight: 600 }}>{c.name}</p>
+                  </div>
+                ))}
+              </div>
+              {favPlayer && (
+                <p style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: ritualText ? 6 : 0 }}>
+                  ❤️ Favorit: {favPlayer.firstName} {favPlayer.lastName}
+                </p>
+              )}
+              {ritualText && (
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-display)', margin: 0 }}>
+                  {ritualText}
+                </p>
+              )}
             </div>
           )
         })()}

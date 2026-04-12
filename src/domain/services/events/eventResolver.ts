@@ -464,6 +464,16 @@ export function resolveEvent(
                   },
                 }
               }
+            } else if (sub.type === 'supporterMood') {
+              if (updatedGame.supporterGroup) {
+                updatedGame = {
+                  ...updatedGame,
+                  supporterGroup: {
+                    ...updatedGame.supporterGroup,
+                    mood: Math.max(0, Math.min(100, updatedGame.supporterGroup.mood + (sub.amount ?? 0))),
+                  },
+                }
+              }
             } else if (sub.type === 'boostMorale' && sub.targetPlayerId) {
               updatedGame = {
                 ...updatedGame,
@@ -486,6 +496,18 @@ export function resolveEvent(
             }
           }
         } catch { /* ignore parse errors */ }
+      }
+      break
+    }
+    case 'supporterMood': {
+      if (updatedGame.supporterGroup) {
+        updatedGame = {
+          ...updatedGame,
+          supporterGroup: {
+            ...updatedGame.supporterGroup,
+            mood: Math.max(0, Math.min(100, updatedGame.supporterGroup.mood + (effect.amount ?? 0))),
+          },
+        }
       }
       break
     }
@@ -514,6 +536,30 @@ export function resolveEvent(
         body: 'Klubben säljer sin akademiprodukt för att lösa den ekonomiska krisen. Lokaltidningen skriver kritiskt om beslutet.',
         isRead: false,
       }],
+    }
+  }
+
+  // Special: supporterEvent tifo — mark tifoDone
+  if (event.type === 'supporterEvent' && event.id.startsWith('supporter_tifo_') && choiceId !== 'no' && updatedGame.supporterGroup) {
+    updatedGame = {
+      ...updatedGame,
+      supporterGroup: { ...updatedGame.supporterGroup, tifoDone: true },
+    }
+  }
+
+  // Special: supporterEvent away_trip — mark awayTripSeason
+  if (event.type === 'supporterEvent' && event.id.startsWith('supporter_away_trip_') && updatedGame.supporterGroup) {
+    updatedGame = {
+      ...updatedGame,
+      supporterGroup: { ...updatedGame.supporterGroup, awayTripSeason: updatedGame.currentSeason },
+    }
+  }
+
+  // Special: supporterEvent conflict — mark conflictSeason
+  if (event.type === 'supporterEvent' && event.id.startsWith('supporter_conflict_') && updatedGame.supporterGroup) {
+    updatedGame = {
+      ...updatedGame,
+      supporterGroup: { ...updatedGame.supporterGroup, conflictSeason: updatedGame.currentSeason },
     }
   }
 

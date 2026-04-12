@@ -101,3 +101,27 @@ export interface LicenseReview {
   requiredCapital?: number
   warningCount?: number       // consecutive warnings
 }
+
+export type SupporterRole = 'leader' | 'veteran' | 'youth' | 'family'
+
+export interface SupporterCharacter {
+  name: string
+  role: SupporterRole
+  favoritePlayerId?: string   // this character's personal favorite player
+}
+
+export interface SupporterGroup {
+  name: string                // e.g. "Järnkurvan"
+  founded: number             // season
+  members: number             // 10-80
+  mood: number                // 0-100, starts 60
+  leader: SupporterCharacter
+  veteran: SupporterCharacter
+  youth: SupporterCharacter
+  family: SupporterCharacter
+  favoritePlayerId?: string   // shared klack favorite (highest-rated forward)
+  ritual?: string             // active ritual name
+  tifoDone?: boolean          // Elin's tifo event seen this season
+  conflictSeason?: number     // season when Sture/Elin conflict occurred
+  awayTripSeason?: number     // last season with away trip event
+}

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bandy Manager — Next Features Mockups</title>
+<style>
+  :root {
+    --accent: #c47a3a; --accent-dark: #a0632e; --accent-deep: #7a4d24;
+    --success: #5a9a4a; --danger: #b05040; --warning: #d4a03c; --ice: #7eb3d4;
+    --text-primary: #2e2a25; --text-secondary: #5c5650; --text-muted: #8c8478; --text-light: #f5f1eb;
+    --bg: #f5f1eb; --bg-surface: #efeae3; --bg-elevated: #e8e2d9; --bg-dark: #2e2a25;
+    --border: #d6cfc5; --border-dark: #c2b9ad;
+    --font-display: Georgia, 'Times New Roman', serif; --font-body: system-ui, -apple-system, sans-serif;
+    --radius-sm: 6px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #3a3530; font-family: var(--font-body); display: flex; flex-direction: column; align-items: center; padding: 20px 10px 60px; gap: 40px; }
+  .mockup-label { color: #c47a3a; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; text-align: center; margin-bottom: 8px; }
+  .mockup-note { color: #8c8478; font-size: 10px; text-align: center; max-width: 375px; line-height: 1.5; margin-bottom: 8px; }
+  .phone { width: 375px; background: var(--bg); border-radius: 20px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+  .card-sharp { background: var(--bg-surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .card-round { background: rgba(239,234,227,0.6); border: 1px solid var(--border); border-radius: var(--radius-sm); margin: 0 12px; }
+  .section-label { font-size: 8px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); font-family: var(--font-body); margin: 0; }
+  .zone-btn { padding: 10px 0; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-primary); text-align: center; flex: 1; }
+  .zone-btn.selected { background: rgba(196,122,58,0.12); border-color: var(--accent); color: var(--accent); }
+  .zone-btn .sub { font-size: 9px; font-weight: 400; color: var(--text-muted); display: block; margin-top: 2px; }
+  .diamond-divider { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 6px 0; }
+  .diamond-divider::before, .diamond-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .diamond-divider .diamond { width: 6px; height: 6px; background: var(--accent); transform: rotate(45deg); opacity: 0.4; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- ① INTERAKTIV HÖRNA — under live-match     -->
+<!-- ═══════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">① Interaktiv hörna — MatchLiveScreen</p>
+  <p class="mockup-note">
+    Infogad INLINE i CommentaryFeed — INTE en overlay.
+    Feeden pausar, kortet visas, spelaren väljer, utfallet visas, feeden fortsätter.
+    Code ska INTE göra detta till en modal eller popup.
+    Max 4 interaktiva hörnor per match.
+  </p>
+  <div class="phone">
+    <div style="background: var(--bg); padding: 8px 0;">
+
+      <!-- Föregående commentary (kontext) -->
+      <div style="padding: 4px 12px; margin-bottom: 4px;">
+        <p style="font-size: 10px; color: var(--text-muted);">31'</p>
+        <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">Salonen pressade ut bollen över mållinjen. Domaren pekar mot hörnet.</p>
+      </div>
+
+      <!-- HÖRN-KORT — detta är det viktiga -->
+      <div class="card-sharp" style="padding: 12px 14px; margin: 6px 0;">
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <p class="section-label">🏒 HÖRNA — 31:a minuten</p>
+          <span style="font-size: 10px; color: var(--accent); font-weight: 600;">2 – 1</span>
+        </div>
+
+        <!-- Hörnläggare -->
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding: 6px 8px; background: var(--bg-elevated); border-radius: 4px;">
+          <span style="font-size: 10px; color: var(--text-muted);">Hörnläggare:</span>
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Salonen</span>
+          <span style="font-size: 10px; color: var(--accent); margin-left: auto;">Hörnskill 78</span>
+        </div>
+
+        <!-- Pitch-vy med zoner (förenklad SVG) -->
+        <div style="position: relative; margin-bottom: 10px;">
+          <svg viewBox="0 0 200 100" width="100%" height="auto" style="display: block;">
+            <!-- Is-yta -->
+            <rect x="0" y="0" width="200" height="100" fill="#d8e8f0" rx="3" />
+            <!-- Straffområde -->
+            <path d="M60,0 A60,50 0 0,1 60,100" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="0.8" />
+            <!-- Mål -->
+            <rect x="0" y="35" width="4" height="30" fill="none" stroke="var(--text-muted)" stroke-width="1.5" rx="1" />
+            <!-- Målvakt -->
+            <circle cx="12" cy="50" r="4" fill="var(--danger)" opacity="0.6" />
+            <!-- Försvarare på mållinjen -->
+            <circle cx="4" cy="30" r="3" fill="var(--danger)" opacity="0.4" />
+            <circle cx="4" cy="40" r="3" fill="var(--danger)" opacity="0.4" />
+            <circle cx="4" cy="50" r="3" fill="var(--danger)" opacity="0.4" />
+            <circle cx="4" cy="60" r="3" fill="var(--danger)" opacity="0.4" />
+            <circle cx="4" cy="70" r="3" fill="var(--danger)" opacity="0.4" />
+            <!-- Hörnpunkt -->
+            <circle cx="195" cy="5" r="3" fill="var(--accent)" />
+            <text x="185" y="16" font-size="6" fill="var(--accent)" font-weight="600">Hörn</text>
+            <!-- Zoner (klickbara) -->
+            <rect x="15" y="20" width="35" height="20" rx="3" fill="rgba(196,122,58,0.15)" stroke="var(--accent)" stroke-width="0.8" />
+            <text x="32" y="33" font-size="6" fill="var(--accent)" text-anchor="middle" font-weight="600">NÄRA</text>
+            <rect x="15" y="40" width="35" height="20" rx="3" fill="rgba(196,122,58,0.08)" stroke="var(--border)" stroke-width="0.8" />
+            <text x="32" y="53" font-size="6" fill="var(--text-muted)" text-anchor="middle">MITT</text>
+            <rect x="15" y="60" width="35" height="20" rx="3" fill="rgba(196,122,58,0.08)" stroke="var(--border)" stroke-width="0.8" />
+            <text x="32" y="73" font-size="6" fill="var(--text-muted)" text-anchor="middle">BORTRE</text>
+            <!-- Rusande spelare (pilar) -->
+            <line x1="120" y1="30" x2="55" y2="30" stroke="var(--accent)" stroke-width="0.8" stroke-dasharray="3,2" marker-end="url(#arrow)" />
+            <line x1="130" y1="50" x2="55" y2="50" stroke="var(--accent)" stroke-width="0.8" stroke-dasharray="3,2" />
+            <line x1="120" y1="70" x2="55" y2="70" stroke="var(--accent)" stroke-width="0.8" stroke-dasharray="3,2" />
+            <!-- Anfallare (väntar utanför straffområdet) -->
+            <circle cx="120" cy="30" r="4" fill="var(--accent)" opacity="0.7" />
+            <circle cx="130" cy="50" r="4" fill="var(--accent)" opacity="0.7" />
+            <circle cx="120" cy="70" r="4" fill="var(--accent)" opacity="0.7" />
+          </svg>
+        </div>
+
+        <!-- Zon-val -->
+        <p style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; letter-spacing: 1px;">VÄLJ ZON</p>
+        <div style="display: flex; gap: 4px; margin-bottom: 8px;">
+          <div class="zone-btn selected">Nära<span class="sub">Snabb redirect</span></div>
+          <div class="zone-btn">Mitt<span class="sub">Straffpunkten</span></div>
+          <div class="zone-btn">Bortre<span class="sub">Överraskning</span></div>
+        </div>
+
+        <!-- Leverans-val -->
+        <p style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; letter-spacing: 1px;">LEVERANS</p>
+        <div style="display: flex; gap: 4px;">
+          <div class="zone-btn">Hårt skott<span class="sub">Snabbt rus</span></div>
+          <div class="zone-btn selected">Låg pass<span class="sub">Kontroll</span></div>
+          <div class="zone-btn">Kort hörna<span class="sub">Överraska</span></div>
+        </div>
+
+      </div>
+
+      <!-- Utfall (visas efter val) -->
+      <div style="padding: 8px 12px; margin-top: 4px;">
+        <p style="font-size: 10px; color: var(--text-muted);">31'</p>
+        <p style="font-size: 12px; color: var(--success); font-weight: 700; line-height: 1.4;">
+          🏒 MÅL! Kronberg mötte bollen vid nära stolpen — perfekt tajming! 3–1.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Variant: utfall ej mål -->
+<div>
+  <p class="mockup-note">Variant: räddning</p>
+  <div class="phone" style="border-radius: 12px;">
+    <div style="background: var(--bg); padding: 8px 12px;">
+      <p style="font-size: 10px; color: var(--text-muted);">31'</p>
+      <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+        Kronberg nådde bollen men målvakten räddade. Retur — nytt spelmoment.
+      </p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- ② HÖRNA: SUPPORTRAR-KOPPLING              -->
+<!-- ═══════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">② Supportrar vid hörna — stämningstext</p>
+  <p class="mockup-note">
+    Om klacken är het (mood > 60) OCH hemmamatch → extra rad OVANFÖR hörn-kortet.
+    card-round, kursiv, samma stil som stämningskortet. INTE alltid — bara hemma + bra humör.
+  </p>
+  <div class="phone" style="border-radius: 12px;">
+    <div style="background: var(--bg); padding: 8px 0;">
+      <!-- Supporter-text före hörna -->
+      <div class="card-round" style="padding: 6px 12px; margin-bottom: 6px;">
+        <p style="font-size: 10px; color: var(--text-secondary); font-style: italic; line-height: 1.4; font-family: var(--font-display); margin: 0;">
+          Norra Klacken stampar. Marken skakar. Salonen ställer sig vid hörnflaggan.
+        </p>
+      </div>
+      <!-- Hörn-kort (abbreviated) -->
+      <div class="card-sharp" style="padding: 10px 14px;">
+        <p class="section-label">🏒 HÖRNA — 31:a minuten</p>
+        <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Välj zon och leverans...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- ③ KLACKEN — Orten-tab                     -->
+<!-- ═══════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">③ Klacken — KlubbTab (Orten)</p>
+  <p class="mockup-note">
+    Ny SectionCard i Orten-tabben. Samma mönster som Frivilliga/Kommun.
+    Visar namn, storlek, humör-bar, profil, senaste aktion.
+    INTE fancy — samma designsystem som allt annat.
+  </p>
+  <div class="phone" style="border-radius: 12px;">
+    <div style="background: var(--bg); padding: 12px 0;">
+      <div class="card-sharp" style="padding: 10px 14px;">
+        <p class="section-label" style="margin-bottom: 8px;">📣 KLACKEN</p>
+
+        <!-- Namn + storlek -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <div>
+            <p style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Norra Klacken</p>
+            <p style="font-size: 10px; color: var(--text-muted);">Grundad 2026 · ~85 medlemmar</p>
+          </div>
+          <span style="font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; background: rgba(90,154,74,0.1); border: 1px solid rgba(90,154,74,0.3); color: var(--success);">
+            Trogna
+          </span>
+        </div>
+
+        <!-- Humör-bar -->
+        <div style="margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-bottom: 2px;">
+            <span>Stämning</span>
+            <span style="color: var(--success); font-weight: 600;">72/100</span>
+          </div>
+          <div style="height: 6px; border-radius: 3px; background: var(--border); overflow: hidden;">
+            <div style="height: 100%; width: 72%; background: var(--success); border-radius: 3px;"></div>
+          </div>
+        </div>
+
+        <!-- Supporterledare -->
+        <div style="padding: 6px 8px; background: var(--bg-elevated); border-radius: 4px; margin-bottom: 6px;">
+          <p style="font-size: 11px; color: var(--text-secondary);">
+            <span style="font-weight: 600;">Tommy Bergkvist</span>, supporterledare
+          </p>
+          <p style="font-size: 10px; color: var(--text-muted); font-style: italic; margin-top: 2px;">
+            "Vi har aldrig svikit laget. Det tänker vi inte börja med nu."
+          </p>
+        </div>
+
+        <!-- Senaste -->
+        <div style="border-top: 1px solid var(--border); padding-top: 6px;">
+          <p style="font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">SENASTE</p>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; padding: 2px 0;">
+            <span style="color: var(--text-secondary);">Tifo mot Bollnäs</span>
+            <span style="color: var(--success); font-weight: 600;">+5 stämning</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; padding: 2px 0;">
+            <span style="color: var(--text-secondary);">Bortaresa till Edsbyn</span>
+            <span style="color: var(--text-muted);">42 resenärer</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- ④ VECKANS BESLUT — Dashboard              -->
+<!-- ═══════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">④ Veckans beslut — Dashboard</p>
+  <p class="mockup-note">
+    card-sharp OVANFÖR CTA-knappen (under DiamondDivider, ovanför pepTalk).
+    EN fråga, TVÅ knappar sida vid sida. Effekt i grå under varje knapp.
+    Försvinner när spelaren väljer — appliceras direkt.
+    Code ska INTE göra detta till en overlay/modal.
+  </p>
+  <div class="phone" style="border-radius: 12px;">
+    <div style="background: var(--bg); padding: 0 12px 20px;">
+
+      <div class="diamond-divider"><div class="diamond"></div></div>
+
+      <!-- VECKANS BESLUT -->
+      <div class="card-sharp" style="padding: 10px 12px; margin: 0 -12px 8px;">
+        <p class="section-label" style="margin-bottom: 6px;">🤔 VECKANS BESLUT</p>
+        <p style="font-size: 12px; color: var(--text-primary); line-height: 1.4; margin-bottom: 8px;">
+          Kronberg vill öva hörnskott efter träningen. Extra pass?
+        </p>
+        <div style="display: flex; gap: 6px;">
+          <button style="flex: 1; padding: 10px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border); text-align: center;">
+            Tillåt
+            <span style="display: block; font-size: 9px; font-weight: 400; color: var(--success); margin-top: 2px;">+3 hörnskill</span>
+          </button>
+          <button style="flex: 1; padding: 10px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border); text-align: center;">
+            Neka
+            <span style="display: block; font-size: 9px; font-weight: 400; color: var(--text-muted); margin-top: 2px;">Ingen effekt</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- PepTalk + CTA (kontext) -->
+      <p style="font-size: 11px; color: var(--text-muted); font-style: italic; text-align: center; margin-bottom: 8px; font-family: var(--font-display);">
+        "Varje lag under oss jagar."
+      </p>
+      <button style="width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent-dark), var(--accent-deep)); color: var(--text-light); border: none; border-radius: 12px; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; cursor: pointer;">
+        Redo — spela omgång 14 →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Variant: supporter-beslut -->
+<div>
+  <p class="mockup-note">Variant: supporterbeslut</p>
+  <div class="phone" style="border-radius: 12px;">
+    <div style="background: var(--bg); padding: 0 12px 12px;">
+      <div class="card-sharp" style="padding: 10px 12px; margin: 0 -12px;">
+        <p class="section-label" style="margin-bottom: 6px;">🤔 VECKANS BESLUT</p>
+        <p style="font-size: 12px; color: var(--text-primary); line-height: 1.4; margin-bottom: 8px;">
+          Klacken vill arrangera tifo till annandagsmatchen. Bidra med 2 000 kr?
+        </p>
+        <div style="display: flex; gap: 6px;">
+          <button style="flex: 1; padding: 10px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border); text-align: center;">
+            Bidra
+            <span style="display: block; font-size: 9px; font-weight: 400; color: var(--success); margin-top: 2px;">−2 tkr · +hemmabonus</span>
+          </button>
+          <button style="flex: 1; padding: 10px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border); text-align: center;">
+            Låt dem ordna
+            <span style="display: block; font-size: 9px; font-weight: 400; color: var(--danger); margin-top: 2px;">−5 klack-stämning</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Variant: träningsbeslut -->
+<div>
+  <p class="mockup-note">Variant: träningsbeslut</p>
+  <div class="phone" style="border-radius: 12px;">
+    <div style="background: var(--bg); padding: 0 12px 12px;">
+      <div class="card-sharp" style="padding: 10px 12px; margin: 0 -12px;">
+        <p class="section-label" style="margin-bottom: 6px;">🤔 VECKANS BESLUT</p>
+        <p style="font-size: 12px; color: var(--text-primary); line-height: 1.4; margin-bottom: 8px;">
+          Bara tid för ett: extra hörnträning eller matchförberedelse?
+        </p>
+        <div style="display: flex; gap: 6px;">
+          <button style="flex: 1; padding: 10px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border); text-align: center;">
+            🏒 Hörnor
+            <span style="display: block; font-size: 9px; font-weight: 400; color: var(--success); margin-top: 2px;">+cornerSkill</span>
+          </button>
+          <button style="flex: 1; padding: 10px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border); text-align: center;">
+            📋 Matchprep
+            <span style="display: block; font-size: 9px; font-weight: 400; color: var(--success); margin-top: 2px;">+positioning</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- ⑤ TROFÉ-RAD                               -->
+<!-- ═══════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">⑤ Trofé-rad — Dashboard / Header</p>
+  <p class="mockup-note">
+    En rad ikoner under klubbnamnet på dashboarden. Tom säsong 1. Ackumuleras.
+    Inline, INTE ett kort. Diskret — men synlig.
+  </p>
+  <div class="phone" style="border-radius: 12px;">
+    <div style="background: var(--bg); padding: 12px;">
+
+      <!-- Säsong 1: tomt -->
+      <p style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600;">Säsong 1:</p>
+      <div style="display: flex; gap: 4px; align-items: center; margin-bottom: 16px; min-height: 20px;">
+        <span style="font-size: 9px; color: var(--text-muted); font-style: italic;">Inga troféer ännu</span>
+      </div>
+
+      <!-- Säsong 3: lite -->
+      <p style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600;">Säsong 3:</p>
+      <div style="display: flex; gap: 4px; align-items: center; margin-bottom: 16px;">
+        <span style="font-size: 14px;" title="SM-guld 2028">🏆</span>
+        <span style="font-size: 14px;" title="Topp 3 2027">⭐</span>
+      </div>
+
+      <!-- Säsong 6: ackumulerat -->
+      <p style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600;">Säsong 6:</p>
+      <div style="display: flex; gap: 4px; align-items: center;">
+        <span style="font-size: 14px;" title="SM-guld 2028">🏆</span>
+        <span style="font-size: 14px;" title="SM-guld 2030">🏆</span>
+        <span style="font-size: 14px;" title="SM-silver 2029">🥈</span>
+        <span style="font-size: 14px;" title="Cup 2031">🏅</span>
+        <span style="font-size: 14px;" title="Topp 3 2027">⭐</span>
+        <span style="font-size: 14px;" title="Topp 3 2030">⭐</span>
+        <span style="font-size: 14px;" title="Topp 3 2031">⭐</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- ⑥ AI-TRÄNARPERSONA — NextMatchCard         -->
+<!-- ═══════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">⑥ AI-tränare — NextMatchCard</p>
+  <p class="mockup-note">
+    En rad under motståndarens namn i NextMatchCard. Tränarens namn + stil.
+    fontSize 10, text-muted. Kursiv quote. Inte mer.
+    Code ska INTE göra detta till en egen sektion eller ett expanderbart kort.
+  </p>
+  <div class="phone" style="border-radius: 12px;">
+    <div style="background: var(--bg); padding: 12px 0;">
+      <div class="card-sharp" style="padding: 10px 12px; box-shadow: 0 0 6px rgba(196,122,58,0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 10px; color: var(--accent); font-weight: 600; letter-spacing: 1px;">🏒 OMGÅNG 14 · BORTA</span>
+          <span style="font-size: 9px; padding: 2px 8px; border-radius: 99px; background: rgba(126,179,212,0.1); border: 1px solid rgba(126,179,212,0.25); color: var(--ice); font-weight: 600;">BORTA</span>
+        </div>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin: 4px 0 4px;">
+          <div style="text-align: center;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-elevated); margin: 0 auto 4px;"></div>
+            <span style="font-size: 13px; font-weight: 700;">Bollnäs</span>
+            <div style="margin-top: 2px;"><span style="padding: 1px 6px; border-radius: 99px; border: 1px solid var(--border); font-size: 9px;">1:A</span></div>
+            <!-- AI-TRÄNARE — detta är det nya -->
+            <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Leif Berglund</p>
+            <p style="font-size: 9px; color: var(--text-muted); font-style: italic; font-family: var(--font-display);">Hörn-specialist</p>
+          </div>
+          <span style="font-size: 12px; color: var(--text-muted); font-style: italic; font-family: var(--font-display);">vs</span>
+          <div style="text-align: center;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-elevated); margin: 0 auto 4px;"></div>
+            <span style="font-size: 13px; font-weight: 700;">Gagnef</span>
+            <div style="margin-top: 2px;"><span style="padding: 1px 6px; border-radius: 99px; border: 1px solid var(--border); font-size: 9px;">5:E</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- DESIGNREGLER                               -->
+<!-- ═══════════════════════════════════════════ -->
+<div style="max-width: 375px;">
+  <p class="mockup-label">Designregler</p>
+  <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; font-size: 10px; color: var(--text-muted); line-height: 1.8;">
+    <p><strong>Hörna:</strong></p>
+    <p>• Inline i CommentaryFeed — INTE overlay/modal.</p>
+    <p>• card-sharp, standard padding (12px 14px).</p>
+    <p>• SVG pitch-vy: isblå bakgrund (#d8e8f0), koppar-accent för anfallare, röd (danger) för försvar.</p>
+    <p>• Zon-knappar: 3 st sida vid sida, same-size. Selected = accent bakgrund.</p>
+    <p>• Leverans-knappar: 3 st under zon. Samma stil.</p>
+    <p>• Utfall: visas SOM COMMENTARY i feeden efter 0.5s delay.</p>
+    <p>• Max 4 interaktiva per match. Resten simuleras i bakgrunden.</p>
+    <p><strong>Klacken:</strong></p>
+    <p>• SectionCard i Orten-tab. Samma mönster som Frivilliga/Kommun.</p>
+    <p>• Humör-bar: samma stil som kommun-relationsbar (6px höjd).</p>
+    <p>• Profil-pill: "Trogna"/"Krävande"/"Familj" — success/warning/accent.</p>
+    <p><strong>Veckans beslut:</strong></p>
+    <p>• card-sharp OVANFÖR CTA, under DiamondDivider.</p>
+    <p>• Två knappar sida vid sida. Effekt-text under varje knapp (9px).</p>
+    <p>• Försvinner vid val. INTE ett event/overlay.</p>
+    <p><strong>Troféer:</strong></p>
+    <p>• Inline emojis, INTE ikoner. 14px storlek. Tom text "Inga troféer ännu" säsong 1.</p>
+    <p><strong>AI-tränare:</strong></p>
+    <p>• Under motståndarnamnet i NextMatchCard. 10px + 9px kursiv. Diskret.</p>
+  </div>
+</div>
+
+</body>
+</html>

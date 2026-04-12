@@ -29,6 +29,7 @@ import { StartStep } from '../components/match/StartStep'
 import { MatchHeader } from '../components/match/MatchHeader'
 import { calcAttendance } from '../../domain/services/economyService'
 import { getMatchMood } from '../../domain/services/matchMoodService'
+import { getRitualText } from '../../domain/services/supporterRituals'
 
 export function MatchScreen() {
   const { game, setPlayerLineup, advance, updateTactic } = useGameStore()
@@ -645,6 +646,7 @@ export function MatchScreen() {
             const homeClub = game.clubs.find(c => c.id === nextFixture.homeClubId)
             return homeClub?.arenaName
           })()}
+          ritualText={getRitualText(game, 'kickoff') ?? undefined}
         />
       )}
     </div>

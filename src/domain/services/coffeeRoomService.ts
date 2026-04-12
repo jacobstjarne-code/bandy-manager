@@ -1,4 +1,5 @@
 import type { SaveGame } from '../entities/SaveGame'
+import { getCharacterName } from './supporterService'
 
 interface CoffeeQuote {
   speaker: string
@@ -71,6 +72,32 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
       ? youthPlayers[Math.abs(seed + 5) % youthPlayers.length].lastName
       : 'någon i P19'
     text = text.replace('{youthName}', youthName)
+  }
+
+  // 20% chance: replace with supporter-karaktär-citat
+  const sg = game.supporterGroup
+  if (sg && (seed % 5 === 0)) {
+    const leader  = getCharacterName(game, 'leader')
+    const veteran = getCharacterName(game, 'veteran')
+    const youth   = getCharacterName(game, 'youth')
+    const family  = getCharacterName(game, 'family')
+    const favPlayer = game.players.find(p => p.id === sg.favoritePlayerId)
+    const favName = favPlayer ? favPlayer.lastName : 'spelaren'
+    const groupName = sg.name
+
+    const supporterQuotes: Array<[string, string, string, string]> = [
+      [leader, `${groupName} är med oavsett. Det är det enda som gäller.`, veteran, 'Det är vad vi alltid sagt.'],
+      [youth,  `${favName} är den bäste just nu. Ingen pratar om det tillräckligt.`, leader, 'Jag vet. Han levererar.'],
+      [veteran, `Jag har följt laget i trettio år. Det här laget har något.`, family, 'Barnen älskar matchdagarna.'],
+      [family, `${youth} hade med sig en ny banderoll. Det var fin.`, leader, 'Hon lägger ner mer tid än oss alla.'],
+      [youth,  `Bortaresan var bäst i år. Vi var nitton stycken.`, veteran, `${leader} förstår att organisera.`],
+      [leader, `Klacken börjar växa. Folk märker det.`, family, 'Det syns när man sitter på läktaren.'],
+      [veteran, `${favName} — den killen är orten igenom.`, youth, 'Alla älskar honom. Han är en av oss.'],
+    ]
+
+    const qIdx = Math.abs(seed + 9) % supporterQuotes.length
+    const sq = supporterQuotes[qIdx]
+    return { speaker: sq[0], text: `"${sq[1]}" — ${sq[2]}: "${sq[3]}"` }
   }
 
   return { speaker: speakerName, text }

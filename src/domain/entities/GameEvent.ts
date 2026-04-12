@@ -27,6 +27,7 @@ export type GameEventType =
   | 'playerPraise'
   | 'captainSpeech'
   | 'playerArc'
+  | 'supporterEvent'
 
 export interface EventChoice {
   id: string
@@ -70,6 +71,7 @@ export interface EventEffect {
     | 'boardPatience'
     | 'multiEffect'
     | 'teamBoostMorale'
+    | 'supporterMood'
   value?: number
   amount?: number
   targetPlayerId?: string

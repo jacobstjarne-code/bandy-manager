@@ -67,9 +67,10 @@ interface StartStepProps {
   fanMood?: number
   expectedAttendance?: number
   arenaName?: string
+  ritualText?: string
 }
 
-export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveMode, lineupError, onSetLiveMode, onBack, onPlay, fixture, isHome, fanMood, expectedAttendance, arenaName }: StartStepProps) {
+export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveMode, lineupError, onSetLiveMode, onBack, onPlay, fixture, isHome, fanMood, expectedAttendance, arenaName, ritualText }: StartStepProps) {
   const atmosphere = useMemo(
     () => fixture ? getPreMatchAtmosphere(fixture, matchWeatherData, isHome ?? true, fanMood ?? 50) : '',
     [fixture?.id]
@@ -93,6 +94,14 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
           }}>
             {atmosphere}
           </p>
+        </div>
+      )}
+
+      {/* Klacken ritual */}
+      {ritualText && (
+        <div className="card-round" style={{ marginBottom: 8, padding: '8px 14px' }}>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>📯 KLACKEN</p>
+          <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 11, lineHeight: 1.5, color: 'var(--text-muted)', margin: 0 }}>{ritualText}</p>
         </div>
       )}
 

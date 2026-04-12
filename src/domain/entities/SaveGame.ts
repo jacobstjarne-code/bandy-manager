@@ -14,12 +14,12 @@ import type { GameEvent, TransferBid } from './GameEvent'
 import type { OpponentAnalysis } from '../services/opponentAnalysisService'
 
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
-import type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityProject, BoardObjective, LicenseReview } from './Community'
+import type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityProject, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole } from './Community'
 import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc } from './Narrative'
 
 // ── Re-exports so existing `import from '../entities/SaveGame'` still works ──
 export type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent }
-export type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityProject, BoardObjective, LicenseReview }
+export type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityProject, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole }
 export type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc }
 
 export interface StandingRow {
@@ -283,6 +283,9 @@ export interface SaveGame {
 
   // V1.2 — Screen visit tracking (for nudge progress in dashboard agenda)
   visitedScreensThisRound?: string[]  // e.g. ['squad', 'transfers', 'club']
+
+  // Sprint 2 — Supporter group (klack)
+  supporterGroup?: SupporterGroup
 
   // V1.3 — Player Arc Controller
   activeArcs?: ActiveArc[]

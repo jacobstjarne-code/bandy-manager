@@ -21,6 +21,7 @@ import { createJournalist } from '../../domain/services/journalistService'
 import { createTrainerArc } from '../../domain/services/trainerArcService'
 import { generateBoardObjectives } from '../../domain/services/boardObjectiveService'
 import { generateMecenat } from '../../domain/services/mecenatService'
+import { generateSupporterGroup } from '../../domain/services/supporterService'
 
 function pickRandom<T>(arr: T[], rand: () => number): T {
   return arr[Math.floor(rand() * arr.length)]
@@ -332,6 +333,12 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     journalistRelationship: 50,
     sponsorNetworkMood: 70,
     licenseWarningCount: 0,
+    supporterGroup: generateSupporterGroup(
+      input.clubId,
+      season,
+      players.filter(p => p.clubId === input.clubId),
+      input.seed ?? 42,
+    ),
     namedCharacters: [
       ...(() => {
         let s = (input.seed ?? 1) + 99991
