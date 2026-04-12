@@ -4,6 +4,7 @@ import { getIceQualityLabel, getWeatherEmoji } from '../../../domain/services/we
 import { getCupRoundLabel, getCupRoundName } from '../../../domain/services/cupService'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { getCurrentAct } from '../../../domain/services/seasonActService'
+import { getCoachStyleLabel } from '../../../domain/services/aiCoachService'
 import type { PlayoffSeries } from '../../../domain/entities/Playoff'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
@@ -304,6 +305,16 @@ export function NextMatchCard({
               {opponent.shortName ?? opponent.name.split(' ')[0]}
             </p>
             {oppSubTag}
+            {(() => {
+              const coach = game.aiCoaches?.[opponent.id]
+              if (!coach) return null
+              return (
+                <>
+                  <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '4px 0 0', fontFamily: 'var(--font-body)' }}>{coach.name}</p>
+                  <p style={{ fontSize: 9, color: 'var(--text-muted)', margin: '1px 0 0', fontStyle: 'italic', fontFamily: 'var(--font-display)' }}>{getCoachStyleLabel(coach.style)}</p>
+                </>
+              )
+            })()}
           </div>
         </div>
 

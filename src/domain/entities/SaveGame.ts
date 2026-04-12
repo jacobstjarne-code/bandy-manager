@@ -291,6 +291,11 @@ export interface SaveGame {
   pendingWeeklyDecision?: import('../services/weeklyDecisionService').WeeklyDecision
   resolvedWeeklyDecisions?: string[]  // `${id}_${season}` — prevents re-picking same decision
 
+  // Sprint 4 — Visuell progression
+  aiCoaches?: Record<string, import('../services/aiCoachService').AICoach>
+  averageAttendance?: number      // rolling average across completed home matches
+  previousAverageAttendance?: number  // previous round's average (for delta)
+
   // V1.3 — Player Arc Controller
   activeArcs?: ActiveArc[]
 

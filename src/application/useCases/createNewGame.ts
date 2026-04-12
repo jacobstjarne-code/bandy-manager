@@ -22,6 +22,7 @@ import { createTrainerArc } from '../../domain/services/trainerArcService'
 import { generateBoardObjectives } from '../../domain/services/boardObjectiveService'
 import { generateMecenat } from '../../domain/services/mecenatService'
 import { generateSupporterGroup } from '../../domain/services/supporterService'
+import { generateAICoaches } from '../../domain/services/aiCoachService'
 
 function pickRandom<T>(arr: T[], rand: () => number): T {
   return arr[Math.floor(rand() * arr.length)]
@@ -353,6 +354,9 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
         }))
       })(),
     ],
+    aiCoaches: generateAICoaches(clubs.map(c => c.id), input.seed ?? 42),
+    averageAttendance: undefined,
+    previousAverageAttendance: undefined,
   }
 
   return game

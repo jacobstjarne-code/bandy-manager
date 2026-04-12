@@ -976,6 +976,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     trainerArc: updatedArc,
     previousKommunBidrag: game.localPolitician?.kommunBidrag,
     mecenater: updatedMecenater,
+    ...(() => {
+      // Update rolling average attendance for home matches
+      if (!justCompletedManagedFixture) return {}
+      const isHomeMatch = justCompletedManagedFixture.homeClubId === game.managedClubId
+      if (!isHomeMatch || !justCompletedManagedFixture.attendance) return {}
+      const prev = game.averageAttendance ?? justCompletedManagedFixture.attendance
+      const newAvg = Math.round((prev * 0.7) + (justCompletedManagedFixture.attendance * 0.3))
+      return { previousAverageAttendance: prev, averageAttendance: newAvg }
+    })(),
     pendingWeeklyDecision: generateWeeklyDecision(
       { ...game, resolvedWeeklyDecisions: game.resolvedWeeklyDecisions ?? [] },
       nextMatchday,
