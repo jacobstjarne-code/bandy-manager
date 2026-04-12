@@ -7,6 +7,7 @@ import { MatchEventType, WeatherCondition } from '../../../domain/enums'
 import { eventIcon } from '../../utils/formatters'
 import { getEventAlignment } from '../../screens/matchLiveHelpers'
 import { SnowOverlay } from './SnowOverlay'
+import { getFinalWhistleSummary } from '../../../domain/services/matchMoodService'
 
 interface CommentaryFeedProps {
   displayedSteps: MatchStep[]
@@ -172,6 +173,12 @@ export function CommentaryFeed({
         const lastStep = displayedSteps[displayedSteps.length - 1]
         const home = lastStep?.homeScore ?? 0
         const away = lastStep?.awayScore ?? 0
+        const myScore = (managedIsHome ?? false) ? home : away
+        const theirScore = (managedIsHome ?? false) ? away : home
+        const allEvents = displayedSteps.flatMap(s => s.events)
+        const lateGoals = allEvents.filter(e => e.type === MatchEventType.Goal && (e.minute ?? 0) >= 55).length
+        const totalGoals = home + away
+        const finalText = getFinalWhistleSummary(myScore, theirScore, lateGoals, totalGoals, managedIsHome ?? false)
         const summary = generateMatchSummary(home, away, managedIsHome ?? false, displayedSteps, game, fixture)
         return (
           <div style={{ padding: '0 12px 8px' }}>
@@ -180,7 +187,7 @@ export function CommentaryFeed({
               margin: '8px 0',
             }}>
               <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                Domaren blåser av!
+                {finalText}
               </p>
               <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '6px 0 0' }}>
                 {summary}

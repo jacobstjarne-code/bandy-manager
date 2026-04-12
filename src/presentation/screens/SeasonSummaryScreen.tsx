@@ -6,6 +6,7 @@ import { ClubBadge } from '../components/ClubBadge'
 import { SectionLabel } from '../components/SectionLabel'
 import { csColor, formatCurrency } from '../utils/formatters'
 import { shareSeasonImage } from '../utils/seasonShareImage'
+import { collectSeasonDecisions } from '../../domain/services/seasonDecisionsService'
 
 export function SeasonSummaryScreen() {
   const navigate = useNavigate()
@@ -534,6 +535,30 @@ export function SeasonSummaryScreen() {
             ))}
           </div>
         )}
+
+        {/* DINA VAL */}
+        {(() => {
+          const decisions = collectSeasonDecisions(game)
+          if (decisions.length === 0) return null
+          return (
+            <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>
+              <SectionLabel>📋 DINA VAL</SectionLabel>
+              {decisions.map((d, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'flex-start', gap: 8,
+                  padding: '5px 0',
+                  borderBottom: i < decisions.length - 1 ? '1px solid var(--border)' : 'none',
+                }}>
+                  <span style={{ fontSize: 12, flexShrink: 0 }}>{d.icon}</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4, flex: 1 }}>{d.text}</span>
+                  {d.round !== undefined && (
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)', flexShrink: 0, marginLeft: 'auto' }}>O{d.round}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )
+        })()}
 
         {/* FINANCES */}
         <div className="card-sharp card-stagger-7" style={{ padding: '10px 14px', marginBottom: 8 }}>

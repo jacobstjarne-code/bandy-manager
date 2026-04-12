@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Bell, Settings } from 'lucide-react'
 import { useGameStore, useManagedClub, useUnreadInboxCount } from '../store/gameStore'
 import { saveSaveGame } from '../../infrastructure/persistence/saveGameStorage'
+import { TownSilhouette } from './TownSilhouette'
 
 export function GameHeader() {
   const navigate = useNavigate()
@@ -32,6 +33,11 @@ export function GameHeader() {
       flexShrink: 0,
       minHeight: 44,
     }}>
+      {/* Ortens siluett — absolut positionerad bakgrund */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, pointerEvents: 'none' }}>
+        <TownSilhouette clubId={game.managedClubId} width={375} height={20} />
+      </div>
+
       {/* Left: logo */}
       <img
         src="/bandymanager-logo.png"

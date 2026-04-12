@@ -24,6 +24,8 @@ import { FormSquares } from '../components/FormDots'
 import { getManagedClubCupStatus, getCupRoundLabel } from '../../domain/services/cupService'
 import { CareerStatsCard } from '../components/dashboard/CareerStatsCard'
 import { getPepTalk } from '../../domain/services/pepTalkService'
+import { getCoffeeRoomQuote } from '../../domain/services/coffeeRoomService'
+import { getTrainingScene } from '../../domain/services/trainingSceneService'
 
 
 const NAV_BTN: React.CSSProperties = {
@@ -418,7 +420,23 @@ export function DashboardScreen() {
         {/* ③ DAGBOKEN */}
         <DailyBriefing game={game} />
 
-        {/* ③b TRÄNARKARRIÄR */}
+        {/* ③b TRÄNINGSSCENEN */}
+        {(() => {
+          const scene = getTrainingScene(game)
+          if (!scene) return null
+          return (
+            <div className="card-round" style={{ padding: '8px 12px', marginBottom: 6 }}>
+              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
+                🏋️ TRÄNINGSPLAN
+              </p>
+              <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-display)', margin: 0 }}>
+                {scene}
+              </p>
+            </div>
+          )
+        })()}
+
+        {/* ③c TRÄNARKARRIÄR */}
         <CareerStatsCard game={game} />
 
         {/* ④ ÖVERBLICK 2×2 grid */}
@@ -666,6 +684,21 @@ export function DashboardScreen() {
             {advanceButtonText}
           </button>
         </div>
+
+        {(() => {
+          const coffee = getCoffeeRoomQuote(game)
+          if (!coffee) return null
+          return (
+            <div style={{ margin: '12px 4px 0', padding: '8px 10px', borderTop: '1px solid var(--border)' }}>
+              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
+                ☕ KAFFERUMMET
+              </p>
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-body)' }}>
+                {coffee.speaker}: {coffee.text}
+              </p>
+            </div>
+          )
+        })()}
 
         <p style={{ textAlign: 'center', fontSize: 9, color: 'var(--text-muted)', opacity: 0.5, marginTop: 16 }}>
           build {(typeof __GIT_HASH__ !== 'undefined' ? __GIT_HASH__ : '?')} · {(typeof __BUILD_DATE__ !== 'undefined' ? __BUILD_DATE__ : '')}

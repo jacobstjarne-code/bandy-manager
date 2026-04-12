@@ -73,6 +73,7 @@ export function MatchLiveScreen() {
   const [htPress, setHtPress] = useState<TacticPress | null>(null)
   const [tacticChanged, setTacticChanged] = useState(false)
   const [htSubs, setHtSubs] = useState<{ outId: string; inId: string }[]>([])
+  const [halftimeChoice, setHalftimeChoice] = useState<'calm' | 'angry' | 'tactical' | null>(null)
   const [liveSubs, setLiveSubs] = useState<{ outId: string; inId: string; minute: number }[]>([])
   const [showSubModal, setShowSubModal] = useState(false)
   const [ceremonySlide, setCeremonySlide] = useState(0)
@@ -188,15 +189,18 @@ export function MatchLiveScreen() {
     prevHomeScore.current = step.homeScore
     prevAwayScore.current = step.awayScore
 
+    const managedIsHomeForSound = fixture?.homeClubId === game?.managedClubId
     if (step.homeScore > prevHome) {
       setHomeScoreFlash(true)
       setTimeout(() => setHomeScoreFlash(false), 2000)
       playSound('goal')
+      if (managedIsHomeForSound) playSound('goalHit')
     }
     if (step.awayScore > prevAway) {
       setAwayScoreFlash(true)
       setTimeout(() => setAwayScoreFlash(false), 2000)
       playSound('goal')
+      if (!managedIsHomeForSound) playSound('goalHit')
     }
 
     if (step.homeScore === prevHomeScore.current && step.awayScore === prevAwayScore.current) {
@@ -209,8 +213,9 @@ export function MatchLiveScreen() {
       else if (hasCorner) playSound('corner')
     }
 
+    if (step.step === 0) playSound('matchStart')
     if (step.step === 30) playSound('whistle')
-    if (step.step === 60) playSound('whistle')
+    if (step.step === 60) playSound('finalWhistle')
     if (step.phase === 'overtime' && step.step === 61) playSound('overtime')
 
     if (step.phase === 'penalties' && step.penaltyRound) {
@@ -302,8 +307,23 @@ export function MatchLiveScreen() {
       ? applySubstitutions({ ...awayLineup, tactic: updatedTactic })
       : awayLineup
     const halftimeStep = steps.find(s => s.step === 30)
-    const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
-    const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
+    let homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
+    let awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
+
+    // Apply halftime choice boost to managed club players
+    if (halftimeChoice === 'calm' || halftimeChoice === 'angry') {
+      const moraleDelta = halftimeChoice === 'calm' ? 5 : -3
+      const sharpnessDelta = halftimeChoice === 'angry' ? 8 : 0
+      const applyBoost = (players: typeof homePlayers) =>
+        players.map(p => ({
+          ...p,
+          morale: Math.min(100, Math.max(0, p.morale + moraleDelta)),
+          sharpness: Math.min(100, Math.max(0, p.sharpness + sharpnessDelta)),
+        }))
+      if (managedIsHome) homePlayers = applyBoost(homePlayers)
+      else awayPlayers = applyBoost(awayPlayers)
+    }
+
     const gen = simulateSecondHalf({
       fixture, homeLineup: updatedHome, awayLineup: updatedAway,
       homePlayers, awayPlayers,
@@ -489,6 +509,8 @@ export function MatchLiveScreen() {
           allPlayers={game?.players ?? []}
           onApplyTactic={handleApplyTactic}
           onContinue={() => { setShowHalftime(false); setCurrentStep(prev => prev + 1) }}
+          halftimeChoice={halftimeChoice}
+          onHalftimeChoice={setHalftimeChoice}
         />
       )}
 

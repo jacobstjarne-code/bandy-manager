@@ -1,4 +1,5 @@
 import type { SaveGame } from '../entities/SaveGame'
+import { getCurrentAct } from './seasonActService'
 
 const PEP_WIN = [
   'Vi vann inte för att vi var bäst. Vi vann för att vi ville mest.',
@@ -61,8 +62,18 @@ export function getPepTalk(game: SaveGame): string | null {
     return PEP_TOP[seed % PEP_TOP.length]
   }
 
+  // Act-based suffix added to result quotes
+  const act = getCurrentAct(lastFixture.roundNumber)
+  const ACT_SUFFIX: Record<typeof act, string> = {
+    1: ' Säsongen är ung — varje match är lärdom.',
+    2: ' Vintern testar viljan. Ni bestämmer.',
+    3: ' Tabellen klarnar. Varje poäng räknas nu.',
+    4: ' Det är avgörandet. Inget mer att spara.',
+  }
+  const suffix = act >= 3 ? ACT_SUFFIX[act] : ''
+
   // Result-based
-  if (myScore > theirScore) return PEP_WIN[seed % PEP_WIN.length]
-  if (myScore < theirScore) return PEP_LOSS[seed % PEP_LOSS.length]
-  return PEP_DRAW[seed % PEP_DRAW.length]
+  if (myScore > theirScore) return PEP_WIN[seed % PEP_WIN.length] + suffix
+  if (myScore < theirScore) return PEP_LOSS[seed % PEP_LOSS.length] + suffix
+  return PEP_DRAW[seed % PEP_DRAW.length] + suffix
 }

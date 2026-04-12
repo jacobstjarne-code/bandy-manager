@@ -3,6 +3,7 @@ import type { ArcType } from '../entities/Narrative'
 import { getRivalry } from '../data/rivalries'
 import { getTransferWindowStatus } from './transferWindowService'
 import { FixtureStatus } from '../enums'
+import { getCurrentAct } from './seasonActService'
 
 export interface Briefing {
   text: string
@@ -142,5 +143,38 @@ export function generateBriefing(game: SaveGame): Briefing | null {
     return { text: `📰 ${game.localPaperName ?? 'Lokaltidningen'}: ${headline}` }
   }
 
-  return null
+  // 7. Generationsväxling — 8b: Tomma omklädningsrummet (omgång 1)
+  const currentLigaRound = game.fixtures
+    .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
+    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+  if (currentLigaRound === 0) {
+    const legends = (game.clubLegends ?? []).filter(l => l.retiredSeason === game.currentSeason - 1)
+    if (legends.length > 0) {
+      return { text: `🏅 Ny säsong. Omklädningsrummet känns tomt utan ${legends[0].name}.` }
+    }
+  }
+
+  // 7b. Akademistjärnans kliv — 8c
+  const academyStars = game.players.filter(p =>
+    p.clubId === game.managedClubId &&
+    p.promotedFromAcademy &&
+    p.seasonStats.gamesPlayed >= 3
+  )
+  if (academyStars.length > 0) {
+    const star = academyStars[academyStars.length - 1]
+    return { text: `🎓 ${star.firstName} ${star.lastName} (${star.age}) — tre matcher i A-laget. Akademin levererade.` }
+  }
+
+  // 8. Akt-baserade briefings
+  const act = getCurrentAct(currentLigaRound)
+  const standing = game.standings.find(s => s.clubId === game.managedClubId)
+  const seed = currentLigaRound * 13 + game.currentSeason * 7
+  const ACT_BRIEFINGS: Record<typeof act, string[]> = {
+    1: ['📅 Tabellen tar form. Allt är möjligt.', '📅 Säsongen är ung. Låt spelet visa vad ni kan.', '📅 Tidiga poäng väger lika tungt som sena.'],
+    2: ['❄️ Vintern testar alla. Utvisningarna avgör.', '❄️ Det är nu karaktären syns. I februari minns alla.', '❄️ Ingen ledar sin väg till guldet om januari säger nej.'],
+    3: [`📊 Tabellen klarnar. ${standing ? `Ni är på plats ${standing.position}.` : ''}`, '📊 Varje poäng väger. Ingen match är liten nu.', '📊 Nio lag kan fortfarande spela slutspel. Det är dags att skilja sig.'],
+    4: ['⏱ Sista raka. Inget utrymme för misstag.', '⏱ De sista omgångarna minns man resten av livet.', '⏱ Avgörandet. Nu spelar allt annat sekundär roll.'],
+  }
+  const pool = ACT_BRIEFINGS[act]
+  return { text: pool[Math.abs(seed) % pool.length] }
 }

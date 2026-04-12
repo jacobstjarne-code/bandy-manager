@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bandy Manager — Soul Features Mockups</title>
+<style>
+  :root {
+    --accent: #c47a3a; --accent-dark: #a0632e; --accent-deep: #7a4d24;
+    --success: #5a9a4a; --danger: #b05040; --warning: #d4a03c; --ice: #7eb3d4;
+    --text-primary: #2e2a25; --text-secondary: #5c5650; --text-muted: #8c8478; --text-light: #f5f1eb;
+    --bg: #f5f1eb; --bg-surface: #efeae3; --bg-elevated: #e8e2d9; --bg-dark: #2e2a25;
+    --border: #d6cfc5; --border-dark: #c2b9ad;
+    --font-display: Georgia, 'Times New Roman', serif; --font-body: system-ui, -apple-system, sans-serif;
+    --radius-sm: 6px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #3a3530; font-family: var(--font-body); display: flex; flex-direction: column; align-items: center; padding: 20px 10px 60px; gap: 40px; }
+  .mockup-label { color: #c47a3a; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; text-align: center; margin-bottom: 8px; }
+  .mockup-note { color: #8c8478; font-size: 10px; text-align: center; max-width: 375px; line-height: 1.5; margin-bottom: 8px; }
+  .phone { width: 375px; background: var(--bg); border-radius: 20px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+  .card-sharp { background: var(--bg-surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .card-round { background: rgba(239,234,227,0.6); border: 1px solid var(--border); border-radius: var(--radius-sm); margin: 0 12px; }
+  .section-label { font-size: 8px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); font-family: var(--font-body); margin: 0; }
+  .game-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--bg-dark); border-bottom: 2px solid var(--accent); position: relative; overflow: hidden; }
+  .game-header .center { text-align: center; flex: 1; padding: 0 8px; position: relative; z-index: 1; }
+  .game-header .club-name { font-size: 12px; color: rgba(245,241,235,0.85); font-weight: 700; font-family: var(--font-display); line-height: 1.2; }
+  .game-header .meta { font-size: 9px; color: rgba(245,241,235,0.55); line-height: 1.2; }
+  .silhouette-bg { position: absolute; bottom: 0; left: 0; right: 0; pointer-events: none; }
+  .diamond-divider { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 6px 0; }
+  .diamond-divider::before, .diamond-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .diamond-divider .diamond { width: 6px; height: 6px; background: var(--accent); transform: rotate(45deg); opacity: 0.4; }
+  .choice-btn { width: 100%; padding: 10px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; text-align: left; cursor: pointer; background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border); font-family: var(--font-body); }
+  .choice-btn .effect { font-size: 10px; font-weight: 400; color: var(--text-muted); margin-top: 2px; display: block; }
+  .act4-glow { box-shadow: 0 0 12px rgba(196,122,58,0.15); }
+</style>
+</head>
+<body>
+
+<!-- ① SILUETT I HEADER -->
+<div>
+  <p class="mockup-label">① GameHeader med ortens siluett</p>
+  <p class="mockup-note">SVG-siluetten är BAKGRUND — opacity 0.12. Inte synlig vid första anblick. Subtilt.</p>
+  <div class="phone" style="border-radius: 12px;">
+    <div class="game-header">
+      <div style="width: 26px; height: 26px; background: rgba(255,255,255,0.08); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 7px; color: rgba(245,241,235,0.4);">BM</div>
+      <div class="center"><p class="club-name">Gagnef</p><p class="meta">Jacob · 2026/2027 · Omg 14</p></div>
+      <div style="display: flex; gap: 6px;"><div style="width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(245,241,235,0.2);"></div><div style="width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(245,241,235,0.15);"></div></div>
+      <div class="silhouette-bg"><svg viewBox="0 0 375 22" width="375" height="22" style="display: block; opacity: 0.10;"><path d="M0,22 L38,22 L38,17 L45,17 L45,8 L48,3 L51,8 L51,17 L55,17 L55,22 L110,22 L110,15 L125,15 L130,12 L140,12 L145,15 L160,15 L160,22 L200,22 L200,16 L210,16 L210,13 L220,13 L220,16 L230,16 L230,22 L280,22 L290,18 L300,12 L320,8 L340,12 L355,17 L375,14" fill="none" stroke="rgba(245,241,235,0.5)" stroke-width="1.2" /></svg></div>
+    </div>
+  </div>
+</div>
+
+<!-- ② STÄMNINGSKORT -->
+<div>
+  <p class="mockup-label">② Stämningskortet — före match</p>
+  <p class="mockup-note">card-round, kursiv Georgia 11px. EN mening. MAX två rader. MatchScreen, ovanför stepper.</p>
+  <div class="phone" style="border-radius: 12px;">
+    <div style="background: var(--bg); padding: 12px 0;">
+      <div class="card-round" style="padding: 8px 12px; margin-bottom: 10px;"><p style="font-size: 11px; color: var(--text-secondary); font-style: italic; line-height: 1.5; font-family: var(--font-display); margin: 0;">🎄 Annandagen. Hela stan är på benen. Det luktar korv och kyla.</p></div>
+      <div class="card-round" style="padding: 8px 12px; margin-bottom: 10px;"><p style="font-size: 11px; color: var(--text-secondary); font-style: italic; line-height: 1.5; font-family: var(--font-display); margin: 0;">🥶 −18°. Vaktmästaren har varit ute sedan fem. Isen är hård som betong.</p></div>
+      <div class="card-round" style="padding: 8px 12px; margin-bottom: 10px;"><p style="font-size: 11px; color: var(--text-secondary); font-style: italic; line-height: 1.5; font-family: var(--font-display); margin: 0;">🔥 Derbydag. Dalaklassikern. Gräsmattorna vid arenan är fulla en timme före nedsläpp.</p></div>
+      <div class="card-round" style="padding: 8px 12px;"><p style="font-size: 11px; color: var(--text-secondary); font-style: italic; line-height: 1.5; font-family: var(--font-display); margin: 0;">⚠️ Varje poäng räknas nu. Laget vet vad som krävs.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ HALVTIDSBESLUT -->
+<div>
+  <p class="mockup-label">③ Halvtidsbeslut</p>
+  <p class="mockup-note">Centrerad overlay. Tre val med effekttext under varje knapp.</p>
+  <div class="phone" style="border-radius: 12px; height: 500px; position: relative;">
+    <div style="background: var(--bg); height: 100%; opacity: 0.4;"></div>
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: flex-start; justify-content: center; padding-top: 60px;">
+      <div style="background: var(--bg); border-radius: 12px; padding: 20px 18px; width: 85%; max-width: 340px; box-shadow: 0 8px 40px rgba(0,0,0,0.3);">
+        <p class="section-label" style="margin-bottom: 6px;">🏒 HALVTID</p>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 10px;">
+          <span style="font-size: 28px; font-weight: 800; color: var(--danger); font-family: var(--font-display);">1</span>
+          <span style="font-size: 18px; color: var(--text-muted);">–</span>
+          <span style="font-size: 28px; font-weight: 800; color: var(--danger); font-family: var(--font-display);">3</span>
+        </div>
+        <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px; text-align: center;">Ni ligger under. Laget ser slagna ut. Vad gör du?</p>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <button class="choice-btn">Håll ihop — lugn genomgång<span class="effect">Moral +5 för alla</span></button>
+          <button class="choice-btn">Skäll ut dem — kräv mer<span class="effect">Skärpa +8, Moral −3</span></button>
+          <button class="choice-btn">Taktikjustering<span class="effect">Öppna taktikpanelen</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ④ KAFFERUMMET -->
+<div>
+  <p class="mockup-label">④ Kafferummet — dashboard botten</p>
+  <p class="mockup-note">INTE ett kort. Tunn sektion med border-top under CTA. Diskret som en fotnot.</p>
+  <div class="phone" style="border-radius: 12px;">
+    <div style="background: var(--bg); padding: 12px 16px 20px;">
+      <div class="diamond-divider"><div class="diamond"></div></div>
+      <p style="font-size: 11px; color: var(--text-muted); font-style: italic; text-align: center; margin-bottom: 8px; font-family: var(--font-display);">"Vi vann inte för att vi var bäst. Vi vann för att vi ville mest."</p>
+      <button style="width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent-dark), var(--accent-deep)); color: var(--text-light); border: none; border-radius: 12px; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; cursor: pointer;">Redo — spela omgång 14 →</button>
+      <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border);">
+        <p class="section-label" style="margin-bottom: 4px;">☕ KAFFERUMMET</p>
+        <p style="font-size: 10px; color: var(--text-muted); font-style: italic; line-height: 1.5; font-family: var(--font-body);">Ove: "Ingen kommer betala 25 kr för en korv i den här kylan." — Margareta: "Det sa du förra året. Vi sålde slut."</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑤ TRÄNINGSSCENEN -->
+<div>
+  <p class="mockup-label">⑤ Träningsscenen — dashboard</p>
+  <p class="mockup-note">card-round. Visas BARA vid omgång 3, 8, 14, 20. Samma typografi som DailyBriefing. INTE klickbar.</p>
+  <div class="phone" style="border-radius: 12px;">
+    <div style="background: var(--bg); padding: 12px 0;">
+      <div class="card-round" style="padding: 8px 12px;">
+        <p class="section-label" style="margin-bottom: 4px;">🏋️ TRÄNINGSPLAN</p>
+        <p style="font-size: 11px; color: var(--text-secondary); font-style: italic; line-height: 1.5; font-family: var(--font-display); margin: 0;">Tisdag, 14:30. Plan 2. Hörnträning. Samma rutin, tjugonde gången idag. Salonen hittar nätet varje gång.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑥ ÅRSBOKEN -->
+<div>
+  <p class="mockup-label">⑥ Årsboken: Dina val — SeasonSummary</p>
+  <p class="mockup-note">card-sharp. Varje beslut = ikon + text + omgångsnummer. Enkel lista. INTE fancy.</p>
+  <div class="phone" style="border-radius: 12px;">
+    <div style="background: var(--bg); padding: 12px 0;">
+      <div class="card-sharp" style="padding: 10px 14px;">
+        <p class="section-label" style="margin-bottom: 8px;">📋 DINA VAL</p>
+        <div style="display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border);"><span style="font-size: 12px; flex-shrink: 0;">🎓</span><span style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; flex: 1;">Kallade upp Lindberg (17 år) från akademin</span><span style="font-size: 10px; color: var(--text-muted); flex-shrink: 0;">O8</span></div>
+        <div style="display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border);"><span style="font-size: 12px; flex-shrink: 0;">🔄</span><span style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; flex: 1;">Sålde Eriksson till Bollnäs (120 000 kr)</span><span style="font-size: 10px; color: var(--text-muted); flex-shrink: 0;">O12</span></div>
+        <div style="display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border);"><span style="font-size: 12px; flex-shrink: 0;">📋</span><span style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; flex: 1;">Licensnämnden: Valde sparplan</span></div>
+        <div style="display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border);"><span style="font-size: 12px; flex-shrink: 0;">🏗️</span><span style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; flex: 1;">Startade projekt: Konstfrysanläggning</span></div>
+        <div style="display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border);"><span style="font-size: 12px; flex-shrink: 0;">✅</span><span style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; flex: 1;">Styrelseuppdrag: Lyft en akademispelare — uppfyllt</span></div>
+        <div style="display: flex; align-items: flex-start; gap: 8px; padding: 5px 0;"><span style="font-size: 12px; flex-shrink: 0;">❌</span><span style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; flex: 1;">Styrelseuppdrag: Topp 6 — misslyckat</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑦ GLOW -->
+<div>
+  <p class="mockup-label">⑦ NextMatchCard — akt-glow</p>
+  <p class="mockup-note">Akt 3 = svag (6px, 0.08). Akt 4 = starkare (12px, 0.15). Statisk, INTE pulserande.</p>
+  <div class="phone" style="border-radius: 12px;">
+    <div style="background: var(--bg); padding: 12px 0;">
+      <p style="font-size: 9px; color: var(--text-muted); margin: 0 12px 4px; font-weight: 600;">AKT 2 — NORMAL:</p>
+      <div class="card-sharp" style="padding: 10px 12px; margin-bottom: 16px;"><p style="font-size: 10px; color: var(--accent); font-weight: 600; letter-spacing: 1px;">🏒 OMGÅNG 9 · HEMMA</p><div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin: 6px 0;"><span style="font-size: 14px; font-weight: 700;">Gagnef</span><span style="font-size: 12px; color: var(--text-muted); font-style: italic;">vs</span><span style="font-size: 14px; font-weight: 700;">Bollnäs</span></div></div>
+      <p style="font-size: 9px; color: var(--text-muted); margin: 0 12px 4px; font-weight: 600;">AKT 3 — SVAG GLOW:</p>
+      <div class="card-sharp" style="padding: 10px 12px; margin-bottom: 16px; box-shadow: 0 0 6px rgba(196,122,58,0.08);"><p style="font-size: 10px; color: var(--accent); font-weight: 600; letter-spacing: 1px;">🏒 OMGÅNG 15 · BORTA</p><div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin: 6px 0;"><span style="font-size: 14px; font-weight: 700;">Målilla</span><span style="font-size: 12px; color: var(--text-muted); font-style: italic;">vs</span><span style="font-size: 14px; font-weight: 700;">Gagnef</span></div></div>
+      <p style="font-size: 9px; color: var(--text-muted); margin: 0 12px 4px; font-weight: 600;">AKT 4 — STARK GLOW:</p>
+      <div class="card-sharp act4-glow" style="padding: 10px 12px;"><p style="font-size: 10px; color: var(--accent); font-weight: 600; letter-spacing: 1px;">🏒 OMGÅNG 21 · HEMMA</p><div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin: 6px 0;"><span style="font-size: 14px; font-weight: 700;">Gagnef</span><span style="font-size: 12px; color: var(--text-muted); font-style: italic;">vs</span><span style="font-size: 14px; font-weight: 700;">Fagersta</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑧ SILUETT-VARIANTER -->
+<div>
+  <p class="mockup-label">⑧ Ortens siluett — 5 varianter</p>
+  <p class="mockup-note">En SVG path per variant. 100×50 viewBox, stroke only. I headern: opacity 0.10. Dessa EXAKTA paths ska användas.</p>
+  <div style="display: flex; flex-direction: column; gap: 12px; width: 375px;">
+    <div style="background: var(--bg-dark); padding: 10px; border-radius: 8px;"><p style="font-size: 9px; color: var(--accent); margin-bottom: 4px; font-weight: 600;">Bruksort (skorsten + fabrik + skog)</p><svg viewBox="0 0 100 50" width="355" height="36" style="display: block;"><path d="M0,50 L5,50 L5,25 L8,25 L8,10 L11,10 L11,25 L25,25 L25,15 L40,15 L40,25 L45,25 L45,50 L55,50 L55,35 L58,35 L58,38 L62,38 L62,35 L65,35 L65,50 L75,50 L78,30 L82,50 L90,50 L92,35 L95,50 L100,50" fill="none" stroke="rgba(245,241,235,0.35)" stroke-width="1" /></svg></div>
+    <div style="background: var(--bg-dark); padding: 10px; border-radius: 8px;"><p style="font-size: 9px; color: var(--accent); margin-bottom: 4px; font-weight: 600;">Dalort (kyrka + trähus + backe)</p><svg viewBox="0 0 100 50" width="355" height="36" style="display: block;"><path d="M0,50 L10,50 L10,40 L12,40 L12,20 L14,20 L14,40 L16,40 L16,50 L30,50 L30,35 L45,35 L45,50 L55,50 L55,38 L60,38 L60,32 L65,32 L65,38 L70,38 L70,50 L80,50 L100,30" fill="none" stroke="rgba(245,241,235,0.35)" stroke-width="1" /></svg></div>
+    <div style="background: var(--bg-dark); padding: 10px; border-radius: 8px;"><p style="font-size: 9px; color: var(--accent); margin-bottom: 4px; font-weight: 600;">Norrlandsort (skog + arena + fjäll)</p><svg viewBox="0 0 100 50" width="355" height="36" style="display: block;"><path d="M0,50 L5,50 L8,30 L11,50 L14,32 L17,50 L20,50 L20,35 L35,35 L38,20 L41,35 L55,35 L55,50 L60,50 L63,28 L66,50 L70,48 L73,25 L76,50 L100,40" fill="none" stroke="rgba(245,241,235,0.35)" stroke-width="1" /></svg></div>
+    <div style="background: var(--bg-dark); padding: 10px; border-radius: 8px;"><p style="font-size: 9px; color: var(--accent); margin-bottom: 4px; font-weight: 600;">Mälardalsort (plan yta + modern arena)</p><svg viewBox="0 0 100 50" width="355" height="36" style="display: block;"><path d="M0,50 L15,50 L15,35 L20,30 L50,30 L55,35 L55,50 L65,50 L65,42 L75,42 L75,50 L85,50 L85,45 L95,45 L95,50 L100,50" fill="none" stroke="rgba(245,241,235,0.35)" stroke-width="1" /></svg></div>
+    <div style="background: var(--bg-dark); padding: 10px; border-radius: 8px;"><p style="font-size: 9px; color: var(--accent); margin-bottom: 4px; font-weight: 600;">Småort (stuga + björkar)</p><svg viewBox="0 0 100 50" width="355" height="36" style="display: block;"><path d="M0,50 L10,50 L12,35 L18,35 L20,50 L30,50 L32,40 L34,32 L36,40 L38,50 L50,50 L50,38 L55,30 L60,38 L60,50 L70,50 L72,33 L74,28 L76,33 L78,50 L100,50" fill="none" stroke="rgba(245,241,235,0.35)" stroke-width="1" /></svg></div>
+  </div>
+</div>
+
+<!-- ⑨ FULLSTÄNDIG DASHBOARD -->
+<div>
+  <p class="mockup-label">⑨ Dashboard — alla nya features i kontext</p>
+  <p class="mockup-note">Träningsscenen visas BARA vid omg 3, 8, 14, 20. Stämningskortet visas BARA i MatchScreen.</p>
+  <div class="phone">
+    <div class="game-header">
+      <div style="width: 26px; height: 26px; background: rgba(255,255,255,0.08); border-radius: 4px; flex-shrink: 0;"></div>
+      <div class="center"><p class="club-name">Gagnef</p><p class="meta">Jacob · 2026/2027 · Omg 14</p></div>
+      <div style="display: flex; gap: 6px;"><div style="width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(245,241,235,0.2);"></div><div style="width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(245,241,235,0.15);"></div></div>
+      <div class="silhouette-bg"><svg viewBox="0 0 375 22" width="375" height="22" style="display: block; opacity: 0.10;"><path d="M0,22 L38,22 L38,17 L45,17 L45,8 L48,3 L51,8 L51,17 L55,17 L55,22 L110,22 L110,15 L125,15 L130,12 L140,12 L145,15 L160,15 L160,22 L200,22 L200,16 L210,16 L210,13 L220,13 L220,16 L230,16 L230,22 L280,22 L290,18 L300,12 L320,8 L340,12 L355,17 L375,14" fill="none" stroke="rgba(245,241,235,0.5)" stroke-width="1.2" /></svg></div>
+    </div>
+    <div style="padding: 8px 0 20px; background: var(--bg);">
+      <div class="card-round" style="padding: 8px 12px; margin-bottom: 6px;"><p style="font-size: 11px; color: var(--text-secondary); font-style: italic; line-height: 1.5; font-family: var(--font-display); margin: 0;">📈 Quentin Salonen i glödande form — 3 mål senaste 5 matcherna.</p></div>
+      <div class="card-round" style="padding: 8px 12px; margin-bottom: 6px;"><p class="section-label" style="margin-bottom: 4px;">🏋️ TRÄNINGSPLAN</p><p style="font-size: 11px; color: var(--text-secondary); font-style: italic; line-height: 1.5; font-family: var(--font-display); margin: 0;">Tisdag, 14:30. Plan 2. Passningsövningar i trekanter. Tempo, tempo, tempo. Kronberg missar allt.</p></div>
+      <div class="card-sharp" style="padding: 10px 12px; margin-bottom: 6px; box-shadow: 0 0 6px rgba(196,122,58,0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;"><span style="font-size: 10px; color: var(--accent); font-weight: 600; letter-spacing: 1px;">🏒 OMGÅNG 14 · HEMMA</span><span style="font-size: 9px; padding: 2px 8px; border-radius: 99px; background: rgba(196,122,58,0.1); border: 1px solid rgba(196,122,58,0.3); color: var(--accent); font-weight: 600;">HEMMA</span></div>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin: 8px 0;">
+          <div style="text-align: center;"><div style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-elevated); margin: 0 auto 4px;"></div><span style="font-size: 13px; font-weight: 700;">Gagnef</span><div style="margin-top: 2px;"><span style="padding: 1px 6px; border-radius: 99px; border: 1px solid var(--border); font-size: 9px;">5:E</span></div></div>
+          <span style="font-size: 12px; color: var(--text-muted); font-style: italic; font-family: var(--font-display);">vs</span>
+          <div style="text-align: center;"><div style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-elevated); margin: 0 auto 4px;"></div><span style="font-size: 13px; font-weight: 700;">Bollnäs</span><div style="margin-top: 2px;"><span style="padding: 1px 6px; border-radius: 99px; border: 1px solid var(--border); font-size: 9px;">3:E</span></div></div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 0 6px;">
+        <div class="card-sharp" style="padding: 8px 10px;"><p class="section-label" style="margin-bottom: 4px;">📊 Tabell</p><span style="font-size: 28px; font-weight: 400; color: var(--accent-dark); font-family: var(--font-display);">5</span><p style="font-size: 9px; color: var(--text-muted);">22p · +8</p></div>
+        <div class="card-sharp" style="padding: 8px 10px;"><p class="section-label" style="margin-bottom: 4px;">💰 Ekonomi</p><span style="font-size: 18px; font-weight: 700; font-family: var(--font-display);">185 tkr</span><p style="font-size: 10px; color: var(--success); font-weight: 600;">+4 tkr/omg</p></div>
+      </div>
+      <div style="margin: 8px 12px 0;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;"><span style="font-size: 10px; color: var(--text-muted);">23 januari 2027</span><span style="font-size: 10px; color: var(--text-muted);">Omgång 14</span></div>
+        <div class="diamond-divider"><div class="diamond"></div></div>
+        <p style="font-size: 11px; color: var(--text-muted); font-style: italic; text-align: center; margin: 6px 0; font-family: var(--font-display);">"Varje lag under oss jagar. Vi kan inte slappna av en sekund."</p>
+        <button style="width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent-dark), var(--accent-deep)); color: var(--text-light); border: none; border-radius: 12px; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; cursor: pointer;">Redo — spela omgång 14 →</button>
+        <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border);"><p class="section-label" style="margin-bottom: 4px;">☕ KAFFERUMMET</p><p style="font-size: 10px; color: var(--text-muted); font-style: italic; line-height: 1.5;">Margareta: "Tre poäng och plusresultat. Jag sover gott."</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

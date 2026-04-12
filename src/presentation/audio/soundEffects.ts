@@ -121,6 +121,29 @@ export const sounds = {
     playTone(233, 0.30, 'sawtooth', 0.06, 100)
     playTone(196, 0.40, 'sawtooth', 0.07, 250)
   },
+
+  matchStart: () => {
+    // Dovt horn — en ton som "sätter sig"
+    playTone(130, 0.6, 'triangle', 0.10, 0)
+    playTone(130, 0.4, 'triangle', 0.06, 500)
+  },
+
+  goalHit: () => {
+    // Klubba mot boll — kort "thwack"
+    playTone(200, 0.05, 'sawtooth', 0.15, 0)
+    playTone(120, 0.08, 'sawtooth', 0.10, 30)
+    // Dämpt publikljud
+    for (let i = 0; i < 4; i++) {
+      playTone(300 + Math.random() * 200, 0.15, 'sine', 0.03, 80 + i * 60)
+    }
+  },
+
+  finalWhistle: () => {
+    // Lång vissling — stigande
+    playTone(1100, 0.15, 'sine', 0.10, 0)
+    playTone(1300, 0.30, 'sine', 0.12, 100)
+    playTone(1500, 0.50, 'sine', 0.08, 350)
+  },
 }
 
 // Global mute (persisted in localStorage)

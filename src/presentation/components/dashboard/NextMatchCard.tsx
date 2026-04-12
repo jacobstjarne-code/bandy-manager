@@ -3,6 +3,7 @@ import { IceQuality, PlayoffRound } from '../../../domain/enums'
 import { getIceQualityLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
 import { getCupRoundLabel, getCupRoundName } from '../../../domain/services/cupService'
 import { getRivalry } from '../../../domain/data/rivalries'
+import { getCurrentAct } from '../../../domain/services/seasonActService'
 import type { PlayoffSeries } from '../../../domain/entities/Playoff'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
@@ -100,6 +101,12 @@ export function NextMatchCard({
   const derbyIntense = isDerby && rivalry!.intensity >= 2
   const isPlayoff = !!isPlayoffFixture
   const isFinal = playoffSeries?.round === PlayoffRound.Final
+
+  // ── Act-based glow (statisk, ej pulserande) ──
+  const act = getCurrentAct(nextFixture.roundNumber)
+  const actGlow: React.CSSProperties = act >= 3 && !isFinal && !isPlayoff
+    ? { boxShadow: `0 0 ${act === 4 ? 12 : 6}px rgba(196,122,58,${act === 4 ? 0.15 : 0.08})` }
+    : {}
 
   // ── Card border & tint per variant ──
   const cardStyle: React.CSSProperties = isFinal
@@ -213,7 +220,7 @@ export function NextMatchCard({
   return (
     <div
       className="card-stagger-1"
-      style={{ ...cardStyle, borderRadius: 14, overflow: 'hidden' }}
+      style={{ ...cardStyle, ...actGlow, borderRadius: 14, overflow: 'hidden' }}
     >
       {/* Leather header bar */}
       <div

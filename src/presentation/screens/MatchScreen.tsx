@@ -28,6 +28,7 @@ import { TacticStep } from '../components/match/TacticStep'
 import { StartStep } from '../components/match/StartStep'
 import { MatchHeader } from '../components/match/MatchHeader'
 import { calcAttendance } from '../../domain/services/economyService'
+import { getMatchMood } from '../../domain/services/matchMoodService'
 
 export function MatchScreen() {
   const { game, setPlayerLineup, advance, updateTactic } = useGameStore()
@@ -476,6 +477,19 @@ export function MatchScreen() {
             />
           </div>
         )}
+
+        {/* Stämningskortet */}
+        {nextFixture && (() => {
+          const mood = getMatchMood(game, nextFixture, matchWeatherData)
+          if (!mood) return null
+          return (
+            <div className="card-round" style={{ margin: '0 12px 8px', padding: '8px 12px' }}>
+              <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-display)', margin: 0 }}>
+                {mood}
+              </p>
+            </div>
+          )
+        })()}
 
         {/* Step indicator */}
         <div style={{ display: 'flex', alignItems: 'center', margin: '10px 0 8px', gap: 0 }}>

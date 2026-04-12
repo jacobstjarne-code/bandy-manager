@@ -34,6 +34,8 @@ interface HalftimeModalProps {
 
   onApplyTactic: () => void
   onContinue: () => void
+  halftimeChoice: 'calm' | 'angry' | 'tactical' | null
+  onHalftimeChoice: (c: 'calm' | 'angry' | 'tactical') => void
 }
 
 export function HalftimeModal({
@@ -61,6 +63,8 @@ export function HalftimeModal({
   allPlayers,
   onApplyTactic,
   onContinue,
+  halftimeChoice,
+  onHalftimeChoice,
 }: HalftimeModalProps) {
   const halftimeStep = steps.find(s => s.step === 30)
   const htSteps = steps.slice(0, 31)
@@ -273,6 +277,43 @@ export function HalftimeModal({
         {/* ÖVERSIKT tab */}
         {activeTab === 'oversikt' && (
           <>
+            {/* Halvtidsbeslut */}
+            <div style={{ marginBottom: 14 }}>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 10, textAlign: 'center' }}>
+                {diff >= 0 ? 'Ni är framme. Vad gör du?' : 'Ni ligger under. Laget ser slagna ut. Vad gör du?'}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {([
+                  { id: 'calm' as const, label: diff >= 0 ? 'Lugn genomgång' : 'Håll ihop', effect: 'Moral +5 för alla' },
+                  { id: 'angry' as const, label: diff >= 0 ? 'Kräv mer' : 'Skäll ut dem', effect: 'Skärpa +8, Moral −3' },
+                  { id: 'tactical' as const, label: 'Taktikjustering', effect: 'Öppna taktikpanelen' },
+                ]).map(choice => {
+                  const isSelected = halftimeChoice === choice.id
+                  return (
+                    <button
+                      key={choice.id}
+                      onClick={() => {
+                        onHalftimeChoice(choice.id)
+                        if (choice.id === 'tactical') setActiveTab('taktik')
+                      }}
+                      style={{
+                        width: '100%', padding: '10px 12px', borderRadius: 8,
+                        fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer',
+                        background: isSelected ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
+                        color: isSelected ? 'var(--accent)' : 'var(--text-primary)',
+                        border: `1px solid ${isSelected ? 'rgba(196,122,58,0.4)' : 'var(--border)'}`,
+                        fontFamily: 'var(--font-body)',
+                      }}
+                    >
+                      {choice.label}
+                      <span style={{ display: 'block', fontSize: 10, fontWeight: 400, color: isSelected ? 'var(--accent)' : 'var(--text-muted)', marginTop: 2 }}>
+                        {choice.effect}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, textAlign: 'left', lineHeight: 1.8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Skott:</span>
