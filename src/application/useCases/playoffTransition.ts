@@ -75,6 +75,7 @@ export function handlePlayoffStart(game: SaveGame, _seed?: number): AdvanceResul
     standings,
     inbox: [...game.inbox, ...newInboxItems],
     currentDate: newDate,
+    showPlayoffIntro: true,
   }
 
   // If managed club didn't make playoffs, we have scheduled fixtures for other teams

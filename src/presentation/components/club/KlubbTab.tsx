@@ -200,7 +200,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
         {activeVolunteers.length > 0 && (
           <div style={{ marginBottom: 10 }}>
             <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--success)', marginBottom: 6 }}>
-              {activeVolunteers.length} aktiva · +{Math.round(volunteerBonus.weeklyIncome / 1000)} tkr/omg · +{volunteerBonus.csBoostPerRound} puls
+              {activeVolunteers.length} aktiva · +{Math.round(volunteerBonus.weeklyIncome / 1000)} tkr/omg · +{volunteerBonus.csBoostPerRound.toFixed(1)} puls/omg
             </p>
             {activeVolunteers.map((name, i) => {
               const morale = (game.volunteerMorale ?? {})[name] ?? 70

@@ -290,6 +290,15 @@ export interface SaveGame {
   // V1.3 — Halvtidssummering (visas efter liga-omgång 11)
   showHalfTimeSummary?: boolean
 
+  // V1.5 — Slutspelsintro (visas när grundserien avslutas och slutspelslottning är klar)
+  showPlayoffIntro?: boolean
+
+  // V1.5 — Kvartsfinalsammanfattning (visas när alla kvartsfinaler är klara)
+  showQFSummary?: boolean
+
+  // V1.5 — Senast processade matchdag (sätts av roundProcessor — förhindrar dubbelprocess vid cup)
+  lastProcessedMatchday?: number
+
   // V1.4 — Nemesis tracker (opponent player who keeps scoring against us)
   nemesisTracker?: Record<string, {
     playerId: string

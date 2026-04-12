@@ -48,6 +48,6 @@ export function getActiveVolunteerBonus(volunteers: string[]): { weeklyIncome: n
   const count = volunteers.length
   return {
     weeklyIncome: count * 600,
-    csBoostPerRound: Math.min(15, count * 3),
+    csBoostPerRound: Math.min(1.5, count * 0.3),
   }
 }

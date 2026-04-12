@@ -61,6 +61,8 @@ export function DashboardScreen() {
     if (game?.managerFired) navigate('/game/game-over', { replace: true })
     else if (game?.showSeasonSummary) navigate('/game/season-summary', { replace: true })
     else if (game?.showHalfTimeSummary) navigate('/game/half-time-summary', { replace: true })
+    else if (game?.showPlayoffIntro) navigate('/game/playoff-intro', { replace: true })
+    else if (game?.showQFSummary) navigate('/game/qf-summary', { replace: true })
     else if (game?.showBoardMeeting) navigate('/game/board-meeting', { replace: true })
     else if (game?.showPreSeason) navigate('/game/pre-season', { replace: true })
     else if (playoffInfo?.status === PlayoffStatus.Completed) navigate('/game/champion', { replace: true })
@@ -201,11 +203,15 @@ export function DashboardScreen() {
     while (safetyLimit-- > 0) {
       const currentGame = useGameStore.getState().game
       if (!currentGame) break
+      if (currentGame.showHalfTimeSummary) break  // halt at mid-season summary
+      if (currentGame.showPlayoffIntro) break    // halt at playoff intro
+      if (currentGame.showQFSummary) break       // halt at QF summary
       // advance() handles cup-skip internally — loop stops at playoffStarted or seasonEnded.
       const result = simulateRemainingStep()
       if (!result) break
       if (result.seasonEnded) break
       if (result.playoffStarted) break
+      if (result.hasManagedCupMatch) break  // cup match pending — user must play it
       // Stop if no more scheduled fixtures (season end / playoff start handled by dashboard)
       const hasMore = useGameStore.getState().game?.fixtures.some(f => f.status === 'scheduled')
       if (!hasMore) break
@@ -243,7 +249,8 @@ export function DashboardScreen() {
     const managedMatchInNextRound = scheduledFixtures.find(f => f.matchday === nextSimEff && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
     if (managedMatchInNextRound) { navigate('/game/match'); return }
     try {
-      advance()
+      const result = advance()
+      if (result?.hasManagedCupMatch || result?.playoffStarted || result?.seasonEnded) return
       navigate('/game/review')
     } catch (err) { console.error('advance() failed:', err) }
   }

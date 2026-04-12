@@ -49,6 +49,8 @@ interface GameState {
   talkToPlayer: (playerId: string, choice: 'encourage' | 'demand' | 'future', currentRound: number) => { moraleChange: number; formChange: number; feedback: string; inboxTriggered: boolean }
   clearPreSeason: () => void
   clearHalfTimeSummary: () => void
+  clearPlayoffIntro: () => void
+  clearQFSummary: () => void
   setBudgetPriority: (priority: 'squad' | 'balanced' | 'youth') => void
   interactWithPolitician: (action: 'invite' | 'budget' | 'apply') => { success: boolean; message: string }
   setTransferBudget: (amount: number) => void

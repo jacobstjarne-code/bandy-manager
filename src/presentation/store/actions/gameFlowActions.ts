@@ -143,7 +143,11 @@ export function gameFlowActions(get: Get, set: Set) {
           navigateTo('/game/pre-season', { replace: true })
         }
       } else if (!suppressMatchNavigation) {
-        if (result.hasManagedCupMatch) {
+        if (result.game.showPlayoffIntro) {
+          navigateTo('/game/playoff-intro', { replace: true })
+        } else if (result.game.showQFSummary) {
+          navigateTo('/game/qf-summary', { replace: true })
+        } else if (result.hasManagedCupMatch) {
           // Managed club has an unplayed match (cup or league) — go to dashboard
           // so user sees between-round info and clicks "Spela omgång X" themselves
           navigateTo('/game/dashboard', { replace: true })
@@ -173,6 +177,18 @@ export function gameFlowActions(get: Get, set: Set) {
       const { game } = get()
       if (!game) return
       set({ game: { ...game, showHalfTimeSummary: false } })
+    },
+
+    clearPlayoffIntro: () => {
+      const { game } = get()
+      if (!game) return
+      set({ game: { ...game, showPlayoffIntro: false } })
+    },
+
+    clearQFSummary: () => {
+      const { game } = get()
+      if (!game) return
+      set({ game: { ...game, showQFSummary: false } })
     },
 
     clearSeasonSummary: () => {

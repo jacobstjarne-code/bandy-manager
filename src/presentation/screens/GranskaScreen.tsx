@@ -115,9 +115,16 @@ export function GranskaScreen() {
       return
     }
     // Live match: advance() was never called. Process the remaining matchday now.
-    if (!didAdvance.current) {
+    // Guard: if this fixture's matchday was already processed (e.g. remount after back navigation),
+    // skip advance() to prevent double side-effects.
+    const liveFixture = game.fixtures.find(f => f.id === game.lastCompletedFixtureId)
+    const alreadyProcessed = liveFixture && game.lastProcessedMatchday === liveFixture.matchday
+    if (!didAdvance.current && !alreadyProcessed) {
       didAdvance.current = true
       advance(true)
+    } else if (alreadyProcessed) {
+      // Matchday already processed — just go to dashboard
+      navigate('/game/dashboard', { replace: true })
     }
   }, [roundSummary, game, navigate, advance])
 

@@ -153,6 +153,21 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     console.error(`[MATCHDAY CONFLICT] md${nextMatchday} has both cup and league fixtures!`)
   }
 
+  // Detect second-pass scenario: advance() is called twice for cup/playoff matchdays —
+  // first to sim AI matches (managed skipped), then again after user sets lineup.
+  // On pass 2, all AI fixtures are already Completed. Skip training/economy/injuries
+  // to avoid double side-effects; only the managed fixture simulation is needed.
+  const aiFixturesThisMatchday = roundFixtures.filter(
+    f => f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId
+  )
+  const isSecondPassForManagedMatch =
+    aiFixturesThisMatchday.length > 0 &&
+    aiFixturesThisMatchday.every(f => f.status === FixtureStatus.Completed) &&
+    roundFixtures.some(
+      f => f.status === FixtureStatus.Scheduled &&
+        (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+    )
+
   const baseSeed = seed ?? (nextMatchday * 1000 + game.currentSeason * 7)
   const localRand = mulberry32(baseSeed + 9999)
 
@@ -177,7 +192,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const currentLeagueRound = roundFixtures.find(f => !f.isCup && f.roundNumber <= 22)?.roundNumber ?? null
 
   // ── Apply training for all clubs this round ────────────────────────────
-  const trainingResult = applyRoundTraining(game, baseSeed, currentLeagueRound ?? nextMatchday)
+  // Skip on second pass (AI fixtures already done, only managed match left) to prevent double side-effects
+  const trainingResult = isSecondPassForManagedMatch
+    ? { players: game.players, trainingHistory: game.trainingHistory ?? [], inboxItems: [] as InboxItem[], trainingProjects: game.trainingProjects ?? [], trainingEffects: [] as unknown[] }
+    : applyRoundTraining(game, baseSeed, currentLeagueRound ?? nextMatchday)
   let trainingPlayers = trainingResult.players
   const updatedTrainingHistory = trainingResult.trainingHistory
   newInboxItems.push(...trainingResult.inboxItems)
@@ -550,6 +568,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const updatedBracket = playoffResult.updatedBracket
   const bracketNewFixtures = playoffResult.bracketNewFixtures
   const playoffCsBoost = playoffResult.playoffCsBoost
+  const triggerQFSummary = playoffResult.triggerQFSummary
   newInboxItems.push(...playoffResult.inboxItems)
 
   // Apply playoff fixture cancellations to allFixtures
@@ -662,16 +681,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // ── Economy: wages, match revenue, sponsorship per round ─────────────────
-  const economyResult = processEconomy(
-    game,
-    simulatedFixtures,
-    availabilityUpdatedPlayers,
-    currentFanMood,
-    standings,
-    nextMatchday,
-    cupResult.prizeMoneyByClub,
-    localRand,
-  )
+  // Skip on second pass to prevent double wage/income application
+  const economyResult = isSecondPassForManagedMatch
+    ? { roundFinanceLog: [], updatedClubs: game.clubs }
+    : processEconomy(
+        game,
+        simulatedFixtures,
+        availabilityUpdatedPlayers,
+        currentFanMood,
+        standings,
+        nextMatchday,
+        cupResult.prizeMoneyByClub,
+        localRand,
+      )
   const { roundFinanceLog, updatedClubs: socialMediaBoostedClubs } = economyResult
 
   // ── Transfer bids ────────────────────────────────────────────────────────
@@ -913,6 +935,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     managedClubPendingLineup: undefined,
     lineupConfirmedThisRound: false,
     visitedScreensThisRound: [],
+    showQFSummary: triggerQFSummary ? true : (game.showQFSummary ?? undefined),
+    lastProcessedMatchday: hasManagedCupPending ? (game.lastProcessedMatchday ?? undefined) : nextMatchday,
     lastCompletedFixtureId: justCompletedManagedFixture?.id ?? game.lastCompletedFixtureId,
     matchWeathers: trimmedWeathers,
     trainingHistory: trimmedTrainingHistory,

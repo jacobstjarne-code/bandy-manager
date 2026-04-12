@@ -14,6 +14,7 @@ export interface PlayoffProcessorResult {
   playoffCsBoost: number
   inboxItems: InboxItem[]
   cancelledFixtureIds: string[]
+  triggerQFSummary: boolean
 }
 
 /**
@@ -40,6 +41,7 @@ export function processPlayoffRound(
     playoffCsBoost: 0,
     inboxItems: [],
     cancelledFixtureIds: [],
+    triggerQFSummary: false,
   }
 
   if (result.updatedBracket === null) return result
@@ -129,8 +131,9 @@ export function processPlayoffRound(
   })()
 
   if (currentPhaseComplete) {
+    const wasQFPhase = result.updatedBracket!.status === PlayoffStatus.QuarterFinals
     const nextRoundStart =
-      result.updatedBracket!.status === PlayoffStatus.QuarterFinals ? 28
+      wasQFPhase ? 28
       : result.updatedBracket!.status === PlayoffStatus.SemiFinals ? 33
       : 36
     const currentMaxMatchday = Math.max(0, ...allFixtures.map(f => f.matchday ?? 0))
@@ -143,6 +146,9 @@ export function processPlayoffRound(
     )
     result.updatedBracket = newBracket
     result.bracketNewFixtures = newFixtures
+    if (wasQFPhase && !game.showQFSummary) {
+      result.triggerQFSummary = true
+    }
   }
 
   // Check managed club advancement or elimination — use completedThisRound (includes live-played)

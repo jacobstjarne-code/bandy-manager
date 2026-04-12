@@ -31,6 +31,8 @@ import { GranskaScreen } from '../screens/GranskaScreen'
 import { HistoryScreen } from '../screens/HistoryScreen'
 import { PreSeasonScreen } from '../screens/PreSeasonScreen'
 import { HalfTimeSummaryScreen } from '../screens/HalfTimeSummaryScreen'
+import { PlayoffIntroScreen } from '../screens/PlayoffIntroScreen'
+import { QFSummaryScreen } from '../screens/QFSummaryScreen'
 import { RoundSummaryScreen } from '../screens/RoundSummaryScreen'
 import { SimSummaryScreen } from '../screens/SimSummaryScreen'
 import { useGameStore } from '../store/gameStore'
@@ -65,6 +67,8 @@ export function AppRouter() {
           <Route path="history" element={<HistoryScreen />} />
           <Route path="pre-season" element={<PreSeasonScreen />} />
           <Route path="half-time-summary" element={<HalfTimeSummaryScreen />} />
+          <Route path="playoff-intro" element={<PlayoffIntroScreen />} />
+          <Route path="qf-summary" element={<QFSummaryScreen />} />
           <Route path="sim-summary" element={<SimSummaryScreen />} />
         </Route>
         <Route element={<GameGuard />}>
