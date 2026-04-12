@@ -16,6 +16,7 @@ import {
 import { updateAllMarketValues } from '../../domain/services/marketValueService'
 import { executeTransfer } from '../../domain/services/transferService'
 import { generatePostAdvanceEvents, generateEvents } from '../../domain/services/eventService'
+import { generateWeeklyDecision } from '../../domain/services/weeklyDecisionService'
 import { generateMediaHeadlines, generateTrendArticles } from '../../domain/services/mediaService'
 import { evaluateBoard, generateBoardMessage } from '../../domain/services/boardService'
 import { mulberry32 } from '../../domain/utils/random'
@@ -975,6 +976,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     trainerArc: updatedArc,
     previousKommunBidrag: game.localPolitician?.kommunBidrag,
     mecenater: updatedMecenater,
+    pendingWeeklyDecision: generateWeeklyDecision(
+      { ...game, resolvedWeeklyDecisions: game.resolvedWeeklyDecisions ?? [] },
+      nextMatchday,
+    ) ?? undefined,
   }
 
   // Append market value change notifications to inbox

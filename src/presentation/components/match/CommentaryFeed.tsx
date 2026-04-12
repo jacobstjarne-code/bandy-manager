@@ -20,6 +20,7 @@ interface CommentaryFeedProps {
   matchDone?: boolean
   managedIsHome?: boolean
   onNavigateToReview?: () => void
+  cornerNode?: React.ReactNode
 }
 
 function generateMatchSummary(
@@ -137,6 +138,7 @@ export function CommentaryFeed({
   matchDone,
   managedIsHome,
   onNavigateToReview,
+  cornerNode,
 }: CommentaryFeedProps) {
   const background = (() => {
     if (!currentMatchStep) return undefined
@@ -211,6 +213,7 @@ export function CommentaryFeed({
           </div>
         )
       })()}
+      {cornerNode}
       {[...displayedSteps].reverse().flatMap((s, idx) => {
         const hasGoal = s.events.some(e => e.type === MatchEventType.Goal)
         const hasSuspension = s.events.some(e => e.type === MatchEventType.RedCard)

@@ -71,6 +71,7 @@ interface GameState {
   simulateRemainingStep: () => AdvanceResult | null
   clearRoundSummary: () => void
   markScreenVisited: (screen: string) => void
+  resolveWeeklyDecision: (choice: 'A' | 'B') => void
 }
 
 const indexedDBStorage = {

@@ -5,7 +5,7 @@ import { simulateMatchStepByStep, simulateSecondHalf, type MatchStep } from '../
 import type { Tactic } from '../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
-import { MatchEventType, TacticMentality, TacticTempo, TacticPress } from '../../domain/enums'
+import { MatchEventType, TacticMentality, TacticTempo, TacticPress, PlayerPosition } from '../../domain/enums'
 import { getRivalry } from '../../domain/data/rivalries'
 import { computePlayerRatings } from '../utils/matchRatings'
 import { playSound, isMuted, toggleMute } from '../audio/soundEffects'
@@ -18,6 +18,10 @@ import { SubstitutionModal } from '../components/match/SubstitutionModal'
 import { Scoreboard } from '../components/match/Scoreboard'
 import { MatchControls } from '../components/match/MatchControls'
 import { CommentaryFeed } from '../components/match/CommentaryFeed'
+import { resolveCorner } from '../../domain/services/cornerInteractionService'
+import type { CornerZone, CornerDelivery } from '../../domain/services/cornerInteractionService'
+import { CornerInteraction } from '../components/match/CornerInteraction'
+import { mulberry32 } from '../../domain/utils/random'
 
 interface LocationState {
   fixture: Fixture
@@ -82,6 +86,9 @@ export function MatchLiveScreen() {
   const [awayScoreFlash, setAwayScoreFlash] = useState(false)
   const prevHomeScore = useRef(0)
   const prevAwayScore = useRef(0)
+
+  const [activeCorner, setActiveCorner] = useState<import('../../domain/services/cornerInteractionService').CornerInteractionData | null>(null)
+  const [cornerOutcome, setCornerOutcome] = useState<import('../../domain/services/cornerInteractionService').CornerOutcome | null>(null)
 
   const feedRef = useRef<HTMLDivElement>(null)
   const hasSimulated = useRef(false)
@@ -238,6 +245,13 @@ export function MatchLiveScreen() {
       return
     }
 
+    // Interactive corner — pause and show UI
+    if (step.cornerInteractionData && !isFastForward && !activeCorner) {
+      setActiveCorner(step.cornerInteractionData)
+      setCornerOutcome(null)
+      return
+    }
+
     if (step.phase === 'overtime' && prevPhase.current !== 'overtime' && !isFastForward) {
       prevPhase.current = 'overtime'
       setShowOvertimeOverlay(true)
@@ -273,6 +287,66 @@ export function MatchLiveScreen() {
 
     return () => clearTimeout(timer)
   }, [currentStep, isPaused, isFastForward, steps])
+
+  function handleCornerChoice(zone: CornerZone, delivery: CornerDelivery) {
+    if (!activeCorner || !game || !fixture) return
+
+    const managedIsHome = fixture.homeClubId === game.managedClubId
+    const allPlayers = game.players
+    const attackers = managedIsHome
+      ? allPlayers.filter(p => p.clubId === fixture.homeClubId)
+      : allPlayers.filter(p => p.clubId === fixture.awayClubId)
+    const defenders = managedIsHome
+      ? allPlayers.filter(p => p.clubId === fixture.awayClubId)
+      : allPlayers.filter(p => p.clubId === fixture.homeClubId)
+
+    const cornerTaker = attackers.find(p => p.id === activeCorner.cornerTakerId) ?? attackers[0]
+    const rushers = activeCorner.rusherIds.map(id => attackers.find(p => p.id === id)).filter(Boolean) as typeof attackers
+    const gk = defenders.find(p => p.position === PlayerPosition.Goalkeeper)
+    const defOutfield = defenders.filter(p => p.position !== PlayerPosition.Goalkeeper)
+
+    const rand = mulberry32(Date.now())
+    const sgMood = game.supporterGroup?.mood ?? 50
+    const outcome = resolveCorner(
+      { zone, delivery },
+      cornerTaker,
+      rushers,
+      defOutfield,
+      gk,
+      activeCorner.opponentPenaltyKill,
+      activeCorner.isHome,
+      sgMood,
+      rand,
+    )
+
+    setCornerOutcome(outcome)
+
+    // Patch scores if goal
+    if (outcome.type === 'goal') {
+      setSteps(prev => prev.map((s, idx) => {
+        if (idx <= currentStep) return s
+        return managedIsHome
+          ? { ...s, homeScore: s.homeScore + 1 }
+          : { ...s, awayScore: s.awayScore + 1 }
+      }))
+      playSound('goal')
+      playSound('goalHit')
+      if (managedIsHome) {
+        setHomeScoreFlash(true)
+        setTimeout(() => setHomeScoreFlash(false), 2000)
+      } else {
+        setAwayScoreFlash(true)
+        setTimeout(() => setAwayScoreFlash(false), 2000)
+      }
+    }
+
+    // After 1.5s, clear corner state and advance step
+    setTimeout(() => {
+      setActiveCorner(null)
+      setCornerOutcome(null)
+      setCurrentStep(prev => prev + 1)
+    }, 1500)
+  }
 
   function handleApplyTactic() {
     if (!fixture || !homeLineup || !awayLineup || !game) return
@@ -481,6 +555,13 @@ export function MatchLiveScreen() {
         matchDone={matchDone && !isSmFinal && !isCupFinal}
         managedIsHome={managedIsHomeForSubs}
         onNavigateToReview={() => navigate('/game/review', { replace: true })}
+        cornerNode={activeCorner ? (
+          <CornerInteraction
+            data={activeCorner}
+            outcome={cornerOutcome}
+            onChoose={handleCornerChoice}
+          />
+        ) : undefined}
       />
 
       {showHalftime && !matchDone && (

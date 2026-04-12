@@ -28,6 +28,7 @@ import { getCoffeeRoomQuote } from '../../domain/services/coffeeRoomService'
 import { getTrainingScene } from '../../domain/services/trainingSceneService'
 import { getSupporterMoodLabel } from '../../domain/services/supporterService'
 import { getRitualText } from '../../domain/services/supporterRituals'
+import type { WeeklyDecision } from '../../domain/services/weeklyDecisionService'
 
 
 const NAV_BTN: React.CSSProperties = {
@@ -47,6 +48,7 @@ const LABEL: React.CSSProperties = {
 export function DashboardScreen() {
   const { game, advance, markTutorialSeen, simulateRemainingStep } = useGameStore()
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
+  const resolveWeeklyDecision = useGameStore(s => s.resolveWeeklyDecision)
   const club = useManagedClub()
   const standing = useCurrentStanding()
   const hasPendingLineup = useHasPendingLineup()
@@ -649,6 +651,33 @@ export function DashboardScreen() {
             )}
           </div>
           <DiamondDivider />
+
+          {/* VECKANS BESLUT */}
+          {game.pendingWeeklyDecision && (() => {
+            const d = game.pendingWeeklyDecision as WeeklyDecision
+            return (
+              <div className="card-sharp" style={{ padding: '10px 12px', margin: '0 -12px 8px' }}>
+                <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>🤔 VECKANS BESLUT</p>
+                <p style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8 }}>{d.question}</p>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button
+                    onClick={() => resolveWeeklyDecision('A')}
+                    style={{ flex: 1, padding: '10px 8px', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', textAlign: 'center' }}
+                  >
+                    {d.optionA.label}
+                    <span style={{ display: 'block', fontSize: 9, fontWeight: 400, color: d.optionA.effectColor === 'success' ? 'var(--success)' : d.optionA.effectColor === 'danger' ? 'var(--danger)' : 'var(--text-muted)', marginTop: 2 }}>{d.optionA.effect}</span>
+                  </button>
+                  <button
+                    onClick={() => resolveWeeklyDecision('B')}
+                    style={{ flex: 1, padding: '10px 8px', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer', background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)', textAlign: 'center' }}
+                  >
+                    {d.optionB.label}
+                    <span style={{ display: 'block', fontSize: 9, fontWeight: 400, color: d.optionB.effectColor === 'success' ? 'var(--success)' : d.optionB.effectColor === 'danger' ? 'var(--danger)' : 'var(--text-muted)', marginTop: 2 }}>{d.optionB.effect}</span>
+                  </button>
+                </div>
+              </div>
+            )
+          })()}
 
           {(() => {
             const pepTalk = getPepTalk(game)

@@ -1,4 +1,5 @@
 import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
+import { resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
 import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
 import { navigateTo } from '../../navigation/globalNavigate'
 import { saveSaveGame } from '../../../infrastructure/persistence/saveGameStorage'
@@ -10,6 +11,7 @@ interface GetState {
   resolveEvent: (eventId: string, choiceId: string) => void
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string) => { success: boolean; error?: string }
   advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
+  resolveWeeklyDecision: (choice: 'A' | 'B') => void
 }
 
 type Get = () => GetState
@@ -198,6 +200,73 @@ export function gameFlowActions(get: Get, set: Set) {
     },
 
     clearRoundSummary: () => set({ roundSummary: null }),
+
+    resolveWeeklyDecision: (choice: 'A' | 'B') => {
+      const { game } = get()
+      if (!game || !game.pendingWeeklyDecision) return
+      const decision = game.pendingWeeklyDecision
+      const effects = resolveWeeklyDecisionFn(game, decision, choice)
+      const resolvedKey = `${decision.id}_${game.currentSeason}`
+
+      let updatedGame: SaveGame = {
+        ...game,
+        pendingWeeklyDecision: undefined,
+        resolvedWeeklyDecisions: [...(game.resolvedWeeklyDecisions ?? []), resolvedKey],
+      }
+
+      // Apply effects
+      for (const effect of effects) {
+        if (effect.type === 'finances') {
+          const club = updatedGame.clubs.find(c => c.id === updatedGame.managedClubId)
+          if (club) {
+            updatedGame = {
+              ...updatedGame,
+              clubs: updatedGame.clubs.map(c =>
+                c.id === updatedGame.managedClubId
+                  ? { ...c, finances: c.finances + effect.delta }
+                  : c
+              ),
+            }
+          }
+        } else if (effect.type === 'supporterMood') {
+          if (updatedGame.supporterGroup) {
+            const newMood = Math.max(0, Math.min(100, updatedGame.supporterGroup.mood + effect.delta))
+            updatedGame = { ...updatedGame, supporterGroup: { ...updatedGame.supporterGroup, mood: newMood } }
+          }
+        } else if (effect.type === 'communityStanding') {
+          updatedGame = {
+            ...updatedGame,
+            communityStanding: Math.max(0, Math.min(100, (updatedGame.communityStanding ?? 50) + effect.delta)),
+          }
+        } else if (effect.type === 'boardPatience') {
+          updatedGame = {
+            ...updatedGame,
+            boardPatience: Math.max(0, Math.min(100, (updatedGame.boardPatience ?? 70) + effect.delta)),
+          }
+        } else if (effect.type === 'cornerSkill') {
+          updatedGame = {
+            ...updatedGame,
+            players: updatedGame.players.map(p =>
+              p.id === effect.playerId
+                ? { ...p, attributes: { ...p.attributes, cornerSkill: Math.min(100, p.attributes.cornerSkill + effect.delta) } }
+                : p
+            ),
+          }
+        } else if (effect.type === 'morale') {
+          updatedGame = {
+            ...updatedGame,
+            players: updatedGame.players.map(p =>
+              p.id === effect.playerId
+                ? { ...p, form: Math.max(0, Math.min(100, p.form + effect.delta)) }
+                : p
+            ),
+          }
+        }
+      }
+
+      set({ game: updatedGame })
+      saveSaveGame(updatedGame)
+    },
 
     markScreenVisited: (screen: string) => {
       const { game } = get()

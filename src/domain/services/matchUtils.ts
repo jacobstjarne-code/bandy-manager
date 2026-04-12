@@ -185,6 +185,8 @@ export interface MatchStep {
   cornersAway: number
   weatherNote?: string
   isDerbyComment?: boolean
+  // Corner interaction (managed club corners only)
+  cornerInteractionData?: import('./cornerInteractionService').CornerInteractionData
   // Overtime/penalty metadata
   phase?: 'regular' | 'overtime' | 'penalties'
   penaltyRound?: PenaltyRound

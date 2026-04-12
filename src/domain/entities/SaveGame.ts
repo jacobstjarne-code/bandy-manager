@@ -287,6 +287,10 @@ export interface SaveGame {
   // Sprint 2 — Supporter group (klack)
   supporterGroup?: SupporterGroup
 
+  // Sprint 3 — Veckans beslut
+  pendingWeeklyDecision?: import('../services/weeklyDecisionService').WeeklyDecision
+  resolvedWeeklyDecisions?: string[]  // `${id}_${season}` — prevents re-picking same decision
+
   // V1.3 — Player Arc Controller
   activeArcs?: ActiveArc[]
 

@@ -12,6 +12,8 @@ import {
   simulatePenalties, pickGoalCommentary, pickWeatherCommentary,
 } from './matchUtils'
 import type { MatchStep, StepByStepInput } from './matchUtils'
+import { shouldBeInteractive, buildCornerInteractionData } from './cornerInteractionService'
+import type { CornerInteractionData } from './cornerInteractionService'
 
 export function* simulateMatchStepByStep(input: StepByStepInput): Generator<MatchStep> {
   const {
@@ -129,6 +131,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
   let shotsAway = 0
   let cornersHome = 0
   let cornersAway = 0
+  let interactiveCornersUsed = 0
 
   // Per-player tracking for ratings (needed for final report)
   const playerGoals: Record<string, number> = {}
@@ -334,6 +337,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     let saveOccurred = false
     let suspensionOccurred = false
     let cornerOccurred = false
+    let cornerInteractionData: CornerInteractionData | undefined
     let scorerPlayerId: string | undefined
     let gkPlayerId: string | undefined
     let suspendedPlayerId: string | undefined
@@ -474,6 +478,44 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     } else if (seqType === 'corner') {
       if (isHomeAttacking) { cornersHome++ } else { cornersAway++ }
 
+      // Check if this corner should be interactive (managed club only)
+      const isManagedCorner = managedIsHome !== undefined
+        ? (managedIsHome === isHomeAttacking)
+        : false
+      const totalCornersThisMatch = cornersHome + cornersAway
+      if (isManagedCorner && shouldBeInteractive(minute, homeScore, awayScore, true, totalCornersThisMatch, interactiveCornersUsed)) {
+        // Build corner interaction data for the UI — skip simulated goal resolution
+        interactiveCornersUsed++
+        const gk = getGK(defendingStarters)
+        const cornerTaker = attackingStarters
+          .filter(p => p.position !== PlayerPosition.Goalkeeper)
+          .sort((a, b) => b.attributes.cornerSkill - a.attributes.cornerSkill)[0]
+        if (cornerTaker) {
+          const sgMood = (input as StepByStepInput & { supporterMood?: number }).supporterMood ?? 50
+          cornerInteractionData = buildCornerInteractionData(
+            cornerTaker,
+            attackingStarters,
+            defendingStarters,
+            isHomeAttacking,
+            sgMood,
+            minute,
+            homeScore,
+            awayScore,
+          )
+          cornerOccurred = true
+          const cornerEvent: MatchEvent = {
+            minute,
+            type: MatchEventType.Corner,
+            clubId: attackingClubId,
+            description: 'Hörna',
+          }
+          stepEvents.push(cornerEvent)
+          allEvents.push(cornerEvent)
+          void gk
+        }
+      }
+
+      if (!cornerInteractionData) {
       const cornerSpecialist = attackingStarters.find(p => p.archetype === PlayerArchetype.CornerSpecialist)
       const specialistBonus = cornerSpecialist
         ? (cornerSpecialist.attributes.cornerSkill > 75 ? 0.25 : 0.15)
@@ -538,6 +580,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
         stepEvents.push(event)
         allEvents.push(event)
       }
+      } // end if (!pendingInteractionData)
     } else if (seqType === 'halfchance') {
       if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
       const chanceQuality = randRange(rand, 0.05, 0.25) * (isPlayoff ? 1.05 : 1.0)
@@ -817,6 +860,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       cornersAway,
       weatherNote: stepWeatherNote,
       isDerbyComment: isDerbyStep || undefined,
+      cornerInteractionData,
     }
   }
 
