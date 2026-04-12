@@ -9,4 +9,5 @@ export type {
 } from './matchUtils'
 export { computeWeatherTacticInteraction } from './matchUtils'
 export { simulateMatch } from './matchEngine'
-export { simulateMatchStepByStep, simulateSecondHalf } from './matchStepByStep'
+export { simulateMatchStepByStep } from './matchStepByStep'
+export { simulateSecondHalf } from './matchSecondHalf'
