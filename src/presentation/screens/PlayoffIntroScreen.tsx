@@ -17,9 +17,8 @@ export function PlayoffIntroScreen() {
   const qualified = position > 0 && position <= 8
 
   function getClubName(id: string) {
-    return g.clubs.find(c => c.id === id)?.shortName
-      ?? g.clubs.find(c => c.id === id)?.name
-      ?? '?'
+    const c = g.clubs.find(cl => cl.id === id)
+    return c?.shortName ?? c?.name ?? '?'
   }
 
   function handleContinue() {
@@ -28,6 +27,7 @@ export function PlayoffIntroScreen() {
   }
 
   const qfMatchups = bracket?.quarterFinals ?? []
+  const top8 = g.standings.filter(s => s.position <= 8).sort((a, b) => a.position - b.position)
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
@@ -113,10 +113,7 @@ export function PlayoffIntroScreen() {
           <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 10 }}>
             📋 FINAL TABELL — TOPP 8
           </p>
-          {g.standings
-            .filter(s => s.position <= 8)
-            .sort((a, b) => a.position - b.position)
-            .map(s => {
+          {top8.map(s => {
               const c = g.clubs.find(cl => cl.id === s.clubId)
               const isManaged = s.clubId === g.managedClubId
               return (

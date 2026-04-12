@@ -13,9 +13,8 @@ export function QFSummaryScreen() {
   const club = g.clubs.find(c => c.id === g.managedClubId)
 
   function getClubName(id: string) {
-    return g.clubs.find(c => c.id === id)?.shortName
-      ?? g.clubs.find(c => c.id === id)?.name
-      ?? '?'
+    const c = g.clubs.find(cl => cl.id === id)
+    return c?.shortName ?? c?.name ?? '?'
   }
 
   function handleContinue() {

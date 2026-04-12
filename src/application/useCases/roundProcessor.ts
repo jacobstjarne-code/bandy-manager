@@ -157,16 +157,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // first to sim AI matches (managed skipped), then again after user sets lineup.
   // On pass 2, all AI fixtures are already Completed. Skip training/economy/injuries
   // to avoid double side-effects; only the managed fixture simulation is needed.
-  const aiFixturesThisMatchday = roundFixtures.filter(
-    f => f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId
-  )
-  const isSecondPassForManagedMatch =
-    aiFixturesThisMatchday.length > 0 &&
-    aiFixturesThisMatchday.every(f => f.status === FixtureStatus.Completed) &&
-    roundFixtures.some(
-      f => f.status === FixtureStatus.Scheduled &&
-        (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-    )
+  let aiCount = 0, aiCompletedCount = 0, hasManagedScheduled = false
+  for (const f of roundFixtures) {
+    const isManaged = f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId
+    if (isManaged) {
+      if (f.status === FixtureStatus.Scheduled) hasManagedScheduled = true
+    } else {
+      aiCount++
+      if (f.status === FixtureStatus.Completed) aiCompletedCount++
+    }
+  }
+  const isSecondPassForManagedMatch = aiCount > 0 && aiCompletedCount === aiCount && hasManagedScheduled
 
   const baseSeed = seed ?? (nextMatchday * 1000 + game.currentSeason * 7)
   const localRand = mulberry32(baseSeed + 9999)
@@ -194,7 +195,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // ── Apply training for all clubs this round ────────────────────────────
   // Skip on second pass (AI fixtures already done, only managed match left) to prevent double side-effects
   const trainingResult = isSecondPassForManagedMatch
-    ? { players: game.players, trainingHistory: game.trainingHistory ?? [], inboxItems: [] as InboxItem[], trainingProjects: game.trainingProjects ?? [], trainingEffects: [] as unknown[] }
+    ? { players: game.players, trainingHistory: game.trainingHistory ?? [], inboxItems: [] as InboxItem[], trainingProjects: game.trainingProjects ?? [], trainingEffects: [] }
     : applyRoundTraining(game, baseSeed, currentLeagueRound ?? nextMatchday)
   let trainingPlayers = trainingResult.players
   const updatedTrainingHistory = trainingResult.trainingHistory

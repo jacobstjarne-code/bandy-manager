@@ -102,6 +102,7 @@ export function GranskaScreen() {
   const [chosenLabels, setChosenLabels] = useState<Record<string, string>>({})
   const [soundsPlayed, setSoundsPlayed] = useState(false)
   const didAdvance = useRef(false)
+  const didRedirect = useRef(false)
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80)
@@ -122,8 +123,8 @@ export function GranskaScreen() {
     if (!didAdvance.current && !alreadyProcessed) {
       didAdvance.current = true
       advance(true)
-    } else if (alreadyProcessed) {
-      // Matchday already processed — just go to dashboard
+    } else if (alreadyProcessed && !didRedirect.current) {
+      didRedirect.current = true
       navigate('/game/dashboard', { replace: true })
     }
   }, [roundSummary, game, navigate, advance])
