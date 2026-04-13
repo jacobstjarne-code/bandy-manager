@@ -108,6 +108,27 @@ export function getCharacterName(game: SaveGame, role: SupporterCharacter['role'
   return sg[role].name
 }
 
+// ── Update member count after home match ─────────────────────────────────────
+// Vinst + hög mood = långsam tillväxt. Förlust + låg mood = krympning.
+// Naturligt tak ~80, golv ~8.
+
+export function updateSupporterMembers(
+  group: SupporterGroup,
+  won: boolean,
+  rand: () => number,
+): SupporterGroup {
+  const mood = group.mood
+  const current = group.members
+
+  let delta = 0
+  if (won && mood >= 65) delta = Math.round(rand() * 2 + 1)   // +1 to +3
+  else if (won) delta = Math.floor(rand() * 2)                 // 0 to +1
+  else if (!won && mood < 40) delta = -Math.round(rand() * 2 + 1) // -1 to -3
+  else delta = -Math.floor(rand() * 2)                         // 0 to -1
+
+  return { ...group, members: Math.min(80, Math.max(8, current + delta)) }
+}
+
 // ── Mood label ────────────────────────────────────────────────────────────────
 
 export function getSupporterMoodLabel(mood: number): string {

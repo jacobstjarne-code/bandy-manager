@@ -609,8 +609,13 @@ export function DashboardScreen() {
           const chars = [sg.leader, sg.veteran, sg.youth, sg.family]
           const favPlayer = game.players.find(p => p.id === sg.favoritePlayerId)
           return (
-            <div data-coach-id="klacken-card" className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <div
+              data-coach-id="klacken-card"
+              className="card-sharp"
+              style={{ margin: '0 0 6px', padding: '10px 12px', cursor: 'pointer' }}
+              onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                 <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>
                   📯 {sg.name.toUpperCase()}
                 </p>
@@ -618,6 +623,9 @@ export function DashboardScreen() {
                   {moodLabel} · {sg.members} st
                 </span>
               </div>
+              <p style={{ fontSize: 10, color: sg.mood >= 65 ? 'var(--success)' : sg.mood >= 40 ? 'var(--text-muted)' : 'var(--danger)', fontFamily: 'var(--font-body)', margin: '0 0 6px', fontStyle: 'italic' }}>
+                {sg.mood >= 65 ? 'Klacken sjunger — hemmabonus aktiv' : sg.mood >= 40 ? 'Klacken finns på plats men saknar energi' : 'Klacken är tyst. Hemmaplansfördelen bleknar.'}
+              </p>
               <div style={{ display: 'flex', gap: 8, marginBottom: ritualText ? 8 : 0 }}>
                 {chars.map(c => (
                   <div key={c.role} style={{ flex: 1, textAlign: 'center' }}>
@@ -732,6 +740,22 @@ export function DashboardScreen() {
           </div>
           <DiamondDivider />
 
+          {/* KAFFERUMMET */}
+          {(() => {
+            const coffee = getCoffeeRoomQuote(game)
+            if (!coffee) return null
+            return (
+              <div style={{ margin: '0 0 8px', padding: '8px 10px', borderBottom: '1px solid var(--border)' }}>
+                <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
+                  ☕ KAFFERUMMET
+                </p>
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-body)' }}>
+                  {coffee.speaker}: {coffee.text}
+                </p>
+              </div>
+            )
+          })()}
+
           {/* VECKANS BESLUT */}
           {game.pendingWeeklyDecision && (() => {
             const d = game.pendingWeeklyDecision as WeeklyDecision
@@ -796,22 +820,6 @@ export function DashboardScreen() {
             {advanceButtonText}
           </button>
         </div>
-
-        {(() => {
-          const coffee = getCoffeeRoomQuote(game)
-          if (!coffee) return null
-          return (
-            <div style={{ margin: '12px 4px 0', padding: '8px 10px', borderTop: '1px solid var(--border)' }}>
-              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
-                ☕ KAFFERUMMET
-              </p>
-              <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-body)' }}>
-                {coffee.speaker}: {coffee.text}
-              </p>
-            </div>
-          )
-        })()}
-
 
         <p style={{ textAlign: 'center', fontSize: 9, color: 'var(--text-secondary)', marginTop: 16 }}>
           build {(typeof __GIT_HASH__ !== 'undefined' ? __GIT_HASH__ : '?')} · {(typeof __BUILD_DATE__ !== 'undefined' ? __BUILD_DATE__ : '')}

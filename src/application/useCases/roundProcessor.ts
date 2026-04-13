@@ -39,6 +39,7 @@ import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventServic
 import { checkReputationMilestones, milestonesToInbox } from '../../domain/services/reputationMilestoneService'
 import { generateDeadlineBids, generateDiscountOffer, deadlineBidToInbox, deadlineOfferToInbox } from '../../domain/services/transferDeadlineService'
 import { generateSocialEvent, generateSilentShoutEvent, generateMecenat, generateMecenatIntroEvent } from '../../domain/services/mecenatService'
+import { updateSupporterMembers } from '../../domain/services/supporterService'
 import { processEconomy } from './processors/economyProcessor'
 import { processCommunity } from './processors/communityProcessor'
 import { processScouts } from './processors/scoutProcessor'
@@ -398,9 +399,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
          f.status === FixtureStatus.Completed
   )
 
-  // Fan mood update
+  // Fan mood + supporter member update
   const currentFanMood = game.fanMood ?? 50
   let newFanMood = currentFanMood
+  let updatedSupporterGroup = game.supporterGroup
   if (justCompletedManagedFixture) {
     const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
     const myScore = isHome ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
@@ -411,6 +413,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const bigLoss = lost && (theirScore ?? 0) >= (myScore ?? 0) + 3
     const fanDelta = bigWin ? 8 : won ? 4 : bigLoss ? -8 : lost ? -4 : 1
     newFanMood = Math.max(0, Math.min(100, currentFanMood + fanDelta))
+    if (isHome && updatedSupporterGroup) {
+      updatedSupporterGroup = updateSupporterMembers(updatedSupporterGroup, won, localRand)
+    }
   }
 
   // ── Update rivalry history ────────────────────────────────────────────
@@ -1026,6 +1031,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     activeTalentSearch: updatedTalentSearch,
     talentSearchResults: updatedTalentResults,
     fanMood: newFanMood,
+    supporterGroup: updatedSupporterGroup,
     rivalryHistory: updatedRivalryHistory,
     nemesisTracker: updatedNemesisTracker,
     doctorQuestionsUsed: 0,
