@@ -264,6 +264,9 @@ export function GranskaScreen() {
               {fixture.attendance != null && (
                 <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>🏟️ {fixture.attendance} åskådare</p>
               )}
+              {homeClub?.arenaName && (
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>Spelades på {homeClub.arenaName}</p>
+              )}
 
               {/* Match summary */}
               {(() => {

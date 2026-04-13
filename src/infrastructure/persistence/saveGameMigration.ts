@@ -34,6 +34,8 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.showSeasonSummary === undefined) data.showSeasonSummary = false
   if (data.activeScoutAssignment === undefined) data.activeScoutAssignment = null
   if (data.allTimeRecords === undefined) data.allTimeRecords = null
+  // tutorialSeen is deprecated — migrate to coachMarksSeen
+  if (data.tutorialSeen && data.coachMarksSeen === undefined) data.coachMarksSeen = true
 
   // V1.0 — Storylines, Legacy, Market tracking
   if (data.storylines === undefined) data.storylines = []
