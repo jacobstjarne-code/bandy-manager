@@ -635,6 +635,23 @@ function generatePlayer(
   }
 }
 
+// ── Handgjorda arenanamn ──────────────────────────────────────────────────
+
+const ARENA_NAMES: Record<string, string> = {
+  club_sandviken: 'Stålvallen',
+  club_sirius: 'Hammarvallen',
+  club_vasteras: 'Slagghögen',
+  club_broberg: 'Fästningsvallen',
+  club_villa: 'Älgparken',
+  club_falun: 'Siljansvallen',
+  club_ljusdal: 'Gjutarvallen',
+  club_edsbyn: 'Smedjebacken',
+  club_tillberga: 'Bokskogen',
+  club_kungalv: 'Brovallen',
+  club_skutskar: 'Massavallen',
+  club_soderhamns: 'Koppargruvan',
+}
+
 export function generateWorld(season: number, seed: number = 42): GeneratedWorld {
   const rng = makeRng(seed)
 
@@ -658,7 +675,7 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     activeTactic: buildTactic(t.preferredStyle),
     squadPlayerIds: [],
     arenaCapacity: Math.round((t.reputation * 7 + 150) / 50) * 50,
-    arenaName: t.arenaName ?? (() => { const w = t.name.split(' ')[0]; return w.endsWith('s') ? `${w} IP` : `${w}s IP` })(),
+    arenaName: t.arenaName ?? ARENA_NAMES[t.id] ?? (() => { const w = t.name.split(' ')[0]; return w.endsWith('s') ? `${w} IP` : `${w}s IP` })(),
   }))
 
   const allPlayers: Player[] = []

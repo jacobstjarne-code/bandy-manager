@@ -8,6 +8,35 @@ interface CupCardProps {
   game: SaveGame
 }
 
+const CUP_STAGES = [
+  { round: 1, label: 'Förstar.' },
+  { round: 2, label: 'QF' },
+  { round: 3, label: 'SF' },
+  { round: 4, label: 'Final' },
+]
+
+function CupProgressRow({ wonRounds, currentRound, eliminated }: { wonRounds: number[], currentRound: number, eliminated: boolean }) {
+  return (
+    <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 8 }}>
+      {CUP_STAGES.map((stage, i) => {
+        const done = wonRounds.includes(stage.round)
+        const active = !eliminated && stage.round === currentRound && !done
+        return (
+          <div key={stage.round} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            {i > 0 && <span style={{ fontSize: 9, color: 'var(--border)' }}>›</span>}
+            <span style={{
+              fontSize: 9, fontWeight: done || active ? 700 : 400,
+              color: done ? 'var(--success)' : active ? 'var(--accent)' : 'var(--text-muted)',
+            }}>
+              {done ? `✓ ${stage.label}` : active ? `● ${stage.label}` : `○ ${stage.label}`}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export function CupCard({ bracket, game }: CupCardProps) {
   const navigate = useNavigate()
   const managedClubId = game.managedClubId
@@ -19,6 +48,14 @@ export function CupCard({ bracket, game }: CupCardProps) {
   const roundsWithMatches = [...new Set(bracket.matches.map(m => m.round))]
   const currentRound = Math.max(...roundsWithMatches)
   const stageLabel = getCupRoundLabel(currentRound)
+
+  const completedCupFixIds = new Set(game.fixtures.filter(f => f.isCup && f.status === 'completed').map(f => f.id))
+  const managedBracketMatches = bracket.matches.filter(m =>
+    (m.homeClubId === managedClubId || m.awayClubId === managedClubId) && !m.isBye
+  )
+  const wonRounds = managedBracketMatches
+    .filter(m => m.winnerId === managedClubId && m.fixtureId && completedCupFixIds.has(m.fixtureId))
+    .map(m => m.round)
 
   let statusContent: React.ReactNode
 
@@ -73,27 +110,23 @@ export function CupCard({ bracket, game }: CupCardProps) {
     )
   } else {
     const hasBye = bracket.matches.some(m => m.isBye && m.homeClubId === managedClubId)
-    const completedCupIds = new Set(game.fixtures.filter(f => f.isCup && f.status === 'completed').map(f => f.id))
-    const managedBracketMatches = bracket.matches.filter(m => (m.homeClubId === managedClubId || m.awayClubId === managedClubId) && !m.isBye)
-    const actuallyWon = managedBracketMatches.filter(m => m.winnerId === managedClubId && m.fixtureId && completedCupIds.has(m.fixtureId))
-    const highestWonRound = actuallyWon.length > 0 ? Math.max(...actuallyWon.map(m => m.round)) : (hasBye ? 1 : 0)
+    const highestWonRound = wonRounds.length > 0 ? Math.max(...wonRounds) : (hasBye ? 1 : 0)
     const CUP_ROUND_MATCHDAYS: Record<number, number> = { 1: 3, 2: 8, 3: 13, 4: 19 }
     const nextCupRound = highestWonRound + 1
-    const nextRoundName = nextCupRound === 1 ? 'Förstarunda'
-      : nextCupRound === 2 ? 'Kvartsfinal'
-      : nextCupRound === 3 ? 'Semifinal'
-      : nextCupRound === 4 ? 'Final' : ''
+    const nextRoundName = nextCupRound === 2 ? 'kvartsfinal'
+      : nextCupRound === 3 ? 'semifinal'
+      : nextCupRound === 4 ? 'final' : ''
     const nextRoundMatchday = CUP_ROUND_MATCHDAYS[nextCupRound]
     statusContent = nextRoundName
       ? (
         <div>
-          {hasBye && highestWonRound === 1 && (
+          {highestWonRound >= 1 && (
             <p style={{ fontSize: 11, color: 'var(--success)', fontWeight: 600, marginBottom: 4 }}>
-              ✓ Direktkvalificerade till kvartsfinal
+              Grattis — ni är i {nextRoundName}! Motståndare lottas snart.
             </p>
           )}
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
-            {nextRoundName} spelas matchdag {nextRoundMatchday ?? '?'}
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>
+            Spelas matchdag {nextRoundMatchday ?? '?'}
           </p>
         </div>
       )
@@ -107,12 +140,19 @@ export function CupCard({ bracket, game }: CupCardProps) {
       onClick={() => navigate('/game/tabell', { state: { tab: 'cupen' } })}
     >
       <div style={{ padding: '10px 14px 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
             🏆 SVENSKA CUPEN
           </p>
           {!bracket.completed && !cupStatus.eliminated && <span className="tag tag-copper">{stageLabel}</span>}
         </div>
+        {!bracket.completed && (
+          <CupProgressRow
+            wonRounds={wonRounds}
+            currentRound={currentRound}
+            eliminated={cupStatus.eliminated}
+          />
+        )}
       </div>
       <div style={{ padding: '0 14px 10px' }}>{statusContent}</div>
     </div>

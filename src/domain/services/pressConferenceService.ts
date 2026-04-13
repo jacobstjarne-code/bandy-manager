@@ -11,11 +11,12 @@ export const JOURNALISTS = ['SVT Nyheter', 'Bandyplay', 'Lokaltidningen', 'Sport
 interface PressQuestion {
   text: string
   preferIds: string[]  // response IDs that directly answer this question
+  minRound?: number    // earliest round this question makes sense
 }
 
 const QUESTIONS: Record<string, PressQuestion[]> = {
   bigWin: [
-    { text: 'Imponerande seger. Var det er bästa match den här säsongen?', preferIds: ['bw_c1', 'bw_h2', 'cl01'] },
+    { text: 'Imponerande seger. Var det er bästa match den här säsongen?', preferIds: ['bw_c1', 'bw_h2', 'cl01'], minRound: 6 },
     { text: 'Laget spelade otroligt idag. Vad är hemligheten?', preferIds: ['bw_c2', 'bw_h5', 'cl04'] },
     { text: 'Tvåsiffrigt idag — är det ett mönster eller en engångsgrej?', preferIds: ['bw_c3', 'bw_h4', 'cl02'] },
     { text: 'Ert anfallsspel ser ostoppbart ut. Fruktar du inte att bli läst av motståndarna?', preferIds: ['bw_c4', 'bw_h4', 'cl02'] },
@@ -27,9 +28,9 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Seger! Berätta om matchen.', preferIds: ['w_h1', 'w_c1', 'w_d1'] },
     { text: 'Två viktiga poäng. Hur påverkar det stämningen i laget?', preferIds: ['w_p2', 'w_h2', 'w_p4'] },
     { text: 'Vilken spelare stack ut idag?', preferIds: ['w_p3', 'w_h3', 'w_c3'] },
-    { text: 'Hur håller ni den här formen uppe?', preferIds: ['w_c4', 'w_d4', 'cl03'] },
+    { text: 'Hur håller ni den här formen uppe?', preferIds: ['w_c4', 'w_d4', 'cl03'], minRound: 3 },
     { text: 'Ni vände underläge till seger. Vad hände i pausen?', preferIds: ['w_p5', 'w_h5', 'w_d5'] },
-    { text: 'Ni avancerar i tabellen. Kan ni utmana toppen nu?', preferIds: ['w_c6', 'w_h6', 'cl08'] },
+    { text: 'Ni avancerar i tabellen. Kan ni utmana toppen nu?', preferIds: ['w_c6', 'w_h6', 'cl08'], minRound: 5 },
     { text: 'Ni dominerade mittfältet idag. Är det er styrka just nu?', preferIds: ['w_c7', 'w_h7', 'bw_d2'] },
   ],
   loss: [
@@ -41,12 +42,12 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Tappar ni tron på er spelstil nu?', preferIds: ['l_c6', 'l_h6', 'cl15'] },
     { text: 'Ni hade chanser men konverterade inte. Stressar det er?', preferIds: ['l_c7', 'l_h7', 'cl16'] },
     { text: 'Bortalaget körde över er i perioder. Vad händer med er försvarsspel?', preferIds: ['l_h8', 'l_h1', 'l_a1'] },
-    { text: 'Ni har det tufft just nu. Hur håller du moralen uppe?', preferIds: ['l_p9', 'l_h9', 'cl13'] },
+    { text: 'Ni har det tufft just nu. Hur håller du moralen uppe?', preferIds: ['l_p9', 'l_h9', 'cl13'], minRound: 3 },
   ],
   bigLoss: [
     { text: 'En mörk kväll. Hur tar ni er vidare härifrån?', preferIds: ['bl_h1', 'bl_p1', 'cl12'] },
     { text: 'Är du orolig för lagets form?', preferIds: ['bl_h2', 'bl_c2', 'cl13'] },
-    { text: 'Det här resultatet kan stå er dyrt i tabellen. Hur reagerar styrelsen?', preferIds: ['bl_p3', 'bl_d2', 'bl_a1'] },
+    { text: 'Det här resultatet kan stå er dyrt i tabellen. Hur reagerar styrelsen?', preferIds: ['bl_p3', 'bl_d2', 'bl_a1'], minRound: 5 },
     { text: 'Motståndarna verkade veta exakt vad ni skulle göra. Läckta planer?', preferIds: ['bl_h4', 'bl_c4', 'bl_h1'] },
     { text: 'En jävla massa mål i röven. Var det ett systemproblem?', preferIds: ['bl_h5', 'bl_a1', 'bl_h1'] },
     { text: 'Behöver du ta in ny spetskompetens för att vända skutan?', preferIds: ['bl_c6', 'bl_c2', 'bl_p1'] },
@@ -490,10 +491,13 @@ export function generatePressConference(
   else if (myScore < theirScore) contextKey = 'loss'
   else contextKey = 'draw'
 
-  const questions = QUESTIONS[contextKey]
-  if (!questions || questions.length === 0) return null
+  const round = fixture.roundNumber ?? 0
+  const allQuestions = QUESTIONS[contextKey]
+  if (!allQuestions || allQuestions.length === 0) return null
+  const questions = allQuestions.filter(q => !q.minRound || round >= q.minRound)
+  const questionPool = questions.length > 0 ? questions : allQuestions
 
-  let question = questions[Math.floor(rand() * questions.length)]
+  let question = questionPool[Math.floor(rand() * questionPool.length)]
   const journalist = JOURNALISTS[Math.floor(rand() * JOURNALISTS.length)]
 
   // Arc-aware question override (40% chance if arc in peak phase)

@@ -303,7 +303,9 @@ export function BoardMeetingScreen() {
           </p>
           {(() => {
             const usedQuotes = new Set<string>()
-            return boardMembers.map((member, i) => {
+            // Skip ordföranden i citat-listan — de talar redan i openerText
+            const quotingMembers = boardMembers.filter(m => m.role !== 'ordförande')
+            return quotingMembers.map((member, i) => {
             let quote = getContextualQuote(member.personality, i)
             // If same quote already used, try next index
             let attempts = 0
@@ -315,9 +317,9 @@ export function BoardMeetingScreen() {
             if (!quote) return null
             return (
               <div key={member.name + i} style={{
-                marginBottom: i < boardMembers.length - 1 ? 8 : 0,
-                paddingBottom: i < boardMembers.length - 1 ? 8 : 0,
-                borderBottom: i < boardMembers.length - 1 ? '1px solid var(--border)' : 'none',
+                marginBottom: i < quotingMembers.length - 1 ? 8 : 0,
+                paddingBottom: i < quotingMembers.length - 1 ? 8 : 0,
+                borderBottom: i < quotingMembers.length - 1 ? '1px solid var(--border)' : 'none',
               }}>
                 <p style={{
                   fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6,
