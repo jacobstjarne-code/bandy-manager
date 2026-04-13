@@ -243,24 +243,46 @@ export function TransfersScreen() {
         </span>
       </div>
 
-      <div style={{ display: 'flex', gap: 4, marginBottom: 10, borderBottom: '1px solid var(--border)', paddingBottom: 6, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}>
-        {([
-          { key: 'marknad', label: '🏪 Marknad' },
-          { key: 'scouting', label: '🔍 Scouting' },
-          { key: 'contracts', label: '📋 Kontrakt' },
-          { key: 'freeagents', label: '👤 Fria' },
-          { key: 'sell', label: '💰 Sälj' },
-        ] as const).map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`btn ${activeTab === tab.key ? 'btn-copper' : 'btn-ghost'}`}
-            style={{ padding: '6px 10px', whiteSpace: 'nowrap' }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {(() => {
+        const incomingBids = (game.transferBids ?? []).filter(b => b.direction === 'incoming' && b.status === 'pending')
+        const tabs = [
+          { key: 'marknad' as const, label: 'Marknad', dot: incomingBids.length > 0 ? 'accent' : null },
+          { key: 'scouting' as const, label: 'Scouting', dot: null },
+          { key: 'contracts' as const, label: 'Kontrakt', dot: expiringPlayers.length > 0 ? 'danger' : null },
+          { key: 'freeagents' as const, label: 'Fria', dot: freeAgents.length > 0 && windowOpen ? 'accent' : null },
+          { key: 'sell' as const, label: 'Sälj', dot: null },
+        ]
+        return (
+          <div style={{ position: 'relative', marginBottom: 10 }}>
+            <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border)', paddingBottom: 6, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}>
+              {tabs.map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`btn ${activeTab === tab.key ? 'btn-copper' : 'btn-ghost'}`}
+                  style={{ padding: '6px 10px', whiteSpace: 'nowrap', position: 'relative', flexShrink: 0 }}
+                >
+                  {tab.label}
+                  {tab.dot && (
+                    <span style={{
+                      position: 'absolute', top: 2, right: 2,
+                      width: 6, height: 6, borderRadius: '50%',
+                      background: tab.dot === 'danger' ? 'var(--danger)' : 'var(--accent)',
+                    }} />
+                  )}
+                </button>
+              ))}
+            </div>
+            {/* Fade gradient signals more content to the right */}
+            <div style={{
+              position: 'absolute', top: 0, right: 0,
+              width: 20, height: 'calc(100% - 7px)',
+              background: 'linear-gradient(to left, var(--bg), transparent)',
+              pointerEvents: 'none',
+            }} />
+          </div>
+        )
+      })()}
 
       <div className="card-sharp" style={{
         background: windowInfo.status === 'open' ? 'rgba(34,197,94,0.08)' : windowInfo.status === 'winter' ? 'rgba(196,122,58,0.08)' : 'rgba(239,68,68,0.06)',
