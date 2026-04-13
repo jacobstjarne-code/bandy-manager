@@ -1055,6 +1055,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     trainerArc: updatedArc,
     previousKommunBidrag: game.localPolitician?.kommunBidrag,
     mecenater: updatedMecenater,
+    lastCoffeeQuoteHash: currentLeagueRound !== null ? currentLeagueRound * 7 + game.currentSeason * 31 : game.lastCoffeeQuoteHash,
     ...(() => {
       // Update rolling average attendance for home matches
       if (!justCompletedManagedFixture) return {}

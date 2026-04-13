@@ -57,7 +57,9 @@ export function PressConferenceScene({ event, journalist, onChoice }: Props) {
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>
             🎤 PRESSKONFERENS
           </p>
-          <span style={{ fontSize: 9, color: styleColor, fontWeight: 600 }}>{styleLabel} · {relLabel}</span>
+          <span style={{ fontSize: 9, color: styleColor, fontWeight: 600 }}>
+            {styleLabel === relLabel ? styleLabel : `${styleLabel} · ${relLabel}`}
+          </span>
         </div>
 
         {/* Journalist card */}

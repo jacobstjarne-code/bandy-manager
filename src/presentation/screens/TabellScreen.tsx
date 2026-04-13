@@ -523,7 +523,7 @@ export function TabellScreen() {
                         {home} {fix ? `${fix.homeScore}–${fix.awayScore}` : 'vs'} {away}
                       </span>
                       <span style={{ fontSize: 11, fontWeight: 600, color: won ? 'var(--success)' : 'var(--danger)' }}>
-                        {won ? '✓ Vidare' : '✗ Utslagen'}
+                        {won ? (m.round === 4 ? '🏆 Vinnare' : '✓ Vidare') : '✗ Utslagen'}
                       </span>
                     </div>
                   )

@@ -1,3 +1,18 @@
+# FIXSPEC: Coach Marks — OMSKRIVNING
+
+## Vad som är fel
+
+Nuvarande CoachMarks renderar tooltip-innehållet som ett INLINE element i DashboardScreens renderträd. Det finns ingen overlay, ingen dim, ingen spotlight. Texten klipps av under BottomNav. Hela poängen med coach marks — att peka på ett specifikt UI-element med en spotlight — saknas.
+
+## Krav (se docs/mockups/onboarding_mockup.html)
+
+Komponenten ska vara en **position: fixed overlay som täcker HELA skärmen**, inklusive BottomNav. Bakom overlayet finns en mörk dim. I dimman finns ett "hål" (spotlight) som visar det faktiska UI-elementet under. Bredvid hålet visas en tooltip med förklaring.
+
+## Exakt implementation
+
+### CoachMarks.tsx — ny komponent (ERSÄTT nuvarande helt)
+
+```tsx
 import { useState, useEffect } from 'react'
 
 interface CoachStep {
@@ -153,3 +168,38 @@ export function CoachMarks({ onDone }: Props) {
     </div>
   )
 }
+```
+
+### DashboardScreen — data-coach-id attribut
+
+Lägg till på tre element:
+- CTA-knappen: `data-coach-id="cta-button"`
+- Orten-cellen: `data-coach-id="orten-card"`
+- Klacken-sektionen: `data-coach-id="klacken-card"`
+
+### DashboardScreen — rendera CoachMarks
+
+INTE inne i scroll-containern. Som syskon UTANFÖR:
+
+```tsx
+return (
+  <>
+    <div className="screen-enter" style={{ ... }}>
+      {/* hela dashboarden */}
+    </div>
+    {!game.coachMarksSeen && <CoachMarks onDone={markCoachMarksSeen} />}
+  </>
+)
+```
+
+### Ta bort
+- TutorialOverlay.tsx
+- `{!game.tutorialSeen && <TutorialOverlay />}` i DashboardScreen
+- `markTutorialSeen` i gameStore (ersätts av `markCoachMarksSeen`)
+
+### Verifiering
+```bash
+grep -n "position.*fixed" src/presentation/components/CoachMarks.tsx  # MÅSTE finnas
+grep -n "4000px" src/presentation/components/CoachMarks.tsx           # MÅSTE finnas
+grep -rn "TutorialOverlay" src/                                       # ska ge 0
+```

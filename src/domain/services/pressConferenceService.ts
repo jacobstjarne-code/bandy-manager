@@ -560,10 +560,19 @@ export function generatePressConference(
     ? `${namedJournalist.name}, ${namedJournalist.outlet}`
     : journalist
 
+  function responseEmoji(id: string, moraleEffect: number): string {
+    if (/_a\d/.test(id)) return '😤'
+    if (/_h\d/.test(id)) return '🙏'
+    if (/_d\d/.test(id)) return '😐'
+    return moraleEffect >= 3 ? '😊' : '😐'
+  }
+
   const choices = responses.map(r => ({
     id: r.id,
     label: r.label,
-    subtitle: r.moraleEffect > 0 ? `😊 +${r.moraleEffect} moral` : r.moraleEffect < 0 ? `😊 ${r.moraleEffect} moral` : undefined,
+    subtitle: r.moraleEffect !== 0
+      ? `${responseEmoji(r.id, r.moraleEffect)} ${r.moraleEffect > 0 ? '+' : ''}${r.moraleEffect} moral`
+      : undefined,
     effect: {
       type: 'pressResponse' as const,
       value: r.moraleEffect,
@@ -575,7 +584,7 @@ export function generatePressConference(
   choices.push({
     id: 'refuse_press',
     label: 'Vägra presskonferens',
-    subtitle: '😊 -3 moral · 🤝 journalisten irriterad',
+    subtitle: '😤 -3 moral · journalisten irriterad',
     effect: {
       type: 'pressResponse' as const,
       value: -3,

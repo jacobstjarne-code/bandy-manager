@@ -76,7 +76,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       id: 'corner_extra_training',
       category: 'player',
       question: `${candidateName} vill öva hörnskott efter träningen. Extra pass?`,
-      optionA: { label: 'Tillåt', effect: '+3 hörnskill', effectColor: 'success' },
+      optionA: { label: 'Tillåt', effect: '+3 hörnskicklighet', effectColor: 'success' },
       optionB: { label: 'Neka', effect: 'Ingen effekt', effectColor: 'muted' },
     },
     {
@@ -113,14 +113,14 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       category: 'supporter',
       question: `Tidningen vill göra ett reportage om ${groupName}. ${leader} säger ja — men frågar om du godkänner.`,
       optionA: { label: 'Tillåt', effect: '+3 kommunstatus', effectColor: 'success' },
-      optionB: { label: 'Neka', effect: '−journalist-rel', effectColor: 'danger' },
+      optionB: { label: 'Neka', effect: 'Journalisten tappar förtroende', effectColor: 'danger' },
     },
     // — Training decisions —
     {
       id: 'training_corners_vs_matchprep',
       category: 'training',
       question: 'Bara tid för ett: extra hörnträning eller matchförberedelse?',
-      optionA: { label: '🏒 Hörnor', effect: '+cornerSkill', effectColor: 'success' },
+      optionA: { label: '🏒 Hörnor', effect: '+hörnskicklighet', effectColor: 'success' },
       optionB: { label: '📋 Matchprep', effect: '+positionering', effectColor: 'success' },
     },
     {

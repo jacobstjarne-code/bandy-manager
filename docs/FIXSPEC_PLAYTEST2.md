@@ -356,16 +356,174 @@ Gör kortet klickbart → navigera till /game/club med state: { tab: 'orten' }.
 
 ---
 
+## BUG-12: Styrelsemöte — opener och citat från samma person
+
+**Fil:** `BoardMeetingScreen.tsx`
+
+**Problem:** openerText nämner ordföranden vid namn ("Välkomna. Vi har en del att gå igenom."). Direkt under visas ordförandens citat igen under "Styrelsemedlemmarna om läget". Samma person, dubbelt.
+
+**Fix:** Hoppa över ordföranden i citat-listan om hen redan används i openern. Eller: gör openern generisk utan namn.
+
+---
+
+## BUG-13: Coach Marks overlay HELT TRASIG
+
+**Se separat spec: `docs/FIXSPEC_COACHMARKS_REWRITE.md`**
+
+Nuvarande implementation renderar tooltip som inline-element utan dim/spotlight. Måste skrivas om från grunden med position:fixed overlay + box-shadow spotlight.
+
+---
+
+## BUG-14: CornerInteraction — corner taker = rusher (samma spelare)
+
+**Fil:** `src/domain/services/cornerInteractionService.ts` → `buildCornerInteractionData()`
+
+**Problem:** topRusherName kan vara samma spelare som cornerTaker.
+
+**Fix:** Filtrera bort cornerTaker.id från rushers-listan innan sort:
+```typescript
+const rushers = attackingStarters
+  .filter(p => p.position !== PlayerPosition.Goalkeeper && p.id !== cornerTaker.id)
+  .sort(...)
+```
+
+---
+
+## BUG-15: Veckans beslut visar råa variabelnamn
+
+**Fil:** `weeklyDecisionService.ts`
+
+**Problem:** Effekttext "–journalist-rel" visas i UI istället för läsbar text.
+
+**Fix:** Granska ALLA beslut i poolen. Alla effect-texter måste vara human-readable:
+- "–journalist-rel" → "Journalisten tappar förtroende"
+- "+3 kommunstatus" → OK (redan läsbart)
+
+---
+
+## BUG-16: Presskonferens header visar "Neutral · Neutral"
+
+**Fil:** PressConferenceScene eller renderingskomponenten
+
+**Problem:** Visar tone + relationship men båda är "Neutral" → dubbeltext.
+
+**Fix:** Om tone === relationship, visa bara en. Eller: visa journalistens namn + tidning istället för tonstämplarna.
+
+---
+
+## BUG-17: Presskonferens — alla val har samma emoji (😊)
+
+**Problem:** Även "Vägra presskonferens" (-3 moral + journalist irriterad) visar 😊.
+
+**Fix:** Emojin baseras på svarstyp:
+- Positiv/berömmande → 😊
+- Neutral/diplomatisk → 😐
+- Vägra/aggressiv → 😤
+- Ödmjuk → 🙏
+
+---
+
+## BUG-22: Cupvy saknar kontext om cupresa
+
+**Filer:** `CupCard.tsx` + `DashboardScreen.tsx` (kompakt cup-rad)
+
+**Problem:** När man gått vidare till kvartsfinal/semifinal/final visar inte UI:t tydligt var man befinner sig i cupresan. Mellanläge (vunnit QF, väntar på SF-fixture) visar bara "Semifinal spelas matchdag X" utan erkännande av att man tagit sig dit.
+
+**Fix 1 — CupCard:** Lägg till en progress-rad överst:
+```
+✓ Förstarunda → ✓ Kvartsfinal → ● Semifinal → ○ Final
+```
+Visar vilka rundor som avklarats (✓), var man är nu (●), och vad som återstår (○).
+
+**Fix 2 — CupCard mellanläge:** När fixture inte finns ännu men spelaren gått vidare:
+```
+"Grattis — ni är i semifinalen! Motståndare lottas snart."
+```
+Istället för bara "Semifinal spelas matchdag 13".
+
+**Fix 3 — NextMatchCard cup-header:** Lägg till journey-kontext:
+```
+Cupen · Semifinal  →  Cupen · Semifinal (via QF-seger)
+```
+Eller en liten tag under matchkortet: "Ni slog [motståndarnamn] i kvartsfinalen."
+
+**Fix 4 — Kompakt cup-rad i DashboardScreen:** Ersätt generisk text med:
+- "I kvartsfinal" / "I semifinal" / "I final" (inte bara "Kvartsfinal md 8")
+
+---
+
+## BUG-19: ?-knappen i header är koppar från start
+
+**Fil:** `GameHeader.tsx`
+
+**Problem:** ?-ikonen har `border: 2px solid var(--accent)` och `color: var(--accent)`. I designsystemet betyder koppar = aktivt/tänt tillstånd. En hjälpknapp som aldrig är "aktiv" borde vara neutral.
+
+**Fix:** Dämpad som default, koppar bara vid hover/press:
+```typescript
+// Default: 
+border: '1.5px solid var(--border)', color: 'var(--text-muted)'
+// Active/pressed:
+border: '1.5px solid var(--accent)', color: 'var(--accent)'
+```
+
+---
+
+## BUG-20: DiamondDivider har flyttat till mitt i dashboarden
+
+**Fil:** `DashboardScreen.tsx`
+
+**Problem:** Separatorlinjen (DiamondDivider) ska ligga direkt ovanför CTA-sektionen som en visuell avslutning på informationskorten. Nu ligger den någonstans mitt i.
+
+**Fix:** Verifiera att DiamondDivider renderas på exakt ett ställe — direkt före datum/omgång-raden och CTA-knappen. Om den duplicerats eller flyttats: återställ.
+
+---
+
+## BUG-21: Presskonferens — "bästa matchen" vid omgång 2
+
+**Fil:** `pressConferenceService.ts`
+
+**Problem:** Frågan "Var det er bästa match den här säsongen?" triggades omgång 2. Efter bara 2 matcher är frågan meningslös.
+
+**Fix:** Kontextstyrda frågor ska ha minimum-omgång:
+- "Bästa matchen" → först efter omgång 6
+- "Hur förklarar du formen?" (förlustsvit) → kräver minst 3 spelade matcher
+- "Ni ligger sist" → först efter omgång 5 (tabellen behöver stabiliseras)
+
+Lägg till `minRound`-fält på varje frågetyp och filtrera i `generatePressQuestion()`.
+
+---
+
+## BUG-18: Kafferummet upprepar samma quote 2 omgångar i rad
+
+**Fil:** `coffeeRoomService.ts`
+
+**Fix:** Spara senaste quote-id (eller hash) i game state. Filtrera bort det vid nästa generering.
+
+---
+
 ## Prioriteringsordning
 
-1. BUG-1 (halvvägs-navigation) — blockerar spelflödet, orsakar slutspelsbugg
-2. BUG-2 (managedIsHome) — hela hörnmekaniken trasig
-3. BUG-7 (kontraktsförnyelse) — extremt synlig, irriterande
-4. BUG-4 (mecenat spawn) — stort system helt oanvänt
-5. BUG-3 (cupRun failed) — synlig i UI varje spelgenomgång
-6. BUG-8 (NextMatchCard alignment + coach) — visuellt störande
-7. BUG-9 (CornerInteraction SVG) — förvirrande hörnposition
-8. BUG-10 (troféer lösa på dash) — visuell röra + dubblett
-9. BUG-6 (paddingBottom) — UX-irritation
-10. BUG-5 (transfers flikar) — UX-irritation
-11. BALANS-1 (CS diminishing returns) — balansändring
+1. BUG-1 (halvvägs-navigation) — blockerar spelflödet
+2. BUG-2 (managedIsHome) — hörnmekaniken trasig
+3. BUG-13 (coach marks) — helt trasig, se FIXSPEC_COACHMARKS_REWRITE.md
+4. BUG-7 (kontraktsförnyelse) — extremt irriterande
+5. BUG-4 (mecenat spawn) — stort system oanvänt
+6. BUG-3 (cupRun failed) — synlig varje spelgenomgång
+7. BUG-14 (corner taker = rusher) — logikfel
+8. BUG-15 (råa variabelnamn) — synlig i UI
+9. BUG-8 (NextMatchCard alignment) — visuellt störande
+10. BUG-9 (CornerInteraction SVG) — förvirrande
+11. BUG-10 (troféer lösa) — visuell röra
+12. BUG-11 (form-prickar) — inkonsekvent
+13. BUG-20 (DiamondDivider position) — layout
+14. BUG-21 (presskonferens minRound) — kontextfel
+15. BUG-22 (cupvy saknar resa-kontext) — UX
+16. BUG-12 (styrelsemöte dubbelcitat) — kosmetiskt
+17. BUG-16 (presskonferens Neutral·Neutral) — kosmetiskt
+18. BUG-17 (presskonferens emoji) — kosmetiskt
+19. BUG-18 (kafferum upprepar) — kosmetiskt
+20. BUG-19 (?-knapp koppar) — designsystem
+21. BUG-6 (paddingBottom) — UX-irritation
+22. BUG-5 (transfers flikar) — UX-irritation
+23. BALANS-1 (CS diminishing returns) — balansändring
+24. trainerArcService patch — roterande quotes

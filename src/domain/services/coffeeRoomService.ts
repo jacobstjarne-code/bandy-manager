@@ -4,6 +4,7 @@ import { getCharacterName } from './supporterService'
 interface CoffeeQuote {
   speaker: string
   text: string
+  hash?: number
 }
 
 const GENERIC_EXCHANGES: Array<[string, string, string, string]> = [
@@ -46,7 +47,16 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     .sort((a, b) => b.matchday - a.matchday)[0]
 
   const seed = round * 7 + game.currentSeason * 31
-  const pick = <T>(arr: T[]): T => arr[Math.abs(seed) % arr.length]
+  const lastHash = game.lastCoffeeQuoteHash ?? -1
+  // pick avoiding the index that matches lastHash to prevent same quote two rounds in a row
+  const pick = <T>(arr: T[]): T => {
+    const idx = Math.abs(seed) % arr.length
+    const lastIdx = ((lastHash % arr.length) + arr.length) % arr.length
+    if (idx === lastIdx && arr.length > 1) {
+      return arr[(idx + 1) % arr.length]
+    }
+    return arr[idx]
+  }
 
   if (lastFixture && (seed % 2 === 0)) {
     const isHome = lastFixture.homeClubId === game.managedClubId

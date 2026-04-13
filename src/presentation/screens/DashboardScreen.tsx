@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   useGameStore,
@@ -48,7 +48,6 @@ const LABEL: React.CSSProperties = {
 export function DashboardScreen() {
   const { game, advance, simulateRemainingStep } = useGameStore()
   const markCoachMarksSeen = useGameStore(s => s.markCoachMarksSeen)
-  const [coachStep, setCoachStep] = useState<0 | 1 | 2>(0)
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const resolveWeeklyDecision = useGameStore(s => s.resolveWeeklyDecision)
   const club = useManagedClub()
@@ -334,17 +333,8 @@ export function DashboardScreen() {
   // ── Render ─────────────────────────────────────────────────────
 
   return (
+    <>
     <div className="screen-enter" style={{ position: 'relative', minHeight: '100%', background: 'var(--bg)' }}>
-      {!game.coachMarksSeen && !game.tutorialSeen && (
-        <CoachMarks
-          step={coachStep}
-          onNext={() => {
-            if (coachStep === 2) { markCoachMarksSeen() }
-            else setCoachStep(s => (s + 1) as 0 | 1 | 2)
-          }}
-          onSkip={markCoachMarksSeen}
-        />
-      )}
 
 
       <div className="texture-wood card-stack" style={{ paddingTop: 8, paddingBottom: 120 }}>
@@ -826,5 +816,7 @@ export function DashboardScreen() {
         </p>
       </div>
     </div>
+    {!game.coachMarksSeen && <CoachMarks onDone={markCoachMarksSeen} />}
+    </>
   )
 }

@@ -5,6 +5,7 @@ import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import { getRivalry } from '../../../domain/data/rivalries'
+import { getConditionLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
 
 interface MatchDayProgramProps {
   fixture: Fixture
@@ -139,7 +140,7 @@ export function MatchDayProgram({ fixture, opponent, managedClub, game, myPlayer
                 VÄDER
               </p>
               <p style={{ fontSize: 12 }}>
-                {weather.condition} · {weather.temperature}°C · {weather.windStrength} m/s vind
+                {getWeatherEmoji(weather.condition)} {getConditionLabel(weather.condition)} · {weather.temperature}°C{weather.windStrength > 5 ? ` · ${weather.windStrength} m/s vind` : ''}
               </p>
             </div>
           )}

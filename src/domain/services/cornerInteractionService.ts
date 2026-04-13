@@ -133,7 +133,7 @@ export function buildCornerInteractionData(
   awayScore: number,
 ): CornerInteractionData {
   const rushers = attackingStarters
-    .filter(p => p.position !== PlayerPosition.Goalkeeper)
+    .filter(p => p.position !== PlayerPosition.Goalkeeper && p.id !== cornerTaker.id)
     .sort((a, b) => b.attributes.shooting + b.attributes.positioning - a.attributes.shooting - a.attributes.positioning)
     .slice(0, 5)
 

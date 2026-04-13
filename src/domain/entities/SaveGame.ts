@@ -313,6 +313,9 @@ export interface SaveGame {
   // V1.5 — Senast processade matchdag (sätts av roundProcessor — förhindrar dubbelprocess vid cup)
   lastProcessedMatchday?: number
 
+  // V1.5 — Kafferumscitat (förhindrar samma citat två omgångar i rad)
+  lastCoffeeQuoteHash?: number
+
   // V1.4 — Nemesis tracker (opponent player who keeps scoring against us)
   nemesisTracker?: Record<string, {
     playerId: string
