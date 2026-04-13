@@ -145,7 +145,9 @@ export function gameFlowActions(get: Get, set: Set) {
           navigateTo('/game/pre-season', { replace: true })
         }
       } else if (!suppressMatchNavigation) {
-        if (result.game.showPlayoffIntro) {
+        if (result.game.showHalfTimeSummary) {
+          navigateTo('/game/half-time-summary', { replace: true })
+        } else if (result.game.showPlayoffIntro) {
           navigateTo('/game/playoff-intro', { replace: true })
         } else if (result.game.showQFSummary) {
           navigateTo('/game/qf-summary', { replace: true })

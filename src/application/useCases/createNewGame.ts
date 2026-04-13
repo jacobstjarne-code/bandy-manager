@@ -287,7 +287,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     seasonSummaries: [],
     showSeasonSummary: false,
     showBoardMeeting: true,
-    tutorialSeen: true,
+    coachMarksSeen: false,
     seasonStartFinances: managedClub.finances,
     financeLog: [],
     storylines: [],

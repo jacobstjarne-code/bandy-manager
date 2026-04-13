@@ -10,6 +10,7 @@ import { positionShort, POSITION_ORDER } from '../utils/formatters'
 import { TRAIT_META } from '../../domain/data/playerTraits'
 import { SectionCard } from '../components/SectionCard'
 import { getPortraitPath } from '../../domain/services/portraitService'
+import { FirstVisitHint } from '../components/FirstVisitHint'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
 type FilterKey = 'all' | 'mv' | 'def' | 'half' | 'mid' | 'fwd'
@@ -252,6 +253,7 @@ export function SquadScreen() {
   const game = useGameStore(s => s.game)
   const talkToPlayer = useGameStore(s => s.talkToPlayer)
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
+  const dismissHint = useGameStore(s => s.dismissHint)
   useEffect(() => { markScreenVisited('squad') }, [])
   const [sort, setSort] = useState<SortKey>('position')
   const [filter, setFilter] = useState<FilterKey>('all')
@@ -298,8 +300,17 @@ export function SquadScreen() {
   const topSuspensions = players.filter(p => p.seasonStats.redCards > 0).sort((a, b) => b.seasonStats.redCards - a.seasonStats.redCards)[0]
   const hasSeasonData = topScorer || topAssist || topRating || topSuspensions
 
+  const dismissed = game?.dismissedHints ?? []
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg)' }}>
+      {!dismissed.includes('squad') && (
+        <FirstVisitHint
+          screenId="squad"
+          text="Dra spelare till positioner. Grön ring = rätt plats. Gul = kan funka. Utan lineup kan du inte spela."
+          onDismiss={() => dismissHint('squad')}
+        />
+      )}
       {/* Header */}
       <div style={{ padding: '10px 16px 8px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
         {/* Lineup hint */}

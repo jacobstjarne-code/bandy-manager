@@ -22,6 +22,7 @@ import { resolveCorner } from '../../domain/services/cornerInteractionService'
 import type { CornerZone, CornerDelivery } from '../../domain/services/cornerInteractionService'
 import { CornerInteraction } from '../components/match/CornerInteraction'
 import { mulberry32 } from '../../domain/utils/random'
+import { FirstVisitHint } from '../components/FirstVisitHint'
 
 interface LocationState {
   fixture: Fixture
@@ -544,6 +545,14 @@ export function MatchLiveScreen() {
         onOpenSubModal={() => { setIsPaused(true); setShowSubModal(true) }}
         onToggleMute={() => { toggleMute(); setMuted(isMuted()) }}
       />
+
+      {game && !(game.dismissedHints ?? []).includes('matchLive') && (
+        <FirstVisitHint
+          screenId="matchLive"
+          text="Matchen rullar automatiskt. Vid hörnor får du välja — titta efter hörn-kortet i feeden."
+          onDismiss={() => useGameStore.getState().dismissHint('matchLive')}
+        />
+      )}
 
       <CommentaryFeed
         displayedSteps={displayedSteps}

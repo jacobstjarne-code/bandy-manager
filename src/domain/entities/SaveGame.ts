@@ -163,7 +163,9 @@ export interface SaveGame {
   trainingHistory: TrainingSession[]
   trainingProjects?: TrainingProject[]
 
-  tutorialSeen?: boolean
+  tutorialSeen?: boolean          // deprecated — migration: if true, skip coachMarksSeen
+  coachMarksSeen?: boolean
+  dismissedHints?: string[]
   lastCompletedFixtureId?: string   // id of most recently completed managed-club fixture
 
   playoffBracket: PlayoffBracket | null

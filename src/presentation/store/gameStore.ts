@@ -35,7 +35,8 @@ interface GameState {
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string) => { success: boolean; error?: string }
   updateTactic: (tactic: Tactic) => void
   setTraining: (focus: TrainingFocus) => void
-  markTutorialSeen: () => void
+  markCoachMarksSeen: () => void
+  dismissHint: (screenId: string) => void
   markInboxRead: (itemId: string) => void
   markAllInboxRead: () => void
   startEvaluation: (playerId: string, clubId: string, sameRegion: boolean, hasPlayedAgainst?: boolean) => { success: boolean; error?: string }
@@ -186,10 +187,19 @@ export const useGameStore = create<GameState>()(
         set({ game: { ...game, clubs: updatedClubs } })
       },
 
-      markTutorialSeen: () => {
+      markCoachMarksSeen: () => {
         const { game } = get()
         if (!game) return
-        set({ game: { ...game, tutorialSeen: true } })
+        set({ game: { ...game, coachMarksSeen: true } })
+      },
+
+      dismissHint: (screenId) => {
+        set(s => {
+          if (!s.game) return s
+          const prev = s.game.dismissedHints ?? []
+          if (prev.includes(screenId)) return s
+          return { game: { ...s.game, dismissedHints: [...prev, screenId] } }
+        })
       },
 
       markInboxRead: (itemId) => {

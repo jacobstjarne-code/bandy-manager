@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   useGameStore,
@@ -9,7 +9,7 @@ import {
   useCanAdvance,
   usePlayoffInfo,
 } from '../store/gameStore'
-import { TutorialOverlay } from '../components/TutorialOverlay'
+import { CoachMarks } from '../components/CoachMarks'
 import { PlayoffStatus, PlayoffRound } from '../../domain/enums'
 import { playSound } from '../audio/soundEffects'
 import { getFormResults } from '../utils/formUtils'
@@ -46,7 +46,9 @@ const LABEL: React.CSSProperties = {
 }
 
 export function DashboardScreen() {
-  const { game, advance, markTutorialSeen, simulateRemainingStep } = useGameStore()
+  const { game, advance, simulateRemainingStep } = useGameStore()
+  const markCoachMarksSeen = useGameStore(s => s.markCoachMarksSeen)
+  const [coachStep, setCoachStep] = useState<0 | 1 | 2>(0)
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const resolveWeeklyDecision = useGameStore(s => s.resolveWeeklyDecision)
   const club = useManagedClub()
@@ -333,8 +335,15 @@ export function DashboardScreen() {
 
   return (
     <div className="screen-enter" style={{ position: 'relative', minHeight: '100%', background: 'var(--bg)' }}>
-      {!game.tutorialSeen && (
-        <TutorialOverlay managerName={game.managerName} clubName={club.name} onDone={markTutorialSeen} />
+      {!game.coachMarksSeen && !game.tutorialSeen && (
+        <CoachMarks
+          step={coachStep}
+          onNext={() => {
+            if (coachStep === 2) { markCoachMarksSeen() }
+            else setCoachStep(s => (s + 1) as 0 | 1 | 2)
+          }}
+          onSkip={markCoachMarksSeen}
+        />
       )}
 
 
@@ -569,7 +578,7 @@ export function DashboardScreen() {
           )}
 
           {/* Orten */}
-          <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}>
+          <div data-coach-id="orten-card" className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}>
             <p style={{ ...LABEL, marginBottom: 6 }}>🏘 Orten</p>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 5 }}>
               <span style={{ fontSize: 22, fontWeight: 700, color: csColor(cs), fontFamily: 'var(--font-display)', lineHeight: 1 }}>{cs}</span>
@@ -624,7 +633,7 @@ export function DashboardScreen() {
           const chars = [sg.leader, sg.veteran, sg.youth, sg.family]
           const favPlayer = game.players.find(p => p.id === sg.favoritePlayerId)
           return (
-            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+            <div data-coach-id="klacken-card" className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>
                   📯 {sg.name.toUpperCase()}
@@ -791,6 +800,7 @@ export function DashboardScreen() {
           )}
 
           <button
+            data-coach-id="cta-button"
             onClick={handleAdvance}
             disabled={!canClickAdvance}
             className="texture-leather"

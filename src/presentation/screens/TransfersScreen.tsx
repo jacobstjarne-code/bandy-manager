@@ -7,6 +7,7 @@ import { getTransferWindowStatus } from '../../domain/services/transferWindowSer
 import { formatCurrency, positionShort } from '../utils/formatters'
 import { SectionLabel } from '../components/SectionLabel'
 import { bidReceivedEvent } from '../../domain/services/events/eventFactories'
+import { FirstVisitHint } from '../components/FirstVisitHint'
 
 import { RenewContractModal } from '../components/transfers/RenewContractModal'
 import { BidModal } from '../components/transfers/BidModal'
@@ -26,6 +27,7 @@ export function TransfersScreen() {
   const placeOutgoingBid = useGameStore(s => s.placeOutgoingBid)
   const startTalentSearch = useGameStore(s => s.startTalentSearch)
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
+  const dismissHint = useGameStore(s => s.dismissHint)
   useEffect(() => { markScreenVisited('transfers') }, [])
 
   const [renewingPlayerId, setRenewingPlayerId] = useState<string | null>(null)
@@ -198,6 +200,14 @@ export function TransfersScreen() {
 
   return (
     <div style={{ padding: '0 12px', paddingTop: 8, overflowY: 'auto', height: '100%', background: 'var(--bg)' }}>
+
+      {!(game.dismissedHints ?? []).includes('transfers') && (
+        <FirstVisitHint
+          screenId="transfers"
+          text="Transferfönstret stänger omgång 15. Scouta billigt. Sälj dyrt. Akademin är gratis."
+          onDismiss={() => dismissHint('transfers')}
+        />
+      )}
 
       {scoutMessage && (
         <div className="card-sharp" style={{ background: 'rgba(196,122,58,0.04)', border: '1px solid rgba(196,122,58,0.15)', padding: '10px 14px', marginBottom: 12, fontSize: 13, color: 'var(--accent)' }}>

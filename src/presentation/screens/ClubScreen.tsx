@@ -7,6 +7,7 @@ import { TrainingSection } from '../components/club/TrainingSection'
 import { EkonomiTab } from '../components/club/EkonomiTab'
 import { KlubbTab } from '../components/club/KlubbTab'
 import { AkademiTab } from '../components/club/AkademiTab'
+import { FirstVisitHint } from '../components/FirstVisitHint'
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
 
@@ -32,6 +33,7 @@ export function ClubScreen() {
   const interactWithPolitician = useGameStore(s => s.interactWithPolitician)
   const recruitVolunteer = useGameStore(s => s.recruitVolunteer)
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
+  const dismissHint = useGameStore(s => s.dismissHint)
   const navigate = useNavigate()
   const location = useLocation()
   const VALID_TABS: ClubTab[] = ['training', 'ekonomi', 'orten', 'akademi']
@@ -123,6 +125,21 @@ export function ClubScreen() {
 
       {/* Scrollable content */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px 90px', paddingTop: 12 }}>
+
+        {activeTab === 'orten' && !(game.dismissedHints ?? []).includes('orten') && (
+          <FirstVisitHint
+            screenId="orten"
+            text="Aktivera kiosken och bandyskolan. Frivilliga och kommunbidrag håller klubben vid liv."
+            onDismiss={() => dismissHint('orten')}
+          />
+        )}
+        {activeTab === 'ekonomi' && !(game.dismissedHints ?? []).includes('ekonomi') && (
+          <FirstVisitHint
+            screenId="ekonomi"
+            text="Klubbkassan är liten. Sponsorer + frivilliga + matchintäkter. Röda siffror = styrelsen agerar."
+            onDismiss={() => dismissHint('ekonomi')}
+          />
+        )}
 
         {/* ── Tab 1: Träning ── */}
         {activeTab === 'training' && (
