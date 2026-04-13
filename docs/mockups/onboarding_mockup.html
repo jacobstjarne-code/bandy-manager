@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bandy Manager — Onboarding Coach Marks</title>
+<style>
+  :root {
+    --accent: #c47a3a; --accent-dark: #a0632e; --accent-deep: #7a4d24;
+    --success: #5a9a4a; --danger: #b05040; --warning: #d4a03c;
+    --text-primary: #2e2a25; --text-secondary: #5c5650; --text-muted: #8c8478; --text-light: #f5f1eb;
+    --bg: #f5f1eb; --bg-surface: #efeae3; --bg-elevated: #e8e2d9; --bg-dark: #2e2a25;
+    --border: #d6cfc5;
+    --font-display: Georgia, 'Times New Roman', serif; --font-body: system-ui, -apple-system, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #3a3530; font-family: var(--font-body); display: flex; flex-direction: column; align-items: center; padding: 20px 10px 60px; gap: 40px; }
+  .mockup-label { color: #c47a3a; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; text-align: center; margin-bottom: 8px; }
+  .mockup-note { color: #8c8478; font-size: 10px; text-align: center; max-width: 375px; line-height: 1.5; margin-bottom: 8px; }
+  .phone { width: 375px; min-height: 700px; background: var(--bg); border-radius: 20px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.4); position: relative; }
+  .section-label { font-size: 8px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+  .card-sharp { background: var(--bg-surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+  /* Coach mark overlay */
+  .coach-overlay { position: absolute; inset: 0; z-index: 100; pointer-events: all; }
+  .coach-dim { position: absolute; inset: 0; background: rgba(0,0,0,0.65); }
+  /* Spotlight hole */
+  .spotlight { position: absolute; border-radius: 12px; box-shadow: 0 0 0 4000px rgba(0,0,0,0.65); z-index: 101; }
+  .spotlight-pulse { animation: spotPulse 2s ease-in-out infinite; }
+  @keyframes spotPulse {
+    0%, 100% { box-shadow: 0 0 0 4000px rgba(0,0,0,0.65), 0 0 0 0 rgba(196,122,58,0.3); }
+    50% { box-shadow: 0 0 0 4000px rgba(0,0,0,0.65), 0 0 0 8px rgba(196,122,58,0.15); }
+  }
+  /* Tooltip */
+  .coach-tooltip {
+    position: absolute; z-index: 102;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 18px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    max-width: 300px; width: calc(100% - 40px);
+  }
+  .coach-tooltip::before {
+    content: ''; position: absolute; width: 12px; height: 12px;
+    background: var(--bg); border-left: 1px solid var(--border); border-top: 1px solid var(--border);
+    transform: rotate(45deg);
+  }
+  .coach-tooltip.arrow-up::before { top: -7px; left: 30px; }
+  .coach-tooltip.arrow-down::before { bottom: -7px; left: 30px; transform: rotate(225deg); }
+  .tooltip-emoji { font-size: 28px; margin-bottom: 8px; display: block; }
+  .tooltip-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; font-family: var(--font-display); }
+  .tooltip-body { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px; }
+  .tooltip-footer { display: flex; justify-content: space-between; align-items: center; }
+  .tooltip-dots { display: flex; gap: 6px; }
+  .tooltip-dot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--border); }
+  .tooltip-dot.active { background: var(--accent); border-color: var(--accent); }
+  .tooltip-btn {
+    padding: 8px 20px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: none; font-family: var(--font-body);
+    background: var(--accent); color: var(--text-light);
+  }
+  .tooltip-skip { font-size: 10px; color: var(--text-muted); cursor: pointer; background: none; border: none; text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- STEG 1: CTA-KNAPPEN                       -->
+<!-- ═══════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">Steg 1 av 3 — Spotlight på CTA</p>
+  <p class="mockup-note">
+    Spotlight "klipper ut" CTA-knappen ur dimman. Tooltip UNDER knappen.
+    Pil pekar upp mot knappen. Pulsande koppar-glow runt spotlighten.
+    Tonen: varm, lite rolig, inte en manual.
+  </p>
+  <div class="phone">
+    <!-- Fake dashboard behind dim -->
+    <div style="padding: 8px 0; opacity: 0.3;">
+      <div class="card-sharp" style="padding: 10px 14px; margin-bottom: 6px;">
+        <p class="section-label">🏒 SÄSONGSSTART 2026</p>
+        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">Gagnef väntar. Sätt din startelva och kör.</p>
+      </div>
+      <div class="card-sharp" style="padding: 10px 12px; margin-bottom: 6px;">
+        <p style="font-size: 10px; color: var(--accent); font-weight: 600;">🏒 OMGÅNG 1 · HEMMA</p>
+        <div style="display: flex; justify-content: center; gap: 16px; margin: 8px 0;">
+          <span style="font-size: 14px; font-weight: 700;">Gagnef</span>
+          <span style="font-size: 12px; color: var(--text-muted);">vs</span>
+          <span style="font-size: 14px; font-weight: 700;">Bollnäs</span>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px;">
+        <div class="card-sharp" style="padding: 8px 10px;"><p class="section-label">📊 Tabell</p></div>
+        <div class="card-sharp" style="padding: 8px 10px;"><p class="section-label">💰 Ekonomi</p></div>
+      </div>
+    </div>
+
+    <!-- Spotlighted CTA (not dimmed) -->
+    <div style="position: relative; z-index: 101; margin: 0 12px;">
+      <div class="spotlight-pulse" style="border-radius: 12px; overflow: hidden;">
+        <button style="
+          width: 100%; padding: 18px;
+          background: linear-gradient(135deg, var(--accent-dark), var(--accent-deep));
+          color: var(--text-light); border: none; border-radius: 12px;
+          font-size: 15px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+        ">Redo — spela omgång 1 →</button>
+      </div>
+    </div>
+
+    <!-- Tooltip below -->
+    <div class="coach-tooltip arrow-up" style="position: relative; margin: 16px 20px 0; left: 0;">
+      <span class="tooltip-emoji">👆</span>
+      <p class="tooltip-title">Det här är din viktigaste knapp</p>
+      <p class="tooltip-body">
+        Tryck här för att spela nästa match. Men först — se till att du har en startelva. Utan spelare på isen vinner ingen.
+        <br><br>
+        <span style="font-style: italic; color: var(--text-muted);">(Oroa dig inte, vi påminner dig.)</span>
+      </p>
+      <div class="tooltip-footer">
+        <div class="tooltip-dots">
+          <div class="tooltip-dot active"></div>
+          <div class="tooltip-dot"></div>
+          <div class="tooltip-dot"></div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button class="tooltip-skip">Hoppa över</button>
+          <button class="tooltip-btn">Nästa →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dim fills rest -->
+    <div style="flex: 1; min-height: 80px;"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- STEG 2: ORTEN-KORTET                      -->
+<!-- ═══════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">Steg 2 av 3 — Spotlight på Orten</p>
+  <p class="mockup-note">
+    Spotlight på Orten-kortet i 2×2-griden. Tooltip UNDER.
+    Förklarar att orten = ekonomi + hemmabonus + själ.
+  </p>
+  <div class="phone">
+    <div style="padding: 8px 0; opacity: 0.3;">
+      <div class="card-sharp" style="padding: 10px 12px; margin-bottom: 6px;">
+        <p style="font-size: 10px; color: var(--accent);">🏒 OMGÅNG 1 · HEMMA</p>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 0 6px;">
+      <div style="padding: 8px 10px; opacity: 0.3; background: var(--bg-surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+        <p class="section-label">📊 Tabell</p>
+        <span style="font-size: 22px; color: var(--accent-dark);">—</span>
+      </div>
+      <!-- SPOTLIGHTED: Orten -->
+      <div style="padding: 8px 10px; position: relative; z-index: 101; background: var(--bg-surface); border-radius: 8px; border: 2px solid var(--accent); box-shadow: 0 0 0 4px rgba(196,122,58,0.15);">
+        <p class="section-label" style="margin-bottom: 4px;">🏘 Orten</p>
+        <div style="display: flex; align-items: baseline; gap: 6px;">
+          <span style="font-size: 22px; font-weight: 700; color: var(--success); font-family: var(--font-display);">50</span>
+        </div>
+        <div style="display: flex; gap: 2px; margin-top: 4px;">
+          <div style="flex: 50; height: 5px; background: var(--success); border-radius: 3px 0 0 3px;"></div>
+          <div style="flex: 50; height: 5px; background: var(--border); border-radius: 0 3px 3px 0;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; opacity: 0.3;">
+      <div style="padding: 8px 10px; background: var(--bg-surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+        <p class="section-label">💰 Ekonomi</p>
+      </div>
+      <div style="padding: 8px 10px; background: var(--bg-surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+        <p class="section-label">Senast</p>
+      </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="coach-tooltip arrow-up" style="position: relative; margin: 16px 20px 0;">
+      <span class="tooltip-emoji">🏘</span>
+      <p class="tooltip-title">Det här är inte bara ett lag</p>
+      <p class="tooltip-body">
+        Det är en <strong>förening</strong>. Frivilliga säljer korv. Kommunen ger bidrag. Klacken sjunger. Allt hänger ihop.
+        <br><br>
+        Bygdens puls påverkar din ekonomi, ditt rykte och din hemmaplansfördel. Satsa på orten — inte bara truppen.
+      </p>
+      <div class="tooltip-footer">
+        <div class="tooltip-dots">
+          <div class="tooltip-dot"></div>
+          <div class="tooltip-dot active"></div>
+          <div class="tooltip-dot"></div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button class="tooltip-skip">Hoppa över</button>
+          <button class="tooltip-btn">Nästa →</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex: 1; min-height: 80px;"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- STEG 3: KLACKEN + HÖRNOR                  -->
+<!-- ═══════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">Steg 3 av 3 — Spotlight på Klacken</p>
+  <p class="mockup-note">
+    Spotlight på KLACKEN-kortet. Tooltip förklarar hörnor + supporter-systemet.
+    Sista steget — knappen säger "Kör igång!" istället för "Nästa".
+  </p>
+  <div class="phone">
+    <div style="padding: 8px 0; opacity: 0.3;">
+      <div class="card-sharp" style="padding: 10px 12px; margin-bottom: 6px;">
+        <p style="font-size: 10px; color: var(--accent);">🏒 OMGÅNG 1</p>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px;">
+        <div class="card-sharp" style="padding: 8px 10px;"><p class="section-label">📊 Tabell</p></div>
+        <div class="card-sharp" style="padding: 8px 10px;"><p class="section-label">🏘 Orten</p></div>
+      </div>
+    </div>
+
+    <!-- SPOTLIGHTED: Klacken -->
+    <div style="position: relative; z-index: 101; margin: 0 0 6px; background: var(--bg-surface); border: 2px solid var(--accent); border-radius: 8px; box-shadow: 0 0 0 4px rgba(196,122,58,0.15); padding: 10px 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <p class="section-label">📯 STRÖMSKLACKEN</p>
+        <span style="font-size: 9px; color: var(--success);">Stabil · 34 st</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <div style="flex: 1; text-align: center;"><p style="font-size: 14px; margin-bottom: 2px;">📣</p><p style="font-size: 9px; color: var(--text-secondary); font-weight: 600;">Birger</p></div>
+        <div style="flex: 1; text-align: center;"><p style="font-size: 14px; margin-bottom: 2px;">🏆</p><p style="font-size: 9px; color: var(--text-secondary); font-weight: 600;">Alvar</p></div>
+        <div style="flex: 1; text-align: center;"><p style="font-size: 14px; margin-bottom: 2px;">🎨</p><p style="font-size: 9px; color: var(--text-secondary); font-weight: 600;">Elin</p></div>
+        <div style="flex: 1; text-align: center;"><p style="font-size: 14px; margin-bottom: 2px;">👨‍👩‍👧</p><p style="font-size: 9px; color: var(--text-secondary); font-weight: 600;">Håkan</p></div>
+      </div>
+      <p style="font-size: 9px; color: var(--text-muted); margin-top: 4px;">❤️ Favorit: Lars Sjölund</p>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="coach-tooltip arrow-up" style="position: relative; margin: 12px 20px 0;">
+      <span class="tooltip-emoji">📐</span>
+      <p class="tooltip-title">Klacken och hörnorna</p>
+      <p class="tooltip-body">
+        Fyra personer med åsikter. De sjunger, bråkar och älskar laget. Håll dem glada — de ger <strong>hemmabonus</strong>.
+        <br><br>
+        Och i bandy avgörs matcher vid <strong>hörnor</strong>. Du får välja zon och leverans vid dina viktigaste hörnsituationer. Klackens energi gör skillnad.
+        <br><br>
+        <span style="font-style: italic; color: var(--text-muted);">Birger trummar redan. Dags att börja.</span>
+      </p>
+      <div class="tooltip-footer">
+        <div class="tooltip-dots">
+          <div class="tooltip-dot"></div>
+          <div class="tooltip-dot"></div>
+          <div class="tooltip-dot active"></div>
+        </div>
+        <button class="tooltip-btn" style="padding: 10px 28px; font-size: 13px;">Kör igång! 🏒</button>
+      </div>
+    </div>
+
+    <div style="flex: 1; min-height: 60px;"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- HJÄLP-KNAPP I HEADER (permanent)           -->
+<!-- ═══════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">Hjälp-knapp — alltid tillgänglig</p>
+  <p class="mockup-note">
+    Liten ?-ikon i GameHeader. Tryck → overlay med 6 korta sektioner.
+    Kan återstartas av spelaren när som helst. Inte påträngande.
+  </p>
+  <div class="phone" style="min-height: 400px;">
+    <!-- Header med ?-knapp markerad -->
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--bg-dark); border-bottom: 2px solid var(--accent);">
+      <div style="width: 26px; height: 26px; background: rgba(255,255,255,0.08); border-radius: 4px;"></div>
+      <div style="text-align: center; flex: 1;">
+        <p style="font-size: 12px; color: rgba(245,241,235,0.85); font-weight: 700; font-family: var(--font-display);">Gagnef</p>
+        <p style="font-size: 9px; color: rgba(245,241,235,0.55);">Jacob · 2026/2027</p>
+      </div>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <div style="width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(245,241,235,0.2);"></div>
+        <!-- HJÄLP-KNAPP -->
+        <div style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--accent);">?</div>
+      </div>
+    </div>
+
+    <!-- Hjälp-overlay (öppen) -->
+    <div style="padding: 16px 14px; background: var(--bg);">
+      <p style="font-size: 18px; font-weight: 800; color: var(--text-primary); font-family: var(--font-display); margin-bottom: 4px;">Hur funkar det?</p>
+      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 14px;">Allt du behöver veta. Resten lär du dig på isen.</p>
+
+      <!-- Sektioner -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+
+        <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="font-size: 16px;">🏒</span>
+            <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Matchen</span>
+          </div>
+          <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">22 omgångar + cup + slutspel. Välj lineup och taktik. Resten sköter sig — utom hörnorna.</p>
+        </div>
+
+        <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="font-size: 16px;">📐</span>
+            <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Hörnor</span>
+          </div>
+          <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">I bandy kommer hälften av alla mål från hörnor. Du väljer zon och leverans. Spelare med hög hörnskill = fler mål.</p>
+        </div>
+
+        <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="font-size: 16px;">🏘</span>
+            <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Orten</span>
+          </div>
+          <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">Frivilliga, kommun och aktiviteter ger pengar och bygdens puls. Hög puls = bättre ekonomi och hemmaplansfördel.</p>
+        </div>
+
+        <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="font-size: 16px;">📣</span>
+            <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Klacken</span>
+          </div>
+          <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">Fyra karaktärer med åsikter. Deras humör ger hemmabonus. De har en favoritspelare. Ignorera dem på egen risk.</p>
+        </div>
+
+        <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="font-size: 16px;">💰</span>
+            <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Ekonomi</span>
+          </div>
+          <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">Kassan är tight. Sponsorer + frivilliga + matchintäkter. Minusbudget = styrelsen tappar tålamodet.</p>
+        </div>
+
+        <div style="padding: 10px 12px; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <span style="font-size: 16px;">⚔️</span>
+            <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Slutspel</span>
+          </div>
+          <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">Topp 8 efter 22 omgångar → kvartsfinaler → semifinaler → SM-final. Bäst av fem. Hemmaplansfördel till den högst placerade.</p>
+        </div>
+      </div>
+
+      <button style="width: 100%; margin-top: 14px; padding: 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-secondary); cursor: pointer;">
+        🔄 Visa introduktionen igen
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- DESIGNREGLER                               -->
+<!-- ═══════════════════════════════════════════ -->
+<div style="max-width: 375px;">
+  <p class="mockup-label">Designregler</p>
+  <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; font-size: 10px; color: var(--text-muted); line-height: 1.8;">
+    <p><strong>Coach marks (3 steg):</strong></p>
+    <p>• Spotlight: klipp ut element ur dim (rgba(0,0,0,0.65)). Pulsande koppar-glow.</p>
+    <p>• Tooltip: bg-bg, border, border-radius 14px, box-shadow. PIL pekar mot spotlighten.</p>
+    <p>• Position: tooltip UNDER spotlighten om det finns plats, OVANFÖR om inte.</p>
+    <p>• Max 3 steg. Steg-dots + "Hoppa över"-länk + "Nästa →"-knapp.</p>
+    <p>• Sista steget: "Kör igång! 🏒" istället för "Nästa →".</p>
+    <p>• Triggas av !game.coachMarksSeen. Sparas i SaveGame.</p>
+    <p>• INTE samma som tutorialSeen — coach marks ersätter TutorialOverlay.</p>
+    <p><strong>Tonen:</strong></p>
+    <p>• Varm, direkt, lite rolig. "Birger trummar redan." INTE "Klicka här för att..."</p>
+    <p>• Korta texter. Max 3 meningar per tooltip. Kursiv fotnot som punchline.</p>
+    <p>• Emoji som inledning, inte dekoration.</p>
+    <p><strong>Hjälp-knapp (?):</strong></p>
+    <p>• 22px cirkel i GameHeader, accent border + accent text. Permanent.</p>
+    <p>• Overlay: fullskärm, scrollbar, 6 sektioner med emoji + titel + 1-2 rader.</p>
+    <p>• "Visa introduktionen igen" → startar om coach marks.</p>
+  </div>
+</div>
+
+</body>
+</html>

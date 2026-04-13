@@ -164,7 +164,7 @@ export function getArcMoodText(phase: ArcPhase): string | null {
     case 'questioned': return '⛅ Media ställer frågor'
     case 'crisis':     return '⛈️ Styrelsen är orolig'
     case 'redemption': return '🌤️ Vändningen har börjat'
-    case 'established':return '🏠 Del av möblerna'
+    case 'established':return '🏠 Del av inventarierna'
     case 'legendary':  return '👑 Legendstatus'
     case 'farewell':   return '👋 Sista chansen'
     default:           return null
