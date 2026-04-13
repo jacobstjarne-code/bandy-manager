@@ -46,7 +46,7 @@ export function generateMatchWeather(
   }
 
   const snowfall = condition === WeatherCondition.LightSnow || condition === WeatherCondition.HeavySnow
-  const windStrength = Math.round(rand() * 60)
+  const windStrength = Math.round(rand() * rand() * 18)
 
   // Ice quality
   let iceQuality: IceQuality

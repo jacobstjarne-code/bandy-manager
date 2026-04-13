@@ -317,6 +317,35 @@ Byt från sidovy (mål vänster, hörna höger) till **uppifrånvy med mål i to
 
 ---
 
+## BUG-13: Klackens medlemsantal ändras aldrig
+
+**Fil:** `supporterService.ts` + `roundProcessor.ts`
+
+**Problem:** `members` sätts vid skapelse och uppdateras aldrig. Klacken har exakt samma antal från omgång 1 till evigheten.
+
+**Fix:** Lägg till `updateSupporterMembers()` i supporterService.ts. Anropa efter hemmamatch i roundProcessor. Vinst + hög mood = långsam tillväxt. Förlust + låg mood = krympning. Naturligt tak ~80, golv ~8. Ger känslan av en levande grupp.
+
+---
+
+## BUG-12: Kafferummet göms under CTA + klacken obegriplig
+
+**Fil:** `DashboardScreen.tsx`
+
+**Problem 1:** Kafferummet renderas EFTER CTA-knappen. CTA:ns gradient-overlay döljer det. Spelaren ser aldrig kafferumscitatet.
+
+**Fix:** Flytta kafferums-blocket (`getCoffeeRoomQuote`) till FÖRE CTA-sektionen, efter DiamondDivider, före Veckans beslut.
+
+**Problem 2:** Klacken-kortet (BANDYKORPEN) visar namn och emojis men förklarar aldrig vad klacken GÖR eller varför den spelar roll.
+
+**Fix:** Lägg till undertitel baserad på mood:
+- mood ≥ 65: "Klacken sjunger — hemmabonus aktiv"
+- mood ≥ 40: "Klacken finns på plats men saknar energi" 
+- mood < 40: "Klacken är tyst. Hemmaplansfördelen bleknar."
+
+Gör kortet klickbart → navigera till /game/club med state: { tab: 'orten' }.
+
+---
+
 ## BUG-11: Form-prickar inkonsekvent ordning
 
 **Problem:** Senaste match är ibland längst till vänster, ibland längst till höger. PlayoffIntroScreen använder `.reverse()` som vänder ordningen jämfört med alla andra ställen.
