@@ -90,7 +90,7 @@ export function CareerStatsCard({ game }: Props) {
         </div>
 
         {(() => {
-          const moodText = getArcMoodText(arc.current)
+          const moodText = getArcMoodText(arc.current, arc.seasonCount + game.currentSeason)
           if (!moodText) return null
           return (
             <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 6, fontFamily: 'var(--font-body)' }}>
