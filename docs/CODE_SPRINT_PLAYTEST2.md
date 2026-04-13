@@ -6,6 +6,7 @@
 
 - `docs/FIXSPEC_PLAYTEST2.md` — 21 buggar + 1 balansändring (HUVUDDOKUMENT)
 - `docs/FIXSPEC_COACHMARKS_REWRITE.md` — Coach marks OMSKRIVNING med exakt komponentkod
+- `docs/FIXSPEC_NYA_FEATURES.md` — Arenanamn, klacknamn, straffar, kapten, hörn-SVG
 - `docs/trainerArcService_patch.ts` — Roterande arc mood-texter
 - `docs/mockups/onboarding_mockup.html` — Visuell referens
 

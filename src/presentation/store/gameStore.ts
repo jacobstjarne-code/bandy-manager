@@ -12,7 +12,7 @@ import { resolveEvent as resolveEventFn } from '../../domain/services/eventServi
 import { type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
 import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
-import { loadSaveGame, listSaveGames, deleteSaveGame, migrateLocalStorageIfNeeded } from '../../infrastructure/persistence/saveGameStorage'
+import { loadSaveGame, listSaveGames, deleteSaveGame, migrateLocalStorageIfNeeded, saveSaveGame } from '../../infrastructure/persistence/saveGameStorage'
 import { applyFinanceChange } from '../../domain/services/economyService'
 import { getAvailableProjects, startFacilityProject as startFacProj } from '../../domain/services/facilityService'
 
@@ -190,7 +190,9 @@ export const useGameStore = create<GameState>()(
       markCoachMarksSeen: () => {
         const { game } = get()
         if (!game) return
-        set({ game: { ...game, coachMarksSeen: true } })
+        const updated = { ...game, coachMarksSeen: true }
+        set({ game: updated })
+        saveSaveGame(updated).catch(e => console.warn('Save failed:', e))
       },
 
       dismissHint: (screenId) => {
