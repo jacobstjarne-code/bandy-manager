@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import { useGameStore } from '../store/gameStore'
+import { saveSaveGame } from '../../infrastructure/persistence/saveGameStorage'
 import type { Player } from '../../domain/entities/Player'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 import { formatCurrency, positionShort } from '../utils/formatters'
@@ -32,6 +33,7 @@ export function TransfersScreen() {
 
   const [renewingPlayerId, setRenewingPlayerId] = useState<string | null>(null)
   const [renewError, setRenewError] = useState<string | null>(null)
+  const [renewConfirmText, setRenewConfirmText] = useState<string | null>(null)
   const [wageWarning, setWageWarning] = useState<string | null>(null)
   const [scoutMessage, setScoutMessage] = useState<string | null>(null)
   const [biddingPlayerId, setBiddingPlayerId] = useState<string | null>(null)
@@ -70,7 +72,7 @@ export function TransfersScreen() {
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
 
   const expiringPlayers = managedClubPlayers
-    .filter(p => p.contractUntilSeason <= game.currentSeason + 1)
+    .filter(p => p.contractUntilSeason <= game.currentSeason)
     .sort((a, b) => a.contractUntilSeason - b.contractUntilSeason)
 
   const freeAgents = game.transferState.freeAgents
@@ -118,9 +120,13 @@ export function TransfersScreen() {
     const updatedPlayers = game.players.map(p =>
       p.id === playerId ? { ...p, contractUntilSeason: game.currentSeason + years, salary: newSalary } : p
     )
-    useGameStore.setState({ game: { ...game, players: updatedPlayers } })
+    const updatedGame = { ...game, players: updatedPlayers }
+    useGameStore.setState({ game: updatedGame })
+    saveSaveGame(updatedGame).catch(e => console.warn('Save failed:', e))
     setRenewingPlayerId(null)
     setRenewError(null)
+    setRenewConfirmText(`✅ Kontrakt förlängt till ${game.currentSeason + years}`)
+    setTimeout(() => setRenewConfirmText(null), 2000)
   }
 
   function handleSignFreeAgent(agentId: string) {
@@ -393,6 +399,11 @@ export function TransfersScreen() {
       {/* Contracts tab */}
       {activeTab === 'contracts' && (
         <div className="card-stagger-2" style={{ marginBottom: 24 }}>
+          {renewConfirmText && (
+            <div style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 12 }}>
+              <p style={{ fontSize: 13, color: 'var(--success)', fontWeight: 600 }}>{renewConfirmText}</p>
+            </div>
+          )}
           {wageWarning && (
             <div style={{ background: 'rgba(196,122,58,0.12)', border: '1px solid rgba(196,122,58,0.4)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
               <p style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 600 }}>⚠️ {wageWarning}</p>

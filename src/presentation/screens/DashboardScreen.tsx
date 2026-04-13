@@ -267,7 +267,7 @@ export function DashboardScreen() {
   const visited = game.visitedScreensThisRound ?? []
   const squadPlayers = game.players.filter(p => p.clubId === game.managedClubId)
   const injuredCount = squadPlayers.filter(p => p.isInjured).length
-  const expiringPlayer = squadPlayers.find(p => p.contractUntilSeason <= game.currentSeason + 1)
+  const expiringPlayer = squadPlayers.find(p => p.contractUntilSeason <= game.currentSeason)
 
   // ── First round ────────────────────────────────────────────────
   const isFirstRound = !game.fixtures.some(f =>

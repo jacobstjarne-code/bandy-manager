@@ -13,7 +13,7 @@ interface RenewContractModalProps {
 
 export function RenewContractModal({ player, currentSeason, minSalary, error, onClose, onConfirm }: RenewContractModalProps) {
   const [newSalary, setNewSalary] = useState(player.salary)
-  const [years, setYears] = useState(1)
+  const [years, setYears] = useState(2)
 
   return (
     <div
