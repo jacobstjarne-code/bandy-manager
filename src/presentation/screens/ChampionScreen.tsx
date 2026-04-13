@@ -90,9 +90,9 @@ export function ChampionScreen() {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'center',
-      overflow: 'hidden',
-      padding: '24px 20px',
+      justifyContent: 'flex-start',
+      overflowY: 'auto',
+      padding: 'max(24px, 5vh) 20px 24px',
     }}>
       <style>{`
         @keyframes confettiFall {

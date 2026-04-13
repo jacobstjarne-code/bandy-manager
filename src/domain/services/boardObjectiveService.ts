@@ -310,12 +310,25 @@ export function evaluateObjective(
         m.homeClubId === game.managedClubId || m.awayClubId === game.managedClubId
       )
       const maxRound = Math.max(0, ...managedMatches.filter(m => m.winnerId === game.managedClubId).map(m => m.round))
-      return { value: maxRound, status: maxRound >= 3 ? 'met' : maxRound >= 2 ? 'active' : 'at_risk' }
+      const eliminated = managedMatches.some(m => m.winnerId && m.winnerId !== game.managedClubId)
+      if (maxRound >= 3) return { value: maxRound, status: 'met' }
+      if (eliminated) return { value: maxRound, status: 'failed' }
+      return { value: maxRound, status: maxRound >= 2 ? 'active' : 'at_risk' }
     }
     case 'beatRival': {
       const history = game.rivalryHistory ?? {}
       const won = Object.values(history).some(h => h.lastResult === 'win')
-      return { value: won ? 1 : 0, status: won ? 'met' : 'active' }
+      if (won) return { value: 1, status: 'met' }
+      const rivalIds = Object.keys(history)
+      const allDerbiesPlayed = rivalIds.length > 0 && rivalIds.every(rivalId => {
+        const played = game.fixtures.filter(f =>
+          f.status === 'completed' &&
+          ((f.homeClubId === game.managedClubId && f.awayClubId === rivalId) ||
+           (f.awayClubId === game.managedClubId && f.homeClubId === rivalId))
+        )
+        return played.length >= 2
+      })
+      return { value: 0, status: allDerbiesPlayed ? 'failed' : 'active' }
     }
     case 'improveFacilities': {
       const projects = game.facilityProjects ?? []

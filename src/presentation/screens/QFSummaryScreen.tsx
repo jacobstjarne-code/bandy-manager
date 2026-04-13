@@ -137,7 +137,7 @@ export function QFSummaryScreen() {
       </div>
 
       {/* ── CTA ── */}
-      <div style={{ padding: '0 16px 24px', marginTop: 'auto' }}>
+      <div style={{ padding: '0 16px calc(24px + env(safe-area-inset-bottom, 0px))', marginTop: 'auto' }}>
         <button
           onClick={handleContinue}
           className="texture-leather"

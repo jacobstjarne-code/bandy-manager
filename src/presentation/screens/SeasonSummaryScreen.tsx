@@ -150,7 +150,7 @@ export function SeasonSummaryScreen() {
       overflowY: 'auto',
       background: 'var(--bg)',
     }}>
-      <div style={{ padding: '0 16px 100px' }}>
+      <div style={{ padding: '0 16px 180px' }}>
 
         {/* HEADER */}
         <div style={{

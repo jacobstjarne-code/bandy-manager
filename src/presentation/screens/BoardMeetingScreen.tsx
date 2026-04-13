@@ -159,7 +159,7 @@ export function BoardMeetingScreen() {
       overflow: 'auto',
       background: 'var(--bg)',
     }}>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px 90px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px 120px' }}>
       {/* Header */}
       <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 4 }}>
         Styrelsemöte

@@ -69,6 +69,7 @@ export function PreSeasonScreen() {
       <div style={{
         width: '100%', maxWidth: 390,
         display: 'flex', flexDirection: 'column', gap: 8,
+        paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))',
       }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 8 }}>
