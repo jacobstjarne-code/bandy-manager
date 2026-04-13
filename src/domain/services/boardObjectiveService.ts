@@ -229,7 +229,7 @@ export function generateBoardObjectives(
     if (!lastSeasonObjectiveIds.has('reduceInjuries')) sportingCandidates.push(reduceInjuries(supporter, season))
     // Always allow beatRival if on a losing streak
     const rivalHistory = Object.entries(game.rivalryHistory ?? {})
-      .find(([, h]) => h.currentStreak < -1)
+      .find(([, h]) => h.currentStreak < 0)
     if (rivalHistory) {
       const rivalClub = game.clubs.find(c => c.id === rivalHistory[0])
       if (rivalClub) sportingCandidates.push(beatRival(supporter, rivalClub.name, season))
