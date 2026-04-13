@@ -1005,7 +1005,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     communityStanding: Math.min(100, Math.max(0,
       Math.round((game.communityStanding ?? 50) + csBoost)
     )),
-    communityStandingDelta: Math.round(csBoost),
+    communityStandingDelta: Math.min(100, Math.max(0, Math.round((game.communityStanding ?? 50) + csBoost))) - (game.communityStanding ?? 50),
     clubs: postTransferClubs,
     fixtures: strippedFixtures,
     players: postTransferPlayers,
