@@ -249,5 +249,13 @@ export function processCommunity(
     } as InboxItem)
   }
 
+  // ── Diminishing returns on positive CS boosts ─────────────────────────────
+  // Negative effects (losses, scandals) are unaffected — equally easy to fall from 90 as from 50
+  const positiveBoost = Math.max(0, csBoost)
+  const negativeBoost = Math.min(0, csBoost)
+  const currentCS = game.communityStanding ?? 50
+  const diminishingFactor = currentCS > 85 ? 0.25 : currentCS > 70 ? 0.5 : currentCS > 55 ? 0.75 : 1.0
+  csBoost = positiveBoost * diminishingFactor + negativeBoost
+
   return { csBoost, inboxItems, updatedFacilityProjects, facilityBonusTotal, updatedVolunteers, updatedVolunteerMorale: volunteerMorale }
 }

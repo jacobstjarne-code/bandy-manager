@@ -297,8 +297,38 @@ export function resolveEvent(
           patron: { ...updatedGame.patron, happiness: newHappiness, isActive: stillActive },
         }
       }
-      // Update matching mecenat (events from mecenatService contain mecenat ID)
-      if (updatedGame.mecenater?.length) {
+      // Mecenat intro event: event_mecenat_intro_<id> — activate or remove the pending mecenat
+      if (eventId.startsWith('event_mecenat_intro_') && updatedGame.mecenater?.length) {
+        const mecenatId = eventId.replace('event_mecenat_intro_', '')
+        const pendingMec = updatedGame.mecenater.find(m => m.id === mecenatId && !m.isActive)
+        if (pendingMec) {
+          const isDecline = (effect.amount ?? 0) === 0
+          if (isDecline) {
+            // Decline: remove the pending mecenat
+            updatedGame = {
+              ...updatedGame,
+              mecenater: updatedGame.mecenater.filter(m => m.id !== mecenatId),
+            }
+          } else {
+            // Welcome / cautious: activate with initial happiness
+            const completedFixtures = (updatedGame.fixtures ?? []).filter(f => (f.status as string) === 'completed')
+            const currentMatchday = completedFixtures.length > 0
+              ? Math.max(...completedFixtures.map(f => f.matchday))
+              : 0
+            const initialHappiness = Math.min(100, 50 + (effect.amount ?? 0))
+            updatedGame = {
+              ...updatedGame,
+              mecenater: updatedGame.mecenater.map(m =>
+                m.id === mecenatId
+                  ? { ...m, isActive: true, happiness: initialHappiness, lastInteractionRound: currentMatchday }
+                  : m
+              ),
+            }
+          }
+        }
+      }
+      // Update matching active mecenat (events from social/silent shout contain mecenat ID)
+      if (updatedGame.mecenater?.length && !eventId.startsWith('event_mecenat_intro_')) {
         const matchedMec = updatedGame.mecenater.find(m => m.isActive && eventId.includes(m.id))
         if (matchedMec) {
           const mNewHappiness = Math.max(0, Math.min(100, matchedMec.happiness + (effect.amount ?? 0)))
@@ -512,6 +542,15 @@ export function resolveEvent(
       break
     }
     case 'noOp':
+      // Mecenat intro declined — remove the pending (inactive) mecenat from the array
+      if (eventId.startsWith('event_mecenat_intro_') && updatedGame.mecenater?.length) {
+        const mecenatId = eventId.replace('event_mecenat_intro_', '')
+        updatedGame = {
+          ...updatedGame,
+          mecenater: updatedGame.mecenater.filter(m => !(m.id === mecenatId && !m.isActive)),
+        }
+      }
+      break
     case 'openNegotiation':
     default:
       break

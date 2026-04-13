@@ -38,7 +38,7 @@ import { generateTransferRumor } from '../../domain/services/rumorService'
 import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventService'
 import { checkReputationMilestones, milestonesToInbox } from '../../domain/services/reputationMilestoneService'
 import { generateDeadlineBids, generateDiscountOffer, deadlineBidToInbox, deadlineOfferToInbox } from '../../domain/services/transferDeadlineService'
-import { generateSocialEvent, generateSilentShoutEvent } from '../../domain/services/mecenatService'
+import { generateSocialEvent, generateSilentShoutEvent, generateMecenat, generateMecenatIntroEvent } from '../../domain/services/mecenatService'
 import { processEconomy } from './processors/economyProcessor'
 import { processCommunity } from './processors/communityProcessor'
 import { processScouts } from './processors/scoutProcessor'
@@ -962,6 +962,37 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         ? { ...c, facilities: Math.min(100, c.facilities + facilityBonusTotal) }
         : c
     )
+  }
+
+  // ── Mecenat spawn ─────────────────────────────────────────────────────────
+  // Trigger: communityStanding >= 65, reputation >= 55, inga aktiva mecenater
+  // Max 1 mecenat per säsong. Spawnar som GameEvent (intro) som spelaren accepterar/avvisar.
+  if (
+    !isSecondPassForManagedMatch &&
+    currentLeagueRound !== null &&
+    currentLeagueRound >= 6 &&
+    currentLeagueRound <= 18
+  ) {
+    const cs = game.communityStanding ?? 50
+    const rep = postTransferClubs.find(c => c.id === game.managedClubId)?.reputation ?? 50
+    const activeMecenater = (game.mecenater ?? []).filter(m => m.isActive)
+    const maxMecenater = cs >= 85 ? 3 : cs >= 70 ? 2 : 1
+    const alreadySpawnedThisSeason = (game.mecenater ?? []).some(
+      m => m.arrivedSeason === game.currentSeason
+    )
+
+    if (
+      cs >= 65 &&
+      rep >= 55 &&
+      activeMecenater.length < maxMecenater &&
+      !alreadySpawnedThisSeason &&
+      localRand() < 0.15
+    ) {
+      const newMecenat = generateMecenat(game.managedClubId, game.currentSeason, localRand)
+      const introEvent = generateMecenatIntroEvent(newMecenat)
+      updatedMecenater = [...updatedMecenater, { ...newMecenat, isActive: false }]
+      allNewEvents.push(introEvent)
+    }
   }
 
   let updatedGame: SaveGame = {
