@@ -72,8 +72,8 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
               <circle key={i} cx="4" cy={y} r="3" fill="var(--danger)" opacity="0.4" />
             ))}
             {/* Corner point */}
-            <circle cx="195" cy="5" r="3" fill="var(--accent)" />
-            <text x="185" y="16" fontSize="6" fill="var(--accent)" fontWeight="600">Hörn</text>
+            <circle cx="195" cy="95" r="3" fill="var(--accent)" />
+            <text x="180" y="93" fontSize="6" fill="var(--accent)" fontWeight="600">H. hörna</text>
             {/* Zone buttons */}
             <rect x="15" y="20" width="35" height="20" rx="3"
               fill={zone === 'near' ? 'rgba(196,122,58,0.25)' : 'rgba(196,122,58,0.08)'}
@@ -108,13 +108,13 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
 
         {/* Zone selector */}
         <p style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 4, fontWeight: 600, letterSpacing: '1px' }}>VÄLJ ZON</p>
-        <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
           {(Object.keys(ZONE_LABELS) as CornerZone[]).map(z => (
             <button
               key={z}
               onClick={() => !confirmed && setZone(z)}
               style={{
-                flex: 1, padding: '10px 0', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                flex: 1, padding: '10px 0', minHeight: 44, borderRadius: 6, fontSize: 11, fontWeight: 600,
                 cursor: confirmed ? 'default' : 'pointer', textAlign: 'center',
                 background: zone === z ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
                 border: `1px solid ${zone === z ? 'var(--accent)' : 'var(--border)'}`,
@@ -129,13 +129,13 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
 
         {/* Delivery selector */}
         <p style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 4, fontWeight: 600, letterSpacing: '1px' }}>LEVERANS</p>
-        <div style={{ display: 'flex', gap: 4, marginBottom: confirmed ? 0 : 10 }}>
+        <div style={{ display: 'flex', gap: 6, marginBottom: confirmed ? 0 : 10 }}>
           {(Object.keys(DELIVERY_LABELS) as CornerDelivery[]).map(d => (
             <button
               key={d}
               onClick={() => !confirmed && setDelivery(d)}
               style={{
-                flex: 1, padding: '10px 0', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                flex: 1, padding: '10px 0', minHeight: 44, borderRadius: 6, fontSize: 11, fontWeight: 600,
                 cursor: confirmed ? 'default' : 'pointer', textAlign: 'center',
                 background: delivery === d ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
                 border: `1px solid ${delivery === d ? 'var(--accent)' : 'var(--border)'}`,

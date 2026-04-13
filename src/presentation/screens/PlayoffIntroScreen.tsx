@@ -37,7 +37,6 @@ export function PlayoffIntroScreen() {
     )
     .sort((a, b) => b.matchday - a.matchday)
     .slice(0, 5)
-    .reverse()
 
   const club = g.clubs.find(c => c.id === g.managedClubId)
   const goalDiff = standing ? standing.goalsFor - standing.goalsAgainst : 0

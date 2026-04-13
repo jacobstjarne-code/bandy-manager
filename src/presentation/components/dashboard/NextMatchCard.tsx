@@ -269,7 +269,7 @@ export function NextMatchCard({
           </div>
         )}
         {/* Crests + vs */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '4px 0' }}>
           {/* My club */}
           <div style={{ textAlign: 'center', flex: 1 }}>
             <div style={{ width: crestSize, height: crestSize, margin: '0 auto' }}>
@@ -284,6 +284,9 @@ export function NextMatchCard({
               {club.shortName ?? club.name.split(' ')[0]}
             </p>
             {mySubTag}
+            {game.managerName && (
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '4px 0 0', fontFamily: 'var(--font-body)' }}>{game.managerName}</p>
+            )}
           </div>
 
           {/* vs */}

@@ -100,16 +100,35 @@ export function CareerStatsCard({ game }: Props) {
         })()}
 
         {/* Trophy shelf */}
-        {trophies > 0 && (
-          <div style={{ marginTop: 6, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            {(records?.championSeasons ?? []).map(s => (
-              <span key={`champ-${s}`} className="tag tag-fill" style={{ fontSize: 9 }}>🏆 SM {s}</span>
-            ))}
-            {(records?.cupWinSeasons ?? []).map(s => (
-              <span key={`cup-${s}`} className="tag tag-copper" style={{ fontSize: 9 }}>🏆 Cup {s}</span>
-            ))}
-          </div>
-        )}
+        {(() => {
+          const championSeasons = records?.championSeasons ?? []
+          const cupWinSeasons = records?.cupWinSeasons ?? []
+          const summaries = game.seasonSummaries ?? []
+          const finalists = summaries.filter(s => s.playoffResult === 'finalist').map(s => s.season)
+          const cupFinalists = summaries.filter(s => s.cupResult === 'finalist' && !cupWinSeasons.includes(s.season)).map(s => s.season)
+          const top3 = summaries.filter(s => s.finalPosition <= 3 && s.playoffResult !== 'champion' && s.playoffResult !== 'finalist').map(s => s.season)
+          const hasAny = trophies > 0 || finalists.length > 0 || cupFinalists.length > 0 || top3.length > 0
+          if (!hasAny) return null
+          return (
+            <div style={{ marginTop: 6, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              {championSeasons.map(s => (
+                <span key={`champ-${s}`} className="tag tag-fill" style={{ fontSize: 9 }}>🏆 SM {s}</span>
+              ))}
+              {cupWinSeasons.map(s => (
+                <span key={`cup-${s}`} className="tag tag-copper" style={{ fontSize: 9 }}>🏆 Cup {s}</span>
+              ))}
+              {finalists.map(s => (
+                <span key={`fin-${s}`} className="tag tag-outline" style={{ fontSize: 9 }}>🥈 SM-final {s}</span>
+              ))}
+              {cupFinalists.map(s => (
+                <span key={`cupfin-${s}`} className="tag tag-outline" style={{ fontSize: 9 }}>🥈 Cup-final {s}</span>
+              ))}
+              {top3.map(s => (
+                <span key={`top3-${s}`} className="tag tag-outline" style={{ fontSize: 9 }}>⭐ Topp 3 {s}</span>
+              ))}
+            </div>
+          )
+        })()}
       </div>
     </div>
   )

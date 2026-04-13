@@ -453,30 +453,6 @@ export function DashboardScreen() {
         {/* ③ DAGBOKEN */}
         <DailyBriefing game={game} />
 
-        {/* TROFÉ-RAD */}
-        {(() => {
-          const summaries = game.seasonSummaries ?? []
-          if (summaries.length === 0) return null
-          const trophies: Array<{ emoji: string; title: string }> = []
-          for (const s of summaries) {
-            if (s.playoffResult === 'champion') trophies.push({ emoji: '🏆', title: `SM-guld ${s.season}` })
-            else if (s.playoffResult === 'finalist') trophies.push({ emoji: '🥈', title: `SM-silver ${s.season}` })
-            if (s.cupResult === 'winner') trophies.push({ emoji: '🏅', title: `Cup ${s.season}` })
-            else if (s.cupResult === 'finalist') trophies.push({ emoji: '🥈', title: `Cup-final ${s.season}` })
-            if (s.finalPosition <= 3 && s.playoffResult !== 'champion' && s.playoffResult !== 'finalist')
-              trophies.push({ emoji: '⭐', title: `Topp 3 ${s.season}` })
-          }
-          return (
-            <div style={{ display: 'flex', gap: 4, alignItems: 'center', padding: '4px 0 2px', minHeight: 24 }}>
-              {trophies.length === 0 ? (
-                <span style={{ fontSize: 9, color: 'var(--text-muted)', fontStyle: 'italic' }}>Inga troféer ännu</span>
-              ) : trophies.map((t, i) => (
-                <span key={i} title={t.title} style={{ fontSize: 14 }}>{t.emoji}</span>
-              ))}
-            </div>
-          )
-        })()}
-
         {/* ③b TRÄNINGSSCENEN */}
         {(() => {
           const scene = getTrainingScene(game)
