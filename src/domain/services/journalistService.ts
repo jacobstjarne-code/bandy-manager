@@ -25,10 +25,14 @@ export function createJournalist(
   const personas: JournalistPersona[] = ['supportive', 'critical', 'analytical', 'sensationalist']
   const persona = personas[Math.floor(rand() * personas.length)]
 
+  const styles: Array<'neutral' | 'provocative' | 'supportive'> = ['neutral', 'provocative', 'supportive']
+  const style = styles[Math.floor(rand() * styles.length)]
+
   return {
     name: `${first} ${last}`,
     outlet,
     persona,
+    style,
     relationship: 50,
     memory: [],
     pressRefusals: 0,

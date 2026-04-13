@@ -1,6 +1,7 @@
 import { useLocation } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { playSound } from '../audio/soundEffects'
+import { PressConferenceScene } from './PressConferenceScene'
 
 function choiceStyle(_choiceId: string): React.CSSProperties {
   return {
@@ -37,6 +38,17 @@ export function EventOverlay() {
   }
 
   const total = events.length
+
+  // Presskonferens: dedikerad visuell scen istf generisk overlay
+  if (event.type === 'pressConference') {
+    return (
+      <PressConferenceScene
+        event={event}
+        journalist={game.journalist}
+        onChoice={handleChoice}
+      />
+    )
+  }
 
   return (
     <div style={{

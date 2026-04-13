@@ -20,6 +20,7 @@ export interface Journalist {
   name: string
   outlet: string        // e.g. "Gefle Dagblad", from localPaperName
   persona: JournalistPersona
+  style: 'neutral' | 'provocative' | 'supportive'
   relationship: number  // 0-100, replaces journalistRelationship
   memory: JournalistMemory[]  // last 10 interactions
   pressRefusals: number       // times manager refused press conference

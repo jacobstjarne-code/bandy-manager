@@ -98,6 +98,8 @@ export enum InboxItemType {
   PatronInfluence = 'patronInfluence',
   MediaEvent = 'mediaEvent',
   Transfer = 'transfer',
+  ReputationMilestone = 'reputationMilestone',
+  TransferDeadline = 'transferDeadline',
 }
 
 export enum TrainingType {

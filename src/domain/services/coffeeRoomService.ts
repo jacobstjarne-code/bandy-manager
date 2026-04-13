@@ -85,6 +85,16 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     const favName = favPlayer ? favPlayer.lastName : 'spelaren'
     const groupName = sg.name
 
+    // Rykte-reaktioner: academyNoticed och reputationWarning
+    const resolvedIds = new Set(game.resolvedEventIds ?? [])
+    const season = game.currentSeason
+    if (resolvedIds.has(`rep_academy_${season}`)) {
+      return { speaker: youth, text: `"Såg ni? LANDSLAGET tittar på oss!" — ${leader}: "Jag vet. Det är stor grej."` }
+    }
+    if (resolvedIds.has(`rep_warning_${season}`)) {
+      return { speaker: veteran, text: `"Det var bättre förr. Och jag menar det den här gången." — ${family}: "Kom igen nu, Sture."` }
+    }
+
     const supporterQuotes: Array<[string, string, string, string]> = [
       [leader, `${groupName} är med oavsett. Det är det enda som gäller.`, veteran, 'Det är vad vi alltid sagt.'],
       [youth,  `${favName} är den bäste just nu. Ingen pratar om det tillräckligt.`, leader, 'Jag vet. Han levererar.'],

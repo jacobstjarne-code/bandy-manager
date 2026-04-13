@@ -395,6 +395,26 @@ export function DashboardScreen() {
           </div>
         ) : null}
 
+        {/* Transferdödline-indikator (omgång 13-15) */}
+        {(() => {
+          const windowClosesIn = Math.max(0, 15 - currentRound)
+          if (windowClosesIn <= 0 || windowClosesIn > 3 || currentRound === 0) return null
+          return (
+            <div style={{
+              padding: '6px 12px',
+              background: 'rgba(176,80,64,0.06)',
+              border: '1px solid rgba(176,80,64,0.2)',
+              borderRadius: 8,
+              textAlign: 'center',
+              marginBottom: 4,
+            }}>
+              <p style={{ fontSize: 10, color: 'var(--danger)', fontWeight: 600, margin: 0 }}>
+                ⏳ Transferfönstret stänger om {windowClosesIn} omgång{windowClosesIn > 1 ? 'ar' : ''}
+              </p>
+            </div>
+          )
+        })()}
+
         {/* ② MATCHKORT */}
         {nextFixture && opponent && (
           <NextMatchCard
@@ -594,6 +614,47 @@ export function DashboardScreen() {
           </div>
         </div>
 
+        {/* ⑩ KLACKEN */}
+        {(() => {
+          const sg = game.supporterGroup
+          if (!sg) return null
+          const ritualText = getRitualText(game, 'preMatch')
+          const moodLabel = getSupporterMoodLabel(sg.mood)
+          const ROLE_EMOJI: Record<string, string> = { leader: '📣', veteran: '🏆', youth: '🎨', family: '👨‍👩‍👧' }
+          const chars = [sg.leader, sg.veteran, sg.youth, sg.family]
+          const favPlayer = game.players.find(p => p.id === sg.favoritePlayerId)
+          return (
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>
+                  📯 {sg.name.toUpperCase()}
+                </p>
+                <span style={{ fontSize: 9, color: sg.mood >= 65 ? 'var(--success)' : sg.mood >= 40 ? 'var(--text-muted)' : 'var(--danger)', fontFamily: 'var(--font-body)' }}>
+                  {moodLabel} · {sg.members} st
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: ritualText ? 8 : 0 }}>
+                {chars.map(c => (
+                  <div key={c.role} style={{ flex: 1, textAlign: 'center' }}>
+                    <p style={{ fontSize: 14, margin: '0 0 2px' }}>{ROLE_EMOJI[c.role]}</p>
+                    <p style={{ fontSize: 9, color: 'var(--text-secondary)', margin: 0, fontFamily: 'var(--font-body)', fontWeight: 600 }}>{c.name}</p>
+                  </div>
+                ))}
+              </div>
+              {favPlayer && (
+                <p style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: ritualText ? 6 : 0 }}>
+                  ❤️ Favorit: {favPlayer.firstName} {favPlayer.lastName}
+                </p>
+              )}
+              {ritualText && (
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-display)', margin: 0 }}>
+                  {ritualText}
+                </p>
+              )}
+            </div>
+          )
+        })()}
+
         {/* ⑤ ENRADERS-KORT */}
 
         {/* Trupp */}
@@ -765,48 +826,8 @@ export function DashboardScreen() {
           )
         })()}
 
-        {/* ⑩ KLACKEN */}
-        {(() => {
-          const sg = game.supporterGroup
-          if (!sg) return null
-          const ritualText = getRitualText(game, 'preMatch')
-          const moodLabel = getSupporterMoodLabel(sg.mood)
-          const ROLE_EMOJI: Record<string, string> = { leader: '📣', veteran: '🏆', youth: '🎨', family: '👨‍👩‍👧' }
-          const chars = [sg.leader, sg.veteran, sg.youth, sg.family]
-          const favPlayer = game.players.find(p => p.id === sg.favoritePlayerId)
-          return (
-            <div style={{ margin: '12px 4px 0', padding: '10px 12px', borderTop: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>
-                  📯 {sg.name.toUpperCase()}
-                </p>
-                <span style={{ fontSize: 9, color: sg.mood >= 65 ? 'var(--success)' : sg.mood >= 40 ? 'var(--text-muted)' : 'var(--danger)', fontFamily: 'var(--font-body)' }}>
-                  {moodLabel} · {sg.members} st
-                </span>
-              </div>
-              <div style={{ display: 'flex', gap: 8, marginBottom: ritualText ? 8 : 0 }}>
-                {chars.map(c => (
-                  <div key={c.role} style={{ flex: 1, textAlign: 'center' }}>
-                    <p style={{ fontSize: 14, margin: '0 0 2px' }}>{ROLE_EMOJI[c.role]}</p>
-                    <p style={{ fontSize: 9, color: 'var(--text-secondary)', margin: 0, fontFamily: 'var(--font-body)', fontWeight: 600 }}>{c.name}</p>
-                  </div>
-                ))}
-              </div>
-              {favPlayer && (
-                <p style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: ritualText ? 6 : 0 }}>
-                  ❤️ Favorit: {favPlayer.firstName} {favPlayer.lastName}
-                </p>
-              )}
-              {ritualText && (
-                <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-display)', margin: 0 }}>
-                  {ritualText}
-                </p>
-              )}
-            </div>
-          )
-        })()}
 
-        <p style={{ textAlign: 'center', fontSize: 9, color: 'var(--text-muted)', opacity: 0.5, marginTop: 16 }}>
+        <p style={{ textAlign: 'center', fontSize: 9, color: 'var(--text-secondary)', marginTop: 16 }}>
           build {(typeof __GIT_HASH__ !== 'undefined' ? __GIT_HASH__ : '?')} · {(typeof __BUILD_DATE__ !== 'undefined' ? __BUILD_DATE__ : '')}
         </p>
       </div>

@@ -36,6 +36,8 @@ import { updateTrainerArc } from '../../domain/services/trainerArcService'
 import { checkInObjectives } from '../../domain/services/boardObjectiveService'
 import { generateTransferRumor } from '../../domain/services/rumorService'
 import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventService'
+import { checkReputationMilestones, milestonesToInbox } from '../../domain/services/reputationMilestoneService'
+import { generateDeadlineBids, generateDiscountOffer, deadlineBidToInbox, deadlineOfferToInbox } from '../../domain/services/transferDeadlineService'
 import { generateSocialEvent, generateSilentShoutEvent } from '../../domain/services/mecenatService'
 import { processEconomy } from './processors/economyProcessor'
 import { processCommunity } from './processors/communityProcessor'
@@ -820,6 +822,46 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const midSeasonItems = checkMidSeasonEvents(preEventGame)
   newInboxItems.push(...midSeasonItems)
 
+  // ── Reputation milestones (P3 — Rykte utanför orten) ─────────────────────
+  // Starts at round 8 to avoid early-season noise
+  let reputationResolvedIds = [...(game.resolvedEventIds ?? [])]
+  if (currentLeagueRound !== null && currentLeagueRound >= 8 && !isSecondPassForManagedMatch) {
+    const repMilestones = checkReputationMilestones(preEventGame)
+    if (repMilestones.length > 0) {
+      newInboxItems.push(...milestonesToInbox(repMilestones, game.currentDate))
+      reputationResolvedIds = [...reputationResolvedIds, ...repMilestones.map(m => m.id)]
+      // Apply effects
+      for (const milestone of repMilestones) {
+        if (milestone.effect?.type === 'reputation') {
+          const managedIdx = academyUpdatedClubs.findIndex(c => c.id === game.managedClubId)
+          if (managedIdx >= 0) {
+            academyUpdatedClubs[managedIdx] = {
+              ...academyUpdatedClubs[managedIdx],
+              reputation: Math.max(0, Math.min(100, (academyUpdatedClubs[managedIdx].reputation ?? 50) + milestone.effect.amount)),
+            }
+          }
+        }
+      }
+    }
+  } else {
+    reputationResolvedIds = game.resolvedEventIds ?? []
+  }
+
+  // ── Transfer deadline events (P2 — Transferdödline) ──────────────────────
+  // Omgång 13-15 = sista omgångarna innan fönstret stänger
+  if (currentLeagueRound !== null && currentLeagueRound >= 13 && currentLeagueRound <= 15 && !isSecondPassForManagedMatch) {
+    const panicBids = generateDeadlineBids(preEventGame, localRand)
+    for (const bid of panicBids) {
+      newInboxItems.push(deadlineBidToInbox(bid, game.currentDate, currentLeagueRound, game.currentSeason))
+      reputationResolvedIds = [...reputationResolvedIds, `deadline_bid_${game.currentSeason}_r${currentLeagueRound}`]
+    }
+    const discountOffer = generateDiscountOffer(preEventGame, localRand)
+    if (discountOffer) {
+      newInboxItems.push(deadlineOfferToInbox(discountOffer, game.currentDate, currentLeagueRound, game.currentSeason))
+      reputationResolvedIds = [...reputationResolvedIds, `deadline_offer_${game.currentSeason}_r${currentLeagueRound}`]
+    }
+  }
+
   // Trim accumulated data to prevent localStorage bloat
   const MAX_INBOX = 50
   const trimmedInbox = [...game.inbox, ...newInboxItems]
@@ -989,6 +1031,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       { ...game, resolvedWeeklyDecisions: game.resolvedWeeklyDecisions ?? [] },
       nextMatchday,
     ) ?? undefined,
+    resolvedEventIds: reputationResolvedIds,
   }
 
   // Append market value change notifications to inbox

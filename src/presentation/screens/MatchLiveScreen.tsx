@@ -117,6 +117,7 @@ export function MatchLiveScreen() {
       awayClubName: awayClubName || undefined,
       rivalry: rivalry ?? undefined,
       storylines: game.storylines?.map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
+      managedIsHome: fixture.homeClubId === game.managedClubId,
     })
     const allSteps: MatchStep[] = []
     for (const step of gen) allSteps.push(step)

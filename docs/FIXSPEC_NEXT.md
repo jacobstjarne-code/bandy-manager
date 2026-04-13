@@ -484,6 +484,21 @@ export interface AICoach {
 
 ---
 
+---
+
+## PARKERAT (lägre prio, framtida sprintar)
+
+Fullständiga specs finns i **`docs/FIXSPEC_PARKERAT.md`** — filer, typer,
+texter, triggers och kopplingar till supporter-karaktärer.
+
+| Feature | Vad som finns i FIXSPEC_PARKERAT.md |
+|---|---|
+| Presskonferens som visuell scen | `PressConferenceScene.tsx`, `pressConferenceService.ts`, 9 frågetyper, 5 svarsalternativ med effekter, journalist-persona med stil, frekvensstyrning |
+| Transferdödline-känsla | Header-indikator, `transferDeadlineService.ts` med `DeadlineBid`, AI-panikbud 20–40% över marknad, rabattvärvningar, klack-reaktion vid favorit-försäljning |
+| Klubbens rykte utanför orten | `reputationMilestoneService.ts` med 6 triggers (academy/media/neighbor/scout/warning), fullständiga texter, koppling till supporter-karaktärer i kafferummet |
+
+---
+
 ## Verifiering
 
 ```bash
