@@ -286,16 +286,12 @@ export function HalftimeModal({
                 {([
                   { id: 'calm' as const, label: diff >= 0 ? 'Lugn genomgång' : 'Håll ihop', effect: 'Moral +5 för alla' },
                   { id: 'angry' as const, label: diff >= 0 ? 'Kräv mer' : 'Skäll ut dem', effect: 'Skärpa +8, Moral −3' },
-                  { id: 'tactical' as const, label: 'Taktikjustering', effect: 'Öppna taktikpanelen' },
-                ]).map(choice => {
+                ] as const).map(choice => {
                   const isSelected = halftimeChoice === choice.id
                   return (
                     <button
                       key={choice.id}
-                      onClick={() => {
-                        onHalftimeChoice(choice.id)
-                        if (choice.id === 'tactical') setActiveTab('taktik')
-                      }}
+                      onClick={() => onHalftimeChoice(choice.id)}
                       style={{
                         width: '100%', padding: '10px 12px', borderRadius: 8,
                         fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer',
@@ -312,6 +308,20 @@ export function HalftimeModal({
                     </button>
                   )
                 })}
+                <button
+                  onClick={() => {
+                    onHalftimeChoice('tactical')
+                    setActiveTab('taktik')
+                  }}
+                  style={{
+                    background: 'none', border: 'none', padding: '6px 0', cursor: 'pointer',
+                    fontSize: 11, color: halftimeChoice === 'tactical' ? 'var(--accent)' : 'var(--text-muted)',
+                    fontFamily: 'var(--font-body)', textDecoration: 'underline', textAlign: 'center',
+                    width: '100%',
+                  }}
+                >
+                  Taktikjustering →
+                </button>
               </div>
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, textAlign: 'left', lineHeight: 1.8 }}>

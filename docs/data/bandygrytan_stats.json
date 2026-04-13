@@ -1,0 +1,70 @@
+{
+  "_meta": {
+    "source": "bandygrytan.se via Firebase SDK",
+    "competition": "Elitserien Herr (Grundserie + Slutspel)",
+    "seasons": ["2024-25", "2025-26"],
+    "scrapedAt": "2026-04-13",
+    "totalMatches": 420,
+    "totalGoals": 4199
+  },
+  "combined": {
+    "avgGoalsPerMatch": 10.0,
+    "avgHomeGoals": 5.35,
+    "avgAwayGoals": 4.65,
+    "homeWinPct": 50.7,
+    "drawPct": 9.0,
+    "awayWinPct": 40.2,
+    "cornerGoalPct": 23.2,
+    "penaltyGoalPct": 5.1,
+    "openPlayGoalPct": 71.7,
+    "avgCornerGoalsPerMatch": 2.32,
+    "avgPenaltyGoalsPerMatch": 0.51,
+    "avgFoulsPerMatch": 4.1,
+    "halvesDistribution": {
+      "firstHalfPct": 45.7,
+      "secondHalfPct": 54.3,
+      "avgFirstHalfGoals": 4.57,
+      "avgSecondHalfGoals": 5.43
+    },
+    "goalTimingWeightsPerBucket": {
+      "0-9":   0.094,
+      "10-19": 0.096,
+      "20-29": 0.098,
+      "30-39": 0.101,
+      "40-49": 0.121,
+      "50-59": 0.110,
+      "60-69": 0.114,
+      "70-79": 0.103,
+      "80-89": 0.122,
+      "90+":   0.041
+    }
+  },
+  "bySeason": {
+    "2024-25": {
+      "completedMatches": 210,
+      "totalGoals": 2139,
+      "avgGoalsPerMatch": 10.19,
+      "cornerGoalPct": 22.2,
+      "penaltyGoalPct": 4.3,
+      "homeWinPct": 52.4,
+      "drawPct": 7.1
+    },
+    "2025-26": {
+      "completedMatches": 210,
+      "totalGoals": 2060,
+      "avgGoalsPerMatch": 9.81,
+      "cornerGoalPct": 24.2,
+      "penaltyGoalPct": 5.9,
+      "homeWinPct": 49.0,
+      "drawPct": 11.0
+    }
+  },
+  "calibrationTargets": {
+    "goalsPerMatch": { "target": 10.0, "tolerance": 1.5 },
+    "cornerGoalShare": { "target": 0.232, "tolerance": 0.03 },
+    "penaltyGoalShare": { "target": 0.051, "tolerance": 0.02 },
+    "homeWinRate": { "target": 0.507, "tolerance": 0.05 },
+    "drawRate": { "target": 0.090, "tolerance": 0.03 },
+    "secondHalfGoalShare": { "target": 0.543, "tolerance": 0.03 }
+  }
+}

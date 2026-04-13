@@ -91,6 +91,7 @@ export function getFinalWhistleSummary(
   const margin = myScore - theirScore
   if (margin >= 4) return 'Dominans från start till slut.'
   if (margin >= 2 && lateGoals === 0) return 'Kontrollerad seger. Laget visste vad som krävdes.'
+  if (margin >= 2 && lateGoals > 0) return 'Kontrollerad seger, även om avslutningen blev stormig.'
   if (margin === 1 && lateGoals > 0) return 'Avgörandet kom sent. Nerverna höll.'
   if (margin === 1) return 'Knapp seger. Det kunde gått åt vilket håll som helst.'
   if (margin === 0 && totalGoals === 0) return 'Mållöst. Isen var hård men kreativiteten saknades.'
@@ -98,6 +99,7 @@ export function getFinalWhistleSummary(
   if (margin === 0) return 'Poängdelning. Rättvist? Kanske.'
   if (margin === -1 && lateGoals > 0) return 'Sent avgörande — åt fel håll.'
   if (margin === -1) return 'En boll skilde. Marginaler.'
+  if (margin === -2) return 'Motståndarna var starkare idag.'
   if (margin <= -3) return 'Tung kväll. Det finns inte mycket att säga.'
-  return 'Motståndarna var starkare idag.'
+  return 'Matchen är över.'
 }

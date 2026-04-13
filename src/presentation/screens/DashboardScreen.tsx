@@ -570,12 +570,14 @@ export function DashboardScreen() {
           {/* Ekonomi */}
           <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}>
             <p style={{ ...LABEL, marginBottom: 6 }}>💰 Ekonomi</p>
-            <span style={{ fontSize: 18, fontWeight: 700, color: finances < 0 ? 'var(--danger)' : 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
-              {formatFinanceAbs(finances)}
-            </span>
-            <p style={{ fontSize: 10, fontWeight: 600, color: netPerRound >= 0 ? 'var(--success)' : 'var(--danger)', marginTop: 3, fontFamily: 'var(--font-body)' }}>
-              {netPerRound >= 0 ? '+' : ''}{Math.round(netPerRound / 1000)} tkr/omg
-            </p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <span style={{ fontSize: 18, fontWeight: 700, color: finances < 0 ? 'var(--danger)' : 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
+                {formatFinanceAbs(finances)}
+              </span>
+              <span style={{ fontSize: 10, fontWeight: 600, color: netPerRound >= 0 ? 'var(--success)' : 'var(--danger)', fontFamily: 'var(--font-body)' }}>
+                {netPerRound >= 0 ? '+' : ''}{Math.round(netPerRound / 1000)} tkr/omg
+              </span>
+            </div>
             {game.averageAttendance != null && (
               <p style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 3, fontFamily: 'var(--font-body)' }}>
                 👥 Snitt: {game.averageAttendance.toLocaleString('sv-SE')}

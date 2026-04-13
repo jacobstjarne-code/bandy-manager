@@ -121,6 +121,7 @@ interface ClubTemplate {
   boardExpectation: ClubExpectation
   preferredStyle: ClubStyle
   arenaName?: string
+  supporterGroupName?: string
 }
 
 export const CLUB_TEMPLATES: ClubTemplate[] = [
@@ -140,6 +141,8 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     hasArtificialIce: true,
     boardExpectation: ClubExpectation.WinLeague,
     preferredStyle: ClubStyle.Technical,
+    arenaName: 'Slagghögen',
+    supporterGroupName: 'Järnklacken',
   },
   {
     id: 'club_sirius',
@@ -157,6 +160,8 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     hasArtificialIce: false,
     boardExpectation: ClubExpectation.MidTable,
     preferredStyle: ClubStyle.Balanced,
+    arenaName: 'Ässjan',
+    supporterGroupName: 'Hammarsmederna',
   },
   {
     id: 'club_vasteras',
@@ -174,6 +179,8 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     hasArtificialIce: true,
     boardExpectation: ClubExpectation.ChallengeTop,
     preferredStyle: ClubStyle.Attacking,
+    arenaName: 'Schaktvallen',
+    supporterGroupName: 'Bergskurvan',
   },
   {
     id: 'club_broberg',
@@ -191,6 +198,8 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     hasArtificialIce: false,
     boardExpectation: ClubExpectation.ChallengeTop,
     preferredStyle: ClubStyle.Balanced,
+    arenaName: 'Bastionen',
+    supporterGroupName: 'Norrskensklacken',
   },
   {
     id: 'club_villa',
@@ -208,6 +217,8 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     hasArtificialIce: true,
     boardExpectation: ClubExpectation.MidTable,
     preferredStyle: ClubStyle.Technical,
+    arenaName: 'Hyttvallen',
+    supporterGroupName: 'Glasblåsarna',
   },
   {
     id: 'club_falun',
@@ -225,6 +236,8 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     hasArtificialIce: false,
     boardExpectation: ClubExpectation.MidTable,
     preferredStyle: ClubStyle.Physical,
+    arenaName: 'Älvvallen',
+    supporterGroupName: 'Dalkurvan',
   },
   {
     id: 'club_ljusdal',
@@ -242,6 +255,8 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     hasArtificialIce: false,
     boardExpectation: ClubExpectation.MidTable,
     preferredStyle: ClubStyle.Balanced,
+    arenaName: 'Gjutarvallen',
+    supporterGroupName: 'Härdarna',
   },
   {
     id: 'club_edsbyn',
@@ -259,6 +274,8 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     hasArtificialIce: false,
     boardExpectation: ClubExpectation.MidTable,
     preferredStyle: ClubStyle.Defensive,
+    arenaName: 'Kolbottnen',
+    supporterGroupName: 'Skogsklacken',
   },
   {
     id: 'club_tillberga',
@@ -276,6 +293,8 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     hasArtificialIce: false,
     boardExpectation: ClubExpectation.AvoidBottom,
     preferredStyle: ClubStyle.Defensive,
+    arenaName: 'Planlunden',
+    supporterGroupName: 'Sydkurvan',
   },
   {
     id: 'club_kungalv',
@@ -293,6 +312,8 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     hasArtificialIce: false,
     boardExpectation: ClubExpectation.AvoidBottom,
     preferredStyle: ClubStyle.Balanced,
+    arenaName: 'Forsvallen',
+    supporterGroupName: 'Bropelarna',
   },
   {
     id: 'club_skutskar',
@@ -310,6 +331,8 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     hasArtificialIce: false,
     boardExpectation: ClubExpectation.AvoidBottom,
     preferredStyle: ClubStyle.Physical,
+    arenaName: 'Sulfatvallen',
+    supporterGroupName: 'Fabrikskurvan',
   },
   {
     id: 'club_soderhamns',
@@ -327,6 +350,8 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     hasArtificialIce: false,
     boardExpectation: ClubExpectation.AvoidBottom,
     preferredStyle: ClubStyle.Defensive,
+    arenaName: 'Hedvallen',
+    supporterGroupName: 'Hjältarna',
   },
 ]
 

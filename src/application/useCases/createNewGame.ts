@@ -3,7 +3,7 @@ import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { League } from '../../domain/entities/League'
 import type { Player } from '../../domain/entities/Player'
 import { FixtureStatus, TrainingType, TrainingIntensity, PlayerPosition, ClubStyle } from '../../domain/enums'
-import { generateWorld } from '../../domain/services/worldGenerator'
+import { generateWorld, CLUB_TEMPLATES } from '../../domain/services/worldGenerator'
 import { generateYouthTeam } from '../../domain/services/academyService'
 import { generateSchedule, buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
 import { calculateStandings } from '../../domain/services/standingsService'
@@ -339,6 +339,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
       season,
       players.filter(p => p.clubId === input.clubId),
       input.seed ?? 42,
+      CLUB_TEMPLATES.find(t => t.id === input.clubId)?.supporterGroupName,
     ),
     namedCharacters: [
       ...(() => {

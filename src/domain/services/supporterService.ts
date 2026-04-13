@@ -39,6 +39,7 @@ export function generateSupporterGroup(
   season: number,
   players: Player[],
   seed: number,
+  overrideName?: string,
 ): SupporterGroup {
   const h = hashStr(clubId) + seed
 
@@ -51,7 +52,7 @@ export function generateSupporterGroup(
   })
 
   return {
-    name: pick(GROUP_NAMES, h),
+    name: overrideName ?? pick(GROUP_NAMES, h),
     founded: season,
     members: 15 + (Math.abs(h * 7) % 50),
     mood: 60,

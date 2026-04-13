@@ -17,7 +17,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     awayLineup,
     homePlayers,
     awayPlayers,
-    homeAdvantage = 0.05,
+    homeAdvantage = 0.035,
     seed,
     weather,
     isPlayoff = false,
@@ -198,7 +198,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
 
     let wAttack = 40
     let wTransition = 15
-    let wCorner = 28
+    let wCorner = 32
     let wHalfchance = 10
     let wFoul = 12
     let wLostball = 8
@@ -255,9 +255,22 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     ]
   }
 
+  // Timing weights: 60 steps × 1.5 min = 90 min. Steps 0-19 = 1st half, 20-59 = 2nd half.
+  // Based on Bandygrytan 420-match data: 45.7% 1st half, 54.3% 2nd half.
+  const TIMING_WEIGHTS = [
+    ...Array(10).fill(0.94),  // steps 0-9  (min 0-14)
+    ...Array(10).fill(0.97),  // steps 10-19 (min 15-29)
+    ...Array(10).fill(1.05),  // steps 20-29 (min 30-44)
+    ...Array(10).fill(1.08),  // steps 30-39 (min 45-59)
+    ...Array(10).fill(1.10),  // steps 40-49 (min 60-74)
+    ...Array(10).fill(1.15),  // steps 50-59 (min 75-89)
+  ]
+
   // Step through 60 match steps
   for (let step = 0; step < 60; step++) {
     const minute = Math.round(step * 1.5)
+    const timingMod = TIMING_WEIGHTS[step] ?? 1.0
+    const goalMod = weatherGoalMod * timingMod
 
     // AI halftime tactical adjustment (applied once at step 30)
     if (step === 30) {
@@ -337,7 +350,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
 
         const shotResult = rand()
         const defenderGkStrength = defGK
-        const goalThreshold = chanceQuality * 0.58 * (1 - defenderGkStrength * 0.35) * weatherGoalMod
+        const goalThreshold = chanceQuality * 0.72 * (1 - defenderGkStrength * 0.30) * goalMod
 
         if (shotResult < goalThreshold) {
           // GOAL
@@ -398,7 +411,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
         if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
 
         const shotResult = rand()
-        const goalThreshold = chanceQuality * 0.28 * (1 - defGK * 0.4) * 1.15 * weatherGoalMod
+        const goalThreshold = chanceQuality * 0.35 * (1 - defGK * 0.35) * 1.15 * goalMod
 
         if (shotResult < goalThreshold) {
           const scorer = getGoalScorer(attackingStarters)
@@ -450,7 +463,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
         : 0
       const cornerChance = attCorner * 0.7 + randRange(rand, 0, 0.3) + specialistBonus
       const defenseResist = defDefense * 0.5 + defGK * 0.3 + randRange(rand, 0, 0.2)
-      const goalThreshold = clamp((cornerChance - defenseResist) * 0.20 * weatherGoalMod + 0.04, 0.05, 0.12)
+      const goalThreshold = clamp((cornerChance - defenseResist) * 0.14 * goalMod + 0.03, 0.03, 0.09)
 
       const r = rand()
       if (r < goalThreshold) {
@@ -500,7 +513,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     } else if (seqType === 'halfchance') {
       if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
       const chanceQuality = randRange(rand, 0.05, 0.25) * (isPlayoff ? 1.05 : 1.0)
-      const goalThreshold = chanceQuality * 0.30 * weatherGoalMod
+      const goalThreshold = chanceQuality * 0.38 * goalMod
 
       if (rand() < goalThreshold) {
         const scorer = getGoalScorer(attackingStarters)
@@ -522,7 +535,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
       const foulProb = defDiscipline * 0.6 + attDiscipline * 0.1
 
       const r = rand()
-      if (r < foulProb * 0.55 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
+      if (r < foulProb * 0.62 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
         // Suspension (red card equivalent)
         const suspPlayer = getDefendingPlayer(defendingStarters)
         if (suspPlayer) {
