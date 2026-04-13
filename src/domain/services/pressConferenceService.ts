@@ -461,6 +461,14 @@ function buildPressResponses(ctx: PressContext, preferIds: string[] = []): Manag
   return result.slice(0, 3)
 }
 
+// Response ID convention: _a = aggressiv/bitter, _h = ödmjuk, _d = diplomatisk/neutral
+function responseEmoji(id: string, moraleEffect: number): string {
+  if (/_a\d/.test(id)) return '😤'
+  if (/_h\d/.test(id)) return '🙏'
+  if (/_d\d/.test(id)) return '😐'
+  return moraleEffect >= 3 ? '😊' : '😐'
+}
+
 // ── generatePressConference ────────────────────────────────────────────────────
 
 export function generatePressConference(
@@ -559,13 +567,6 @@ export function generatePressConference(
   const displayJournalist = namedJournalist
     ? `${namedJournalist.name}, ${namedJournalist.outlet}`
     : journalist
-
-  function responseEmoji(id: string, moraleEffect: number): string {
-    if (/_a\d/.test(id)) return '😤'
-    if (/_h\d/.test(id)) return '🙏'
-    if (/_d\d/.test(id)) return '😐'
-    return moraleEffect >= 3 ? '😊' : '😐'
-  }
 
   const choices = responses.map(r => ({
     id: r.id,

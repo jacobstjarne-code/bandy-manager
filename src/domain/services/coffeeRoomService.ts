@@ -4,7 +4,6 @@ import { getCharacterName } from './supporterService'
 interface CoffeeQuote {
   speaker: string
   text: string
-  hash?: number
 }
 
 const GENERIC_EXCHANGES: Array<[string, string, string, string]> = [

@@ -144,12 +144,6 @@ export function CoachMarks({ onDone }: Props) {
         </div>
       </div>
 
-      <style>{`
-        @keyframes coachPulse {
-          0%, 100% { box-shadow: 0 0 0 4000px rgba(0,0,0,0.65), 0 0 0 0px rgba(196,122,58,0.3); }
-          50% { box-shadow: 0 0 0 4000px rgba(0,0,0,0.65), 0 0 0 8px rgba(196,122,58,0.15); }
-        }
-      `}</style>
     </div>
   )
 }
