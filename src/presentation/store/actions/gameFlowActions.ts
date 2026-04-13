@@ -267,7 +267,7 @@ export function gameFlowActions(get: Get, set: Set) {
       }
 
       set({ game: updatedGame })
-      saveSaveGame(updatedGame)
+      saveSaveGame(updatedGame).catch(e => console.warn('Autosave misslyckades:', e))
     },
 
     markScreenVisited: (screen: string) => {

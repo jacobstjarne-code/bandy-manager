@@ -10,6 +10,16 @@ import {
 } from './matchUtils'
 import type { SimulateMatchInput, SimulateMatchResult } from './matchUtils'
 
+// Based on Bandygrytan 420-match data: 45.7% 1st half, 54.3% 2nd half, spikes at min 40-49 and 80-89.
+const TIMING_WEIGHTS: number[] = [
+  ...Array(10).fill(0.94),  // steps 0-9   (min 0-14)
+  ...Array(10).fill(0.97),  // steps 10-19 (min 15-29)
+  ...Array(10).fill(1.05),  // steps 20-29 (min 30-44)
+  ...Array(10).fill(1.08),  // steps 30-39 (min 45-59)
+  ...Array(10).fill(1.10),  // steps 40-49 (min 60-74)
+  ...Array(10).fill(1.15),  // steps 50-59 (min 75-89)
+]
+
 export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   const {
     fixture,
@@ -255,22 +265,10 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     ]
   }
 
-  // Timing weights: 60 steps × 1.5 min = 90 min. Steps 0-19 = 1st half, 20-59 = 2nd half.
-  // Based on Bandygrytan 420-match data: 45.7% 1st half, 54.3% 2nd half.
-  const TIMING_WEIGHTS = [
-    ...Array(10).fill(0.94),  // steps 0-9  (min 0-14)
-    ...Array(10).fill(0.97),  // steps 10-19 (min 15-29)
-    ...Array(10).fill(1.05),  // steps 20-29 (min 30-44)
-    ...Array(10).fill(1.08),  // steps 30-39 (min 45-59)
-    ...Array(10).fill(1.10),  // steps 40-49 (min 60-74)
-    ...Array(10).fill(1.15),  // steps 50-59 (min 75-89)
-  ]
-
   // Step through 60 match steps
   for (let step = 0; step < 60; step++) {
     const minute = Math.round(step * 1.5)
-    const timingMod = TIMING_WEIGHTS[step] ?? 1.0
-    const goalMod = weatherGoalMod * timingMod
+    const goalMod = weatherGoalMod * TIMING_WEIGHTS[step]
 
     // AI halftime tactical adjustment (applied once at step 30)
     if (step === 30) {

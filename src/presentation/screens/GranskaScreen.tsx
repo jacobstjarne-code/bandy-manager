@@ -264,7 +264,7 @@ export function GranskaScreen() {
               {fixture.attendance != null && (
                 <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>🏟️ {fixture.attendance} åskådare</p>
               )}
-              {homeClub?.arenaName && (
+              {homeClub?.arenaName && !fixture.isNeutralVenue && (
                 <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>Spelades på {homeClub.arenaName}</p>
               )}
 
