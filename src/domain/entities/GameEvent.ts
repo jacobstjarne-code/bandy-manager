@@ -28,6 +28,9 @@ export type GameEventType =
   | 'captainSpeech'
   | 'playerArc'
   | 'supporterEvent'
+  | 'mecenatInteraction'
+  | 'journalistExclusive'
+  | 'supporterAwayTrip'
 
 export interface EventChoice {
   id: string
@@ -72,10 +75,12 @@ export interface EventEffect {
     | 'multiEffect'
     | 'teamBoostMorale'
     | 'supporterMood'
+    | 'mecenatHappiness'
   value?: number
   amount?: number
   targetPlayerId?: string
   targetClubId?: string
+  targetMecenatId?: string
   bidId?: string
   sponsorData?: string
   mediaQuote?: string

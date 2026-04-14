@@ -67,10 +67,19 @@ interface KlubbTabProps {
   interactWithPolitician?: (action: 'invite' | 'budget' | 'apply') => { success: boolean; message: string }
   startFacilityProject?: (projectId: string) => { success: boolean; error?: string }
   recruitVolunteer?: (name: string) => void
+  activateCommunity?: (key: string, level: string) => { success: boolean; error?: string }
 }
 
-export function KlubbTab({ club, game, navigate, interactWithPolitician, startFacilityProject, recruitVolunteer }: KlubbTabProps) {
+export function KlubbTab({ club, game, navigate, interactWithPolitician, startFacilityProject, recruitVolunteer, activateCommunity }: KlubbTabProps) {
   const [polFeedback, setPolFeedback] = useState<{ text: string; ok: boolean } | null>(null)
+  const [activityFeedback, setActivityFeedback] = useState<{ text: string; ok: boolean } | null>(null)
+
+  function handleActivity(key: string, level: string) {
+    if (!activateCommunity) return
+    const result = activateCommunity(key, level)
+    setActivityFeedback({ text: result.error ?? 'Aktivitet uppdaterad', ok: result.success })
+    if (result.success) setTimeout(() => setActivityFeedback(null), 2500)
+  }
 
   const cs = game.communityStanding ?? 50
   const currentRound = game.fixtures
@@ -78,13 +87,6 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
   const quote = getFunctionaryQuote(game, currentRound, game.lastCompletedFixtureId)
   const ca = game.communityActivities
-  const activeActivities = [
-    ca?.kiosk && ca.kiosk !== 'none' ? '🏪 Kiosk' : null,
-    ca?.lottery && ca.lottery !== 'none' ? '🎫 Lotteri' : null,
-    ca?.functionaries ? '🤝 Funktionärer' : null,
-    ca?.bandyplay ? '🏒 Bandyskola' : null,
-    ca?.socialMedia ? '📱 Sociala medier' : null,
-  ].filter((x): x is string => x !== null)
 
   // Volunteer roster — generated from seed based on clubId + season
   const seedNum = game.managedClubId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) + game.currentSeason * 17
@@ -130,12 +132,41 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
           <div style={{ flex: cs, height: 7, background: csColor(cs), borderRadius: '4px 0 0 4px' }} />
           <div style={{ flex: 100 - cs, height: 7, background: 'var(--border-dark)', borderRadius: '0 4px 4px 0' }} />
         </div>
-        {activeActivities.length > 0 && (
-          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
-            {activeActivities.map(a => (
-              <span key={a} className="tag tag-outline">{a}</span>
-            ))}
-          </div>
+        {/* Aktiviteter */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
+          {([
+            { key: 'kiosk',         levels: [{ id: 'basic', label: '🏪 Kiosk (3 tkr)', cost: 3000 }, { id: 'upgraded', label: '🏪 Kiosk uppgraderad (8 tkr)', cost: 8000 }], current: ca?.kiosk ?? 'none', isEnum: true },
+            { key: 'lottery',       levels: [{ id: 'basic', label: '🎫 Lotteri (1 tkr)', cost: 1000 }, { id: 'intensive', label: '🎫 Lotteri intensivt (5 tkr)', cost: 5000 }], current: ca?.lottery ?? 'none', isEnum: true },
+            { key: 'functionaries', levels: [{ id: 'active', label: '🤝 Funktionärer (2 tkr)', cost: 2000 }], current: ca?.functionaries ? 'active' : 'none', isEnum: false },
+            { key: 'bandyplay',     levels: [{ id: 'active', label: '🏒 Bandyskola (gratis)', cost: 0 }], current: ca?.bandyplay ? 'active' : 'none', isEnum: false },
+            { key: 'socialMedia',   levels: [{ id: 'active', label: '📱 Sociala medier (2 tkr)', cost: 2000 }], current: ca?.socialMedia ? 'active' : 'none', isEnum: false },
+            { key: 'bandySchool',   levels: [{ id: 'active', label: '🏫 Bandyskola akademi (5 tkr)', cost: 5000 }], current: ca?.bandySchool ? 'active' : 'none', isEnum: false },
+          ] as const).map(({ key, levels, current }) => {
+            const nextLevel = levels.find(l => l.id !== current)
+            const isActive = current !== 'none'
+            return (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 12, color: isActive ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                  {isActive ? levels.find(l => l.id === current)?.label.split('(')[0].trim() ?? key : levels[0].label.split('(')[0].trim()}
+                  {isActive && <span style={{ color: 'var(--success)', marginLeft: 4, fontSize: 10 }}>✓</span>}
+                </span>
+                {nextLevel && (
+                  <button
+                    className="btn btn-ghost"
+                    onClick={() => handleActivity(key, nextLevel.id)}
+                    style={{ padding: '3px 8px', fontSize: 10, flexShrink: 0 }}
+                  >
+                    {isActive ? 'Uppgradera' : 'Aktivera'}
+                  </button>
+                )}
+              </div>
+            )
+          })}
+        </div>
+        {activityFeedback && (
+          <p style={{ fontSize: 11, color: activityFeedback.ok ? 'var(--success)' : 'var(--danger)', marginBottom: 8 }}>
+            {activityFeedback.text}
+          </p>
         )}
         {quote && (
           <div style={{ padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 8 }}>

@@ -1,6 +1,7 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent, EventChoice, TransferBid } from '../../entities/GameEvent'
 import type { Player } from '../../entities/Player'
+import type { Mecenat } from '../../entities/Mecenat'
 
 export function formatValue(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
@@ -288,19 +289,26 @@ export function generatePlayerPraiseEvent(
 }
 
 // ── Captain speech — captain rallies the team after losing streak ─────────
-export function generateCaptainSpeechEvent(captain: Player, clubName: string): GameEvent {
+export function generateCaptainSpeechEvent(captain: Player, _clubName: string, season: number): GameEvent {
   const captainName = `${captain.firstName} ${captain.lastName}`
+  const isHighForm = captain.morale >= 70
   return {
-    id: `event_captain_speech_s${Date.now()}`,
+    id: `event_captain_speech_s${season}`,
     type: 'captainSpeech',
-    title: `📣 Kaptenen tar ton i omklädningsrummet`,
-    body: `${captainName} samlade laget efter träningen:\n\n"Det räcker nu. Vi är bättre än det här. Varenda en av er vet det. Imorgon börjar vi om."\n\nStämningen i ${clubName} har förändrats.`,
+    title: `📣 Kaptenen vill ta ton`,
+    body: `${captainName} knackar på dörren till ditt kontor.\n\n"Jag tänkte tala till laget idag. Det är dags att vi tar tag i det här. Okej med dig?"\n\nKaptenen ser sammanbiten ut. Laget har förlorat tre raka.`,
     choices: [
       {
         id: 'support',
-        label: 'Bra initiativ — det behövdes',
-        subtitle: '😊 +5 moral hela laget',
-        effect: { type: 'boostMorale', value: 5 },
+        label: 'Ja — kör på, det behövs',
+        subtitle: isHighForm ? '😊 +8 moral hela laget' : '😊 +5 moral hela laget',
+        effect: { type: 'boostMorale', value: isHighForm ? 8 : 5 },
+      },
+      {
+        id: 'decline',
+        label: 'Nej — jag tar det här samtalet själv',
+        subtitle: '😐 Ingen moralboost · kaptenen tar det med ro',
+        effect: { type: 'noOp', value: 0 },
       },
     ],
     resolved: false,
@@ -427,6 +435,82 @@ export function generateCoworkerBondEvent(
       },
     ],
     relatedPlayerId: player1.id,
+    resolved: false,
+  }
+}
+
+// ── Journalist exclusive story offer ─────────────────────────────────────────
+export function generateJournalistExclusiveEvent(
+  journalistName: string,
+  outlet: string,
+  player: Player,
+  roundNumber: number,
+): GameEvent {
+  const playerName = `${player.firstName} ${player.lastName}`
+  return {
+    id: `event_journalist_exclusive_${player.id}_r${roundNumber}`,
+    type: 'journalistExclusive',
+    title: `📰 ${journalistName} vill göra ett reportage`,
+    body: `${journalistName} från ${outlet} hör av sig.\n\n"Jag tänkte skriva ett djupdyk om ${playerName} — karriären, drivkraften, vad bandy betyder. Är ni okej med det?"\n\nEtt positivt reportage skulle stärka spelaren och klubben i orten.`,
+    choices: [
+      {
+        id: 'accept',
+        label: 'Ja — kör på',
+        subtitle: `😊 +10 moral (${player.firstName}) · 📰 bra press · 🤝 +5 journalistrelation`,
+        effect: {
+          type: 'multiEffect',
+          subEffects: JSON.stringify([
+            { type: 'boostMorale', amount: 10, targetPlayerId: player.id },
+            { type: 'journalistRelationship', amount: 5 },
+            { type: 'communityStanding', amount: 1 },
+          ]),
+        },
+      },
+      {
+        id: 'decline',
+        label: 'Nej — vi håller oss i bakgrunden just nu',
+        subtitle: '📰 -5 journalistrelation',
+        effect: { type: 'journalistRelationship', amount: -5 },
+      },
+    ],
+    resolved: false,
+  }
+}
+
+// ── Mecenat cooling-off intervention ─────────────────────────────────────────
+export function generateMecenatInterventionEvent(mec: Mecenat, roundNumber: number): GameEvent {
+  const isShowman = mec.personality === 'showman'
+  const isTystKraft = mec.personality === 'tyst_kraft'
+  const eventLabel = isShowman ? 'en VIP-kväll på arenan' : isTystKraft ? 'en privat middag' : 'en golfrunda'
+  const eventCost = isShowman ? 8000 : isTystKraft ? 5000 : 6000
+  const happinessBonusRight = 18  // right event for personality
+  const happinessBonusWrong = 8   // wrong event type — half effect
+
+  return {
+    id: `event_mec_intervention_${mec.id}_r${roundNumber}`,
+    type: 'mecenatInteraction',
+    title: `⚠️ ${mec.name} är på väg att tappa tron`,
+    body: `${mec.name} från ${mec.business} har blivit allt tystare på sistone. Happiness: ${mec.happiness}/100.\n\nDu kan ta initiativet och bjuda in till ${eventLabel} (kostnad: ${eventCost.toLocaleString('sv')} kr), eller låta det rinna av.`,
+    choices: [
+      {
+        id: 'invite_right',
+        label: `Bjud in till ${eventLabel} (+${happinessBonusRight} happiness)`,
+        subtitle: `💰 ${eventCost.toLocaleString('sv')} kr · 😊 +${happinessBonusRight} happiness`,
+        effect: { type: 'mecenatHappiness', targetMecenatId: mec.id, amount: happinessBonusRight, value: -eventCost },
+      },
+      {
+        id: 'invite_generic',
+        label: 'Bjud in på match nästa hemmagång (+8 happiness)',
+        subtitle: '🎟️ Gratis · 😊 +8 happiness',
+        effect: { type: 'mecenatHappiness', targetMecenatId: mec.id, amount: happinessBonusWrong, value: 0 },
+      },
+      {
+        id: 'ignore',
+        label: 'Avvakta — det löser sig',
+        subtitle: '😐 Ingen åtgärd · risk att happiness fortsätter falla',
+        effect: { type: 'noOp', value: 0 },
+      },
+    ],
     resolved: false,
   }
 }

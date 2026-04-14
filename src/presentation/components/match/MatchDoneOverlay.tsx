@@ -2,7 +2,7 @@ import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { truncate } from '../../utils/formatters'
-import { getMatchHeadline } from '../../../domain/services/matchMoodService'
+import { getMatchHeadline, getFinalWhistleSummary } from '../../../domain/services/matchMoodService'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { MatchEventType } from '../../../domain/enums'
 
@@ -63,6 +63,26 @@ export function MatchDoneOverlay({
   const comeback = managedWon && htManaged < htOpp
   const resultLabel = getMatchHeadline(managedWon, managedLost, margin, totalGoals, !!rivalry, !!fixture.isCup, comeback, lateDecider)
 
+  const allEvents = steps.flatMap(s => s.events)
+  const lateGoalCount = steps.filter(s => s.minute >= 80 && s.events.some(e => e.type === MatchEventType.Goal)).length
+  const cornerGoalCount = allEvents.filter(e => e.type === MatchEventType.Goal && e.isCornerGoal).length
+  const myClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
+  const suspUs = allEvents.filter(e => e.type === MatchEventType.Suspension && e.clubId === myClubId).length
+  const finalSummary = getFinalWhistleSummary({
+    myScore: managedGoals,
+    theirScore: oppGoals,
+    lateGoals: lateGoalCount,
+    totalGoals,
+    isHome: managedIsHome,
+    cornerGoals: cornerGoalCount,
+    suspensionsUs: suspUs,
+    isRivalry: !!rivalry,
+    rivalryName: rivalry?.name,
+    isCup: !!fixture.isCup,
+    isPlayoff: !!fixture.isKnockout,
+    comeback,
+  })
+
   return (
     <div style={{
       position: 'fixed', inset: 0,
@@ -121,6 +141,12 @@ export function MatchDoneOverlay({
             {resultLabel}
           </span>
         </div>
+
+        {finalSummary && (
+          <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5, marginBottom: 12, padding: '0 4px' }}>
+            {finalSummary}
+          </p>
+        )}
 
         {lastStep && fixture.attendance != null && (
           <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 14 }}>

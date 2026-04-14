@@ -17,6 +17,8 @@ import {
   generatePlayerMediaEvent,
   generatePlayerPraiseEvent,
   generateCaptainSpeechEvent,
+  generateMecenatInterventionEvent,
+  generateJournalistExclusiveEvent,
   formatValue,
 } from './eventFactories'
 import { findEmployerForJob } from '../../data/localEmployers'
@@ -374,12 +376,14 @@ export function generatePostAdvanceEvents(
       const eid = `event_captain_speech_s${game.currentSeason}`
       if (!alreadyQueued.has(eid)) {
         const managedClub = game.clubs.find(c => c.id === game.managedClubId)
-        const captain = game.players.find(p =>
-          p.clubId === game.managedClubId && p.morale > 50 &&
-          p.age >= 25 && p.currentAbility >= 50
-        )
+        const captain = game.captainPlayerId
+          ? game.players.find(p => p.id === game.captainPlayerId)
+          : game.players.find(p =>
+              p.clubId === game.managedClubId && p.morale > 50 &&
+              p.age >= 25 && p.currentAbility >= 50
+            )
         if (captain && managedClub) {
-          events.push(generateCaptainSpeechEvent(captain, managedClub.name))
+          events.push(generateCaptainSpeechEvent(captain, managedClub.name, game.currentSeason))
         }
       }
     }
@@ -406,6 +410,37 @@ export function generatePostAdvanceEvents(
       const eid = `event_conflict_${m1.id}_${m2.id}_r${roundPlayed}`
       if (!alreadyQueued.has(eid)) {
         events.push(generateMecenatConflictEvent(m1, m2))
+      }
+    }
+  }
+
+  if (events.length >= 2) return events
+
+  // 5l. Mecenat intervention — happiness < 40, no existing intervention queued this season
+  for (const mec of game.mecenater ?? []) {
+    if (events.length >= 2) break
+    if (!mec.isActive || mec.happiness >= 40) continue
+    const eid = `event_mec_intervention_${mec.id}_r${roundPlayed}`
+    const alreadyHasIntervention = [...alreadyQueued].some(id => id.startsWith(`event_mec_intervention_${mec.id}`))
+    if (!alreadyQueued.has(eid) && !alreadyHasIntervention) {
+      events.push(generateMecenatInterventionEvent(mec, roundPlayed))
+    }
+  }
+
+  if (events.length >= 2) return events
+
+  // 5m. Journalist exclusive offer — relationship >= 65, ~15% chance, once per season per player
+  if (events.length < 2) {
+    const j = game.journalist
+    if (j && j.relationship >= 65 && rand() < 0.15) {
+      const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId && !p.isInjured)
+      if (managedPlayers.length > 0) {
+        const subject = managedPlayers.reduce((best, p) => p.currentAbility > best.currentAbility ? p : best, managedPlayers[0])
+        const eid = `event_journalist_exclusive_${subject.id}_r${roundPlayed}`
+        const alreadyThisSeason = [...alreadyQueued].some(id => id.startsWith(`event_journalist_exclusive_`) && id.includes(`_r${roundPlayed}`))
+        if (!alreadyQueued.has(eid) && !alreadyThisSeason) {
+          events.push(generateJournalistExclusiveEvent(j.name, j.outlet, subject, roundPlayed))
+        }
       }
     }
   }

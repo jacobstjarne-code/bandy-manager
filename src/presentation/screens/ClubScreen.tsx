@@ -171,7 +171,7 @@ export function ClubScreen() {
 
         {/* ── Tab 3: Klubb ── */}
         {activeTab === 'orten' && (
-          <KlubbTab club={club} game={game} navigate={navigate} interactWithPolitician={interactWithPolitician} startFacilityProject={useGameStore.getState().startFacilityProject} recruitVolunteer={recruitVolunteer} />
+          <KlubbTab club={club} game={game} navigate={navigate} interactWithPolitician={interactWithPolitician} startFacilityProject={useGameStore.getState().startFacilityProject} recruitVolunteer={recruitVolunteer} activateCommunity={activateCommunity} />
         )}
 
         {/* ── Tab 4: Akademi ── */}

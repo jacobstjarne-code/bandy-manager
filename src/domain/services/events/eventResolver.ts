@@ -446,6 +446,27 @@ export function resolveEvent(
       }
       break
     }
+    case 'mecenatHappiness': {
+      if (effect.targetMecenatId && updatedGame.mecenater) {
+        const delta = effect.amount ?? 0
+        const costKr = effect.value ?? 0
+        updatedGame = {
+          ...updatedGame,
+          mecenater: updatedGame.mecenater.map(m =>
+            m.id === effect.targetMecenatId
+              ? { ...m, happiness: Math.max(0, Math.min(100, m.happiness + delta)) }
+              : m
+          ),
+        }
+        if (costKr !== 0) {
+          updatedGame = {
+            ...updatedGame,
+            clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, costKr),
+          }
+        }
+      }
+      break
+    }
     case 'boardPatience': {
       updatedGame = {
         ...updatedGame,

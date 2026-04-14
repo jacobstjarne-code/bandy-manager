@@ -482,6 +482,11 @@ export const useGameStore = create<GameState>()(
         const available = getAvailableProjects(club.facilities, game.facilityProjects ?? [])
         const project = available.find(p => p.id === projectId)
         if (!project) return { success: false, error: 'Projektet är inte tillgängligt' }
+        if (project.requiresKommun) {
+          const pol = game.localPolitician
+          if (!pol) return { success: false, error: 'Kräver kommunalt stöd — ingen kommunföreträdare kopplad' }
+          if (pol.relationship < 40) return { success: false, error: `Kommunalrådet ${pol.name} är inte redo att stödja detta (relation ${pol.relationship}/100). Bjud in till match eller presentera budget.` }
+        }
         if (club.finances < project.cost) return { success: false, error: `Inte tillräckligt med pengar (kräver ${Math.round(project.cost / 1000)} tkr)` }
         const currentMatchday = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max, f) => Math.max(max, f.roundNumber), 0)
         const started = startFacProj(project, currentMatchday)

@@ -155,9 +155,22 @@ export function generateSupporterEvents(
         body: `${sture} hör av sig. Klacken vill hyra en buss till nästa bortamatch.\n\n"${rolf} kommer med. Och ${elin} och hennes kompisar. Vi är tolv stycken hittills. Du behöver inte göra något — vi fixar det. Men det vore kul om du sa att du visste om det."`,
         choices: [
           {
+            id: 'subsidize',
+            label: 'Subventionera bussen (5 000 kr)',
+            subtitle: '💰 −5 000 kr · 💛 +8 stämning · 🏠 +3 orten',
+            effect: {
+              type: 'multiEffect',
+              subEffects: JSON.stringify([
+                { type: 'income', amount: -5000 },
+                { type: 'supporterMood', amount: 8 },
+                { type: 'communityStanding', amount: 3 },
+              ]),
+            },
+          },
+          {
             id: 'encourage',
             label: 'Peppa dem — det är kul!',
-            subtitle: '💛 +5 klackens stämning · 💰 +500 kr biljettintäkt om de köper',
+            subtitle: '💛 +5 klackens stämning',
             effect: { type: 'supporterMood', amount: 5 },
           },
           {
