@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Club } from '../../../domain/entities/Club'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { SectionCard } from '../SectionCard'
+import { positionShort } from '../../utils/formatters'
 
 const LOAN_CLUBS = ['Skutskärs IF', 'Tillberga IK', 'Bollnäs GIF', 'Delsbo IF', 'Norrby IF']
 
@@ -107,7 +108,7 @@ export function AkademiTab({ club, game, upgradeAcademy, upgradeFacilities, prom
                     <div>
                       <span style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-display)' }}>{p.firstName} {p.lastName}</span>
                       <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>
-                        {p.age} år · {p.position.substring(0, 3).toUpperCase()}
+                        {p.age} år · {positionShort(p.position)}
                       </span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

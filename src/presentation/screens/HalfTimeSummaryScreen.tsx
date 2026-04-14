@@ -18,7 +18,7 @@ export function HalfTimeSummaryScreen() {
   }
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)', position: 'relative' }}>
       <div className="texture-wood card-stack" style={{ flex: 1, overflowY: 'auto', padding: '24px 0 160px' }}>
 
         {/* ── RUBRIK ── */}

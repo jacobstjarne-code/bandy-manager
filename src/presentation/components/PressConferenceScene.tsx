@@ -105,17 +105,6 @@ export function PressConferenceScene({ event, journalist, onChoice }: Props) {
               }}
             >
               {choice.label}
-              {choice.subtitle && (
-                <span style={{
-                  display: 'block',
-                  fontSize: 10,
-                  fontWeight: 400,
-                  color: 'var(--text-muted)',
-                  marginTop: 3,
-                }}>
-                  {choice.subtitle}
-                </span>
-              )}
             </button>
           ))}
         </div>

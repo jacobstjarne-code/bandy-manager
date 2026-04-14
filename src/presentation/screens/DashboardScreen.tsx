@@ -9,7 +9,6 @@ import {
   useCanAdvance,
   usePlayoffInfo,
 } from '../store/gameStore'
-import { CoachMarks } from '../components/CoachMarks'
 import { PlayoffStatus, PlayoffRound } from '../../domain/enums'
 import { playSound } from '../audio/soundEffects'
 import { getFormResults } from '../utils/formUtils'
@@ -47,8 +46,7 @@ const LABEL: React.CSSProperties = {
 
 export function DashboardScreen() {
   const { game, advance, simulateRemainingStep } = useGameStore()
-  const markCoachMarksSeen = useGameStore(s => s.markCoachMarksSeen)
-  const markScreenVisited = useGameStore(s => s.markScreenVisited)
+const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const resolveWeeklyDecision = useGameStore(s => s.resolveWeeklyDecision)
   const club = useManagedClub()
   const standing = useCurrentStanding()
@@ -818,7 +816,8 @@ export function DashboardScreen() {
         </p>
       </div>
     </div>
-    {!game.coachMarksSeen && <CoachMarks onDone={markCoachMarksSeen} />}
+    {/* CoachMarks disabled until re-enabled for new players */}
+    {/* {!game.coachMarksSeen && <CoachMarks onDone={markCoachMarksSeen} />} */}
     </>
   )
 }

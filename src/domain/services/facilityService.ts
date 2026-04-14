@@ -77,11 +77,11 @@ export function getAvailableProjects(facilities: number, existingProjects: Facil
   // Nivå 80+
   if (facilities >= 80) {
     all.push({
-      id: 'inomhushall',
-      name: 'Inomhushall',
-      description: 'En ishall förändrar allt. Träning året om. Matcher i alla väder.',
+      id: 'ny_arena',
+      name: 'Ny arena',
+      description: 'En ny modern bandyarena med uppvärmd läktare och förbättrad isbana.',
       cost: 2000000, duration: 20, facilitiesBonus: 30,
-      otherEffects: ['Träning året om', 'Inga väderproblem', '+5000 publikkapacitet'],
+      otherEffects: ['+5000 publikkapacitet', 'Hemmaplansfördel +10%', 'Sponsorer +20%'],
       requiresKommun: true, kommunCostShare: 0.6,
       status: 'available',
     })

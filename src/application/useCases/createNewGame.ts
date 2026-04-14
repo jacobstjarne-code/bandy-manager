@@ -23,6 +23,7 @@ import { generateBoardObjectives } from '../../domain/services/boardObjectiveSer
 import { generateMecenat } from '../../domain/services/mecenatService'
 import { generateSupporterGroup } from '../../domain/services/supporterService'
 import { generateAICoaches } from '../../domain/services/aiCoachService'
+import { updatePlayerAvailability } from '../../domain/services/playerAvailabilityService'
 
 function pickRandom<T>(arr: T[], rand: () => number): T {
   return arr[Math.floor(rand() * arr.length)]
@@ -219,8 +220,13 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   const allFixtures = [...fixtures, ...cupFixtures]
 
   // Ensure the player's chosen club doesn't have hasIndoorArena
+  // PT-12: Set wageBudget = actual monthly salaries + 10% buffer so player doesn't start over budget
+  const managedMonthlyWages = players
+    .filter(p => p.clubId === input.clubId)
+    .reduce((sum, p) => sum + p.salary, 0)
+  const initialWageBudget = Math.ceil(managedMonthlyWages * 1.1 / 1000) * 1000
   const clubsFixed = clubs.map(c =>
-    c.id === input.clubId ? { ...c, hasIndoorArena: false } : c
+    c.id === input.clubId ? { ...c, hasIndoorArena: false, wageBudget: initialWageBudget } : c
   )
 
   const managedClub = clubsFixed.find(c => c.id === input.clubId)!
@@ -360,5 +366,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     previousAverageAttendance: undefined,
   }
 
-  return game
+  // PT-2/PT-3: Initialize player availability so transfer market is populated from game start
+  const playersWithAvailability = updatePlayerAvailability(game)
+  return { ...game, players: playersWithAvailability }
 }

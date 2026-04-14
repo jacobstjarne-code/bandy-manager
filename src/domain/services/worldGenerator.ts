@@ -355,17 +355,17 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
   },
 ]
 
-// Position distribution: 2 GK, 6 B (backar), 4 H (halvar), 5 M (innrar/yttar), 5 F (forwards) = 22
+// Position distribution: 2 MV, 4 B, 3 YH, 4 MF, 3 FW = 16
 const POSITION_POOL: PlayerPosition[] = [
   PlayerPosition.Goalkeeper, PlayerPosition.Goalkeeper,
-  PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender,
-  PlayerPosition.Half, PlayerPosition.Half, PlayerPosition.Half, PlayerPosition.Half,
-  PlayerPosition.Midfielder, PlayerPosition.Midfielder, PlayerPosition.Midfielder, PlayerPosition.Midfielder, PlayerPosition.Midfielder,
-  PlayerPosition.Forward, PlayerPosition.Forward, PlayerPosition.Forward, PlayerPosition.Forward, PlayerPosition.Forward,
+  PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender,
+  PlayerPosition.Half, PlayerPosition.Half, PlayerPosition.Half,
+  PlayerPosition.Midfielder, PlayerPosition.Midfielder, PlayerPosition.Midfielder, PlayerPosition.Midfielder,
+  PlayerPosition.Forward, PlayerPosition.Forward, PlayerPosition.Forward,
 ]
 
-// Age distribution — 22 entries matching the position pool size
-const AGE_DISTRIBUTION = [17, 18, 19, 19, 20, 21, 22, 22, 23, 24, 24, 25, 25, 26, 26, 27, 27, 28, 28, 29, 30, 31]
+// Age distribution — 16 entries matching the position pool size
+const AGE_DISTRIBUTION = [18, 19, 20, 21, 22, 23, 24, 24, 25, 26, 27, 27, 28, 29, 30, 31]
 
 function pickArchetype(
   rng: ReturnType<typeof makeRng>,
@@ -763,15 +763,6 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     }
   }
 
-  // Set hasIndoorArena on up to 3 high-reputation clubs
-  const highRepClubs = clubs
-    .filter(c => c.reputation >= 55)
-    .sort(() => rng.next() - 0.5)
-    .slice(0, 3)
-  const indoorArenaIds = new Set(highRepClubs.map(c => c.id))
-  const clubsWithArena = clubs.map(c =>
-    indoorArenaIds.has(c.id) ? { ...c, hasIndoorArena: true } : c
-  )
-
-  return { clubs: clubsWithArena, players: allPlayers }
+  // PT-11: No indoor arenas — bandy is always played outdoors
+  return { clubs, players: allPlayers }
 }
