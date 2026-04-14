@@ -270,10 +270,28 @@ export const commentary = {
     "Slutspelsbandy. Vinna eller försvinna. Varje mål är livsviktigt.",
   ],
 
+  quarterfinal_kickoff: [
+    "KVARTSFINAL! En match avgör allt. Vinna eller åka hem.",
+    "Det är här säsongen antingen lever vidare eller dör. Kvartsfinal.",
+    "Inga omgångar kvar att gömma sig bakom. Kvartsfinal — på med allvaret.",
+  ],
+
+  semifinal_kickoff: [
+    "SEMIFINAL! En match ifrån finalen. Det går knappt att föreställa sig pressen.",
+    "SM-finalen är en match bort. Semifinal — det här är varför man spelar.",
+    "Fyra lag kvar. Bara ett tar guldet. Semifinalen börjar nu.",
+  ],
+
   final_kickoff: [
     "SM-FINALEN! Det här är vad alla har väntat på. Sveriges Superbowl.",
     "Domaren blåser igång SM-finalen! Vilken stämning!",
     "Det största ögonblicket i svensk idrott. SM-final i bandy. Avslag!",
+  ],
+
+  semifinal_goal: [
+    "SEMIFINALMÅL! {player}! Det kan bli avgörande! {score}!",
+    "MÅL! {player} sätter dit den i semifinalen! {score}!",
+    "NÄSTAN FRAMME! {player} ger {team} ledningen i semifinalen! {score}!",
   ],
 
   final_goal: [

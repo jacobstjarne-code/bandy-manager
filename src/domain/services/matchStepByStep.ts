@@ -903,6 +903,12 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       if (rivalry) {
         commentaryText = fillTemplate(pickCommentary(commentary.derby_kickoff, rand), { ...templateVars, rivalry: rivalry.name })
         isDerbyStep = true
+      } else if (matchPhase === 'final') {
+        commentaryText = fillTemplate(pickCommentary(commentary.final_kickoff, rand), templateVars)
+      } else if (matchPhase === 'semifinal') {
+        commentaryText = fillTemplate(pickCommentary(commentary.semifinal_kickoff, rand), templateVars)
+      } else if (matchPhase === 'quarterfinal') {
+        commentaryText = fillTemplate(pickCommentary(commentary.quarterfinal_kickoff, rand), templateVars)
       } else if (supporterCtx && rand() < 0.30) {
         const supporterVars = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
         commentaryText = fillTemplate(pickCommentary(commentary.supporter_kickoff, rand), supporterVars)
@@ -932,7 +938,11 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       commentaryText = cornerIntro + ' ' + goalText
     } else if (goalScored && scorerPlayerId) {
       templateVars = { ...templateVars, player: findPlayerName(scorerPlayerId) }
-      if (rivalry && rand() < 0.40) {
+      if (matchPhase === 'final' && rand() < 0.60) {
+        commentaryText = fillTemplate(pickCommentary(commentary.final_goal, rand), templateVars)
+      } else if (matchPhase === 'semifinal' && rand() < 0.50) {
+        commentaryText = fillTemplate(pickCommentary(commentary.semifinal_goal, rand), templateVars)
+      } else if (rivalry && rand() < 0.40) {
         commentaryText = fillTemplate(pickCommentary(commentary.derby_goal, rand), { ...templateVars, player: findPlayerName(scorerPlayerId), rivalry: rivalry.name })
         isDerbyStep = true
       } else if (input.storylines && scorerPlayerId && rand() < 0.30) {
@@ -1134,11 +1144,16 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       // Referee line (low probability, adds flavour) — checked outside event filter
 
 
+      // Playoff general atmosphere commentary — every ~8 steps during knockout phases
+      if (matchPhase !== 'regular' && step > 5 && step % 8 === 0 && rand() < 0.45) {
+        commentaryText = fillTemplate(pickCommentary(commentary.playoff_general, rand), templateVars)
+      }
+
       // Protecting lead / chasing commentary (late game, Sprint B)
       if (step >= 45 && managedIsHome !== undefined && rand() < 0.20) {
         const managedScore = managedIsHome ? homeScore : awayScore
         const opponentScore = managedIsHome ? awayScore : homeScore
-        const mode = getSecondHalfMode(managedScore, opponentScore, step)
+        const mode = getSecondHalfMode(managedScore, opponentScore, step, matchPhase)
         if (mode === 'controlling') {
           commentaryText = fillTemplate(pickCommentary(commentary.context_protecting_lead, rand),
             { ...templateVars, team: managedIsHome ? homeTeamRef : awayTeamRef })
