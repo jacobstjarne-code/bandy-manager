@@ -1,0 +1,133 @@
+{
+  "_meta": {
+    "source": "bandygrytan.se via Firebase Realtime DB",
+    "schemaVersion": 2,
+    "scrapedAt": "2026-04-14",
+    "matchCount": 1124,
+    "seasons": ["2019-20", "2020-21", "2021-22", "2022-23", "2024-25", "2025-26"],
+    "note": "Elitserien Herr, regular season only. 2023-24 saknade matchdata i API."
+  },
+
+  "calibrationTargets": {
+    "avgGoalsPerMatch":      { "value": 9.12,  "tolerance": 1.5,  "note": "Snitt 8.2–10.3 per säsong" },
+    "avgHomeGoals":          { "value": 4.88,  "tolerance": 0.5 },
+    "avgAwayGoals":          { "value": 4.24,  "tolerance": 0.5 },
+    "homeWinPct":            { "value": 50.2,  "tolerance": 5.0,  "note": "Snitt 47–56% per säsong" },
+    "drawPct":               { "value": 11.6,  "tolerance": 3.0,  "note": "Snitt 8–13% per säsong" },
+    "awayWinPct":            { "value": 38.3,  "tolerance": 5.0 },
+    "cornerGoalPct":         { "value": 22.2,  "tolerance": 3.0,  "note": "Snitt 20–25% per säsong" },
+    "penaltyGoalPct":        { "value": 5.4,   "tolerance": 1.5,  "note": "Snitt 4–6% per säsong" },
+    "avgCornersPerMatch":    { "value": 17.72, "tolerance": 2.0 },
+    "avgSuspensionsPerMatch":{ "value": 3.77,  "tolerance": 0.5 },
+    "avgShotsPerMatch":      { "value": 10.5,  "tolerance": 2.0 },
+    "avgHalfTimeGoals":      { "value": 4.19,  "tolerance": 0.5 },
+    "htLeadWinPct":          { "value": 46.6,  "tolerance": 5.0 },
+    "goalsSecondHalfPct":    { "value": 60.7,  "tolerance": 3.0,  "note": "OBS: 60.7% inte 54.3% — föregående mål var fel" }
+  },
+
+  "goalTimeDistribution": {
+    "avgMinute": 48.2,
+    "median": 49.0,
+    "byDecile": [
+      { "range": "0-10",  "count": 1003, "pct": 9.7  },
+      { "range": "10-20", "count": 1007, "pct": 9.8  },
+      { "range": "20-30", "count": 1014, "pct": 9.8  },
+      { "range": "30-40", "count": 1027, "pct": 10.0 },
+      { "range": "40-50", "count": 1222, "pct": 11.8 },
+      { "range": "50-60", "count": 1128, "pct": 10.9 },
+      { "range": "60-70", "count": 1085, "pct": 10.5 },
+      { "range": "70-80", "count": 1101, "pct": 10.7 },
+      { "range": "80-90", "count": 1327, "pct": 12.9 },
+      { "range": "90+",   "count": 407,  "pct": 3.9  }
+    ],
+    "note": "Tydlig spike min 40-50 (halvtidsjakt) och 80-90 (slutryckning)"
+  },
+
+  "bySeason": {
+    "2019-20": {
+      "matchCount": 182,
+      "avgGoalsPerMatch": 8.20,
+      "homeWinPct": 51.1,
+      "drawPct": 11.0,
+      "cornerGoalPct": 19.9,
+      "penaltyGoalPct": 6.2,
+      "avgSuspensionsPerMatch": 3.70,
+      "avgCornersPerMatch": 16.45
+    },
+    "2020-21": {
+      "matchCount": 182,
+      "avgGoalsPerMatch": 9.12,
+      "homeWinPct": 48.4,
+      "drawPct": 13.2,
+      "cornerGoalPct": 21.6,
+      "penaltyGoalPct": 5.9,
+      "avgSuspensionsPerMatch": 4.01,
+      "avgCornersPerMatch": 17.39
+    },
+    "2021-22": {
+      "matchCount": 240,
+      "avgGoalsPerMatch": 8.99,
+      "homeWinPct": 48.3,
+      "drawPct": 11.7,
+      "cornerGoalPct": 21.1,
+      "penaltyGoalPct": 5.1,
+      "avgSuspensionsPerMatch": 3.57,
+      "avgCornersPerMatch": 17.59
+    },
+    "2022-23": {
+      "matchCount": 156,
+      "avgGoalsPerMatch": 8.25,
+      "homeWinPct": 55.8,
+      "drawPct": 12.8,
+      "cornerGoalPct": 23.5,
+      "penaltyGoalPct": 3.8,
+      "avgSuspensionsPerMatch": 3.14,
+      "avgCornersPerMatch": 17.70
+    },
+    "2024-25": {
+      "matchCount": 182,
+      "avgGoalsPerMatch": 10.34,
+      "homeWinPct": 51.6,
+      "drawPct": 8.2,
+      "cornerGoalPct": 22.5,
+      "penaltyGoalPct": 4.8,
+      "avgSuspensionsPerMatch": 3.86,
+      "avgCornersPerMatch": 18.19
+    },
+    "2025-26": {
+      "matchCount": 182,
+      "avgGoalsPerMatch": 9.74,
+      "homeWinPct": 47.3,
+      "drawPct": 12.6,
+      "cornerGoalPct": 24.9,
+      "penaltyGoalPct": 6.4,
+      "avgSuspensionsPerMatch": 4.29,
+      "avgCornersPerMatch": 19.07
+    }
+  },
+
+  "engineConstantsAfterCalibration": {
+    "date": "2026-04-14",
+    "homeAdvantage": 0.14,
+    "goalThresholdAttack": "chanceQuality * 1.20 * (1 - defenderGkStrength * 0.30) * goalMod",
+    "goalThresholdTransition": "chanceQuality * 0.58 * (1 - defGK * 0.35) * 1.15 * goalMod",
+    "goalThresholdHalfchance": "chanceQuality * 0.63 * goalMod",
+    "goalThresholdCorner": "clamp((cornerChance - defenseResist) * 0.30 * goalMod + 0.14, 0.10, 0.30)",
+    "calibrateScriptResults": {
+      "goalsPerMatch": 10.3,
+      "cornerGoalShare": 0.226,
+      "homeWinRate": 0.465,
+      "drawRate": 0.095,
+      "secondHalfShare": 0.526
+    },
+    "knownGap_drawPct": "Motor ger 9.5%, verklighet 11.6% — acceptabelt men kan finslipas",
+    "knownGap_secondHalfShare": "Motor ger 52.6%, verklighet 60.7% — TIMING_WEIGHTS behöver se över separat"
+  },
+
+  "pendingCalibrationWork": [
+    "secondHalfShare: 52.6% vs 60.7% verklighet — TIMING_WEIGHTS steg 40-60 behöver ytterligare boost",
+    "drawPct: 9.5% vs 11.6% verklighet — homeAdvantage möjligen lite hög",
+    "avgSuspensionsPerMatch: inte verifierat mot motor ännu (mål: 3.77/match)",
+    "calibrate_v2.ts: väntar på att bandygrytan_detailed.json kopieras till docs/data/"
+  ]
+}
