@@ -61,9 +61,10 @@ interface DetailedMatch {
 
 interface DetailedData {
   _meta: { totalMatches: number; seasons: string[] }
+  calibrationTargets: Record<string, { target: number; tolerance: number }>
   combined: Record<string, unknown>
   bySeason: Record<string, Record<string, unknown>>
-  calibrationTargets: Record<string, { target: number; tolerance: number }>
+  herr?: { matches?: DetailedMatch[] }
   matches: DetailedMatch[]
 }
 
@@ -77,11 +78,11 @@ let detailedData: DetailedData | null = null
 let hasDetailedData = false
 
 if (fs.existsSync(DETAILED_PATH)) {
-  detailedData = JSON.parse(fs.readFileSync(DETAILED_PATH, 'utf-8'))
-  if (detailedData) {
-    detailedData.matches = detailedData.matches.filter((m: Record<string, unknown>) => !m.___EXAMPLE)
-    hasDetailedData = detailedData.matches.length > 0
-  }
+  const raw = JSON.parse(fs.readFileSync(DETAILED_PATH, 'utf-8'))
+  // Matches live under raw.herr.matches (schema v2) or raw.matches (legacy)
+  const matchArray: DetailedMatch[] = raw?.herr?.matches ?? raw?.matches ?? []
+  detailedData = { ...raw, matches: matchArray.filter((m: Record<string, unknown>) => !m.___EXAMPLE) }
+  hasDetailedData = detailedData.matches.length > 0
 }
 
 if (!hasDetailedData) {
@@ -346,7 +347,7 @@ function analyzeSeasonCurves(matches: DetailedMatch[]) {
   console.log('  3. SÄSONGSKURVOR — MÅLSNITT OCH HEMMAVINST PER OMGÅNGSFAS')
   console.log(`${'═'.repeat(70)}\n`)
 
-  const regular = matches.filter(m => m.phase === 'regular')
+  const regular = matches.filter(m => m.phase === 'regular' && m.round != null)
   const byRound: Record<number, DetailedMatch[]> = {}
   for (const m of regular) { if (!byRound[m.round]) byRound[m.round] = []; byRound[m.round].push(m) }
 
@@ -657,7 +658,10 @@ console.log('═'.repeat(70))
 
 if (hasDetailedData && detailedData) {
   const matches = detailedData.matches
-  console.log(`\n  Laddat ${matches.length} matcher från ${detailedData._meta.seasons.length} säsonger`)
+  const seasonCount = (detailedData._meta as Record<string, unknown>).seasons
+    ? ((detailedData._meta as Record<string, unknown>).seasons as unknown[]).length
+    : new Set(matches.map(m => m.season)).size
+  console.log(`\n  Laddat ${matches.length} matcher från ${seasonCount} säsonger`)
   analyzeGoalTiming(matches)
   analyzeFouls(matches)
   analyzePowerplay(matches)
