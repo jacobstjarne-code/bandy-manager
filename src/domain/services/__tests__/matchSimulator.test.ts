@@ -183,7 +183,7 @@ describe('simulateMatch', () => {
     }
 
     const avg = totals.reduce((a, b) => a + b, 0) / totals.length
-    const inSaneRange = totals.filter(t => t >= 2 && t <= 10).length
+    const inSaneRange = totals.filter(t => t >= 4 && t <= 20).length
 
     expect(avg).toBeGreaterThanOrEqual(2)
     expect(avg).toBeLessThanOrEqual(12)

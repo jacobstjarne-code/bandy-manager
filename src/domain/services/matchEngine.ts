@@ -27,7 +27,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     awayLineup,
     homePlayers,
     awayPlayers,
-    homeAdvantage = 0.035,
+    homeAdvantage = 0.14,
     seed,
     weather,
     isPlayoff = false,
@@ -348,7 +348,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
 
         const shotResult = rand()
         const defenderGkStrength = defGK
-        const goalThreshold = chanceQuality * 0.72 * (1 - defenderGkStrength * 0.30) * goalMod
+        const goalThreshold = chanceQuality * 1.20 * (1 - defenderGkStrength * 0.30) * goalMod
 
         if (shotResult < goalThreshold) {
           // GOAL
@@ -409,7 +409,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
         if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
 
         const shotResult = rand()
-        const goalThreshold = chanceQuality * 0.35 * (1 - defGK * 0.35) * 1.15 * goalMod
+        const goalThreshold = chanceQuality * 0.58 * (1 - defGK * 0.35) * 1.15 * goalMod
 
         if (shotResult < goalThreshold) {
           const scorer = getGoalScorer(attackingStarters)
@@ -461,7 +461,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
         : 0
       const cornerChance = attCorner * 0.7 + randRange(rand, 0, 0.3) + specialistBonus
       const defenseResist = defDefense * 0.5 + defGK * 0.3 + randRange(rand, 0, 0.2)
-      const goalThreshold = clamp((cornerChance - defenseResist) * 0.14 * goalMod + 0.03, 0.03, 0.09)
+      const goalThreshold = clamp((cornerChance - defenseResist) * 0.30 * goalMod + 0.14, 0.10, 0.30)
 
       const r = rand()
       if (r < goalThreshold) {
@@ -511,7 +511,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     } else if (seqType === 'halfchance') {
       if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
       const chanceQuality = randRange(rand, 0.05, 0.25) * (isPlayoff ? 1.05 : 1.0)
-      const goalThreshold = chanceQuality * 0.38 * goalMod
+      const goalThreshold = chanceQuality * 0.63 * goalMod
 
       if (rand() < goalThreshold) {
         const scorer = getGoalScorer(attackingStarters)

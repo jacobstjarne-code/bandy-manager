@@ -499,15 +499,15 @@ ${flagsSection}
     console.log(`\nAnalysis written to: ${outputPath}`)
 
     // === Assertions ===
-    // 1. Average goals per match between 4.0 and 8.0 (updated calibration target)
-    expect(avgGoalsPerMatch, `Goals per match (${avgGoalsPerMatch.toFixed(2)}) should be between 4 and 8`).toBeGreaterThan(4.0)
-    expect(avgGoalsPerMatch, `Goals per match (${avgGoalsPerMatch.toFixed(2)}) should be between 4 and 8`).toBeLessThan(8.0)
+    // 1. Average goals per match between 7.0 and 13.0 (Bandygrytan target: ~10.0)
+    expect(avgGoalsPerMatch, `Goals per match (${avgGoalsPerMatch.toFixed(2)}) should be between 7 and 13`).toBeGreaterThan(7.0)
+    expect(avgGoalsPerMatch, `Goals per match (${avgGoalsPerMatch.toFixed(2)}) should be between 7 and 13`).toBeLessThan(13.0)
 
     // 2. Zero-zero matches should be < 8 per season
     expect(avgZeroZero, `0-0 matches (${avgZeroZero.toFixed(1)}) should be < 8`).toBeLessThan(8)
 
-    // 3. High-scoring matches (8+) < 35% (< 46.2) — higher threshold to match ~5.5 goals/match calibration
-    expect(avgHighScoring, `High-scoring matches (${avgHighScoring.toFixed(1)}) should be < 46`).toBeLessThan(46)
+    // 3. High-scoring matches (8+) < 120 per season — ~10 goals/match means most matches will be 8+
+    expect(avgHighScoring, `High-scoring matches (${avgHighScoring.toFixed(1)}) should be < 120`).toBeLessThan(120)
 
     // 4. Corner goals between 0% and 45% of total goals
     expect(avgCornerGoalsPct, 'Corner goal % should be >= 0').toBeGreaterThanOrEqual(0)

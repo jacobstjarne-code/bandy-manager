@@ -7,10 +7,31 @@ interface CornerInteractionProps {
   onChoose: (zone: CornerZone, delivery: CornerDelivery) => void
 }
 
-const DELIVERY_LABELS: Record<CornerDelivery, { label: string; sub: string }> = {
-  hard:  { label: 'Hårt skott', sub: 'Snabbt rus' },
-  low:   { label: 'Låg pass',   sub: 'Kontroll' },
-  short: { label: 'Kort hörna', sub: 'Överraska' },
+const DELIVERY_OPTIONS: { key: CornerDelivery; emoji: string; label: string; sub: string }[] = [
+  { key: 'hard',  emoji: '💨', label: 'Hårt skott', sub: 'Snabbt rus' },
+  { key: 'low',   emoji: '🎯', label: 'Låg pass',   sub: 'Kontroll' },
+  { key: 'short', emoji: '🤫', label: 'Kort hörna', sub: 'Överraska' },
+]
+
+const cardStyle: React.CSSProperties = {
+  background: 'var(--bg-dark)',
+  borderRadius: 12,
+  padding: 16,
+  border: '1.5px solid rgba(196,122,58,0.3)',
+  boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+}
+
+const infoRowStyle: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', gap: 8,
+  padding: '6px 8px',
+  background: 'var(--bg-dark-surface)',
+  borderRadius: 4,
+  marginBottom: 10,
+}
+
+const sectionLabelStyle: React.CSSProperties = {
+  fontSize: 9, color: 'var(--text-light-secondary)', marginBottom: 4,
+  fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' as const,
 }
 
 export function CornerInteraction({ data, outcome, onChoose }: CornerInteractionProps) {
@@ -29,116 +50,137 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
 
   return (
     <div style={{ margin: '6px 0' }}>
-      {/* Corner card — card-sharp, inline in feed */}
-      <div className="card-sharp" style={{ padding: '12px 14px' }}>
+      <div style={cardStyle}>
 
-        {/* Header row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>
-            🏒 HÖRNA — {minuteStr} minuten
-          </p>
-          <span style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 600 }}>
-            {data.cornerTakerName}
+        {/* Title */}
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', margin: '0 0 8px 0' }}>
+          📐 HÖRNA — {minuteStr} minuten
+        </p>
+
+        {/* Info row */}
+        <div style={infoRowStyle}>
+          <span style={{ fontSize: 10, color: 'var(--text-light-secondary)' }}>Hörnläggare:</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-light)' }}>
+            {data.cornerTakerName.split('. ')[1] ?? data.cornerTakerName}
           </span>
-        </div>
-
-        {/* Corner taker row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, padding: '6px 8px', background: 'var(--bg-elevated)', borderRadius: 4 }}>
-          <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Hörnläggare:</span>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>{data.cornerTakerName.split('. ')[1] ?? data.cornerTakerName}</span>
-          <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 'auto' }}>
+          <span style={{ fontSize: 10, color: 'var(--text-light-secondary)', marginLeft: 'auto' }}>
             {data.topRusherName} rusar
           </span>
         </div>
 
         {/* Pitch SVG */}
-        <div style={{ position: 'relative', marginBottom: 10 }}>
-          <svg viewBox="0 0 200 100" width="100%" style={{ display: 'block' }}>
-            {/* Ice surface */}
-            <rect x="0" y="0" width="200" height="100" fill="#d8e8f0" rx="3" />
-            {/* Penalty arc */}
-            <path d="M60,0 A60,50 0 0,1 60,100" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="0.8" />
-            {/* Goal */}
-            <rect x="0" y="35" width="4" height="30" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" rx="1" />
-            {/* Goalkeeper */}
-            <circle cx="12" cy="50" r="4" fill="var(--danger)" opacity="0.6" />
-            {/* Defenders on goal line */}
-            {[30, 40, 50, 60, 70].map((y, i) => (
-              <circle key={i} cx="4" cy={y} r="3" fill="var(--danger)" opacity="0.4" />
-            ))}
-            {/* Corner point */}
-            <circle cx={cornerSide === 'right' ? 195 : 5} cy="95" r="3" fill="var(--accent)" />
-            <text
-              x={cornerSide === 'right' ? 175 : 25}
-              y="93" fontSize="6" fill="var(--accent)" fontWeight="600"
-              textAnchor={cornerSide === 'right' ? 'end' : 'start'}
-            >{cornerSide === 'right' ? 'Hörna från höger' : 'Hörna från vänster'}</text>
-            {/* Zone buttons */}
-            <rect x="15" y="15" width="35" height="18" rx="3"
-              fill={zone === 'near' ? 'rgba(196,122,58,0.35)' : 'rgba(196,122,58,0.08)'}
-              stroke={zone === 'near' ? 'var(--accent)' : 'var(--border)'} strokeWidth={zone === 'near' ? '1.5' : '0.8'}
-              style={{ cursor: 'pointer' }}
-              onClick={() => !confirmed && setZone('near')}
-            />
-            <text x="32" y="27" fontSize="6" fill={zone === 'near' ? 'var(--accent)' : 'var(--text-muted)'} textAnchor="middle" fontWeight={zone === 'near' ? '600' : '400'}>NÄRA</text>
-            <rect x="15" y="38" width="35" height="18" rx="3"
-              fill={zone === 'center' ? 'rgba(196,122,58,0.35)' : 'rgba(196,122,58,0.08)'}
-              stroke={zone === 'center' ? 'var(--accent)' : 'var(--border)'} strokeWidth={zone === 'center' ? '1.5' : '0.8'}
-              style={{ cursor: 'pointer' }}
-              onClick={() => !confirmed && setZone('center')}
-            />
-            <text x="32" y="50" fontSize="6" fill={zone === 'center' ? 'var(--accent)' : 'var(--text-muted)'} textAnchor="middle" fontWeight={zone === 'center' ? '600' : '400'}>MITT</text>
-            <rect x="15" y="61" width="35" height="18" rx="3"
-              fill={zone === 'far' ? 'rgba(196,122,58,0.35)' : 'rgba(196,122,58,0.08)'}
-              stroke={zone === 'far' ? 'var(--accent)' : 'var(--border)'} strokeWidth={zone === 'far' ? '1.5' : '0.8'}
-              style={{ cursor: 'pointer' }}
-              onClick={() => !confirmed && setZone('far')}
-            />
-            <text x="32" y="73" fontSize="6" fill={zone === 'far' ? 'var(--accent)' : 'var(--text-muted)'} textAnchor="middle" fontWeight={zone === 'far' ? '600' : '400'}>BORTRE</text>
-            {/* Rushing players */}
-            <line x1="120" y1="30" x2="55" y2="30" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="3,2" />
-            <line x1="130" y1="50" x2="55" y2="50" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="3,2" />
-            <line x1="120" y1="70" x2="55" y2="70" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="3,2" />
-            <circle cx="120" cy="30" r="4" fill="var(--accent)" opacity="0.7" />
-            <circle cx="130" cy="50" r="4" fill="var(--accent)" opacity="0.7" />
-            <circle cx="120" cy="70" r="4" fill="var(--accent)" opacity="0.7" />
-          </svg>
-        </div>
+        <svg viewBox="0 0 220 110" width="100%" style={{ display: 'block', borderRadius: 6, overflow: 'hidden', marginBottom: 10 }}>
+          <defs>
+            <linearGradient id="iceC" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#E8E4DC" />
+              <stop offset="100%" stopColor="#D8D4CC" />
+            </linearGradient>
+          </defs>
+          <rect width="220" height="110" fill="url(#iceC)" rx="4" />
+          {/* Penalty arc */}
+          <path d="M70,0 A70,55 0 0,1 70,110" fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth="0.8" />
+          {/* Goal */}
+          <rect x="0" y="37" width="5" height="36" fill="none" stroke="#999" strokeWidth="1.5" rx="1" />
+          {/* Goalkeeper */}
+          <circle cx="14" cy="55" r="5" fill="#2C2820" opacity="0.7" />
+          <text x="14" y="57" textAnchor="middle" fontSize="5" fill="white" fontWeight="700">MV</text>
+          {/* Defenders */}
+          {[38, 48, 58, 68].map((y, i) => (
+            <circle key={i} cx="6" cy={y} r="3" fill="#B05040" opacity="0.5" />
+          ))}
+          {/* Zone buttons */}
+          <rect x="22" y="14" width="42" height="20" rx="4"
+            fill={zone === 'near' ? 'rgba(196,122,58,0.3)' : 'rgba(196,122,58,0.08)'}
+            stroke={zone === 'near' ? 'var(--accent)' : 'rgba(196,122,58,0.4)'}
+            strokeWidth={zone === 'near' ? '1.5' : '0.8'}
+            style={{ cursor: confirmed ? 'default' : 'pointer' }}
+            onClick={() => !confirmed && setZone('near')}
+          />
+          <text x="43" y="27" fontSize="7" fill={zone === 'near' ? 'var(--accent)' : 'var(--text-light-secondary)'}
+            textAnchor="middle" fontWeight={zone === 'near' ? '700' : '500'} style={{ pointerEvents: 'none' }}>
+            NÄRA
+          </text>
+          <rect x="22" y="42" width="42" height="20" rx="4"
+            fill={zone === 'center' ? 'rgba(196,122,58,0.3)' : 'rgba(196,122,58,0.08)'}
+            stroke={zone === 'center' ? 'var(--accent)' : 'rgba(196,122,58,0.4)'}
+            strokeWidth={zone === 'center' ? '1.5' : '0.8'}
+            style={{ cursor: confirmed ? 'default' : 'pointer' }}
+            onClick={() => !confirmed && setZone('center')}
+          />
+          <text x="43" y="55" fontSize="7" fill={zone === 'center' ? 'var(--accent)' : 'var(--text-light-secondary)'}
+            textAnchor="middle" fontWeight={zone === 'center' ? '700' : '500'} style={{ pointerEvents: 'none' }}>
+            MITT{zone === 'center' ? ' ●' : ''}
+          </text>
+          <rect x="22" y="70" width="42" height="20" rx="4"
+            fill={zone === 'far' ? 'rgba(196,122,58,0.3)' : 'rgba(196,122,58,0.08)'}
+            stroke={zone === 'far' ? 'var(--accent)' : 'rgba(196,122,58,0.4)'}
+            strokeWidth={zone === 'far' ? '1.5' : '0.8'}
+            style={{ cursor: confirmed ? 'default' : 'pointer' }}
+            onClick={() => !confirmed && setZone('far')}
+          />
+          <text x="43" y="83" fontSize="7" fill={zone === 'far' ? 'var(--accent)' : 'var(--text-light-secondary)'}
+            textAnchor="middle" fontWeight={zone === 'far' ? '700' : '500'} style={{ pointerEvents: 'none' }}>
+            BORTRE
+          </text>
+          {/* Rush lines */}
+          <line x1="140" y1="25" x2="70" y2="25" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="3,2" />
+          <line x1="150" y1="55" x2="70" y2="52" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="3,2" />
+          <line x1="140" y1="80" x2="70" y2="80" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="3,2" />
+          <circle cx="140" cy="25" r="4" fill="var(--accent)" opacity="0.7" />
+          <circle cx="150" cy="55" r="4" fill="var(--accent)" opacity="0.7" />
+          <circle cx="140" cy="80" r="4" fill="var(--accent)" opacity="0.7" />
+          {/* Corner point */}
+          <circle cx={cornerSide === 'right' ? 215 : 5} cy="105" r="4" fill="var(--accent)" stroke="#fff" strokeWidth="1" />
+          <text
+            x={cornerSide === 'right' ? 198 : 22}
+            y="100" fontSize="6" fill="var(--accent)" fontWeight="600"
+            textAnchor={cornerSide === 'right' ? 'end' : 'start'}
+          >
+            {cornerSide === 'right' ? 'Hörna från höger' : 'Hörna från vänster'}
+          </text>
+        </svg>
 
         {/* Delivery selector */}
-        <p style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 4, fontWeight: 600, letterSpacing: '1px' }}>LEVERANS</p>
-        <div style={{ display: 'flex', gap: 6, marginBottom: confirmed ? 0 : 10 }}>
-          {(Object.keys(DELIVERY_LABELS) as CornerDelivery[]).map(d => (
+        <p style={sectionLabelStyle}>LEVERANS</p>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 0 }}>
+          {DELIVERY_OPTIONS.map(({ key, emoji, label, sub }) => (
             <button
-              key={d}
-              onClick={() => !confirmed && setDelivery(d)}
+              key={key}
+              onClick={() => !confirmed && setDelivery(key)}
               style={{
-                flex: 1, padding: '10px 0', minHeight: 44, borderRadius: 6, fontSize: 11, fontWeight: 600,
-                cursor: confirmed ? 'default' : 'pointer', textAlign: 'center',
-                background: delivery === d ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
-                border: `1px solid ${delivery === d ? 'var(--accent)' : 'var(--border)'}`,
-                color: delivery === d ? 'var(--accent)' : 'var(--text-primary)',
+                flex: 1,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                padding: '10px 8px', borderRadius: 8,
+                border: `1.5px solid ${delivery === key ? 'var(--accent)' : 'rgba(196,122,58,0.25)'}`,
+                background: delivery === key ? 'var(--bg-dark-elevated)' : 'var(--bg-dark-surface)',
+                cursor: confirmed ? 'default' : 'pointer',
               }}
             >
-              {DELIVERY_LABELS[d].label}
-              <span style={{ display: 'block', fontSize: 9, fontWeight: 400, color: 'var(--text-muted)', marginTop: 2 }}>{DELIVERY_LABELS[d].sub}</span>
+              <span style={{ fontSize: 20 }}>{emoji}</span>
+              <span style={{ color: 'var(--text-light)', fontSize: 12, fontWeight: 700 }}>{label}</span>
+              <span style={{ color: 'var(--text-light-secondary)', fontSize: 9, textTransform: 'uppercase' as const, letterSpacing: '0.5px' }}>{sub}</span>
             </button>
           ))}
         </div>
 
-        {/* Confirm button — only shown before confirmed */}
+        {/* Confirm */}
         {!confirmed && (
           <button
             onClick={handleConfirm}
-            className="btn btn-copper"
-            style={{ width: '100%', padding: '11px', fontSize: 13, fontWeight: 700, letterSpacing: '0.5px', marginTop: 2 }}
+            style={{
+              width: '100%', padding: 11, borderRadius: 8, border: 'none',
+              background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))',
+              color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              letterSpacing: '1px', marginTop: 10,
+              boxShadow: '0 3px 10px rgba(162,88,40,0.4)',
+            }}
           >
             SLÅ HÖRNAN →
           </button>
         )}
       </div>
 
-      {/* Outcome — shown after resolution, same style as commentary */}
+      {/* Outcome */}
       {outcome && (
         <div style={{ padding: '8px 12px', marginTop: 4 }}>
           <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>{data.minute}'</p>
