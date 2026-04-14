@@ -21,6 +21,9 @@ import { CommentaryFeed } from '../components/match/CommentaryFeed'
 import { resolveCorner } from '../../domain/services/cornerInteractionService'
 import type { CornerZone, CornerDelivery } from '../../domain/services/cornerInteractionService'
 import { CornerInteraction } from '../components/match/CornerInteraction'
+import { resolvePenalty, resolveAIPenaltyKeeperDive } from '../../domain/services/penaltyInteractionService'
+import type { PenaltyDirection, PenaltyHeight } from '../../domain/services/penaltyInteractionService'
+import { PenaltyInteraction } from '../components/match/PenaltyInteraction'
 import { mulberry32 } from '../../domain/utils/random'
 import { FirstVisitHint } from '../components/FirstVisitHint'
 
@@ -91,6 +94,9 @@ export function MatchLiveScreen() {
   const [activeCorner, setActiveCorner] = useState<import('../../domain/services/cornerInteractionService').CornerInteractionData | null>(null)
   const [cornerOutcome, setCornerOutcome] = useState<import('../../domain/services/cornerInteractionService').CornerOutcome | null>(null)
 
+  const [activePenalty, setActivePenalty] = useState<import('../../domain/services/penaltyInteractionService').PenaltyInteractionData | null>(null)
+  const [penaltyOutcome, setPenaltyOutcome] = useState<import('../../domain/services/penaltyInteractionService').PenaltyOutcome | null>(null)
+
   const feedRef = useRef<HTMLDivElement>(null)
   const hasSimulated = useRef(false)
 
@@ -119,6 +125,13 @@ export function MatchLiveScreen() {
       rivalry: rivalry ?? undefined,
       storylines: game.storylines?.map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
       managedIsHome: fixture.homeClubId === game.managedClubId,
+      captainPlayerId: game.captainPlayerId,
+      fanFavoritePlayerId: game.supporterGroup?.favoritePlayerId,
+      supporterContext: game.supporterGroup ? {
+        mood: game.supporterGroup.mood,
+        members: game.supporterGroup.members,
+        leaderName: game.supporterGroup.leader.name,
+      } : undefined,
     })
     const allSteps: MatchStep[] = []
     for (const step of gen) allSteps.push(step)
@@ -254,6 +267,13 @@ export function MatchLiveScreen() {
       return
     }
 
+    // Interactive penalty — pause and show UI
+    if (step.penaltyInteractionData && !isFastForward && !activePenalty) {
+      setActivePenalty(step.penaltyInteractionData)
+      setPenaltyOutcome(null)
+      return
+    }
+
     if (step.phase === 'overtime' && prevPhase.current !== 'overtime' && !isFastForward) {
       prevPhase.current = 'overtime'
       setShowOvertimeOverlay(true)
@@ -346,6 +366,40 @@ export function MatchLiveScreen() {
     setTimeout(() => {
       setActiveCorner(null)
       setCornerOutcome(null)
+      setCurrentStep(prev => prev + 1)
+    }, 1500)
+  }
+
+  function handlePenaltyChoice(dir: PenaltyDirection, height: PenaltyHeight) {
+    if (!activePenalty || !fixture || !game) return
+
+    const managedIsHome = fixture.homeClubId === game.managedClubId
+    const rand = mulberry32(Date.now())
+    const keeperDive = resolveAIPenaltyKeeperDive('offensive', rand)
+    const outcome = resolvePenalty(activePenalty, dir, height, keeperDive, rand)
+    setPenaltyOutcome(outcome)
+
+    if (outcome.type === 'goal') {
+      setSteps(prev => prev.map((s, idx) => {
+        if (idx <= currentStep) return s
+        return managedIsHome
+          ? { ...s, homeScore: s.homeScore + 1 }
+          : { ...s, awayScore: s.awayScore + 1 }
+      }))
+      playSound('goal')
+      playSound('goalHit')
+      if (managedIsHome) {
+        setHomeScoreFlash(true)
+        setTimeout(() => setHomeScoreFlash(false), 2000)
+      } else {
+        setAwayScoreFlash(true)
+        setTimeout(() => setAwayScoreFlash(false), 2000)
+      }
+    }
+
+    setTimeout(() => {
+      setActivePenalty(null)
+      setPenaltyOutcome(null)
       setCurrentStep(prev => prev + 1)
     }, 1500)
   }
@@ -565,13 +619,21 @@ export function MatchLiveScreen() {
         matchDone={matchDone && !isSmFinal && !isCupFinal}
         managedIsHome={managedIsHomeForSubs}
         onNavigateToReview={() => navigate('/game/review', { replace: true })}
-        cornerNode={activeCorner ? (
-          <CornerInteraction
-            data={activeCorner}
-            outcome={cornerOutcome}
-            onChoose={handleCornerChoice}
-          />
-        ) : undefined}
+        cornerNode={
+          activeCorner ? (
+            <CornerInteraction
+              data={activeCorner}
+              outcome={cornerOutcome}
+              onChoose={handleCornerChoice}
+            />
+          ) : activePenalty ? (
+            <PenaltyInteraction
+              data={activePenalty}
+              outcome={penaltyOutcome}
+              onChoose={handlePenaltyChoice}
+            />
+          ) : undefined
+        }
       />
 
       {showHalftime && !matchDone && (

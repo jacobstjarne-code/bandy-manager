@@ -14,6 +14,8 @@ import {
 import type { MatchStep, StepByStepInput } from './matchUtils'
 import { shouldBeInteractive, buildCornerInteractionData } from './cornerInteractionService'
 import type { CornerInteractionData } from './cornerInteractionService'
+import { resolveAIPenaltyKeeperDive, resolvePenalty } from './penaltyInteractionService'
+import type { PenaltyInteractionData } from './penaltyInteractionService'
 
 export function* simulateMatchStepByStep(input: StepByStepInput): Generator<MatchStep> {
   const {
@@ -32,6 +34,9 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     fanMood,
     managedIsHome,
   } = input
+  const captainPlayerId = input.captainPlayerId
+  const fanFavoritePlayerId = input.fanFavoritePlayerId
+  const supporterCtx = input.supporterContext
 
   const rand = mulberry32(seed ?? Date.now())
 
@@ -338,6 +343,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     let suspensionOccurred = false
     let cornerOccurred = false
     let cornerInteractionData: CornerInteractionData | undefined
+    let penaltyInteractionData: PenaltyInteractionData | undefined
     let scorerPlayerId: string | undefined
     let gkPlayerId: string | undefined
     let suspendedPlayerId: string | undefined
@@ -610,30 +616,94 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       const foulProb = (attDiscipline) * 0.4 + (defDiscipline) * 0.3
 
       const r = rand()
-      // ~35% chance of suspension per foul sequence (gives 2-4 per match)
-      if (r < foulProb * 0.55 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
-        const suspPlayer = getDefendingPlayer(defendingStarters)
-        if (suspPlayer) {
-          suspendedPlayerId = suspPlayer.id
-          suspensionOccurred = true
-          const duration = 3 + Math.floor(rand() * 4) // 3-6 steps ≈ 5-10 min
-          if (isHomeAttacking) {
-            awayActiveSuspensions++
-            awaySuspensionTimers.push(duration)
-          } else {
-            homeActiveSuspensions++
-            homeSuspensionTimers.push(duration)
+      const foulThreshold = foulProb * 0.55 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult
+      if (r < foulThreshold) {
+        // Penalty check: ~20% of fouls in attack zone → straff
+        const isAttackZoneFoul = rand() < 0.35
+        const isPenalty = isAttackZoneFoul && rand() < 0.20
+
+        if (isPenalty) {
+          const isManagedAttacking = managedIsHome !== undefined ? (managedIsHome === isHomeAttacking) : false
+          const shooter = getGoalScorer(attackingStarters)
+          const gk = getGK(defendingStarters)
+
+          if (shooter && gk) {
+            const penEvent: MatchEvent = {
+              minute,
+              type: MatchEventType.Penalty,
+              clubId: attackingClubId,
+              description: 'Straff',
+            }
+            stepEvents.push(penEvent)
+            allEvents.push(penEvent)
+
+            if (isManagedAttacking) {
+              // Interactive — MatchLiveScreen will resolve via UI
+              penaltyInteractionData = {
+                minute,
+                shooterName: `${shooter.firstName} ${shooter.lastName}`,
+                shooterId: shooter.id,
+                shooterSkill: shooter.currentAbility,
+                keeperName: `${gk.firstName} ${gk.lastName}`,
+                keeperSkill: gk.currentAbility,
+              }
+            } else {
+              // AI penalty — auto-resolve
+              const mentality = isHomeAttacking ? homeLineup.tactic.mentality : awayLineup.tactic.mentality
+              const keeperDive = resolveAIPenaltyKeeperDive(mentality ?? 'offensive', rand)
+              const aiDir = rand() < 0.4 ? 'left' : rand() < 0.7 ? 'right' : 'center'
+              const aiHeight = rand() < 0.65 ? 'low' : 'high'
+              const penData: PenaltyInteractionData = {
+                minute,
+                shooterName: `${shooter.firstName} ${shooter.lastName}`,
+                shooterId: shooter.id,
+                shooterSkill: shooter.currentAbility,
+                keeperName: `${gk.firstName} ${gk.lastName}`,
+                keeperSkill: gk.currentAbility,
+              }
+              const outcome = resolvePenalty(penData, aiDir as 'left' | 'center' | 'right', aiHeight as 'low' | 'high', keeperDive, rand)
+              if (outcome.type === 'goal') {
+                if (isHomeAttacking) { homeScore++ } else { awayScore++ }
+                scorerPlayerId = shooter.id
+                goalScored = true
+                trackGoal(shooter.id)
+                const goalEvent: MatchEvent = {
+                  minute,
+                  type: MatchEventType.Goal,
+                  clubId: attackingClubId,
+                  playerId: shooter.id,
+                  description: `Strafftmål av ${shooter.firstName} ${shooter.lastName}`,
+                }
+                stepEvents.push(goalEvent)
+                allEvents.push(goalEvent)
+              }
+            }
           }
-          trackRed(suspPlayer.id)
-          const event: MatchEvent = {
-            minute,
-            type: MatchEventType.RedCard,
-            clubId: defendingClubId,
-            playerId: suspPlayer.id,
-            description: `Utvisning av ${suspPlayer.firstName} ${suspPlayer.lastName}`,
+        } else {
+          // Normal suspension
+          const suspPlayer = getDefendingPlayer(defendingStarters)
+          if (suspPlayer) {
+            suspendedPlayerId = suspPlayer.id
+            suspensionOccurred = true
+            const duration = 3 + Math.floor(rand() * 4) // 3-6 steps ≈ 5-10 min
+            if (isHomeAttacking) {
+              awayActiveSuspensions++
+              awaySuspensionTimers.push(duration)
+            } else {
+              homeActiveSuspensions++
+              homeSuspensionTimers.push(duration)
+            }
+            trackRed(suspPlayer.id)
+            const event: MatchEvent = {
+              minute,
+              type: MatchEventType.RedCard,
+              clubId: defendingClubId,
+              playerId: suspPlayer.id,
+              description: `Utvisning av ${suspPlayer.firstName} ${suspPlayer.lastName}`,
+            }
+            stepEvents.push(event)
+            allEvents.push(event)
           }
-          stepEvents.push(event)
-          allEvents.push(event)
         }
       }
       // No yellow cards in bandy — only suspensions
@@ -670,11 +740,19 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       if (rivalry) {
         commentaryText = fillTemplate(pickCommentary(commentary.derby_kickoff, rand), { ...templateVars, rivalry: rivalry.name })
         isDerbyStep = true
+      } else if (supporterCtx && rand() < 0.30) {
+        const supporterVars = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
+        commentaryText = fillTemplate(pickCommentary(commentary.supporter_kickoff, rand), supporterVars)
       } else {
         commentaryText = fillTemplate(pickCommentary(commentary.kickoff, rand), templateVars)
       }
     } else if (step === 30) {
-      commentaryText = fillTemplate(pickCommentary(commentary.halfTime, rand), templateVars)
+      if (supporterCtx && rand() < 0.25) {
+        const supporterVars = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
+        commentaryText = fillTemplate(pickCommentary(commentary.supporter_halfTime, rand), supporterVars)
+      } else {
+        commentaryText = fillTemplate(pickCommentary(commentary.halfTime, rand), templateVars)
+      }
     } else if (cornerGoalScored && scorerPlayerId) {
       templateVars = { ...templateVars, player: findPlayerName(scorerPlayerId) }
       const cornerIntro = fillTemplate(pickCommentary(commentary.corner, rand), templateVars)
@@ -711,6 +789,36 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
         } else {
           commentaryText = fillTemplate(pickGoalCommentary(isHomeAttacking ? homeScore : awayScore, isHomeAttacking ? awayScore : homeScore, rand, minute), templateVars)
         }
+      } else if (scorerPlayerId && rand() < 0.40) {
+        // Contextual commentary (THE_BOMB 1.3)
+        const scorerPlayer = allPlayers.find(p => p.id === scorerPlayerId)
+        const scorerIsManaged = managedIsHome ? isHomeAttacking : !isHomeAttacking
+        const scorerName = findPlayerName(scorerPlayerId)
+        const currentMargin = Math.abs(homeScore - awayScore)
+        let contextual: string | null = null
+        if (scorerIsManaged && scorerPlayer?.promotedFromAcademy && scorerPlayer.age <= 22) {
+          contextual = `MÅL! ${scorerName} — egenodlad talent! Akademin levererar när det gäller!`
+        } else if (scorerIsManaged && captainPlayerId && scorerPlayerId === captainPlayerId) {
+          contextual = `MÅL! Kaptenen kliver fram! Det är därför ${scorerName} bär bindeln!`
+        } else if (scorerIsManaged && fanFavoritePlayerId && scorerPlayerId === fanFavoritePlayerId) {
+          contextual = `MÅL! Klackfavoriten ${scorerName}! Hör hur läktaren skanderar!`
+        } else if (scorerIsManaged && scorerPlayer?.dayJob && !scorerPlayer.isFullTimePro) {
+          contextual = `MÅL! ${scorerName} — ${scorerPlayer.dayJob.title} på dagarna, målskytt på kvällarna!`
+        } else if (scorerIsManaged && minute >= 80 && currentMargin <= 1) {
+          contextual = `SLUTMINUTERNA! ${scorerName} slår till! Stämningen är ELEKTRISK!`
+        } else if (weather && (weather.condition === WeatherCondition.HeavySnow || weather.condition === WeatherCondition.Thaw) && rand() < 0.50) {
+          contextual = fillTemplate(pickCommentary(
+            weather.condition === WeatherCondition.HeavySnow ? commentary.weather_goal_heavySnow : commentary.weather_goal_thaw,
+            rand
+          ), templateVars)
+        }
+        if (contextual) {
+          commentaryText = contextual
+        } else {
+          const scoringTeamScore = isHomeAttacking ? homeScore : awayScore
+          const otherTeamScore = isHomeAttacking ? awayScore : homeScore
+          commentaryText = fillTemplate(pickGoalCommentary(scoringTeamScore, otherTeamScore, rand, minute), templateVars)
+        }
       } else if (weather && weather.condition === WeatherCondition.HeavySnow && rand() < 0.20) {
         commentaryText = fillTemplate(pickCommentary(commentary.weather_goal_heavySnow, rand), templateVars)
       } else if (weather && weather.condition === WeatherCondition.Thaw && rand() < 0.20) {
@@ -719,6 +827,13 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
         const scoringTeamScore = isHomeAttacking ? homeScore : awayScore
         const otherTeamScore = isHomeAttacking ? awayScore : homeScore
         commentaryText = fillTemplate(pickGoalCommentary(scoringTeamScore, otherTeamScore, rand, minute), templateVars)
+      }
+      // Add late supporter commentary for tight matches
+      if (supporterCtx && step >= 47 && Math.abs(homeScore - awayScore) <= 1) {
+        const isManaged = managedIsHome ? homeScore >= awayScore : awayScore >= homeScore
+        const supArr = isManaged ? commentary.supporter_late_home : commentary.supporter_late_silent
+        const supVars = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
+        if (rand() < 0.15) commentaryText += ' ' + fillTemplate(pickCommentary(supArr, rand), supVars)
       }
       // Trait override (50% chance)
       if (scorerPlayerId && rand() < 0.5) {
@@ -861,6 +976,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       weatherNote: stepWeatherNote,
       isDerbyComment: isDerbyStep || undefined,
       cornerInteractionData,
+      penaltyInteractionData,
     }
   }
 

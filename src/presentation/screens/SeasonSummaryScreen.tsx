@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
+import { pickSeasonHighlight } from '../../domain/services/seasonSummaryService'
 import { ClubBadge } from '../components/ClubBadge'
 import { SectionLabel } from '../components/SectionLabel'
 import { csColor, formatCurrency } from '../utils/formatters'
@@ -224,6 +225,26 @@ export function SeasonSummaryScreen() {
             "{summary.narrativeSummary}"
           </p>
         </div>
+
+        {/* ÅRETS MATCH — THE_BOMB 2.2 */}
+        {(() => {
+          const highlight = pickSeasonHighlight(game)
+          if (!highlight) return null
+          return (
+            <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 8, background: 'rgba(196,122,58,0.05)', border: '1px solid rgba(196,122,58,0.3)' }}>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 6 }}>
+                {highlight.headline}
+              </p>
+              <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 2 }}>
+                vs {highlight.opponent} — {highlight.score}
+              </p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 0 }}>Omgång {highlight.round}</p>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6, fontStyle: 'italic' }}>
+                {highlight.description}
+              </p>
+            </div>
+          )
+        })()}
 
         {/* DIN SÄSONG — merged timeline */}
         {(() => {

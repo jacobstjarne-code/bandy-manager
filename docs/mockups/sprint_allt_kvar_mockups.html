@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bandy Manager — Mockups Sprint Allt Kvar</title>
+<style>
+  :root {
+    --accent: #c47a3a; --accent-dark: #a0632e;
+    --success: #5a9a4a; --danger: #b05040; --warning: #c4a84c;
+    --text-primary: #2e2a25; --text-secondary: #5c5650; --text-muted: #8c8478; --text-light: #f5f1eb;
+    --bg: #f5f1eb; --bg-surface: #efeae3; --bg-elevated: #e8e2d9; --bg-dark: #2e2a25;
+    --border: #d6cfc5;
+    --font-display: Georgia, 'Times New Roman', serif;
+    --font-body: system-ui, -apple-system, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #3a3530; font-family: var(--font-body); display: flex; flex-direction: column; align-items: center; padding: 20px 10px 60px; gap: 40px; }
+  .mockup-label { color: #c47a3a; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; text-align: center; margin-bottom: 8px; }
+  .mockup-note { color: #8c8478; font-size: 10px; text-align: center; max-width: 375px; line-height: 1.5; margin-bottom: 8px; }
+  .phone { width: 375px; background: var(--bg); border-radius: 20px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.4); position: relative; }
+  .card-sharp { background: var(--bg-surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .section-label { font-size: 8px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+  .btn-copper { background: linear-gradient(135deg, var(--accent-dark), #7a4d24); color: var(--text-light); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- MOCKUP 1: STRAFFINTERAKTION                    -->
+<!-- ═══════════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">Straffinteraktion — under match</p>
+  <p class="mockup-note">Samma card-sharp stil som hörnor. Yieldar i matchStepByStep. Enklare layout — inga SVG.</p>
+  <div class="phone" style="padding: 12px;">
+    <!-- Commentary feed ovanför -->
+    <div style="padding: 6px 12px; margin-bottom: 8px;">
+      <p style="font-size: 10px; color: var(--text-muted);">34'</p>
+      <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">Bentackling i straffområdet! Domaren pekar på straffpunkten. Forsbacka får straff.</p>
+    </div>
+
+    <!-- Straff-kort -->
+    <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px;">
+      <!-- Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <p style="font-size: 8px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted);">🏒 STRAFF — 34:e minuten</p>
+        <span style="font-size: 10px; color: var(--accent); font-weight: 600;">S. Kronberg</span>
+      </div>
+
+      <!-- Skytt + Målvakt -->
+      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <div style="flex: 1; padding: 8px 10px; background: var(--bg-elevated); border-radius: 6px; text-align: center;">
+          <p style="font-size: 9px; color: var(--text-muted); margin-bottom: 2px;">SKYTT</p>
+          <p style="font-size: 13px; font-weight: 700;">Kronberg</p>
+          <p style="font-size: 9px; color: var(--accent);">Skott 74</p>
+        </div>
+        <div style="flex: 1; padding: 8px 10px; background: var(--bg-elevated); border-radius: 6px; text-align: center;">
+          <p style="font-size: 9px; color: var(--text-muted); margin-bottom: 2px;">MÅLVAKT</p>
+          <p style="font-size: 13px; font-weight: 700;">K. Nilsson</p>
+          <p style="font-size: 9px; color: var(--danger);">MV 68</p>
+        </div>
+      </div>
+
+      <!-- Placering -->
+      <p style="font-size: 9px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; letter-spacing: 1px;">PLACERING</p>
+      <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+        <button style="flex: 1; padding: 12px 0; min-height: 44px; border-radius: 6px; font-size: 12px; font-weight: 600; text-align: center; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary); cursor: pointer;">
+          ← Vänster
+        </button>
+        <button style="flex: 1; padding: 12px 0; min-height: 44px; border-radius: 6px; font-size: 12px; font-weight: 600; text-align: center; background: rgba(196,122,58,0.12); border: 1px solid var(--accent); color: var(--accent); cursor: pointer;">
+          Mitt
+        </button>
+        <button style="flex: 1; padding: 12px 0; min-height: 44px; border-radius: 6px; font-size: 12px; font-weight: 600; text-align: center; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary); cursor: pointer;">
+          Höger →
+        </button>
+      </div>
+
+      <!-- Höjd -->
+      <p style="font-size: 9px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; letter-spacing: 1px;">HÖJD</p>
+      <div style="display: flex; gap: 6px; margin-bottom: 12px;">
+        <button style="flex: 1; padding: 12px 0; min-height: 44px; border-radius: 6px; font-size: 12px; font-weight: 600; text-align: center; background: rgba(196,122,58,0.12); border: 1px solid var(--accent); color: var(--accent); cursor: pointer;">
+          🧊 Lågt
+          <span style="display: block; font-size: 9px; font-weight: 400; color: var(--text-muted); margin-top: 2px;">Säkrare</span>
+        </button>
+        <button style="flex: 1; padding: 12px 0; min-height: 44px; border-radius: 6px; font-size: 12px; font-weight: 600; text-align: center; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary); cursor: pointer;">
+          ⬆️ Högt
+          <span style="display: block; font-size: 9px; font-weight: 400; color: var(--text-muted); margin-top: 2px;">Riskfyllt</span>
+        </button>
+      </div>
+
+      <!-- CTA -->
+      <button class="btn-copper" style="padding: 13px; font-size: 14px; letter-spacing: 0.5px;">
+        SKJUT STRAFFEN →
+      </button>
+    </div>
+
+    <!-- Utfall (efter val) -->
+    <div style="padding: 8px 12px; margin-top: 8px;">
+      <p style="font-size: 10px; color: var(--text-muted); margin-bottom: 2px;">34'</p>
+      <p style="font-size: 13px; color: var(--success); font-weight: 700; line-height: 1.4;">
+        🏒 MÅL! Bollen i vänstra hörnet. Målvakten chanslös.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- MOCKUP 1b: STRAFFINTERAKTION — miss            -->
+<!-- ═══════════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">Straffinteraktion — miss/räddning</p>
+  <div class="phone" style="padding: 12px;">
+    <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <p style="font-size: 8px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted);">🏒 STRAFF — 67:e minuten</p>
+      </div>
+      <!-- Resultat inline (alla knappar gråade) -->
+      <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+        <div style="flex: 1; padding: 10px; border-radius: 6px; text-align: center; background: var(--bg-elevated); border: 1px solid var(--border); opacity: 0.5; font-size: 12px; color: var(--text-muted);">← Vänster</div>
+        <div style="flex: 1; padding: 10px; border-radius: 6px; text-align: center; background: rgba(176,80,64,0.15); border: 1.5px solid var(--danger); font-size: 12px; color: var(--danger); font-weight: 700;">Mitt ✕</div>
+        <div style="flex: 1; padding: 10px; border-radius: 6px; text-align: center; background: var(--bg-elevated); border: 1px solid var(--border); opacity: 0.5; font-size: 12px; color: var(--text-muted);">Höger →</div>
+      </div>
+      <p style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 4px;">Målvakten stod kvar i mitten. Räddning.</p>
+    </div>
+    <div style="padding: 8px 12px; margin-top: 8px;">
+      <p style="font-size: 10px; color: var(--text-muted); margin-bottom: 2px;">67'</p>
+      <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">Räddning! Målvakten läser skottet och parar. Publiken suckar.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- MOCKUP 2: CUP PROGRESS                         -->
+<!-- ═══════════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">Cup progress-rad</p>
+  <p class="mockup-note">Visar var spelaren befinner sig i cupresan. Överst i CupCard.</p>
+  <div class="phone" style="padding: 12px;">
+    <!-- Cup-kort med progress -->
+    <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+      <div style="padding: 10px 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <p style="font-size: 9px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted);">🏆 SVENSKA CUPEN</p>
+          <span style="font-size: 8px; padding: 2px 8px; border-radius: 4px; background: rgba(196,122,58,0.15); color: var(--accent); border: 1px solid rgba(196,122,58,0.3); font-weight: 600;">Semifinal</span>
+        </div>
+
+        <!-- Progress-rad -->
+        <div style="display: flex; align-items: center; gap: 0; margin-bottom: 12px;">
+          <!-- Steg 1: Förstarunda (klar) -->
+          <div style="text-align: center; flex: 1;">
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--success); display: flex; align-items: center; justify-content: center; margin: 0 auto 2px; font-size: 10px; color: white; font-weight: 700;">✓</div>
+            <p style="font-size: 7px; color: var(--text-muted);">1:a runda</p>
+          </div>
+          <div style="flex: 0.6; height: 2px; background: var(--success);"></div>
+          <!-- Steg 2: Kvartsfinal (klar) -->
+          <div style="text-align: center; flex: 1;">
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: var(--success); display: flex; align-items: center; justify-content: center; margin: 0 auto 2px; font-size: 10px; color: white; font-weight: 700;">✓</div>
+            <p style="font-size: 7px; color: var(--text-muted);">KF</p>
+          </div>
+          <div style="flex: 0.6; height: 2px; background: var(--accent);"></div>
+          <!-- Steg 3: Semifinal (nu) -->
+          <div style="text-align: center; flex: 1;">
+            <div style="width: 22px; height: 22px; border-radius: 50%; background: rgba(196,122,58,0.15); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; margin: 0 auto 2px; font-size: 10px; color: var(--accent); font-weight: 700;">●</div>
+            <p style="font-size: 7px; color: var(--accent); font-weight: 600;">SF</p>
+          </div>
+          <div style="flex: 0.6; height: 2px; background: var(--border);"></div>
+          <!-- Steg 4: Final (framtid) -->
+          <div style="text-align: center; flex: 1;">
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: transparent; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; margin: 0 auto 2px; font-size: 8px; color: var(--text-muted);">○</div>
+            <p style="font-size: 7px; color: var(--text-muted);">Final</p>
+          </div>
+        </div>
+
+        <!-- Nästa match eller mellanläge -->
+        <div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+            <span style="font-size: 13px; color: var(--text-primary); font-weight: 600;">Semifinal vs Västanfors</span>
+            <span style="font-size: 8px; padding: 2px 6px; border-radius: 4px; background: rgba(90,154,74,0.15); color: var(--success); border: 1px solid rgba(90,154,74,0.3);">Hemma</span>
+          </div>
+          <p style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Ni slog Gagnef i kvartsfinalen.</p>
+          <p style="font-size: 11px; color: var(--warning); margin-top: 4px;">⚡ Spelas denna omgång</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mellanläge-variant -->
+    <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: 16px;">
+      <div style="padding: 10px 14px;">
+        <p style="font-size: 9px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">🏆 SVENSKA CUPEN</p>
+        <!-- Samma progress-rad men text under ändras -->
+        <p style="font-size: 13px; color: var(--text-primary); font-weight: 600;">Ni är i semifinalen!</p>
+        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Motståndare lottas snart. Semifinal spelas matchdag 13.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- MOCKUP 3: KAPTEN                                -->
+<!-- ═══════════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">Kaptensutsättning — PreSeason</p>
+  <div class="phone" style="padding: 12px;">
+    <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px;">
+      <p style="font-size: 8px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">⚓ UTSE LAGKAPTEN</p>
+      <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">Välj vem som bär lagbindeln den här säsongen.</p>
+
+      <!-- Kandidat 1 (default) -->
+      <div style="padding: 10px 12px; border-radius: 6px; border: 1.5px solid var(--accent); background: rgba(196,122,58,0.08); margin-bottom: 6px; display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 20px;">©</span>
+        <div style="flex: 1;">
+          <p style="font-size: 13px; font-weight: 700;">Erik Ström</p>
+          <p style="font-size: 10px; color: var(--text-muted);">B · 28 år · 68 styrka · 3 säsonger</p>
+        </div>
+        <span style="font-size: 9px; color: var(--accent); font-weight: 600;">Föreslagen</span>
+      </div>
+
+      <!-- Kandidat 2 -->
+      <div style="padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-elevated); margin-bottom: 6px; display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 20px; opacity: 0.3;">©</span>
+        <div style="flex: 1;">
+          <p style="font-size: 13px; font-weight: 600;">Lars Sjölund</p>
+          <p style="font-size: 10px; color: var(--text-muted);">MF · 27 år · 65 styrka · 2 säsonger</p>
+        </div>
+      </div>
+
+      <!-- Kandidat 3 -->
+      <div style="padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-elevated); margin-bottom: 6px; display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 20px; opacity: 0.3;">©</span>
+        <div style="flex: 1;">
+          <p style="font-size: 13px; font-weight: 600;">Staffan Henriksson</p>
+          <p style="font-size: 10px; color: var(--text-muted);">H · 31 år · 62 styrka · 4 säsonger</p>
+        </div>
+      </div>
+
+      <button class="btn-copper" style="padding: 12px; font-size: 13px; margin-top: 6px;">
+        Bekräfta kapten
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- MOCKUP 4: ARENANAMN I SCOREBOARD                -->
+<!-- ═══════════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">Arenanamn i Scoreboard</p>
+  <div class="phone" style="padding: 12px;">
+    <div style="background: #1a1714; border-radius: 8px; border: 3px solid #3a3530; box-shadow: inset 0 2px 8px rgba(0,0,0,0.5); padding: 12px 16px; text-align: center;">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+        <div>
+          <p style="font-family: 'Courier New', monospace; font-weight: 700; font-size: 13px; color: rgba(255,255,255,0.85); letter-spacing: 1.5px;">FORSBA <span style="color: #ccff00; font-size: 12px;">H</span></p>
+          <span style="font-family: 'Courier New', monospace; font-weight: 900; font-size: 48px; color: #ff1a1a; text-shadow: 0 0 10px rgba(255,26,26,0.6); line-height: 1;">3</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+          <span style="color: #ff1a1a; font-size: 24px; opacity: 0.7; font-family: 'Courier New', monospace;">–</span>
+          <span style="font-family: 'Courier New', monospace; font-weight: 700; font-size: 18px; color: #ccff00; text-shadow: 0 0 8px rgba(204,255,0,0.5);">67'</span>
+        </div>
+        <div>
+          <p style="font-family: 'Courier New', monospace; font-weight: 700; font-size: 13px; color: rgba(255,255,255,0.85); letter-spacing: 1.5px;"><span style="color: #ccff00; font-size: 12px;">G</span> GAGNEF</p>
+          <span style="font-family: 'Courier New', monospace; font-weight: 900; font-size: 48px; color: #ff1a1a; text-shadow: 0 0 10px rgba(255,26,26,0.6); line-height: 1;">1</span>
+        </div>
+      </div>
+      <p style="font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 6px; font-family: 'Courier New', monospace;">☁ +2° · Bra is</p>
+      <p style="font-size: 10px; color: rgba(255,255,255,0.25); margin-top: 2px; font-family: 'Courier New', monospace; letter-spacing: 1px;">SLAGGHÖGEN</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- MOCKUP 5: NEXTMATCHCARD MED ARENA               -->
+<!-- ═══════════════════════════════════════════════ -->
+<div>
+  <p class="mockup-label">NextMatchCard med arenanamn</p>
+  <div class="phone" style="padding: 12px;">
+    <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;">
+      <!-- Leather header -->
+      <div style="background: #4a3e2e; height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-radius: 13px 13px 0 0;">
+        <span style="color: rgba(245,241,235,0.6); font-size: 8px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700;">Nästa match</span>
+        <span style="font-size: 8px; padding: 2px 7px; background: var(--accent-dark); color: var(--text-light); border-radius: 4px;">BORTA · OMG 5</span>
+      </div>
+      <div style="padding: 10px 12px; text-align: center;">
+        <div style="display: flex; align-items: flex-start; justify-content: center; padding: 4px 0;">
+          <div style="text-align: center; flex: 1;">
+            <div style="width: 36px; height: 36px; background: rgba(196,122,58,0.15); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 14px;">🏛</div>
+            <p style="font-size: 11px; font-weight: 700; margin-top: 3px;">Forsbacka</p>
+            <span style="font-size: 8px; padding: 1px 6px; border-radius: 4px; background: rgba(196,122,58,0.12); color: var(--accent); border: 1px solid rgba(196,122,58,0.3);">3:e</span>
+            <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Jacob</p>
+          </div>
+          <span style="font-size: 12px; color: var(--accent-dark); margin: 0 6px; font-family: var(--font-display); font-style: italic;">vs</span>
+          <div style="text-align: center; flex: 1;">
+            <div style="width: 36px; height: 36px; background: rgba(140,132,120,0.15); border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 14px;">🛡</div>
+            <p style="font-size: 11px; font-weight: 700; margin-top: 3px;">Lesjöfors</p>
+            <span style="font-size: 8px; padding: 1px 6px; border-radius: 4px; background: transparent; color: var(--text-muted); border: 1px solid var(--border);">8:e</span>
+            <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Lars Larsson</p>
+            <p style="font-size: 9px; color: var(--text-muted); font-style: italic; font-family: var(--font-display);">Defensiv</p>
+          </div>
+        </div>
+        <p style="font-size: 9px; color: var(--text-muted); margin-top: 2px;">Omgång 5</p>
+        <p style="font-size: 8px; color: var(--text-muted); font-style: italic; margin-top: 1px;">Kolbottnen (Lesjöfors)</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body></html>

@@ -1,4 +1,5 @@
 import type { SaveGame } from '../entities/SaveGame'
+import { InboxItemType } from '../enums'
 import { getCharacterName } from './supporterService'
 
 interface CoffeeQuote {
@@ -15,6 +16,27 @@ const GENERIC_EXCHANGES: Array<[string, string, string, string]> = [
   ['Kassören', 'Sponsoravtalet med ICA går ut.', 'Ordföranden', 'Ring dom. Bjud på kaffe. Och korv.'],
   // Placeholder — byts ut mot dynamisk ungdomsspelare i getCoffeeRoomQuote
   ['Ungdomstränaren', '{youthName} i P19 börjar likna något.', 'Materialaren', 'Ge honom inte för stora tröjor.'],
+]
+
+// Transfer-triggered exchanges — shown after a sale/buy
+const TRANSFER_SALE_EXCHANGES: Array<[string, string, string, string]> = [
+  ['Kioskvakten', '{name} lämnade. Synd, folk gillade honom.', 'Kassören', 'Pengarna gör nytta. Det är sporten.'],
+  ['Materialaren', 'Tröjan med {name} på hänger fortfarande.', 'Vaktmästaren', 'Ge det ett tag. Det är inte sista tröjan vi hänger.'],
+  ['Kassören', 'Affären gick igenom. Pengarna är inne.', 'Ordföranden', 'Bra. Nu handlar det om vad vi gör med dem.'],
+  ['Vaktmästaren', '{name} sa hej till alla i korridoren på väg ut.', 'Materialaren', 'Det är det man minns.'],
+]
+
+const TRANSFER_BUY_EXCHANGES: Array<[string, string, string, string]> = [
+  ['Vaktmästaren', 'Ny kille i omklädningsrummet. Sa knappt hej.', 'Kassören', 'Ge honom en vecka.'],
+  ['Materialaren', 'Fick ta fram en ny tröja i förtid.', 'Kioskvakten', 'Numret är bra. Folk gillar jämna nummer.'],
+  ['Kassören', 'Nyförvärvet kostar — men det kan bli bra.', 'Ordföranden', 'Det är investeringen som räknas.'],
+  ['Kioskvakten', 'Folk frågade redan vem han är.', 'Vaktmästaren', 'Säg att han är ny. Det räcker.'],
+]
+
+const TRANSFER_DEADLINE_EXCHANGES: Array<[string, string, string, string]> = [
+  ['Kassören', 'Telefonen ringer hela tiden.', 'Ordföranden', 'Svara inte.'],
+  ['Materialaren', 'Hörde att folk sniffar runt.', 'Kioskvakten', 'De ska inte ha honom. Punkt.'],
+  ['Vaktmästaren', 'Sista dagarna nu. Ryktena flyger.', 'Kassören', 'Lita på tränaren. Han vet vad han gör.'],
 ]
 
 const RESULT_EXCHANGES: Record<'win' | 'loss' | 'draw', Array<[string, string]>> = {
@@ -46,6 +68,36 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     .sort((a, b) => b.matchday - a.matchday)[0]
 
   const seed = round * 7 + game.currentSeason * 31
+
+  let soldItem: typeof game.inbox[number] | undefined
+  let boughtItem: typeof game.inbox[number] | undefined
+  for (const item of (game.inbox ?? []).slice(-10)) {
+    if (!soldItem && (item.type === InboxItemType.Transfer || item.type === InboxItemType.TransferBidReceived)) soldItem = item
+    if (!boughtItem && item.type === InboxItemType.TransferOffer && !item.isRead) boughtItem = item
+    if (soldItem && boughtItem) break
+  }
+  const deadlineRound = round >= 13 && round <= 15
+
+  if (deadlineRound && seed % 5 === 0) {
+    const idx = Math.abs(seed * 3) % TRANSFER_DEADLINE_EXCHANGES.length
+    const ex = TRANSFER_DEADLINE_EXCHANGES[idx]
+    return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
+  }
+  if (soldItem && seed % 3 === 0) {
+    const idx = Math.abs(seed * 7) % TRANSFER_SALE_EXCHANGES.length
+    const ex = TRANSFER_SALE_EXCHANGES[idx]
+    const soldPlayer = soldItem.relatedPlayerId
+      ? game.players.find(p => p.id === soldItem.relatedPlayerId)
+      : null
+    const name = soldPlayer ? soldPlayer.lastName : 'spelaren'
+    return { speaker: ex[0], text: `"${ex[1].replace('{name}', name)}" — ${ex[2]}: "${ex[3]}"` }
+  }
+  if (boughtItem && seed % 3 === 1) {
+    const idx = Math.abs(seed * 11) % TRANSFER_BUY_EXCHANGES.length
+    const ex = TRANSFER_BUY_EXCHANGES[idx]
+    return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
+  }
+
   const lastHash = game.lastCoffeeQuoteHash ?? -1
   // pick avoiding the index that matches lastHash to prevent same quote two rounds in a row
   const pick = <T>(arr: T[]): T => {

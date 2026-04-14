@@ -53,6 +53,7 @@ interface GameState {
   clearPlayoffIntro: () => void
   clearQFSummary: () => void
   setBudgetPriority: (priority: 'squad' | 'balanced' | 'youth') => void
+  setCaptain: (playerId: string) => void
   interactWithPolitician: (action: 'invite' | 'budget' | 'apply') => { success: boolean; message: string }
   setTransferBudget: (amount: number) => void
   buyScoutRounds: () => void
@@ -422,6 +423,18 @@ export const useGameStore = create<GameState>()(
         const { game } = get()
         if (!game) return
         set({ game: { ...game, budgetPriority: priority } })
+      },
+
+      setCaptain: (playerId: string) => {
+        const { game } = get()
+        if (!game) return
+        // Apply +3 morale to the new captain
+        const updatedPlayers = game.players.map(p =>
+          p.id === playerId
+            ? { ...p, morale: Math.min(100, p.morale + 3) }
+            : p
+        )
+        set({ game: { ...game, captainPlayerId: playerId, players: updatedPlayers } })
       },
 
       setTransferBudget: (amount: number) => {

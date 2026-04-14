@@ -7,12 +7,6 @@ interface CornerInteractionProps {
   onChoose: (zone: CornerZone, delivery: CornerDelivery) => void
 }
 
-const ZONE_LABELS: Record<CornerZone, { label: string; sub: string }> = {
-  near:   { label: 'Nära',   sub: 'Snabb redirect' },
-  center: { label: 'Mitt',   sub: 'Straffpunkten' },
-  far:    { label: 'Bortre', sub: 'Överraskning' },
-}
-
 const DELIVERY_LABELS: Record<CornerDelivery, { label: string; sub: string }> = {
   hard:  { label: 'Hårt skott', sub: 'Snabbt rus' },
   low:   { label: 'Låg pass',   sub: 'Kontroll' },
@@ -23,6 +17,7 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
   const [zone, setZone] = useState<CornerZone>('center')
   const [delivery, setDelivery] = useState<CornerDelivery>('hard')
   const [confirmed, setConfirmed] = useState(false)
+  const [cornerSide] = useState<'right' | 'left'>(() => Math.random() < 0.5 ? 'right' : 'left')
 
   const minuteStr = `${data.minute}:a`
 
@@ -72,26 +67,30 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
               <circle key={i} cx="4" cy={y} r="3" fill="var(--danger)" opacity="0.4" />
             ))}
             {/* Corner point */}
-            <circle cx="195" cy="95" r="3" fill="var(--accent)" />
-            <text x="180" y="93" fontSize="6" fill="var(--accent)" fontWeight="600">H. hörna</text>
+            <circle cx={cornerSide === 'right' ? 195 : 5} cy="95" r="3" fill="var(--accent)" />
+            <text
+              x={cornerSide === 'right' ? 175 : 25}
+              y="93" fontSize="6" fill="var(--accent)" fontWeight="600"
+              textAnchor={cornerSide === 'right' ? 'end' : 'start'}
+            >{cornerSide === 'right' ? 'Hörna från höger' : 'Hörna från vänster'}</text>
             {/* Zone buttons */}
-            <rect x="15" y="20" width="35" height="20" rx="3"
-              fill={zone === 'near' ? 'rgba(196,122,58,0.25)' : 'rgba(196,122,58,0.08)'}
-              stroke={zone === 'near' ? 'var(--accent)' : 'var(--border)'} strokeWidth="0.8"
+            <rect x="15" y="15" width="35" height="18" rx="3"
+              fill={zone === 'near' ? 'rgba(196,122,58,0.35)' : 'rgba(196,122,58,0.08)'}
+              stroke={zone === 'near' ? 'var(--accent)' : 'var(--border)'} strokeWidth={zone === 'near' ? '1.5' : '0.8'}
               style={{ cursor: 'pointer' }}
               onClick={() => !confirmed && setZone('near')}
             />
-            <text x="32" y="33" fontSize="6" fill={zone === 'near' ? 'var(--accent)' : 'var(--text-muted)'} textAnchor="middle" fontWeight={zone === 'near' ? '600' : '400'}>NÄRA</text>
-            <rect x="15" y="40" width="35" height="20" rx="3"
-              fill={zone === 'center' ? 'rgba(196,122,58,0.25)' : 'rgba(196,122,58,0.08)'}
-              stroke={zone === 'center' ? 'var(--accent)' : 'var(--border)'} strokeWidth="0.8"
+            <text x="32" y="27" fontSize="6" fill={zone === 'near' ? 'var(--accent)' : 'var(--text-muted)'} textAnchor="middle" fontWeight={zone === 'near' ? '600' : '400'}>NÄRA</text>
+            <rect x="15" y="38" width="35" height="18" rx="3"
+              fill={zone === 'center' ? 'rgba(196,122,58,0.35)' : 'rgba(196,122,58,0.08)'}
+              stroke={zone === 'center' ? 'var(--accent)' : 'var(--border)'} strokeWidth={zone === 'center' ? '1.5' : '0.8'}
               style={{ cursor: 'pointer' }}
               onClick={() => !confirmed && setZone('center')}
             />
-            <text x="32" y="53" fontSize="6" fill={zone === 'center' ? 'var(--accent)' : 'var(--text-muted)'} textAnchor="middle" fontWeight={zone === 'center' ? '600' : '400'}>MITT</text>
-            <rect x="15" y="60" width="35" height="20" rx="3"
-              fill={zone === 'far' ? 'rgba(196,122,58,0.25)' : 'rgba(196,122,58,0.08)'}
-              stroke={zone === 'far' ? 'var(--accent)' : 'var(--border)'} strokeWidth="0.8"
+            <text x="32" y="50" fontSize="6" fill={zone === 'center' ? 'var(--accent)' : 'var(--text-muted)'} textAnchor="middle" fontWeight={zone === 'center' ? '600' : '400'}>MITT</text>
+            <rect x="15" y="61" width="35" height="18" rx="3"
+              fill={zone === 'far' ? 'rgba(196,122,58,0.35)' : 'rgba(196,122,58,0.08)'}
+              stroke={zone === 'far' ? 'var(--accent)' : 'var(--border)'} strokeWidth={zone === 'far' ? '1.5' : '0.8'}
               style={{ cursor: 'pointer' }}
               onClick={() => !confirmed && setZone('far')}
             />
@@ -104,27 +103,6 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
             <circle cx="130" cy="50" r="4" fill="var(--accent)" opacity="0.7" />
             <circle cx="120" cy="70" r="4" fill="var(--accent)" opacity="0.7" />
           </svg>
-        </div>
-
-        {/* Zone selector */}
-        <p style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 4, fontWeight: 600, letterSpacing: '1px' }}>VÄLJ ZON</p>
-        <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-          {(Object.keys(ZONE_LABELS) as CornerZone[]).map(z => (
-            <button
-              key={z}
-              onClick={() => !confirmed && setZone(z)}
-              style={{
-                flex: 1, padding: '10px 0', minHeight: 44, borderRadius: 6, fontSize: 11, fontWeight: 600,
-                cursor: confirmed ? 'default' : 'pointer', textAlign: 'center',
-                background: zone === z ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
-                border: `1px solid ${zone === z ? 'var(--accent)' : 'var(--border)'}`,
-                color: zone === z ? 'var(--accent)' : 'var(--text-primary)',
-              }}
-            >
-              {ZONE_LABELS[z].label}
-              <span style={{ display: 'block', fontSize: 9, fontWeight: 400, color: 'var(--text-muted)', marginTop: 2 }}>{ZONE_LABELS[z].sub}</span>
-            </button>
-          ))}
         </div>
 
         {/* Delivery selector */}

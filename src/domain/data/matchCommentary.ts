@@ -418,6 +418,35 @@ export const commentary = {
     '{team} VINNER STRAFFARNA {penAway}-{penHome}! Vilken dramatik!',
     'Det är avgjort! {team} tar det på straffar! {penAway}-{penHome}!',
   ],
+
+  // Supporter-klack commentary — triggas vid matchstart, halvtid, sent i matchen
+  supporter_kickoff: [
+    '🎵 {leader} drar igång välkomstsången. {members} röster — inte mycket, men dom hörs.',
+    '📣 {leader} och {members} i klacken laddar upp inför avslaget. Stämningen är i sin linda.',
+    '📯 Trumman går igång. {leader} ser till att läktarensidan lever från start.',
+    '🎵 Klacken är här. {members} personer, ett mål. Det är vad det handlar om.',
+  ],
+
+  supporter_halfTime: [
+    '📣 {leader} uppmanar sina till nya insatser. "En halvlek kvar — håll i."',
+    '🎵 Klacken sjunger under pausen. {members} som vägrar tiga still.',
+    '📯 Trumman ekade fortfarande när spelarna gick in i omklädningsrummet.',
+    '{leader} samlar klacken. "Vi ger dem allt vi har i andra halvlek."',
+  ],
+
+  supporter_late_home: [
+    '📣 {leader} piskar upp stämningen. Läktaren lever med laget i slutet!',
+    '🎵 Klacksången ekar över planen. {members} som inte ger sig.',
+    '📯 Trumman slår hårdare nu. Det märks att det händer något.',
+    '{leader} viftar med flaggan. Stämningen är ELEKTRISK i det här slutskedet!',
+  ],
+
+  supporter_late_silent: [
+    '📣 Tyst på läktaren efter det senaste insläppta. {leader} trummar ensam.',
+    '{members} i klacken sjunger fortfarande — men det hörs inte lika långt.',
+    '📯 Trumman spelar. Men sångerna dör ut. Laget behöver ett mål.',
+    '{leader} envisas. Publiken är tyst, men klacken ger inte upp.',
+  ],
 }
 
 // Helper to fill in a template

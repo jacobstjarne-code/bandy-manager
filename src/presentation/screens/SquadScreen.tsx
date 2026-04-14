@@ -81,6 +81,8 @@ function PlayerRowAnimated({ player, index, onClick }: PlayerRowAnimatedProps) {
 }
 
 function PlayerRow({ player, onClick }: PlayerRowProps) {
+  const captainPlayerId = useGameStore(s => s.game?.captainPlayerId)
+  const isCaptain = player.id === captainPlayerId
   let statusPill: React.ReactNode = null
   if (player.isInjured) {
     statusPill = (
@@ -136,6 +138,9 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
           }}>
             {player.shirtNumber != null && (
               <span style={{ fontSize: 12, color: 'var(--text-muted)', marginRight: 4 }}>#{player.shirtNumber}</span>
+            )}
+            {isCaptain && (
+              <span style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginRight: 4 }}>©</span>
             )}
             {player.firstName} {player.lastName}
           </p>

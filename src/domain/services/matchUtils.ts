@@ -187,6 +187,8 @@ export interface MatchStep {
   isDerbyComment?: boolean
   // Corner interaction (managed club corners only)
   cornerInteractionData?: import('./cornerInteractionService').CornerInteractionData
+  // Penalty interaction (managed club attacking only)
+  penaltyInteractionData?: import('./penaltyInteractionService').PenaltyInteractionData
   // Overtime/penalty metadata
   phase?: 'regular' | 'overtime' | 'penalties'
   penaltyRound?: PenaltyRound
@@ -213,6 +215,9 @@ export interface StepByStepInput {
   fanMood?: number
   managedIsHome?: boolean
   storylines?: Array<{ playerId?: string; type: string; displayText: string }>
+  captainPlayerId?: string
+  fanFavoritePlayerId?: string
+  supporterContext?: { mood: number; members: number; leaderName: string }
 }
 
 export interface SecondHalfInput extends StepByStepInput {

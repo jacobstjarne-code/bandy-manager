@@ -135,6 +135,16 @@ export function Scoreboard({
         </p>
       )}
 
+      {/* Arena name */}
+      {game && (() => {
+        const homeClub = game.clubs.find(c => c.id === fixture.homeClubId)
+        return homeClub?.arenaName ? (
+          <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: 0, fontFamily: 'Courier New, monospace', letterSpacing: '1px' }}>
+            {homeClub.arenaName.toUpperCase()}
+          </p>
+        ) : null
+      })()}
+
       {/* Suspensions */}
       {(() => {
         if (!currentMatchStep) return null

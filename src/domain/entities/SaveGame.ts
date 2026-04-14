@@ -316,6 +316,20 @@ export interface SaveGame {
   // V1.5 — Kafferumscitat (förhindrar samma citat två omgångar i rad)
   lastCoffeeQuoteHash?: number
 
+  // Kapten
+  captainPlayerId?: string
+
+  // THE_BOMB 3.1 — State of the Club (visas i PreSeasonScreen säsong 2+)
+  seasonStartSnapshot?: {
+    season: number
+    finalPosition: number
+    finances: number
+    communityStanding: number
+    squadSize: number
+    supporterMembers: number
+    academyPromotions: number
+  }
+
   // V1.4 — Nemesis tracker (opponent player who keeps scoring against us)
   nemesisTracker?: Record<string, {
     playerId: string

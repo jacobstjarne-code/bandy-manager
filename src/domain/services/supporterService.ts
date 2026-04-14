@@ -14,7 +14,7 @@ const NAMES: Record<string, string[]> = {
 
 const GROUP_NAMES = [
   'Järnkurvan', 'Bandygänget', 'Norrlandsklacken', 'Dalkurvan',
-  'Isfolket', 'Blå Front', 'Bandykorpen', 'Strömsklacken',
+  'Isfolket', 'Blå Front', 'Brukskurvan', 'Strömsklacken',
   'Norrviperiet', 'Klacklagen', 'Stadens Stolthet', 'Isbjörnarna',
 ]
 

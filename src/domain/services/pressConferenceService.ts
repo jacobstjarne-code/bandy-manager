@@ -561,6 +561,17 @@ export function generatePressConference(
     }
   }
 
+  // Community-standing question override (25% chance if triggered)
+  const cs = game.communityStanding ?? 50
+  const newMecenat = (game.mecenater ?? []).find(m => m.arrivedSeason === game.currentSeason)
+  if (cs > 75 && rand() < 0.25) {
+    question = { text: 'Det pratas om er i hela kommunen. Är det press eller inspiration?', preferIds: question.preferIds }
+  } else if (cs < 35 && rand() < 0.25) {
+    question = { text: 'Publiken sviker. Hur påverkar det laget?', preferIds: question.preferIds }
+  } else if (newMecenat && rand() < 0.25) {
+    question = { text: `Ni har fått ${newMecenat.name}s stöd. Gör det skillnad i omklädningsrummet?`, preferIds: question.preferIds }
+  }
+
   const ctx = buildPressContext(fixture, game, rand)
   const responses = buildPressResponses(ctx, question.preferIds)
 

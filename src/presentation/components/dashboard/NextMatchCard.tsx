@@ -333,12 +333,25 @@ export function NextMatchCard({
           <SeriesBoxes wins={dynamicHomeWins} losses={dynamicAwayWins} />
         )}
 
-        {/* Normal/home: round info */}
-        {!isPlayoff && !isCup && !isDerby && !isAnnandagen && (
-          <p style={{ fontSize: 9, color: 'var(--text-muted)', textAlign: 'center', margin: '2px 0 0', fontFamily: 'var(--font-body)' }}>
-            Omgång {nextFixture.roundNumber}
-          </p>
-        )}
+        {/* Normal/home: round info + arena */}
+        {!isPlayoff && !isCup && !isDerby && !isAnnandagen && (() => {
+          const venueClub = isHome ? club : opponent
+          const arenaLabel = venueClub.arenaName
+            ? `${venueClub.arenaName} (${venueClub.shortName ?? venueClub.name})`
+            : undefined
+          return (
+            <>
+              <p style={{ fontSize: 9, color: 'var(--text-muted)', textAlign: 'center', margin: '2px 0 0', fontFamily: 'var(--font-body)' }}>
+                Omgång {nextFixture.roundNumber}
+              </p>
+              {arenaLabel && (
+                <p style={{ fontSize: 8, color: 'var(--text-muted)', textAlign: 'center', margin: '1px 0 0', fontFamily: 'var(--font-body)', fontStyle: 'italic' }}>
+                  {arenaLabel}
+                </p>
+              )}
+            </>
+          )
+        })()}
 
         {/* Special info tags */}
         {(isDerby || isAnnandagen || isCup || isFinal) && (

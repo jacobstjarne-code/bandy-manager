@@ -867,6 +867,22 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     showSeasonSummary: true,
     showBoardMeeting: managerFired ? false : undefined,
     showPreSeason: managerFired ? false : true,
+    seasonStartSnapshot: managerFired ? game.seasonStartSnapshot : (() => {
+      const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+      const standing = game.standings.find(s => s.clubId === game.managedClubId)
+      const academyPromoCount = (game.youthIntakeHistory ?? []).filter(r =>
+        r.season === game.currentSeason && r.clubId === game.managedClubId
+      ).reduce((sum, r) => sum + r.playerIds.length, 0)
+      return {
+        season: game.currentSeason,
+        finalPosition: standing?.position ?? 12,
+        finances: managedClub?.finances ?? 0,
+        communityStanding: game.communityStanding ?? 50,
+        squadSize: game.players.filter(p => p.clubId === game.managedClubId).length,
+        supporterMembers: game.supporterGroup?.members ?? 0,
+        academyPromotions: academyPromoCount,
+      }
+    })(),
     managerFired: managerFired ? true : undefined,
     fanMood: licenseReview?.status === 'denied'
       ? Math.max(0, (game.fanMood ?? 50) - 15)

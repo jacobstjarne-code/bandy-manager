@@ -30,6 +30,11 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
     rivalry,
     fanMood,
     managedIsHome,
+  } = input
+  const captainPlayerId = input.captainPlayerId
+  const fanFavoritePlayerId = input.fanFavoritePlayerId
+  const supporterCtx = input.supporterContext
+  const {
     initialHomeScore,
     initialAwayScore,
     initialShotsHome,
@@ -365,8 +370,35 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
         const matchedStory = scorerStories.find(s => storylineCommentary[s.type])
         if (matchedStory) { commentaryText = storylineCommentary[matchedStory.type] }
         else { const ss = isHomeAttacking ? homeScore : awayScore; const os = isHomeAttacking ? awayScore : homeScore; commentaryText = fillTemplate(pickGoalCommentary(ss, os, rand, minute), tvars) }
+      } else if (rand() < 0.40) {
+        // Contextual commentary (THE_BOMB 1.3)
+        const scorerPlayer = allPlayers.find(p => p.id === scorerPlayerId)
+        const scorerIsManaged = managedIsHome ? isHomeAttacking : !isHomeAttacking
+        const scorerName = findName(scorerPlayerId)
+        const currentMargin = Math.abs(homeScore - awayScore)
+        let contextual: string | null = null
+        if (scorerIsManaged && scorerPlayer?.promotedFromAcademy && scorerPlayer.age <= 22) {
+          contextual = `MÅL! ${scorerName} — egenodlad talent! Akademin levererar när det gäller!`
+        } else if (scorerIsManaged && captainPlayerId && scorerPlayerId === captainPlayerId) {
+          contextual = `MÅL! Kaptenen kliver fram! Det är därför ${scorerName} bär bindeln!`
+        } else if (scorerIsManaged && fanFavoritePlayerId && scorerPlayerId === fanFavoritePlayerId) {
+          contextual = `MÅL! Klackfavoriten ${scorerName}! Hör hur läktaren skanderar!`
+        } else if (scorerIsManaged && scorerPlayer?.dayJob && !scorerPlayer.isFullTimePro) {
+          contextual = `MÅL! ${scorerName} — ${scorerPlayer.dayJob.title} på dagarna, målskytt på kvällarna!`
+        } else if (scorerIsManaged && minute >= 80 && currentMargin <= 1) {
+          contextual = `SLUTMINUTERNA! ${scorerName} slår till! Stämningen är ELEKTRISK!`
+        }
+        if (contextual) { commentaryText = contextual }
+        else { const ss = isHomeAttacking ? homeScore : awayScore; const os = isHomeAttacking ? awayScore : homeScore; commentaryText = fillTemplate(pickGoalCommentary(ss, os, rand, minute), tvars) }
       }
       else { const ss = isHomeAttacking ? homeScore : awayScore; const os = isHomeAttacking ? awayScore : homeScore; commentaryText = fillTemplate(pickGoalCommentary(ss, os, rand, minute), tvars) }
+      // Add late supporter commentary for tight matches
+      if (supporterCtx && step >= 47 && Math.abs(homeScore - awayScore) <= 1) {
+        const isManaged = managedIsHome ? homeScore >= awayScore : awayScore >= homeScore
+        const supArr = isManaged ? commentary.supporter_late_home : commentary.supporter_late_silent
+        const supVars = { ...tvars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
+        if (rand() < 0.15) commentaryText += ' ' + fillTemplate(pickCommentary(supArr, rand), supVars)
+      }
     } else if (saveOccurred && gkPlayerId) {
       tvars = { ...tvars, goalkeeper: findName(gkPlayerId) }
       commentaryText = fillTemplate(pickCommentary(commentary.save, rand), tvars)
