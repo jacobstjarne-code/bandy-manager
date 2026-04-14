@@ -1,4 +1,4 @@
-# CODE-INSTRUKTIONER — 14 april 2026 (kväll, efter dataanalys)
+# CODE-INSTRUKTIONER — 14 april 2026 (sent kväll)
 
 `npm run build && npm test` efter VARJE fix.
 
@@ -6,118 +6,72 @@
 
 ## STATUS
 
-### ✅ KLART
-- Sprint A–K (Rik matchupplevelse) — allt implementerat
-- Kalibrering — 5 targets gröna
-- Visuella gap — dark card på alla interaktioner, MATCHENS BERÄTTELSE-kort
-- Dataanalys — 7 mönster analyserade, resultat i `docs/data/ANALYS_MATCHMONSTER.md`
+### ✅ KLART IDAG (14 april)
+
+**Matchmotor — datadriven kalibrering:**
+- `GOAL_TIMING_BY_PERIOD` — empiriska vikter per 10-minutersperiod (halvtidsjakt 1.160×, slutryckning 1.269×)
+- `SUSP_TIMING_BY_PERIOD` — utvisningsvikter (slutfas 1.639×, öppning 0.447×)
+- `PHASE_CONSTANTS` — fas-specifika konstanter (KVF/SF/Final) med goalMod, homeAdvDelta, suspMod, cornerTrailingMod
+- Powerplay goalThreshold-bonus + defDefense-reduktion under utvisning
+- `getSecondHalfMode()` med fas-medvetenhet (KVF: chasing vid −1)
+- Alla konstanter i `matchUtils.ts` — delade av båda motorerna
+
+**Sprint A–K (Rik matchupplevelse):**
+- A–B: kontextuell commentary med `commentaryType`-visuell differentiering
+- C: narrativ båge, `getSecondHalfMode`, pacing
+- D: tactical_shift, player_duel, atmosphere, offside_call, freekick_danger
+- E–F: `getFinalWhistleSummary` (5 lager), `getMatchHeadline`, MATCHENS BERÄTTELSE-kort
+- G: MatchMode (full/commentary/quicksim), StartStep 3-knappar
+- H–J: CounterInteraction, FreeKickInteraction, LastMinutePress — dark card, SVG, wired
+- K: CornerInteraction + PenaltyInteraction redesign (dark card, emoji-btns, SVG-målbur)
+- Commentary med slutspelsmedvetenhet (fas-specifika kommentarer)
+
+**Playtest-buggar (15 st, alla fixade):**
+- PT-1: Halvvägsöversikt — fortsätt-knapp tillagd
+- PT-2/3: Scouting + värvning — fungerar nu
+- PT-4: Juniorer stannar i akademin tills 20 (inte auto-bort)
+- PT-5: Serietabellen låses efter grundserien
+- PT-6: Annandagsbandy = 26 december, rätt namn
+- PT-7: SM-final tredje helgen i mars (var redan korrekt)
+- PT-8: Synliga effekter borttagna från presskonferens/kommun-val
+- PT-9: Truppsammansättning balanserad (2 MV, 4 B, 3 YH, 4 MF, 3 FW)
+- PT-10: Positionsförkortningar → MV/B/YH/MF/A
+- PT-11: All hall-text borttagen
+- PT-12: Lönebudget satt korrekt vid start
+- PT-13: Lägsta lön ger −12 morale
+- PT-14: Patron-bugg fixad (events raderades/återskapades varje omgång)
+- PT-15: Vila: +1 morale/omg (ned från +3), +8 fitness (ned från +15)
+
+**Data:**
+- 1 124 matcher skrapade från Bandygrytan (herr + 376 dam)
+- 7 grundserieanalyser + slutspelsanalys (KVF/SF/Final)
+- Matchflödesspec med 5-minutersblock
 
 ---
 
 ## ❌ KVAR ATT GÖRA
 
-### 1️⃣ KALIBRERING — Datadriven uppdatering (prio 1)
+### 1️⃣ KALIBRERING — Kör och verifiera (prio 1)
 
-**Huvudspec:** `docs/SPEC_MATCHFLODE.md` — komplett 5-minutersblock-referens med alla sannolikheter, vikter och konstanter. Implementera det som står där.
-
-Baserat på `ANALYS_MATCHMONSTER.md` och PP-analysen. Sex konkreta motorändringar:
-
-#### A) TIMING_WEIGHTS uppdatering (secondHalfShare-gapet)
-**Motor:** 52.6% mål i 2:a halvlek. **Verklighet:** 60.7%.
-
-Uppdatera `TIMING_WEIGHTS` i `matchEngine.ts` baserat på verklig målltidens fördelning:
-
-```
-Period    Verklig%   Nuvarande vikt   Ny vikt (förslag)
-0-14'     9.7%       0.94             0.85
-15-29'    9.8%       0.97             0.86
-30-44'    10.0%      1.05             0.92
-45-59'    11.8%      1.08             1.12
-60-74'    10.5%      1.10             1.14
-75-89'    12.9%      1.15             1.28
+```bash
+node_modules/.bin/vite-node scripts/calibrate.ts
 ```
 
-Sänk 1:a halvlek, höj 2:a. Kör `calibrate.ts` tills secondHalfShare landar på ~60% (±3%).
+Alla targets ska vara ✅:
 
-#### B) Powerplay goalThreshold-bonus
-**Motor:** Ingen direkt målchans-boost under PP. **Verklighet:** +57% målfrekvens.
+| Target | Värde | Tolerans |
+|--------|-------|----------|
+| goalsPerMatch | 9.12 | ±1.5 |
+| secondHalfShare | 60.7% | ±3% |
+| homeWinRate | 50.2% | ±5% |
+| drawRate | 11.6% | ±3% |
+| cornerGoalShare | 22.2% | ±3% |
+| avgSuspensionsPerMatch | 3.77 | ±0.5 |
+| ppGoalsPer10Min | 0.76 | ±0.15 |
 
-I matchEngine.ts och matchStepByStep.ts, lägg till:
-```typescript
-// När försvarande lag har aktiv utvisning:
-const ppBonus = defendingActiveSuspensions > 0 ? 1.35 : 1.0
-const goalThreshold = baseThreshold * ppBonus
-```
+Calibrate.ts-targets behöver uppdateras från gamla värden (10.0 mål, 54.3% 2H) till nya (`bandygrytan_calibration_targets.json`).
 
-Också sänk `defDefense` med 15% under utvisning:
-```typescript
-const effectiveDefDefense = defDefense * (defendingActiveSuspensions > 0 ? 0.85 : 1.0)
-```
-
-**Target:** PP-laget ~0.76 mål/10 min, SH-laget ~0.38. Verifiera med `calibrate.ts` (ny sektion).
-
-#### C) Utvisnings timing-vikter
-**Motor:** Platt sannolikhet. **Verklighet:** 16.5% av utvisningar i 80-90', bara 4.5% i 0-10'.
-
-Lägg till `SUSPENSION_TIMING_WEIGHTS` i matchEngine.ts:
-```typescript
-const SUSPENSION_TIMING_WEIGHTS: number[] = [
-  ...Array(10).fill(0.55),  // 0-14'  (4.5%)
-  ...Array(10).fill(0.75),  // 15-29' (6.6-8.5%)
-  ...Array(10).fill(0.95),  // 30-44' (9.7%)
-  ...Array(10).fill(1.10),  // 45-59' (11.8%)
-  ...Array(10).fill(1.25),  // 60-74' (11.6%)
-  ...Array(10).fill(1.55),  // 75-89' (16.5%)
-]
-```
-
-Applicera: `foulProb * SUSPENSION_TIMING_WEIGHTS[step]`
-
-**Target:** Utvisningsfördelning som matchar verkligheten (inte nödvändigt att vara exakt, men slutfasen ska ha tydligt fler).
-
-#### D) Hörnmål trailing-bonus
-**Motor:** Samma chans oavsett ställning. **Verklighet:** 24.7% vid underläge vs 19.9% vid ledning.
-
-I corner-sekvensen, lägg till:
-```typescript
-const trailingBonus = isAttackingTeamTrailing ? 1.15 : (isAttackingTeamLeading ? 0.92 : 1.0)
-const goalThreshold = baseCornerThreshold * trailingBonus
-```
-
-#### E) `getSecondHalfMode()` — desperate-läge
-**Motor:** `chasing` vid −2+. **Verklighet:** −3 i HT vänder bara 3.7%.
-
-```typescript
-function getSecondHalfMode(managedScore: number, opponentScore: number, step: number): SecondHalfMode {
-  const diff = managedScore - opponentScore
-  if (diff <= -3) return 'desperate'   // NY — 3.7% comeback
-  if (diff <= -2) return 'chasing'     // 11% comeback
-  if (diff >= 3) return 'cruise'
-  if (diff >= 1 && step > 45) return 'controlling'
-  return 'even_battle'
-}
-```
-
-`desperate` bör påverka commentary (resignation + desperation) men INTE sänka goalThreshold — datan visar att förloraren alltid kämpar (249 desperationsmål i 80-90').
-
-#### F) Uppdatera calibrate.ts targets
-Byt till verkliga värden från `bandygrytan_calibration_targets.json`:
-- goalsPerMatch: 10.0 → **9.12** (±1.5)
-- secondHalfShare: 0.543 → **0.607** (±0.03)
-- drawRate: 0.090 → **0.116** (±0.03)
-- Lägg till ny target: `avgSuspensionsPerMatch: 3.77` (±0.5)
-- Lägg till ny target: `ppGoalRate: 0.76` per 10 min (±0.15)
-
-### Bekräftat korrekt (INGA ändringar behövs):
-- ✅ Ingen goals-breed-goals-effekt → Motorn har ingen kluster-boost, korrekt
-- ✅ Hemmafördel som konstant → Förenkling OK (verklig kurva platt nog)
-- ✅ Förloraren kämpar alltid → lastMinutePress-mekanik bekräftad
-- ✅ First-goal-effekt 61.6% → Inga justeringar
-- ✅ 0-0 förekommer aldrig → Motorns höga målantal stämmer
-
----
-
-### 2️⃣ BUGGAR — speltesta och fixa
+### 2️⃣ BUGGAR FRÅN SPRINT_ALLT_KVAR (ej verifierade)
 
 | # | Bugg | Risk |
 |---|------|------|
@@ -128,9 +82,10 @@ Byt till verkliga värden från `bandygrytan_calibration_targets.json`:
 | 1.14 | paddingBottom 7 skärmar | Oklart vilka åtgärdats |
 | 1.16 | Cupvy saknar progress-rad | Ej implementerat |
 
-Detaljer: `docs/SPRINT_ALLT_KVAR.md` punkt 1.3–1.16.
+Detaljer: `docs/SPRINT_ALLT_KVAR.md`
 
 ### 3️⃣ PARKERAT — docs/FIXSPEC_PARKERAT.md
+
 - P1: Presskonferens som visuell scen
 - P2: Transferdödline-känsla
 - P3: Klubbens rykte utanför orten
@@ -141,13 +96,15 @@ Detaljer: `docs/SPRINT_ALLT_KVAR.md` punkt 1.3–1.16.
 
 | Fil | Innehåll |
 |-----|----------|
-| `docs/SPEC_MATCHFLODE.md` | 5-minutersblock-spec med sannolikheter per fas (mål, utvisningar, PP, score-state) |
-| `docs/data/ANALYS_MATCHMONSTER.md` | 7 analysresultat med motorsimplikationer |
+| `docs/SPEC_MATCHFLODE.md` | 5-minutersblock-spec med sannolikheter + §10 slutspelsmodifieringar |
+| `docs/data/ANALYS_MATCHMONSTER.md` | 7 grundserieanalyser |
+| `docs/data/ANALYS_SLUTSPEL.md` | Slutspelsanalys: KVF/SF/Final |
 | `docs/data/bandygrytan_calibration_targets.json` | Verkliga targets (1124 matcher) |
-| `docs/data/bandygrytan_detailed.json` | Per-match-data (i /tmp/, kopiera till docs/data/) |
-| `docs/SPRINT_ALLT_KVAR.md` | Kvarstående buggar |
+| `docs/PLAYTEST_BUGGAR_KVÄLL.md` | 15 playtest-buggar (alla fixade) |
+| `docs/SPRINT_ALLT_KVAR.md` | Kvarstående äldre buggar |
 | `docs/SPEC_RIK_MATCHUPPLEVELSE.md` | Sprint A–K spec (alla implementerade) |
 | `docs/FIXSPEC_PARKERAT.md` | P1–P3 (parkerat) |
+| `docs/RAPPORT_SESSION_14APR.md` | Sessionsrapport med konstanttabeller |
 
 ## KVALITETSGATES
 
@@ -155,5 +112,3 @@ Detaljer: `docs/SPRINT_ALLT_KVAR.md` punkt 1.3–1.16.
 npm run build && npm test
 node_modules/.bin/vite-node scripts/calibrate.ts
 ```
-
-Alla targets ska vara ✅ efter kalibrering.
