@@ -22,7 +22,6 @@ export function calculateStandings(teamIds: string[], fixtures: Fixture[]): Stan
 
   for (const fixture of fixtures) {
     if (fixture.status !== FixtureStatus.Completed) continue
-    // PT-5: Exclude playoff/cup/knockout fixtures from league standings
     if (fixture.isKnockout || fixture.isCup) continue
 
     const home = rowMap.get(fixture.homeClubId)

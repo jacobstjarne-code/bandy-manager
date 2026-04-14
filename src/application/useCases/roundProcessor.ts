@@ -1026,7 +1026,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     activeScoutAssignment: updatedScoutAssignment,
     scoutBudget: game.scoutBudget ?? 10,
     transferBids: trimmedBids,
-    // PT-14: Carry over unresolved events so they aren't re-generated next round
     pendingEvents: [
       ...(game.pendingEvents ?? []).filter(e => !e.resolved && !allNewEvents.some(n => n.id === e.id)),
       ...allNewEvents,

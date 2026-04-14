@@ -52,7 +52,6 @@ export function getTrainingEffects(focus: TrainingFocus): TrainingEffects {
     attributeBoosts[attr] = (base as number) * intensityCfg.attributeMultiplier
   }
 
-  // Recovery: liten moralboost, ingen träningseffekt (PT-15)
   const moraleEffect =
     focus.type === TrainingType.Recovery
       ? 1

@@ -67,16 +67,6 @@ export function processCommunity(
   if (csPos <= 3) csBoost += 0.2
   else if (csPos >= 10) csBoost -= 0.15
 
-  // 1.15: Diminishing returns på positiva CS-boostar när CS redan är högt
-  if (csBoost > 0) {
-    const currentCS = game.communityStanding ?? 50
-    const diminishingFactor = currentCS > 85 ? 0.25
-      : currentCS > 70 ? 0.5
-      : currentCS > 55 ? 0.75
-      : 1.0
-    csBoost = csBoost * diminishingFactor
-  }
-
   // ── Politiker inbox-notiser ────────────────────────────────────────────────
   const pol = game.localPolitician
   if (pol && justCompletedManagedFixture && pol.relationship > 50) {

@@ -220,7 +220,6 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   const allFixtures = [...fixtures, ...cupFixtures]
 
   // Ensure the player's chosen club doesn't have hasIndoorArena
-  // PT-12: Set wageBudget = actual monthly salaries + 10% buffer so player doesn't start over budget
   const managedMonthlyWages = players
     .filter(p => p.clubId === input.clubId)
     .reduce((sum, p) => sum + p.salary, 0)
@@ -366,7 +365,6 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     previousAverageAttendance: undefined,
   }
 
-  // PT-2/PT-3: Initialize player availability so transfer market is populated from game start
   const playersWithAvailability = updatePlayerAvailability(game)
   return { ...game, players: playersWithAvailability }
 }

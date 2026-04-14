@@ -46,7 +46,7 @@ const LABEL: React.CSSProperties = {
 
 export function DashboardScreen() {
   const { game, advance, simulateRemainingStep } = useGameStore()
-const markScreenVisited = useGameStore(s => s.markScreenVisited)
+  const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const resolveWeeklyDecision = useGameStore(s => s.resolveWeeklyDecision)
   const club = useManagedClub()
   const standing = useCurrentStanding()
