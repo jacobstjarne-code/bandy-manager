@@ -7,6 +7,7 @@ import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { FixtureStatus, PlayerPosition, InboxItemType, ClubStyle } from '../../../domain/enums'
 import type { FormationType } from '../../../domain/entities/Formation'
 import { simulateMatch } from '../../../domain/services/matchSimulator'
+import type { MatchPhaseContext } from '../../../domain/services/matchUtils'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { generateMatchWeather } from '../../../domain/services/weatherService'
 import { calcAttendance } from '../../../domain/services/economyService'
@@ -258,6 +259,14 @@ export function simulateRound(
       ? ((game.communityStanding ?? 50) - 50) / 50 * 0.02
       : 0
     const homeAdv = Math.max(0, baseAdv + communityBonus)
+
+    const isPlayoffFinal = fixture.roundNumber > 22 && game.playoffBracket?.final?.fixtures.includes(fixture.id)
+    const isPlayoffSemi = fixture.roundNumber > 22 && game.playoffBracket?.semiFinals.some(s => s.fixtures.includes(fixture.id))
+    const matchPhase: MatchPhaseContext = isPlayoffFinal ? 'final'
+      : isPlayoffSemi ? 'semifinal'
+      : isPlayoffRound ? 'quarterfinal'
+      : 'regular'
+
     const result = simulateMatch({
       fixture,
       homeLineup,
@@ -268,6 +277,7 @@ export function simulateRound(
       seed: baseSeed + i,
       weather: matchWeather.weather,
       isPlayoff: isPlayoffRound,
+      matchPhase,
       rivalry: rivalry ?? undefined,
       fanMood: game.fanMood ?? 50,
       managedIsHome: isManagedHome,

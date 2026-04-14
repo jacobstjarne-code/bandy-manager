@@ -7,18 +7,9 @@ import { mulberry32 } from '../utils/random'
 import {
   clamp, randRange, weightedPick, pickWeightedPlayer,
   SEQUENCE_TYPES, computeWeatherEffects, computeWeatherTacticInteraction, simulatePenalties,
+  GOAL_TIMING_BY_PERIOD, SUSP_TIMING_BY_PERIOD, PHASE_CONSTANTS, getTimingPeriod,
 } from './matchUtils'
 import type { SimulateMatchInput, SimulateMatchResult } from './matchUtils'
-
-// Based on Bandygrytan 420-match data: 45.7% 1st half, 54.3% 2nd half, spikes at min 40-49 and 80-89.
-const TIMING_WEIGHTS: number[] = [
-  ...Array(10).fill(0.94),  // steps 0-9   (min 0-14)
-  ...Array(10).fill(0.97),  // steps 10-19 (min 15-29)
-  ...Array(10).fill(1.05),  // steps 20-29 (min 30-44)
-  ...Array(10).fill(1.08),  // steps 30-39 (min 45-59)
-  ...Array(10).fill(1.10),  // steps 40-49 (min 60-74)
-  ...Array(10).fill(1.15),  // steps 50-59 (min 75-89)
-]
 
 export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   const {
@@ -31,10 +22,13 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     seed,
     weather,
     isPlayoff = false,
+    matchPhase = 'regular',
     rivalry,
     fanMood,
     managedIsHome,
   } = input
+
+  const phaseConst = PHASE_CONSTANTS[matchPhase]
 
   const rand = mulberry32(seed ?? Date.now())
 
@@ -90,7 +84,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   // Derby intensity modifiers
   let derbyFoulMult = 1.0
   let derbyChanceMult = 0.0
-  let effectiveHomeAdvantage = fixture.isNeutralVenue ? 0 : homeAdvantage
+  let effectiveHomeAdvantage = fixture.isNeutralVenue ? 0 : homeAdvantage + phaseConst.homeAdvDelta
   // Fan mood affects home advantage (only when managed club plays at home)
   if (!fixture.isNeutralVenue && fanMood !== undefined && managedIsHome) {
     effectiveHomeAdvantage *= 1 + ((fanMood - 50) / 100) * 0.06
@@ -268,7 +262,8 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   // Step through 60 match steps
   for (let step = 0; step < 60; step++) {
     const minute = Math.round(step * 1.5)
-    const goalMod = weatherGoalMod * TIMING_WEIGHTS[step]
+    const period = getTimingPeriod(minute)
+    const goalMod = weatherGoalMod * phaseConst.goalMod * GOAL_TIMING_BY_PERIOD[period]
 
     // AI halftime tactical adjustment (applied once at step 30)
     if (step === 30) {
@@ -459,9 +454,16 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
       const specialistBonus = cornerSpecialist
         ? (cornerSpecialist.attributes.cornerSkill > 75 ? 0.25 : 0.15)
         : 0
+      const attackingScore = isHomeAttacking ? homeScore : awayScore
+      const defendingScore = isHomeAttacking ? awayScore : homeScore
+      const cornerStateMod = attackingScore < defendingScore
+        ? phaseConst.cornerTrailingMod
+        : attackingScore > defendingScore
+          ? phaseConst.cornerLeadingMod
+          : 1.0
       const cornerChance = attCorner * 0.7 + randRange(rand, 0, 0.3) + specialistBonus
       const defenseResist = defDefense * 0.5 + defGK * 0.3 + randRange(rand, 0, 0.2)
-      const goalThreshold = clamp((cornerChance - defenseResist) * 0.30 * goalMod + 0.14, 0.10, 0.30)
+      const goalThreshold = clamp((cornerChance - defenseResist) * 0.30 * goalMod * cornerStateMod + 0.14, 0.10, 0.30)
 
       const r = rand()
       if (r < goalThreshold) {
@@ -513,7 +515,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
       const chanceQuality = randRange(rand, 0.05, 0.25) * (isPlayoff ? 1.05 : 1.0)
       const goalThreshold = chanceQuality * 0.63 * goalMod
 
-      if (rand() < goalThreshold) {
+      if (rand() < goalThreshold) { // matchEngine halfchance
         const scorer = getGoalScorer(attackingStarters)
 
         if (scorer) {
@@ -533,7 +535,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
       const foulProb = defDiscipline * 0.6 + attDiscipline * 0.1
 
       const r = rand()
-      if (r < foulProb * 0.62 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
+      if (r < foulProb * 0.62 * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult) {
         // Suspension (red card equivalent)
         const suspPlayer = getDefendingPlayer(defendingStarters)
         if (suspPlayer) {

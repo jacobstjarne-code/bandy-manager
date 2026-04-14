@@ -5,6 +5,64 @@ import { WeatherCondition, IceQuality, PlayerPosition } from '../enums'
 import type { Rivalry } from '../data/rivalries'
 import { commentary, pickCommentary } from '../data/matchCommentary'
 
+// ── Match phase context ────────────────────────────────────────────────────
+// Derived from fixture matchday: regular (1-26), quarterfinal (27-31),
+// semifinal (32-36), final (37+). Drives all phase-specific probability tables.
+export type MatchPhaseContext = 'regular' | 'quarterfinal' | 'semifinal' | 'final'
+
+// Empirical goal-timing weights from 1124 Bandygrytan herr regular-season matches.
+// Index = getTimingPeriod(minute). Normalized so weighted step-sum ≈ old TIMING_WEIGHTS total.
+// Real data: 9.7 / 9.8 / 9.8 / 10.0 / 11.8 / 10.9 / 10.5 / 10.7 / 12.9 % per 10-min period.
+export const GOAL_TIMING_BY_PERIOD: number[] = [
+  0.954,  // 0–10 min   (9.7% of goals)
+  0.964,  // 10–20 min  (9.8%)
+  0.964,  // 20–30 min  (9.8%)
+  0.984,  // 30–40 min  (10.0%)
+  1.160,  // 40–50 min  (11.8%) ← halvtidsjakt
+  1.072,  // 50–60 min  (10.9%)
+  1.032,  // 60–70 min  (10.5%)
+  1.052,  // 70–80 min  (10.7%)
+  1.269,  // 80–90 min  (12.9%) ← slutryckning
+]
+
+// Empirical suspension-timing weights from same dataset.
+// Real data: 4.5 / 6.6 / 8.5 / 9.7 / 11.8 / 10.0 / 11.6 / 12.5 / 16.5 % per 10-min period.
+// Normalized so average ≈ 1.0 per step (preserves overall suspension rate).
+export const SUSP_TIMING_BY_PERIOD: number[] = [
+  0.447,  // 0–10 min   (4.5%)
+  0.656,  // 10–20 min  (6.6%)
+  0.844,  // 20–30 min  (8.5%)
+  0.964,  // 30–40 min  (9.7%)
+  1.172,  // 40–50 min  (11.8%)
+  0.993,  // 50–60 min  (10.0%)
+  1.152,  // 60–70 min  (11.6%)
+  1.241,  // 70–80 min  (12.5%)
+  1.639,  // 80–90 min  (16.5%) ← slutryckning
+]
+
+// Per-phase constants derived from Bandygrytan playoff data (KVF n=68, SF n=38, Final n=12).
+// goalMod: avg mål/match vs regular 9.12 baseline.
+// homeAdvDelta: additive on top of caller's homeAdvantage (neutral venues already zeroed).
+// suspMod: phase avg / regular 3.77 avg.
+// cornerTrailingMod / cornerLeadingMod: intra-phase ratio (trailing/leading vs even).
+export const PHASE_CONSTANTS: Record<MatchPhaseContext, {
+  goalMod: number
+  homeAdvDelta: number
+  suspMod: number
+  cornerTrailingMod: number
+  cornerLeadingMod: number
+}> = {
+  regular:     { goalMod: 1.000, homeAdvDelta: 0.00, suspMod: 1.00, cornerTrailingMod: 1.11, cornerLeadingMod: 0.90 },
+  quarterfinal:{ goalMod: 0.966, homeAdvDelta: 0.03, suspMod: 0.84, cornerTrailingMod: 1.20, cornerLeadingMod: 0.81 },
+  semifinal:   { goalMod: 0.920, homeAdvDelta: 0.05, suspMod: 0.94, cornerTrailingMod: 1.05, cornerLeadingMod: 0.86 },
+  final:       { goalMod: 0.768, homeAdvDelta: 0.00, suspMod: 1.08, cornerTrailingMod: 0.58, cornerLeadingMod: 1.24 },
+}
+
+// Maps a match minute (0-90) to a 10-min period index (0-8) for timing lookups.
+export function getTimingPeriod(minute: number): number {
+  return Math.min(8, Math.floor(minute / 10))
+}
+
 export interface SimulateMatchInput {
   fixture: Fixture
   homeLineup: TeamSelection
@@ -17,6 +75,7 @@ export interface SimulateMatchInput {
   homeClubName?: string
   awayClubName?: string
   isPlayoff?: boolean
+  matchPhase?: MatchPhaseContext
   rivalry?: Rivalry
   fanMood?: number
   managedIsHome?: boolean
@@ -227,6 +286,7 @@ export interface StepByStepInput {
   homeClubName?: string
   awayClubName?: string
   isPlayoff?: boolean
+  matchPhase?: MatchPhaseContext
   rivalry?: Rivalry
   fanMood?: number
   managedIsHome?: boolean

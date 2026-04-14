@@ -10,6 +10,7 @@ import {
   clamp, randRange, weightedPick, pickWeightedPlayer,
   SEQUENCE_TYPES, computeWeatherEffects, computeWeatherTacticInteraction,
   simulatePenalties, pickGoalCommentary, pickWeatherCommentary,
+  GOAL_TIMING_BY_PERIOD, SUSP_TIMING_BY_PERIOD, PHASE_CONSTANTS, getTimingPeriod,
 } from './matchUtils'
 import type { MatchStep, StepByStepInput } from './matchUtils'
 import { shouldBeInteractive, buildCornerInteractionData } from './cornerInteractionService'
@@ -43,9 +44,12 @@ type SecondHalfMode = 'chasing' | 'controlling' | 'even_battle' | 'cruise'
 function getSecondHalfMode(
   managedScore: number, opponentScore: number,
   step: number,
+  matchPhase: import('./matchUtils').MatchPhaseContext = 'regular',
 ): SecondHalfMode {
   const diff = managedScore - opponentScore
-  if (diff <= -2) return 'chasing'
+  // In knockouts the game is more decisive — chasing mode triggers one goal earlier
+  const chasingThreshold = matchPhase === 'quarterfinal' ? -1 : -2
+  if (diff <= chasingThreshold) return 'chasing'
   if (diff >= 3) return 'cruise'
   if (diff >= 1 && step > 45) return 'controlling'
   return 'even_battle'
@@ -73,10 +77,13 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     homeClubName,
     awayClubName,
     isPlayoff = false,
+    matchPhase = 'regular',
     rivalry,
     fanMood,
     managedIsHome,
   } = input
+
+  const phaseConst = PHASE_CONSTANTS[matchPhase]
   const captainPlayerId = input.captainPlayerId
   const fanFavoritePlayerId = input.fanFavoritePlayerId
   const supporterCtx = input.supporterContext
@@ -136,7 +143,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
   // Derby intensity modifiers
   let derbyFoulMult = 1.0
   let derbyChanceMult = 0.0
-  let effectiveHomeAdvantageSbs = fixture.isNeutralVenue ? 0 : homeAdvantage
+  let effectiveHomeAdvantageSbs = fixture.isNeutralVenue ? 0 : homeAdvantage + phaseConst.homeAdvDelta
   // Fan mood affects home advantage (only when managed club plays at home)
   if (!fixture.isNeutralVenue && fanMood !== undefined && managedIsHome) {
     effectiveHomeAdvantageSbs *= 1 + ((fanMood - 50) / 100) * 0.06
@@ -148,7 +155,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     derbyFoulMult = 1 + rivalry.intensity * 0.15
     derbyChanceMult = 0.05
     if (!fixture.isNeutralVenue) {
-      effectiveHomeAdvantageSbs = homeAdvantage * (1 + rivalry.intensity * 0.1)
+      effectiveHomeAdvantageSbs = (homeAdvantage + phaseConst.homeAdvDelta) * (1 + rivalry.intensity * 0.1)
     }
   }
 
@@ -347,14 +354,15 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     const stepEvents: MatchEvent[] = []
 
     // B3: Ice degrades in second half (step > 30)
-    let stepGoalMod = weatherGoalMod
+    const period = getTimingPeriod(minute)
+    let stepGoalMod = weatherGoalMod * phaseConst.goalMod * GOAL_TIMING_BY_PERIOD[period]
     if (weather && step > 30) {
       const base = 0.03
       const snowExtra = weather.condition === WeatherCondition.HeavySnow ? 0.02 : 0
       const thawExtra = weather.condition === WeatherCondition.Thaw ? 0.03 : 0
       const iceDegradation = base + snowExtra + thawExtra
       const degradationPenalty = iceDegradation * (step - 30) * 0.5
-      stepGoalMod = Math.max(0.60, weatherGoalMod - degradationPenalty / 100)
+      stepGoalMod = Math.max(0.60, stepGoalMod - degradationPenalty / 100)
     }
 
     // Second half mode — apply goal/foul multipliers (Sprint C)
@@ -363,7 +371,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     if (step >= 30 && managedIsHome !== undefined) {
       const managedScore = managedIsHome ? homeScore : awayScore
       const opponentScore = managedIsHome ? awayScore : homeScore
-      const mode = getSecondHalfMode(managedScore, opponentScore, step)
+      const mode = getSecondHalfMode(managedScore, opponentScore, step, matchPhase)
       if (mode === 'chasing') {
         secondHalfGoalMod = 1.08
         secondHalfFoulMod = 1.15
@@ -647,9 +655,16 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       const specialistBonus = cornerSpecialist
         ? (cornerSpecialist.attributes.cornerSkill > 75 ? 0.25 : 0.15)
         : 0
+      const attackingScore = isHomeAttacking ? homeScore : awayScore
+      const defendingScore = isHomeAttacking ? awayScore : homeScore
+      const cornerStateMod = attackingScore < defendingScore
+        ? phaseConst.cornerTrailingMod
+        : attackingScore > defendingScore
+          ? phaseConst.cornerLeadingMod
+          : 1.0
       const cornerChance = attCorner * 0.7 + randRange(rand, 0, 0.3) + specialistBonus
       const defenseResist = defDefense * 0.5 + defGK * 0.3 + randRange(rand, 0, 0.2)
-      const goalThreshold = clamp((cornerChance - defenseResist) * 0.25 * stepGoalMod + 0.08, 0.06, 0.18)
+      const goalThreshold = clamp((cornerChance - defenseResist) * 0.25 * stepGoalMod * cornerStateMod + 0.08, 0.06, 0.18)
 
       const r = rand()
       if (r < goalThreshold) {
@@ -710,7 +725,9 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       } // end if (!pendingInteractionData)
     } else if (seqType === 'halfchance') {
       if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
-      const chanceQuality = randRange(rand, 0.05, 0.25) * (isPlayoff ? 1.05 : 1.0)
+      // Playoff/knockout matches have slightly higher half-chance quality (top players)
+      const halfchancePlayoffBonus = isPlayoff ? 1.05 : 1.0
+      const chanceQuality = randRange(rand, 0.05, 0.25) * halfchancePlayoffBonus
       const goalThreshold = chanceQuality * 0.30 * stepGoalMod
 
       if (rand() < goalThreshold) {
@@ -737,7 +754,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       const foulProb = (attDiscipline) * 0.4 + (defDiscipline) * 0.3
 
       const r = rand()
-      const foulThreshold = foulProb * 0.55 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult * secondHalfFoulMod
+      const foulThreshold = foulProb * 0.55 * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult * secondHalfFoulMod
       if (r < foulThreshold) {
         // Penalty check: ~20% of fouls in attack zone → straff
         const isAttackZoneFoul = rand() < 0.35

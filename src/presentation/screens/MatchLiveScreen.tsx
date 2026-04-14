@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { simulateMatchStepByStep, simulateSecondHalf, type MatchStep } from '../../domain/services/matchSimulator'
+import type { MatchPhaseContext } from '../../domain/services/matchUtils'
 import type { Tactic } from '../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
@@ -65,6 +66,17 @@ export function MatchLiveScreen() {
 
   const rivalry = fixture ? getRivalry(fixture.homeClubId, fixture.awayClubId) : null
   const isSmFinal = fixture?.isNeutralVenue === true
+
+  const matchPhase: MatchPhaseContext = (() => {
+    if (!fixture || !game) return 'regular'
+    if (isSmFinal) return 'final'
+    const bracket = game.playoffBracket
+    if (!bracket) return 'regular'
+    if (bracket.final?.fixtures.includes(fixture.id)) return 'final'
+    if (bracket.semiFinals.some(s => s.fixtures.includes(fixture.id))) return 'semifinal'
+    if (fixture.roundNumber > 26) return 'quarterfinal'
+    return 'regular'
+  })()
 
   const isCupFinal = fixture?.isCup === true && (() => {
     const bracket = game?.cupBracket
@@ -143,6 +155,8 @@ export function MatchLiveScreen() {
       weather: matchWeather?.weather,
       homeClubName: homeClubName || undefined,
       awayClubName: awayClubName || undefined,
+      isPlayoff: matchPhase !== 'regular',
+      matchPhase,
       rivalry: rivalry ?? undefined,
       storylines: game.storylines?.map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
       managedIsHome: fixture.homeClubId === game.managedClubId,
