@@ -112,9 +112,9 @@ export function HalfTimeSummaryScreen() {
       <div style={{
         position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 430, padding: '12px 20px',
-        paddingBottom: 'calc(12px + var(--safe-bottom, 0px))',
+        paddingBottom: 'calc(12px + var(--bottom-nav-height) + var(--safe-bottom, 0px))',
         background: 'linear-gradient(to top, var(--bg) 80%, transparent)',
-        zIndex: 50, pointerEvents: 'none',
+        zIndex: 110, pointerEvents: 'none',
       }}>
         <button
           onClick={handleContinue}
