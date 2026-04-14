@@ -52,7 +52,11 @@ export function LastMatchCard({ fixture, game, managedClubId }: LastMatchCardPro
         <p style={{ fontSize: 13, fontWeight: 600 }}>
           {homeClub?.shortName ?? homeClub?.name} {fixture.homeScore}–{fixture.awayScore} {awayClub?.shortName ?? awayClub?.name}
         </p>
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Omgång {fixture.roundNumber}</p>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+          {fixture.isCup
+            ? `Cup · ${fixture.roundNumber === 1 ? 'Förstarunda' : fixture.roundNumber === 2 ? 'Kvartsfinal' : fixture.roundNumber === 3 ? 'Semifinal' : 'Final'}`
+            : `Omgång ${fixture.roundNumber}`}
+        </p>
       </div>
     </div>
   )

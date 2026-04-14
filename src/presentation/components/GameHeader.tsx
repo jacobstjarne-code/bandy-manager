@@ -18,7 +18,10 @@ export function GameHeader() {
   const lastPlayedRound = game.fixtures
     .filter(f => f.status === 'completed' && !f.isCup)
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
-  const currentRound = lastPlayedRound
+  const nextLeagueRound = game.fixtures
+    .filter(f => f.status === 'scheduled' && !f.isCup && f.roundNumber <= 22)
+    .reduce((min, f) => Math.min(min, f.roundNumber), Infinity)
+  const currentRound = nextLeagueRound < Infinity ? nextLeagueRound : lastPlayedRound
 
   const [showHelp, setShowHelp] = useState(false)
 
