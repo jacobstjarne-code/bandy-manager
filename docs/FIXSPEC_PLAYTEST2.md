@@ -501,29 +501,92 @@ Lägg till `minRound`-fält på varje frågetyp och filtrera i `generatePressQue
 
 ---
 
+## BUG-23: Matchsammanfattning "Motståndarna var starkare" vid vinst
+
+**Fil:** `src/domain/services/matchMoodService.ts` → `getFinalWhistleSummary()`
+
+**Root cause:** `margin >= 2 && lateGoals === 0` kräver noll sena mål. Om du vinner 4-1 men gör ett sent mål → villkoret missar → faller genom alla checks → default: "Motståndarna var starkare idag." vid en 4-1 VINST.
+
+**Fix:** Lägg till för margin >= 2 med sena mål, och ändra default:
+```typescript
+if (margin >= 4) return 'Dominans från start till slut.'
+if (margin >= 2 && lateGoals === 0) return 'Kontrollerad seger. Laget visste vad som krävdes.'
+if (margin >= 2 && lateGoals > 0) return 'Kontrollerad seger, även om avslutningen blev stormig.'
+if (margin === 1 && lateGoals > 0) return 'Avgörandet kom sent. Nerverna höll.'
+if (margin === 1) return 'Knapp seger. Det kunde gått åt vilket håll som helst.'
+// ... draws ...
+if (margin === -1 && lateGoals > 0) return 'Sent avgörande — åt fel håll.'
+if (margin === -1) return 'En boll skilde. Marginaler.'
+if (margin === -2) return 'Motståndarna var starkare idag.'
+if (margin <= -3) return 'Tung kväll. Det finns inte mycket att säga.'
+return 'Matchen är över.'
+```
+
+---
+
+## BUG-24: Halvtidsbeslut — "Taktikjustering" visuellt lika de andra
+
+**Fil:** `HalfTimeScreen.tsx` eller halvtidskomponenten
+
+**Problem:** "Lugn genomgång" och "Kräv mer" är engångsval med direkt effekt. "Taktikjustering" öppnar taktikpanelen. De tre ser identiska ut men beter sig helt olika.
+
+**Fix:** Separera visuellt:
+- "Lugn genomgång" och "Kräv mer" — två knappar sida vid sida (som nu)
+- "Taktikjustering" — en text-länk eller ghost-knapp UNDER de två primärvalen, med annan stil:
+  ```
+  [Lugn genomgång]  [Kräv mer]
+  
+  ────────────────────────
+  ⚙️ Justera taktiken →
+  ```
+  Alternativt: byt FLIKAR-headern (ÖVERSIKT / TAKTIK / BYTEN) till att vara det primära navigeringsverktyget, och låt bara de två första vara "pep talk"-val.
+
+---
+
+## BUG-25: Ekonomi-kortet — önska kompaktare layout
+
+**Fil:** Dashboard ekonomi-cellen
+
+**Problem:** "-2 tkr/omg" och "Snitt: 385" tar två separata rader under "365 tkr". Bredvid beloppet finns plats.
+
+**Fix:**
+```
+┌─────────────────────┐
+│ 💰 EKONOMI             │
+│ 365 tkr  -2 tkr/omg  │  ← på samma rad
+│ 👥 Snitt: 385          │
+└─────────────────────┘
+```
+Summan stor (font-display, 22px), "-2 tkr/omg" liten (11px, danger) på samma rad. Sparar en hel rad.
+
+---
+
 ## Prioriteringsordning
 
 1. BUG-1 (halvvägs-navigation) — blockerar spelflödet
 2. BUG-2 (managedIsHome) — hörnmekaniken trasig
 3. BUG-13 (coach marks) — helt trasig, se FIXSPEC_COACHMARKS_REWRITE.md
-4. BUG-7 (kontraktsförnyelse) — extremt irriterande
-5. BUG-4 (mecenat spawn) — stort system oanvänt
-6. BUG-3 (cupRun failed) — synlig varje spelgenomgång
-7. BUG-14 (corner taker = rusher) — logikfel
-8. BUG-15 (råa variabelnamn) — synlig i UI
-9. BUG-8 (NextMatchCard alignment) — visuellt störande
-10. BUG-9 (CornerInteraction SVG) — förvirrande
-11. BUG-10 (troféer lösa) — visuell röra
-12. BUG-11 (form-prickar) — inkonsekvent
-13. BUG-20 (DiamondDivider position) — layout
-14. BUG-21 (presskonferens minRound) — kontextfel
-15. BUG-22 (cupvy saknar resa-kontext) — UX
-16. BUG-12 (styrelsemöte dubbelcitat) — kosmetiskt
-17. BUG-16 (presskonferens Neutral·Neutral) — kosmetiskt
-18. BUG-17 (presskonferens emoji) — kosmetiskt
-19. BUG-18 (kafferum upprepar) — kosmetiskt
-20. BUG-19 (?-knapp koppar) — designsystem
-21. BUG-6 (paddingBottom) — UX-irritation
-22. BUG-5 (transfers flikar) — UX-irritation
-23. BALANS-1 (CS diminishing returns) — balansändring
-24. trainerArcService patch — roterande quotes
+4. BUG-23 (matchsummary vinst=förlusttext) — logikbugg
+5. BUG-7 (kontraktsförnyelse) — extremt irriterande
+6. BUG-4 (mecenat spawn) — stort system oanvänt
+7. BUG-3 (cupRun failed) — synlig varje spelgenomgång
+8. BUG-14 (corner taker = rusher) — logikfel
+9. BUG-15 (råa variabelnamn) — synlig i UI
+10. BUG-8 (NextMatchCard alignment) — visuellt störande
+11. BUG-9 (CornerInteraction SVG) — förvirrande
+12. BUG-10 (troféer lösa) — visuell röra
+13. BUG-11 (form-prickar) — inkonsekvent
+14. BUG-20 (DiamondDivider position) — layout
+15. BUG-21 (presskonferens minRound) — kontextfel
+16. BUG-22 (cupvy saknar resa-kontext) — UX
+17. BUG-24 (taktikjustering visuell separation) — UX
+18. BUG-25 (ekonomi-kortet kompaktare) — layout
+19. BUG-12 (styrelsemöte dubbelcitat) — kosmetiskt
+20. BUG-16 (presskonferens Neutral·Neutral) — kosmetiskt
+21. BUG-17 (presskonferens emoji) — kosmetiskt
+22. BUG-18 (kafferum upprepar) — kosmetiskt
+23. BUG-19 (?-knapp koppar) — designsystem
+24. BUG-6 (paddingBottom) — UX-irritation
+25. BUG-5 (transfers flikar) — UX-irritation
+26. BALANS-1 (CS diminishing returns) — balansändring
+27. trainerArcService patch — roterande quotes

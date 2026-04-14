@@ -16,6 +16,49 @@ import { shouldBeInteractive, buildCornerInteractionData } from './cornerInterac
 import type { CornerInteractionData } from './cornerInteractionService'
 import { resolveAIPenaltyKeeperDive, resolvePenalty } from './penaltyInteractionService'
 import type { PenaltyInteractionData } from './penaltyInteractionService'
+import type { CounterInteractionData } from './counterAttackInteractionService'
+import type { FreeKickInteractionData } from './freeKickInteractionService'
+import type { LastMinutePressData } from './lastMinutePressService'
+
+// ── Match situation helpers ────────────────────────────────────────────────
+
+type MatchSituation = 'dominating_home' | 'dominating_away' | 'tight' | 'opened_up' | 'neutral'
+
+function getMatchSituation(
+  homeShots: number, awayShots: number,
+  homeScore: number, awayScore: number,
+  step: number,
+): MatchSituation {
+  const shotDiff = homeShots - awayShots
+  const goalTotal = homeScore + awayScore
+  if (shotDiff > 4 && step > 10) return 'dominating_home'
+  if (shotDiff < -4 && step > 10) return 'dominating_away'
+  if (goalTotal >= 6 && step > 20) return 'opened_up'
+  if (goalTotal <= 1 && step > 25) return 'tight'
+  return 'neutral'
+}
+
+type SecondHalfMode = 'chasing' | 'controlling' | 'even_battle' | 'cruise'
+
+function getSecondHalfMode(
+  managedScore: number, opponentScore: number,
+  step: number,
+): SecondHalfMode {
+  const diff = managedScore - opponentScore
+  if (diff <= -2) return 'chasing'
+  if (diff >= 3) return 'cruise'
+  if (diff >= 1 && step > 45) return 'controlling'
+  return 'even_battle'
+}
+
+type RefStyle = 'strict' | 'lenient' | 'inconsistent'
+
+function pickRefStyle(rand: () => number): RefStyle {
+  const r = rand()
+  if (r < 0.33) return 'strict'
+  if (r < 0.66) return 'lenient'
+  return 'inconsistent'
+}
 
 export function* simulateMatchStepByStep(input: StepByStepInput): Generator<MatchStep> {
   const {
@@ -39,6 +82,9 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
   const supporterCtx = input.supporterContext
 
   const rand = mulberry32(seed ?? Date.now())
+
+  // Match-level constants set once
+  const refStyle: RefStyle = pickRefStyle(rand)
 
   // Resolve starters
   const homeStarters = homeLineup.startingPlayerIds
@@ -137,6 +183,15 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
   let cornersHome = 0
   let cornersAway = 0
   let interactiveCornersUsed = 0
+  let interactiveCountersUsed = 0
+  let interactiveFreeKicksUsed = 0
+  let lastMinutePressTriggered = false
+
+  // Momentum tracking (last 5 steps)
+  const recentHomeShots: number[] = []
+  const recentAwayShots: number[] = []
+  let prevMomentumDiff = 0
+  let situationalInterval = randRange(rand, 8, 12) | 0
 
   // Per-player tracking for ratings (needed for final report)
   const playerGoals: Record<string, number> = {}
@@ -214,7 +269,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     return nonGK[Math.floor(rand() * nonGK.length)]
   }
 
-  function buildSequenceWeights(isHome: boolean): number[] {
+  function buildSequenceWeights(isHome: boolean, step: number, situation: MatchSituation): number[] {
     const tactic = isHome ? homeLineup.tactic : awayLineup.tactic
     const mods = isHome ? homeMods : awayMods
 
@@ -224,6 +279,12 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     let wHalfchance = 10
     let wFoul = 12
     let wLostball = 8
+    // New variation sequences — lower base weights
+    let wTacticalShift = 4
+    let wPlayerDuel = 6
+    let wAtmosphere = 5
+    let wOffside = 4
+    let wFreekick = 5
 
     if (tactic.tempo === 'high') {
       wAttack += 5
@@ -258,6 +319,12 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       wHalfchance += 3
     }
 
+    // Situation-based adjustments
+    if (step < 5 || step > 55) wAtmosphere += 4
+    if (step >= 30 && step <= 35) wTacticalShift += 3
+    if (situation === 'tight') wPlayerDuel += 4
+    if (step >= 30) wOffside += 2
+
     void mods
 
     return [
@@ -267,6 +334,11 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       Math.max(1, wHalfchance),
       Math.max(1, wFoul),
       Math.max(1, wLostball),
+      Math.max(1, wTacticalShift),
+      Math.max(1, wPlayerDuel),
+      Math.max(1, wAtmosphere),
+      Math.max(1, wOffside),
+      Math.max(1, wFreekick),
     ]
   }
 
@@ -284,6 +356,26 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       const degradationPenalty = iceDegradation * (step - 30) * 0.5
       stepGoalMod = Math.max(0.60, weatherGoalMod - degradationPenalty / 100)
     }
+
+    // Second half mode — apply goal/foul multipliers (Sprint C)
+    let secondHalfGoalMod = 1.0
+    let secondHalfFoulMod = 1.0
+    if (step >= 30 && managedIsHome !== undefined) {
+      const managedScore = managedIsHome ? homeScore : awayScore
+      const opponentScore = managedIsHome ? awayScore : homeScore
+      const mode = getSecondHalfMode(managedScore, opponentScore, step)
+      if (mode === 'chasing') {
+        secondHalfGoalMod = 1.08
+        secondHalfFoulMod = 1.15
+      } else if (mode === 'controlling') {
+        secondHalfGoalMod = 0.92
+      } else if (mode === 'even_battle') {
+        // Tension builds toward end
+        secondHalfGoalMod = step >= 50 ? 1.04 : 1.0
+        secondHalfFoulMod = 1.10
+      }
+    }
+    stepGoalMod *= secondHalfGoalMod
 
     // Update suspension timers
     for (let i = homeSuspensionTimers.length - 1; i >= 0; i--) {
@@ -331,8 +423,11 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     // Steps 0–1 are the opening — force neutral, no goals or cards
     const isOpeningStep = step <= 1
 
+    // Match situation for commentary/weights
+    const situation = getMatchSituation(shotsHome, shotsAway, homeScore, awayScore, step)
+
     // Pick sequence type
-    const seqWeights = buildSequenceWeights(isHomeAttacking)
+    const seqWeights = buildSequenceWeights(isHomeAttacking, step, situation)
     const seqIdx = weightedPick(rand, seqWeights)
     const seqType = isOpeningStep ? 'neutral' : SEQUENCE_TYPES[seqIdx]
 
@@ -344,6 +439,9 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     let cornerOccurred = false
     let cornerInteractionData: CornerInteractionData | undefined
     let penaltyInteractionData: PenaltyInteractionData | undefined
+    let counterInteractionData: CounterInteractionData | undefined
+    let freeKickInteractionData: FreeKickInteractionData | undefined
+    let lastMinutePressData: LastMinutePressData | undefined
     let scorerPlayerId: string | undefined
     let gkPlayerId: string | undefined
     let suspendedPlayerId: string | undefined
@@ -422,6 +520,29 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
         }
       }
     } else if (seqType === 'transition') {
+      // Counter-attack interaction: managed team attacking, max 2 per match
+      const isManagedTransition = managedIsHome !== undefined && (managedIsHome === isHomeAttacking)
+      if (isManagedTransition && interactiveCountersUsed < 2 && rand() < 0.08) {
+        const runner = attackingStarters
+          .filter(p => p.position !== PlayerPosition.Goalkeeper)
+          .sort((a, b) => b.attributes.skating - a.attributes.skating)[0]
+        const support = attackingStarters
+          .filter(p => p.position !== PlayerPosition.Goalkeeper && p.id !== runner?.id)
+          .sort((a, b) => b.attributes.passing - a.attributes.passing)[0]
+        if (runner && support) {
+          interactiveCountersUsed++
+          counterInteractionData = {
+            minute,
+            runnerName: `${runner.firstName} ${runner.lastName}`,
+            runnerId: runner.id,
+            runnerSpeed: runner.attributes.skating,
+            supportName: `${support.firstName} ${support.lastName}`,
+            supportId: support.id,
+            defendersBeat: (1 + Math.floor(rand() * 3)) as 1 | 2 | 3,
+          }
+        }
+      }
+
       const chanceQuality = randRange(rand, 0.3, 0.7)
 
       if (chanceQuality > 0.05) {
@@ -616,11 +737,33 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       const foulProb = (attDiscipline) * 0.4 + (defDiscipline) * 0.3
 
       const r = rand()
-      const foulThreshold = foulProb * 0.55 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult
+      const foulThreshold = foulProb * 0.55 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult * secondHalfFoulMod
       if (r < foulThreshold) {
         // Penalty check: ~20% of fouls in attack zone → straff
         const isAttackZoneFoul = rand() < 0.35
         const isPenalty = isAttackZoneFoul && rand() < 0.20
+
+        // Free kick interaction: dangerous foul in attack zone, managed attacking, not penalty, max 1
+        if (isAttackZoneFoul && !isPenalty && interactiveFreeKicksUsed < 1 && rand() < 0.15) {
+          const isManagedAttacking = managedIsHome !== undefined ? (managedIsHome === isHomeAttacking) : false
+          if (isManagedAttacking) {
+            const kicker = attackingStarters
+              .filter(p => p.position !== PlayerPosition.Goalkeeper)
+              .sort((a, b) => (b.attributes.shooting + b.attributes.passing) - (a.attributes.shooting + a.attributes.passing))[0]
+            if (kicker) {
+              interactiveFreeKicksUsed++
+              freeKickInteractionData = {
+                minute,
+                kickerName: `${kicker.firstName} ${kicker.lastName}`,
+                kickerId: kicker.id,
+                kickerShooting: kicker.attributes.shooting,
+                kickerPassing: kicker.attributes.passing,
+                distanceMeters: 20 + Math.round(rand() * 8),
+                wallSize: 3 + Math.round(rand() * 2),
+              }
+            }
+          }
+        }
 
         if (isPenalty) {
           const isManagedAttacking = managedIsHome !== undefined ? (managedIsHome === isHomeAttacking) : false
@@ -708,6 +851,9 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       }
       // No yellow cards in bandy — only suspensions
     }
+    // Variation sequences — no game state change, pure commentary triggers
+    // (tactical_shift, player_duel, atmosphere, offside_call, freekick_danger)
+    // These are handled in commentary selection below.
 
     // Build score string
     const scoreStr = `${homeScore}–${awayScore}`
@@ -866,6 +1012,22 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     } else if (weather && (step === 15 || step === 30 || step === 45)) {
       // Weather-specific atmospheric commentary at milestone steps
       commentaryText = pickWeatherCommentary(weather, rand) ?? fillTemplate(pickCommentary(commentary.neutral, rand), templateVars)
+    } else if (seqType === 'tactical_shift') {
+      commentaryText = fillTemplate(pickCommentary(commentary.tactical_shift, rand), templateVars)
+    } else if (seqType === 'player_duel') {
+      const duelPlayer = getGoalScorer(attackingStarters)
+      const duelVars = { ...templateVars, player: duelPlayer ? findPlayerName(duelPlayer.id) : attackingTeam }
+      commentaryText = fillTemplate(pickCommentary(commentary.player_duel, rand), duelVars)
+    } else if (seqType === 'atmosphere') {
+      commentaryText = fillTemplate(pickCommentary(commentary.atmosphere, rand), templateVars)
+    } else if (seqType === 'offside_call') {
+      const offsidePlayer = getGoalScorer(attackingStarters)
+      const offsideVars = { ...templateVars, player: offsidePlayer ? findPlayerName(offsidePlayer.id) : attackingTeam }
+      commentaryText = fillTemplate(pickCommentary(commentary.offside_call, rand), offsideVars)
+    } else if (seqType === 'freekick_danger') {
+      const fkPlayer = getGoalScorer(attackingStarters)
+      const fkVars = { ...templateVars, player: fkPlayer ? findPlayerName(fkPlayer.id) : attackingTeam }
+      commentaryText = fillTemplate(pickCommentary(commentary.freekick_danger, rand), fkVars)
     } else {
       // Derby neutral override: 30% chance on every 10th step when no event
       if (rivalry && step % 10 === 0 && !goalScored && !saveOccurred && !suspensionOccurred && !cornerOccurred && rand() < 0.30) {
@@ -891,6 +1053,109 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       } else {
         commentaryText = fillTemplate(pickCommentary(commentary.neutral, rand), templateVars)
       }
+    }
+
+    // ── Situational commentary injection (Sprint B) ────────────────────────
+    // Inject situation/season/momentum commentary as a suffix, max 1 per injection
+    // Injected only on non-event steps so it doesn't drown out goals/saves
+    if (!goalScored && !suspensionOccurred && !cornerOccurred) {
+      // Momentum tracking
+      recentHomeShots.push(shotsHome)
+      recentAwayShots.push(shotsAway)
+      if (recentHomeShots.length > 5) recentHomeShots.shift()
+      if (recentAwayShots.length > 5) recentAwayShots.shift()
+      const momentumDiff = (recentHomeShots[recentHomeShots.length - 1] ?? 0) - (recentAwayShots[recentAwayShots.length - 1] ?? 0)
+      const momentumSwing = Math.abs(momentumDiff - prevMomentumDiff)
+
+      // Season context at kickoff (step 0)
+      if (step === 0 && rand() < 0.40) {
+        const ctx = input.matchContext
+        const round = fixture.roundNumber ?? 0
+        const managedPos = ctx?.managedPosition
+        let ctxLine: string | null = null
+        if (ctx?.isFirstRound) {
+          ctxLine = fillTemplate(pickCommentary(commentary.context_season_opener, rand), templateVars)
+        } else if (fixture.isCup && rand() < 0.7) {
+          ctxLine = fillTemplate(pickCommentary(commentary.context_cup_final, rand), templateVars)
+        } else if (managedPos && managedPos <= 3 && round >= 16) {
+          ctxLine = fillTemplate(pickCommentary(commentary.context_title_race, rand), templateVars)
+        } else if (managedPos && managedPos >= 10 && round >= 18) {
+          ctxLine = fillTemplate(pickCommentary(commentary.context_relegation, rand), templateVars)
+        }
+        if (ctxLine) commentaryText = ctxLine
+      }
+
+      // Situational commentary every situationalInterval steps
+      if (step > 5 && step % situationalInterval === 0 && situation !== 'neutral') {
+        situationalInterval = randRange(rand, 8, 12) | 0
+        let sitLine: string | null = null
+        if (situation === 'dominating_home') {
+          sitLine = fillTemplate(pickCommentary(commentary.situational_dominating, rand),
+            { ...templateVars, team: homeTeamRef, opponent: awayTeamRef })
+        } else if (situation === 'dominating_away') {
+          sitLine = fillTemplate(pickCommentary(commentary.situational_dominating, rand),
+            { ...templateVars, team: awayTeamRef, opponent: homeTeamRef })
+        } else if (situation === 'tight') {
+          sitLine = fillTemplate(pickCommentary(commentary.situational_tight, rand), templateVars)
+        } else if (situation === 'opened_up') {
+          sitLine = fillTemplate(pickCommentary(commentary.situational_opened_up, rand), templateVars)
+        }
+        if (sitLine && rand() < 0.70) commentaryText = sitLine
+      }
+
+      // Momentum swing commentary
+      if (step >= 10 && momentumSwing >= 3 && rand() < 0.50) {
+        const homeHasMomentum = momentumDiff > prevMomentumDiff
+        const swingPool = homeHasMomentum ? commentary.momentum_swing_home : commentary.momentum_swing_away
+        const swingVars = homeHasMomentum
+          ? { ...templateVars, team: homeTeamRef, opponent: awayTeamRef }
+          : { ...templateVars, team: awayTeamRef, opponent: homeTeamRef }
+        commentaryText = fillTemplate(pickCommentary(swingPool, rand), swingVars)
+      }
+      prevMomentumDiff = momentumDiff
+
+      // Referee line (low probability, adds flavour) — checked outside event filter
+
+
+      // Protecting lead / chasing commentary (late game, Sprint B)
+      if (step >= 45 && managedIsHome !== undefined && rand() < 0.20) {
+        const managedScore = managedIsHome ? homeScore : awayScore
+        const opponentScore = managedIsHome ? awayScore : homeScore
+        const mode = getSecondHalfMode(managedScore, opponentScore, step)
+        if (mode === 'controlling') {
+          commentaryText = fillTemplate(pickCommentary(commentary.context_protecting_lead, rand),
+            { ...templateVars, team: managedIsHome ? homeTeamRef : awayTeamRef })
+        } else if (mode === 'chasing') {
+          commentaryText = fillTemplate(pickCommentary(commentary.context_comeback_chasing, rand),
+            { ...templateVars, team: managedIsHome ? homeTeamRef : awayTeamRef })
+        }
+      }
+    }
+
+    // Suspension context commentary (Sprint B) — replaces basic suspension text
+    if (suspensionOccurred && suspendedPlayerId && rand() < 0.35) {
+      const managedIsDefending = managedIsHome !== undefined ? (managedIsHome !== isHomeAttacking) : false
+      const scoreDiff = managedIsHome ? (homeScore - awayScore) : (awayScore - homeScore)
+      const suspName = findPlayerName(suspendedPlayerId)
+      if (managedIsDefending && scoreDiff < 0) {
+        // We're defending and losing — frustration
+        commentaryText = fillTemplate(pickCommentary(commentary.context_suspension_frustration, rand),
+          { ...templateVars, player: suspName, score: scoreStr })
+      } else if (managedIsDefending && scoreDiff > 0) {
+        // Tactical stop
+        commentaryText = fillTemplate(pickCommentary(commentary.context_suspension_tactical, rand),
+          { ...templateVars, player: suspName })
+      }
+    }
+
+    // Referee line (low probability, replaces commentary after suspension)
+    let isRefCommentary = false
+    if (suspensionOccurred && rand() < 0.20) {
+      const refPool = refStyle === 'strict' ? commentary.referee_strict
+        : refStyle === 'lenient' ? commentary.referee_lenient
+        : commentary.referee_inconsistent
+      commentaryText = fillTemplate(pickCommentary(refPool, rand), templateVars)
+      isRefCommentary = true
     }
 
     // Determine intensity
@@ -960,6 +1225,32 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       }
     }
 
+    // Last-minute press: automatic trigger when trailing by 1, step >= 55, once per match
+    if (!lastMinutePressTriggered && step >= 55 && managedIsHome !== undefined) {
+      const managedGoalsNow = managedIsHome ? homeScore : awayScore
+      const oppGoalsNow = managedIsHome ? awayScore : homeScore
+      const diff = managedGoalsNow - oppGoalsNow
+      if (diff === -1) {
+        lastMinutePressTriggered = true
+        const stepsLeft = 60 - step
+        const managedStartersNow = managedIsHome ? homeStarters : awayStarters
+        const avgFatigue = managedStartersNow.reduce((s, p) => s + (100 - p.morale), 0) / Math.max(1, managedStartersNow.length)
+        lastMinutePressData = { minute, scoreDiff: diff, stepsLeft, fatigueLevel: Math.round(avgFatigue) }
+      }
+    }
+
+    // Determine commentaryType for visual styling in CommentaryFeed
+    const commentaryType: import('./matchUtils').CommentaryType = (() => {
+      if (isRefCommentary) return 'referee'
+      if (seqType === 'atmosphere') return 'atmosphere'
+      if (seqType === 'player_duel') return 'player_duel'
+      if (seqType === 'tactical_shift') return 'tactical'
+      if (goalScored && scorerPlayerId) return 'goal_context'
+      if (situation !== 'neutral' && !goalScored && !suspensionOccurred
+        && !saveOccurred && !cornerOccurred) return 'situation'
+      return 'normal'
+    })()
+
     yield {
       step,
       minute,
@@ -967,6 +1258,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       homeScore,
       awayScore,
       commentary: commentaryText,
+      commentaryType,
       intensity,
       activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
       shotsHome,
@@ -977,6 +1269,9 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       isDerbyComment: isDerbyStep || undefined,
       cornerInteractionData,
       penaltyInteractionData,
+      counterInteractionData,
+      freeKickInteractionData,
+      lastMinutePressData,
     }
   }
 

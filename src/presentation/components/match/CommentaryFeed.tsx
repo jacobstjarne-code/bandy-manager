@@ -222,6 +222,8 @@ export function CommentaryFeed({
         const isDerby = s.isDerbyComment || s.commentary.toLowerCase().includes('derby')
         const hasCornerGoal = s.events.some(e => e.type === MatchEventType.Goal && e.isCornerGoal)
 
+        const ct = s.commentaryType ?? 'normal'
+
         let borderLeft = 'none'
         let background = 'transparent'
         let fontSize = 13
@@ -229,6 +231,8 @@ export function CommentaryFeed({
         let color = 'var(--text-secondary)'
         let paddingLeft = 16
         let boxShadow: string | undefined = undefined
+        let fontStyle: string | undefined = undefined
+        let showMinute = true
 
         if (hasGoal) {
           background = 'rgba(196, 122, 58, 0.12)'
@@ -239,9 +243,14 @@ export function CommentaryFeed({
           paddingLeft = 12
           boxShadow = 'inset 3px 0 0 var(--accent)'
         } else if (hasSuspension) {
-          borderLeft = '3px solid var(--danger)'
-          color = 'var(--danger)'
-          fontWeight = 500
+          if (ct === 'referee') {
+            borderLeft = '1px dotted var(--danger)'
+            color = 'var(--danger)'
+          } else {
+            borderLeft = '3px solid var(--danger)'
+            color = 'var(--danger)'
+            fontWeight = 500
+          }
         } else if (hasYellow) {
           borderLeft = '3px solid var(--warning)'
           color = 'var(--text-primary)'
@@ -252,6 +261,22 @@ export function CommentaryFeed({
         } else if (isDerby) {
           borderLeft = '3px solid rgba(220,80,30,0.7)'
           paddingLeft = 8
+        } else if (ct === 'atmosphere') {
+          borderLeft = '1px dashed rgba(140,190,220,0.5)'
+          color = 'var(--text-muted)'
+          fontStyle = 'italic'
+          showMinute = false
+        } else if (ct === 'situation') {
+          borderLeft = '3px solid var(--accent)'
+          fontWeight = 600
+          color = 'var(--text-primary)'
+          showMinute = false
+        } else if (ct === 'tactical') {
+          borderLeft = '2px solid rgba(140,190,220,0.6)'
+          color = 'var(--text-secondary)'
+        } else if (ct === 'referee') {
+          borderLeft = '1px dotted var(--danger)'
+          color = 'var(--danger)'
         }
 
         const primaryEvent = s.events.find(e =>
@@ -259,7 +284,8 @@ export function CommentaryFeed({
           e.type === MatchEventType.YellowCard || e.type === MatchEventType.Save ||
           e.type === MatchEventType.Corner
         )
-        const icon = primaryEvent ? eventIcon(primaryEvent.type) : ''
+        const icon = primaryEvent ? eventIcon(primaryEvent.type)
+          : ct === 'player_duel' ? '⚔️' : ''
 
         const sidedEvent = s.events.find(e =>
           (e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard) && e.clubId
@@ -281,11 +307,11 @@ export function CommentaryFeed({
               textAlign: isAwayEvent ? 'right' : 'left',
             }}
           >
-            <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 28, paddingTop: 1, flexShrink: 0 }}>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 28, paddingTop: 1, flexShrink: 0, visibility: showMinute ? undefined : 'hidden' }}>
               {s.minute}'
             </span>
             {icon && <span style={{ fontSize: 14, flexShrink: 0 }}>{icon}</span>}
-            <span style={{ fontSize, fontWeight, color, lineHeight: 1.4 }}>
+            <span style={{ fontSize, fontWeight, color, lineHeight: 1.4, fontStyle }}>
               {hasCornerGoal ? `📐 HÖRNMÅL! ${s.commentary}` : s.commentary}
             </span>
           </div>

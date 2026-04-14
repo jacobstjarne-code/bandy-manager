@@ -20,31 +20,11 @@ Samlad spec för Code. Ersätter INTE tidigare spec-filer men SAMMANFATTAR allt 
 
 ---
 
-### 1.2 Hörn-SVG — inline-knappar krockar + "H. hörna" avklippt
+### 1.2 Hörn-SVG — ~~ERSATT av SPEC_RIK_MATCHUPPLEVELSE Sprint K~~
 
-**Fil:** `src/presentation/components/match/CornerInteraction.tsx`
-
-**Problem 1:** SVG-zonknapparna (NÄRA/MITT/BORTRE) har y-positioner 20/40/60 med höjd 20 vardera — de sitter kant i kant utan gap.
-
-**Fix:** Öka y-avstånd + tydligare visuell separation:
-```typescript
-// Ändra y-positioner:
-// NÄRA:   y=15  height=18
-// MITT:   y=38  height=18   (var 40, nu 5px gap)
-// BORTRE: y=61  height=18   (var 60, nu 5px gap)
-// Bredare stroke på aktiv: strokeWidth={zone === z ? '1.5' : '0.8'}
-// Högre opacity på aktiv fill: zone === z ? 0.35 : 0.08
-```
-
-**Problem 2:** "H. hörna" avklipps i höger kant. Hörnpunkten vid (195,95) har text som inte ryms.
-
-**Fix:** Flytta text till vänster om punkten:
-```typescript
-<text x="175" y="93" fontSize="6" fill="var(--accent)" fontWeight="600" textAnchor="end">
-  Hörna från höger
-</text>
-```
-Randomisera "Hörna från höger" / "Hörna från vänster" per tillfälle. Spegla punktens x-position (195 vs 5) beroende på sida.
+**Status:** ❌ BORTTAGEN. Hela CornerInteraction och PenaltyInteraction redesignas i
+`docs/SPEC_RIK_MATCHUPPLEVELSE.md` Sprint K med dark interaction-card, nya SVG:er,
+och emoji choice-btn. Se mockup: `docs/mockups/match_interactions_v3.html`.
 
 ---
 
@@ -355,21 +335,9 @@ Frekvens: `rand() < 0.20` av fouls i anfallszon. Anfallszon = `rand() < 0.35`. G
 
 ---
 
-### 2.3 Hörn-SVG — ta bort dubbla knappar
+### 2.3 Hörn-SVG dubbla knappar — ~~ERSATT av Sprint K~~
 
-**Fil:** `CornerInteraction.tsx`
-
-Nuvarande: SVG med zonknappar + SEPARATA HTML-knappar under = dubblering.
-
-**Fix:** Ta bort de HTML-knapparna under "VÄLJ ZON". Behåll BARA SVG-knapparna (med fixade gap från 1.2). Behåll LEVERANS-knapparna som HTML (de har ingen SVG-motsvarighet).
-
-Resultat:
-```
-[SVG med pitch + inline zonknappar + hörnpunkt]
-LEVERANS
-[Hårt skott] [Låg pass] [Kort hörna]
-[SLÅ HÖRNAN →]
-```
+**Status:** ❌ BORTTAGEN. Ingår i hörna-redesignen, Sprint K.
 
 ---
 
@@ -396,7 +364,7 @@ Logga avvikelser. Justera konstanterna iterativt tills alla targets är inom tol
 
 ### Fas 1 — Buggar (gör först)
 1. ~~Coach marks (1.1)~~ ✅ LÖST (migrering)
-2. Hörn-SVG knappar (1.2) — synlig varje match
+2. ~~Hörn-SVG knappar (1.2)~~ ❌ ERSATT av Sprint K
 3. Kontraktsförnyelse (1.3) — verifiera 4 delåtgärder
 4. Mecenat spawn (1.4) — helt oanvänt system
 5. cupRun failed (1.5)
@@ -416,7 +384,7 @@ Logga avvikelser. Justera konstanterna iterativt tills alla targets är inom tol
 ### Fas 2 — Features (efter alla buggar)
 18. Straffar under match (2.1)
 19. Kapten (2.2)
-20. Hörn-SVG dubbla knappar (2.3)
+20. ~~Hörn-SVG dubbla knappar (2.3)~~ ❌ ERSATT av Sprint K
 21. Kalibrering verifiering (2.4)
 
 ---
@@ -428,7 +396,7 @@ Starta nytt spel. Spela 5+ omgångar. Kontrollera:
 - [ ] ?-knappen dämpad, inte koppar
 - [x] Klacknamn ≠ Bandykorpen — LÖST (Brukskurvan)
 - [x] Arenanamn visas i NextMatchCard, Scoreboard, Granska — LÖST
-- [ ] Hörnor: zonknappar separerade, ingen dubblett, "Hörna från höger/vänster"
+- [x] ~~Hörnor: zonknappar separerade~~ — ERSATT av Sprint K redesign
 - [ ] Kontraktsförnyelse försvinner efter förlängning
 - [ ] Form-prickar: senaste match till vänster överallt
 - [ ] Presskonferens: inga "Neutral · Neutral", varierande emoji

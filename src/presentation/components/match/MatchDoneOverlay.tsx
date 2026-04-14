@@ -2,6 +2,9 @@ import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { truncate } from '../../utils/formatters'
+import { getMatchHeadline } from '../../../domain/services/matchMoodService'
+import { getRivalry } from '../../../domain/data/rivalries'
+import { MatchEventType } from '../../../domain/enums'
 
 interface MatchDoneOverlayProps {
   fixture: Fixture
@@ -48,7 +51,17 @@ export function MatchDoneOverlay({
   const managedWon = actualWinner === (managedIsHome ? 'home' : 'away')
   const managedLost = actualWinner !== 'draw' && !managedWon
   const resultColor = managedWon ? 'var(--success)' : managedLost ? 'var(--danger)' : 'var(--accent)'
-  const resultLabel = managedWon ? 'SEGER' : managedLost ? 'FÖRLUST' : 'OAVGJORT'
+
+  // Contextual headline (Sprint F)
+  const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
+  const margin = managedGoals - oppGoals
+  const totalGoals = homeScore + awayScore
+  const lateDecider = steps.some(s => s.minute >= 80 && s.events.some(e => e.type === MatchEventType.Goal))
+  const halfTimeStep = steps.find(s => s.step === 30)
+  const htManaged = halfTimeStep ? (managedIsHome ? halfTimeStep.homeScore : halfTimeStep.awayScore) : managedGoals
+  const htOpp = halfTimeStep ? (managedIsHome ? halfTimeStep.awayScore : halfTimeStep.homeScore) : oppGoals
+  const comeback = managedWon && htManaged < htOpp
+  const resultLabel = getMatchHeadline(managedWon, managedLost, margin, totalGoals, !!rivalry, !!fixture.isCup, comeback, lateDecider)
 
   return (
     <div style={{

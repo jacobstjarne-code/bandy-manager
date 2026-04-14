@@ -53,13 +53,15 @@ function getPreMatchAtmosphere(
   return 'Omklädningsrummet är tyst. Alla vet vad som gäller.'
 }
 
+type MatchMode = 'full' | 'commentary' | 'quicksim'
+
 interface StartStepProps {
   startingIds: string[]
   tacticState: Tactic
   matchWeatherData: MatchWeather | undefined
-  useLiveMode: boolean
+  matchMode: MatchMode
   lineupError: string | null
-  onSetLiveMode: (v: boolean) => void
+  onSetMatchMode: (m: MatchMode) => void
   onBack: () => void
   onPlay: () => void
   fixture?: Fixture
@@ -70,7 +72,7 @@ interface StartStepProps {
   ritualText?: string
 }
 
-export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveMode, lineupError, onSetLiveMode, onBack, onPlay, fixture, isHome, fanMood, expectedAttendance, arenaName, ritualText }: StartStepProps) {
+export function StartStep({ startingIds, tacticState, matchWeatherData, matchMode, lineupError, onSetMatchMode, onBack, onPlay, fixture, isHome, fanMood, expectedAttendance, arenaName, ritualText }: StartStepProps) {
   const atmosphere = useMemo(
     () => fixture ? getPreMatchAtmosphere(fixture, matchWeatherData, isHome ?? true, fanMood ?? 50) : '',
     [fixture?.id]
@@ -138,32 +140,25 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, useLiveM
       </div>
 
 
-      {/* Live / Snabbsim toggle */}
+      {/* Match mode selector */}
       <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>🎮 Spelläge</p>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-        <button onClick={() => onSetLiveMode(true)} style={{
-          flex: 1, padding: '12px 8px',
-          background: useLiveMode ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
-          border: `2px solid ${useLiveMode ? 'var(--accent)' : 'var(--border)'}`,
-          borderRadius: 'var(--radius)', cursor: 'pointer',
-        }}>
-          <div style={{ fontSize: 20, marginBottom: 4 }}>🎙</div>
-          <div style={{ fontSize: 13, fontWeight: useLiveMode ? 700 : 500, color: useLiveMode ? 'var(--accent)' : 'var(--text-secondary)' }}>Live</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Följ händelserna</div>
-        </button>
-        <button
-          onClick={() => onSetLiveMode(false)}
-          style={{
-            flex: 1, padding: '12px 8px',
-            background: !useLiveMode ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
-            border: `2px solid ${!useLiveMode ? 'var(--accent)' : 'var(--border)'}`,
-            borderRadius: 'var(--radius)',
-            cursor: 'pointer',
+      <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+        {([
+          { mode: 'full' as MatchMode, icon: '🎥', label: 'Full', desc: 'Alla interaktioner' },
+          { mode: 'commentary' as MatchMode, icon: '📝', label: 'Kommentar', desc: 'Följ utan stopp' },
+          { mode: 'quicksim' as MatchMode, icon: '⚡', label: 'Snabb', desc: 'Direkt resultat' },
+        ] as const).map(({ mode, icon, label, desc }) => (
+          <button key={mode} onClick={() => onSetMatchMode(mode)} style={{
+            flex: 1, padding: '10px 6px',
+            background: matchMode === mode ? 'rgba(196,122,58,0.12)' : 'var(--bg-elevated)',
+            border: `2px solid ${matchMode === mode ? 'var(--accent)' : 'var(--border)'}`,
+            borderRadius: 'var(--radius)', cursor: 'pointer',
           }}>
-          <div style={{ fontSize: 20, marginBottom: 4 }}>⏩</div>
-          <div style={{ fontSize: 13, fontWeight: !useLiveMode ? 700 : 500, color: !useLiveMode ? 'var(--accent)' : 'var(--text-secondary)' }}>Snabbsim</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Direkt resultat</div>
-        </button>
+            <div style={{ fontSize: 18, marginBottom: 3 }}>{icon}</div>
+            <div style={{ fontSize: 12, fontWeight: matchMode === mode ? 700 : 500, color: matchMode === mode ? 'var(--accent)' : 'var(--text-secondary)' }}>{label}</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{desc}</div>
+          </button>
+        ))}
       </div>
 
       {lineupError && (

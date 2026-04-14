@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bandy Manager — Commentary + StartStep (mockup v2)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #EDE8DF; --bg-surface: #FAF8F4; --bg-elevated: #FFFFFF;
+    --bg-dark: #0E0D0B; --bg-dark-surface: #1E1D19; --bg-dark-elevated: #2C2A24;
+    --border: #DDD7CC; --border-dark: #C4BAA8;
+    --text-primary: #1A1A18; --text-secondary: #6B6760; --text-muted: #8A857A;
+    --text-light: #F5F1EB; --text-light-secondary: #C4BAA8;
+    --accent: #C47A3A; --accent-dark: #A25828; --accent-deep: #8B4820;
+    --success: #5A9A4A; --danger: #B05040; --danger-text: #8B3E30;
+    --ice: #7EB3D4; --ice-dark: #5A7A8A;
+    --led-bg: #0A0A0A; --led-border: #1A1A1A; --led-score: #FF1A1A;
+    --led-time: #CCFF00; --led-warn: #FF6644;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body: system-ui, -apple-system, sans-serif;
+    --radius: 8px;
+  }
+  body { background: #2A2824; font-family: var(--font-body); display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; padding: 30px 20px; }
+  h1.section-title { width: 100%; text-align: center; color: #C4BAA8; font-family: var(--font-display); font-size: 22px; font-weight: 400; letter-spacing: 1px; margin: 30px 0 10px; border-bottom: 1px solid #3D3A32; padding-bottom: 12px; }
+  p.section-desc { width: 100%; text-align: center; color: #8A857A; font-size: 13px; margin-bottom: 20px; max-width: 700px; margin-left: auto; margin-right: auto; }
+  .phone { width: 390px; min-height: 500px; background: var(--bg); border-radius: 40px; overflow: hidden; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
+  .phone-label { position: absolute; top: -24px; left: 16px; font-size: 11px; color: #8A857A; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+  .scroll-area { flex: 1; overflow-y: auto; }
+  .card-sharp { border-radius: 3px; background: var(--bg-surface); border: 1px solid var(--border); overflow: hidden; }
+  .card-round { border-radius: 14px; background: var(--bg-surface); border: 1px solid var(--border); overflow: hidden; }
+  .led-board { background: var(--led-bg); border: 3px solid var(--led-border); border-radius: 8px; padding: 10px 14px; text-align: center; box-shadow: inset 0 2px 8px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3); }
+  .cl { padding: 7px 16px; display: flex; align-items: flex-start; gap: 8px; }
+  .cl-min { font-size: 12px; color: var(--text-muted); min-width: 28px; flex-shrink: 0; padding-top: 1px; }
+  .cl-icon { font-size: 14px; flex-shrink: 0; }
+  .cl-text { font-size: 13px; line-height: 1.4; color: var(--text-secondary); }
+  .cl-goal { background: rgba(196,122,58,0.12); box-shadow: inset 3px 0 0 var(--accent); }
+  .cl-goal .cl-text { font-size: 14px; font-weight: 600; color: var(--accent); }
+  .cl-save { box-shadow: inset 3px 0 0 var(--ice); }
+  .cl-susp { box-shadow: inset 3px 0 0 var(--danger); }
+  .cl-susp .cl-text { color: var(--danger); font-weight: 500; }
+  .cl-atmos { background: rgba(126,179,212,0.06); padding: 6px 16px 6px 20px; border-left: 2px dashed rgba(126,179,212,0.3); }
+  .cl-atmos .cl-text { font-style: italic; color: var(--ice-dark); font-size: 12px; }
+  .cl-atmos .cl-min { display: none; }
+  .cl-situation { background: rgba(196,122,58,0.06); padding: 6px 16px 6px 20px; border-left: 2px solid rgba(196,122,58,0.3); }
+  .cl-situation .cl-text { color: var(--accent-dark); font-weight: 500; font-size: 12px; }
+  .cl-situation .cl-min { display: none; }
+  .cl-context { padding: 2px 16px 6px 52px; }
+  .cl-context .cl-text { font-size: 11px; font-style: italic; color: var(--text-muted); }
+  .cl-duel { padding: 6px 16px 6px 20px; }
+  .cl-duel .cl-text { color: var(--text-secondary); font-size: 12px; }
+  .cl-referee { padding: 6px 16px 6px 20px; border-left: 2px dotted rgba(176,80,64,0.3); }
+  .cl-referee .cl-text { color: var(--danger-text); font-size: 12px; }
+  .headline-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; text-align: center; }
+  .headline-word { font-family: var(--font-display); font-size: 42px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<h1 class="section-title">1. STARTSTEP — Tre lägen</h1>
+<p class="section-desc">Befintligt innehåll behålls. Tvåknapps-toggle → treknapps.</p>
+
+<div class="phone" style="min-height: 780px;">
+  <span class="phone-label">StartStep — ny toggle</span>
+  <div class="scroll-area" style="padding: 16px 12px;">
+    <div class="card-round" style="margin-bottom: 10px; padding: 10px 14px;">
+      <p style="font-size: 9px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">📣 Pep-talk</p>
+      <p style="font-family: var(--font-display); font-style: italic; font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin: 0;">Derbystämning. Du hör bortaläktaren redan från omklädningsrummet.</p>
+    </div>
+    <div class="card-round" style="margin-bottom: 8px; padding: 8px 14px;">
+      <p style="font-size: 9px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">📯 KLACKEN</p>
+      <p style="font-family: var(--font-display); font-style: italic; font-size: 11px; line-height: 1.5; color: var(--text-muted); margin: 0;">Sansen drar igång välkomstsången. 47 röster — inte mycket, men dom hörs.</p>
+    </div>
+    <div class="card-sharp" style="margin-bottom: 8px; padding: 8px 14px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 12px; color: var(--text-secondary);">🏟️ Slagghögen</span><span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">~285 åskådare</span></div>
+    </div>
+    <div class="card-sharp" style="margin-bottom: 10px; padding: 10px 14px;">
+      <p style="font-size: 9px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">📋 Sammanfattning</p>
+      <div style="font-size: 12px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="color: var(--text-muted);">Startspelare</span><span style="font-weight: 600; color: var(--success);">11 valda ✓</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="color: var(--text-muted);">Mentalitet</span><span style="font-weight: 600;">Balanserat</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="color: var(--text-muted);">Tempo</span><span style="font-weight: 600;">Medium</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="color: var(--text-muted);">Press</span><span style="font-weight: 600;">Medium</span></div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="color: var(--text-muted);">Passning</span><span style="font-weight: 600;">Säker</span></div>
+        <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Hörnstrategi</span><span style="font-weight: 600;">Standard</span></div>
+      </div>
+    </div>
+    <p style="font-size: 9px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">🎮 Matchläge</p>
+    <div style="display: flex; gap: 6px; margin-bottom: 14px;">
+      <button style="flex: 1; padding: 10px 6px; background: rgba(196,122,58,0.12); border: 2px solid var(--accent); border-radius: var(--radius); cursor: pointer; text-align: center;"><div style="font-size: 20px; margin-bottom: 3px;">🎙</div><div style="font-size: 12px; font-weight: 700; color: var(--accent);">Full</div><div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Lev matchen</div></button>
+      <button style="flex: 1; padding: 10px 6px; background: var(--bg-elevated); border: 2px solid var(--border); border-radius: var(--radius); cursor: pointer; text-align: center;"><div style="font-size: 20px; margin-bottom: 3px;">📝</div><div style="font-size: 12px; font-weight: 500; color: var(--text-secondary);">Kommentar</div><div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Text rullar</div></button>
+      <button style="flex: 1; padding: 10px 6px; background: var(--bg-elevated); border: 2px solid var(--border); border-radius: var(--radius); cursor: pointer; text-align: center;"><div style="font-size: 20px; margin-bottom: 3px;">⚡</div><div style="font-size: 12px; font-weight: 500; color: var(--text-secondary);">Snabb</div><div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Bara resultat</div></button>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button style="flex: 1; padding: 13px; font-size: 13px; background: var(--bg-surface); border: 1.5px solid var(--accent); border-radius: var(--radius); color: var(--accent-dark); font-weight: 600; cursor: pointer;">← Taktik</button>
+      <button style="flex: 2; padding: 13px; font-size: 14px; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-dark)); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; box-shadow: 0 3px 8px rgba(162,88,40,0.30);">SPELA MATCHEN →</button>
+    </div>
+  </div>
+</div>
+
+<h1 class="section-title">2. COMMENTARY — Typbaserad (nytt vs nuvarande)</h1>
+<p class="section-desc">Varje radtyp har unik visuell identitet. Atmosfär/situation utan minuttal.</p>
+
+<div class="phone" style="min-height: 640px;">
+  <span class="phone-label">Nytt — typbaserad</span>
+  <div class="scroll-area" style="padding-top: 12px;">
+    <div style="padding: 0 12px; margin-bottom: 8px;">
+      <div class="led-board">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="flex: 1; text-align: center;"><p style="font-family: 'Courier New', monospace; font-weight: 700; font-size: 13px; color: rgba(255,255,255,0.85); margin: 0 0 2px;">FIK <span style="color: var(--led-time); font-size: 12px;">H</span></p><span style="font-family: 'Courier New', monospace; font-weight: 900; font-size: 48px; color: var(--led-score); text-shadow: 0 0 10px rgba(255,26,26,0.6); line-height: 1;">2</span></div>
+          <div style="text-align: center;"><span style="color: var(--led-score); font-size: 24px; font-weight: 900; opacity: 0.7; font-family: 'Courier New', monospace;">–</span><br><span style="font-family: 'Courier New', monospace; font-weight: 700; font-size: 18px; color: var(--led-time);">34'</span></div>
+          <div style="flex: 1; text-align: center;"><p style="font-family: 'Courier New', monospace; font-weight: 700; font-size: 13px; color: rgba(255,255,255,0.85); margin: 0 0 2px;"><span style="color: var(--led-time); font-size: 12px;">G</span> LBK</p><span style="font-family: 'Courier New', monospace; font-weight: 900; font-size: 48px; color: var(--led-score); text-shadow: 0 0 10px rgba(255,26,26,0.6); line-height: 1;">1</span></div>
+        </div>
+        <p style="font-size: 13px; color: rgba(255,255,255,0.6); font-family: 'Courier New', monospace; margin-top: 4px;">❄️ -8° · God is</p>
+        <p style="font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'Courier New', monospace; letter-spacing: 1px; margin-top: 2px;">SLAGGHÖGEN</p>
+      </div>
+    </div>
+    <div class="cl cl-situation"><span class="cl-icon">📊</span><span class="cl-text">Forsbacka håller bollen som en katt med en mus. Det här går bara åt ett håll.</span></div>
+    <div class="cl cl-save"><span class="cl-min">32'</span><span class="cl-icon">🧤</span><span class="cl-text">Strålande insats av Nilsson. Han höll Forsbacka kvar i matchen!</span></div>
+    <div class="cl cl-goal"><span class="cl-min">31'</span><span class="cl-icon">🏒</span><span class="cl-text">📐 HÖRNMÅL! Kronberg med en dräpare! 2-1!</span></div>
+    <div class="cl cl-context"><span class="cl-text">🔥 Tredje målet på två matcher. Kan inte sluta göra mål.</span></div>
+    <div class="cl cl-atmos"><span class="cl-icon">🌨️</span><span class="cl-text">Publiken stampar i läktarplankorna. Det ekar över hela vallen.</span></div>
+    <div class="cl cl-duel"><span class="cl-min">27'</span><span class="cl-icon">⚔️</span><span class="cl-text">Kronberg och deras mittback. Personligt. Tredje gången i rad.</span></div>
+    <div class="cl cl-save"><span class="cl-min">25'</span><span class="cl-icon">🧤</span><span class="cl-text">Räddning! Nilsson väljer rätt håll.</span></div>
+    <div class="cl cl-atmos"><span class="cl-icon">❄️</span><span class="cl-text">Snön lättar. Nu ser man linjerna igen. Minus åtta men publiken klagar inte.</span></div>
+    <div class="cl"><span class="cl-min">21'</span><span class="cl-text">Avslut strax utanför. Nära nu för Lesjöfors.</span></div>
+    <div class="cl"><span class="cl-min">19'</span><span class="cl-icon">🚩</span><span class="cl-text">Offside! Flaggan går upp. Kronberg var steget för tidigt.</span></div>
+    <div class="cl cl-referee"><span class="cl-icon">👨‍⚖️</span><span class="cl-text">Domaren har plockat fram armen tidigt. Nolltolerans ikväll.</span></div>
+    <div class="cl" style="flex-direction: row-reverse; text-align: right;"><span class="cl-min">15'</span><span class="cl-icon">🏒</span><span class="cl-text" style="color: var(--text-muted); font-weight: 600;">Andersson kvitterar. 1-1.</span></div>
+    <div class="cl cl-goal"><span class="cl-min">8'</span><span class="cl-icon">🏒</span><span class="cl-text">MÅÅÅL! Kronberg lägger in 1-0!</span></div>
+    <div class="cl cl-context"><span class="cl-text">Nollan är bruten! Publiken vaknar.</span></div>
+    <div class="cl cl-atmos"><span class="cl-icon">🏔️</span><span class="cl-text">En kall kväll i Bergslagen. Isen gnistrar under strålkastarna.</span></div>
+  </div>
+</div>
+
+<h1 class="section-title">3. COMMENTARY-TYPER — Visuell guide för Code</h1>
+
+<div class="phone" style="min-height: 620px;">
+  <span class="phone-label">Alla typer</span>
+  <div class="scroll-area" style="padding: 12px 0;">
+    <p style="font-size: 8px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); padding: 0 16px; margin-bottom: 8px;">🏒 Händelser (med minut)</p>
+    <div class="cl cl-goal"><span class="cl-min">31'</span><span class="cl-icon">🏒</span><span class="cl-text">HÖRNMÅL! Kronberg sätter 2-1!</span></div>
+    <div class="cl cl-context"><span class="cl-text">🔥 Hat-trick-jakt! Andra målet idag.</span></div>
+    <div class="cl cl-save"><span class="cl-min">25'</span><span class="cl-icon">🧤</span><span class="cl-text">JÄTTERÄDDNING! Nilsson med reflexerna.</span></div>
+    <div class="cl cl-susp"><span class="cl-min">22'</span><span class="cl-icon">🚫</span><span class="cl-text">Utvisning! Ek med 10 minuter.</span></div>
+    <div class="cl"><span class="cl-min">15'</span><span class="cl-icon">🚩</span><span class="cl-text">Offside. Linjedomaren flaggar.</span></div>
+    <div class="cl"><span class="cl-min">12'</span><span class="cl-text">Avslut utanför. Nära.</span></div>
+
+    <p style="font-size: 8px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); padding: 12px 16px 8px;">🎭 Narrativ (utan minut)</p>
+    <div class="cl cl-situation"><span class="cl-icon">📊</span><span class="cl-text">Total kontroll. Forsbacka spelar runt motståndarna som koner.</span></div>
+    <div class="cl cl-atmos"><span class="cl-icon">🌨️</span><span class="cl-text">Snön faller tätare nu. Linjerna suddas ut.</span></div>
+    <div class="cl cl-atmos"><span class="cl-icon">📣</span><span class="cl-text">Klacken sjunger igen efter målet. Det var tyst i 20 minuter.</span></div>
+    <div class="cl cl-atmos"><span class="cl-icon">🏔️</span><span class="cl-text">En termos öppnas. Ångan stiger. Minus femton, men ingen klagar.</span></div>
+    <div class="cl cl-duel"><span class="cl-icon">⚔️</span><span class="cl-text">Kronberg och deras mittback. Personligt.</span></div>
+    <div class="cl cl-referee"><span class="cl-icon">👨‍⚖️</span><span class="cl-text">Inkonsekvent linje idag. Spelarna klagar.</span></div>
+
+    <p style="font-size: 8px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); padding: 12px 16px 8px;">💬 Spelarkontext (under mål)</p>
+    <div class="cl cl-context"><span class="cl-text">🔥 Tredje målet på två matcher. Hetaste spelaren.</span></div>
+    <div class="cl cl-context"><span class="cl-text">© Kaptenen klev fram. Ansvar i blicken.</span></div>
+    <div class="cl cl-context"><span class="cl-text">❤️ Klackens favorit! Läktarna sjunger hans namn.</span></div>
+    <div class="cl cl-context"><span class="cl-text">⭐ Äntligen! Bryter torkan. Lättnad.</span></div>
+    <div class="cl cl-context"><span class="cl-text">🌱 17-åringens första ligamål! Minns det namnet.</span></div>
+  </div>
+</div>
+
+<h1 class="section-title">4. MATCHENS BERÄTTELSE</h1>
+
+<div class="phone" style="min-height: 380px;">
+  <span class="phone-label">GranskaScreen</span>
+  <div class="scroll-area" style="padding: 16px 12px;">
+    <div class="card-sharp" style="padding: 10px 14px; text-align: center; margin-bottom: 6px;">
+      <p style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Omgång 14 · Hemmamatch</p>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 6px 0;"><span style="font-size: 13px; font-weight: 600;">Forsbacka IK</span><span style="font-size: 36px; font-weight: 800;">4</span><span style="font-size: 20px; color: var(--text-muted);">–</span><span style="font-size: 36px; font-weight: 800;">3</span><span style="font-size: 13px; font-weight: 600;">Lesjöfors BK</span></div>
+      <p style="font-size: 10px; color: var(--text-muted);">Slagghögen · 342 åskådare · -8° ❄️</p>
+    </div>
+    <div class="card-round" style="padding: 10px 14px; margin-bottom: 6px; border-color: rgba(196,122,58,0.25); background: rgba(196,122,58,0.03);">
+      <p style="font-size: 8px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px;">📰 MATCHENS BERÄTTELSE</p>
+      <p style="font-size: 12px; line-height: 1.55; color: var(--text-secondary);">Från 1-3 i halvtid till 4-3 vid slutsignal. Kronberg svarade för tre av målen — hattricket komplett i 78:e. Hörnorna avgjorde: tre mål från fasta situationer. Snön ställde till det, men 342 på Slagghögen fick mer än valuta.</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

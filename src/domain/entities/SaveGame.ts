@@ -339,4 +339,7 @@ export interface SaveGame {
     inboxSentAt?: number  // goalsAgainstUs count when inbox was last sent
     signedBy?: string     // our clubId if signed
   }>
+
+  // Sprint G — preferred match mode (persists between matches)
+  preferredMatchMode?: 'full' | 'commentary' | 'quicksim'
 }

@@ -267,6 +267,17 @@ Fixture-ordningen styrs av `fixture.matchday` — ett heltal som bestämmer glob
 
 ## Bandyspecifika regler (VIKTIGT)
 
+### Spelets värld
+12 fiktiva klubbar på riktiga bruksorter. Alla klubbnamn, arenanamn och klacknamn är PÅHITTADE — inga riktiga föreningar. Definerade i `CLUB_TEMPLATES` i `worldGenerator.ts`. Arena- och klacknamn är required fält.
+
+### Matchmotor-kalibrering
+Kalibrerad mot 420 Elitseriematcher (bandygrytan.se, 2024-26). Data i `docs/data/bandygrytan_stats.json`. Nyckeltal:
+- 10.0 mål/match, 23.2% hörnmål, 5.1% straffmål
+- 50.7% hemmaseger, 9.0% oavgjort
+- 54.3% av mål i 2:a halvlek
+
+Verifieringsskript: `scripts/calibrate.ts` (varierad lagstyrka, 200 matcher).
+
 - **Offside FINNS i bandy** — ta aldrig bort offside-kommentarer
 - **Inga gula kort** — bandy har 10 min utvisning, inte gula/röda kort
 - **2 poäng för vinst** — inte 3 som i fotboll
@@ -310,16 +321,49 @@ Must return 0 results.
 - `scheduleGenerator.ts` — buildSeasonCalendar, generateSchedule, getRoundDate
 - `cupService.ts` — cup-bracket, generateNextCupRound
 - `playoffService.ts` — slutspelsserier, advancePlayoffRound
-- `matchSimulator.ts` — AI-matcher (snabbsim)
-- `matchStepByStep.ts` — live-matcher (steg för steg)
+- `matchEngine.ts` — snabbsim för AI-matcher (kalibrerad mot Bandygrytan-data)
+- `matchStepByStep.ts` — live-matcher (steg för steg, med yield för hörn- och straffinteraktion)
+- `matchUtils.ts` — TIMING_WEIGHTS, simulatePenalties, computeWeatherEffects
 - `transferService.ts` — bud, signering, executeTransfer
 - `scoutingService.ts` — scoutrapporter, ARCHETYPE_STRENGTHS
 - `matchCommentary.ts` — alla matchkommentarer (i src/domain/data/)
+- `cornerInteractionService.ts` — hörninteraktion (zon + leverans + utfall)
+- `penaltyInteractionService.ts` — straffinteraktion (placering + höjd + målvaktsval)
+- `worldGenerator.ts` — CLUB_TEMPLATES med alla 12 klubbar (arenaName, supporterGroupName)
+- `trainerArcService.ts` — tränarens arc (newcomer → legendary), mood-texter
+- `supporterService.ts` — klackgenerering, favoritspelare, stämning
+- `matchMoodService.ts` — matchstämning + slutsammanfattning (getFinalWhistleSummary)
+- `facilityService.ts` — utbyggnadsprojekt (omklädningsrum → inomhushall)
+- `pressConferenceService.ts` — presskonferenser (kontext-triggers + journalist-relation)
 
 ## Active Documentation
-- `docs/DESIGN_SYSTEM.md` — designregler, mönster, konventioner
-- `docs/VERIFIERAD_RESTLISTA.md` — aktuell restlista (verifierad mot kod)
-- `docs/RESTLISTA.md` — gameplay-buggar och teststatus
+
+### Projektguides (läs alltid)
+- `CLAUDE.md` — denna fil, kodregler och arbetsfördelning
+- `docs/DESIGN_SYSTEM.md` — visuellt designsystem (20 sektioner)
+- `docs/CODE_SPRINT_PLAYTEST2.md` — aktuella instruktioner till Code
+
+### Aktuella sprintdokument
+- `docs/SPRINT_ALLT_KVAR.md` — **HUVUDDOK** — 15 kvarstående buggar + checklista
+- `docs/mockups/sprint_allt_kvar_mockups.html` — 5 mockups (straff, cup-progress, kapten, arena)
+
+### Visionsdokument (långsiktig roadmap)
+- `docs/THE_BOMB.md` — narrativ vision: korsreferenser mellan system, milestone-moments, atmosfär, share-images
+- `docs/SPEC_KLUBBUTVECKLING.md` — ekonomisk progression: utbyggnadsträd, sponsortillväxt, löneeskalering, inomhushallen
+- `docs/SPEC_RIK_MATCHUPPLEVELSE.md` — kontextuell kommentar, narrativ båge, händelsevariation, domartyper
+- `docs/FIXSPEC_PARKERAT.md` — fullspecade framtida features: presskonferens-scen, transferdödline, rykte
+
+### Kalibreringsdata
+- `docs/data/bandygrytan_stats.json` — 420 Elitseriematcher (2024-26), kalibreringsmål
+- `docs/data/SCHEMA_DETAILED.md` — schema för detaljerad per-match-data (v2, 2010-26)
+- `docs/FIXSPEC_KALIBRERING.md` — matchmotor-konstanter (implementerat)
+- `scripts/calibrate.ts` — kör 200 matcher med varierad lagstyrka, jämför mot targets
+- `scripts/calibrate_v2.ts` — 7-sektionsanalys (tidmönster, utvisningar, powerplay, säsongskurvor, hörnvariation, comeback, slutspel) + motorsimulering
+
+### Feature-specar (redan implementerade, behåll som referens)
+- `docs/FIXSPEC_NYA_FEATURES.md` — arenanamn, klacknamn, straffar, kapten, hörn-SVG
+- `docs/FIXSPEC_COACHMARKS_REWRITE.md` — coach marks (löst via migrering)
+- `docs/FIXSPEC_PLAYTEST2.md` — 25 buggar från playtest 2 (de flesta fixade)
 
 ## Commit Convention
 ```

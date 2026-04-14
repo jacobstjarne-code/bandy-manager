@@ -32,7 +32,7 @@ import { getMatchMood } from '../../domain/services/matchMoodService'
 import { getRitualText } from '../../domain/services/supporterRituals'
 
 export function MatchScreen() {
-  const { game, setPlayerLineup, advance, updateTactic } = useGameStore()
+  const { game, setPlayerLineup, advance, updateTactic, updateMatchMode } = useGameStore()
   const location = useLocation()
   const navigate = useNavigate()
   const lastCompletedFixtureFromStore = useLastCompletedFixture()
@@ -40,7 +40,7 @@ export function MatchScreen() {
   const showReport = !!(location.state as { showReport?: boolean } | null)?.showReport
   const completedFixture: Fixture | null = showReport ? lastCompletedFixtureFromStore : null
   const [matchStep, setMatchStep] = useState<'lineup' | 'tactic' | 'start'>('lineup')
-  const [useLiveMode, setUseLiveMode] = useState(true)
+  const matchMode = game?.preferredMatchMode ?? 'full'
 
   useEffect(() => {
     if ((location.state as { showReport?: boolean } | null)?.showReport) {
@@ -322,7 +322,7 @@ export function MatchScreen() {
         setLineupError(lineupResult.error ?? 'Ogiltig uppställning')
         return
       }
-      if (useLiveMode && nextFixture) {
+      if (matchMode !== 'quicksim' && nextFixture) {
         const homeClub = game!.clubs.find(c => c.id === nextFixture.homeClubId)
         const awayClub = game!.clubs.find(c => c.id === nextFixture.awayClubId)
         const isHome = nextFixture.homeClubId === managedClubId
@@ -354,6 +354,7 @@ export function MatchScreen() {
             awayClubName: awayClub?.name ?? '',
             isManaged: true,
             matchWeather: liveMatchWeather,
+            matchMode,
           },
         })
       } else {
@@ -617,9 +618,9 @@ export function MatchScreen() {
           startingIds={startingIds}
           tacticState={tacticState}
           matchWeatherData={matchWeatherData}
-          useLiveMode={useLiveMode}
+          matchMode={matchMode}
           lineupError={lineupError}
-          onSetLiveMode={setUseLiveMode}
+          onSetMatchMode={m => { updateMatchMode(m) }}
           onBack={() => setMatchStep('tactic')}
           onPlay={handlePlayMatch}
           fixture={nextFixture ?? undefined}

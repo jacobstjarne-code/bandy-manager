@@ -37,6 +37,7 @@ interface GameState {
   setTraining: (focus: TrainingFocus) => void
   markCoachMarksSeen: () => void
   dismissHint: (screenId: string) => void
+  updateMatchMode: (mode: 'full' | 'commentary' | 'quicksim') => void
   markInboxRead: (itemId: string) => void
   markAllInboxRead: () => void
   startEvaluation: (playerId: string, clubId: string, sameRegion: boolean, hasPlayedAgainst?: boolean) => { success: boolean; error?: string }
@@ -202,6 +203,16 @@ export const useGameStore = create<GameState>()(
           const prev = s.game.dismissedHints ?? []
           if (prev.includes(screenId)) return s
           return { game: { ...s.game, dismissedHints: [...prev, screenId] } }
+        })
+      },
+
+      updateMatchMode: (mode) => {
+        set(s => {
+          if (!s.game) return s
+          if (s.game.preferredMatchMode === mode) return s
+          const updated = { ...s.game, preferredMatchMode: mode }
+          saveSaveGame(updated).catch(e => console.warn('Save failed:', e))
+          return { game: updated }
         })
       },
 

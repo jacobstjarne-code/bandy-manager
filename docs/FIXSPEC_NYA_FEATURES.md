@@ -19,53 +19,54 @@ Uppdatera `generateSupporterGroup()` i `supporterService.ts` att använda klubb-
 
 ```typescript
 // worldGenerator.ts — lägg till arenaName + supporterGroupName i varje template
+// ALLA NAMN ÄR PÅHITTADE — inga riktiga arenor
 
-// Forsbacka (Gävleborg) — toppklubb, tradition, artificiell is
-arenaName: 'Stålvallen'
-supporterGroupName: 'Slaggklacken'
+// Forsbacka (Gävleborg) — toppklubb, bruksort, järnindustri
+arenaName: 'Slagghögen'
+supporterGroupName: 'Järnklacken'
 
-// Söderfors (Uppland) — mellanklubb, balanserad
-arenaName: 'Bruksvallen'
+// Söderfors (Uppland) — mellanklubb, bruksort
+arenaName: 'Ässjan'
 supporterGroupName: 'Hammarsmederna'
 
-// Västanfors (Västmanland) — toppklubb, offensiv
-arenaName: 'Gruvvallen'
+// Västanfors (Västmanland) — toppklubb, gruvort
+arenaName: 'Schaktvallen'
 supporterGroupName: 'Bergskurvan'
 
-// Karlsborg (Norrbotten) — övre mitt, balanserad
-arenaName: 'Fästningsvallen'
+// Karlsborg (Norrbotten) — övre mitt
+arenaName: 'Bastionen'
 supporterGroupName: 'Norrskensklacken'
 
-// Målilla (Småland) — mellanklubb, teknisk
-arenaName: 'Glasvallen'
-supporterGroupName: 'Hyttklacken'
+// Målilla (Småland) — mellanklubb, glasrike
+arenaName: 'Hyttvallen'
+supporterGroupName: 'Glasblåsarna'
 
-// Gagnef (Dalarna) — mellanklubb, fysisk
-arenaName: 'Folkparken'
+// Gagnef (Dalarna) — mellanklubb, älvdal
+arenaName: 'Älvvallen'
 supporterGroupName: 'Dalkurvan'
 
-// Hälleforsnäs (Södermanland) — mellanklubb
-arenaName: 'Smedjevallen'
+// Hälleforsnäs (Södermanland) — mellanklubb, bruk
+arenaName: 'Gjutarvallen'
 supporterGroupName: 'Härdarna'
 
-// Lesjöfors (Värmland) — mellanklubb, defensiv
-arenaName: 'Torpvallen'
+// Lesjöfors (Värmland) — mellanklubb, skogsort
+arenaName: 'Kolbottnen'
 supporterGroupName: 'Skogsklacken'
 
-// Rögle (Skåne) — underklubb, defensiv
-arenaName: 'Bokskogen IP'
+// Rögle (Skåne) — underklubb
+arenaName: 'Planlunden'
 supporterGroupName: 'Sydkurvan'
 
 // Slottsbron (Värmland) — underklubb
-arenaName: 'Brovallen'
+arenaName: 'Forsvallen'
 supporterGroupName: 'Bropelarna'
 
-// Skutskär (Uppland) — underklubb, fysisk
-arenaName: 'Massavallen'
-supporterGroupName: 'Fabriksklacken'
+// Skutskär (Uppland) — underklubb, massaindustri
+arenaName: 'Sulfatvallen'
+supporterGroupName: 'Fabrikskurvan'
 
-// Heros (Dalarna) — underklubb, defensiv
-arenaName: 'Kyrkbacken'
+// Heros (Dalarna) — underklubb
+arenaName: 'Hedvallen'
 supporterGroupName: 'Hjältarna'
 ```
 

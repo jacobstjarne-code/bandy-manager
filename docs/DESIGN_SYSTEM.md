@@ -2,7 +2,7 @@
 
 Dokumenterar de designprinciper och mönster som etablerats under utvecklingen. Alla nya vyer och ändringar MÅSTE följa dessa regler. Brott kräver omskrivning.
 
-**Uppdaterad:** 9 april 2026
+**Uppdaterad:** 14 april 2026
 
 **Mockups:** Se `docs/mockups/` för visuella referensfiler (HTML). Öppna i webbläsaren. Implementera det du ser, inte vad du tror det ska se ut som.
 
@@ -466,5 +466,7 @@ npm run build && npm test
 |-----|-------------|
 | `docs/mockups/round_cycle_mockup.html` | Hela omgångscykeln: Förbered → Spela → Granska |
 | `docs/mockups/tactic_view_mockup.html` | Interaktiv taktikvy med rörliga prickar |
+| `docs/mockups/sprint_allt_kvar_mockups.html` | Straffinteraktion, cup-progress, kapten, arenanamn i UI |
+| `docs/mockups/onboarding_mockup.html` | Coach marks overlay-design |
 
 Öppna i webbläsaren. Implementera det du ser.

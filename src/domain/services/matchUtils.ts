@@ -110,9 +110,14 @@ export function pickWeightedPlayer(rand: () => number, players: Player[], weight
   return players[weightedPick(rand, weights)]
 }
 
-export type SequenceType = 'attack' | 'transition' | 'corner' | 'halfchance' | 'foul' | 'lostball'
+export type SequenceType =
+  | 'attack' | 'transition' | 'corner' | 'halfchance' | 'foul' | 'lostball'
+  | 'tactical_shift' | 'player_duel' | 'atmosphere' | 'offside_call' | 'freekick_danger'
 
-export const SEQUENCE_TYPES: SequenceType[] = ['attack', 'transition', 'corner', 'halfchance', 'foul', 'lostball']
+export const SEQUENCE_TYPES: SequenceType[] = [
+  'attack', 'transition', 'corner', 'halfchance', 'foul', 'lostball',
+  'tactical_shift', 'player_duel', 'atmosphere', 'offside_call', 'freekick_danger',
+]
 
 export function pickGoalCommentary(
   scoringTeamScore: number,
@@ -170,6 +175,10 @@ export interface PenaltyRound {
   awayScored: boolean
 }
 
+export type CommentaryType =
+  | 'normal' | 'goal_context' | 'atmosphere' | 'situation'
+  | 'player_duel' | 'referee' | 'tactical'
+
 export interface MatchStep {
   step: number
   minute: number
@@ -177,6 +186,7 @@ export interface MatchStep {
   homeScore: number
   awayScore: number
   commentary: string
+  commentaryType?: CommentaryType
   intensity: 'low' | 'medium' | 'high'
   activeSuspensions: { homeCount: number; awayCount: number }
   shotsHome: number
@@ -189,6 +199,12 @@ export interface MatchStep {
   cornerInteractionData?: import('./cornerInteractionService').CornerInteractionData
   // Penalty interaction (managed club attacking only)
   penaltyInteractionData?: import('./penaltyInteractionService').PenaltyInteractionData
+  // Counter-attack interaction (managed club transition, max 2 per match)
+  counterInteractionData?: import('./counterAttackInteractionService').CounterInteractionData
+  // Free kick interaction (managed club dangerous foul, max 1 per match)
+  freeKickInteractionData?: import('./freeKickInteractionService').FreeKickInteractionData
+  // Last-minute press (automatic when trailing by 1 at step >= 55)
+  lastMinutePressData?: import('./lastMinutePressService').LastMinutePressData
   // Overtime/penalty metadata
   phase?: 'regular' | 'overtime' | 'penalties'
   penaltyRound?: PenaltyRound
@@ -218,6 +234,11 @@ export interface StepByStepInput {
   captainPlayerId?: string
   fanFavoritePlayerId?: string
   supporterContext?: { mood: number; members: number; leaderName: string }
+  matchContext?: {
+    managedPosition?: number   // 1-12 i tabellen
+    totalRounds?: number       // 22 för grundserie
+    isFirstRound?: boolean     // säsongspremiär
+  }
 }
 
 export interface SecondHalfInput extends StepByStepInput {

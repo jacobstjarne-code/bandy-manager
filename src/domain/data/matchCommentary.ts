@@ -419,6 +419,207 @@ export const commentary = {
     'Det är avgjort! {team} tar det på straffar! {penAway}-{penHome}!',
   ],
 
+  // ── Situationella kommentarer (Sprint A) ─────────────────────────────────
+
+  situational_dominating: [
+    '{team} håller bollen som en katt med en mus. Det här går bara åt ett håll.',
+    'Total kontroll. {team} spelar runt {opponent} som koner på träningen.',
+    '{opponent} har knappt rört bollen de senaste minuterna.',
+    'Det börjar bli generande nu. {team} gör vad de vill.',
+    '{team} styr. {opponent} jagar skuggor.',
+  ],
+
+  situational_under_pressure: [
+    '{team} trycker ihop sig. Allt handlar om att överleva just nu.',
+    'Det är kanoneld mot {team}s mål. Målvakten jobbar övertid.',
+    '{opponent} vädrar blod. Våg efter våg.',
+    'Nu ska vi se vad {team} är gjorda av. Det pumpas in bollar.',
+    '{team} har inte rört bollen på minuter. Alarmerande.',
+  ],
+
+  situational_tight: [
+    'Jämnt som tusan. Ingen vill göra det första felet.',
+    'Det här är schack på is. Båda lagen respekterar varandra.',
+    'Försiktigt nu. Ingen vill släppa in det första målet.',
+    'Millimeterbandy. Varje detalj kan avgöra.',
+  ],
+
+  situational_opened_up: [
+    'Nu har matchen öppnat sig! Det går fram och tillbaka!',
+    'Helt öppen match nu. Försvaret har glömt var det bor.',
+    'Det är hög underhållning — men någon tränare gråter bakom glaset.',
+    'Bollen rör sig fort. Båda lag vill ha mer.',
+  ],
+
+  // ── Säsongskontext ────────────────────────────────────────────────────────
+
+  context_season_opener: [
+    'Säsongspremiär. Ny termos, nya förhoppningar, samma gamla läktare.',
+    'Första matchen. Alla lag är lika bra i september. Sen visar verkligheten sig.',
+    'Premiärnerverna märks. Ingen har kommit in i säsongsrytmen ännu.',
+  ],
+
+  context_title_race: [
+    'Tabelltoppen. Allt hänger på de sista omgångarna. {team} vet vad som krävs.',
+    'Det här kan vara matchen som avgör var guldet hamnar.',
+    'Poängkampen i toppen. Varje detalj räknas nu.',
+  ],
+
+  context_relegation: [
+    'Nederst i tabellen. Varje poäng väger som guld.',
+    'Desperation på bänken. {team} kan inte tappa fler poäng.',
+    'Krisläge. {team} behöver poäng — och de behöver dem nu.',
+  ],
+
+  context_cup_final: [
+    'Cupfinal. Alla ögon på {team}. Nerver av stål krävs.',
+    'En match. En chans. Inget mer. Cupfinalen har börjat.',
+    'Titeln hägrar. {team} är en match ifrån att lyfta bucklan.',
+  ],
+
+  context_comeback_chasing: [
+    '{team} jagar. Klockan tickar. Publiken trycker på.',
+    'Tränaren pekar framåt. {team} måste chansa nu.',
+    'Allt framåt. {team} har inget att förlora i slutminuterna.',
+  ],
+
+  context_protecting_lead: [
+    '{team} drar ner tempot. Erfarenhet framför finess nu.',
+    'Klockan är {team}s bästa vän. Minuterna rinner iväg.',
+    '{team} spelar kontroll. Säkert framför spektakulärt.',
+  ],
+
+  // ── Spelarkontext ─────────────────────────────────────────────────────────
+
+  context_player_hot_streak: [
+    '{player} igen! Tredje målet på två matcher. Han kan inte sluta göra mål.',
+    '{player} — den hetaste spelaren i serien just nu.',
+    'Ingen kan stoppa {player}. Det är fjärde omgången i rad med poäng.',
+    '{player} är i en zon. Allt han rör sitter.',
+  ],
+
+  context_player_drought: [
+    'Äntligen! {player} bryter torkan. Det var ett tag sedan sist.',
+    '{player} har kämpat. Men den här gången sitter den. Lättnad.',
+    'Länge väntat för {player}. Nu äntligen belönat.',
+  ],
+
+  context_captain_moment: [
+    'Kaptenen kliver fram. © på armen, ansvar i blicken.',
+    'Det är därför han har bindeln. {player} gör det som krävs.',
+    'Kaptensmål! {player} tar ansvar när det behövs som mest.',
+  ],
+
+  context_fan_favorite: [
+    'Klackens favorit! {player} får läktarna att sjunga!',
+    '{player} — publiken ÄLSKAR honom. Och det är inte svårt att förstå varför.',
+    'Publikfavoriten slår till! {player} — det var det de kom för att se.',
+  ],
+
+  // ── Utvisningskontext ─────────────────────────────────────────────────────
+
+  context_suspension_frustration: [
+    '{player} kokar av frustration. 10 minuter — och det vid {score}.',
+    'Onödigt. Helt onödigt. {player} visas ut när laget behöver varenda man.',
+    'Temperamentet tar över. {player} får betala priset.',
+  ],
+
+  context_suspension_tactical: [
+    'Taktisk utvisning? {player} stoppade en farlig kontra. Värt priset, kanske.',
+    '{player} tar straffet. Ibland måste man offra sig.',
+    'Kalkylerat av {player}. Stoppar anfallet — men betalar med 10 minuter.',
+  ],
+
+  context_shorthanded_surviving: [
+    '{team} överlever! 10 man i 10 minuter och nollan hålls!',
+    '{player} är tillbaka. {team} andas ut — utvisningen kostade ingenting.',
+    'Kollektiv insats av {team}. Inga insläppta i undertalet.',
+  ],
+
+  context_shorthanded_conceding: [
+    'Där kom det. Med en man mindre hade {team} ingen chans.',
+    'Utvisningen straffar sig. {opponent} utnyttjar överskottet iskallt.',
+    '{team} håller inte emot i undertalet. Kostsamt.',
+  ],
+
+  // ── Momentum ──────────────────────────────────────────────────────────────
+
+  momentum_swing_home: [
+    'Helt plötsligt är det {team}s match! Momentum har svängt!',
+    '{team} rullar! Tre raka chanser. {opponent} kan inte få stopp.',
+    'Publiken reser sig. Något är på gång.',
+    '{team} tar över. Det märks i varje situation.',
+  ],
+
+  momentum_swing_away: [
+    '{opponent} har tagit över. {team} ser vilsna ut.',
+    'Det har vridits helt. {opponent} dikterar tempot nu.',
+    'Tyst på hemmaplan. {opponent} kontrollerar matchen.',
+    '{team} tappar tråden. {opponent} utnyttjar varje yta.',
+  ],
+
+  // ── Händelsevariation (Sprint D) ──────────────────────────────────────────
+
+  tactical_shift: [
+    '{opponent} byter formation. Ser ut som en tre-fem-tvåa nu.',
+    'Omställning borta. Tränaren har reagerat efter målet.',
+    '{opponent} drar sig tillbaka. Defensivt nu.',
+    'Nytt mönster hos {opponent}. Forwarden spelar bredare.',
+    '{team} märker det — {opponent} har ändrat uppställning.',
+  ],
+
+  player_duel: [
+    '{player} och deras mittback har gått på varandra hela matchen. Personligt.',
+    'Hård duell vid sargen! {player} reser sig, borstar av knäna och kör vidare.',
+    '{player} vinner brittningen — tredje gången i rad. Dominerar sitt område.',
+    'Kroppsspråket säger allt. {player} har hittat sin motståndare.',
+  ],
+
+  atmosphere: [
+    'En stund av stillhet. Bara isens knastrande hörs.',
+    'Publiken stampar i läktarplankorna. Det ekar över hela vallen.',
+    'Dimman lättar lite. Nu ser man hela planen igen.',
+    'En termos öppnas på läktaren. Ångan stiger. Minus femton, men ingen klagar.',
+    'Fåglarna har slutat sjunga. Det är bara bandy nu.',
+    'Vaktmästaren nickar nöjt från sin bänk. Isen håller.',
+    'Ljuset från strålkastarna glittrar i isen. Det är vackert.',
+    'Kosan luktar choklad och kyla. Äkta bandykväll.',
+  ],
+
+  offside_call: [
+    'Offside! Flaggan går upp. {team} ville ha frispark men domaren säger nej.',
+    'Linjedomaren flaggar. Offside. {player} var steget för tidigt.',
+    'Offside. Bra bevakning av {opponent}. Backlinjen sitter.',
+    'Anfallet bryts. Offside — men det var en fin rörelse av {player}.',
+  ],
+
+  freekick_danger: [
+    'Frislag! {player} ställer sig vid bollen. 25 meter rakt in...',
+    'Farligt läge. Frislag strax utanför. {team} samlar sig i muren.',
+    'Frislagschans! {player} slår — MEN rakt i muren. Inget mer.',
+    'Frislag. {player} väljer att slå kort. Besvikna röster från klacken.',
+    '{player} med frislag. Hög boll över muren — men utanför.',
+  ],
+
+  referee_strict: [
+    'Domaren har plockat fram armen tidigt. Nolltolerans ikväll.',
+    'Ännu en utvisning. Det här är en domare som inte kompromissar.',
+    'Pipa! Frislagsdömning igen. Spelarna skakar på huvudet.',
+    'Hårt hållen match av domaren. Inga gratisdueller idag.',
+  ],
+
+  referee_lenient: [
+    'Domaren viftar vidare. Den gick igenom — men det var nära.',
+    'Ingen pipa. Domaren låter spelet flöda. Det uppskattas på planen.',
+    'Fri duell. Domaren låter det hållas. Spelarna tack.',
+  ],
+
+  referee_inconsistent: [
+    'Domaren blåser FÖR? Den verkade ren. Spelarna förstår inte.',
+    'Ibland pipa, ibland inte. Inkonsekvent linje idag.',
+    'Spelarna vet inte vad som gäller. Domarens linje är svår att läsa.',
+  ],
+
   // Supporter-klack commentary — triggas vid matchstart, halvtid, sent i matchen
   supporter_kickoff: [
     '🎵 {leader} drar igång välkomstsången. {members} röster — inte mycket, men dom hörs.',
