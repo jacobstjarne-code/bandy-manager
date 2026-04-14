@@ -35,7 +35,7 @@ const INTENSITY_CONFIG: Record<TrainingIntensity, IntensityConfig> = {
 
 // Special overrides for Recovery and MatchPrep
 const TYPE_OVERRIDES: Partial<Record<TrainingType, Partial<IntensityConfig>>> = {
-  [TrainingType.Recovery]:  { fitnessBase: 15 },
+  [TrainingType.Recovery]:  { fitnessBase: 8 },
   [TrainingType.MatchPrep]: { fitnessBase: 0, sharpnessEffect: 8 },
 }
 
@@ -52,10 +52,10 @@ export function getTrainingEffects(focus: TrainingFocus): TrainingEffects {
     attributeBoosts[attr] = (base as number) * intensityCfg.attributeMultiplier
   }
 
-  // Recovery gets bonus morale regardless of intensity
+  // Recovery: liten moralboost, ingen träningseffekt (PT-15)
   const moraleEffect =
     focus.type === TrainingType.Recovery
-      ? 3
+      ? 1
       : focus.type === TrainingType.MatchPrep
       ? 2
       : intensityCfg.moraleEffect

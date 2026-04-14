@@ -117,8 +117,12 @@ export function TransfersScreen() {
     if (projectedWageBill > club.wageBudget) {
       setWageWarning(`OBS: Lönekostnaderna överstiger budgeten med ${formatCurrency(projectedWageBill - club.wageBudget)}/mån`)
     }
+    // PT-13: signing at minimum salary costs goodwill — player loses morale
+    const isMinSalary = newSalary === minSalary
     const updatedPlayers = game.players.map(p =>
-      p.id === playerId ? { ...p, contractUntilSeason: game.currentSeason + years, salary: newSalary } : p
+      p.id === playerId
+        ? { ...p, contractUntilSeason: game.currentSeason + years, salary: newSalary, morale: isMinSalary ? Math.max(20, p.morale - 12) : p.morale }
+        : p
     )
     const updatedGame = { ...game, players: updatedPlayers }
     useGameStore.setState({ game: updatedGame })

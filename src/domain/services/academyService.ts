@@ -108,9 +108,9 @@ export function generateYouthTeam(
 /**
  * Carry over youth team between seasons:
  * - Age all players +1
- * - Remove players aged 20+ (they graduate or leave)
- * - Remove players with readyForPromotion (promoted to A-squad in seasonEndProcessor)
- * - Fill remaining slots with new players
+ * - Remove players aged 20+ (they must leave — aged out)
+ * - Keep readyForPromotion players — manager decides who to promote manually
+ * - Fill remaining slots with new 15-year-olds
  */
 export function carryOverYouthTeam(
   existingTeam: YouthTeam,
@@ -124,9 +124,8 @@ export function carryOverYouthTeam(
   const caFloor = academyLevel === 'elite' ? 20 : academyLevel === 'developing' ? 15 : 10
   const caCeiling = academyLevel === 'elite' ? 30 : academyLevel === 'developing' ? 25 : 20
 
-  // Age up and filter out graduated/promoted players
+  // Age up — keep everyone under 20, including readyForPromotion (PT-4)
   const retained: YouthPlayer[] = existingTeam.players
-    .filter(p => !p.readyForPromotion)
     .map(p => ({
       ...p,
       age: p.age + 1,
@@ -138,7 +137,7 @@ export function carryOverYouthTeam(
       readyForPromotion: false,
       schoolConflict: (p.age + 1) <= 17 ? rand() < 0.40 : false,
     }))
-    .filter(p => p.age < 20)  // 20+ must leave
+    .filter(p => p.age < 20)  // 20+ must leave (aged out)
 
   // Fill up to target with new 15-year-olds
   const needed = Math.max(0, targetCount - retained.length)
