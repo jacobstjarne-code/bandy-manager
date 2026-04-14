@@ -1,123 +1,82 @@
-# CODE-INSTRUKTIONER — 14 april 2026
+# CODE-INSTRUKTIONER — 14 april 2026 (uppdaterad kväll)
 
 `npm run build && npm test` efter VARJE fix.
 
 ---
 
-## PRIORITETSORDNING
+## STATUS
 
-### 1️⃣ BUGGAR — docs/SPRINT_ALLT_KVAR.md (gör ALLA först)
+### ✅ KLART
+- Kalibrering — alla 5 targets gröna
+- Sprint A–K (Rik matchupplevelse) — allt implementerat:
+  - A–B: `getMatchSituation`, kontextuell commentary, `commentaryType`-visuell differentiering i CommentaryFeed
+  - C: `getSecondHalfMode` (chasing/controlling/cruise/even_battle), `isCommentaryMode`-pacing
+  - D: tactical_shift, player_duel, atmosphere, offside_call, freekick_danger som sekvenstyper
+  - E–F: `getFinalWhistleSummary` (5-lagers FinalWhistleContext), `getMatchHeadline` (VÄNDNINGEN/TUNGT/CUPSKRÄLL etc), tre matchlägen
+  - G: `MatchMode` (full/commentary/quicksim), StartStep 3-knappsgrid
+  - H–J: CounterInteraction, FreeKickInteraction, LastMinutePress — alla wired i MatchLiveScreen
+  - K: dark interaction-card, CornerInteraction + PenaltyInteraction redesign
+- Hörn-SVG buggar (1.2 + 2.3) — ersatta av Sprint K
+- Coach marks, arenanamn, klacknamn, kapten, straffar, matchsummary etc
 
-13 kvarstående buggar. Hörn-SVG (1.2 + 2.3) är BORTTAGNA — ersatta av redesign i SPEC_RIK_MATCHUPPLEVELSE Sprint K.
+---
 
-| # | Bugg | Fil(er) | Allvar |
-|---|------|---------|--------|
-| 1.3 | Kontraktsförnyelse fastnar | TransfersScreen, RenewContractModal, DashboardScreen | Hög |
-| 1.4 | Mecenater spawnar aldrig | roundProcessor.ts | Hög |
-| 1.5 | cupRun board objective fail-logik | boardObjectiveService.ts | Medium |
-| 1.6 | Troféer lösa på dashboard | DashboardScreen, CareerStatsCard | Medium |
-| 1.7 | Form-prickar inkonsekvent ordning | PlayoffIntroScreen | Låg |
-| 1.8 | DiamondDivider har flyttat | DashboardScreen | Låg |
-| 1.9 | Styrelsemöte dubbelcitat | BoardMeetingScreen | Låg |
-| 1.10 | Presskonferens 4 buggar | pressConferenceService + rendering | Medium |
-| 1.11 | Kafferummet upprepar | coffeeRoomService.ts | Låg |
-| 1.12 | ?-knappen koppar | GameHeader.tsx | Låg |
-| 1.13 | TransfersScreen flikar | TransfersScreen.tsx | Låg |
-| 1.14 | paddingBottom 7 skärmar | Diverse screens | Medium |
-| 1.15 | CS diminishing returns | communityProcessor.ts | Medium |
-| 1.16 | Cupvy saknar progress-rad | CupCard.tsx, DashboardScreen | Medium |
+## ❌ KVAR ATT GÖRA
 
-Detaljer och exakt fix-kod: se SPRINT_ALLT_KVAR.md punkt 1.3–1.16.
+### 1️⃣ BUGGAR — speltesta och fixa
 
-### 2️⃣ KALIBRERING — kör och iterera
+Flertalet *kan* vara fixade av en Explore-agent tidigare, men ej verifierade live.
 
+| # | Bugg | Risk |
+|---|------|------|
+| 1.3 | Kontraktsförnyelse fastnar | Behöver speltesta — 4 delåtgärder |
+| 1.4 | Mecenater spawnar aldrig | Logiken finns, triggers ej verifierade |
+| 1.5 | cupRun board objective fail | Troligen fixat, ej verifierat |
+| 1.6 | Troféer lösa på dashboard | Okänt |
+| 1.14 | paddingBottom 7 skärmar | Oklart vilka som åtgärdats |
+| 1.16 | Cupvy saknar progress-rad | Ej implementerat |
+
+Detaljer: `docs/SPRINT_ALLT_KVAR.md` punkt 1.3–1.16.
+
+Lägre prio (troligen fixade eller triviala):
+- 1.7 Form-prickar, 1.8 DiamondDivider, 1.9 Styrelsemöte, 1.10 Presskonferens, 1.11 Kafferum, 1.12 ?-knapp, 1.13 Transfers flikar, 1.15 CS diminishing returns
+
+### 2️⃣ KALIBRERING — uppdatera mot ny data
+
+Tre kvarstående gap:
+
+| Gap | Motor | Verklighet | Åtgärd |
+|-----|-------|------------|--------|
+| secondHalfShare | 52.6% | **60.7%** | TIMING_WEIGHTS steg 40–60 behöver mer boost |
+| drawPct | 9.5% | **11.6%** | homeAdvantage (0.14) möjligen lite hög |
+| calibrate.ts targets | 10.0 mål, 54.3% 2H | 9.12 mål, 60.7% 2H | Uppdatera till `bandygrytan_calibration_targets.json`-värden |
+
+Kör:
 ```bash
 node_modules/.bin/vite-node scripts/calibrate.ts
 ```
 
-Alla 5 targets ska vara ✅. Justera konstanter i matchEngine.ts tills de stämmer.
-
-Nytt script `scripts/calibrate_v2.ts` finns redo men väntar på detaljdata (docs/data/bandygrytan_detailed.json). Kör INTE v2 ännu — det gör vi när datan landar.
-
-### 3️⃣ RIK MATCHUPPLEVELSE — docs/SPEC_RIK_MATCHUPPLEVELSE.md
-
-Komplett spec med mockups. Gör i denna ordning:
-
-**Fas 1-2: Commentary (Sprint A-B, ~105 min)**
-- Nya commentary-pools i matchCommentary.ts (~50 nya strängar)
-- getMatchSituation() i matchStepByStep.ts
-- Kontextuell wiring: spelarform, kapten, favorit, utvisningar
-- Se mockup: `docs/mockups/match_experience_mockups_v2.html` sektion 2-3
-
-**Fas 2: Narrativ båge (Sprint C, ~45 min)**
-- getSecondHalfMode() — chasing/controlling/cruise/even_battle
-- Momentum-svängningar → kommentarer
-- getStepDelay() i MatchLiveScreen (pacing)
-
-**Fas 3: Händelsevariation (Sprint D, ~60 min)**
-- Nya sekvenstyper: tactical_shift, player_duel, atmosphere, offside, freekick_danger
-- buildSequenceWeights() — situationsberoende vikter
-- RefStyle-system (strict/lenient/inconsistent)
-
-**Fas 4: Sammanfattningar (Sprint F, ~60 min)**
-- getFinalWhistleSummary → FinalWhistleContext (lager-på-lager)
-- generateQuickSummary → väder, hörnor, utvisningar, rivalitet
-- getMatchHeadline() i MatchDoneOverlay (VÄNDNINGEN, TUNGT, CUPSKRÄLL etc)
-- "MATCHENS BERÄTTELSE" i MatchReportView
-
-**Fas 5: Matchlägen (Sprint G, ~60 min)**
-- MatchMode typ (full/commentary/quicksim)
-- UI-väljare i StartStep (tre knappar, ersätter tvåknapps Live/Snabb)
-- Kommentar-läge: auto-resolve interaktioner, snabbare tempo
-- Snabbsim: simulateMatch() → direkt till GranskaScreen
-- Se mockup: `docs/mockups/match_experience_mockups_v2.html` sektion 1
-
-**Fas 5: Nya interaktioner (Sprint H-J, ~120 min)**
-- counterAttackInteractionService.ts + CounterInteraction.tsx
-- freeKickInteractionService.ts + FreeKickInteraction.tsx
-- lastMinutePressService.ts + LastMinutePress.tsx
-- Se mockup: `docs/mockups/match_interactions_v3.html` sektion 3
-
-**Fas 5: Hörna + straff redesign (Sprint K, ~60 min)**
-- CornerInteraction → dark interaction-card, emoji choice-btn, förbättrad SVG
-- PenaltyInteraction → dark interaction-card, SVG-målbur med outline-målvakt, klickbara zoner
-- Ersätter befintlig ljus card-sharp-stil
-- Se mockup: `docs/mockups/match_interactions_v3.html` sektion 1-2
-
-### 4️⃣ PARKERAT (gör INTE nu) — docs/FIXSPEC_PARKERAT.md
+### 3️⃣ PARKERAT (gör INTE nu) — docs/FIXSPEC_PARKERAT.md
 
 - P1: Presskonferens som visuell scen
 - P2: Transferdödline-känsla
 - P3: Klubbens rykte utanför orten
 
-Fullspecade men ej prioriterade. Gör efter lager 1-3.
+Fullspecade men ej prioriterade.
 
 ---
 
-## VAD SOM REDAN ÄR KLART (rör inte)
-
-- ✅ Coach marks (löst via saveGameMigration)
-- ✅ Arenanamn i all UI
-- ✅ Klacknamn (alla 12 klubbar)
-- ✅ Matchmotor-kalibrering (6 steg, TIMING_WEIGHTS)
-- ✅ Straffar under match (penaltyInteractionService + PenaltyInteraction.tsx)
-- ✅ Kapten (captainPlayerId, PreSeason-val, ©-badge)
-- ✅ BUG-23/24/25 (matchsummary, taktikjustering, ekonomi-kort)
-- ✅ GranskaScreen neutral plan för SM-final
-- ✅ TIMING_WEIGHTS till modulnivå
-- ✅ arenaName/supporterGroupName required
-
-## SPEC-FILER (referens)
+## SPEC-FILER
 
 | Fil | Innehåll |
 |-----|----------|
-| `docs/SPRINT_ALLT_KVAR.md` | 13 buggar + kalibrering |
-| `docs/SPEC_RIK_MATCHUPPLEVELSE.md` | Commentary, båge, interaktioner, lägen, sammanfattningar |
+| `docs/SPRINT_ALLT_KVAR.md` | Buggar (1.3–1.16) + kalibrering |
+| `docs/SPEC_RIK_MATCHUPPLEVELSE.md` | Sprint A–K spec (alla implementerade) |
 | `docs/mockups/match_interactions_v3.html` | Hörna/straff redesign, kontring, frislag, sista-minuten, headlines |
 | `docs/mockups/match_experience_mockups_v2.html` | StartStep 3 lägen, commentary-typer, matchens berättelse |
 | `docs/FIXSPEC_PARKERAT.md` | Presskonferens-scen, transferdödline, rykte |
-| `docs/data/SCHEMA_DETAILED.md` | Dataformat för Bandygrytan-extraktion |
-| `scripts/calibrate_v2.ts` | Analysscript (väntar på data) |
+| `docs/data/bandygrytan_calibration_targets.json` | Verklig data (1124 matcher, 2019–2026) |
+| `docs/RAPPORT_SESSION_14APR.md` | Sessionsrapport med konstanttabeller |
 
 ## KVALITETSGATES
 
@@ -127,6 +86,5 @@ npm run build && npm test
 
 - Build+test efter VARJE steg
 - ALDRIG verifiera komponenter i isolation — läs parent screen FÖRST
-- Trace full renderflöde (vad renderas, i vilken ordning, med vilka props)
-- grep-verifiera imports
-- Mockups = sanning. Implementera det du SER, inte vad du tror.
+- Trace full renderflöde
+- Mockups = sanning. Implementera det du SER.
