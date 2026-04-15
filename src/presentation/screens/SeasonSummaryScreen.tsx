@@ -458,6 +458,10 @@ export function SeasonSummaryScreen() {
               <StatRow label="Nollor" value={summary.totalCleanSheets} />
             </div>
           </div>
+          {game.captainPlayerId && (() => {
+            const captain = game.players.find(p => p.id === game.captainPlayerId)
+            return captain ? <StatRow label="© Lagkapten" value={`${captain.firstName} ${captain.lastName}`} color="var(--accent)" /> : null
+          })()}
         </div>
 
         {/* HOME vs AWAY */}

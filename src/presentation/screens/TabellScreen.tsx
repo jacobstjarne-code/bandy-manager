@@ -87,6 +87,12 @@ export function TabellScreen() {
         ))}
       </div>
 
+      {(['tabell', 'statistik'] as const).includes(activeTab as 'tabell' | 'statistik') && (
+        <p style={{ padding: '6px 16px 10px', fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', borderBottom: '1px solid var(--border)', marginBottom: 10 }}>
+          {activeTab === 'tabell' ? 'Aktuell tabell med form och målskillnad.' : activeTab === 'statistik' ? 'Ligans toppskytt, assist och betyg.' : ''}
+        </p>
+      )}
+
       {activeTab === 'statistik' && (() => {
         const allPlayers = game!.players.filter(p => p.seasonStats.gamesPlayed > 0)
         if (allPlayers.length === 0) return (
