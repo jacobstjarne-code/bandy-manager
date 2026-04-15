@@ -108,11 +108,11 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   let homeScore = 0
   let awayScore = 0
   const events: MatchEvent[] = []
-  // Hard cap: max 15 total goals, max 8 goal difference
+  // Hard cap: max 13 total goals, max 6 goal difference
   const canScore = (attackingHome: boolean) => {
-    if (homeScore + awayScore >= 15) return false
+    if (homeScore + awayScore >= 13) return false
     const newDiff = attackingHome ? homeScore + 1 - awayScore : awayScore + 1 - homeScore
-    return Math.abs(newDiff) <= 8
+    return Math.abs(newDiff) <= 6
   }
 
   // Suspension tracking
@@ -349,7 +349,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
 
         const shotResult = rand()
         const defenderGkStrength = defGK
-        const goalThreshold = chanceQuality * 1.20 * (1 - defenderGkStrength * 0.30) * goalMod
+        const goalThreshold = chanceQuality * 1.05 * (1 - defenderGkStrength * 0.30) * goalMod
 
         if (shotResult < goalThreshold && canScore(isHomeAttacking)) {
           // GOAL
