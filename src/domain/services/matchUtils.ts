@@ -299,6 +299,17 @@ export interface StepByStepInput {
     totalRounds?: number       // 22 för grundserie
     isFirstRound?: boolean     // säsongspremiär
   }
+  // Second-half restart fields (optional — omit for full match from step 0)
+  startStep?: number
+  initialHomeScore?: number
+  initialAwayScore?: number
+  initialShotsHome?: number
+  initialShotsAway?: number
+  initialCornersHome?: number
+  initialCornersAway?: number
+  initialHomeSuspensions?: number
+  initialAwaySuspensions?: number
+  substitutions?: { outId: string; inId: string }[]
 }
 
 export interface SecondHalfInput extends StepByStepInput {

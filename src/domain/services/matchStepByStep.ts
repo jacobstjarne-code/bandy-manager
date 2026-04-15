@@ -179,20 +179,20 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
   }
 
   // Match state
-  let homeScore = 0
-  let awayScore = 0
+  let homeScore = input.initialHomeScore ?? 0
+  let awayScore = input.initialAwayScore ?? 0
 
   // Suspension tracking
-  let homeActiveSuspensions = 0
-  let awayActiveSuspensions = 0
+  let homeActiveSuspensions = input.initialHomeSuspensions ?? 0
+  let awayActiveSuspensions = input.initialAwaySuspensions ?? 0
   const homeSuspensionTimers: number[] = []
   const awaySuspensionTimers: number[] = []
 
   // Counters
-  let shotsHome = 0
-  let shotsAway = 0
-  let cornersHome = 0
-  let cornersAway = 0
+  let shotsHome = input.initialShotsHome ?? 0
+  let shotsAway = input.initialShotsAway ?? 0
+  let cornersHome = input.initialCornersHome ?? 0
+  let cornersAway = input.initialCornersAway ?? 0
   let interactiveCornersUsed = 0
   let interactiveCountersUsed = 0
   let interactiveFreeKicksUsed = 0
@@ -380,9 +380,27 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     ]
   }
 
-  for (let step = 0; step < 60; step++) {
+  const startStep = input.startStep ?? 0
+  for (let step = startStep; step < 60; step++) {
     const minute = Math.round(step * 1.5)
     const stepEvents: MatchEvent[] = []
+
+    // Emit substitution commentary events at the start of the second half (step 31)
+    if (step === 31 && input.substitutions && input.substitutions.length > 0) {
+      const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
+      for (const sub of input.substitutions) {
+        const inName = findPlayerName(sub.inId)
+        const outName = findPlayerName(sub.outId)
+        stepEvents.push({
+          type: MatchEventType.Substitution,
+          clubId: managedClubId,
+          playerId: sub.inId,
+          secondaryPlayerId: sub.outId,
+          minute: 45,
+          description: `🔄 ${inName} IN för ${outName}`,
+        })
+      }
+    }
 
     // B3: Ice degrades in second half (step > 30)
     const period = getTimingPeriod(minute)
@@ -440,8 +458,15 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     const homePenaltyFactor = homeActiveSuspensions > 0 ? 0.75 : 1.0
     const awayPenaltyFactor = awayActiveSuspensions > 0 ? 0.75 : 1.0
 
-    const homeWeight = homeAttack * (1 + homeMods.pressModifier * 0.2) * (1 + effectiveHomeAdvantage) * homePenaltyFactor
-    const awayWeight = awayAttack * (1 + awayMods.pressModifier * 0.2) * awayPenaltyFactor
+    // Per-step trailing boost — trailing team presses harder in second half
+    const trailingBoost = (diff: number) => diff < 0 ? Math.min(-diff, 3) * 0.07 : 0
+    const homeTrailBoost = trailingBoost(homeScore - awayScore)
+    const awayTrailBoost = trailingBoost(awayScore - homeScore)
+    const effectiveHomeAttack = step >= 30 ? clamp(homeAttack * (1 + homeTrailBoost), 0, 1) : homeAttack
+    const effectiveAwayAttack = step >= 30 ? clamp(awayAttack * (1 + awayTrailBoost), 0, 1) : awayAttack
+
+    const homeWeight = effectiveHomeAttack * (1 + homeMods.pressModifier * 0.2) * (1 + effectiveHomeAdvantage) * homePenaltyFactor
+    const awayWeight = effectiveAwayAttack * (1 + awayMods.pressModifier * 0.2) * awayPenaltyFactor
 
     const homeInitiative = homeWeight / (homeWeight + awayWeight)
     const isHomeAttacking = rand() < homeInitiative
