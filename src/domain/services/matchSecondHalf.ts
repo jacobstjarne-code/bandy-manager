@@ -11,6 +11,9 @@ import {
   simulatePenalties, pickGoalCommentary,
 } from './matchUtils'
 import type { MatchStep, SecondHalfInput } from './matchUtils'
+import type { CounterInteractionData } from './counterAttackInteractionService'
+import type { FreeKickInteractionData } from './freeKickInteractionService'
+import type { LastMinutePressData } from './lastMinutePressService'
 
 // Regenerate just steps 30-60 (second half) with possibly updated tactic.
 // Used when player changes tactic at halftime.
@@ -197,6 +200,10 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
     }
   }
 
+  let interactiveCountersUsed = 0
+  let interactiveFreeKicksUsed = 0
+  let lastMinutePressTriggered = false
+
   for (let step = 31; step < 60; step++) {
     const minute = Math.round(step * 1.5)
     const stepEvents: MatchEvent[] = step === 31 ? [...subEvents] : []
@@ -249,6 +256,8 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
     let scorerPlayerId: string | undefined
     let gkPlayerId: string | undefined
     let suspendedPlayerId: string | undefined
+    let stepCounterData: CounterInteractionData | undefined
+    let stepFreeKickData: FreeKickInteractionData | undefined
 
     if (seqType === 'attack') {
       const base = attAttack * 0.6 - defDefense * 0.4 + randRange(rand, -0.2, 0.2)
@@ -277,6 +286,27 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
         }
       }
     } else if (seqType === 'transition') {
+      const isManagedTransition = managedIsHome !== undefined && (managedIsHome === isHomeAttacking)
+      if (isManagedTransition && interactiveCountersUsed < 2 && rand() < 0.20) {
+        const runner = attackingStarters
+          .filter(p => p.position !== PlayerPosition.Goalkeeper)
+          .sort((a, b) => b.attributes.skating - a.attributes.skating)[0]
+        const support = attackingStarters
+          .filter(p => p.position !== PlayerPosition.Goalkeeper && p.id !== runner?.id)
+          .sort((a, b) => b.attributes.passing - a.attributes.passing)[0]
+        if (runner && support) {
+          interactiveCountersUsed++
+          stepCounterData = {
+            minute,
+            runnerName: `${runner.firstName} ${runner.lastName}`,
+            runnerId: runner.id,
+            runnerSpeed: runner.attributes.skating,
+            supportName: `${support.firstName} ${support.lastName}`,
+            supportId: support.id,
+            defendersBeat: (1 + Math.floor(rand() * 3)) as 1 | 2 | 3,
+          }
+        }
+      }
       const cq = randRange(rand, 0.3, 0.7)
       if (cq > 0.05) {
         if (isHomeAttacking) shotsHome++; else shotsAway++
@@ -328,6 +358,27 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
         }
       }
     } else if (seqType === 'foul') {
+      const isAttackZoneFoul = rand() < 0.70
+      if (isAttackZoneFoul && interactiveFreeKicksUsed < 1 && rand() < 0.15) {
+        const isManagedAttacking = managedIsHome !== undefined ? (managedIsHome === isHomeAttacking) : false
+        if (isManagedAttacking) {
+          const kicker = attackingStarters
+            .filter(p => p.position !== PlayerPosition.Goalkeeper)
+            .sort((a, b) => (b.attributes.shooting + b.attributes.passing) - (a.attributes.shooting + a.attributes.passing))[0]
+          if (kicker) {
+            interactiveFreeKicksUsed++
+            stepFreeKickData = {
+              minute,
+              kickerName: `${kicker.firstName} ${kicker.lastName}`,
+              kickerId: kicker.id,
+              kickerShooting: kicker.attributes.shooting,
+              kickerPassing: kicker.attributes.passing,
+              distanceMeters: 20 + Math.round(rand() * 8),
+              wallSize: 3 + Math.round(rand() * 2),
+            }
+          }
+        }
+      }
       const fp = attDiscipline * 0.4 + defDiscipline * 0.3
       const r = rand()
       if (r < fp * 0.55 * (isPlayoff ? 1.2 : 1.0) * derbyFoulMult) {
@@ -435,7 +486,22 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
       intensity = 'medium'
     }
 
-    yield { step, minute, events: stepEvents, homeScore, awayScore, commentary: commentaryText, intensity, activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions }, shotsHome, shotsAway, cornersHome, cornersAway, isDerbyComment: isDerbyStep || undefined, phase: 'regular' }
+    // Last-minute press: trailing by 1, step >= 55, once per match
+    let lastMinutePressData: LastMinutePressData | undefined
+    if (!lastMinutePressTriggered && step >= 55 && managedIsHome !== undefined) {
+      const managedGoalsNow = managedIsHome ? homeScore : awayScore
+      const oppGoalsNow = managedIsHome ? awayScore : homeScore
+      const diff = managedGoalsNow - oppGoalsNow
+      if (diff === -1) {
+        lastMinutePressTriggered = true
+        const stepsLeft = 60 - step
+        const managedStartersNow = managedIsHome ? homeStarters : awayStarters
+        const avgFatigue = managedStartersNow.reduce((s, p) => s + (100 - p.morale), 0) / Math.max(1, managedStartersNow.length)
+        lastMinutePressData = { minute, scoreDiff: diff, stepsLeft, fatigueLevel: Math.round(avgFatigue) }
+      }
+    }
+
+    yield { step, minute, events: stepEvents, homeScore, awayScore, commentary: commentaryText, intensity, activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions }, shotsHome, shotsAway, cornersHome, cornersAway, isDerbyComment: isDerbyStep || undefined, phase: 'regular', counterInteractionData: stepCounterData, freeKickInteractionData: stepFreeKickData, lastMinutePressData }
   }
 
   // Full time

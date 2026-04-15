@@ -565,7 +565,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     } else if (seqType === 'transition') {
       // Counter-attack interaction: managed team attacking, max 2 per match
       const isManagedTransition = managedIsHome !== undefined && (managedIsHome === isHomeAttacking)
-      if (isManagedTransition && interactiveCountersUsed < 2 && rand() < 0.08) {
+      if (isManagedTransition && interactiveCountersUsed < 2 && rand() < 0.20) {
         const runner = attackingStarters
           .filter(p => p.position !== PlayerPosition.Goalkeeper)
           .sort((a, b) => b.attributes.skating - a.attributes.skating)[0]
