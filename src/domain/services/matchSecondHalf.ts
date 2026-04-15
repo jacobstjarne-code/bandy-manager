@@ -156,7 +156,7 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
 
   function buildSHWeights(isHome: boolean): number[] {
     const tactic = isHome ? homeLineup.tactic : awayLineup.tactic
-    let wA = 40, wT = 15, wC = 28, wH = 10, wF = 12, wL = 8
+    let wA = 40, wT = 15, wC = 40, wH = 10, wF = 12, wL = 8  // wC calibrated to 8.83 corners/team/match
     if (tactic.tempo === 'high') { wA += 5; wC += 3; wF += 2 }
     else if (tactic.tempo === 'low') { wA -= 5; wL += 5 }
     if (tactic.press === 'high') { wF += 5; wT += 3 }

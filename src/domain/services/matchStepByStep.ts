@@ -313,7 +313,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
 
     let wAttack = 40
     let wTransition = 15
-    let wCorner = 28
+    let wCorner = 40  // calibrated: 8.83 corners/team/match (bandygrytan Elitserien data)
     let wHalfchance = 10
     let wFoul = 12
     let wLostball = 8
@@ -816,9 +816,9 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       const r = rand()
       const foulThreshold = foulProb * 0.55 * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult * secondHalfFoulMod
       if (r < foulThreshold) {
-        // Penalty check: ~20% of fouls in attack zone → straff
-        const isAttackZoneFoul = rand() < 0.35
-        const isPenalty = isAttackZoneFoul && rand() < 0.20
+        // Penalty check: calibrated to ~6.6% of goals from penalties (bandygrytan data)
+        const isAttackZoneFoul = rand() < 0.70
+        const isPenalty = isAttackZoneFoul && rand() < 0.60
 
         // Free kick interaction: dangerous foul in attack zone, managed attacking, not penalty, max 1
         if (isAttackZoneFoul && !isPenalty && interactiveFreeKicksUsed < 1 && rand() < 0.15) {
