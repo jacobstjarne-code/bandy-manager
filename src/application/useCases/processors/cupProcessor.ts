@@ -63,12 +63,19 @@ export function processCupRound(
     f.status === FixtureStatus.Completed && f.isCup && !fixturesCompletedBeforeRound.has(f.id)
   )
 
+  // Update bracket with any newly AI-simulated cup fixtures
   if (newlyCompletedCupThisRound.length > 0) {
     result.updatedCupBracket = updateCupBracketAfterRound(
       result.updatedCupBracket,
       newlyCompletedCupThisRound,
     )
+  }
 
+  // Always check if the current round is complete and next round needs generating.
+  // This covers the case where the managed club played their cup match LIVE — in that case
+  // newlyCompletedCupThisRound is empty (their match is in fixturesCompletedBeforeRound),
+  // but the bracket was already updated by matchActions and the round may now be complete.
+  {
     const roundsWithMatches = [...new Set(result.updatedCupBracket.matches.map(m => m.round))]
     const maxRound = Math.max(...roundsWithMatches)
     const currentRoundMatches = result.updatedCupBracket.matches.filter(m => m.round === maxRound)
@@ -78,40 +85,42 @@ export function processCupRound(
       if (maxRound === 4) {
         // Cup final complete — set winner and mark completed
         const finalMatch = currentRoundMatches[0]
-        result.updatedCupBracket = {
-          ...result.updatedCupBracket,
-          winnerId: finalMatch.winnerId,
-          completed: true,
-        }
+        if (!result.updatedCupBracket.completed) {
+          result.updatedCupBracket = {
+            ...result.updatedCupBracket,
+            winnerId: finalMatch.winnerId,
+            completed: true,
+          }
 
-        const managedIsWinner = finalMatch.winnerId === game.managedClubId
-        const managedIsRunnerUp =
-          !managedIsWinner &&
-          (finalMatch.homeClubId === game.managedClubId || finalMatch.awayClubId === game.managedClubId)
+          const managedIsWinner = finalMatch.winnerId === game.managedClubId
+          const managedIsRunnerUp =
+            !managedIsWinner &&
+            (finalMatch.homeClubId === game.managedClubId || finalMatch.awayClubId === game.managedClubId)
 
-        if (managedIsWinner) {
-          const winnerClub = game.clubs.find(c => c.id === finalMatch.winnerId)
-          result.cupInboxItems.push({
-            id: `inbox_cup_winner_${game.currentSeason}`,
-            date: currentDate,
-            type: InboxItemType.Playoff,
-            title: '🏆 CUPVINNARE!',
-            body: `${winnerClub?.name} vinner Svenska Cupen ${game.currentSeason}! En fantastisk bedrift!`,
-            isRead: false,
-          } as InboxItem)
-        } else if (managedIsRunnerUp) {
-          const winnerClub = game.clubs.find(c => c.id === finalMatch.winnerId)
-          result.cupInboxItems.push({
-            id: `inbox_cup_final_loss_${game.currentSeason}`,
-            date: currentDate,
-            type: InboxItemType.Playoff,
-            title: 'Cupfinalen förlorad',
-            body: `${winnerClub?.name ?? 'Motståndaren'} tog cuptiteln. En stark insats att ta sig till finalen.`,
-            isRead: false,
-          } as InboxItem)
+          if (managedIsWinner) {
+            const winnerClub = game.clubs.find(c => c.id === finalMatch.winnerId)
+            result.cupInboxItems.push({
+              id: `inbox_cup_winner_${game.currentSeason}`,
+              date: currentDate,
+              type: InboxItemType.Playoff,
+              title: '🏆 CUPVINNARE!',
+              body: `${winnerClub?.name} vinner Svenska Cupen ${game.currentSeason}! En fantastisk bedrift!`,
+              isRead: false,
+            } as InboxItem)
+          } else if (managedIsRunnerUp) {
+            const winnerClub = game.clubs.find(c => c.id === finalMatch.winnerId)
+            result.cupInboxItems.push({
+              id: `inbox_cup_final_loss_${game.currentSeason}`,
+              date: currentDate,
+              type: InboxItemType.Playoff,
+              title: 'Cupfinalen förlorad',
+              body: `${winnerClub?.name ?? 'Motståndaren'} tog cuptiteln. En stark insats att ta sig till finalen.`,
+              isRead: false,
+            } as InboxItem)
+          }
         }
       } else {
-        // Generate next cup round fixtures
+        // Generate next cup round fixtures (generateNextCupRound is idempotent — safe to call again)
         const { updatedBracket, newFixtures } = generateNextCupRound(
           result.updatedCupBracket,
           maxRound,
@@ -121,7 +130,7 @@ export function processCupRound(
         result.cupNewFixtures = newFixtures
       }
 
-      // Check managed club elimination (non-final rounds)
+      // Check managed club elimination (non-final rounds), deduplicated by inbox ID
       if (!result.updatedCupBracket.completed) {
         for (const match of currentRoundMatches) {
           if (
@@ -129,16 +138,19 @@ export function processCupRound(
             match.winnerId !== game.managedClubId &&
             (match.homeClubId === game.managedClubId || match.awayClubId === game.managedClubId)
           ) {
-            const winner = game.clubs.find(c => c.id === match.winnerId)
-            const roundName = getCupRoundName(match.round)
-            result.cupInboxItems.push({
-              id: `inbox_cup_elim_${game.currentSeason}_r${match.round}`,
-              date: currentDate,
-              type: InboxItemType.Playoff,
-              title: `Utslagna ur cup${roundName}`,
-              body: `${winner?.name ?? 'Motståndaren'} gick vidare. Cupäventyret är över för i år.`,
-              isRead: false,
-            } as InboxItem)
+            const elimInboxId = `inbox_cup_elim_${game.currentSeason}_r${match.round}`
+            if (!game.inbox.some(i => i.id === elimInboxId)) {
+              const winner = game.clubs.find(c => c.id === match.winnerId)
+              const roundName = getCupRoundName(match.round)
+              result.cupInboxItems.push({
+                id: elimInboxId,
+                date: currentDate,
+                type: InboxItemType.Playoff,
+                title: `Utslagna ur cup${roundName}`,
+                body: `${winner?.name ?? 'Motståndaren'} gick vidare. Cupäventyret är över för i år.`,
+                isRead: false,
+              } as InboxItem)
+            }
             break
           }
         }

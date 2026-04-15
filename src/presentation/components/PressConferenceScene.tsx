@@ -8,22 +8,11 @@ interface Props {
 }
 
 export function PressConferenceScene({ event, journalist, onChoice }: Props) {
-  const rel = journalist?.relationship ?? 50
   const style = journalist?.style ?? 'neutral'
-
-  const styleColor =
-    style === 'provocative' ? 'var(--danger)' :
-    style === 'supportive'  ? 'var(--success)' :
-    'var(--text-muted)'
 
   const styleLabel =
     style === 'provocative' ? 'Provokativ' :
     style === 'supportive'  ? 'Stödjande' :
-    'Neutral'
-
-  const relLabel =
-    rel >= 70 ? 'Vänlig' :
-    rel <= 30 ? 'Fientlig' :
     'Neutral'
 
   // Extract question text from body (format: "frågan")
@@ -57,8 +46,8 @@ export function PressConferenceScene({ event, journalist, onChoice }: Props) {
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>
             🎤 PRESSKONFERENS
           </p>
-          <span style={{ fontSize: 9, color: styleColor, fontWeight: 600 }}>
-            {styleLabel === relLabel ? styleLabel : `${styleLabel} · ${relLabel}`}
+          <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600 }}>
+            {journalist ? `${journalist.name} · ${journalist.outlet}` : styleLabel}
           </span>
         </div>
 
