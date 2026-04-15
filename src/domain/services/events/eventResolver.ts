@@ -327,22 +327,35 @@ export function resolveEvent(
           }
         }
       }
-      // Update matching active mecenat (events from social/silent shout contain mecenat ID)
+      // Update matching active mecenat(s) — alliance events (event_alliance_<id1>_<id2>) update both
       if (updatedGame.mecenater?.length && !eventId.startsWith('event_mecenat_intro_')) {
-        const matchedMec = updatedGame.mecenater.find(m => m.isActive && eventId.includes(m.id))
-        if (matchedMec) {
-          const mNewHappiness = Math.max(0, Math.min(100, matchedMec.happiness + (effect.amount ?? 0)))
-          const completedFixtures = (updatedGame.fixtures ?? []).filter(f => (f.status as string) === 'completed')
-          const currentMatchday = completedFixtures.length > 0
-            ? Math.max(...completedFixtures.map(f => f.matchday))
-            : 0
+        const completedFixtures = (updatedGame.fixtures ?? []).filter(f => (f.status as string) === 'completed')
+        const currentMatchday = completedFixtures.length > 0
+          ? Math.max(...completedFixtures.map(f => f.matchday))
+          : 0
+        const isAllianceEvent = eventId.startsWith('event_alliance_')
+        if (isAllianceEvent) {
+          // Uppdatera alla aktiva mecenater vars ID finns i event-ID
           updatedGame = {
             ...updatedGame,
-            mecenater: updatedGame.mecenater.map(m =>
-              m.id === matchedMec.id
-                ? { ...m, happiness: mNewHappiness, isActive: mNewHappiness > 0, lastInteractionRound: currentMatchday }
-                : m
-            ),
+            mecenater: updatedGame.mecenater.map(m => {
+              if (!m.isActive || !eventId.includes(m.id)) return m
+              const mNewHappiness = Math.max(0, Math.min(100, m.happiness + (effect.amount ?? 0)))
+              return { ...m, happiness: mNewHappiness, isActive: mNewHappiness > 0, lastInteractionRound: currentMatchday }
+            }),
+          }
+        } else {
+          const matchedMec = updatedGame.mecenater.find(m => m.isActive && eventId.includes(m.id))
+          if (matchedMec) {
+            const mNewHappiness = Math.max(0, Math.min(100, matchedMec.happiness + (effect.amount ?? 0)))
+            updatedGame = {
+              ...updatedGame,
+              mecenater: updatedGame.mecenater.map(m =>
+                m.id === matchedMec.id
+                  ? { ...m, happiness: mNewHappiness, isActive: mNewHappiness > 0, lastInteractionRound: currentMatchday }
+                  : m
+              ),
+            }
           }
         }
       }

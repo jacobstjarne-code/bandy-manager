@@ -59,7 +59,7 @@ interface GameState {
   setTransferBudget: (amount: number) => void
   buyScoutRounds: () => void
   recruitVolunteer: (name: string) => void
-  startFacilityProject: (projectId: string) => { success: boolean; error?: string }
+  startFacilityProject: (projectId: string, mode?: 'club' | 'kommun' | 'mecenat') => { success: boolean; error?: string }
   activateCommunity: (key: string, level: string) => { success: boolean; error?: string }
   upgradeAcademy: () => { success: boolean; error?: string }
   upgradeFacilities: () => { success: boolean; error?: string }
@@ -474,7 +474,7 @@ export const useGameStore = create<GameState>()(
         set({ game: { ...game, volunteers: [...existing, name] } })
       },
 
-      startFacilityProject: (projectId: string) => {
+      startFacilityProject: (projectId: string, mode: 'club' | 'kommun' | 'mecenat' = 'club') => {
         const { game } = get()
         if (!game) return { success: false, error: 'Inget spel' }
         const club = game.clubs.find(c => c.id === game.managedClubId)
@@ -482,19 +482,47 @@ export const useGameStore = create<GameState>()(
         const available = getAvailableProjects(club.facilities, game.facilityProjects ?? [])
         const project = available.find(p => p.id === projectId)
         if (!project) return { success: false, error: 'Projektet är inte tillgängligt' }
-        if (project.requiresKommun) {
-          const pol = game.localPolitician
+
+        const pol = game.localPolitician
+        if (mode === 'kommun' || mode === 'mecenat') {
           if (!pol) return { success: false, error: 'Kräver kommunalt stöd — ingen kommunföreträdare kopplad' }
-          if (pol.relationship < 40) return { success: false, error: `Kommunalrådet ${pol.name} är inte redo att stödja detta (relation ${pol.relationship}/100). Bjud in till match eller presentera budget.` }
+          if (pol.relationship < 40) return { success: false, error: `${pol.name} är inte redo att stödja detta (relation ${pol.relationship}/100)` }
         }
-        if (club.finances < project.cost) return { success: false, error: `Inte tillräckligt med pengar (kräver ${Math.round(project.cost / 1000)} tkr)` }
+
+        // Räkna ut faktisk kostnad + mecenat-andel
+        const kommunShare = (mode === 'kommun' || mode === 'mecenat') ? project.kommunCostShare : 0
+        const activeMecenat = mode === 'mecenat'
+          ? (game.mecenater ?? []).find(m => m.isActive && m.wealth >= 3 && m.happiness >= 50)
+          : undefined
+        const mecenatShare = activeMecenat ? Math.min(0.3, activeMecenat.wealth * 0.06) : 0
+        const clubPays = Math.round(project.cost * (1 - kommunShare - mecenatShare))
+
+        if (club.finances < clubPays) return { success: false, error: `Inte tillräckligt med pengar (kräver ${Math.round(clubPays / 1000)} tkr ur kassan)` }
+
         const currentMatchday = game.fixtures.filter(f => f.status === 'completed' && !f.isCup).reduce((max, f) => Math.max(max, f.roundNumber), 0)
-        const started = startFacProj(project, currentMatchday)
-        const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -project.cost)
+        const started = startFacProj({ ...project, financingMode: mode, mecenatCostShare: mecenatShare }, currentMatchday)
+        const updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -clubPays)
+
+        // Sidoeffekter
+        let updatedPol = pol
+        if ((mode === 'kommun' || mode === 'mecenat') && pol) {
+          updatedPol = { ...pol, relationship: Math.min(100, pol.relationship + 10) }
+        }
+        let updatedMecenater = game.mecenater ?? []
+        if (mode === 'mecenat' && activeMecenat) {
+          updatedMecenater = updatedMecenater.map(m =>
+            m.id === activeMecenat.id
+              ? { ...m, silentShout: Math.min(100, m.silentShout + 10), totalContributed: m.totalContributed + Math.round(project.cost * mecenatShare) }
+              : m
+          )
+        }
+
         set({ game: {
           ...game,
           clubs: updatedClubs,
           facilityProjects: [...(game.facilityProjects ?? []), started],
+          localPolitician: updatedPol ?? game.localPolitician,
+          mecenater: updatedMecenater,
         }})
         return { success: true, error: undefined }
       },

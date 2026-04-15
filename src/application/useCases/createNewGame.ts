@@ -1,4 +1,4 @@
-import type { SaveGame, Patron, LocalPolitician, BoardMember, CommunityActivities } from '../../domain/entities/SaveGame'
+import type { SaveGame, Patron, LocalPolitician, BoardMember, CommunityActivities, MediaProfile, PersonalInterest } from '../../domain/entities/SaveGame'
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { League } from '../../domain/entities/League'
 import type { Player } from '../../domain/entities/Player'
@@ -69,14 +69,33 @@ function generatePatron(
   }
 }
 
+const PARTY_AGENDA_WEIGHTS_CNG: Record<string, Array<'youth' | 'inclusion' | 'prestige' | 'savings' | 'infrastructure'>> = {
+  S:      ['youth', 'inclusion', 'youth', 'inclusion'],
+  M:      ['savings', 'prestige', 'savings', 'prestige'],
+  C:      ['youth', 'infrastructure', 'youth'],
+  L:      ['infrastructure', 'prestige'],
+  KD:     ['youth', 'inclusion'],
+  lokalt: ['youth', 'inclusion', 'prestige', 'savings', 'infrastructure'],
+}
+
+const CAMPAIGN_PROMISES_CNG: Record<string, string[]> = {
+  youth:          ['Satsa på ungdomsidrott i alla skolor', 'Ny idrottshall för ungdomar senast nästa år', 'Fler kommunala idrottsstipendier'],
+  inclusion:      ['Idrott ska vara tillgängligt för alla oavsett plånbok', 'Avgiftsfria aktiviteter för barn under 16', 'Integrationsprojekt via föreningslivet'],
+  prestige:       ['Sätt orten på kartan med toppklass-idrott', 'Bygga ett kommunalt varumärke vi kan vara stolta över', 'Attrahera regionalt intresse till vår ort'],
+  savings:        ['Hålla kommunbudgeten i balans utan nya lån', 'Effektivisera alla kommunala bidrag', 'Varje skattekrona ska synas i resultaten'],
+  infrastructure: ['Bygg en modern idrottsanläggning senast 2028', 'Uppgradera kommunens sportinfrastruktur', 'Konstfryst is till alla utomhusanläggningar'],
+}
+
 function generatePolitician(rand: () => number): LocalPolitician {
   const profile = pickRandom(POLITICIAN_PROFILES, rand)
-  const agendas: Array<'youth' | 'inclusion' | 'prestige' | 'savings' | 'infrastructure'> =
-    ['youth', 'inclusion', 'prestige', 'savings', 'infrastructure']
-  const agenda = pickRandom(agendas, rand)
+  const agendaPool = PARTY_AGENDA_WEIGHTS_CNG[profile.party] ?? ['youth', 'inclusion', 'prestige', 'savings', 'infrastructure']
+  const agenda = agendaPool[Math.floor(rand() * agendaPool.length)] as 'youth' | 'inclusion' | 'prestige' | 'savings' | 'infrastructure'
   const generosity = agenda === 'savings'
     ? Math.round(20 + rand() * 20)
     : Math.round(50 + rand() * 40)
+  const mediaProfiles: MediaProfile[] = ['tystlåten', 'utåtriktad', 'populist']
+  const interests: PersonalInterest[] = ['bandy', 'fotboll', 'kultur', 'ingenting']
+  const promisePool = CAMPAIGN_PROMISES_CNG[agenda] ?? []
   return {
     name: `${profile.first} ${profile.last}`,
     title: `${profile.title} ${profile.party}`,
@@ -87,6 +106,11 @@ function generatePolitician(rand: () => number): LocalPolitician {
     generosity,
     mandatExpires: (new Date().getFullYear()) + 4,
     corruption: Math.round(rand() * 60),
+    campaignPromise: promisePool[Math.floor(rand() * promisePool.length)],
+    personalInterest: interests[Math.floor(rand() * interests.length)],
+    mediaProfile: mediaProfiles[Math.floor(rand() * mediaProfiles.length)],
+    oppositionStrength: Math.round(30 + rand() * 50),
+    popularitet: Math.round(40 + rand() * 40),
   }
 }
 

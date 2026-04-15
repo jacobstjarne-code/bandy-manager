@@ -22,7 +22,7 @@ import {
   formatValue,
 } from './eventFactories'
 import { findEmployerForJob } from '../../data/localEmployers'
-import { generateSilentShoutEvent, generateMecenatConflictEvent } from '../mecenatService'
+import { generateSilentShoutEvent, generateMecenatConflictEvent, generateMecenatAllianceEvent } from '../mecenatService'
 
 // ── generatePostAdvanceEvents ──────────────────────────────────────────────
 export function generatePostAdvanceEvents(
@@ -410,6 +410,24 @@ export function generatePostAdvanceEvents(
       const eid = `event_conflict_${m1.id}_${m2.id}_r${roundPlayed}`
       if (!alreadyQueued.has(eid)) {
         events.push(generateMecenatConflictEvent(m1, m2))
+      }
+    }
+  }
+
+  if (events.length >= 2) return events
+
+  // 5k2. Mecenat alliance (~2% if 2+ active mecenater with both happiness >= 60)
+  if (events.length < 2) {
+    const happyMecs = (game.mecenater ?? []).filter(m => m.isActive && m.happiness >= 60)
+    if (happyMecs.length >= 2 && rand() < 0.02) {
+      const m1 = happyMecs[0]
+      const m2 = happyMecs[1]
+      const eid = `event_alliance_${m1.id}_${m2.id}`
+      if (!alreadyQueued.has(eid)) {
+        // Föreslå ett projekt som passar deras kombinerade intresse
+        const projectNames = ['en ny värmestuga', 'uppgradering av strålkastarna', 'omklädningsrummet']
+        const projectName = projectNames[Math.floor(rand() * projectNames.length)]
+        events.push(generateMecenatAllianceEvent(m1, m2, projectName))
       }
     }
   }

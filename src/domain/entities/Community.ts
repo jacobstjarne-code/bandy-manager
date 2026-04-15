@@ -40,6 +40,9 @@ export interface Patron {
 
 export type PoliticalAgenda = 'youth' | 'inclusion' | 'prestige' | 'savings' | 'infrastructure'
 
+export type MediaProfile = 'tystlåten' | 'utåtriktad' | 'populist'
+export type PersonalInterest = 'bandy' | 'fotboll' | 'kultur' | 'ingenting'
+
 export interface LocalPolitician {
   name: string
   title: string
@@ -52,6 +55,11 @@ export interface LocalPolitician {
   demands?: string[]
   demandsMet?: boolean
   corruption?: number          // 0-100
+  campaignPromise?: string     // "Bygg en ishall senast 2028"
+  personalInterest?: PersonalInterest
+  mediaProfile?: MediaProfile
+  oppositionStrength?: number  // 0-100, hur stark opposition
+  popularitet?: number         // 0-100
 }
 
 export interface PoliticianInteractionLog {
@@ -61,6 +69,8 @@ export interface PoliticianInteractionLog {
   apply?: number          // last round applied for grant
   applySeason?: number    // season of last grant application
 }
+
+export type FacilityFinancingMode = 'club' | 'kommun' | 'mecenat'
 
 export interface FacilityProject {
   id: string
@@ -74,6 +84,8 @@ export interface FacilityProject {
   kommunCostShare: number
   status: 'available' | 'in_progress' | 'completed'
   startedMatchday?: number
+  financingMode?: FacilityFinancingMode
+  mecenatCostShare?: number    // faktisk mecenat-andel (0–1) som tillämpades
 }
 
 export interface BoardObjective {

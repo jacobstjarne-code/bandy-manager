@@ -51,6 +51,15 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   // V1.0 — Journalist character (created on-demand if missing)
   if (data.journalist === undefined) data.journalist = null
 
+  // ── localPolitician: ensure newer optional fields exist ───────────────
+  if (data.localPolitician && typeof data.localPolitician === 'object') {
+    const pol = data.localPolitician as Record<string, unknown>
+    if (pol.mediaProfile === undefined) pol.mediaProfile = 'tystlåten'
+    if (pol.personalInterest === undefined) pol.personalInterest = 'ingenting'
+    if (pol.oppositionStrength === undefined) pol.oppositionStrength = 40
+    if (pol.popularitet === undefined) pol.popularitet = 55
+  }
+
   // ── players: ensure each player has newer optional fields ──────────────
   if (Array.isArray(data.players)) {
     data.players = (data.players as Record<string, unknown>[]).map(p => {
