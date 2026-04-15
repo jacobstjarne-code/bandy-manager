@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1">
+<title>Spelarkort 2.0 — Mockup</title>
+<style>
+  :root {
+    --bg: #F5F0E8;
+    --bg-surface: #EDE7DA;
+    --bg-elevated: #E8E0D0;
+    --bg-dark: #1A1A18;
+    --accent: #8b7332;
+    --accent-dark: #6B5A2A;
+    --success: #4A7C59;
+    --danger: #B05040;
+    --warning: #C4883A;
+    --ice: #6BA3BE;
+    --text-primary: #2C2C28;
+    --text-secondary: #5A5A52;
+    --text-muted: #8A8A7E;
+    --text-light: #F5F0E8;
+    --border: #D4CFC2;
+    --border-dark: #B8B2A4;
+    --font-display: Georgia, 'Times New Roman', serif;
+    --font-body: system-ui, -apple-system, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #2a2a2a; display: flex; flex-wrap: wrap; gap: 40px; padding: 40px; justify-content: center; font-family: var(--font-body); }
+
+  .phone { width: 375px; height: 812px; background: rgba(0,0,0,0.6); border-radius: 20px; overflow: hidden; position: relative; box-shadow: 0 8px 40px rgba(0,0,0,0.4); display: flex; flex-direction: column; }
+  .phone-label { color: #ccc; font-size: 12px; text-align: center; margin-bottom: 8px; letter-spacing: 1px; text-transform: uppercase; }
+
+  .card-scroll { flex: 1; overflow-y: auto; }
+  .card-body { background: var(--bg-surface); margin: 40px 12px 80px; border-radius: 3px; overflow: hidden; }
+
+  .gold-div { height: 1px; background: rgba(196,122,58,0.4); margin: 0 14px; }
+
+  .label { font-size: 8px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin: 0; }
+
+  .section { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+
+  .tag { display: inline-flex; padding: 2px 8px; border-radius: 99px; font-size: 9px; font-weight: 700; border: 1px solid var(--accent); color: var(--accent); letter-spacing: 0.5px; }
+  .tag-fill { background: var(--accent); color: var(--text-light); border-color: var(--accent); }
+  .tag-danger { border-color: var(--danger); color: var(--danger); }
+  .tag-warn { border-color: var(--warning); color: var(--warning); }
+
+  .bar-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+
+  .stat-box { display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.04); border-radius: 5px; padding: 4px 2px; }
+  .stat-num { font-size: 14px; font-weight: 800; font-family: var(--font-display); }
+  .stat-label { font-size: 9px; color: var(--text-muted); letter-spacing: 0.5px; }
+
+  .btn-talk { flex: 1; padding: 10px 8px; border-radius: 8px; background: var(--bg-elevated); border: 1px solid var(--border); font-size: 11px; color: var(--text-primary); cursor: pointer; text-align: center; font-family: var(--font-body); }
+  .btn-talk:hover { background: var(--border); }
+
+  .diary-row { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; }
+  .diary-row + .diary-row { border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- SPELARKORT 2.0 — ÄGD SPELARE (10 sektioner, scrollbart)     -->
+<!--                                                              -->
+<!-- Implementera alla sektioner i denna ordning.                 -->
+<!-- Varje sektion separeras av border-bottom: 1px solid border.  -->
+<!-- Sticky footer med Prata-knappar längst ner.                  -->
+<!-- ============================================================ -->
+<div>
+<p class="phone-label">Spelarkort 2.0 — Ägd spelare (scrolla ↓)</p>
+<div class="phone">
+  <div class="card-scroll">
+    <div class="card-body">
+
+      <!-- ═══ TOP BAR: Badge + Position/Nummer + Close ═══ -->
+      <div style="display: flex; align-items: center; padding: 12px 14px 8px; background: rgba(0,0,0,0.15); gap: 8px;">
+        <!-- Club badge placeholder -->
+        <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text-light); font-weight: 700;">F</div>
+        <div style="flex: 1; text-align: center;">
+          <p style="font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: 1px;">#17</p>
+          <p style="font-size: 10px; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase;">ANFALLARE</p>
+        </div>
+        <button style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: var(--text-muted); font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer;">✕</button>
+      </div>
+
+      <div class="gold-div"></div>
+
+      <!-- ═══ PORTRAIT ═══ -->
+      <div style="display: flex; justify-content: center; padding: 10px 0 6px; background: linear-gradient(180deg, var(--bg-surface), var(--bg-elevated));">
+        <!-- Portrait placeholder — 72px circle with initials -->
+        <div style="width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #6B5A2A, #4A3D1C); border: 2.5px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 24px; font-family: var(--font-display); color: var(--text-light); font-weight: 400;">SK</div>
+      </div>
+
+      <div class="gold-div" style="background: rgba(196,122,58,0.5);"></div>
+
+      <!-- ═══ NAME + CLUB + BADGES ═══ -->
+      <div style="padding: 10px 14px 8px;">
+        <p style="font-size: 17px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.3px; text-transform: uppercase;">STEFAN KRONBERG</p>
+        <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap;">
+          <span style="font-size: 10px; font-weight: 700; color: var(--accent); letter-spacing: 1px;">FORSBACKA</span>
+          <span style="color: var(--border); font-size: 12px;">·</span>
+          <div style="padding: 2px 6px; border-radius: 4px; background: var(--success); font-size: 10px; font-weight: 700; color: var(--text-light); letter-spacing: 0.5px;">ANFALLARE</div>
+        </div>
+        <!-- Trait + role badges -->
+        <div style="display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap;">
+          <span class="tag tag-fill">© KAPTEN</span>
+          <span class="tag" style="border-color: var(--success); color: var(--success);">🔥 Hungrig</span>
+          <span class="tag tag-danger">❤️ Klackfavorit</span>
+        </div>
+      </div>
+
+      <!-- ═══ ① STATUS — 4 horisontella bars ═══ -->
+      <!-- Form, Kondition, Moral, Skärpa med färgkodade bars -->
+      <!-- Under bars: skade/avstängningsstatus som textrad -->
+      <div class="section">
+        <p class="label" style="margin-bottom: 8px;">💪 STATUS</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px;">
+          <!-- Form -->
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 2px;">
+              <span style="color: var(--text-muted);">Form</span>
+              <span style="color: var(--success); font-weight: 700; font-family: var(--font-display);">78</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width: 78%; background: var(--success);"></div></div>
+          </div>
+          <!-- Kondition -->
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 2px;">
+              <span style="color: var(--text-muted);">Kondition</span>
+              <span style="color: var(--success); font-weight: 700; font-family: var(--font-display);">82</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width: 82%; background: var(--success);"></div></div>
+          </div>
+          <!-- Moral -->
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 2px;">
+              <span style="color: var(--text-muted);">Moral</span>
+              <span style="color: var(--success); font-weight: 700; font-family: var(--font-display);">90</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width: 90%; background: var(--success);"></div></div>
+          </div>
+          <!-- Skärpa -->
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 2px;">
+              <span style="color: var(--text-muted);">Skärpa</span>
+              <span style="color: var(--warning); font-weight: 700; font-family: var(--font-display);">58</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width: 58%; background: var(--warning);"></div></div>
+          </div>
+        </div>
+        <p style="font-size: 10px; color: var(--success); margin-top: 6px;">🩹 Frisk · Tillgänglig</p>
+      </div>
+
+      <!-- ═══ ② DUBBELLIV — Spelets USP, visuellt framlyft ═══ -->
+      <!-- Dagsjobb med titel, arbetsgivare, ort -->
+      <!-- Flexibilitetsbar med procent och färg -->
+      <!-- Konsekvenstext: vad flexibiliteten innebär i praktiken -->
+      <!-- ALT: "⭐ Heltidsproffs" om isFullTimePro -->
+      <div class="section">
+        <p class="label" style="margin-bottom: 6px;">💼 DUBBELLIV</p>
+        <p style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Mekaniker, Volvo</p>
+        <p style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Eskilstuna · Pendlar 45 min</p>
+
+        <div style="display: flex; align-items: center; gap: 6px; margin-top: 8px;">
+          <span style="font-size: 10px; color: var(--text-muted); min-width: 60px;">Flexibilitet</span>
+          <div style="flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden;">
+            <div style="width: 65%; height: 100%; background: var(--warning); border-radius: 3px;"></div>
+          </div>
+          <span style="font-size: 10px; color: var(--warning); font-weight: 700;">65%</span>
+        </div>
+
+        <p style="font-size: 10px; color: var(--text-muted); font-style: italic; margin-top: 6px; line-height: 1.5;">
+          Kan delta i de flesta träningar, men nattskift varannan vecka skapar konflikter. Missade träning omg 11 och 14.
+        </p>
+      </div>
+
+      <!-- ═══ ③ SENASTE 5 MATCHER — formkurva med SVG sparkline ═══ -->
+      <!-- Prickar färgade: grön=vinst, röd=förlust, orange=oavgjort -->
+      <!-- Matchbetyg ovanför varje prick, motståndarens kortnamn under -->
+      <!-- Sammanfattning: "📈 Stigande form" / "📉 Vikande" -->
+      <div class="section">
+        <p class="label" style="margin-bottom: 6px;">📈 SENASTE 5 MATCHER</p>
+        <svg width="220" height="65" viewBox="0 0 220 65" style="display: block; margin: 0 auto;">
+          <line x1="20" y1="8" x2="200" y2="8" stroke="rgba(0,0,0,0.05)" stroke-width="0.5"/>
+          <line x1="20" y1="28" x2="200" y2="28" stroke="rgba(0,0,0,0.05)" stroke-width="0.5"/>
+          <!-- Line connecting ratings -->
+          <polyline points="30,30 75,36 120,14 165,24 200,10" fill="none" stroke="#4A7C59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Match 1: 6.8 vs Gag (loss) -->
+          <circle cx="30" cy="30" r="4" fill="#B05040" stroke="#EDE7DA" stroke-width="1.5"/>
+          <text x="30" y="24" text-anchor="middle" font-size="9" font-weight="700" fill="#2C2C28">6.8</text>
+          <text x="30" y="53" text-anchor="middle" font-size="8" fill="#8A8A7E">Gag</text>
+          <text x="30" y="62" text-anchor="middle" font-size="7" fill="#B05040">F</text>
+          <!-- Match 2: 6.5 vs Les (draw) -->
+          <circle cx="75" cy="36" r="4" fill="#C4883A" stroke="#EDE7DA" stroke-width="1.5"/>
+          <text x="75" y="30" text-anchor="middle" font-size="9" font-weight="700" fill="#2C2C28">6.5</text>
+          <text x="75" y="53" text-anchor="middle" font-size="8" fill="#8A8A7E">Les</text>
+          <text x="75" y="62" text-anchor="middle" font-size="7" fill="#C4883A">O</text>
+          <!-- Match 3: 8.1 vs Vfors (win) -->
+          <circle cx="120" cy="14" r="4" fill="#4A7C59" stroke="#EDE7DA" stroke-width="1.5"/>
+          <text x="120" y="8" text-anchor="middle" font-size="9" font-weight="700" fill="#2C2C28">8.1</text>
+          <text x="120" y="53" text-anchor="middle" font-size="8" fill="#8A8A7E">Vfr</text>
+          <text x="120" y="62" text-anchor="middle" font-size="7" fill="#4A7C59">V</text>
+          <!-- Match 4: 7.4 vs Sku (win) -->
+          <circle cx="165" cy="24" r="4" fill="#4A7C59" stroke="#EDE7DA" stroke-width="1.5"/>
+          <text x="165" y="18" text-anchor="middle" font-size="9" font-weight="700" fill="#2C2C28">7.4</text>
+          <text x="165" y="53" text-anchor="middle" font-size="8" fill="#8A8A7E">Sku</text>
+          <text x="165" y="62" text-anchor="middle" font-size="7" fill="#4A7C59">V</text>
+          <!-- Match 5: 8.2 vs Berg (win) — latest, accent ring -->
+          <circle cx="200" cy="10" r="4.5" fill="#4A7C59" stroke="#8b7332" stroke-width="1.5"/>
+          <text x="200" y="4" text-anchor="middle" font-size="9" font-weight="700" fill="#2C2C28">8.2</text>
+          <text x="200" y="53" text-anchor="middle" font-size="8" fill="#8A8A7E">Ber</text>
+          <text x="200" y="62" text-anchor="middle" font-size="7" fill="#4A7C59">V</text>
+        </svg>
+        <p style="font-size: 9px; color: var(--success); text-align: center; margin-top: 4px;">📈 Stigande form · 3 raka segrar</p>
+      </div>
+
+      <!-- ═══ ④ EGENSKAPER — 2×2 grid + potential-bar + CA-sparkline ═══ -->
+      <!-- Visa topp-4 attribut baserat på arketyp -->
+      <!-- Under: potential-bar (CA fylld, PA-gap genomskinligt) -->
+      <!-- Under: CA-sparkline (liten SVG med linje + slutpunkt) -->
+      <div class="section">
+        <p class="label" style="margin-bottom: 8px; color: var(--accent);">EGENSKAPER</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px;">
+          <div style="display: flex; justify-content: space-between; padding: 4px 8px; background: rgba(255,255,255,0.04); border-radius: 6px; border: 1px solid rgba(196,122,58,0.1);">
+            <span style="font-size: 10px; color: var(--text-secondary);">Skott</span>
+            <span style="font-size: 12px; font-weight: 800; color: var(--success); font-family: var(--font-display);">78</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 8px; background: rgba(255,255,255,0.04); border-radius: 6px; border: 1px solid rgba(196,122,58,0.1);">
+            <span style="font-size: 10px; color: var(--text-secondary);">Acceleration</span>
+            <span style="font-size: 12px; font-weight: 800; color: var(--success); font-family: var(--font-display);">75</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 8px; background: rgba(255,255,255,0.04); border-radius: 6px; border: 1px solid rgba(196,122,58,0.1);">
+            <span style="font-size: 10px; color: var(--text-secondary);">Spelsinne</span>
+            <span style="font-size: 12px; font-weight: 800; color: var(--text-primary); font-family: var(--font-display);">68</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 8px; background: rgba(255,255,255,0.04); border-radius: 6px; border: 1px solid rgba(196,122,58,0.1);">
+            <span style="font-size: 10px; color: var(--text-secondary);">Positionering</span>
+            <span style="font-size: 12px; font-weight: 800; color: var(--text-primary); font-family: var(--font-display);">64</span>
+          </div>
+        </div>
+
+        <!-- Potential bar — visa bara om PA > CA + 3 -->
+        <div style="margin-top: 10px;">
+          <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 3px;">
+            <span style="color: var(--text-muted);">Utvecklingspotential</span>
+          </div>
+          <div style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; position: relative;">
+            <!-- CA filled portion -->
+            <div style="width: 72%; height: 100%; background: var(--accent); border-radius: 3px;"></div>
+            <!-- PA gap (translucent) -->
+            <div style="position: absolute; left: 72%; top: 0; width: 12%; height: 100%; background: rgba(139,115,50,0.2); border-radius: 0 3px 3px 0;"></div>
+          </div>
+          <p style="font-size: 9px; color: var(--text-muted); margin-top: 2px;">24 år — utvecklas fortfarande</p>
+        </div>
+
+        <!-- CA sparkline -->
+        <div style="margin-top: 8px;">
+          <p style="font-size: 9px; font-weight: 700; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 3px;">CA-UTVECKLING</p>
+          <svg width="180" height="36" viewBox="0 0 180 36" style="display: block;">
+            <polyline points="0,28 36,24 72,20 108,16 144,10 180,8" fill="none" stroke="#4A7C59" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="180" cy="8" r="3" fill="#4A7C59"/>
+            <text x="180" y="6" dx="5" font-size="9" fill="#2C2C28" font-weight="700">72</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ═══ ⑤ SÄSONG — stats grid + marknadsvärde med delta ═══ -->
+      <div class="section">
+        <p class="label" style="margin-bottom: 6px;">🏒 SÄSONG</p>
+        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">
+          Marknadsvärde: <span style="font-weight: 700; color: var(--text-secondary);">180 tkr</span>
+          <span style="color: var(--success); font-size: 10px; margin-left: 4px;">+25 tkr ↑</span>
+        </p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px 6px;">
+          <div class="stat-box"><span class="stat-num" style="color: var(--text-primary);">23</span><span class="stat-label">MÅL</span></div>
+          <div class="stat-box"><span class="stat-num" style="color: var(--text-primary);">8</span><span class="stat-label">ASSIST</span></div>
+          <div class="stat-box"><span class="stat-num" style="color: var(--text-primary);">18</span><span class="stat-label">MATCHER</span></div>
+          <div class="stat-box"><span class="stat-num" style="color: var(--success);">7.4</span><span class="stat-label">BETYG</span></div>
+          <div class="stat-box"><span class="stat-num" style="color: var(--danger);">2</span><span class="stat-label">UTVISN</span></div>
+          <div class="stat-box"><span class="stat-num" style="color: var(--text-primary);">3</span><span class="stat-label">HÖRNMÅL</span></div>
+        </div>
+      </div>
+
+      <!-- ═══ ⑥ RELATIONER ═══ -->
+      <!-- Senaste samtalet (omgångsnummer + citerat svar) -->
+      <!-- Mentor-koppling (om mentorships finns) -->
+      <!-- Kontrakt + lön -->
+      <div class="section">
+        <p class="label" style="margin-bottom: 6px;">🤝 RELATIONER</p>
+        <div style="display: flex; flex-direction: column; gap: 4px; font-size: 11px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="color: var(--text-muted); font-size: 10px;">🗣</span>
+            <span style="color: var(--text-secondary);">Senaste samtalet: <strong>Omg 12</strong> — "Tack. Det ger bränsle."</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="color: var(--text-muted); font-size: 10px;">👥</span>
+            <span style="color: var(--text-secondary);">Mentorar: <strong>N. Ström</strong> (P19, 16 år)</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="color: var(--text-muted); font-size: 10px;">📋</span>
+            <span style="color: var(--text-secondary);">Kontrakt t.o.m. <strong>2028</strong></span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="color: var(--text-muted); font-size: 10px;">💰</span>
+            <span style="color: var(--text-secondary);">Lön: <strong>45 tkr</strong>/säsong</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ ⑦ KARRIÄRRESA (dagbok) ═══ -->
+      <!-- Genererad bio överst (1 rad, kursiv) -->
+      <!-- Kronologisk timeline med S{season} O{matchday} prefix -->
+      <!-- Ikoner: 🏅=milestone, 📖=storyline, 📈=form, 🩹=injury, 🔥=trait -->
+      <div class="section">
+        <p class="label" style="margin-bottom: 6px;">📖 KARRIÄRRESA</p>
+        <p style="font-size: 11px; color: var(--text-secondary); font-style: italic; line-height: 1.5; margin-bottom: 8px; font-family: var(--font-display);">
+          Fostrad i Forsbacka. Mekaniker vid sidan om. Hungrig — vill bevisa sig.
+        </p>
+        <div class="diary-row">
+          <span style="font-size: 10px; color: var(--text-muted); min-width: 36px; flex-shrink: 0;">S1 O3</span>
+          <span style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">🏅 Debut mot Gagnef. Kallades in från P19.</span>
+        </div>
+        <div class="diary-row">
+          <span style="font-size: 10px; color: var(--text-muted); min-width: 36px; flex-shrink: 0;">S1 O7</span>
+          <span style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">📖 Varslet på Volvo. Osäkerhet — men tränade ändå varje kväll.</span>
+        </div>
+        <div class="diary-row">
+          <span style="font-size: 10px; color: var(--text-muted); min-width: 36px; flex-shrink: 0;">S1 O9</span>
+          <span style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">🔥 Första målet mot Lesjöfors. Klacken adopterade honom.</span>
+        </div>
+        <div class="diary-row">
+          <span style="font-size: 10px; color: var(--text-muted); min-width: 36px; flex-shrink: 0;">S1 O12</span>
+          <span style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">🏅 Hattrick mot Västanfors. Klacken skanderade hans namn.</span>
+        </div>
+        <div class="diary-row">
+          <span style="font-size: 10px; color: var(--text-muted); min-width: 36px; flex-shrink: 0;">S1 O14</span>
+          <span style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">⭐ Fick beröm av tränaren. "Det ger bränsle."</span>
+        </div>
+        <div class="diary-row">
+          <span style="font-size: 10px; color: var(--text-muted); min-width: 36px; flex-shrink: 0;">S1 O16</span>
+          <span style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">© Vald till kapten. "Jag tar ansvaret."</span>
+        </div>
+        <div class="diary-row">
+          <span style="font-size: 10px; color: var(--text-muted); min-width: 36px; flex-shrink: 0;">S1 O18</span>
+          <span style="font-size: 11px; color: var(--accent); line-height: 1.4; font-weight: 600;">🔥 Avgörande mål i 87:e mot Västanfors. Derbyseger!</span>
+        </div>
+      </div>
+
+      <!-- ═══ ⑧ KARRIÄR-TABELL (säsongshistorik) ═══ -->
+      <div class="section" style="border-bottom: none;">
+        <p class="label" style="margin-bottom: 6px;">📊 KARRIÄR</p>
+        <div style="font-size: 11px;">
+          <div style="display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid var(--border);">
+            <span style="color: var(--text-muted); min-width: 40px;">2026</span>
+            <span style="flex: 1; color: var(--text-secondary);">18 m · 23 mål · 8 ast</span>
+            <span style="font-weight: 600; color: var(--success);">7.4</span>
+          </div>
+        </div>
+        <p style="font-size: 9px; color: var(--text-muted); margin-top: 6px; text-align: center;">Första säsongen</p>
+      </div>
+
+    </div><!-- end card-body -->
+
+    <!-- ═══ ⑩ PRATA MED SPELAREN — sticky footer ═══ -->
+    <!-- Tre knappar: Uppmuntra / Ställ krav / Framtid -->
+    <!-- Disabled om playerConversations[playerId] === currentRound -->
+    <div style="position: sticky; bottom: 0; padding: 10px 14px; background: var(--bg-surface); border-top: 2px solid rgba(196,122,58,0.3); box-shadow: 0 -4px 16px rgba(0,0,0,0.08);">
+      <p class="label" style="margin-bottom: 6px;">🗣 PRATA MED SPELAREN</p>
+      <div style="display: flex; gap: 6px;">
+        <button class="btn-talk">😊 Uppmuntra</button>
+        <button class="btn-talk">💪 Ställ krav</button>
+        <button class="btn-talk">🔮 Framtid</button>
+      </div>
+    </div>
+
+  </div><!-- end card-scroll -->
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SPELARKORT — SCOUTAD / ICKE-ÄGD SPELARE                     -->
+<!-- ============================================================ -->
+<div>
+<p class="phone-label">Spelarkort — Scoutad motståndare</p>
+<div class="phone">
+  <div class="card-scroll">
+    <div class="card-body">
+
+      <!-- TOP BAR -->
+      <div style="display: flex; align-items: center; padding: 12px 14px 8px; background: rgba(0,0,0,0.15); gap: 8px;">
+        <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--border-dark); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text-light); font-weight: 700;">L</div>
+        <div style="flex: 1; text-align: center;">
+          <p style="font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: 1px;">#9</p>
+          <p style="font-size: 10px; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase;">ANFALLARE</p>
+        </div>
+        <button style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: var(--text-muted); font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer;">✕</button>
+      </div>
+
+      <div class="gold-div"></div>
+
+      <!-- PORTRAIT -->
+      <div style="display: flex; justify-content: center; padding: 10px 0 6px; background: linear-gradient(180deg, var(--bg-surface), var(--bg-elevated));">
+        <div style="width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #8A8A7E, #5A5A52); border: 2.5px solid var(--border-dark); display: flex; align-items: center; justify-content: center; font-size: 24px; font-family: var(--font-display); color: var(--text-light); font-weight: 400;">EL</div>
+      </div>
+
+      <div class="gold-div"></div>
+
+      <!-- NAME -->
+      <div style="padding: 10px 14px 8px;">
+        <p style="font-size: 17px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.3px; text-transform: uppercase;">ERIK LUND</p>
+        <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px;">
+          <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 1px;">LESJÖFORS</span>
+          <span style="color: var(--border); font-size: 12px;">·</span>
+          <div style="padding: 2px 6px; border-radius: 4px; background: var(--success); font-size: 10px; font-weight: 700; color: var(--text-light);">ANFALLARE</div>
+        </div>
+        <div style="display: flex; gap: 5px; margin-top: 6px;">
+          <span class="tag tag-warn">⚠️ Nemesis — 4 mål mot oss</span>
+        </div>
+      </div>
+
+      <!-- SCOUTING RAPPORT — attribut med ~ (uppskattade) -->
+      <div class="section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <p class="label" style="color: var(--accent);">🔍 SCOUTRAPPORT</p>
+          <span style="font-size: 9px; color: var(--success);">Färsk rapport</span>
+        </div>
+        <p style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">Scoutad: 12 nov 2026 · Uppskattad styrka: <strong style="color: var(--text-secondary);">72</strong></p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px;">
+          <div style="display: flex; justify-content: space-between; padding: 4px 8px; background: rgba(255,255,255,0.04); border-radius: 6px; border: 1px solid rgba(196,122,58,0.1);">
+            <span style="font-size: 10px; color: var(--text-secondary);">Skott</span>
+            <span style="font-size: 12px; font-weight: 800; color: var(--success); font-family: var(--font-display);">76 <span style="font-size: 9px; opacity: 0.6;">~</span></span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 8px; background: rgba(255,255,255,0.04); border-radius: 6px; border: 1px solid rgba(196,122,58,0.1);">
+            <span style="font-size: 10px; color: var(--text-secondary);">Acceleration</span>
+            <span style="font-size: 12px; font-weight: 800; color: var(--text-primary); font-family: var(--font-display);">69 <span style="font-size: 9px; opacity: 0.6;">~</span></span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 8px; background: rgba(255,255,255,0.04); border-radius: 6px; border: 1px solid rgba(196,122,58,0.1);">
+            <span style="font-size: 10px; color: var(--text-secondary);">Spelsinne</span>
+            <span style="font-size: 12px; font-weight: 800; color: var(--text-primary); font-family: var(--font-display);">65 <span style="font-size: 9px; opacity: 0.6;">~</span></span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 8px; background: rgba(255,255,255,0.04); border-radius: 6px; border: 1px solid rgba(196,122,58,0.1);">
+            <span style="font-size: 10px; color: var(--text-secondary);">Positionering</span>
+            <span style="font-size: 12px; font-weight: 800; color: var(--text-primary); font-family: var(--font-display);">61 <span style="font-size: 9px; opacity: 0.6;">~</span></span>
+          </div>
+        </div>
+
+        <p style="font-size: 10px; color: var(--text-muted); font-style: italic; margin-top: 8px; line-height: 1.5;">
+          "Snabb och klinisk framför mål. Rörlig i anfallszon. Defensivt svag —
+          tappar man honom i boxen är det mål."
+        </p>
+      </div>
+
+      <!-- KÄND INFO -->
+      <div class="section">
+        <p class="label" style="margin-bottom: 6px;">ℹ️ KÄND INFO</p>
+        <div style="display: flex; flex-direction: column; gap: 3px; font-size: 11px;">
+          <span style="color: var(--text-secondary);">📅 24 år · Kontrakt t.o.m. 2027</span>
+          <span style="color: var(--text-secondary);">💰 Marknadsvärde: ~120 tkr</span>
+          <span style="color: var(--text-secondary);">💼 Lärare (heltid)</span>
+          <span style="color: var(--text-secondary);">📊 13 mål, 4 assist på 16 matcher (denna säsong)</span>
+        </div>
+      </div>
+
+      <!-- NEMESIS-HISTORIK -->
+      <div class="section">
+        <p class="label" style="margin-bottom: 6px;">⚠️ NEMESIS-HISTORIK</p>
+        <p style="font-size: 11px; color: var(--danger); line-height: 1.5;">
+          4 mål mot oss på 3 möten. Senast: 2 mål i omg 11.
+        </p>
+        <p style="font-size: 10px; color: var(--text-muted); font-style: italic; margin-top: 4px;">
+          "Är det dags att värva honom istället?"
+        </p>
+      </div>
+
+      <!-- BUD + SCOUT KNAPPAR -->
+      <div style="padding: 14px;">
+        <button style="width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent-dark), var(--accent)); color: var(--text-light); border: none; border-radius: 8px; font-size: 13px; font-weight: 600; letter-spacing: 1px; cursor: pointer; font-family: var(--font-body);">
+          💼 Lägg bud →
+        </button>
+        <button style="width: 100%; padding: 10px; background: none; border: 1px solid var(--border); border-radius: 8px; font-size: 11px; color: var(--text-muted); cursor: pointer; margin-top: 4px; font-family: var(--font-body);">
+          🔍 Scouta igen (förbrukar 1 scoutomgång)
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1">
+<title>Masterspec Mockups — Bandy Manager</title>
+<style>
+  :root {
+    --bg: #F5F0E8;
+    --bg-surface: #EDE7DA;
+    --bg-elevated: #E8E0D0;
+    --bg-dark: #1A1A18;
+    --bg-dark-surface: #2A2A26;
+    --accent: #8b7332;
+    --accent-dark: #6B5A2A;
+    --accent-deep: #4A3D1C;
+    --success: #4A7C59;
+    --danger: #B05040;
+    --warning: #C4883A;
+    --ice: #6BA3BE;
+    --text-primary: #2C2C28;
+    --text-secondary: #5A5A52;
+    --text-muted: #8A8A7E;
+    --text-light: #F5F0E8;
+    --border: #D4CFC2;
+    --border-dark: #B8B2A4;
+    --font-display: Georgia, 'Times New Roman', serif;
+    --font-body: system-ui, -apple-system, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #333; font-family: var(--font-body); display: flex; flex-wrap: wrap; gap: 40px; padding: 40px; justify-content: center; }
+
+  .phone { width: 375px; height: 812px; background: var(--bg); border-radius: 20px; overflow-y: auto; overflow-x: hidden; position: relative; box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+  .phone-label { color: #ccc; font-size: 12px; text-align: center; margin-bottom: 8px; font-family: var(--font-body); letter-spacing: 1px; text-transform: uppercase; }
+
+  .header { background: var(--bg-dark); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .header-title { color: var(--text-light); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 600; }
+  .header-sub { color: rgba(245,240,232,0.5); font-size: 9px; }
+
+  .phase-bar { background: var(--bg-dark); padding: 6px 16px 10px; display: flex; align-items: center; justify-content: center; gap: 0; }
+  .phase-dot { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid rgba(139,115,50,0.3); background: transparent; }
+  .phase-dot.done { background: var(--accent); border-color: var(--accent); }
+  .phase-dot.active { border-color: var(--accent); box-shadow: 0 0 6px rgba(139,115,50,0.5); }
+  .phase-line { width: 40px; height: 1px; background: rgba(139,115,50,0.2); }
+  .phase-line.done { background: var(--accent); }
+  .phase-label { font-size: 8px; color: rgba(245,240,232,0.3); margin-top: 3px; text-align: center; }
+  .phase-label.active { color: var(--accent); font-weight: 600; }
+  .phase-label.done { color: rgba(139,115,50,0.6); }
+  .phase-group { display: flex; flex-direction: column; align-items: center; }
+
+  .card-sharp { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 3px; }
+  .card-round { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; }
+
+  .label { font-size: 8px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); font-family: var(--font-body); margin: 0; }
+
+  .content { padding: 0 12px; }
+
+  .pill { display: inline-flex; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; }
+  .pill-win { color: var(--success); border: 1px solid var(--success); }
+  .pill-loss { color: var(--danger); border: 1px solid var(--danger); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- MOCKUP 1: GRANSKA 2.0                                        -->
+<!-- ============================================================ -->
+<div>
+<p class="phone-label">① GranskaScreen 2.0 — Omgångssammanfattning</p>
+<div class="phone">
+  <div class="header">
+    <span class="header-title">Bandy Manager</span>
+    <span class="header-sub">Forsbacka · S1 · Omg 14</span>
+  </div>
+  <div class="phase-bar">
+    <div class="phase-group"><div class="phase-dot done"></div><span class="phase-label done">Förbered</span></div>
+    <div class="phase-line done"></div>
+    <div class="phase-group"><div class="phase-dot done"></div><span class="phase-label done">Spela</span></div>
+    <div class="phase-line done"></div>
+    <div class="phase-group"><div class="phase-dot active"></div><span class="phase-label active">Granska</span></div>
+  </div>
+
+  <div class="content" style="padding-top: 10px; padding-bottom: 120px;">
+
+    <!-- RESULTAT HERO -->
+    <div class="card-sharp" style="padding: 16px 14px; margin-bottom: 6px; text-align: center;">
+      <p class="label" style="margin-bottom: 8px;">🏒 SLUTRESULTAT</p>
+      <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 6px;">
+        <div>
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--accent); margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text-light);">F</div>
+          <p style="font-size: 10px; font-weight: 600; color: var(--text-primary);">Forsbacka</p>
+        </div>
+        <div>
+          <p style="font-family: var(--font-display); font-size: 36px; font-weight: 800; color: var(--text-primary); line-height: 1;">4–3</p>
+        </div>
+        <div>
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--border-dark); margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--text-light);">V</div>
+          <p style="font-size: 10px; font-weight: 600; color: var(--text-primary);">Västanfors</p>
+        </div>
+      </div>
+      <span class="pill pill-win">VINST</span>
+      <p style="font-size: 10px; color: var(--text-muted); margin-top: 6px;">Stålvallen · 347 åskådare · –7° Stjärnklart</p>
+      <p style="font-size: 10px; color: var(--accent); margin-top: 3px;">⭐ S. Kronberg 8.2 — matchens lirare</p>
+    </div>
+
+    <!-- TIDNINGSRUBRIK -->
+    <div class="card-round" style="padding: 8px 12px; margin-bottom: 6px;">
+      <p style="font-size: 8px; font-weight: 600; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 3px;">📰 STÅLORTSBLADET</p>
+      <p style="font-size: 12px; color: var(--text-secondary); font-style: italic; font-family: var(--font-display); line-height: 1.4;">
+        "Kronberg räddade poängen med sent mål — derbyseger!"
+      </p>
+      <p style="font-size: 9px; color: var(--text-muted); margin-top: 3px;">Sven Lindkvist · Sensationsjagare</p>
+    </div>
+
+    <!-- NYCKELMOMENT -->
+    <div class="card-sharp" style="padding: 10px 12px; margin-bottom: 6px;">
+      <p class="label" style="margin-bottom: 6px;">⚡ NYCKELMOMENT</p>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 9px; color: var(--text-muted); width: 24px; text-align: right;">12'</span>
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent);"></span>
+          <span style="font-size: 11px; color: var(--text-secondary);">⚽ Eriksson — Anfall</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 9px; color: var(--text-muted); width: 24px; text-align: right;">28'</span>
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--danger);"></span>
+          <span style="font-size: 11px; color: var(--text-muted);">⚽ Holm (V) — Kvittering</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 9px; color: var(--text-muted); width: 24px; text-align: right;">45'</span>
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent);"></span>
+          <span style="font-size: 11px; color: var(--text-secondary);">🔲 Sjögren — Hörnmål</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 9px; color: var(--text-muted); width: 24px; text-align: right;">61'</span>
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--danger);"></span>
+          <span style="font-size: 11px; color: var(--text-muted);">⚽ Holm (V) — Reducering</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 9px; color: var(--text-muted); width: 24px; text-align: right;">73'</span>
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent);"></span>
+          <span style="font-size: 11px; color: var(--text-secondary);">⚽ Martinsson — Transition</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 9px; color: var(--text-muted); width: 24px; text-align: right;">81'</span>
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--danger);"></span>
+          <span style="font-size: 11px; color: var(--text-muted);">⚽ Bergman (V)</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 9px; color: var(--text-muted); width: 24px; text-align: right;">87'</span>
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: var(--warning);"></span>
+          <span style="font-size: 11px; color: var(--text-primary); font-weight: 600;">⚽ Kronberg — Avgörande mål!</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRESSKONFERENS (inline, ej overlay) -->
+    <div class="card-sharp" style="padding: 10px 12px; margin-bottom: 6px;">
+      <p class="label" style="margin-bottom: 6px;">🎤 PRESSKONFERENS</p>
+      <p style="font-size: 9px; color: var(--text-muted); margin-bottom: 6px;">Sven Lindkvist · Stålortsbladet · Sensationsjagare</p>
+      <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 8px;">
+        "Det pratas om er i hela kommunen. Orten lever och andas bandy just nu. Är det press eller inspiration?"
+      </p>
+      <div style="display: flex; gap: 6px;">
+        <button style="flex: 1; padding: 8px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; font-size: 11px; color: var(--text-primary); cursor: pointer; font-family: var(--font-body);">
+          😤 "Vi bryr oss inte om prat"
+        </button>
+        <button style="flex: 1; padding: 8px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; font-size: 11px; color: var(--text-primary); cursor: pointer; font-family: var(--font-body);">
+          🙏 "Orten ger oss energi"
+        </button>
+      </div>
+    </div>
+
+    <!-- ANDRA MATCHER -->
+    <div class="card-sharp" style="padding: 10px 12px; margin-bottom: 6px;">
+      <p class="label" style="margin-bottom: 6px;">📊 OMGÅNG 14 — ÖVRIGA</p>
+      <div style="display: flex; flex-direction: column; gap: 3px;">
+        <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border);">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-primary);">Skutskär</span>
+          <span style="font-size: 11px; color: var(--text-secondary); font-family: var(--font-display);">3–1</span>
+          <span style="font-size: 11px; color: var(--text-muted);">Gagnef</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border); border-left: 2px solid var(--accent); padding-left: 6px;">
+          <span style="font-size: 11px; color: var(--text-muted);">Lesjöfors</span>
+          <span style="font-size: 11px; color: var(--text-secondary); font-family: var(--font-display);">2–4</span>
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-primary);">Bergslagen</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border);">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-primary);">Sandviken</span>
+          <span style="font-size: 11px; color: var(--text-secondary); font-family: var(--font-display);">5–2</span>
+          <span style="font-size: 11px; color: var(--text-muted);">Hällefors</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border);">
+          <span style="font-size: 11px; color: var(--text-muted);">Norrbotten</span>
+          <span style="font-size: 11px; color: var(--text-secondary); font-family: var(--font-display);">2–2</span>
+          <span style="font-size: 11px; color: var(--text-muted);">Borlänge</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-primary);">Avesta</span>
+          <span style="font-size: 11px; color: var(--text-secondary); font-family: var(--font-display);">3–0</span>
+          <span style="font-size: 11px; color: var(--text-muted);">Katrineholm</span>
+        </div>
+      </div>
+      <p style="font-size: 9px; color: var(--text-muted); margin-top: 6px; font-style: italic;">Bergslagen vann — din rival avancerar till 4:a</p>
+    </div>
+
+    <!-- SAMMANFATTNING -->
+    <div class="card-sharp" style="padding: 10px 12px; margin-bottom: 6px;">
+      <p class="label" style="margin-bottom: 6px;">📈 FÖRÄNDRING DENNA OMGÅNG</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center;">
+        <div>
+          <p style="font-size: 10px; color: var(--text-muted);">📊 Tabell</p>
+          <p style="font-size: 14px; font-weight: 600; color: var(--success); font-family: var(--font-display);">7→6 ↑</p>
+        </div>
+        <div>
+          <p style="font-size: 10px; color: var(--text-muted);">💰 Kassa</p>
+          <p style="font-size: 14px; font-weight: 600; color: var(--success); font-family: var(--font-display);">+8.4k</p>
+        </div>
+        <div>
+          <p style="font-size: 10px; color: var(--text-muted);">🏘 Orten</p>
+          <p style="font-size: 14px; font-weight: 600; color: var(--success); font-family: var(--font-display);">72→74</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSFER + AKADEMI -->
+    <div class="card-sharp" style="padding: 8px 12px; margin-bottom: 6px;">
+      <p class="label" style="margin-bottom: 4px;">🔍 SCOUTING</p>
+      <p style="font-size: 11px; color: var(--text-secondary);">Rapport klar: E. Lund (Lesjöfors) — ⭐ 72 · Forward · 24 år</p>
+    </div>
+
+    <div class="card-sharp" style="padding: 8px 12px; margin-bottom: 6px;">
+      <p class="label" style="margin-bottom: 4px;">🎓 P19</p>
+      <p style="font-size: 11px; color: var(--text-secondary);">P19 vann 3-1 mot Sandviken. N. Ström (16) — imponerande insats.</p>
+    </div>
+
+    <!-- CTA -->
+    <div style="margin-top: 12px;">
+      <button style="width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent-dark), var(--accent-deep)); color: var(--text-light); border: none; border-radius: 12px; font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; font-family: var(--font-body);">
+        Nästa omgång →
+      </button>
+      <button style="width: 100%; padding: 10px; background: none; border: 1px solid var(--border); border-radius: 8px; font-size: 11px; color: var(--text-muted); cursor: pointer; margin-top: 6px; font-family: var(--font-body);">
+        Se fullständig matchrapport →
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MOCKUP 2: ÅRETS MATCH + STORYLINES (SeasonSummary)           -->
+<!-- ============================================================ -->
+<div>
+<p class="phone-label">② Årets Match + Storylines (SeasonSummary)</p>
+<div class="phone">
+  <div class="header">
+    <span class="header-title">Bandy Manager</span>
+    <span class="header-sub">Forsbacka · Säsong 1</span>
+  </div>
+
+  <div class="content" style="padding-top: 12px; padding-bottom: 120px;">
+
+    <div style="text-align: center; margin-bottom: 12px;">
+      <p style="font-size: 8px; font-weight: 600; letter-spacing: 3px; color: var(--accent); margin-bottom: 4px;">SÄSONGSSAMMANFATTNING</p>
+      <p style="font-size: 24px; font-family: var(--font-display); font-weight: 400; color: var(--text-primary);">2026/2027</p>
+    </div>
+
+    <!-- Slutplacering -->
+    <div class="card-sharp" style="padding: 14px; margin-bottom: 6px; text-align: center;">
+      <p style="font-family: var(--font-display); font-size: 48px; font-weight: 400; color: var(--accent-dark); line-height: 1;">6</p>
+      <p style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">SLUTPLACERING</p>
+      <p style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">36 poäng · +12 målskillnad · 18V 0O 4F</p>
+      <p style="font-size: 10px; color: var(--success); margin-top: 3px;">Kvartsfinal i slutspelet (förlust 1-3 mot Skutskär)</p>
+    </div>
+
+    <!-- ÅRETS MATCH -->
+    <div style="margin-bottom: 6px; border: 1.5px solid var(--accent); border-radius: 3px; background: linear-gradient(135deg, rgba(139,115,50,0.04), rgba(139,115,50,0.01));">
+      <div style="padding: 12px 14px;">
+        <p style="font-size: 8px; font-weight: 600; letter-spacing: 2px; color: var(--accent); margin-bottom: 8px;">🏒 ÅRETS MATCH</p>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 8px;">
+          <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Forsbacka</span>
+          <span style="font-family: var(--font-display); font-size: 28px; font-weight: 800; color: var(--accent-dark);">4–3</span>
+          <span style="font-size: 13px; color: var(--text-secondary);">Västanfors</span>
+        </div>
+        <p style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 8px;">Omgång 18 · Bergslagsderby · 512 åskådare</p>
+        <p style="font-size: 12px; color: var(--text-secondary); text-align: center; font-style: italic; line-height: 1.5; font-family: var(--font-display);">
+          S. Kronberg med avgörande mål i 87:e minuten.<br>
+          Tre byten av ledningen. 347 i klacken.<br>
+          En match som definierade säsongen.
+        </p>
+        <div style="text-align: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border);">
+          <p style="font-size: 10px; color: var(--text-muted); font-style: italic;">"Den matchen ändrade allt." — Birger, klackledare</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOPPSCORER -->
+    <div class="card-sharp" style="padding: 10px 12px; margin-bottom: 6px;">
+      <p class="label" style="margin-bottom: 6px;">🏅 STATISTIK</p>
+      <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border);">
+        <span style="font-size: 10px; color: var(--text-muted);">Toppscorer</span>
+        <span style="font-size: 11px; color: var(--text-primary); font-weight: 600;">S. Kronberg — 23 mål</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border);">
+        <span style="font-size: 10px; color: var(--text-muted);">Bästa betyg</span>
+        <span style="font-size: 11px; color: var(--text-primary); font-weight: 600;">J. Eriksson — 7.4 snitt</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+        <span style="font-size: 10px; color: var(--text-muted);">Lagkapten</span>
+        <span style="font-size: 11px; color: var(--text-primary); font-weight: 600;">E. Ström ©</span>
+      </div>
+    </div>
+
+    <!-- STORYLINES -->
+    <div class="card-round" style="padding: 10px 12px; margin-bottom: 6px;">
+      <p class="label" style="margin-bottom: 6px;">📖 SÄSONGENS BERÄTTELSER</p>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <p style="font-size: 11px; color: var(--text-secondary); font-style: italic; line-height: 1.5; font-family: var(--font-display);">
+          <span style="color: var(--accent); font-weight: 600;">Martinsson</span> — räddades från varslet på Sandvik i oktober. Gjorde 8 mål och blev publikens favorit.
+        </p>
+        <p style="font-size: 11px; color: var(--text-secondary); font-style: italic; line-height: 1.5; font-family: var(--font-display);">
+          <span style="color: var(--accent); font-weight: 600;">N. Ström (17)</span> — debuterade i omgång 12. Akademins stolthet. Tre mål i A-laget.
+        </p>
+        <p style="font-size: 11px; color: var(--text-secondary); font-style: italic; line-height: 1.5; font-family: var(--font-display);">
+          <span style="color: var(--accent); font-weight: 600;">Henriksson</span> — pensionerad efter 147 matcher. "Jag stannar i föreningen."
+        </p>
+      </div>
+    </div>
+
+    <!-- TRAINER ARC -->
+    <div class="card-round" style="padding: 10px 12px; margin-bottom: 6px;">
+      <p class="label" style="margin-bottom: 4px;">🧑‍💼 TRÄNAREN</p>
+      <p style="font-size: 12px; color: var(--text-secondary); font-style: italic; font-family: var(--font-display); line-height: 1.5;">
+        Du kom som outsider. Du lämnar som respekterad. 6:a och kvartsfinalplats — bättre än någon hade trott.
+      </p>
+      <p style="font-size: 9px; color: var(--accent); margin-top: 4px; font-weight: 600;">Status: ETABLERAD</p>
+    </div>
+
+    <!-- STATE OF THE CLUB -->
+    <div class="card-sharp" style="padding: 10px 12px; margin-bottom: 6px;">
+      <p class="label" style="margin-bottom: 6px;">📊 KLUBBEN — ÅR FÖR ÅR</p>
+      <div style="display: flex; flex-direction: column; gap: 3px;">
+        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+          <span style="color: var(--text-muted);">Tabellplats</span>
+          <span style="color: var(--success); font-weight: 600;">8:a → 6:a ↑</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+          <span style="color: var(--text-muted);">Klubbkassa</span>
+          <span style="color: var(--success); font-weight: 600;">320 → 440 tkr ↑</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+          <span style="color: var(--text-muted);">Orten</span>
+          <span style="color: var(--success); font-weight: 600;">45 → 72 ↑</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+          <span style="color: var(--text-muted);">Klacken</span>
+          <span style="color: var(--success); font-weight: 600;">25 → 41 medl. ↑</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+          <span style="color: var(--text-muted);">Trupp</span>
+          <span style="color: var(--text-secondary);">3 nya, 2 sålda, 1 uppflyttad</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- KAFFERUMMET MED KONTEXT -->
+    <div class="card-round" style="padding: 8px 12px; margin-bottom: 6px;">
+      <p style="font-size: 8px; font-weight: 600; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 4px;">☕ KAFFERUMMET (kontextuellt)</p>
+      <p style="font-size: 10px; color: var(--text-muted); font-style: italic; line-height: 1.5;">
+        <strong style="color: var(--text-secondary);">Materialaren:</strong> "En ledig krok i omklädningsrummet. Alltid konstigt de första dagarna."
+      </p>
+      <p style="font-size: 8px; color: var(--accent); margin-top: 4px;">↑ Reagerar på att Lindberg såldes</p>
+    </div>
+
+    <!-- ANLÄGGNINGSPROJEKT -->
+    <div class="card-sharp" style="padding: 10px 12px; margin-bottom: 6px;">
+      <p class="label" style="margin-bottom: 6px;">🏟️ ANLÄGGNING — STARTBART PROJEKT</p>
+      <div style="padding: 8px 10px; background: rgba(139,115,50,0.06); border: 1px solid rgba(139,115,50,0.2); border-radius: 8px; margin-bottom: 6px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <p style="font-size: 12px; font-weight: 600; color: var(--text-primary);">🔨 Ny omklädningsrum</p>
+            <p style="font-size: 10px; color: var(--text-muted);">3 omgångar kvar</p>
+          </div>
+          <div style="width: 50px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden;">
+            <div style="width: 60%; height: 100%; background: var(--accent);"></div>
+          </div>
+        </div>
+      </div>
+      <div style="padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <p style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Uppvärmt omklädningsrum</p>
+          <p style="font-size: 10px; color: var(--text-muted);">45 tkr · 4 omgångar · +5 facilities</p>
+        </div>
+        <button style="padding: 5px 12px; background: var(--accent); color: var(--text-light); border: none; border-radius: 6px; font-size: 10px; font-weight: 600; cursor: pointer; font-family: var(--font-body);">Starta</button>
+      </div>
+    </div>
+
+    <!-- PENSIONSCEREMONI -->
+    <div style="border: 1.5px solid var(--accent); border-radius: 3px; padding: 14px; background: linear-gradient(135deg, rgba(139,115,50,0.04), rgba(139,115,50,0.01)); margin-bottom: 6px;">
+      <p class="label" style="margin-bottom: 8px;">📋 PENSIONERING</p>
+      <p style="font-size: 16px; font-weight: 600; color: var(--text-primary); font-family: var(--font-display); margin-bottom: 2px;">Staffan Henriksson</p>
+      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">34 år · Backlinje · Veteran</p>
+      <div style="display: flex; gap: 16px; margin-bottom: 10px; text-align: center;">
+        <div>
+          <p style="font-size: 22px; font-family: var(--font-display); color: var(--accent-dark);">147</p>
+          <p style="font-size: 9px; color: var(--text-muted);">matcher</p>
+        </div>
+        <div>
+          <p style="font-size: 22px; font-family: var(--font-display); color: var(--accent-dark);">23</p>
+          <p style="font-size: 9px; color: var(--text-muted);">mål</p>
+        </div>
+        <div>
+          <p style="font-size: 22px; font-family: var(--font-display); color: var(--accent-dark);">3</p>
+          <p style="font-size: 9px; color: var(--text-muted);">säsonger</p>
+        </div>
+      </div>
+      <p style="font-size: 12px; color: var(--text-secondary); font-style: italic; font-family: var(--font-display); line-height: 1.5; text-align: center; margin-bottom: 10px;">"Jag slutar. Men jag stannar i föreningen."</p>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <button style="padding: 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; font-size: 11px; color: var(--text-primary); cursor: pointer; text-align: center; font-family: var(--font-body);">🎓 Erbjud roll som ungdomstränare <span style="color: var(--success); font-size: 9px;">+5 akademi</span></button>
+        <button style="padding: 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; font-size: 11px; color: var(--text-primary); cursor: pointer; text-align: center; font-family: var(--font-body);">🔍 Erbjud roll som scout <span style="color: var(--success); font-size: 9px;">+3 scoutbudget</span></button>
+        <button style="padding: 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; font-size: 11px; color: var(--text-muted); cursor: pointer; text-align: center; font-family: var(--font-body);">Tack och lycka till</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+</body>
+</html>

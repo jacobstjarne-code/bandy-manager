@@ -80,7 +80,19 @@
       "Bash(python3 generate_allsv_reports.py)",
       "Bash(python3 scripts/cleanup_db.py)",
       "Bash(python3 c2_suspension_profiles.py)",
-      "Bash(wc -l /Users/jacobstjarne/Desktop/code_projects/bandy-manager/docs/data/klubbrapporter/*.md)"
+      "Bash(wc -l /Users/jacobstjarne/Desktop/code_projects/bandy-manager/docs/data/klubbrapporter/*.md)",
+      "Bash(python3 generate_reports_v2.py)",
+      "Bash(timeout 180 python3 scrape_nassjo_names.py)",
+      "Bash(python3 scrape_nassjo_names.py)",
+      "Bash(grep -v \"^$\")",
+      "Bash(grep -n \"isBye\\\\|hasManagedCupPending\" /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/domain/services/matchEngine.ts /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/application/useCases/*.ts)",
+      "Bash(grep -n \"hasManagedCupMatch\\\\|hasManagedCup\\\\|isBye\" /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/presentation/screens/*.tsx)",
+      "Bash(grep -rn \"result\\\\|tar med sig\\\\|fullTime\" /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/domain/services/*.ts)",
+      "Bash(ls /Users/jacobstjarne/Desktop/code_projects/bandy-manager/*.js)",
+      "Bash(grep -l \"HalfTimeSummaryScreen\\\\|PlayoffIntroScreen\\\\|QFSummaryScreen\\\\|SeasonSummaryScreen\\\\|BoardMeetingScreen\\\\|PreSeasonScreen\\\\|ChampionScreen\" /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/presentation/screens/*.tsx)",
+      "Bash(grep -l \"CounterInteraction\\\\|FreeKickInteraction\\\\|LastMinutePress\" /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/presentation/components/match/*.tsx)",
+      "Bash(npx vite *)",
+      "Bash(find src *)"
     ]
   }
 }

@@ -150,7 +150,7 @@ export function MatchLiveScreen() {
     const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
     const gen = simulateMatchStepByStep({
       fixture, homeLineup, awayLineup, homePlayers, awayPlayers,
-      homeAdvantage: fixture.isNeutralVenue ? 0 : 0.05,
+      homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,
       seed: Date.now(),
       weather: matchWeather?.weather,
       homeClubName: homeClubName || undefined,
@@ -613,7 +613,7 @@ export function MatchLiveScreen() {
     const gen = simulateSecondHalf({
       fixture, homeLineup: updatedHome, awayLineup: updatedAway,
       homePlayers, awayPlayers,
-      homeAdvantage: fixture.isNeutralVenue ? 0 : 0.05,
+      homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,
       seed: Date.now(),
       weather: matchWeather?.weather,
       homeClubName: homeClubName || undefined,
