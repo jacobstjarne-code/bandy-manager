@@ -27,7 +27,7 @@ function createRegenPlayer(club: Club, index: number, rand: () => number): Playe
   const pos = positions[Math.floor(rand() * positions.length)]
   const emptyStats = { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0 }
   const emptyCareer = { totalGames: 0, totalGoals: 0, totalAssists: 0, seasonsPlayed: 0 }
-  const attrs = { skating: 40, acceleration: 40, stamina: 40, ballControl: 40, passing: 40, shooting: 40, dribbling: 40, vision: 40, decisions: 40, workRate: 50, positioning: 40, defending: 40, cornerSkill: 30, goalkeeping: 10 }
+  const attrs = { skating: 40, acceleration: 40, stamina: 40, ballControl: 40, passing: 40, shooting: 40, dribbling: 40, vision: 40, decisions: 40, workRate: 50, positioning: 40, defending: 40, cornerSkill: 30, goalkeeping: 10, cornerRecovery: 50 }
   return {
     id: `regen_${club.id}_${index}_${Math.floor(rand() * 99999)}`,
     firstName: 'Regen', lastName: 'Spelare', age: 20 + Math.floor(rand() * 10),

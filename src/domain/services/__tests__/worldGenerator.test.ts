@@ -9,13 +9,13 @@ describe('generateWorld', () => {
     expect(world.clubs).toHaveLength(12)
   })
 
-  it('generates exactly 264 players (22 per club)', () => {
-    expect(world.players).toHaveLength(264)
+  it('generates exactly 192 players (16 per club)', () => {
+    expect(world.players).toHaveLength(192)
   })
 
-  it('each club has exactly 22 players in squadPlayerIds', () => {
+  it('each club has exactly 16 players in squadPlayerIds', () => {
     for (const club of world.clubs) {
-      expect(club.squadPlayerIds).toHaveLength(22)
+      expect(club.squadPlayerIds).toHaveLength(16)
     }
   })
 
@@ -81,10 +81,10 @@ describe('generateWorld', () => {
     expect(sandvikenAvgCA).toBeGreaterThan(soderhamnsAvgCA)
   })
 
-  it('player ids are unique across all 264 players', () => {
+  it('player ids are unique across all 192 players', () => {
     const ids = world.players.map((p) => p.id)
     const uniqueIds = new Set(ids)
-    expect(uniqueIds.size).toBe(264)
+    expect(uniqueIds.size).toBe(192)
   })
 
   it('same seed produces same output (determinism)', () => {
@@ -94,12 +94,12 @@ describe('generateWorld', () => {
     expect(world1.players[0].id).toBe(world2.players[0].id)
     expect(world1.players[0].firstName).toBe(world2.players[0].firstName)
     expect(world1.players[100].currentAbility).toBe(world2.players[100].currentAbility)
-    expect(world1.players[263].attributes.skating).toBe(world2.players[263].attributes.skating)
+    expect(world1.players[191].attributes.skating).toBe(world2.players[191].attributes.skating)
   })
 
-  it('all clubs have squadPlayerIds.length === 22', () => {
+  it('all clubs have squadPlayerIds.length === 16', () => {
     for (const club of world.clubs) {
-      expect(club.squadPlayerIds.length).toBe(22)
+      expect(club.squadPlayerIds.length).toBe(16)
     }
   })
 

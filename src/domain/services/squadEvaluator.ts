@@ -19,11 +19,17 @@ export function getPositionFit(playerPosition: PlayerPosition, slotPosition: Pla
 }
 
 export interface SquadEvaluation {
-  offenseScore: number      // 0-100
-  defenseScore: number      // 0-100
-  cornerScore: number       // 0-100
-  goalkeeperScore: number   // 0-100
-  disciplineRisk: number    // 0-100 (higher = more risky)
+  offenseScore: number           // 0-100
+  defenseScore: number           // 0-100
+  cornerScore: number            // 0-100
+  goalkeeperScore: number        // 0-100
+  disciplineRisk: number         // 0-100 (higher = more risky)
+  // How quickly defenders recover position after an offensive corner.
+  // Low = exposed in the post-corner counter window. Shown in scouting.
+  cornerRecoveryScore: number    // 0-100 (higher = safer)
+  // How well a team avoids unnecessary fouls when holding a lead.
+  // Low = they gamble with suspensions in the last 20 min. Shown in scouting.
+  tacticalDiscipline: number     // 0-100 (higher = more disciplined)
 }
 
 
@@ -148,11 +154,37 @@ export function evaluateSquad(starters: Player[], tactic: Tactic): SquadEvaluati
     : 50
   const disciplineRisk = 100 - avgDiscipline
 
+  // --- cornerRecoveryScore: avg cornerRecovery of non-GK starters ---
+  const nonGkStarters = starters.filter(p => p.position !== PlayerPosition.Goalkeeper)
+  const cornerRecoveryScore = nonGkStarters.length > 0
+    ? nonGkStarters.reduce((sum, p) => sum + (p.attributes.cornerRecovery ?? 50), 0) / nonGkStarters.length
+    : 50
+
+  // --- tacticalDiscipline: discipline weighted by suspension profile risk ---
+  // situation/intensitet/volym profiles drag it down; ren pulls it up
+  const profilePenalty = (p: Player): number => {
+    switch (p.suspensionProfile) {
+      case 'situation':  return -8
+      case 'intensitet': return -12
+      case 'volym':      return -15
+      case 'ren':        return +10
+      default:           return 0
+    }
+  }
+  const tacticalDiscipline = nonGkStarters.length > 0
+    ? clamp(
+        nonGkStarters.reduce((sum, p) => sum + p.discipline + profilePenalty(p), 0) / nonGkStarters.length,
+        0, 100
+      )
+    : 50
+
   return {
     offenseScore: round1(clamp(offenseScore)),
     defenseScore: round1(clamp(defenseScore)),
     cornerScore: round1(clamp(cornerScore)),
     goalkeeperScore: round1(clamp(goalkeeperScore)),
     disciplineRisk: round1(clamp(disciplineRisk)),
+    cornerRecoveryScore: round1(clamp(cornerRecoveryScore)),
+    tacticalDiscipline: round1(clamp(tacticalDiscipline)),
   }
 }

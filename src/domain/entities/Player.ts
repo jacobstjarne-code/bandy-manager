@@ -17,7 +17,15 @@ export interface PlayerAttributes {
   defending: number       // 0-100
   cornerSkill: number     // 0-100
   goalkeeping: number     // 0-100
+  // Hidden attribute — visible in player development screen, not in match view.
+  // How fast the player recovers defensive position after an offensive corner.
+  // Low = team is exposed in post-corner counter window.
+  cornerRecovery: number  // 0-100
 }
+
+// Hidden suspension profile — never shown as a label. Surfaces through match patterns.
+// Distribution: situation 24%, volym 4%, intensitet 6%, ren 21%, neutral 45%
+export type SuspensionProfile = 'situation' | 'volym' | 'intensitet' | 'ren' | 'neutral'
 
 export interface PlayerSeasonStats {
   gamesPlayed: number
@@ -84,6 +92,7 @@ export interface Player {
 
   injuryProneness: number   // 0-100
   discipline: number        // 0-100
+  suspensionProfile?: SuspensionProfile  // hidden — not shown to player
 
   attributes: PlayerAttributes
 

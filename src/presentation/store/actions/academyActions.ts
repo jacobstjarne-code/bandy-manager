@@ -188,15 +188,15 @@ export function academyActions(get: Get, set: Set) {
         const mid = Math.round(ca * 0.8)
 
         if (position === PlayerPosition.Goalkeeper) {
-          return { skating: mid, acceleration: base, stamina: mid, ballControl: low, passing: low, shooting: low, dribbling: low, vision: mid, decisions: mid, workRate: mid, positioning: mid, defending: mid, cornerSkill: low, goalkeeping: high }
+          return { skating: mid, acceleration: base, stamina: mid, ballControl: low, passing: low, shooting: low, dribbling: low, vision: mid, decisions: mid, workRate: mid, positioning: mid, defending: mid, cornerSkill: low, goalkeeping: high, cornerRecovery: mid }
         } else if (position === PlayerPosition.Defender) {
-          return { skating: mid, acceleration: mid, stamina: mid, ballControl: base, passing: base, shooting: low, dribbling: low, vision: base, decisions: mid, workRate: high, positioning: high, defending: high, cornerSkill: base, goalkeeping: low }
+          return { skating: mid, acceleration: mid, stamina: mid, ballControl: base, passing: base, shooting: low, dribbling: low, vision: base, decisions: mid, workRate: high, positioning: high, defending: high, cornerSkill: base, goalkeeping: low, cornerRecovery: high }
         } else if (position === PlayerPosition.Half) {
-          return { skating: mid, acceleration: mid, stamina: high, ballControl: mid, passing: mid, shooting: base, dribbling: base, vision: mid, decisions: mid, workRate: high, positioning: mid, defending: mid, cornerSkill: base, goalkeeping: low }
+          return { skating: mid, acceleration: mid, stamina: high, ballControl: mid, passing: mid, shooting: base, dribbling: base, vision: mid, decisions: mid, workRate: high, positioning: mid, defending: mid, cornerSkill: base, goalkeeping: low, cornerRecovery: mid }
         } else if (position === PlayerPosition.Midfielder) {
-          return { skating: mid, acceleration: mid, stamina: mid, ballControl: mid, passing: high, shooting: base, dribbling: mid, vision: high, decisions: high, workRate: mid, positioning: mid, defending: base, cornerSkill: base, goalkeeping: low }
+          return { skating: mid, acceleration: mid, stamina: mid, ballControl: mid, passing: high, shooting: base, dribbling: mid, vision: high, decisions: high, workRate: mid, positioning: mid, defending: base, cornerSkill: base, goalkeeping: low, cornerRecovery: mid }
         } else {
-          return { skating: high, acceleration: high, stamina: mid, ballControl: mid, passing: base, shooting: high, dribbling: high, vision: mid, decisions: mid, workRate: mid, positioning: high, defending: low, cornerSkill: base, goalkeeping: low }
+          return { skating: high, acceleration: high, stamina: mid, ballControl: mid, passing: base, shooting: high, dribbling: high, vision: mid, decisions: mid, workRate: mid, positioning: high, defending: low, cornerSkill: base, goalkeeping: low, cornerRecovery: base }
         }
       }
 

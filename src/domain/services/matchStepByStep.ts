@@ -116,12 +116,16 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
   const homeCorner = (homeEval.cornerScore * homeMods.cornerModifier) / 100
   const homeGK = homeEval.goalkeeperScore / 100
   const homeDisciplineRisk = (homeEval.disciplineRisk * homeMods.disciplineModifier) / 100
+  const homeTacticalDiscipline = homeEval.tacticalDiscipline / 100  // 0-1
+  const homeCornerRecovery = homeEval.cornerRecoveryScore / 100     // 0-1
 
   let awayAttackSbs = (awayEval.offenseScore * awayMods.offenseModifier) / 100
   const awayDefense = (awayEval.defenseScore * awayMods.defenseModifier) / 100
   const awayCorner = (awayEval.cornerScore * awayMods.cornerModifier) / 100
   const awayGK = awayEval.goalkeeperScore / 100
   const awayDisciplineRisk = (awayEval.disciplineRisk * awayMods.disciplineModifier) / 100
+  const awayTacticalDiscipline = awayEval.tacticalDiscipline / 100  // 0-1
+  const awayCornerRecovery = awayEval.cornerRecoveryScore / 100     // 0-1
 
   // Apply weather modifiers (with tactic interaction)
   let weatherGoalModSbs = 1.0
@@ -270,10 +274,37 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     return starters.find(p => p.position === PlayerPosition.Goalkeeper)
   }
 
-  function getDefendingPlayer(starters: Player[]): Player | undefined {
+  // Profile-weighted foul selection. The scoreline drives profile relevance:
+  // - 'situation' and 'intensitet': fire disproportionately in close games (|margin| ≤ 1)
+  // - 'intensitet': almost never fouls when the game is decided (|margin| > 2)
+  // - 'volym': elevated baseline, margin-agnostic
+  // - 'ren': below-average regardless
+  function getDefendingPlayer(
+    starters: Player[],
+    attackScore: number,
+    defendScore: number,
+  ): Player | undefined {
     const nonGK = starters.filter(p => p.position !== PlayerPosition.Goalkeeper)
     if (nonGK.length === 0) return undefined
-    return nonGK[Math.floor(rand() * nonGK.length)]
+    const margin = Math.abs(attackScore - defendScore)
+    const isClose = margin <= 1
+    const isDecided = margin > 2
+    const weights = nonGK.map(p => {
+      switch (p.suspensionProfile) {
+        case 'situation':   return isClose ? 2.2 : 0.8
+        case 'intensitet':  return isDecided ? 0.2 : isClose ? 3.0 : 1.0
+        case 'volym':       return 1.6
+        case 'ren':         return 0.45
+        default:            return 1.0
+      }
+    })
+    const total = weights.reduce((s, w) => s + w, 0)
+    let r = rand() * total
+    for (let i = 0; i < nonGK.length; i++) {
+      r -= weights[i]
+      if (r <= 0) return nonGK[i]
+    }
+    return nonGK[nonGK.length - 1]
   }
 
   function buildSequenceWeights(isHome: boolean, step: number, situation: MatchSituation): number[] {
@@ -372,11 +403,15 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       const managedScore = managedIsHome ? homeScore : awayScore
       const opponentScore = managedIsHome ? awayScore : homeScore
       const mode = getSecondHalfMode(managedScore, opponentScore, step, matchPhase)
+      const managedTD = managedIsHome ? homeTacticalDiscipline : awayTacticalDiscipline
       if (mode === 'chasing') {
         secondHalfGoalMod = 1.08
         secondHalfFoulMod = 1.15
       } else if (mode === 'controlling') {
         secondHalfGoalMod = 0.92
+        // Low tactical discipline = they gamble with suspensions even when leading.
+        // Max +25% extra foul risk for a team with tacticalDiscipline near 0.
+        secondHalfFoulMod = 1.0 + (1.0 - managedTD) * 0.25
       } else if (mode === 'even_battle') {
         // Tension builds toward end
         secondHalfGoalMod = step >= 50 ? 1.04 : 1.0
@@ -721,6 +756,31 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
         }
         stepEvents.push(event)
         allEvents.push(event)
+
+        // Post-corner counter window. Attackers pushed forward for the corner —
+        // if their defenders have low cornerRecovery they're slow to get back.
+        // Max ~9% counter chance for a team with cornerRecovery near 0.
+        const cornerAttackerRecovery = isHomeAttacking ? homeCornerRecovery : awayCornerRecovery
+        const counterChance = (1.0 - cornerAttackerRecovery) * 0.09
+        if (counterChance > 0.01 && rand() < counterChance) {
+          const counterScorer = getGoalScorer(defendingStarters)
+          if (counterScorer) {
+            if (isHomeAttacking) { awayScore++ } else { homeScore++ }
+            const counterClubId = isHomeAttacking ? fixture.awayClubId : fixture.homeClubId
+            scorerPlayerId = counterScorer.id
+            goalScored = true
+            trackGoal(counterScorer.id)
+            const counterGoalEvent: MatchEvent = {
+              minute,
+              type: MatchEventType.Goal,
+              clubId: counterClubId,
+              playerId: counterScorer.id,
+              description: `Kontring av ${counterScorer.firstName} ${counterScorer.lastName}`,
+            }
+            stepEvents.push(counterGoalEvent)
+            allEvents.push(counterGoalEvent)
+          }
+        }
       }
       } // end if (!pendingInteractionData)
     } else if (seqType === 'halfchance') {
@@ -840,8 +900,10 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
             }
           }
         } else {
-          // Normal suspension
-          const suspPlayer = getDefendingPlayer(defendingStarters)
+          // Normal suspension — defending team commits foul, profile-weighted by scoreline
+          const attackScore = isHomeAttacking ? homeScore : awayScore
+          const defendScore = isHomeAttacking ? awayScore : homeScore
+          const suspPlayer = getDefendingPlayer(defendingStarters, attackScore, defendScore)
           if (suspPlayer) {
             suspendedPlayerId = suspPlayer.id
             suspensionOccurred = true

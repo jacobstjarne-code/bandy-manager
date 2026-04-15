@@ -134,6 +134,7 @@ function generateYouthAttributes(
     defending: Math.round(base),
     cornerSkill: Math.round(base),
     goalkeeping: Math.round(base),
+    cornerRecovery: Math.round(base),
   }
 
   const isGK =

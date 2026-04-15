@@ -780,7 +780,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       const caBase = Math.round(club.reputation * 0.45 + 15)
       const ca = Math.max(20, Math.min(70, caBase + Math.floor(replenishRand() * 16) - 8))
       const age = 20 + Math.floor(replenishRand() * 12)
-      const attrs = { skating: ca - 5, acceleration: ca - 5, stamina: ca - 3, ballControl: ca - 5, passing: ca - 5, shooting: ca - 5, dribbling: ca - 5, vision: ca - 5, decisions: ca - 5, workRate: ca, positioning: ca - 5, defending: ca - 5, cornerSkill: ca - 10, goalkeeping: pos === PlayerPosition.Goalkeeper ? ca : 10 }
+      const attrs = { skating: ca - 5, acceleration: ca - 5, stamina: ca - 3, ballControl: ca - 5, passing: ca - 5, shooting: ca - 5, dribbling: ca - 5, vision: ca - 5, decisions: ca - 5, workRate: ca, positioning: ca - 5, defending: ca - 5, cornerSkill: ca - 10, goalkeeping: pos === PlayerPosition.Goalkeeper ? ca : 10, cornerRecovery: ca - 5 }
       const id = `replenish_${club.id}_s${nextSeason}_${squadSize + i}`
       const player: Player = {
         id,

@@ -1,5 +1,5 @@
 import type { Club, Tactic } from '../entities/Club'
-import type { Player, PlayerAttributes, PlayerSeasonStats, PlayerCareerStats, PlayerDayJob } from '../entities/Player'
+import type { Player, PlayerAttributes, PlayerSeasonStats, PlayerCareerStats, PlayerDayJob, SuspensionProfile } from '../entities/Player'
 import {
   PlayerPosition,
   PlayerArchetype,
@@ -396,12 +396,55 @@ function pickArchetype(
   }
 }
 
+// Empirically grounded: situation 24%, volym 4%, intensitet 6%, ren 21%, neutral 45%
+// Aggressive archetypes (Finisher, Dribbler) skew toward situation/volym.
+// Defensive archetypes (DefensiveWorker, TwoWaySkater) skew toward ren.
+function pickSuspensionProfile(
+  rng: ReturnType<typeof makeRng>,
+  archetype: PlayerArchetype,
+): SuspensionProfile {
+  const isAggressive =
+    archetype === PlayerArchetype.Finisher || archetype === PlayerArchetype.Dribbler
+  const isDefensive =
+    archetype === PlayerArchetype.DefensiveWorker || archetype === PlayerArchetype.TwoWaySkater
+
+  const r = rng.next()
+  if (isAggressive) {
+    // Finisher/Dribbler: higher situation + volym
+    if (r < 0.07) return 'volym'
+    if (r < 0.15) return 'intensitet'
+    if (r < 0.45) return 'situation'
+    if (r < 0.58) return 'ren'
+    return 'neutral'
+  }
+  if (isDefensive) {
+    // Defensive types: skew ren
+    if (r < 0.02) return 'volym'
+    if (r < 0.05) return 'intensitet'
+    if (r < 0.17) return 'situation'
+    if (r < 0.45) return 'ren'
+    return 'neutral'
+  }
+  // Baseline distribution
+  if (r < 0.04) return 'volym'
+  if (r < 0.10) return 'intensitet'
+  if (r < 0.34) return 'situation'
+  if (r < 0.55) return 'ren'
+  return 'neutral'
+}
+
 function generateAttributes(
   rng: ReturnType<typeof makeRng>,
   archetype: PlayerArchetype,
   reputation: number,
 ): PlayerAttributes {
   const base = clamp(reputation * 0.7 + rng.float(-10, 10), 20, 95)
+
+  // cornerRecovery: physical + tactical + some noise. Defenders tend to run higher.
+  const isDefensiveArchetype =
+    archetype === PlayerArchetype.DefensiveWorker ||
+    archetype === PlayerArchetype.TwoWaySkater ||
+    archetype === PlayerArchetype.PositionalGoalkeeper
 
   const attrs: PlayerAttributes = {
     skating: Math.round(base),
@@ -418,6 +461,9 @@ function generateAttributes(
     defending: Math.round(base),
     cornerSkill: Math.round(base),
     goalkeeping: Math.round(base),
+    cornerRecovery: isDefensiveArchetype
+      ? clamp(Math.round(base * 0.9 + rng.float(0, 15)), 30, 99)
+      : clamp(Math.round(base * 0.7 + rng.float(-10, 20)), 20, 90),
   }
 
   // Apply archetype bonuses and GK penalty
@@ -648,6 +694,7 @@ function generatePlayer(
     developmentRate: devRate,
     injuryProneness: isPhysical ? rng.int(20, 50) : rng.int(10, 40),
     discipline: isAggressive ? rng.int(40, 80) : rng.int(50, 90),
+    suspensionProfile: pickSuspensionProfile(rng, archetype),
     attributes,
     isInjured: false,
     injuryDaysRemaining: 0,
@@ -693,7 +740,7 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     const ages = rng.shuffle([...AGE_DISTRIBUTION])
 
     const clubPlayers: Player[] = []
-    for (let i = 0; i < 22; i++) {
+    for (let i = 0; i < POSITION_POOL.length; i++) {
       const player = generatePlayer(
         rng,
         club.id,
@@ -735,12 +782,14 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     developmentRate: 35,
     injuryProneness: 20,
     discipline: 85,
+    suspensionProfile: 'ren' as SuspensionProfile,
     attributes: {
       skating: 72, acceleration: 65, stamina: 76,
       ballControl: 62, passing: 68, shooting: 50,
       dribbling: 55, vision: 64, decisions: 72,
       workRate: 82, positioning: 74, defending: 78,
       cornerSkill: 55, goalkeeping: 5,
+      cornerRecovery: 78,
     },
     isInjured: false,
     injuryDaysRemaining: 0,
