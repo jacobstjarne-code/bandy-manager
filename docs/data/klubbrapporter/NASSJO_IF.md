@@ -187,6 +187,8 @@ Ingen tydlig förändring i utvisningstyp beroende på spelläge (aggression: 40
 
 **Ensidiga utvisningsprofiler (≥75% av en typ):**
 
-*8 spelare med ≥4 utvisningar hittades men spelarnamn saknas i källdata — inga interna ID:n visas.*
+- **Okänd spelare (ID: 120500)**: 10 utvisningar, 80.0% kontaktutvisningar. Vanligaste orsak: *Fasthållning* (4×).
+- **Okänd spelare (ID: 120498)**: 9 utvisningar, 77.8% kontaktutvisningar. Vanligaste orsak: *Slag på skridskon* (3×).
+- **Okänd spelare (ID: 120494)**: 4 utvisningar, 75.0% kontaktutvisningar. Vanligaste orsak: *Fasthållning* (2×).
 
 *Rapport genererad från 101 grundseriematcher, 2021–2025.*
