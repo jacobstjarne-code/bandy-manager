@@ -96,7 +96,7 @@ export function matchActions(get: Get, set: Set) {
         }
       }
 
-      set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings, cupBracket: updatedCupBracket, playoffBracket: updatedPlayoffBracket } })
+      set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings, cupBracket: updatedCupBracket, playoffBracket: updatedPlayoffBracket, managedClubPendingLineup: undefined } })
     },
   }
 }
