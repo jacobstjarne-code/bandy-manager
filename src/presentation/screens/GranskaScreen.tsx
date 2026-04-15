@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { playSound } from '../audio/soundEffects'
-import { MatchEventType } from '../../domain/enums'
+import { MatchEventType, InboxItemType } from '../../domain/enums'
 import { csColor, formatFinance } from '../utils/formatters'
 import { FixtureStatus } from '../../domain/enums'
+import { getRivalry } from '../../domain/data/rivalries'
 import type { EventChoice } from '../../domain/entities/GameEvent'
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { Player } from '../../domain/entities/Player'
@@ -286,6 +287,34 @@ export function GranskaScreen() {
           </div>
         )}
 
+        {/* ── TIDNINGSRUBRIK ── */}
+        {(() => {
+          const headlineItem = game.inbox
+            .filter(i => i.type === InboxItemType.MediaEvent)
+            .sort((a, b) => b.date.localeCompare(a.date))[0]
+          if (!headlineItem) return null
+          const journalist = game.journalist
+          const personaLabel = journalist?.persona === 'critical' ? 'Kritisk'
+            : journalist?.persona === 'supportive' ? 'Stödjande'
+            : journalist?.persona === 'sensationalist' ? 'Sensationalistisk'
+            : journalist?.persona === 'analytical' ? 'Analytisk' : null
+          return (
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(1) }}>
+              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 6 }}>
+                📰 MEDIA
+              </p>
+              {journalist && (
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>
+                  {journalist.name} · {journalist.outlet}{personaLabel ? ` · ${personaLabel}` : ''}
+                </p>
+              )}
+              <p style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.4, fontStyle: 'italic' }}>
+                {headlineItem.body}
+              </p>
+            </div>
+          )
+        })()}
+
         {/* ── NYCKELMOMENT ── */}
         {keyMoments.length > 0 && (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(1) }}>
@@ -436,26 +465,82 @@ export function GranskaScreen() {
         )}
 
         {/* ── ANDRA MATCHER ── */}
-        {otherResults.length > 0 && (
-          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(4) }}>
-            <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 6 }}>
-              🏒 ANDRA MATCHER
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {otherResults.map(f => {
-                const homeWon = (f.homeScore ?? 0) > (f.awayScore ?? 0)
-                const awayWon = (f.awayScore ?? 0) > (f.homeScore ?? 0)
-                return (
-                  <div key={f.id} style={{ display: 'flex', alignItems: 'center', padding: '3px 0' }}>
-                    <span style={{ flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: homeWon ? 700 : 400, color: homeWon ? 'var(--text-primary)' : 'var(--text-muted)' }}>{getClubShort(f.homeClubId)}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', width: 40, textAlign: 'center', flexShrink: 0 }}>{f.homeScore}–{f.awayScore}</span>
-                    <span style={{ flex: 1, fontSize: 11, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: awayWon ? 700 : 400, color: awayWon ? 'var(--text-primary)' : 'var(--text-muted)' }}>{getClubShort(f.awayClubId)}</span>
-                  </div>
-                )
-              })}
+        {otherResults.length > 0 && (() => {
+          // Find rival club (if any)
+          const rivalClubId = game.clubs
+            .filter(c => c.id !== game.managedClubId)
+            .find(c => getRivalry(game.managedClubId, c.id))?.id ?? null
+
+          // Rival summary: find rival result + new position
+          let rivalSummary: string | null = null
+          if (rivalClubId) {
+            const rivalFixture = otherResults.find(f => f.homeClubId === rivalClubId || f.awayClubId === rivalClubId)
+            if (rivalFixture) {
+              const rivalIsHome = rivalFixture.homeClubId === rivalClubId
+              const rivalScore = rivalIsHome ? rivalFixture.homeScore : rivalFixture.awayScore
+              const oppScore = rivalIsHome ? rivalFixture.awayScore : rivalFixture.homeScore
+              const rivalWon = rivalScore > oppScore
+              const rivalDrew = rivalScore === oppScore
+              const rivalPos = game.standings.find(s => s.clubId === rivalClubId)?.position
+              const rivalName = game.clubs.find(c => c.id === rivalClubId)?.shortName ?? game.clubs.find(c => c.id === rivalClubId)?.name ?? 'Rivalen'
+              const resultWord = rivalWon ? 'vann' : rivalDrew ? 'spelade kryss' : 'förlorade'
+              rivalSummary = rivalPos
+                ? `${rivalName} ${resultWord} — nu på plats ${rivalPos}`
+                : `${rivalName} ${resultWord}`
+            }
+          }
+
+          return (
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(4) }}>
+              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 6 }}>
+                🏒 ANDRA MATCHER
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {otherResults.map(f => {
+                  const homeWon = (f.homeScore ?? 0) > (f.awayScore ?? 0)
+                  const awayWon = (f.awayScore ?? 0) > (f.homeScore ?? 0)
+                  const isRivalMatch = rivalClubId && (f.homeClubId === rivalClubId || f.awayClubId === rivalClubId)
+                  return (
+                    <div key={f.id} style={{
+                      display: 'flex', alignItems: 'center', padding: '3px 0 3px 6px',
+                      borderLeft: isRivalMatch ? '2px solid var(--accent)' : '2px solid transparent',
+                    }}>
+                      <span style={{ flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: homeWon ? 700 : 400, color: homeWon ? 'var(--text-primary)' : 'var(--text-muted)' }}>{getClubShort(f.homeClubId)}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', width: 40, textAlign: 'center', flexShrink: 0 }}>{f.homeScore}–{f.awayScore}</span>
+                      <span style={{ flex: 1, fontSize: 11, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: awayWon ? 700 : 400, color: awayWon ? 'var(--text-primary)' : 'var(--text-muted)' }}>{getClubShort(f.awayClubId)}</span>
+                    </div>
+                  )
+                })}
+              </div>
+              {rivalSummary && (
+                <p style={{ fontSize: 11, color: 'var(--accent)', marginTop: 6, fontStyle: 'italic' }}>{rivalSummary}</p>
+              )}
             </div>
-          </div>
-        )}
+          )
+        })()}
+        {/* ── SCOUTING ── */}
+        {(() => {
+          const scoutItems = game.inbox
+            .filter(i => i.type === InboxItemType.ScoutReport && !i.isRead)
+            .slice(-2)
+          if (scoutItems.length === 0) return null
+          return (
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(5) }}>
+              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 6 }}>
+                🔍 SCOUTING
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {scoutItems.map((item, i) => (
+                  <div key={i} style={{ borderBottom: i < scoutItems.length - 1 ? '1px solid var(--border)' : 'none', paddingBottom: i < scoutItems.length - 1 ? 5 : 0 }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{item.title}</p>
+                    <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{item.body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        })()}
+
       </div>
 
       {/* ── CTA ── */}

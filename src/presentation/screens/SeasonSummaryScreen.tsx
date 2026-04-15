@@ -242,6 +242,21 @@ export function SeasonSummaryScreen() {
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6, fontStyle: 'italic' }}>
                 {highlight.description}
               </p>
+              {game.supporterGroup && (() => {
+                const sg = game.supporterGroup
+                const leaderName = sg.leader?.name ?? sg.name
+                const quotes = [
+                  `"Den matchen pratar vi om länge." — ${leaderName}`,
+                  `"Jag var där. Jag minns varje sekund." — ${leaderName}`,
+                  `"Det är därför vi åker dit match efter match." — ${leaderName}`,
+                ]
+                const idx = (summary.season * 7 + highlight.round * 3) % quotes.length
+                return (
+                  <p style={{ fontSize: 11, color: 'var(--accent)', marginTop: 8, fontStyle: 'italic', borderTop: '1px solid rgba(196,122,58,0.2)', paddingTop: 6 }}>
+                    {quotes[idx]}
+                  </p>
+                )
+              })()}
             </div>
           )
         })()}
