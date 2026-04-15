@@ -157,9 +157,10 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
     return nonGK.length > 0 ? nonGK[Math.floor(rand() * nonGK.length)] : undefined
   }
 
-  function buildSHWeights(isHome: boolean): number[] {
+  function buildSHWeights(isHome: boolean, step: number): number[] {
     const tactic = isHome ? homeLineup.tactic : awayLineup.tactic
     let wA = 40, wT = 15, wC = 40, wH = 10, wF = 12, wL = 8  // wC calibrated to 8.83 corners/team/match
+    let wTacticalShift = 4, wPlayerDuel = 6, wAtmosphere = 5, wOffside = 4, wFreekick = 5
     if (tactic.tempo === 'high') { wA += 5; wC += 3; wF += 2 }
     else if (tactic.tempo === 'low') { wA -= 5; wL += 5 }
     if (tactic.press === 'high') { wF += 5; wT += 3 }
@@ -167,7 +168,12 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
     if (tactic.cornerStrategy === 'aggressive') wC += 3
     if (tactic.passingRisk === 'direct') { wL += 5; wA += 3; wH -= 3 }
     if (tactic.mentality === 'offensive') { wA += 5; wH += 3 }
-    return [Math.max(1,wA), Math.max(1,wT), Math.max(1,wC), Math.max(1,wH), Math.max(1,wF), Math.max(1,wL)]
+    // Late game: more atmosphere in final minutes
+    if (step > 55) wAtmosphere += 4
+    if (step >= 45 && step <= 50) wTacticalShift += 3
+    wOffside += 2  // second half has more offside pressure
+    return [Math.max(1,wA), Math.max(1,wT), Math.max(1,wC), Math.max(1,wH), Math.max(1,wF), Math.max(1,wL),
+            Math.max(1,wTacticalShift), Math.max(1,wPlayerDuel), Math.max(1,wAtmosphere), Math.max(1,wOffside), Math.max(1,wFreekick)]
   }
 
   let homeScore = initialHomeScore
@@ -244,7 +250,7 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
     const attDiscipline = isHomeAttacking ? homeDisciplineRisk : awayDisciplineRisk
     const defDiscipline = isHomeAttacking ? awayDisciplineRisk : homeDisciplineRisk
 
-    const seqWeights = buildSHWeights(isHomeAttacking)
+    const seqWeights = buildSHWeights(isHomeAttacking, step)
     const seqIdx = weightedPick(rand, seqWeights)
     const seqType = SEQUENCE_TYPES[seqIdx]
 
@@ -458,6 +464,19 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
       commentaryText = fillTemplate(pickCommentary(commentary.suspension, rand), tvars)
     } else if (cornerOccurred && !goalScored) {
       commentaryText = fillTemplate(pickCommentary(commentary.corner, rand), tvars)
+    } else if (seqType === 'tactical_shift') {
+      commentaryText = fillTemplate(pickCommentary(commentary.tactical_shift, rand), tvars)
+    } else if (seqType === 'player_duel') {
+      const duelPlayer = getGoalScorer(attackingStarters)
+      commentaryText = fillTemplate(pickCommentary(commentary.player_duel, rand), { ...tvars, player: duelPlayer ? findName(duelPlayer.id) : attackingTeam })
+    } else if (seqType === 'atmosphere') {
+      commentaryText = fillTemplate(pickCommentary(commentary.atmosphere, rand), tvars)
+    } else if (seqType === 'offside_call') {
+      const offsidePlayer = getGoalScorer(attackingStarters)
+      commentaryText = fillTemplate(pickCommentary(commentary.offside_call, rand), { ...tvars, player: offsidePlayer ? findName(offsidePlayer.id) : attackingTeam })
+    } else if (seqType === 'freekick_danger') {
+      const fkPlayer = getGoalScorer(attackingStarters)
+      commentaryText = fillTemplate(pickCommentary(commentary.freekick_danger, rand), { ...tvars, player: fkPlayer ? findName(fkPlayer.id) : attackingTeam })
     } else if (step === 31) {
       commentaryText = fillTemplate(pickCommentary(commentary.secondHalf, rand), tvars)
     } else {
