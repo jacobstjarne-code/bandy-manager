@@ -493,7 +493,7 @@ export function SquadScreen() {
             alignItems: 'center',
             maxWidth: 430,
             margin: '0 auto',
-            padding: '40px 20px 20px',
+            padding: '40px 20px calc(var(--bottom-nav-height) + 80px)',
           }}
         >
           {/* Unified card surface — everything scrollable inside the overlay */}
@@ -503,9 +503,11 @@ export function SquadScreen() {
             background: 'var(--bg)',
             borderRadius: 12,
             boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
+            border: '1px solid var(--border)',
             width: '100%',
             maxWidth: 390,
             position: 'relative',
+            overflow: 'hidden',
           }}>
           <PlayerCard
             player={selectedPlayer}

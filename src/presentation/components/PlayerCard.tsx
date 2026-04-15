@@ -715,7 +715,7 @@ export function PlayerCard({
       {isOwned && onTalkToPlayer && (
         <div style={{
           position: 'sticky',
-          bottom: 0,
+          bottom: 'calc(var(--bottom-nav-height) + 8px)',
           padding: '10px 14px',
           background: 'var(--bg-surface)',
           borderTop: '2px solid rgba(196,122,58,0.3)',
