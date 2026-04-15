@@ -18,6 +18,7 @@ import { executeTransfer } from '../../domain/services/transferService'
 import { generatePostAdvanceEvents, generateEvents } from '../../domain/services/eventService'
 import { generateWeeklyDecision } from '../../domain/services/weeklyDecisionService'
 import { generateMediaHeadlines, generateTrendArticles } from '../../domain/services/mediaService'
+import { generatePostMatchHeadline } from '../../domain/services/journalistService'
 import { evaluateBoard, generateBoardMessage } from '../../domain/services/boardService'
 import { mulberry32 } from '../../domain/utils/random'
 import { getRoundDate, buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
@@ -808,6 +809,18 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Media headlines
   const mediaHeadlines = generateMediaHeadlines(preEventGame, simulatedFixtures, nextMatchday, localRand)
   newInboxItems.push(...mediaHeadlines)
+
+  // Journalist post-match headline (if managed club played this round and has a journalist)
+  if (justCompletedManagedFixture && game.journalist && !isSecondPassForManagedMatch) {
+    const headlineItem = generatePostMatchHeadline(
+      game.journalist,
+      justCompletedManagedFixture,
+      game.managedClubId,
+      newDate,
+      game.currentSeason,
+    )
+    if (headlineItem) newInboxItems.push(headlineItem)
+  }
 
   // Trend articles (win/loss streaks, standings position)
   const trendArticles = generateTrendArticles(preEventGame, nextMatchday, localRand)

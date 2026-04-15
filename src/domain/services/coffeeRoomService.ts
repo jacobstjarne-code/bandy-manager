@@ -39,6 +39,19 @@ const TRANSFER_DEADLINE_EXCHANGES: Array<[string, string, string, string]> = [
   ['Vaktmästaren', 'Sista dagarna nu. Ryktena flyger.', 'Kassören', 'Lita på tränaren. Han vet vad han gör.'],
 ]
 
+const STREAK_EXCHANGES: Record<'winning' | 'losing', Array<[string, string, string, string]>> = {
+  winning: [
+    ['Kioskvakten', 'Hade slut på kaffe vid halvtid igår. Det har aldrig hänt.', 'Vaktmästaren', 'Inte förvånande just nu.'],
+    ['Vaktmästaren', 'Grabbarna sjunger i duschen igen.', 'Materialaren', 'Bra tecken.'],
+    ['Kassören', 'Biljetterna säljer sig själva nu.', 'Ordföranden', 'Berätta inte — de höjer priset.'],
+  ],
+  losing: [
+    ['Materialaren', 'Det är tyst i duschen efter match numera.', 'Kioskvakten', 'Ja. Ingen vill prata.'],
+    ['Kioskvakten', 'Korvförsäljningen har sjunkit. Folk stannar inte kvar efter slutsignalen.', 'Kassören', 'Förstår dom.'],
+    ['Vaktmästaren', 'Jag plogade ensam igår. Ingen dröjde kvar.', 'Materialaren', 'Det går över. Det brukar det.'],
+  ],
+}
+
 const RESULT_EXCHANGES: Record<'win' | 'loss' | 'draw', Array<[string, string]>> = {
   win: [
     ['Kioskvakten', 'Vi sålde dubbelt idag. Seger säljer.'],
@@ -77,6 +90,33 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     if (soldItem && boughtItem) break
   }
   const deadlineRound = round >= 13 && round <= 15
+
+  // Detect form streak (last 3 managed league matches)
+  const recentManaged = game.fixtures
+    .filter(f => f.status === 'completed' && !f.isCup &&
+      (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+    .sort((a, b) => b.matchday - a.matchday)
+    .slice(0, 3)
+
+  const getResult = (f: typeof recentManaged[0]) => {
+    const isHome = f.homeClubId === game.managedClubId
+    const my = isHome ? f.homeScore : f.awayScore
+    const their = isHome ? f.awayScore : f.homeScore
+    return my > their ? 'win' : my < their ? 'loss' : 'draw'
+  }
+
+  let streakType: 'winning' | 'losing' | null = null
+  if (recentManaged.length >= 3) {
+    const results = recentManaged.map(getResult)
+    if (results.every(r => r === 'win')) streakType = 'winning'
+    else if (results.every(r => r === 'loss')) streakType = 'losing'
+  }
+
+  if (streakType && seed % 3 === 0) {
+    const idx = Math.abs(seed * 13) % STREAK_EXCHANGES[streakType].length
+    const ex = STREAK_EXCHANGES[streakType][idx]
+    return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
+  }
 
   if (deadlineRound && seed % 5 === 0) {
     const idx = Math.abs(seed * 3) % TRANSFER_DEADLINE_EXCHANGES.length

@@ -1,4 +1,6 @@
-import type { Journalist, JournalistPersona, JournalistMemory } from '../entities/SaveGame'
+import type { Journalist, JournalistPersona, JournalistMemory, InboxItem } from '../entities/SaveGame'
+import type { Fixture } from '../entities/Fixture'
+import { InboxItemType } from '../enums'
 
 // ── Swedish journalist first + last names ─────────────────────────────────
 
@@ -126,6 +128,74 @@ export function getJournalistTone(journalist: Journalist): ToneModifier {
   }
 
   return { questionStyle, headlineStyle, followUpChance }
+}
+
+// ── Generate post-match headline for inbox ────────────────────────────────
+
+export function generatePostMatchHeadline(
+  journalist: Journalist,
+  fixture: Fixture,
+  managedClubId: string,
+  currentDate: string,
+  season: number,
+): InboxItem | null {
+  const isHome = fixture.homeClubId === managedClubId
+  const myScore = isHome ? fixture.homeScore : fixture.awayScore
+  const theirScore = isHome ? fixture.awayScore : fixture.homeScore
+  const margin = myScore - theirScore
+  const bigWin = margin >= 4
+  const bigLoss = margin <= -4
+  const win = margin > 0
+  const loss = margin < 0
+
+  const { persona } = journalist
+
+  let headline: string | null = null
+
+  if (bigWin) {
+    switch (persona) {
+      case 'sensationalist': headline = `STORSTILAT! Krossade motståndaren ${myScore}–${theirScore}`; break
+      case 'supportive':     headline = `Imponerande! Tydlig seger med ${margin} måls marginal`; break
+      case 'analytical':     headline = `Effektivt — dominerade klart i ${myScore}–${theirScore}`; break
+      case 'critical':       headline = `Äntligen en övertygande seger — men frågetecknen kvarstår`; break
+    }
+  } else if (bigLoss) {
+    switch (persona) {
+      case 'sensationalist': headline = `KRIS! Ny kollaps ${myScore}–${theirScore} — hur länge håller tränaren?`; break
+      case 'critical':       headline = `Katastrofal insats — ${Math.abs(margin)} mål bakom i den sista halvleken`; break
+      case 'analytical':     headline = `Analysen: Strukturella problem bakom storförlusten`; break
+      case 'supportive':     headline = `Tung dag — men det finns mer i det här laget än resultatet visar`; break
+    }
+  } else if (win) {
+    switch (persona) {
+      case 'supportive':     headline = `Välförtjänt seger — laget levererade när det gällde`; break
+      case 'sensationalist': headline = `SEGER! Klättrar i tabellen efter knapertriumf`; break
+      case 'analytical':     headline = `Knapert men effektivt — tog hem de tre poängen`; break
+      case 'critical':       headline = `Vann trots ojämn insats — mer krävs framöver`; break
+    }
+  } else if (loss) {
+    switch (persona) {
+      case 'supportive':     headline = `Hårfint — formen är bättre än resultatet visar`; break
+      case 'sensationalist': headline = `FÖRLUST — tredje nederlaget på fem`; break
+      case 'analytical':     headline = `Förlusten oroar — defensiven hade klara brister`; break
+      case 'critical':       headline = `Återigen utan poäng — tränaren har svaret att leva upp till`; break
+    }
+  } else {
+    // Draw — only sensationalist and supportive bother headlining
+    if (persona === 'sensationalist') headline = `Dramatiskt kryss — räddade en poäng i sista minuten`
+    else if (persona === 'supportive') headline = `Poäng räddad — ett steg i rätt riktning`
+  }
+
+  if (!headline) return null
+
+  return {
+    id: `inbox_headline_md${fixture.matchday}_${season}`,
+    date: currentDate,
+    type: InboxItemType.MediaEvent,
+    title: `${journalist.name} · ${journalist.outlet}`,
+    body: headline,
+    isRead: false,
+  } as InboxItem
 }
 
 // ── Generate persona-flavored headline prefix ─────────────────────────────

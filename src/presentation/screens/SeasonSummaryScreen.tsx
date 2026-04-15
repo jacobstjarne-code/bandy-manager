@@ -348,6 +348,33 @@ export function SeasonSummaryScreen() {
           )
         })()}
 
+        {/* SÄSONGENS BERÄTTELSER */}
+        {(() => {
+          const seasonStorylines = (game.storylines ?? []).filter(s => s.season === summary.season)
+          if (seasonStorylines.length === 0) return null
+          return (
+            <div className="card-round" style={{ padding: '10px 12px', marginBottom: 8 }}>
+              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 6 }}>
+                📖 SÄSONGENS BERÄTTELSER
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {seasonStorylines.slice(-5).map((s, i) => {
+                  const player = s.playerId ? game.players.find(p => p.id === s.playerId) : null
+                  const playerName = player ? `${player.firstName} ${player.lastName}` : null
+                  return (
+                    <p key={i} style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-display)', margin: 0 }}>
+                      {playerName && (
+                        <><span style={{ color: 'var(--accent)', fontWeight: 600, fontStyle: 'normal' }}>{playerName}</span> — </>
+                      )}
+                      {s.displayText}
+                    </p>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })()}
+
         {/* SEASON'S BEST */}
         <div className="card-sharp card-stagger-2" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <SectionLabel>SÄSONGENS BÄSTA</SectionLabel>
