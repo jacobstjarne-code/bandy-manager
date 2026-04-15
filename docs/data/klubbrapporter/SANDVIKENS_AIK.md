@@ -1,178 +1,194 @@
-# Sandvikens AIK — Datarapport 2019–2026
-Djup AI-ledd analys av 183 matcher med 2595 matchhändelser och 133 spelare.
+# Sandvikens AIK — Datarapport 2021-22–2025-26
+Djup analys av 131 reguljärseriematcher. Händelsedata (v2): 25 matcher.
+Liga: Elitserien Herr.
 
-*Säsonger:* 2019-20–26 &nbsp;|&nbsp; *Detaljerade händelsedata (2023-24):* 25 matcher
+---
+
+## Grundfakta — reguljär serie
+
+| Stat | Värde |
+|------|-------|
+| Matcher | 131 |
+| Vinster / Oavgjort / Förluster | 57 / 17 / 57 |
+| Vinstprocent | 43.5% |
+| Mål för / emot | 642 / 642 (4.9 / 4.9 per match) |
+| Nettomål per match | 0.0 |
+
+## 🔢 A. PP-ekonomi
+
+*Baserat på 25 matcher med händelsedata.*
+
+| Stat | Värde |
+|------|-------|
+| Egna utvisningar totalt | 42 (1.7 per match) |
+| Motståndarens utvisningar totalt | 38 (1.5 per match) |
+| PP-övertag per match | -0.2 |
+| Kaskadutvisningar (inom 10 min) | 54.8% av egna utvisningar |
+
+**Vanligaste utvisningsorsaker (egna):**
+- Fasthållning: 11
+- Våldsamt slag: 10
+- Slag på skridskon: 6
+- Bentackling: 4
+- Slag på klubban: 3
+
+**Spelsituation vid egna utvisningar:**
+- Ledning: 42.9% (18 ggr)
+- Jämnt: 11.9% (5 ggr)
+- Underläge: 45.2% (19 ggr)
+
+## 🔍 B. Motståndarmönster
+
+Matcher mot lag mötta minst 4 gånger i reguljär serie. Fyra mest intressanta matchups:
+
+### Villa Lidköping BK
+*10 matcher — 10.0% vunna, 4.0 mål för / 6.8 emot per match*
+
+- Nettomål per match: -2.8
+- Egna utvisningar per match: 1.4 (snitt 1.9)
+- Mål H1 / H2 per match: 1.4 / 2.6 gjorda, 2.0 / 4.8 insläppta
+
+### IFK Motala
+*6 matcher — 83.3% vunna, 5.7 mål för / 3.2 emot per match*
+
+- Nettomål per match: +2.5
+- Egna utvisningar per match: 1.3 (snitt 1.9)
+- Mål H1 / H2 per match: 1.3 / 4.3 gjorda, 1.2 / 2.0 insläppta
+
+### Västerås SK
+*10 matcher — 30.0% vunna, 3.9 mål för / 5.8 emot per match*
+
+- Nettomål per match: -1.9
+- Egna utvisningar per match: 1.9 (snitt 1.9)
+- Mål H1 / H2 per match: 1.6 / 2.3 gjorda, 1.9 / 3.9 insläppta
+
+### Frillesås BK
+*10 matcher — 70.0% vunna, 5.7 mål för / 4.0 emot per match*
+
+- Nettomål per match: +1.7
+- Egna utvisningar per match: 1.7 (snitt 1.9)
+- Mål H1 / H2 per match: 2.4 / 3.3 gjorda, 1.1 / 2.9 insläppta
+
+## 🟥 C. Utvisningsprofil
+
+**Utvisningar per match:** 1.9 (baserat på 131 matcher)
+
+**Fördelning efter typ (händelsedata):**
+- Kontakt: 27 (64.3%)
+- Aggression: 13 (31.0%)
+- Taktisk: 2 (4.8%)
+
+**Vanligaste orsaker:**
+- Fasthållning: 11
+- Våldsamt slag: 10
+- Slag på skridskon: 6
+- Bentackling: 4
+- Slag på klubban: 3
+- Hakning: 3
+
+## 🔄 D. Hörnförsvar
+
+Underlag: 131 matcher.
+
+| Stat | Hemma | Borta | Totalt |
+|------|-------|-------|--------|
+| Hörnor insläppta per match | 7.0 | 8.8 | 7.9 |
+| Hörnmål insläppta per match | — | — | 1.0 |
+| Defensiv hörnkonvertering | 13.5% | 12.8% | 13.1% |
+
+## ⏱️ E. Halvtidskorrigering
+
+Baserat på 131 matcher med halvtidsdata.
+
+| Stat | Värde |
+|------|-------|
+| Snitt mål H1 | 3.7 |
+| Snitt mål H2 | 6.1 |
+| Andel mål i H2 | **62.6%** |
+| Halvtidsvändningar (under HT, vann/oavgjort FT) | 11 (27.5% av gånger vi låg under) |
+| Halvtidsras (ledde HT, förlorade FT) | 8 (19.0% av gånger vi ledde) |
+
+## 🥇 F. Första-mål-effekt
+
+| Scenario | Matcher | Vinstprocent |
+|----------|---------|--------------|
+| Vi gör första mål | 14 | **35.7%** |
+| Motståndaren gör första mål | 11 | 54.5% |
+
+Första-målsfördelen är **-18.8pp** (differens i vinstprocent).
+*Baserat på 25 matcher med händelsedata.*
+
+## 📊 G. Periodisk sårbarhet
+
+Mål gjorda vs insläppta per 10-minutersintervall (25 matcher med händelsedata):
+
+| Minut | Gjorda | Insläppta | Netto |
+|-------|--------|-----------|-------|
+| 0-9 | 14.0% | 6.9% | +7.1pp |
+| 10-19 | 10.1% | 7.3% | +2.8pp |
+| 20-29 | 7.8% | 8.1% | -0.3pp |
+| 30-39 | 9.5% | 8.9% | +0.6pp |
+| 40-49 | 10.6% | 12.6% | -1.9pp |
+| 50-59 | 10.1% | 15.8% | -5.7pp |
+| 60-69 | 11.7% | 10.9% | +0.8pp |
+| 70-79 | 10.6% | 10.9% | -0.3pp |
+| 80-90 | 15.6% | 18.6% | -3.0pp |
+
+Svagaste defensiva period: **80-90 min** (18.6% av insläppta mål).
+
+## ⚡ H. Matchens vändpunkt
+
+Analys av 11 vunna matcher (reguljär serie):
+
+- Median minut för avgörande ledning: **minut 86**
+- Snitt: minut 82.3
+- Andel vinster avgjorda i H1 (< min 45): **9.1%**
+- Andel vinster avgjorda sent (min 70+): **90.9%**
 
 ---
 
-## ⚡ PP-EKONOMI
-Analysen bygger på 25 matcher med händelsedata (säsongen 2023-24).
-
-| Mätvärde | Sandvikens AIK |
-|---|---|
-| PP-konvertering (% av utv. som ger mål) | 47.4% |
-| PK-överlevnad (% utan insläppt mål) | 47.6% |
-| PP-netto per match | -0.16 mål |
-| Utvisningar begångna | 42 (1.7/match) |
-| Utvisningar erhållna | 38 (1.5/match) |
-
-**Utvisningsorsaker:**
-
-- Kontakt: 40 (95.2%)
-- Taktisk: 2 (4.8%)
-
-PK-insläppta mål 2023-24: **22**. Det kostar uppskattningsvis **6.6 poäng** per säsong (0,3 p/PK-mål insläppt).
-
-Kostsammaste spelare: **Wille Larsson** — 7 utvisningar, 7 mål insläppta under den spelaren's utvisningar.
-
-
-## 🟥 UTVISNINGSPROFIL
-Sandvikens AIK fick **1.93 utvisningar per match** under perioden 2019–2026 — -1.63 jämfört med ligasnittet (3.56).
-
-**Fördelning per orsak (2023-24):**
-
-- Kontakt: 40 (95.2%)
-- Taktisk: 2 (4.8%)
-
-**Spelsituation vid utvisning (2023-24):**
-
-- Ledde: 42.9% &nbsp;| Lika: 11.9% &nbsp;| Jagade: 45.2%
-
-Kedjeeffekt: 31.8% av utvisningarna kom inom 10 minuter efter en tidigare utvisning.
-
-**Mest utvisade (2023-24):**
-
-- Spelare #292438: 9 utvisningar
-- Wille Larsson: 7 utvisningar
-- Marcus Öhman: 6 utvisningar
-
-
-## 🔰 HÖRNFÖRSVAR
-Underlag: 183 matcher (alla säsonger med hörndata).
-
-| Mätvärde | Sandvikens AIK | Ligasnitt |
-|---|---|---|
-| Hörnor insläppta per match | 7.6 | — |
-| Hörnmål insläppta per match | 1.0 | 0.97 |
-| Defensiv hörnkonvertering tillåten | 12.5% | 11.3% |
-
-**Hemma vs borta (defensiv hörnkonvertering tillåten):**
-
-- Hemma: 12.3% (6.8 hörnor/match)
-- Borta: 12.7% (8.5 hörnor/match)
-
-
-## 🔄 HALVTIDSKORRIGERING
-Underlag: 182 matcher med halvtidsdata.
-
-I **37.4%** av matcherna var Sandvikens AIK:s andra halvlek bättre (i målskillnad) än den första — ett mått på tränarens förmåga att anpassa spelet i paus.
-
-Halvtidsvändningar: vände 0-underläge vid HT till vinst eller oavgjort i **30.8%** av fallen (16 av 52 gånger man låg under).
-
-Tappade HT-ledning: förlorade eller delade poäng trots HT-ledning i **23.5%** av fallen (16 av 68 gånger man ledde i paus).
-
-
-## 🎯 MOTSTÅNDARSPECIFIKA MÖNSTER
-De fyra matchuppar med mest uttalade mönster (min. 4 möten i grundserie).
-
-### mot IK Tellus (4 matcher, 4V-0O-0F)
-Vinstprocent: **100.0%** &nbsp;| Snittresultat: 7.8–1.8 &nbsp;| Utvisningar/match: 2.0
-
-Vinstprocent när vi scorer först: **100.0%**
-
-Halvtidssplit: H1 3.8–1.0, H2 4.0–0.8
-
-### mot Villa-Lidköping BK (4 matcher, 0V-0O-4F)
-Vinstprocent: **0.0%** &nbsp;| Snittresultat: 4.0–7.0 &nbsp;| Utvisningar/match: 1.0
-
-Vinstprocent när vi scorer först: **0.0%**
-
-Halvtidssplit: H1 1.5–3.0, H2 2.5–4.0
-
-### mot Edsbyns IF (8 matcher, 0V-3O-5F)
-Vinstprocent: **0.0%** &nbsp;| Snittresultat: 2.5–5.1 &nbsp;| Utvisningar/match: 1.6
-
-Vinstprocent när vi scorer först: **0.0%**
-
-Halvtidssplit: H1 0.6–1.6, H2 1.9–3.5
-
-### mot Västerås SK (8 matcher, 2V-0O-6F)
-Vinstprocent: **25.0%** &nbsp;| Snittresultat: 3.6–6.1 &nbsp;| Utvisningar/match: 1.6
-
-Vinstprocent när vi scorer först: **12.5%**
-
-Halvtidssplit: H1 1.5–1.8, H2 2.1–4.4
-
-
-## ⏱ PERIODISK SÅRBARHET
-Mål insläppta per 10-minutersperiod (säsongen 2023-24, 25 matcher).
-
-| Period | Mål insläppta | Mål gjorda |
-|---|---|---|
-| 1-10 min | 11 | 14 |
-| 11-20 min | 16 | 10 |
-| 21-30 min | 18 | 16 |
-| 31-40 min | 16 | 8 |
-| 41-50 min | 16 | 6 |
-| 51-60 min | 14 | 8 |
-| 61-70 min | 15 | 14 |
-| 71-80 min | 22 | 17 |
-| 81-90 min | 21 | 26 |
-
-Svagaste defensiva period: **71-80 min** (+33% fler mål insläppta jämfört med snittperioden).
-
-
-## 🏁 MATCHENS VÄNDPUNKT
-I vunna matcher (n=11) föll det avgörande målet i genomsnitt runt minut **88** (median).
-
-Sena avgöranden (minut 75+): **100.0%** av vinsterna — 11 matcher.
-
-
----
-*Domardata ej tillgänglig — framtida analys.*
+*Domardata ej tillgänglig — framtida analys när domarstatistik inkluderas i källdata.*
 
 ---
 
 ## C2. Utvisningstyps-profiler
 
-*Baserat på 34 utvisningar i grundserien (25 matcher med event-data).*
+*Baserat på 42 utvisningar (25 matcher med händelsedata).*
 
 ### A) Lagprofil — temperament vs taktik
 
 | Typ | Antal | Andel | Liganorm | Avvikelse |
 |-----|-------|-------|----------|-----------|
-| Aggression (Våldsamt slag, Olämpligt uppträdande, Slag på klubban) | 12 | 35.3% | 27.1% | +8.2pp |
-| Taktisk (Friläge, Sabotage) | 1 | 2.9% | 11.3% | -8.4pp |
-| Kontakt (Fasthållning, Hakning, Bentackling m.fl.) | 21 | 61.8% | — | — |
+| Aggression (Våldsamt slag, Olämpligt uppträdande, Slag på klubban) | 13 | 31.0% | 27.1% | +3.9pp |
+| Taktisk (Friläge, Sabotage) | 2 | 4.8% | 11.3% | -6.5pp |
+| Kontakt (Fasthållning, Hakning, Bentackling m.fl.) | 27 | 64.3% | — | — |
 
-**Tolkning:** 35.3% aggressionsutvisningar är 8.2 procentenheter över liganormen. Laget har ett temperamentsproblem som genererar undvikbara utvisningar.
+**Tolkning:** 31.0% aggressionsutvisningar är 3.9 procentenheter över liganormen. Laget har ett temperamentsproblem som genererar undvikbara utvisningar.
 
 **Vanligaste orsaker:**
-- Fasthållning: 8 (23.5%)
-- Våldsamt slag: 8 (23.5%)
-- Slag på skridskon: 5 (14.7%)
-- Bentackling: 4 (11.8%)
-- Ojust tackling: 3 (8.8%)
-- Slag på klubban: 2 (5.9%)
+- Fasthållning: 11 (26.2%)
+- Våldsamt slag: 10 (23.8%)
+- Slag på skridskon: 6 (14.3%)
+- Bentackling: 4 (9.5%)
+- Slag på klubban: 3 (7.1%)
+- Hakning: 3 (7.1%)
 
 ### B) Utvisningstyp per spelläge
 
 | Spelläge | Totalt | Aggression% | Taktisk% |
 |----------|--------|-------------|----------|
-| Vid ledning | 12 | 25.0% | 0.0% |
-| Vid jämt läge | 8 | 50.0% | 12.5% |
-| Vid underläge | 14 | 35.7% | 0.0% |
+| Vid ledning | 18 | 33.3% | 5.6% |
+| Vid jämnt | 5 | 40.0% | 0.0% |
+| Vid underläge | 19 | 26.3% | 5.3% |
 
-**Frustrationssignal:** Aggressionsandelen stiger från 25.0% vid ledning till 35.7% vid underläge (+10.7pp). Laget tappar disciplinen när det är pressat.
+Ingen tydlig förändring i utvisningstyp beroende på spelläge (aggression: 33.3% vid ledning, 26.3% vid underläge).
 
 ### C) Spelarspotlights
 
 **Ensidiga utvisningsprofiler (≥75% av en typ):**
 
-- **Topi Saukkonen**: 5 utvisningar, 80% kontaktutvisningar. Vanligaste orsak: *Fasthållning* (2×).
-- **Spelare fx_29243**: 5 utvisningar, 80% aggression. Vanligaste orsak: *Våldsamt slag* (3×). Det är temperament, inte trötthet — kan åtgärdas med träning.
-- **Marcus Öhman**: 5 utvisningar, 100% kontaktutvisningar. Vanligaste orsak: *Fasthållning* (2×).
-- **Wille Larsson**: 4 utvisningar, 75% kontaktutvisningar. Vanligaste orsak: *Ojust tackling* (2×).
+- **Wille Larsson**: 7 utvisningar, 85.7% kontaktutvisningar. Vanligaste orsak: *Slag på skridskon* (2×).
+- **Marcus Öhman**: 6 utvisningar, 100.0% kontaktutvisningar. Vanligaste orsak: *Bentackling* (2×).
+- **Topi Saukkonen**: 5 utvisningar, 80.0% kontaktutvisningar. Vanligaste orsak: *Fasthållning* (2×).
 
-
-*Rapport genererad från 183 grundseriematcher, säsong 2019-20–2025-26.*
+*Rapport genererad från 131 grundseriematcher, 2021-22–2025-26.*
