@@ -414,6 +414,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   }
 
   // ── Legacy — retiring managed club players become legends if 3+ seasons ──
+  const retirementCeremonyEvents: GameEvent[] = []
   const newLegends = [...(game.clubLegends ?? [])]
   for (const pid of retiredPlayerIds) {
     const player = resetPlayers.find(p => p.id === pid)
@@ -440,6 +441,37 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         body: `${seasonsInClub} säsonger, ${player.careerStats?.totalGoals ?? 0} mål. ${storyline ? `"${storyline.displayText}"` : 'En spelare som betydde mycket.'} Fansen: "Tack för allt!"`,
         isRead: false,
       } as InboxItem)
+
+      // Retirement ceremony event with choices
+      const playerName = `${player.firstName} ${player.lastName}`
+      retirementCeremonyEvents.push({
+        id: `retirement_ceremony_${player.id}_${nextSeason}`,
+        type: 'retirementCeremony',
+        title: `🎖️ Pensionsceremoni — ${playerName}`,
+        body: `${playerName} lägger bandyn på hyllan efter ${seasonsInClub} säsonger. Vill du erbjuda en roll i föreningen?`,
+        relatedPlayerId: player.id,
+        resolved: false,
+        sender: { name: playerName, role: 'Avgående spelare' },
+        choices: [
+          {
+            id: 'youth_coach',
+            label: 'Erbjud roll som ungdomstränare',
+            subtitle: '⭐ +5 reputation',
+            effect: { type: 'reputation', amount: 5 },
+          },
+          {
+            id: 'scout',
+            label: 'Erbjud roll som scout',
+            subtitle: '🔍 +3 scoutbudget',
+            effect: { type: 'noOp' },
+          },
+          {
+            id: 'farewell',
+            label: 'Tack och lycka till',
+            effect: { type: 'noOp' },
+          },
+        ],
+      } as GameEvent)
     }
   }
 
@@ -635,7 +667,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   }
 
   // ── Build handlingsplan pending event if needed ───────────────────────────
-  const seasonEndPendingEvents: GameEvent[] = []
+  const seasonEndPendingEvents: GameEvent[] = [...retirementCeremonyEvents]
   if (licenseReview?.status === 'warning' || licenseReview?.status === 'continued_review') {
     const handlingsplanEvent: GameEvent = {
       id: `licenseHandlingsplan_${game.currentSeason}`,

@@ -175,6 +175,20 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     text = text.replace('{youthName}', youthName)
   }
 
+  // 15% chance: club legend reference
+  const legends = game.clubLegends ?? []
+  if (legends.length > 0 && seed % 7 === 0) {
+    const legend = legends[Math.abs(seed + 11) % legends.length]
+    const legendRef: Array<[string, string, string, string]> = [
+      ['Materialaren', `${legend.name} var nere på träningen igår. Grabbarna lyssnade.`, 'Vaktmästaren', 'Det är så det ska vara.'],
+      ['Kioskvakten', `${legend.name} köpte korv. Sa inget. Men han såg glad ut.`, 'Kassören', 'Det betyder något.'],
+      ['Vaktmästaren', `${legend.name} ringer fortfarande när vi vinner.`, 'Materialaren', 'Naturligtvis.'],
+    ]
+    const refIdx = Math.abs(seed + 13) % legendRef.length
+    const ref = legendRef[refIdx]
+    return { speaker: ref[0], text: `"${ref[1]}" — ${ref[2]}: "${ref[3]}"` }
+  }
+
   // 20% chance: replace with supporter-karaktär-citat
   const sg = game.supporterGroup
   if (sg && (seed % 5 === 0)) {
