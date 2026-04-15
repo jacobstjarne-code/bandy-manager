@@ -104,7 +104,12 @@ export function PressConferenceScene({ event, journalist, onChoice }: Props) {
                 border: '1px solid var(--border)',
               }}
             >
-              {choice.label}
+              <span>{choice.label}</span>
+              {choice.subtitle && (
+                <span style={{ display: 'block', fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', marginTop: 3 }}>
+                  {choice.subtitle}
+                </span>
+              )}
             </button>
           ))}
         </div>
