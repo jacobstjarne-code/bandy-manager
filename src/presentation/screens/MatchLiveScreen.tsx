@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
-import { simulateMatchStepByStep, simulateSecondHalf, type MatchStep } from '../../domain/services/matchSimulator'
+import { simulateMatchStepByStep, simulateSecondHalf, simulateFromMidMatch, type MatchStep } from '../../domain/services/matchSimulator'
 import type { MatchPhaseContext } from '../../domain/services/matchUtils'
 import type { Tactic } from '../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
@@ -103,6 +103,9 @@ export function MatchLiveScreen() {
   const [htTempo, setHtTempo] = useState<TacticTempo | null>(null)
   const [htPress, setHtPress] = useState<TacticPress | null>(null)
   const [tacticChanged, setTacticChanged] = useState(false)
+  const [showTacticQuick, setShowTacticQuick] = useState(false)
+  const [tacticChangesUsed, setTacticChangesUsed] = useState(0)
+  const MAX_TACTIC_CHANGES = 3
   const [htSubs, setHtSubs] = useState<{ outId: string; inId: string }[]>([])
   const [halftimeChoice, setHalftimeChoice] = useState<'calm' | 'angry' | 'tactical' | null>(null)
   const [liveSubs, setLiveSubs] = useState<{ outId: string; inId: string; minute: number }[]>([])
@@ -640,6 +643,77 @@ export function MatchLiveScreen() {
     setCurrentStep(31)
   }
 
+  function applyQuickTactic(optId: string) {
+    if (!game || !fixture || !homeLineup || !awayLineup || !currentMatchStep) return
+    if (tacticChangesUsed >= MAX_TACTIC_CHANGES) return
+
+    const managedIsHome = fixture.homeClubId === game.managedClubId
+    const currentTactic = managedIsHome ? homeLineup.tactic : awayLineup.tactic
+    const updatedTactic: Tactic = { ...currentTactic }
+    if (optId === 'tempo_high') updatedTactic.tempo = TacticTempo.High
+    else if (optId === 'tempo_low') updatedTactic.tempo = TacticTempo.Low
+    else if (optId === 'attack') updatedTactic.mentality = TacticMentality.Offensive
+    else if (optId === 'defend') updatedTactic.mentality = TacticMentality.Defensive
+
+    const newHome = managedIsHome ? { ...homeLineup, tactic: updatedTactic } : homeLineup
+    const newAway = !managedIsHome ? { ...awayLineup, tactic: updatedTactic } : awayLineup
+
+    const fromStep = currentStep + 1
+    const inSecondHalf = fromStep >= 31
+
+    const tacticCommentary: Record<string, string[]> = {
+      tempo_high: ['Tränaren viftar in spelarna. Tempot höjs.', 'Nya direktiv från bänken — nu ska det gå fort.'],
+      tempo_low: ['Tränaren signalerar lugn. Sänk tempot.', 'Kontroll. Tränaren vill se tålamod.'],
+      attack: ['Tränaren skickar upp laget. Allt framåt!', 'Anfallspress. Backlinjen flyttar upp.'],
+      defend: ['Tränaren sjunker ner. Försvara ledningen.', 'Alla bakom bollen.'],
+    }
+    const comments = tacticCommentary[optId] ?? []
+    const commentText = comments[Math.floor(Math.random() * comments.length)] ?? ''
+
+    const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
+    const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
+
+    const gen = simulateFromMidMatch({
+      fixture, homeLineup: newHome, awayLineup: newAway,
+      homePlayers, awayPlayers,
+      homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,
+      seed: Date.now(),
+      weather: matchWeather?.weather,
+      homeClubName: homeClubName || undefined,
+      awayClubName: awayClubName || undefined,
+      rivalry: rivalry ?? undefined,
+      initialHomeScore: currentMatchStep.homeScore,
+      initialAwayScore: currentMatchStep.awayScore,
+      initialShotsHome: currentMatchStep.shotsHome,
+      initialShotsAway: currentMatchStep.shotsAway,
+      initialCornersHome: currentMatchStep.cornersHome,
+      initialCornersAway: currentMatchStep.cornersAway,
+      initialHomeSuspensions: currentMatchStep.activeSuspensions.homeCount,
+      initialAwaySuspensions: currentMatchStep.activeSuspensions.awayCount,
+      managedIsHome,
+      storylines: game.storylines?.map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
+    }, fromStep, inSecondHalf)
+
+    const newRemainder: MatchStep[] = []
+    for (const s of gen) newRemainder.push(s)
+
+    // Inject tactic commentary as a synthetic step at current position
+    const commentStep: MatchStep = {
+      ...currentMatchStep,
+      step: currentStep,
+      events: [],
+      commentary: commentText,
+      commentaryType: 'tactical',
+    }
+
+    const kept = steps.slice(0, currentStep)
+    setSteps([...kept, commentStep, ...newRemainder])
+    setTacticChangesUsed(prev => prev + 1)
+    setTacticChanged(true)
+    setShowTacticQuick(false)
+    setIsPaused(false)
+  }
+
   if (!fixture || !homeLineup || !awayLineup) {
     return <div style={{ padding: 20, color: 'var(--text-secondary)' }}>Ingen matchdata tillgänglig.</div>
   }
@@ -754,7 +828,44 @@ export function MatchLiveScreen() {
         onToggleFastForward={() => setIsFastForward(prev => !prev)}
         onOpenSubModal={() => { setIsPaused(true); setShowSubModal(true) }}
         onToggleMute={() => { toggleMute(); setMuted(isMuted()) }}
+        onOpenTacticQuick={() => { setIsPaused(true); setShowTacticQuick(true) }}
+        tacticChangesLeft={MAX_TACTIC_CHANGES - tacticChangesUsed}
       />
+
+      {showTacticQuick && !matchDone && (
+        <div style={{
+          position: 'absolute', bottom: 70, left: 16, right: 16,
+          background: 'var(--bg-surface)', border: '1px solid var(--border)',
+          borderRadius: 14, padding: '14px 16px', zIndex: 50,
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.15)',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 600 }}>⚙️ Snabbändring</span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+              {MAX_TACTIC_CHANGES - tacticChangesUsed} kvar
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+            {[
+              { id: 'tempo_high', label: 'Höj tempot' },
+              { id: 'tempo_low', label: 'Sänk tempot' },
+              { id: 'attack', label: 'Anfallspress' },
+              { id: 'defend', label: 'Parkera bussen' },
+            ].map(opt => (
+              <button key={opt.id} className="btn btn-ghost"
+                style={{ padding: 10, fontSize: 12 }}
+                onClick={() => applyQuickTactic(opt.id)}>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <button onClick={() => { setShowTacticQuick(false); setIsPaused(false) }} style={{
+            width: '100%', marginTop: 8, padding: 8,
+            background: 'none', border: 'none',
+            color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer',
+          }}>Avbryt</button>
+        </div>
+      )}
 
       {game && !(game.dismissedHints ?? []).includes('matchLive') && (
         <FirstVisitHint

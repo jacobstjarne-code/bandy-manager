@@ -12,6 +12,8 @@ interface MatchControlsProps {
   onToggleFastForward: () => void
   onOpenSubModal: () => void
   onToggleMute: () => void
+  onOpenTacticQuick?: () => void
+  tacticChangesLeft?: number
 }
 
 export function MatchControls({
@@ -24,6 +26,8 @@ export function MatchControls({
   onToggleFastForward,
   onOpenSubModal,
   onToggleMute,
+  onOpenTacticQuick,
+  tacticChangesLeft,
 }: MatchControlsProps) {
   return (
     <div style={{
@@ -48,6 +52,14 @@ export function MatchControls({
         {!matchDone && (
           <button onClick={onOpenSubModal} className="btn btn-ghost" style={{ padding: '6px 10px', fontSize: 14 }}>
             🔄
+          </button>
+        )}
+        {!matchDone && onOpenTacticQuick && (tacticChangesLeft ?? 0) > 0 && (
+          <button onClick={onOpenTacticQuick} className="btn btn-ghost" style={{ padding: '6px 10px', fontSize: 14, position: 'relative' }}>
+            ⚙️
+            <span style={{ position: 'absolute', top: 2, right: 2, fontSize: 8, color: 'var(--accent)', fontWeight: 700, lineHeight: 1 }}>
+              {tacticChangesLeft}
+            </span>
           </button>
         )}
         <button onClick={onToggleMute} className="btn btn-ghost" style={{ padding: '6px 10px', fontSize: 14 }}>

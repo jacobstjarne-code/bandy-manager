@@ -10,5 +10,5 @@ export type {
 export { computeWeatherTacticInteraction } from './matchUtils'
 export { simulateMatch } from './matchEngine'
 // matchStepByStep and matchSecondHalf replaced by matchCore:
-export { simulateFirstHalf as simulateMatchStepByStep, simulateSecondHalf } from './matchCore'
+export { simulateFirstHalf as simulateMatchStepByStep, simulateSecondHalf, simulateFromMidMatch } from './matchCore'
 export type { MatchCoreInput } from './matchCore'

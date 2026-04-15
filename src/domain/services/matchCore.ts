@@ -1437,3 +1437,17 @@ export function* simulateFirstHalf(input: MatchCoreInput): Generator<MatchStep> 
 export function* simulateSecondHalf(input: MatchCoreInput & Partial<SecondHalfInput>): Generator<MatchStep> {
   yield* simulateMatchCore(input, 31, 60, true)
 }
+
+/**
+ * Regenerate steps from an arbitrary mid-match position.
+ * Used for quick tactic changes during live matches.
+ * fromStep: first step to generate (inclusive).
+ * inSecondHalf: true if fromStep >= 31 (emits fulltime at end).
+ */
+export function* simulateFromMidMatch(
+  input: MatchCoreInput & Partial<SecondHalfInput>,
+  fromStep: number,
+  inSecondHalf: boolean,
+): Generator<MatchStep> {
+  yield* simulateMatchCore(input, fromStep, inSecondHalf ? 60 : 31, inSecondHalf)
+}
