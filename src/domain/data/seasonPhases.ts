@@ -1,4 +1,6 @@
-export type SeasonPhase =
+// ── Functionary-system (Swedish phase names, used by functionaries.ts) ───────
+
+export type FunctionaryPhase =
   | 'höststart'
   | 'höst'
   | 'annandagen'
@@ -7,7 +9,7 @@ export type SeasonPhase =
   | 'våroffensiv'
   | 'slutspurt'
 
-export function getSeasonPhase(roundNumber: number, tablePosition: number, totalTeams: number): SeasonPhase {
+export function getFunctionaryPhase(roundNumber: number, tablePosition: number, totalTeams: number): FunctionaryPhase {
   if (roundNumber <= 3) return 'höststart'
   if (roundNumber <= 6) return 'höst'
   if (roundNumber <= 11) return 'annandagen'
@@ -17,4 +19,15 @@ export function getSeasonPhase(roundNumber: number, tablePosition: number, total
   }
   if (roundNumber <= 20) return 'våroffensiv'
   return 'slutspurt'
+}
+
+// ── Dashboard / SEASON_MOOD phase ─────────────────────────────────────────────
+
+export type SeasonPhase = 'pre_season' | 'early' | 'mid' | 'endgame' | 'playoff'
+
+export function getSeasonPhase(leagueRound: number, isPlayoff: boolean): SeasonPhase {
+  if (isPlayoff) return 'playoff'
+  if (leagueRound <= 3) return 'early'
+  if (leagueRound <= 11) return 'mid'
+  return 'endgame'
 }

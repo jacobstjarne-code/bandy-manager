@@ -1,6 +1,6 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { FUNCTIONARY_TEMPLATES } from '../data/functionaries'
-import { getSeasonPhase } from '../data/seasonPhases'
+import { getFunctionaryPhase } from '../data/seasonPhases'
 
 export interface FunctionaryQuote {
   name: string
@@ -19,7 +19,7 @@ export function getFunctionaryQuote(
 
   const standing = game.standings?.find(s => s.clubId === game.managedClubId)
   const tablePosition = standing?.position ?? 6
-  const phase = getSeasonPhase(roundNumber, tablePosition, game.clubs.length)
+  const phase = getFunctionaryPhase(roundNumber, tablePosition, game.clubs.length)
 
   const lastFixture = lastFixtureId ? game.fixtures.find(f => f.id === lastFixtureId) : null
 

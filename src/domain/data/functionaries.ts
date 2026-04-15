@@ -1,10 +1,10 @@
-import type { SeasonPhase } from './seasonPhases'
+import type { FunctionaryPhase } from './seasonPhases'
 
 export interface FunctionaryTemplate {
   role: string
   roleDescription: string
   namePool: string[]
-  quotesByPhase: Partial<Record<SeasonPhase, string[]>>
+  quotesByPhase: Partial<Record<FunctionaryPhase, string[]>>
   quotesByCondition?: {
     afterWin?: string[]
     afterLoss?: string[]

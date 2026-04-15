@@ -666,6 +666,25 @@ export const commentary = {
     '📯 Trumman spelar. Men sångerna dör ut. Laget behöver ett mål.',
     '{leader} envisas. Publiken är tyst, men klacken ger inte upp.',
   ],
+
+  supporter_goal_home: [
+    '🎵 {leader} drar igång sången! {members} röster — inte mycket, men de HÖRS!',
+    '📯 Trumman ekar! Klacken exploderar!',
+    '📣 {leader} kastar sig framåt! Klacken sjunger ut!',
+    '🎵 Hör det! {members} i klacken ger allt de har!',
+  ],
+
+  supporter_goal_conceded: [
+    'Tyst från hemmasidan. {leader} klappar händerna — försöker dra igång.',
+    '📣 {leader} håller flaggan uppe. Men tystnad svarar.',
+    '{members} i klacken sitter stilla. {leader} försöker men orken är slut.',
+  ],
+
+  supporter_attendance_low: [
+    '{members} modiga har kommit trots allt. {leader} gör sitt bästa.',
+    '📯 Trumman ekar lite ensamt i kvällen. {members} som höll ord.',
+    '{leader} spelar för det lilla gänget. De som alltid kommer.',
+  ],
 }
 
 // Helper to fill in a template

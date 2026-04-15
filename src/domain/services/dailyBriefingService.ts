@@ -4,6 +4,27 @@ import { getRivalry } from '../data/rivalries'
 import { getTransferWindowStatus } from './transferWindowService'
 import { FixtureStatus } from '../enums'
 import { getCurrentAct } from './seasonActService'
+import { getSeasonPhase, type SeasonPhase } from '../data/seasonPhases'
+
+const SEASON_MOOD: Record<SeasonPhase, string[]> = {
+  pre_season: ['Ny säsong. Nya möjligheter.'],
+  early: [
+    'Oktober. Första frosten. Truppen samlas.',
+    'Höstmörkret sänker sig. Men isen glänser.',
+  ],
+  mid: [
+    'November. Mörkret har lagt sig. Dagsjobben tar kraft.',
+    'December. Julturneringen närmar sig.',
+  ],
+  endgame: [
+    'Februari. Slutstriden börjar ta form.',
+    'Varje match räknas nu. Tabellen stramas åt.',
+  ],
+  playoff: [
+    'Slutspel. Inga andra chanser.',
+    'Bäst av fem. Varje match kan vara den sista.',
+  ],
+}
 
 export interface Briefing {
   text: string
@@ -165,7 +186,16 @@ export function generateBriefing(game: SaveGame): Briefing | null {
     return { text: `🎓 ${star.firstName} ${star.lastName} (${star.age}) — tre matcher i A-laget. Akademin levererade.` }
   }
 
-  // 8. Akt-baserade briefings
+  // 8. Säsongsfas-stämning (30% chans)
+  const isPlayoff = game.fixtures.some(f => f.matchday > 26 && f.status === FixtureStatus.Scheduled)
+  const phase = getSeasonPhase(currentLigaRound, isPlayoff)
+  const phaseSeed = currentLigaRound * 17 + game.currentSeason * 11
+  if (phaseSeed % 3 === 0) {
+    const moodPool = SEASON_MOOD[phase]
+    return { text: `🕯️ ${moodPool[Math.abs(phaseSeed) % moodPool.length]}` }
+  }
+
+  // 9. Akt-baserade briefings
   const act = getCurrentAct(currentLigaRound)
   const standing = game.standings.find(s => s.clubId === game.managedClubId)
   const seed = currentLigaRound * 13 + game.currentSeason * 7

@@ -904,6 +904,9 @@ function* simulateMatchCore(
           commentaryText = fillTemplate(pickCommentary(commentary.semifinal_kickoff, rand), templateVars)
         } else if (matchPhase === 'quarterfinal') {
           commentaryText = fillTemplate(pickCommentary(commentary.quarterfinal_kickoff, rand), templateVars)
+        } else if (supporterCtx && supporterCtx.members <= 30 && rand() < 0.50) {
+          const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
+          commentaryText = fillTemplate(pickCommentary(commentary.supporter_attendance_low, rand), sv)
         } else if (supporterCtx && rand() < 0.30) {
           const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
           commentaryText = fillTemplate(pickCommentary(commentary.supporter_kickoff, rand), sv)
@@ -990,6 +993,16 @@ function* simulateMatchCore(
           commentaryText = fillTemplate(pickGoalCommentary(isHomeAttacking ? homeScore : awayScore, isHomeAttacking ? awayScore : homeScore, rand, minute), templateVars)
         }
 
+        // Supporter goal reaction
+        if (supporterCtx && managedIsHome !== undefined) {
+          const managedScored = managedIsHome === isHomeAttacking
+          const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
+          if (managedScored && rand() < 0.35) {
+            commentaryText += ' ' + fillTemplate(pickCommentary(commentary.supporter_goal_home, rand), sv)
+          } else if (!managedScored && rand() < 0.25) {
+            commentaryText += ' ' + fillTemplate(pickCommentary(commentary.supporter_goal_conceded, rand), sv)
+          }
+        }
         // Late supporter commentary
         if (supporterCtx && step >= 47 && Math.abs(homeScore - awayScore) <= 1) {
           const isManaged = managedIsHome ? homeScore >= awayScore : awayScore >= homeScore
