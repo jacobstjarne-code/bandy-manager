@@ -244,9 +244,7 @@ export function DashboardScreen() {
     const scheduledFixtures = game.fixtures.filter(f => f.status === 'scheduled')
     if (scheduledFixtures.length === 0) {
       try {
-        const result = advance()
-        if (result?.playoffStarted || result?.seasonEnded) return
-        navigate('/game/review')
+        advance()
       } catch (err) { console.error('advance() failed:', err) }
       return
     }
@@ -254,9 +252,7 @@ export function DashboardScreen() {
     const managedMatchInNextRound = scheduledFixtures.find(f => f.matchday === nextSimEff && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
     if (managedMatchInNextRound) { navigate('/game/match'); return }
     try {
-      const result = advance()
-      if (result?.hasManagedCupMatch || result?.playoffStarted || result?.seasonEnded) return
-      navigate('/game/review')
+      advance()
     } catch (err) { console.error('advance() failed:', err) }
   }
 
