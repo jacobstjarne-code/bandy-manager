@@ -26,6 +26,17 @@ export function generateCupFixtures(
     ;[playInTeams[i], playInTeams[j]] = [playInTeams[j], playInTeams[i]]
   }
 
+  // Guard: verify no duplicates in playInTeams after shuffle
+  if (new Set(playInTeams).size !== playInTeams.length) {
+    console.error('[CUP BUG] Duplicate teams in play-in list:', playInTeams)
+  }
+
+  // Guard: verify no team appears in both bye and play-in
+  const byeSet = new Set(byeTeams)
+  if (playInTeams.some(id => byeSet.has(id))) {
+    console.error('[CUP BUG] Team in both bye and play-in lists')
+  }
+
   const matches: CupMatch[] = []
   const fixtures: Fixture[] = []
 

@@ -53,6 +53,10 @@ export const PROFILE_GOAL_MODS: Record<MatchProfile, number> = {
   chaotic:          1.80,
 }
 
+// Empirisk boost: verklig Elitserie-data visar 54.3% av mål i 2:a halvlek.
+// Timing weights producerar ~51%. Boost 1.25 → ~54% share + total ~10 mål.
+const SECOND_HALF_BOOST = 1.25
+
 // Deterministic profile selection from seed — both halves receive the same
 // profile without needing to pass state between generators.
 export function pickMatchProfileFromSeed(
@@ -501,6 +505,9 @@ function* simulateMatchCore(
     }
     stepGoalMod *= secondHalfGoalMod
 
+    // Global second-half boost — only in second half (emitFullTime = true), not overtime
+    if (emitFullTime) stepGoalMod *= SECOND_HALF_BOOST
+
     // Update suspension timers
     for (let i = homeSuspensionTimers.length - 1; i >= 0; i--) {
       homeSuspensionTimers[i]--
@@ -710,7 +717,10 @@ function* simulateMatchCore(
         const cornerChance  = attCorner * 0.7 + randRange(rand, 0, 0.3) + specialistBonus
         const defenseResist = defDefense * 0.5 + defGK * 0.3 + randRange(rand, 0, 0.2)
         // matchEngine-calibrated (base +0.14, clamp 0.10-0.30 — was +0.08, clamp 0.06-0.18)
-        const goalThreshold = clamp((cornerChance - defenseResist) * 0.30 * stepGoalMod * cornerStateMod + 0.14, 0.10, 0.30)
+        // Both base and clamp scale with SECOND_HALF_BOOST so corner share stays proportional
+        const cornerBase     = emitFullTime ? 0.14 * SECOND_HALF_BOOST : 0.14
+        const cornerClampMax = emitFullTime ? 0.30 * SECOND_HALF_BOOST : 0.30
+        const goalThreshold = clamp((cornerChance - defenseResist) * 0.30 * stepGoalMod * cornerStateMod + cornerBase, 0.10, cornerClampMax)
 
         const r = rand()
         if (r < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {

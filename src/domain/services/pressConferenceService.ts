@@ -23,6 +23,7 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Bortalaget verkade chockade av er intensitet. Avsiktlig taktik?', preferIds: ['bw_c5', 'bw_h5', 'bw_d1'] },
     { text: 'Bra match. Hade ni kunnat vinna med ännu mer?', preferIds: ['bw_c6', 'bw_h6', 'bw_d2'] },
     { text: 'Publiken var i extas. Hur mycket spelar fansen in i resultatet?', preferIds: ['bw_p7', 'bw_h7', 'cl07'] },
+    { text: 'Det pratas om er i hela kommunen. Är det press eller inspiration?', preferIds: ['w_h1', 'w_c1', 'cl01'], minRound: 5 },
   ],
   win: [
     { text: 'Seger! Berätta om matchen.', preferIds: ['w_h1', 'w_c1', 'w_d1'] },
@@ -32,6 +33,8 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Ni vände underläge till seger. Vad hände i pausen?', preferIds: ['w_p5', 'w_h5', 'w_d5'] },
     { text: 'Ni avancerar i tabellen. Kan ni utmana toppen nu?', preferIds: ['w_c6', 'w_h6', 'cl08'], minRound: 5 },
     { text: 'Ni dominerade mittfältet idag. Är det er styrka just nu?', preferIds: ['w_c7', 'w_h7', 'bw_d2'] },
+    { text: 'Ni har fått en ny mecenats stöd. Gör det skillnad i omklädningsrummet?', preferIds: ['w_p2', 'w_h2', 'cl07'], minRound: 6 },
+    { text: 'Ni har en ung spelare som imponerar. Hur hanterar ni trycket?', preferIds: ['w_p3', 'w_h3', 'cl03'], minRound: 4 },
   ],
   loss: [
     { text: 'Tung förlust. Vad gick fel?', preferIds: ['l_h1', 'l_c2', 'cl11'] },
@@ -43,6 +46,7 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Ni hade chanser men konverterade inte. Stressar det er?', preferIds: ['l_c7', 'l_h7', 'cl16'] },
     { text: 'Bortalaget körde över er i perioder. Vad händer med er försvarsspel?', preferIds: ['l_h8', 'l_h1', 'l_a1'] },
     { text: 'Ni har det tufft just nu. Hur håller du moralen uppe?', preferIds: ['l_p9', 'l_h9', 'cl13'], minRound: 3 },
+    { text: 'Publiken sviker. Hur påverkar det laget?', preferIds: ['l_h1', 'l_c2', 'cl14'], minRound: 5 },
   ],
   bigLoss: [
     { text: 'En mörk kväll. Hur tar ni er vidare härifrån?', preferIds: ['bl_h1', 'bl_p1', 'cl12'] },
