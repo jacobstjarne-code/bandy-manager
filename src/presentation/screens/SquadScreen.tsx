@@ -6,6 +6,7 @@ import type { Player } from '../../domain/entities/Player'
 import type { LoanDeal } from '../../domain/entities/Academy'
 import { StatBar } from '../components/StatBar'
 import { PlayerCard } from '../components/PlayerCard'
+import { getRecentMatchRatings } from '../components/playerCardUtils'
 import { positionShort, POSITION_ORDER } from '../utils/formatters'
 import { TRAIT_META } from '../../domain/data/playerTraits'
 import { SectionCard } from '../components/SectionCard'
@@ -266,7 +267,7 @@ export function SquadScreen() {
   const [talkFeedback, setTalkFeedback] = useState<{ text: string; moraleChange: number; formChange: number } | null>(null)
 
   const currentRound = game
-    ? (game.fixtures.filter(f => f.status === 'completed').sort((a, b) => b.roundNumber - a.roundNumber)[0]?.roundNumber ?? 0)
+    ? (game.fixtures.filter(f => f.status === 'completed').sort((a, b) => b.matchday - a.matchday)[0]?.matchday ?? 0)
     : 0
 
   function handleTalk(playerId: string, choice: 'encourage' | 'demand' | 'future') {
@@ -514,6 +515,10 @@ export function SquadScreen() {
             storylines={(game?.storylines ?? []).filter(s => s.playerId === selectedPlayer.id && s.resolved)}
             onExtendContract={() => navigate('/game/transfers', { state: { tab: 'contracts', renewPlayerId: selectedPlayer.id } })}
             onClose={() => setSelectedPlayerId(null)}
+            game={game ?? undefined}
+            recentRatings={game ? getRecentMatchRatings(game.fixtures, game.clubs, selectedPlayer.id, game.managedClubId, 5) : undefined}
+            onTalkToPlayer={(choice) => handleTalk(selectedPlayer.id, choice)}
+            talkFeedback={talkFeedback}
           />
 
           {/* Karaktärsspelare badge */}
@@ -522,7 +527,7 @@ export function SquadScreen() {
             const ls = selectedPlayer.loyaltyScore ?? 5
             return (
               <div style={{
-                margin: '0 14px 0', padding: '10px 14px',
+                margin: '0 14px 12px', padding: '10px 14px',
                 background: 'var(--bg-elevated)', border: `1px solid ${meta.color}44`,
                 borderRadius: 8,
                 display: 'flex', alignItems: 'center', gap: 10,
@@ -539,66 +544,6 @@ export function SquadScreen() {
                   </div>
                   <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{meta.description}</p>
                 </div>
-              </div>
-            )
-          })()}
-
-          {/* Spelarsamtal */}
-          {(() => {
-            const lastTalked = (game?.playerConversations ?? {})[selectedPlayer.id] ?? -Infinity
-            const canTalk = currentRound - lastTalked >= 3
-            return (
-              <div style={{ padding: '12px 14px 16px' }}>
-                <p style={{
-                  fontSize: 10, fontWeight: 700, letterSpacing: '1.5px',
-                  textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10,
-                }}>
-                  Spelarsamtal
-                </p>
-                {talkFeedback ? (
-                  <div style={{
-                    padding: '10px 14px', background: 'var(--bg-surface)',
-                    border: '1px solid var(--border)', borderRadius: 10,
-                    animation: 'fadeInUp 200ms ease-out both',
-                  }}>
-                    <p style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 6 }}>{talkFeedback.text}</p>
-                    <div style={{ display: 'flex', gap: 12, fontSize: 12 }}>
-                      {talkFeedback.moraleChange !== 0 && (
-                        <span className={talkFeedback.moraleChange > 0 ? 'tag tag-green' : 'tag tag-red'}>
-                          Moral {talkFeedback.moraleChange > 0 ? '+' : ''}{talkFeedback.moraleChange}
-                        </span>
-                      )}
-                      {talkFeedback.formChange !== 0 && (
-                        <span className={talkFeedback.formChange > 0 ? 'tag tag-green' : 'tag tag-red'}>
-                          Form {talkFeedback.formChange > 0 ? '+' : ''}{talkFeedback.formChange}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ) : canTalk ? (
-                  <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                    {([
-                      { id: 'encourage' as const, label: '👍 Uppmuntra' },
-                      { id: 'demand' as const, label: '💪 Ställ krav' },
-                      { id: 'future' as const, label: '🤝 Framtid' },
-                    ]).map(opt => (
-                      <button
-                        key={opt.id}
-                        onClick={() => handleTalk(selectedPlayer.id, opt.id)}
-                        className="btn btn-outline"
-                        style={{ padding: '8px 16px', fontSize: 12 }}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    {lastTalked === -Infinity
-                      ? 'Tryck en knapp för att prata med spelaren.'
-                      : `Nästa samtal möjligt omgång ${Number(lastTalked) + 3}.`}
-                  </p>
-                )}
               </div>
             )
           })()}
