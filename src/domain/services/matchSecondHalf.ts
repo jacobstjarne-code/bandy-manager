@@ -425,14 +425,22 @@ export function* simulateSecondHalf(input: SecondHalfInput): Generator<MatchStep
       }
     }
 
-    const intensity: 'low' | 'medium' | 'high' = goalScored || suspensionOccurred ? 'high' : saveOccurred || cornerOccurred ? 'medium' : 'low'
+    let intensity: 'low' | 'medium' | 'high' = goalScored || suspensionOccurred ? 'high' : saveOccurred || cornerOccurred ? 'medium' : 'low'
+    // Late game: boost intensity when close or in final 7 minutes
+    const scoreDiff = Math.abs(homeScore - awayScore)
+    if (minute >= 83) {
+      if (intensity === 'low') intensity = 'medium'
+      if (scoreDiff <= 1) intensity = 'high'
+    } else if (minute >= 70 && scoreDiff <= 1 && intensity === 'low') {
+      intensity = 'medium'
+    }
 
     yield { step, minute, events: stepEvents, homeScore, awayScore, commentary: commentaryText, intensity, activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions }, shotsHome, shotsAway, cornersHome, cornersAway, isDerbyComment: isDerbyStep || undefined, phase: 'regular' }
   }
 
   // Full time
   const scoreStr = `${homeScore}–${awayScore}`
-  const ftVars: Record<string, string> = { team: homeTeamRef, opponent: awayTeamRef, score: scoreStr, minute: '90', player: '', goalkeeper: '', rivalry: rivalry?.name ?? '', result: '' }
+  const ftVars: Record<string, string> = { team: homeTeamRef, opponent: awayTeamRef, score: scoreStr, minute: '90', player: '', goalkeeper: '', rivalry: rivalry?.name ?? '', result: homeScore > awayScore ? 'en seger' : homeScore < awayScore ? 'ingenting' : 'en poäng' }
   const ftText = rivalry ? fillTemplate(pickCommentary(commentary.derby_fullTime, rand), { ...ftVars, rivalry: rivalry.name }) : fillTemplate(pickCommentary(commentary.fullTime, rand), ftVars)
   yield { step: 60, minute: 90, events: [], homeScore, awayScore, commentary: ftText, intensity: 'high', activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions }, shotsHome, shotsAway, cornersHome, cornersAway, phase: 'regular' }
 

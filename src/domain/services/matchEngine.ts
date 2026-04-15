@@ -108,6 +108,12 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   let homeScore = 0
   let awayScore = 0
   const events: MatchEvent[] = []
+  // Hard cap: max 15 total goals, max 8 goal difference
+  const canScore = (attackingHome: boolean) => {
+    if (homeScore + awayScore >= 15) return false
+    const newDiff = attackingHome ? homeScore + 1 - awayScore : awayScore + 1 - homeScore
+    return Math.abs(newDiff) <= 8
+  }
 
   // Suspension tracking
   let homeActiveSuspensions = 0
@@ -345,7 +351,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
         const defenderGkStrength = defGK
         const goalThreshold = chanceQuality * 1.20 * (1 - defenderGkStrength * 0.30) * goalMod
 
-        if (shotResult < goalThreshold) {
+        if (shotResult < goalThreshold && canScore(isHomeAttacking)) {
           // GOAL
           const scorer = getGoalScorer(attackingStarters)
           const assister = getAssistProvider(attackingStarters, scorer?.id)
@@ -406,7 +412,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
         const shotResult = rand()
         const goalThreshold = chanceQuality * 0.58 * (1 - defGK * 0.35) * 1.15 * goalMod
 
-        if (shotResult < goalThreshold) {
+        if (shotResult < goalThreshold && canScore(isHomeAttacking)) {
           const scorer = getGoalScorer(attackingStarters)
           const assister = getAssistProvider(attackingStarters, scorer?.id)
 
@@ -466,7 +472,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
       const goalThreshold = clamp((cornerChance - defenseResist) * 0.30 * goalMod * cornerStateMod + 0.14, 0.10, 0.30)
 
       const r = rand()
-      if (r < goalThreshold) {
+      if (r < goalThreshold && canScore(isHomeAttacking)) {
         // Corner goal
         const scorer = getGoalScorer(attackingStarters)
         const assister = getAssistProvider(attackingStarters, scorer?.id)
@@ -515,7 +521,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
       const chanceQuality = randRange(rand, 0.05, 0.25) * (isPlayoff ? 1.05 : 1.0)
       const goalThreshold = chanceQuality * 0.63 * goalMod
 
-      if (rand() < goalThreshold) { // matchEngine halfchance
+      if (rand() < goalThreshold && canScore(isHomeAttacking)) { // matchEngine halfchance
         const scorer = getGoalScorer(attackingStarters)
 
         if (scorer) {
@@ -691,7 +697,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
       const chanceQuality = clamp(attAttack * 0.5 - defDefense * 0.3 + randRange(rand, -0.15, 0.25), 0.05, 0.90)
       const goalThreshold = chanceQuality * 0.40 * (1 - defGK * 0.35) * otGoalMod
 
-      if (rand() < goalThreshold) {
+      if (rand() < goalThreshold && canScore(isHomeAttacking)) {
         const scorer = getGoalScorer(attackingStarters)
         if (scorer) {
           if (isHomeAttacking) { homeScore++ } else { awayScore++ }

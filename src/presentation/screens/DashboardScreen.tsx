@@ -342,7 +342,7 @@ export function DashboardScreen() {
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
             <p style={{ ...LABEL, marginBottom: 8 }}>🏒 SÄSONGSSTART {game.currentSeason}</p>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 10, fontFamily: 'var(--font-body)' }}>
-              {club.name} väntar. Sätt din startelva och kör.
+              Ditt uppdrag för {club.name} väntar. Sätt din startelva och kör.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {nudges.map((n, i) => (
@@ -610,7 +610,7 @@ export function DashboardScreen() {
                   📯 {sg.name.toUpperCase()}
                 </p>
                 <span style={{ fontSize: 9, color: sg.mood >= 65 ? 'var(--success)' : sg.mood >= 40 ? 'var(--text-muted)' : 'var(--danger)', fontFamily: 'var(--font-body)' }}>
-                  {moodLabel} · {sg.members} st
+                  {moodLabel} · {sg.members} medlemmar
                 </span>
               </div>
               <p style={{ fontSize: 10, color: sg.mood >= 65 ? 'var(--success)' : sg.mood >= 40 ? 'var(--text-muted)' : 'var(--danger)', fontFamily: 'var(--font-body)', margin: '0 0 6px', fontStyle: 'italic' }}>

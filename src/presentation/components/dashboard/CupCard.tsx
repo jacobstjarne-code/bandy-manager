@@ -9,7 +9,7 @@ interface CupCardProps {
 }
 
 const CUP_STAGES = [
-  { round: 1, label: 'Förstar.' },
+  { round: 1, label: 'Förstarunda' },
   { round: 2, label: 'QF' },
   { round: 3, label: 'SF' },
   { round: 4, label: 'Final' },

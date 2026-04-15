@@ -7,9 +7,9 @@ import { mulberry32 } from '../utils/random'
 function roundToMonth(roundNumber: number): number {
   if (roundNumber <= 4)  return 10  // okt: r1-4
   if (roundNumber <= 7)  return 11  // nov: r5-7
-  if (roundNumber <= 9)  return 12  // dec: r8-9 (Annandagen + r9)
-  if (roundNumber <= 15) return 1   // jan: r10-15
-  if (roundNumber <= 22) return 2   // feb: r16-22
+  if (roundNumber <= 11) return 12  // dec: r8-11 (Dec 3, Dec 19, Annandagen, Dec 30)
+  if (roundNumber <= 17) return 1   // jan: r12-17
+  if (roundNumber <= 22) return 2   // feb: r18-22
   return 3                          // mar: slutspel r23+
 }
 

@@ -957,7 +957,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       player: scorerPlayerId ? findPlayerName(scorerPlayerId) : '',
       goalkeeper: savingGK,
       intensity: 'intensiv',
-      result: homeScore > awayScore ? 'vinst' : homeScore < awayScore ? 'förlust' : 'oavgjort',
+      result: homeScore > awayScore ? 'en seger' : homeScore < awayScore ? 'ingenting' : 'en poäng',
       rivalry: rivalry?.name ?? '',
     }
 
@@ -1252,7 +1252,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       isRefCommentary = true
     }
 
-    // Determine intensity
+    // Determine intensity — factoring in match minute and score state
     let intensity: 'low' | 'medium' | 'high'
     if (goalScored || suspensionOccurred) {
       intensity = 'high'
@@ -1260,6 +1260,16 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
       intensity = 'medium'
     } else {
       intensity = 'low'
+    }
+    // Late game: boost intensity when close or in final 7 minutes
+    const scoreDiff = Math.abs(homeScore - awayScore)
+    if (minute >= 83) {
+      // Final 7 minutes always at least medium
+      if (intensity === 'low') intensity = 'medium'
+      // Close game (within 1) in final minutes → high
+      if (scoreDiff <= 1) intensity = 'high'
+    } else if (minute >= 70 && scoreDiff <= 1 && intensity === 'low') {
+      intensity = 'medium'
     }
 
     // Weather note for step 0
@@ -1381,7 +1391,7 @@ export function* simulateMatchStepByStep(input: StepByStepInput): Generator<Matc
     player: '',
     goalkeeper: '',
     rivalry: rivalry?.name ?? '',
-    result: homeScore > awayScore ? 'vinst' : homeScore < awayScore ? 'förlust' : 'oavgjort',
+    result: homeScore > awayScore ? 'en seger' : homeScore < awayScore ? 'ingenting' : 'en poäng',
   }
   const fullTimeText = rivalry
     ? fillTemplate(pickCommentary(commentary.derby_fullTime, rand), { ...fullTimeVars, rivalry: rivalry.name })

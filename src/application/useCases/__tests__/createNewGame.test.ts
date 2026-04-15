@@ -8,10 +8,9 @@ describe('createNewGame', () => {
     expect(game.clubs.length).toBe(12)
   })
 
-  it('returns SaveGame with ~264 players (between 250 and 280)', () => {
+  it('returns SaveGame with exactly 192 players (16 per club × 12 clubs)', () => {
     const game = createNewGame({ managerName: 'Jacob', clubId: 'club_sandviken', season: 2025, seed: 42 })
-    expect(game.players.length).toBeGreaterThanOrEqual(250)
-    expect(game.players.length).toBeLessThanOrEqual(280)
+    expect(game.players.length).toBe(192)
   })
 
   it('returns SaveGame with 132 league fixtures plus cup fixtures', () => {

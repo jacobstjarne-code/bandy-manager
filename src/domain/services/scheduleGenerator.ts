@@ -135,21 +135,21 @@ export function getRoundDate(season: number, roundNumber: number): string {
     5:  `${season}-11-05`,
     6:  `${season}-11-12`,
     7:  `${season}-11-26`,
-    8:  `${season}-12-26`,
-    9:  `${season}-12-30`,
-    10: `${season + 1}-01-04`,
-    11: `${season + 1}-01-09`,
-    12: `${season + 1}-01-14`,
-    13: `${season + 1}-01-18`,
-    14: `${season + 1}-01-23`,
-    15: `${season + 1}-01-28`,
-    16: `${season + 1}-02-01`,
-    17: `${season + 1}-02-05`,
-    18: `${season + 1}-02-09`,
-    19: `${season + 1}-02-13`,
-    20: `${season + 1}-02-17`,
-    21: `${season + 1}-02-21`,
-    22: `${season + 1}-02-25`,
+    8:  `${season}-12-03`,
+    9:  `${season}-12-19`,
+    10: `${season}-12-26`,
+    11: `${season}-12-30`,
+    12: `${season + 1}-01-04`,
+    13: `${season + 1}-01-09`,
+    14: `${season + 1}-01-14`,
+    15: `${season + 1}-01-18`,
+    16: `${season + 1}-01-23`,
+    17: `${season + 1}-01-28`,
+    18: `${season + 1}-02-01`,
+    19: `${season + 1}-02-05`,
+    20: `${season + 1}-02-09`,
+    21: `${season + 1}-02-13`,
+    22: `${season + 1}-02-17`,
     23: `${season + 1}-02-28`,
     24: `${season + 1}-03-02`,
     25: `${season + 1}-03-04`,
@@ -171,9 +171,9 @@ export function getRoundDate(season: number, roundNumber: number): string {
 }
 
 /**
- * Post-processes fixtures to ensure rivalry pairs meet in round 8 (Annandagen).
- * Uses a three-way swap: moves rivalry match to round 8, displaces the two
- * incumbent round-8 matches to vacated slots.
+ * Post-processes fixtures to ensure rivalry pairs meet in round 10 (Annandagen, Dec 26).
+ * Uses a three-way swap: moves rivalry match to round 10, displaces the two
+ * incumbent round-10 matches to vacated slots.
  */
 function enforceAnnandagenDerbies(
   fixtures: ScheduleFixture[],
@@ -187,8 +187,8 @@ function enforceAnnandagenDerbies(
     const [a, b] = rivalry.clubIds
     if (!teamSet.has(a) || !teamSet.has(b)) continue
 
-    // Already in round 8 — done
-    if (result.some(f => f.roundNumber === 8 &&
+    // Already in round 10 — done
+    if (result.some(f => f.roundNumber === 10 &&
       ((f.homeClubId === a && f.awayClubId === b) || (f.homeClubId === b && f.awayClubId === a)))) continue
 
     // Find first-half meeting of A vs B
@@ -196,22 +196,22 @@ function enforceAnnandagenDerbies(
       f.roundNumber <= firstHalfRounds &&
       ((f.homeClubId === a && f.awayClubId === b) || (f.homeClubId === b && f.awayClubId === a))
     )
-    if (!matchAB || matchAB.roundNumber === 8) continue
+    if (!matchAB || matchAB.roundNumber === 10) continue
 
     const roundX = matchAB.roundNumber
 
-    // Find A's and B's round-8 opponents
+    // Find A's and B's round-10 opponents
     const matchAC = result.find(f =>
-      f.roundNumber === 8 && (f.homeClubId === a || f.awayClubId === a)
+      f.roundNumber === 10 && (f.homeClubId === a || f.awayClubId === a)
     )
     const matchBD = result.find(f =>
-      f.roundNumber === 8 && (f.homeClubId === b || f.awayClubId === b)
+      f.roundNumber === 10 && (f.homeClubId === b || f.awayClubId === b)
     )
     if (!matchAC || !matchBD || matchAC === matchBD) continue
 
     const d = matchBD.homeClubId === b ? matchBD.awayClubId : matchBD.homeClubId
 
-    // Move matchAB → round 8, matchAC → round X
+    // Move matchAB → round 10, matchAC → round X
     // Now find a home for matchBD: try round X first (B and D are both free there after the swap)
     const dInRoundX = result.some(f =>
       f !== matchAB && f !== matchAC && f !== matchBD &&
@@ -225,7 +225,7 @@ function enforceAnnandagenDerbies(
       // Find any round where neither B nor D currently plays
       const maxRound = Math.max(...result.map(f => f.roundNumber))
       for (let z = 1; z <= maxRound; z++) {
-        if (z === 8 || z === roundX) continue
+        if (z === 10 || z === roundX) continue
         const bInZ = result.some(f => f !== matchBD && f.roundNumber === z && (f.homeClubId === b || f.awayClubId === b))
         const dInZ = result.some(f => f !== matchBD && f.roundNumber === z && (f.homeClubId === d || f.awayClubId === d))
         if (!bInZ && !dInZ) { targetForBD = z; break }
@@ -234,7 +234,7 @@ function enforceAnnandagenDerbies(
 
     if (targetForBD === null) continue // can't safely place, skip
 
-    matchAB.roundNumber = 8
+    matchAB.roundNumber = 10
     matchAC.roundNumber = roundX
     matchBD.roundNumber = targetForBD
   }

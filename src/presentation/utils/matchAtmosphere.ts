@@ -32,8 +32,8 @@ export function getMatchAtmosphere(fixture: Fixture): MatchAtmosphere {
   const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
   const isPlayoff = fixture.isKnockout === true
   const isCup = fixture.isCup === true
-  // Annandagen: liga omgång 8 = 26 dec = matchday 10
-  const isAnnandagen = fixture.roundNumber === 8 && !isCup
+  // Annandagen: liga omgång 10 = 26 dec
+  const isAnnandagen = fixture.roundNumber === 10 && !isCup
 
   if (rivalry) {
     return {

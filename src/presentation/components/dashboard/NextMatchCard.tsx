@@ -96,7 +96,7 @@ export function NextMatchCard({
   lineupConfirmedThisRound,
 }: NextMatchCardProps) {
   const rivalry = getRivalry(nextFixture.homeClubId, nextFixture.awayClubId)
-  const isAnnandagen = nextFixture.roundNumber === 8
+  const isAnnandagen = nextFixture.roundNumber === 10
   const isCup = nextFixture.isCup
   const isDerby = !!rivalry
   const derbyIntense = isDerby && rivalry!.intensity >= 2

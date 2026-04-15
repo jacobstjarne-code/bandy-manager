@@ -343,7 +343,7 @@ export function MatchScreen() {
           isDerby: false,
           isFinal: nextFixture.roundNumber > 22 && game!.playoffBracket?.final?.fixtures.includes(nextFixture.id),
           isSemiFinal: nextFixture.roundNumber > 22 && game!.playoffBracket?.semiFinals.some(s => s.fixtures.includes(nextFixture.id)),
-          isAnnandagen: nextFixture.roundNumber === 8,
+          isAnnandagen: nextFixture.roundNumber === 10,
         }) : undefined
         navigate('/game/match/live', {
           state: {

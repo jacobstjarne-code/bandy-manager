@@ -17,7 +17,7 @@ export function getMatchMood(
   const isCup = fixture.isCup
 
   // Annandagen
-  if (fixture.matchday === 10) {
+  if (fixture.matchday === 12) {
     return '🎄 Annandagen. Hela stan är på benen. Det luktar korv och kyla.'
   }
 
@@ -138,7 +138,7 @@ export function getFinalWhistleSummary(
   else if (margin === 1 && late > 0) lines.push('Avgörandet kom sent. Nerverna höll.')
   else if (margin === 1) lines.push('Knapp seger. Det kunde gått åt vilket håll som helst.')
   else if (margin === 0 && total === 0) lines.push('Mållöst. Isen var hård men kreativiteten saknades.')
-  else if (margin === 0 && total >= 6) lines.push('Målfest och rättvis poängdelning.')
+  else if (margin === 0 && total >= 7) lines.push('Målfest och rättvis poängdelning.')
   else if (margin === 0) lines.push('Poängdelning. Rättvist? Kanske.')
   else if (margin === -1 && late > 0) lines.push('Sent avgörande — åt fel håll.')
   else if (margin === -1) lines.push('En boll skilde. Marginaler.')
@@ -210,7 +210,7 @@ export function getMatchHeadline(
   if (managedWon && margin >= 4) return 'KROSS'
   if (managedWon && margin >= 2) return 'KONTROLL'
   if (managedWon) return 'SEGER'
-  if (totalGoals >= 10 && !managedLost) return 'MÅLFEST'
+  if (totalGoals >= 11 && !managedLost) return 'MÅLFEST'
   if (totalGoals === 0) return 'NOLLNOLLA'
   if (!managedWon && !managedLost) return 'OAVGJORT'
   if (managedLost && margin <= -4) return 'TUNGT'

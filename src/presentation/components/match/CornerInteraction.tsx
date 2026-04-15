@@ -129,12 +129,12 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
           <circle cx="140" cy="25" r="4" fill="var(--accent)" opacity="0.7" />
           <circle cx="150" cy="55" r="4" fill="var(--accent)" opacity="0.7" />
           <circle cx="140" cy="80" r="4" fill="var(--accent)" opacity="0.7" />
-          {/* Corner point */}
-          <circle cx={cornerSide === 'right' ? 215 : 5} cy="105" r="4" fill="var(--accent)" stroke="#fff" strokeWidth="1" />
+          {/* Corner point — both corners at goal end (cx≈5), top=left, bottom=right */}
+          <circle cx="5" cy={cornerSide === 'right' ? 105 : 5} r="4" fill="var(--accent)" stroke="#fff" strokeWidth="1" />
           <text
-            x={cornerSide === 'right' ? 198 : 22}
-            y="100" fontSize="6" fill="var(--accent)" fontWeight="600"
-            textAnchor={cornerSide === 'right' ? 'end' : 'start'}
+            x="22"
+            y={cornerSide === 'right' ? 102 : 14} fontSize="6" fill="var(--accent)" fontWeight="600"
+            textAnchor="start"
           >
             {cornerSide === 'right' ? 'Hörna från höger' : 'Hörna från vänster'}
           </text>
