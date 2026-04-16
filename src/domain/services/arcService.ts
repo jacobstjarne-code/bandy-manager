@@ -476,7 +476,7 @@ export function progressArcs(
               matchday: currentMatchday,
               playerId: p.id,
               description: `${name} bröt den långa målsvälten och levererade när det gällde som mest.`,
-              displayText: `🔥 ${name} bröt isen`,
+              displayText: `${name} bröt isen`,
               resolved: true,
             })
           }
@@ -552,7 +552,7 @@ export function progressArcs(
                 matchday: currentMatchday,
                 playerId: p.id,
                 description: `${name} avgjorde när det gällde och tystade alla kritiker.`,
-                displayText: `🎭 ${name} — joker i hjärtat`,
+                displayText: `${name} — joker i hjärtat`,
                 resolved: true,
               })
             }
@@ -848,11 +848,19 @@ export function progressArcs(
         if (player) {
           const resolvedId = `arc_resolved_generic_${updatedArc.id}`
           if (!arc.eventsFired.includes(resolvedId)) {
+            const arcExitTexts: Partial<Record<string, string>> = {
+              hungrig_breakthrough: `${player.firstName} ${player.lastName}s genombrott uteblev denna säsong. Men hungern finns kvar.`,
+              veteran_farewell: `${player.firstName} ${player.lastName}s era tog slut. Tysta steg ut ur omklädningsrummet.`,
+              lokal_hero: `${player.firstName} ${player.lastName} spelade sin roll. Orten minns.`,
+              contract_drama: `Kontraktshistorien kring ${player.firstName} ${player.lastName} avslutades utan drama.`,
+              derby_echo: `Derbykänslan har lagt sig. Nästa gång räknas igen.`,
+            }
+            const exitBody = arcExitTexts[updatedArc.type] ?? 'En berättelse i laget avslutades.'
             newInboxItems.push({
               id: `inbox_${resolvedId}`,
               type: InboxItemType.MediaEvent,
               title: `Berättelsen om ${player.firstName} ${player.lastName}`,
-              body: 'En berättelse i laget avslutades.',
+              body: exitBody,
               relatedPlayerId: player.id,
               isRead: false,
               date: currentDate,

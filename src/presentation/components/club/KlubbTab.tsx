@@ -597,6 +597,26 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
       </SectionCard>
 
       <SectionCard title="🎯 Förväntan & profil" stagger={3}>
+        {/* WEAK-012: Reputation */}
+        {(() => {
+          const r = club.reputation
+          const repLabel = r >= 85 ? 'Elitklubb' : r >= 70 ? 'Etablerad topp' : r >= 55 ? 'Mittenklubb' : r >= 40 ? 'Utmanare' : 'Underdog'
+          const repColor = r >= 70 ? 'var(--accent)' : r >= 45 ? 'var(--text-primary)' : 'var(--text-secondary)'
+          return (
+            <div style={{ paddingBottom: 10, marginBottom: 10, borderBottom: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>KLUBBRENOMMÉ</span>
+                <span style={{ fontSize: 22, fontWeight: 700, color: repColor, marginLeft: 'auto' }}>{r}</span>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>/ 100</span>
+                <span style={{ fontSize: 11, color: repColor }}>{repLabel}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 1 }}>
+                <div style={{ flex: r, height: 4, background: repColor, borderRadius: 2 }} />
+                <div style={{ flex: 100 - r, height: 4, background: 'var(--border)', borderRadius: 2 }} />
+              </div>
+            </div>
+          )
+        })()}
         <InfoRow label="Styrelseförväntning" value={expectationLabel(club.boardExpectation)} />
         <InfoRow label="Supporterförväntning" value={expectationLabel(club.fanExpectation)} />
         <InfoRow label="Spelstil" value={styleLabel(club.preferredStyle)} />

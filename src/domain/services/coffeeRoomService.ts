@@ -3,7 +3,7 @@ import { InboxItemType } from '../enums'
 import { getCharacterName } from './supporterService'
 
 interface CoffeeQuote {
-  speaker: string
+  speaker?: string
   text: string
 }
 
@@ -70,6 +70,11 @@ const RESULT_EXCHANGES: Record<'win' | 'loss' | 'draw', Array<[string, string]>>
 }
 
 export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
+  // Victory echo takes priority
+  if (game.pendingVictoryEcho) {
+    return { text: game.pendingVictoryEcho.coffeeLine }
+  }
+
   const round = game.fixtures
     .filter(f => f.status === 'completed' && !f.isCup)
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)

@@ -16,13 +16,13 @@ interface PressQuestion {
 
 const QUESTIONS: Record<string, PressQuestion[]> = {
   bigWin: [
-    { text: 'Imponerande seger. Var det er bästa match den här säsongen?', preferIds: ['bw_c1', 'bw_h2', 'cl01'], minRound: 6 },
-    { text: 'Laget spelade otroligt idag. Vad är hemligheten?', preferIds: ['bw_c2', 'bw_h5', 'cl04'] },
+    { text: 'Tydlig seger. Var det er bästa match den här säsongen?', preferIds: ['bw_c1', 'bw_h2', 'cl01'], minRound: 6 },
+    { text: 'Laget spelade bra idag. Vad är skillnaden jämfört med tidigare omgångar?', preferIds: ['bw_c2', 'bw_h5', 'cl04'] },
     { text: 'Tvåsiffrigt idag — är det ett mönster eller en engångsgrej?', preferIds: ['bw_c3', 'bw_h4', 'cl02'] },
     { text: 'Ert anfallsspel ser ostoppbart ut. Fruktar du inte att bli läst av motståndarna?', preferIds: ['bw_c4', 'bw_h4', 'cl02'] },
     { text: 'Bortalaget verkade chockade av er intensitet. Avsiktlig taktik?', preferIds: ['bw_c5', 'bw_h5', 'bw_d1'] },
     { text: 'Bra match. Hade ni kunnat vinna med ännu mer?', preferIds: ['bw_c6', 'bw_h6', 'bw_d2'] },
-    { text: 'Publiken var i extas. Hur mycket spelar fansen in i resultatet?', preferIds: ['bw_p7', 'bw_h7', 'cl07'] },
+    { text: 'Publiken sjöng hela vägen. Hur mycket spelar fansen in i resultatet?', preferIds: ['bw_p7', 'bw_h7', 'cl07'] },
     { text: 'Det pratas om er i hela kommunen. Är det press eller inspiration?', preferIds: ['w_h1', 'w_c1', 'cl01'], minRound: 5 },
   ],
   win: [
@@ -55,7 +55,7 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Är du orolig för lagets form?', preferIds: ['bl_h2', 'bl_c2', 'cl13'] },
     { text: 'Det här resultatet kan stå er dyrt i tabellen. Hur reagerar styrelsen?', preferIds: ['bl_p3', 'bl_d2', 'bl_a1'], minRound: 5 },
     { text: 'Motståndarna verkade veta exakt vad ni skulle göra. Läckta planer?', preferIds: ['bl_h4', 'bl_c4', 'bl_h1'] },
-    { text: 'En jävla massa mål i röven. Var det ett systemproblem?', preferIds: ['bl_h5', 'bl_a1', 'bl_h1'] },
+    { text: 'Många mål insläppta. Är det ett strukturproblem i försvaret?', preferIds: ['bl_h5', 'bl_a1', 'bl_h1'] },
     { text: 'Behöver du ta in ny spetskompetens för att vända skutan?', preferIds: ['bl_c6', 'bl_c2', 'bl_p1'] },
   ],
   draw: [
@@ -469,12 +469,7 @@ function buildPressResponses(ctx: PressContext, preferIds: string[] = []): Manag
 }
 
 // Response ID convention: _a = aggressiv/bitter, _h = ödmjuk, _d = diplomatisk/neutral
-function responseEmoji(id: string, moraleEffect: number): string {
-  if (/_a\d/.test(id)) return '😤'
-  if (/_h\d/.test(id)) return '🙏'
-  if (/_d\d/.test(id)) return '😐'
-  return moraleEffect >= 3 ? '😊' : '😐'
-}
+// (responseEmoji removed — emojis replaced with plain text in subtitles)
 
 // ── WEAK-008 + DEV-006: Follow-up questions based on journalist memory ─────────
 
@@ -656,7 +651,7 @@ export function generatePressConference(
     id: r.id,
     label: r.label,
     subtitle: r.moraleEffect !== 0
-      ? `${responseEmoji(r.id, r.moraleEffect)} ${r.moraleEffect > 0 ? '+' : ''}${r.moraleEffect} moral`
+      ? `${r.moraleEffect > 0 ? '+' : ''}${r.moraleEffect} moral`
       : undefined,
     effect: {
       type: 'pressResponse' as const,

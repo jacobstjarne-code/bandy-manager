@@ -52,6 +52,7 @@ import { detectArcTriggers, progressArcs } from '../../domain/services/arcServic
 import { createEconomicStressEvent } from '../../domain/services/events/eventFactories'
 import { generatePreMatchOpponentQuote } from '../../domain/services/opponentManagerService'
 import { generateAwayTrip } from '../../domain/services/awayTripService'
+import { classifyVictory, generateVictoryEcho } from '../../domain/services/postVictoryNarrativeService'
 
 export type { AdvanceResult }
 
@@ -445,6 +446,39 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // ── WEAK-014: Segrarens eko ────────────────────────────────────────────────
+  let pendingVictoryEcho = game.pendingVictoryEcho
+  let victoryEchoExpires = game.victoryEchoExpires
+  if (justCompletedManagedFixture) {
+    const victoryType = classifyVictory(justCompletedManagedFixture, game.managedClubId)
+    if (victoryType) {
+      const opponentId = justCompletedManagedFixture.homeClubId === game.managedClubId
+        ? justCompletedManagedFixture.awayClubId
+        : justCompletedManagedFixture.homeClubId
+      const opponentClub = game.clubs.find(c => c.id === opponentId)
+      const opponentName = opponentClub?.shortName ?? opponentClub?.name ?? 'motståndaren'
+      const echo = generateVictoryEcho(victoryType, justCompletedManagedFixture, opponentName)
+      pendingVictoryEcho = echo
+      victoryEchoExpires = nextMatchday + 1
+      if (echo.boardMessage) {
+        newInboxItems.push({
+          id: `victory_board_${justCompletedManagedFixture.id}`,
+          type: InboxItemType.MediaEvent,
+          title: 'Efter vinsten',
+          body: echo.boardMessage,
+          date: game.currentDate,
+          isRead: false,
+        })
+      }
+    } else {
+      // Clear expired echo after each match
+      if (nextMatchday > (victoryEchoExpires ?? 0)) {
+        pendingVictoryEcho = undefined
+        victoryEchoExpires = undefined
+      }
+    }
+  }
+
   // ── WEAK-009 + DEV-007: Reevaluate favorite player var 5:e omgång ────────
   if (nextMatchday % 5 === 0 && updatedSupporterGroup) {
     const favResult = reevaluateFavoritePlayer(
@@ -627,6 +661,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const playoffCsBoost = playoffResult.playoffCsBoost
   const triggerQFSummary = playoffResult.triggerQFSummary
   newInboxItems.push(...playoffResult.inboxItems)
+  // playoff narrative events collected here, pushed to allNewEvents after it's declared below
 
   // Apply playoff fixture cancellations to allFixtures
   if (playoffResult.cancelledFixtureIds.length > 0) {
@@ -787,7 +822,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     nextMatchday,
     localRand,
   )
-  const allNewEvents = [...newEvents, ...communityEvents]
+  const allNewEvents = [...newEvents, ...communityEvents, ...playoffResult.gameEvents]
   // WEAK-002 + DEV-002: press event goes to pendingPressConference (shown directly in GranskaScreen)
   // — NOT pushed to allNewEvents to avoid appearing in the general event queue
 
@@ -1199,6 +1234,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     ) ?? undefined,
     resolvedEventIds: reputationResolvedIds,
     awayTrip: awayTripUpdate,
+    pendingVictoryEcho,
+    victoryEchoExpires,
   }
 
   // Append market value change notifications to inbox

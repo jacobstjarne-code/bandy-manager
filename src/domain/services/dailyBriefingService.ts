@@ -99,6 +99,11 @@ function getLatestHeadline(game: SaveGame): string | null {
 }
 
 export function generateBriefing(game: SaveGame): Briefing | null {
+  // -1. Victory echo — show diary line day after special win
+  if (game.pendingVictoryEcho) {
+    return { text: game.pendingVictoryEcho.diaryLine }
+  }
+
   // 0a. Grind-state — visa exit-villkor så spelaren vet vad som krävs
   if (game.trainerArc?.current === 'grind') {
     const wins = game.trainerArc.consecutiveWins ?? 0
@@ -126,7 +131,7 @@ export function generateBriefing(game: SaveGame): Briefing | null {
     const arcPlayer = game.players.find(p => p.id === buildingArc.playerId)
     if (arcPlayer) {
       const texts: Partial<Record<ArcType, string>> = {
-        hungrig_breakthrough: `🔥 ${arcPlayer.firstName} ${arcPlayer.lastName} har inte gjort mål på ${buildingArc.data?.gamesWithoutGoal ?? '?'} matcher.`,
+        hungrig_breakthrough: `${arcPlayer.firstName} ${arcPlayer.lastName} har inte gjort mål på ${buildingArc.data?.gamesWithoutGoal ?? '?'} matcher.`,
         veteran_farewell: `🏅 ${arcPlayer.firstName} ${arcPlayer.lastName}s kontrakt går ut. ${arcPlayer.age} år gammal.`,
         veteran_final_season: `🏅 ${arcPlayer.firstName} ${arcPlayer.lastName} spelar sin sista säsong. ${arcPlayer.age} år. Varje match räknas.`,
         contract_drama: `📋 ${arcPlayer.firstName} ${arcPlayer.lastName} i blåsväder — kontraktet löper ut snart.`,
@@ -151,7 +156,7 @@ export function generateBriefing(game: SaveGame): Briefing | null {
       const opponentId = nextFixture.homeClubId === game.managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId
       const h = game.rivalryHistory?.[opponentId]
       const histText = h ? `V${h.wins} O${h.draws} F${h.losses} i historiken.` : 'Historien börjar nu.'
-      return { text: `🔥 Derby. ${rivalry.name}. ${histText}` }
+      return { text: `Derby. ${rivalry.name}. ${histText}` }
     }
   }
 

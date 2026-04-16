@@ -345,6 +345,10 @@ export interface SaveGame {
   // Sprint G — preferred match mode (persists between matches)
   preferredMatchMode?: 'full' | 'commentary' | 'quicksim'
 
+  // Sprint 12 — Segrarens eko (WEAK-014)
+  pendingVictoryEcho?: import('../services/postVictoryNarrativeService').VictoryEcho
+  victoryEchoExpires?: number  // matchday after which echo is cleared
+
   // Sprint 11 — Truppledarskap (NARR-005)
   leadershipActions?: Array<{
     playerId: string

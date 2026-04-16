@@ -23,7 +23,7 @@ export function getMatchMood(
 
   // Derby
   if (rivalry && rivalry.intensity >= 2) {
-    return `🔥 Derbydag. ${rivalry.name}. Gräsmattorna vid arenan är fulla en timme före nedsläpp.`
+    return `Derbydag. ${rivalry.name}. Gräsmattorna vid arenan är fulla en timme före nedsläpp.`
   }
   if (rivalry) {
     return `⚔️ ${rivalry.name}. Det är tystare än vanligt i omklädningsrummet.`

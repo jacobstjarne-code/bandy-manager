@@ -156,6 +156,20 @@ export function PreSeasonScreen() {
                 🌱 {snap.academyPromotions} uppflyttad{snap.academyPromotions > 1 ? 'e' : ''} från akademin
               </p>
             )}
+            {(() => {
+              const posDelta = snap.finalPosition - currPosition // positivt = upp
+              const finDelta = club.finances - snap.finances
+              let narrative = 'En säsong med rörelse. Nästa ska visa om riktningen håller.'
+              if (posDelta >= 3 && finDelta > 0) narrative = 'Ett år av tydlig progression. Vi har skakat av oss stigmat.'
+              else if (posDelta >= 2) narrative = 'Vi står stabilare. Ekonomin följer inte alltid tabellen — men det är inte en överraskning.'
+              else if (posDelta <= -2) narrative = 'Ett tungt år i tabellen. Vi har försökt behålla strukturen. Det syns i kontraktens längd, inte i poängen.'
+              else if (Math.abs(posDelta) <= 1) narrative = 'Stillastående. Det är varken misslyckande eller framgång. Det är en position att bygga från.'
+              return (
+                <p style={{ fontSize: 11, fontStyle: 'italic', marginTop: 8, lineHeight: 1.5, color: 'var(--text-secondary)' }}>
+                  {narrative}
+                </p>
+              )
+            })()}
           </div>
         )}
 

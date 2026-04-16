@@ -145,6 +145,39 @@ export function processYouth(
     }
   }
 
+  // ── WEAK-017: Breakthrough event — young player debut + goal ─────────────────
+  const managedCompletedThisRound = game.fixtures.filter(
+    f => f.status === 'completed' &&
+      (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+  )
+  const latestManaged = [...managedCompletedThisRound].sort((a, b) => (b.matchday ?? 0) - (a.matchday ?? 0))[0]
+  if (latestManaged) {
+    const goals = latestManaged.events.filter(e => e.type === 'goal' && e.playerId)
+    for (const goal of goals) {
+      const player = game.players.find(p => p.id === goal.playerId)
+      if (!player) continue
+      if (player.clubId !== game.managedClubId) continue
+      if (player.age > 21) continue
+      if ((player.careerStats?.totalGames ?? 0) > 3) continue
+      const breakthroughId = `event_breakthrough_${player.id}_${nextMatchday}`
+      const alreadyFired = (game.pendingEvents ?? []).some(e => e.id === breakthroughId) ||
+        (game.resolvedEventIds ?? []).includes(breakthroughId)
+      if (alreadyFired) continue
+      const opponentId = latestManaged.homeClubId === game.managedClubId
+        ? latestManaged.awayClubId : latestManaged.homeClubId
+      const opponent = game.clubs.find(c => c.id === opponentId)
+      gameEvents.push({
+        id: breakthroughId,
+        type: 'academyEvent',
+        title: `${player.firstName} ${player.lastName} bryter igenom`,
+        body: `I debuten mot ${opponent?.name ?? 'motståndaren'}. Minut ${goal.minute ?? '?'}. ${player.age} år gammal. Akademitränaren har ringt redan. "Han har varit den mest hungrige på träning i två år. Det är inte tur."`,
+        choices: [{ id: 'ack', label: 'Grattis akademin', effect: { type: 'noOp' } }],
+        resolved: false,
+      })
+      break // max ett breakthrough-event per omgång
+    }
+  }
+
   // ── Academy reputation delta ───────────────────────────────────────────────
   const academyReputationDelta = (() => {
     if (!game.youthTeam || !updatedYouthTeam) return 0

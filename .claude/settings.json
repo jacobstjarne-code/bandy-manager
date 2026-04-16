@@ -128,7 +128,9 @@
       "Bash(python3 -m scrapers.jefferson_wells)",
       "Bash(xargs sed *)",
       "Bash(grep -n \"awayTrip\\\\|updatedGame.*{$\\\\|return.*{$\" /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/application/useCases/roundProcessor.ts)",
-      "Bash(grep -n \"resolveWeeklyDecision\\\\|gameFlowActions\" /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/presentation/store/*.ts)"
+      "Bash(grep -n \"resolveWeeklyDecision\\\\|gameFlowActions\" /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/presentation/store/*.ts)",
+      "Read(//dev/**)",
+      "Bash(ls /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/presentation/components/match/TacticChangeModal*)"
     ]
   }
 }

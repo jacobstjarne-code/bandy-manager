@@ -24,7 +24,7 @@ const TRIGGERS: MidSeasonTrigger[] = [
       const ga = s?.goalsAgainst ?? 0
       const topScorer = [...managedPlayers].sort((a, b) => b.seasonStats.goals - a.seasonStats.goals)[0]
       const topScorerStr = topScorer && topScorer.seasonStats.goals > 0
-        ? `\n\n⚡ Skyttekung hittills: ${topScorer.firstName} ${topScorer.lastName} med ${topScorer.seasonStats.goals} mål.`
+        ? `\n\nSkyttekung hittills: ${topScorer.firstName} ${topScorer.lastName} med ${topScorer.seasonStats.goals} mål.`
         : ''
       const assessment = pos <= 3
         ? 'Bättre start kan man knappt ha. Laget är med i toppen och hålls ihop av bra lagkänsla och resultat.'
@@ -83,7 +83,7 @@ const TRIGGERS: MidSeasonTrigger[] = [
       id: `mse-tightrace-${g.currentSeason}`,
       date: g.currentDate,
       type: InboxItemType.Media,
-      title: '🔥 Seriefeber',
+      title: 'Seriefeber',
       body: `Toppstriden är kok-het! Bara ${g.standings[0].points - (s?.points ?? 0)} poäng till serieledaren. Publiken börjar vakna.`,
       isRead: false,
     }),
@@ -112,7 +112,7 @@ const TRIGGERS: MidSeasonTrigger[] = [
       id: `mse-playoffjakt-${g.currentSeason}`,
       date: g.currentDate,
       type: InboxItemType.Media,
-      title: '⚡ Slutspelsjakt',
+      title: 'Slutspelsjakt',
       body: `Med fyra omgångar kvar ligger laget ${s?.position}:a. Varje poäng räknas i jakten på topp 8.`,
       isRead: false,
     }),

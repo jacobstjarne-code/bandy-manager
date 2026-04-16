@@ -25,12 +25,12 @@ const PEP_DRAW = [
 
 const PEP_CRISIS = [
   'Ingen räddare kommer. Vi är räddarna. Varje omgång, varje duell.',
-  'Jag har sett lag i sämre läge vända. Men aldrig lag som slutade tro.',
+  'Jag har sett lag i sämre läge vända. Men inte lag som slutade träna.',
   'Om ni vill ha en tränare som ljuger — hämta honom. Jag säger sanningen: vi måste bli bättre.',
 ]
 
 const PEP_TOP = [
-  'Vi är där. Men att komma dit och stanna är två helt olika saker.',
+  'Vi är där. Att stanna kvar är nästa steg.',
   'Varje lag under oss jagar. Vi kan inte slappna av en sekund.',
   'Njut inte ännu. Njut i mars.',
 ]

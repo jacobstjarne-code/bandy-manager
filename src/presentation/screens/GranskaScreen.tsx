@@ -11,6 +11,7 @@ import type { Fixture } from '../../domain/entities/Fixture'
 import type { Player } from '../../domain/entities/Player'
 import { SectionLabel } from '../components/SectionLabel'
 import { generateInsandare } from '../../domain/services/insandareService'
+import { generatePostMatchOpponentQuote } from '../../domain/services/opponentManagerService'
 
 function choiceStyle(_choiceId: string): React.CSSProperties {
   return { background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)' }
@@ -356,6 +357,25 @@ export function GranskaScreen() {
             </div>
           </div>
         )}
+
+        {/* ── MOTSTÅNDARTRÄNARE — visas vid storseger/storseger för motståndare (≥3 mål) ── */}
+        {(() => {
+          const margin = myScore - theirScore
+          if (Math.abs(margin) < 3) return null
+          const opponentClub = isHome ? awayClub : homeClub
+          if (!opponentClub) return null
+          const theyWon = margin < 0
+          const quote = generatePostMatchOpponentQuote(opponentClub, theyWon)
+          if (!quote) return null
+          return (
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(2) }}>
+              <SectionLabel style={{ marginBottom: 6 }}>🎙 MOTSTÅNDET SÄGER</SectionLabel>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5 }}>
+                {quote}
+              </p>
+            </div>
+          )
+        })()}
 
         {/* ── PRESSKONFERENS INLINE (WEAK-002) — visas direkt efter match, före övriga events ── */}
         {(() => {

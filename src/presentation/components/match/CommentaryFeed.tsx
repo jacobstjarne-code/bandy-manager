@@ -8,6 +8,7 @@ import { eventIcon } from '../../utils/formatters'
 import { getEventAlignment } from '../../screens/matchLiveHelpers'
 import { SnowOverlay } from './SnowOverlay'
 import { getFinalWhistleSummary } from '../../../domain/services/matchMoodService'
+import { getWelcomeSong } from '../../../domain/services/supporterRituals'
 
 interface CommentaryFeedProps {
   displayedSteps: MatchStep[]
@@ -316,6 +317,25 @@ export function CommentaryFeed({
             </span>
           </div>
         ]
+
+        if (s.step === 0 && managedIsHome && game) {
+          const welcomeSong = getWelcomeSong(game)
+          if (welcomeSong) {
+            rows.push(
+              <div
+                key={`welcome-${idx}`}
+                style={{
+                  padding: '6px 16px',
+                  borderLeft: '1px dashed rgba(140,190,220,0.5)',
+                  animation: 'fadeInUp 250ms ease-out both',
+                }}
+              >
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', minWidth: 28, display: 'inline-block' }}></span>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{welcomeSong}</span>
+              </div>
+            )
+          }
+        }
 
         s.events.filter(e => e.type === MatchEventType.Substitution).forEach((e, si) => {
           rows.push(

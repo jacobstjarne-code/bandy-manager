@@ -32,12 +32,6 @@ export function BoardMeetingScreen() {
   const maxSponsors = Math.min(6, 2 + Math.floor(club.reputation / 20))
 
   const players = game.players.filter(p => p.clubId === game.managedClubId)
-  const avgCA = players.length > 0
-    ? Math.round(players.reduce((s, p) => s + p.currentAbility, 0) / players.length)
-    : 0
-  const avgAge = players.length > 0
-    ? (players.reduce((s, p) => s + p.age, 0) / players.length).toFixed(1)
-    : '0'
 
   // Board quotes logic
   const myStanding = game.standings.find(s => s.clubId === game.managedClubId)
@@ -269,24 +263,62 @@ export function BoardMeetingScreen() {
         </div>
       </div>
 
-      {/* Trupp */}
-      <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
-        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
-          👥 Trupp
-        </p>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Antal spelare</span>
-          <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{players.length}</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Snittstyrka</span>
-          <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{avgCA}</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Snittålder</span>
-          <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{avgAge}</span>
-        </div>
-      </div>
+      {/* Trupp — WEAK-018 */}
+      {(() => {
+        const avgAge = players.length > 0
+          ? (players.reduce((s, p) => s + p.age, 0) / players.length).toFixed(1)
+          : '0'
+        const veterans = players.filter(p => p.age >= 30)
+        const expiring = players.filter(p => p.contractUntilSeason <= game.currentSeason + 1)
+        const bestPlayer = [...players].sort((a, b) => b.currentAbility - a.currentAbility)[0]
+        const captain = game.captainPlayerId ? players.find(p => p.id === game.captainPlayerId) : null
+
+        const POSITION_AVG: Record<string, { sum: number; count: number }> = {}
+        for (const p of players) {
+          if (!POSITION_AVG[p.position]) POSITION_AVG[p.position] = { sum: 0, count: 0 }
+          POSITION_AVG[p.position].sum += p.currentAbility
+          POSITION_AVG[p.position].count += 1
+        }
+        const POSITION_LABELS: Record<string, string> = {
+          Goalkeeper: 'Målvakt', Defender: 'Back', Half: 'Halvback', Midfielder: 'Mittfältare', Forward: 'Forward',
+        }
+        const weakestPos = Object.entries(POSITION_AVG)
+          .filter(([, v]) => v.count > 0)
+          .sort(([, a], [, b]) => (a.sum / a.count) - (b.sum / b.count))[0]
+        const weakestLabel = weakestPos ? (POSITION_LABELS[weakestPos[0]] ?? weakestPos[0]) : '—'
+
+        const squadNarrative = (() => {
+          if (veterans.length >= 4 && expiring.length >= 3) return 'Erfaren trupp med många utgående kontrakt. En skiljeväg väntar.'
+          if (players.filter(p => p.age < 23).length >= 5) return 'Många unga spelare. Potential finns — men tålamod krävs.'
+          if (expiring.length >= 4) return 'Kontraktssituationen är pressad. Prioritera förnyelse tidigt.'
+          return 'Truppen ser sammanhållen ut. Var kan vi höja oss ett snäpp?'
+        })()
+
+        const rows = [
+          `• ${players.length} spelare i truppen, snittålder ${avgAge}`,
+          `• ${veterans.length} spelare är 30+ (veteraner)`,
+          `• ${expiring.length} kontrakt löper ut i år`,
+          `• Svagaste position: ${weakestLabel}`,
+          bestPlayer ? `• Stjärnan: ${bestPlayer.firstName} ${bestPlayer.lastName} (CA ${bestPlayer.currentAbility}, ${bestPlayer.age} år)` : null,
+          captain ? `• Kapten: ${captain.firstName} ${captain.lastName}` : null,
+        ].filter(Boolean) as string[]
+
+        return (
+          <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
+            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+              👥 Truppen just nu
+            </p>
+            <div style={{ fontSize: 12, lineHeight: 1.7, color: 'var(--text-secondary)', marginBottom: 8 }}>
+              {rows.map((r, i) => <p key={i}>{r}</p>)}
+            </div>
+            <div style={{ padding: '8px 10px', background: 'var(--bg-surface)', borderRadius: 6 }}>
+              <p style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                {squadNarrative}
+              </p>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Styrelsemedlemmarnas röster */}
       {boardMembers.length > 0 && (

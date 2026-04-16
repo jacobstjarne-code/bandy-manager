@@ -775,6 +775,31 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     seasonEndPendingEvents.push(retirementEvent)
   }
 
+  // ── WEAK-017: Akademi-sammanfattning ─────────────────────────────────────────
+  {
+    const managedId = game.managedClubId
+    const promotions = game.players.filter(p =>
+      p.academyClubId === managedId &&
+      p.clubId === managedId &&
+      (p.careerStats?.totalGames ?? 0) >= 3 &&
+      (p.careerStats?.seasonsPlayed ?? 0) <= 1
+    ).length
+    const sold = game.players.filter(p =>
+      p.academyClubId === managedId &&
+      p.clubId !== managedId
+    ).length
+    if (promotions > 0 || sold > 0) {
+      newInboxItems.push({
+        id: `inbox_academy_summary_${game.currentSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.MediaEvent,
+        title: `Akademi-utfall ${game.currentSeason}`,
+        body: `${promotions > 0 ? `${promotions} spelare fick A-lagsdebut i år. ` : ''}${sold > 0 ? `${sold} akademifostrad${sold > 1 ? 'e' : ''} spelar nu för annan klubb — och pengarna gick tillbaka till akademin.` : ''} Det är så det ska fungera.`.trim(),
+        isRead: false,
+      } as InboxItem)
+    }
+  }
+
   // ── Funktionärsdöd (2%/säsong vid age >= 65) ──────────────────────────────
   const deathRand = mulberry32((seed ?? 42) + game.currentSeason * 31337)
   let updatedNamedCharacters = (game.namedCharacters ?? []).map(c => ({ ...c }))

@@ -127,7 +127,7 @@ export function generateHalfTimeSummary(game: SaveGame): HalfTimeSummary {
     if (p) {
       const name = `${p.firstName} ${p.lastName}`
       if (activeArc.type === 'hungrig_breakthrough') {
-        arcText = `🔥 ${name} har fortfarande inte gjort mål — genombrott krävs.`
+        arcText = `${name} har fortfarande inte gjort mål — genombrott krävs.`
       } else if (activeArc.type === 'veteran_farewell') {
         arcText = `🏅 ${name}s kontrakt tickar — beslut krävs före mars.`
       } else if (activeArc.type === 'contract_drama') {
@@ -135,7 +135,7 @@ export function generateHalfTimeSummary(game: SaveGame): HalfTimeSummary {
       } else if (activeArc.type === 'ledare_crisis') {
         arcText = `🦁 ${name} försöker hålla ihop laget under krisperioden.`
       } else if (activeArc.type === 'joker_redemption') {
-        arcText = `🎭 ${name} delar fansen — vad händer i vår?`
+        arcText = `${name} delar fansen — vad händer i vår?`
       }
     }
   }

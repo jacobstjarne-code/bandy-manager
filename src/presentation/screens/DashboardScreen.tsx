@@ -334,6 +334,26 @@ export function DashboardScreen() {
   const cupEliminated = cupStatus?.eliminated ?? false
   const showExpandedCup = !!(game.cupBracket && !cupEliminated && nextCupFixture)
 
+  // ── Dashboard priority (VIS-001) ────────────────────────────────
+  type DashboardPriority = 'event' | 'weekly_decision' | 'match' | 'arc' | 'last_match_glory' | 'default'
+  function getPrimaryCard(): DashboardPriority {
+    const hasCriticalEvent = (game!.pendingEvents ?? []).some(e => !e.resolved && e.type !== 'pressConference')
+    if (hasCriticalEvent) return 'event'
+    if (game!.pendingWeeklyDecision) return 'weekly_decision'
+    if (nextFixture && !game!.lineupConfirmedThisRound) return 'match'
+    if (game!.trainerArc?.current === 'crisis') return 'arc'
+    const lastWasSpecial = lastCompletedFixture && (() => {
+      const isHome = lastCompletedFixture.homeClubId === game!.managedClubId
+      const scored = isHome ? (lastCompletedFixture.homeScore ?? 0) : (lastCompletedFixture.awayScore ?? 0)
+      const conceded = isHome ? (lastCompletedFixture.awayScore ?? 0) : (lastCompletedFixture.homeScore ?? 0)
+      return scored > conceded && (scored - conceded >= 3 || lastCompletedFixture.matchday > 22)
+    })()
+    if (lastWasSpecial) return 'last_match_glory'
+    return 'default'
+  }
+  const primaryCard = getPrimaryCard()
+  const collapseGrid = primaryCard !== 'default'
+
   // ── Trainer arc ────────────────────────────────────────────────
 
   // ── Render ─────────────────────────────────────────────────────
@@ -420,8 +440,9 @@ export function DashboardScreen() {
           )
         })()}
 
-        {/* ② MATCHKORT */}
+        {/* ② MATCHKORT — accent border when it's the primary card */}
         {nextFixture && opponent && (
+          <div style={primaryCard === 'match' ? { border: '2px solid var(--accent)', borderRadius: 10, marginBottom: 6 } : {}}>
           <NextMatchCard
             nextFixture={nextFixture}
             opponent={opponent}
@@ -436,6 +457,7 @@ export function DashboardScreen() {
             hasPendingLineup={hasPendingLineup}
             lineupConfirmedThisRound={game.lineupConfirmedThisRound}
           />
+          </div>
         )}
 
         {/* ② BORTARESA (WEAK-019) */}
@@ -504,8 +526,33 @@ export function DashboardScreen() {
         {/* ③c TRÄNARKARRIÄR */}
         <CareerStatsCard game={game} />
 
-        {/* ④ ÖVERBLICK 2×2 grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, margin: '0 0 6px' }}>
+        {/* ④ ÖVERBLICK — collapsed rows when primary card active, otherwise 2×2 grid */}
+        {collapseGrid && (
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '6px 10px', display: 'flex', flexDirection: 'column', gap: 0 }}>
+            {standing && (
+              <div onClick={() => navigate('/game/tabell')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
+                <span style={{ fontSize: 13, width: 20 }}>📊</span>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', flex: 1 }}>Tabell</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {standing.position}:a · {standing.points}p
+                </span>
+              </div>
+            )}
+            <div onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
+              <span style={{ fontSize: 13, width: 20 }}>💰</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)', flex: 1 }}>Ekonomi</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: finances < 0 ? 'var(--danger)' : 'var(--text-primary)' }}>
+                {formatFinanceAbs(finances)}
+              </span>
+            </div>
+            <div onClick={() => navigate('/game/club', { state: { tab: 'orten' } })} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', cursor: 'pointer' }}>
+              <span style={{ fontSize: 13, width: 20 }}>🏘</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)', flex: 1 }}>Orten</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: csColor(cs) }}>CS {cs}</span>
+            </div>
+          </div>
+        )}
+        {!collapseGrid && <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, margin: '0 0 6px' }}>
 
           {/* Tabell */}
           {standing ? (
@@ -631,7 +678,7 @@ export function DashboardScreen() {
               </p>
             )}
           </div>
-        </div>
+        </div>}
 
         {/* ⑩ KLACKEN */}
         {(() => {
@@ -780,7 +827,7 @@ export function DashboardScreen() {
               <div style={{ margin: '0 0 8px', padding: '8px 10px', borderBottom: '1px solid var(--border)' }}>
                 <SectionLabel style={{ marginBottom: 4 }}>☕ KAFFERUMMET</SectionLabel>
                 <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-body)' }}>
-                  {coffee.speaker}: {coffee.text}
+                  {coffee.speaker ? `${coffee.speaker}: ${coffee.text}` : coffee.text}
                 </p>
               </div>
             )

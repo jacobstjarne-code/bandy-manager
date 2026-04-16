@@ -1,5 +1,7 @@
 import type { SaveGame, InboxItem } from '../../domain/entities/SaveGame'
+import type { GameEvent } from '../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType } from '../../domain/enums'
+import { generateQuarterFinalEvent } from '../../domain/services/playoffNarrativeService'
 import { calculateStandings } from '../../domain/services/standingsService'
 import {
   generatePlayoffBracket,
@@ -68,12 +70,24 @@ export function handlePlayoffStart(game: SaveGame, _seed?: number): AdvanceResul
   }
 
   const newDate = advanceDate(game.currentDate, 7)
+
+  const newPendingEvents: GameEvent[] = []
+  if (isInPlayoffs) {
+    const qfEventId = `playoff_qf_${game.currentSeason}`
+    const alreadyFired = (game.pendingEvents ?? []).some(e => e.id === qfEventId) ||
+      (game.resolvedEventIds ?? []).includes(qfEventId)
+    if (!alreadyFired) {
+      newPendingEvents.push(generateQuarterFinalEvent(game))
+    }
+  }
+
   const updatedGame: SaveGame = {
     ...game,
     fixtures: [...game.fixtures, ...allQFFixtures],
     playoffBracket: bracketWithFixtures,
     standings,
     inbox: [...game.inbox, ...newInboxItems],
+    pendingEvents: [...(game.pendingEvents ?? []), ...newPendingEvents],
     currentDate: newDate,
     showPlayoffIntro: true,
   }

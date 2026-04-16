@@ -1,8 +1,10 @@
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { PlayoffBracket } from '../../../domain/entities/Playoff'
+import type { GameEvent } from '../../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType, PlayoffStatus } from '../../../domain/enums'
 import { updateSeriesAfterMatch, advancePlayoffRound } from '../../../domain/services/playoffService'
+import { generateSemiFinalEvent, generateFinalEvent } from '../../../domain/services/playoffNarrativeService'
 
 function isSeriesDecided(series: { winnerId: string | null }): boolean {
   return series.winnerId !== null
@@ -13,6 +15,7 @@ export interface PlayoffProcessorResult {
   bracketNewFixtures: Fixture[]
   playoffCsBoost: number
   inboxItems: InboxItem[]
+  gameEvents: GameEvent[]
   cancelledFixtureIds: string[]
   triggerQFSummary: boolean
 }
@@ -40,6 +43,7 @@ export function processPlayoffRound(
     bracketNewFixtures: [],
     playoffCsBoost: 0,
     inboxItems: [],
+    gameEvents: [],
     cancelledFixtureIds: [],
     triggerQFSummary: false,
   }
@@ -148,6 +152,24 @@ export function processPlayoffRound(
     result.bracketNewFixtures = newFixtures
     if (wasQFPhase && !game.showQFSummary) {
       result.triggerQFSummary = true
+    }
+    // Narrative event for managed club advancing to next round
+    const managedInNewBracket = [
+      ...newBracket.semiFinals,
+      ...(newBracket.final ? [newBracket.final] : []),
+    ].some(s => s.homeClubId === game.managedClubId || s.awayClubId === game.managedClubId)
+    if (managedInNewBracket) {
+      if (wasQFPhase) {
+        const sfId = `playoff_sf_${game.currentSeason}`
+        const alreadyFired = (game.pendingEvents ?? []).some(e => e.id === sfId) ||
+          (game.resolvedEventIds ?? []).includes(sfId)
+        if (!alreadyFired) result.gameEvents.push(generateSemiFinalEvent(game))
+      } else if (result.updatedBracket!.status === PlayoffStatus.Final) {
+        const finalId = `playoff_final_${game.currentSeason}`
+        const alreadyFired = (game.pendingEvents ?? []).some(e => e.id === finalId) ||
+          (game.resolvedEventIds ?? []).includes(finalId)
+        if (!alreadyFired) result.gameEvents.push(generateFinalEvent(game))
+      }
     }
   }
 

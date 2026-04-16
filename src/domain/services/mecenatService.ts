@@ -481,7 +481,7 @@ export function generateMecenatConflictEvent(
   return {
     id: `event_conflict_${mec1.id}_${mec2.id}`,
     type: 'patronEvent',
-    title: `⚡ Konflikt: ${mec1.name} vs ${mec2.name}`,
+    title: `Konflikt: ${mec1.name} vs ${mec2.name}`,
     body: `${mec1.name} vill satsa på dyra värvningar. ${mec2.name} tycker ni ska fokusera på ungdomar.\n\nBåda väntar på ditt svar.`,
     choices: [
       {
