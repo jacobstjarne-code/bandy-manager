@@ -9,6 +9,40 @@ function bidId(round: number, playerId: string, buyingClubId: string): string {
   return `bid_${round}_${playerId}_${buyingClubId}`
 }
 
+// WEAK-015 + DEV-004: build a rich narrative body when a historically significant player leaves
+interface TransferStoryFlags {
+  isCaptain: boolean
+  isFanFavorite: boolean
+  hasActiveArc: boolean
+  isLegend: boolean
+  isHomegrown: boolean
+}
+
+function buildTransferStory(
+  player: import('../entities/Player').Player,
+  flags: TransferStoryFlags,
+  buyerClub: import('../entities/Club').Club | undefined,
+): string {
+  const parts: string[] = []
+  if (flags.isCaptain) {
+    parts.push(`Kaptenen är borta. ${player.firstName} ${player.lastName} tog bindeln sist och gav laget en hållhake hela säsongen.`)
+  }
+  if (flags.isFanFavorite) {
+    parts.push('Klacken är tyst. "Vi förlåter inte det här i första taget" skriver en insändare.')
+  }
+  if (flags.isHomegrown) {
+    parts.push(`${player.firstName} växte upp här. Tränade i vår akademi. Det här är en del av klubbens historia som lämnar.`)
+  }
+  if (flags.isLegend) {
+    parts.push(`${player.careerStats.totalGames} matcher i tröjan. ${player.careerStats.totalGoals} mål. En epok är över.`)
+  }
+  if (flags.hasActiveArc) {
+    parts.push('Berättelsen om honom fick inte ett slut — den klipptes av.')
+  }
+  parts.push(`Han skrev på för ${buyerClub?.name ?? 'annan klubb'}.`)
+  return parts.join(' ')
+}
+
 // ── AI-bud på spelarens lag ─────────────────────────────────────────────────
 export function generateIncomingBids(
   game: SaveGame,
@@ -190,6 +224,14 @@ export function executeTransfer(
 ): SaveGame {
   const { playerId, buyingClubId, sellingClubId, offerAmount, offeredSalary, contractYears } = bid
 
+  // BUG-008: block purchase if managed club would go below -100k
+  if (buyingClubId === game.managedClubId) {
+    const buyingClub = game.clubs.find(c => c.id === buyingClubId)
+    if (buyingClub && buyingClub.finances - offerAmount < -100000) {
+      return game
+    }
+  }
+
   const updatedPlayers = game.players.map(p => {
     if (p.id !== playerId) return p
     return {
@@ -223,6 +265,27 @@ export function executeTransfer(
   const soldPlayer = game.players.find(p => p.id === playerId)
   const isAcademyProduct = soldPlayer?.isHomegrown && soldPlayer.academyClubId === sellingClubId
   const isSoldFromManagedClub = sellingClubId === game.managedClubId
+  const buyerClub = game.clubs.find(c => c.id === buyingClubId)
+
+  // WEAK-015 + DEV-004: rich narrative inbox for historically significant sales
+  const storyInboxItems = (() => {
+    if (!isSoldFromManagedClub || !soldPlayer) return []
+    const isCaptain = game.captainPlayerId === soldPlayer.id
+    const isFanFavorite = game.supporterGroup?.favoritePlayerId === soldPlayer.id
+    const hasActiveArc = (game.activeArcs ?? []).some(a => a.playerId === soldPlayer.id && a.phase !== 'resolving')
+    const isLegend = soldPlayer.careerStats.totalGames >= 80
+    const isHomegrown = !!(soldPlayer.isHomegrown && soldPlayer.academyClubId === game.managedClubId)
+    const hasHistory = isCaptain || isFanFavorite || hasActiveArc || isLegend || isHomegrown
+    if (!hasHistory) return []
+    return [{
+      id: `transfer_story_${soldPlayer.id}_${game.currentDate}`,
+      date: game.currentDate,
+      type: InboxItemType.Transfer,
+      title: `${soldPlayer.firstName} ${soldPlayer.lastName} lämnar`,
+      body: buildTransferStory(soldPlayer, { isCaptain, isFanFavorite, hasActiveArc, isLegend, isHomegrown }, buyerClub),
+      isRead: false,
+    }]
+  })()
 
   const fanInboxItems = (isAcademyProduct && isSoldFromManagedClub && soldPlayer)
     ? [{
@@ -269,7 +332,10 @@ export function executeTransfer(
     clubs: updatedClubs,
     transferBids: updatedBids,
     financeLog: updatedFinanceLog,
-    inbox: fanInboxItems.length > 0 ? [...fanInboxItems, ...game.inbox] : game.inbox,
+    inbox: (() => {
+      const extra = [...storyInboxItems, ...fanInboxItems]
+      return extra.length > 0 ? [...extra, ...game.inbox] : game.inbox
+    })(),
     fanMood: fanMoodPenalty !== 0 ? Math.max(0, (game.fanMood ?? 50) + fanMoodPenalty) : game.fanMood,
   }
 }

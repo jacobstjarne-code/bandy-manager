@@ -231,6 +231,7 @@ export interface SaveGame {
   boardPersonalities?: BoardMember[]
   hallDebateCount?: number
   lastHallDebateRound?: number
+  lastEconomicStressRound?: number
   budgetPriority?: 'squad' | 'balanced' | 'youth'
   resolvedEventIds?: string[]  // event IDs that have been resolved — prevents re-triggering
 

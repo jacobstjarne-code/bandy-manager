@@ -514,3 +514,53 @@ export function generateMecenatInterventionEvent(mec: Mecenat, roundNumber: numb
     resolved: false,
   }
 }
+
+// DEV-012: Economic stress micro-decisions (only active in -100k to +50k zone)
+export function createEconomicStressEvent(game: SaveGame, currentMatchday: number): GameEvent | null {
+  const finances = game.clubs.find(c => c.id === game.managedClubId)?.finances ?? 0
+  if (finances >= 50000 || finances < -100000) return null
+
+  // Max 1 stress-event per 6 omgångar
+  if (game.lastEconomicStressRound && (currentMatchday - game.lastEconomicStressRound) < 6) return null
+
+  const options: Array<{ id: string; title: string; body: string; choices: GameEvent['choices'] }> = [
+    {
+      id: 'economic_stress_clubs',
+      title: 'Materialarens fråga',
+      body: 'Materialaren: "Fem klubbor gick sönder i veckan. Köper vi nya nu eller väntar en månad?"',
+      choices: [
+        { id: 'buy', label: 'Köp nya direkt (−3k)', effect: { type: 'finance', value: -3000 } },
+        { id: 'wait', label: 'Vänta — grabbarna får klara sig', effect: { type: 'moraleDelta', value: -2 } },
+      ],
+    },
+    {
+      id: 'economic_stress_bus',
+      title: 'Bussbolaget ringde',
+      body: 'Bussbolaget: "Vi höjer 8% från nästa månad. Vill ni skriva nytt 3-årsavtal med lägre höjning eller köra som vanligt?"',
+      choices: [
+        { id: 'sign', label: 'Skriv nytt avtal (−5k nu, billigare sen)', effect: { type: 'finance', value: -5000 } },
+        { id: 'shop', label: 'Fråga andra bolag — kan ta tid', effect: { type: 'noOp' } },
+      ],
+    },
+    {
+      id: 'economic_stress_kiosk',
+      title: 'Kioskvakten: förnyar vi korvavtalet?',
+      body: 'Korvfabriken vill sälja oss exklusivt. 10% billigare men låst i två år.',
+      choices: [
+        { id: 'lock', label: 'Skriv — bra marginaler', effect: { type: 'finance', value: 4000 } },
+        { id: 'free', label: 'Behåll flexibiliteten', effect: { type: 'noOp' } },
+      ],
+    },
+  ]
+
+  const idx = Math.floor(Math.random() * options.length)
+  const chosen = options[idx]
+  return {
+    id: `event_economic_stress_${chosen.id}_${currentMatchday}`,
+    type: 'economicStress',
+    title: chosen.title,
+    body: chosen.body,
+    choices: chosen.choices,
+    resolved: false,
+  }
+}

@@ -32,6 +32,7 @@ export type GameEventType =
   | 'journalistExclusive'
   | 'supporterAwayTrip'
   | 'retirementCeremony'
+  | 'economicStress'
 
 export interface EventChoice {
   id: string
@@ -77,6 +78,8 @@ export interface EventEffect {
     | 'teamBoostMorale'
     | 'supporterMood'
     | 'mecenatHappiness'
+    | 'finance'
+    | 'moraleDelta'
   value?: number
   amount?: number
   targetPlayerId?: string

@@ -585,6 +585,27 @@ export function resolveEvent(
         }
       }
       break
+    case 'finance': {
+      // DEV-012: direct finance mutation for economic stress events
+      updatedGame = {
+        ...updatedGame,
+        clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, effect.value ?? 0),
+      }
+      break
+    }
+    case 'moraleDelta': {
+      // DEV-012: apply morale delta to all managed club players
+      const delta = effect.value ?? 0
+      updatedGame = {
+        ...updatedGame,
+        players: updatedGame.players.map(p =>
+          p.clubId === updatedGame.managedClubId
+            ? { ...p, morale: Math.max(0, Math.min(100, p.morale + delta)) }
+            : p
+        ),
+      }
+      break
+    }
     case 'openNegotiation':
     default:
       break

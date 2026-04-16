@@ -210,6 +210,27 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
         )}
       </SectionCard>
 
+      {/* Budgetprioritet */}
+      {game.budgetPriority && (
+        <SectionCard title="🎯 Budgetprioritet">
+          <div style={{ padding: '8px 0' }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+              {game.budgetPriority === 'squad' && 'Truppen först'}
+              {game.budgetPriority === 'youth' && 'Ungdomssatsning'}
+              {game.budgetPriority === 'balanced' && 'Balanserat'}
+            </p>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              {game.budgetPriority === 'squad' && 'Du lägger +15% extra på löner denna säsong. Akademi -10%.'}
+              {game.budgetPriority === 'youth' && '+20% till akademi och ungdomsutveckling. Löner -10%.'}
+              {game.budgetPriority === 'balanced' && 'Jämn fördelning mellan trupp och akademi.'}
+            </p>
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>
+              Valet gäller hela säsongen. Ändra vid nästa säsongsstart.
+            </p>
+          </div>
+        </SectionCard>
+      )}
+
       {/* Sponsorer */}
       <SectionCard title="🤝 Sponsorer" stagger={2}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>

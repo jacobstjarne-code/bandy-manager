@@ -49,6 +49,7 @@ import { processSponsors } from './processors/sponsorProcessor'
 import { simulateRound } from './processors/matchSimProcessor'
 import { processYouth } from './processors/youthProcessor'
 import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
+import { createEconomicStressEvent } from '../../domain/services/events/eventFactories'
 
 export type { AdvanceResult }
 
@@ -728,6 +729,28 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const allNewEvents = [...newEvents, ...communityEvents]
   if (simResult.pressEvent) allNewEvents.push(simResult.pressEvent)
 
+  // ── BUG-008: finance warning inbox when managed club is in -50k to -100k zone ──
+  const managedClubForWarning = preEventGame.clubs.find(c => c.id === game.managedClubId)
+  if (managedClubForWarning && managedClubForWarning.finances < -50000 && managedClubForWarning.finances >= -100000) {
+    const warnId = `inbox_finance_warn_${game.currentSeason}_${nextMatchday}`
+    if (!preEventGame.inbox.some(i => i.id === warnId)) {
+      newInboxItems.push({
+        id: warnId,
+        date: preEventGame.currentDate,
+        type: InboxItemType.BoardFeedback,
+        title: '⚠️ Ekonomisk varning',
+        body: `Kassan är på ${managedClubForWarning.finances.toLocaleString('sv-SE')} kr. Om vi når -100k kan licensnämnden agera.`,
+        isRead: false,
+      })
+    }
+  }
+
+  // ── DEV-012: economic stress micro-events ───────────────────────────────
+  const stressEvent = createEconomicStressEvent(preEventGame, nextMatchday)
+  if (stressEvent) {
+    allNewEvents.push(stressEvent)
+  }
+
   // ── Mecenat social events, silent shout, and happiness decay ────────────
   let updatedMecenater = (game.mecenater ?? []).map(mec => {
     if (!mec.isActive) return mec
@@ -1072,6 +1095,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     previousKommunBidrag: game.localPolitician?.kommunBidrag,
     mecenater: updatedMecenater,
     lastCoffeeQuoteHash: currentLeagueRound !== null ? currentLeagueRound * 7 + game.currentSeason * 31 : game.lastCoffeeQuoteHash,
+    lastEconomicStressRound: stressEvent ? nextMatchday : game.lastEconomicStressRound,
     ...(() => {
       // Update rolling average attendance for home matches
       if (!justCompletedManagedFixture) return {}
