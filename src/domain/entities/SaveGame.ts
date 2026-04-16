@@ -344,4 +344,13 @@ export interface SaveGame {
 
   // Sprint G — preferred match mode (persists between matches)
   preferredMatchMode?: 'full' | 'commentary' | 'quicksim'
+
+  // Sprint 9 — Away trip microdecision (WEAK-019)
+  awayTrip?: {
+    fixtureId: string
+    hotel: 'pensionat' | 'mellanklass' | 'nice'
+    extraMeal: boolean
+    weatherWarning?: string
+    mikrobeslut: 'stay_home' | 'book_nice' | 'ask_foundation' | null
+  }
 }

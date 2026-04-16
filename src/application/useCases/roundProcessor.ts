@@ -51,6 +51,7 @@ import { processYouth } from './processors/youthProcessor'
 import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
 import { createEconomicStressEvent } from '../../domain/services/events/eventFactories'
 import { generatePreMatchOpponentQuote } from '../../domain/services/opponentManagerService'
+import { generateAwayTrip } from '../../domain/services/awayTripService'
 
 export type { AdvanceResult }
 
@@ -1097,6 +1098,31 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  // ── WEAK-019: Away trip microdecision — generate for upcoming away fixture ──
+  const upcomingAwayFixture = finalAllFixtures
+    .filter(f => f.status === FixtureStatus.Scheduled && f.awayClubId === game.managedClubId)
+    .sort((a, b) => a.matchday - b.matchday)[0] ?? null
+  const nextManagedFixtureForTrip = finalAllFixtures
+    .filter(f => f.status === FixtureStatus.Scheduled && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+    .sort((a, b) => a.matchday - b.matchday)[0] ?? null
+  const isNextAway = nextManagedFixtureForTrip?.awayClubId === game.managedClubId
+  const awayTripUpdate = (() => {
+    // Clear if we just played away (trip consumed)
+    if (justCompletedManagedFixture && justCompletedManagedFixture.awayClubId === game.managedClubId) {
+      return undefined
+    }
+    // Keep existing trip if it's for the same upcoming fixture and already has a decision
+    if (game.awayTrip && isNextAway && nextManagedFixtureForTrip && game.awayTrip.fixtureId === nextManagedFixtureForTrip.id) {
+      return game.awayTrip
+    }
+    // Generate new trip if next managed fixture is away
+    if (isNextAway && nextManagedFixtureForTrip && upcomingAwayFixture) {
+      const tripWeather = trimmedWeathers.find(mw => mw.fixtureId === nextManagedFixtureForTrip.id)
+      return generateAwayTrip(nextManagedFixtureForTrip, tripWeather)
+    }
+    return undefined
+  })()
+
   let updatedGame: SaveGame = {
     ...game,
     communityStanding: Math.min(100, Math.max(0,
@@ -1172,6 +1198,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       nextMatchday,
     ) ?? undefined,
     resolvedEventIds: reputationResolvedIds,
+    awayTrip: awayTripUpdate,
   }
 
   // Append market value change notifications to inbox

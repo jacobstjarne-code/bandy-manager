@@ -80,6 +80,7 @@ export interface SimulateMatchInput {
   fanMood?: number
   managedIsHome?: boolean
   storylines?: Array<{ playerId?: string; type: string; displayText: string }>
+  fixtureMonth?: number  // 1-12, for seasonal ice hardness (DREAM-004)
 }
 
 export function computeWeatherEffects(w: Weather) {
@@ -294,6 +295,7 @@ export interface StepByStepInput {
   captainPlayerId?: string
   fanFavoritePlayerId?: string
   supporterContext?: { mood: number; members: number; leaderName: string }
+  fixtureMonth?: number  // 1-12, for seasonal ice hardness (DREAM-004)
   matchContext?: {
     managedPosition?: number   // 1-12 i tabellen
     totalRounds?: number       // 22 för grundserie

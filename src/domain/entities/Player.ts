@@ -115,6 +115,10 @@ export interface Player {
   lowMoraleDays?: number  // consecutive matchdays with morale < 30
   seasonHistory?: Array<{ season: number; goals: number; assists: number; games: number; rating: number; clubId: string }>
 
+  // Sprint 9 — DREAM-012: injury narrative
+  familyContext?: string    // generated once, persists across injuries
+  injuryNarrative?: string  // current injury story text
+
   // V1.4 — Player narrative diary (auto-generated)
   narrativeLog?: Array<{
     season: number

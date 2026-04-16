@@ -11,6 +11,15 @@
   /* Backgrounds */
   --bg:               #EDE8DF;
   --bg-surface:       #FAF8F4;
+
+  /* Seasonal backgrounds — NARR-002 */
+  --bg-october:  linear-gradient(180deg, #E8E4DC 0%, #EDE8DF 100%);
+  --bg-november: linear-gradient(180deg, #D8D4CC 0%, #E8E4DC 100%);
+  --bg-december: linear-gradient(180deg, #F0ECE4 0%, #E8DCCC 100%);
+  --bg-january:  linear-gradient(180deg, #D0D4D8 0%, #E0E4E8 100%);
+  --bg-february: linear-gradient(180deg, #E8E4DC 0%, #F0ECE4 100%);
+  --bg-march:    linear-gradient(180deg, #F0E0DC 0%, #EDE8DF 100%);
+  --bg-april:    linear-gradient(180deg, #E8F0E4 0%, #F0F5EC 100%);
   --bg-elevated:      #FFFFFF;
   --bg-dark:          #0E0D0B;
   --bg-dark-surface:  #1E1D19;

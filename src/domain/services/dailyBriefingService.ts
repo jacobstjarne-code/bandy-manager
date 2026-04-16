@@ -19,6 +19,7 @@ const SEASON_MOOD: Record<SeasonPhase, string[]> = {
   endgame: [
     'Februari. Slutstriden börjar ta form.',
     'Varje match räknas nu. Tabellen stramas åt.',
+    'Transferfönstret. Alla har någon agent som ringt.',
   ],
   playoff: [
     'Slutspel. Inga andra chanser.',

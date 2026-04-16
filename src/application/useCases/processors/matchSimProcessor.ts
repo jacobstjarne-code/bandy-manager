@@ -282,6 +282,7 @@ export function simulateRound(
       fanMood: game.fanMood ?? 50,
       managedIsHome: isManagedHome,
       storylines: (game.storylines ?? []).filter(s => s.resolved),
+      fixtureMonth: new Date(game.currentDate).getMonth() + 1,
     })
 
     const homeClubForAttendance = game.clubs.find(c => c.id === fixture.homeClubId)
@@ -297,6 +298,7 @@ export function simulateRound(
       isFinal: isFinalFixture || (fixture.isCup && fixture.roundNumber === 4),
       isSemiFinal: isSemiFixture || (fixture.isCup && fixture.roundNumber === 3),
       isAnnandagen: nextMatchday === 12,
+      fixtureMonth: new Date(game.currentDate).getMonth() + 1,
     }) : undefined
     simulatedFixtures.push({ ...result.fixture, attendance })
   }

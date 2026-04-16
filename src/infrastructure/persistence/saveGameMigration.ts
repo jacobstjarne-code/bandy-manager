@@ -63,6 +63,8 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   // ── players: ensure each player has newer optional fields ──────────────
   if (Array.isArray(data.players)) {
     data.players = (data.players as Record<string, unknown>[]).map(p => {
+      if (p.injuryNarrative === undefined) p.injuryNarrative = undefined
+      if (p.familyContext === undefined) p.familyContext = undefined
       if (p.promotedFromAcademy === undefined) p.promotedFromAcademy = false
       if (p.careerMilestones === undefined) p.careerMilestones = []
       if (p.startSeasonCA === undefined) p.startSeasonCA = p.currentAbility

@@ -1,5 +1,6 @@
 import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
 import { resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
+import { applyFinanceChange } from '../../../domain/services/economyService'
 import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
 import { navigateTo } from '../../navigation/globalNavigate'
 import { saveSaveGame } from '../../../infrastructure/persistence/saveGameStorage'
@@ -12,6 +13,7 @@ interface GetState {
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string) => { success: boolean; error?: string }
   advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
   resolveWeeklyDecision: (choice: 'A' | 'B') => void
+  resolveAwayTrip: (decision: 'stay_home' | 'book_nice' | 'ask_foundation') => void
 }
 
 type Get = () => GetState
@@ -263,6 +265,50 @@ export function gameFlowActions(get: Get, set: Set) {
                 : p
             ),
           }
+        }
+      }
+
+      set({ game: updatedGame })
+      saveSaveGame(updatedGame).catch(e => console.warn('Autosave misslyckades:', e))
+    },
+
+    resolveAwayTrip: (decision: 'stay_home' | 'book_nice' | 'ask_foundation') => {
+      const { game } = get()
+      if (!game || !game.awayTrip) return
+
+      // Find the lineup for this fixture to apply effects to starters
+      const fixture = game.fixtures.find(f => f.id === game.awayTrip!.fixtureId)
+      const lineup = fixture ? (fixture.awayClubId === game.managedClubId ? fixture.awayLineup : null) : null
+      const starterIds = new Set(lineup?.startingPlayerIds ?? [])
+
+      let updatedGame: SaveGame = {
+        ...game,
+        awayTrip: { ...game.awayTrip, mikrobeslut: decision },
+      }
+
+      if (decision === 'book_nice') {
+        updatedGame = {
+          ...updatedGame,
+          clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, -8000),
+          players: updatedGame.players.map(p =>
+            starterIds.has(p.id)
+              ? { ...p, morale: Math.min(100, p.morale + 2) }
+              : p
+          ),
+        }
+      } else if (decision === 'ask_foundation') {
+        updatedGame = {
+          ...updatedGame,
+          communityStanding: Math.max(0, (updatedGame.communityStanding ?? 50) - 2),
+        }
+      } else if (decision === 'stay_home') {
+        updatedGame = {
+          ...updatedGame,
+          players: updatedGame.players.map(p =>
+            starterIds.has(p.id)
+              ? { ...p, form: Math.max(0, p.form - 3) }
+              : p
+          ),
         }
       }
 

@@ -126,7 +126,9 @@
       "Bash(python3 scripts/reclassify_sources.py)",
       "Bash(python3 -m pytest tests/ -v --tb=short)",
       "Bash(python3 -m scrapers.jefferson_wells)",
-      "Bash(xargs sed *)"
+      "Bash(xargs sed *)",
+      "Bash(grep -n \"awayTrip\\\\|updatedGame.*{$\\\\|return.*{$\" /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/application/useCases/roundProcessor.ts)",
+      "Bash(grep -n \"resolveWeeklyDecision\\\\|gameFlowActions\" /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/presentation/store/*.ts)"
     ]
   }
 }

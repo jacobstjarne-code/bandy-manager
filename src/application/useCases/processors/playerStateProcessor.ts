@@ -9,6 +9,7 @@ import { getTacticModifiers } from '../../../domain/services/tacticModifiers'
 import { developPlayers } from '../../../domain/services/playerDevelopmentService'
 import { mulberry32 } from '../../../domain/utils/random'
 import { generateInjuryEntry, generateReturnFromInjuryEntry } from '../../../domain/services/narrativeService'
+import { generateInjuryNarrative } from '../../../domain/data/injuryStories'
 
 export interface PlayerStateResult {
   updatedPlayers: Player[]
@@ -50,6 +51,7 @@ export function applyPlayerStateUpdates(
         updated.isInjured = false
         updated.injuryDaysRemaining = 0
         updated.fitness = Math.max(30, updated.fitness - 15)
+        updated.injuryNarrative = undefined
         // Narrative: recovery entry for managed players
         if (player.clubId === game.managedClubId) {
           const recoveryEntry = generateReturnFromInjuryEntry(game.currentSeason, nextRound)
@@ -170,11 +172,17 @@ export function applyPlayerStateUpdates(
 
     if (localRand() < injuryChance) {
       const days = 7 + Math.floor(localRand() * 28)  // 1–5 weeks
+      const injuryTypes = ['knä', 'axel', 'vrist', 'huvud', 'rygg', 'hamstring']
+      const injuryType = injuryTypes[Math.floor(localRand() * injuryTypes.length)]
       let injuredPlayer = { ...player, isInjured: true, injuryDaysRemaining: days }
       // Narrative: injury entry for managed players
       if (player.clubId === game.managedClubId) {
         const injuryEntry = generateInjuryEntry(game.currentSeason, nextRound, days)
         injuredPlayer.narrativeLog = [...(player.narrativeLog ?? []), injuryEntry].slice(-20)
+        // DREAM-012: human injury narrative
+        const { narrative, familyContext } = generateInjuryNarrative(player.familyContext, injuryType, localRand)
+        injuredPlayer.injuryNarrative = narrative
+        injuredPlayer.familyContext = familyContext
       }
       updatedPlayers[idx] = injuredPlayer
       newlyInjured.push({ player: updatedPlayers[idx], days })

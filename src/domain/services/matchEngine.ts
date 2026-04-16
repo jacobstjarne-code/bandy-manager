@@ -32,6 +32,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     fanMood,
     managedIsHome,
     storylines,
+    fixtureMonth,
   } = input
 
   // ── Run first half (fast mode) ───────────────────────────────────────────
@@ -52,6 +53,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     fanMood,
     managedIsHome,
     storylines,
+    fixtureMonth,
     mode: 'fast' as const,
   }
 

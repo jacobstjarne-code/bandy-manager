@@ -206,8 +206,9 @@ export function calcAttendance(params: {
   isFinal?: boolean
   isSemiFinal?: boolean
   isAnnandagen?: boolean
+  fixtureMonth?: number  // DREAM-004: december bonus
 }): number {
-  const { club, fanMood, position, isKnockout, isCup, isDerby, isFinal, isSemiFinal, isAnnandagen } = params
+  const { club, fanMood, position, isKnockout, isCup, isDerby, isFinal, isSemiFinal, isAnnandagen, fixtureMonth } = params
   const baseCapacity = club.arenaCapacity ?? Math.round(club.reputation * 7 + 150)
 
   // Finals get expanded capacity (temporary stands, like Studenternas)
@@ -223,7 +224,9 @@ export function calcAttendance(params: {
   const derbyBonus = isDerby ? 1.30 : 1.0
   // Annandagen is the most-attended league match of the year — whole village turns up
   const annandagenBonus = isAnnandagen ? 1.80 : 1.0
-  const base = Math.round(expandedCapacity * attendanceRate * eventBonus * derbyBonus * annandagenBonus)
+  // DREAM-004: december julturneringen — hela familjen på läktaren
+  const christmasBonus = (fixtureMonth === 12) ? 1.15 : 1.0
+  const base = Math.round(expandedCapacity * attendanceRate * eventBonus * derbyBonus * annandagenBonus * christmasBonus)
   return Math.min(expandedCapacity, Math.max(50, base))
 }
 

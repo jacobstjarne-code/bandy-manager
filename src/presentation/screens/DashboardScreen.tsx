@@ -29,6 +29,7 @@ import { getSupporterMoodLabel } from '../../domain/services/supporterService'
 import { getRitualText } from '../../domain/services/supporterRituals'
 import type { WeeklyDecision } from '../../domain/services/weeklyDecisionService'
 import { SectionLabel } from '../components/SectionLabel'
+import { HOTEL_NAMES, RESOLVED_TEXTS } from '../../domain/services/awayTripService'
 
 
 const NAV_BTN: React.CSSProperties = {
@@ -44,6 +45,7 @@ export function DashboardScreen() {
   const { game, advance, simulateRemainingStep } = useGameStore()
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const resolveWeeklyDecision = useGameStore(s => s.resolveWeeklyDecision)
+  const resolveAwayTrip = useGameStore(s => s.resolveAwayTrip)
   const club = useManagedClub()
   const standing = useCurrentStanding()
   const hasPendingLineup = useHasPendingLineup()
@@ -118,6 +120,20 @@ export function DashboardScreen() {
   const currentDateObj = new Date(game.currentDate)
   const MONTHS = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december']
   const currentDateStr = `${currentDateObj.getDate()} ${MONTHS[currentDateObj.getMonth()]} ${currentDateObj.getFullYear()}`
+
+  function getSeasonalBackground(date: Date): string {
+    const month = date.getMonth() + 1
+    switch (month) {
+      case 10: return 'var(--bg-october)'
+      case 11: return 'var(--bg-november)'
+      case 12: return 'var(--bg-december)'
+      case 1:  return 'var(--bg-january)'
+      case 2:  return 'var(--bg-february)'
+      case 3:  return 'var(--bg-march)'
+      case 4:  return 'var(--bg-april)'
+      default: return 'var(--bg)'
+    }
+  }
 
   const recentForm = getFormResults(game.managedClubId, game.fixtures, game.clubs)
 
@@ -324,7 +340,7 @@ export function DashboardScreen() {
 
   return (
     <>
-    <div className="screen-enter" style={{ position: 'relative', minHeight: '100%', background: 'var(--bg)' }}>
+    <div className="screen-enter" style={{ position: 'relative', minHeight: '100%', background: getSeasonalBackground(currentDateObj) }}>
 
 
       <div className="texture-wood card-stack" style={{ paddingTop: 8, paddingBottom: 'var(--scroll-padding-bottom)' }}>
@@ -420,6 +436,44 @@ export function DashboardScreen() {
             hasPendingLineup={hasPendingLineup}
             lineupConfirmedThisRound={game.lineupConfirmedThisRound}
           />
+        )}
+
+        {/* ② BORTARESA (WEAK-019) */}
+        {game.awayTrip && nextFixture && !isHome && (
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+            <SectionLabel style={{ marginBottom: 6 }}>🚌 BORTARESA — {opponent?.name}</SectionLabel>
+            <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5, fontFamily: 'var(--font-body)' }}>
+              Bussen avgår fredag 14:00. Övernattning på {HOTEL_NAMES[game.awayTrip.hotel]}.
+              {game.awayTrip.weatherWarning && ` ${game.awayTrip.weatherWarning}.`}
+            </p>
+            {game.awayTrip.mikrobeslut === null && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
+                {([
+                  { id: 'book_nice' as const, label: 'Bättre hotell — 8k kr', sub: '+2 moral på startelvan' },
+                  { id: 'ask_foundation' as const, label: 'Fråga föreningen om mattstöd', sub: '−2 orten' },
+                  { id: 'stay_home' as const, label: 'Åk samma kväll', sub: '−3 form på startelvan' },
+                ] as const).map(opt => (
+                  <button
+                    key={opt.id}
+                    onClick={() => resolveAwayTrip(opt.id)}
+                    style={{
+                      padding: '7px 10px', borderRadius: 6, textAlign: 'left',
+                      background: 'var(--bg)', border: '1px solid var(--border)',
+                      cursor: 'pointer', fontSize: 11, color: 'var(--text-secondary)',
+                    }}
+                  >
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{opt.label}</span>
+                    <span style={{ color: 'var(--text-muted)', marginLeft: 6 }}>{opt.sub}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {game.awayTrip.mikrobeslut !== null && (
+              <p style={{ fontSize: 10, fontStyle: 'italic', color: 'var(--text-muted)', marginTop: 6 }}>
+                {RESOLVED_TEXTS[game.awayTrip.mikrobeslut]}
+              </p>
+            )}
+          </div>
         )}
 
         {/* Eliminated */}

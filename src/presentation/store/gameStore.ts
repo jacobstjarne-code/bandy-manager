@@ -75,6 +75,7 @@ interface GameState {
   clearRoundSummary: () => void
   markScreenVisited: (screen: string) => void
   resolveWeeklyDecision: (choice: 'A' | 'B') => void
+  resolveAwayTrip: (decision: 'stay_home' | 'book_nice' | 'ask_foundation') => void
 }
 
 const indexedDBStorage = {

@@ -433,6 +433,17 @@ export function PlayerCard({
           <p style={{ fontSize: 10, marginTop: 6, color: player.isInjured ? 'var(--danger)' : player.suspensionGamesRemaining > 0 ? 'var(--warning)' : 'var(--success)' }}>
             {player.isInjured ? `🩹 Skadad` : player.suspensionGamesRemaining > 0 ? `🚫 Avstängd ${player.suspensionGamesRemaining} match${player.suspensionGamesRemaining > 1 ? 'er' : ''}` : '🩹 Frisk · Tillgänglig'}
           </p>
+          {/* DREAM-012: injury narrative */}
+          {player.isInjured && player.injuryNarrative && (
+            <div style={{ padding: '8px 10px', background: 'rgba(176,80,64,0.08)', borderLeft: '3px solid var(--danger)', marginTop: 8, borderRadius: '0 4px 4px 0' }}>
+              <p style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: 2, color: 'var(--danger)', marginBottom: 4 }}>
+                🏥 SKADAD — {Math.ceil(player.injuryDaysRemaining / 7)} veckor kvar
+              </p>
+              <p style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                {player.injuryNarrative}
+              </p>
+            </div>
+          )}
         </div>
       )}
 

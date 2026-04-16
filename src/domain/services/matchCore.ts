@@ -94,6 +94,18 @@ export function pickMatchProfileFromSeed(
   return 'chaotic'
 }
 
+// ── DREAM-004: Seasonal ice hardness modifier ─────────────────────────────────
+
+function getIceHardnessMod(month: number): number {
+  if (month === 1) return 1.05
+  if (month === 2) return 1.03
+  if (month === 12) return 1.0
+  if (month === 11) return 0.98
+  if (month === 10) return 0.95
+  if (month === 3) return 0.97
+  return 1.0
+}
+
 // ── Input type ────────────────────────────────────────────────────────────────
 
 export interface MatchCoreInput extends StepByStepInput {
@@ -177,6 +189,7 @@ function* simulateMatchCore(
   const captainPlayerId    = input.captainPlayerId
   const fanFavoritePlayerId = input.fanFavoritePlayerId
   const supporterCtx       = input.supporterContext
+  const iceHardnessMod     = getIceHardnessMod(input.fixtureMonth ?? 1)
 
   const rand = mulberry32(seed ?? Date.now())
 
@@ -483,6 +496,9 @@ function* simulateMatchCore(
 
     // Apply match profile multiplier
     stepGoalMod *= profileGoalMod
+
+    // DREAM-004: seasonal ice hardness
+    stepGoalMod *= iceHardnessMod
 
     // Second-half mode modifiers
     let secondHalfGoalMod = 1.0
