@@ -1,4 +1,18 @@
 /**
+ * Deterministic seed from a fixture ID string.
+ * Hashes the string into a 32-bit integer — avoids Date.now() as a fallback seed.
+ * Same fixture always produces the same seed across runs and devices.
+ */
+export function fixtureSeed(fixtureId: string, extra = 0): number {
+  let h = 0x811c9dc5
+  for (let i = 0; i < fixtureId.length; i++) {
+    h ^= fixtureId.charCodeAt(i)
+    h = (Math.imul(h, 0x01000193) >>> 0)
+  }
+  return (h + extra * 0x9e3779b9) >>> 0
+}
+
+/**
  * Mulberry32 — fast seeded pseudo-random number generator.
  * Returns a function that produces numbers in [0, 1).
  */

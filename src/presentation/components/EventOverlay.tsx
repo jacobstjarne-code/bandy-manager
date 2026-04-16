@@ -2,6 +2,7 @@ import { useLocation } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { playSound } from '../audio/soundEffects'
 import { PressConferenceScene } from './PressConferenceScene'
+import { getEventPriority } from '../../domain/entities/GameEvent'
 
 function choiceStyle(_choiceId: string): React.CSSProperties {
   return {
@@ -21,7 +22,14 @@ export function EventOverlay() {
   const events = game?.pendingEvents ?? []
   if (!game || events.length === 0 || isMatchScreen) return null
 
-  const event = events[0]
+  const priorityOrder = { critical: 0, high: 1, normal: 2, low: 3 }
+  const event = [...events]
+    .sort((a, b) => {
+      const pa = a.priority ?? getEventPriority(a.type)
+      const pb = b.priority ?? getEventPriority(b.type)
+      return priorityOrder[pa] - priorityOrder[pb]
+    })
+    .find(e => !e.resolved) ?? events[0]
   if (!event) return null
 
   const relatedPlayer = event.relatedPlayerId

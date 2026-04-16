@@ -97,6 +97,31 @@ export interface EventEffect {
   subEffects?: string
 }
 
+export type EventPriority = 'critical' | 'high' | 'normal' | 'low'
+
+export function getEventPriority(type: GameEventType): EventPriority {
+  switch (type) {
+    case 'mecenatEvent':
+    case 'economicStress':
+    case 'playerUnhappy':
+      return 'critical'
+    case 'patronEvent':
+    case 'pressConference':
+    case 'presskonferens':
+    case 'politicianEvent':
+    case 'kommunMote':
+    case 'hallDebate':
+      return 'high'
+    case 'transferBidReceived':
+    case 'contractRequest':
+    case 'academyEvent':
+    case 'playoffEvent':
+      return 'normal'
+    default:
+      return 'low'
+  }
+}
+
 export interface GameEvent {
   id: string
   type: GameEventType
@@ -110,6 +135,7 @@ export interface GameEvent {
   sponsorData?: string
   resolved: boolean
   followUpText?: string      // Simple follow-up inbox text (3-5 matchdays later)
+  priority?: EventPriority   // defaults to getEventPriority(type) if not set
 }
 
 // ── Follow-up system ──────────────────────────────────────────────────────

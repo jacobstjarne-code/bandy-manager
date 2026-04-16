@@ -128,6 +128,12 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     }
   }
 
+  // V1.4 — narrative / supporter fields
+  if (data.rivalryHistory === undefined) data.rivalryHistory = {}
+  if (data.nemesisTracker === undefined) data.nemesisTracker = {}
+  if (data.volunteers === undefined) data.volunteers = []
+  if (data.volunteerMorale === undefined) data.volunteerMorale = 70
+
   // ── version stamp ────────────────────────────────────────────────────────
   data.version = CURRENT_SAVE_VERSION
 

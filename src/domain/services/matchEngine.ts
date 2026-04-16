@@ -13,6 +13,7 @@ import type { MatchEvent } from '../entities/Fixture'
 import type { SimulateMatchInput, SimulateMatchResult, MatchStep } from './matchUtils'
 import { clamp } from './matchUtils'
 import { simulateFirstHalf, simulateSecondHalf } from './matchCore'
+import { fixtureSeed } from '../utils/random'
 
 export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   const {
@@ -141,7 +142,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   }
 
   // Seeded random variance ±0.5 — use a simple deterministic hash of the seed
-  const seedVal = seed ?? Date.now()
+  const seedVal = seed ?? fixtureSeed(fixture.id)
   let rngState  = seedVal
   const fastRand = () => {
     rngState = (rngState * 1664525 + 1013904223) >>> 0

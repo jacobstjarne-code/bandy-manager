@@ -15,10 +15,7 @@ import {
 } from '../../domain/services/inboxService'
 import { updateAllMarketValues } from '../../domain/services/marketValueService'
 import { executeTransfer } from '../../domain/services/transferService'
-import { generatePostAdvanceEvents, generateEvents } from '../../domain/services/eventService'
 import { generateWeeklyDecision } from '../../domain/services/weeklyDecisionService'
-import { generateMediaHeadlines, generateTrendArticles } from '../../domain/services/mediaService'
-import { generatePostMatchHeadline } from '../../domain/services/journalistService'
 import { evaluateBoard, generateBoardMessage } from '../../domain/services/boardService'
 import { mulberry32 } from '../../domain/utils/random'
 import { getRoundDate, buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
@@ -35,12 +32,7 @@ import { appendFinanceLog } from '../../domain/services/economyService'
 import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/services/playerAvailabilityService'
 import { updateTrainerArc } from '../../domain/services/trainerArcService'
 import { checkInObjectives } from '../../domain/services/boardObjectiveService'
-import { generateTransferRumor } from '../../domain/services/rumorService'
-import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventService'
-import { checkReputationMilestones, milestonesToInbox } from '../../domain/services/reputationMilestoneService'
-import { generateDeadlineBids, generateDiscountOffer, deadlineBidToInbox, deadlineOfferToInbox } from '../../domain/services/transferDeadlineService'
-import { generateSocialEvent, generateSilentShoutEvent, generateMecenat, generateMecenatIntroEvent } from '../../domain/services/mecenatService'
-import { updateSupporterMembers, reevaluateFavoritePlayer } from '../../domain/services/supporterService'
+import { generateMecenat, generateMecenatIntroEvent } from '../../domain/services/mecenatService'
 import { processEconomy } from './processors/economyProcessor'
 import { processCommunity } from './processors/communityProcessor'
 import { processScouts } from './processors/scoutProcessor'
@@ -49,64 +41,56 @@ import { processSponsors } from './processors/sponsorProcessor'
 import { simulateRound } from './processors/matchSimProcessor'
 import { processYouth } from './processors/youthProcessor'
 import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
-import { createEconomicStressEvent } from '../../domain/services/events/eventFactories'
 import { generatePreMatchOpponentQuote } from '../../domain/services/opponentManagerService'
 import { generateAwayTrip } from '../../domain/services/awayTripService'
-import { classifyVictory, generateVictoryEcho } from '../../domain/services/postVictoryNarrativeService'
+import { processNarrative } from './processors/narrativeProcessor'
+import { processMedia } from './processors/mediaProcessor'
+import { processGameEvents } from './processors/eventProcessor'
 
 export type { AdvanceResult }
 
+type Lineup = Fixture['homeLineup']
 
+function stripLineup(lineup: Lineup): Lineup {
+  if (!lineup) return undefined
+  return {
+    startingPlayerIds: lineup.startingPlayerIds,
+    benchPlayerIds: [],
+    tactic: {
+      mentality: lineup.tactic.mentality,
+      tempo: lineup.tactic.tempo,
+      press: lineup.tactic.press,
+      passingRisk: lineup.tactic.passingRisk,
+      width: lineup.tactic.width,
+      attackingFocus: lineup.tactic.attackingFocus,
+      cornerStrategy: lineup.tactic.cornerStrategy,
+      penaltyKillStyle: lineup.tactic.penaltyKillStyle,
+    },
+  }
+}
 
-
-function stripCompletedFixture(f: Fixture, managedFixtureId?: string): Fixture {
-  // Keep full data for the most recent managed match (for match report)
+function stripCompletedFixture(f: Fixture, managedFixtureId?: string, managedClubId?: string): Fixture {
   if (f.id === managedFixtureId) return f
-  // Keep full data for non-completed fixtures
   if (f.status !== FixtureStatus.Completed) return f
 
-  // Strip heavy data from old completed fixtures
+  const isManagedFixture = managedClubId != null &&
+    (f.homeClubId === managedClubId || f.awayClubId === managedClubId)
+  const margin = Math.abs((f.homeScore ?? 0) - (f.awayScore ?? 0))
+  // Derby/playoff/blowout managed fixtures keep playerRatings for GranskaScreen
+  const preserveRatings = isManagedFixture && (
+    getRivalry(f.homeClubId, f.awayClubId) !== null || f.matchday > 22 || margin >= 3
+  )
+
+  const strippedEvents = f.events
+    .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard || e.type === MatchEventType.YellowCard)
+    .map(e => ({ ...e, description: '' }))
+
   return {
     ...f,
-    // Keep only goal/card events, drop descriptions
-    events: f.events
-      .filter(e =>
-        e.type === MatchEventType.Goal ||
-        e.type === MatchEventType.RedCard ||
-        e.type === MatchEventType.YellowCard
-      )
-      .map(e => ({ ...e, description: '' })),
-    // Strip lineups — not needed after simulation
-    homeLineup: f.homeLineup ? {
-      startingPlayerIds: f.homeLineup.startingPlayerIds,
-      benchPlayerIds: [],
-      tactic: {
-        mentality: f.homeLineup.tactic.mentality,
-        tempo: f.homeLineup.tactic.tempo,
-        press: f.homeLineup.tactic.press,
-        passingRisk: f.homeLineup.tactic.passingRisk,
-        width: f.homeLineup.tactic.width,
-        attackingFocus: f.homeLineup.tactic.attackingFocus,
-        cornerStrategy: f.homeLineup.tactic.cornerStrategy,
-        penaltyKillStyle: f.homeLineup.tactic.penaltyKillStyle,
-      },
-    } : undefined,
-    awayLineup: f.awayLineup ? {
-      startingPlayerIds: f.awayLineup.startingPlayerIds,
-      benchPlayerIds: [],
-      tactic: {
-        mentality: f.awayLineup.tactic.mentality,
-        tempo: f.awayLineup.tactic.tempo,
-        press: f.awayLineup.tactic.press,
-        passingRisk: f.awayLineup.tactic.passingRisk,
-        width: f.awayLineup.tactic.width,
-        attackingFocus: f.awayLineup.tactic.attackingFocus,
-        cornerStrategy: f.awayLineup.tactic.cornerStrategy,
-        penaltyKillStyle: f.awayLineup.tactic.penaltyKillStyle,
-      },
-    } : undefined,
-    // Clear playerRatings — only needed for match report screen
-    report: f.report ? { ...f.report, playerRatings: {} } : undefined,
+    events: strippedEvents,
+    homeLineup: stripLineup(f.homeLineup),
+    awayLineup: stripLineup(f.awayLineup),
+    report: preserveRatings || !f.report ? f.report : { ...f.report, playerRatings: {} },
   }
 }
 
@@ -427,218 +411,21 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
          f.status === FixtureStatus.Completed
   )
 
-  // Fan mood + supporter member update
-  const currentFanMood = game.fanMood ?? 50
-  let newFanMood = currentFanMood
-  let updatedSupporterGroup = game.supporterGroup
-  if (justCompletedManagedFixture) {
-    const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
-    const myScore = isHome ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
-    const theirScore = isHome ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
-    const won = (myScore ?? 0) > (theirScore ?? 0)
-    const lost = (myScore ?? 0) < (theirScore ?? 0)
-    const bigWin = won && (myScore ?? 0) >= (theirScore ?? 0) + 3
-    const bigLoss = lost && (theirScore ?? 0) >= (myScore ?? 0) + 3
-    const fanDelta = bigWin ? 8 : won ? 4 : bigLoss ? -8 : lost ? -4 : 1
-    newFanMood = Math.max(0, Math.min(100, currentFanMood + fanDelta))
-    if (isHome && updatedSupporterGroup) {
-      updatedSupporterGroup = updateSupporterMembers(updatedSupporterGroup, won, localRand)
-    }
-  }
-
-  // ── WEAK-014: Segrarens eko ────────────────────────────────────────────────
-  let pendingVictoryEcho = game.pendingVictoryEcho
-  let victoryEchoExpires = game.victoryEchoExpires
-  if (justCompletedManagedFixture) {
-    const victoryType = classifyVictory(justCompletedManagedFixture, game.managedClubId)
-    if (victoryType) {
-      const opponentId = justCompletedManagedFixture.homeClubId === game.managedClubId
-        ? justCompletedManagedFixture.awayClubId
-        : justCompletedManagedFixture.homeClubId
-      const opponentClub = game.clubs.find(c => c.id === opponentId)
-      const opponentName = opponentClub?.shortName ?? opponentClub?.name ?? 'motståndaren'
-      const echo = generateVictoryEcho(victoryType, justCompletedManagedFixture, opponentName)
-      pendingVictoryEcho = echo
-      victoryEchoExpires = nextMatchday + 1
-      if (echo.boardMessage) {
-        newInboxItems.push({
-          id: `victory_board_${justCompletedManagedFixture.id}`,
-          type: InboxItemType.MediaEvent,
-          title: 'Efter vinsten',
-          body: echo.boardMessage,
-          date: game.currentDate,
-          isRead: false,
-        })
-      }
-    } else {
-      // Clear expired echo after each match
-      if (nextMatchday > (victoryEchoExpires ?? 0)) {
-        pendingVictoryEcho = undefined
-        victoryEchoExpires = undefined
-      }
-    }
-  }
-
-  // ── WEAK-009 + DEV-007: Reevaluate favorite player var 5:e omgång ────────
-  if (nextMatchday % 5 === 0 && updatedSupporterGroup) {
-    const favResult = reevaluateFavoritePlayer(
-      updatedSupporterGroup,
-      game.players.filter(p => p.clubId === game.managedClubId),
-      nextMatchday,
-      game.currentSeason,
-    )
-    if (favResult.changed) {
-      newInboxItems.push({
-        id: `fav_shift_${nextMatchday}_${game.currentSeason}`,
-        type: InboxItemType.MediaEvent,
-        title: 'Klacken har en ny favorit',
-        body: `Klacken sjunger inte längre ${favResult.oldFavoriteName}s namn. ${favResult.newFavoriteName} har tagit över kören.`,
-        date: game.currentDate,
-        isRead: false,
-      } as InboxItem)
-      updatedSupporterGroup = { ...updatedSupporterGroup, favoritePlayerId: favResult.favoritePlayerId }
-    }
-  }
-
-  // ── Update rivalry history ────────────────────────────────────────────
-  let updatedRivalryHistory = { ...(game.rivalryHistory ?? {}) }
-  if (justCompletedManagedFixture) {
-    const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
-    const myScore = isHome ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
-    const theirScore = isHome ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
-    const opponentId = isHome ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId
-
-    const won = myScore > theirScore
-    const lost = myScore < theirScore
-    const resultLabel: 'win' | 'loss' | 'draw' = won ? 'win' : lost ? 'loss' : 'draw'
-
-    const prev = updatedRivalryHistory[opponentId] ?? { wins: 0, losses: 0, draws: 0, currentStreak: 0 }
-    const newWins = prev.wins + (won ? 1 : 0)
-    const newLosses = prev.losses + (lost ? 1 : 0)
-    const newDraws = prev.draws + (!won && !lost ? 1 : 0)
-
-    let newStreak: number
-    if (won) {
-      newStreak = prev.currentStreak > 0 ? prev.currentStreak + 1 : 1
-    } else if (lost) {
-      newStreak = prev.currentStreak < 0 ? prev.currentStreak - 1 : -1
-    } else {
-      newStreak = 0
-    }
-
-    updatedRivalryHistory = {
-      ...updatedRivalryHistory,
-      [opponentId]: {
-        wins: newWins,
-        losses: newLosses,
-        draws: newDraws,
-        lastResult: resultLabel,
-        currentStreak: newStreak,
-      },
-    }
-
-    // Rivalry context inbox item: if long history (4+ meetings), generate flavor text
-    const totalMeetings = newWins + newLosses + newDraws
-    if (totalMeetings >= 4) {
-      const rival = game.clubs.find(c => c.id === opponentId)
-      const managedClub = game.clubs.find(c => c.id === game.managedClubId)
-      const alreadySentId = `inbox_rivalry_context_${opponentId}_r${nextMatchday}_${game.currentSeason}`
-      if (!game.inbox.some(i => i.id === alreadySentId)) {
-        let rivalryBody = ''
-        if (newWins > newLosses + newLosses * 0.5 && won) {
-          rivalryBody = `${managedClub?.name ?? 'Ni'} dominerar mötet mot ${rival?.name ?? 'motståndaren'} med ${newWins}–${newLosses} i matcher. Dominansen håller i sig.`
-        } else if (newLosses > newWins && won) {
-          rivalryBody = `Revansch! ${managedClub?.name ?? 'Ni'} bröt den negativa sviten mot ${rival?.name ?? 'motståndaren'} som lett ${newLosses}–${newWins} i möten.`
-        } else if (Math.abs(newStreak) >= 2) {
-          const streakText = newStreak > 0 ? `${newStreak} raka segrar` : `${Math.abs(newStreak)} raka förluster`
-          rivalryBody = `${managedClub?.name ?? 'Ni'} har nu ${streakText} mot ${rival?.name ?? 'motståndaren'}.`
-        }
-        if (rivalryBody) {
-          newInboxItems.push({
-            id: alreadySentId,
-            date: game.currentDate,
-            type: InboxItemType.BoardFeedback,
-            title: `Rivalmöte: ${rival?.name ?? 'Motståndaren'}`,
-            body: rivalryBody,
-            relatedClubId: opponentId,
-            isRead: false,
-          } as InboxItem)
-        }
-      }
-    }
-  }
-
-  // ── Nemesis tracker ──────────────────────────────────────────────────────
-  let updatedNemesisTracker = { ...(game.nemesisTracker ?? {}) }
-  if (justCompletedManagedFixture) {
-    const isHome = justCompletedManagedFixture.homeClubId === game.managedClubId
-    const opponentClubId = isHome ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId
-    const opponentGoalEvents = justCompletedManagedFixture.events.filter(
-      e => e.type === MatchEventType.Goal && e.clubId === opponentClubId && e.playerId,
-    )
-    const goalsByOpponent: Record<string, number> = {}
-    for (const evt of opponentGoalEvents) {
-      if (evt.playerId) goalsByOpponent[evt.playerId] = (goalsByOpponent[evt.playerId] ?? 0) + 1
-    }
-    for (const [playerId, matchGoals] of Object.entries(goalsByOpponent)) {
-      const opponentPlayer = game.players.find(p => p.id === playerId)
-      if (!opponentPlayer) continue
-      const prev = updatedNemesisTracker[playerId] ?? {
-        playerId,
-        name: `${opponentPlayer.firstName} ${opponentPlayer.lastName}`,
-        clubId: opponentClubId,
-        goalsAgainstUs: 0,
-      }
-      const newTotal = prev.goalsAgainstUs + matchGoals
-      const shouldSendInbox = newTotal >= 3 && (prev.inboxSentAt == null || prev.inboxSentAt < 3)
-      updatedNemesisTracker[playerId] = { ...prev, goalsAgainstUs: newTotal, clubId: opponentClubId }
-      if (shouldSendInbox) {
-        updatedNemesisTracker[playerId].inboxSentAt = newTotal
-        const nemesisClub = game.clubs.find(c => c.id === opponentClubId)
-        newInboxItems.push({
-          id: `inbox_nemesis_${playerId}_${game.currentSeason}`,
-          date: game.currentDate,
-          type: InboxItemType.BoardFeedback,
-          title: `⚠️ Nemesis: ${opponentPlayer.firstName} ${opponentPlayer.lastName}`,
-          body: `${opponentPlayer.firstName} ${opponentPlayer.lastName} (${nemesisClub?.name ?? 'motst.'}) har nu gjort ${newTotal} mål mot oss. Är det dags att värva honom istället?`,
-          relatedPlayerId: playerId,
-          isRead: false,
-        } as import('../../domain/entities/SaveGame').InboxItem)
-      }
-    }
-  }
-
-  // Pre-derby preview: if the next unplayed managed fixture is a derby, fire one inbox item per season
-  {
-    const nextManagedFixture = simulatedFixtures
-      .filter(f => f.status === FixtureStatus.Scheduled &&
-        (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
-      .sort((a, b) => a.matchday - b.matchday)[0]
-    if (nextManagedFixture) {
-      const upcomingRivalry = getRivalry(nextManagedFixture.homeClubId, nextManagedFixture.awayClubId)
-      if (upcomingRivalry) {
-        const opponentId = nextManagedFixture.homeClubId === game.managedClubId
-          ? nextManagedFixture.awayClubId : nextManagedFixture.homeClubId
-        const rival = game.clubs.find(c => c.id === opponentId)
-        const previewId = `inbox_derby_preview_${opponentId}_s${game.currentSeason}`
-        const alreadySent = newInboxItems.some(i => i.id === previewId) || game.inbox.some(i => i.id === previewId)
-        if (!alreadySent && rival) {
-          const h2h = updatedRivalryHistory[opponentId]
-          const historyStr = h2h && h2h.wins + h2h.losses + h2h.draws >= 2
-            ? ` H2H: ${h2h.wins}V–${h2h.draws}O–${h2h.losses}F.`
-            : ''
-          newInboxItems.push({
-            id: previewId,
-            date: newDate,
-            type: InboxItemType.Derby,
-            title: `Derby: ${upcomingRivalry.name} väntar`,
-            body: `${rival.name} är nästa motståndare.${historyStr} Stämningen är hög i stan — derbyt avgör mer än tre poäng.`,
-            isRead: false,
-          } as InboxItem)
-        }
-      }
-    }
-  }
+  // ── Narrative: fan mood, victory echo, rivalry, nemesis ─────────────────
+  const narrativeResult = processNarrative(
+    game,
+    justCompletedManagedFixture ?? null,
+    nextMatchday,
+    newDate,
+    localRand,
+  )
+  const newFanMood = narrativeResult.fanMood
+  const updatedSupporterGroup = narrativeResult.supporterGroup
+  const pendingVictoryEcho = narrativeResult.pendingVictoryEcho
+  const victoryEchoExpires = narrativeResult.victoryEchoExpires
+  const updatedRivalryHistory = narrativeResult.rivalryHistory
+  let updatedNemesisTracker = narrativeResult.nemesisTracker ?? {}
+  newInboxItems.push(...narrativeResult.inboxItems)
 
   // Track which fixtures were already completed before this round (for dedup in processors)
   const fixturesCompletedBeforeRound = new Set(
@@ -795,7 +582,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         game,
         simulatedFixtures,
         availabilityUpdatedPlayers,
-        currentFanMood,
+        game.fanMood ?? 50,
         standings,
         nextMatchday,
         cupResult.prizeMoneyByClub,
@@ -815,92 +602,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     transferBids: resolvedBids,
   }
 
-  // ── Post-advance events ──────────────────────────────────────────────────
-  const newEvents = generatePostAdvanceEvents(preEventGame, newBids, nextMatchday, localRand, justCompletedManagedFixture ?? undefined)
-  const communityEvents = generateEvents(
-    { ...preEventGame, communityActivities: game.communityActivities },
+  // ── Events: post-advance, finance warning, economic stress, mecenat ────────
+  // WEAK-002 + DEV-002: press event goes to pendingPressConference (shown directly in GranskaScreen)
+  // — NOT pushed to allNewEvents to avoid appearing in the general event queue
+  const eventResult = processGameEvents(
+    preEventGame,
+    newBids,
+    justCompletedManagedFixture,
     nextMatchday,
     localRand,
   )
-  const allNewEvents = [...newEvents, ...communityEvents, ...playoffResult.gameEvents]
-  // WEAK-002 + DEV-002: press event goes to pendingPressConference (shown directly in GranskaScreen)
-  // — NOT pushed to allNewEvents to avoid appearing in the general event queue
-
-  // ── BUG-008: finance warning inbox when managed club is in -50k to -100k zone ──
-  const managedClubForWarning = preEventGame.clubs.find(c => c.id === game.managedClubId)
-  if (managedClubForWarning && managedClubForWarning.finances < -50000 && managedClubForWarning.finances >= -100000) {
-    const warnId = `inbox_finance_warn_${game.currentSeason}_${nextMatchday}`
-    if (!preEventGame.inbox.some(i => i.id === warnId)) {
-      newInboxItems.push({
-        id: warnId,
-        date: preEventGame.currentDate,
-        type: InboxItemType.BoardFeedback,
-        title: '⚠️ Ekonomisk varning',
-        body: `Kassan är på ${managedClubForWarning.finances.toLocaleString('sv-SE')} kr. Om vi når -100k kan licensnämnden agera.`,
-        isRead: false,
-      })
-    }
-  }
-
-  // ── DEV-012: economic stress micro-events ───────────────────────────────
-  const stressEvent = createEconomicStressEvent(preEventGame, nextMatchday)
-  if (stressEvent) {
-    allNewEvents.push(stressEvent)
-  }
-
-  // ── Mecenat social events, silent shout, and happiness decay ────────────
-  let updatedMecenater = (game.mecenater ?? []).map(mec => {
-    if (!mec.isActive) return mec
-
-    // Happiness decay: -1 per round if no interaction in last 4 rounds
-    const roundsSinceInteraction = nextMatchday - (mec.lastInteractionRound ?? 0)
-    const decayedHappiness = roundsSinceInteraction > 4
-      ? Math.max(0, mec.happiness - 1)
-      : mec.happiness
-
-    return { ...mec, happiness: decayedHappiness }
-  })
-
-  for (let i = 0; i < updatedMecenater.length; i++) {
-    const mec = updatedMecenater[i]
-    if (!mec.isActive) continue
-
-    // Social event every ~4 rounds
-    const roundsSinceLastSocial = nextMatchday - (mec.lastSocialRound ?? 0)
-    if (roundsSinceLastSocial >= 4 && localRand() < 0.35) {
-      const socialEvent = generateSocialEvent(mec, game.currentSeason, nextMatchday, localRand)
-      allNewEvents.push(socialEvent)
-      updatedMecenater = updatedMecenater.map((m, idx) =>
-        idx === i ? { ...m, lastSocialRound: nextMatchday } : m
-      )
-    }
-
-    // Silent shout event: unhappy mecenat with growing influence
-    if (mec.happiness < 30 || mec.silentShout >= 30) {
-      const randomPlayer = game.players.find(p => p.clubId === game.managedClubId)
-      const playerName = randomPlayer ? `${randomPlayer.firstName} ${randomPlayer.lastName}` : undefined
-      const shoutEvent = generateSilentShoutEvent(mec, playerName, localRand)
-      if (shoutEvent) {
-        allNewEvents.push(shoutEvent)
-      }
-    }
-
-    // Demand reminder: active demands not yet addressed
-    if (mec.demands.length > 0) {
-      const demandId = `inbox_mec_demand_${mec.id}_${nextMatchday}`
-      if (!game.inbox.some(item => item.id === demandId) && nextMatchday % 5 === 0) {
-        const demandTexts = mec.demands.map(d => d.description ?? d.type).join(', ')
-        newInboxItems.push({
-          id: demandId,
-          date: game.currentDate,
-          type: InboxItemType.PatronInfluence,
-          title: `📋 ${mec.name} påminner`,
-          body: `${mec.name} har fortfarande önskemål som inte hanterats: ${demandTexts}.`,
-          isRead: false,
-        } as InboxItem)
-      }
-    }
-  }
+  const allNewEvents = [...eventResult.gameEvents, ...playoffResult.gameEvents]
+  let updatedMecenater = eventResult.updatedMecenater
+  newInboxItems.push(...eventResult.inboxItems)
 
   // ── Youth processing (P19 sim, mentor effects, academy events, rep delta) ─
   const youthResult = processYouth(game, availabilityUpdatedPlayers, nextMatchday, newDate, baseSeed, localRand)
@@ -926,77 +640,28 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       )
     : managedClubAfterLoan
 
-  // Media headlines
-  const mediaHeadlines = generateMediaHeadlines(preEventGame, simulatedFixtures, nextMatchday, localRand)
-  newInboxItems.push(...mediaHeadlines)
-
-  // Journalist post-match headline (if managed club played this round and has a journalist)
-  if (justCompletedManagedFixture && game.journalist && !isSecondPassForManagedMatch) {
-    const headlineItem = generatePostMatchHeadline(
-      game.journalist,
-      justCompletedManagedFixture,
-      game.managedClubId,
-      newDate,
-      game.currentSeason,
-    )
-    if (headlineItem) newInboxItems.push(headlineItem)
-  }
-
-  // Trend articles (win/loss streaks, standings position)
-  const trendArticles = generateTrendArticles(preEventGame, nextMatchday, localRand)
-  newInboxItems.push(...trendArticles)
-
-  // Transfer rumors (matchday 5-18)
-  const rumorResult = generateTransferRumor(preEventGame, localRand)
-  let rumorScoutReports = { ...game.scoutReports }
-  if (rumorResult) {
-    newInboxItems.push(rumorResult.inboxItem)
-    if (rumorResult.scoutHint) {
-      rumorScoutReports = { ...rumorScoutReports, [rumorResult.scoutHint.playerId]: rumorResult.scoutHint }
-    }
-  }
-
-  // Mid-season events (narrative triggers at key matchdays)
-  const midSeasonItems = checkMidSeasonEvents(preEventGame)
-  newInboxItems.push(...midSeasonItems)
-
-  // ── Reputation milestones (P3 — Rykte utanför orten) ─────────────────────
-  // Starts at round 8 to avoid early-season noise
-  let reputationResolvedIds = [...(game.resolvedEventIds ?? [])]
-  if (currentLeagueRound !== null && currentLeagueRound >= 8 && !isSecondPassForManagedMatch) {
-    const repMilestones = checkReputationMilestones(preEventGame)
-    if (repMilestones.length > 0) {
-      newInboxItems.push(...milestonesToInbox(repMilestones, game.currentDate))
-      reputationResolvedIds = [...reputationResolvedIds, ...repMilestones.map(m => m.id)]
-      // Apply effects
-      for (const milestone of repMilestones) {
-        if (milestone.effect?.type === 'reputation') {
-          const managedIdx = academyUpdatedClubs.findIndex(c => c.id === game.managedClubId)
-          if (managedIdx >= 0) {
-            academyUpdatedClubs[managedIdx] = {
-              ...academyUpdatedClubs[managedIdx],
-              reputation: Math.max(0, Math.min(100, (academyUpdatedClubs[managedIdx].reputation ?? 50) + milestone.effect.amount)),
-            }
-          }
-        }
+  // ── Media: headlines, journalist, rumors, milestones, deadline ──────────
+  const mediaResult = processMedia(
+    preEventGame,
+    simulatedFixtures,
+    justCompletedManagedFixture ?? null,
+    nextMatchday,
+    currentLeagueRound,
+    newDate,
+    isSecondPassForManagedMatch,
+    localRand,
+  )
+  newInboxItems.push(...mediaResult.inboxItems)
+  const rumorScoutReports = { ...game.scoutReports, ...mediaResult.scoutReportUpdates }
+  const reputationResolvedIds = mediaResult.resolvedEventIds
+  // Apply reputation delta from milestones
+  if (mediaResult.reputationDelta !== 0) {
+    const managedIdx = academyUpdatedClubs.findIndex(c => c.id === game.managedClubId)
+    if (managedIdx >= 0) {
+      academyUpdatedClubs[managedIdx] = {
+        ...academyUpdatedClubs[managedIdx],
+        reputation: Math.max(0, Math.min(100, (academyUpdatedClubs[managedIdx].reputation ?? 50) + mediaResult.reputationDelta)),
       }
-    }
-  } else {
-    reputationResolvedIds = game.resolvedEventIds ?? []
-  }
-
-  // ── Transfer deadline events (P2 — Transferdödline) ──────────────────────
-  // Omgång 13-15 = sista omgångarna innan fönstret stänger
-  if (currentLeagueRound !== null && currentLeagueRound >= 13 && currentLeagueRound <= 15 && !isSecondPassForManagedMatch) {
-    const panicBids = generateDeadlineBids(preEventGame, localRand)
-    for (const bid of panicBids) {
-      newInboxItems.push(deadlineBidToInbox(bid, game.currentDate, currentLeagueRound, game.currentSeason))
-      reputationResolvedIds = [...reputationResolvedIds, `deadline_bid_${game.currentSeason}_r${currentLeagueRound}`]
-    }
-    const discountOffer = generateDiscountOffer(preEventGame, localRand)
-    if (discountOffer) {
-      newInboxItems.push(deadlineOfferToInbox(discountOffer, game.currentDate, currentLeagueRound, game.currentSeason))
-      reputationResolvedIds = [...reputationResolvedIds, `deadline_offer_${game.currentSeason}_r${currentLeagueRound}`]
     }
   }
 
@@ -1020,7 +685,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   )
 
   const managedFixtureId = justCompletedManagedFixture?.id
-  const strippedFixtures = finalAllFixtures.map(f => stripCompletedFixture(f, managedFixtureId))
+  const strippedFixtures = finalAllFixtures.map(f => stripCompletedFixture(f, managedFixtureId, game.managedClubId))
 
   // ── Sponsor chain effects, patron inbox, nudges ──────────────────────────
   const sponsorResult = processSponsors(
@@ -1217,7 +882,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     previousKommunBidrag: game.localPolitician?.kommunBidrag,
     mecenater: updatedMecenater,
     lastCoffeeQuoteHash: currentLeagueRound !== null ? currentLeagueRound * 7 + game.currentSeason * 31 : game.lastCoffeeQuoteHash,
-    lastEconomicStressRound: stressEvent ? nextMatchday : game.lastEconomicStressRound,
+    lastEconomicStressRound: eventResult.lastEconomicStressRound,
     pendingPressConference: simResult.pressEvent ?? undefined,
     ...(() => {
       // Update rolling average attendance for home matches

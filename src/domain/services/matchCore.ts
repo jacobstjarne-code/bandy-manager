@@ -19,7 +19,7 @@ import type { MatchEvent } from '../entities/Fixture'
 import { MatchEventType, PlayerPosition, PlayerArchetype, WeatherCondition } from '../enums'
 import { evaluateSquad } from './squadEvaluator'
 import { getTacticModifiers } from './tacticModifiers'
-import { mulberry32 } from '../utils/random'
+import { mulberry32, fixtureSeed } from '../utils/random'
 import { commentary, fillTemplate, pickCommentary, getTraitCommentary } from '../data/matchCommentary'
 import { getConditionLabel, getIceQualityLabel } from './weatherService'
 import {
@@ -191,7 +191,7 @@ function* simulateMatchCore(
   const supporterCtx       = input.supporterContext
   const iceHardnessMod     = getIceHardnessMod(input.fixtureMonth ?? 1)
 
-  const rand = mulberry32(seed ?? Date.now())
+  const rand = mulberry32(seed ?? fixtureSeed(fixture.id))
 
   // Match profile — same result for both halves sharing the same seed
   const hasRivalry     = !!rivalry

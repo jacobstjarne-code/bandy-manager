@@ -192,19 +192,46 @@ export function processLoans(
   for (const deal of activeLoanDeals) {
     if (nextMatchday >= deal.endRound) {
       returnedLoanPlayerIds.push(deal.playerId)
-      loanUpdatedPlayers = loanUpdatedPlayers.map(p =>
-        p.id === deal.playerId ? { ...p, isOnLoan: false, loanClubName: undefined } : p,
-      )
       const participationRate = deal.totalMatches > 0 ? deal.matchesPlayed / deal.totalMatches : 0
       const caBoost = participationRate >= 0.75 ? 3 + Math.floor(localRand() * 3)
         : participationRate >= 0.5 ? 1 + Math.floor(localRand() * 2) : 0
-      if (caBoost > 0) {
-        loanUpdatedPlayers = loanUpdatedPlayers.map(p =>
-          p.id === deal.playerId
-            ? { ...p, currentAbility: Math.min(p.potentialAbility, p.currentAbility + caBoost), morale: Math.min(100, (p.morale ?? 50) + 10) }
-            : p,
-        )
-      }
+      // Merge loan stats into player's season stats on return
+      let loanGoals = 0, loanAssists = 0
+      for (const r of deal.reports) { loanGoals += r.goals ?? 0; loanAssists += r.assists ?? 0 }
+      loanUpdatedPlayers = loanUpdatedPlayers.map(p => {
+        if (p.id !== deal.playerId) return p
+        const prevStats = p.seasonStats
+        const combinedGames = prevStats.gamesPlayed + deal.matchesPlayed
+        const combinedRating = combinedGames > 0
+          ? (prevStats.averageRating * prevStats.gamesPlayed + deal.averageRating * deal.matchesPlayed) / combinedGames
+          : prevStats.averageRating
+        const updatedPlayer = {
+          ...p,
+          isOnLoan: false,
+          loanClubName: undefined,
+          seasonStats: {
+            ...prevStats,
+            gamesPlayed: combinedGames,
+            goals: prevStats.goals + loanGoals,
+            assists: prevStats.assists + loanAssists,
+            averageRating: Math.round(combinedRating * 10) / 10,
+          },
+          careerStats: {
+            ...p.careerStats,
+            totalGames: p.careerStats.totalGames + deal.matchesPlayed,
+            totalGoals: p.careerStats.totalGoals + loanGoals,
+            totalAssists: p.careerStats.totalAssists + loanAssists,
+          },
+        }
+        if (caBoost > 0) {
+          return {
+            ...updatedPlayer,
+            currentAbility: Math.min(p.potentialAbility, p.currentAbility + caBoost),
+            morale: Math.min(100, (p.morale ?? 50) + 10),
+          }
+        }
+        return updatedPlayer
+      })
       const returnedPlayer = loanUpdatedPlayers.find(p => p.id === deal.playerId)
       if (returnedPlayer) {
         const confStr = participationRate >= 0.75 ? 'spelade regelbundet och kom tillbaka stärkt'
