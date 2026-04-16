@@ -158,7 +158,7 @@ export function RoundSummaryScreen() {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
       {/* Scrollable content */}
-      <div className="texture-wood card-stack" style={{ flex: 1, overflowY: 'auto', paddingTop: 12, paddingBottom: 120 }}>
+      <div className="texture-wood card-stack" style={{ flex: 1, overflowY: 'auto', paddingTop: 12, paddingBottom: 'var(--scroll-padding-bottom)' }}>
 
         {/* Header pill */}
         <div style={{ textAlign: 'center', marginBottom: 10, ...fadeIn(0) }}>

@@ -72,8 +72,8 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
         <svg viewBox="0 0 220 110" width="100%" style={{ display: 'block', borderRadius: 6, overflow: 'hidden', marginBottom: 10 }}>
           <defs>
             <linearGradient id="iceC" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#E8E4DC" />
-              <stop offset="100%" stopColor="#D8D4CC" />
+              <stop offset="0%" stopColor="var(--bg)" />
+              <stop offset="100%" stopColor="var(--border)" />
             </linearGradient>
           </defs>
           <rect width="220" height="110" fill="url(#iceC)" rx="4" />
@@ -82,11 +82,11 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
           {/* Goal */}
           <rect x="0" y="37" width="5" height="36" fill="none" stroke="#999" strokeWidth="1.5" rx="1" />
           {/* Goalkeeper */}
-          <circle cx="14" cy="55" r="5" fill="#2C2820" opacity="0.7" />
+          <circle cx="14" cy="55" r="5" fill="var(--bg-leather)" opacity="0.7" />
           <text x="14" y="57" textAnchor="middle" fontSize="5" fill="white" fontWeight="700">MV</text>
           {/* Defenders */}
           {[38, 48, 58, 68].map((y, i) => (
-            <circle key={i} cx="6" cy={y} r="3" fill="#B05040" opacity="0.5" />
+            <circle key={i} cx="6" cy={y} r="3" fill="var(--danger)" opacity="0.5" />
           ))}
           {/* Zone buttons */}
           <rect x="22" y="14" width="42" height="20" rx="4"

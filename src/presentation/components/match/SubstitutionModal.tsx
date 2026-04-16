@@ -26,7 +26,7 @@ export function SubstitutionModal({ starters, bench, onConfirm, onClose }: Subst
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         justifyContent: 'flex-start', paddingTop: '40px',
-        zIndex: 600, overflowY: 'auto',
+        zIndex: 'var(--z-modal)', overflowY: 'auto',
       }}
     >
       <div

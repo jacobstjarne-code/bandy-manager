@@ -28,6 +28,7 @@ import { getTrainingScene } from '../../domain/services/trainingSceneService'
 import { getSupporterMoodLabel } from '../../domain/services/supporterService'
 import { getRitualText } from '../../domain/services/supporterRituals'
 import type { WeeklyDecision } from '../../domain/services/weeklyDecisionService'
+import { SectionLabel } from '../components/SectionLabel'
 
 
 const NAV_BTN: React.CSSProperties = {
@@ -38,11 +39,6 @@ const NAV_BTN: React.CSSProperties = {
   cursor: 'pointer',
 }
 
-const LABEL: React.CSSProperties = {
-  fontSize: 8, fontWeight: 600, letterSpacing: '2px',
-  textTransform: 'uppercase', color: 'var(--text-muted)',
-  fontFamily: 'var(--font-body)', margin: 0,
-}
 
 export function DashboardScreen() {
   const { game, advance, simulateRemainingStep } = useGameStore()
@@ -331,12 +327,12 @@ export function DashboardScreen() {
     <div className="screen-enter" style={{ position: 'relative', minHeight: '100%', background: 'var(--bg)' }}>
 
 
-      <div className="texture-wood card-stack" style={{ paddingTop: 8, paddingBottom: 120 }}>
+      <div className="texture-wood card-stack" style={{ paddingTop: 8, paddingBottom: 'var(--scroll-padding-bottom)' }}>
 
         {/* ① VÄLKOMSTKORT (omgång 1) eller AGENDA (övriga omgångar) */}
         {isFirstRound ? (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
-            <p style={{ ...LABEL, marginBottom: 8 }}>🏒 SÄSONGSSTART {game.currentSeason}</p>
+            <SectionLabel style={{ marginBottom: 8 }}>🏒 SÄSONGSSTART {game.currentSeason}</SectionLabel>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 10, fontFamily: 'var(--font-body)' }}>
               Ditt uppdrag för {club.name} väntar. Sätt din startelva och kör.
             </p>
@@ -364,7 +360,7 @@ export function DashboardScreen() {
         ) : nudges.length > 0 ? (
           <div style={{ margin: '0 0 6px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2px', marginBottom: 4 }}>
-              <span style={{ ...LABEL }}>Att göra</span>
+              <SectionLabel>Att göra</SectionLabel>
               <span style={{ fontSize: 8, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{doneCount} av {nudges.length} klart</span>
             </div>
             {nudges.map((n, i) => (
@@ -443,9 +439,7 @@ export function DashboardScreen() {
           if (!scene) return null
           return (
             <div className="card-round" style={{ padding: '8px 12px', marginBottom: 6 }}>
-              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
-                🏋️ TRÄNINGSPLAN
-              </p>
+              <SectionLabel style={{ marginBottom: 4 }}>🏋️ TRÄNINGSPLAN</SectionLabel>
               <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-display)', margin: 0 }}>
                 {scene}
               </p>
@@ -467,7 +461,7 @@ export function DashboardScreen() {
                   TOPP 8
                 </span>
               )}
-              <p style={{ ...LABEL, marginBottom: 6 }}>📊 Tabell</p>
+              <SectionLabel style={{ marginBottom: 6 }}>📊 Tabell</SectionLabel>
               {standing.played === 0 ? (
                 <>
                   <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3, fontFamily: 'var(--font-display)' }}>12 lag · 22 omg</p>
@@ -499,7 +493,7 @@ export function DashboardScreen() {
           {/* Senast */}
           {lastResult ? (
             <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/match', { state: { showReport: true } })}>
-              <p style={{ ...LABEL, marginBottom: 6 }}>Senast</p>
+              <SectionLabel style={{ marginBottom: 6 }}>Senast</SectionLabel>
               {(() => {
                 const won = lastResult!.scoreFor > lastResult!.scoreAgainst
                 const lost = lastResult!.scoreFor < lastResult!.scoreAgainst
@@ -527,7 +521,7 @@ export function DashboardScreen() {
             </div>
           ) : (
             <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}>
-              <p style={{ ...LABEL, marginBottom: 6 }}>🎯 Styrelsens mål</p>
+              <SectionLabel style={{ marginBottom: 6 }}>🎯 Styrelsens mål</SectionLabel>
               {(game.boardObjectives ?? []).slice(0, 2).map((o, i) => (
                 <p key={i} style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)', marginBottom: 2, lineHeight: 1.4 }}>"{o.label}"</p>
               ))}
@@ -539,7 +533,7 @@ export function DashboardScreen() {
 
           {/* Orten */}
           <div data-coach-id="orten-card" className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}>
-            <p style={{ ...LABEL, marginBottom: 6 }}>🏘 Orten</p>
+            <SectionLabel style={{ marginBottom: 6 }}>🏘 Orten</SectionLabel>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 5 }}>
               <span style={{ fontSize: 22, fontWeight: 700, color: csColor(cs), fontFamily: 'var(--font-display)', lineHeight: 1 }}>{cs}</span>
               {(() => {
@@ -563,7 +557,7 @@ export function DashboardScreen() {
 
           {/* Ekonomi */}
           <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}>
-            <p style={{ ...LABEL, marginBottom: 6 }}>💰 Ekonomi</p>
+            <SectionLabel style={{ marginBottom: 6 }}>💰 Ekonomi</SectionLabel>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
               <span style={{ fontSize: 18, fontWeight: 700, color: finances < 0 ? 'var(--danger)' : 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
                 {formatFinanceAbs(finances)}
@@ -602,9 +596,7 @@ export function DashboardScreen() {
               onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>
-                  📯 {sg.name.toUpperCase()}
-                </p>
+                <SectionLabel>📯 {sg.name.toUpperCase()}</SectionLabel>
                 <span style={{ fontSize: 9, color: sg.mood >= 65 ? 'var(--success)' : sg.mood >= 40 ? 'var(--text-muted)' : 'var(--danger)', fontFamily: 'var(--font-body)' }}>
                   {moodLabel} · {sg.members} medlemmar
                 </span>
@@ -640,7 +632,7 @@ export function DashboardScreen() {
         <div className="card-sharp" style={{ margin: '0 0 4px', cursor: 'pointer' }} onClick={() => navigate('/game/squad')}>
           <div style={{ padding: '7px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ ...LABEL }}>👥 Trupp</span>
+              <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>👥 Trupp</span>
               <span style={{ fontSize: 11, color: injuredCount > 0 ? 'var(--danger)' : 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
                 {readyCount} redo{injuredCount > 0 ? ` · ${injuredCount} skadad${injuredCount > 1 ? 'e' : ''}` : ''} · Form {avgForm} · Kond {avgFitness}
               </span>
@@ -654,7 +646,7 @@ export function DashboardScreen() {
           <div className="card-sharp" style={{ margin: '0 0 4px', cursor: 'pointer' }} onClick={() => navigate('/game/tabell')}>
             <div style={{ padding: '7px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ ...LABEL }}>⚔️ Slutspel</span>
+                <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>⚔️ Slutspel</span>
                 {playoffSeries ? (
                   <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
                     {playoffSeries.round === PlayoffRound.QuarterFinal ? 'Kvartsfinal' : playoffSeries.round === PlayoffRound.SemiFinal ? 'Semifinal' : 'SM-Final'} · {dynamicHomeWins}–{dynamicAwayWins} i matcher
@@ -670,7 +662,7 @@ export function DashboardScreen() {
           <div className="card-sharp" style={{ margin: '0 0 4px', cursor: 'pointer' }} onClick={() => navigate('/game/tabell', { state: { tab: 'cupen' } })}>
             <div style={{ padding: '7px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ ...LABEL }}>🏆 Cupen</span>
+                <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>🏆 Cupen</span>
                 <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
                   {cupEliminated ? 'Utslagna' : (() => {
                     const hasBye = game.cupBracket!.matches.some(m => m.isBye && (m.homeClubId === game.managedClubId || m.awayClubId === game.managedClubId))
@@ -695,7 +687,7 @@ export function DashboardScreen() {
           <div className="card-sharp" style={{ margin: '0 0 4px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'akademi' } })}>
             <div style={{ padding: '7px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ ...LABEL }}>🎓 Akademi</span>
+                <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>🎓 Akademi</span>
                 <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
                   P19 · {game.youthTeam.tablePosition}:a · {game.youthTeam.seasonRecord.w}V {game.youthTeam.seasonRecord.d}O {game.youthTeam.seasonRecord.l}F
                 </span>
@@ -732,9 +724,7 @@ export function DashboardScreen() {
             if (!coffee) return null
             return (
               <div style={{ margin: '0 0 8px', padding: '8px 10px', borderBottom: '1px solid var(--border)' }}>
-                <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
-                  ☕ KAFFERUMMET
-                </p>
+                <SectionLabel style={{ marginBottom: 4 }}>☕ KAFFERUMMET</SectionLabel>
                 <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-body)' }}>
                   {coffee.speaker}: {coffee.text}
                 </p>
@@ -747,7 +737,7 @@ export function DashboardScreen() {
             const d = game.pendingWeeklyDecision as WeeklyDecision
             return (
               <div className="card-sharp" style={{ padding: '10px 12px', margin: '0 -12px 8px' }}>
-                <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>🤔 VECKANS BESLUT</p>
+                <SectionLabel style={{ marginBottom: 6 }}>🤔 VECKANS BESLUT</SectionLabel>
                 <p style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8 }}>{d.question}</p>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button

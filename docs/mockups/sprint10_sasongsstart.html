@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Mockup: Säsongsstart — State of the Club (Sprint 10)</title>
+<style>
+  :root {
+    --bg: #F5F1EB;
+    --bg-surface: #E8E4DC;
+    --bg-elevated: #FFFFFF;
+    --text-primary: #2C2820;
+    --text-secondary: #534E44;
+    --text-muted: #8A8478;
+    --accent: #B05040;
+    --border: #D4CFC4;
+    --success: #5F7F5F;
+    --danger: #B05040;
+  }
+  body {
+    font-family: Georgia, serif;
+    background: var(--bg);
+    margin: 0;
+    padding: 20px;
+    color: var(--text-primary);
+  }
+  .container {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 20px;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .label {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 10px;
+  }
+  
+  /* State of the Club */
+  .state-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .state-col { text-align: center; }
+  .state-col.right { text-align: center; }
+  .state-heading {
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 0 0 6px;
+  }
+  .state-metric {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+    margin: 0;
+  }
+  .state-meta {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin: 4px 0 0;
+    line-height: 1.4;
+  }
+  .arrow {
+    font-size: 28px;
+    color: var(--text-muted);
+  }
+  .delta-positive { color: var(--success); font-weight: 600; }
+  .delta-negative { color: var(--danger); font-weight: 600; }
+  .narrative {
+    font-size: 12px;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    margin-top: 12px;
+  }
+  
+  /* Truppen */
+  .squad-row {
+    font-size: 12px;
+    padding: 4px 0;
+    display: flex;
+    justify-content: space-between;
+    line-height: 1.5;
+  }
+  .squad-row strong { color: var(--text-primary); }
+  .squad-summary {
+    font-size: 11px;
+    font-style: italic;
+    color: var(--text-secondary);
+    padding: 10px 12px;
+    background: var(--bg-surface);
+    border-radius: 4px;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Säsong 2026/2027</h1>
+    <p class="subtitle">FORSBACKA IF · STYRELSEMÖTE INFÖR SÄSONG</p>
+    
+    <!-- STATE OF THE CLUB (WEAK-013) -->
+    <div class="card">
+      <p class="label">📐 STATE OF THE CLUB</p>
+      
+      <div class="state-grid">
+        <div class="state-col">
+          <p class="state-heading">Förra säsongen</p>
+          <p class="state-metric">6:a</p>
+          <p class="state-meta">+47k · CS 58<br>24 spelare</p>
+        </div>
+        
+        <div class="arrow">→</div>
+        
+        <div class="state-col right">
+          <p class="state-heading">Nu</p>
+          <p class="state-metric">4:a <span class="delta-positive" style="font-size: 14px;">↑2</span></p>
+          <p class="state-meta">+118k <span class="delta-positive">↑71k</span> · CS 62 <span class="delta-positive">↑4</span><br>26 spelare</p>
+        </div>
+      </div>
+      
+      <div class="narrative">
+        Ett år av tydlig progression. Vi har skakat av oss stigmat från 80-talets nergångsår. 
+        Ekonomin följer tabellen och klackens mood är den högsta sedan Hedin tog över som ordförande.
+      </div>
+    </div>
+    
+    <!-- TRUPPEN JUST NU (WEAK-018) -->
+    <div class="card">
+      <p class="label">👥 TRUPPEN JUST NU</p>
+      
+      <div class="squad-row"><span>Truppstorlek</span><strong>26 spelare</strong></div>
+      <div class="squad-row"><span>Snittålder</span><strong>27.3 år</strong></div>
+      <div class="squad-row"><span>Spelare 30+ (veteraner)</span><strong>6</strong></div>
+      <div class="squad-row"><span>Kontrakt som löper ut i år</span><strong>4</strong></div>
+      <div class="squad-row"><span>Svagaste position</span><strong style="color: var(--danger);">Yttre halv</strong></div>
+      <div class="squad-row"><span>Stjärna</span><strong>Martinsson (CA 78, 24 år)</strong></div>
+      <div class="squad-row"><span>Kapten</span><strong>Kronberg (sista säsongen)</strong></div>
+      
+      <div class="squad-summary">
+        Truppen är jämn men ytterhalvorna sticker ut negativt. Om vi ska kliva upp i tabellen nästa år 
+        måste vi antingen värva eller flytta upp Karlsson (P19). Kronbergs avsked nästa vår blir 
+        en känslomässig fråga — inte bara en sportslig.
+      </div>
+    </div>
+    
+    <!-- STYRELSENS AMBITIONER (existerande) -->
+    <div class="card">
+      <p class="label">STYRELSEN FÖRVÄNTAR SIG</p>
+      <div class="squad-row"><span>Minimiplacering</span><strong>Topp 6</strong></div>
+      <div class="squad-row"><span>Slutspel</span><strong>Önskas</strong></div>
+      <div class="squad-row"><span>Ekonomi vid säsongsslut</span><strong>≥ 0 kr</strong></div>
+    </div>
+  </div>
+  
+  <div style="max-width: 420px; margin: 20px auto; padding: 12px; background: #FFF9E6; border-left: 3px solid #E8B040; font-size: 12px; font-family: system-ui;">
+    <strong>Sprint 10-förändringar synliga:</strong>
+    <ul style="margin: 6px 0 0 16px; padding: 0;">
+      <li><strong>WEAK-013:</strong> State of the Club-jämförelse före/efter</li>
+      <li><strong>WEAK-018:</strong> "Truppen just nu"-sektion med konkreta siffror</li>
+      <li>Narrativ kontext som knyter siffrorna till klubbens berättelse</li>
+    </ul>
+  </div>
+</body>
+</html>

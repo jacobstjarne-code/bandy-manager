@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Mockup: Presskonferens med minne (Sprint 5)</title>
+<style>
+  :root {
+    --bg: #F5F1EB;
+    --bg-surface: #E8E4DC;
+    --bg-elevated: #FFFFFF;
+    --text-primary: #2C2820;
+    --text-secondary: #534E44;
+    --text-muted: #8A8478;
+    --accent: #B05040;
+    --accent-dark: #8B3E30;
+    --border: #D4CFC4;
+    --danger: #B05040;
+  }
+  body {
+    font-family: Georgia, serif;
+    background: var(--bg);
+    margin: 0;
+    padding: 20px;
+    color: var(--text-primary);
+  }
+  .container {
+    max-width: 420px;
+    margin: 0 auto;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .header {
+    padding: 14px 16px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .label {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 6px;
+  }
+  .journalist-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .journalist-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 12px;
+  }
+  .journalist-meta {
+    flex: 1;
+  }
+  .journalist-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .journalist-outlet {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin: 0;
+  }
+  .memory-tag {
+    font-size: 9px;
+    color: var(--danger);
+    padding: 2px 6px;
+    border: 1px solid var(--danger);
+    border-radius: 3px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .body {
+    padding: 20px 16px;
+  }
+  .context-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 10px 12px;
+    background: var(--bg-surface);
+    border-left: 2px solid var(--accent);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .question {
+    font-size: 15px;
+    line-height: 1.4;
+    margin: 0 0 18px;
+    font-family: Georgia, serif;
+  }
+  .answer {
+    display: block;
+    width: 100%;
+    padding: 14px 12px;
+    margin-bottom: 8px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    text-align: left;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .answer:hover {
+    border-color: var(--accent);
+    background: var(--bg-surface);
+  }
+  .answer-tone {
+    display: block;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-style: italic;
+  }
+  .scroll-label {
+    text-align: center;
+    font-size: 9px;
+    color: var(--text-muted);
+    padding: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .footer-note {
+    padding: 10px 16px;
+    background: var(--bg-surface);
+    font-size: 10px;
+    color: var(--text-muted);
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <p class="label">📰 PRESSKONFERENS — EFTER MATCHEN</p>
+      <div class="journalist-row">
+        <div class="journalist-avatar">KS</div>
+        <div class="journalist-meta">
+          <p class="journalist-name">Karin Ström</p>
+          <p class="journalist-outlet">Gefle Dagblad · kritisk</p>
+        </div>
+        <span class="memory-tag">minns</span>
+      </div>
+    </div>
+    
+    <div class="body">
+      <div class="context-hint">
+        Karin har ställt kritiska frågor i fyra raka presskonferenser. 
+        Sentiment: −18.
+      </div>
+      
+      <p class="question">"Förra mötet sa du att försvaret skulle hålla. 
+      Nu har ni släppt in 11 mål på tre matcher. Vad säger du nu?"</p>
+      
+      <button class="answer">
+        Erkänna problem — "Hon har rätt. Vi kan bättre."
+        <span class="answer-tone">Ödmjuk — relation +3, reputation −1</span>
+      </button>
+      
+      <button class="answer">
+        Försvara — "Siffror är siffror. Vi vet vad vi gör."
+        <span class="answer-tone">Defensiv — relation −2, ingen effekt på reputation</span>
+      </button>
+      
+      <button class="answer">
+        Attackera — "Ni letar efter rubriker. Vi bygger lag."
+        <span class="answer-tone">Aggressiv — relation −8, reputation beror på följande 3 matcher</span>
+      </button>
+      
+      <button class="answer">
+        Vägra svara
+        <span class="answer-tone">Tyst — reputation −4, Karin skriver kritisk artikel</span>
+      </button>
+    </div>
+    
+    <div class="footer-note">
+      Presskonferens öppnas direkt efter match — inte via inbox.
+    </div>
+  </div>
+  
+  <div style="max-width: 420px; margin: 20px auto; padding: 12px; background: #FFF9E6; border-left: 3px solid #E8B040; font-size: 12px; font-family: system-ui;">
+    <strong>Sprint 5-förändringar synliga:</strong>
+    <ul style="margin: 6px 0 0 16px; padding: 0;">
+      <li>"minns"-tag när journalist har memory med sentiment &lt; −10</li>
+      <li>Context-hint visar historiken (endast för spelaren)</li>
+      <li>Fråga refererar tidigare svar ("Förra mötet sa du…")</li>
+      <li>Konsekvenser per svar visade explicit</li>
+      <li>Presskonferensen triggas direkt efter match, inte från inbox</li>
+    </ul>
+  </div>
+</body>
+</html>

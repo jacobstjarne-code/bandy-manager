@@ -326,12 +326,7 @@ export function SeasonSummaryScreen() {
 
           return (
             <div style={{ marginBottom: 8 }}>
-              <p style={{
-                fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase',
-                color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 6,
-              }}>
-                🏒 DIN SÄSONG
-              </p>
+              <SectionLabel style={{ marginBottom: 6 }}>🏒 DIN SÄSONG</SectionLabel>
               {topItems.map((item, i) => (
                 <div key={i} className="card-round" style={{ padding: '10px 12px', marginBottom: 6 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
@@ -369,9 +364,7 @@ export function SeasonSummaryScreen() {
           if (seasonStorylines.length === 0) return null
           return (
             <div className="card-round" style={{ padding: '10px 12px', marginBottom: 8 }}>
-              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 6 }}>
-                📖 SÄSONGENS BERÄTTELSER
-              </p>
+              <SectionLabel style={{ marginBottom: 6 }}>📖 SÄSONGENS BERÄTTELSER</SectionLabel>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {seasonStorylines.slice(-5).map((s, i) => {
                   const player = s.playerId ? game.players.find(p => p.id === s.playerId) : null

@@ -54,8 +54,8 @@ export function CounterInteraction({ data, outcome, onChoose }: CounterInteracti
         <svg viewBox="0 0 260 120" width="100%" style={{ display: 'block', borderRadius: 6, overflow: 'hidden', marginBottom: 10 }}>
           <defs>
             <linearGradient id="igC" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#E8E4DC" />
-              <stop offset="100%" stopColor="#D8D4CC" />
+              <stop offset="0%" stopColor="var(--bg)" />
+              <stop offset="100%" stopColor="var(--border)" />
             </linearGradient>
             <marker id="arC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
               <path d="M0 0L10 5L0 10z" fill="var(--accent)" />
@@ -64,12 +64,12 @@ export function CounterInteraction({ data, outcome, onChoose }: CounterInteracti
           <rect width="260" height="120" fill="url(#igC)" rx="4" />
           {/* Goal at top */}
           <rect x="100" y="2" width="60" height="14" fill="none" stroke="#999" strokeWidth="1.5" rx="2" />
-          <circle cx="130" cy="12" r="5" fill="#2C2820" opacity="0.7" />
+          <circle cx="130" cy="12" r="5" fill="var(--bg-leather)" opacity="0.7" />
           <text x="130" y="15" textAnchor="middle" fontSize="5" fill="white" fontWeight="700">MV</text>
           {/* Defenders (beaten) */}
-          <circle cx="112" cy="34" r="6" fill="#B05040" opacity="0.6" />
+          <circle cx="112" cy="34" r="6" fill="var(--danger)" opacity="0.6" />
           <text x="112" y="37" textAnchor="middle" fontSize="5" fill="white">X</text>
-          <circle cx="148" cy="30" r="6" fill="#B05040" opacity="0.6" />
+          <circle cx="148" cy="30" r="6" fill="var(--danger)" opacity="0.6" />
           <text x="148" y="33" textAnchor="middle" fontSize="5" fill="white">X</text>
           {/* Runner */}
           <circle cx="100" cy="70" r="8" fill="var(--accent)" stroke="#fff" strokeWidth="2" />

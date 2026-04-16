@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Mockup: Spelarkort 2.5 (Sprint 7)</title>
+<style>
+  :root {
+    --bg: #F5F1EB;
+    --bg-surface: #E8E4DC;
+    --bg-elevated: #FFFFFF;
+    --text-primary: #2C2820;
+    --text-secondary: #534E44;
+    --text-muted: #8A8478;
+    --accent: #B05040;
+    --border: #D4CFC4;
+    --danger: #B05040;
+    --success: #5F7F5F;
+    --warning: #C89838;
+  }
+  body {
+    font-family: Georgia, serif;
+    background: var(--bg);
+    margin: 0;
+    padding: 20px;
+    color: var(--text-primary);
+  }
+  .container {
+    max-width: 420px;
+    margin: 0 auto;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .label {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .hero {
+    padding: 16px;
+    background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .portrait {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .name {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.1;
+  }
+  .meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin: 2px 0 0;
+  }
+  .badges {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .badge-captain { background: var(--accent); color: white; }
+  .badge-fan-fav { background: #D4B06A; color: white; }
+  .badge-nemesis { background: var(--danger); color: white; opacity: 0.9; }
+  .badge-veteran { background: var(--text-secondary); color: white; }
+  .stats-bars {
+    display: grid;
+    gap: 4px;
+  }
+  .stat-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+  }
+  .stat-label {
+    width: 60px;
+    color: var(--text-muted);
+    font-size: 10px;
+  }
+  .stat-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .stat-fill { height: 100%; background: var(--accent); }
+  .stat-fill.warn { background: var(--warning); }
+  .stat-fill.low { background: var(--danger); }
+  .stat-value {
+    width: 24px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 11px;
+  }
+  
+  .section {
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .section-title {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 8px;
+  }
+  
+  .daylife {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+  }
+  .flex-bar {
+    display: flex;
+    gap: 1px;
+    margin-top: 6px;
+    height: 4px;
+  }
+  .flex-fill { background: var(--warning); border-radius: 2px 0 0 2px; }
+  .flex-rest { background: var(--border); border-radius: 0 2px 2px 0; }
+  
+  .relations-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .relation-box {
+    padding: 8px;
+    background: var(--bg-surface);
+    border-radius: 4px;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .relation-box strong { color: var(--text-primary); }
+  
+  .player-voice {
+    padding: 10px 12px;
+    background: var(--bg-surface);
+    border-left: 3px solid var(--text-muted);
+    font-style: italic;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+  }
+  .player-voice-context {
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-style: normal;
+    letter-spacing: 0.5px;
+  }
+  
+  .leadership {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .leadership button {
+    padding: 8px 6px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    line-height: 1.3;
+  }
+  .leadership button:hover { border-color: var(--accent); }
+  .leadership button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .leadership-cooldown {
+    display: block;
+    font-size: 8px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  
+  .last-talked {
+    font-size: 10px;
+    color: var(--text-muted);
+    padding: 6px 12px;
+    background: var(--bg-surface);
+    border-radius: 3px;
+    margin-top: 8px;
+    font-style: italic;
+  }
+  
+  .talk-footer {
+    padding: 12px 16px;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 6px;
+  }
+  .talk-footer button {
+    flex: 1;
+    padding: 10px 4px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .talk-footer button.primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-top">
+        <div class="portrait">SK</div>
+        <div style="flex: 1;">
+          <h1 class="name">Stefan Kronberg</h1>
+          <p class="meta">#9 · Forward · 34 år · CA 72</p>
+          <div class="badges">
+            <span class="badge badge-captain">Kapten</span>
+            <span class="badge badge-fan-fav">Klackfavorit</span>
+            <span class="badge badge-veteran">Sista säsongen</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="stats-bars">
+        <div class="stat-row">
+          <span class="stat-label">Form</span>
+          <div class="stat-bar"><div class="stat-fill" style="width: 74%"></div></div>
+          <span class="stat-value">74</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Kondition</span>
+          <div class="stat-bar"><div class="stat-fill warn" style="width: 62%"></div></div>
+          <span class="stat-value">62</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Moral</span>
+          <div class="stat-bar"><div class="stat-fill" style="width: 88%"></div></div>
+          <span class="stat-value">88</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Skärpa</span>
+          <div class="stat-bar"><div class="stat-fill" style="width: 70%"></div></div>
+          <span class="stat-value">70</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- DUBBELLIV -->
+    <div class="section">
+      <p class="section-title">DUBBELLIV</p>
+      <p class="daylife">Elektriker på Holmström Bygg (15 år). Flexibilitet 72 — jobbar 07-16, svårt att träna förmiddag.</p>
+      <div class="flex-bar">
+        <div class="flex-fill" style="flex: 72"></div>
+        <div class="flex-rest" style="flex: 28"></div>
+      </div>
+    </div>
+    
+    <!-- SPELARENS RÖST (NY, NARR-006) -->
+    <div class="section">
+      <p class="section-title">VAD HAN SÄGER</p>
+      <div class="player-voice">
+        "Jag har spelat i 17 år. Om det här blir min sista säsong vill jag att det ska betyda något. 
+        Du vet — inte en trofé nödvändigtvis. Bara en säsong att komma ihåg."
+        <p class="player-voice-context">Sagt efter träningen · omgång 8</p>
+      </div>
+    </div>
+    
+    <!-- RELATIONER -->
+    <div class="section">
+      <p class="section-title">RELATIONER</p>
+      <div class="relations-grid">
+        <div class="relation-box">
+          <strong>Mentor till</strong><br>
+          Martinsson (19 år, hungrig)<br>
+          <span style="color: var(--text-muted); font-size: 10px;">Sen omgång 4</span>
+        </div>
+        <div class="relation-box">
+          <strong>Nemesis (NU LAGKAMRAT)</strong><br>
+          Lundkvist — gjorde 8 mål mot oss<br>
+          <span style="color: var(--accent); font-size: 10px;">Värvad omgång 14</span>
+        </div>
+      </div>
+      <div class="last-talked">
+        Senaste samtalet: omgång 18 (för 2 omgångar sedan)
+      </div>
+    </div>
+    
+    <!-- LEDARSKAP (NY, NARR-005) -->
+    <div class="section">
+      <p class="section-title">LEDARSKAP</p>
+      <div class="leadership">
+        <button>
+          Sänk ett varv
+          <span class="leadership-cooldown">Tillgänglig</span>
+        </button>
+        <button disabled>
+          Sätt som mentor
+          <span class="leadership-cooldown">Redan mentor</span>
+        </button>
+        <button>
+          Privat samtal
+          <span class="leadership-cooldown">Tillgänglig</span>
+        </button>
+        <button disabled>
+          Offentlig beröm
+          <span class="leadership-cooldown">Cooldown: 3 omg</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- CTA -->
+    <div class="talk-footer">
+      <button>Uppmuntra</button>
+      <button>Ställ krav</button>
+      <button>Framtid</button>
+      <button class="primary">Prata</button>
+    </div>
+  </div>
+  
+  <div style="max-width: 420px; margin: 20px auto; padding: 12px; background: #FFF9E6; border-left: 3px solid #E8B040; font-size: 12px; font-family: system-ui;">
+    <strong>Sprint 7-förändringar synliga:</strong>
+    <ul style="margin: 6px 0 0 16px; padding: 0;">
+      <li><strong>WEAK-004:</strong> Senaste samtalet-indikator</li>
+      <li><strong>WEAK-005:</strong> cornerRecovery inte visat (förblir dolt) men refereras indirekt i matchkommentar</li>
+      <li><strong>WEAK-006:</strong> Kapten-badge synlig, kapten-citat i presskonferens</li>
+      <li><strong>WEAK-007:</strong> Nemesis-tracker visar "NU LAGKAMRAT"-status</li>
+      <li><strong>WEAK-010:</strong> "Sista säsongen"-badge (veteran-arc)</li>
+      <li><strong>NARR-005:</strong> Ledarskap-sektion med 4 actions</li>
+      <li><strong>NARR-006:</strong> Spelarens egen röst — mikro-citat</li>
+    </ul>
+  </div>
+</body>
+</html>

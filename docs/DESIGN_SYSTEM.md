@@ -28,6 +28,19 @@ Skärmar via BottomNav ska INTE ha rubrik-rad. Undantag: hierarkisk navigering (
 - Action-knappar: INTE fullbredd. `padding: '8px 16px'`, `borderRadius: 8`, högerställd
 - CTA-knappar (Spela omgång, Välj taktik): FÅR vara fullbredd
 
+### Knapphierarki
+
+Fyra klasser i `global.css`. Använd rätt klass för rätt syfte:
+
+| Klass | Utseende | Användning | Regel |
+|-------|----------|------------|-------|
+| `.btn-primary` | Gradient `--accent-dark` → `--accent-deep` | Primär CTA (Spela, Bekräfta) | Max 1 per skärm |
+| `.btn-secondary` | Solid `--accent` | Sekundär action (Välj, Sätt) | Fritt |
+| `.btn-ghost` | `--bg-surface` + border | Val i listor/modals | Fritt |
+| `.btn-outline` | Transparent + border | Neutral/Avbryt | Fritt |
+
+Alla knappar kombineras med `.btn` (bas-reset + flexbox + transition).
+
 ---
 
 ## 2. KORTSYSTEM

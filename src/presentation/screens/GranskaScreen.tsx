@@ -9,6 +9,7 @@ import { getRivalry } from '../../domain/data/rivalries'
 import type { EventChoice } from '../../domain/entities/GameEvent'
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { Player } from '../../domain/entities/Player'
+import { SectionLabel } from '../components/SectionLabel'
 
 function choiceStyle(_choiceId: string): React.CSSProperties {
   return { background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)' }
@@ -219,15 +220,13 @@ export function GranskaScreen() {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-      <div className="texture-wood card-stack" style={{ flex: 1, overflowY: 'auto', paddingTop: 12, paddingBottom: 180 }}>
+      <div className="texture-wood card-stack" style={{ flex: 1, overflowY: 'auto', paddingTop: 12, paddingBottom: 'var(--scroll-padding-bottom)' }}>
 
         {/* ── RESULTAT-HERO ── */}
         {fixture && (
           <div className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(0) }}>
             <div style={{ padding: '16px 14px 12px', textAlign: 'center' }}>
-              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 10 }}>
-                SLUTRESULTAT
-              </p>
+              <SectionLabel style={{ marginBottom: 10 }}>SLUTRESULTAT</SectionLabel>
 
               {/* Club names */}
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -300,9 +299,7 @@ export function GranskaScreen() {
             : journalist?.persona === 'analytical' ? 'Analytisk' : null
           return (
             <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(1) }}>
-              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 6 }}>
-                📰 MEDIA
-              </p>
+              <SectionLabel style={{ marginBottom: 6 }}>📰 MEDIA</SectionLabel>
               {journalist && (
                 <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>
                   {journalist.name} · {journalist.outlet}{personaLabel ? ` · ${personaLabel}` : ''}
@@ -318,9 +315,7 @@ export function GranskaScreen() {
         {/* ── NYCKELMOMENT ── */}
         {keyMoments.length > 0 && (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(1) }}>
-            <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 8 }}>
-              NYCKELMOMENT
-            </p>
+            <SectionLabel style={{ marginBottom: 8 }}>NYCKELMOMENT</SectionLabel>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {keyMoments.map((e, i) => {
                 const isHomeEvent = e.clubId === fixture?.homeClubId
@@ -351,9 +346,9 @@ export function GranskaScreen() {
           return (
             <div key={event.id} className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(2 + ei) }}>
               <div style={{ padding: '10px 12px' }}>
-                <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: resolved ? 4 : 6 }}>
+                <SectionLabel style={{ marginBottom: resolved ? 4 : 6 }}>
                   {event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}
-                </p>
+                </SectionLabel>
 
                 {resolved ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -407,9 +402,7 @@ export function GranskaScreen() {
         {rs && (
           <div className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(3) }}>
             <div style={{ padding: '10px 12px' }}>
-              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 8 }}>
-                OMGÅNGSSAMMANFATTNING
-              </p>
+              <SectionLabel style={{ marginBottom: 8 }}>OMGÅNGSSAMMANFATTNING</SectionLabel>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {standing && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/tabell')}>
@@ -492,9 +485,7 @@ export function GranskaScreen() {
 
           return (
             <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(4) }}>
-              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 6 }}>
-                🏒 ANDRA MATCHER
-              </p>
+              <SectionLabel style={{ marginBottom: 6 }}>🏒 ANDRA MATCHER</SectionLabel>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {otherResults.map(f => {
                   const homeWon = (f.homeScore ?? 0) > (f.awayScore ?? 0)
@@ -526,9 +517,7 @@ export function GranskaScreen() {
           if (scoutItems.length === 0) return null
           return (
             <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(5) }}>
-              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 6 }}>
-                🔍 SCOUTING
-              </p>
+              <SectionLabel style={{ marginBottom: 6 }}>🔍 SCOUTING</SectionLabel>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {scoutItems.map((item, i) => (
                   <div key={i} style={{ borderBottom: i < scoutItems.length - 1 ? '1px solid var(--border)' : 'none', paddingBottom: i < scoutItems.length - 1 ? 5 : 0 }}>

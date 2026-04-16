@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Mockup: Taktik + Momentum (Sprint 11)</title>
+<style>
+  :root {
+    --bg: #F5F1EB;
+    --bg-surface: #E8E4DC;
+    --bg-elevated: #FFFFFF;
+    --text-primary: #2C2820;
+    --text-secondary: #534E44;
+    --text-muted: #8A8478;
+    --accent: #B05040;
+    --accent-subtle: #D4968E;
+    --border: #D4CFC4;
+  }
+  body {
+    font-family: Georgia, serif;
+    background: var(--bg);
+    margin: 0;
+    padding: 20px;
+    color: var(--text-primary);
+  }
+  .container {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  
+  /* MATCH SCOREBOARD + MOMENTUM */
+  .scoreboard {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .team-name {
+    font-size: 13px;
+    font-weight: 600;
+    flex: 1;
+  }
+  .team-name.right { text-align: right; }
+  .score {
+    font-size: 32px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .match-time {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  
+  /* MOMENTUM BAR (NARR-003) */
+  .momentum {
+    margin: 10px 0 0;
+  }
+  .momentum-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-bottom: 3px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .momentum-labels .active {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .momentum-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+  }
+  .momentum-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 68%;  /* momentum = +4, ger 50 + 4/10*45 = 68% */
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent-subtle) 100%);
+    transition: width 0.4s;
+  }
+  .momentum-marker {
+    position: absolute;
+    left: 50%;
+    top: -2px;
+    width: 1px;
+    height: 7px;
+    background: var(--text-muted);
+    opacity: 0.3;
+  }
+  
+  /* COMMENTARY */
+  .commentary {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .comment-row {
+    display: flex;
+    gap: 10px;
+    padding: 4px 0;
+    font-size: 12px;
+    border-bottom: 1px solid var(--bg-surface);
+  }
+  .comment-row:last-child { border-bottom: none; }
+  .comment-time {
+    width: 32px;
+    color: var(--text-muted);
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  
+  /* SCOUT RECOMMENDATIONS (NARR-004) */
+  .card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+  .label {
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 12px;
+  }
+  .scout-rec {
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+  }
+  .scout-rec:first-of-type {
+    border-top: none;
+    padding-top: 0;
+  }
+  .scout-title {
+    font-size: 12px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  .scout-body {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin: 0 0 6px;
+  }
+  .scout-effect {
+    font-size: 10px;
+    font-style: italic;
+    color: var(--text-secondary);
+    margin: 0 0 6px;
+  }
+  .scout-btn {
+    font-size: 10px;
+    padding: 5px 10px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .scout-btn:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <!-- SCOREBOARD MED MOMENTUM -->
+    <div class="scoreboard">
+      <div class="score-row">
+        <span class="team-name">Forsbacka</span>
+        <span class="score">2</span>
+        <span style="color: var(--text-muted);">–</span>
+        <span class="score">1</span>
+        <span class="team-name right">Lesjöfors</span>
+      </div>
+      <div class="match-time">67:14 · andra halvlek</div>
+      
+      <div class="momentum">
+        <div class="momentum-labels">
+          <span class="active">FBK ↑</span>
+          <span>LSJ</span>
+        </div>
+        <div class="momentum-bar">
+          <div class="momentum-fill"></div>
+          <div class="momentum-marker"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- COMMENTARY -->
+    <div class="commentary">
+      <div class="comment-row">
+        <span class="comment-time">67'</span>
+        <span>Martinsson pressar återigen i LSJ:s zon. Hans tredje försök på fem minuter.</span>
+      </div>
+      <div class="comment-row">
+        <span class="comment-time">65'</span>
+        <span>Forsbacka har funnit rytmen. Bolen går snabbt mellan vänster och mitt.</span>
+      </div>
+      <div class="comment-row">
+        <span class="comment-time">63'</span>
+        <span>MÅL. Martinsson sätter 2-1 efter corner.</span>
+      </div>
+    </div>
+    
+    <!-- SCOUTRAPPORT (NARR-004) -->
+    <div class="card">
+      <p class="label">🔍 SCOUTRAPPORT — LESJÖFORS</p>
+      
+      <div class="scout-rec">
+        <p class="scout-title">Motståndarens stjärna: Johan Lundberg</p>
+        <p class="scout-body">Anfallaren har CA 74. 12 mål hittills i säsong. Plockar ofta fria ytor i kontra.</p>
+        <p class="scout-effect">Tight markering: -1% egen offensiv, Lundbergs effektivitet -15%</p>
+        <button class="scout-btn">Applicera — Press High</button>
+      </div>
+      
+      <div class="scout-rec">
+        <p class="scout-title">Cornerhot</p>
+        <p class="scout-body">3 spelare med hög cornerSkill. 34% av deras mål kommer från hörnor.</p>
+        <p class="scout-effect">CornerStrategy: Safe — egen cornereffektivitet -2%, egen risk -30%</p>
+        <button class="scout-btn">Applicera — Safe corners</button>
+      </div>
+      
+      <div class="scout-rec">
+        <p class="scout-title">Svag ytterförsvar</p>
+        <p class="scout-body">Snitt-defending 52 i yttre halvor. Sårbara för direktspel.</p>
+        <p class="scout-effect">Tempo: High + Direct → +3% egen offensiv</p>
+        <button class="scout-btn">Applicera — Direct play</button>
+      </div>
+    </div>
+    
+  </div>
+  
+  <div style="max-width: 420px; margin: 20px auto; padding: 12px; background: #FFF9E6; border-left: 3px solid #E8B040; font-size: 12px; font-family: system-ui;">
+    <strong>Sprint 11-förändringar synliga:</strong>
+    <ul style="margin: 6px 0 0 16px; padding: 0;">
+      <li><strong>NARR-003:</strong> Momentum-bar över Scoreboard, skiftar med match-rytm</li>
+      <li><strong>NARR-004:</strong> Scoutrapport visar konkreta taktikrekommendationer med effekter</li>
+      <li>One-click-applicering av taktikpatch</li>
+    </ul>
+  </div>
+</body>
+</html>

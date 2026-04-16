@@ -54,8 +54,8 @@ export function FreeKickInteraction({ data, outcome, onChoose }: FreeKickInterac
         <svg viewBox="0 0 260 150" width="100%" style={{ display: 'block', borderRadius: 6, overflow: 'hidden', marginBottom: 10 }}>
           <defs>
             <linearGradient id="igF" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#E8E4DC" />
-              <stop offset="100%" stopColor="#D8D4CC" />
+              <stop offset="0%" stopColor="var(--bg)" />
+              <stop offset="100%" stopColor="var(--border)" />
             </linearGradient>
           </defs>
           <rect width="260" height="150" fill="url(#igF)" rx="4" />
@@ -63,16 +63,16 @@ export function FreeKickInteraction({ data, outcome, onChoose }: FreeKickInterac
           <rect x="75" y="4" width="110" height="20" fill="none" stroke="#888" strokeWidth="2" rx="2" />
           <rect x="77" y="6" width="106" height="16" fill="rgba(0,0,0,0.04)" />
           {/* Keeper */}
-          <circle cx="130" cy="16" r="6" fill="#2C2820" opacity="0.7" />
+          <circle cx="130" cy="16" r="6" fill="var(--bg-leather)" opacity="0.7" />
           <text x="130" y="19" textAnchor="middle" fontSize="5" fill="white" fontWeight="700">MV</text>
           {/* Wall */}
-          <rect x="112" y="48" width={data.wallSize * 9} height="12" rx="3" fill="#B05040" opacity="0.75" />
+          <rect x="112" y="48" width={data.wallSize * 9} height="12" rx="3" fill="var(--danger)" opacity="0.75" />
           <text x={112 + data.wallSize * 4.5} y="57" textAnchor="middle" fontSize="7" fill="white" fontWeight="700">
             {'■ '.repeat(data.wallSize).trim()}
           </text>
           <text x="130" y="72" textAnchor="middle" fontSize="6" fill="#888">MUR · {data.wallSize} man</text>
           {/* Distance marker */}
-          <line x1="130" y1="82" x2="130" y2="118" stroke="#C4BAA8" strokeWidth="0.8" strokeDasharray="3,2" />
+          <line x1="130" y1="82" x2="130" y2="118" stroke="var(--border-dark)" strokeWidth="0.8" strokeDasharray="3,2" />
           <text x="145" y="102" fontSize="6" fill="#999">{data.distanceMeters}m</text>
           {/* Kicker */}
           <circle cx="130" cy="125" r="5" fill="var(--accent)" stroke="#fff" strokeWidth="1.5" />

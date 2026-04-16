@@ -74,8 +74,8 @@ export function PenaltyInteraction({ data, outcome, onChoose }: PenaltyInteracti
         <svg viewBox="0 0 260 110" width="100%" style={{ display: 'block', borderRadius: 6, overflow: 'hidden', marginBottom: 10 }}>
           <defs>
             <linearGradient id="iceP" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#D8D4CC" />
-              <stop offset="100%" stopColor="#C8C4BC" />
+              <stop offset="0%" stopColor="var(--border)" />
+              <stop offset="100%" stopColor="var(--border-dark)" />
             </linearGradient>
           </defs>
           <rect width="260" height="110" fill="url(#iceP)" rx="4" />
@@ -89,12 +89,12 @@ export function PenaltyInteraction({ data, outcome, onChoose }: PenaltyInteracti
           <line x1="93" y1="10" x2="93" y2="90" stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
           <line x1="167" y1="10" x2="167" y2="90" stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
           {/* Goalkeeper outline */}
-          <rect x="121" y="38" width="18" height="32" rx="4" fill="none" stroke="#3a3530" strokeWidth="1.5" opacity="0.7" />
-          <circle cx="130" cy="32" r="7" fill="none" stroke="#3a3530" strokeWidth="1.5" opacity="0.7" />
-          <line x1="121" y1="45" x2="105" y2="42" stroke="#3a3530" strokeWidth="1.5" opacity="0.6" strokeLinecap="round" />
-          <line x1="139" y1="45" x2="155" y2="42" stroke="#3a3530" strokeWidth="1.5" opacity="0.6" strokeLinecap="round" />
-          <circle cx="104" cy="41" r="3.5" fill="none" stroke="#3a3530" strokeWidth="1.5" opacity="0.6" />
-          <circle cx="156" cy="41" r="3.5" fill="none" stroke="#3a3530" strokeWidth="1.5" opacity="0.6" />
+          <rect x="121" y="38" width="18" height="32" rx="4" fill="none" stroke="var(--bg-leather)" strokeWidth="1.5" opacity="0.7" />
+          <circle cx="130" cy="32" r="7" fill="none" stroke="var(--bg-leather)" strokeWidth="1.5" opacity="0.7" />
+          <line x1="121" y1="45" x2="105" y2="42" stroke="var(--bg-leather)" strokeWidth="1.5" opacity="0.6" strokeLinecap="round" />
+          <line x1="139" y1="45" x2="155" y2="42" stroke="var(--bg-leather)" strokeWidth="1.5" opacity="0.6" strokeLinecap="round" />
+          <circle cx="104" cy="41" r="3.5" fill="none" stroke="var(--bg-leather)" strokeWidth="1.5" opacity="0.6" />
+          <circle cx="156" cy="41" r="3.5" fill="none" stroke="var(--bg-leather)" strokeWidth="1.5" opacity="0.6" />
           <text x="130" y="80" textAnchor="middle" fontSize="7" fill="rgba(255,255,255,0.5)" fontWeight="600">MÅLVAKT</text>
           {/* Left zone */}
           <rect x="22" y="12" width="70" height="76" rx="2"
@@ -165,7 +165,7 @@ export function PenaltyInteraction({ data, outcome, onChoose }: PenaltyInteracti
             onClick={handleConfirm}
             style={{
               width: '100%', padding: 11, borderRadius: 8, border: 'none',
-              background: 'linear-gradient(135deg, var(--danger), #8B3E30)',
+              background: 'linear-gradient(135deg, var(--danger), var(--danger-dark))',
               color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer',
               letterSpacing: '1px', marginTop: 10,
               boxShadow: '0 3px 10px rgba(176,80,64,0.4)',

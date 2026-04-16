@@ -4,7 +4,7 @@ export function GoldConfetti() {
     left: (i * 37 + 11) % 100,
     delay: (i * 0.17) % 3,
     duration: 3 + (i * 0.13) % 3,
-    color: i % 3 === 0 ? 'var(--accent)' : i % 3 === 1 ? '#F5F1EB' : '#FFD700',
+    color: i % 3 === 0 ? 'var(--accent)' : i % 3 === 1 ? 'var(--text-light)' : 'var(--match-gold)',
     size: 6 + (i % 6),
   }))
   return (

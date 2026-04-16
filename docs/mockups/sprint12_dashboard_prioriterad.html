@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Mockup: Dashboard prioriterad (Sprint 12)</title>
+<style>
+  :root {
+    --bg: #F5F1EB;
+    --bg-surface: #E8E4DC;
+    --bg-elevated: #FFFFFF;
+    --text-primary: #2C2820;
+    --text-secondary: #534E44;
+    --text-muted: #8A8478;
+    --accent: #B05040;
+    --border: #D4CFC4;
+  }
+  body {
+    font-family: Georgia, serif;
+    background: var(--bg);
+    margin: 0;
+    padding: 16px;
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  .container {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  .agenda {
+    padding: 8px 12px;
+    background: var(--bg-surface);
+    border-radius: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  
+  /* PRIMARY CARD - dominerar */
+  .primary-card {
+    background: var(--bg-elevated);
+    border: 2px solid var(--accent);
+    border-radius: 6px;
+    padding: 20px 18px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(176, 80, 64, 0.1);
+  }
+  .primary-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+  .primary-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    line-height: 1.2;
+  }
+  .primary-body {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0 0 16px;
+    line-height: 1.6;
+  }
+  .primary-actions {
+    display: grid;
+    gap: 6px;
+  }
+  .primary-actions button {
+    padding: 12px;
+    font-family: inherit;
+    font-size: 13px;
+    text-align: left;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .primary-actions button:hover {
+    border-color: var(--accent);
+  }
+  .action-cost {
+    display: block;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    font-style: italic;
+  }
+  
+  /* COLLAPSED SECONDARY CARDS */
+  .collapsed-row {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-bottom: 3px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .collapsed-row:hover {
+    border-color: var(--accent);
+  }
+  .collapsed-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .collapsed-icon {
+    width: 18px;
+    text-align: center;
+  }
+  .collapsed-label {
+    color: var(--text-secondary);
+  }
+  .collapsed-value {
+    color: var(--text-muted);
+    font-size: 10px;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="agenda">OMG 14 · Derby vs Lesjöfors · fredag</div>
+    
+    <!-- PRIMARY CARD (dominerar i denna omgång = veckobeslut) -->
+    <div class="primary-card">
+      <p class="primary-label">⚡ VECKANS BESLUT — NEDRÄKNING: 2 OMGÅNGAR</p>
+      
+      <h2 class="primary-title">Kronbergs kontrakt löper ut</h2>
+      
+      <p class="primary-body">
+        Stefan Kronberg, 34 år, kapten sedan 2019. Kontrakt löper ut i juni. 
+        Han har signalerat att "det kanske räcker nu". Klacken har honom som 
+        evighetslåt. Styrelsen har inte satt en budget-grund men väntar besked.
+      </p>
+      
+      <div class="primary-actions">
+        <button>
+          Erbjud 1-års förlängning — 180k/säsong
+          <span class="action-cost">Han accepterar troligen. Klacken jublar. Ung spelare stannar i mentor-roll.</span>
+        </button>
+        <button>
+          Låt gå — stäng som legend
+          <span class="action-cost">Hyllas med avskedsmatch. Nästa säsongs lagkitt +5. Ingen kostnad.</span>
+        </button>
+        <button>
+          Vänta en omgång — se form
+          <span class="action-cost">Fönstret smalnar. Han tolkar tystnaden som besked.</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- COLLAPSED SECONDARY CARDS (allt annat som en-radiga indikatorer) -->
+    <div class="collapsed-row">
+      <div class="collapsed-left">
+        <span class="collapsed-icon">📊</span>
+        <span class="collapsed-label">Tabellen</span>
+      </div>
+      <span class="collapsed-value">4:a · 24p · -3 till topp 2</span>
+    </div>
+    <div class="collapsed-row">
+      <div class="collapsed-left">
+        <span class="collapsed-icon">💰</span>
+        <span class="collapsed-label">Ekonomi</span>
+      </div>
+      <span class="collapsed-value">+118k · stabilt</span>
+    </div>
+    <div class="collapsed-row">
+      <div class="collapsed-left">
+        <span class="collapsed-icon">🏘</span>
+        <span class="collapsed-label">Orten</span>
+      </div>
+      <span class="collapsed-value">CS 62 · klackens mood 78</span>
+    </div>
+    <div class="collapsed-row">
+      <div class="collapsed-left">
+        <span class="collapsed-icon">📅</span>
+        <span class="collapsed-label">Nästa match</span>
+      </div>
+      <span class="collapsed-value">Fredag hemma vs Lesjöfors</span>
+    </div>
+    <div class="collapsed-row">
+      <div class="collapsed-left">
+        <span class="collapsed-icon">☕</span>
+        <span class="collapsed-label">Kafferummet</span>
+      </div>
+      <span class="collapsed-value">1 nytt citat</span>
+    </div>
+    <div class="collapsed-row">
+      <div class="collapsed-left">
+        <span class="collapsed-icon">🎓</span>
+        <span class="collapsed-label">Akademin</span>
+      </div>
+      <span class="collapsed-value">Karlsson fortsätter utvecklas</span>
+    </div>
+    <div class="collapsed-row">
+      <div class="collapsed-left">
+        <span class="collapsed-icon">📬</span>
+        <span class="collapsed-label">Inbox</span>
+      </div>
+      <span class="collapsed-value">2 olästa</span>
+    </div>
+  </div>
+  
+  <div style="max-width: 420px; margin: 20px auto; padding: 12px; background: #FFF9E6; border-left: 3px solid #E8B040; font-size: 12px; font-family: system-ui;">
+    <strong>Sprint 12-förändringar synliga:</strong>
+    <ul style="margin: 6px 0 0 16px; padding: 0;">
+      <li><strong>VIS-001:</strong> Veckobeslutet DOMINERAR. Allt annat kollapsat till rader.</li>
+      <li><strong>VIS-002:</strong> Inga "förstärknings-emoji" (inga 🔥, 💪). Endast navigationsikoner.</li>
+      <li><strong>VIS-005:</strong> Röst dämpad — inga "Grattis!", "Fantastisk möjlighet!"</li>
+      <li>Allt är fortfarande klickbart — bara nedprioriterat visuellt</li>
+    </ul>
+  </div>
+</body>
+</html>

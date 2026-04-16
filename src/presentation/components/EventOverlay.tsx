@@ -56,7 +56,7 @@ export function EventOverlay() {
       background: 'rgba(0,0,0,0.6)',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'flex-start',
-      paddingTop: '60px', zIndex: 300, overflowY: 'auto',
+      paddingTop: '60px', zIndex: 'var(--z-modal)', overflowY: 'auto',
     }}>
       <div className="card-round" style={{
         padding: '24px 20px',

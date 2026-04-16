@@ -106,7 +106,7 @@ export function SimSummaryScreen() {
 
   return (
     <div className="screen-enter" style={{ position: 'relative', minHeight: '100%', background: 'var(--bg)' }}>
-      <div style={{ paddingTop: 12, paddingBottom: 100, display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ paddingTop: 12, paddingBottom: 'var(--scroll-padding-bottom)', display: 'flex', flexDirection: 'column', gap: 6 }}>
 
         {/* ── Header ── */}
         <div className="card-sharp" style={{ padding: '10px 14px' }}>

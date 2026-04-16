@@ -1,84 +1,83 @@
 # Säsongsanalys — Bandy Manager v0.1
 
-Genererad: 2026-04-15 20:58:46
+Genererad: 2026-04-16 11:38:30
 Simulerade säsonger: 5 (seeds: 42, 123, 456, 789, 1337)
 
 ## Före/efter-jämförelse (kalibreringsjusteringar 2026-03-22)
 
 | Mått | Före | Efter | Mål |
 |------|------|-------|-----|
-| Mål per match (snitt) | 3.46 | 9.39 | ~5.5 |
+| Mål per match (snitt) | 3.46 | 10.35 | ~5.5 |
 | 0-0-matcher per säsong (snitt) | 4.4 | 0.0 | <8 |
-| Hörnmål (% av totalt) | 32.3% (heuristik) | 30.5% (flagga) | 8–18% |
-| Toppskyttens mål (snitt) | 15.2 | 36.6 | 20–70 |
+| Hörnmål (% av totalt) | 32.3% (heuristik) | 25.8% (flagga) | 8–18% |
+| Toppskyttens mål (snitt) | 15.2 | 38.8 | 20–70 |
 
 Ändringar som genomfördes:
 - **Fix 1 (mål):** `goalThreshold` i attack-sekvensen höjdes från `× 0.28 × (1 - GK×0.4)` till `× 0.45 × (1 - GK×0.35)`. Skottröskeln sänktes från >0.25 till >0.15. Transition multiplied by 1.15 (var 1.1). Halfchance-tröskel höjdes från ×0.20 till ×0.30. Bas-chanceQuality fick +0.15 extra.
 - **Fix 2 (betyg):** Bas-betyg sänkt från 6.5 → 6.0. Assist +0.5 (var +0.3). Gult kort −0.4 (var −0.3). Rött kort −1.2 (var −1.0). Save +0.3 (var +0.2). Förlust −0.2 (var −0.3). Slumpmässig varians ±0.5 per spelare tillagd. Clamp ändrat till 3.0–10.0 (var 4.0–9.5). Målvaktsbonus +1.0 vid nollmatch.
-- **Fix 3 (hörnmål):** `isCornerGoal: true`-flagga tillagd på MatchEvent. Hörnmålsräkning i testet använder nu flaggan direkt istället för tidsnärhetsheuristik. Resulterade i mer precis och lägre hörnmålsprocent (30.5% vs 32.3%).
+- **Fix 3 (hörnmål):** `isCornerGoal: true`-flagga tillagd på MatchEvent. Hörnmålsräkning i testet använder nu flaggan direkt istället för tidsnärhetsheuristik. Resulterade i mer precis och lägre hörnmålsprocent (25.8% vs 32.3%).
 
 ## Sammanfattning
 
 | Mått | Snitt | Min | Max | Status |
 |------|-------|-----|-----|--------|
-| Mål per match | 9.39 | 9.04 | 9.86 | ⚠️ |
+| Mål per match | 10.35 | 10.05 | 10.72 | ❌ |
 | 0-0-matcher per säsong | 0.0 | 0 | 0 | ✅ |
-| Hörnmål (% av totalt) | 30.5% | 28.3% | 31.8% | ❌ |
-| Röda kort per match | 0.953 | 0.902 | 1.023 | ⚠️ |
-| Toppskyttens mål (snitt) | 36.6 | 32 | 44 | ✅ |
+| Hörnmål (% av totalt) | 25.8% | 24.0% | 27.8% | ❌ |
+| Röda kort per match | 0.326 | 0.227 | 0.402 | ✅ |
+| Toppskyttens mål (snitt) | 38.8 | 35 | 44 | ✅ |
 
 ## Per säsong
 
 | Seed | Mål/match | 0-0-matcher | Hörnmål% | Röda kort/match | Toppskyttens mål |
 |------|-----------|-------------|-----------|-----------------|-----------------|
-| 42 | 9.86 | 0 | 28.3% | 0.970 | 44 |
-| 123 | 9.38 | 0 | 31.8% | 0.939 | 38 |
-| 456 | 9.24 | 0 | 30.7% | 1.023 | 34 |
-| 789 | 9.43 | 0 | 29.7% | 0.902 | 32 |
-| 1337 | 9.04 | 0 | 31.8% | 0.932 | 35 |
+| 42 | 10.05 | 0 | 24.0% | 0.318 | 35 |
+| 123 | 10.33 | 0 | 26.3% | 0.318 | 36 |
+| 456 | 10.72 | 0 | 27.8% | 0.227 | 44 |
+| 789 | 10.05 | 0 | 24.3% | 0.364 | 37 |
+| 1337 | 10.58 | 0 | 26.7% | 0.402 | 42 |
 
 ## Sluttabeller (genomsnitt av 5 säsonger)
 
 | Snittpos | Lag | Snittpoäng | Snittvinster | Snitt GF | Snitt GA |
 |----------|-----|------------|--------------|----------|----------|
-| 1.4 | Västanfors | 39.4 | 18.8 | 152.8 | 79.2 |
-| 2.2 | Forsbacka | 36.4 | 17.4 | 134.0 | 73.0 |
-| 4.4 | Målilla | 29.0 | 13.8 | 127.2 | 97.2 |
-| 4.8 | Karlsborg | 26.2 | 12.4 | 120.2 | 98.6 |
-| 5.2 | Gagnef | 26.4 | 12.4 | 110.6 | 94.2 |
-| 5.2 | Hälleforsnäs | 24.4 | 11.2 | 106.2 | 100.0 |
-| 7.2 | Söderfors | 18.0 | 7.8 | 92.4 | 108.6 |
-| 7.6 | Lesjöfors | 18.0 | 8.0 | 83.4 | 102.4 |
-| 8.4 | Skutskär | 16.0 | 6.8 | 90.8 | 119.8 |
-| 8.6 | Slottsbron | 16.0 | 7.4 | 91.8 | 115.6 |
-| 11.2 | Rögle | 7.6 | 3.2 | 66.2 | 121.2 |
-| 11.8 | Heros | 6.6 | 3.0 | 63.8 | 129.6 |
+| 1.4 | Västanfors | 38.0 | 18.8 | 159.8 | 84.8 |
+| 1.8 | Forsbacka | 36.6 | 17.8 | 142.4 | 83.6 |
+| 3.8 | Karlsborg | 29.4 | 14.2 | 129.2 | 101.8 |
+| 4.8 | Gagnef | 26.2 | 12.2 | 124.4 | 104.2 |
+| 5.2 | Målilla | 25.0 | 11.8 | 128.2 | 114.0 |
+| 6.6 | Hälleforsnäs | 18.2 | 8.6 | 111.4 | 119.4 |
+| 7.8 | Söderfors | 18.0 | 8.0 | 101.4 | 118.4 |
+| 7.8 | Lesjöfors | 18.6 | 8.6 | 98.6 | 116.8 |
+| 8.4 | Skutskär | 17.4 | 7.8 | 102.0 | 128.0 |
+| 8.6 | Slottsbron | 16.0 | 7.6 | 107.4 | 127.8 |
+| 10.6 | Rögle | 11.2 | 4.6 | 81.4 | 131.6 |
+| 11.2 | Heros | 9.4 | 4.2 | 79.4 | 135.2 |
 
-## Toppskyttar (bästa säsong — seed 42)
+## Toppskyttar (bästa säsong — seed 456)
 
 | # | Spelare | Lag | Mål |
 |---|---------|-----|-----|
-| 1 | Kristoffer Björk | Västanfors | 44 |
-| 2 | William Stål | Söderfors | 32 |
-| 3 | Noah Rosén | Karlsborg | 31 |
-| 4 | Fabian Eld | Målilla | 28 |
-| 5 | Olof Frost | Hälleforsnäs | 28 |
+| 1 | Matti Berg | Gagnef | 44 |
+| 2 | Arvid Nordström | Västanfors | 35 |
+| 3 | Felix Hedberg | Hälleforsnäs | 32 |
+| 4 | Kari Kjellström | Västanfors | 31 |
+| 5 | Quentin Jonsson | Målilla | 31 |
 
-## Spelarbetyg (snitt, bästa säsong — seed 42)
+## Spelarbetyg (snitt, bästa säsong — seed 456)
 
 | # | Spelare | Lag | Snittbetyg | Matcher |
 |---|---------|-----|------------|---------|
-| 1 | Kristoffer Björk | Västanfors | 8.01 | 22 |
-| 2 | Noah Rosén | Karlsborg | 7.47 | 22 |
-| 3 | Samuel Jonasson | Forsbacka | 7.46 | 22 |
-| 4 | Jonas Wikqvist | Karlsborg | 7.44 | 22 |
-| 5 | Kevin Virtanen | Forsbacka | 7.42 | 22 |
+| 1 | Arvid Nordström | Västanfors | 7.81 | 22 |
+| 2 | Matti Berg | Gagnef | 7.78 | 22 |
+| 3 | Mikael Laitinen | Forsbacka | 7.60 | 22 |
+| 4 | Ulf Alm | Forsbacka | 7.53 | 22 |
+| 5 | Quentin Jonsson | Målilla | 7.52 | 22 |
 
 ## Flaggor
 
-- ⚠️ Målsnittet 9.4 är i övre kant av målet 4-8
-- ⚠️ Hörnmålsprocenten (30.5%) är utanför idealet 8-18% — troligen pga att hörndetektionen räknar korrelerade händelser snarare än kausalitet
-- ⚠️ Röda kort per match (0.953) är högt
+- ❌ Målsnittet 10.3 är utanför acceptabelt intervall (3-10)
+- ⚠️ Hörnmålsprocenten (25.8%) är utanför idealet 8-18% — troligen pga att hörndetektionen räknar korrelerade händelser snarare än kausalitet
 
 ---
 
