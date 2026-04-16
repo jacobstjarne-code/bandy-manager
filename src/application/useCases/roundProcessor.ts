@@ -40,7 +40,7 @@ import { checkMidSeasonEvents } from '../../domain/services/midSeasonEventServic
 import { checkReputationMilestones, milestonesToInbox } from '../../domain/services/reputationMilestoneService'
 import { generateDeadlineBids, generateDiscountOffer, deadlineBidToInbox, deadlineOfferToInbox } from '../../domain/services/transferDeadlineService'
 import { generateSocialEvent, generateSilentShoutEvent, generateMecenat, generateMecenatIntroEvent } from '../../domain/services/mecenatService'
-import { updateSupporterMembers } from '../../domain/services/supporterService'
+import { updateSupporterMembers, reevaluateFavoritePlayer } from '../../domain/services/supporterService'
 import { processEconomy } from './processors/economyProcessor'
 import { processCommunity } from './processors/communityProcessor'
 import { processScouts } from './processors/scoutProcessor'
@@ -418,6 +418,27 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     newFanMood = Math.max(0, Math.min(100, currentFanMood + fanDelta))
     if (isHome && updatedSupporterGroup) {
       updatedSupporterGroup = updateSupporterMembers(updatedSupporterGroup, won, localRand)
+    }
+  }
+
+  // ── WEAK-009 + DEV-007: Reevaluate favorite player var 5:e omgång ────────
+  if (nextMatchday % 5 === 0 && updatedSupporterGroup) {
+    const favResult = reevaluateFavoritePlayer(
+      updatedSupporterGroup,
+      game.players.filter(p => p.clubId === game.managedClubId),
+      nextMatchday,
+      game.currentSeason,
+    )
+    if (favResult.changed) {
+      newInboxItems.push({
+        id: `fav_shift_${nextMatchday}_${game.currentSeason}`,
+        type: InboxItemType.MediaEvent,
+        title: 'Klacken har en ny favorit',
+        body: `Klacken sjunger inte längre ${favResult.oldFavoriteName}s namn. ${favResult.newFavoriteName} har tagit över kören.`,
+        date: game.currentDate,
+        isRead: false,
+      } as InboxItem)
+      updatedSupporterGroup = { ...updatedSupporterGroup, favoritePlayerId: favResult.favoritePlayerId }
     }
   }
 

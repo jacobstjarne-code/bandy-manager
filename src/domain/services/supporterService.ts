@@ -130,6 +130,54 @@ export function updateSupporterMembers(
   return { ...group, members: Math.min(80, Math.max(8, current + delta)) }
 }
 
+// ── Reevaluate klackens favoritspelare var 5:e omgång ────────────────────────
+
+function scoreFavorite(p: Player): number {
+  const attrs = p.attributes
+  const skill = attrs.shooting * 2 + attrs.skating + attrs.acceleration + attrs.stamina
+  const posBonus = p.position === PlayerPosition.Forward ? 20 : p.position === PlayerPosition.Half ? 5 : 0
+  const formBonus = p.form * 0.5
+  const seasonBonus = p.seasonStats.goals * 3 + p.seasonStats.assists * 1
+  return skill + posBonus + formBonus + seasonBonus
+}
+
+export function reevaluateFavoritePlayer(
+  supporterGroup: SupporterGroup,
+  players: Player[],
+  _currentRound: number,
+  _currentSeason: number,
+): { favoritePlayerId: string; changed: boolean; oldFavoriteName?: string; newFavoriteName?: string } {
+  const currentFavorite = players.find(p => p.id === supporterGroup.favoritePlayerId)
+  const newFavorite = pickFavoritePlayer(players)
+
+  if (!newFavorite) {
+    return { favoritePlayerId: supporterGroup.favoritePlayerId ?? '', changed: false }
+  }
+
+  // Ingen ändring om nya favoriten är samma som gamla
+  if (newFavorite.id === supporterGroup.favoritePlayerId) {
+    return { favoritePlayerId: newFavorite.id, changed: false }
+  }
+
+  // Ändring endast om den gamla favoriten verkligen har tappat tätt
+  // (för att undvika oscillation)
+  if (currentFavorite) {
+    const oldScore = scoreFavorite(currentFavorite)
+    const newScore = scoreFavorite(newFavorite)
+    if (newScore < oldScore * 1.15) {
+      // Inte tillräckligt stor skillnad
+      return { favoritePlayerId: currentFavorite.id, changed: false }
+    }
+  }
+
+  return {
+    favoritePlayerId: newFavorite.id,
+    changed: true,
+    oldFavoriteName: currentFavorite ? `${currentFavorite.firstName} ${currentFavorite.lastName}` : undefined,
+    newFavoriteName: `${newFavorite.firstName} ${newFavorite.lastName}`,
+  }
+}
+
 // ── Mood label ────────────────────────────────────────────────────────────────
 
 export function getSupporterMoodLabel(mood: number): string {

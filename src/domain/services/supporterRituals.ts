@@ -1,5 +1,6 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { getCharacterName } from './supporterService'
+import type { Club } from '../entities/Club'
 
 // ── Ritual moment types ───────────────────────────────────────────────────────
 
@@ -118,6 +119,14 @@ export function getRitualText(
     .replace(/\{family\}/g, family)
     .replace(/\{player\}/g, player)
     .replace(/\{group\}/g, group)
+}
+
+// ── Welcome song — arena-specifik hälsning ────────────────────────────────────
+
+export function getWelcomeSong(game: SaveGame): string | null {
+  if (!game.supporterGroup) return null
+  const club = game.clubs.find((c: Club) => c.id === game.managedClubId)
+  return `Klacken ropar: "Välkommen till ${club?.arenaName ?? 'planen'}!"`
 }
 
 // ── Away trip narrative ───────────────────────────────────────────────────────

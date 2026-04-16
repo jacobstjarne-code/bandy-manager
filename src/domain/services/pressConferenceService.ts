@@ -35,6 +35,7 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Ni dominerade mittfältet idag. Är det er styrka just nu?', preferIds: ['w_c7', 'w_h7', 'bw_d2'] },
     { text: 'Ni har fått en ny mecenats stöd. Gör det skillnad i omklädningsrummet?', preferIds: ['w_p2', 'w_h2', 'cl07'], minRound: 6 },
     { text: 'Ni har en ung spelare som imponerar. Hur hanterar ni trycket?', preferIds: ['w_p3', 'w_h3', 'cl03'], minRound: 4 },
+    { text: 'Hur var stämningen på {arenaName} idag?', preferIds: ['w_p3', 'bw_p7'], minRound: 3 },
   ],
   loss: [
     { text: 'Tung förlust. Vad gick fel?', preferIds: ['l_h1', 'l_c2', 'cl11'] },
@@ -620,6 +621,13 @@ export function generatePressConference(
     if (followUp && rand() < 0.4) {
       question = followUp
     }
+  }
+
+  // Fill arena name template placeholder
+  if (question.text.includes('{arenaName}')) {
+    const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+    const arenaName = managedClub?.arenaName ?? 'arenan'
+    question = { ...question, text: question.text.replace('{arenaName}', arenaName) }
   }
 
   const ctx = buildPressContext(fixture, game, rand)

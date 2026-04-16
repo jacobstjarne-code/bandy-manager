@@ -10,6 +10,7 @@ import type { EventChoice } from '../../domain/entities/GameEvent'
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { Player } from '../../domain/entities/Player'
 import { SectionLabel } from '../components/SectionLabel'
+import { generateInsandare } from '../../domain/services/insandareService'
 
 function choiceStyle(_choiceId: string): React.CSSProperties {
   return { background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)' }
@@ -307,6 +308,26 @@ export function GranskaScreen() {
               )}
               <p style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.4, fontStyle: 'italic' }}>
                 {headlineItem.body}
+              </p>
+            </div>
+          )
+        })()}
+
+        {/* ── INSÄNDARE (DREAM-015) ── */}
+        {(() => {
+          if (!fixture) return null
+          const insandare = generateInsandare(game, fixture)
+          if (!insandare) return null
+          return (
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: 6 }}>
+                ✉️ INSÄNDARE
+              </p>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-display)', fontStyle: 'italic', lineHeight: 1.5 }}>
+                "{insandare.text}"
+              </p>
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+                — {insandare.signature}
               </p>
             </div>
           )

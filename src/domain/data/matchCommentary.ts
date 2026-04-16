@@ -11,6 +11,13 @@ export const commentary = {
     "Och vi är igång! Spelarna har värmt upp, publiken är på plats, nu kör vi.",
   ],
 
+  kickoff_home_arena: [
+    '{homeClubName} har publik i ryggen. {arenaName} ekar.',
+    '{arenaName} är full — och de vet vad de kom för.',
+    'Klacken har kommit tidigt till {arenaName}. Det kommer att märkas.',
+    'Det är {weather} på {arenaName}. Spelarna skakar liv i lederna.',
+  ],
+
   halfTime: [
     "Halvtid! Spelarna drar mot omklädningsrummet. Ställningen just nu: {score}.",
     "Domaren blåser för halvtidsvila. {score} efter 45 spelade minuter.",
