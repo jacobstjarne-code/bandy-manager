@@ -18,6 +18,12 @@ export const commentary = {
     'Det är {weather} på {arenaName}. Spelarna skakar liv i lederna.',
   ],
 
+  counter_after_corner_slow: [
+    '{defenderName} hinner inte tillbaka! Öppen yta och motståndarna kontrar!',
+    'Vår defensiv var uppflyttad på hörnan. Nu är vi exponerade.',
+    '{defenderName} springer för livet men det räcker inte — kontringen är ute på isen.',
+  ],
+
   halfTime: [
     "Halvtid! Spelarna drar mot omklädningsrummet. Ställningen just nu: {score}.",
     "Domaren blåser för halvtidsvila. {score} efter 45 spelade minuter.",

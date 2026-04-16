@@ -53,8 +53,12 @@ export function PreSeasonScreen() {
 
   const captainCandidates = managedPlayers
     .filter(p => p.position !== PlayerPosition.Goalkeeper)
-    .sort((a, b) => b.currentAbility - a.currentAbility)
-    .slice(0, 5)
+    .sort((a, b) => {
+      const scoreA = (a.loyaltyScore ?? 0) + (a.careerStats?.totalGames ?? 0) * 0.5 + (a.trait === 'ledare' ? 20 : 0)
+      const scoreB = (b.loyaltyScore ?? 0) + (b.careerStats?.totalGames ?? 0) * 0.5 + (b.trait === 'ledare' ? 20 : 0)
+      return scoreB - scoreA
+    })
+    .slice(0, 3)
 
   const currPosition = game.standings.find(s => s.clubId === game.managedClubId)?.position ?? snap?.finalPosition ?? 12
   const currMembers = game.supporterGroup?.members ?? snap?.supporterMembers ?? 0

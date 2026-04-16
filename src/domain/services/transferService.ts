@@ -1,5 +1,5 @@
 import type { SaveGame } from '../entities/SaveGame'
-import type { TransferBid } from '../entities/GameEvent'
+import type { TransferBid, FollowUp } from '../entities/GameEvent'
 import { getTransferWindowStatus } from './transferWindowService'
 import { InboxItemType } from '../enums'
 import { applyFinanceChange, appendFinanceLog } from './economyService'
@@ -326,12 +326,42 @@ export function executeTransfer(
     updatedFinanceLog = appendFinanceLog(updatedFinanceLog, buyEntry)
   }
 
+  // DEV-011: Nemesis becomes lagkamrat — generate diary follow-ups
+  const nemesisFollowUps: FollowUp[] = []
+  if (buyingClubId === game.managedClubId && soldPlayer) {
+    const nemesisKey = Object.keys(game.nemesisTracker ?? {}).find(
+      k => (game.nemesisTracker ?? {})[k].playerId === soldPlayer.id
+    )
+    if (nemesisKey) {
+      const currentMatchday = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed').map(f => f.matchday))
+      const clubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? 'oss'
+      const diaryTexts = [
+        `${soldPlayer.firstName} anlände idag. Omklädningsrummet var tyst.`,
+        `${soldPlayer.firstName} pratade med kaptenen. Någonting lossnade.`,
+        `${soldPlayer.firstName}: "Jag har alltid gillat ${clubName}. Det har bara varit på andra sidan."`,
+      ]
+      diaryTexts.forEach((text, idx) => {
+        nemesisFollowUps.push({
+          id: `nemesis_diary_${soldPlayer.id}_${idx}`,
+          triggerEventId: `nemesis_signed_${soldPlayer.id}`,
+          matchdaysDelay: idx + 1,
+          createdMatchday: currentMatchday,
+          type: 'nemesis_diary',
+          data: { text, playerId: soldPlayer.id },
+        })
+      })
+    }
+  }
+
   return {
     ...game,
     players: updatedPlayers,
     clubs: updatedClubs,
     transferBids: updatedBids,
     financeLog: updatedFinanceLog,
+    pendingFollowUps: nemesisFollowUps.length > 0
+      ? [...(game.pendingFollowUps ?? []), ...nemesisFollowUps]
+      : game.pendingFollowUps,
     inbox: (() => {
       const extra = [...storyInboxItems, ...fanInboxItems]
       return extra.length > 0 ? [...extra, ...game.inbox] : game.inbox

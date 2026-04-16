@@ -413,6 +413,26 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
+  // ── WEAK-007: Nemesis pensioneras — rensa tracker, skicka inbox ───────────
+  let updatedNemesisTracker = { ...(game.nemesisTracker ?? {}) }
+  for (const pid of retiredPlayerIds) {
+    const retiringPlayer = resetPlayers.find(p => p.id === pid)
+    if (!retiringPlayer) continue
+    for (const [key, nemesis] of Object.entries(updatedNemesisTracker)) {
+      if (nemesis.playerId === retiringPlayer.id) {
+        retirementMessages.push({
+          id: `inbox_nemesis_retired_${retiringPlayer.id}_${nextSeason}`,
+          date: game.currentDate,
+          type: InboxItemType.BoardFeedback,
+          title: 'Nemesis lägger av',
+          body: `${retiringPlayer.firstName} ${retiringPlayer.lastName} avslutar karriären. Han gjorde ${nemesis.goalsAgainstUs} mål mot oss. En epok är över.`,
+          isRead: false,
+        } as InboxItem)
+        delete updatedNemesisTracker[key]
+      }
+    }
+  }
+
   // ── Legacy — retiring managed club players become legends if 3+ seasons ──
   const retirementCeremonyEvents: GameEvent[] = []
   const newLegends = [...(game.clubLegends ?? [])]
@@ -1001,6 +1021,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         }
       : game.localPolitician,
     politicianLastInteraction: {},
+    nemesisTracker: updatedNemesisTracker,
     resolvedEventIds: [
       ...(game.resolvedEventIds ?? []),
       ...(licenseReview?.status !== 'denied' ? [] : []),

@@ -36,6 +36,7 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Ni har fått en ny mecenats stöd. Gör det skillnad i omklädningsrummet?', preferIds: ['w_p2', 'w_h2', 'cl07'], minRound: 6 },
     { text: 'Ni har en ung spelare som imponerar. Hur hanterar ni trycket?', preferIds: ['w_p3', 'w_h3', 'cl03'], minRound: 4 },
     { text: 'Hur var stämningen på {arenaName} idag?', preferIds: ['w_p3', 'bw_p7'], minRound: 3 },
+    { text: 'Kaptenen {captainName} — hur ser han på insatsen?', preferIds: ['w_p2', 'w_h3'], minRound: 3 },
   ],
   loss: [
     { text: 'Tung förlust. Vad gick fel?', preferIds: ['l_h1', 'l_c2', 'cl11'] },
@@ -623,11 +624,21 @@ export function generatePressConference(
     }
   }
 
-  // Fill arena name template placeholder
+  // Fill template placeholders
   if (question.text.includes('{arenaName}')) {
     const managedClub = game.clubs.find(c => c.id === game.managedClubId)
     const arenaName = managedClub?.arenaName ?? 'arenan'
     question = { ...question, text: question.text.replace('{arenaName}', arenaName) }
+  }
+  if (question.text.includes('{captainName}')) {
+    if (!game.captainPlayerId) {
+      // Skip captain question if no captain set — fall back to generic win question
+      question = { text: 'Hur ser du på lagets insats idag?', preferIds: question.preferIds }
+    } else {
+      const captain = game.players.find(p => p.id === game.captainPlayerId)
+      const captainName = captain ? `${captain.firstName} ${captain.lastName}` : 'kaptenen'
+      question = { ...question, text: question.text.replace('{captainName}', captainName) }
+    }
   }
 
   const ctx = buildPressContext(fixture, game, rand)

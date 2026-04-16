@@ -759,7 +759,19 @@ function* simulateMatchCore(
               scorerPlayerId = counterScorer.id
               goalScored = true
               trackGoal(counterScorer.id)
-              const cg: MatchEvent = { minute, type: MatchEventType.Goal, clubId: counterClubId, playerId: counterScorer.id, description: `Kontring av ${counterScorer.firstName} ${counterScorer.lastName}` }
+              // WEAK-005: narrative commentary when slow defender exposed on counter
+              const attackingDefenders = attackingStarters.filter(p =>
+                p.position === PlayerPosition.Defender || p.position === PlayerPosition.Half
+              )
+              const slowestRecovery = attackingDefenders.length > 0
+                ? Math.min(...attackingDefenders.map(p => p.attributes.cornerRecovery ?? 50))
+                : 100
+              let counterDesc = `Kontring av ${counterScorer.firstName} ${counterScorer.lastName}`
+              if (slowestRecovery < 50 && attackingDefenders.length > 0) {
+                const slowest = attackingDefenders.find(p => (p.attributes.cornerRecovery ?? 50) === slowestRecovery)
+                if (slowest) counterDesc = `${slowest.lastName} hinner inte tillbaka! Kontring av ${counterScorer.firstName} ${counterScorer.lastName}`
+              }
+              const cg: MatchEvent = { minute, type: MatchEventType.Goal, clubId: counterClubId, playerId: counterScorer.id, description: counterDesc }
               stepEvents.push(cg); allEvents.push(cg)
             }
           }

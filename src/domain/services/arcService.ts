@@ -105,6 +105,28 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
     }
   }
 
+  // ── veteran_final_season ── Triggas vid säsongsstart (md <= 1)
+  if (!hasArcType('veteran_final_season') && canAddArc() && currentMatchday <= 1) {
+    const veterans = managedPlayers.filter(p =>
+      p.age >= 34 &&
+      p.contractUntilSeason === game.currentSeason &&
+      !activePlayerIds.has(p.id)
+    )
+    for (const vet of veterans) {
+      newArcs.push({
+        id: `arc_vetfinal_${vet.id}_s${game.currentSeason}`,
+        type: 'veteran_final_season',
+        playerId: vet.id,
+        startedMatchday: 0,
+        phase: 'building',
+        eventsFired: [],
+        decisionsMade: [],
+        expiresMatchday: 22,
+        data: { gamesPlayed: vet.careerStats?.totalGames ?? 0 },
+      })
+    }
+  }
+
   // ── veteran_farewell ──
   if (!hasArcType('veteran_farewell') && canAddArc() && currentMatchday >= 15) {
     const veterans = managedPlayers.filter(
@@ -599,6 +621,85 @@ export function progressArcs(
               : `🏅 ${name}s sista säsong`,
             resolved: true,
           })
+        }
+        continue
+      }
+      updatedArcs.push(updatedArc)
+      continue
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    if (arc.type === 'veteran_final_season') {
+      // Dagboksanteckningar var 4:e omgång
+      if (p) {
+        const diaryId = `vetfinal_diary_${arc.id}_r${Math.floor(currentMatchday / 4)}`
+        if (!arc.eventsFired.includes(diaryId) && currentMatchday > 0 && currentMatchday % 4 === 0) {
+          const diaryTexts = [
+            `${name} har börjat prata om vad som kommer sen. Ungdomslaget, kanske.`,
+            `${name} drev sista träningspasset med en intensitet som om kroppen visste något.`,
+            `${name} hälsade på de yngsta efter träningen. Satt länge. Ingen frågade varför.`,
+            `${name} sa lite mer i omklädningsrummet idag. Laget lyssnar.`,
+          ]
+          const textIdx = Math.floor(currentMatchday / 4) % diaryTexts.length
+          newInboxItems.push({
+            id: `inbox_${diaryId}`,
+            type: InboxItemType.Community,
+            title: `📓 ${name}`,
+            body: diaryTexts[textIdx],
+            relatedPlayerId: p.id,
+            isRead: false,
+            date: currentDate,
+          })
+          updatedArc = { ...updatedArc, eventsFired: [...updatedArc.eventsFired, diaryId] }
+        }
+
+        // Kapten-fråga i presskonferens (hanteras i pressConferenceService via is_captain + veteran)
+        // Sista matchen ceremoni — om vid md 22 och inte avslutad
+        if (currentMatchday >= 22 && updatedArc.phase !== 'resolving') {
+          updatedArc = { ...updatedArc, phase: 'resolving' }
+        }
+      }
+
+      if (updatedArc.phase === 'resolving' && p) {
+        const storylineId = `storyline_${arc.id}_final`
+        if (!arc.eventsFired.includes(storylineId)) {
+          newStorylines.push({
+            id: storylineId,
+            type: 'veteran_farewell',
+            season: game.currentSeason,
+            matchday: currentMatchday,
+            playerId: p.id,
+            description: `${name}s sista säsong. Publiken hyllar honom vid avslutet.`,
+            displayText: `🏅 ${name} — en karriär på isen`,
+            resolved: true,
+          })
+          const ceremonyId = `vetfinal_ceremony_${arc.id}`
+          if (!arc.eventsFired.includes(ceremonyId)) {
+            newEvents.push({
+              id: ceremonyId,
+              type: 'playerArc',
+              title: `${name}s sista match`,
+              body: `Sista omgången. Publiken vet. Laget vet. Dags att tacka av en spelare som gett allt.`,
+              choices: [
+                {
+                  id: 'ceremony_flowers',
+                  label: 'Blombukett och avtackning',
+                  subtitle: '💛 Moral +15 alla',
+                  effect: { type: 'teamBoostMorale', value: 15, targetClubId: game.managedClubId },
+                },
+                {
+                  id: 'ceremony_simple',
+                  label: 'Enkelt — han vill det inte stor',
+                  subtitle: '💛 Moral +5',
+                  effect: { type: 'boostMorale', value: 5, targetPlayerId: p.id },
+                },
+              ],
+              sender: { name: 'Truppen', role: 'Omklädningsrum' },
+              relatedPlayerId: p.id,
+              resolved: false,
+            })
+            updatedArc = { ...updatedArc, eventsFired: [...updatedArc.eventsFired, ceremonyId, storylineId] }
+          }
         }
         continue
       }

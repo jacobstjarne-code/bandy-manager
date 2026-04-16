@@ -121,6 +121,7 @@ export type ArcType =
   | 'hungrig_breakthrough'    // Ung hungrig spelare som kämpar för genombrott
   | 'joker_redemption'        // Joker som kostar/räddar — oförutsägbar
   | 'veteran_farewell'        // Veteran med utgående kontrakt, sista säsongen?
+  | 'veteran_final_season'    // Veteran 34+ vars kontrakt löper ut detta år — hela säsongen-arc
   | 'ledare_crisis'           // Kapten/ledare under krisperiod
   | 'lokal_hero'              // Lokalhjälte som gör något stort
   | 'contract_drama'          // Bygger på transfer-spekulationsinkorg

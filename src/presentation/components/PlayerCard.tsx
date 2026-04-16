@@ -5,6 +5,7 @@ import { PlayerArchetype, PlayerPosition } from '../../domain/enums'
 import { getScoutReportAge } from '../../domain/services/scoutingService'
 import { ClubBadge } from './ClubBadge'
 import { getPortraitPath } from '../../domain/services/portraitService'
+import { getPlayerVoice } from '../../domain/services/playerVoiceService'
 import type { RecentMatchRating } from './playerCardUtils'
 
 export interface PlayerCardProps {
@@ -611,12 +612,24 @@ export function PlayerCard({
         <div style={SECTION_STYLE}>
           <p style={{ ...LABEL_STYLE, marginBottom: 6 }}>🤝 RELATIONER</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11 }}>
-            {lastTalked !== -Infinity && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>🗣</span>
-                <span style={{ color: 'var(--text-secondary)' }}>Senaste samtalet: <strong>Omg {Number(lastTalked)}</strong></span>
-              </div>
-            )}
+            {lastTalked !== -Infinity && (() => {
+              const roundsSince = currentRound - Number(lastTalked)
+              return (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>🗣</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>
+                      Senaste samtalet: <strong>Omg {Number(lastTalked)}</strong> — för {roundsSince} omgång{roundsSince !== 1 ? 'ar' : ''} sedan
+                    </span>
+                  </div>
+                  {roundsSince >= 5 && (
+                    <p style={{ fontSize: 10, color: 'var(--warning)', fontStyle: 'italic' }}>
+                      💬 Det var ett tag sen ni pratades vid.
+                    </p>
+                  )}
+                </>
+              )
+            })()}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>📋</span>
               <span style={{ color: 'var(--text-secondary)' }}>
@@ -638,6 +651,22 @@ export function PlayerCard({
           </div>
         </div>
       )}
+
+      {/* ═══ ⑥b NARR-006: Spelarens röst ═══ */}
+      {isOwned && game && (() => {
+        const voice = getPlayerVoice(player, game)
+        if (!voice) return null
+        return (
+          <div style={{ margin: '0 0 8px', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+            <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: 4 }}>
+              🗣 {player.firstName.toUpperCase()}
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic', fontFamily: 'var(--font-display)', lineHeight: 1.5 }}>
+              {voice}
+            </p>
+          </div>
+        )
+      })()}
 
       {/* ═══ ⑦ KARRIÄRRESA (dagbok) — owned only ═══ */}
       {isOwned && (() => {

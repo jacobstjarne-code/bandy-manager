@@ -272,6 +272,29 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Push milestone inbox items
   newInboxItems.push(...milestoneInboxItems)
 
+  // ── WEAK-006/DEV-009: Captain morale cascade ──────────────────────────────
+  if (game.captainPlayerId) {
+    const captain = finalPlayers.find(p => p.id === game.captainPlayerId)
+    if (captain && captain.morale < 40) {
+      const alreadySentId = `inbox_captain_crisis_r${nextMatchday}_${game.currentSeason}`
+      const alreadySent = newInboxItems.some(i => i.id === alreadySentId) || game.inbox.some(i => i.id === alreadySentId)
+      if (!alreadySent) {
+        finalPlayers = finalPlayers.map(p => {
+          if (p.clubId !== game.managedClubId || p.id === captain.id) return p
+          return { ...p, morale: Math.max(0, p.morale - 5) }
+        })
+        newInboxItems.push({
+          id: alreadySentId,
+          date: game.currentDate,
+          type: InboxItemType.BoardFeedback,
+          title: 'Omklädningsrummet är tyst',
+          body: `Kapten ${captain.firstName} ${captain.lastName} har inte sagt mycket denna vecka. Det märks i hela truppen.`,
+          isRead: false,
+        } as InboxItem)
+      }
+    }
+  }
+
   // ── Per-round development for managed club players ────────────────────────
   {
     const managedFixture = simulatedFixtures.find(

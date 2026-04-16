@@ -111,6 +111,14 @@ export function generateBriefing(game: SaveGame): Briefing | null {
     }
   }
 
+  // 0b. Captain crisis briefing
+  if (game.captainPlayerId && game.trainerArc?.current === 'crisis') {
+    const captain = game.players.find(p => p.id === game.captainPlayerId)
+    if (captain) {
+      return { text: `Kapten ${captain.lastName} samlade truppen efter träningen. Han pratade inte mycket. Det räckte.` }
+    }
+  }
+
   // 0. Arc (building phase) — between derby and hot player priority
   const buildingArc = (game.activeArcs ?? []).find(a => a.phase === 'building' && a.playerId)
   if (buildingArc) {
@@ -119,6 +127,7 @@ export function generateBriefing(game: SaveGame): Briefing | null {
       const texts: Partial<Record<ArcType, string>> = {
         hungrig_breakthrough: `🔥 ${arcPlayer.firstName} ${arcPlayer.lastName} har inte gjort mål på ${buildingArc.data?.gamesWithoutGoal ?? '?'} matcher.`,
         veteran_farewell: `🏅 ${arcPlayer.firstName} ${arcPlayer.lastName}s kontrakt går ut. ${arcPlayer.age} år gammal.`,
+        veteran_final_season: `🏅 ${arcPlayer.firstName} ${arcPlayer.lastName} spelar sin sista säsong. ${arcPlayer.age} år. Varje match räknas.`,
         contract_drama: `📋 ${arcPlayer.firstName} ${arcPlayer.lastName} i blåsväder — kontraktet löper ut snart.`,
         lokal_hero: `🏠 Hela orten pratar om ${arcPlayer.firstName} ${arcPlayer.lastName}.`,
         ledare_crisis: `🦁 ${arcPlayer.firstName} ${arcPlayer.lastName} har samlat laget — krisläget kräver ledarskap.`,
