@@ -1,6 +1,6 @@
 # BANDY MANAGER — ÅTGÄRDSBANK
 
-**Uppdaterad:** 16 april 2026 (efter Sprint 10)  
+**Uppdaterad:** 16 april 2026 (efter Sprint 13)  
 **Syfte:** Levande förteckning över alla identifierade problem, svagheter, luckor, idéer och drömmar.
 
 ---
@@ -25,14 +25,14 @@
 | BUG-005 | Hard-coded hex SVG | ✅ Sprint 1 |
 | BUG-006 | PenaltyInteraction gradient | ✅ Sprint 1 |
 | BUG-007 | GoldConfetti färger | ✅ Sprint 1 |
-| BUG-008 | Negativ kassa | ✅ Sprint 4 · Beroende: BUG-014 |
+| BUG-008 | Negativ kassa | ✅ Sprint 4 |
 | BUG-009 | Arc resolving cleanup | ✅ Sprint 3 |
-| BUG-010 | Lånespelares matcher | 🔴 Sprint 13 · 4h |
-| BUG-011 | Determinism matchprofil-seed | 🔴 Sprint 13 · 2h |
+| BUG-010 | Lånespelares matcher | ✅ Sprint 13 — stats mergas vid retur |
+| BUG-011 | Determinism matchprofil-seed | ✅ Sprint 13 — löst via ARCH-007 fixtureSeed() |
 | BUG-012 | Klubb-ID ärvt | ✅ Sprint 8 |
 | BUG-013 | Forsbacka mecenater | ✅ Sprint 8 |
 | BUG-014 | Transfer blockerar utan UI | 🔴 Bugfix-sprint · 1h |
-| BUG-015 | Stress-events Math.random | 🔴 Sprint 13 · 15 min |
+| BUG-015 | Stress-events Math.random | ❌ **Ej fixad i Sprint 13** — eventFactories.ts:556 har kvar Math.random() · 1 rad |
 | BUG-016 | Opponent quote ej renderad | ✅ Orphan-cleanup |
 | BUG-017 | getWelcomeSong ej anropad | ✅ Orphan-cleanup |
 
@@ -53,16 +53,16 @@
 | WEAK-009 | Klack favorit statisk | ✅ Sprint 6 |
 | WEAK-010 | Pension sista-säsong | ✅ Sprint 7 |
 | WEAK-011 | Arenanamn narrativ | ✅ Sprint 6 |
-| WEAK-012 | Reputation osynlig | ✅ Sprint 10 — KlubbTab reputation-kort med bar + etikett |
-| WEAK-013 | State of Club | ✅ Sprint 10 — PreSeasonScreen LÄGET I KLUBBEN |
-| WEAK-014 | Segrarens silence | 🔴 Sprint 12 |
+| WEAK-012 | Reputation osynlig | ✅ Sprint 10 |
+| WEAK-013 | State of Club | ✅ Sprint 10 |
+| WEAK-014 | Segrarens silence | ✅ Sprint 12 |
 | WEAK-015 | Transfers tyst | ✅ Sprint 4 |
 | WEAK-016 | Opponent manager | ✅ Sprint 5 |
-| WEAK-017 | Akademin tyst | ✅ Sprint 10 — breakthrough + säsongssammanfattning |
-| WEAK-018 | Säsongsstart kontext | ✅ Sprint 10 — BoardMeeting "Truppen just nu" |
+| WEAK-017 | Akademin tyst | ✅ Sprint 10 |
+| WEAK-018 | Säsongsstart kontext | ✅ Sprint 10 |
 | WEAK-019 | Bortamatcher matt | ✅ Sprint 9 |
-| WEAK-020 | Slutspel oddsarc | ✅ Sprint 10 — playoffNarrativeService QF/SF/Final |
-| WEAK-021 | Omklädningsrum | ✅ Sprint 10 — SquadScreen inre/yttre cirkel |
+| WEAK-020 | Slutspel oddsarc | ✅ Sprint 10 |
+| WEAK-021 | Omklädningsrum | ✅ Sprint 10 |
 | WEAK-022 | Ekonomi enkelriktad | 🔴 Post-beta |
 
 ---
@@ -71,9 +71,9 @@
 
 | ID | Titel | Status |
 |----|-------|--------|
-| DEAD-001 | narrativeService | 🔴 Sprint 13 |
-| DEAD-002 | rivalryHistory | ⚠️ Sprint 13 |
-| DEAD-003 | resolvedEventIds | ⚠️ Sprint 13 |
+| DEAD-001 | narrativeService | ✅ Sprint 13 — aktivt använd i narrativeProcessor |
+| DEAD-002 | rivalryHistory | ✅ Sprint 13 — skrivs+läses i narrativeProcessor+roundProcessor, migrering tillagd |
+| DEAD-003 | resolvedEventIds | ⚠️ Sprint 13 — migreras men eventService.generateEvents filtrerar inte mot det |
 
 ---
 
@@ -83,9 +83,9 @@
 |----|-------|--------|
 | NARR-001 | Mecenat pension | ✅ Sprint 8 |
 | NARR-002 | Ishallens årstider | ✅ Sprint 9 |
-| NARR-003 | Visuell matchrytm | 🔴 Sprint 11 |
-| NARR-004 | Motståndarspecifik taktik | 🔴 Sprint 11 |
-| NARR-005 | Truppledarskap | 🔴 Sprint 11 |
+| NARR-003 | Visuell matchrytm | ✅ Sprint 11 |
+| NARR-004 | Motståndarspecifik taktik | ✅ Sprint 11 |
+| NARR-005 | Truppledarskap | ✅ Sprint 11 |
 | NARR-006 | Spelarens röst | ✅ Sprint 7 |
 | NARR-007 | Arc exit per typ | ✅ Orphan-cleanup |
 
@@ -95,14 +95,14 @@
 
 | ID | Titel | Status |
 |----|-------|--------|
-| ARCH-001 | roundProcessor 1200 rader | 🔴 Sprint 13 |
-| ARCH-002 | Tre arc-system | 🔴 Sprint 13 |
-| ARCH-003 | SaveGame-flaggor | 🔴 Sprint 13 |
-| ARCH-004 | pendingEvents prioritet | 🔴 Sprint 13 |
-| ARCH-005 | StripCompletedFixture | 🔴 Sprint 13 |
-| ARCH-006 | Migrationer | 🟡 Delvis — klubb-ID migration finns |
-| ARCH-007 | Seeded random | 🔴 Sprint 13 · Beroende: BUG-015 |
-| ARCH-008 | SaveGame.ts 300+ | 🔴 Sprint 13 |
+| ARCH-001 | roundProcessor 1200 rader | ✅ Sprint 13 — split i narrativeProcessor, mediaProcessor, eventProcessor (1380→1054) |
+| ARCH-002 | Tre arc-system | ⚠️ **Skippades Sprint 13** — alltför komplex, hög regressionsrisk. Post-beta. |
+| ARCH-003 | SaveGame-flaggor | ⚠️ **Skippades Sprint 13** — pendingScreen-enum berör för många ställen. Post-beta. |
+| ARCH-004 | pendingEvents prioritet | ✅ Sprint 13 — getEventPriority() i EventOverlay, högst prio visas först |
+| ARCH-005 | StripCompletedFixture | ✅ Sprint 13 — playerRatings behålls för derby/slutspel/blowout (margin ≥3) |
+| ARCH-006 | Migrationer | ✅ Sprint 13 — migrationer för rivalryHistory, nemesisTracker, volunteers, volunteerMorale |
+| ARCH-007 | Seeded random | ✅ Sprint 13 — fixtureSeed(fixture.id) ersätter Date.now() i matchCore+matchEngine |
+| ARCH-008 | SaveGame.ts 300+ | ⚠️ **Skippades Sprint 13** — kräver dedikerad session. Post-beta. |
 
 ---
 
@@ -110,13 +110,13 @@
 
 | ID | Titel | Status |
 |----|-------|--------|
-| VIS-001 | Dashboard tät | 🔴 Sprint 12 |
-| VIS-002 | Emoji-trötthet | 🔴 Sprint 12 |
+| VIS-001 | Dashboard tät | ✅ Sprint 12 |
+| VIS-002 | Emoji-trötthet | ✅ Sprint 12 |
 | VIS-003 | Överskrifter | ✅ Sprint 1 |
-| VIS-004 | Knappar hierarki | 🟡 Sprint 1 → Sprint 12 |
-| VIS-005 | Röster svajar | 🔴 Sprint 12 |
-| VIS-006 | Halvtid vs taktik-modal | 🔴 Sprint 11 |
-| VIS-007 | Modals z-index | 🟡 Sprint 1 → Sprint 12 |
+| VIS-004 | Knappar hierarki | 🔴 Ej rapporterad Sprint 12 — bugfix-sprint |
+| VIS-005 | Röster svajar | ✅ Sprint 12 |
+| VIS-006 | Halvtid vs taktik-modal | ✅ Sprint 11 |
+| VIS-007 | Modals z-index | 🔴 Ej rapporterad Sprint 12 — bugfix-sprint |
 | VIS-008 | paddingBottom | ✅ Sprint 1 |
 | VIS-009 | Spelarporträtt | ❄️ Erik |
 
@@ -137,7 +137,7 @@
 | DEV-009 | Kapten-ceremoni | ✅ Sprint 7 |
 | DEV-010 | Sista-säsong-arc | ✅ Sprint 7 |
 | DEV-011 | Nemesis lagkamrat | ✅ Sprint 7 |
-| DEV-012 | Stress-events | ✅ Sprint 4 · Beroende: BUG-015 |
+| DEV-012 | Stress-events | ✅ Sprint 4 |
 | DEV-013 | Press-avslag | ✅ Sprint 5 |
 
 ---
@@ -170,29 +170,26 @@
 
 **Totalt:** 81 punkter
 
-**Status efter Sprint 10:**
-- ✅ Klart: **55**
-- 🟡 Delvis: 3 (VIS-004, VIS-007, ARCH-006)
+**Status efter Sprint 13:**
+- ✅ Klart: **71**
+- ⚠️ Skippade/delvis: 4 (ARCH-002/003/008, DEAD-003)
+- ❌ Ej fixat: 1 (BUG-015 — 1 rad)
 - ❄️ Parkerad: 2 (VIS-009, DREAM-017)
-- ⚠️ Obekräftad: 2 (DEAD-002, DEAD-003)
-- 🔴 Återstår: 19
+- 🔴 Kvar: 3 pre-beta (BUG-014, VIS-004, VIS-007) + WEAK-022 + 7 drömmar
 
-| Sprint | ✅ |
-|--------|---|
-| 1 | 5 + 2🟡 |
-| 2 | 3 |
-| 3 | 5 |
-| 4 | 6 |
-| 5 | 7 |
-| 6 | 5 |
-| 7 | 10 |
-| 8 | 4 |
-| 9 | 6 |
-| 10 | 6 |
-| Orphans | 3 |
-| **Summa** | **55 ✅** |
+**BETA-BLOCKERS (bugfix-sprint):**
+| ID | Vad | Kostnad |
+|----|-----|---------|
+| BUG-014 | Disable köp-knapp | 1h |
+| BUG-015 | 1 rad Math.random → fixtureSeed | 1 min |
+| VIS-004 | ghost/danger-knappar | 30 min |
+| VIS-007 | Ceremonies/CoachMarks z-index | 30 min |
+| DEAD-003 | resolvedEventIds-filtrering i generateEvents | 30 min |
 
-**Kvar före beta:** Sprint 11 (4 ID, ~5h) + Sprint 12 (4+2🟡 ID, ~5h) + BUG-014 (1h) ≈ **11h Code-tid**  
-**Post-beta:** Sprint 13 (~12h) + Sprint 14 (~stora) = arkitektur + drömmar
+**Totalt bugfix-sprint: ~3h** → sedan playtest → public beta
 
-**Nästa: Sprint 11 (TAKTIK)** — NARR-003, NARR-004, NARR-005, VIS-006
+**Post-beta backlog:**
+- ARCH-002/003/008 (stora refaktorer)
+- WEAK-022 (ekonomi)
+- Sprint 14 drömmar (7 ID)
+- DREAM-006/008/009/017
