@@ -258,6 +258,7 @@ export function SquadScreen() {
   const location = useLocation()
   const game = useGameStore(s => s.game)
   const talkToPlayer = useGameStore(s => s.talkToPlayer)
+  const useLeadershipAction = useGameStore(s => s.useLeadershipAction)
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const dismissHint = useGameStore(s => s.dismissHint)
   useEffect(() => { markScreenVisited('squad') }, [])
@@ -265,6 +266,7 @@ export function SquadScreen() {
   const [filter, setFilter] = useState<FilterKey>('all')
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)
   const [talkFeedback, setTalkFeedback] = useState<{ text: string; moraleChange: number; formChange: number } | null>(null)
+  const [leadershipFeedback, setLeadershipFeedback] = useState<string | null>(null)
 
   const currentRound = game
     ? (game.fixtures.filter(f => f.status === 'completed').sort((a, b) => b.matchday - a.matchday)[0]?.matchday ?? 0)
@@ -274,6 +276,14 @@ export function SquadScreen() {
     const result = talkToPlayer(playerId, choice, currentRound)
     setTalkFeedback({ text: result.feedback, moraleChange: result.moraleChange, formChange: result.formChange })
     setTimeout(() => setTalkFeedback(null), 4000)
+  }
+
+  function handleLeadership(playerId: string, action: import('../../domain/services/leadershipService').LeadershipAction) {
+    const result = useLeadershipAction(playerId, action, currentRound)
+    if (result) {
+      setLeadershipFeedback(result.feedback)
+      setTimeout(() => setLeadershipFeedback(null), 4000)
+    }
   }
 
   useEffect(() => {
@@ -430,6 +440,50 @@ export function SquadScreen() {
           </div>
         )}
 
+        {/* WEAK-021: Omklädningsrummet */}
+        {(() => {
+          if (players.length < 3) return null
+          const captainId = game?.captainPlayerId
+          const sorted = [...players].sort((a, b) => (b.loyaltyScore ?? 0) - (a.loyaltyScore ?? 0))
+          const innerCircle = [
+            captainId ? players.find(p => p.id === captainId) : null,
+            ...sorted.filter(p => p.id !== captainId).slice(0, 3),
+          ].filter(Boolean) as typeof players
+          const peripheral = sorted.filter(p => (p.loyaltyScore ?? 5) < 4).slice(0, 3)
+          return (
+            <div className="card-sharp" style={{ padding: 12, marginBottom: 12 }}>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+                🚪 OMKLÄDNINGSRUMMET
+              </p>
+              <div style={{ marginBottom: peripheral.length > 0 ? 10 : 0 }}>
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6 }}>INRE CIRKEL</p>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {innerCircle.map(p => (
+                    <div key={p.id} onClick={() => setSelectedPlayerId(p.id)} style={{ padding: '4px 8px', background: 'rgba(196,122,58,0.12)', border: '1px solid rgba(196,122,58,0.3)', borderRadius: 4, fontSize: 10, cursor: 'pointer' }}>
+                      {p.lastName}{p.id === captainId && ' (C)'}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {peripheral.length > 0 && (
+                <div>
+                  <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6 }}>UTANFÖR</p>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {peripheral.map(p => (
+                      <div key={p.id} onClick={() => setSelectedPlayerId(p.id)} style={{ padding: '4px 8px', background: 'var(--border-subtle)', border: '1px solid var(--border)', borderRadius: 4, fontSize: 10, opacity: 0.65, cursor: 'pointer' }}>
+                        {p.lastName}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <p style={{ fontSize: 10, fontStyle: 'italic', marginTop: 8, color: 'var(--text-muted)' }}>
+                Inre cirkel: kapten + spelare med högst lojalitet. Utanför: låg lojalitet.
+              </p>
+            </div>
+          )
+        })()}
+
         <SectionCard title="TRUPPEN" variant="sharp" style={{ margin: '0 0 16px' }}>
           {sorted.map((player, index) => (
             <PlayerRowAnimated
@@ -521,6 +575,8 @@ export function SquadScreen() {
             recentRatings={game ? getRecentMatchRatings(game.fixtures, game.clubs, selectedPlayer.id, game.managedClubId, 5) : undefined}
             onTalkToPlayer={(choice) => handleTalk(selectedPlayer.id, choice)}
             talkFeedback={talkFeedback}
+            onLeadershipAction={(action) => { handleLeadership(selectedPlayer.id, action); return null }}
+            leadershipFeedback={leadershipFeedback}
           />
 
           {/* Karaktärsspelare badge */}

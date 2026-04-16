@@ -1,7 +1,9 @@
-import type { Tactic } from '../../../domain/entities/Club'
+import type { Club, Tactic } from '../../../domain/entities/Club'
+import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import { PlayerArchetype } from '../../../domain/enums'
+import { generateBasicAnalysis } from '../../../domain/services/opponentAnalysisService'
 import { SegmentedControl } from '../SegmentedControl'
 import { tacticRows, tacticExplanations } from '../../utils/tacticData'
 import { getDetailedWeatherAdvice } from '../../utils/weatherAdvice'
@@ -12,13 +14,33 @@ interface TacticStepProps {
   matchWeatherData: MatchWeather | undefined
   startingIds: string[]
   game: SaveGame
+  opponent?: Club | null
+  nextFixture?: Fixture | null
   onChange: <K extends keyof Tactic>(key: K, value: Tactic[K]) => void
   onBack: () => void
   onNext: () => void
 }
 
-export function TacticStep({ tacticState, matchWeatherData, startingIds, game, onChange, onBack, onNext }: TacticStepProps) {
+export function TacticStep({ tacticState, matchWeatherData, startingIds, game, opponent, nextFixture, onChange, onBack, onNext }: TacticStepProps) {
   const adviceItems = getDetailedWeatherAdvice(matchWeatherData, tacticState)
+
+  const tacticHints = (() => {
+    if (!opponent || !nextFixture) return []
+    const opponentPlayers = game.players.filter(p => opponent.squadPlayerIds.includes(p.id))
+    const analysis = generateBasicAnalysis(opponent, opponentPlayers, game.standings, game.fixtures, nextFixture.id)
+    const hints: { text: string; icon: string }[] = []
+    if (analysis.recentForm === 'Stark form') {
+      hints.push({ icon: '🛡', text: 'Motståndaren är i stark form — prioritera ett kompakt försvar.' })
+    } else if (analysis.recentForm === 'Svag form') {
+      hints.push({ icon: '⚔️', text: 'Motståndaren är i svag form — offensiv spelplan kan löna sig.' })
+    }
+    const tablePos = analysis.tablePosition
+    if (tablePos != null) {
+      if (tablePos <= 3) hints.push({ icon: '⚠️', text: `Topplag (${tablePos}:a) — defensiv stabilitet viktigare än normalt.` })
+      else if (tablePos >= 9) hints.push({ icon: '💡', text: `Bottenlag (${tablePos}:e) — högt tempo och press bör fungera.` })
+    }
+    return hints
+  })()
 
   const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
   const cornerSpec = managedPlayers.find(
@@ -50,6 +72,22 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
               <span style={{ lineHeight: 1.4 }}>{item.text}</span>
             </div>
           ))}
+        </div>
+      )}
+
+      {tacticHints.length > 0 && (
+        <div className="card-sharp" style={{ marginBottom: 10, padding: '10px 14px' }}>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+            🎯 TAKTIKRÅD
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {tacticHints.map((hint, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 12, color: 'var(--text-secondary)' }}>
+                <span style={{ flexShrink: 0 }}>{hint.icon}</span>
+                <span style={{ lineHeight: 1.4 }}>{hint.text}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

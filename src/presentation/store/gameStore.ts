@@ -14,6 +14,7 @@ import { setLineup } from '../../application/useCases/setLineup'
 import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
 import { loadSaveGame, listSaveGames, deleteSaveGame, migrateLocalStorageIfNeeded, saveSaveGame } from '../../infrastructure/persistence/saveGameStorage'
 import { applyFinanceChange } from '../../domain/services/economyService'
+import { applyLeadershipAction } from '../../domain/services/leadershipService'
 import { getAvailableProjects, startFacilityProject as startFacProj } from '../../domain/services/facilityService'
 
 import { matchActions } from './actions/matchActions'
@@ -49,6 +50,7 @@ interface GameState {
   requestDetailedAnalysis: (opponentClubId: string, fixtureId: string) => { success: boolean; error?: string }
   startTalentSearch: (position: string, maxAge: number, maxSalary: number, currentRound: number) => { success: boolean; error?: string }
   talkToPlayer: (playerId: string, choice: 'encourage' | 'demand' | 'future', currentRound: number) => { moraleChange: number; formChange: number; feedback: string; inboxTriggered: boolean }
+  useLeadershipAction: (playerId: string, action: import('../../domain/services/leadershipService').LeadershipAction, currentRound: number) => { feedback: string } | null
   clearPreSeason: () => void
   clearHalfTimeSummary: () => void
   clearPlayoffIntro: () => void
@@ -435,6 +437,34 @@ export const useGameStore = create<GameState>()(
         const { game } = get()
         if (!game) return
         set({ game: { ...game, budgetPriority: priority } })
+      },
+
+      useLeadershipAction: (playerId, action, currentRound) => {
+        const { game } = get()
+        if (!game) return null
+        const result = applyLeadershipAction(game, playerId, action, currentRound)
+        if (!result) return null
+
+        let updatedPlayers = game.players.map(p =>
+          p.id === playerId ? { ...p, ...result.playerUpdates } : p
+        )
+        if (result.affectedPlayerIds && result.affectedMoraleChange != null) {
+          updatedPlayers = updatedPlayers.map(p =>
+            result.affectedPlayerIds!.includes(p.id)
+              ? { ...p, morale: Math.max(0, Math.min(100, p.morale + result.affectedMoraleChange!)) }
+              : p
+          )
+        }
+
+        const updatedLeadershipActions = [
+          ...(game.leadershipActions ?? []).filter(
+            a => !(a.playerId === playerId && a.action === action)
+          ),
+          result.leadershipEntry,
+        ]
+
+        set({ game: { ...game, players: updatedPlayers, leadershipActions: updatedLeadershipActions } })
+        return { feedback: result.feedback }
       },
 
       setCaptain: (playerId: string) => {

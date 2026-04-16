@@ -25,6 +25,7 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.trainingHistory === undefined) data.trainingHistory = []
   if (data.trainingProjects === undefined) data.trainingProjects = []
   if (data.playerConversations === undefined) data.playerConversations = {}
+  if (data.leadershipActions === undefined) data.leadershipActions = []
   if (data.doctorQuestionsUsed === undefined) data.doctorQuestionsUsed = 0
   if (data.scoutBudget === undefined) data.scoutBudget = 3
   if (data.communityStanding === undefined) data.communityStanding = 50

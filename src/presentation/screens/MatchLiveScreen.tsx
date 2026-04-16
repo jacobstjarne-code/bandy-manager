@@ -33,6 +33,7 @@ import type { FreeKickChoice } from '../../domain/services/freeKickInteractionSe
 import { FreeKickInteraction } from '../components/match/FreeKickInteraction'
 import type { PressChoice } from '../../domain/services/lastMinutePressService'
 import { LastMinutePress } from '../components/match/LastMinutePress'
+import { TacticChangeModal } from '../components/match/TacticChangeModal'
 import { mulberry32 } from '../../domain/utils/random'
 import { FirstVisitHint } from '../components/FirstVisitHint'
 
@@ -833,38 +834,11 @@ export function MatchLiveScreen() {
       />
 
       {showTacticQuick && !matchDone && (
-        <div style={{
-          position: 'absolute', bottom: 70, left: 16, right: 16,
-          background: 'var(--bg-surface)', border: '1px solid var(--border)',
-          borderRadius: 14, padding: '14px 16px', zIndex: 'var(--z-modal)',
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.15)',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-            <span style={{ fontSize: 12, fontWeight: 600 }}>⚙️ Snabbändring</span>
-            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-              {MAX_TACTIC_CHANGES - tacticChangesUsed} kvar
-            </span>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-            {[
-              { id: 'tempo_high', label: 'Höj tempot' },
-              { id: 'tempo_low', label: 'Sänk tempot' },
-              { id: 'attack', label: 'Anfallspress' },
-              { id: 'defend', label: 'Parkera bussen' },
-            ].map(opt => (
-              <button key={opt.id} className="btn btn-ghost"
-                style={{ padding: 10, fontSize: 12 }}
-                onClick={() => applyQuickTactic(opt.id)}>
-                {opt.label}
-              </button>
-            ))}
-          </div>
-          <button onClick={() => { setShowTacticQuick(false); setIsPaused(false) }} style={{
-            width: '100%', marginTop: 8, padding: 8,
-            background: 'none', border: 'none',
-            color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer',
-          }}>Avbryt</button>
-        </div>
+        <TacticChangeModal
+          changesLeft={MAX_TACTIC_CHANGES - tacticChangesUsed}
+          onChoose={applyQuickTactic}
+          onClose={() => { setShowTacticQuick(false); setIsPaused(false) }}
+        />
       )}
 
       {game && !(game.dismissedHints ?? []).includes('matchLive') && (

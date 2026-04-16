@@ -345,6 +345,15 @@ export interface SaveGame {
   // Sprint G — preferred match mode (persists between matches)
   preferredMatchMode?: 'full' | 'commentary' | 'quicksim'
 
+  // Sprint 11 — Truppledarskap (NARR-005)
+  leadershipActions?: Array<{
+    playerId: string
+    action: 'lower_tempo' | 'mentor' | 'private_talk' | 'public_praise'
+    fromRound: number
+    expiresRound: number
+    effect: { stat: string; delta: number }
+  }>
+
   // Sprint 9 — Away trip microdecision (WEAK-019)
   awayTrip?: {
     fixtureId: string

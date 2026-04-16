@@ -607,6 +607,8 @@ export function MatchScreen() {
           matchWeatherData={matchWeatherData}
           startingIds={startingIds}
           game={game}
+          opponent={opponent}
+          nextFixture={nextFixture}
           onChange={handleTacticChange}
           onBack={() => setMatchStep('lineup')}
           onNext={() => setMatchStep('start')}

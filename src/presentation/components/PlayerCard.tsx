@@ -3,6 +3,7 @@ import type { ScoutReport } from '../../domain/entities/Scouting'
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { PlayerArchetype, PlayerPosition } from '../../domain/enums'
 import { getScoutReportAge } from '../../domain/services/scoutingService'
+import { canUseLeadershipAction, type LeadershipAction } from '../../domain/services/leadershipService'
 import { ClubBadge } from './ClubBadge'
 import { getPortraitPath } from '../../domain/services/portraitService'
 import { getPlayerVoice } from '../../domain/services/playerVoiceService'
@@ -24,6 +25,8 @@ export interface PlayerCardProps {
   recentRatings?: RecentMatchRating[]
   onTalkToPlayer?: (choice: 'encourage' | 'demand' | 'future') => void
   talkFeedback?: { text: string; moraleChange: number; formChange: number } | null
+  onLeadershipAction?: (action: LeadershipAction) => { feedback: string } | null
+  leadershipFeedback?: string | null
 }
 
 function archetypeColor(arch: PlayerArchetype): string {
@@ -278,6 +281,8 @@ export function PlayerCard({
   recentRatings,
   onTalkToPlayer,
   talkFeedback,
+  onLeadershipAction,
+  leadershipFeedback,
 }: PlayerCardProps) {
   const reportAge = scoutReport && currentSeason
     ? getScoutReportAge(scoutReport, currentSeason, scoutReport.scoutedSeason)
@@ -307,6 +312,10 @@ export function PlayerCard({
     ? (game.fixtures.filter(f => f.status === 'completed').sort((a, b) => b.matchday - a.matchday)[0]?.matchday ?? 0)
     : 0
   const canTalk = onTalkToPlayer != null && currentRound - Number(lastTalked) >= 3
+
+  const leadershipAvailable = onLeadershipAction != null && game != null
+  const canLeadership = (action: LeadershipAction) =>
+    leadershipAvailable && canUseLeadershipAction(game!, player.id, action, currentRound)
 
   return (
     <div
@@ -751,7 +760,53 @@ export function PlayerCard({
         </div>
       )}
 
-      {/* ═══ ⑨ STICKY PRATA-FOOTER — owned + onTalkToPlayer only ═══ */}
+      {/* ═══ ⑨ LEDARSKAP — owned + onLeadershipAction only ═══ */}
+      {isOwned && leadershipAvailable && (
+        <div style={{ padding: '10px 14px', borderTop: '1px solid var(--border)' }}>
+          <p style={{ ...LABEL_STYLE, marginBottom: 8 }}>👑 LEDARSKAP</p>
+          {leadershipFeedback ? (
+            <div style={{
+              padding: '8px 12px', background: 'var(--bg-elevated)',
+              border: '1px solid var(--border)', borderRadius: 8,
+              fontSize: 12, color: 'var(--text-primary)',
+              animation: 'fadeInUp 200ms ease-out both',
+            }}>
+              {leadershipFeedback}
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+              {([
+                { id: 'lower_tempo' as LeadershipAction, label: '😮‍💨 Sänk ett varv' },
+                { id: 'mentor' as LeadershipAction, label: '🎓 Sätt som mentor' },
+                { id: 'private_talk' as LeadershipAction, label: '🤫 Privat samtal' },
+                { id: 'public_praise' as LeadershipAction, label: '📣 Offentlig beröm' },
+              ]).map(opt => {
+                const avail = canLeadership(opt.id)
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={e => { e.stopPropagation(); onLeadershipAction!(opt.id) }}
+                    disabled={!avail}
+                    style={{
+                      padding: '9px 8px', borderRadius: 8,
+                      background: avail ? 'var(--bg-elevated)' : 'rgba(0,0,0,0.04)',
+                      border: '1px solid var(--border)',
+                      fontSize: 11, color: avail ? 'var(--text-primary)' : 'var(--text-muted)',
+                      cursor: avail ? 'pointer' : 'not-allowed',
+                      fontFamily: 'var(--font-body)',
+                      opacity: avail ? 1 : 0.5,
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ═══ ⑩ STICKY PRATA-FOOTER — owned + onTalkToPlayer only ═══ */}
       {isOwned && onTalkToPlayer && (
         <div style={{
           position: 'sticky',
