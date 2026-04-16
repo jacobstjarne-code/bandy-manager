@@ -5,6 +5,9 @@ import { InboxItemType } from '../../../domain/enums'
 import { generatePostAdvanceEvents, generateEvents } from '../../../domain/services/eventService'
 import { createEconomicStressEvent } from '../../../domain/services/events/eventFactories'
 import { generateSocialEvent, generateSilentShoutEvent } from '../../../domain/services/mecenatService'
+import { generateBandyLetterEvent } from '../../../domain/services/bandyLetterService'
+import { checkEconomicCrisis } from '../../../domain/services/economicCrisisService'
+import { generateSchoolAssignmentEvent } from '../../../domain/services/schoolAssignmentService'
 
 export interface EventProcessorResult {
   gameEvents: GameEvent[]
@@ -47,6 +50,18 @@ export function processGameEvents(
     gameEvents.push(stressEvent)
     lastEconomicStressRound = nextMatchday
   }
+
+  // DREAM-010: Bandybrev
+  const bandyLetterEvent = generateBandyLetterEvent(game, nextMatchday)
+  if (bandyLetterEvent) gameEvents.push(bandyLetterEvent)
+
+  // DREAM-002: Ekonomisk kris
+  const crisisEvent = checkEconomicCrisis(game, nextMatchday)
+  if (crisisEvent) gameEvents.push(crisisEvent)
+
+  // DREAM-016: Skoluppgift
+  const schoolEvent = generateSchoolAssignmentEvent(game, nextMatchday)
+  if (schoolEvent) gameEvents.push(schoolEvent)
 
   let updatedMecenater = (game.mecenater ?? []).map(mec => {
     if (!mec.isActive) return mec

@@ -15,12 +15,12 @@ import type { OpponentAnalysis } from '../services/opponentAnalysisService'
 
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
 import type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityProject, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest } from './Community'
-import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc } from './Narrative'
+import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord } from './Narrative'
 
 // ── Re-exports so existing `import from '../entities/SaveGame'` still works ──
 export type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent }
 export type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityProject, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest }
-export type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc }
+export type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord }
 
 export interface StandingRow {
   clubId: string
@@ -343,7 +343,7 @@ export interface SaveGame {
   }>
 
   // Sprint G — preferred match mode (persists between matches)
-  preferredMatchMode?: 'full' | 'commentary' | 'quicksim'
+  preferredMatchMode?: 'full' | 'commentary' | 'quicksim' | 'silent'
 
   // Sprint 12 — Segrarens eko (WEAK-014)
   pendingVictoryEcho?: import('../services/postVictoryNarrativeService').VictoryEcho
@@ -366,4 +366,27 @@ export interface SaveGame {
     weatherWarning?: string
     mikrobeslut: 'stay_home' | 'book_nice' | 'ask_foundation' | null
   }
+
+  // DREAM-010 — Bandybrev till klubben
+  bandyLetters?: BandyLetter[]
+  bandyLetterThisSeason?: number  // season when last letter was sent — prevents duplicates
+
+  // DREAM-002 — Ekonomisk kris narrativ bana
+  economicCrisisState?: {
+    startedSeason: number
+    startedMatchday: number
+    phase: 'awareness' | 'pressure' | 'decision' | 'resolved'
+    eventsFired: string[]
+    outcome?: 'sold_star' | 'loan' | 'mecenat' | 'natural_recovery'
+  }
+
+  // DREAM-014 — Tyst mode (extend preferredMatchMode handled here)
+  // Uses preferredMatchMode: 'silent' (existing field extended)
+
+  // DREAM-016 — Bandyhistorisk skoluppgift
+  schoolAssignmentThisSeason?: number  // season of last assignment
+  schoolAssignmentArchive?: SchoolAssignmentRecord[]
+
+  // DREAM-013 — Lagfotografiet (photos stored in IndexedDB, here just track last generated)
+  lastTeamPhotoSeason?: number
 }

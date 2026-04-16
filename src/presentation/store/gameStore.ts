@@ -38,7 +38,7 @@ interface GameState {
   setTraining: (focus: TrainingFocus) => void
   markCoachMarksSeen: () => void
   dismissHint: (screenId: string) => void
-  updateMatchMode: (mode: 'full' | 'commentary' | 'quicksim') => void
+  updateMatchMode: (mode: 'full' | 'commentary' | 'quicksim' | 'silent') => void
   markInboxRead: (itemId: string) => void
   markAllInboxRead: () => void
   startEvaluation: (playerId: string, clubId: string, sameRegion: boolean, hasPlayedAgainst?: boolean) => { success: boolean; error?: string }

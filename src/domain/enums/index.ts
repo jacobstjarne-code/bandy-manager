@@ -100,6 +100,9 @@ export enum InboxItemType {
   Transfer = 'transfer',
   ReputationMilestone = 'reputationMilestone',
   TransferDeadline = 'transferDeadline',
+  BandyLetter = 'bandyLetter',
+  SchoolAssignment = 'schoolAssignment',
+  EconomicCrisis = 'economicCrisis',
 }
 
 export enum TrainingType {

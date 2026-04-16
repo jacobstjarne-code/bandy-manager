@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
@@ -8,11 +8,27 @@ import { SectionLabel } from '../components/SectionLabel'
 import { csColor, formatCurrency } from '../utils/formatters'
 import { shareSeasonImage } from '../utils/seasonShareImage'
 import { collectSeasonDecisions } from '../../domain/services/seasonDecisionsService'
+import { generateTeamPhotoSvg } from '../utils/teamPhotoGenerator'
+import { saveTeamPhoto, loadTeamPhoto } from '../../infrastructure/teamPhotoStorage'
 
 export function SeasonSummaryScreen() {
   const navigate = useNavigate()
   const params = useParams<{ season?: string }>()
   const { game, clearSeasonSummary } = useGameStore()
+
+  // DREAM-013: generate and persist team photo when season ends
+  useEffect(() => {
+    if (!game?.lastTeamPhotoSeason) return
+    const season = game.lastTeamPhotoSeason
+    loadTeamPhoto(season).then(existing => {
+      if (existing) return
+      const club = game.clubs.find(c => c.id === game.managedClubId)
+      if (!club) return
+      const players = game.players.filter(p => p.clubId === game.managedClubId)
+      const svg = generateTeamPhotoSvg(club, players, season)
+      saveTeamPhoto(season, svg).catch(() => {})
+    }).catch(() => {})
+  }, [game?.lastTeamPhotoSeason])
 
   if (!game) return null
 

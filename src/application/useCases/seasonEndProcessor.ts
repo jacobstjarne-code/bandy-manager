@@ -352,7 +352,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const retiredPlayerIds = new Set<string>()
   const retirementMessages: InboxItem[] = []
 
-  const resetPlayers = allPlayers.map(player => ({
+  let resetPlayers = allPlayers.map(player => ({
     ...player,
     age: player.age + 1,
     fitness: Math.min(100, player.fitness + 15),
@@ -494,6 +494,14 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       } as GameEvent)
     }
   }
+
+  // ── DREAM-011: Club legends auto-renew their contract for 1 year ─────────
+  resetPlayers = resetPlayers.map(p => {
+    if (p.isClubLegend && p.clubId === game.managedClubId && p.contractUntilSeason <= game.currentSeason) {
+      return { ...p, contractUntilSeason: nextSeason }
+    }
+    return p
+  })
 
   // ── Contract expiry — players whose contracts have run out ───────────────
   const handledContractIds = new Set(game.handledContractPlayerIds ?? [])
@@ -1059,6 +1067,13 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       gravId,
       raddId,
     ].slice(-200),
+    // DREAM-013: flag that a team photo should be generated for this season
+    lastTeamPhotoSeason: game.currentSeason,
+    // DREAM-016/DREAM-010: reset per-season trackers
+    bandyLetterThisSeason: undefined,
+    schoolAssignmentThisSeason: undefined,
+    // DREAM-002: reset crisis state at season rollover if resolved
+    economicCrisisState: game.economicCrisisState?.phase === 'resolved' ? undefined : game.economicCrisisState,
   }
 
   return { game: { ...updatedGame, allTimeRecords: updateAllTimeRecords(updatedGame, seasonSummary) }, roundPlayed: null, seasonEnded: true }

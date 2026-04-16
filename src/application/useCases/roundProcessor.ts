@@ -46,6 +46,7 @@ import { generateAwayTrip } from '../../domain/services/awayTripService'
 import { processNarrative } from './processors/narrativeProcessor'
 import { processMedia } from './processors/mediaProcessor'
 import { processGameEvents } from './processors/eventProcessor'
+import { applyRipples } from '../../domain/services/rippleEffectService'
 
 export type { AdvanceResult }
 
@@ -340,11 +341,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // Injury notifications
+  // Injury notifications + DREAM-003 star injury ripple
+  let gameAfterRipples = game
   for (const { player, days } of newlyInjured) {
     const clubId = player.clubId
     if (clubId === game.managedClubId) {
       newInboxItems.push(createInjuryItem(player, days, game.currentDate))
+      gameAfterRipples = applyRipples(gameAfterRipples, { type: 'star_injured', playerId: player.id })
     }
   }
 
@@ -410,6 +413,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
          f.status === FixtureStatus.Completed
   )
+
+  // DREAM-003: derby win ripple — big margin win in a derby gives cross-system boosts
+  if (justCompletedManagedFixture) {
+    const isDerby = getRivalry(justCompletedManagedFixture.homeClubId, justCompletedManagedFixture.awayClubId) !== null
+    if (isDerby) {
+      const managedIsHome = justCompletedManagedFixture.homeClubId === game.managedClubId
+      const managedScore = managedIsHome ? (justCompletedManagedFixture.homeScore ?? 0) : (justCompletedManagedFixture.awayScore ?? 0)
+      const oppScore = managedIsHome ? (justCompletedManagedFixture.awayScore ?? 0) : (justCompletedManagedFixture.homeScore ?? 0)
+      if (managedScore > oppScore) {
+        gameAfterRipples = applyRipples(gameAfterRipples, { type: 'big_derby_win', fixtureId: justCompletedManagedFixture.id })
+      }
+    }
+  }
 
   // ── Narrative: fan mood, victory echo, rivalry, nemesis ─────────────────
   const narrativeResult = processNarrative(
@@ -825,8 +841,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   let updatedGame: SaveGame = {
     ...game,
+    // DREAM-003: apply ripple-derived field changes (star injury / derby win)
+    boardPatience: gameAfterRipples.boardPatience,
+    sponsorNetworkMood: gameAfterRipples.sponsorNetworkMood,
     communityStanding: Math.min(100, Math.max(0,
-      Math.round((game.communityStanding ?? 50) + csBoost)
+      Math.round((gameAfterRipples.communityStanding ?? game.communityStanding ?? 50) + csBoost)
     )),
     communityStandingDelta: Math.min(100, Math.max(0, Math.round((game.communityStanding ?? 50) + csBoost))) - (game.communityStanding ?? 50),
     clubs: postTransferClubs,
@@ -856,8 +875,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     sponsors: updatedSponsors,
     activeTalentSearch: updatedTalentSearch,
     talentSearchResults: updatedTalentResults,
-    fanMood: newFanMood,
-    supporterGroup: updatedSupporterGroup,
+    // DREAM-003: merge ripple fanMood delta on top of narrative result
+    fanMood: Math.min(100, Math.max(0, newFanMood + ((gameAfterRipples.fanMood ?? game.fanMood ?? 50) - (game.fanMood ?? 50)))),
+    supporterGroup: gameAfterRipples.supporterGroup !== game.supporterGroup
+      ? gameAfterRipples.supporterGroup
+      : updatedSupporterGroup,
     rivalryHistory: updatedRivalryHistory,
     nemesisTracker: updatedNemesisTracker,
     doctorQuestionsUsed: 0,

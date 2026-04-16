@@ -96,6 +96,24 @@ export interface StorylineEntry {
   resolved: boolean
 }
 
+export interface BandyLetter {
+  id: string
+  senderName: string
+  senderAge: number
+  senderOrigin: string
+  season: number
+  text: string
+  playerReply?: string
+  savedInArchive: boolean
+}
+
+export interface SchoolAssignmentRecord {
+  season: number
+  youngPlayerName: string
+  choiceLabel: string
+  archiveText: string
+}
+
 export interface ClubLegend {
   name: string
   position: string

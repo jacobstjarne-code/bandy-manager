@@ -141,6 +141,11 @@ export function createOutgoingBid(
   const target = game.players.find(p => p.id === playerId)
   if (!target) return { success: false, error: 'Spelare hittades inte' }
 
+  // DREAM-011: club legends cannot be transferred out
+  if (target.isClubLegend && target.clubId === game.managedClubId) {
+    return { success: false, error: 'Klubblegender kan inte säljas' }
+  }
+
   const report = (game.scoutReports ?? {})[playerId]
   if (!report) return { success: false, error: 'Spelaren måste vara scoutad innan du lägger bud' }
 

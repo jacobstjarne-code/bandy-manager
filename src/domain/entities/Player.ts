@@ -126,6 +126,10 @@ export interface Player {
     text: string
     type: 'milestone' | 'form' | 'injury' | 'transfer' | 'storyline'
   }>
+
+  // DREAM-011 — Club legend (one per club, homegrown, never sold)
+  isClubLegend?: boolean
+  legendBackstory?: string
 }
 
 export type PlayerAvailability =

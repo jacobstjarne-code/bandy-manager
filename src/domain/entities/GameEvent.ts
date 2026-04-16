@@ -36,6 +36,9 @@ export type GameEventType =
   | 'mecenatEvent'
   | 'academyEvent'
   | 'playoffEvent'
+  | 'bandyLetter'
+  | 'criticalEconomy'
+  | 'schoolAssignment'
 
 export interface EventChoice {
   id: string
@@ -83,6 +86,10 @@ export interface EventEffect {
     | 'mecenatHappiness'
     | 'finance'
     | 'moraleDelta'
+    | 'saveBandyLetter'
+    | 'startEconomicCrisis'
+    | 'resolveEconomicCrisis'
+    | 'saveSchoolAssignment'
   value?: number
   amount?: number
   targetPlayerId?: string
@@ -95,6 +102,11 @@ export interface EventEffect {
   communityValue?: string
   // For multiEffect: serialized array of sub-effects
   subEffects?: string
+  // For saveBandyLetter / saveSchoolAssignment — reply text embedded in choice
+  replyText?: string
+  // For startEconomicCrisis / resolveEconomicCrisis
+  crisisPhase?: string
+  removePlayerId?: string
 }
 
 export type EventPriority = 'critical' | 'high' | 'normal' | 'low'
@@ -112,11 +124,16 @@ export function getEventPriority(type: GameEventType): EventPriority {
     case 'kommunMote':
     case 'hallDebate':
       return 'high'
+    case 'criticalEconomy':
+      return 'critical'
     case 'transferBidReceived':
     case 'contractRequest':
     case 'academyEvent':
     case 'playoffEvent':
       return 'normal'
+    case 'bandyLetter':
+    case 'schoolAssignment':
+      return 'low'
     default:
       return 'low'
   }

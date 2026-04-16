@@ -606,6 +606,123 @@ export function resolveEvent(
       }
       break
     }
+    case 'saveBandyLetter': {
+      // DREAM-010: archive the letter + reply
+      const managedPlayers = updatedGame.players.filter(p => p.clubId === updatedGame.managedClubId)
+      const letter = {
+        id: eventId,
+        senderName: event.sender?.name ?? 'Okänd',
+        senderAge: 0,
+        senderOrigin: '',
+        season: updatedGame.currentSeason,
+        text: event.body,
+        playerReply: effect.replyText,
+        savedInArchive: true,
+      }
+      updatedGame = {
+        ...updatedGame,
+        bandyLetters: [...(updatedGame.bandyLetters ?? []), letter],
+        bandyLetterThisSeason: updatedGame.currentSeason,
+      }
+      // Morale boost to managed players — reading the letter together
+      if (managedPlayers.length > 0) {
+        updatedGame = {
+          ...updatedGame,
+          players: updatedGame.players.map(p =>
+            p.clubId === updatedGame.managedClubId
+              ? { ...p, morale: Math.min(100, p.morale + 3) }
+              : p
+          ),
+        }
+      }
+      break
+    }
+    case 'startEconomicCrisis': {
+      // DREAM-002: initialise or advance the crisis state
+      const currentMatchday = updatedGame.fixtures
+        .filter(f => f.status === 'completed' && !f.isCup)
+        .reduce((m, f) => Math.max(m, f.roundNumber), 0)
+      // pressure_rejected → treat as 'pressure' phase (sponsor left without plan)
+      const rawPhase = effect.crisisPhase ?? 'awareness'
+      const phase = (rawPhase === 'pressure_rejected' ? 'pressure' : rawPhase) as 'awareness' | 'pressure' | 'decision' | 'resolved'
+      if (!updatedGame.economicCrisisState) {
+        updatedGame = {
+          ...updatedGame,
+          economicCrisisState: {
+            startedSeason: updatedGame.currentSeason,
+            startedMatchday: currentMatchday,
+            phase,
+            eventsFired: ['awareness'],
+          },
+        }
+      } else {
+        updatedGame = {
+          ...updatedGame,
+          economicCrisisState: {
+            ...updatedGame.economicCrisisState,
+            phase,
+            eventsFired: [...updatedGame.economicCrisisState.eventsFired, rawPhase],
+          },
+        }
+      }
+      if (effect.value) {
+        updatedGame = {
+          ...updatedGame,
+          clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, effect.value),
+        }
+      }
+      break
+    }
+    case 'resolveEconomicCrisis': {
+      // DREAM-002: resolve the crisis
+      const outcomeMap: Record<string, 'sold_star' | 'loan' | 'mecenat' | 'natural_recovery'> = {
+        sold_star: 'sold_star', loan: 'loan', mecenat: 'mecenat',
+      }
+      const outcome = outcomeMap[effect.crisisPhase ?? ''] ?? 'natural_recovery'
+      updatedGame = {
+        ...updatedGame,
+        economicCrisisState: updatedGame.economicCrisisState
+          ? { ...updatedGame.economicCrisisState, phase: 'resolved' as const, outcome }
+          : undefined,
+      }
+      if (effect.value) {
+        updatedGame = {
+          ...updatedGame,
+          clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, effect.value),
+        }
+      }
+      if (effect.removePlayerId) {
+        const pid = effect.removePlayerId
+        updatedGame = {
+          ...updatedGame,
+          players: updatedGame.players.map(p => p.id === pid ? { ...p, clubId: 'free_agent' } : p),
+          clubs: updatedGame.clubs.map(c =>
+            c.id === updatedGame.managedClubId
+              ? { ...c, squadPlayerIds: c.squadPlayerIds.filter(id => id !== pid) }
+              : c
+          ),
+        }
+      }
+      break
+    }
+    case 'saveSchoolAssignment': {
+      // DREAM-016: archive the school assignment answer
+      const player = event.relatedPlayerId
+        ? updatedGame.players.find(p => p.id === event.relatedPlayerId)
+        : undefined
+      const record = {
+        season: updatedGame.currentSeason,
+        youngPlayerName: player ? `${player.firstName} ${player.lastName}` : event.sender?.name ?? '',
+        choiceLabel: event.choices.find(c => c.id === choiceId)?.label ?? choiceId,
+        archiveText: effect.replyText ?? '',
+      }
+      updatedGame = {
+        ...updatedGame,
+        schoolAssignmentArchive: [...(updatedGame.schoolAssignmentArchive ?? []), record],
+        schoolAssignmentThisSeason: updatedGame.currentSeason,
+      }
+      break
+    }
     case 'openNegotiation':
     default:
       break

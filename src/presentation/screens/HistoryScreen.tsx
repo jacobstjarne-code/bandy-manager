@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { PlayerLink } from '../components/PlayerLink'
 import { ordinal } from '../utils/formatters'
 import type { SeasonSummary } from '../../domain/entities/SeasonSummary'
 import { shareSeasonImage } from '../utils/seasonShareImage'
+import { loadTeamPhoto, listTeamPhotoSeasons } from '../../infrastructure/teamPhotoStorage'
 
 function RecordRow({ label, value, sub, isLast }: { label: string; value: string; sub: string; isLast?: boolean }) {
   return (
@@ -112,10 +113,25 @@ function JourneyGraph({ summaries }: { summaries: SeasonSummary[] }) {
   )
 }
 
+type ArchiveTab = 'seasons' | 'letters' | 'school' | 'photos'
+
 export function HistoryScreen() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
   const [expandedSeason, setExpandedSeason] = useState<number | null>(null)
+  const [activeTab, setActiveTab] = useState<ArchiveTab>('seasons')
+  const [photoSeasons, setPhotoSeasons] = useState<number[]>([])
+  const [photoSvg, setPhotoSvg] = useState<string | null>(null)
+  const [photoSeason, setPhotoSeason] = useState<number | null>(null)
+
+  useEffect(() => {
+    listTeamPhotoSeasons().then(setPhotoSeasons).catch(() => {})
+  }, [])
+
+  function handlePhotoSelect(season: number) {
+    setPhotoSeason(season)
+    loadTeamPhoto(season).then(setPhotoSvg).catch(() => setPhotoSvg(null))
+  }
 
   if (!game) return null
 
@@ -162,9 +178,128 @@ export function HistoryScreen() {
         </div>
       </div>
 
-      <JourneyGraph summaries={game.seasonSummaries ?? []} />
+      {/* Archive tabs */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 14, overflowX: 'auto' }}>
+        {(['seasons', 'letters', 'school', 'photos'] as ArchiveTab[]).map(tab => {
+          const labels: Record<ArchiveTab, string> = { seasons: '📅 Säsonger', letters: '✉️ Brev', school: '📚 Skoluppgifter', photos: '📷 Lagfoton' }
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
+                background: activeTab === tab ? 'var(--accent)' : 'var(--bg-elevated)',
+                color: activeTab === tab ? '#1A1410' : 'var(--text-secondary)',
+              }}
+            >
+              {labels[tab]}
+            </button>
+          )
+        })}
+      </div>
 
-      {summaries.length > 0 && (
+      {activeTab !== 'seasons' && <div style={{ display: 'none' }}><JourneyGraph summaries={[]} /></div>}
+      {activeTab === 'seasons' && <JourneyGraph summaries={game.seasonSummaries ?? []} />}
+
+      {/* Letters archive */}
+      {activeTab === 'letters' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
+          {(game.bandyLetters ?? []).length === 0 ? (
+            <div className="card-sharp" style={{ padding: '30px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
+              <p style={{ fontSize: 20, marginBottom: 8 }}>✉️</p>
+              <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Inga brev ännu</p>
+              <p style={{ fontSize: 12 }}>Supportrar kan skriva brev under säsongen.</p>
+            </div>
+          ) : (
+            [...(game.bandyLetters ?? [])].reverse().map(letter => (
+              <div key={letter.id} className="card-sharp" style={{ padding: '12px 14px' }}>
+                <p style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 700, letterSpacing: '1px', marginBottom: 6 }}>
+                  ✉️ {letter.senderName} — Säsong {letter.season}
+                </p>
+                <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: letter.playerReply ? 10 : 0 }}>
+                  {letter.text}
+                </p>
+                {letter.playerReply && (
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', borderTop: '1px solid var(--border)', paddingTop: 8, fontStyle: 'italic' }}>
+                    Svar: {letter.playerReply}
+                  </p>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* School assignments archive */}
+      {activeTab === 'school' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
+          {(game.schoolAssignmentArchive ?? []).length === 0 ? (
+            <div className="card-sharp" style={{ padding: '30px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
+              <p style={{ fontSize: 20, marginBottom: 8 }}>📚</p>
+              <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Inga skoluppgifter ännu</p>
+              <p style={{ fontSize: 12 }}>Unga akademispelare kan intervjua dig om klubbens historia.</p>
+            </div>
+          ) : (
+            [...(game.schoolAssignmentArchive ?? [])].reverse().map((record, i) => (
+              <div key={i} className="card-sharp" style={{ padding: '12px 14px' }}>
+                <p style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 700, letterSpacing: '1px', marginBottom: 6 }}>
+                  📚 {record.youngPlayerName} — Säsong {record.season}
+                </p>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{record.choiceLabel}</p>
+                <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-secondary)' }}>{record.archiveText}</p>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Team photos archive */}
+      {activeTab === 'photos' && (
+        <div style={{ marginBottom: 32 }}>
+          {photoSeasons.length === 0 ? (
+            <div className="card-sharp" style={{ padding: '30px 16px', textAlign: 'center', color: 'var(--text-muted)' }}>
+              <p style={{ fontSize: 20, marginBottom: 8 }}>📷</p>
+              <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Inga lagfoton ännu</p>
+              <p style={{ fontSize: 12 }}>Lagfoton genereras automatiskt vid säsongsslut.</p>
+            </div>
+          ) : (
+            <>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+                {photoSeasons.map(s => (
+                  <button
+                    key={s}
+                    onClick={() => handlePhotoSelect(s)}
+                    style={{
+                      padding: '5px 10px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                      fontSize: 11, fontWeight: 600,
+                      background: photoSeason === s ? 'var(--accent)' : 'var(--bg-elevated)',
+                      color: photoSeason === s ? '#1A1410' : 'var(--text-secondary)',
+                    }}
+                  >
+                    {s}/{s + 1}
+                  </button>
+                ))}
+              </div>
+              {photoSvg && (
+                <div
+                  style={{ borderRadius: 8, overflow: 'hidden', cursor: 'pointer' }}
+                  onClick={() => {
+                    const blob = new Blob([photoSvg], { type: 'image/svg+xml' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url; a.download = `lagfoto_${photoSeason}.svg`; a.click()
+                    URL.revokeObjectURL(url)
+                  }}
+                  dangerouslySetInnerHTML={{ __html: photoSvg }}
+                />
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'seasons' && summaries.length > 0 && (
         <button
           onClick={() => shareSeasonImage(summaries[0])}
           style={{
@@ -177,7 +312,7 @@ export function HistoryScreen() {
         </button>
       )}
 
-      {summaries.length === 0 ? (
+      {activeTab === 'seasons' && summaries.length === 0 ? (
         <div className="card-sharp" style={{
           padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)',
         }}>
@@ -293,8 +428,8 @@ export function HistoryScreen() {
         </div>
       )}
 
-      {/* All-time Records */}
-      {game.allTimeRecords && (
+      {/* All-time Records (seasons tab only) */}
+      {activeTab === 'seasons' && game.allTimeRecords && (
         <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 8 }}>
           <p style={{
             fontSize: 8, fontWeight: 700, letterSpacing: '2px',
@@ -330,8 +465,8 @@ export function HistoryScreen() {
         </div>
       )}
 
-      {/* Hall of Fame */}
-      <div className="card-sharp" style={{ padding: '18px 16px' }}>
+      {/* Hall of Fame (seasons tab only) */}
+      {activeTab === 'seasons' && <div className="card-sharp" style={{ padding: '18px 16px' }}>
         <p style={{
           fontSize: 8, fontWeight: 700, letterSpacing: '2px',
           textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 18,
@@ -388,7 +523,7 @@ export function HistoryScreen() {
         {topGoalScorers.length === 0 && topByGames.length === 0 && (
           <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Inga spelare att visa ännu.</p>
         )}
-      </div>
+      </div>}
     </div>
   )
 }

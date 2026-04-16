@@ -134,6 +134,20 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.volunteers === undefined) data.volunteers = []
   if (data.volunteerMorale === undefined) data.volunteerMorale = 70
 
+  // V1.5 — DREAM features (Sprint 14)
+  if (data.bandyLetters === undefined) data.bandyLetters = []
+  // bandyLetterThisSeason, schoolAssignmentThisSeason, economicCrisisState — undefined is the correct default
+  if (data.schoolAssignmentArchive === undefined) data.schoolAssignmentArchive = []
+  // lastTeamPhotoSeason — undefined is fine (no photo yet)
+
+  // ── players: ensure isClubLegend field exists ────────────────────────────
+  if (Array.isArray(data.players)) {
+    data.players = (data.players as Record<string, unknown>[]).map(p => {
+      if (p.isClubLegend === undefined) p.isClubLegend = false
+      return p
+    })
+  }
+
   // ── version stamp ────────────────────────────────────────────────────────
   data.version = CURRENT_SAVE_VERSION
 

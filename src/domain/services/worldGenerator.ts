@@ -755,6 +755,10 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
       clubPlayers.push(player)
     }
 
+    // DREAM-011: mark the best player in each club as the club legend
+    const bestIdx = clubPlayers.reduce((bi, p, i) => p.currentAbility > clubPlayers[bi].currentAbility ? i : bi, 0)
+    clubPlayers[bestIdx] = { ...clubPlayers[bestIdx], isClubLegend: true }
+
     club.squadPlayerIds = clubPlayers.map((p) => p.id)
     allPlayers.push(...clubPlayers)
   }

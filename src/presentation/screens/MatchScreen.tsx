@@ -322,7 +322,7 @@ export function MatchScreen() {
         setLineupError(lineupResult.error ?? 'Ogiltig uppställning')
         return
       }
-      if (matchMode !== 'quicksim' && nextFixture) {
+      if (matchMode !== 'quicksim' && matchMode !== 'silent' && nextFixture) {
         const homeClub = game!.clubs.find(c => c.id === nextFixture.homeClubId)
         const awayClub = game!.clubs.find(c => c.id === nextFixture.awayClubId)
         const isHome = nextFixture.homeClubId === managedClubId

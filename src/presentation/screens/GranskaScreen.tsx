@@ -12,6 +12,7 @@ import type { Player } from '../../domain/entities/Player'
 import { SectionLabel } from '../components/SectionLabel'
 import { generateInsandare } from '../../domain/services/insandareService'
 import { generatePostMatchOpponentQuote } from '../../domain/services/opponentManagerService'
+import { generateSilentMatchReport } from '../../domain/services/silentMatchReportService'
 
 function choiceStyle(_choiceId: string): React.CSSProperties {
   return { background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)' }
@@ -270,8 +271,26 @@ export function GranskaScreen() {
                 <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>Spelades på {homeClub.arenaName}</p>
               )}
 
-              {/* Match summary */}
+              {/* Match summary — prose report for silent mode, quick summary otherwise */}
               {(() => {
+                if (game.preferredMatchMode === 'silent') {
+                  const homeClubName = game.clubs.find(c => c.id === fixture.homeClubId)?.name ?? ''
+                  const awayClubName = game.clubs.find(c => c.id === fixture.awayClubId)?.name ?? ''
+                  const report = generateSilentMatchReport(fixture, homeClubName, awayClubName, game.managedClubId)
+                  return (
+                    <div style={{
+                      marginTop: 12, padding: '10px 12px',
+                      background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)',
+                      textAlign: 'left',
+                    }}>
+                      {report.split('\n\n').map((para, i) => (
+                        <p key={i} style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: i < 2 ? 10 : 0, fontStyle: i === 0 ? 'normal' : 'normal' }}>
+                          {para}
+                        </p>
+                      ))}
+                    </div>
+                  )
+                }
                 const summary = generateQuickSummary(fixture, isHome, game.players)
                 return summary ? (
                   <p style={{
