@@ -1108,9 +1108,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       date: updatedGame.currentDate,
       isRead: false,
     }))
+    // BUG-009: prune stale resolving arcs (keep 2 matchdays for DEV-003 notification window)
+    const cleanedArcs = arcResult.updatedArcs.filter(arc => {
+      if (arc.phase !== 'resolving') return true
+      return nextMatchday <= arc.expiresMatchday + 2
+    })
     updatedGame = {
       ...updatedGame,
-      activeArcs: arcResult.updatedArcs,
+      activeArcs: cleanedArcs,
       pendingEvents: [...(updatedGame.pendingEvents ?? []), ...arcResult.newEvents],
       storylines: [...(updatedGame.storylines ?? []), ...arcResult.newStorylines],
       inbox: [...updatedGame.inbox, ...arcInbox],

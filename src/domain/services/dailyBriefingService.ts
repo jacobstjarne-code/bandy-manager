@@ -98,6 +98,19 @@ function getLatestHeadline(game: SaveGame): string | null {
 }
 
 export function generateBriefing(game: SaveGame): Briefing | null {
+  // 0a. Grind-state — visa exit-villkor så spelaren vet vad som krävs
+  if (game.trainerArc?.current === 'grind') {
+    const wins = game.trainerArc.consecutiveWins ?? 0
+    const needed = 5 - wins
+    if (wins >= 2) {
+      return { text: `${wins} raka — bara ${needed} till, sen vänder det. Laget vet det.` }
+    } else if (game.trainerArc.consecutiveLosses >= 2) {
+      return { text: 'Varje match räknas nu. Ett till tappat poäng och styrelsen börjar titta åt fel håll.' }
+    } else {
+      return { text: 'Det är grind. Laget gör jobbet men genombrottet dröjer. En sejerserie — det är vad som krävs.' }
+    }
+  }
+
   // 0. Arc (building phase) — between derby and hot player priority
   const buildingArc = (game.activeArcs ?? []).find(a => a.phase === 'building' && a.playerId)
   if (buildingArc) {

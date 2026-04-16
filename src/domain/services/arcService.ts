@@ -739,8 +739,30 @@ export function progressArcs(
       continue
     }
 
-    // Fallback: keep arc
-    updatedArcs.push(updatedArc)
+    // Fallback: keep arc unless resolving
+    if (updatedArc.phase === 'resolving') {
+      // DEV-003: generic arc-resolution inbox event for arcs without specific resolving logic
+      if (updatedArc.playerId && arc.phase !== 'resolving') {
+        const player = managedPlayers.find(pp => pp.id === updatedArc.playerId)
+        if (player) {
+          const resolvedId = `arc_resolved_generic_${updatedArc.id}`
+          if (!arc.eventsFired.includes(resolvedId)) {
+            newInboxItems.push({
+              id: `inbox_${resolvedId}`,
+              type: InboxItemType.MediaEvent,
+              title: `Berättelsen om ${player.firstName} ${player.lastName}`,
+              body: 'En berättelse i laget avslutades.',
+              relatedPlayerId: player.id,
+              isRead: false,
+              date: currentDate,
+            })
+          }
+        }
+      }
+      // Don't keep resolving arcs — they're done
+    } else {
+      updatedArcs.push(updatedArc)
+    }
   }
 
   return { updatedArcs, newEvents, newInboxItems, newStorylines }

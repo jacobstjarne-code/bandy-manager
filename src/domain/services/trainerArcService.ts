@@ -86,6 +86,21 @@ export function updateTrainerArc(game: SaveGame): TrainerArc {
         transition(arc, 'honeymoon', md, season, `${arc.consecutiveWins} raka segrar`)
       } else if (pos <= 2 && md >= 15) {
         transition(arc, 'established', md, season, 'Toppkandidat')
+      } else if (pos <= 4 && md >= 12) {
+        transition(arc, 'established', md, season, 'Stabil topposition')
+      } else if (md >= 18) {
+        const recentFixtures = game.fixtures
+          .filter(f => f.status === 'completed' && !f.isCup &&
+            (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+          .sort((a, b) => b.roundNumber - a.roundNumber)
+          .slice(0, 8)
+        const wins = recentFixtures.filter(f => {
+          const isHome = f.homeClubId === game.managedClubId
+          return (isHome ? f.homeScore : f.awayScore) > (isHome ? f.awayScore : f.homeScore)
+        }).length
+        if (wins >= 5) {
+          transition(arc, 'established', md, season, 'Jämn stark form')
+        }
       }
       break
 
