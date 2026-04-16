@@ -8,7 +8,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { TeamSelection } from '../../../domain/entities/Fixture'
 
 function makeGame(): SaveGame {
-  return createNewGame({ managerName: 'Jacob', clubId: 'club_sandviken', season: 2025, seed: 7 })
+  return createNewGame({ managerName: 'Jacob', clubId: 'club_forsbacka', season: 2025, seed: 7 })
 }
 
 /**

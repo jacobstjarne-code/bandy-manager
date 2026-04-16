@@ -7,7 +7,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { TransferBid } from '../../../domain/entities/GameEvent'
 
 function makeGame(): SaveGame {
-  return createNewGame({ managerName: 'Test', clubId: 'club_sandviken', season: 2025, seed: 42 })
+  return createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 42 })
 }
 
 // ── Group 1: financeLog accumulation ─────────────────────────────────────────

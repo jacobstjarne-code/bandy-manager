@@ -10,7 +10,7 @@ import type { TransferBid } from '../../../domain/entities/GameEvent'
 import type { TeamSelection } from '../../../domain/entities/Fixture'
 
 function makeGame(): SaveGame {
-  return createNewGame({ managerName: 'Test', clubId: 'club_sandviken', season: 2025, seed: 42 })
+  return createNewGame({ managerName: 'Test', clubId: 'club_forsbacka', season: 2025, seed: 42 })
 }
 
 /**

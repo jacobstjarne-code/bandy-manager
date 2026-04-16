@@ -43,19 +43,19 @@ describe('saveGameStorage', () => {
   })
 
   it('saveSaveGame stores game and loadSaveGame retrieves identical object', async () => {
-    const game = makeGame('save_001', 'club_sandviken', '2025-10-01T10:00:00.000Z')
+    const game = makeGame('save_001', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
     await saveSaveGame(game)
 
     const loaded = await loadSaveGame('save_001')
     expect(loaded).not.toBeNull()
     expect(loaded?.id).toBe('save_001')
     expect(loaded?.managerName).toBe('Test Manager')
-    expect(loaded?.managedClubId).toBe('club_sandviken')
+    expect(loaded?.managedClubId).toBe('club_forsbacka')
   })
 
   it('listSaveGames returns summaries sorted by lastSavedAt (newest first)', async () => {
-    const game1 = makeGame('save_001', 'club_sandviken', '2025-10-01T08:00:00.000Z')
-    const game2 = makeGame('save_002', 'club_sirius', '2025-10-02T09:00:00.000Z')
+    const game1 = makeGame('save_001', 'club_forsbacka', '2025-10-01T08:00:00.000Z')
+    const game2 = makeGame('save_002', 'club_soderfors', '2025-10-02T09:00:00.000Z')
 
     await saveSaveGame(game1)
     await saveSaveGame(game2)
@@ -67,7 +67,7 @@ describe('saveGameStorage', () => {
   })
 
   it('deleteSaveGame removes game and updates index', async () => {
-    const game = makeGame('save_001', 'club_sandviken', '2025-10-01T10:00:00.000Z')
+    const game = makeGame('save_001', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
     await saveSaveGame(game)
     await deleteSaveGame('save_001')
 
@@ -89,8 +89,8 @@ describe('saveGameStorage', () => {
   })
 
   it('saving two games lists both in index', async () => {
-    const game1 = makeGame('save_001', 'club_sandviken', '2025-10-01T10:00:00.000Z')
-    const game2 = makeGame('save_002', 'club_sirius', '2025-10-03T10:00:00.000Z')
+    const game1 = makeGame('save_001', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+    const game2 = makeGame('save_002', 'club_soderfors', '2025-10-03T10:00:00.000Z')
 
     await saveSaveGame(game1)
     await saveSaveGame(game2)
@@ -103,8 +103,8 @@ describe('saveGameStorage', () => {
   })
 
   it('deleting one of two games leaves the other intact', async () => {
-    const game1 = makeGame('save_001', 'club_sandviken', '2025-10-01T10:00:00.000Z')
-    const game2 = makeGame('save_002', 'club_sirius', '2025-10-03T10:00:00.000Z')
+    const game1 = makeGame('save_001', 'club_forsbacka', '2025-10-01T10:00:00.000Z')
+    const game2 = makeGame('save_002', 'club_soderfors', '2025-10-03T10:00:00.000Z')
 
     await saveSaveGame(game1)
     await saveSaveGame(game2)

@@ -5,7 +5,7 @@ import { generateSeasonSummary } from '../seasonSummaryService'
 import { FixtureStatus } from '../../enums'
 
 function makeFullSeasonGame() {
-  let game = createNewGame({ managerName: 'Jacob', clubId: 'club_sandviken', season: 2025, seed: 42 })
+  let game = createNewGame({ managerName: 'Jacob', clubId: 'club_forsbacka', season: 2025, seed: 42 })
   for (let round = 1; round <= 22; round++) {
     // Set a lineup so managed club can advance
     const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId && !p.isInjured && p.suspensionGamesRemaining === 0)
@@ -33,7 +33,7 @@ describe('generateSeasonSummary', () => {
   it('returns correct clubId and clubName', () => {
     const game = makeFullSeasonGame()
     const summary = generateSeasonSummary(game)
-    expect(summary.clubId).toBe('club_sandviken')
+    expect(summary.clubId).toBe('club_forsbacka')
     expect(summary.clubName).toBeTruthy()
     expect(summary.season).toBe(2025)
   }, 60000)

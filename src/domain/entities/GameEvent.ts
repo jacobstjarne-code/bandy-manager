@@ -33,6 +33,7 @@ export type GameEventType =
   | 'supporterAwayTrip'
   | 'retirementCeremony'
   | 'economicStress'
+  | 'mecenatEvent'
 
 export interface EventChoice {
   id: string

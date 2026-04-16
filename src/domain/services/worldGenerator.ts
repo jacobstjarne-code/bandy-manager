@@ -127,7 +127,7 @@ interface ClubTemplate {
 
 export const CLUB_TEMPLATES: ClubTemplate[] = [
   {
-    id: 'club_sandviken',
+    id: 'club_forsbacka',
     name: 'Forsbacka',
     shortName: 'Forsbacka',
     region: 'Gävleborg',
@@ -146,7 +146,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     supporterGroupName: 'Järnklacken',
   },
   {
-    id: 'club_sirius',
+    id: 'club_soderfors',
     name: 'Söderfors',
     shortName: 'Söderfors',
     region: 'Uppland',
@@ -165,7 +165,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     supporterGroupName: 'Hammarsmederna',
   },
   {
-    id: 'club_vasteras',
+    id: 'club_vastanfors',
     name: 'Västanfors',
     shortName: 'Västanfors',
     region: 'Västmanland',
@@ -184,7 +184,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     supporterGroupName: 'Bergskurvan',
   },
   {
-    id: 'club_broberg',
+    id: 'club_karlsborg',
     name: 'Karlsborg',
     shortName: 'Karlsborg',
     region: 'Norrbotten',
@@ -203,7 +203,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     supporterGroupName: 'Norrskensklacken',
   },
   {
-    id: 'club_villa',
+    id: 'club_malilla',
     name: 'Målilla',
     shortName: 'Målilla',
     region: 'Småland',
@@ -222,7 +222,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     supporterGroupName: 'Glasblåsarna',
   },
   {
-    id: 'club_falun',
+    id: 'club_gagnef',
     name: 'Gagnef',
     shortName: 'Gagnef',
     region: 'Dalarna',
@@ -241,7 +241,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     supporterGroupName: 'Dalkurvan',
   },
   {
-    id: 'club_ljusdal',
+    id: 'club_halleforsnas',
     name: 'Hälleforsnäs',
     shortName: 'Hälleforsnäs',
     region: 'Södermanland',
@@ -260,7 +260,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     supporterGroupName: 'Härdarna',
   },
   {
-    id: 'club_edsbyn',
+    id: 'club_lesjofors',
     name: 'Lesjöfors',
     shortName: 'Lesjöfors',
     region: 'Värmland',
@@ -279,7 +279,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     supporterGroupName: 'Skogsklacken',
   },
   {
-    id: 'club_tillberga',
+    id: 'club_rogle',
     name: 'Rögle',
     shortName: 'Rögle',
     region: 'Skåne',
@@ -298,7 +298,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     supporterGroupName: 'Sydkurvan',
   },
   {
-    id: 'club_kungalv',
+    id: 'club_slottsbron',
     name: 'Slottsbron',
     shortName: 'Slottsbron',
     region: 'Värmland',
@@ -336,7 +336,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     supporterGroupName: 'Fabrikskurvan',
   },
   {
-    id: 'club_soderhamns',
+    id: 'club_heros',
     name: 'Heros',
     shortName: 'Heros',
     region: 'Dalarna',
@@ -760,7 +760,7 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
   }
 
   // Easter egg: Erik Ström — alltid back i Forsbacka
-  const erikClub = clubs.find(c => c.id === 'club_sandviken') ?? clubs[0]
+  const erikClub = clubs.find(c => c.id === 'club_forsbacka') ?? clubs[0]
   const erikPlayer: Player = {
     id: `player_erik_strom_${season}`,
     firstName: 'Erik',

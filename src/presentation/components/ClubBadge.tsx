@@ -3,18 +3,18 @@ type Symbol =
   | 'mountain' | 'elk' | 'axe' | 'tower' | 'wave' | 'tree' | 'bear'
 
 const CLUB_BADGES: Record<string, { primary: string; secondary: string; symbol: Symbol }> = {
-  'club_sandviken': { primary: '#1e4d8c', secondary: '#C47A3A', symbol: 'hammer' },
-  'club_sirius':    { primary: '#1a237e', secondary: '#E8D080', symbol: 'star' },
-  'club_vasteras':  { primary: '#006400', secondary: '#FFFFFF', symbol: 'crown' },
-  'club_broberg':   { primary: '#8B0000', secondary: '#FFFFFF', symbol: 'river' },
-  'club_villa':     { primary: '#4A0080', secondary: '#C47A3A', symbol: 'shield' },
-  'club_falun':     { primary: '#CC0000', secondary: '#FFFFFF', symbol: 'mountain' },
-  'club_ljusdal':   { primary: '#2E7D32', secondary: '#FFFFFF', symbol: 'elk' },
-  'club_edsbyn':    { primary: '#FF6600', secondary: '#000000', symbol: 'axe' },
-  'club_tillberga': { primary: '#333333', secondary: '#C47A3A', symbol: 'tower' },
-  'club_kungalv':   { primary: '#0066CC', secondary: '#FFFFFF', symbol: 'wave' },
+  'club_forsbacka': { primary: '#1e4d8c', secondary: '#C47A3A', symbol: 'hammer' },
+  'club_soderfors':    { primary: '#1a237e', secondary: '#E8D080', symbol: 'star' },
+  'club_vastanfors':  { primary: '#006400', secondary: '#FFFFFF', symbol: 'crown' },
+  'club_karlsborg':   { primary: '#8B0000', secondary: '#FFFFFF', symbol: 'river' },
+  'club_malilla':     { primary: '#4A0080', secondary: '#C47A3A', symbol: 'shield' },
+  'club_gagnef':     { primary: '#CC0000', secondary: '#FFFFFF', symbol: 'mountain' },
+  'club_halleforsnas':   { primary: '#2E7D32', secondary: '#FFFFFF', symbol: 'elk' },
+  'club_lesjofors':    { primary: '#FF6600', secondary: '#000000', symbol: 'axe' },
+  'club_rogle': { primary: '#333333', secondary: '#C47A3A', symbol: 'tower' },
+  'club_slottsbron':   { primary: '#0066CC', secondary: '#FFFFFF', symbol: 'wave' },
   'club_skutskar':  { primary: '#006633', secondary: '#E8D080', symbol: 'tree' },
-  'club_soderhamns':{ primary: '#990000', secondary: '#FFFFFF', symbol: 'bear' },
+  'club_heros':{ primary: '#990000', secondary: '#FFFFFF', symbol: 'bear' },
 }
 
 // Shield path for 64×64 viewBox

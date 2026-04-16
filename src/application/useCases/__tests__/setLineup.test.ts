@@ -6,7 +6,7 @@ import { PlayerPosition } from '../../../domain/enums'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 
 function makeGame(): SaveGame {
-  return createNewGame({ managerName: 'Jacob', clubId: 'club_sandviken', season: 2025, seed: 5 })
+  return createNewGame({ managerName: 'Jacob', clubId: 'club_forsbacka', season: 2025, seed: 5 })
 }
 
 function getValidLineup(game: SaveGame, clubId: string): { startingPlayerIds: string[]; benchPlayerIds: string[] } {
@@ -48,11 +48,11 @@ function getValidLineup(game: SaveGame, clubId: string): { startingPlayerIds: st
 describe('setLineup', () => {
   it('valid lineup returns success: true', () => {
     const game = makeGame()
-    const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_sandviken')
+    const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_forsbacka')
 
     const result = setLineup({
       game,
-      clubId: 'club_sandviken',
+      clubId: 'club_forsbacka',
       startingPlayerIds,
       benchPlayerIds,
     })
@@ -62,12 +62,12 @@ describe('setLineup', () => {
 
   it('10 players (not 11) returns error about exactly 11 players', () => {
     const game = makeGame()
-    const { startingPlayerIds } = getValidLineup(game, 'club_sandviken')
+    const { startingPlayerIds } = getValidLineup(game, 'club_forsbacka')
     const tenPlayers = startingPlayerIds.slice(0, 10)
 
     const result = setLineup({
       game,
-      clubId: 'club_sandviken',
+      clubId: 'club_forsbacka',
       startingPlayerIds: tenPlayers,
       benchPlayerIds: [],
     })
@@ -80,7 +80,7 @@ describe('setLineup', () => {
 
   it('injured player in lineup returns error mentioning player name', () => {
     const game = makeGame()
-    const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_sandviken')
+    const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_forsbacka')
 
     // Manually injure the first starter
     const injuredPlayerId = startingPlayerIds[0]
@@ -91,7 +91,7 @@ describe('setLineup', () => {
 
     const result = setLineup({
       game: modifiedGame,
-      clubId: 'club_sandviken',
+      clubId: 'club_forsbacka',
       startingPlayerIds,
       benchPlayerIds,
     })
@@ -105,7 +105,7 @@ describe('setLineup', () => {
 
   it('suspended player in lineup returns error', () => {
     const game = makeGame()
-    const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_sandviken')
+    const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_forsbacka')
 
     const suspendedPlayerId = startingPlayerIds[0]
     const modifiedPlayers = game.players.map(p =>
@@ -115,7 +115,7 @@ describe('setLineup', () => {
 
     const result = setLineup({
       game: modifiedGame,
-      clubId: 'club_sandviken',
+      clubId: 'club_forsbacka',
       startingPlayerIds,
       benchPlayerIds,
     })
@@ -129,7 +129,7 @@ describe('setLineup', () => {
   it('no goalkeeper in lineup is allowed (warning shown in UI, not hard block)', () => {
     const game = makeGame()
     const clubPlayers = game.players.filter(
-      p => p.clubId === 'club_sandviken' && !p.isInjured && p.suspensionGamesRemaining === 0,
+      p => p.clubId === 'club_forsbacka' && !p.isInjured && p.suspensionGamesRemaining === 0,
     )
     const outfieldOnly = clubPlayers
       .filter(p => p.position !== PlayerPosition.Goalkeeper)
@@ -144,7 +144,7 @@ describe('setLineup', () => {
 
     const result = setLineup({
       game,
-      clubId: 'club_sandviken',
+      clubId: 'club_forsbacka',
       startingPlayerIds: outfieldOnly,
       benchPlayerIds: [],
     })
@@ -155,16 +155,16 @@ describe('setLineup', () => {
 
   it('player from wrong club returns error', () => {
     const game = makeGame()
-    const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_sandviken')
+    const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_forsbacka')
 
     // Replace one player with a player from a different club
-    const wrongClubPlayer = game.players.find(p => p.clubId === 'club_sirius')!
+    const wrongClubPlayer = game.players.find(p => p.clubId === 'club_soderfors')!
     const modifiedStarters = [...startingPlayerIds]
     modifiedStarters[modifiedStarters.length - 1] = wrongClubPlayer.id
 
     const result = setLineup({
       game,
-      clubId: 'club_sandviken',
+      clubId: 'club_forsbacka',
       startingPlayerIds: modifiedStarters,
       benchPlayerIds,
     })
@@ -177,11 +177,11 @@ describe('setLineup', () => {
 
   it('valid lineup is stored in game.managedClubPendingLineup', () => {
     const game = makeGame()
-    const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_sandviken')
+    const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_forsbacka')
 
     const result = setLineup({
       game,
-      clubId: 'club_sandviken',
+      clubId: 'club_forsbacka',
       startingPlayerIds,
       benchPlayerIds,
     })
@@ -195,11 +195,11 @@ describe('setLineup', () => {
 
   it('after advanceToNextEvent with pending lineup: managedClubPendingLineup is cleared', () => {
     const game = makeGame()
-    const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_sandviken')
+    const { startingPlayerIds, benchPlayerIds } = getValidLineup(game, 'club_forsbacka')
 
     const lineupResult = setLineup({
       game,
-      clubId: 'club_sandviken',
+      clubId: 'club_forsbacka',
       startingPlayerIds,
       benchPlayerIds,
     })

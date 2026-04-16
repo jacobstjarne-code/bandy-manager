@@ -312,7 +312,7 @@ describe('Season simulation', () => {
     console.log(`Top scorer goals: avg ${avgTopScorerGoals.toFixed(1)}, min ${minTopScorerGoals}, max ${maxTopScorerGoals}`)
 
     // Check elite club top-5 finish rate
-    const eliteClubIds = ['club_sandviken', 'club_sirius', 'club_vasteras']
+    const eliteClubIds = ['club_forsbacka', 'club_soderfors', 'club_vastanfors']
     const totalEliteAppearances = seasonResults.reduce((count, s) => {
       const top5 = s.finalStandings.filter(row => row.position <= 5).map(row => row.clubId)
       return count + eliteClubIds.filter(id => top5.includes(id)).length

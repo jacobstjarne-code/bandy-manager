@@ -817,6 +817,40 @@ export function resolveEvent(
     }
   }
 
+  // ── NARR-001: Mecenat retirement resolution ───────────────────────────────
+  if (event.type === 'mecenatEvent' && eventId.startsWith('event_mecenat_retire_')) {
+    const mecenatId = eventId.split('_')[3]
+    updatedGame = {
+      ...updatedGame,
+      mecenater: (updatedGame.mecenater ?? []).map(m => {
+        if (m.id !== mecenatId) return m
+        if (choiceId === 'listen') {
+          return { ...m, hasAnnouncedRetirement: true, retirementThreshold: (m.retirementThreshold ?? 6) + 1, happiness: Math.min(100, m.happiness + 5) }
+        }
+        if (choiceId === 'plan_succession') {
+          return { ...m, hasAnnouncedRetirement: true }
+        }
+        if (choiceId === 'offer_tribute') {
+          return { ...m, hasAnnouncedRetirement: true, happiness: Math.min(100, m.happiness + 5) }
+        }
+        return { ...m, hasAnnouncedRetirement: true }
+      }),
+    }
+    if (choiceId === 'plan_succession') {
+      updatedGame = {
+        ...updatedGame,
+        communityStanding: Math.min(100, (updatedGame.communityStanding ?? 50) + 2),
+      }
+    }
+    if (choiceId === 'offer_tribute') {
+      updatedGame = {
+        ...updatedGame,
+        communityStanding: Math.min(100, (updatedGame.communityStanding ?? 50) + 3),
+        clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, -25000),
+      }
+    }
+  }
+
   // ── Record arc decisions ──────────────────────────────────────────────────
   if (event.type === 'playerArc') {
     updatedGame = {

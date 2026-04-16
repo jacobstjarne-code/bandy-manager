@@ -24,7 +24,7 @@ import { processAITransfers } from '../../domain/services/aiTransferService'
 import { generateNominations, generateGalaEvent, generateGalaInbox } from '../../domain/services/bandyGalaService'
 import { checkSeasonEndArc } from '../../domain/services/trainerArcService'
 import { evaluateObjective, generateBoardObjectives } from '../../domain/services/boardObjectiveService'
-import { updateSilentShout } from '../../domain/services/mecenatService'
+import { updateSilentShout, ageMecenater, checkMecenatRetirement } from '../../domain/services/mecenatService'
 import type { LicenseReview } from '../../domain/entities/SaveGame'
 import type { AdvanceResult } from './advanceTypes'
 
@@ -769,6 +769,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     galaStorylines.forEach(s => (game.storylines ?? []).push(s))
   }
 
+  // ── NARR-001: Mecenat retirement check ───────────────────────────────────
+  const retirementEvent = checkMecenatRetirement(game)
+  if (retirementEvent) {
+    seasonEndPendingEvents.push(retirementEvent)
+  }
+
   // ── Funktionärsdöd (2%/säsong vid age >= 65) ──────────────────────────────
   const deathRand = mulberry32((seed ?? 42) + game.currentSeason * 31337)
   let updatedNamedCharacters = (game.namedCharacters ?? []).map(c => ({ ...c }))
@@ -957,7 +963,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     consecutiveFailures: newConsecutiveFailures,
     rivalryHistory: game.rivalryHistory ?? {},
     clubLegends: newLegends,
-    mecenater: (game.mecenater ?? []).map(m => m.isActive ? updateSilentShout(m) : m),
+    mecenater: ageMecenater((game.mecenater ?? []).map(m => m.isActive ? updateSilentShout(m) : m)),
     facilityProjects: game.facilityProjects ?? [],
     storylines: game.storylines ?? [],
     boardObjectives: newSeasonObjectives,

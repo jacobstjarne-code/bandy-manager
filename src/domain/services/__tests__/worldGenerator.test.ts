@@ -70,8 +70,8 @@ describe('generateWorld', () => {
   })
 
   it('Sandviken players have higher average CA than Söderhamns AIK players', () => {
-    const sandvikenPlayers = world.players.filter((p) => p.clubId === 'club_sandviken')
-    const soderhamnsPlayers = world.players.filter((p) => p.clubId === 'club_soderhamns')
+    const sandvikenPlayers = world.players.filter((p) => p.clubId === 'club_forsbacka')
+    const soderhamnsPlayers = world.players.filter((p) => p.clubId === 'club_heros')
 
     const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length
 

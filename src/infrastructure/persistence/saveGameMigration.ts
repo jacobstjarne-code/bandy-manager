@@ -78,6 +78,53 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     })
   }
 
+  // ── BUG-012: Club ID normalization (legacy saves from v1.3 and earlier) ──
+  const CLUB_ID_MIGRATION: Record<string, string> = {
+    club_sandviken:  'club_forsbacka',
+    club_sirius:     'club_soderfors',
+    club_vasteras:   'club_vastanfors',
+    club_broberg:    'club_karlsborg',
+    club_villa:      'club_malilla',
+    club_falun:      'club_gagnef',
+    club_ljusdal:    'club_halleforsnas',
+    club_edsbyn:     'club_lesjofors',
+    club_tillberga:  'club_rogle',
+    club_kungalv:    'club_slottsbron',
+    club_soderhamns: 'club_heros',
+  }
+  const mapId = (id: string): string => CLUB_ID_MIGRATION[id] ?? id
+  const hasOldIds = Object.keys(CLUB_ID_MIGRATION).some(old =>
+    data.managedClubId === old ||
+    (Array.isArray(data.clubs) && (data.clubs as Record<string, unknown>[]).some(c => c.id === old))
+  )
+  if (hasOldIds) {
+    if (typeof data.managedClubId === 'string') data.managedClubId = mapId(data.managedClubId)
+    if (Array.isArray(data.clubs)) {
+      data.clubs = (data.clubs as Record<string, unknown>[]).map(c => ({
+        ...c, id: typeof c.id === 'string' ? mapId(c.id) : c.id,
+      }))
+    }
+    if (Array.isArray(data.players)) {
+      data.players = (data.players as Record<string, unknown>[]).map(p => ({
+        ...p,
+        clubId: typeof p.clubId === 'string' ? mapId(p.clubId) : p.clubId,
+        academyClubId: typeof p.academyClubId === 'string' ? mapId(p.academyClubId) : p.academyClubId,
+      }))
+    }
+    if (Array.isArray(data.fixtures)) {
+      data.fixtures = (data.fixtures as Record<string, unknown>[]).map(f => ({
+        ...f,
+        homeClubId: typeof f.homeClubId === 'string' ? mapId(f.homeClubId) : f.homeClubId,
+        awayClubId: typeof f.awayClubId === 'string' ? mapId(f.awayClubId) : f.awayClubId,
+      }))
+    }
+    if (Array.isArray(data.standings)) {
+      data.standings = (data.standings as Record<string, unknown>[]).map(s => ({
+        ...s, clubId: typeof s.clubId === 'string' ? mapId(s.clubId) : s.clubId,
+      }))
+    }
+  }
+
   // ── version stamp ────────────────────────────────────────────────────────
   data.version = CURRENT_SAVE_VERSION
 

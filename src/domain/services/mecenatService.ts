@@ -9,29 +9,53 @@ interface MecenatTemplate {
 }
 
 const REGION_BUSINESSES: Record<string, MecenatTemplate[]> = {
-  sandviken: [
-    { type: 'brukspatron', businesses: ['Hedins Sågverk', 'Sandvikens Stålförädling'] },
-    { type: 'entrepreneur', businesses: ['Göranssons Sporthandel', 'Gävle Bil'] },
+  forsbacka: [
+    { type: 'brukspatron', businesses: ['Forsbacka Järnbruk', 'Bergslagens Stålförädling'] },
+    { type: 'entrepreneur', businesses: ['Forsbacka Entreprenad', 'Gästrike Bil'] },
   ],
-  edsbyn: [
-    { type: 'skogsägare', businesses: ['Edsbyns Skogsbruk', 'Hälsinge Timmer'] },
-    { type: 'brukspatron', businesses: ['Träslöjden AB', 'Edsbyns Elverk'] },
+  soderfors: [
+    { type: 'brukspatron', businesses: ['Söderfors Stålverk', 'Uppland-Gävle Järn'] },
+    { type: 'entrepreneur', businesses: ['Söderfors Bygg', 'Uppsala Logistik'] },
   ],
-  vasteras: [
-    { type: 'it_miljonär', businesses: ['Voltiq Systems', 'DataNode AB'] },
-    { type: 'fastigheter', businesses: ['Västeråshus AB', 'Mälar-Fastigheter'] },
+  vastanfors: [
+    { type: 'brukspatron', businesses: ['Västanfors Mekaniska', 'Bergslagens Smide'] },
+    { type: 'it_miljonär', businesses: ['VoltaSystem AB', 'Västerås Tech'] },
   ],
-  sirius: [
-    { type: 'it_miljonär', businesses: ['Dalsjö Digital', 'Uppsala Tech Ventures'] },
-    { type: 'entrepreneur', businesses: ['Lindströms Bil', 'Fyris Bygg'] },
+  karlsborg: [
+    { type: 'brukspatron', businesses: ['Karlsborgs Järnbruk', 'Lapplands Trä'] },
+    { type: 'skogsägare', businesses: ['Norrbottensskog', 'Övre Norrlands Skogs-AB'] },
   ],
-  broberg: [
-    { type: 'brukspatron', businesses: ['BillerudKorsnäs', 'Söderhamns Trä'] },
-    { type: 'skogsägare', businesses: ['Hälsinge Skog', 'Norrskog'] },
+  malilla: [
+    { type: 'entrepreneur', businesses: ['Målilla Glasbruk', 'Smålandsindustri'] },
+    { type: 'brukspatron', businesses: ['Målilla Mekaniska', 'Hultsfreds Smide'] },
   ],
-  falun: [
-    { type: 'brukspatron', businesses: ['SSAB Borlänge', 'Dalslipsten AB'] },
-    { type: 'entrepreneur', businesses: ['Mora Knivfabrik', 'Dahlströms Sport'] },
+  gagnef: [
+    { type: 'brukspatron', businesses: ['Gagnefs Sågverk', 'Dalarnas Trävaror'] },
+    { type: 'skogsägare', businesses: ['Dalfalls Skog', 'Mora Timmer'] },
+  ],
+  halleforsnas: [
+    { type: 'brukspatron', businesses: ['Hälleforsnäs Järnbruk', 'Södermanlands Gjuteri'] },
+    { type: 'entrepreneur', businesses: ['Flens Bygg', 'Eskilstunas Mekaniska'] },
+  ],
+  lesjofors: [
+    { type: 'brukspatron', businesses: ['Lesjöfors Fjäderfabrik', 'Värmlandsstål'] },
+    { type: 'skogsägare', businesses: ['Värmlandsskog', 'Filipstadsbolagen'] },
+  ],
+  rogle: [
+    { type: 'entrepreneur', businesses: ['Skåne Bygg', 'Öresunds Logistik'] },
+    { type: 'fastigheter', businesses: ['Malmö Fastigheter', 'Skånekapital'] },
+  ],
+  slottsbron: [
+    { type: 'brukspatron', businesses: ['Slottsbrons Pappersbruk', 'Värmlands Skog'] },
+    { type: 'entrepreneur', businesses: ['Grums Entreprenad', 'Karlstads Bygg'] },
+  ],
+  skutskar: [
+    { type: 'brukspatron', businesses: ['Skutskärs Massafabrik', 'StoraEnso Norra'] },
+    { type: 'entrepreneur', businesses: ['Älvkarleby Bygg', 'Gävle Logistik'] },
+  ],
+  heros: [
+    { type: 'brukspatron', businesses: ['Heros Bruk', 'Dalarna-Hälsinges Mekan'] },
+    { type: 'skogsägare', businesses: ['Dalbergs Skog', 'Leksands Trä'] },
   ],
   default: [
     { type: 'entrepreneur', businesses: ['Lokala Bygg AB', 'Ortens Bil'] },
@@ -181,6 +205,15 @@ export function generateMecenat(
   const backstoryPool = BACKSTORIES[template.type]?.[isFemale ? 'female' : 'male'] ?? []
   const backstory = backstoryPool[Math.floor(rand() * backstoryPool.length)] ?? ''
 
+  // NARR-001: aging + retirement threshold
+  const age = 45 + Math.floor(rand() * 28)
+  const retirementThreshold = (() => {
+    if (personality === 'nostalgiker') return 7 + Math.floor(rand() * 2)
+    if (personality === 'kontrollfreak') return 6 + Math.floor(rand() * 2)
+    if (personality === 'filantropen') return 5 + Math.floor(rand() * 2)
+    return 5 + Math.floor(rand() * 3)
+  })()
+
   return {
     id: `mecenat_${firstName.toLowerCase()}_${season}`,
     name: `${firstName} ${lastName}`,
@@ -200,6 +233,10 @@ export function generateMecenat(
     arrivedSeason: season,
     silentShout: 0,
     backstory: backstory || undefined,
+    age,
+    yearsActive: 0,
+    retirementThreshold,
+    hasAnnouncedRetirement: false,
   }
 }
 
@@ -494,6 +531,71 @@ export function generateMecenatAllianceEvent(
         label: 'Vi klarar oss själva',
         subtitle: '🤝 -5 båda',
         effect: { type: 'patronHappiness', amount: -5 },
+      },
+    ],
+    resolved: false,
+  }
+}
+
+// ── NARR-001: Mecenat aging tick (called at season end) ───────────────────
+
+export function ageMecenater(mecenater: Mecenat[]): Mecenat[] {
+  return mecenater.map(m => ({
+    ...m,
+    age: (m.age ?? 55) + 1,
+    yearsActive: (m.yearsActive ?? 0) + 1,
+  }))
+}
+
+// ── NARR-001: Check if any active mecenat should announce retirement ──────
+
+function generateRetirementBody(m: Mecenat): string {
+  const years = m.yearsActive ?? 0
+  const age = m.age ?? 60
+  if (m.personality === 'nostalgiker') {
+    return `${m.name} ringer en torsdagskväll. "Jag har suttit här i ${years} år. Sett barnbarnen växa upp medan jag var på matcher. Jag har börjat fundera." Rösten är mjuk. "Jag tänker inte sluta bråttom. Men jag ville att du skulle veta."`
+  }
+  if (m.personality === 'kontrollfreak') {
+    return `${m.name} kallar till möte i styrelselokalen. "Efter ${years} år är det dags att säkerställa kontinuitet. Jag vill ha en succession-plan på bordet inom ett år." Inte sentimentalt. Operativt.`
+  }
+  if (m.personality === 'filantropen') {
+    return `"Jag har alltid sagt att det här inte handlar om mig", säger ${m.name}. "Men jag måste vara ärlig. Åldern har tagit ut sin rätt. Kan vi prata om vad som händer efter mig?"`
+  }
+  return `${m.name}, ${age} år, ber om ett möte. "Jag har varit stödjande i ${years} år. Jag tänker på att trappa ner. Jag vill prata om hur vi gör det här bra."`
+}
+
+export function checkMecenatRetirement(game: import('../entities/SaveGame').SaveGame): GameEvent | null {
+  const eligible = (game.mecenater ?? []).filter(m =>
+    m.isActive &&
+    !m.hasAnnouncedRetirement &&
+    ((m.yearsActive ?? 0) >= (m.retirementThreshold ?? 6) || (m.age ?? 0) >= 70)
+  )
+  if (eligible.length === 0) return null
+
+  const mecenat = eligible[0]
+  return {
+    id: `event_mecenat_retire_${mecenat.id}_${game.currentSeason}`,
+    type: 'mecenatEvent',
+    title: `${mecenat.name} funderar på sin framtid`,
+    body: generateRetirementBody(mecenat),
+    choices: [
+      {
+        id: 'listen',
+        label: 'Lyssna',
+        subtitle: 'Mecenat stannar en säsong till',
+        effect: { type: 'mecenatHappiness', value: 5 },
+      },
+      {
+        id: 'plan_succession',
+        label: 'Föreslå succession',
+        subtitle: '+2 orten',
+        effect: { type: 'noOp' },
+      },
+      {
+        id: 'offer_tribute',
+        label: 'Erbjud jubileumsmatch (25k)',
+        subtitle: '+5 happiness, +3 orten',
+        effect: { type: 'mecenatHappiness', value: 5 },
       },
     ],
     resolved: false,

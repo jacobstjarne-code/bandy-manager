@@ -11,18 +11,18 @@ function difficultyLabel(reputation: number): { label: string; color: string } {
 }
 
 const CLUB_FLAVOR: Record<string, string> = {
-  'club_sandviken':  'Hårda bollar. Hårda tag.',
-  'club_sirius':     'Hungrig klubb med stora ambitioner.',
-  'club_vasteras':   'Där alla andas bandy.',
-  'club_broberg':    'Outsidern med de stora drömmarna.',
-  'club_villa':      'Nykomlingen med allt att bevisa.',
-  'club_falun':      'Envisa masar med stor historia.',
-  'club_ljusdal':    'Brukets Blå knegar alltid på.',
-  'club_edsbyn':     'Bandybaroner. Eldsjälar. Byalag.',
-  'club_tillberga':  'Bandyklubb med udda bakgrund.',
-  'club_kungalv':    'Blåtomtarna från Värmland.',
+  'club_forsbacka':  'Hårda bollar. Hårda tag.',
+  'club_soderfors':     'Hungrig klubb med stora ambitioner.',
+  'club_vastanfors':   'Där alla andas bandy.',
+  'club_karlsborg':    'Outsidern med de stora drömmarna.',
+  'club_malilla':      'Nykomlingen med allt att bevisa.',
+  'club_gagnef':      'Envisa masar med stor historia.',
+  'club_halleforsnas':    'Brukets Blå knegar alltid på.',
+  'club_lesjofors':     'Bandybaroner. Eldsjälar. Byalag.',
+  'club_rogle':  'Bandyklubb med udda bakgrund.',
+  'club_slottsbron':    'Blåtomtarna från Värmland.',
   'club_skutskar':   'Upplands stolthet.',
-  'club_soderhamns': 'Arbetarbandyns urmoder.',
+  'club_heros': 'Arbetarbandyns urmoder.',
 }
 
 const CLUBS = CLUB_TEMPLATES.map(t => ({

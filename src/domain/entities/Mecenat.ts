@@ -51,4 +51,9 @@ export interface Mecenat {
   lastSocialRound?: number
   lastInteractionRound?: number
   backstory?: string
+  // NARR-001: aging + retirement
+  age?: number                       // 45-72 vid skapande
+  yearsActive?: number               // ökar varje säsongsslut
+  retirementThreshold?: number       // 5-8 år beroende på personlighet
+  hasAnnouncedRetirement?: boolean   // förhindrar upprepat trigger
 }
