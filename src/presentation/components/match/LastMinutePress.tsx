@@ -74,13 +74,8 @@ export function LastMinutePress({ data, onChoose }: LastMinutePressProps) {
 
             <button
               onClick={handleConfirm}
-              style={{
-                width: '100%', padding: 11, borderRadius: 8, border: 'none',
-                background: 'linear-gradient(135deg, var(--danger), var(--danger-dark))',
-                color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                letterSpacing: '1px',
-                boxShadow: '0 3px 10px rgba(176,80,64,0.4)',
-              }}
+              className="btn btn-danger"
+              style={{ width: '100%', padding: 11, fontSize: 13, fontWeight: 700, letterSpacing: '1px' }}
             >
               BESTÄM →
             </button>

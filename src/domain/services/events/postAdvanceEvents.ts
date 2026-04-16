@@ -33,7 +33,10 @@ export function generatePostAdvanceEvents(
   justCompletedFixture?: Fixture,
 ): GameEvent[] {
   const events: GameEvent[] = []
-  const alreadyQueued = new Set((game.pendingEvents ?? []).map(e => e.id))
+  const alreadyQueued = new Set([
+    ...(game.pendingEvents ?? []).map(e => e.id),
+    ...(game.resolvedEventIds ?? []),
+  ])
 
   // 0. Press conference after managed match
   if (justCompletedFixture) {

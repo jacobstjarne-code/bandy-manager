@@ -4,6 +4,7 @@ import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { truncate } from '../../utils/formatters'
 import { computePlayerRatings } from '../../utils/matchRatings'
 import { GoldConfetti } from './GoldConfetti'
+import { Z } from '../../utils/zIndices'
 
 interface CeremonySmFinalProps {
   slide: 1 | 2 | 3
@@ -43,7 +44,7 @@ export function CeremonySmFinal({
       <div style={{
         position: 'fixed', inset: 0, background: 'var(--bg-dark)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        zIndex: 300,
+        zIndex: Z.modal,
       }}>
         <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 24 }}>
           SM-FINAL
@@ -75,7 +76,7 @@ export function CeremonySmFinal({
       <div style={{
         position: 'fixed', inset: 0, background: 'var(--bg-dark)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        zIndex: 300, overflow: 'hidden',
+        zIndex: Z.modal, overflow: 'hidden',
       }}>
         {managedWon && <GoldConfetti />}
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '0 24px' }}>
@@ -133,7 +134,7 @@ export function CeremonySmFinal({
     <div style={{
       position: 'fixed', inset: 0, background: 'var(--bg-dark)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      zIndex: 300,
+      zIndex: Z.modal,
     }}>
       <div style={{ textAlign: 'center', padding: '0 24px' }}>
         <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 24 }}>

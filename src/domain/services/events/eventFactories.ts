@@ -516,7 +516,7 @@ export function generateMecenatInterventionEvent(mec: Mecenat, roundNumber: numb
 }
 
 // DEV-012: Economic stress micro-decisions (only active in -100k to +50k zone)
-export function createEconomicStressEvent(game: SaveGame, currentMatchday: number): GameEvent | null {
+export function createEconomicStressEvent(game: SaveGame, currentMatchday: number, localRand: () => number): GameEvent | null {
   const finances = game.clubs.find(c => c.id === game.managedClubId)?.finances ?? 0
   if (finances >= 50000 || finances < -100000) return null
 
@@ -553,7 +553,7 @@ export function createEconomicStressEvent(game: SaveGame, currentMatchday: numbe
     },
   ]
 
-  const idx = Math.floor(Math.random() * options.length)
+  const idx = Math.floor(localRand() * options.length)
   const chosen = options[idx]
   return {
     id: `event_economic_stress_${chosen.id}_${currentMatchday}`,

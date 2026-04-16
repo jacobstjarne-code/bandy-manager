@@ -289,9 +289,9 @@ a {
 }
 
 .btn-danger {
-  background: var(--danger);
+  background: linear-gradient(135deg, var(--danger), var(--danger-dark));
   color: #fff;
-  box-shadow: 0 2px 6px rgba(176,80,64,0.25);
+  box-shadow: 0 3px 10px rgba(176,80,64,0.40);
 }
 
 /* ── Sharp cards: factual data display ── */

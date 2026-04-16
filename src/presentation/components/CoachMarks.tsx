@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Z } from '../utils/zIndices'
 
 interface CoachStep {
   targetId: string
@@ -62,7 +63,7 @@ export function CoachMarks({ onDone }: Props) {
 
   if (!targetRect) {
     return (
-      <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.65)' }} />
+      <div style={{ position: 'fixed', inset: 0, zIndex: Z.coachmarks, background: 'rgba(0,0,0,0.65)' }} />
     )
   }
 
@@ -71,7 +72,7 @@ export function CoachMarks({ onDone }: Props) {
   const pad = 8
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: Z.coachmarks }}>
       {/* Spotlight med box-shadow som dim */}
       <div style={{
         position: 'absolute',

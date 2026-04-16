@@ -42,7 +42,7 @@ export function processGameEvents(
   }
 
   let lastEconomicStressRound: number | undefined = game.lastEconomicStressRound
-  const stressEvent = createEconomicStressEvent(game, nextMatchday)
+  const stressEvent = createEconomicStressEvent(game, nextMatchday, localRand)
   if (stressEvent) {
     gameEvents.push(stressEvent)
     lastEconomicStressRound = nextMatchday

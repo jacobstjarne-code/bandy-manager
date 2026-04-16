@@ -4,6 +4,7 @@ import type { CupBracket } from '../../../domain/entities/Cup'
 import { truncate } from '../../utils/formatters'
 import { getCupJourney } from '../../utils/finalJourneys'
 import { GoldConfetti } from './GoldConfetti'
+import { Z } from '../../utils/zIndices'
 
 interface CeremonyCupFinalProps {
   slide: 1 | 2
@@ -37,7 +38,7 @@ export function CeremonyCupFinal({
       <div style={{
         position: 'fixed', inset: 0, background: 'var(--bg-dark)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        zIndex: 300,
+        zIndex: Z.modal,
       }}>
         <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 24 }}>
           CUPFINALEN
@@ -81,7 +82,7 @@ export function CeremonyCupFinal({
     <div style={{
       position: 'fixed', inset: 0, background: 'var(--bg-dark)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      zIndex: 300, overflow: 'hidden',
+      zIndex: Z.modal, overflow: 'hidden',
     }}>
       {managedWon && <GoldConfetti />}
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '0 24px' }}>

@@ -19,7 +19,7 @@ export function BidModal({ player, managedClub, onClose, onConfirm }: BidModalPr
   const [offerAmount, setOfferAmount] = useState(suggestedBid)
   const [offeredSalary, setOfferedSalary] = useState(Math.round(player.salary / 500) * 500)
   const [contractYears, setContractYears] = useState(3)
-  const canAfford = managedClub.transferBudget >= offerAmount
+  const canAfford = managedClub.transferBudget >= offerAmount && managedClub.finances - offerAmount >= -100000
 
   return (
     <div
@@ -74,7 +74,8 @@ export function BidModal({ player, managedClub, onClose, onConfirm }: BidModalPr
             ))}
           </div>
         </div>
-        {!canAfford && <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 8 }}>Otillräcklig transferbudget</p>}
+        {managedClub.transferBudget < offerAmount && <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 8 }}>Otillräcklig transferbudget</p>}
+        {managedClub.transferBudget >= offerAmount && managedClub.finances - offerAmount < -100000 && <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 8 }}>Budet skulle föra kassan under −100 000 kr</p>}
         <button
           onClick={() => canAfford && onConfirm(player.id, offerAmount, offeredSalary, contractYears)}
           disabled={!canAfford}
