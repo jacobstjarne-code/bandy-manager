@@ -198,6 +198,19 @@ export function generatePostMatchHeadline(
   } as InboxItem
 }
 
+// ── DEV-013: Critical article after 3 press refusals ─────────────────────────
+
+export function generateCriticalArticle(journalist: Journalist, managerName: string, currentDate: string): InboxItem {
+  return {
+    id: `article_refusal_${journalist.pressRefusals}`,
+    type: InboxItemType.MediaEvent,
+    title: `${journalist.outlet}: "${managerName} ducker frågorna"`,
+    body: `Ledare i lokaltidningen: Klubbens ledning har nu vägrat tre presskonferenser i rad. Det är inte bara en fråga om PR — det är en fråga om respekt för orten, supportrarna och de som följer laget. ${managerName} behöver börja svara.`,
+    date: currentDate,
+    isRead: false,
+  } as InboxItem
+}
+
 // ── Generate persona-flavored headline prefix ─────────────────────────────
 
 export function getHeadlinePrefix(journalist: Journalist, isPositive: boolean): string {

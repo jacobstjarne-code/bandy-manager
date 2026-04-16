@@ -2,7 +2,7 @@ import type { SaveGame, Sponsor, CommunityActivities } from '../../entities/Save
 import { InboxItemType } from '../../enums'
 import { executeTransfer } from '../transferService'
 import { applyFinanceChange } from '../economyService'
-import { recordInteraction, recordPressRefusal } from '../journalistService'
+import { recordInteraction, recordPressRefusal, generateCriticalArticle } from '../journalistService'
 
 // ── resolveEvent ───────────────────────────────────────────────────────────
 export function resolveEvent(
@@ -731,6 +731,25 @@ export function resolveEvent(
       ...updatedGame,
       hallDebateCount: (updatedGame.hallDebateCount ?? 0) + 1,
       lastHallDebateRound: lastFixtureRound,
+    }
+  }
+
+  // Special: pressConference — clear pendingPressConference + DEV-013 refusal consequence
+  if (event.type === 'pressConference' || event.type === 'presskonferens') {
+    // Clear pendingPressConference (WEAK-002)
+    if (updatedGame.pendingPressConference?.id === eventId) {
+      updatedGame = { ...updatedGame, pendingPressConference: undefined }
+    }
+    // DEV-013: critical article after 3 refusals
+    if (choiceId === 'refuse_press' && updatedGame.journalist && updatedGame.journalist.pressRefusals >= 3) {
+      const managerName = updatedGame.managerName ?? 'Tränaren'
+      const article = generateCriticalArticle(updatedGame.journalist, managerName, updatedGame.currentDate)
+      const updatedJournalist = { ...updatedGame.journalist, style: 'provocative' as const }
+      updatedGame = {
+        ...updatedGame,
+        journalist: updatedJournalist,
+        inbox: [article, ...updatedGame.inbox],
+      }
     }
   }
 

@@ -474,6 +474,38 @@ function responseEmoji(id: string, moraleEffect: number): string {
   return moraleEffect >= 3 ? '😊' : '😐'
 }
 
+// ── WEAK-008 + DEV-006: Follow-up questions based on journalist memory ─────────
+
+function findFollowUpQuestion(journalist: import('../entities/SaveGame').Journalist, round: number): PressQuestion | null {
+  const recent = journalist.memory.slice(-3)
+  const hasNegativeMemory = recent.some(m => m.sentiment <= -5)
+  if (!hasNegativeMemory) return null
+
+  const lastNegative = recent.filter(m => m.sentiment <= -5).slice(-1)[0]
+  const roundsSince = round - lastNegative.matchday
+
+  const followUps: PressQuestion[] = [
+    {
+      text: `Förra mötet sa du att försvaret skulle hålla. Du har släppt in mål på löpande band. Vad säger du nu?`,
+      preferIds: ['cl15', 'l_h1'],
+      minRound: lastNegative.matchday + 3,
+    },
+    {
+      text: `Du lovade vändning. Den har inte kommit. Hur mycket längre ska vi vänta?`,
+      preferIds: ['l_c6', 'bl_p1'],
+      minRound: lastNegative.matchday + 5,
+    },
+    {
+      text: `För ${roundsSince} omgångar sen sa du att truppen räcker. Gör den det?`,
+      preferIds: ['l_h4', 'bl_c6'],
+      minRound: lastNegative.matchday + 4,
+    },
+  ]
+
+  const eligible = followUps.filter(q => (q.minRound ?? 0) <= round)
+  return eligible.length > 0 ? eligible[Math.floor(Math.random() * eligible.length)] : null
+}
+
 // ── generatePressConference ────────────────────────────────────────────────────
 
 export function generatePressConference(
@@ -580,6 +612,14 @@ export function generatePressConference(
     const youngStar = game.players.find(p => p.clubId === game.managedClubId && p.promotedFromAcademy && p.age <= 20)
     const name = youngStar ? `${youngStar.firstName} ${youngStar.lastName}` : 'er unge spelare'
     question = { text: `${name} imponerar. Hur hanterar ni trycket på en så ung spelare?`, preferIds: question.preferIds }
+  }
+
+  // WEAK-008 + DEV-006: check for follow-up question first (40% chance if journalist has negative memory)
+  if (game.journalist) {
+    const followUp = findFollowUpQuestion(game.journalist, round)
+    if (followUp && rand() < 0.4) {
+      question = followUp
+    }
   }
 
   const ctx = buildPressContext(fixture, game, rand)

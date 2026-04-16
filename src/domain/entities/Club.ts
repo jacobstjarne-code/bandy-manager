@@ -40,4 +40,9 @@ export interface Club {
   activeTactic: Tactic
   squadPlayerIds: string[]
   academyReputation?: number  // 0-100
+  opponentManager?: {
+    name: string
+    persona: 'confident' | 'defensive' | 'cryptic' | 'professorial'
+    yearsAtClub: number
+  }
 }

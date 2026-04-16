@@ -50,6 +50,7 @@ import { simulateRound } from './processors/matchSimProcessor'
 import { processYouth } from './processors/youthProcessor'
 import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
 import { createEconomicStressEvent } from '../../domain/services/events/eventFactories'
+import { generatePreMatchOpponentQuote } from '../../domain/services/opponentManagerService'
 
 export type { AdvanceResult }
 
@@ -633,6 +634,21 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
             body: `${managedClub?.name ?? 'Ni'} möter ${opponentClub?.name ?? 'motståndaren'} i ${derbyRivalry.name}. Intensiteten kommer vara hög.`,
             isRead: false,
           })
+
+          // DREAM-001: pre-match opponent manager quote
+          if (opponentClub) {
+            const opponentQuote = generatePreMatchOpponentQuote(opponentClub, true)
+            if (opponentQuote) {
+              newInboxItems.push({
+                id: `inbox_prematch_quote_${upcomingManagedFixture.id}`,
+                date: game.currentDate,
+                type: InboxItemType.MediaEvent,
+                title: `Inför derbyt: ${opponentClub.shortName ?? opponentClub.name}`,
+                body: opponentQuote,
+                isRead: false,
+              })
+            }
+          }
         }
       }
     }
@@ -727,7 +743,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     localRand,
   )
   const allNewEvents = [...newEvents, ...communityEvents]
-  if (simResult.pressEvent) allNewEvents.push(simResult.pressEvent)
+  // WEAK-002 + DEV-002: press event goes to pendingPressConference (shown directly in GranskaScreen)
+  // — NOT pushed to allNewEvents to avoid appearing in the general event queue
 
   // ── BUG-008: finance warning inbox when managed club is in -50k to -100k zone ──
   const managedClubForWarning = preEventGame.clubs.find(c => c.id === game.managedClubId)
@@ -1096,6 +1113,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     mecenater: updatedMecenater,
     lastCoffeeQuoteHash: currentLeagueRound !== null ? currentLeagueRound * 7 + game.currentSeason * 31 : game.lastCoffeeQuoteHash,
     lastEconomicStressRound: stressEvent ? nextMatchday : game.lastEconomicStressRound,
+    pendingPressConference: simResult.pressEvent ?? undefined,
     ...(() => {
       // Update rolling average attendance for home matches
       if (!justCompletedManagedFixture) return {}

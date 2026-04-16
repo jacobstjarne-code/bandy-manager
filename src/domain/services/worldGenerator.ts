@@ -1,4 +1,5 @@
 import type { Club, Tactic } from '../entities/Club'
+import { generateOpponentManager } from './opponentManagerService'
 import type { Player, PlayerAttributes, PlayerSeasonStats, PlayerCareerStats, PlayerDayJob, SuspensionProfile } from '../entities/Player'
 import {
   PlayerPosition,
@@ -731,6 +732,7 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     squadPlayerIds: [],
     arenaCapacity: Math.round((t.reputation * 7 + 150) / 50) * 50,
     arenaName: t.arenaName,
+    opponentManager: generateOpponentManager(rng.next),
   }))
 
   const allPlayers: Player[] = []

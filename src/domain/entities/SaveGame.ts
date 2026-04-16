@@ -232,6 +232,7 @@ export interface SaveGame {
   hallDebateCount?: number
   lastHallDebateRound?: number
   lastEconomicStressRound?: number
+  pendingPressConference?: import('../entities/GameEvent').GameEvent
   budgetPriority?: 'squad' | 'balanced' | 'youth'
   resolvedEventIds?: string[]  // event IDs that have been resolved — prevents re-triggering
 

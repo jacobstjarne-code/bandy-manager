@@ -336,6 +336,50 @@ export function GranskaScreen() {
           </div>
         )}
 
+        {/* ── PRESSKONFERENS INLINE (WEAK-002) — visas direkt efter match, före övriga events ── */}
+        {(() => {
+          const pc = game.pendingPressConference
+          if (!pc) return null
+          const pcResolved = resolvedEventIds.has(pc.id)
+          const pcChosenLabel = chosenLabels[pc.id]
+          return (
+            <div className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(2) }}>
+              <div style={{ padding: '10px 12px' }}>
+                <SectionLabel style={{ marginBottom: pcResolved ? 4 : 6 }}>🎤 PRESSKONFERENS</SectionLabel>
+                {pcResolved ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{pcChosenLabel}</span>
+                  </div>
+                ) : (
+                  <>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{pc.title}</p>
+                    <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, fontStyle: 'italic' }}>{pc.body}</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      {pc.choices.map((choice: EventChoice) => (
+                        <button
+                          key={choice.id}
+                          onClick={() => handleChoice(pc.id, choice.id, choice.label)}
+                          style={{
+                            width: '100%', padding: '9px 12px', borderRadius: 8,
+                            fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer',
+                            ...choiceStyle(choice.id),
+                          }}
+                        >
+                          {choice.label}
+                          {choice.subtitle && (
+                            <span style={{ display: 'block', fontSize: 10, color: 'var(--text-muted)', fontWeight: 400, marginTop: 2 }}>{choice.subtitle}</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )
+        })()}
+
         {/* ── EVENTS INLINE ── */}
         {pendingEvents.map((event, ei) => {
           const resolved = resolvedEventIds.has(event.id)
