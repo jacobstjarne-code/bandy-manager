@@ -44,7 +44,7 @@ export function TransfersScreen() {
   const location = useLocation()
 
   useEffect(() => {
-    const state = location.state as any
+    const state = location.state as { tab?: string; renewPlayerId?: string; highlightPlayer?: string } | null
     const highlightId = state?.highlightPlayer
     const tabOverride = state?.tab as typeof activeTab | undefined
     const renewId = state?.renewPlayerId as string | undefined

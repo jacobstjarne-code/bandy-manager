@@ -19,6 +19,9 @@ export interface RoundSummaryData {
   youthMatchResult?: string
   mentorEffect?: string
 
+  // Standing
+  standingBefore?: number
+
   // Economy
   financesBefore: number
   financesAfter: number

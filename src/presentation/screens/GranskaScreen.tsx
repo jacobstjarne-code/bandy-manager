@@ -183,7 +183,7 @@ export function GranskaScreen() {
   // Round summary data
   const rs = roundSummary
   const standing = game.standings.find(s => s.clubId === game.managedClubId)
-  const standingBefore = rs ? (rs as any).standingBefore ?? null : null
+  const standingBefore = rs?.standingBefore ?? null
   const financesDelta = rs ? rs.financesAfter - rs.financesBefore : 0
   const csDelta = rs ? rs.communityStandingAfter - (rs.communityStandingBefore ?? rs.communityStandingAfter) : 0
   const cs = rs?.communityStandingAfter ?? game.communityStanding ?? 50

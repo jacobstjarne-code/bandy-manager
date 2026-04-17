@@ -15,7 +15,7 @@ export function TabellScreen() {
 
   // Handle deep-link from dashboard CupCard/PlayoffCard
   useEffect(() => {
-    const tab = (location.state as any)?.tab
+    const tab = (location.state as { tab?: string } | null)?.tab
     if (tab === 'cupen' || tab === 'statistik' || tab === 'tabell') {
       setActiveTab(tab)
       window.history.replaceState({ ...window.history.state, usr: {} }, '')
