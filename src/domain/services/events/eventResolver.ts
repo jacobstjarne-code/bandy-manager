@@ -10,6 +10,7 @@ export function resolveEvent(
   game: SaveGame,
   eventId: string,
   choiceId: string,
+  rand: () => number = Math.random,
 ): SaveGame {
   const event = (game.pendingEvents ?? []).find(e => e.id === eventId)
   if (!event) return game
@@ -788,7 +789,7 @@ export function resolveEvent(
   if (event.type === 'icaMaxiEvent' && choiceId === 'send_player') {
     const managedPlayers = updatedGame.players.filter(p => p.clubId === updatedGame.managedClubId && !p.isInjured)
     if (managedPlayers.length > 0) {
-      const chosen = managedPlayers[Math.floor(Math.random() * managedPlayers.length)]
+      const chosen = managedPlayers[Math.floor(rand() * managedPlayers.length)]
       const moraleDelta = (chosen.discipline ?? 50) > 60 ? 5 : -3
       updatedGame = {
         ...updatedGame,
@@ -924,7 +925,7 @@ export function resolveEvent(
     const followUp = {
       id: `fu_${eventId}_${choiceId}`,
       triggerEventId: eventId,
-      matchdaysDelay: 3 + Math.floor(Math.random() * 3), // 3-5 matchdays
+      matchdaysDelay: 3 + Math.floor(rand() * 3), // 3-5 matchdays
       createdMatchday: currentMatchday,
       type: 'simple_inbox',
       data: { text: event.followUpText } as Record<string, unknown>,

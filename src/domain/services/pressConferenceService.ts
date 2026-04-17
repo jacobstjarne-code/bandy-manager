@@ -473,7 +473,7 @@ function buildPressResponses(ctx: PressContext, preferIds: string[] = []): Manag
 
 // ── WEAK-008 + DEV-006: Follow-up questions based on journalist memory ─────────
 
-function findFollowUpQuestion(journalist: import('../entities/SaveGame').Journalist, round: number): PressQuestion | null {
+function findFollowUpQuestion(journalist: import('../entities/SaveGame').Journalist, round: number, rand: () => number): PressQuestion | null {
   const recent = journalist.memory.slice(-3)
   const hasNegativeMemory = recent.some(m => m.sentiment <= -5)
   if (!hasNegativeMemory) return null
@@ -500,7 +500,7 @@ function findFollowUpQuestion(journalist: import('../entities/SaveGame').Journal
   ]
 
   const eligible = followUps.filter(q => (q.minRound ?? 0) <= round)
-  return eligible.length > 0 ? eligible[Math.floor(Math.random() * eligible.length)] : null
+  return eligible.length > 0 ? eligible[Math.floor(rand() * eligible.length)] : null
 }
 
 // ── generatePressConference ────────────────────────────────────────────────────
@@ -613,7 +613,7 @@ export function generatePressConference(
 
   // WEAK-008 + DEV-006: check for follow-up question first (40% chance if journalist has negative memory)
   if (game.journalist) {
-    const followUp = findFollowUpQuestion(game.journalist, round)
+    const followUp = findFollowUpQuestion(game.journalist, round, rand)
     if (followUp && rand() < 0.4) {
       question = followUp
     }
