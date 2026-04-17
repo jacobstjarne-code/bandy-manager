@@ -45,6 +45,7 @@ interface GameState {
   placeOutgoingBid: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => { success: boolean; error?: string }
   resolveEvent: (eventId: string, choiceId: string) => void
   saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection, overtimeResult?: 'home' | 'away', penaltyResult?: { home: number; away: number }, attendance?: number) => void
+  markMatchStarted: (fixtureId: string) => void
   clearSeasonSummary: () => void
   clearBoardMeeting: () => void
   requestDetailedAnalysis: (opponentClubId: string, fixtureId: string) => { success: boolean; error?: string }

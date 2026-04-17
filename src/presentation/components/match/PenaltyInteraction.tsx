@@ -77,6 +77,9 @@ export function PenaltyInteraction({ data, outcome, onChoose }: PenaltyInteracti
               <stop offset="0%" stopColor="var(--border)" />
               <stop offset="100%" stopColor="var(--border-dark)" />
             </linearGradient>
+            <marker id="arrowP" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L6,3 z" fill="var(--danger)" />
+            </marker>
           </defs>
           <rect width="260" height="110" fill="url(#iceP)" rx="4" />
           {/* Goal posts */}
@@ -132,6 +135,24 @@ export function PenaltyInteraction({ data, outcome, onChoose }: PenaltyInteracti
             fontWeight="700" style={{ pointerEvents: 'none' }}>H</text>
           <text x="203" y="66" textAnchor="middle" fontSize="6" fill={dir === 'right' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)'}
             style={{ pointerEvents: 'none' }}>HÖGER</text>
+          {/* Ball path from taker to selected zone */}
+          {(() => {
+            const from = { x: 130, y: 100 }
+            const zoneX = dir === 'left' ? 57 : dir === 'center' ? 130 : 203
+            const zoneY = height === 'low' ? 72 : 28
+            const cp = { x: (from.x + zoneX) / 2, y: height === 'high' ? 40 : 90 }
+            return (
+              <path
+                d={`M ${from.x},${from.y} Q ${cp.x},${cp.y} ${zoneX},${zoneY}`}
+                fill="none"
+                stroke="var(--danger)"
+                strokeWidth="1.5"
+                strokeDasharray="2,1.5"
+                opacity="0.75"
+                markerEnd="url(#arrowP)"
+              />
+            )
+          })()}
           {/* Penalty taker dot */}
           <circle cx="130" cy="102" r="4" fill="var(--danger)" stroke="#fff" strokeWidth="1.5" />
         </svg>

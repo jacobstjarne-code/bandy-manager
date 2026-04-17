@@ -139,7 +139,8 @@
       "Bash(xargs basename *)",
       "Bash(ls /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/application/useCases/processors/*.ts)",
       "Bash(npx vite-node *)",
-      "Bash(ls /Users/jacobstjarne/Desktop/code_projects/bandy-manager/scripts/calibrate*.ts)"
+      "Bash(ls /Users/jacobstjarne/Desktop/code_projects/bandy-manager/scripts/calibrate*.ts)",
+      "Bash(grep -rn \"outlet\\\\|journalist\\\\|headline\\\\|Allehanda\\\\|press\" src/presentation/components/dashboard/*.tsx)"
     ]
   }
 }

@@ -147,7 +147,6 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
           { mode: 'full' as MatchMode, icon: '🎥', label: 'Full', desc: 'Alla interaktioner' },
           { mode: 'commentary' as MatchMode, icon: '📝', label: 'Kommentar', desc: 'Följ utan stopp' },
           { mode: 'quicksim' as MatchMode, icon: '⚡', label: 'Snabb', desc: 'Direkt resultat' },
-          { mode: 'silent' as MatchMode, icon: '📰', label: 'Tyst', desc: 'Prosarapport' },
         ] as const).map(({ mode, icon, label, desc }) => (
           <button key={mode} onClick={() => onSetMatchMode(mode)} style={{
             flex: 1, padding: '10px 6px',

@@ -98,5 +98,14 @@ export function matchActions(get: Get, set: Set) {
 
       set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings, cupBracket: updatedCupBracket, playoffBracket: updatedPlayoffBracket, managedClubPendingLineup: undefined } })
     },
+
+    markMatchStarted: (fixtureId: string) => {
+      const { game } = get()
+      if (!game) return
+      const updatedFixtures = game.fixtures.map(f =>
+        f.id === fixtureId ? { ...f, matchStartedAt: Date.now() } : f
+      )
+      set({ game: { ...game, fixtures: updatedFixtures } })
+    },
   }
 }

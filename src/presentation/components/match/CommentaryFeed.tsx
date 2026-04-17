@@ -295,7 +295,7 @@ export function CommentaryFeed({
 
         const rows: React.ReactNode[] = [
           <div
-            key={idx}
+            key={`${s.step}-${s.events.length}-${(s.commentary ?? '').length}`}
             style={{
               display: 'flex', alignItems: 'flex-start',
               flexDirection: isAwayEvent ? 'row-reverse' : 'row',

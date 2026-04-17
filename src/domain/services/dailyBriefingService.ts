@@ -92,7 +92,11 @@ function getTransferWindowCountdown(game: SaveGame): { opening: boolean; roundsU
 
 function getLatestHeadline(game: SaveGame): string | null {
   const recent = game.inbox
-    .filter(i => i.title && (i.type === 'media' || i.type === 'mediaEvent' || i.type === 'matchResult'))
+    .filter(i =>
+      i.title &&
+      (i.type === 'media' || i.type === 'mediaEvent' || i.type === 'matchResult') &&
+      !i.title.includes(' · ')  // skip journalist attribution format (e.g. "Name · Outlet")
+    )
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 1)[0]
   return recent?.title ?? null

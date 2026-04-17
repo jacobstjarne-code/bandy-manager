@@ -51,7 +51,7 @@ interface LocationState {
 export function MatchLiveScreen() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { game, saveLiveMatchResult, advance } = useGameStore()
+  const { game, saveLiveMatchResult, advance, markMatchStarted } = useGameStore()
 
   const state = location.state as LocationState | null
   const fixture = state?.fixture
@@ -142,6 +142,11 @@ export function MatchLiveScreen() {
     const liveFixture = game.fixtures.find(f => f.id === fixture.id)
     if (liveFixture?.status === 'completed') {
       navigate('/game', { replace: true })
+      return
+    }
+    // Match was started but not finished — user navigated away mid-match
+    if (liveFixture?.matchStartedAt && liveFixture.status === 'scheduled') {
+      navigate('/game', { replace: true })
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -149,6 +154,7 @@ export function MatchLiveScreen() {
     if (hasSimulated.current) return
     if (!fixture || !homeLineup || !awayLineup || !game) return
     hasSimulated.current = true
+    markMatchStarted(fixture.id)
 
     const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
     const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
@@ -294,9 +300,18 @@ export function MatchLiveScreen() {
 
     const step = steps[currentStep]
 
-    if (step.step === 30 && !isFastForward) {
-      setShowHalftime(true)
-      return
+    if (step.step === 30) {
+      const hasSecondHalf = steps.length > 31
+      if (!hasSecondHalf) {
+        if (isFastForward) {
+          handleApplyTactic()
+          return
+        } else {
+          setShowHalftime(true)
+          return
+        }
+      }
+      // Second half already generated — fall through and continue stepping
     }
 
     // Interactive corner — pause and show UI (skip in commentary mode)
@@ -770,6 +785,9 @@ export function MatchLiveScreen() {
     }
 
     const kept = steps.slice(0, currentStep)
+    console.log('[applyQuickTactic] steps before:', steps.length, 'currentStep:', currentStep)
+    console.log('[applyQuickTactic] kept:', kept.length, 'commentStep.homeScore:', commentStep.homeScore, 'newRemainder:', newRemainder.length)
+    console.log('[applyQuickTactic] first newRemainder step:', newRemainder[0])
     setSteps([...kept, commentStep, ...newRemainder])
     setTacticChangesUsed(prev => prev + 1)
     setTacticChanged(true)
