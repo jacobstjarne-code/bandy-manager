@@ -12,6 +12,7 @@ import { TRAIT_META } from '../../domain/data/playerTraits'
 import { SectionCard } from '../components/SectionCard'
 import { getPortraitSvg } from '../../domain/services/portraitService'
 import { FirstVisitHint } from '../components/FirstVisitHint'
+import { LockerRoomMap } from '../components/squad/LockerRoomMap'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
 type FilterKey = 'all' | 'mv' | 'def' | 'half' | 'mid' | 'fwd'
@@ -435,49 +436,15 @@ export function SquadScreen() {
           </div>
         )}
 
-        {/* WEAK-021: Omklädningsrummet */}
-        {(() => {
-          if (players.length < 3) return null
-          const captainId = game?.captainPlayerId
-          const sorted = [...players].sort((a, b) => (b.loyaltyScore ?? 0) - (a.loyaltyScore ?? 0))
-          const innerCircle = [
-            captainId ? players.find(p => p.id === captainId) : null,
-            ...sorted.filter(p => p.id !== captainId).slice(0, 3),
-          ].filter(Boolean) as typeof players
-          const peripheral = sorted.filter(p => (p.loyaltyScore ?? 5) < 4).slice(0, 3)
-          return (
-            <div className="card-sharp" style={{ padding: 12, marginBottom: 12 }}>
-              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
-                🚪 OMKLÄDNINGSRUMMET
-              </p>
-              <div style={{ marginBottom: peripheral.length > 0 ? 10 : 0 }}>
-                <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6 }}>INRE CIRKEL</p>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  {innerCircle.map(p => (
-                    <div key={p.id} onClick={() => setSelectedPlayerId(p.id)} style={{ padding: '4px 8px', background: 'rgba(196,122,58,0.12)', border: '1px solid rgba(196,122,58,0.3)', borderRadius: 4, fontSize: 10, cursor: 'pointer' }}>
-                      {p.lastName}{p.id === captainId && ' (C)'}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {peripheral.length > 0 && (
-                <div>
-                  <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6 }}>UTANFÖR</p>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    {peripheral.map(p => (
-                      <div key={p.id} onClick={() => setSelectedPlayerId(p.id)} style={{ padding: '4px 8px', background: 'var(--border-subtle)', border: '1px solid var(--border)', borderRadius: 4, fontSize: 10, opacity: 0.65, cursor: 'pointer' }}>
-                        {p.lastName}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <p style={{ fontSize: 10, fontStyle: 'italic', marginTop: 8, color: 'var(--text-muted)' }}>
-                Inre cirkel: kapten + spelare med högst lojalitet. Utanför: låg lojalitet.
-              </p>
-            </div>
-          )
-        })()}
+        {/* DREAM-006: Omklädningsrum-karta */}
+        {game && players.length >= 3 && (
+          <LockerRoomMap
+            players={players}
+            captainId={game.captainPlayerId}
+            game={game}
+            onPlayerClick={(id) => setSelectedPlayerId(id)}
+          />
+        )}
 
         <SectionCard title="TRUPPEN" variant="sharp" style={{ margin: '0 0 16px' }}>
           {sorted.map((player, index) => (
