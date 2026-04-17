@@ -398,6 +398,48 @@ export function MatchLiveScreen() {
     return () => clearTimeout(timer)
   }, [currentStep, isPaused, isFastForward, steps])
 
+  function regenerateRemainderWithUpdatedScore(
+    newHomeScore: number,
+    newAwayScore: number,
+    atStep: number,
+  ): MatchStep[] | null {
+    if (!game || !fixture || !homeLineup || !awayLineup) return null
+    const managedIsHome = fixture.homeClubId === game.managedClubId
+    const currentStepData = steps[atStep]
+    if (!currentStepData) return null
+
+    const fromStep = atStep + 1
+    const inSecondHalf = fromStep >= 31
+
+    const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
+    const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
+
+    const gen = simulateFromMidMatch({
+      fixture, homeLineup, awayLineup,
+      homePlayers, awayPlayers,
+      homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,
+      seed: Date.now(),
+      weather: matchWeather?.weather,
+      homeClubName: homeClubName || undefined,
+      awayClubName: awayClubName || undefined,
+      rivalry: rivalry ?? undefined,
+      initialHomeScore: newHomeScore,
+      initialAwayScore: newAwayScore,
+      initialShotsHome: currentStepData.shotsHome,
+      initialShotsAway: currentStepData.shotsAway,
+      initialCornersHome: currentStepData.cornersHome,
+      initialCornersAway: currentStepData.cornersAway,
+      initialHomeSuspensions: currentStepData.activeSuspensions.homeCount,
+      initialAwaySuspensions: currentStepData.activeSuspensions.awayCount,
+      managedIsHome,
+      storylines: game.storylines?.map(s => ({ playerId: s.playerId, type: s.type, displayText: s.displayText })),
+    }, fromStep, inSecondHalf)
+
+    const newRemainder: MatchStep[] = []
+    for (const s of gen) newRemainder.push(s)
+    return newRemainder
+  }
+
   function handleCornerChoice(zone: CornerZone, delivery: CornerDelivery) {
     if (!activeCorner || !game || !fixture) return
 
@@ -434,22 +476,26 @@ export function MatchLiveScreen() {
     const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
     const minute = activeCorner.minute
 
-    setSteps(prev => prev.map((s, idx) => {
-      if (idx < currentStep) return s
-      if (idx === currentStep) {
+    setSteps(prev => {
+      const updatedCurrent = prev.map((s, idx) => {
+        if (idx !== currentStep) return s
         const event = outcome.type === 'goal'
           ? { type: MatchEventType.Goal, minute, clubId: managedClubId, playerId: outcome.scorerId,
               description: outcome.description, isCorner: true }
           : { type: MatchEventType.Save, minute, clubId: managedClubId,
               description: outcome.description }
-        return { ...s, events: [...s.events, event as MatchStep['events'][0]],
+        const newHomeScore = outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
+        const newAwayScore = outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
+        return { ...s, homeScore: newHomeScore, awayScore: newAwayScore,
+          events: [...s.events, event as MatchStep['events'][0]],
           commentary: outcome.description, commentaryType: (outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
-      }
-      if (outcome.type === 'goal') {
-        return managedIsHome ? { ...s, homeScore: s.homeScore + 1 } : { ...s, awayScore: s.awayScore + 1 }
-      }
-      return s
-    }))
+      })
+      if (outcome.type !== 'goal') return updatedCurrent
+      const cur = updatedCurrent[currentStep]
+      const newRemainder = regenerateRemainderWithUpdatedScore(cur.homeScore, cur.awayScore, currentStep)
+      if (!newRemainder) return updatedCurrent
+      return [...updatedCurrent.slice(0, currentStep + 1), ...newRemainder]
+    })
 
     if (outcome.type === 'goal') {
       playSound('goal')
@@ -487,9 +533,9 @@ export function MatchLiveScreen() {
     const keeperLast = activePenalty.keeperName.split(' ').slice(-1)[0]
     const minute = activePenalty.minute
 
-    setSteps(prev => prev.map((s, idx) => {
-      if (idx < currentStep) return s
-      if (idx === currentStep) {
+    setSteps(prev => {
+      const updatedCurrent = prev.map((s, idx) => {
+        if (idx !== currentStep) return s
         const event = outcome.type === 'goal'
           ? { type: MatchEventType.Goal, minute, clubId: managedClubId, playerId: shooterId,
               description: `Straffmål av ${shooterLast}.`, isPenalty: true }
@@ -498,14 +544,18 @@ export function MatchLiveScreen() {
               description: `Straffräddning! ${keeperLast} läser skottet.` }
           : { type: MatchEventType.Save, minute, clubId: managedClubId,
               description: `Straffen utanför! ${shooterLast} missade målet.` }
-        return { ...s, events: [...s.events, event as MatchStep['events'][0]],
+        const newHomeScore = outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
+        const newAwayScore = outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
+        return { ...s, homeScore: newHomeScore, awayScore: newAwayScore,
+          events: [...s.events, event as MatchStep['events'][0]],
           commentary: event.description, commentaryType: (outcome.type === 'goal' ? 'goal' : 'critical') as MatchStep['commentaryType'] }
-      }
-      if (outcome.type === 'goal') {
-        return managedIsHome ? { ...s, homeScore: s.homeScore + 1 } : { ...s, awayScore: s.awayScore + 1 }
-      }
-      return s
-    }))
+      })
+      if (outcome.type !== 'goal') return updatedCurrent
+      const cur = updatedCurrent[currentStep]
+      const newRemainder = regenerateRemainderWithUpdatedScore(cur.homeScore, cur.awayScore, currentStep)
+      if (!newRemainder) return updatedCurrent
+      return [...updatedCurrent.slice(0, currentStep + 1), ...newRemainder]
+    })
 
     if (outcome.type === 'goal') {
       playSound('goal')
@@ -548,22 +598,26 @@ export function MatchLiveScreen() {
     const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
     const minute = activeCounter.minute
 
-    setSteps(prev => prev.map((s, idx) => {
-      if (idx < currentStep) return s
-      if (idx === currentStep) {
+    setSteps(prev => {
+      const updatedCurrent = prev.map((s, idx) => {
+        if (idx !== currentStep) return s
         const event = outcome.type === 'goal'
           ? { type: MatchEventType.Goal, minute, clubId: managedClubId, playerId: outcome.scorerId,
               description: outcome.description }
           : { type: MatchEventType.Save, minute, clubId: managedClubId,
               description: outcome.description }
-        return { ...s, events: [...s.events, event as MatchStep['events'][0]],
+        const newHomeScore = outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
+        const newAwayScore = outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
+        return { ...s, homeScore: newHomeScore, awayScore: newAwayScore,
+          events: [...s.events, event as MatchStep['events'][0]],
           commentary: outcome.description, commentaryType: (outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
-      }
-      if (outcome.type === 'goal') {
-        return managedIsHome ? { ...s, homeScore: s.homeScore + 1 } : { ...s, awayScore: s.awayScore + 1 }
-      }
-      return s
-    }))
+      })
+      if (outcome.type !== 'goal') return updatedCurrent
+      const cur = updatedCurrent[currentStep]
+      const newRemainder = regenerateRemainderWithUpdatedScore(cur.homeScore, cur.awayScore, currentStep)
+      if (!newRemainder) return updatedCurrent
+      return [...updatedCurrent.slice(0, currentStep + 1), ...newRemainder]
+    })
 
     if (outcome.type === 'goal') {
       playSound('goal')
@@ -600,22 +654,26 @@ export function MatchLiveScreen() {
     const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
     const minute = activeFreeKick.minute
 
-    setSteps(prev => prev.map((s, idx) => {
-      if (idx < currentStep) return s
-      if (idx === currentStep) {
+    setSteps(prev => {
+      const updatedCurrent = prev.map((s, idx) => {
+        if (idx !== currentStep) return s
         const event = outcome.type === 'goal'
           ? { type: MatchEventType.Goal, minute, clubId: managedClubId, playerId: activeFreeKick.kickerId,
               description: outcome.description }
           : { type: MatchEventType.Save, minute, clubId: managedClubId,
               description: outcome.description }
-        return { ...s, events: [...s.events, event as MatchStep['events'][0]],
+        const newHomeScore = outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
+        const newAwayScore = outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
+        return { ...s, homeScore: newHomeScore, awayScore: newAwayScore,
+          events: [...s.events, event as MatchStep['events'][0]],
           commentary: outcome.description, commentaryType: (outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
-      }
-      if (outcome.type === 'goal') {
-        return managedIsHome ? { ...s, homeScore: s.homeScore + 1 } : { ...s, awayScore: s.awayScore + 1 }
-      }
-      return s
-    }))
+      })
+      if (outcome.type !== 'goal') return updatedCurrent
+      const cur = updatedCurrent[currentStep]
+      const newRemainder = regenerateRemainderWithUpdatedScore(cur.homeScore, cur.awayScore, currentStep)
+      if (!newRemainder) return updatedCurrent
+      return [...updatedCurrent.slice(0, currentStep + 1), ...newRemainder]
+    })
 
     if (outcome.type === 'goal') {
       playSound('goal')
@@ -782,9 +840,6 @@ export function MatchLiveScreen() {
     }
 
     const kept = steps.slice(0, currentStep)
-    console.log('[applyQuickTactic] steps before:', steps.length, 'currentStep:', currentStep)
-    console.log('[applyQuickTactic] kept:', kept.length, 'commentStep.homeScore:', commentStep.homeScore, 'newRemainder:', newRemainder.length)
-    console.log('[applyQuickTactic] first newRemainder step:', newRemainder[0])
     setSteps([...kept, commentStep, ...newRemainder])
     setTacticChangesUsed(prev => prev + 1)
     setTacticChanged(true)
