@@ -66,7 +66,7 @@ export function processEconomy(
   })
 
   if (managedIncome.weeklyBase !== 0) {
-    roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.weeklyBase, reason: 'sponsorship', label: 'Grundintäkt (reputation)' })
+    roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.weeklyBase, reason: 'weekly_base', label: 'Grundintäkt (reputation)' })
   }
   if (managedIncome.sponsorIncome !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.sponsorIncome, reason: 'sponsorship', label: 'Sponsorintäkter' })

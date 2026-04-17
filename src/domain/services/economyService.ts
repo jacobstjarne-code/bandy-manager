@@ -8,6 +8,7 @@ import { getActiveVolunteerBonus } from './volunteerService'
 export type FinanceReason =
   | 'wages'
   | 'match_revenue'
+  | 'weekly_base'
   | 'sponsorship'
   | 'community_round'
   | 'cup_prize'
@@ -62,7 +63,7 @@ export function appendFinanceLog(
 // ── Canonical round income calculation ───────────────────────────────────────
 
 export interface RoundIncomeBreakdown {
-  weeklyBase: number             // reputation × 250
+  weeklyBase: number             // reputation × 120
   sponsorIncome: number          // active sponsors' weeklyIncome
   matchRevenue: number           // ticket/gate revenue for a home match (0 if away/no match)
   communityMatchIncome: number   // kiosk/vipTent/functionaries/bandyplay per home match, net
