@@ -1,3 +1,18 @@
+/**
+ * Gemensam basstruktur för alla arc-lika system.
+ * Specifika arc-typer (TrainerArc, ActiveArc) utökar detta.
+ * Fält är optional för bakåtkompatibilitet med befintliga sparade spel.
+ */
+export interface BaseArc {
+  id?: string
+  type?: string           // arc-typ-nyckel
+  subject?: string        // vem/vad handlar det om
+  phase?: string          // aktuell fas
+  startedMatchday?: number
+  startedSeason?: number
+  expiresMatchday?: number
+}
+
 export interface NamedCharacter {
   id: string
   name: string
@@ -47,8 +62,11 @@ export interface ArcTransition {
   reason: string
 }
 
-export interface TrainerArc {
-  current: ArcPhase
+export interface TrainerArc extends BaseArc {
+  type?: 'trainer'
+  subject?: 'manager'
+  phase?: ArcPhase
+  current: ArcPhase     // behåll för bakåtkompatibilitet — primär fas-källa
   history: ArcTransition[]
   seasonCount: number
   bestFinish: number
@@ -145,15 +163,17 @@ export type ArcType =
   | 'contract_drama'          // Bygger på transfer-spekulationsinkorg
   | 'derby_echo'              // POST-derby efterdyningar (2 omgångar)
 
-export interface ActiveArc {
+export interface ActiveArc extends BaseArc {
   id: string
   type: ArcType
+  subject?: string            // spelarnamn (sätts när arc skapas)
+  startedSeason?: number
   playerId?: string
   opponentClubId?: string     // derby_echo
   startedMatchday: number
   phase: 'building' | 'peak' | 'resolving'
+  expiresMatchday: number
   eventsFired: string[]       // event IDs redan genererade
   decisionsMade: string[]     // choice IDs spelaren valt
-  expiresMatchday: number
   data?: Record<string, unknown>
 }
