@@ -10,7 +10,7 @@ import { getRecentMatchRatings } from '../components/playerCardUtils'
 import { positionShort, POSITION_ORDER } from '../utils/formatters'
 import { TRAIT_META } from '../../domain/data/playerTraits'
 import { SectionCard } from '../components/SectionCard'
-import { getPortraitPath } from '../../domain/services/portraitService'
+import { getPortraitSvg } from '../../domain/services/portraitService'
 import { FirstVisitHint } from '../components/FirstVisitHint'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
@@ -116,14 +116,9 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
       {/* Top row: badge + name + CA */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         {/* Player portrait */}
-        <img
-          src={getPortraitPath(player.id, player.age)}
-          alt=""
-          style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', objectPosition: 'center 20%', border: '2px solid var(--border)', flexShrink: 0 }}
-          onError={(e) => {
-            const el = e.target as HTMLImageElement
-            el.style.display = 'none'
-          }}
+        <div
+          style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--border)', flexShrink: 0 }}
+          dangerouslySetInnerHTML={{ __html: getPortraitSvg(player.id, player.age, player.position) }}
         />
 
         {/* Name */}

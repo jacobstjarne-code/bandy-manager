@@ -5,7 +5,7 @@ import { PlayerArchetype, PlayerPosition } from '../../domain/enums'
 import { getScoutReportAge } from '../../domain/services/scoutingService'
 import { canUseLeadershipAction, type LeadershipAction } from '../../domain/services/leadershipService'
 import { ClubBadge } from './ClubBadge'
-import { getPortraitPath } from '../../domain/services/portraitService'
+import { getPortraitSvg } from '../../domain/services/portraitService'
 import { getPlayerVoice } from '../../domain/services/playerVoiceService'
 import type { RecentMatchRating } from './playerCardUtils'
 
@@ -289,7 +289,7 @@ export function PlayerCard({
     : scoutReport ? 'fresh' : null
   const isStale = reportAge === 'stale'
   const effectiveReport = isStale ? undefined : scoutReport
-  const portraitPath = getPortraitPath(player.id, player.age)
+  const portraitSvg = getPortraitSvg(player.id, player.age, player.position)
 
   const topStats = isOwned
     ? getTopStats(player)
@@ -372,11 +372,9 @@ export function PlayerCard({
         padding: '8px 0 4px',
         background: 'linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-elevated) 100%)',
       }}>
-        <img
-          src={portraitPath}
-          alt={`${player.firstName} ${player.lastName}`}
-          style={{ width: 72, height: 72, borderRadius: '50%', border: '2px solid var(--accent)', objectFit: 'cover', objectPosition: 'center 20%', background: 'var(--bg)' }}
-          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+        <div
+          style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent)' }}
+          dangerouslySetInnerHTML={{ __html: portraitSvg }}
         />
       </div>
 
