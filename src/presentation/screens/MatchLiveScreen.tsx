@@ -997,7 +997,7 @@ export function MatchLiveScreen() {
           managedLineup={fixture.homeClubId === game?.managedClubId ? homeLineup : awayLineup}
           allPlayers={game?.players ?? []}
           onApplyTactic={handleApplyTactic}
-          onContinue={() => { setShowHalftime(false); setCurrentStep(prev => prev + 1) }}
+          onContinue={handleApplyTactic}
           halftimeChoice={halftimeChoice}
           onHalftimeChoice={setHalftimeChoice}
         />

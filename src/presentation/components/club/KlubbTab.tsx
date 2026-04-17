@@ -620,10 +620,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
         <InfoRow label="Styrelseförväntning" value={expectationLabel(club.boardExpectation)} />
         <InfoRow label="Supporterförväntning" value={expectationLabel(club.fanExpectation)} />
         <InfoRow label="Spelstil" value={styleLabel(club.preferredStyle)} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10, marginBottom: (game.boardObjectives ?? []).length > 0 ? 10 : 0, borderBottom: (game.boardObjectives ?? []).length > 0 ? '1px solid var(--border)' : 'none' }}>
-          <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Konstis</span>
-          <span style={{ fontSize: 14, fontWeight: 600 }}>{club.hasArtificialIce ? 'Ja' : 'Nej'}</span>
-        </div>
+        <InfoRow label="Konstis" value={club.hasArtificialIce ? 'Ja' : 'Nej'} />
         {(game.boardObjectives ?? []).length > 0 && (
           <div>
             <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>

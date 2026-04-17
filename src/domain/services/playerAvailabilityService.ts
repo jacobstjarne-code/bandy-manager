@@ -39,9 +39,9 @@ function isPositionOverstocked(game: SaveGame, player: Player): boolean {
   const samePos = game.players.filter(
     p => p.clubId === player.clubId && p.position === player.position && !p.isInjured
   )
-  if (samePos.length < 4) return false
+  if (samePos.length < 5) return false
   const sorted = [...samePos].sort((a, b) => a.currentAbility - b.currentAbility)
-  return sorted[0].id === player.id || sorted[1]?.id === player.id
+  return sorted[0].id === player.id
 }
 
 /**

@@ -42,6 +42,13 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
 
   const minuteStr = `${data.minute}:a`
 
+  // When cornerSide === 'right', flag is at top → top zone = near post, bottom = far post
+  // When cornerSide === 'left', flag is at bottom → top zone = far post, bottom = near post
+  const topZone: CornerZone = cornerSide === 'right' ? 'near' : 'far'
+  const bottomZone: CornerZone = cornerSide === 'right' ? 'far' : 'near'
+  const topLabel = cornerSide === 'right' ? 'NÄRA' : 'BORTRE'
+  const bottomLabel = cornerSide === 'right' ? 'BORTRE' : 'NÄRA'
+
   function handleConfirm() {
     if (confirmed) return
     setConfirmed(true)
@@ -91,17 +98,17 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
           {[38, 48, 58, 68].map((y, i) => (
             <circle key={i} cx="6" cy={y} r="3" fill="var(--danger)" opacity="0.5" />
           ))}
-          {/* Zone buttons */}
+          {/* Zone buttons — top/bottom labels flip based on cornerSide */}
           <rect x="22" y="14" width="42" height="20" rx="4"
-            fill={zone === 'near' ? 'rgba(196,122,58,0.3)' : 'rgba(196,122,58,0.08)'}
-            stroke={zone === 'near' ? 'var(--accent)' : 'rgba(196,122,58,0.4)'}
-            strokeWidth={zone === 'near' ? '1.5' : '0.8'}
+            fill={zone === topZone ? 'rgba(196,122,58,0.3)' : 'rgba(196,122,58,0.08)'}
+            stroke={zone === topZone ? 'var(--accent)' : 'rgba(196,122,58,0.4)'}
+            strokeWidth={zone === topZone ? '1.5' : '0.8'}
             style={{ cursor: confirmed ? 'default' : 'pointer' }}
-            onClick={() => !confirmed && setZone('near')}
+            onClick={() => !confirmed && setZone(topZone)}
           />
-          <text x="43" y="27" fontSize="7" fill={zone === 'near' ? 'var(--accent)' : 'var(--text-light-secondary)'}
-            textAnchor="middle" fontWeight={zone === 'near' ? '700' : '500'} style={{ pointerEvents: 'none' }}>
-            NÄRA
+          <text x="43" y="27" fontSize="7" fill={zone === topZone ? 'var(--accent)' : 'var(--text-light-secondary)'}
+            textAnchor="middle" fontWeight={zone === topZone ? '700' : '500'} style={{ pointerEvents: 'none' }}>
+            {topLabel}
           </text>
           <rect x="22" y="42" width="42" height="20" rx="4"
             fill={zone === 'center' ? 'rgba(196,122,58,0.3)' : 'rgba(196,122,58,0.08)'}
@@ -115,21 +122,24 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
             MITT{zone === 'center' ? ' ●' : ''}
           </text>
           <rect x="22" y="70" width="42" height="20" rx="4"
-            fill={zone === 'far' ? 'rgba(196,122,58,0.3)' : 'rgba(196,122,58,0.08)'}
-            stroke={zone === 'far' ? 'var(--accent)' : 'rgba(196,122,58,0.4)'}
-            strokeWidth={zone === 'far' ? '1.5' : '0.8'}
+            fill={zone === bottomZone ? 'rgba(196,122,58,0.3)' : 'rgba(196,122,58,0.08)'}
+            stroke={zone === bottomZone ? 'var(--accent)' : 'rgba(196,122,58,0.4)'}
+            strokeWidth={zone === bottomZone ? '1.5' : '0.8'}
             style={{ cursor: confirmed ? 'default' : 'pointer' }}
-            onClick={() => !confirmed && setZone('far')}
+            onClick={() => !confirmed && setZone(bottomZone)}
           />
-          <text x="43" y="83" fontSize="7" fill={zone === 'far' ? 'var(--accent)' : 'var(--text-light-secondary)'}
-            textAnchor="middle" fontWeight={zone === 'far' ? '700' : '500'} style={{ pointerEvents: 'none' }}>
-            BORTRE
+          <text x="43" y="83" fontSize="7" fill={zone === bottomZone ? 'var(--accent)' : 'var(--text-light-secondary)'}
+            textAnchor="middle" fontWeight={zone === bottomZone ? '700' : '500'} style={{ pointerEvents: 'none' }}>
+            {bottomLabel}
           </text>
           {/* Arrow from corner flag to selected zone */}
           {(() => {
             const cx = 5
             const cy = cornerSide === 'right' ? 5 : 105
-            const zoneY = zone === 'near' ? 24 : zone === 'center' ? 52 : 80
+            // near=top when right, near=bottom when left
+            const nearY = cornerSide === 'right' ? 24 : 80
+            const farY = cornerSide === 'right' ? 80 : 24
+            const zoneY = zone === 'near' ? nearY : zone === 'center' ? 52 : farY
             const tx = 22
             const ty = zoneY
             const cpx = cx + (tx - cx) * 0.5

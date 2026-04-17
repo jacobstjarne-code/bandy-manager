@@ -100,8 +100,8 @@ export function resolveCorner(
       description: setup.delivery === 'hard'
         ? `${bestRusher.player.lastName} mötte bollen i full fart — MÅLLL!`
         : setup.delivery === 'low'
-        ? `Perfekt tajming! ${bestRusher.player.lastName} styrde in bollen vid ${setup.zone === 'near' ? 'nära stolpen' : setup.zone === 'far' ? 'bortre stolpen' : 'straffpunkten'}.`
-        : `Kort hörna — motståndaren överraskad! ${bestRusher.player.lastName} avslutade.`,
+        ? `MÅL! Perfekt tajming — ${bestRusher.player.lastName} styrde in bollen vid ${setup.zone === 'near' ? 'nära stolpen' : setup.zone === 'far' ? 'bortre stolpen' : 'straffpunkten'}.`
+        : `MÅL! Kort hörna — motståndaren överraskad! ${bestRusher.player.lastName} avslutade.`,
     }
   }
   if (roll < goalChance + 0.15) return { type: 'saved', description: `${bestRusher.player.lastName} nådde bollen men målvakten räddade.` }
