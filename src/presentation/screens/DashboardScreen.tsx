@@ -518,6 +518,12 @@ export function DashboardScreen() {
         {/* ③ DAGBOKEN */}
         <DailyBriefing game={game} />
 
+        {/* ③a ORTEN FEED */}
+        <OrtenSection
+          game={game}
+          currentMatchday={nextFixture?.matchday ?? lastPlayedRound}
+        />
+
         {/* ③b TRÄNINGSSCENEN */}
         {(() => {
           const scene = getTrainingScene(game)
@@ -736,15 +742,7 @@ export function DashboardScreen() {
           )
         })()}
 
-        {/* ⑤ ORTEN FEED */}
-        {(game.recentMoments?.length ?? 0) > 0 && (
-          <OrtenSection
-            moments={game.recentMoments ?? []}
-            currentMatchday={nextFixture?.matchday ?? lastPlayedRound}
-          />
-        )}
-
-        {/* ⑥ ENRADERS-KORT */}
+        {/* ⑤ ENRADERS-KORT */}
 
         {/* Trupp */}
         <div className="card-sharp" style={{ margin: '0 0 4px', cursor: 'pointer' }} onClick={() => navigate('/game/squad')}>

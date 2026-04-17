@@ -1,4 +1,6 @@
 import type { SaveGame, InboxItem, AllTimeRecords } from '../../domain/entities/SaveGame'
+
+import { selectMatchOfTheSeason } from '../../domain/services/matchHighlightService'
 import type { Player } from '../../domain/entities/Player'
 import type { GameEvent } from '../../domain/entities/GameEvent'
 import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition } from '../../domain/enums'
@@ -575,7 +577,10 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // ── Tvångsnedflyttning effects (license denied) ───────────────────────────
   let clubsAfterLicense = clubsWithRetirements
   let playersAfterLicense = updateLoyaltyScores(activePlayers)
-  let sponsorsAfterLicense = game.sponsors ?? []
+  // M13: filter out contextual sponsors that have expired
+  let sponsorsAfterLicense = (game.sponsors ?? []).filter(
+    s => !s.expiresSeason || s.expiresSeason >= nextSeason,
+  )
 
   if (licenseReview?.status === 'denied' && managedClubForLicense) {
     // Remove 3 random managed players
@@ -923,12 +928,14 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   }
 
   // Generate season summary with the final communityStanding (after all season-end adjustments)
+  const matchHighlight = selectMatchOfTheSeason(game)
   seasonSummary = {
     ...generateSeasonSummary(
       { ...game, clubs: updatedClubs },
       Math.min(100, newCommunityStanding + communityStandingDelta),
     ),
     retiredPlayers: retiredManagedPlayers.length > 0 ? retiredManagedPlayers : undefined,
+    matchOfTheSeason: matchHighlight ?? undefined,
   }
 
   const updatedGame: SaveGame = {
@@ -1058,6 +1065,17 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         }
       : game.localPolitician,
     politicianLastInteraction: {},
+    recentMoments: matchHighlight ? [
+      {
+        id: `moment_season_highlight_${game.currentSeason}`,
+        source: 'season_highlight' as const,
+        matchday: matchHighlight.matchday,
+        season: game.currentSeason,
+        title: `Säsongens match — ${matchHighlight.opponentName}`,
+        body: matchHighlight.narrative,
+      },
+      ...(game.recentMoments ?? [])
+    ].slice(0, 5) : (game.recentMoments ?? []),
     nemesisTracker: updatedNemesisTracker,
     resolvedEventIds: [
       ...(game.resolvedEventIds ?? []),

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
-import { pickSeasonHighlight } from '../../domain/services/seasonSummaryService'
 import { ClubBadge } from '../components/ClubBadge'
 import { SectionLabel } from '../components/SectionLabel'
 import { csColor, formatCurrency } from '../utils/formatters'
@@ -242,37 +241,35 @@ export function SeasonSummaryScreen() {
           </p>
         </div>
 
-        {/* ÅRETS MATCH — THE_BOMB 2.2 */}
-        {(() => {
-          const highlight = pickSeasonHighlight(game)
-          if (!highlight) return null
+        {/* ÅRETS MATCH — M12 */}
+        {summary.matchOfTheSeason && (() => {
+          const h = summary.matchOfTheSeason!
+          const homeLabel = h.isHome ? summary.clubName : h.opponentName
+          const awayLabel = h.isHome ? h.opponentName : summary.clubName
           return (
             <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 8, background: 'rgba(196,122,58,0.05)', border: '1px solid rgba(196,122,58,0.3)' }}>
               <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 6 }}>
-                {highlight.headline}
+                ⭐ SÄSONGENS MATCH
               </p>
-              <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 2 }}>
-                vs {highlight.opponent} — {highlight.score}
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Omgång {h.matchday}</p>
+              <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6, textAlign: 'center' }}>
+                {homeLabel} {h.homeScore} — {h.awayScore} {awayLabel}
               </p>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 0 }}>Omgång {highlight.round}</p>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6, fontStyle: 'italic' }}>
-                {highlight.description}
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: h.potmName ? 4 : 0 }}>
+                {h.narrative}
               </p>
-              {game.supporterGroup && (() => {
-                const sg = game.supporterGroup
-                const leaderName = sg.leader?.name ?? sg.name
-                const quotes = [
-                  `"Den matchen pratar vi om länge." — ${leaderName}`,
-                  `"Jag var där. Jag minns varje sekund." — ${leaderName}`,
-                  `"Det är därför vi åker dit match efter match." — ${leaderName}`,
-                ]
-                const idx = (summary.season * 7 + highlight.round * 3) % quotes.length
-                return (
-                  <p style={{ fontSize: 11, color: 'var(--accent)', marginTop: 8, fontStyle: 'italic', borderTop: '1px solid rgba(196,122,58,0.2)', paddingTop: 6 }}>
-                    {quotes[idx]}
-                  </p>
-                )
-              })()}
+              {h.potmName && (
+                <p style={{ fontSize: 12, color: 'var(--accent)', marginTop: 4 }}>
+                  ⭐ Match av matchen: {h.potmName}
+                </p>
+              )}
+              <button
+                onClick={handleShare}
+                disabled={sharing}
+                style={{ marginTop: 8, padding: '6px 12px', fontSize: 12, fontWeight: 600, color: 'var(--accent)', background: 'none', border: '1px solid rgba(196,122,58,0.4)', borderRadius: 4, cursor: 'pointer', opacity: sharing ? 0.5 : 1 }}
+              >
+                {sharing ? 'Sparar...' : 'Spara som bild'}
+              </button>
             </div>
           )
         })()}

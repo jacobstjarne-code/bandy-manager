@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { ClubExpectation, PlayerPosition } from '../../domain/enums'
 import { positionShort, formatFinanceAbs } from '../utils/formatters'
+import { calculateClubEra, eraLabel, eraDescription } from '../../domain/services/clubEraService'
 
 function expectationText(e: ClubExpectation): string {
   switch (e) {
@@ -261,6 +262,27 @@ export function PreSeasonScreen() {
             "{expectationText(club.boardExpectation)}"
           </p>
         </div>
+
+        {/* M14: Club era */}
+        {(() => {
+          const era = game.currentEra ?? calculateClubEra(game)
+          return (
+            <div style={{
+              background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius)', padding: '10px 14px',
+            }}>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+                📅 Klubbens fas
+              </p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
+                {eraLabel(era)}
+              </p>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                {eraDescription(era)}
+              </p>
+            </div>
+          )
+        })()}
 
         {/* Budget priority */}
         <div style={{

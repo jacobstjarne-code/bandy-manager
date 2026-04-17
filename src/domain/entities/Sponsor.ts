@@ -9,4 +9,11 @@ export interface Sponsor {
   networkMood?: number        // 0-100
   icaMaxi?: boolean           // special ICA Maxi sponsor
   icaMaxi_active?: boolean    // player visit active this season
+  // M13: contextual sponsor fields
+  tier?: 'fixed' | 'contextual_regional' | 'contextual_kommun' | 'contextual_catering'
+  triggeredBy?: 'top4' | 'cs_over_70' | 'attendance_1000'
+  triggeredSeason?: number
+  expiresSeason?: number
+  isOneTime?: boolean
+  paidOutSeason?: number
 }

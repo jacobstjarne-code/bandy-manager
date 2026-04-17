@@ -18,6 +18,7 @@ import type { TransferOffer, TransferState } from './Transfer'
 import type { Sponsor } from './Sponsor'
 import type { TalentSearchRequest, TalentSuggestion, TalentSearchResult } from './TalentSearch'
 import type { RoundSummaryData } from './RoundSummary'
+import type { Moment, MomentSource } from './Moment'
 
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
 import type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityProject, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest } from './Community'
@@ -34,24 +35,9 @@ export type { Sponsor }
 export type { TalentSearchRequest, TalentSuggestion, TalentSearchResult }
 export type { RoundSummaryData }
 
-export type MomentSource =
-  | 'derby'
-  | 'captain_crisis'
-  | 'nemesis_signed'
-  | 'mecenat_costshare'
-  | 'sponsor_reaction'
-  | 'star_injury'
-  | 'mecenat_left'
-  | 'transfer_story'
+export type { Moment, MomentSource }
 
-export interface Moment {
-  id: string
-  source: MomentSource
-  matchday: number
-  season: number
-  title: string
-  body: string
-}
+export type ClubEra = 'survival' | 'establishment' | 'legacy'
 
 export interface YouthIntakeRecord {
   season: number
@@ -303,4 +289,7 @@ export interface SaveGame {
 
   // M7 — Orten feed: rolling window of narrative moments (max 5, newest first)
   recentMoments?: Moment[]
+
+  // M14 — Klubbens era (beräknas varje säsongsstart)
+  currentEra?: ClubEra
 }

@@ -1,6 +1,7 @@
-import type { SaveGame } from '../entities/SaveGame'
+import type { SaveGame, ClubEra } from '../entities/SaveGame'
 import { PlayerPosition } from '../enums'
 import { getCharacterName } from './supporterService'
+import { calculateClubEra } from './clubEraService'
 
 export type WeeklyDecisionCategory = 'player' | 'supporter' | 'training' | 'community'
 
@@ -16,6 +17,7 @@ export interface WeeklyDecision {
   optionA: WeeklyDecisionOption
   optionB: WeeklyDecisionOption
   category: WeeklyDecisionCategory
+  requiredEra?: ClubEra[]
 }
 
 export type WeeklyDecisionEffect =
@@ -157,9 +159,13 @@ export function generateWeeklyDecision(game: SaveGame, round: number): WeeklyDec
 
   const pool = makeDecisions(game)
   const resolved = game.resolvedWeeklyDecisions ?? []
+  const currentEra = game.currentEra ?? calculateClubEra(game)
 
-  // Filter out already-resolved decisions this season
-  const available = pool.filter(d => !resolved.includes(`${d.id}_${game.currentSeason}`))
+  // Filter out already-resolved decisions and era-incompatible ones
+  const available = pool.filter(d =>
+    !resolved.includes(`${d.id}_${game.currentSeason}`) &&
+    (!d.requiredEra || d.requiredEra.includes(currentEra)),
+  )
   if (available.length === 0) return null
 
   // Pick deterministically by round + season

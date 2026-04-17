@@ -1,5 +1,27 @@
 import type { ClubExpectation } from '../enums'
 
+export type MatchHighlightCategory =
+  | 'comeback'
+  | 'late_winner'
+  | 'big_win'
+  | 'underdog_upset'
+  | 'cup_drama'
+  | 'derby_win'
+  | 'playoff_decisive'
+
+export interface MatchHighlight {
+  fixtureId: string
+  matchday: number
+  opponentName: string
+  homeScore: number
+  awayScore: number
+  isHome: boolean
+  category: MatchHighlightCategory
+  narrative: string
+  potmName?: string
+  shareImageReady: boolean
+}
+
 export interface SeasonSummary {
   season: number
   clubId: string
@@ -76,6 +98,8 @@ export interface SeasonSummary {
     fixtureId?: string
     relatedPlayerId?: string
   }>
+
+  matchOfTheSeason?: MatchHighlight
 
   retiredPlayers?: Array<{
     playerId: string

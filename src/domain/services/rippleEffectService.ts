@@ -3,6 +3,51 @@
 
 import type { SaveGame } from '../entities/SaveGame'
 
+// M15: fields that ripple effects can modify — used for targeted merging
+export const RIPPLE_AFFECTED_FIELDS = [
+  'fanMood', 'communityStanding', 'boardPatience', 'sponsorNetworkMood', 'supporterGroup',
+] as const
+
+export type RippleAffectedField = typeof RIPPLE_AFFECTED_FIELDS[number]
+
+export interface RippleMergeOverrides {
+  /** Base fanMood before adding ripple delta (e.g. narrative-updated fanMood) */
+  fanMoodBase?: number
+  /** Additional sponsorNetworkMood delta beyond ripple (e.g. transfer reactions) */
+  sponsorNetworkMoodDelta?: number
+  /** Additional communityStanding delta beyond ripple (e.g. csBoost from community) */
+  communityStandingDelta?: number
+  /** Fallback supporterGroup if ripple did not change it */
+  supporterGroupFallback?: SaveGame['supporterGroup']
+}
+
+/**
+ * Merge ripple-derived deltas into the correct fields for the output game state.
+ * Replaces the scattered manual extractions in roundProcessor.
+ */
+export function mergeRippleDeltas(
+  base: SaveGame,
+  rippled: SaveGame,
+  overrides: RippleMergeOverrides = {},
+): Pick<SaveGame, RippleAffectedField> {
+  const fanMoodBase = overrides.fanMoodBase ?? base.fanMood ?? 50
+  const fanMoodRippleDelta = (rippled.fanMood ?? base.fanMood ?? 50) - (base.fanMood ?? 50)
+
+  return {
+    fanMood: Math.min(100, Math.max(0, fanMoodBase + fanMoodRippleDelta)),
+    communityStanding: Math.min(100, Math.max(0, Math.round(
+      (rippled.communityStanding ?? base.communityStanding ?? 50) + (overrides.communityStandingDelta ?? 0),
+    ))),
+    boardPatience: rippled.boardPatience,
+    sponsorNetworkMood: Math.min(100, Math.max(0,
+      (rippled.sponsorNetworkMood ?? base.sponsorNetworkMood ?? 50) + (overrides.sponsorNetworkMoodDelta ?? 0),
+    )),
+    supporterGroup: rippled.supporterGroup !== base.supporterGroup
+      ? rippled.supporterGroup
+      : (overrides.supporterGroupFallback ?? base.supporterGroup),
+  }
+}
+
 export type RippleTrigger =
   | { type: 'star_injured'; playerId: string }
   | { type: 'big_derby_win'; fixtureId: string }

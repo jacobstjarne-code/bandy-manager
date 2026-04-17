@@ -1,4 +1,5 @@
-import type { SaveGame, InboxItem, Moment } from '../../domain/entities/SaveGame'
+import type { SaveGame, InboxItem } from '../../domain/entities/SaveGame'
+import type { Moment } from '../../domain/entities/Moment'
 import type { Player } from '../../domain/entities/Player'
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
@@ -38,6 +39,8 @@ import { processCommunity } from './processors/communityProcessor'
 import { processScouts } from './processors/scoutProcessor'
 import { processTransferBids, processLoans } from './processors/transferProcessor'
 import { processSponsors } from './processors/sponsorProcessor'
+import { checkContextualSponsors, applyOneTimeKommunstod } from '../../domain/services/contextualSponsorService'
+import { calculateClubEra, eraLabel } from '../../domain/services/clubEraService'
 import { simulateRound } from './processors/matchSimProcessor'
 import { processYouth } from './processors/youthProcessor'
 import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
@@ -46,7 +49,7 @@ import { generateAwayTrip } from '../../domain/services/awayTripService'
 import { processNarrative } from './processors/narrativeProcessor'
 import { processMedia } from './processors/mediaProcessor'
 import { processGameEvents } from './processors/eventProcessor'
-import { applyRipples } from '../../domain/services/rippleEffectService'
+import { applyRipples, mergeRippleDeltas } from '../../domain/services/rippleEffectService'
 
 export type { AdvanceResult }
 
@@ -271,21 +274,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           if (p.clubId !== game.managedClubId || p.id === captain.id) return p
           return { ...p, morale: Math.max(0, p.morale - 5) }
         })
-        newInboxItems.push({
-          id: alreadySentId,
-          date: game.currentDate,
-          type: InboxItemType.BoardFeedback,
-          title: 'Omklädningsrummet är tyst',
-          body: `Kapten ${captain.firstName} ${captain.lastName} har inte sagt mycket denna vecka. Det märks i hela truppen.`,
-          isRead: false,
-        } as InboxItem)
         newMoments.push({
           id: alreadySentId,
           source: 'captain_crisis',
           matchday: nextMatchday,
           season: game.currentSeason,
-          title: 'Kaptenskrisen',
-          body: `${captain.firstName} ${captain.lastName} är tyst — och det märks i truppen.`,
+          title: 'Omklädningsrummet är tyst',
+          body: `Kapten ${captain.firstName} ${captain.lastName} har inte sagt mycket denna vecka. Det märks i hela truppen.`,
+          subjectPlayerId: captain.id,
         })
       }
     }
@@ -363,8 +359,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           source: 'star_injury',
           matchday: nextMatchday,
           season: game.currentSeason,
-          title: 'Skadesmäll',
-          body: `${player.firstName} ${player.lastName} skadades och är borta ${days} dagar.`,
+          title: `${player.firstName} ${player.lastName} är borta`,
+          body: `Sidan han spelade på blir tunnare. Klacken vet det. ${days} dagar minst.`,
+          subjectPlayerId: player.id,
         })
       }
     }
@@ -445,11 +442,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         const rivalClub = game.clubs.find(c => c.id === (justCompletedManagedFixture.homeClubId === game.managedClubId ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId))
         newMoments.push({
           id: `moment_derby_${justCompletedManagedFixture.id}`,
-          source: 'derby',
+          source: 'derby_win',
           matchday: nextMatchday,
           season: game.currentSeason,
-          title: 'Derbyseger',
-          body: `${managedScore}–${oppScore} mot ${rivalClub?.name ?? 'rivalen'}. Hela orten pratar om det.`,
+          title: `Derbyt mot ${rivalClub?.name ?? 'rivalen'} sitter kvar`,
+          body: 'Klacken sjöng hela vägen till bilen. Två sponsorer hörde av sig i morse. Hälsningar från orten.',
+          subjectClubId: rivalClub?.id,
         })
       }
     }
@@ -742,7 +740,35 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     localRand,
   )
   newInboxItems.push(...sponsorResult.inboxItems)
-  const updatedSponsors = sponsorResult.updatedSponsors
+  let updatedSponsors = sponsorResult.updatedSponsors
+
+  // M13: contextual sponsors (top4, CS>70, attendance>1000)
+  const contextualResult = checkContextualSponsors(
+    { ...game, sponsors: updatedSponsors },
+    standings,
+    nextMatchday,
+  )
+  if (contextualResult.newSponsors.length > 0) {
+    updatedSponsors = [...updatedSponsors, ...contextualResult.newSponsors]
+    for (const title of contextualResult.inboxTitles) {
+      newInboxItems.push({
+        id: `inbox_ctxsponsor_${nextMatchday}_${title.slice(0, 10)}`,
+        date: newDate,
+        type: InboxItemType.SponsorNetwork,
+        title,
+        body: title,
+        isRead: false,
+      })
+    }
+  }
+  // Apply one-time kommunstöd payment if triggered (80k to managed club finances)
+  let kommunstodBonus = 0
+  const kommunResult = applyOneTimeKommunstod({ ...game, sponsors: updatedSponsors })
+  if (kommunResult.paid) {
+    updatedSponsors = kommunResult.updatedGame.sponsors ?? updatedSponsors
+    kommunstodBonus = kommunResult.updatedGame.clubs.find(c => c.id === game.managedClubId)?.finances ?? 0
+    kommunstodBonus -= game.clubs.find(c => c.id === game.managedClubId)?.finances ?? 0
+  }
 
   // Persist regen players created this round: add to player list + club squads
   let loanAndRegenPlayers = loanUpdatedPlayers
@@ -781,22 +807,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const signedPlayer = postTransferPlayers.find(p => p.id === bid.playerId)
       if (signedPlayer) {
         updatedNemesisTracker[bid.playerId] = { ...nemesis, signedBy: game.managedClubId }
-        newInboxItems.push({
-          id: `inbox_nemesis_signed_${bid.playerId}_${game.currentSeason}`,
-          date: game.currentDate,
-          type: InboxItemType.Transfer,
-          title: `Nemesis värvad: ${signedPlayer.firstName} ${signedPlayer.lastName}`,
-          body: `${signedPlayer.firstName} ${signedPlayer.lastName} — som satte ${nemesis.goalsAgainstUs} mål MOT oss — bär nu våra färger. Välkommen till rätt sida.`,
-          relatedPlayerId: bid.playerId,
-          isRead: false,
-        } as InboxItem)
         newMoments.push({
           id: `moment_nemesis_${bid.playerId}_${game.currentSeason}`,
           source: 'nemesis_signed',
           matchday: nextMatchday,
           season: game.currentSeason,
-          title: 'Nemesis värvad',
-          body: `${signedPlayer.firstName} ${signedPlayer.lastName} — ${nemesis.goalsAgainstUs} mål mot oss — bär nu våra färger.`,
+          title: `${signedPlayer.firstName} ${signedPlayer.lastName} — i rätt färger nu`,
+          body: `${nemesis.goalsAgainstUs} mål MOT oss. Nu bär han våra.`,
+          subjectPlayerId: bid.playerId,
         })
       }
     }
@@ -809,21 +827,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         const share = Math.min(50000, Math.round(bid.offerAmount * 0.20))
         postTransferClubs = applyFinanceChange(postTransferClubs, game.managedClubId, share)
         const boughtPlayer = postTransferPlayers.find(p => p.id === bid.playerId)
-        newInboxItems.push({
-          id: `inbox_mec_costshare_${bid.playerId}_${nextMatchday}`,
-          date: game.currentDate,
-          type: InboxItemType.PatronInfluence,
-          title: `${activeMec.name} erbjuder sig att täcka 20%`,
-          body: `${activeMec.name} erbjuder sig att täcka 20% av ${boughtPlayer ? `${boughtPlayer.firstName} ${boughtPlayer.lastName}`  : 'affären'}-affären. ${share.toLocaleString('sv-SE')} kr läggs till kassan.`,
-          isRead: false,
-        } as InboxItem)
         newMoments.push({
           id: `moment_mec_costshare_${bid.playerId}_${nextMatchday}`,
           source: 'mecenat_costshare',
           matchday: nextMatchday,
           season: game.currentSeason,
-          title: 'Mecenaten täcker',
-          body: `${activeMec.name} skjuter till ${share.toLocaleString('sv-SE')} kr i transferstöd.`,
+          title: `${activeMec.name} täcker 20%`,
+          body: `${boughtPlayer ? `${boughtPlayer.firstName} ${boughtPlayer.lastName}` : 'Affären'} blev lite billigare. ${share.toLocaleString('sv-SE')} kr tillbaka i kassan.`,
+          subjectPlayerId: boughtPlayer?.id,
         })
       }
     }
@@ -834,21 +845,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       if (bid.direction === 'outgoing' && bid.status === 'accepted' && transferPlayer.currentAbility > 70) {
         // Köp av stark spelare → sponsorer nöjda
         sponsorNetworkMoodDelta += 3
-        newInboxItems.push({
-          id: `inbox_sponsor_transfer_buy_${bid.playerId}_${nextMatchday}`,
-          date: game.currentDate,
-          type: InboxItemType.SponsorNetwork,
-          title: '📣 Sponsornätverket reagerar positivt',
-          body: `Huvudsponsorn nöjd med värvningen av ${transferPlayer.firstName} ${transferPlayer.lastName}.`,
-          isRead: false,
-        } as InboxItem)
         newMoments.push({
           id: `moment_sponsor_buy_${bid.playerId}_${nextMatchday}`,
-          source: 'sponsor_reaction',
+          source: 'sponsor_positive',
           matchday: nextMatchday,
           season: game.currentSeason,
-          title: 'Sponsorerna reagerar positivt',
-          body: `Värvningen av ${transferPlayer.firstName} ${transferPlayer.lastName} välkomnas av sponsornätverket.`,
+          title: 'Sponsornätverket reagerar positivt',
+          body: `Huvudsponsorn nöjd med värvningen av ${transferPlayer.firstName} ${transferPlayer.lastName}.`,
+          subjectPlayerId: bid.playerId,
         })
       }
     }
@@ -863,21 +867,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const isFavorite = soldPlayer && game.supporterGroup?.favoritePlayerId === bid.playerId
     if (isFavorite) {
       sponsorNetworkMoodDelta -= 5
-      newInboxItems.push({
-        id: `inbox_sponsor_transfer_sell_${bid.playerId}_${nextMatchday}`,
-        date: game.currentDate,
-        type: InboxItemType.SponsorNetwork,
-        title: '😟 Sponsornätverket oroligt',
-        body: `Sponsornätverket oroligt efter stjärnförsäljningen av ${soldPlayer.firstName} ${soldPlayer.lastName}.`,
-        isRead: false,
-      } as InboxItem)
       newMoments.push({
         id: `moment_sponsor_sell_${bid.playerId}_${nextMatchday}`,
-        source: 'sponsor_reaction',
+        source: 'sponsor_negative',
         matchday: nextMatchday,
         season: game.currentSeason,
-        title: 'Sponsorerna oroliga',
-        body: `Försäljningen av ${soldPlayer.firstName} ${soldPlayer.lastName} skapar oro hos sponsornätverket.`,
+        title: 'Sponsornätverket oroligt',
+        body: `Sponsornätverket oroligt efter stjärnförsäljningen av ${soldPlayer.firstName} ${soldPlayer.lastName}.`,
+        subjectPlayerId: bid.playerId,
       })
     }
 
@@ -888,14 +885,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const isLegend = soldPlayer.careerStats.totalGames >= 80
       const isHomegrown = !!(soldPlayer.isHomegrown && soldPlayer.academyClubId === game.managedClubId)
       if (isCaptain || isFanFavorite || isLegend || isHomegrown) {
-        const reasons = [isCaptain && 'kapten', isFanFavorite && 'klackfavorit', isLegend && 'legend', isHomegrown && 'akademiprodukt'].filter(Boolean).join(', ')
+        const buyerClub = game.clubs.find(c => c.id === bid.buyingClubId)
+        const role = isCaptain ? 'kapten' : isFanFavorite ? 'klackfavorit' : isLegend ? 'legend' : 'akademiprodukt'
         newMoments.push({
           id: `moment_transfer_${bid.playerId}_${nextMatchday}`,
           source: 'transfer_story',
           matchday: nextMatchday,
           season: game.currentSeason,
           title: `${soldPlayer.firstName} ${soldPlayer.lastName} lämnar`,
-          body: `${soldPlayer.firstName} ${soldPlayer.lastName} (${reasons}) såldes vidare.`,
+          body: `Vår ${role} lämnar${buyerClub ? ` till ${buyerClub.name}` : ''}. Det är inte lätt att ta in.`,
+          subjectPlayerId: bid.playerId,
+          subjectClubId: buyerClub?.id,
         })
       }
     }
@@ -916,6 +916,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       c.id === game.managedClubId
         ? { ...c, facilities: Math.min(100, c.facilities + facilityBonusTotal) }
         : c
+    )
+  }
+  // M13: apply kommunstöd one-time bonus to club finances
+  if (kommunstodBonus > 0) {
+    postTransferClubs = postTransferClubs.map(c =>
+      c.id === game.managedClubId ? { ...c, finances: c.finances + kommunstodBonus } : c
     )
   }
 
@@ -975,15 +981,18 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     return undefined
   })()
 
+  // M15: merge ripple-derived field changes via centralized function
+  const rippleMerged = mergeRippleDeltas(game, gameAfterRipples, {
+    fanMoodBase: newFanMood,
+    sponsorNetworkMoodDelta,
+    communityStandingDelta: csBoost,
+    supporterGroupFallback: updatedSupporterGroup,
+  })
+
   let updatedGame: SaveGame = {
     ...game,
-    // DREAM-003: apply ripple-derived field changes (star injury / derby win)
-    boardPatience: gameAfterRipples.boardPatience,
-    sponsorNetworkMood: Math.min(100, Math.max(0, (gameAfterRipples.sponsorNetworkMood ?? 50) + sponsorNetworkMoodDelta)),
-    communityStanding: Math.min(100, Math.max(0,
-      Math.round((gameAfterRipples.communityStanding ?? game.communityStanding ?? 50) + csBoost)
-    )),
-    communityStandingDelta: Math.min(100, Math.max(0, Math.round((game.communityStanding ?? 50) + csBoost))) - (game.communityStanding ?? 50),
+    ...rippleMerged,
+    communityStandingDelta: (rippleMerged.communityStanding ?? game.communityStanding ?? 50) - (game.communityStanding ?? 50),
     clubs: postTransferClubs,
     fixtures: strippedFixtures,
     players: postTransferPlayers,
@@ -1011,11 +1020,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     sponsors: updatedSponsors,
     activeTalentSearch: updatedTalentSearch,
     talentSearchResults: updatedTalentResults,
-    // DREAM-003: merge ripple fanMood delta on top of narrative result
-    fanMood: Math.min(100, Math.max(0, newFanMood + ((gameAfterRipples.fanMood ?? game.fanMood ?? 50) - (game.fanMood ?? 50)))),
-    supporterGroup: gameAfterRipples.supporterGroup !== game.supporterGroup
-      ? gameAfterRipples.supporterGroup
-      : updatedSupporterGroup,
     rivalryHistory: updatedRivalryHistory,
     nemesisTracker: updatedNemesisTracker,
     doctorQuestionsUsed: 0,
@@ -1059,7 +1063,30 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     awayTrip: awayTripUpdate,
     pendingVictoryEcho,
     victoryEchoExpires,
-    recentMoments: [...newMoments, ...(game.recentMoments ?? [])].slice(0, 5),
+    recentMoments: (() => {
+      // M14: check for era shift and push era_shift Moment
+      const newEra = calculateClubEra(game)
+      const prevEra = game.currentEra
+      const eraShiftMoments: Moment[] = []
+      if (prevEra && prevEra !== newEra) {
+        eraShiftMoments.push({
+          id: `moment_era_shift_${game.currentSeason}_${nextMatchday}`,
+          source: 'era_shift',
+          matchday: nextMatchday,
+          season: game.currentSeason,
+          title: eraLabel(newEra),
+          body: newEra === 'establishment'
+            ? 'Klubben reser sig. Något har förändrats i hur orten ser på laget.'
+            : newEra === 'legacy'
+            ? 'Det är inte längre bara bandy. Det är ortens identitet.'
+            : 'Tuffa tider. Men det är nu det verkligen gäller.',
+        })
+      }
+      return [...(game.recentMoments ?? []), ...newMoments, ...eraShiftMoments]
+        .sort((a, b) => (b.season - a.season) || (b.matchday - a.matchday))
+        .slice(0, 5)
+    })(),
+    currentEra: calculateClubEra(game),
   }
 
   // Append market value change notifications to inbox
