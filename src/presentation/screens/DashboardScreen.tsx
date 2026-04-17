@@ -9,7 +9,7 @@ import {
   useCanAdvance,
   usePlayoffInfo,
 } from '../store/gameStore'
-import { PlayoffStatus, PlayoffRound } from '../../domain/enums'
+import { PendingScreen, PlayoffStatus, PlayoffRound } from '../../domain/enums'
 import { playSound } from '../audio/soundEffects'
 import { getFormResults } from '../utils/formUtils'
 import { calcRoundIncome } from '../../domain/services/economyService'
@@ -59,16 +59,24 @@ export function DashboardScreen() {
   useEffect(() => { markScreenVisited('dashboard') }, [])
 
 
+  const SCREEN_ROUTES: Record<PendingScreen, string> = {
+    [PendingScreen.SeasonSummary]: '/game/season-summary',
+    [PendingScreen.BoardMeeting]: '/game/board-meeting',
+    [PendingScreen.PreSeason]: '/game/pre-season',
+    [PendingScreen.HalfTimeSummary]: '/game/half-time-summary',
+    [PendingScreen.PlayoffIntro]: '/game/playoff-intro',
+    [PendingScreen.QFSummary]: '/game/qf-summary',
+  }
+
   useEffect(() => {
     if (!game) return
-    if (game?.managerFired) navigate('/game/game-over', { replace: true })
-    else if (game?.showSeasonSummary) navigate('/game/season-summary', { replace: true })
-    else if (game?.showHalfTimeSummary) navigate('/game/half-time-summary', { replace: true })
-    else if (game?.showPlayoffIntro) navigate('/game/playoff-intro', { replace: true })
-    else if (game?.showQFSummary) navigate('/game/qf-summary', { replace: true })
-    else if (game?.showBoardMeeting) navigate('/game/board-meeting', { replace: true })
-    else if (game?.showPreSeason) navigate('/game/pre-season', { replace: true })
-    else if (playoffInfo?.status === PlayoffStatus.Completed) navigate('/game/champion', { replace: true })
+    if (game.managerFired) { navigate('/game/game-over', { replace: true }); return }
+    if (game.pendingScreen) {
+      const route = SCREEN_ROUTES[game.pendingScreen]
+      if (route) navigate(route, { replace: true })
+      return
+    }
+    if (playoffInfo?.status === PlayoffStatus.Completed) navigate('/game/champion', { replace: true })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -155,7 +163,7 @@ export function DashboardScreen() {
     .filter(f => f.status === 'scheduled' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
     .sort((a, b) => a.matchday - b.matchday)[0]
   // Hide simulate button if next managed fixture is a cup match — user should play it themselves
-  const canSimulateRemaining = hasScheduledFixtures && playedRounds >= 12 && !game.playoffBracket && !nextManagedScheduled?.isCup && !game.showHalfTimeSummary
+  const canSimulateRemaining = hasScheduledFixtures && playedRounds >= 12 && !game.playoffBracket && !nextManagedScheduled?.isCup && game.pendingScreen !== PendingScreen.HalfTimeSummary
 
   const advanceButtonText = (() => {
     const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
@@ -220,9 +228,9 @@ export function DashboardScreen() {
     while (safetyLimit-- > 0) {
       const currentGame = useGameStore.getState().game
       if (!currentGame) break
-      if (currentGame.showHalfTimeSummary) break  // halt at mid-season summary
-      if (currentGame.showPlayoffIntro) break    // halt at playoff intro
-      if (currentGame.showQFSummary) break       // halt at QF summary
+      if (currentGame.pendingScreen === PendingScreen.HalfTimeSummary) break  // halt at mid-season summary
+      if (currentGame.pendingScreen === PendingScreen.PlayoffIntro) break    // halt at playoff intro
+      if (currentGame.pendingScreen === PendingScreen.QFSummary) break       // halt at QF summary
       // advance() handles cup-skip internally — loop stops at playoffStarted or seasonEnded.
       const result = simulateRemainingStep()
       if (!result) break

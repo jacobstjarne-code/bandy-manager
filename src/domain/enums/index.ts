@@ -186,3 +186,12 @@ export enum PlayoffRound {
   SemiFinal = 'semiFinal',
   Final = 'final',
 }
+
+export enum PendingScreen {
+  SeasonSummary = 'season_summary',
+  BoardMeeting = 'board_meeting',
+  PreSeason = 'pre_season',
+  HalfTimeSummary = 'half_time_summary',
+  PlayoffIntro = 'playoff_intro',
+  QFSummary = 'qf_summary',
+}

@@ -2,7 +2,7 @@ import type { SaveGame, InboxItem } from '../../domain/entities/SaveGame'
 import type { Player } from '../../domain/entities/Player'
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
-import { FixtureStatus, MatchEventType, InboxItemType, PlayoffStatus, TrainingType, TrainingIntensity } from '../../domain/enums'
+import { FixtureStatus, MatchEventType, InboxItemType, PendingScreen, PlayoffStatus, TrainingType, TrainingIntensity } from '../../domain/enums'
 import { getTacticModifiers } from '../../domain/services/tacticModifiers'
 import { getRivalry } from '../../domain/data/rivalries'
 import { generateMatchWeather } from '../../domain/services/weatherService'
@@ -857,7 +857,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     managedClubPendingLineup: undefined,
     lineupConfirmedThisRound: false,
     visitedScreensThisRound: [],
-    showQFSummary: triggerQFSummary ? true : (game.showQFSummary ?? undefined),
+    pendingScreen: triggerQFSummary ? PendingScreen.QFSummary : game.pendingScreen,
     lastProcessedMatchday: hasManagedCupPending ? (game.lastProcessedMatchday ?? undefined) : nextMatchday,
     lastCompletedFixtureId: justCompletedManagedFixture?.id ?? game.lastCompletedFixtureId,
     matchWeathers: trimmedWeathers,
@@ -1032,9 +1032,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     justCompletedManagedFixture &&
     !justCompletedManagedFixture.isCup &&
     justCompletedManagedFixture.roundNumber === 11 &&
-    !game.showHalfTimeSummary
+    game.pendingScreen !== PendingScreen.HalfTimeSummary
   ) {
-    updatedGame = { ...updatedGame, showHalfTimeSummary: true }
+    updatedGame = { ...updatedGame, pendingScreen: PendingScreen.HalfTimeSummary }
   }
 
   // Onboarding step progression (advances after first 3 managed matches)

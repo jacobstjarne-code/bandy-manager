@@ -2,7 +2,7 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { PlayoffBracket } from '../../../domain/entities/Playoff'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
-import { FixtureStatus, InboxItemType, PlayoffStatus } from '../../../domain/enums'
+import { FixtureStatus, InboxItemType, PendingScreen, PlayoffStatus } from '../../../domain/enums'
 import { updateSeriesAfterMatch, advancePlayoffRound } from '../../../domain/services/playoffService'
 import { generateSemiFinalEvent, generateFinalEvent } from '../../../domain/services/playoffNarrativeService'
 
@@ -150,7 +150,7 @@ export function processPlayoffRound(
     )
     result.updatedBracket = newBracket
     result.bracketNewFixtures = newFixtures
-    if (wasQFPhase && !game.showQFSummary) {
+    if (wasQFPhase && game.pendingScreen !== PendingScreen.QFSummary) {
       result.triggerQFSummary = true
     }
     // Narrative event for managed club advancing to next round

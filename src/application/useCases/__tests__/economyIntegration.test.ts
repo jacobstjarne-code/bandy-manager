@@ -219,7 +219,7 @@ describe('economyIntegration — season end', () => {
 
     // Advance all rounds until season ends
     let iterations = 0
-    while (!game.showSeasonSummary && iterations < 50) {
+    while (game.pendingScreen !== 'season_summary' && iterations < 50) {
       const result = advanceToNextEvent(game, iterations + 1)
       game = result.game
       if (result.seasonEnded) break

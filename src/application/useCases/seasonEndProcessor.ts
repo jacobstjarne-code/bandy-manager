@@ -1,7 +1,7 @@
 import type { SaveGame, InboxItem, AllTimeRecords } from '../../domain/entities/SaveGame'
 import type { Player } from '../../domain/entities/Player'
 import type { GameEvent } from '../../domain/entities/GameEvent'
-import { FixtureStatus, InboxItemType, PlayerPosition } from '../../domain/enums'
+import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition } from '../../domain/enums'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../domain/data/playerNames'
 import { calculateStandings } from '../../domain/services/standingsService'
 import { generateYouthIntake } from '../../domain/services/youthIntakeService'
@@ -955,9 +955,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     playoffBracket: null,
     cupBracket: newCupBracket,
     seasonSummaries: [...(game.seasonSummaries ?? []), seasonSummary].slice(-5),
-    showSeasonSummary: true,
-    showBoardMeeting: managerFired ? false : undefined,
-    showPreSeason: managerFired ? false : true,
+    pendingScreen: PendingScreen.SeasonSummary,
     seasonStartSnapshot: managerFired ? game.seasonStartSnapshot : (() => {
       const managedClub = game.clubs.find(c => c.id === game.managedClubId)
       const standing = game.standings.find(s => s.clubId === game.managedClubId)

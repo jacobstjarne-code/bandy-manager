@@ -1,4 +1,5 @@
 import type { SaveGame } from '../../domain/entities/SaveGame'
+import { PendingScreen } from '../../domain/enums'
 
 export const CURRENT_SAVE_VERSION = '0.2.0'
 
@@ -32,7 +33,22 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.journalistRelationship === undefined) data.journalistRelationship = 50
   if (data.playoffBracket === undefined) data.playoffBracket = null
   if (data.cupBracket === undefined) data.cupBracket = null
-  if (data.showSeasonSummary === undefined) data.showSeasonSummary = false
+  // ARCH-003: migrate old show* booleans to pendingScreen enum
+  if (data.pendingScreen === undefined) {
+    if (data.showSeasonSummary) data.pendingScreen = PendingScreen.SeasonSummary
+    else if (data.showBoardMeeting) data.pendingScreen = PendingScreen.BoardMeeting
+    else if (data.showPreSeason) data.pendingScreen = PendingScreen.PreSeason
+    else if (data.showHalfTimeSummary) data.pendingScreen = PendingScreen.HalfTimeSummary
+    else if (data.showPlayoffIntro) data.pendingScreen = PendingScreen.PlayoffIntro
+    else if (data.showQFSummary) data.pendingScreen = PendingScreen.QFSummary
+    else data.pendingScreen = null
+  }
+  delete data.showSeasonSummary
+  delete data.showBoardMeeting
+  delete data.showPreSeason
+  delete data.showHalfTimeSummary
+  delete data.showPlayoffIntro
+  delete data.showQFSummary
   if (data.activeScoutAssignment === undefined) data.activeScoutAssignment = null
   if (data.allTimeRecords === undefined) data.allTimeRecords = null
   // tutorialSeen is deprecated — migrate to coachMarksSeen

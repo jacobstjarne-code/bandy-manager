@@ -1,4 +1,5 @@
 import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
+import { PendingScreen } from '../../../domain/enums'
 import { resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
@@ -139,19 +140,17 @@ export function gameFlowActions(get: Get, set: Set) {
       if (managerFired) {
         navigateTo('/game/game-over', { replace: true })
       } else if (result.seasonEnded) {
-        if (result.game.showSeasonSummary) {
-          navigateTo('/game/season-summary', { replace: true })
-        } else if (result.game.showBoardMeeting) {
-          navigateTo('/game/board-meeting', { replace: true })
-        } else if (result.game.showPreSeason) {
-          navigateTo('/game/pre-season', { replace: true })
-        }
+        const ps = result.game.pendingScreen
+        if (ps === PendingScreen.SeasonSummary) navigateTo('/game/season-summary', { replace: true })
+        else if (ps === PendingScreen.BoardMeeting) navigateTo('/game/board-meeting', { replace: true })
+        else if (ps === PendingScreen.PreSeason) navigateTo('/game/pre-season', { replace: true })
       } else if (!suppressMatchNavigation) {
-        if (result.game.showHalfTimeSummary) {
+        const ps = result.game.pendingScreen
+        if (ps === PendingScreen.HalfTimeSummary) {
           navigateTo('/game/half-time-summary', { replace: true })
-        } else if (result.game.showPlayoffIntro) {
+        } else if (ps === PendingScreen.PlayoffIntro) {
           navigateTo('/game/playoff-intro', { replace: true })
-        } else if (result.game.showQFSummary) {
+        } else if (ps === PendingScreen.QFSummary) {
           navigateTo('/game/qf-summary', { replace: true })
         } else if (result.hasManagedCupMatch) {
           // Managed club has an unplayed match (cup or league) — go to dashboard
@@ -170,37 +169,37 @@ export function gameFlowActions(get: Get, set: Set) {
     clearBoardMeeting: () => {
       const { game } = get()
       if (!game) return
-      set({ game: { ...game, showBoardMeeting: false } })
+      set({ game: { ...game, pendingScreen: PendingScreen.PreSeason } })
     },
 
     clearPreSeason: () => {
       const { game } = get()
       if (!game) return
-      set({ game: { ...game, showPreSeason: false } })
+      set({ game: { ...game, pendingScreen: null } })
     },
 
     clearHalfTimeSummary: () => {
       const { game } = get()
       if (!game) return
-      set({ game: { ...game, showHalfTimeSummary: false } })
+      set({ game: { ...game, pendingScreen: null } })
     },
 
     clearPlayoffIntro: () => {
       const { game } = get()
       if (!game) return
-      set({ game: { ...game, showPlayoffIntro: false } })
+      set({ game: { ...game, pendingScreen: null } })
     },
 
     clearQFSummary: () => {
       const { game } = get()
       if (!game) return
-      set({ game: { ...game, showQFSummary: false } })
+      set({ game: { ...game, pendingScreen: null } })
     },
 
     clearSeasonSummary: () => {
       const { game } = get()
       if (!game) return
-      set({ game: { ...game, showSeasonSummary: false, showBoardMeeting: true } })
+      set({ game: { ...game, pendingScreen: PendingScreen.BoardMeeting } })
     },
 
     clearRoundSummary: () => set({ roundSummary: null }),

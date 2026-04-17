@@ -1,3 +1,4 @@
+import type { PendingScreen } from '../enums'
 import type { Club } from './Club'
 import type { Player } from './Player'
 import type { League } from './League'
@@ -74,8 +75,7 @@ export interface SaveGame {
   playoffBracket: PlayoffBracket | null
   cupBracket: CupBracket | null
 
-  showSeasonSummary?: boolean
-  showBoardMeeting?: boolean
+  pendingScreen?: PendingScreen | null
   seasonSummaries: SeasonSummary[]
   seasonStartFinances?: number  // club finances at season start
 
@@ -110,8 +110,6 @@ export interface SaveGame {
   doctorQuestionsUsed?: number  // resets each round, max 5
 
   playerConversations?: Record<string, number>  // playerId → roundNumber of last conversation
-
-  showPreSeason?: boolean
 
   youthTeam?: YouthTeam
   academyLevel: AcademyLevel
@@ -205,15 +203,6 @@ export interface SaveGame {
 
   // V1.3 — Player Arc Controller
   activeArcs?: ActiveArc[]
-
-  // V1.3 — Halvtidssummering (visas efter liga-omgång 11)
-  showHalfTimeSummary?: boolean
-
-  // V1.5 — Slutspelsintro (visas när grundserien avslutas och slutspelslottning är klar)
-  showPlayoffIntro?: boolean
-
-  // V1.5 — Kvartsfinalsammanfattning (visas när alla kvartsfinaler är klara)
-  showQFSummary?: boolean
 
   // V1.5 — Senast processade matchdag (sätts av roundProcessor — förhindrar dubbelprocess vid cup)
   lastProcessedMatchday?: number

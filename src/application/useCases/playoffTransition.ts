@@ -1,6 +1,6 @@
 import type { SaveGame, InboxItem } from '../../domain/entities/SaveGame'
 import type { GameEvent } from '../../domain/entities/GameEvent'
-import { FixtureStatus, InboxItemType } from '../../domain/enums'
+import { FixtureStatus, InboxItemType, PendingScreen } from '../../domain/enums'
 import { generateQuarterFinalEvent } from '../../domain/services/playoffNarrativeService'
 import { calculateStandings } from '../../domain/services/standingsService'
 import {
@@ -89,7 +89,7 @@ export function handlePlayoffStart(game: SaveGame, _seed?: number): AdvanceResul
     inbox: [...game.inbox, ...newInboxItems],
     pendingEvents: [...(game.pendingEvents ?? []), ...newPendingEvents],
     currentDate: newDate,
-    showPlayoffIntro: true,
+    pendingScreen: PendingScreen.PlayoffIntro,
   }
 
   // If managed club didn't make playoffs, we have scheduled fixtures for other teams
