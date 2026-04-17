@@ -25,13 +25,8 @@ export function checkContextualSponsors(
   const managedPos = standings.find(s => s.clubId === game.managedClubId)?.position ?? 12
   const cs = game.communityStanding ?? 50
 
-  // top4 → regional sponsor (fires ONLY at round 11, one per season)
-  if (currentRound !== 11) {
-    return { newSponsors, newMoments }
-  }
-
   const hasTop4Sponsor = existing.some(s => s.triggeredBy === 'top4' && s.triggeredSeason === season)
-  if (!hasTop4Sponsor && managedPos <= 4) {
+  if (!hasTop4Sponsor && managedPos <= 4 && currentRound === 11) {
     newSponsors.push({
       id: `contextual_top4_${season}`,
       name: 'Regionalt Näringsliv AB',
