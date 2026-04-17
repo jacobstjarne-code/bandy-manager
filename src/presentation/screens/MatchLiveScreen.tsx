@@ -303,13 +303,10 @@ export function MatchLiveScreen() {
     if (step.step === 30) {
       const hasSecondHalf = steps.length > 31
       if (!hasSecondHalf) {
-        if (isFastForward) {
-          handleApplyTactic()
-          return
-        } else {
-          setShowHalftime(true)
-          return
-        }
+        // Always stop and show halftime modal — turn off FF so second half plays at normal speed
+        setIsFastForward(false)
+        setShowHalftime(true)
+        return
       }
       // Second half already generated — fall through and continue stepping
     }
