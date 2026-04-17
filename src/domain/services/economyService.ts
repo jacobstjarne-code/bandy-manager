@@ -68,6 +68,7 @@ export interface RoundIncomeBreakdown {
   communityMatchIncome: number   // kiosk/vipTent/functionaries/bandyplay per home match, net
   communityRoundIncome: number   // lottery/bandySchool/socialMedia per round, net
   volunteerIncome: number        // active volunteers × 600 per round
+  kommunBidrag: number           // reputation × communityStanding-based bidrag (once at round 1)
   weeklyWages: number            // monthly salary total / 4
   netPerRound: number            // sum of all income − wages
 }
@@ -85,6 +86,8 @@ export interface CalcRoundIncomeParams {
   matchHasRivalry: boolean
   standing: StandingRow | null
   rand: () => number
+  communityStanding?: number     // 0-100, used for kommunBidrag calculation
+  isFirstRound?: boolean         // true only at matchday 1 — triggers kommunBidrag payout
 }
 
 /**
@@ -101,7 +104,8 @@ export interface CalcRoundIncomeParams {
  */
 export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreakdown {
   const { club, players, sponsors, communityActivities, volunteers, fanMood, isHomeMatch,
-    matchIsKnockout, matchIsCup, matchHasRivalry, standing, rand } = params
+    matchIsKnockout, matchIsCup, matchHasRivalry, standing, rand,
+    communityStanding, isFirstRound } = params
 
   // ── Wages ─────────────────────────────────────────────────────────────────
   const totalSalary = players.reduce((sum, p) => sum + p.salary, 0)
@@ -179,8 +183,17 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
 
   const volunteerIncome = getActiveVolunteerBonus(volunteers ?? []).weeklyIncome
 
+  // ── Kommunbidrag (utbetalas en gång per säsong, omgång 1) ─────────────────
+  let kommunBidrag = 0
+  if (isFirstRound) {
+    const kommunBase = 60000
+    const repFactor = 0.5 + (club.reputation / 100) * 1.0        // 0.5–1.5
+    const csFactor = 0.7 + ((communityStanding ?? 50) / 100) * 0.6  // 0.7–1.3
+    kommunBidrag = Math.round(kommunBase * repFactor * csFactor)
+  }
+
   const netPerRound = weeklyBase + sponsorIncome + matchRevenue + communityMatchIncome
-    + communityRoundIncome + volunteerIncome - weeklyWages
+    + communityRoundIncome + volunteerIncome + kommunBidrag - weeklyWages
 
   return {
     weeklyBase,
@@ -189,6 +202,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     communityMatchIncome,
     communityRoundIncome,
     volunteerIncome,
+    kommunBidrag,
     weeklyWages,
     netPerRound,
   }

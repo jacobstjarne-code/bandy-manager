@@ -28,7 +28,7 @@ import { updatePlayerMatchStats } from './processors/statsProcessor'
 import { applyRoundDevelopment } from '../../domain/services/playerDevelopmentService'
 import { processPlayoffRound } from './processors/playoffProcessor'
 import { processCupRound } from './processors/cupProcessor'
-import { appendFinanceLog } from '../../domain/services/economyService'
+import { appendFinanceLog, applyFinanceChange } from '../../domain/services/economyService'
 import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/services/playerAvailabilityService'
 import { updateTrainerArc } from '../../domain/services/trainerArcService'
 import { checkInObjectives } from '../../domain/services/boardObjectiveService'
@@ -737,6 +737,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const prevBids = game.transferBids ?? []
   let postTransferPlayers = loanAndRegenPlayers
   let postTransferClubs = regenUpdatedClubs
+  let sponsorNetworkMoodDelta = 0
   for (const bid of resolvedBids) {
     if (bid.direction !== 'outgoing' || bid.status !== 'accepted') continue
     const wasPending = prevBids.find(b => b.id === bid.id)?.status === 'pending'
@@ -762,6 +763,62 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           isRead: false,
         } as InboxItem)
       }
+    }
+
+    // WEAK-022B: Mecenat cost-share vid transferköp (inkommande spelare)
+    if (bid.direction === 'outgoing' && bid.status === 'accepted' && bid.offerAmount > 0) {
+      const activeMec = (game.mecenater ?? []).find(m => m.isActive && (m.happiness ?? 50) >= 60 &&
+        (m.businessType === 'brukspatron' || m.businessType === 'entrepreneur'))
+      if (activeMec) {
+        const share = Math.min(50000, Math.round(bid.offerAmount * 0.20))
+        postTransferClubs = applyFinanceChange(postTransferClubs, game.managedClubId, share)
+        const boughtPlayer = postTransferPlayers.find(p => p.id === bid.playerId)
+        newInboxItems.push({
+          id: `inbox_mec_costshare_${bid.playerId}_${nextMatchday}`,
+          date: game.currentDate,
+          type: InboxItemType.PatronInfluence,
+          title: `${activeMec.name} erbjuder sig att täcka 20%`,
+          body: `${activeMec.name} erbjuder sig att täcka 20% av ${boughtPlayer ? `${boughtPlayer.firstName} ${boughtPlayer.lastName}`  : 'affären'}-affären. ${share.toLocaleString('sv-SE')} kr läggs till kassan.`,
+          isRead: false,
+        } as InboxItem)
+      }
+    }
+
+    // WEAK-022C: Sponsor-reaktion vid stora transferer
+    const transferPlayer = postTransferPlayers.find(p => p.id === bid.playerId)
+    if (transferPlayer) {
+      if (bid.direction === 'outgoing' && bid.status === 'accepted' && transferPlayer.currentAbility > 70) {
+        // Köp av stark spelare → sponsorer nöjda
+        sponsorNetworkMoodDelta += 3
+        newInboxItems.push({
+          id: `inbox_sponsor_transfer_buy_${bid.playerId}_${nextMatchday}`,
+          date: game.currentDate,
+          type: InboxItemType.SponsorNetwork,
+          title: '📣 Sponsornätverket reagerar positivt',
+          body: `Huvudsponsorn nöjd med värvningen av ${transferPlayer.firstName} ${transferPlayer.lastName}.`,
+          isRead: false,
+        } as InboxItem)
+      }
+    }
+  }
+
+  // WEAK-022C: Försäljning av klackfavorit → sponsorer oroliga
+  for (const bid of resolvedBids) {
+    if (bid.direction !== 'incoming' || bid.status !== 'accepted') continue
+    const wasPending = prevBids.find(b => b.id === bid.id)?.status === 'pending'
+    if (!wasPending) continue
+    const soldPlayer = loanAndRegenPlayers.find(p => p.id === bid.playerId)
+    const isFavorite = soldPlayer && game.supporterGroup?.favoritePlayerId === bid.playerId
+    if (isFavorite) {
+      sponsorNetworkMoodDelta -= 5
+      newInboxItems.push({
+        id: `inbox_sponsor_transfer_sell_${bid.playerId}_${nextMatchday}`,
+        date: game.currentDate,
+        type: InboxItemType.SponsorNetwork,
+        title: '😟 Sponsornätverket oroligt',
+        body: `Sponsornätverket oroligt efter stjärnförsäljningen av ${soldPlayer.firstName} ${soldPlayer.lastName}.`,
+        isRead: false,
+      } as InboxItem)
     }
   }
 
@@ -843,7 +900,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     ...game,
     // DREAM-003: apply ripple-derived field changes (star injury / derby win)
     boardPatience: gameAfterRipples.boardPatience,
-    sponsorNetworkMood: gameAfterRipples.sponsorNetworkMood,
+    sponsorNetworkMood: Math.min(100, Math.max(0, (gameAfterRipples.sponsorNetworkMood ?? 50) + sponsorNetworkMoodDelta)),
     communityStanding: Math.min(100, Math.max(0,
       Math.round((gameAfterRipples.communityStanding ?? game.communityStanding ?? 50) + csBoost)
     )),

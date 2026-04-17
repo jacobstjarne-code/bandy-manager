@@ -61,6 +61,8 @@ export function processEconomy(
       : false,
     standing: standings.find(s => s.clubId === game.managedClubId) ?? null,
     rand: localRand,
+    communityStanding: game.communityStanding,
+    isFirstRound: nextMatchday === 1,
   })
 
   if (managedIncome.weeklyBase !== 0) {
@@ -81,6 +83,9 @@ export function processEconomy(
   if (managedIncome.volunteerIncome !== 0) {
     const volunteerCount = (game.volunteers ?? []).length
     roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.volunteerIncome, reason: 'community_round', label: `Frivilligas bidrag (${volunteerCount} st)` })
+  }
+  if (managedIncome.kommunBidrag !== 0) {
+    roundFinanceLog.push({ round: nextMatchday, amount: managedIncome.kommunBidrag, reason: 'kommunbidrag', label: `Kommunbidrag (säsongsstart)` })
   }
   if (managedIncome.weeklyWages !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.weeklyWages, reason: 'wages', label: 'Löner' })
