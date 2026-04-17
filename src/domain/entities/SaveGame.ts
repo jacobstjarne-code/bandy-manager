@@ -1,4 +1,3 @@
-import type { InboxItemType } from '../enums'
 import type { Club } from './Club'
 import type { Player } from './Player'
 import type { League } from './League'
@@ -12,6 +11,12 @@ import type { ScoutReport, ScoutAssignment } from './Scouting'
 import type { YouthTeam, Mentorship, LoanDeal, AcademyLevel } from './Academy'
 import type { GameEvent, TransferBid } from './GameEvent'
 import type { OpponentAnalysis } from '../services/opponentAnalysisService'
+import type { StandingRow } from './Standing'
+import type { InboxItem } from './Inbox'
+import type { TransferOffer, TransferState } from './Transfer'
+import type { Sponsor } from './Sponsor'
+import type { TalentSearchRequest, TalentSuggestion, TalentSearchResult } from './TalentSearch'
+import type { RoundSummaryData } from './RoundSummary'
 
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
 import type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityProject, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest } from './Community'
@@ -21,47 +26,12 @@ import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPh
 export type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent }
 export type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityProject, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest }
 export type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord }
-
-export interface StandingRow {
-  clubId: string
-  played: number
-  wins: number
-  draws: number
-  losses: number
-  goalsFor: number
-  goalsAgainst: number
-  goalDifference: number
-  points: number
-  position: number
-}
-
-export interface InboxItem {
-  id: string
-  date: string        // ISO date
-  type: InboxItemType
-  title: string
-  body: string
-  relatedClubId?: string
-  relatedPlayerId?: string
-  relatedFixtureId?: string
-  isRead: boolean
-}
-
-export interface TransferOffer {
-  id: string
-  playerId: string
-  fromClubId: string
-  toClubId: string
-  offerAmount: number
-  offeredSalary: number
-  contractYears: number
-  status: 'pending' | 'accepted' | 'rejected'
-}
-
-export interface TransferState {
-  freeAgents: Player[]
-  pendingOffers: TransferOffer[]
-}
+export type { StandingRow }
+export type { InboxItem }
+export type { TransferOffer, TransferState }
+export type { Sponsor }
+export type { TalentSearchRequest, TalentSuggestion, TalentSearchResult }
+export type { RoundSummaryData }
 
 export interface YouthIntakeRecord {
   season: number
@@ -69,73 +39,6 @@ export interface YouthIntakeRecord {
   date: string
   playerIds: string[]
   topProspectId?: string
-}
-
-export interface Sponsor {
-  id: string
-  name: string
-  category: string
-  weeklyIncome: number
-  contractRounds: number
-  signedRound: number
-  personality?: 'local' | 'regional' | 'foundation'
-  networkMood?: number        // 0-100
-  icaMaxi?: boolean           // special ICA Maxi sponsor
-  icaMaxi_active?: boolean    // player visit active this season
-}
-
-export interface TalentSearchRequest {
-  id: string
-  position: string  // PlayerPosition or 'any'
-  maxAge: number
-  maxSalary: number
-  roundsRemaining: number
-  createdRound: number
-}
-
-export interface TalentSuggestion {
-  playerId: string
-  scoutNotes: string
-  estimatedCA: number
-  estimatedValue: number
-}
-
-export interface TalentSearchResult {
-  id: string
-  requestId: string
-  players: TalentSuggestion[]
-  season: number
-  round: number
-}
-
-export interface RoundSummaryData {
-  round: number
-  date: string
-  temperature?: number
-
-  // Match
-  matchPlayed: boolean
-  matchResult?: string
-  matchScorers?: string[]
-
-  // Community
-  communityStandingBefore: number
-  communityStandingAfter: number
-  communityStandingChanges: { reason: string; delta: number }[]
-  communityNote?: string
-  attendance?: number
-
-  // Academy
-  youthMatchResult?: string
-  mentorEffect?: string
-
-  // Economy
-  financesBefore: number
-  financesAfter: number
-
-  // Events
-  injuries: string[]
-  newInboxCount: number
 }
 
 export interface SaveGame {
