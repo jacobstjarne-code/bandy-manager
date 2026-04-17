@@ -290,6 +290,14 @@ export function resolveEvent(
       break
     }
     case 'patronHappiness': {
+      // Dual-system: 'patronHappiness' serves both the legacy singular `patron` and the multi-mecenat
+      // `mecenater` array. The same effect type is reused because both share the happiness/isActive
+      // contract. Event ID prefix distinguishes the sub-case:
+      //   event_mecenat_intro_<id>  → activate or decline a pending mecenat
+      //   event_alliance_<id1>_<id2> → update both mecenater in an alliance event
+      //   event_*_<mecenatId>_*     → update a single active mecenat by ID match
+      //   anything else              → only the legacy patron is updated (if present)
+
       // Update singular patron
       if (updatedGame.patron?.isActive) {
         const newHappiness = Math.max(0, Math.min(100, (updatedGame.patron.happiness ?? 50) + (effect.amount ?? 0)))

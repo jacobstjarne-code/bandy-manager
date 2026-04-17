@@ -28,13 +28,13 @@ export function generateCupFixtures(
 
   // Guard: verify no duplicates in playInTeams after shuffle
   if (new Set(playInTeams).size !== playInTeams.length) {
-    console.error('[CUP BUG] Duplicate teams in play-in list:', playInTeams)
+    if (process.env.NODE_ENV !== 'production') throw new Error(`[CUP BUG] Duplicate teams in play-in list: ${playInTeams.join(', ')}`)
   }
 
   // Guard: verify no team appears in both bye and play-in
   const byeSet = new Set(byeTeams)
   if (playInTeams.some(id => byeSet.has(id))) {
-    console.error('[CUP BUG] Team in both bye and play-in lists')
+    if (process.env.NODE_ENV !== 'production') throw new Error('[CUP BUG] Team in both bye and play-in lists')
   }
 
   const matches: CupMatch[] = []

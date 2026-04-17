@@ -1,5 +1,15 @@
 import type { SaveGame, BoardObjective, BoardMember } from '../entities/SaveGame'
 import type { Club } from '../entities/Club'
+import type { Player } from '../entities/Player'
+
+interface BoardObjectiveGameContext {
+  currentSeason: number
+  boardObjectiveHistory?: Array<{ season: number; objectiveId: string; result: 'met' | 'failed'; ownerReaction: string }>
+  players: Player[]
+  fanMood?: number
+  rivalryHistory?: Record<string, { wins: number; losses: number; draws: number; lastResult?: 'win' | 'loss' | 'draw'; currentStreak: number }>
+  clubs: Club[]
+}
 
 // ── Objective factories ─────────────────────────────────────────────────────
 
@@ -175,7 +185,7 @@ function beatRival(owner: BoardMember, rivalName: string, season: number): Board
 
 export function generateBoardObjectives(
   club: Club,
-  game: SaveGame,
+  game: BoardObjectiveGameContext,
   boardMembers: BoardMember[],
   rand: () => number,
 ): BoardObjective[] {
