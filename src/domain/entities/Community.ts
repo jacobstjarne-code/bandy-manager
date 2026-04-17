@@ -134,6 +134,9 @@ export interface SupporterGroup {
   favoritePlayerId?: string   // shared klack favorite (highest-rated forward)
   ritual?: string             // active ritual name
   tifoDone?: boolean          // Elin's tifo event seen this season
+  tifoDoneMatchday?: number   // matchday when tifo event resolved
   conflictSeason?: number     // season when Sture/Elin conflict occurred
+  conflictMatchday?: number   // matchday when conflict resolved
   awayTripSeason?: number     // last season with away trip event
+  awayTripMatchday?: number   // matchday when away trip resolved
 }

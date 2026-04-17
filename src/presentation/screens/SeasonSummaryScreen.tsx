@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import type { SeasonSummary } from '../../domain/services/seasonSummaryService'
+import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import { ClubBadge } from '../components/ClubBadge'
 import { SectionLabel } from '../components/SectionLabel'
 import { csColor, formatCurrency } from '../utils/formatters'
@@ -244,29 +245,78 @@ export function SeasonSummaryScreen() {
         {/* ÅRETS MATCH — M12 */}
         {summary.matchOfTheSeason && (() => {
           const h = summary.matchOfTheSeason!
-          const homeLabel = h.isHome ? summary.clubName : h.opponentName
-          const awayLabel = h.isHome ? h.opponentName : summary.clubName
+          const homeLabel = (h.isHome ? summary.clubName : h.opponentName).toUpperCase()
+          const awayLabel = (h.isHome ? h.opponentName : summary.clubName).toUpperCase()
+          const matchDate = (() => {
+            try {
+              const d = new Date(getRoundDate(summary.season, h.matchday))
+              return d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'long' })
+            } catch { return null }
+          })()
           return (
-            <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 8, background: 'rgba(196,122,58,0.05)', border: '1px solid rgba(196,122,58,0.3)' }}>
-              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 6 }}>
-                ⭐ SÄSONGENS MATCH
+            <div style={{
+              background: 'linear-gradient(180deg, var(--bg-elevated) 0%, rgba(196,122,58,0.06) 100%)',
+              border: '2px solid var(--accent)',
+              borderRadius: 8,
+              padding: '20px 18px',
+              textAlign: 'center',
+              position: 'relative',
+              marginBottom: 8,
+            }}>
+              {/* Pill label */}
+              <div style={{
+                position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
+                background: 'var(--accent)', color: 'var(--text-light)',
+                fontSize: 9, letterSpacing: '3px', fontWeight: 700,
+                padding: '4px 16px', borderRadius: 20,
+                fontFamily: 'var(--font-body)', textTransform: 'uppercase',
+                whiteSpace: 'nowrap',
+              }}>⭐ SÄSONGENS MATCH</div>
+
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '6px 0 12px', letterSpacing: 1, fontFamily: 'var(--font-body)' }}>
+                Omgång {h.matchday}{matchDate ? ` · ${matchDate}` : ''}
               </p>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Omgång {h.matchday}</p>
-              <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6, textAlign: 'center' }}>
-                {homeLabel} {h.homeScore} — {h.awayScore} {awayLabel}
-              </p>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: h.potmName ? 4 : 0 }}>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 12 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, color: h.isHome ? 'var(--accent)' : 'var(--text-primary)', fontFamily: 'var(--font-body)' }}>
+                  {homeLabel}
+                </span>
+                <span style={{ fontSize: 40, fontWeight: 400, color: 'var(--accent)', lineHeight: 1, letterSpacing: 4, fontFamily: 'var(--font-display)' }}>
+                  {h.homeScore}–{h.awayScore}
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, color: !h.isHome ? 'var(--accent)' : 'var(--text-primary)', fontFamily: 'var(--font-body)' }}>
+                  {awayLabel}
+                </span>
+              </div>
+
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.55, margin: '12px 12px 14px', fontStyle: 'italic', fontFamily: 'var(--font-display)' }}>
                 {h.narrative}
               </p>
+
               {h.potmName && (
-                <p style={{ fontSize: 12, color: 'var(--accent)', marginTop: 4 }}>
+                <p style={{ fontSize: 11, color: 'var(--accent)', margin: '0 0 14px', fontWeight: 600, fontFamily: 'var(--font-body)' }}>
                   ⭐ Match av matchen: {h.potmName}
                 </p>
               )}
+
               <button
                 onClick={handleShare}
                 disabled={sharing}
-                style={{ marginTop: 8, padding: '6px 12px', fontSize: 12, fontWeight: 600, color: 'var(--accent)', background: 'none', border: '1px solid rgba(196,122,58,0.4)', borderRadius: 4, cursor: 'pointer', opacity: sharing ? 0.5 : 1 }}
+                style={{
+                  display: 'inline-block',
+                  padding: '8px 18px',
+                  border: '1px solid var(--accent)',
+                  color: 'var(--accent)',
+                  fontSize: 10,
+                  letterSpacing: '2px',
+                  textTransform: 'uppercase',
+                  cursor: sharing ? 'default' : 'pointer',
+                  background: 'transparent',
+                  borderRadius: 4,
+                  fontFamily: 'var(--font-body)',
+                  fontWeight: 600,
+                  opacity: sharing ? 0.5 : 1,
+                }}
               >
                 {sharing ? 'Sparar...' : 'Spara som bild'}
               </button>

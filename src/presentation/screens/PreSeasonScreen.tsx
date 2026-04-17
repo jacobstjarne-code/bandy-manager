@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { ClubExpectation, PlayerPosition } from '../../domain/enums'
 import { positionShort, formatFinanceAbs } from '../utils/formatters'
-import { calculateClubEra, eraLabel, eraDescription } from '../../domain/services/clubEraService'
+import { calculateClubEra, eraLabel, eraFullLabel, eraDescription } from '../../domain/services/clubEraService'
 
 function expectationText(e: ClubExpectation): string {
   switch (e) {
@@ -266,18 +266,72 @@ export function PreSeasonScreen() {
         {/* M14: Club era */}
         {(() => {
           const era = game.currentEra ?? calculateClubEra(game)
+          const arc = game.trainerArc
+          const eraShiftMoment = (game.recentMoments ?? []).find(
+            m => m.source === 'era_shift' && m.season === game.currentSeason,
+          )
+          // Find previous era from the shift moment title e.g. "Etablering"
+          const prevEraLabel = eraShiftMoment
+            ? (['survival', 'establishment', 'legacy'] as const)
+                .filter(e => e !== era)
+                .map(e => eraLabel(e))
+                .find(l => eraShiftMoment.title.toLowerCase().includes(l.toLowerCase()))
+              ?? '—'
+            : null
+
+          if (eraShiftMoment) {
+            // Big ERA-ÖVERGÅNG card
+            const expectationByEra: Record<typeof era, string> = {
+              survival: 'Håll laget sammanhållet. En placering som inte tvingar krisåtgärder.',
+              establishment: 'Topp 8, bygga akademin, utveckla en egen stjärna.',
+              legacy: 'Titeln är förväntningen. Inget annat räcker.',
+            }
+            return (
+              <div style={{
+                background: 'var(--bg-elevated)',
+                border: '1px solid var(--accent)',
+                borderRadius: 6,
+                padding: '18px 16px',
+                position: 'relative',
+              }}>
+                <span style={{
+                  position: 'absolute', top: -9, left: 16,
+                  background: 'var(--accent)', color: 'var(--text-light)',
+                  fontSize: 8, letterSpacing: '2.5px', fontWeight: 700,
+                  padding: '3px 10px', borderRadius: 3,
+                  fontFamily: 'var(--font-body)', textTransform: 'uppercase',
+                }}>ERA-ÖVERGÅNG</span>
+                <p style={{ fontSize: 18, fontWeight: 400, margin: '6px 0 4px', color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+                  {eraFullLabel(era)}
+                </p>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 12px', fontFamily: 'var(--font-body)' }}>
+                  tidigare: {prevEraLabel ?? '—'} · {arc?.seasonCount ?? 0}:e säsongen som chef
+                </p>
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, fontStyle: 'italic' }}>
+                  {eraShiftMoment.body}
+                </p>
+                <div style={{ marginTop: 12, padding: '10px 12px', background: 'var(--bg-surface)', borderLeft: '3px solid var(--accent)' }}>
+                  <p style={{ fontSize: 11, color: 'var(--text-primary)', margin: 0 }}>
+                    <strong>Styrelsens förväntningar skärps:</strong> {expectationByEra[era]}
+                  </p>
+                </div>
+              </div>
+            )
+          }
+
+          // Compact stable era
           return (
             <div style={{
               background: 'var(--bg-elevated)', border: '1px solid var(--border)',
               borderRadius: 'var(--radius)', padding: '10px 14px',
             }}>
-              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
-                📅 Klubbens fas
+              <p style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-primary)', margin: '0 0 2px', fontFamily: 'var(--font-display)' }}>
+                Klubbens era: {eraFullLabel(era)}
               </p>
-              <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
-                {eraLabel(era)}
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 6px', fontFamily: 'var(--font-body)' }}>
+                {arc?.seasonCount ?? 0}:e säsongen som chef
               </p>
-              <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+              <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: 0 }}>
                 {eraDescription(era)}
               </p>
             </div>

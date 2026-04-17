@@ -27,7 +27,7 @@ export function OrtenSection({ game, currentMatchday }: Props) {
         <div key={m.id}>
           <div style={{ marginBottom: 4 }}>
             <p style={{
-              fontSize: 12, fontWeight: 600, color: 'var(--text-primary)',
+              fontSize: 13, fontWeight: 700, color: 'var(--text-primary)',
               fontFamily: 'var(--font-display)', margin: 0, lineHeight: 1.3,
             }}>
               {m.title}

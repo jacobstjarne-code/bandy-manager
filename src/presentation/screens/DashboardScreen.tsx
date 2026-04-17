@@ -26,8 +26,7 @@ import { OrtenSection } from '../components/dashboard/OrtenSection'
 import { getPepTalk } from '../../domain/services/pepTalkService'
 import { getCoffeeRoomQuote } from '../../domain/services/coffeeRoomService'
 import { getTrainingScene } from '../../domain/services/trainingSceneService'
-import { getSupporterMoodLabel } from '../../domain/services/supporterService'
-import { getRitualText } from '../../domain/services/supporterRituals'
+import { getKlackDisplay } from '../../domain/services/klackPresenter'
 import type { WeeklyDecision } from '../../domain/services/weeklyDecisionService'
 import { SectionLabel } from '../components/SectionLabel'
 import { HOTEL_NAMES, RESOLVED_TEXTS } from '../../domain/services/awayTripService'
@@ -699,43 +698,132 @@ export function DashboardScreen() {
         {(() => {
           const sg = game.supporterGroup
           if (!sg) return null
-          const ritualText = getRitualText(game, 'preMatch')
-          const moodLabel = getSupporterMoodLabel(sg.mood)
+          const klack = getKlackDisplay(game, nextFixture?.matchday ?? lastPlayedRound)
+          if (!klack) return null
+
           const ROLE_EMOJI: Record<string, string> = { leader: '📣', veteran: '🏆', youth: '🎨', family: '👨‍👩‍👧' }
-          const chars = [sg.leader, sg.veteran, sg.youth, sg.family]
-          const favPlayer = game.players.find(p => p.id === sg.favoritePlayerId)
+          const ROLE_DESC: Record<string, string> = {
+            leader: 'ordförande',
+            veteran: `veteran sedan ${sg.founded}`,
+            youth: 'första säsongen i klacken',
+            family: 'familjefar i klacken',
+          }
+
+          const cardBase: React.CSSProperties = {
+            margin: '0 0 6px',
+            padding: '12px 14px',
+            borderRadius: 6,
+            border: '1px solid var(--border)',
+            background: 'var(--bg-elevated)',
+            cursor: 'pointer',
+            position: 'relative',
+          }
+
+          const headRow = (sub: string) => (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6, gap: 8 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }}>
+                📯 {sg.name}
+              </span>
+              <span style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{sub}</span>
+            </div>
+          )
+
+          if (klack.type === 'event') {
+            return (
+              <div
+                data-coach-id="klacken-card"
+                style={cardBase}
+                onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}
+              >
+                <span style={{
+                  position: 'absolute', top: -1, right: 8,
+                  background: 'var(--accent)', color: 'var(--text-light)',
+                  fontSize: 7, letterSpacing: '1.5px', fontWeight: 700,
+                  padding: '3px 8px 4px', borderRadius: '0 0 4px 4px',
+                  fontFamily: 'var(--font-body)',
+                }}>HÄNDELSE</span>
+                {headRow(`grundad ${sg.founded}`)}
+                <p style={{ fontSize: 14, fontWeight: 700, margin: '4px 0 6px', color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.3 }}>
+                  {klack.title}
+                </p>
+                <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 8px', fontFamily: 'var(--font-display)' }}>
+                  {klack.body}
+                </p>
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: 0, fontFamily: 'var(--font-body)' }}>
+                  {klack.note}
+                </p>
+              </div>
+            )
+          }
+
+          if (klack.type === 'mood') {
+            const isLow = klack.extreme === 'low'
+            return (
+              <div
+                data-coach-id="klacken-card"
+                style={{
+                  ...cardBase,
+                  borderColor: isLow ? 'rgba(176,80,64,0.35)' : 'rgba(95,127,95,0.35)',
+                  background: isLow
+                    ? 'linear-gradient(180deg, var(--bg-elevated) 0%, rgba(176,80,64,0.04) 100%)'
+                    : 'linear-gradient(180deg, var(--bg-elevated) 0%, rgba(95,127,95,0.04) 100%)',
+                }}
+                onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}
+              >
+                {headRow(klack.subLabel)}
+                <p style={{ fontSize: 14, fontWeight: 700, margin: '4px 0 6px', color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.3 }}>
+                  {klack.title}
+                </p>
+                <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 8px', fontFamily: 'var(--font-display)' }}>
+                  {klack.body}
+                </p>
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: 0, fontFamily: 'var(--font-body)' }}>
+                  mood{' '}
+                  <span style={{ color: isLow ? 'var(--danger)' : 'var(--success)', fontWeight: 700 }}>
+                    {sg.mood}
+                  </span>
+                  {' '}· {sg.members} medlemmar
+                </p>
+              </div>
+            )
+          }
+
+          // Mode C: Person i fokus
           return (
             <div
               data-coach-id="klacken-card"
-              className="card-sharp"
-              style={{ margin: '0 0 6px', padding: '10px 12px', cursor: 'pointer' }}
+              style={cardBase}
               onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <SectionLabel>📯 {sg.name.toUpperCase()}</SectionLabel>
-                <span style={{ fontSize: 9, color: sg.mood >= 65 ? 'var(--success)' : sg.mood >= 40 ? 'var(--text-muted)' : 'var(--danger)', fontFamily: 'var(--font-body)' }}>
-                  {moodLabel} · {sg.members} medlemmar
-                </span>
+              {headRow(`mood ${sg.mood} · ${sg.members} medlemmar`)}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '6px 0 8px' }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: '50%',
+                  background: 'var(--bg-surface)', border: '1px solid var(--border)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 22, flexShrink: 0,
+                }}>
+                  {ROLE_EMOJI[klack.role]}
+                </div>
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+                    {klack.character.name}, {klack.age}
+                  </p>
+                  <p style={{ fontSize: 9, color: 'var(--text-muted)', margin: '2px 0 0', fontFamily: 'var(--font-body)' }}>
+                    {ROLE_DESC[klack.role]}
+                  </p>
+                </div>
               </div>
-              <p style={{ fontSize: 10, color: sg.mood >= 65 ? 'var(--success)' : sg.mood >= 40 ? 'var(--text-muted)' : 'var(--danger)', fontFamily: 'var(--font-body)', margin: '0 0 6px', fontStyle: 'italic' }}>
-                {sg.mood >= 65 ? 'Klacken sjunger — hemmabonus aktiv' : sg.mood >= 40 ? 'Klacken finns på plats men saknar energi' : 'Klacken är tyst. Hemmaplansfördelen bleknar.'}
+              <p style={{
+                fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5,
+                margin: '0 0 6px', paddingLeft: 10,
+                borderLeft: '2px solid var(--border)', fontFamily: 'var(--font-display)',
+              }}>
+                "{klack.quote}"
               </p>
-              <div style={{ display: 'flex', gap: 8, marginBottom: ritualText ? 8 : 0 }}>
-                {chars.map(c => (
-                  <div key={c.role} style={{ flex: 1, textAlign: 'center' }}>
-                    <p style={{ fontSize: 14, margin: '0 0 2px' }}>{ROLE_EMOJI[c.role]}</p>
-                    <p style={{ fontSize: 9, color: 'var(--text-secondary)', margin: 0, fontFamily: 'var(--font-body)', fontWeight: 600 }}>{c.name}</p>
-                  </div>
-                ))}
-              </div>
-              {favPlayer && (
-                <p style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: ritualText ? 6 : 0 }}>
-                  ❤️ Favorit: {favPlayer.firstName} {favPlayer.lastName}
-                </p>
-              )}
-              {ritualText && (
-                <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-display)', margin: 0 }}>
-                  {ritualText}
+              {klack.favoritePlayerName && (
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: 0, fontFamily: 'var(--font-body)' }}>
+                  ❤️ Egen favorit: {klack.favoritePlayerName}
                 </p>
               )}
             </div>

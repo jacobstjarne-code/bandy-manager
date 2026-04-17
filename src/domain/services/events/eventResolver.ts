@@ -768,11 +768,13 @@ export function resolveEvent(
     }
   }
 
+  const resolvedMatchday = game.lastProcessedMatchday ?? 1
+
   // Special: supporterEvent tifo — mark tifoDone
   if (event.type === 'supporterEvent' && event.id.startsWith('supporter_tifo_') && choiceId !== 'no' && updatedGame.supporterGroup) {
     updatedGame = {
       ...updatedGame,
-      supporterGroup: { ...updatedGame.supporterGroup, tifoDone: true },
+      supporterGroup: { ...updatedGame.supporterGroup, tifoDone: true, tifoDoneMatchday: resolvedMatchday },
     }
   }
 
@@ -780,7 +782,7 @@ export function resolveEvent(
   if (event.type === 'supporterEvent' && event.id.startsWith('supporter_away_trip_') && updatedGame.supporterGroup) {
     updatedGame = {
       ...updatedGame,
-      supporterGroup: { ...updatedGame.supporterGroup, awayTripSeason: updatedGame.currentSeason },
+      supporterGroup: { ...updatedGame.supporterGroup, awayTripSeason: updatedGame.currentSeason, awayTripMatchday: resolvedMatchday },
     }
   }
 
@@ -788,7 +790,7 @@ export function resolveEvent(
   if (event.type === 'supporterEvent' && event.id.startsWith('supporter_conflict_') && updatedGame.supporterGroup) {
     updatedGame = {
       ...updatedGame,
-      supporterGroup: { ...updatedGame.supporterGroup, conflictSeason: updatedGame.currentSeason },
+      supporterGroup: { ...updatedGame.supporterGroup, conflictSeason: updatedGame.currentSeason, conflictMatchday: resolvedMatchday },
     }
   }
 
