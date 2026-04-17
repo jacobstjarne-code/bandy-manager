@@ -56,7 +56,7 @@ export function checkEconomicCrisis(game: SaveGame, nextMatchday: number): GameE
         {
           id: 'accept_loss',
           label: 'Acceptera — vi klarar oss utan dem',
-          effect: { type: 'startEconomicCrisis', crisisPhase: 'pressure_rejected' },
+          effect: { type: 'resolveEconomicCrisis', crisisPhase: 'natural_recovery' },
         },
       ],
       resolved: false,

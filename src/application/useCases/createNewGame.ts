@@ -386,6 +386,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     aiCoaches: generateAICoaches(clubs.map(c => c.id), input.seed ?? 42),
     averageAttendance: undefined,
     previousAverageAttendance: undefined,
+    recentMoments: [],
   }
 
   const playersWithAvailability = updatePlayerAvailability(game)

@@ -22,6 +22,7 @@ import { DiamondDivider } from '../components/dashboard/DiamondDivider'
 import { FormSquares } from '../components/FormDots'
 import { getManagedClubCupStatus, getCupRoundLabel } from '../../domain/services/cupService'
 import { CareerStatsCard } from '../components/dashboard/CareerStatsCard'
+import { OrtenSection } from '../components/dashboard/OrtenSection'
 import { getPepTalk } from '../../domain/services/pepTalkService'
 import { getCoffeeRoomQuote } from '../../domain/services/coffeeRoomService'
 import { getTrainingScene } from '../../domain/services/trainingSceneService'
@@ -735,7 +736,15 @@ export function DashboardScreen() {
           )
         })()}
 
-        {/* ⑤ ENRADERS-KORT */}
+        {/* ⑤ ORTEN FEED */}
+        {(game.recentMoments?.length ?? 0) > 0 && (
+          <OrtenSection
+            moments={game.recentMoments ?? []}
+            currentMatchday={nextFixture?.matchday ?? lastPlayedRound}
+          />
+        )}
+
+        {/* ⑥ ENRADERS-KORT */}
 
         {/* Trupp */}
         <div className="card-sharp" style={{ margin: '0 0 4px', cursor: 'pointer' }} onClick={() => navigate('/game/squad')}>

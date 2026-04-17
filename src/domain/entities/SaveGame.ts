@@ -34,6 +34,25 @@ export type { Sponsor }
 export type { TalentSearchRequest, TalentSuggestion, TalentSearchResult }
 export type { RoundSummaryData }
 
+export type MomentSource =
+  | 'derby'
+  | 'captain_crisis'
+  | 'nemesis_signed'
+  | 'mecenat_costshare'
+  | 'sponsor_reaction'
+  | 'star_injury'
+  | 'mecenat_left'
+  | 'transfer_story'
+
+export interface Moment {
+  id: string
+  source: MomentSource
+  matchday: number
+  season: number
+  title: string
+  body: string
+}
+
 export interface YouthIntakeRecord {
   season: number
   clubId: string
@@ -281,4 +300,7 @@ export interface SaveGame {
 
   // DREAM-013 — Lagfotografiet (photos stored in IndexedDB, here just track last generated)
   lastTeamPhotoSeason?: number
+
+  // M7 — Orten feed: rolling window of narrative moments (max 5, newest first)
+  recentMoments?: Moment[]
 }

@@ -1,4 +1,4 @@
-import type { SaveGame, InboxItem } from '../../domain/entities/SaveGame'
+import type { SaveGame, InboxItem, Moment } from '../../domain/entities/SaveGame'
 import type { Player } from '../../domain/entities/Player'
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
@@ -175,6 +175,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const simulatedFixtures: Fixture[] = []
   const roundMatchWeathers: MatchWeather[] = []
   const newInboxItems: InboxItem[] = []
+  const newMoments: Moment[] = []
 
   // Detect if there is a pending (unplayed) cup match for the managed club this round
   let hasManagedCupPending = false
@@ -278,6 +279,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           body: `Kapten ${captain.firstName} ${captain.lastName} har inte sagt mycket denna vecka. Det märks i hela truppen.`,
           isRead: false,
         } as InboxItem)
+        newMoments.push({
+          id: alreadySentId,
+          source: 'captain_crisis',
+          matchday: nextMatchday,
+          season: game.currentSeason,
+          title: 'Kaptenskrisen',
+          body: `${captain.firstName} ${captain.lastName} är tyst — och det märks i truppen.`,
+        })
       }
     }
   }
@@ -348,6 +357,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     if (clubId === game.managedClubId) {
       newInboxItems.push(createInjuryItem(player, days, game.currentDate))
       gameAfterRipples = applyRipples(gameAfterRipples, { type: 'star_injured', playerId: player.id })
+      if (player.currentAbility >= 65) {
+        newMoments.push({
+          id: `moment_injury_${player.id}_${nextMatchday}`,
+          source: 'star_injury',
+          matchday: nextMatchday,
+          season: game.currentSeason,
+          title: 'Skadesmäll',
+          body: `${player.firstName} ${player.lastName} skadades och är borta ${days} dagar.`,
+        })
+      }
     }
   }
 
@@ -423,6 +442,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const oppScore = managedIsHome ? (justCompletedManagedFixture.awayScore ?? 0) : (justCompletedManagedFixture.homeScore ?? 0)
       if (managedScore > oppScore) {
         gameAfterRipples = applyRipples(gameAfterRipples, { type: 'big_derby_win', fixtureId: justCompletedManagedFixture.id })
+        const rivalClub = game.clubs.find(c => c.id === (justCompletedManagedFixture.homeClubId === game.managedClubId ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId))
+        newMoments.push({
+          id: `moment_derby_${justCompletedManagedFixture.id}`,
+          source: 'derby',
+          matchday: nextMatchday,
+          season: game.currentSeason,
+          title: 'Derbyseger',
+          body: `${managedScore}–${oppScore} mot ${rivalClub?.name ?? 'rivalen'}. Hela orten pratar om det.`,
+        })
       }
     }
   }
@@ -762,6 +790,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           relatedPlayerId: bid.playerId,
           isRead: false,
         } as InboxItem)
+        newMoments.push({
+          id: `moment_nemesis_${bid.playerId}_${game.currentSeason}`,
+          source: 'nemesis_signed',
+          matchday: nextMatchday,
+          season: game.currentSeason,
+          title: 'Nemesis värvad',
+          body: `${signedPlayer.firstName} ${signedPlayer.lastName} — ${nemesis.goalsAgainstUs} mål mot oss — bär nu våra färger.`,
+        })
       }
     }
 
@@ -781,6 +817,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           body: `${activeMec.name} erbjuder sig att täcka 20% av ${boughtPlayer ? `${boughtPlayer.firstName} ${boughtPlayer.lastName}`  : 'affären'}-affären. ${share.toLocaleString('sv-SE')} kr läggs till kassan.`,
           isRead: false,
         } as InboxItem)
+        newMoments.push({
+          id: `moment_mec_costshare_${bid.playerId}_${nextMatchday}`,
+          source: 'mecenat_costshare',
+          matchday: nextMatchday,
+          season: game.currentSeason,
+          title: 'Mecenaten täcker',
+          body: `${activeMec.name} skjuter till ${share.toLocaleString('sv-SE')} kr i transferstöd.`,
+        })
       }
     }
 
@@ -798,6 +842,14 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           body: `Huvudsponsorn nöjd med värvningen av ${transferPlayer.firstName} ${transferPlayer.lastName}.`,
           isRead: false,
         } as InboxItem)
+        newMoments.push({
+          id: `moment_sponsor_buy_${bid.playerId}_${nextMatchday}`,
+          source: 'sponsor_reaction',
+          matchday: nextMatchday,
+          season: game.currentSeason,
+          title: 'Sponsorerna reagerar positivt',
+          body: `Värvningen av ${transferPlayer.firstName} ${transferPlayer.lastName} välkomnas av sponsornätverket.`,
+        })
       }
     }
   }
@@ -819,6 +871,33 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         body: `Sponsornätverket oroligt efter stjärnförsäljningen av ${soldPlayer.firstName} ${soldPlayer.lastName}.`,
         isRead: false,
       } as InboxItem)
+      newMoments.push({
+        id: `moment_sponsor_sell_${bid.playerId}_${nextMatchday}`,
+        source: 'sponsor_reaction',
+        matchday: nextMatchday,
+        season: game.currentSeason,
+        title: 'Sponsorerna oroliga',
+        body: `Försäljningen av ${soldPlayer.firstName} ${soldPlayer.lastName} skapar oro hos sponsornätverket.`,
+      })
+    }
+
+    // Hook 7: transfer story Moment for historically significant sales from managed club
+    if (soldPlayer) {
+      const isCaptain = game.captainPlayerId === bid.playerId
+      const isFanFavorite = game.supporterGroup?.favoritePlayerId === bid.playerId
+      const isLegend = soldPlayer.careerStats.totalGames >= 80
+      const isHomegrown = !!(soldPlayer.isHomegrown && soldPlayer.academyClubId === game.managedClubId)
+      if (isCaptain || isFanFavorite || isLegend || isHomegrown) {
+        const reasons = [isCaptain && 'kapten', isFanFavorite && 'klackfavorit', isLegend && 'legend', isHomegrown && 'akademiprodukt'].filter(Boolean).join(', ')
+        newMoments.push({
+          id: `moment_transfer_${bid.playerId}_${nextMatchday}`,
+          source: 'transfer_story',
+          matchday: nextMatchday,
+          season: game.currentSeason,
+          title: `${soldPlayer.firstName} ${soldPlayer.lastName} lämnar`,
+          body: `${soldPlayer.firstName} ${soldPlayer.lastName} (${reasons}) såldes vidare.`,
+        })
+      }
     }
   }
 
@@ -980,6 +1059,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     awayTrip: awayTripUpdate,
     pendingVictoryEcho,
     victoryEchoExpires,
+    recentMoments: [...newMoments, ...(game.recentMoments ?? [])].slice(0, 5),
   }
 
   // Append market value change notifications to inbox

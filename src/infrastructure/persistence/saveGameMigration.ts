@@ -156,6 +156,19 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.schoolAssignmentArchive === undefined) data.schoolAssignmentArchive = []
   // lastTeamPhotoSeason — undefined is fine (no photo yet)
 
+  // M2 — obligatoriska fält som saknades i migrationen
+  if (data.handledContractPlayerIds === undefined) data.handledContractPlayerIds = []
+  if (data.matchWeathers === undefined) data.matchWeathers = []
+  if (data.mentorships === undefined) data.mentorships = []
+  if (data.loanDeals === undefined) data.loanDeals = []
+  if (data.talentSearchResults === undefined) data.talentSearchResults = []
+  if (data.youthIntakeHistory === undefined) data.youthIntakeHistory = []
+  if (data.transferState === undefined) data.transferState = { freeAgents: [], pendingOffers: [] }
+  if (data.academyLevel === undefined) data.academyLevel = 'basic'
+
+  // M7 — Orten-feed
+  if (data.recentMoments === undefined) data.recentMoments = []
+
   // ── players: ensure isClubLegend field exists ────────────────────────────
   if (Array.isArray(data.players)) {
     data.players = (data.players as Record<string, unknown>[]).map(p => {
