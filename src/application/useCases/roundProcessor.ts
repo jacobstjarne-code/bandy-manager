@@ -1046,10 +1046,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       const newAvg = Math.round((prev * 0.7) + (justCompletedManagedFixture.attendance * 0.3))
       return { previousAverageAttendance: prev, averageAttendance: newAvg }
     })(),
-    pendingWeeklyDecision: generateWeeklyDecision(
-      { ...game, resolvedWeeklyDecisions: game.resolvedWeeklyDecisions ?? [] },
-      nextMatchday,
-    ) ?? undefined,
+    ...(() => {
+      const newDecision = generateWeeklyDecision(
+        { ...game, resolvedWeeklyDecisions: game.resolvedWeeklyDecisions ?? [] },
+        nextMatchday,
+      )
+      return {
+        pendingWeeklyDecision: newDecision ?? undefined,
+        weeklyDecisionLastRound: newDecision ? nextMatchday : game.weeklyDecisionLastRound,
+      }
+    })(),
     resolvedEventIds: reputationResolvedIds,
     awayTrip: awayTripUpdate,
     pendingVictoryEcho,

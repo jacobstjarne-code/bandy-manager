@@ -200,6 +200,7 @@ export interface SaveGame {
   // Sprint 3 — Veckans beslut
   pendingWeeklyDecision?: import('../services/weeklyDecisionService').WeeklyDecision
   resolvedWeeklyDecisions?: string[]  // `${id}_${season}` — prevents re-picking same decision
+  weeklyDecisionLastRound?: number    // round when last decision was generated — enforces cooldown
 
   // Sprint 4 — Visuell progression
   aiCoaches?: Record<string, import('../services/aiCoachService').AICoach>
