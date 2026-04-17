@@ -750,16 +750,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   )
   if (contextualResult.newSponsors.length > 0) {
     updatedSponsors = [...updatedSponsors, ...contextualResult.newSponsors]
-    for (const title of contextualResult.inboxTitles) {
-      newInboxItems.push({
-        id: `inbox_ctxsponsor_${nextMatchday}_${title.slice(0, 10)}`,
-        date: newDate,
-        type: InboxItemType.SponsorNetwork,
-        title,
-        body: title,
-        isRead: false,
-      })
-    }
+    newMoments.push(...contextualResult.newMoments)
   }
   // Apply one-time kommunstöd payment if triggered (80k to managed club finances)
   let kommunstodBonus = 0

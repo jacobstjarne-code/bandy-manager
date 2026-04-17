@@ -147,6 +147,42 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       optionA: { label: 'Ordna det', effect: '+kommunstatus · +stämning', effectColor: 'success' },
       optionB: { label: 'Inte nu', effect: `${family} besviken`, effectColor: 'danger' },
     },
+
+    // ── Era-gated: legacy only ───────────────────────────────────────────────
+    {
+      id: 'legacy_naming_arena',
+      category: 'community',
+      requiredEra: ['legacy'],
+      question: `Kommunen vill döpa om arenan efter en lokal sponsor. ${veteran} är emot. Acceptera?`,
+      optionA: { label: 'Acceptera', effect: '+20 tkr engång · −stolthet', effectColor: 'success' },
+      optionB: { label: 'Behåll namnet', effect: '+${groupName}-stämning · −boardpatience', effectColor: 'muted' },
+    },
+    {
+      id: 'legacy_youth_showcase',
+      category: 'player',
+      requiredEra: ['legacy'],
+      question: `En regional TV-kanal vill sända er akademimatchen. ${leader} vill att ni ställer upp.`,
+      optionA: { label: 'Ställ upp', effect: '+rekrytering · +kommunstatus', effectColor: 'success' },
+      optionB: { label: 'Inte nu', effect: 'Ingen effekt', effectColor: 'muted' },
+    },
+
+    // ── Era-gated: survival only ─────────────────────────────────────────────
+    {
+      id: 'survival_wage_freeze',
+      category: 'player',
+      requiredEra: ['survival'],
+      question: 'Kassören föreslår lönestopp — inga nya kontrakt under månaden för att täcka underskott.',
+      optionA: { label: 'Godkänn', effect: '+budget · −spelarförtroende', effectColor: 'danger' },
+      optionB: { label: 'Neka', effect: '−boardpatience · spelarna trygga', effectColor: 'muted' },
+    },
+    {
+      id: 'survival_emergency_lotto',
+      category: 'community',
+      requiredEra: ['survival'],
+      question: `${leader} vill sälja lottsedlar vid hemmamatcherna. Enkelt, men inte alla gillar det.`,
+      optionA: { label: 'Kör igång', effect: '+5 tkr · +klackstämning', effectColor: 'success' },
+      optionB: { label: 'Inte vår grej', effect: '${leader} besviken', effectColor: 'muted' },
+    },
   ]
 
   return decisions
@@ -244,6 +280,26 @@ export function resolveWeeklyDecision(
       if (choice === 'A')
         return [{ type: 'communityStanding', delta: 3 }, { type: 'supporterMood', delta: 4 }]
       return [{ type: 'supporterMood', delta: -3 }]
+
+    case 'legacy_naming_arena':
+      if (choice === 'A')
+        return [{ type: 'finances', delta: 20_000 }, { type: 'supporterMood', delta: -6 }]
+      return [{ type: 'supporterMood', delta: 5 }, { type: 'boardPatience', delta: -3 }]
+
+    case 'legacy_youth_showcase':
+      if (choice === 'A')
+        return [{ type: 'communityStanding', delta: 4 }]
+      return [{ type: 'noop' }]
+
+    case 'survival_wage_freeze':
+      if (choice === 'A')
+        return [{ type: 'boardPatience', delta: 6 }, { type: 'supporterMood', delta: -4 }]
+      return [{ type: 'boardPatience', delta: -4 }]
+
+    case 'survival_emergency_lotto':
+      if (choice === 'A')
+        return [{ type: 'finances', delta: 5_000 }, { type: 'supporterMood', delta: 3 }]
+      return [{ type: 'supporterMood', delta: -2 }]
 
     default:
       return [{ type: 'noop' }]
