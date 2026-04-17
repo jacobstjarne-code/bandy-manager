@@ -87,6 +87,7 @@ export interface EventEffect {
     | 'startEconomicCrisis'
     | 'resolveEconomicCrisis'
     | 'saveSchoolAssignment'
+    | 'scoutBudget'
   value?: number
   amount?: number
   targetPlayerId?: string

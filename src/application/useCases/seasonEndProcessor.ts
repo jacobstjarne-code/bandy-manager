@@ -483,7 +483,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
             id: 'scout',
             label: 'Erbjud roll som scout',
             subtitle: '🔍 +3 scoutbudget',
-            effect: { type: 'noOp' },
+            effect: { type: 'scoutBudget', amount: 3 },
           },
           {
             id: 'farewell',

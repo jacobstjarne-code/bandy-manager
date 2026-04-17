@@ -725,6 +725,14 @@ export function resolveEvent(
       }
       break
     }
+    case 'scoutBudget': {
+      const delta = effect.amount ?? 0
+      updatedGame = {
+        ...updatedGame,
+        scoutBudget: Math.max(0, Math.min(30, (updatedGame.scoutBudget ?? 10) + delta)),
+      }
+      break
+    }
     case 'openNegotiation':
     default:
       break
