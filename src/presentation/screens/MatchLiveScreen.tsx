@@ -789,6 +789,7 @@ export function MatchLiveScreen() {
     setTacticChangesUsed(prev => prev + 1)
     setTacticChanged(true)
     setShowTacticQuick(false)
+    setIsFastForward(false)
     setIsPaused(false)
   }
 
@@ -906,7 +907,7 @@ export function MatchLiveScreen() {
         onToggleFastForward={() => setIsFastForward(prev => !prev)}
         onOpenSubModal={() => { setIsPaused(true); setShowSubModal(true) }}
         onToggleMute={() => { toggleMute(); setMuted(isMuted()) }}
-        onOpenTacticQuick={() => { setIsPaused(true); setShowTacticQuick(true) }}
+        onOpenTacticQuick={() => { setIsFastForward(false); setIsPaused(true); setShowTacticQuick(true) }}
         tacticChangesLeft={MAX_TACTIC_CHANGES - tacticChangesUsed}
       />
 
