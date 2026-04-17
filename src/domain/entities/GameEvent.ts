@@ -39,6 +39,7 @@ export type GameEventType =
   | 'bandyLetter'
   | 'criticalEconomy'
   | 'schoolAssignment'
+  | 'mecenatDinner'
 
 export interface EventChoice {
   id: string
@@ -123,6 +124,7 @@ export function getEventPriority(type: GameEventType): EventPriority {
     case 'politicianEvent':
     case 'kommunMote':
     case 'hallDebate':
+    case 'mecenatDinner':
       return 'high'
     case 'criticalEconomy':
       return 'critical'

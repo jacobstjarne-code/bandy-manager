@@ -2,6 +2,7 @@ import { useLocation } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { playSound } from '../audio/soundEffects'
 import { PressConferenceScene } from './PressConferenceScene'
+import { MecenatDinnerEvent } from './events/MecenatDinnerEvent'
 import { getEventPriority } from '../../domain/entities/GameEvent'
 
 function choiceStyle(_choiceId: string): React.CSSProperties {
@@ -54,6 +55,16 @@ export function EventOverlay() {
         event={event}
         journalist={game.journalist}
         onChoice={handleChoice}
+      />
+    )
+  }
+
+  // DREAM-017: Mecenatens middag — interaktiv scen
+  if (event.type === 'mecenatDinner') {
+    return (
+      <MecenatDinnerEvent
+        event={event}
+        onFinish={handleChoice}
       />
     )
   }

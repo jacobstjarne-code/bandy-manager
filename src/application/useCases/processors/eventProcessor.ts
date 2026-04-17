@@ -8,6 +8,7 @@ import { generateSocialEvent, generateSilentShoutEvent } from '../../../domain/s
 import { generateBandyLetterEvent } from '../../../domain/services/bandyLetterService'
 import { checkEconomicCrisis } from '../../../domain/services/economicCrisisService'
 import { generateSchoolAssignmentEvent } from '../../../domain/services/schoolAssignmentService'
+import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
 
 export interface EventProcessorResult {
   gameEvents: GameEvent[]
@@ -62,6 +63,12 @@ export function processGameEvents(
   // DREAM-016: Skoluppgift
   const schoolEvent = generateSchoolAssignmentEvent(game, nextMatchday)
   if (schoolEvent) gameEvents.push(schoolEvent)
+
+  // DREAM-017: Mecenatens middag (omgång 20)
+  if (nextMatchday === 20) {
+    const dinnerEvent = generateDinnerEvent(game, nextMatchday)
+    if (dinnerEvent) gameEvents.push(dinnerEvent)
+  }
 
   let updatedMecenater = (game.mecenater ?? []).map(mec => {
     if (!mec.isActive) return mec

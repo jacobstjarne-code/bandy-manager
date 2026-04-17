@@ -1,4 +1,5 @@
 import type { SaveGame, Sponsor, CommunityActivities } from '../../entities/SaveGame'
+import type { DinnerScene } from '../mecenatDinnerService'
 import { InboxItemType } from '../../enums'
 import { executeTransfer } from '../transferService'
 import { applyFinanceChange } from '../economyService'
@@ -966,6 +967,49 @@ export function resolveEvent(
         clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, -25000),
       }
     }
+  }
+
+  // ── DREAM-017: Mecenatens middag — apply cumulative effects ─────────────────
+  if (event.type === 'mecenatDinner' && choiceId.startsWith('final|') && event.sponsorData) {
+    try {
+      const scene: DinnerScene = JSON.parse(event.sponsorData)
+      const chosenIds = choiceId.replace('final|', '').split('|')
+      let totalHappiness = 0, totalCS = 0, totalFinancial = 0
+      for (const q of scene.questions) {
+        const chosen = chosenIds.find(id => id.startsWith(q.id + '_'))
+        if (!chosen) continue
+        const opt = q.options.find(o => o.id === chosen)
+        if (!opt) continue
+        totalHappiness += opt.effect.happiness
+        totalCS += opt.effect.communityStanding
+        totalFinancial += opt.effect.financial ?? 0
+      }
+      // Apply mecenat happiness
+      if (scene.mecenatId) {
+        updatedGame = {
+          ...updatedGame,
+          mecenater: (updatedGame.mecenater ?? []).map(m =>
+            m.id === scene.mecenatId
+              ? { ...m, happiness: Math.max(0, Math.min(100, m.happiness + totalHappiness)), lastInteractionRound: currentMatchday }
+              : m
+          ),
+        }
+      }
+      // Apply communityStanding
+      if (totalCS !== 0) {
+        updatedGame = {
+          ...updatedGame,
+          communityStanding: Math.max(0, Math.min(100, (updatedGame.communityStanding ?? 50) + totalCS)),
+        }
+      }
+      // Apply financial (cost-share gift from mecenat)
+      if (totalFinancial > 0) {
+        updatedGame = {
+          ...updatedGame,
+          clubs: applyFinanceChange(updatedGame.clubs, updatedGame.managedClubId, totalFinancial),
+        }
+      }
+    } catch { /* ignore parse errors */ }
   }
 
   // ── Record arc decisions ──────────────────────────────────────────────────
