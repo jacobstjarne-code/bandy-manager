@@ -113,13 +113,22 @@ export function resolveCorner(
 export function shouldBeInteractive(
   minute: number, homeScore: number, awayScore: number,
   isManaged: boolean, cornersThisMatch: number, interactiveSoFar: number,
+  rand: () => number,
 ): boolean {
   if (!isManaged) return false
-  if (interactiveSoFar >= 4) return false
-  if (cornersThisMatch < 2) return true
-  if (Math.abs(homeScore - awayScore) <= 1) return true
-  if (minute >= 70) return true
-  return false
+
+  const MAX_INTERACTIVE = 3
+  if (interactiveSoFar >= MAX_INTERACTIVE) return false
+
+  // First corner of the match: always interactive
+  if (cornersThisMatch === 0) return true
+
+  // Critical moment: last 10 minutes AND close score
+  const scoreDiff = Math.abs(homeScore - awayScore)
+  if (minute >= 80 && scoreDiff <= 1) return true
+
+  // Otherwise: 25% chance
+  return rand() < 0.25
 }
 
 export function buildCornerInteractionData(

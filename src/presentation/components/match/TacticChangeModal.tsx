@@ -14,7 +14,7 @@ const OPTIONS = [
 export function TacticChangeModal({ changesLeft, onChoose, onClose }: TacticChangeModalProps) {
   return (
     <div style={{
-      position: 'absolute', bottom: 70, left: 16, right: 16,
+      position: 'fixed', bottom: 70, left: 16, right: 16,
       background: 'var(--bg-surface)', border: '1px solid var(--border)',
       borderRadius: 14, padding: '14px 16px', zIndex: 'var(--z-modal)',
       boxShadow: '0 -4px 20px rgba(0,0,0,0.15)',

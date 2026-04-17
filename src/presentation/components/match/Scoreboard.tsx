@@ -139,7 +139,14 @@ export function Scoreboard({
       {game && (() => {
         const homeClub = game.clubs.find(c => c.id === fixture.homeClubId)
         return homeClub?.arenaName ? (
-          <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: 0, fontFamily: 'Courier New, monospace', letterSpacing: '1px' }}>
+          <p style={{
+            fontSize: 10,
+            color: '#A89878',
+            margin: 0,
+            fontFamily: 'Courier New, monospace',
+            letterSpacing: '1.5px',
+            textShadow: '0 0 4px rgba(168,152,120,0.3)',
+          }}>
             {homeClub.arenaName.toUpperCase()}
           </p>
         ) : null

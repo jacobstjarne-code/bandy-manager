@@ -55,11 +55,14 @@ export function MatchControls({
           </button>
         )}
         {!matchDone && onOpenTacticQuick && (tacticChangesLeft ?? 0) > 0 && (
-          <button onClick={onOpenTacticQuick} className="btn btn-ghost" style={{ padding: '6px 10px', fontSize: 14, position: 'relative' }}>
-            ⚙️
-            <span style={{ position: 'absolute', top: 2, right: 2, fontSize: 8, color: 'var(--accent)', fontWeight: 700, lineHeight: 1 }}>
-              {tacticChangesLeft}
-            </span>
+          <button
+            onClick={onOpenTacticQuick}
+            className="btn btn-ghost"
+            style={{ padding: '6px 10px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}
+            title="Taktikjustering"
+          >
+            ⚙️ <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)' }}>{tacticChangesLeft}</span>
+            <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>TAKTIK</span>
           </button>
         )}
         <button onClick={onToggleMute} className="btn btn-ghost" style={{ padding: '6px 10px', fontSize: 14 }}>

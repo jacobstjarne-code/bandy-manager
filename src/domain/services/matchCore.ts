@@ -704,7 +704,7 @@ function* simulateMatchCore(
       if (!isFast) {
         const isManagedCorner = managedIsHome !== undefined ? (managedIsHome === isHomeAttacking) : false
         const totalCornersThisMatch = cornersHome + cornersAway
-        if (isManagedCorner && shouldBeInteractive(minute, homeScore, awayScore, true, totalCornersThisMatch, interactiveCornersUsed)) {
+        if (isManagedCorner && shouldBeInteractive(minute, homeScore, awayScore, true, totalCornersThisMatch, interactiveCornersUsed, rand)) {
           interactiveCornersUsed++
           const gk         = getGK(defendingStarters)
           const cornerTaker = attackingStarters.filter(p => p.position !== PlayerPosition.Goalkeeper).sort((a, b) => b.attributes.cornerSkill - a.attributes.cornerSkill)[0]
