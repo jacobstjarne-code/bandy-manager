@@ -1,4 +1,13 @@
 // matchCore.ts — Unified match simulation engine
+// PENALTY_CAUSE_COMMENTARY — shown as step commentary when interactive penalty is triggered
+const PENALTY_CAUSE_COMMENTARY: Array<(attacker: string) => string> = [
+  (a) => `Straff! ${a} fälls i straffområdet — domaren tvekar inte.`,
+  (a) => `Tydligt fall. ${a} hakas ner bakifrån. Straff.`,
+  (a) => `Där! Foul på ${a} inne i området. Domaren pekar på prickern.`,
+  () => `Domaren blåser — olaga hindrande i straffområdet. Straff.`,
+  () => `Straff! Målvakten tog spelaren istället för bollen.`,
+]
+
 //
 // Single source of truth for all match logic. Replaces matchStepByStep.ts and
 // serves as the foundation for matchEngine.ts (fast/AI wrapper).
@@ -595,6 +604,7 @@ function* simulateMatchCore(
     let counterInteractionData:  CounterInteractionData  | undefined
     let freeKickInteractionData: FreeKickInteractionData | undefined
     let lastMinutePressData:     LastMinutePressData      | undefined
+    let penaltyCauseText = ''
 
     // ── Sequence resolution ──────────────────────────────────────────────────
 
@@ -859,6 +869,8 @@ function* simulateMatchCore(
                 keeperName:   `${gk.firstName} ${gk.lastName}`,
                 keeperSkill:  gk.currentAbility,
               }
+              const causeIdx = Math.floor(rand() * PENALTY_CAUSE_COMMENTARY.length)
+              penaltyCauseText = PENALTY_CAUSE_COMMENTARY[causeIdx](`${shooter.firstName} ${shooter.lastName}`)
             } else {
               // AI penalty — auto-resolve
               const mentality  = isHomeAttacking ? homeLineup.tactic.mentality : awayLineup.tactic.mentality
@@ -916,10 +928,13 @@ function* simulateMatchCore(
     const defendingTeam = isHomeAttacking ? awayTeamRef : homeTeamRef
     const savingGK      = gkPlayerId ? findPlayerName(gkPlayerId) : ''
 
-    let commentaryText = ''
+    let commentaryText = penaltyCauseText   // penalty cause overrides default if set
     let isDerbyStep    = false
 
     if (!isFast) {
+      if (penaltyCauseText) {
+        // Commentary already set — skip normal derivation for this step
+      } else {
       let templateVars: Record<string, string> = {
         team:      attackingTeam,
         opponent:  defendingTeam,
@@ -1249,6 +1264,7 @@ function* simulateMatchCore(
 
       // Determine commentaryType
       void isRefCommentary  // used above
+      } // end else (non-penalty commentary)
     } // end if (!isFast)
 
     // ── Intensity ──────────────────────────────────────────────────────────
@@ -1265,6 +1281,7 @@ function* simulateMatchCore(
     }
 
     const commentaryType: import('./matchUtils').CommentaryType = (() => {
+      if (penaltyCauseText)             return 'critical'
       if (seqType === 'atmosphere')     return 'atmosphere'
       if (seqType === 'player_duel')    return 'player_duel'
       if (seqType === 'tactical_shift') return 'tactical'

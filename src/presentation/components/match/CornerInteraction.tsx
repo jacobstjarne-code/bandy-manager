@@ -75,6 +75,9 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
               <stop offset="0%" stopColor="var(--bg)" />
               <stop offset="100%" stopColor="var(--border)" />
             </linearGradient>
+            <marker id="arrowC" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L6,3 z" fill="var(--accent)" />
+            </marker>
           </defs>
           <rect width="220" height="110" fill="url(#iceC)" rx="4" />
           {/* Penalty arc */}
@@ -122,6 +125,41 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
             textAnchor="middle" fontWeight={zone === 'far' ? '700' : '500'} style={{ pointerEvents: 'none' }}>
             BORTRE
           </text>
+          {/* Arrow from corner flag to selected zone */}
+          {(() => {
+            const cx = 5
+            const cy = cornerSide === 'right' ? 5 : 105
+            const zoneY = zone === 'near' ? 24 : zone === 'center' ? 52 : 80
+            const tx = 22
+            const ty = zoneY
+            const cpx = cx + (tx - cx) * 0.5
+            const cpy = cy + (ty - cy) * 0.1
+            return (
+              <path
+                d={`M${cx},${cy} Q${cpx},${cpy} ${tx},${ty}`}
+                fill="none"
+                stroke="var(--accent)"
+                strokeWidth="1.5"
+                strokeDasharray="4,3"
+                markerEnd="url(#arrowC)"
+              />
+            )
+          })()}
+          {/* Corner flag */}
+          {(() => {
+            const cx = 5
+            const cy = cornerSide === 'right' ? 5 : 105
+            return (
+              <>
+                <line x1={cx} y1={cy} x2={cx} y2={cornerSide === 'right' ? cy - 8 : cy + 8}
+                  stroke="var(--accent)" strokeWidth="1.2" />
+                <polygon
+                  points={`${cx},${cornerSide === 'right' ? cy - 8 : cy + 8} ${cx + 6},${cornerSide === 'right' ? cy - 5 : cy + 5} ${cx},${cornerSide === 'right' ? cy - 2 : cy + 2}`}
+                  fill="var(--accent)"
+                />
+              </>
+            )
+          })()}
           {/* Rush lines */}
           <line x1="140" y1="25" x2="70" y2="25" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="3,2" />
           <line x1="150" y1="55" x2="70" y2="52" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="3,2" />
@@ -129,14 +167,13 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
           <circle cx="140" cy="25" r="4" fill="var(--accent)" opacity="0.7" />
           <circle cx="150" cy="55" r="4" fill="var(--accent)" opacity="0.7" />
           <circle cx="140" cy="80" r="4" fill="var(--accent)" opacity="0.7" />
-          {/* Corner point — both corners at goal end (cx≈5), top=höger, bottom=vänster */}
-          <circle cx="5" cy={cornerSide === 'right' ? 5 : 105} r="4" fill="var(--accent)" stroke="#fff" strokeWidth="1" />
+          {/* Corner label */}
           <text
-            x="22"
+            x="15"
             y={cornerSide === 'right' ? 14 : 102} fontSize="6" fill="var(--accent)" fontWeight="600"
             textAnchor="start"
           >
-            {cornerSide === 'right' ? 'Hörna från höger' : 'Hörna från vänster'}
+            {cornerSide === 'right' ? 'HÖGER' : 'VÄNSTER'}
           </text>
         </svg>
 

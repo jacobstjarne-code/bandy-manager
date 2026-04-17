@@ -1,7 +1,8 @@
+import type React from 'react'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import { MatchEventType, PlayoffRound, PlayerPosition } from '../../../domain/enums'
+import { MatchEventType, PlayoffRound } from '../../../domain/enums'
 import { positionShort, eventIcon } from '../../utils/formatters'
 import { PlayerLink } from '../PlayerLink'
 
@@ -17,15 +18,9 @@ function ratingColor(r: number): string {
   return 'var(--success)'
 }
 
-function positionDotColor(pos: PlayerPosition): string {
-  switch (pos) {
-    case PlayerPosition.Goalkeeper: return 'var(--ice)'
-    case PlayerPosition.Defender: return 'var(--success)'
-    case PlayerPosition.Half: return 'var(--accent)'
-    case PlayerPosition.Midfielder: return 'var(--warning)'
-    case PlayerPosition.Forward: return 'var(--danger)'
-    default: return 'var(--text-muted)'
-  }
+const LABEL: React.CSSProperties = {
+  fontSize: 8, fontWeight: 600, letterSpacing: '2px',
+  textTransform: 'uppercase', color: 'var(--text-muted)',
 }
 
 interface MatchReportViewProps {
@@ -162,9 +157,9 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
             {homeClub?.shortName ?? homeClub?.name}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 0 }}>
-            <span style={{ fontSize: 48, fontWeight: 800, lineHeight: 1 }}>{fixture.homeScore}</span>
-            <span style={{ fontSize: 24, color: 'var(--text-muted)', fontWeight: 300 }}>—</span>
-            <span style={{ fontSize: 48, fontWeight: 800, lineHeight: 1 }}>{fixture.awayScore}</span>
+            <span style={{ fontSize: 36, fontWeight: 800, lineHeight: 1 }}>{fixture.homeScore}</span>
+            <span style={{ fontSize: 20, color: 'var(--text-muted)', fontWeight: 300 }}>—</span>
+            <span style={{ fontSize: 36, fontWeight: 800, lineHeight: 1 }}>{fixture.awayScore}</span>
           </div>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', flex: 1, textAlign: 'right' }}>
             {awayClub?.shortName ?? awayClub?.name}
@@ -199,12 +194,12 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
       </div>
 
       {/* MATCHENS BERÄTTELSE */}
-      <div className="card-round" style={{
+      <div className="card-sharp" style={{
         padding: '10px 14px', marginBottom: 8,
         border: '1px solid rgba(196,122,58,0.25)',
         background: 'rgba(196,122,58,0.03)',
       }}>
-        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 4 }}>
+        <p style={{ ...LABEL, color: 'var(--accent)', marginBottom: 4 }}>
           📰 MATCHENS BERÄTTELSE
         </p>
         <p style={{ fontSize: 12, lineHeight: 1.55, color: 'var(--text-secondary)', margin: 0 }}>
@@ -215,31 +210,31 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
       {/* Events timeline */}
       {visibleEvents.length > 0 && (
         <div className="card-sharp" style={{ overflow: 'hidden', marginBottom: 8 }}>
-          <p style={{
-            fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2.5px',
-            color: 'var(--text-muted)', padding: '10px 14px 6px',
-          }}>
+          <p style={{ ...LABEL, padding: '10px 14px 6px' }}>
             ⚡ HÄNDELSER
           </p>
           {visibleEvents.map((event, index) => {
             const isHome = event.clubId === fixture.homeClubId
+            const clubShort = isHome ? (homeClub?.shortName ?? 'H') : (awayClub?.shortName ?? 'B')
             return (
               <div
                 key={index}
                 style={{
                   display: 'flex', alignItems: 'center', padding: '6px 14px',
                   borderTop: '1px solid var(--border)',
-                  flexDirection: isHome ? 'row' : 'row-reverse',
                 }}
               >
-                <span style={{ fontSize: 12, color: 'var(--text-muted)', width: 30, flexShrink: 0, textAlign: isHome ? 'left' : 'right' }}>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', width: 30, flexShrink: 0 }}>
                   {event.minute}'
+                </span>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 28, flexShrink: 0 }}>
+                  {clubShort}
                 </span>
                 <span style={{ fontSize: 16, margin: '0 6px', flexShrink: 0 }}>
                   {eventIcon(event.type)}
                 </span>
                 <span style={{
-                  fontSize: 13, flex: 1, textAlign: isHome ? 'left' : 'right',
+                  fontSize: 13, flex: 1,
                   color: event.isCornerGoal ? 'var(--accent)' : undefined,
                   fontWeight: event.isCornerGoal ? 600 : undefined,
                 }}>
@@ -267,12 +262,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
       {/* Match stats — hemma | label | borta */}
       {fixture.report && (
         <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 8 }}>
-          <p style={{
-            fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2.5px',
-            color: 'var(--text-muted)', marginBottom: 8,
-          }}>
-            📊 STATISTIK
-          </p>
+          <p style={{ ...LABEL, marginBottom: 8 }}>📊 STATISTIK</p>
           {/* Column headers */}
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
             <span style={{ flex: 1, fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textAlign: 'right' }}>
@@ -314,12 +304,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
       {/* Player ratings */}
       {ratedPlayers.length > 0 && (
         <div className="card-sharp" style={{ overflow: 'hidden', marginBottom: 8 }}>
-          <p style={{
-            fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2.5px',
-            color: 'var(--text-muted)', padding: '10px 14px 6px',
-          }}>
-            ⭐ SPELARBETYG
-          </p>
+          <p style={{ ...LABEL, padding: '10px 14px 6px' }}>⭐ SPELARBETYG</p>
           {/* POTM highlight */}
           {(() => {
             const potmId = fixture.report?.playerOfTheMatchId
@@ -357,11 +342,6 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
                 display: 'flex', alignItems: 'center', padding: '5px 14px',
                 borderTop: '1px solid var(--border)', gap: 6,
               }}>
-                {/* Position color dot */}
-                <div style={{
-                  width: 7, height: 7, borderRadius: '50%',
-                  background: positionDotColor(player.position), flexShrink: 0,
-                }} />
                 {/* Shirt number */}
                 <span style={{
                   fontSize: 10, color: 'var(--text-muted)', minWidth: 18, textAlign: 'right', flexShrink: 0,

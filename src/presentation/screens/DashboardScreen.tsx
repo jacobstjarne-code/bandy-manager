@@ -378,7 +378,7 @@ export function DashboardScreen() {
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
             <SectionLabel style={{ marginBottom: 8 }}>🏒 SÄSONGSSTART {game.currentSeason}</SectionLabel>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 10, fontFamily: 'var(--font-body)' }}>
-              Ditt uppdrag för {club.name} väntar. Sätt din startelva och kör.
+              Säsongen börjar. Sätt din startelva för {club.name} och kör.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {nudges.map((n, i) => (

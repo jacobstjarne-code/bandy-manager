@@ -237,7 +237,7 @@ export interface PenaltyRound {
 
 export type CommentaryType =
   | 'normal' | 'goal_context' | 'atmosphere' | 'situation'
-  | 'player_duel' | 'referee' | 'tactical'
+  | 'player_duel' | 'referee' | 'tactical' | 'critical'
 
 export interface MatchStep {
   step: number

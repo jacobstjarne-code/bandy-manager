@@ -419,14 +419,27 @@ export function MatchLiveScreen() {
 
     setCornerOutcome(outcome)
 
-    // Patch scores if goal
+    const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
+    const minute = activeCorner.minute
+
+    setSteps(prev => prev.map((s, idx) => {
+      if (idx < currentStep) return s
+      if (idx === currentStep) {
+        const event = outcome.type === 'goal'
+          ? { type: MatchEventType.Goal, minute, clubId: managedClubId, playerId: outcome.scorerId,
+              description: outcome.description, isCorner: true }
+          : { type: MatchEventType.Save, minute, clubId: managedClubId,
+              description: outcome.description }
+        return { ...s, events: [...s.events, event as MatchStep['events'][0]],
+          commentary: outcome.description, commentaryType: (outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
+      }
+      if (outcome.type === 'goal') {
+        return managedIsHome ? { ...s, homeScore: s.homeScore + 1 } : { ...s, awayScore: s.awayScore + 1 }
+      }
+      return s
+    }))
+
     if (outcome.type === 'goal') {
-      setSteps(prev => prev.map((s, idx) => {
-        if (idx <= currentStep) return s
-        return managedIsHome
-          ? { ...s, homeScore: s.homeScore + 1 }
-          : { ...s, awayScore: s.awayScore + 1 }
-      }))
       playSound('goal')
       playSound('goalHit')
       if (managedIsHome) {
@@ -455,13 +468,34 @@ export function MatchLiveScreen() {
     const outcome = resolvePenalty(activePenalty, dir, height, keeperDive, rand)
     setPenaltyOutcome(outcome)
 
+    const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
+    const oppClubId = managedIsHome ? fixture.awayClubId : fixture.homeClubId
+    const shooterId = activePenalty.shooterId
+    const shooterLast = activePenalty.shooterName.split(' ').slice(-1)[0]
+    const keeperLast = activePenalty.keeperName.split(' ').slice(-1)[0]
+    const minute = activePenalty.minute
+
+    setSteps(prev => prev.map((s, idx) => {
+      if (idx < currentStep) return s
+      if (idx === currentStep) {
+        const event = outcome.type === 'goal'
+          ? { type: MatchEventType.Goal, minute, clubId: managedClubId, playerId: shooterId,
+              description: `Straffmål av ${shooterLast}.`, isPenalty: true }
+          : outcome.type === 'save'
+          ? { type: MatchEventType.Save, minute, clubId: oppClubId,
+              description: `Straffräddning! ${keeperLast} läser skottet.` }
+          : { type: MatchEventType.Save, minute, clubId: managedClubId,
+              description: `Straffen utanför! ${shooterLast} missade målet.` }
+        return { ...s, events: [...s.events, event as MatchStep['events'][0]],
+          commentary: event.description, commentaryType: (outcome.type === 'goal' ? 'goal' : 'critical') as MatchStep['commentaryType'] }
+      }
+      if (outcome.type === 'goal') {
+        return managedIsHome ? { ...s, homeScore: s.homeScore + 1 } : { ...s, awayScore: s.awayScore + 1 }
+      }
+      return s
+    }))
+
     if (outcome.type === 'goal') {
-      setSteps(prev => prev.map((s, idx) => {
-        if (idx <= currentStep) return s
-        return managedIsHome
-          ? { ...s, homeScore: s.homeScore + 1 }
-          : { ...s, awayScore: s.awayScore + 1 }
-      }))
       playSound('goal')
       playSound('goalHit')
       if (managedIsHome) {
@@ -499,13 +533,27 @@ export function MatchLiveScreen() {
     const outcome = resolveCounter(choice, runner, support, gk, rand)
     setCounterOutcome(outcome)
 
+    const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
+    const minute = activeCounter.minute
+
+    setSteps(prev => prev.map((s, idx) => {
+      if (idx < currentStep) return s
+      if (idx === currentStep) {
+        const event = outcome.type === 'goal'
+          ? { type: MatchEventType.Goal, minute, clubId: managedClubId, playerId: outcome.scorerId,
+              description: outcome.description }
+          : { type: MatchEventType.Save, minute, clubId: managedClubId,
+              description: outcome.description }
+        return { ...s, events: [...s.events, event as MatchStep['events'][0]],
+          commentary: outcome.description, commentaryType: (outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
+      }
+      if (outcome.type === 'goal') {
+        return managedIsHome ? { ...s, homeScore: s.homeScore + 1 } : { ...s, awayScore: s.awayScore + 1 }
+      }
+      return s
+    }))
+
     if (outcome.type === 'goal') {
-      setSteps(prev => prev.map((s, idx) => {
-        if (idx <= currentStep) return s
-        return managedIsHome
-          ? { ...s, homeScore: s.homeScore + 1 }
-          : { ...s, awayScore: s.awayScore + 1 }
-      }))
       playSound('goal')
       playSound('goalHit')
       if (managedIsHome) { setHomeScoreFlash(true); setTimeout(() => setHomeScoreFlash(false), 2000) }
@@ -537,13 +585,27 @@ export function MatchLiveScreen() {
     const outcome = resolveFreeKick(choice, kicker, gk, activeFreeKick, rand)
     setFreeKickOutcome(outcome)
 
+    const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
+    const minute = activeFreeKick.minute
+
+    setSteps(prev => prev.map((s, idx) => {
+      if (idx < currentStep) return s
+      if (idx === currentStep) {
+        const event = outcome.type === 'goal'
+          ? { type: MatchEventType.Goal, minute, clubId: managedClubId, playerId: activeFreeKick.kickerId,
+              description: outcome.description }
+          : { type: MatchEventType.Save, minute, clubId: managedClubId,
+              description: outcome.description }
+        return { ...s, events: [...s.events, event as MatchStep['events'][0]],
+          commentary: outcome.description, commentaryType: (outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
+      }
+      if (outcome.type === 'goal') {
+        return managedIsHome ? { ...s, homeScore: s.homeScore + 1 } : { ...s, awayScore: s.awayScore + 1 }
+      }
+      return s
+    }))
+
     if (outcome.type === 'goal') {
-      setSteps(prev => prev.map((s, idx) => {
-        if (idx <= currentStep) return s
-        return managedIsHome
-          ? { ...s, homeScore: s.homeScore + 1 }
-          : { ...s, awayScore: s.awayScore + 1 }
-      }))
       playSound('goal')
       playSound('goalHit')
       if (managedIsHome) { setHomeScoreFlash(true); setTimeout(() => setHomeScoreFlash(false), 2000) }

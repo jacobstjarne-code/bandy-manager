@@ -130,7 +130,16 @@
       "Bash(grep -n \"awayTrip\\\\|updatedGame.*{$\\\\|return.*{$\" /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/application/useCases/roundProcessor.ts)",
       "Bash(grep -n \"resolveWeeklyDecision\\\\|gameFlowActions\" /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/presentation/store/*.ts)",
       "Read(//dev/**)",
-      "Bash(ls /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/presentation/components/match/TacticChangeModal*)"
+      "Bash(ls /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/presentation/components/match/TacticChangeModal*)",
+      "Bash(grep -n \"preferredMatchMode\\\\|silent\" /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/presentation/screens/*.tsx)",
+      "Bash(git restore *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(echo \"exit_exists: $?\")",
+      "Bash(ls /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/domain/services/*.ts)",
+      "Bash(xargs basename *)",
+      "Bash(ls /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/application/useCases/processors/*.ts)",
+      "Bash(npx vite-node *)",
+      "Bash(ls /Users/jacobstjarne/Desktop/code_projects/bandy-manager/scripts/calibrate*.ts)"
     ]
   }
 }

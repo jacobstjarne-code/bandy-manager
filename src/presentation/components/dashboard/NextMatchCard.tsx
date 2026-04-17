@@ -356,11 +356,6 @@ export function NextMatchCard({
         {/* Special info tags */}
         {(isDerby || isAnnandagen || isCup || isFinal) && (
           <div style={{ display: 'flex', gap: 4, justifyContent: 'center', marginTop: 6 }}>
-            {isDerby && (
-              <>
-                <span className="tag tag-red" style={{ fontSize: 8 }}>🔥 Derby</span>
-              </>
-            )}
             {isAnnandagen && (
               <>
                 <span className="tag tag-green" style={{ fontSize: 8 }}>🎄 Höjdpunkt</span>
