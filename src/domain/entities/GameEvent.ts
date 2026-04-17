@@ -1,10 +1,8 @@
 export type GameEventType =
   | 'transferBidReceived'
-  | 'transferBidResult'
   | 'contractRequest'
   | 'playerUnhappy'
   | 'starPerformance'
-  | 'transferWindowAlert'
   | 'sponsorOffer'
   | 'pressConference'
   | 'dayJobConflict'
@@ -20,7 +18,6 @@ export type GameEventType =
   | 'icaMaxiEvent'
   | 'patronInfluence'
   | 'spoksponsor'
-  | 'presskonferens'
   | 'detOmojligaValet'
   | 'varsel'
   | 'playerMediaComment'
@@ -30,7 +27,6 @@ export type GameEventType =
   | 'supporterEvent'
   | 'mecenatInteraction'
   | 'journalistExclusive'
-  | 'supporterAwayTrip'
   | 'retirementCeremony'
   | 'economicStress'
   | 'mecenatEvent'
@@ -120,7 +116,6 @@ export function getEventPriority(type: GameEventType): EventPriority {
       return 'critical'
     case 'patronEvent':
     case 'pressConference':
-    case 'presskonferens':
     case 'politicianEvent':
     case 'kommunMote':
     case 'hallDebate':

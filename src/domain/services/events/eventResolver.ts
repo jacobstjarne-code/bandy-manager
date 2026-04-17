@@ -854,7 +854,7 @@ export function resolveEvent(
   }
 
   // Special: pressConference — clear pendingPressConference + DEV-013 refusal consequence
-  if (event.type === 'pressConference' || event.type === 'presskonferens') {
+  if (event.type === 'pressConference') {
     // Clear pendingPressConference (WEAK-002)
     if (updatedGame.pendingPressConference?.id === eventId) {
       updatedGame = { ...updatedGame, pendingPressConference: undefined }
