@@ -49,9 +49,10 @@ export function checkContextualSponsors(
     })
   }
 
-  // cs_over_70 → kommunalt engagemang (one-time payment, also checked at round 11)
+  // cs_over_70 → kommunalt engagemang (one-time payment)
+  // Only fires at specific check-points to prevent repeated triggering when CS stays above 70
   const hasCsSponsor = existing.some(s => s.triggeredBy === 'cs_over_70' && s.triggeredSeason === season)
-  if (!hasCsSponsor && cs > 70) {
+  if (!hasCsSponsor && cs > 70 && [5, 11, 18].includes(currentRound)) {
     const managedClub = game.clubs.find(c => c.id === game.managedClubId)
     newSponsors.push({
       id: `contextual_cs70_${season}`,

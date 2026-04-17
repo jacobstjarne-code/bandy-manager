@@ -7,6 +7,10 @@ export interface CommunityActivities {
   bandySchool?: boolean
   socialMedia?: boolean
   vipTent?: boolean
+  // Community-relation activities (affect communityStanding, not income)
+  pensionarskaffe?: boolean   // Pensionärskaffe — integration med lokalsamhället
+  soppkvall?: boolean         // Soppkväll med laget — genuint engagemang
+  skolbesok?: boolean         // Skolbesök — nästa generations supportrar
 }
 
 export type BoardPersonality = 'supporter' | 'ekonom' | 'traditionalist' | 'modernist'

@@ -58,13 +58,13 @@ export type MatchProfile = 'defensive_battle' | 'standard' | 'open_game' | 'chao
 export const PROFILE_GOAL_MODS: Record<MatchProfile, number> = {
   defensive_battle: 0.60,
   standard:         1.00,
-  open_game:        1.40,
-  chaotic:          1.80,
+  open_game:        1.25,  // was 1.40 — matchCore runs more steps/tick than matchEngine
+  chaotic:          1.55,  // was 1.80
 }
 
 // Empirisk boost: verklig Elitserie-data visar 54.3% av mål i 2:a halvlek.
-// Timing weights producerar ~51%. Boost 1.25 → ~54% share + total ~10 mål.
-const SECOND_HALF_BOOST = 1.25
+// Boost 1.19 ger exakt 54.3% share (1.19/2.19). Var 1.25 → för högt totalt.
+const SECOND_HALF_BOOST = 1.19
 
 // Deterministic profile selection from seed — both halves receive the same
 // profile without needing to pass state between generators.

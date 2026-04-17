@@ -140,7 +140,16 @@
       "Bash(ls /Users/jacobstjarne/Desktop/code_projects/bandy-manager/src/application/useCases/processors/*.ts)",
       "Bash(npx vite-node *)",
       "Bash(ls /Users/jacobstjarne/Desktop/code_projects/bandy-manager/scripts/calibrate*.ts)",
-      "Bash(grep -rn \"outlet\\\\|journalist\\\\|headline\\\\|Allehanda\\\\|press\" src/presentation/components/dashboard/*.tsx)"
+      "Bash(grep -rn \"outlet\\\\|journalist\\\\|headline\\\\|Allehanda\\\\|press\" src/presentation/components/dashboard/*.tsx)",
+      "Bash(python -m pytest tests/test_db.py -q)",
+      "Bash(python3 -m pytest tests/test_db.py -q)",
+      "Bash(wc -l /Users/jacobstjarne/Desktop/code_projects/jobbagent/archive/v1/*.py /Users/jacobstjarne/Desktop/code_projects/jobbagent/backend/app.py /Users/jacobstjarne/Desktop/code_projects/jobbagent/backend/db.py /Users/jacobstjarne/Desktop/code_projects/jobbagent/matcher.py /Users/jacobstjarne/Desktop/code_projects/jobbagent/sources.py /Users/jacobstjarne/Desktop/code_projects/jobbagent/discovery.py)",
+      "Bash(ls -la /Users/jacobstjarne/Desktop/code_projects/jobbagent/*.py)",
+      "Bash(python -c \"import database; database.init_db\\(\\); print\\('OK'\\)\")",
+      "Bash(ls -la /Users/jacobstjarne/Desktop/code_projects/jobbagent/*.db)",
+      "Bash(sqlite3 /Users/jacobstjarne/Desktop/code_projects/jobbagent/jobbagent.db \".tables\")",
+      "Bash(timeout 30 python3 main.py --test)",
+      "Read(//Users/jacobstjarne/.claude/projects/-Users-jacobstjarne-Desktop-code_projects-bandy-manager/72f9b58d-6603-4a0f-82dd-065fcbec87e4/tool-results/**)"
     ]
   }
 }

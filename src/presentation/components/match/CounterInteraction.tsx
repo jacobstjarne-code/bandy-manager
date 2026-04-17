@@ -8,9 +8,9 @@ interface CounterInteractionProps {
 }
 
 const CHOICES: { choice: CounterChoice; emoji: string; label: string; sub: string }[] = [
-  { choice: 'sprint',    emoji: '🏃', label: 'Spurta',   sub: 'Hög risk' },
-  { choice: 'earlyBall', emoji: '🎯', label: 'Spela av', sub: 'Medium' },
-  { choice: 'build',     emoji: '🧠', label: 'Bygga',    sub: 'Säkert' },
+  { choice: 'sprint',    emoji: '⚡', label: 'Bryter igenom', sub: 'Hög risk' },
+  { choice: 'earlyBall', emoji: '🎯', label: 'Spela av',      sub: 'Medium' },
+  { choice: 'build',     emoji: '🧠', label: 'Bygga upp',     sub: 'Säkert' },
 ]
 
 const cardStyle: React.CSSProperties = {
@@ -45,7 +45,7 @@ export function CounterInteraction({ data, outcome, onChoose }: CounterInteracti
         {/* Info row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', background: 'var(--bg-dark-surface)', borderRadius: 4, marginBottom: 10 }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-light)' }}>
-            {data.runnerName} springer fritt!
+            {data.runnerName} bryter igenom!
           </span>
           <span style={{ fontSize: 10, color: 'var(--text-light-secondary)', marginLeft: 'auto' }}>{defText}</span>
         </div>

@@ -16,14 +16,17 @@ export function academyActions(get: Get, set: Set) {
       if (!club) return { success: false, error: 'Ingen klubb hittad' }
 
       const costs: Record<string, Record<string, number>> = {
-        kiosk:         { basic: 3000, upgraded: 8000 },
-        lottery:       { basic: 1000, intensive: 5000 },
-        bandyplay:     { active: 0 },
-        functionaries: { active: 2000 },
-        julmarknad:    { active: 2000 },
-        bandySchool:   { active: 5000 },
-        socialMedia:   { active: 2000 },
-        vipTent:       { active: 10000 },
+        kiosk:           { basic: 3000, upgraded: 8000 },
+        lottery:         { basic: 1000, intensive: 5000 },
+        bandyplay:       { active: 0 },
+        functionaries:   { active: 2000 },
+        julmarknad:      { active: 2000 },
+        bandySchool:     { active: 5000 },
+        socialMedia:     { active: 2000 },
+        vipTent:         { active: 10000 },
+        pensionarskaffe: { active: 0 },
+        soppkvall:       { active: 1000 },
+        skolbesok:       { active: 0 },
       }
 
       const cost = costs[key]?.[level] ?? 0
@@ -65,7 +68,7 @@ export function academyActions(get: Get, set: Set) {
         return { success: false, error: 'Redan aktiv' }
       }
 
-      const boolKeys = ['bandyplay', 'functionaries', 'julmarknad', 'bandySchool', 'socialMedia', 'vipTent']
+      const boolKeys = ['bandyplay', 'functionaries', 'julmarknad', 'bandySchool', 'socialMedia', 'vipTent', 'pensionarskaffe', 'soppkvall', 'skolbesok']
       const updatedCA = boolKeys.includes(key)
         ? { ...ca, [key]: true }
         : { ...ca, [key]: level }

@@ -57,6 +57,9 @@ export function processCommunity(
   if (csActivities?.functionaries) csBoost += 0.05
   if (csActivities?.bandySchool) csBoost += 0.08
   if (csActivities?.socialMedia) csBoost += 0.03
+  if (csActivities?.pensionarskaffe) csBoost += 0.10
+  if (csActivities?.soppkvall) csBoost += 0.08
+  if (csActivities?.skolbesok) csBoost += 0.12
   // ── Frivilligbonus ────────────────────────────────────────────────────────
   const volunteerCount = (game.volunteers ?? []).length
   if (volunteerCount > 0) {

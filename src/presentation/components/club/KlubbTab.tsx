@@ -134,15 +134,16 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
           <div style={{ flex: cs, height: 7, background: csColor(cs), borderRadius: '4px 0 0 4px' }} />
           <div style={{ flex: 100 - cs, height: 7, background: 'var(--border-dark)', borderRadius: '0 4px 4px 0' }} />
         </div>
-        {/* Aktiviteter */}
+        {/* Samhällsaktiviteter — påverkar bygdens puls, inte inkomst */}
+        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>ENGAGEMANG</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
           {([
-            { key: 'kiosk',         levels: [{ id: 'basic', label: '🏪 Kiosk (3 tkr)', cost: 3000 }, { id: 'upgraded', label: '🏪 Kiosk uppgraderad (8 tkr)', cost: 8000 }], current: ca?.kiosk ?? 'none', isEnum: true },
-            { key: 'lottery',       levels: [{ id: 'basic', label: '🎫 Lotteri (1 tkr)', cost: 1000 }, { id: 'intensive', label: '🎫 Lotteri intensivt (5 tkr)', cost: 5000 }], current: ca?.lottery ?? 'none', isEnum: true },
-            { key: 'functionaries', levels: [{ id: 'active', label: '🤝 Funktionärer (2 tkr)', cost: 2000 }], current: ca?.functionaries ? 'active' : 'none', isEnum: false },
-            { key: 'bandyplay',     levels: [{ id: 'active', label: '🏒 Bandyskola (gratis)', cost: 0 }], current: ca?.bandyplay ? 'active' : 'none', isEnum: false },
-            { key: 'socialMedia',   levels: [{ id: 'active', label: '📱 Sociala medier (2 tkr)', cost: 2000 }], current: ca?.socialMedia ? 'active' : 'none', isEnum: false },
-            { key: 'bandySchool',   levels: [{ id: 'active', label: '🏫 Bandyskola akademi (5 tkr)', cost: 5000 }], current: ca?.bandySchool ? 'active' : 'none', isEnum: false },
+            { key: 'functionaries', levels: [{ id: 'active', label: '🤝 Matchvärdar (2 tkr)', cost: 2000 }], current: ca?.functionaries ? 'active' : 'none', isEnum: false },
+            { key: 'bandyplay',     levels: [{ id: 'active', label: '🏒 Bandyskola för barn (gratis)', cost: 0 }], current: ca?.bandyplay ? 'active' : 'none', isEnum: false },
+            { key: 'bandySchool',   levels: [{ id: 'active', label: '🏫 Bandyskola avancerad (5 tkr)', cost: 5000 }], current: ca?.bandySchool ? 'active' : 'none', isEnum: false },
+            { key: 'pensionarskaffe', levels: [{ id: 'active', label: '☕ Pensionärskaffe (gratis)', cost: 0 }], current: ca?.pensionarskaffe ? 'active' : 'none', isEnum: false },
+            { key: 'soppkvall',     levels: [{ id: 'active', label: '🍲 Soppkväll med laget (1 tkr)', cost: 1000 }], current: ca?.soppkvall ? 'active' : 'none', isEnum: false },
+            { key: 'skolbesok',     levels: [{ id: 'active', label: '🎒 Skolbesök (gratis)', cost: 0 }], current: ca?.skolbesok ? 'active' : 'none', isEnum: false },
           ] as const).map(({ key, levels, current }) => {
             const nextLevel = levels.find(l => l.id !== current)
             const isActive = current !== 'none'
@@ -213,7 +214,13 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
                 <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>SENASTE INTERAKTIONER</p>
                 {recentMemories.map((m, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, padding: '3px 0', borderBottom: i < recentMemories.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>Omg {m.matchday} — {m.event}</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>Omg {m.matchday} — {{
+                      good_answer: 'Bra svar',
+                      bad_answer: 'Dåligt svar',
+                      refused_press: 'Vägrade kommentera',
+                      big_win: 'Stor seger',
+                      crisis: 'Krisläge',
+                    }[m.event] ?? m.event}</span>
                     <span style={{ color: m.sentiment >= 0 ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>{m.sentiment >= 0 ? '+' : ''}{m.sentiment}</span>
                   </div>
                 ))}
