@@ -149,8 +149,6 @@ export const commentary = {
     "{team} får hörna. En bra inslagen boll som resulterar i ett skott låååångt över.",
     "Hörna för {team}. Men inget kommer ut av det.",
     "{team} får hörna. Bollen studsar lite, men det blir ändå till ett skott i ruset.",
-    "Hörna för {team}. Tredje hörnan på kort tid. Hårt tryck nu.",
-    "{team} med ännu en hörna. De styr spelet nu.",
     "Hörna. Inslagen mot tredjeskytt, som skjuter rakt i {opponent}s rus.",
   ],
 

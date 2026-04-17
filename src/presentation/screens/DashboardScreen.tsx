@@ -870,7 +870,7 @@ export function DashboardScreen() {
                 <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
                   {cupEliminated ? 'Utslagna' : (() => {
                     const hasBye = game.cupBracket!.matches.some(m => m.isBye && (m.homeClubId === game.managedClubId || m.awayClubId === game.managedClubId))
-                    if (hasBye) return 'Direktkval. till kvartsfinal'
+                    if (hasBye) return 'Direktkvalificerad till kvartsfinal'
                     const nextScheduled = game.fixtures.filter(f => f.isCup && f.status === 'scheduled').sort((a, b) => a.matchday - b.matchday)[0]
                     if (nextScheduled) {
                       const cupMatch = game.cupBracket!.matches.find(m => m.fixtureId === nextScheduled.id)
