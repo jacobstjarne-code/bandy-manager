@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { playSound } from '../audio/soundEffects'
@@ -21,17 +22,28 @@ export function EventOverlay() {
   // Block events during live match, match setup, match result, and review — review handles events inline
   const isMatchScreen = location.pathname.includes('/match/live') || location.pathname === '/game/match' || location.pathname === '/game/match-result' || location.pathname === '/game/review'
   const events = game?.pendingEvents ?? []
-  if (!game || events.length === 0 || isMatchScreen) return null
 
   const priorityOrder = { critical: 0, high: 1, normal: 2, low: 3 }
-  const event = [...events]
-    .sort((a, b) => {
-      const pa = a.priority ?? getEventPriority(a.type)
-      const pb = b.priority ?? getEventPriority(b.type)
-      return priorityOrder[pa] - priorityOrder[pb]
-    })
-    .find(e => !e.resolved) ?? events[0]
-  if (!event) return null
+  const event = (game && events.length > 0 && !isMatchScreen)
+    ? ([...events]
+        .sort((a, b) => {
+          const pa = a.priority ?? getEventPriority(a.type)
+          const pb = b.priority ?? getEventPriority(b.type)
+          return priorityOrder[pa] - priorityOrder[pb]
+        })
+        .find(e => !e.resolved) ?? events[0])
+    : null
+
+  // Auto-resolve pressConference events if journalist data is missing — avoids blocking the event queue
+  useEffect(() => {
+    if (!event) return
+    if (event.type === 'pressConference' && !game?.journalist) {
+      console.warn('[EventOverlay] Missing journalist, auto-resolving event', { eventId: event.id })
+      resolveEvent(event.id, event.choices[0]?.id ?? 'no_choice')
+    }
+  }, [event?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!game || events.length === 0 || isMatchScreen || !event) return null
 
   const relatedPlayer = event.relatedPlayerId
     ? game.players.find(p => p.id === event.relatedPlayerId)
@@ -41,15 +53,19 @@ export function EventOverlay() {
     ? game.clubs.find(c => c.id === event.relatedClubId)
     : null
 
+  const activeEvent = event  // non-null: guarded by early return above
   function handleChoice(choiceId: string) {
     playSound('click')
-    resolveEvent(event.id, choiceId)
+    resolveEvent(activeEvent.id, choiceId)
   }
 
   const total = events.length
 
   // Presskonferens: dedikerad visuell scen istf generisk overlay
   if (event.type === 'pressConference') {
+    if (!game.journalist) {
+      return null  // useEffect handles auto-resolve
+    }
     return (
       <PressConferenceScene
         event={event}

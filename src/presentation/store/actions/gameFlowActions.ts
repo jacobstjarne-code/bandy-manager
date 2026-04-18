@@ -140,10 +140,8 @@ export function gameFlowActions(get: Get, set: Set) {
       if (managerFired) {
         navigateTo('/game/game-over', { replace: true })
       } else if (result.seasonEnded) {
-        const ps = result.game.pendingScreen
-        if (ps === PendingScreen.SeasonSummary) navigateTo('/game/season-summary', { replace: true })
-        else if (ps === PendingScreen.BoardMeeting) navigateTo('/game/board-meeting', { replace: true })
-        else if (ps === PendingScreen.PreSeason) navigateTo('/game/pre-season', { replace: true })
+        // Navigation handled by DashboardScreen's pendingScreen mechanism — avoids duplicate navigation
+        navigateTo('/game/dashboard', { replace: true })
       } else if (!suppressMatchNavigation) {
         const ps = result.game.pendingScreen
         if (ps === PendingScreen.HalfTimeSummary) {
@@ -211,10 +209,18 @@ export function gameFlowActions(get: Get, set: Set) {
       const effects = resolveWeeklyDecisionFn(game, decision, choice)
       const resolvedKey = `${decision.id}_${game.currentSeason}`
 
+      // Cooldown starts from resolution time — ensures at least COOLDOWN rounds between resolution and next generation
+      const resolvedMatchday = Math.min(
+        ...game.fixtures.filter(f => f.status !== 'completed').map(f => f.matchday),
+        Infinity,
+      )
+      const resolvedRound = isFinite(resolvedMatchday) ? resolvedMatchday : (game.weeklyDecisionLastRound ?? 1)
+
       let updatedGame: SaveGame = {
         ...game,
         pendingWeeklyDecision: undefined,
         resolvedWeeklyDecisions: [...(game.resolvedWeeklyDecisions ?? []), resolvedKey],
+        weeklyDecisionLastRound: Math.max(game.weeklyDecisionLastRound ?? 0, resolvedRound),
       }
 
       // Apply effects
