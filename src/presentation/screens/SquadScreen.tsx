@@ -260,6 +260,7 @@ export function SquadScreen() {
   useEffect(() => { markScreenVisited('squad') }, [])
   const [sort, setSort] = useState<SortKey>('position')
   const [filter, setFilter] = useState<FilterKey>('all')
+  const [lineupTab, setLineupTab] = useState<'startelva' | 'bank' | 'reserv'>('startelva')
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null)
   const [talkFeedback, setTalkFeedback] = useState<{ text: string; moraleChange: number; formChange: number } | null>(null)
   const [leadershipFeedback, setLeadershipFeedback] = useState<string | null>(null)
@@ -302,6 +303,17 @@ export function SquadScreen() {
     if (sort === 'age') return a.age - b.age
     return 0
   })
+
+  // Apply lineup tab filter when lineup exists
+  const lineupFiltered: Player[] = (() => {
+    const lineup = game?.managedClubPendingLineup
+    if (!lineup) return sorted
+    const startIds = new Set(lineup.startingPlayerIds)
+    const benchIds = new Set(lineup.benchPlayerIds)
+    if (lineupTab === 'startelva') return sorted.filter(p => startIds.has(p.id))
+    if (lineupTab === 'bank') return sorted.filter(p => benchIds.has(p.id))
+    return sorted.filter(p => !startIds.has(p.id) && !benchIds.has(p.id))
+  })()
 
   const navigate = useNavigate()
   const selectedPlayer = selectedPlayerId ? players.find(p => p.id === selectedPlayerId) ?? null : null
@@ -376,6 +388,35 @@ export function SquadScreen() {
             </button>
           ))}
         </div>
+
+        {/* Lineup tabs — only when lineup exists */}
+        {game?.managedClubPendingLineup && (
+          <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+            {([
+              { key: 'startelva' as const, label: `Startelva (${game.managedClubPendingLineup.startingPlayerIds.length})` },
+              { key: 'bank' as const, label: `Bänken (${game.managedClubPendingLineup.benchPlayerIds.length})` },
+              { key: 'reserv' as const, label: 'Reserv' },
+            ]).map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setLineupTab(tab.key)}
+                style={{
+                  flex: 1,
+                  padding: '7px 8px',
+                  borderRadius: 8,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  border: lineupTab === tab.key ? 'none' : '1px solid var(--accent)',
+                  background: lineupTab === tab.key ? 'var(--accent)' : 'transparent',
+                  color: lineupTab === tab.key ? '#fff' : 'var(--accent)',
+                  cursor: 'pointer',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Player list */}
@@ -445,8 +486,14 @@ export function SquadScreen() {
           />
         )}
 
-        <SectionCard title="TRUPPEN" variant="sharp" style={{ margin: '0 0 16px' }}>
-          {sorted.map((player, index) => (
+        <SectionCard
+          title={game?.managedClubPendingLineup
+            ? (lineupTab === 'startelva' ? 'STARTELVA' : lineupTab === 'bank' ? 'BÄNKEN' : 'RESERV')
+            : 'TRUPPEN'
+          }
+          variant="sharp"
+          style={{ margin: '0 0 16px' }}>
+          {(game?.managedClubPendingLineup ? lineupFiltered : sorted).map((player, index) => (
             <PlayerRowAnimated
               key={player.id}
               player={player}
@@ -454,9 +501,11 @@ export function SquadScreen() {
               onClick={() => setSelectedPlayerId(player.id)}
             />
           ))}
-          {sorted.length === 0 && (
+          {(game?.managedClubPendingLineup ? lineupFiltered : sorted).length === 0 && (
             <p style={{ padding: '24px 0', color: 'var(--text-muted)', textAlign: 'center', fontSize: 14 }}>
-              Inga spelare i denna position
+              {game?.managedClubPendingLineup && lineupTab === 'startelva' ? 'Inga startspelare valda' :
+               game?.managedClubPendingLineup && lineupTab === 'bank' ? 'Inga avbytare valda' :
+               'Inga spelare i denna position'}
             </p>
           )}
         </SectionCard>
@@ -522,7 +571,6 @@ export function SquadScreen() {
             width: '100%',
             maxWidth: 390,
             position: 'relative',
-            overflow: 'hidden',
           }}>
           <PlayerCard
             player={selectedPlayer}

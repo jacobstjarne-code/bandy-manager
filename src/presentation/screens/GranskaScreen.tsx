@@ -15,6 +15,7 @@ import { generateInsandare } from '../../domain/services/insandareService'
 import { generatePostMatchOpponentQuote } from '../../domain/services/opponentManagerService'
 import { generateSilentMatchReport } from '../../domain/services/silentMatchReportService'
 import { getPortraitSvg } from '../../domain/services/portraitService'
+import { generateCoachQuote } from '../../domain/services/assistantCoachService'
 
 function choiceStyle(_choiceId: string): React.CSSProperties {
   return { background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)' }
@@ -613,14 +614,14 @@ export function GranskaScreen() {
       const r2 = seededRand(seed * 13 + 1)
       let x: number, y: number
       if (kind === 'goal') {
-        x = GOAL_X + (r1 - 0.5) * 80
-        y = GOAL_Y + 20 + r2 * 50
+        x = GOAL_X + (r1 - 0.5) * 90
+        y = GOAL_Y + 10 + r2 * 80
       } else if (kind === 'save') {
         x = GOAL_X + (r1 - 0.5) * 100
-        y = GOAL_Y + 15 + r2 * 70
+        y = GOAL_Y + 15 + r2 * 100
       } else {
         x = W * 0.1 + r1 * W * 0.8
-        y = GOAL_Y + 10 + r2 * 140
+        y = GOAL_Y + 20 + r2 * 130
       }
       return { x: Math.max(10, Math.min(W - 10, x)), y: Math.max(GOAL_Y + 5, Math.min(H - 10, y)) }
     }
@@ -640,6 +641,28 @@ export function GranskaScreen() {
     const oppShots = isHome ? fixture.report.shotsAway : fixture.report.shotsHome
     const oppGoals = fixture.events.filter(e => e.type === MatchEventType.Goal && e.clubId !== managedClubId).length
 
+    // Opponent shots in lower half (mirrored)
+    const OPP_GOAL_Y = H - 20
+    type OppDot = { x: number; y: number; kind: 'goal' | 'save' | 'miss' }
+    const oppDots: OppDot[] = []
+    let oppSeed = 100
+
+    function nextOppPos(kind: 'goal' | 'save' | 'miss'): { x: number; y: number } {
+      oppSeed++
+      const r1 = seededRand(oppSeed * 11)
+      const r2 = seededRand(oppSeed * 17)
+      if (kind === 'goal') return { x: GOAL_X + (r1 - 0.5) * 90, y: OPP_GOAL_Y - 10 - r2 * 80 }
+      if (kind === 'save') return { x: GOAL_X + (r1 - 0.5) * 100, y: OPP_GOAL_Y - 15 - r2 * 100 }
+      return { x: W * 0.1 + r1 * W * 0.8, y: OPP_GOAL_Y - 20 - r2 * 130 }
+    }
+
+    const oppGoalCount = fixture.events.filter(e => e.type === MatchEventType.Goal && e.clubId !== managedClubId).length
+    const oppSavedCount = Math.min(oppShots - oppGoalCount, oppShots)
+    const oppMissCount = Math.max(0, oppShots - oppGoalCount - oppSavedCount)
+    for (let i = 0; i < oppGoalCount; i++) oppDots.push({ ...nextOppPos('goal'), kind: 'goal' })
+    for (let i = 0; i < oppSavedCount; i++) oppDots.push({ ...nextOppPos('save'), kind: 'save' })
+    for (let i = 0; i < oppMissCount; i++) oppDots.push({ ...nextOppPos('miss'), kind: 'miss' })
+
     return (
       <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
         <SectionLabel style={{ marginBottom: 8 }}>SKOTTBILD</SectionLabel>
@@ -653,8 +676,12 @@ export function GranskaScreen() {
             <rect x={GOAL_X + 19} y={GOAL_Y - 8} width="1" height="12" fill="var(--border)" />
             {/* Goal area */}
             <rect x={GOAL_X - 40} y={GOAL_Y} width="80" height="30" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+            {/* Opponent goal area */}
+            <rect x={GOAL_X - 40} y={H - 30} width="80" height="30" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
             {/* Center arc */}
             <ellipse cx={GOAL_X} cy={H} rx="80" ry="50" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+            {/* Center line */}
+            <line x1="0" y1={H/2} x2={W} y2={H/2} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="3,3" />
             {/* Shot dots */}
             {dots.map((d, i) => (
               <g key={i}>
@@ -665,10 +692,30 @@ export function GranskaScreen() {
                   stroke={d.kind === 'goal' ? 'rgba(90,154,74,1)' : d.kind === 'save' ? 'rgba(196,122,58,1)' : 'rgba(255,255,255,0.4)'}
                   strokeWidth="1"
                 />
-                {d.label && (
-                  <text x={d.x + 8} y={d.y + 4} fontSize="7" fill="rgba(255,255,255,0.7)">{d.label}</text>
-                )}
+                {d.label && (() => {
+                  const angle = (d.label.charCodeAt(0) % 8) * (Math.PI / 4)
+                  const lx = d.x + Math.cos(angle) * 12
+                  const ly = d.y + Math.sin(angle) * 12 + 2
+                  return <text x={lx} y={ly} fontSize="7" fill="rgba(255,255,255,0.7)">{d.label}</text>
+                })()}
               </g>
+            ))}
+            {/* Opponent goal at bottom */}
+            <rect x={GOAL_X - 20} y={H - 8} width="40" height="8" fill="var(--border)" />
+            <rect x={GOAL_X - 20} y={H - 12} width="1" height="12" fill="var(--border)" />
+            <rect x={GOAL_X + 19} y={H - 12} width="1" height="12" fill="var(--border)" />
+            {/* Opponent shot dots */}
+            {oppDots.map((d, i) => (
+              <circle
+                key={`opp-${i}`}
+                cx={Math.max(10, Math.min(W - 10, d.x))}
+                cy={Math.max(10, Math.min(H - 8, d.y))}
+                r={d.kind === 'goal' ? 5 : 3}
+                fill={d.kind === 'goal' ? 'rgba(176,80,64,0.6)' : d.kind === 'save' ? 'rgba(196,122,58,0.4)' : 'rgba(255,255,255,0.1)'}
+                stroke={d.kind === 'goal' ? 'rgba(176,80,64,0.9)' : 'rgba(255,255,255,0.2)'}
+                strokeWidth="1"
+                opacity="0.6"
+              />
             ))}
           </svg>
         </div>
@@ -860,21 +907,29 @@ export function GranskaScreen() {
 
     return (
       <>
-        {coach && coachItem && (
-          <div className="card-sharp" style={{ margin: '0 0 6px', overflow: 'hidden' }}>
-            <div style={{ background: 'var(--accent)', height: 22, display: 'flex', alignItems: 'center', padding: '0 12px', gap: 8 }}>
-              <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--accent-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 9, fontWeight: 700, color: '#fff' }}>{coach.initials}</span>
+        {coach && (() => {
+          const quote = coachItem?.body ?? (coach ? generateCoachQuote(coach, {
+            type: 'match-result',
+            result: won ? 'win' : lost ? 'loss' : 'draw',
+            score: `${myScore}–${theirScore}`,
+          }) : null)
+          if (!quote) return null
+          return (
+            <div className="card-sharp" style={{ margin: '0 0 6px', overflow: 'hidden' }}>
+              <div style={{ background: 'var(--accent)', height: 22, display: 'flex', alignItems: 'center', padding: '0 12px', gap: 8 }}>
+                <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--accent-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: '#fff' }}>{coach.initials}</span>
+                </div>
+                <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', color: '#fff' }}>{coach.name.toUpperCase()} · ASSISTENTTRÄNARE</span>
               </div>
-              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', color: '#fff' }}>{coach.name.toUpperCase()} · ASSISTENTTRÄNARE</span>
+              <div style={{ padding: '12px 14px' }}>
+                <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                  "{quote}"
+                </p>
+              </div>
             </div>
-            <div style={{ padding: '12px 14px' }}>
-              <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                "{coachItem.body}"
-              </p>
-            </div>
-          </div>
-        )}
+          )
+        })()}
 
         {/* Consequences */}
         {standing && (
@@ -941,6 +996,33 @@ export function GranskaScreen() {
             </div>
           )
         })()}
+
+        {/* Key insights */}
+        {fixture?.report && (() => {
+          const insights: string[] = []
+          const shots = isHome ? fixture.report.shotsHome : fixture.report.shotsAway
+          const goals = myScore
+          const conversion = shots > 0 ? goals / shots : 0
+          if (conversion > 0.5) insights.push(`Effektivt anfallsspel — ${Math.round(conversion * 100)}% målkonvertering.`)
+          else if (shots > 0 && conversion < 0.15) insights.push(`Ineffektivt framåt — ${shots} skott gav bara ${goals} mål.`)
+          const myCorners = isHome ? fixture.report.cornersHome : fixture.report.cornersAway
+          if (myCorners >= 8) insights.push(`Kontinuerligt hörnstryck — ${myCorners} hörn under matchen.`)
+          const potmPlayer = potm
+          if (potmPlayer) insights.push(`${potmPlayer.firstName} ${potmPlayer.lastName} stod ut och fick matchens bästa betyg.`)
+          if (won && (myScore - theirScore) >= 3) insights.push('En klar seger som styrker lagets nuvarande form.')
+          if (lost && (theirScore - myScore) >= 3) insights.push('En tungt förlust att analysera grundligt.')
+          if (insights.length === 0) return null
+          return (
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+              <SectionLabel style={{ marginBottom: 8 }}>NYCKELINSIKTER</SectionLabel>
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, lineHeight: 1.7 }}>
+                {insights.map((ins, i) => (
+                  <li key={i} style={{ color: 'var(--text-secondary)' }}>{ins}</li>
+                ))}
+              </ul>
+            </div>
+          )
+        })()}
       </>
     )
   }
@@ -950,7 +1032,7 @@ export function GranskaScreen() {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
       {/* Content */}
-      <div className="texture-wood card-stack" style={{ flex: 1, overflowY: 'auto', paddingTop: 12, paddingBottom: 8 }}>
+      <div className="texture-wood card-stack" style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingTop: 12, paddingBottom: 8 }}>
         {step === 'oversikt' && renderOversikt()}
         {step === 'spelare' && renderSpelare()}
         {step === 'shotmap' && renderShotmap()}
@@ -993,16 +1075,13 @@ export function GranskaScreen() {
                   border: isActive ? 'none' : '1px solid var(--accent)',
                   background: isActive ? 'var(--accent)' : 'transparent',
                   cursor: 'pointer',
-                  opacity: isVisited ? 0.45 : 1,
+                  opacity: isVisited ? 0.55 : 1,
                   boxShadow: isVisited ? 'none' : (isActive ? '0 2px 6px rgba(196,122,58,0.35)' : 'none'),
                   position: 'relative',
                 }}
               >
                 <span style={{ fontSize: 20 }}>{s.icon}</span>
                 <span style={{ fontSize: 8, color: isActive ? '#fff' : 'var(--accent)', letterSpacing: '0.5px', fontWeight: 600 }}>{s.label}</span>
-                {isVisited && (
-                  <div style={{ position: 'absolute', bottom: 0, left: '20%', right: '20%', height: 2, background: 'var(--accent)', borderRadius: 1 }} />
-                )}
               </button>
             )
           })}

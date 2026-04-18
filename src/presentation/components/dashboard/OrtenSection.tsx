@@ -1,6 +1,5 @@
 import { SectionLabel } from '../SectionLabel'
 import { DiamondDivider } from './DiamondDivider'
-import type { Moment } from '../../../domain/entities/Moment'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 
 interface Props {
@@ -8,42 +7,46 @@ interface Props {
   currentMatchday: number
 }
 
-function formatMomentTime(moment: Moment, currentMatchday: number): string {
-  const delta = currentMatchday - moment.matchday
-  if (delta <= 0) return 'igår'
-  if (delta === 1) return 'förra omgången'
-  return `${delta} omgångar sedan`
-}
-
-export function OrtenSection({ game, currentMatchday }: Props) {
+export function OrtenSection({ game, currentMatchday: _currentMatchday }: Props) {
   const moments = game.recentMoments ?? []
   if (moments.length === 0) return null
   const visible = moments.slice(0, 3)
 
   return (
-    <div className="card-sharp" style={{ margin: '8px 0', padding: '12px 14px' }}>
-      <SectionLabel style={{ marginBottom: 10 }}>🏘 ORTEN</SectionLabel>
+    <div style={{ margin: '8px 0' }}>
+      <SectionLabel style={{ marginBottom: 8 }}>🏘 ORTEN</SectionLabel>
       {visible.map((m, i) => (
         <div key={m.id}>
-          <div style={{ marginBottom: 4 }}>
-            <p style={{
-              fontSize: 13, fontWeight: 700, color: 'var(--text-primary)',
-              fontFamily: 'var(--font-display)', margin: 0, lineHeight: 1.3,
+          <div style={{ borderRadius: 6, overflow: 'hidden', marginBottom: 4 }}>
+            {/* Leather bar */}
+            <div style={{
+              background: 'var(--accent)',
+              height: 22,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0 10px',
             }}>
-              {m.title}
-            </p>
-            <p style={{
-              fontSize: 9, color: 'var(--text-muted)', margin: '2px 0 6px',
-              fontFamily: 'var(--font-body)',
-            }}>
-              — {formatMomentTime(m, currentMatchday)}
-            </p>
-            <p style={{
-              fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5,
-              fontFamily: 'var(--font-body)', margin: 0,
-            }}>
-              {m.body}
-            </p>
+              <span style={{ color: '#fff', fontSize: 9, fontWeight: 700, letterSpacing: '1.5px' }}>HÄNDELSE</span>
+              <span style={{ color: '#fff', fontSize: 9, opacity: 0.8, letterSpacing: '0.5px' }}>
+                OMG {m.matchday} · S{m.season}
+              </span>
+            </div>
+            {/* Content */}
+            <div style={{ padding: '8px 10px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderTop: 'none', borderRadius: '0 0 6px 6px' }}>
+              <p style={{
+                fontSize: 13, fontWeight: 700, color: 'var(--text-primary)',
+                fontFamily: 'var(--font-display)', margin: 0, lineHeight: 1.3,
+              }}>
+                {m.title}
+              </p>
+              <p style={{
+                fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5,
+                fontFamily: 'var(--font-body)', margin: '4px 0 0',
+              }}>
+                {m.body}
+              </p>
+            </div>
           </div>
           {i < visible.length - 1 && <DiamondDivider />}
         </div>

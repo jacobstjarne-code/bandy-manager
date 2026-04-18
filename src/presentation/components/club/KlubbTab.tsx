@@ -468,7 +468,7 @@ export function KlubbTab({ club, game, navigate, interactWithPolitician, startFa
         <FacilityRow label="Ungdomsrekrytering" value={club.youthRecruitment} />
         <FacilityRow label="Ungdomsutveckling" value={club.youthDevelopment} />
         {(game.facilityProjects ?? []).filter(p => p.status === 'in_progress').map(proj => (
-          <div key={proj.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+          <div key={proj.id} style={{ padding: '8px 0' }}>
             <p style={{ fontSize: 12, fontWeight: 600 }}>🚧 {proj.name}</p>
             <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{proj.description}</p>
           </div>
