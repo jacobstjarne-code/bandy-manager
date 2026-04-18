@@ -14,6 +14,7 @@ import { SectionLabel } from '../components/SectionLabel'
 import { generateInsandare } from '../../domain/services/insandareService'
 import { generatePostMatchOpponentQuote } from '../../domain/services/opponentManagerService'
 import { generateSilentMatchReport } from '../../domain/services/silentMatchReportService'
+import { getPortraitSvg } from '../../domain/services/portraitService'
 
 function choiceStyle(_choiceId: string): React.CSSProperties {
   return { background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)' }
@@ -31,7 +32,6 @@ function generateQuickSummary(fixture: Fixture, managedIsHome: boolean, players:
   const lateGoals = goals.filter(e => (e.minute ?? 0) >= 55)
   const lateDecider = lateGoals.length > 0 && Math.abs(margin) <= 1
 
-  // Scorer summary
   const scorerCounts: Record<string, number> = {}
   const scorerNames: Record<string, string> = {}
   goals.forEach(e => {
@@ -58,43 +58,44 @@ function generateQuickSummary(fixture: Fixture, managedIsHome: boolean, players:
   const lines: string[] = []
 
   if (myScore > theirScore) {
-    if (margin >= 4) {
-      lines.push(`Stormatch. ${myScore}–${theirScore} och det var aldrig i närheten av en dramatisk avslutning.`)
-      if (totalGoals >= 10) lines.push(`${totalGoals} mål totalt — publiken fick valuta för pengarna.`)
-    } else if (margin >= 2) {
-      lines.push(`Kontrollerad seger, ${myScore}–${theirScore}. Laget tog täten och höll den.`)
-    } else if (lateDecider) {
-      lines.push(`Nervpirrande till det sista. Avgörandet kom sent och slutade ${myScore}–${theirScore}.`)
-    } else {
-      lines.push(`Knapp seger, ${myScore}–${theirScore}. Jämnt länge men laget hade den avgörande kvaliteten när det gällde.`)
-    }
+    if (margin >= 4) lines.push('En övertygande seger.')
+    else if (margin === 3) lines.push('En klar seger.')
+    else if (margin === 2) lines.push('En välförtjänt seger.')
+    else if (lateDecider) lines.push('En dramatisk seger i slutminuterna.')
+    else lines.push('En knapp men viktig seger.')
   } else if (myScore < theirScore) {
-    if (margin <= -4) {
-      lines.push(`Tungt. ${myScore}–${theirScore} och motståndarna visade varför de är ett hot.`)
-    } else if (margin <= -2) {
-      lines.push(`${myScore}–${theirScore}. Motståndarna var ett snäpp bättre i de flesta delar av spelet.`)
-    } else if (lateDecider) {
-      lines.push(`Länge jämnt, men ett sent mål fällde avgörandet till motståndarnas fördel. ${myScore}–${theirScore}.`)
-    } else {
-      lines.push(`${myScore}–${theirScore}. Motståndarna var starkare idag — det är svårt att säga något annat.`)
-    }
+    if (margin <= -4) lines.push('En tungt matchdag att glömma.')
+    else if (margin === -3) lines.push('En klar förlust.')
+    else if (lateDecider) lines.push('En bitter förlust i matchens slutskede.')
+    else lines.push('En förlust att analysera.')
   } else {
-    if (totalGoals >= 8) {
-      lines.push(`Målfest och rättvis poängdelning, ${myScore}–${theirScore}. ${totalGoals} mål och publiken var med hela vägen.`)
-    } else if (totalGoals === 0) {
-      lines.push(`Mållöst kryss. Båda lagen var defensivt solida men offensivt utan genomslag.`)
-    } else if (lateDecider) {
-      lines.push(`Utjämning sent höll kryss vid liv — ${myScore}–${theirScore}.`)
-    } else {
-      lines.push(`Rättvis poängdelning, ${myScore}–${theirScore}. Båda lagen hade sina perioder.`)
-    }
+    lines.push('En poäng som känns som en förlust — eller en vinst, beroende på perspektiv.')
   }
 
-  const sc = scorerLine()
-  if (sc) lines.push(sc)
+  const sl = scorerLine()
+  if (sl) lines.push(sl)
+
+  if (totalGoals >= 10) lines.push('Många mål i en öppen match.')
+  else if (totalGoals <= 2) lines.push('En tät och defensiv drabbning.')
 
   return lines.join(' ')
 }
+
+// Seeded random for shot map positions
+function seededRand(seed: number): number {
+  const x = Math.sin(seed + 1) * 10000
+  return x - Math.floor(x)
+}
+
+type GranskaStep = 'oversikt' | 'spelare' | 'shotmap' | 'forlop' | 'analys'
+
+const STEPS: { id: GranskaStep; icon: string; label: string }[] = [
+  { id: 'oversikt', icon: '🎯', label: 'Översikt' },
+  { id: 'spelare', icon: '👥', label: 'Spelare' },
+  { id: 'shotmap', icon: '📈', label: 'Shotmap' },
+  { id: 'forlop', icon: '⚡', label: 'Förlopp' },
+  { id: 'analys', icon: '🎓', label: 'Analys' },
+]
 
 export function GranskaScreen() {
   const navigate = useNavigate()
@@ -107,6 +108,8 @@ export function GranskaScreen() {
   const [resolvedEventIds, setResolvedEventIds] = useState<Set<string>>(new Set())
   const [chosenLabels, setChosenLabels] = useState<Record<string, string>>({})
   const [soundsPlayed, setSoundsPlayed] = useState(false)
+  const [step, setStep] = useState<GranskaStep>('oversikt')
+  const [visitedSteps, setVisitedSteps] = useState<Set<GranskaStep>>(new Set(['oversikt']))
   const didAdvance = useRef(false)
   const didRedirect = useRef(false)
 
@@ -121,9 +124,6 @@ export function GranskaScreen() {
       navigate('/game/dashboard', { replace: true })
       return
     }
-    // Live match: advance() was never called. Process the remaining matchday now.
-    // Guard: if this fixture's matchday was already processed (e.g. remount after back navigation),
-    // skip advance() to prevent double side-effects.
     const liveFixture = game.fixtures.find(f => f.id === game.lastCompletedFixtureId)
     const alreadyProcessed = liveFixture && game.lastProcessedMatchday === liveFixture.matchday
     if (!didAdvance.current && !alreadyProcessed) {
@@ -145,6 +145,7 @@ export function GranskaScreen() {
   }, [roundSummary, soundsPlayed])
 
   if (!game) return null
+  const g = game  // narrowed SaveGame — used by nested render functions
 
   const fixture = game.lastCompletedFixtureId
     ? game.fixtures.find(f => f.id === game.lastCompletedFixtureId)
@@ -176,12 +177,10 @@ export function GranskaScreen() {
   const potm = potmId ? game.players.find(p => p.id === potmId) : null
   const potmRating = potmId ? fixture?.report?.playerRatings[potmId] : null
 
-  // Key moments
   const keyMoments = fixture?.events
     .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard)
     .sort((a, b) => a.minute - b.minute) ?? []
 
-  // Round summary data
   const rs = roundSummary
   const standing = game.standings.find(s => s.clubId === game.managedClubId)
   const standingBefore = rs?.standingBefore ?? null
@@ -189,7 +188,6 @@ export function GranskaScreen() {
   const csDelta = rs ? rs.communityStandingAfter - (rs.communityStandingBefore ?? rs.communityStandingAfter) : 0
   const cs = rs?.communityStandingAfter ?? game.communityStanding ?? 50
 
-  // Other matches this matchday
   const currentMatchday = fixture?.matchday ?? 0
   const otherResults = currentMatchday > 0
     ? game.fixtures.filter(f =>
@@ -201,7 +199,6 @@ export function GranskaScreen() {
     : []
   const getClubShort = (id: string) => game.clubs.find(c => c.id === id)?.shortName ?? game.clubs.find(c => c.id === id)?.name ?? '?'
 
-  // Pending events (inline)
   const pendingEvents = game.pendingEvents ?? []
 
   function handleChoice(eventId: string, choiceId: string, choiceLabel: string) {
@@ -216,29 +213,33 @@ export function GranskaScreen() {
     navigate('/game/dashboard', { replace: true })
   }
 
+  function goToStep(s: GranskaStep) {
+    setStep(s)
+    setVisitedSteps(prev => new Set([...prev, s]))
+  }
+
   const fadeIn = (i: number) => ({
     opacity: visible ? 1 : 0,
     transform: visible ? 'translateY(0)' : 'translateY(12px)',
     transition: `all 0.35s ease ${80 + i * 60}ms`,
   })
 
-  return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-      <div className="texture-wood card-stack" style={{ flex: 1, overflowY: 'auto', paddingTop: 12, paddingBottom: 'var(--scroll-padding-bottom)' }}>
-
-        {/* ── RESULTAT-HERO ── */}
+  // ── STEP: ÖVERSIKT ────────────────────────────────────────────────────────
+  function renderOversikt() {
+    const game = g
+    return (
+      <>
+        {/* Result hero */}
         {fixture && (
           <div className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(0) }}>
             <div style={{ padding: '16px 14px 12px', textAlign: 'center' }}>
               <SectionLabel style={{ marginBottom: 10 }}>SLUTRESULTAT</SectionLabel>
 
-              {/* Club names */}
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                 <span style={{ fontSize: 11, color: 'var(--text-secondary)', flex: 1, textAlign: 'left' }}>{homeClub?.shortName ?? homeClub?.name}</span>
                 <span style={{ fontSize: 11, color: 'var(--text-secondary)', flex: 1, textAlign: 'right' }}>{awayClub?.shortName ?? awayClub?.name}</span>
               </div>
 
-              {/* Big score */}
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16, marginBottom: 8 }}>
                 <span style={{ fontSize: 36, fontWeight: 800, color: resultColor, fontFamily: 'var(--font-display)', lineHeight: 1 }}>{fixture.homeScore}</span>
                 <span style={{ fontSize: 24, color: 'var(--text-muted)', fontWeight: 300 }}>–</span>
@@ -251,7 +252,6 @@ export function GranskaScreen() {
                 </p>
               )}
 
-              {/* Result pill */}
               <span style={{
                 display: 'inline-block', padding: '4px 14px', borderRadius: 20,
                 background: won ? 'rgba(90,154,74,0.12)' : lost ? 'rgba(176,80,64,0.12)' : 'rgba(245,241,235,0.08)',
@@ -261,7 +261,6 @@ export function GranskaScreen() {
                 {resultLabel}
               </span>
 
-              {/* POTM + attendance */}
               {potm && potmRating != null && (
                 <p style={{ fontSize: 11, color: 'var(--accent)', marginTop: 4 }}>⭐ {potm.firstName} {potm.lastName} · {potmRating.toFixed(1)}</p>
               )}
@@ -272,34 +271,23 @@ export function GranskaScreen() {
                 <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>Spelades på {formatArenaName(homeClub.arenaName)}</p>
               )}
 
-              {/* Match summary — prose report for silent mode, quick summary otherwise */}
+              {/* Match summary */}
               {(() => {
                 if (game.preferredMatchMode === 'silent') {
                   const homeClubName = game.clubs.find(c => c.id === fixture.homeClubId)?.name ?? ''
                   const awayClubName = game.clubs.find(c => c.id === fixture.awayClubId)?.name ?? ''
                   const report = generateSilentMatchReport(fixture, homeClubName, awayClubName, game.managedClubId)
                   return (
-                    <div style={{
-                      marginTop: 12, padding: '10px 12px',
-                      background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)',
-                      textAlign: 'left',
-                    }}>
+                    <div style={{ marginTop: 12, padding: '10px 12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', textAlign: 'left' }}>
                       {report.split('\n\n').map((para, i) => (
-                        <p key={i} style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: i < 2 ? 10 : 0, fontStyle: i === 0 ? 'normal' : 'normal' }}>
-                          {para}
-                        </p>
+                        <p key={i} style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: i < 2 ? 10 : 0 }}>{para}</p>
                       ))}
                     </div>
                   )
                 }
                 const summary = generateQuickSummary(fixture, isHome, game.players)
                 return summary ? (
-                  <p style={{
-                    fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5,
-                    marginTop: 12, padding: '10px 12px',
-                    background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)',
-                    textAlign: 'left',
-                  }}>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: 12, padding: '10px 12px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', textAlign: 'left' }}>
                     {summary}
                   </p>
                 ) : null
@@ -308,7 +296,36 @@ export function GranskaScreen() {
           </div>
         )}
 
-        {/* ── TIDNINGSRUBRIK ── */}
+        {/* Statistik */}
+        {fixture?.report && (
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(1) }}>
+            <SectionLabel style={{ marginBottom: 8 }}>STATISTIK</SectionLabel>
+            {[
+              { label: 'Skott', home: fixture.report.shotsHome, away: fixture.report.shotsAway },
+              { label: 'Hörn', home: fixture.report.cornersHome, away: fixture.report.cornersAway },
+              { label: 'Bollinnehav', home: fixture.report.possessionHome, away: fixture.report.possessionAway, suffix: '%' },
+              ...(fixture.report.penaltiesHome + fixture.report.penaltiesAway > 0 ? [{ label: 'Straffar', home: fixture.report.penaltiesHome, away: fixture.report.penaltiesAway }] : []),
+            ].map(stat => {
+              const total = stat.home + stat.away
+              const homeW = total > 0 ? (stat.home / total) * 100 : 50
+              return (
+                <div key={stat.label} style={{ marginBottom: 6 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)' }}>{stat.home}{stat.suffix ?? ''}</span>
+                    <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '1px' }}>{stat.label.toUpperCase()}</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)' }}>{stat.away}{stat.suffix ?? ''}</span>
+                  </div>
+                  <div style={{ display: 'flex', height: 3, borderRadius: 2, overflow: 'hidden', gap: 1 }}>
+                    <div style={{ flex: homeW, background: isHome ? 'var(--accent)' : 'var(--border)' }} />
+                    <div style={{ flex: 100 - homeW, background: !isHome ? 'var(--accent)' : 'var(--border)' }} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Media */}
         {(() => {
           const headlineItem = game.inbox
             .filter(i => i.type === InboxItemType.MediaEvent)
@@ -320,7 +337,7 @@ export function GranskaScreen() {
             : journalist?.persona === 'sensationalist' ? 'Sensationalistisk'
             : journalist?.persona === 'analytical' ? 'Analytisk' : null
           return (
-            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(1) }}>
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(2) }}>
               <SectionLabel style={{ marginBottom: 6 }}>📰 MEDIA</SectionLabel>
               {journalist && (
                 <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>
@@ -334,29 +351,23 @@ export function GranskaScreen() {
           )
         })()}
 
-        {/* ── INSÄNDARE (DREAM-015) ── */}
+        {/* Insändare */}
         {(() => {
           if (!fixture) return null
           const insandare = generateInsandare(game, fixture)
           if (!insandare) return null
           return (
             <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
-              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: 6 }}>
-                ✉️ INSÄNDARE
-              </p>
-              <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-display)', fontStyle: 'italic', lineHeight: 1.5 }}>
-                "{insandare.text}"
-              </p>
-              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
-                — {insandare.signature}
-              </p>
+              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: 6 }}>✉️ INSÄNDARE</p>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-display)', fontStyle: 'italic', lineHeight: 1.5 }}>"{insandare.text}"</p>
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>— {insandare.signature}</p>
             </div>
           )
         })()}
 
-        {/* ── NYCKELMOMENT ── */}
+        {/* Nyckelmoment */}
         {keyMoments.length > 0 && (
-          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(1) }}>
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(3) }}>
             <SectionLabel style={{ marginBottom: 8 }}>NYCKELMOMENT</SectionLabel>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {keyMoments.map((e, i) => {
@@ -378,7 +389,7 @@ export function GranskaScreen() {
           </div>
         )}
 
-        {/* ── MOTSTÅNDARTRÄNARE — visas vid storseger/storseger för motståndare (≥3 mål) ── */}
+        {/* Motståndartränare */}
         {(() => {
           const margin = myScore - theirScore
           if (Math.abs(margin) < 3) return null
@@ -388,23 +399,21 @@ export function GranskaScreen() {
           const quote = generatePostMatchOpponentQuote(opponentClub, theyWon)
           if (!quote) return null
           return (
-            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(2) }}>
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
               <SectionLabel style={{ marginBottom: 6 }}>🎙 MOTSTÅNDET SÄGER</SectionLabel>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5 }}>
-                {quote}
-              </p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5 }}>{quote}</p>
             </div>
           )
         })()}
 
-        {/* ── PRESSKONFERENS INLINE (WEAK-002) — visas direkt efter match, före övriga events ── */}
+        {/* Presskonferens */}
         {(() => {
           const pc = game.pendingPressConference
           if (!pc) return null
           const pcResolved = resolvedEventIds.has(pc.id)
           const pcChosenLabel = chosenLabels[pc.id]
           return (
-            <div className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(2) }}>
+            <div className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(4) }}>
               <div style={{ padding: '10px 12px' }}>
                 <SectionLabel style={{ marginBottom: pcResolved ? 4 : 6 }}>🎤 PRESSKONFERENS</SectionLabel>
                 {pcResolved ? (
@@ -418,19 +427,10 @@ export function GranskaScreen() {
                     <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, fontStyle: 'italic' }}>{pc.body}</p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                       {pc.choices.map((choice: EventChoice) => (
-                        <button
-                          key={choice.id}
-                          onClick={() => handleChoice(pc.id, choice.id, choice.label)}
-                          style={{
-                            width: '100%', padding: '9px 12px', borderRadius: 8,
-                            fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer',
-                            ...choiceStyle(choice.id),
-                          }}
-                        >
+                        <button key={choice.id} onClick={() => handleChoice(pc.id, choice.id, choice.label)}
+                          style={{ width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
                           {choice.label}
-                          {choice.subtitle && (
-                            <span style={{ display: 'block', fontSize: 10, color: 'var(--text-muted)', fontWeight: 400, marginTop: 2 }}>{choice.subtitle}</span>
-                          )}
+                          {choice.subtitle && <span style={{ display: 'block', fontSize: 10, color: 'var(--text-muted)', fontWeight: 400, marginTop: 2 }}>{choice.subtitle}</span>}
                         </button>
                       ))}
                     </div>
@@ -441,20 +441,16 @@ export function GranskaScreen() {
           )
         })()}
 
-        {/* ── EVENTS INLINE ── */}
+        {/* Events */}
         {pendingEvents.map((event, ei) => {
           const resolved = resolvedEventIds.has(event.id)
           const chosenLabel = chosenLabels[event.id]
           const relatedPlayer = event.relatedPlayerId ? game.players.find(p => p.id === event.relatedPlayerId) : null
           const relatedClub = event.relatedClubId ? game.clubs.find(c => c.id === event.relatedClubId) : null
-
           return (
-            <div key={event.id} className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(2 + ei) }}>
+            <div key={event.id} className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(5 + ei) }}>
               <div style={{ padding: '10px 12px' }}>
-                <SectionLabel style={{ marginBottom: resolved ? 4 : 6 }}>
-                  {event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}
-                </SectionLabel>
-
+                <SectionLabel style={{ marginBottom: resolved ? 4 : 6 }}>{event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}</SectionLabel>
                 {resolved ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
@@ -464,34 +460,16 @@ export function GranskaScreen() {
                   <>
                     <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 5, lineHeight: 1.3 }}>{event.title}</p>
                     <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: 8, whiteSpace: 'pre-line' }}>{event.body}</p>
-
                     {(relatedPlayer || relatedClub) && (
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-                        {relatedPlayer && (
-                          <span style={{ fontSize: 11, background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.3)', borderRadius: 20, padding: '3px 8px', color: 'var(--accent)', fontWeight: 600 }}>
-                            {relatedPlayer.firstName} {relatedPlayer.lastName} · Styrka {Math.round(relatedPlayer.currentAbility)}
-                          </span>
-                        )}
-                        {relatedClub && (
-                          <span style={{ fontSize: 11, background: 'rgba(126,179,212,0.10)', border: '1px solid rgba(126,179,212,0.25)', borderRadius: 20, padding: '3px 8px', color: 'var(--ice)', fontWeight: 600 }}>
-                            {relatedClub.name}
-                          </span>
-                        )}
+                        {relatedPlayer && <span style={{ fontSize: 11, background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.3)', borderRadius: 20, padding: '3px 8px', color: 'var(--accent)', fontWeight: 600 }}>{relatedPlayer.firstName} {relatedPlayer.lastName} · Styrka {Math.round(relatedPlayer.currentAbility)}</span>}
+                        {relatedClub && <span style={{ fontSize: 11, background: 'rgba(126,179,212,0.10)', border: '1px solid rgba(126,179,212,0.25)', borderRadius: 20, padding: '3px 8px', color: 'var(--ice)', fontWeight: 600 }}>{relatedClub.name}</span>}
                       </div>
                     )}
-
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                       {event.choices.map((choice: EventChoice) => (
-                        <button
-                          key={choice.id}
-                          onClick={() => handleChoice(event.id, choice.id, choice.label)}
-                          style={{
-                            position: 'relative', zIndex: 1,
-                            width: '100%', padding: '9px 12px', borderRadius: 8,
-                            fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer',
-                            ...choiceStyle(choice.id),
-                          }}
-                        >
+                        <button key={choice.id} onClick={() => handleChoice(event.id, choice.id, choice.label)}
+                          style={{ position: 'relative', zIndex: 1, width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
                           {choice.label}
                         </button>
                       ))}
@@ -502,74 +480,317 @@ export function GranskaScreen() {
             </div>
           )
         })}
+      </>
+    )
+  }
 
-        {/* ── OMGÅNGSSAMMANFATTNING ── */}
-        {rs && (
-          <div className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(3) }}>
-            <div style={{ padding: '10px 12px' }}>
-              <SectionLabel style={{ marginBottom: 8 }}>OMGÅNGSSAMMANFATTNING</SectionLabel>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                {standing && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/tabell')}>
-                    <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>📊 Tabellplacering</span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
-                      {standingBefore && standingBefore !== standing.position
-                        ? `${standingBefore} → ${standing.position} ${standingBefore > standing.position ? '↑' : '↓'}`
-                        : `${standing.position}:a`
-                      }
-                    </span>
-                  </div>
-                )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}>
-                  <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>💰 Ekonomi</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: financesDelta >= 0 ? 'var(--success)' : 'var(--danger)' }}>
-                    {formatFinance(financesDelta)}/omg
-                  </span>
+  // ── STEP: SPELARE ─────────────────────────────────────────────────────────
+  function renderSpelare() {
+    const game = g
+    if (!fixture || !fixture.report) return (
+      <div className="card-sharp" style={{ margin: '0 0 6px', padding: '20px 14px', textAlign: 'center' }}>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Spelarbetyg saknas</p>
+      </div>
+    )
+
+    const myLineup = isHome ? fixture.homeLineup : fixture.awayLineup
+    const ratings = fixture.report.playerRatings
+
+    const starterIds = myLineup?.startingPlayerIds ?? []
+    const benchIds = myLineup?.benchPlayerIds ?? []
+    const captainId = myLineup?.captainPlayerId ?? game.captainPlayerId
+
+    const starters = starterIds
+      .map(id => game.players.find(p => p.id === id))
+      .filter(Boolean) as Player[]
+    starters.sort((a, b) => (ratings[b.id] ?? 0) - (ratings[a.id] ?? 0))
+
+    const bench = benchIds
+      .map(id => game.players.find(p => p.id === id))
+      .filter(Boolean) as Player[]
+
+    function ratingColor(r: number): string {
+      if (r >= 8) return 'var(--success)'
+      if (r >= 6.5) return 'var(--text-primary)'
+      if (r >= 5) return 'var(--text-secondary)'
+      return 'var(--danger)'
+    }
+
+    return (
+      <>
+        <div className="card-sharp" style={{ margin: '0 0 6px', overflow: 'hidden' }}>
+          <div style={{ padding: '10px 12px 6px', borderBottom: '1px solid var(--border)' }}>
+            <SectionLabel>STARTELVA — BETYG</SectionLabel>
+          </div>
+          {starters.map((p, i) => {
+            const r = ratings[p.id] ?? 0
+            const isCap = p.id === captainId
+            const goals = fixture.events.filter(e => e.type === MatchEventType.Goal && e.playerId === p.id).length
+            const assists = fixture.events.filter(e => e.type === MatchEventType.Assist && e.playerId === p.id).length
+            const saves = fixture.events.filter(e => e.type === MatchEventType.Save && e.playerId === p.id).length
+            const statParts: string[] = []
+            if (goals > 0) statParts.push(`${goals} mål`)
+            if (assists > 0) statParts.push(`${assists} assist`)
+            if (saves > 0) statParts.push(`${saves} räddning${saves > 1 ? 'ar' : ''}`)
+            const isPOTM = p.id === potmId
+
+            return (
+              <div key={p.id} style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '7px 12px',
+                borderBottom: i < starters.length - 1 ? '1px solid var(--border)' : 'none',
+                background: isPOTM ? 'rgba(196,122,58,0.06)' : 'transparent',
+              }}>
+                <div style={{ width: 22, height: 22, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--bg-surface)', border: isCap ? '1.5px solid var(--accent)' : '1px solid var(--border)' }}
+                  dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 12, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.2 }}>
+                    {isCap && <span style={{ marginRight: 2 }}>⭐</span>}
+                    {isPOTM && <span style={{ marginRight: 2 }}>🏒</span>}
+                    {p.firstName[0]}. {p.lastName}
+                  </p>
+                  <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>
+                    {p.position}{statParts.length > 0 ? ` · ${statParts.join(' · ')}` : ''}
+                  </p>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}>
-                  <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>🏘 Bygdens puls</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: csColor(cs) }}>
-                    {csDelta !== 0
-                      ? `${rs.communityStandingBefore ?? cs} → ${cs} ${csDelta > 0 ? '↑' : '↓'}`
-                      : `${cs}`
-                    }
-                  </span>
-                </div>
-                {rs.injuries && rs.injuries.length > 0 && (
-                  <div style={{ padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/squad')}>
-                    <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>🩹 Skador</span>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 3 }}>
-                      {rs.injuries.map((inj, i) => (
-                        <span key={i} style={{ fontSize: 12, fontWeight: 600, color: 'var(--danger)' }}>{inj}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {rs.youthMatchResult && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'akademi' } })}>
-                    <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>🎓 P19</span>
-                    <span style={{ fontSize: 12, color: 'var(--text-primary)' }}>{rs.youthMatchResult}</span>
-                  </div>
-                )}
-                {rs.newInboxCount > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', cursor: 'pointer' }} onClick={() => navigate('/game/inbox')}>
-                    <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>📬 Inkorg</span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>{rs.newInboxCount} nya</span>
-                  </div>
-                )}
+                <span style={{ fontSize: 15, fontFamily: 'var(--font-display)', fontWeight: 700, color: ratingColor(r), flexShrink: 0 }}>
+                  {r > 0 ? r.toFixed(1) : '–'}
+                </span>
               </div>
+            )
+          })}
+        </div>
+
+        {bench.length > 0 && (
+          <div className="card-sharp" style={{ margin: '0 0 6px', overflow: 'hidden' }}>
+            <div style={{ padding: '10px 12px 6px', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>BÄNKEN</span>
+            </div>
+            {bench.map((p, i) => {
+              const r = ratings[p.id] ?? 0
+              return (
+                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderBottom: i < bench.length - 1 ? '1px solid var(--border)' : 'none', opacity: 0.7 }}>
+                  <div style={{ width: 18, height: 18, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}
+                    dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
+                  <span style={{ flex: 1, fontSize: 11, color: 'var(--text-secondary)' }}>{p.firstName[0]}. {p.lastName}</span>
+                  <span style={{ fontSize: 12, fontFamily: 'var(--font-display)', color: 'var(--text-muted)' }}>{r > 0 ? r.toFixed(1) : '–'}</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </>
+    )
+  }
+
+  // ── STEP: SHOT MAP ────────────────────────────────────────────────────────
+  function renderShotmap() {
+    const game = g
+    if (!fixture?.report) return null
+
+    const managedClubId = isHome ? fixture.homeClubId : fixture.awayClubId
+    const goals = fixture.events.filter(e => e.type === MatchEventType.Goal && e.clubId === managedClubId)
+    const saves = fixture.events.filter(e => e.type === MatchEventType.Save && e.clubId !== managedClubId)
+
+    const totalShots = isHome ? fixture.report.shotsHome : fixture.report.shotsAway
+    const scoredCount = goals.length
+    const savedCount = Math.min(saves.length, totalShots - scoredCount)
+    const missCount = Math.max(0, totalShots - scoredCount - savedCount)
+
+    // Generate seeded positions in attack half (SVG: 280×190 viewBox, goal at top center)
+    const GOAL_Y = 20
+    const GOAL_X = 140
+    const W = 280
+    const H = 190
+
+    type ShotDot = { x: number; y: number; kind: 'goal' | 'save' | 'miss'; label?: string }
+    const dots: ShotDot[] = []
+    let seed = 0
+
+    function nextPos(kind: 'goal' | 'save' | 'miss', playerId?: string): { x: number; y: number } {
+      seed++
+      const r1 = seededRand(seed * 7 + (playerId ? playerId.charCodeAt(0) : 0))
+      const r2 = seededRand(seed * 13 + 1)
+      let x: number, y: number
+      if (kind === 'goal') {
+        x = GOAL_X + (r1 - 0.5) * 80
+        y = GOAL_Y + 20 + r2 * 50
+      } else if (kind === 'save') {
+        x = GOAL_X + (r1 - 0.5) * 100
+        y = GOAL_Y + 15 + r2 * 70
+      } else {
+        x = W * 0.1 + r1 * W * 0.8
+        y = GOAL_Y + 10 + r2 * 140
+      }
+      return { x: Math.max(10, Math.min(W - 10, x)), y: Math.max(GOAL_Y + 5, Math.min(H - 10, y)) }
+    }
+
+    goals.forEach(e => {
+      const pos = nextPos('goal', e.playerId)
+      const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
+      dots.push({ ...pos, kind: 'goal', label: scorer?.lastName })
+    })
+    for (let i = 0; i < savedCount; i++) {
+      dots.push({ ...nextPos('save'), kind: 'save' })
+    }
+    for (let i = 0; i < missCount; i++) {
+      dots.push({ ...nextPos('miss'), kind: 'miss' })
+    }
+
+    const oppShots = isHome ? fixture.report.shotsAway : fixture.report.shotsHome
+    const oppGoals = fixture.events.filter(e => e.type === MatchEventType.Goal && e.clubId !== managedClubId).length
+
+    return (
+      <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+        <SectionLabel style={{ marginBottom: 8 }}>SKOTTBILD</SectionLabel>
+        <div style={{ textAlign: 'center', marginBottom: 8 }}>
+          <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: 320, display: 'block', margin: '0 auto' }}>
+            {/* Pitch background */}
+            <rect x="0" y="0" width={W} height={H} fill="rgba(0,0,0,0.2)" rx="4" />
+            {/* Goal */}
+            <rect x={GOAL_X - 20} y={GOAL_Y - 8} width="40" height="8" fill="var(--border)" />
+            <rect x={GOAL_X - 20} y={GOAL_Y - 8} width="1" height="12" fill="var(--border)" />
+            <rect x={GOAL_X + 19} y={GOAL_Y - 8} width="1" height="12" fill="var(--border)" />
+            {/* Goal area */}
+            <rect x={GOAL_X - 40} y={GOAL_Y} width="80" height="30" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+            {/* Center arc */}
+            <ellipse cx={GOAL_X} cy={H} rx="80" ry="50" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+            {/* Shot dots */}
+            {dots.map((d, i) => (
+              <g key={i}>
+                <circle
+                  cx={d.x} cy={d.y}
+                  r={d.kind === 'goal' ? 6 : 4}
+                  fill={d.kind === 'goal' ? 'rgba(90,154,74,0.85)' : d.kind === 'save' ? 'rgba(196,122,58,0.7)' : 'rgba(255,255,255,0.2)'}
+                  stroke={d.kind === 'goal' ? 'rgba(90,154,74,1)' : d.kind === 'save' ? 'rgba(196,122,58,1)' : 'rgba(255,255,255,0.4)'}
+                  strokeWidth="1"
+                />
+                {d.label && (
+                  <text x={d.x + 8} y={d.y + 4} fontSize="7" fill="rgba(255,255,255,0.7)">{d.label}</text>
+                )}
+              </g>
+            ))}
+          </svg>
+        </div>
+
+        {/* Legend */}
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 8 }}>
+          {[
+            { color: 'var(--success)', label: `Mål (${scoredCount})` },
+            { color: 'var(--accent)', label: `Räddad (${savedCount})` },
+            { color: 'rgba(255,255,255,0.3)', label: `Miss (${missCount})` },
+          ].map(l => (
+            <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: l.color }} />
+              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{l.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Summary text */}
+        <div style={{ padding: '8px 10px', background: 'var(--bg-elevated)', borderRadius: 4 }}>
+          <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            {totalShots > 0
+              ? `${totalShots} skott — ${scoredCount} mål (${Math.round(scoredCount / totalShots * 100)}% konvertering). Motståndaren sköt ${oppShots} gånger och sköt ${oppGoals} mål.`
+              : 'Skottdata saknas för denna match.'
+            }
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // ── STEP: FÖRLOPP ─────────────────────────────────────────────────────────
+  function renderForlop() {
+    const game = g
+    const allEvents = fixture?.events
+      .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard || e.type === MatchEventType.Corner || e.type === MatchEventType.Penalty)
+      .sort((a, b) => a.minute - b.minute) ?? []
+
+    return (
+      <>
+        {/* Other matches */}
+        {rs && (
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+            <SectionLabel style={{ marginBottom: 8 }}>OMGÅNGSSAMMANFATTNING</SectionLabel>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {standing && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/tabell')}>
+                  <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>📊 Tabellplacering</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+                    {standingBefore && standingBefore !== standing.position
+                      ? `${standingBefore} → ${standing.position} ${standingBefore > standing.position ? '↑' : '↓'}`
+                      : `${standing.position}:a`}
+                  </span>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>💰 Ekonomi</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: financesDelta >= 0 ? 'var(--success)' : 'var(--danger)' }}>{formatFinance(financesDelta)}/omg</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>🏘 Bygdens puls</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: csColor(cs) }}>
+                  {csDelta !== 0 ? `${rs.communityStandingBefore ?? cs} → ${cs} ${csDelta > 0 ? '↑' : '↓'}` : `${cs}`}
+                </span>
+              </div>
+              {rs.injuries && rs.injuries.length > 0 && (
+                <div style={{ padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/squad')}>
+                  <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>🩹 Skador</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 3 }}>
+                    {rs.injuries.map((inj, i) => <span key={i} style={{ fontSize: 12, fontWeight: 600, color: 'var(--danger)' }}>{inj}</span>)}
+                  </div>
+                </div>
+              )}
+              {rs.youthMatchResult && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'akademi' } })}>
+                  <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>🎓 P19</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-primary)' }}>{rs.youthMatchResult}</span>
+                </div>
+              )}
+              {rs.newInboxCount > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', cursor: 'pointer' }} onClick={() => navigate('/game/inbox')}>
+                  <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>📬 Inkorg</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>{rs.newInboxCount} nya</span>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* ── ANDRA MATCHER ── */}
+        {/* Match event timeline */}
+        {allEvents.length > 0 && (
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+            <SectionLabel style={{ marginBottom: 8 }}>HÄNDELSETIDSLINJE</SectionLabel>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {allEvents.map((e, i) => {
+                const isManagedEvent = isHome ? e.clubId === fixture?.homeClubId : e.clubId === fixture?.awayClubId
+                const icon = e.type === MatchEventType.Goal ? (e.isCornerGoal ? '📐' : '🏒')
+                  : e.type === MatchEventType.Corner ? '🔄'
+                  : e.type === MatchEventType.Penalty ? '🎯'
+                  : '🟥'
+                const p = e.playerId ? game.players.find(pl => pl.id === e.playerId) : null
+                const name = p ? `${p.firstName[0]}. ${p.lastName}` : ''
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0' }}>
+                    <span style={{ fontSize: 9, color: 'var(--text-muted)', width: 22, textAlign: 'right', flexShrink: 0 }}>{e.minute}'</span>
+                    <span style={{ fontSize: 11 }}>{icon}</span>
+                    <span style={{ fontSize: 11, flex: 1, color: isManagedEvent ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                      {name || e.description}
+                    </span>
+                    {!isManagedEvent && <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>mot</span>}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Other results */}
         {otherResults.length > 0 && (() => {
-          // Find rival club (if any)
           const rivalClubId = game.clubs
             .filter(c => c.id !== game.managedClubId)
             .find(c => getRivalry(game.managedClubId, c.id))?.id ?? null
-
-          // Rival summary: find rival result + new position
           let rivalSummary: string | null = null
           if (rivalClubId) {
             const rivalFixture = otherResults.find(f => f.homeClubId === rivalClubId || f.awayClubId === rivalClubId)
@@ -580,16 +801,13 @@ export function GranskaScreen() {
               const rivalWon = rivalScore > oppScore
               const rivalDrew = rivalScore === oppScore
               const rivalPos = game.standings.find(s => s.clubId === rivalClubId)?.position
-              const rivalName = game.clubs.find(c => c.id === rivalClubId)?.shortName ?? game.clubs.find(c => c.id === rivalClubId)?.name ?? 'Rivalen'
+              const rivalName = game.clubs.find(c => c.id === rivalClubId)?.shortName ?? 'Rivalen'
               const resultWord = rivalWon ? 'vann' : rivalDrew ? 'spelade kryss' : 'förlorade'
-              rivalSummary = rivalPos
-                ? `${rivalName} ${resultWord} — nu på plats ${rivalPos}`
-                : `${rivalName} ${resultWord}`
+              rivalSummary = rivalPos ? `${rivalName} ${resultWord} — nu på plats ${rivalPos}` : `${rivalName} ${resultWord}`
             }
           }
-
           return (
-            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(4) }}>
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
               <SectionLabel style={{ marginBottom: 6 }}>🏒 ANDRA MATCHER</SectionLabel>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {otherResults.map(f => {
@@ -597,10 +815,7 @@ export function GranskaScreen() {
                   const awayWon = (f.awayScore ?? 0) > (f.homeScore ?? 0)
                   const isRivalMatch = rivalClubId && (f.homeClubId === rivalClubId || f.awayClubId === rivalClubId)
                   return (
-                    <div key={f.id} style={{
-                      display: 'flex', alignItems: 'center', padding: '3px 0 3px 6px',
-                      borderLeft: isRivalMatch ? '2px solid var(--accent)' : '2px solid transparent',
-                    }}>
+                    <div key={f.id} style={{ display: 'flex', alignItems: 'center', padding: '3px 0 3px 6px', borderLeft: isRivalMatch ? '2px solid var(--accent)' : '2px solid transparent' }}>
                       <span style={{ flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: homeWon ? 700 : 400, color: homeWon ? 'var(--text-primary)' : 'var(--text-muted)' }}>{getClubShort(f.homeClubId)}</span>
                       <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', width: 40, textAlign: 'center', flexShrink: 0 }}>{f.homeScore}–{f.awayScore}</span>
                       <span style={{ flex: 1, fontSize: 11, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: awayWon ? 700 : 400, color: awayWon ? 'var(--text-primary)' : 'var(--text-muted)' }}>{getClubShort(f.awayClubId)}</span>
@@ -608,20 +823,17 @@ export function GranskaScreen() {
                   )
                 })}
               </div>
-              {rivalSummary && (
-                <p style={{ fontSize: 11, color: 'var(--accent)', marginTop: 6, fontStyle: 'italic' }}>{rivalSummary}</p>
-              )}
+              {rivalSummary && <p style={{ fontSize: 11, color: 'var(--accent)', marginTop: 6, fontStyle: 'italic' }}>{rivalSummary}</p>}
             </div>
           )
         })()}
-        {/* ── SCOUTING ── */}
+
+        {/* Scouting */}
         {(() => {
-          const scoutItems = game.inbox
-            .filter(i => i.type === InboxItemType.ScoutReport && !i.isRead)
-            .slice(-2)
+          const scoutItems = game.inbox.filter(i => i.type === InboxItemType.ScoutReport && !i.isRead).slice(-2)
           if (scoutItems.length === 0) return null
           return (
-            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(5) }}>
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
               <SectionLabel style={{ marginBottom: 6 }}>🔍 SCOUTING</SectionLabel>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {scoutItems.map((item, i) => (
@@ -634,47 +846,186 @@ export function GranskaScreen() {
             </div>
           )
         })()}
+      </>
+    )
+  }
 
-      </div>
+  // ── STEP: ANALYS ──────────────────────────────────────────────────────────
+  function renderAnalys() {
+    const game = g
+    const coach = game.assistantCoach
+    const coachItem = game.inbox
+      .filter(i => i.tone === 'coach')
+      .sort((a, b) => b.date.localeCompare(a.date))[0]
 
-      {/* ── CTA ── */}
-      <div style={{
-        position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 430, padding: '12px 20px',
-        paddingBottom: 'calc(12px + var(--safe-bottom, 0px))',
-        background: 'linear-gradient(to top, var(--bg) 80%, transparent)',
-        zIndex: 50, opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease 0.3s',
-        display: 'flex', flexDirection: 'column', gap: 8,
-        pointerEvents: 'none',
-      }}>
-        {(() => {
-          const unresolved = pendingEvents.filter(e => !resolvedEventIds.has(e.id)).length
-          if (unresolved === 0) return null
+    return (
+      <>
+        {coach && coachItem && (
+          <div className="card-sharp" style={{ margin: '0 0 6px', overflow: 'hidden' }}>
+            <div style={{ background: 'var(--accent)', height: 22, display: 'flex', alignItems: 'center', padding: '0 12px', gap: 8 }}>
+              <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--accent-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: 9, fontWeight: 700, color: '#fff' }}>{coach.initials}</span>
+              </div>
+              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', color: '#fff' }}>{coach.name.toUpperCase()} · ASSISTENTTRÄNARE</span>
+            </div>
+            <div style={{ padding: '12px 14px' }}>
+              <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                "{coachItem.body}"
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Consequences */}
+        {standing && (
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+            <SectionLabel style={{ marginBottom: 8 }}>KONSEKVENSER</SectionLabel>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Tabellplacering</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+                {standingBefore && standingBefore !== standing.position
+                  ? `${standingBefore} → ${standing.position}`
+                  : `${standing.position}:a`}
+              </span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Ekonomi denna omgång</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: financesDelta >= 0 ? 'var(--success)' : 'var(--danger)' }}>{formatFinance(financesDelta)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Bygdens puls</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: csColor(cs) }}>
+                {csDelta !== 0 ? `${csDelta > 0 ? '+' : ''}${csDelta} → ${cs}` : `${cs}`}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Form players */}
+        {fixture?.report && (() => {
+          const ratings = fixture.report.playerRatings
+          const managedLineup = isHome ? fixture.homeLineup : fixture.awayLineup
+          const starterIds = managedLineup?.startingPlayerIds ?? []
+          const best = starterIds
+            .map(id => ({ id, r: ratings[id] ?? 0 }))
+            .sort((a, b) => b.r - a.r)
+            .slice(0, 3)
+          const worst = starterIds
+            .map(id => ({ id, r: ratings[id] ?? 0 }))
+            .sort((a, b) => a.r - b.r)
+            .slice(0, 1)
+
           return (
-            <p style={{ fontSize: 10, color: 'var(--warning)', textAlign: 'center', margin: '0 0 4px' }}>
-              {unresolved} ohanterad{unresolved > 1 ? 'e' : ''} händelse{unresolved > 1 ? 'r' : ''} — du kan hantera dem senare
-            </p>
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+              <SectionLabel style={{ marginBottom: 8 }}>FORMSPELARE</SectionLabel>
+              {best.map(({ id, r }) => {
+                const p = game.players.find(pl => pl.id === id)
+                if (!p) return null
+                return (
+                  <div key={id} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{p.firstName[0]}. {p.lastName}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-display)', color: r >= 7 ? 'var(--success)' : 'var(--text-primary)' }}>{r.toFixed(1)}</span>
+                  </div>
+                )
+              })}
+              {worst.map(({ id, r }) => {
+                const p = game.players.find(pl => pl.id === id)
+                if (!p || r >= 5.5) return null
+                return (
+                  <div key={id} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>Svagaste länken: {p.firstName[0]}. {p.lastName}</span>
+                    <span style={{ fontSize: 12, fontFamily: 'var(--font-display)', color: 'var(--danger)' }}>{r.toFixed(1)}</span>
+                  </div>
+                )
+              })}
+            </div>
           )
         })()}
-        {fixture && (
-          <button
-            onClick={() => navigate('/game/match', { state: { showReport: true } })}
-            className="btn btn-ghost"
-            style={{ width: '100%', padding: '11px', justifyContent: 'center', fontSize: 13, pointerEvents: 'auto' }}
-          >
-            Se fullständig matchrapport →
+      </>
+    )
+  }
+
+  const unresolved = pendingEvents.filter(e => !resolvedEventIds.has(e.id)).length
+
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+      {/* Content */}
+      <div className="texture-wood card-stack" style={{ flex: 1, overflowY: 'auto', paddingTop: 12, paddingBottom: 8 }}>
+        {step === 'oversikt' && renderOversikt()}
+        {step === 'spelare' && renderSpelare()}
+        {step === 'shotmap' && renderShotmap()}
+        {step === 'forlop' && renderForlop()}
+        {step === 'analys' && renderAnalys()}
+      </div>
+
+      {/* Bottom nav + CTA */}
+      <div style={{
+        flexShrink: 0,
+        background: 'var(--bg)',
+        borderTop: '1px solid var(--border)',
+        paddingBottom: 'var(--safe-bottom, 0px)',
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 0.3s ease 0.3s',
+      }}>
+        {/* Step label */}
+        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textAlign: 'center', color: 'var(--text-muted)', paddingTop: 8, marginBottom: 2 }}>
+          FÖRDJUPA
+        </p>
+
+        {/* Icon buttons */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 20px', marginBottom: 8 }}>
+          {STEPS.map(s => {
+            const isActive = step === s.id
+            const isVisited = visitedSteps.has(s.id) && !isActive
+            return (
+              <button
+                key={s.id}
+                onClick={() => goToStep(s.id)}
+                style={{
+                  width: 56,
+                  height: 56,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 2,
+                  borderRadius: 8,
+                  border: isActive ? 'none' : '1px solid var(--accent)',
+                  background: isActive ? 'var(--accent)' : 'transparent',
+                  cursor: 'pointer',
+                  opacity: isVisited ? 0.45 : 1,
+                  boxShadow: isVisited ? 'none' : (isActive ? '0 2px 6px rgba(196,122,58,0.35)' : 'none'),
+                  position: 'relative',
+                }}
+              >
+                <span style={{ fontSize: 20 }}>{s.icon}</span>
+                <span style={{ fontSize: 8, color: isActive ? '#fff' : 'var(--accent)', letterSpacing: '0.5px', fontWeight: 600 }}>{s.label}</span>
+                {isVisited && (
+                  <div style={{ position: 'absolute', bottom: 0, left: '20%', right: '20%', height: 2, background: 'var(--accent)', borderRadius: 1 }} />
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* CTA */}
+        <div style={{ padding: '0 20px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {unresolved > 0 && (
+            <p style={{ fontSize: 10, color: 'var(--warning)', textAlign: 'center', margin: 0 }}>
+              {unresolved} ohanterad{unresolved > 1 ? 'e' : ''} händelse{unresolved > 1 ? 'r' : ''} — du kan hantera dem i Översikt
+            </p>
+          )}
+          <button onClick={handleContinue} className="texture-leather" style={{
+            width: '100%', padding: '15px',
+            background: 'linear-gradient(135deg, var(--accent-dark), var(--accent-deep))',
+            color: 'var(--text-light)',
+            borderRadius: 12, fontSize: 15, fontWeight: 600, letterSpacing: '2px',
+            textTransform: 'uppercase', border: 'none', fontFamily: 'var(--font-body)',
+            cursor: 'pointer',
+          }}>
+            KLAR — NÄSTA OMGÅNG →
           </button>
-        )}
-        <button onClick={handleContinue} className="texture-leather" style={{
-          width: '100%', padding: '15px',
-          background: 'linear-gradient(135deg, var(--accent-dark), var(--accent-deep))',
-          color: 'var(--text-light)',
-          borderRadius: 12, fontSize: 15, fontWeight: 600, letterSpacing: '2px',
-          textTransform: 'uppercase', border: 'none', fontFamily: 'var(--font-body)',
-          cursor: 'pointer', pointerEvents: 'auto',
-        }}>
-          Nästa omgång →
-        </button>
+        </div>
       </div>
     </div>
   )

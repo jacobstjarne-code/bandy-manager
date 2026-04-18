@@ -12,7 +12,7 @@ import { TRAIT_META } from '../../domain/data/playerTraits'
 import { SectionCard } from '../components/SectionCard'
 import { getPortraitSvg } from '../../domain/services/portraitService'
 import { FirstVisitHint } from '../components/FirstVisitHint'
-import { LockerRoomMap } from '../components/squad/LockerRoomMap'
+import { LockerRoomCard } from '../components/club/LockerRoomCard'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
 type FilterKey = 'all' | 'mv' | 'def' | 'half' | 'mid' | 'fwd'
@@ -436,12 +436,11 @@ export function SquadScreen() {
           </div>
         )}
 
-        {/* DREAM-006: Omklädningsrum-karta */}
+        {/* 19B: Omklädningsrummet — list-vy */}
         {game && players.length >= 3 && (
-          <LockerRoomMap
+          <LockerRoomCard
             players={players}
             captainId={game.captainPlayerId}
-            game={game}
             onPlayerClick={(id) => setSelectedPlayerId(id)}
           />
         )}
