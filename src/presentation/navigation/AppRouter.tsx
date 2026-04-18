@@ -27,6 +27,7 @@ import { MatchResultScreen } from '../screens/MatchResultScreen'
 import { BoardMeetingScreen } from '../screens/BoardMeetingScreen'
 import { GameOverScreen } from '../screens/GameOverScreen'
 import { GranskaScreen } from '../screens/GranskaScreen'
+import { TaktikScreen } from '../screens/TaktikScreen'
 
 import { HistoryScreen } from '../screens/HistoryScreen'
 import { PreSeasonScreen } from '../screens/PreSeasonScreen'
@@ -70,6 +71,7 @@ export function AppRouter() {
           <Route path="playoff-intro" element={<PlayoffIntroScreen />} />
           <Route path="qf-summary" element={<QFSummaryScreen />} />
           <Route path="sim-summary" element={<SimSummaryScreen />} />
+          <Route path="taktik" element={<TaktikScreen />} />
         </Route>
         <Route element={<GameGuard />}>
           <Route path="/game/review" element={<GranskaScreen />} />

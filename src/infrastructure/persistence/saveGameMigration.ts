@@ -183,6 +183,11 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     data.assistantCoach = generateAssistantCoach(typeof data.id === 'string' ? data.id : 'default')
   }
 
+  // ── Sprint 23 — Chemistry ─────────────────────────────────────────────────
+  if (data.chemistryStats === undefined) {
+    data.chemistryStats = {}
+  }
+
   // ── version stamp ────────────────────────────────────────────────────────
   data.version = CURRENT_SAVE_VERSION
 

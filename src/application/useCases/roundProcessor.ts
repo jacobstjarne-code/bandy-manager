@@ -288,6 +288,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // ── Per-round development for managed club players ────────────────────────
+  const updatedChemistryStats = { ...(game.chemistryStats ?? {}) }
   {
     const managedFixture = simulatedFixtures.find(
       f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId
@@ -302,6 +303,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       if (lineup) {
         for (const id of lineup.startingPlayerIds ?? []) { starterIds.add(id); playedIds.add(id) }
         for (const id of lineup.benchPlayerIds ?? []) { playedIds.add(id) }
+      }
+
+      // Update chemistry stats — 90 min for each pair of starters
+      const starters = Array.from(starterIds)
+      for (let i = 0; i < starters.length; i++) {
+        for (let j = i + 1; j < starters.length; j++) {
+          const key = [starters[i], starters[j]].sort().join('|')
+          updatedChemistryStats[key] = (updatedChemistryStats[key] ?? 0) + 90
+        }
       }
       if (managedFixture.report?.playerRatings) {
         Object.assign(ratings, managedFixture.report.playerRatings)
@@ -1003,6 +1013,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     pendingScreen: triggerQFSummary ? PendingScreen.QFSummary : game.pendingScreen,
     lastProcessedMatchday: hasManagedCupPending ? (game.lastProcessedMatchday ?? undefined) : nextMatchday,
     lastCompletedFixtureId: justCompletedManagedFixture?.id ?? game.lastCompletedFixtureId,
+    chemistryStats: updatedChemistryStats,
     matchWeathers: trimmedWeathers,
     trainingHistory: trimmedTrainingHistory,
     playoffBracket: updatedBracket,

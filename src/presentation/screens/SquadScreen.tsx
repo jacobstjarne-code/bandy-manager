@@ -419,6 +419,32 @@ export function SquadScreen() {
         )}
       </div>
 
+      {/* Taktiktavlan shortcut */}
+      <div style={{ padding: '8px 12px 0' }}>
+        <button
+          onClick={() => navigate('/game/taktik')}
+          style={{
+            width: '100%',
+            padding: '8px 12px',
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: '1px',
+            color: 'var(--accent)',
+            background: 'rgba(196,122,58,0.08)',
+            border: '1px solid rgba(196,122,58,0.3)',
+            borderRadius: 6,
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <span>📋 TAKTIKTAVLAN</span>
+          <span style={{ opacity: 0.6 }}>Formation · Kemi · Anteckningar →</span>
+        </button>
+      </div>
+
       {/* Player list */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }}>
         {/* Fitness warning */}

@@ -78,6 +78,7 @@ export interface SaveGame {
   coachMarksSeen?: boolean
   dismissedHints?: string[]
   lastCompletedFixtureId?: string   // id of most recently completed managed-club fixture
+  chemistryStats?: Record<string, number>  // key = sortedId1|sortedId2, value = shared minutes
 
   playoffBracket: PlayoffBracket | null
   cupBracket: CupBracket | null
