@@ -30,13 +30,11 @@ export function FreeKickInteraction({ data, outcome, onChoose, coach }: FreeKick
   }) : undefined
 
   useEffect(() => {
-    if (outcome && phase !== 'revealed') {
-      setPhase('locked')
-      const t = setTimeout(() => setPhase('revealed'), 600)
-      return () => clearTimeout(t)
-    }
-    return undefined
-  }, [outcome, phase])
+    if (!outcome) return
+    setPhase('locked')
+    const t = setTimeout(() => setPhase('revealed'), 600)
+    return () => clearTimeout(t)
+  }, [outcome])
 
   function handleConfirm(c = choice) {
     if (phase !== 'choosing') return

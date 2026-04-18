@@ -41,13 +41,11 @@ export function CornerInteraction({ data, outcome, onChoose, coach }: CornerInte
   }) : undefined
 
   useEffect(() => {
-    if (outcome && phase !== 'revealed') {
-      setPhase('locked')
-      const t = setTimeout(() => setPhase('revealed'), 600)
-      return () => clearTimeout(t)
-    }
-    return undefined
-  }, [outcome, phase])
+    if (!outcome) return
+    setPhase('locked')
+    const t = setTimeout(() => setPhase('revealed'), 600)
+    return () => clearTimeout(t)
+  }, [outcome])
 
   function handleConfirm(z = zone, d = delivery) {
     if (phase !== 'choosing') return

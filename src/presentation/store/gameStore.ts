@@ -809,21 +809,17 @@ export const usePlayoffInfo = () => {
   return game.playoffBracket
 }
 
+const NAV_LOCK_REASONS: Record<string, string> = {
+  'season-summary':    'Slutför säsongssammanfattning',
+  'board-meeting':     'Slutför styrelsemöte',
+  'pre-season':        'Slutför försäsong',
+  'half-time-summary': 'Slutför halvtidssammanfattning',
+  'playoff-intro':     'Starta slutspelet',
+  'qf-summary':        'Slutför kvartsfinalssammanfattning',
+}
+
 export const useNavigationLock = (): { locked: boolean; reason: string | null } => {
-  return useGameStore(s => {
-    const game = s.game
-    if (!game) return { locked: false, reason: null }
-    if (game.pendingScreen) {
-      const reasons: Record<string, string> = {
-        'season-summary':    'Slutför säsongssammanfattning',
-        'board-meeting':     'Slutför styrelsemöte',
-        'pre-season':        'Slutför försäsong',
-        'half-time-summary': 'Slutför halvtidssammanfattning',
-        'playoff-intro':     'Starta slutspelet',
-        'qf-summary':        'Slutför kvartsfinalssammanfattning',
-      }
-      return { locked: true, reason: reasons[game.pendingScreen] ?? 'Slutför pågående flöde' }
-    }
-    return { locked: false, reason: null }
-  })
+  const pendingScreen = useGameStore(s => s.game?.pendingScreen ?? null)
+  const reason = pendingScreen ? (NAV_LOCK_REASONS[pendingScreen] ?? 'Slutför pågående flöde') : null
+  return { locked: !!pendingScreen, reason }
 }

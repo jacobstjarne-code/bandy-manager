@@ -30,13 +30,11 @@ export function PenaltyInteraction({ data, outcome, onChoose, coach }: PenaltyIn
   }) : undefined
 
   useEffect(() => {
-    if (outcome && phase !== 'revealed') {
-      setPhase('locked')
-      const t = setTimeout(() => setPhase('revealed'), 600)
-      return () => clearTimeout(t)
-    }
-    return undefined
-  }, [outcome, phase])
+    if (!outcome) return
+    setPhase('locked')
+    const t = setTimeout(() => setPhase('revealed'), 600)
+    return () => clearTimeout(t)
+  }, [outcome])
 
   function handleConfirm(d = dir, h = height) {
     if (phase !== 'choosing') return

@@ -32,13 +32,11 @@ export function CounterInteraction({ data, outcome, onChoose, coach }: CounterIn
   }) : undefined
 
   useEffect(() => {
-    if (outcome && phase !== 'revealed') {
-      setPhase('locked')
-      const t = setTimeout(() => setPhase('revealed'), 600)
-      return () => clearTimeout(t)
-    }
-    return undefined
-  }, [outcome, phase])
+    if (!outcome) return
+    setPhase('locked')
+    const t = setTimeout(() => setPhase('revealed'), 600)
+    return () => clearTimeout(t)
+  }, [outcome])
 
   function handleConfirm(c = choice) {
     if (phase !== 'choosing') return
