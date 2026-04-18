@@ -94,6 +94,7 @@ function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
   const color = inboxTypeColor(item.type)
   const [expanded, setExpanded] = useState(false)
   const hasBody = item.body && item.body.trim().length > 5
+  const isCoach = item.tone === 'coach'
 
   function handleClick() {
     if (hasBody) setExpanded(e => !e)
@@ -115,57 +116,111 @@ function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
         animation: `fadeInUp 200ms ease-out ${Math.min(index, 14) * 30}ms both`,
       }}
     >
-      <div style={{
-        width: 22,
-        height: 22,
-        borderRadius: '50%',
-        background: `${color}18`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 11,
-        flexShrink: 0,
-        marginTop: 1,
-      }}>
-        {inboxTypeIcon(item.type)}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6 }}>
-          <p style={{
-            fontSize: 13,
-            fontWeight: item.isRead ? 400 : 700,
-            color: item.isRead ? 'var(--text-secondary)' : 'var(--text-primary)',
-            lineHeight: 1.3,
-            ...(expanded ? {} : {
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }),
-          }}>
-            {!item.isRead && <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', marginRight: 5, verticalAlign: 'middle' }} />}
-            {item.title}
-          </p>
-          <span style={{ fontSize: 10, color: 'var(--text-muted)', flexShrink: 0 }}>
-            {formatDate(item.date)}
+      {/* Avatar — initials circle for coach tone, icon circle otherwise */}
+      {isCoach ? (
+        <div style={{
+          width: 28,
+          height: 28,
+          borderRadius: '50%',
+          background: 'var(--accent-dark)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          marginTop: 1,
+        }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', fontFamily: 'var(--font-display)' }}>
+            {item.coachInitials ?? '?'}
           </span>
         </div>
-        {expanded && hasBody && (
-          <p style={{
-            fontSize: 12,
-            color: 'var(--text-secondary)',
-            marginTop: 4,
-            lineHeight: 1.5,
-            whiteSpace: 'pre-wrap',
-          }}>
-            {item.body}
-          </p>
-        )}
-        {playerName && item.relatedPlayerId && (
-          <PlayerLink
-            playerId={item.relatedPlayerId}
-            name={playerName}
-            style={{ fontSize: 11, marginTop: 3, display: 'inline-block' }}
-          />
+      ) : (
+        <div style={{
+          width: 22,
+          height: 22,
+          borderRadius: '50%',
+          background: `${color}18`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 11,
+          flexShrink: 0,
+          marginTop: 1,
+        }}>
+          {inboxTypeIcon(item.type)}
+        </div>
+      )}
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {isCoach ? (
+          /* Coach-tone layout */
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6 }}>
+              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+                {item.title} · {item.fromRole ?? 'ASSISTENTTRÄNARE'}
+              </span>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', flexShrink: 0 }}>
+                {formatDate(item.date)}
+              </span>
+            </div>
+            {expanded && hasBody && (
+              <p style={{
+                fontSize: 12,
+                fontFamily: 'var(--font-display)',
+                fontStyle: 'italic',
+                color: 'var(--text-secondary)',
+                marginTop: 4,
+                lineHeight: 1.6,
+              }}>
+                "{item.body}"
+              </p>
+            )}
+            {!expanded && (
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic', fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {item.body}
+              </p>
+            )}
+          </>
+        ) : (
+          /* Standard layout */
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6 }}>
+              <p style={{
+                fontSize: 13,
+                fontWeight: item.isRead ? 400 : 700,
+                color: item.isRead ? 'var(--text-secondary)' : 'var(--text-primary)',
+                lineHeight: 1.3,
+                ...(expanded ? {} : {
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }),
+              }}>
+                {!item.isRead && <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', marginRight: 5, verticalAlign: 'middle' }} />}
+                {item.title}
+              </p>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', flexShrink: 0 }}>
+                {formatDate(item.date)}
+              </span>
+            </div>
+            {expanded && hasBody && (
+              <p style={{
+                fontSize: 12,
+                color: 'var(--text-secondary)',
+                marginTop: 4,
+                lineHeight: 1.5,
+                whiteSpace: 'pre-wrap',
+              }}>
+                {item.body}
+              </p>
+            )}
+            {playerName && item.relatedPlayerId && (
+              <PlayerLink
+                playerId={item.relatedPlayerId}
+                name={playerName}
+                style={{ fontSize: 11, marginTop: 3, display: 'inline-block' }}
+              />
+            )}
+          </>
         )}
       </div>
     </div>

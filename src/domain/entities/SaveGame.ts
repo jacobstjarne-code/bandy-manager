@@ -19,6 +19,7 @@ import type { Sponsor } from './Sponsor'
 import type { TalentSearchRequest, TalentSuggestion, TalentSearchResult } from './TalentSearch'
 import type { RoundSummaryData } from './RoundSummary'
 import type { Moment, MomentSource } from './Moment'
+import type { AssistantCoach } from './AssistantCoach'
 
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
 import type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityProject, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest } from './Community'
@@ -36,6 +37,7 @@ export type { TalentSearchRequest, TalentSuggestion, TalentSearchResult }
 export type { RoundSummaryData }
 
 export type { Moment, MomentSource }
+export type { AssistantCoach, CoachPersonality, CoachBackground } from './AssistantCoach'
 
 export type ClubEra = 'survival' | 'establishment' | 'legacy'
 
@@ -242,6 +244,9 @@ export interface SaveGame {
 
   // Sprint G — preferred match mode (persists between matches)
   preferredMatchMode?: 'full' | 'commentary' | 'quicksim' | 'silent'
+
+  // Sprint 18 — Assistenttränare
+  assistantCoach?: AssistantCoach
 
   // Sprint 12 — Segrarens eko (WEAK-014)
   pendingVictoryEcho?: import('../services/postVictoryNarrativeService').VictoryEcho

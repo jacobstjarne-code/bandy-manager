@@ -1,5 +1,6 @@
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { PendingScreen } from '../../domain/enums'
+import { generateAssistantCoach } from '../../domain/services/assistantCoachService'
 
 export const CURRENT_SAVE_VERSION = '0.2.0'
 
@@ -175,6 +176,11 @@ export function migrateSaveGame(raw: unknown): SaveGame {
       if (p.isClubLegend === undefined) p.isClubLegend = false
       return p
     })
+  }
+
+  // ── Sprint 18 — AssistantCoach ───────────────────────────────────────────
+  if (data.assistantCoach === undefined) {
+    data.assistantCoach = generateAssistantCoach(typeof data.id === 'string' ? data.id : 'default')
   }
 
   // ── version stamp ────────────────────────────────────────────────────────

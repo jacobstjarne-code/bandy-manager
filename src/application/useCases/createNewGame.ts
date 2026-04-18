@@ -23,6 +23,7 @@ import { generateBoardObjectives } from '../../domain/services/boardObjectiveSer
 import { generateMecenat } from '../../domain/services/mecenatService'
 import { generateSupporterGroup } from '../../domain/services/supporterService'
 import { generateAICoaches } from '../../domain/services/aiCoachService'
+import { generateAssistantCoach } from '../../domain/services/assistantCoachService'
 import { updatePlayerAvailability } from '../../domain/services/playerAvailabilityService'
 
 function pickRandom<T>(arr: T[], rand: () => number): T {
@@ -240,6 +241,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   })
 
   const now = new Date().toISOString()
+  const saveId = `save_${Date.now()}`
 
   const allFixtures = [...fixtures, ...cupFixtures]
 
@@ -291,7 +293,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   }
 
   const game: SaveGame = {
-    id: `save_${Date.now()}`,
+    id: saveId,
     managerName: input.managerName,
     managedClubId: input.clubId,
     currentDate: `${season}-10-01`,
@@ -384,6 +386,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
       })(),
     ],
     aiCoaches: generateAICoaches(clubs.map(c => c.id), input.seed ?? 42),
+    assistantCoach: generateAssistantCoach(saveId),
     averageAttendance: undefined,
     previousAverageAttendance: undefined,
     recentMoments: [],

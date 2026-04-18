@@ -10,4 +10,8 @@ export interface InboxItem {
   relatedPlayerId?: string
   relatedFixtureId?: string
   isRead: boolean
+  // Sprint 18 — coach tone
+  tone?: 'coach'
+  fromRole?: string
+  coachInitials?: string
 }

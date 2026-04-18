@@ -1,9 +1,12 @@
-import type { SaveGame } from '../../../domain/entities/SaveGame'
+import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../../domain/entities/Fixture'
-import { FixtureStatus, PlayoffStatus } from '../../../domain/enums'
+import { FixtureStatus, PlayoffStatus, InboxItemType } from '../../../domain/enums'
 import { calculateStandings } from '../../../domain/services/standingsService'
 import { updateCupBracketAfterRound } from '../../../domain/services/cupService'
 import { updateSeriesAfterMatch, advancePlayoffRound } from '../../../domain/services/playoffService'
+import { simulateMatch } from '../../../domain/services/matchEngine'
+import { fixtureSeed } from '../../../domain/utils/random'
+import { generateCoachQuote } from '../../../domain/services/assistantCoachService'
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
@@ -99,11 +102,79 @@ export function matchActions(get: Get, set: Set) {
       set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings, cupBracket: updatedCupBracket, playoffBracket: updatedPlayoffBracket, managedClubPendingLineup: undefined } })
     },
 
-    markMatchStarted: (fixtureId: string) => {
+    simulateAbandonedMatch: (fixtureId: string) => {
+      const { game } = get()
+      if (!game) return
+      const fixture = game.fixtures.find(f => f.id === fixtureId)
+      if (!fixture || !fixture.homeLineup || !fixture.awayLineup) return
+
+      const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
+      const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
+      const homeClub = game.clubs.find(c => c.id === fixture.homeClubId)
+      const awayClub = game.clubs.find(c => c.id === fixture.awayClubId)
+
+      const result = simulateMatch({
+        fixture,
+        homeLineup: fixture.homeLineup,
+        awayLineup: fixture.awayLineup,
+        homePlayers,
+        awayPlayers,
+        seed: fixtureSeed(fixture.id),
+        homeClubName: homeClub?.name,
+        awayClubName: awayClub?.name,
+        isPlayoff: fixture.isKnockout,
+        managedIsHome: fixture.homeClubId === game.managedClubId,
+      })
+
+      const completed = result.fixture
+      const updatedFixtures = game.fixtures.map(f => f.id === fixtureId ? completed : f)
+      const completedLeague = updatedFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
+      const standings = calculateStandings(game.league.teamIds, completedLeague)
+
+      const isHome = fixture.homeClubId === game.managedClubId
+      const managedScore = isHome ? completed.homeScore ?? 0 : completed.awayScore ?? 0
+      const oppScore     = isHome ? completed.awayScore ?? 0 : completed.homeScore ?? 0
+      const opponent = game.clubs.find(c => c.id === (isHome ? fixture.awayClubId : fixture.homeClubId))
+
+      const matchResult: 'win' | 'draw' | 'loss' =
+        managedScore > oppScore ? 'win' : managedScore < oppScore ? 'loss' : 'draw'
+      const score = `${managedScore}–${oppScore}`
+      const coach = game.assistantCoach
+      const coachBody = coach
+        ? generateCoachQuote(coach, { type: 'match-result', result: matchResult, score }, fixtureSeed(fixtureId))
+        : `Du lämnade matchen innan den var klar. Assistenten tog över. Resultat: ${score}.`
+
+      const inboxItem: InboxItem = {
+        id: `abandoned_match_${fixtureId}`,
+        date: game.currentDate,
+        type: InboxItemType.BoardFeedback,
+        title: coach ? `${coach.name} · ${opponent?.shortName ?? opponent?.name ?? '?'} ${score}` : `Matchen mot ${opponent?.name ?? '?'} avgjord utan dig`,
+        body: coachBody,
+        isRead: false,
+        ...(coach ? { tone: 'coach' as const, fromRole: 'ASSISTENTTRÄNARE', coachInitials: coach.initials } : {}),
+      }
+
+      set({ game: {
+        ...game,
+        fixtures: updatedFixtures,
+        standings,
+        inbox: [inboxItem, ...game.inbox],
+      }})
+    },
+
+    markMatchStarted: (fixtureId: string, homeLineup?: TeamSelection, awayLineup?: TeamSelection) => {
       const { game } = get()
       if (!game) return
       const updatedFixtures = game.fixtures.map(f =>
-        f.id === fixtureId ? { ...f, matchStartedAt: Date.now() } : f
+        f.id === fixtureId
+          ? {
+              ...f,
+              matchStartedAt: Date.now(),
+              // Persist lineups so we can auto-simulate if user abandons mid-match
+              ...(homeLineup ? { homeLineup } : {}),
+              ...(awayLineup ? { awayLineup } : {}),
+            }
+          : f
       )
       set({ game: { ...game, fixtures: updatedFixtures } })
     },
