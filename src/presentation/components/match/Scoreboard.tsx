@@ -4,6 +4,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
 import { MatchEventType, IceQuality } from '../../../domain/enums'
 import { getWeatherEmoji, getIceQualityLabel } from '../../../domain/services/weatherService'
+import { formatArenaName } from '../../../domain/utils/arenaName'
 
 interface Rivalry {
   name: string
@@ -147,7 +148,7 @@ export function Scoreboard({
             letterSpacing: '1.5px',
             textShadow: '0 0 4px rgba(168,152,120,0.3)',
           }}>
-            {homeClub.arenaName.toUpperCase()}
+            {formatArenaName(homeClub.arenaName).toUpperCase()}
           </p>
         ) : null
       })()}

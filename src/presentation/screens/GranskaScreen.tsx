@@ -4,6 +4,7 @@ import { useGameStore } from '../store/gameStore'
 import { playSound } from '../audio/soundEffects'
 import { MatchEventType, InboxItemType } from '../../domain/enums'
 import { csColor, formatFinance } from '../utils/formatters'
+import { formatArenaName } from '../../domain/utils/arenaName'
 import { FixtureStatus } from '../../domain/enums'
 import { getRivalry } from '../../domain/data/rivalries'
 import type { EventChoice } from '../../domain/entities/GameEvent'
@@ -268,7 +269,7 @@ export function GranskaScreen() {
                 <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>🏟️ {fixture.attendance} åskådare</p>
               )}
               {homeClub?.arenaName && !fixture.isNeutralVenue && (
-                <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>Spelades på {homeClub.arenaName}</p>
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>Spelades på {formatArenaName(homeClub.arenaName)}</p>
               )}
 
               {/* Match summary — prose report for silent mode, quick summary otherwise */}

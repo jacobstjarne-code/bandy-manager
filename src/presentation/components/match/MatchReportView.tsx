@@ -4,6 +4,7 @@ import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { MatchEventType, PlayoffRound } from '../../../domain/enums'
 import { positionShort, eventIcon } from '../../utils/formatters'
+import { formatArenaName } from '../../../domain/utils/arenaName'
 import { PlayerLink } from '../PlayerLink'
 
 function getPlayoffRoundLabel(round: PlayoffRound): string {
@@ -128,7 +129,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
 
     // Attendance
     if (fixture.attendance && managedIsHome && managedClub) {
-      sentences.push(`${fixture.attendance} på ${managedClub.arenaName ?? managedClub.name + 's IP'}.`)
+      sentences.push(`${fixture.attendance} på ${formatArenaName(managedClub.arenaName ?? managedClub.name + 's IP')}.`)
     }
 
     return sentences.join(' ')
@@ -146,7 +147,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
       {/* Arena + attendance */}
       {fixture.attendance && (
         <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 8 }}>
-          {homeClub?.arenaName ?? `${homeClub?.shortName ?? '?'}s IP`} · {fixture.attendance} åskådare
+          {formatArenaName(homeClub?.arenaName ?? `${homeClub?.shortName ?? '?'}s IP`)} · {fixture.attendance} åskådare
         </p>
       )}
 

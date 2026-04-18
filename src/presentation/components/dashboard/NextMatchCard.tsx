@@ -1,4 +1,5 @@
 import { ClubBadge } from '../ClubBadge'
+import { formatArenaName } from '../../../domain/utils/arenaName'
 import { IceQuality, PlayoffRound } from '../../../domain/enums'
 import { getIceQualityLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
 import { getCupRoundLabel, getCupRoundName } from '../../../domain/services/cupService'
@@ -337,7 +338,7 @@ export function NextMatchCard({
         {!isPlayoff && !isCup && !isDerby && !isAnnandagen && (() => {
           const venueClub = isHome ? club : opponent
           const arenaLabel = venueClub.arenaName
-            ? `${venueClub.arenaName} (${venueClub.shortName ?? venueClub.name})`
+            ? `${formatArenaName(venueClub.arenaName)} (${venueClub.shortName ?? venueClub.name})`
             : undefined
           return (
             <>

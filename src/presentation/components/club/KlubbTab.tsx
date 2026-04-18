@@ -5,6 +5,7 @@ import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { ClubExpectation, ClubStyle } from '../../../domain/enums'
 import { StatBar } from '../StatBar'
 import { SectionCard } from '../SectionCard'
+import { InfoRow } from '../primitives'
 import { csColor } from '../../utils/formatters'
 import { getFunctionaryQuote } from '../../../domain/services/functionaryQuoteService'
 import { getAvailableProjects } from '../../../domain/services/facilityService'
@@ -32,21 +33,7 @@ function styleLabel(s: ClubStyle): string {
   return map[s] ?? s
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingBottom: 10,
-      marginBottom: 10,
-      borderBottom: '1px solid var(--border)',
-    }}>
-      <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{label}</span>
-      <span style={{ fontSize: 14, fontWeight: 600 }}>{value}</span>
-    </div>
-  )
-}
+
 
 function FacilityRow({ label, value }: { label: string; value: number }) {
   return (

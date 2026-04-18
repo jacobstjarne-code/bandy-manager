@@ -214,13 +214,8 @@ export function CornerInteraction({ data, outcome, onChoose }: CornerInteraction
         {!confirmed && (
           <button
             onClick={handleConfirm}
-            style={{
-              width: '100%', padding: 11, borderRadius: 8, border: 'none',
-              background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))',
-              color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-              letterSpacing: '1px', marginTop: 10,
-              boxShadow: '0 3px 10px rgba(162,88,40,0.4)',
-            }}
+            className="btn btn-primary"
+            style={{ width: '100%', marginTop: 10 }}
           >
             SLÅ HÖRNAN →
           </button>

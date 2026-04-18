@@ -43,6 +43,7 @@ const NAV_BTN: React.CSSProperties = {
 
 export function DashboardScreen() {
   const { game, advance, simulateRemainingStep } = useGameStore()
+  const simulateAbandonedMatch = useGameStore(s => s.simulateAbandonedMatch)
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const resolveWeeklyDecision = useGameStore(s => s.resolveWeeklyDecision)
   const resolveAwayTrip = useGameStore(s => s.resolveAwayTrip)
@@ -57,6 +58,19 @@ export function DashboardScreen() {
 
   // Mark dashboard visited (for possible future tracking)
   useEffect(() => { markScreenVisited('dashboard') }, [])
+
+  // Auto-simulate match left in abandoned state (e.g. browser refresh mid-match)
+  useEffect(() => {
+    if (!game) return
+    const abandoned = game.fixtures.find(f =>
+      f.matchStartedAt &&
+      f.status === 'scheduled' &&
+      (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
+      f.homeLineup &&
+      f.awayLineup
+    )
+    if (abandoned) simulateAbandonedMatch(abandoned.id)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
 
   const SCREEN_ROUTES: Record<PendingScreen, string> = {
@@ -732,26 +746,39 @@ export function DashboardScreen() {
             return (
               <div
                 data-coach-id="klacken-card"
-                style={cardBase}
+                className="card-sharp"
+                style={{ ...cardBase, padding: 0, overflow: 'hidden' }}
                 onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}
               >
-                <span style={{
-                  position: 'absolute', top: -1, right: 8,
-                  background: 'var(--accent)', color: 'var(--text-light)',
-                  fontSize: 7, letterSpacing: '1.5px', fontWeight: 700,
-                  padding: '3px 8px 4px', borderRadius: '0 0 4px 4px',
-                  fontFamily: 'var(--font-body)',
-                }}>HÄNDELSE</span>
-                {headRow(`grundad ${sg.founded}`)}
-                <p style={{ fontSize: 14, fontWeight: 700, margin: '4px 0 6px', color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.3 }}>
-                  {klack.title}
-                </p>
-                <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 8px', fontFamily: 'var(--font-display)' }}>
-                  {klack.body}
-                </p>
-                <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: 0, fontFamily: 'var(--font-body)' }}>
-                  {klack.note}
-                </p>
+                {/* Leather bar */}
+                <div style={{
+                  background: 'var(--accent)',
+                  height: 22,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '0 12px',
+                }}>
+                  <span style={{ color: '#fff', fontSize: 9, fontWeight: 700, letterSpacing: '2px', fontFamily: 'var(--font-body)' }}>
+                    HÄNDELSE
+                  </span>
+                  <span style={{ color: '#fff', fontSize: 9, opacity: 0.8, letterSpacing: '1px', fontFamily: 'var(--font-body)' }}>
+                    OMG {currentRound} · {currentDateStr}
+                  </span>
+                </div>
+                {/* Content */}
+                <div style={{ padding: '10px 12px' }}>
+                  {headRow(`grundad ${sg.founded}`)}
+                  <p style={{ fontSize: 14, fontWeight: 700, margin: '4px 0 6px', color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.3 }}>
+                    {klack.title}
+                  </p>
+                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 8px', fontFamily: 'var(--font-display)' }}>
+                    {klack.body}
+                  </p>
+                  <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: 0, fontFamily: 'var(--font-body)' }}>
+                    {klack.note}
+                  </p>
+                </div>
               </div>
             )
           }

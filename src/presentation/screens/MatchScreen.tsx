@@ -17,6 +17,7 @@ import {
 import type { Tactic } from '../../domain/entities/Club'
 import { FORMATIONS, autoAssignFormation } from '../../domain/entities/Formation'
 import { POSITION_ORDER } from '../utils/formatters'
+import { formatArenaName } from '../../domain/utils/arenaName'
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { Player } from '../../domain/entities/Player'
 import { getRivalry } from '../../domain/data/rivalries'
@@ -647,7 +648,7 @@ export function MatchScreen() {
             const isFinal = nextFixture.roundNumber > 22 && game.playoffBracket?.final?.fixtures.includes(nextFixture.id)
             if (isFinal) return 'Studenternas IP, Uppsala'
             const homeClub = game.clubs.find(c => c.id === nextFixture.homeClubId)
-            return homeClub?.arenaName
+            return homeClub?.arenaName ? formatArenaName(homeClub.arenaName) : undefined
           })()}
           ritualText={getRitualText(game, 'kickoff') ?? undefined}
         />

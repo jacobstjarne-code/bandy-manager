@@ -373,7 +373,7 @@ export function PlayerCard({
         background: 'linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-elevated) 100%)',
       }}>
         <div
-          style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent)' }}
+          style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent)', background: 'var(--bg-surface)' }}
           dangerouslySetInnerHTML={{ __html: portraitSvg }}
         />
       </div>

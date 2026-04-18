@@ -118,7 +118,7 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         {/* Player portrait */}
         <div
-          style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--border)', flexShrink: 0 }}
+          style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--border)', flexShrink: 0, background: 'var(--bg-surface)' }}
           dangerouslySetInnerHTML={{ __html: getPortraitSvg(player.id, player.age, player.position) }}
         />
 

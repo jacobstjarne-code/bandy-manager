@@ -64,14 +64,13 @@ function buildFacialHair(p: PortraitParams): string {
 function buildSvg(p: PortraitParams): string {
   const eyebrowH = p.eyebrowThick ? 2.5 : 1.5
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" fill="#18130F" rx="32"/>
   <rect x="27" y="47" width="10" height="10" rx="3" fill="${p.skinTone}"/>
   ${buildHairSides(p)}
   ${buildFaceEl(p)}
   <rect x="22" y="27" width="8" height="${eyebrowH}" rx="1" fill="${p.hairColor}" opacity="0.85"/>
   <rect x="34" y="27" width="8" height="${eyebrowH}" rx="1" fill="${p.hairColor}" opacity="0.85"/>
-  <circle cx="26" cy="33" r="2.5" fill="#18130F"/>
-  <circle cx="38" cy="33" r="2.5" fill="#18130F"/>
+  <circle cx="26" cy="33" r="2.5" fill="rgba(0,0,0,0.75)"/>
+  <circle cx="38" cy="33" r="2.5" fill="rgba(0,0,0,0.75)"/>
   <circle cx="26.8" cy="32.2" r="0.9" fill="rgba(255,255,255,0.6)"/>
   <circle cx="38.8" cy="32.2" r="0.9" fill="rgba(255,255,255,0.6)"/>
   <path d="M29 42 q3 2 6 0" fill="none" stroke="rgba(0,0,0,0.3)" stroke-width="1.5" stroke-linecap="round"/>

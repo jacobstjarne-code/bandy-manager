@@ -472,13 +472,8 @@ export function HalftimeModal({
         {/* Continue button — always visible */}
         <button
           onClick={htSubs.length > 0 || htMentality || htTempo || htPress ? onApplyTactic : onContinue}
-          style={{
-            width: '100%', padding: '12px', marginTop: 16,
-            background: isBigMatch ? 'var(--accent)' : 'var(--accent)',
-            border: 'none', borderRadius: 'var(--radius)',
-            color: isBigMatch ? 'var(--text-primary)' : 'var(--text-light)', fontSize: 15, fontWeight: 700,
-            cursor: 'pointer',
-          }}
+          className="btn btn-primary"
+          style={{ width: '100%', marginTop: 16 }}
         >
           {tacticChanged || htSubs.length > 0 ? '🔄 ' : ''}{isSmFinal || isCupFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}
         </button>

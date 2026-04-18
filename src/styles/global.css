@@ -249,12 +249,15 @@ a {
 }
 
 .btn-copper {
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  background:
+    linear-gradient(to bottom, rgba(255,255,255,0.35) 0%, transparent 50%),
+    linear-gradient(to bottom, #DD9555, #8B4820);
   color: #fff;
-  box-shadow: 0 3px 8px rgba(162,88,40,0.30), 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 5px rgba(162,88,40,0.38);
 }
 
 .btn-copper:active {
+  transform: translateY(1px);
   box-shadow: 0 1px 3px rgba(162,88,40,0.20);
 }
 
@@ -273,13 +276,16 @@ a {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-dark), var(--accent-deep));
+  background:
+    linear-gradient(to bottom, rgba(255,255,255,0.35) 0%, transparent 50%),
+    linear-gradient(to bottom, #DD9555, #8B4820);
   color: #fff;
-  box-shadow: 0 3px 8px rgba(139,72,32,0.30), 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 5px rgba(162,88,40,0.38);
 }
 
 .btn-primary:active {
-  box-shadow: 0 1px 3px rgba(139,72,32,0.20);
+  transform: translateY(1px);
+  box-shadow: 0 1px 3px rgba(162,88,40,0.20);
 }
 
 .btn-secondary {
@@ -606,4 +612,36 @@ a {
 @keyframes coachPulse {
   0%, 100% { box-shadow: 0 0 0 4000px rgba(0,0,0,0.65), 0 0 0 0px rgba(196,122,58,0.3); }
   50% { box-shadow: 0 0 0 4000px rgba(0,0,0,0.65), 0 0 0 8px rgba(196,122,58,0.15); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TYPOGRAPHY UTILITY CLASSES
+   ═══════════════════════════════════════════════════════════ */
+
+/* Display/numeric (Georgia) */
+.text-display-xl { font-family: var(--font-display); font-size: 44px; }
+.text-display-lg { font-family: var(--font-display); font-size: 28px; }
+.text-display-md { font-family: var(--font-display); font-size: 20px; }
+
+/* Body */
+.text-body-md  { font-size: 13px; }
+.text-body-sm  { font-size: 12px; }
+.text-body-xs  { font-size: 11px; }
+.text-body-xxs { font-size: 10px; }
+
+/* Labels (sans-serif, uppercase) */
+.text-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Italic för citat */
+.text-quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--text-secondary);
 }
