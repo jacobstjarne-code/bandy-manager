@@ -56,6 +56,10 @@ export function NewGameScreen() {
   const { newGame } = useGameStore()
   const [step, setStep] = useState<'name' | 'club'>('name')
   const [managerName, setManagerName] = useState('')
+  const [nameError, setNameError] = useState<string | null>(null)
+
+  const VALID_NAME = /^[a-zA-ZåäöÅÄÖ0-9\s\-']*$/
+  const isNameValid = (n: string) => n.trim().length > 0 && VALID_NAME.test(n)
   const [selectedClubId, setSelectedClubId] = useState<string | null>(() => {
     const idx = Math.floor(Math.random() * CLUBS.length)
     return CLUBS[idx]?.id ?? null
@@ -66,8 +70,18 @@ export function NewGameScreen() {
     return name.split(' ').map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ')
   }
 
+  const tryAdvanceFromName = () => {
+    if (!isNameValid(managerName)) {
+      if (!managerName.trim()) return
+      setNameError('Namnet får bara innehålla bokstäver, siffror, bindestreck och apostrof.')
+      return
+    }
+    setNameError(null)
+    setStep('club')
+  }
+
   const handleStart = () => {
-    if (!selectedClubId || !managerName.trim()) return
+    if (!selectedClubId || !isNameValid(managerName)) return
     setIsStarting(true)
     setTimeout(() => {
       try {
@@ -183,8 +197,8 @@ export function NewGameScreen() {
             autoFocus
             type="text"
             value={managerName}
-            onChange={e => setManagerName(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && managerName.trim() && setStep('club')}
+            onChange={e => { setManagerName(e.target.value); if (nameError) setNameError(null) }}
+            onKeyDown={e => e.key === 'Enter' && tryAdvanceFromName()}
             placeholder="Ditt namn"
             maxLength={40}
             style={{
@@ -202,10 +216,15 @@ export function NewGameScreen() {
               letterSpacing: '1px',
             }}
           />
+          {nameError && (
+            <p style={{ color: 'var(--error, #e05c5c)', fontSize: 12, marginTop: 8, textAlign: 'center', maxWidth: 300 }}>
+              {nameError}
+            </p>
+          )}
         </div>
         <div style={{ padding: '20px 32px', paddingBottom: 'calc(20px + var(--safe-bottom))' }}>
           <button
-            onClick={() => setStep('club')}
+            onClick={tryAdvanceFromName}
             disabled={!managerName.trim()}
             className="btn btn-copper"
             style={{
@@ -214,8 +233,8 @@ export function NewGameScreen() {
               fontSize: 14,
               letterSpacing: '3px',
               textTransform: 'uppercase',
-              opacity: managerName.trim() ? 1 : 0.35,
-              cursor: managerName.trim() ? 'pointer' : 'not-allowed',
+              opacity: isNameValid(managerName) ? 1 : 0.35,
+              cursor: isNameValid(managerName) ? 'pointer' : 'not-allowed',
               transition: 'opacity 0.2s',
             }}
           >

@@ -13,19 +13,28 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "blob:"],
       connectSrc: ["'self'"],
       fontSrc: ["'self'"],
     },
   },
+  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+  frameguard: { action: 'deny' },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }))
 
 // ── CORS ────────────────────────────────────────
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:5173', 'http://localhost:3000']
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : (() => {
+      if (process.env.NODE_ENV === 'production') {
+        console.warn('[CORS] ALLOWED_ORIGINS inte satt i produktion — alla origins blockeras')
+        return []
+      }
+      return ['http://localhost:5173', 'http://localhost:3000']
+    })()
 
 app.use(cors({ origin: allowedOrigins }))
 

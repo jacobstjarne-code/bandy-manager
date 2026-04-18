@@ -511,8 +511,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const cupNewFixtures = cupResult.cupNewFixtures
   newInboxItems.push(...cupResult.cupInboxItems)
 
-  // Merge new playoff fixtures and cup fixtures
-  const finalAllFixtures = [...allFixtures, ...bracketNewFixtures, ...cupNewFixtures]
+  // Merge new playoff fixtures and cup fixtures (dedup by id to prevent double-add)
+  const finalAllFixtures = [...new Map(
+    [...allFixtures, ...bracketNewFixtures, ...cupNewFixtures].map(f => [f.id, f])
+  ).values()]
 
   // Derby notification: if next matchday has a derby for managed club
   const remainingScheduled = finalAllFixtures.filter(f => f.status === FixtureStatus.Scheduled)
@@ -730,24 +732,29 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const strippedFixtures = finalAllFixtures.map(f => stripCompletedFixture(f, managedFixtureId, game.managedClubId))
 
   // ── Sponsor chain effects, patron inbox, nudges ──────────────────────────
-  const sponsorResult = processSponsors(
-    game,
-    justCompletedManagedFixture ?? null,
-    finalPlayers,
-    nextMatchday,
-    newDate,
-    baseSeed,
-    localRand,
-  )
+  // Skip on second pass (same as processEconomy) to prevent double contract-round decrement
+  const sponsorResult = isSecondPassForManagedMatch
+    ? { updatedSponsors: game.sponsors ?? [], inboxItems: [] }
+    : processSponsors(
+        game,
+        justCompletedManagedFixture ?? null,
+        finalPlayers,
+        nextMatchday,
+        newDate,
+        baseSeed,
+        localRand,
+      )
   newInboxItems.push(...sponsorResult.inboxItems)
   let updatedSponsors = sponsorResult.updatedSponsors
 
   // M13: contextual sponsors (top4, CS>70, attendance>1000)
-  const contextualResult = checkContextualSponsors(
-    { ...game, sponsors: updatedSponsors },
-    standings,
-    nextMatchday,
-  )
+  const contextualResult = isSecondPassForManagedMatch
+    ? { newSponsors: [], newMoments: [] }
+    : checkContextualSponsors(
+        { ...game, sponsors: updatedSponsors },
+        standings,
+        nextMatchday,
+      )
   if (contextualResult.newSponsors.length > 0) {
     updatedSponsors = [...updatedSponsors, ...contextualResult.newSponsors]
     newMoments.push(...contextualResult.newMoments)

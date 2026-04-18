@@ -45,7 +45,8 @@ interface GameState {
   placeOutgoingBid: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => { success: boolean; error?: string }
   resolveEvent: (eventId: string, choiceId: string) => void
   saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection, overtimeResult?: 'home' | 'away', penaltyResult?: { home: number; away: number }, attendance?: number) => void
-  markMatchStarted: (fixtureId: string) => void
+  markMatchStarted: (fixtureId: string, homeLineup?: import('../../domain/entities/Fixture').TeamSelection, awayLineup?: import('../../domain/entities/Fixture').TeamSelection) => void
+  simulateAbandonedMatch: (fixtureId: string) => void
   clearSeasonSummary: () => void
   clearBoardMeeting: () => void
   requestDetailedAnalysis: (opponentClubId: string, fixtureId: string) => { success: boolean; error?: string }
@@ -806,4 +807,23 @@ export const usePlayoffInfo = () => {
   const game = useGameStore(s => s.game)
   if (!game || !game.playoffBracket) return null
   return game.playoffBracket
+}
+
+export const useNavigationLock = (): { locked: boolean; reason: string | null } => {
+  return useGameStore(s => {
+    const game = s.game
+    if (!game) return { locked: false, reason: null }
+    if (game.pendingScreen) {
+      const reasons: Record<string, string> = {
+        'season-summary':    'Slutför säsongssammanfattning',
+        'board-meeting':     'Slutför styrelsemöte',
+        'pre-season':        'Slutför försäsong',
+        'half-time-summary': 'Slutför halvtidssammanfattning',
+        'playoff-intro':     'Starta slutspelet',
+        'qf-summary':        'Slutför kvartsfinalssammanfattning',
+      }
+      return { locked: true, reason: reasons[game.pendingScreen] ?? 'Slutför pågående flöde' }
+    }
+    return { locked: false, reason: null }
+  })
 }

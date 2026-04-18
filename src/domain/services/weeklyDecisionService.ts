@@ -195,6 +195,9 @@ const WEEKLY_DECISION_COOLDOWN = 3  // minimum rounds between decisions
 export function generateWeeklyDecision(game: SaveGame, round: number): WeeklyDecision | null {
   if (round < 1) return null
 
+  // Don't generate a new decision while one is still pending (user hasn't answered yet)
+  if (game.pendingWeeklyDecision) return null
+
   // Don't generate a new decision if one was just generated within the cooldown window
   const lastRound = game.weeklyDecisionLastRound ?? 0
   if (lastRound > 0 && round - lastRound < WEEKLY_DECISION_COOLDOWN) return null

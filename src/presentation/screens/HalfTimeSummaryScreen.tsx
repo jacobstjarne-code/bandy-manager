@@ -9,13 +9,25 @@ export function HalfTimeSummaryScreen() {
 
   if (!game) { navigate('/game', { replace: true }); return null }
 
-  const summary = generateHalfTimeSummary(game)
-  const club = game.clubs.find(c => c.id === game.managedClubId)
-
   function handleContinue() {
     clearHalfTimeSummary()
     navigate('/game/dashboard', { replace: true })
   }
+
+  let summary
+  try {
+    summary = generateHalfTimeSummary(game)
+  } catch (err) {
+    console.error('[HalfTimeSummary] Kunde inte generera sammanfattning:', err)
+    return (
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '0 20px' }}>
+        <p style={{ fontSize: 14, color: 'var(--text-secondary)', textAlign: 'center' }}>Halvtidssammanfattningen kunde inte visas.</p>
+        <button className="btn btn-copper" onClick={handleContinue}>Fortsätt säsongen →</button>
+      </div>
+    )
+  }
+
+  const club = game.clubs.find(c => c.id === game.managedClubId)
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)', position: 'relative' }}>

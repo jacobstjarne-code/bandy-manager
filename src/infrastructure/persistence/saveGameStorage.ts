@@ -14,6 +14,21 @@ export function exportSaveAsJson(game: SaveGame): void {
   URL.revokeObjectURL(url)
 }
 
+function isValidSaveGameStructure(obj: unknown): obj is SaveGame {
+  if (typeof obj !== 'object' || obj === null) return false
+  const o = obj as Record<string, unknown>
+  return (
+    typeof o.id === 'string' && o.id.length > 0 &&
+    typeof o.managerName === 'string' &&
+    typeof o.managedClubId === 'string' &&
+    typeof o.currentSeason === 'number' &&
+    Array.isArray(o.clubs) &&
+    Array.isArray(o.players) &&
+    typeof o.league === 'object' && o.league !== null &&
+    Array.isArray(o.fixtures)
+  )
+}
+
 export async function importSaveFromJson(): Promise<SaveGame | null> {
   return new Promise((resolve) => {
     const input = document.createElement('input')
@@ -24,7 +39,12 @@ export async function importSaveFromJson(): Promise<SaveGame | null> {
       if (!file) { resolve(null); return }
       try {
         const text = await file.text()
-        const parsed = JSON.parse(text) as SaveGame
+        const parsed = JSON.parse(text)
+        if (!isValidSaveGameStructure(parsed)) {
+          console.warn('[importSaveFromJson] Ogiltig save-struktur — import avbruten')
+          resolve(null)
+          return
+        }
         const migrated = migrateSaveGame(parsed)
         await saveSaveGame(migrated)
         resolve(migrated)

@@ -5,6 +5,7 @@ import type { TransferBid } from '../../../domain/entities/GameEvent'
 import type { LoanDeal } from '../../../domain/entities/Academy'
 import { InboxItemType } from '../../../domain/enums'
 import { resolveOutgoingBid, generateIncomingBids, getCounterOfferAmount } from '../../../domain/services/transferService'
+import { getTransferWindowStatus } from '../../../domain/services/transferWindowService'
 
 export interface TransferProcessorResult {
   resolvedBids: TransferBid[]
@@ -41,8 +42,15 @@ export function processTransferBids(
 ): TransferProcessorResult {
   const inboxItems: InboxItem[] = []
 
+  const windowNow = getTransferWindowStatus(newDate)
+  const windowClosed = windowNow.status === 'closed'
+
   const existingBids: TransferBid[] = game.transferBids ?? []
   const resolvedBids: TransferBid[] = existingBids.map(b => {
+    // Avbryt utgående bud om transferfönstret stängde sedan budet lades
+    if (b.direction === 'outgoing' && b.status === 'pending' && windowClosed) {
+      return { ...b, status: 'expired' as const }
+    }
     if (b.direction === 'outgoing' && b.status === 'pending' && nextMatchday >= b.expiresRound) {
       const outcome = resolveOutgoingBid(b, game, localRand)
       if (outcome === 'counter') {
@@ -129,6 +137,19 @@ export function processTransferBids(
 
     const target = preEventGame.players.find(p => p.id === bid.playerId)
     const sellingClub = preEventGame.clubs.find(c => c.id === bid.sellingClubId)
+
+    // Fönster stängdes — notifiera om avbrutet bud
+    if (bid.status === 'expired' && windowClosed && target) {
+      inboxItems.push({
+        id: `inbox_bid_window_closed_${bid.id}`,
+        date: newDate,
+        type: InboxItemType.TransferBidResult,
+        title: `Bud på ${target.firstName} ${target.lastName} avbröts`,
+        body: `Transferfönstret stängde och budet på ${target.firstName} ${target.lastName} (${sellingClub?.name ?? '?'}) avbröts automatiskt.`,
+        isRead: false,
+      })
+      continue
+    }
 
     if (bid.status === 'accepted' && target) {
       inboxItems.push({
