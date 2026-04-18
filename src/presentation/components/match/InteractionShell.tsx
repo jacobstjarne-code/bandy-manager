@@ -25,6 +25,7 @@ export function InteractionShell({
   const [timeLeft, setTimeLeft] = useState(timerSeconds)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const timedOut = useRef(false)
+  const timeLeftRef = useRef(timerSeconds)
   const onTimeoutRef = useRef(onTimeout)
   useEffect(() => { onTimeoutRef.current = onTimeout }, [onTimeout])
 
@@ -34,20 +35,19 @@ export function InteractionShell({
       if (timerRef.current) clearInterval(timerRef.current)
       return
     }
+    timeLeftRef.current = timerSeconds
     setTimeLeft(timerSeconds)
     timedOut.current = false
     timerRef.current = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
-          clearInterval(timerRef.current!)
-          if (!timedOut.current) {
-            timedOut.current = true
-            onTimeoutRef.current()
-          }
-          return 0
+      timeLeftRef.current -= 1
+      setTimeLeft(timeLeftRef.current)
+      if (timeLeftRef.current <= 0) {
+        clearInterval(timerRef.current!)
+        if (!timedOut.current) {
+          timedOut.current = true
+          onTimeoutRef.current()
         }
-        return t - 1
-      })
+      }
     }, 1000)
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
