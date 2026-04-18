@@ -19,6 +19,22 @@ export interface CounterOutcome {
   description: string
 }
 
+/** Uppskattad målchans per val (0–1) */
+export function counterChoiceSuccessRates(data: CounterInteractionData): Record<CounterChoice, number> {
+  const speedFactor = data.runnerSpeed > 70 ? 0.05 : data.runnerSpeed > 50 ? 0 : -0.05
+  const outnumbered = data.defendersBeat >= 2
+  return {
+    sprint:    Math.max(0.10, Math.min(0.60, 0.35 + speedFactor + (outnumbered ? -0.05 : 0.05))),
+    earlyBall: Math.max(0.15, Math.min(0.55, 0.40 + (outnumbered ? -0.08 : 0))),
+    build:     Math.max(0.10, Math.min(0.45, 0.25 + (outnumbered ? 0.05 : 0))),
+  }
+}
+
+/** Formats a rate as %, rounded to nearest 5 */
+export function formatCounterRate(rate: number): string {
+  return `${Math.round(rate * 20) * 5}%`
+}
+
 export function resolveCounter(
   choice: CounterChoice,
   runner: Player,

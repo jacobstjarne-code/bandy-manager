@@ -40,6 +40,11 @@ export type QuoteContext =
   | { type: 'weekly-decision'; topic: string }
   | { type: 'season-summary'; finalPosition: number; expectation: number }
   | { type: 'press-conference'; result: 'win' | 'draw' | 'loss' }
+  | { type: 'corner'; sub: 'taker-tired' | 'striker-hot' | 'no-goals-yet' | 'default'; playerName?: string }
+  | { type: 'penalty'; sub: 'taker-missed-last' | 'gk-strong' | 'default'; playerName?: string }
+  | { type: 'counter'; sub: 'fast-runner' | 'outnumbered' | 'default'; playerName?: string }
+  | { type: 'freekick'; sub: 'wall-small' | 'distance-long' | 'default' }
+  | { type: 'last-minute'; sub: 'leading' | 'chasing' | 'tied'; margin: number }
 
 const WIN_QUOTES: Record<CoachPersonality, string[]> = {
   calm: [
@@ -441,6 +446,172 @@ export function generateCoachQuote(coach: AssistantCoach, context: QuoteContext,
       break
     case 'press-conference':
       quotes = context.result === 'win' ? PRESS_WIN_QUOTES[p] : PRESS_LOSS_QUOTES[p]
+      break
+    case 'corner': {
+      const n = context.playerName ?? 'han'
+      if (context.sub === 'taker-tired') {
+        const MAP: Record<CoachPersonality, string> = {
+          calm: `${n} är trött. Ta det säkra och slå nära.`,
+          sharp: `${n} orkar inte mer. Lägg det kort.`,
+          jovial: `${n} har slitit — låt någon annan ta bollen!`,
+          grumpy: `${n} borde byta ut sig. Kort hörna.`,
+          philosophical: `Trötthet är en signal. Lyssna på kroppen — gå kort.`,
+        }
+        return MAP[p]
+      }
+      if (context.sub === 'striker-hot') {
+        const MAP: Record<CoachPersonality, string> = {
+          calm: `${n} är i form. Slå upp till honom i mitten.`,
+          sharp: `${n} är glödhet. Centrera.`,
+          jovial: `${n} flammar! Ge honom bollen — mitt i mål!`,
+          grumpy: `${n} har tur idag. Utnyttja det.`,
+          philosophical: `Momentum är flyktigt. Ge ${n} bollen medan det varar.`,
+        }
+        return MAP[p]
+      }
+      if (context.sub === 'no-goals-yet') {
+        const MAP: Record<CoachPersonality, string> = {
+          calm: 'Flera hörnor utan mål. Dags att variera.',
+          sharp: 'Motståndaren läser oss. Byt taktik nu.',
+          jovial: 'Vi missar hörnorna! Prova något annat!',
+          grumpy: 'Samma sak om och om igen. Ändra.',
+          philosophical: 'Galenskap är att göra samma sak och vänta sig ett annat resultat.',
+        }
+        return MAP[p]
+      }
+      const MAP: Record<CoachPersonality, string> = {
+        calm: 'Välj zonen med störst täckning. Gå på läget.',
+        sharp: 'Analys klar. Välj och kör.',
+        jovial: 'Det här är vår chans! Slå hårt!',
+        grumpy: 'Välj rätt den här gången.',
+        philosophical: 'En hörna är en möjlighet som skapas av disciplin.',
+      }
+      return MAP[p]
+    }
+    case 'penalty': {
+      const n = context.playerName ?? 'han'
+      if (context.sub === 'taker-missed-last') {
+        const MAP: Record<CoachPersonality, string> = {
+          calm: `${n} missade senast. Håll det enkelt och säkert.`,
+          sharp: `${n} har skuld att betala. Sikta lågt.`,
+          jovial: `${n} vill ha revansch! Fokus — välj säkert!`,
+          grumpy: `${n} missade senast. Hoppas det inte upprepas.`,
+          philosophical: `Misstag läker med tid. ${n} vet vad som krävs nu.`,
+        }
+        return MAP[p]
+      }
+      if (context.sub === 'gk-strong') {
+        const MAP: Record<CoachPersonality, string> = {
+          calm: 'Målvakten är bra på straffar. Välj sidorna.',
+          sharp: 'Motståndets keeper tar höga bollar. Skjut lågt.',
+          jovial: 'Målvakten är het — men vi är hetare! Välj hörn!',
+          grumpy: 'Keepern är bra. Det här kommer inte gå bra.',
+          philosophical: 'En stark keeper är en utmaning — men alla val har sin risk.',
+        }
+        return MAP[p]
+      }
+      const MAP: Record<CoachPersonality, string> = {
+        calm: 'Ta det lugnt. Välj ett hörn och håll dig till det.',
+        sharp: 'Kort approach, hård avslutning.',
+        jovial: 'Stämningen är elektrisk! Välj ett hörn och kör!',
+        grumpy: 'Slösa inte det här.',
+        philosophical: 'Straffsparkens enkelhet är dess svårighet.',
+      }
+      return MAP[p]
+    }
+    case 'counter': {
+      const n = context.playerName ?? 'spelaren'
+      if (context.sub === 'fast-runner') {
+        const MAP: Record<CoachPersonality, string> = {
+          calm: `${n} är snabbare. Spring.`,
+          sharp: `${n} vinner loppet. Sprinta.`,
+          jovial: `${n} är ett blixtsnabbt djur! Kör!`,
+          grumpy: `${n} är snabbare, i alla fall.`,
+          philosophical: `Fart i de rätta ögonblicken är konst.`,
+        }
+        return MAP[p]
+      }
+      if (context.sub === 'outnumbered') {
+        const MAP: Record<CoachPersonality, string> = {
+          calm: 'Dom täcker ytan. Spela av och bygga om.',
+          sharp: 'Underlägset. Spela säkert.',
+          jovial: 'Det är tufft — men vi kämpar! Spela av!',
+          grumpy: 'Dom är fler. Gör inte något dumt.',
+          philosophical: 'Att erkänna underlägsenhet är det klokaste valet.',
+        }
+        return MAP[p]
+      }
+      const MAP: Record<CoachPersonality, string> = {
+        calm: 'Läs situationen och välj rätt moment.',
+        sharp: 'Snabbt beslut — tveka inte.',
+        jovial: 'Det är nu det händer! Välj!',
+        grumpy: 'Välj nu.',
+        philosophical: 'Kontringen är fotbollens rent distillerade essens.',
+      }
+      return MAP[p]
+    }
+    case 'freekick': {
+      if (context.sub === 'wall-small') {
+        const MAP: Record<CoachPersonality, string> = {
+          calm: 'Liten mur. Bra läge att skjuta över.',
+          sharp: 'Muren är klen. Skjut hårt och högt.',
+          jovial: 'Liten mur — stor chans! Skjut!',
+          grumpy: 'Muren är svag. Utnyttja det.',
+          philosophical: 'En liten barriär inbjuder till mod.',
+        }
+        return MAP[p]
+      }
+      if (context.sub === 'distance-long') {
+        const MAP: Record<CoachPersonality, string> = {
+          calm: 'Långt avstånd. Passa in istället.',
+          sharp: 'Långt bort — passa, skjut inte.',
+          jovial: 'Lite långt — men vad tusan, prova!',
+          grumpy: 'Det är för långt. Passa.',
+          philosophical: 'Avstånd är relativt. Klokhet är absolut.',
+        }
+        return MAP[p]
+      }
+      const MAP: Record<CoachPersonality, string> = {
+        calm: 'Välj det bästa alternativet för situationen.',
+        sharp: 'Snabb analys — välj och genomför.',
+        jovial: 'Det här är vår chans! Kör!',
+        grumpy: 'Gör rätt val för en gångs skull.',
+        philosophical: 'Frislag — ordningen återvinns ur kaos.',
+      }
+      return MAP[p]
+    }
+    case 'last-minute': {
+      if (context.sub === 'leading') {
+        const MAP: Record<CoachPersonality, string> = {
+          calm: `Vi leder med ${context.margin}. Håll ihop. Disciplin vinner.`,
+          sharp: `${context.margin} måls försprång. Låt dem inte tillbaka.`,
+          jovial: `Vi leder! Håll kvar det — men go hard!`,
+          grumpy: `Förstör inte det nu.`,
+          philosophical: `Segern är nära — men den kräver vaksamhet till sista visslingen.`,
+        }
+        return MAP[p]
+      }
+      if (context.sub === 'chasing') {
+        const MAP: Record<CoachPersonality, string> = {
+          calm: 'Allt eller inget. Vi pressar nu.',
+          sharp: 'Kom igen — pressa upp dem.',
+          jovial: 'Vi kan ta det! Allt in! Kör!',
+          grumpy: 'Det är sent, men vi försöker.',
+          philosophical: 'Det sista är alltid det svåraste — och det viktigaste.',
+        }
+        return MAP[p]
+      }
+      const MAP: Record<CoachPersonality, string> = {
+        calm: 'Jämnt. Välj rätt och ta tre poäng.',
+        sharp: 'Lika. Nu avgörs det.',
+        jovial: 'Allt att vinna! Kör på!',
+        grumpy: 'Jämnt. Äckligt.',
+        philosophical: 'Oavgjort är ingen destination — det är en övergång.',
+      }
+      return MAP[p]
+    }
+    default:
+      quotes = WIN_QUOTES[p]
       break
   }
 

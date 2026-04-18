@@ -154,7 +154,7 @@ export function MatchLiveScreen() {
     if (hasSimulated.current) return
     if (!fixture || !homeLineup || !awayLineup || !game) return
     hasSimulated.current = true
-    markMatchStarted(fixture.id)
+    markMatchStarted(fixture.id, homeLineup, awayLineup)
 
     const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
     const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
@@ -188,8 +188,9 @@ export function MatchLiveScreen() {
 
   useEffect(() => {
     if (ceremonySlide !== 1) return
-    const timer = setTimeout(() => setCeremonySlide(2), 3000)
-    return () => clearTimeout(timer)
+    let mounted = true
+    const timer = setTimeout(() => { if (mounted) setCeremonySlide(2) }, 3000)
+    return () => { mounted = false; clearTimeout(timer) }
   }, [ceremonySlide])
 
   useEffect(() => {
@@ -206,6 +207,17 @@ export function MatchLiveScreen() {
       : managedGoals > oppGoals
     if (managedWon) playSound('champagne')
   }, [ceremonySlide]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Warn user if they try to close/refresh mid-match — auto-simulation kicks in on next DashboardScreen mount
+  useEffect(() => {
+    if (matchDone) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = 'Matchen pågår. Lämnar du nu simuleras resten automatiskt.'
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [matchDone])
 
   useEffect(() => {
     if (!matchDone || !fixture || !homeLineup || !awayLineup || steps.length === 0) return
@@ -999,29 +1011,34 @@ export function MatchLiveScreen() {
               data={activeCorner}
               outcome={cornerOutcome}
               onChoose={handleCornerChoice}
+              coach={game?.assistantCoach ?? undefined}
             />
           ) : activePenalty ? (
             <PenaltyInteraction
               data={activePenalty}
               outcome={penaltyOutcome}
               onChoose={handlePenaltyChoice}
+              coach={game?.assistantCoach ?? undefined}
             />
           ) : activeCounter ? (
             <CounterInteraction
               data={activeCounter}
               outcome={counterOutcome}
               onChoose={handleCounterChoice}
+              coach={game?.assistantCoach ?? undefined}
             />
           ) : activeFreeKick ? (
             <FreeKickInteraction
               data={activeFreeKick}
               outcome={freeKickOutcome}
               onChoose={handleFreeKickChoice}
+              coach={game?.assistantCoach ?? undefined}
             />
           ) : activeLastMinutePress ? (
             <LastMinutePress
               data={activeLastMinutePress}
               onChoose={handleLastMinutePressChoice}
+              coach={game?.assistantCoach ?? undefined}
             />
           ) : undefined
         }

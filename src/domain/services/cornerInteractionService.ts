@@ -169,3 +169,44 @@ export function buildCornerInteractionData(
     minute,
   }
 }
+
+/**
+ * Returnerar uppskattad målsannolikhet (0–1) per zon, baserat på situationsdata.
+ * Avrundas till närmaste 5% i UI.
+ */
+export function cornerZoneSuccessRates(
+  data: CornerInteractionData,
+  cornerTaker?: Player,
+  topRusher?: Player,
+  goalkeeper?: Player,
+): Record<CornerZone, number> {
+  const base: Record<CornerZone, number> = { near: 0.33, center: 0.26, far: 0.16 }
+
+  // Taker skill
+  const takerAttr = cornerTaker?.attributes.cornerSkill ?? 50
+  const takerBonus = (takerAttr - 50) / 600  // ±8%
+
+  // Rusher height/finishing for center
+  const rusherBonus = topRusher ? (topRusher.attributes.shooting - 50) / 800 : 0
+
+  // GK skill reduces all
+  const gkPenalty = goalkeeper ? (goalkeeper.attributes.goalkeeping - 50) / 600 : 0
+
+  // PK pressure reduces near/far
+  const pkPenalty = data.opponentPenaltyKill === 'aggressive' ? 0.05
+    : data.opponentPenaltyKill === 'active' ? 0.025 : 0
+
+  // Home advantage
+  const homeBonus = data.isHome ? data.supporterBoost * 0.001 : 0
+
+  return {
+    near: Math.max(0.08, Math.min(0.60, base.near + takerBonus - gkPenalty - pkPenalty + homeBonus)),
+    center: Math.max(0.08, Math.min(0.55, base.center + takerBonus + rusherBonus - gkPenalty + homeBonus)),
+    far: Math.max(0.05, Math.min(0.45, base.far + takerBonus * 0.5 - gkPenalty - pkPenalty + homeBonus)),
+  }
+}
+
+/** Formats a rate as %, rounded to nearest 5 */
+export function formatRate(rate: number): string {
+  return `${Math.round(rate * 20) * 5}%`
+}
