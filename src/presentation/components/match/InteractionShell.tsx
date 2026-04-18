@@ -25,6 +25,8 @@ export function InteractionShell({
   const [timeLeft, setTimeLeft] = useState(timerSeconds)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const timedOut = useRef(false)
+  const onTimeoutRef = useRef(onTimeout)
+  useEffect(() => { onTimeoutRef.current = onTimeout }, [onTimeout])
 
   // Timer — only runs in 'choosing' phase
   useEffect(() => {
@@ -32,13 +34,15 @@ export function InteractionShell({
       if (timerRef.current) clearInterval(timerRef.current)
       return
     }
+    setTimeLeft(timerSeconds)
+    timedOut.current = false
     timerRef.current = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) {
           clearInterval(timerRef.current!)
           if (!timedOut.current) {
             timedOut.current = true
-            onTimeout()
+            onTimeoutRef.current()
           }
           return 0
         }
@@ -48,7 +52,7 @@ export function InteractionShell({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
     }
-  }, [phase, onTimeout])
+  }, [phase, timerSeconds])
 
   const timerFraction = timeLeft / timerSeconds
   const timerColor = timerFraction > 0.5 ? 'var(--accent)' : timerFraction > 0.25 ? 'var(--warning)' : 'var(--danger)'
