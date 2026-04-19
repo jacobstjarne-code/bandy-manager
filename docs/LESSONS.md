@@ -110,3 +110,91 @@ fix: shotmap prickar klumpade — rot: nextPos('goal') y-range var
 **Känn igen:** Spelaren scrollar genom två olika skärmar och ser samma siffror.
 
 **Historik:** GranskaScreen Analys-steg — tabellplacering/ekonomi/bygdens puls dubblerade från Förlopp-steg.
+
+---
+
+## 7. useEffect-dep på state som effecten själv skriver till
+
+**Mönster:** React error #185 under live-match-interaktioner (hörna, straff, kontring, frislag). Kraschar specifikt när `outcome` sätts.
+
+**Rotorsak:** `useEffect` med `[outcome, phase]` i deps anropade `setPhase('locked')` — vilket ändrar `phase` → triggrar om effecten → `setPhase` igen → loop. Inte samma som lärdom 3 (inline-funktion) — här är det lokalt state i deps-arrayen som effecten själv muterar.
+
+**Fix:** Ta bort allt state som effecten skriver till från deps-arrayen. Behåll bara den externa triggern:
+```tsx
+// Fel — phase är i deps men setPhase('locked') ändrar phase
+useEffect(() => {
+  if (!outcome) return
+  setPhase('locked')
+  const t = setTimeout(() => setPhase('revealed'), 600)
+  return () => clearTimeout(t)
+}, [outcome, phase])
+
+// Rätt — bara den externa triggern
+useEffect(() => {
+  if (!outcome) return
+  setPhase('locked')
+  const t = setTimeout(() => setPhase('revealed'), 600)
+  return () => clearTimeout(t)
+}, [outcome])
+```
+
+**Känn igen:** Error #185 i kombination med `useState` + `useEffect` där samma state-variabel finns i deps OCH skrivs till inuti effecten. Kontrollera alla interaktionskomponenter (CornerInteraction, PenaltyInteraction, etc.).
+
+**Historik:** Alla fyra interaktionskomponenter hade `[outcome, phase]` — fixades i Sprint 22.
+
+---
+
+## 8. Zustand-selektor returnerar nytt objekt varje render
+
+**Mönster:** Komponent re-renderas vid varje store-uppdatering trots att det visade värdet inte ändrats. Kan eskalera till loop-problem eller märkbar lagg.
+
+**Rotorsak:** Zustand använder `Object.is` för att jämföra selektor-output. `useGameStore(s => ({ locked: !!, reason: s... }))` skapar ett nytt objekt-literal varje anrop → `Object.is({}, {}) === false` → re-render.
+
+**Fix:** Returnera primitives direkt från selektorn och bygg det sammansatta värdet utanför:
+```tsx
+// Fel — nytt objekt varje render
+const { locked, reason } = useGameStore(s => ({
+  locked: !!s.game?.pendingScreen,
+  reason: s.game?.pendingScreen ?? null,
+}))
+
+// Rätt — primitives, stabila referenser
+const pendingScreen = useGameStore(s => s.game?.pendingScreen ?? null)
+const locked = !!pendingScreen
+const reason = pendingScreen ? (REASON_MAP[pendingScreen] ?? 'Slutför pågående flöde') : null
+```
+
+**Känn igen:** `useGameStore(s => ({ ... }))` med objekt-literal. Letaefter i hooks som används i ofta-renderande komponenter (BottomNav, headers, wrappers).
+
+**Historik:** `useNavigationLock` i BottomNav — bidrog till React #185 i Sprint 22.
+
+---
+
+## 9. Sticky-element flödar ovanpå modal-innehåll
+
+**Mönster:** Knapprad eller footer syns utanpå ett modalt kort — inte förankrad till kortet, ser felfixad ut som ett floating-element.
+
+**Rotorsak:** `position: sticky` med `bottom: X` inuti en scrollbar overlay placerar elementet relativt till scroll-containern, inte till det visuella kortet. Ser ut som att det "hänger i luften" utanpå kortet.
+
+**Fix:** Flytta in elementet som normal flow-del av kortets scrollbara innehåll. Ta bort `position: sticky` och `bottom`-värdet. Om det måste stanna synligt — lägg det *utanför* scroll-diven men *inuti* kortets wrapper, inte med sticky:
+```tsx
+// Fel — sticky inuti overflowY: auto
+<div style={{ overflowY: 'auto' }}>
+  {/* ...innehåll... */}
+  <div style={{ position: 'sticky', bottom: 60 }}>
+    <button>Prata med spelaren</button>
+  </div>
+</div>
+
+// Rätt — normal flow, scrollar med innehållet
+<div style={{ overflowY: 'auto' }}>
+  {/* ...innehåll... */}
+  <div style={{ borderTop: '1px solid var(--border)', padding: '10px 14px' }}>
+    <button>Prata med spelaren</button>
+  </div>
+</div>
+```
+
+**Känn igen:** `position: sticky` inuti `overflowY: auto`-container. Fråga alltid: "Ska detta scrolla med innehållet?" Om ja — normal flow. Om nej — placera utanför scroll-diven.
+
+**Historik:** PlayerCard "Prata med spelaren"-footer — fixades efter playtest-feedback Sprint 23.
