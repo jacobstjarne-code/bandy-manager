@@ -49,7 +49,7 @@ export function NotesView({ coach, players, captainPlayerId }: NotesViewProps) {
       {/* Coach intro */}
       <div style={{
         display: 'flex', gap: 10, padding: '10px 12px',
-        background: 'var(--bg-dark-surface)', borderRadius: 6, marginBottom: 10,
+        background: 'var(--bg-surface)', borderRadius: 6, marginBottom: 10,
         border: '0.5px solid var(--border)',
       }}>
         <div style={{
@@ -83,7 +83,7 @@ export function NotesView({ coach, players, captainPlayerId }: NotesViewProps) {
         return (
           <div key={note.playerId} style={{
             padding: '10px 12px', border: '0.5px solid var(--border)',
-            borderRadius: 6, marginBottom: 8, background: 'var(--bg-dark-surface)',
+            borderRadius: 6, marginBottom: 8, background: 'var(--bg-surface)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {/* Position circle */}

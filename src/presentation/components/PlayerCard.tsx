@@ -774,7 +774,7 @@ export function PlayerCard({
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
               {([
-                { id: 'lower_tempo' as LeadershipAction, label: '😮‍💨 Sänk ett varv' },
+                { id: 'lower_tempo' as LeadershipAction, label: '😮‍💨 Vila nästa match' },
                 { id: 'mentor' as LeadershipAction, label: '🎓 Sätt som mentor' },
                 { id: 'private_talk' as LeadershipAction, label: '🤫 Privat samtal' },
                 { id: 'public_praise' as LeadershipAction, label: '📣 Offentlig beröm' },
@@ -804,15 +804,11 @@ export function PlayerCard({
         </div>
       )}
 
-      {/* ═══ ⑩ STICKY PRATA-FOOTER — owned + onTalkToPlayer only ═══ */}
+      {/* ═══ ⑩ PRATA — owned + onTalkToPlayer only ═══ */}
       {isOwned && onTalkToPlayer && (
         <div style={{
-          position: 'sticky',
-          bottom: 'calc(var(--bottom-nav-height) + 8px)',
           padding: '10px 14px',
-          background: 'var(--bg-surface)',
-          borderTop: '2px solid rgba(196,122,58,0.3)',
-          boxShadow: '0 -4px 16px rgba(0,0,0,0.08)',
+          borderTop: '1px solid var(--border)',
         }}>
           <p style={{ ...LABEL_STYLE, marginBottom: 6 }}>🗣 PRATA MED SPELAREN</p>
           {talkFeedback ? (

@@ -105,7 +105,7 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
       </div>
 
       {/* Pitch SVG */}
-      <svg viewBox="0 0 280 400" style={{ width: '100%', background: 'var(--bg-surface)', borderRadius: 6, display: 'block' }}>
+      <svg viewBox="0 0 280 400" style={{ width: '100%', background: 'var(--bg-surface)', borderRadius: 6, display: 'block', maxHeight: 240 }}>
         <PitchLines />
         {template.slots.map(slot => {
           const playerId = lineupSlots[slot.id]

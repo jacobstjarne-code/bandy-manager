@@ -8,30 +8,35 @@ export function TabBar<T extends string>({ tabs, active, onChange }: TabBarProps
   return (
     <div style={{
       display: 'flex',
+      gap: 6,
+      padding: '8px 10px',
       borderBottom: '1px solid var(--border)',
       background: 'var(--bg-surface)',
     }}>
-      {tabs.map(tab => (
-        <button
-          key={tab.id}
-          onClick={() => onChange(tab.id)}
-          style={{
-            flex: 1,
-            padding: '8px 4px',
-            fontSize: 10,
-            fontWeight: tab.id === active ? 700 : 500,
-            letterSpacing: '1.5px',
-            color: tab.id === active ? 'var(--accent)' : 'var(--text-muted)',
-            background: 'transparent',
-            border: 'none',
-            borderBottom: `2px solid ${tab.id === active ? 'var(--accent)' : 'transparent'}`,
-            cursor: 'pointer',
-            transition: 'color 0.15s, border-color 0.15s',
-          }}
-        >
-          {tab.label}
-        </button>
-      ))}
+      {tabs.map(tab => {
+        const isActive = tab.id === active
+        return (
+          <button
+            key={tab.id}
+            onClick={() => onChange(tab.id)}
+            style={{
+              flex: 1,
+              padding: '6px 4px',
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: '1.2px',
+              color: isActive ? '#fff' : 'var(--text-muted)',
+              background: isActive ? 'var(--accent)' : 'transparent',
+              border: isActive ? 'none' : '1px solid var(--border)',
+              borderRadius: 4,
+              cursor: 'pointer',
+              transition: 'background 0.15s, color 0.15s',
+            }}
+          >
+            {tab.label}
+          </button>
+        )
+      })}
     </div>
   )
 }

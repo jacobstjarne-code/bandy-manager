@@ -4,6 +4,7 @@ import { useManagedPlayers, useHasPendingLineup, useManagedClub, useGameStore } 
 import { PlayerPosition, PlayerArchetype } from '../../domain/enums'
 import type { Player } from '../../domain/entities/Player'
 import type { LoanDeal } from '../../domain/entities/Academy'
+import type { Tactic } from '../../domain/entities/Club'
 import { StatBar } from '../components/StatBar'
 import { PlayerCard } from '../components/PlayerCard'
 import { getRecentMatchRatings } from '../components/playerCardUtils'
@@ -13,6 +14,7 @@ import { SectionCard } from '../components/SectionCard'
 import { getPortraitSvg } from '../../domain/services/portraitService'
 import { FirstVisitHint } from '../components/FirstVisitHint'
 import { LockerRoomCard } from '../components/club/LockerRoomCard'
+import { TacticBoardCard } from '../components/tactic/TacticBoardCard'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
 type FilterKey = 'all' | 'mv' | 'def' | 'half' | 'mid' | 'fwd'
@@ -258,6 +260,8 @@ export function SquadScreen() {
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const dismissHint = useGameStore(s => s.dismissHint)
   useEffect(() => { markScreenVisited('squad') }, [])
+  const updateTactic = useGameStore(s => s.updateTactic)
+  const [screenTab, setScreenTab] = useState<'trupp' | 'taktik'>('trupp')
   const [sort, setSort] = useState<SortKey>('position')
   const [filter, setFilter] = useState<FilterKey>('all')
   const [lineupTab, setLineupTab] = useState<'startelva' | 'bank' | 'reserv'>('startelva')
@@ -335,8 +339,39 @@ export function SquadScreen() {
           onDismiss={() => dismissHint('squad')}
         />
       )}
+      {/* Screen tabs */}
+      <div style={{ display: 'flex', gap: 6, padding: '8px 12px', borderBottom: '1px solid var(--border)', background: 'var(--bg-surface)', flexShrink: 0 }}>
+        {(['trupp', 'taktik'] as const).map(t => (
+          <button
+            key={t}
+            onClick={() => setScreenTab(t)}
+            style={{
+              flex: 1, padding: '7px 4px', fontSize: 11, fontWeight: 700,
+              letterSpacing: '1.2px', borderRadius: 4,
+              color: screenTab === t ? '#fff' : 'var(--text-muted)',
+              background: screenTab === t ? 'var(--accent)' : 'transparent',
+              border: screenTab === t ? 'none' : '1px solid var(--border)',
+              cursor: 'pointer',
+            }}
+          >
+            {t === 'trupp' ? '👥 TRUPP' : '📋 TAKTIK'}
+          </button>
+        ))}
+      </div>
+      {screenTab === 'taktik' && club && game?.assistantCoach && (
+        <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px', paddingBottom: 'calc(var(--bottom-nav-height, 60px) + 16px)' }}>
+          <TacticBoardCard
+            club={club}
+            players={players}
+            coach={game.assistantCoach}
+            captainPlayerId={game.captainPlayerId}
+            chemistryStats={game.chemistryStats ?? {}}
+            onTacticChange={(tactic: Tactic) => updateTactic(tactic)}
+          />
+        </div>
+      )}
       {/* Header */}
-      <div style={{ padding: '10px 16px 8px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
+      {screenTab === 'trupp' && <div style={{ padding: '10px 16px 8px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
         {/* Lineup hint */}
         {!hasPendingLineup && (
           <div className="card-stagger-1" style={{
@@ -417,36 +452,10 @@ export function SquadScreen() {
             ))}
           </div>
         )}
-      </div>
-
-      {/* Taktiktavlan shortcut */}
-      <div style={{ padding: '8px 12px 0' }}>
-        <button
-          onClick={() => navigate('/game/taktik')}
-          style={{
-            width: '100%',
-            padding: '8px 12px',
-            fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: '1px',
-            color: 'var(--accent)',
-            background: 'rgba(196,122,58,0.08)',
-            border: '1px solid rgba(196,122,58,0.3)',
-            borderRadius: 6,
-            cursor: 'pointer',
-            textAlign: 'left',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <span>📋 TAKTIKTAVLAN</span>
-          <span style={{ opacity: 0.6 }}>Formation · Kemi · Anteckningar →</span>
-        </button>
-      </div>
+      </div>}
 
       {/* Player list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }}>
+      {screenTab === 'trupp' && <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }}>
         {/* Fitness warning */}
         {players.filter(p => p.fitness < 35 && !p.isInjured).length >= 2 && (
           <div
@@ -565,7 +574,7 @@ export function SquadScreen() {
         )}
 
         <div style={{ height: 90 }} />
-      </div>
+      </div>}
 
       {/* Player Card Modal */}
       {selectedPlayer && (

@@ -669,7 +669,7 @@ export function GranskaScreen() {
         <div style={{ textAlign: 'center', marginBottom: 8 }}>
           <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: 320, display: 'block', margin: '0 auto' }}>
             {/* Pitch background */}
-            <rect x="0" y="0" width={W} height={H} fill="rgba(0,0,0,0.2)" rx="4" />
+            <rect x="0" y="0" width={W} height={H} fill="var(--bg-surface)" rx="4" />
             {/* Goal */}
             <rect x={GOAL_X - 20} y={GOAL_Y - 8} width="40" height="8" fill="var(--border)" />
             <rect x={GOAL_X - 20} y={GOAL_Y - 8} width="1" height="12" fill="var(--border)" />
@@ -734,15 +734,98 @@ export function GranskaScreen() {
           ))}
         </div>
 
-        {/* Summary text */}
-        <div style={{ padding: '8px 10px', background: 'var(--bg-elevated)', borderRadius: 4 }}>
-          <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-            {totalShots > 0
-              ? `${totalShots} skott — ${scoredCount} mål (${Math.round(scoredCount / totalShots * 100)}% konvertering). Motståndaren sköt ${oppShots} gånger och sköt ${oppGoals} mål.`
-              : 'Skottdata saknas för denna match.'
-            }
-          </p>
+        {/* DITT SKOTTMÖNSTER */}
+        <div className="card-sharp" style={{ marginTop: 8, padding: '10px 12px' }}>
+          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: 8 }}>🎯 DITT SKOTTMÖNSTER</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Den här matchen</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
+              {totalShots} skott · {totalShots > 0 ? Math.round(scoredCount / totalShots * 100) : 0}% konvertering
+            </span>
+          </div>
+          {(() => {
+            // Compute season-to-date stats from all completed managed club fixtures
+            const managedClubId = isHome ? fixture.homeClubId : fixture.awayClubId
+            const completedFixtures = game.fixtures.filter(f =>
+              f.report != null &&
+              (f.homeClubId === managedClubId || f.awayClubId === managedClubId) &&
+              f.id !== fixture.id
+            )
+            const seasonShots = completedFixtures.reduce((sum, f) => {
+              const h = f.homeClubId === managedClubId
+              return sum + (h ? (f.report?.shotsHome ?? 0) : (f.report?.shotsAway ?? 0))
+            }, 0)
+            const seasonGoals = completedFixtures.reduce((sum, f) => {
+              const h = f.homeClubId === managedClubId
+              return sum + (h ? f.homeScore : f.awayScore)
+            }, 0)
+            const seasonConversion = seasonShots > 0 ? Math.round(seasonGoals / seasonShots * 100) : 0
+            if (completedFixtures.length === 0) return null
+            return (
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Säsongen ({completedFixtures.length} matcher)</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
+                  {seasonShots} skott · {seasonConversion}%
+                  {seasonConversion > (totalShots > 0 ? Math.round(scoredCount / totalShots * 100) : 0) ? ' ▼' : ' ▲'}
+                </span>
+              </div>
+            )
+          })()}
         </div>
+
+        {/* MOTSTÅNDAREN */}
+        {(() => {
+          const oppClubId = isHome ? fixture.awayClubId : fixture.homeClubId
+          const oppClub = game.clubs.find(c => c.id === oppClubId)
+          const oppSavedByUs = saves.length  // saves by our keeper = opp shots saved
+          const oppConversion = oppShots > 0 ? Math.round(oppGoals / oppShots * 100) : 0
+          if (!oppClub) return null
+          return (
+            <div className="card-sharp" style={{ marginTop: 6, padding: '10px 12px' }}>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: 8 }}>
+                🛡 {oppClub.name.toUpperCase()}
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Skott</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
+                  {oppShots} skott · {oppConversion}% konvertering
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Vår MV räddade</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: oppSavedByUs > 0 ? 'var(--success)' : 'var(--text-primary)' }}>
+                  {oppSavedByUs} räddningar
+                </span>
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* INSIKT */}
+        {(() => {
+          const myConv = totalShots > 0 ? scoredCount / totalShots : 0
+          const oppConv = oppShots > 0 ? oppGoals / oppShots : 0
+          let insight = ''
+          if (myConv > 0.4 && oppConv < 0.2) {
+            insight = `Klinisk effektivitet — ni konverterade ${Math.round(myConv * 100)}% av skotten medan motståndaren bara lyckades med ${Math.round(oppConv * 100)}%.`
+          } else if (myConv < 0.2 && oppConv > 0.3) {
+            insight = `Motståndaren var mer effektiva. Era ${totalShots} skott gav bara ${scoredCount} mål — nästa match handlar om att skapa lägen nära mål.`
+          } else if (totalShots > oppShots + 5) {
+            insight = `Ni dominerade skottstatistiken (${totalShots} mot ${oppShots}) men konverteringen avgör. Fortsätt pressa på.`
+          } else if (oppShots > totalShots + 5) {
+            insight = `Motståndaren hade flest skott (${oppShots} mot ${totalShots}). Defensiven behöver hålla linjerna bättre.`
+          } else if (scoredCount >= 3 && myConv > 0.35) {
+            insight = `Stark offensiv — ${scoredCount} mål på ${totalShots} skott är över ligasnittet. Håll den formen.`
+          } else {
+            insight = `${totalShots} skott och ${scoredCount} mål. Motståndaren sköt ${oppShots} gånger och sköt ${oppGoals} mål.`
+          }
+          return (
+            <div style={{ marginTop: 6, padding: '8px 10px', background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.2)', borderRadius: 6 }}>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.5px', color: 'var(--accent)', marginBottom: 4 }}>💡 INSIKT</p>
+              <p style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{insight}</p>
+            </div>
+          )
+        })()}
       </div>
     )
   }

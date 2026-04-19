@@ -63,7 +63,7 @@ function buildFacialHair(p: PortraitParams): string {
 
 function buildSvg(p: PortraitParams): string {
   const eyebrowH = p.eyebrowThick ? 2.5 : 1.5
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block">
   <rect x="27" y="47" width="10" height="10" rx="3" fill="${p.skinTone}"/>
   ${buildHairSides(p)}
   ${buildFaceEl(p)}

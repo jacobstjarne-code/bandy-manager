@@ -49,7 +49,7 @@ export function ChemistryView({ tactic, players, chemistryStats }: ChemistryView
 
   return (
     <>
-      <svg viewBox="0 0 280 400" style={{ width: '100%', background: 'var(--bg-surface)', borderRadius: 6, display: 'block' }}>
+      <svg viewBox="0 0 280 400" style={{ width: '100%', background: 'var(--bg-surface)', borderRadius: 6, display: 'block', maxHeight: 240 }}>
         <PitchLines />
 
         {/* Chemistry lines */}

@@ -45,6 +45,15 @@ export function TacticBoardCard({
         onChange={setTab}
       />
 
+      {/* Tab description */}
+      <div style={{ padding: '6px 12px', background: 'var(--bg-surface)', borderBottom: '0.5px solid var(--border)' }}>
+        <p style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+          {tab === 'formation' && 'Välj formation och flytta spelare.'}
+          {tab === 'chemistry' && 'Grön linje = bra kemi. Röd streckad = svag.'}
+          {tab === 'notes' && 'Assistenttränarens observationer inför nästa match.'}
+        </p>
+      </div>
+
       {/* Content */}
       <div style={{ padding: '12px' }}>
         {tab === 'formation' && (
