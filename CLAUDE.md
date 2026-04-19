@@ -1,5 +1,71 @@
 # Bandy Manager — Project Instructions for Claude Code
 
+## LÄS VID SESSIONSTART — OBLIGATORISKT
+
+1. **`docs/LESSONS.md`** — återkommande buggmönster. Känn igen innan du fixar. Om en ny bugg matchar ett mönster där, använd lärdomen först.
+2. **`docs/DESIGN_SYSTEM.md`** — visuell grund.
+3. **Aktuell sprintfil** i `docs/sprints/`.
+
+---
+
+## ROTORSAK FÖRE FIX — OBLIGATORISKT
+
+Innan kod ändras för att fixa en bugg, formulera i EN mening VARFÖR buggen uppstod. Om du inte kan formulera det — läs mer kod innan du rör något.
+
+Commit-meddelande ska innehålla rotorsaken:
+
+**Rätt:**
+```
+fix: shotmap prickar klumpade — rot: nextPos('goal') y-range var
+20-70 istf 10-90 så alla skott hamnade i målområdet
+```
+
+**Fel:**
+```
+fix: shotmap prickar klumpade — justerade koordinater
+```
+
+---
+
+## SJÄLVAUDIT EFTER VARJE SPRINT — OBLIGATORISKT
+
+Ingen sprint får markeras klar utan `docs/sprints/SPRINT_XX_AUDIT.md`.
+
+Mall:
+
+```markdown
+# Sprint XX — audit
+
+## Punkter i spec
+- [x] 22A Spelarkort-modal scroll — verifierat i: PlayerModal öppnad från Trupp-vy, scrollade hela vägen till EGENSKAPER
+- [x] 22B Porträtt-koordinater — verifierat i: Trupp-vy (22px cirklar) + PlayerModal (stor version), ansikten centrerade
+- [ ] 22C Trupp-flikar — INTE LEVERERAD, orsak: [beskrivning]
+- ...
+
+## Observerat i UI
+Öppnade appen som ny manager i Målilla. Navigerade:
+- Dashboard → syns normalt
+- Trupp → filter + flikar (Startelva/Bänken/Reserv) synliga, klickbart
+- PlayerModal → öppnar korrekt som overlay, scrollar till botten
+- ...
+
+## Ej levererat (med orsak)
+[punkter som inte gick att slutföra — VARFÖR, inte vad]
+
+## Nya lärdomar till LESSONS.md
+[om någon bugg i denna sprint matchade ett mönster som borde loggas]
+```
+
+"Verifierat i" ska vara en konkret observation i appen, inte "komponenten finns i filen".
+
+---
+
+## ÅTERKOMMANDE BUGG — UPPDATERA LESSONS.md
+
+Om en bugg uppträder 2+ gånger, eller om en ny bugg matchar ett mönster som redan finns i `docs/LESSONS.md` — uppdatera `LESSONS.md` innan fixen committeras. Lägg till under "Historik" i relevant lärdom, eller skapa ny lärdom om mönstret är nytt.
+
+---
+
 ## DESIGN SYSTEM — LÄS FÖRST
 
 **`docs/DESIGN_SYSTEM.md`** — Komplett designsystem. LÄS DENNA INNAN du gör NÅGON visuell ändring. Reglerna är:
