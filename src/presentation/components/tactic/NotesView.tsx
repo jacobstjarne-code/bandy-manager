@@ -66,7 +66,7 @@ export function NotesView({ coach, players, captainPlayerId }: NotesViewProps) {
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1px', color: 'var(--text-muted)', marginBottom: 2 }}>
             {coach.name.toUpperCase()} · ASSISTENT
           </p>
-          <p style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontStyle: 'italic', color: 'var(--text-light)', lineHeight: 1.4 }}>
+          <p style={{ fontFamily: 'var(--font-display)', fontSize: 12, fontStyle: 'italic', color: 'var(--text-primary)', lineHeight: 1.4 }}>
             {notes.length > 0
               ? `"${notes.length} spelare att hålla koll på inför nästa match."`
               : '"Inga särskilda anteckningar just nu. Gruppen är jämn."'
@@ -96,7 +96,7 @@ export function NotesView({ coach, players, captainPlayerId }: NotesViewProps) {
                   {p.position.slice(0, 2).toUpperCase()}
                 </span>
               </div>
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--text-light)' }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--text-primary)' }}>
                 {p.firstName} {p.lastName}
               </span>
               <NoteTagBadge tag={note.tag} />
@@ -106,7 +106,7 @@ export function NotesView({ coach, players, captainPlayerId }: NotesViewProps) {
             </p>
             <p style={{
               fontFamily: 'var(--font-display)', fontSize: 11, fontStyle: 'italic',
-              color: 'var(--text-light-secondary)', marginLeft: 36, marginTop: 6, lineHeight: 1.5,
+              color: 'var(--text-secondary)', marginLeft: 36, marginTop: 6, lineHeight: 1.5,
             }}>
               "{note.quote}"
             </p>

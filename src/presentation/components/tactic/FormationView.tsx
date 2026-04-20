@@ -137,15 +137,15 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
                 padding: '6px 8px', borderRadius: 6, width: 56,
                 border: `1px solid ${selectedSlotId ? 'var(--accent)' : 'var(--border)'}`,
-                background: selectedSlotId ? 'rgba(196,122,58,0.1)' : 'var(--bg-dark-surface)',
+                background: selectedSlotId ? 'rgba(196,122,58,0.1)' : 'var(--bg-elevated)',
                 cursor: selectedSlotId ? 'pointer' : 'default',
               }}
             >
               <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-muted)' }}>{p.position.slice(0, 3).toUpperCase()}</span>
-              <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-light)', textAlign: 'center', lineHeight: 1.2, maxWidth: 48, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', lineHeight: 1.2, maxWidth: 48, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {p.lastName}
               </span>
-              <span style={{ fontSize: 9, color: 'var(--text-light-secondary)' }}>{p.currentAbility}</span>
+              <span style={{ fontSize: 9, color: 'var(--text-secondary)' }}>{p.currentAbility}</span>
             </button>
           ))}
           {benchPlayers.length === 0 && (
