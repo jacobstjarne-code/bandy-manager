@@ -454,6 +454,8 @@ Trackas via `lineupConfirmedThisRound` i SaveGame.
 
 ## 19. VERIFIERING — obligatorisk efter varje implementationssteg
 
+### Statisk analys (grep)
+
 ```bash
 # Inga hardkodade hex:
 grep -rn "#[0-9a-fA-F]\{6\}" src/presentation/ --include="*.tsx" | grep -v node_modules | grep -v ".svg"
@@ -470,6 +472,31 @@ grep -n "fontSize: [0-7][^0-9]" src/presentation/screens/*.tsx
 # Build + tester:
 npm run build && npm test
 ```
+
+### Runtime-audit (browser)
+
+Finns som `window.__designAudit()` i dev-läge och Vercel preview (`VITE_AUDIT_ENABLED=true`).
+
+```js
+// Kör alla regler, returnera JSON-rapport
+await window.__designAudit()
+
+// Kör och skriv ut läsbart text-format
+await window.__designAudit({ format: 'text' })
+
+// Kör bara specifika regler
+await window.__designAudit({ rules: ['cardPadding', 'hexColors'] })
+
+// Rensa console-bufferten
+window.__clearAuditBuffer()
+```
+
+**Regler:** `cardPadding`, `sectionLabels`, `hexColors`, `gridGaps`, `chevronButtons`,
+`emojiConsistency`, `fontSizes`, `overlaps`, `consoleErrors`
+
+**Källkod:** `src/debug/designAudit/`
+
+**Körtid:** Navigera till önskad skärm i appen, kör sedan `window.__designAudit({ format: 'text' })` i DevTools-konsolen.
 
 ---
 
