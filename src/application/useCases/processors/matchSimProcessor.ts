@@ -4,7 +4,7 @@ import type { Club } from '../../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
-import { FixtureStatus, PlayerPosition, InboxItemType, ClubStyle } from '../../../domain/enums'
+import { FixtureStatus, PlayerPosition, InboxItemType, ClubStyle, PlayerArchetype } from '../../../domain/enums'
 import type { FormationType } from '../../../domain/entities/Formation'
 import { simulateMatch } from '../../../domain/services/matchSimulator'
 import type { MatchPhaseContext } from '../../../domain/services/matchUtils'
@@ -32,7 +32,7 @@ function createRegenPlayer(club: Club, index: number, rand: () => number): Playe
     id: `regen_${club.id}_${index}_${Math.floor(rand() * 99999)}`,
     firstName: 'Regen', lastName: 'Spelare', age: 20 + Math.floor(rand() * 10),
     nationality: 'svenska', clubId: club.id, isHomegrown: false,
-    position: pos, archetype: 'TwoWaySkater' as Player['archetype'],
+    position: pos, archetype: PlayerArchetype.TwoWaySkater,
     salary: 3000, contractUntilSeason: 9999, marketValue: 10000,
     morale: 60, form: 50, fitness: 70, sharpness: 50,
     isFullTimePro: false, currentAbility: 25 + Math.floor(rand() * 15),

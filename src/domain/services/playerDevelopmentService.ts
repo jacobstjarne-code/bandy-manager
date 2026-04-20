@@ -117,7 +117,15 @@ function getArchetypeMultiplier(archetype: PlayerArchetype, attr: keyof PlayerAt
     return 0.4
   }
 
-  const specific = ARCHETYPE_MULTIPLIERS[archetype][attr]
+  const archetypeMap = ARCHETYPE_MULTIPLIERS[archetype]
+  if (!archetypeMap) {
+    // Defensiv guard: okänd archetype-sträng (t.ex. legacy JSON eller ny archetype ej registrerad).
+    // Rotorsak var 'TwoWaySkater' (PascalCase) istf PlayerArchetype.TwoWaySkater ('twoWaySkater')
+    // i seasonEndProcessor och matchSimProcessor — fixat Sprint 22.6.
+    return getDefaultMultiplier(archetype)
+  }
+
+  const specific = archetypeMap[attr]
   if (specific !== undefined) return specific
 
   if (GK_ARCHETYPES.has(archetype)) {

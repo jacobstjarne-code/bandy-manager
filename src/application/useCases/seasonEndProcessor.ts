@@ -3,7 +3,7 @@ import type { SaveGame, InboxItem, AllTimeRecords } from '../../domain/entities/
 import { selectMatchOfTheSeason } from '../../domain/services/matchHighlightService'
 import type { Player } from '../../domain/entities/Player'
 import type { GameEvent } from '../../domain/entities/GameEvent'
-import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition } from '../../domain/enums'
+import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition, PlayerArchetype } from '../../domain/enums'
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../domain/data/playerNames'
 import { calculateStandings } from '../../domain/services/standingsService'
 import { generateYouthIntake } from '../../domain/services/youthIntakeService'
@@ -887,7 +887,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         clubId: club.id,
         isHomegrown: age <= 23,
         position: pos,
-        archetype: 'TwoWaySkater' as Player['archetype'],
+        archetype: PlayerArchetype.TwoWaySkater,
         salary: Math.round(ca * 120 + 2000),
         contractUntilSeason: nextSeason + 2 + Math.floor(replenishRand() * 2),
         marketValue: ca * 1500,
