@@ -3,8 +3,9 @@
 ## LÄS VID SESSIONSTART — OBLIGATORISKT
 
 1. **`docs/LESSONS.md`** — återkommande buggmönster. Känn igen innan du fixar. Om en ny bugg matchar ett mönster där, använd lärdomen först.
-2. **`docs/DESIGN_SYSTEM.md`** — visuell grund.
-3. **Aktuell sprintfil** i `docs/sprints/`.
+2. **`docs/DECISIONS.md`** — arkitekturbeslut.
+3. **`docs/DESIGN_SYSTEM.md`** — visuell grund.
+4. **Aktuell sprintfil** i `docs/sprints/`.
 
 ---
 
@@ -229,6 +230,89 @@ Om en port skippas och buggen hittas i playtest:
 - Buggen går FÖRST i nästa sprint (före nya features)
 - En "post-mortem" rad läggs till i commit:
   `fix: [bugg] — missad av port X, orsak: [förklaring]`
+
+---
+
+## LÖPANDE KVALITET — OBLIGATORISKT
+
+Utöver spec-lydnad och kvalitetsportar finns fyra löpande discipliner som körs kontinuerligt, inte per sprint.
+
+### 1. TESTRYTM
+
+Design-audit (`window.__designAudit`) och stress-test (`npm run stress`) är projektets två runtime-verifieringsverktyg.
+
+**Vid commit av UI-ändring:**
+- Kör `window.__designAudit({ format: 'text' })` mot den ändrade skärmen lokalt.
+- Nya findings > 0 = motivera eller fixa innan commit.
+- Klistra rapporten i commit-meddelandet om findings fanns (så historiken visar).
+
+**Vid sprint-slut (i SPRINT_XX_AUDIT.md):**
+- Design-audit på fyra nyckelskärmar: `/game/dashboard`, `/game/board-meeting`, `/game/squad`, `/game/match`. 
+- `npm run stress` med default 10×5. Nya invariants-brott loggas i auditen.
+- Jämför total findings mot föregående sprint. Ska gå ner eller ligga still. Uppgång = rotorsaksanalys i auditen.
+
+**Innan playtest-release:**
+- Full design-audit över alla skärmar spelaren planerar besöka.
+- `npm run stress` 20×5.
+- Båda rapporterna summeras som "fixat sedan senast" + "fortfarande öppet" till Jacob.
+
+### 2. REFACTOR-DISCIPLIN
+
+Om Code eller Opus ändrar > 2 filer **utöver** vad specen listade: **pausa, rapportera, fortsätt bara efter bekräftelse från Jacob i chatten**.
+
+Commit-meddelandet ska då innehålla:
+- Filer specen listade
+- Filer som faktiskt ändrades
+- Rotorsak till avvikelsen
+
+**Rätt:**
+```
+fix: styrelsemöte padding — rot: samma template duplicerad i BoardMeetingScreen
+spec-scope: 1 fil (BoardMeetingScreen.tsx)
+faktisk-scope: 3 filer — utökning: TacticStep.tsx, StartStep.tsx hade samma
+  padding-värden p.g.a. shared template för säsongs-kort
+```
+
+**Fel:**
+```
+fix: fixade padding på några skärmar
+```
+
+Rotorsak till regeln: Sprint 22.3 expanderade 2 → 5 filer självständigt. Utfallet blev bra, men utan rapport tappar Jacob överblick och kan inte bedöma om scope-expansion är sund eller slapp.
+
+### 3. ARKITEKTURLOGGBOK (`docs/DECISIONS.md`)
+
+Arkitekturbeslut loggas som en kort post **när beslutet tas**, inte efteråt. Gäller: ny service, ny entity-form, ny store-struktur, ny arbetsmetod, ny CSS-primitiv, ny mapp-struktur.
+
+Format: 4-5 rader per post.
+
+```
+## 2026-04-20 — .btn-cta istället för fyra inline-CTA:er
+Problem: 4 skärmar, 4 olika CTA-implementeringar. DESIGN_SYSTEM.md saknade stor CTA-klass.
+Beslut: Ny .btn-cta i global.css. Alla 4 skärmar migrerade.
+Alternativ övervägt: Tre storlekar (medveten hierarki) — avvisat, ingen tydlig regel för vilken som är störst.
+Konsekvens: Ny inline-CTA är regression. Alla framtida skärm-avslutande CTA:er ska använda .btn-cta.
+```
+
+**Vem skriver:** Opus vid tillfället beslutet tas. Inte retroaktivt.
+**Vem läser:** Code + Opus vid sessionstart, tillsammans med LESSONS.md.
+
+Syftet är inte formalism. Syftet är att om 6 månader ha ett svar på "varför gjorde vi så här?" som inte är "det bara blev så".
+
+### 4. KOD-GRANSKNING FÖR NYA FILER
+
+Innan Code skapar en ny fil i något av dessa mönster:
+- `src/domain/services/*.ts` (ny service)
+- `src/domain/entities/*.ts` (ny entity)
+- `src/presentation/components/*/[StoreKomponent].tsx` (ny större UI-komponent)
+- `.btn-X`, `.card-X`, `.tag-X` i `global.css` (ny CSS-primitiv)
+
+**Code ska:**
+1. Söka efter liknande befintlig funktionalitet (`grep -r "nyckelord" src/`, läs relevanta filer)
+2. Rapportera till Opus: "jag tänker skapa X, har hittat dessa liknande: Y, Z. Anledning till att de inte passar: ..."
+3. Fortsätta bara efter Opus-bekräftelse att dublett inte finns
+
+Rotorsak: `.btn-copper` skapades trots att `.btn-primary` redan existerade med identisk CSS. Ingen granskning fångade det. Dubletten upptäcktes först 4 månader senare vid Sprint 22.5-granskning.
 
 ---
 

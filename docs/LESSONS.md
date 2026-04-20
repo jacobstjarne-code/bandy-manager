@@ -198,3 +198,29 @@ const reason = pendingScreen ? (REASON_MAP[pendingScreen] ?? 'Slutför pågåend
 **Känn igen:** `position: sticky` inuti `overflowY: auto`-container. Fråga alltid: "Ska detta scrolla med innehållet?" Om ja — normal flow. Om nej — placera utanför scroll-diven.
 
 **Historik:** PlayerCard "Prata med spelaren"-footer — fixades efter playtest-feedback Sprint 23.
+
+---
+
+## 10. Enum-value ≠ key i map-konstant (TypeScript skyddar inte mot legacy-strängar)
+
+**Mönster:** `TypeError: Cannot read properties of undefined (reading 'X')` där X är en property på ett objekt från en map-lookup. Koden gör `MAP[someValue].X` och `MAP[someValue]` är `undefined`.
+
+**Rotorsak:** En variabel är typad som `SomeEnum` men innehåller en raw sträng som inte matchar enum-värdet. TypeScript validerar inte satta strängar med `as SomeType`-casts, och savegame-JSON kan ha legacy-värden från när enum-nycklar stavades annorlunda.
+
+**Fix:** (1) Sök alla ställen där enum-typen sätts explicit (`'EnumName' as Player['field']`) — byt till `SomeEnum.Value`. (2) Lägg defensiv guard i map-läsningen: `if (!MAP[value]) return fallback`. Guarden ska stå kvar permanent som skydd mot framtida JSON-import.
+
+**Känn igen:** Signalen är alltid `undefined (reading 'X')` där X är en nyckel på ett objekt — inte en primitiv. Kontrollera map-lookup ett steg upp. Grep efter `as Player['archetype']` eller liknande casts i filen.
+
+**Historik:** Sprint 22.6 — `'TwoWaySkater'` (PascalCase) i `seasonEndProcessor.ts:890` och `matchSimProcessor.ts:35`, enum-värdet är `'twoWaySkater'` (camelCase). Hittades via stress-test 10×5 (56 160 varningar per körning).
+
+---
+
+## 11. [PLAYOFF] completedThisRound loggas tom upprepat — möjlig dubbelprocessning
+
+**Mönster:** `[PLAYOFF] Series X: 3-0, winnerId=clubY, completedThisRound: ` (tom) loggas 5-8 gånger per serie efter att serien redan är klar (winnerId satt).
+
+**Rotorsak:** Ej undersökt. Sannolikt att `advanceToNextEvent` anropas på fixture-matchdays som tillhör en redan avslutad serie, och playoff-koden körs men hittar inget att göra (completedThisRound = tom). Inga konsekvenser synliga i speldata.
+
+**Känn igen:** Upprepade identiska PLAYOFF-loggrader med tom `completedThisRound` direkt efter en seriseger.
+
+**Historik:** Observerat i stress-test baseline Sprint 22.6. Inte fixat — potentiell bugg, låg prio.

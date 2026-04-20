@@ -39,14 +39,16 @@ TypeError: Cannot read properties of undefined (reading 'skating')
 - Krascharna sker alltid vid `round=null` = season-end processing
 - `lastActions` för alla seeds slutar med `advance season=X round=31 seed=...` → säsongsslutprocessorn triggas efter matchday 31 (sista playoff-rund)
 
-**Sannolik rotorsak:**  
-En eller flera spelare i `game.players` saknar `attributes`-objekt. Kandidater:
-1. Spelare genererade av `createNewSeason` / spelargenerering vid säsongsstart
-2. Spelare som tagits in via transfersystemet och saknar attribut-initialisering
-3. `playerDevelopmentService.getArchetypeMultiplier(p)` antar `p.attributes` alltid finns — men det gäller inte efter säsongsreset
+**⚠️ Feldiagnostiserad i baseline — korrigering Sprint 22.6:**  
+Code diagnostiserade rotorsaken som `p.attributes = undefined`. Opus granskade stacktrace och fann att felet låg ett steg upp: `ARCHETYPE_MULTIPLIERS[archetype]` är undefined, inte `p.attributes`. Rad 120 läser `archetypeMap[attr]` där `archetypeMap = ARCHETYPE_MULTIPLIERS[archetype]` — det är `archetypeMap` som är undefined.
 
-**Åtgärd (loggas — ej fixas i denna sprint):**  
-Lägg ett guards-check i `getArchetypeMultiplier` ELLER säkerställ att alla spelare har `attributes` vid generering/transfer. Se `docs/LESSONS.md` för att avgöra om detta mönster redan finns logged.
+**Korrekt rotorsak:**  
+`seasonEndProcessor.ts:890` och `matchSimProcessor.ts:35` satte `archetype: 'TwoWaySkater' as Player['archetype']` — en raw PascalCase-sträng. `PlayerArchetype.TwoWaySkater = 'twoWaySkater'` (camelCase). Mismatch → `ARCHETYPE_MULTIPLIERS['TwoWaySkater']` returnerar `undefined`. Triggar vid säsongsslut för varje spelare med denna archetype (56 160 varningar per 10×5-körning).
+
+**Åtgärd (Sprint 22.6):**  
+- Defensiv guard i `getArchetypeMultiplier`: returnerar `getDefaultMultiplier()` om archetype inte finns i mappen
+- `seasonEndProcessor.ts` och `matchSimProcessor.ts`: `PlayerArchetype.TwoWaySkater` ersätter `'TwoWaySkater' as Player['archetype']`
+- Se `docs/LESSONS.md` §10 och `docs/DECISIONS.md` (2026-04-20 BUG-STRESS-01)
 
 ---
 
