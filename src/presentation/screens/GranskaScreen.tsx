@@ -303,7 +303,7 @@ export function GranskaScreen() {
             <SectionLabel style={{ marginBottom: 8 }}>STATISTIK</SectionLabel>
             {[
               { label: 'Skott', home: fixture.report.shotsHome, away: fixture.report.shotsAway },
-              { label: 'Hörn', home: fixture.report.cornersHome, away: fixture.report.cornersAway },
+              { label: 'Hörnor', home: fixture.report.cornersHome, away: fixture.report.cornersAway },
               { label: 'Bollinnehav', home: fixture.report.possessionHome, away: fixture.report.possessionAway, suffix: '%' },
               ...(fixture.report.penaltiesHome + fixture.report.penaltiesAway > 0 ? [{ label: 'Straffar', home: fixture.report.penaltiesHome, away: fixture.report.penaltiesAway }] : []),
             ].map(stat => {
@@ -1089,9 +1089,9 @@ export function GranskaScreen() {
           if (conversion > 0.5) insights.push(`Effektivt anfallsspel — ${Math.round(conversion * 100)}% målkonvertering.`)
           else if (shots > 0 && conversion < 0.15) insights.push(`Ineffektivt framåt — ${shots} skott gav bara ${goals} mål.`)
           const myCorners = isHome ? fixture.report.cornersHome : fixture.report.cornersAway
-          if (myCorners >= 8) insights.push(`Kontinuerligt hörnstryck — ${myCorners} hörn under matchen.`)
+          if (myCorners >= 8) insights.push(`Kontinuerligt hörnstryck — ${myCorners} hörnor under matchen.`)
           const potmPlayer = potm
-          if (potmPlayer) insights.push(`${potmPlayer.firstName} ${potmPlayer.lastName} stod ut och fick matchens bästa betyg.`)
+          if (potmPlayer) insights.push(`${potmPlayer.firstName} ${potmPlayer.lastName} utsågs till matchens bästa spelare.`)
           if (won && (myScore - theirScore) >= 3) insights.push('En klar seger som styrker lagets nuvarande form.')
           if (lost && (theirScore - myScore) >= 3) insights.push('En tungt förlust att analysera grundligt.')
           if (insights.length === 0) return null
@@ -1177,14 +1177,7 @@ export function GranskaScreen() {
               {unresolved} ohanterad{unresolved > 1 ? 'e' : ''} händelse{unresolved > 1 ? 'r' : ''} — du kan hantera dem i Översikt
             </p>
           )}
-          <button onClick={handleContinue} className="texture-leather" style={{
-            width: '100%', padding: '15px',
-            background: 'linear-gradient(135deg, var(--accent-dark), var(--accent-deep))',
-            color: 'var(--text-light)',
-            borderRadius: 12, fontSize: 15, fontWeight: 600, letterSpacing: '2px',
-            textTransform: 'uppercase', border: 'none', fontFamily: 'var(--font-body)',
-            cursor: 'pointer',
-          }}>
+          <button onClick={handleContinue} className="btn btn-primary btn-cta">
             KLAR — NÄSTA OMGÅNG →
           </button>
         </div>

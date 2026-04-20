@@ -1010,7 +1010,7 @@ export function DashboardScreen() {
             data-coach-id="cta-button"
             onClick={handleAdvance}
             disabled={!canClickAdvance}
-            className={`btn btn-primary btn-cta texture-leather${canClickAdvance ? ' btn-pulse' : ''}`}
+            className={`btn btn-primary btn-cta${canClickAdvance ? ' btn-pulse' : ''}`}
           >
             {advanceButtonText}
           </button>
