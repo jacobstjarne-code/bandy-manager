@@ -7,6 +7,10 @@
  * Alias: npm run stress
  */
 
+// Sprint 22.7 diagnostic: enable squad-composition logging in seasonEndProcessor
+// Remove this line once BUG-STRESS-02 is diagnosed and fixed.
+process.env.STRESS_DEBUG = 'true'
+
 import { writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'

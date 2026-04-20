@@ -28,7 +28,29 @@ import { checkSeasonEndArc } from '../../domain/services/trainerArcService'
 import { evaluateObjective, generateBoardObjectives } from '../../domain/services/boardObjectiveService'
 import { updateSilentShout, ageMecenater, checkMecenatRetirement } from '../../domain/services/mecenatService'
 import type { LicenseReview } from '../../domain/entities/SaveGame'
+import type { Club } from '../../domain/entities/Club'
 import type { AdvanceResult } from './advanceTypes'
+
+// ── Squad-composition diagnostik (STRESS_DEBUG only) ──────────────────────────
+function logSquadComposition(label: string, players: Player[], clubs: Club[], managedClubId: string): void {
+  if (!process.env.STRESS_DEBUG) return
+  const byClub = new Map<string, Player[]>()
+  for (const p of players) {
+    if (!byClub.has(p.clubId)) byClub.set(p.clubId, [])
+    byClub.get(p.clubId)!.push(p)
+  }
+  const summary = [...byClub.entries()].map(([clubId, ps]) => {
+    const gk  = ps.filter(p => p.position === PlayerPosition.Goalkeeper).length
+    const def = ps.filter(p => p.position === PlayerPosition.Defender).length
+    const mid = ps.filter(p => p.position === PlayerPosition.Midfielder || p.position === PlayerPosition.Half).length
+    const fwd = ps.filter(p => p.position === PlayerPosition.Forward).length
+    const total = ps.length
+    const clubName = clubs.find(c => c.id === clubId)?.name ?? clubId
+    const isManaged = clubId === managedClubId ? ' [MANAGED]' : ''
+    return `  ${clubName}${isManaged}: ${total}p (GK:${gk} DEF:${def} MID:${mid} FWD:${fwd})`
+  }).join('\n')
+  console.log(`\n[SQUAD-COMP ${label}]\n${summary}`)
+}
 
 export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   // seasonSummary is generated AFTER all financial updates (prize money, patron, etc.)
@@ -350,6 +372,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   // Reset player season stats, recover fitness, age players
   const allPlayers = [...game.players, ...youthPlayers]
+  logSquadComposition('AFTER_YOUTH', allPlayers, updatedClubs, game.managedClubId)
   const retirementRand = mulberry32(baseSeed + 99991)
   const retiredPlayerIds = new Set<string>()
   const retirementMessages: InboxItem[] = []
@@ -415,6 +438,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
+  logSquadComposition('AFTER_RETIRE', resetPlayers.filter(p => !retiredPlayerIds.has(p.id)), updatedClubs, game.managedClubId)
   // ── WEAK-007: Nemesis pensioneras — rensa tracker, skicka inbox ───────────
   let updatedNemesisTracker = { ...(game.nemesisTracker ?? {}) }
   for (const pid of retiredPlayerIds) {
@@ -532,6 +556,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const activePlayers = resetPlayers
     .filter(p => !retiredPlayerIds.has(p.id))
     .map(p => contractExpiredIds.has(p.id) ? { ...p, clubId: 'free_agent' } : p)
+  logSquadComposition('AFTER_CONTRACT_EXPIRY', activePlayers, updatedClubs, game.managedClubId)
 
   // ── Board patience update ─────────────────────────────────────────────
   const totalTeams = game.clubs.length
@@ -606,6 +631,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     sponsorsAfterLicense = sponsorsAfterLicense.slice(0, keepCount)
 
   }
+  logSquadComposition('AFTER_LICENSE', playersAfterLicense, clubsAfterLicense, game.managedClubId)
 
   // ── Kommunval — every 4th season, 50% chance of new politician ───────────
   let nextPolitician = game.localPolitician
@@ -850,6 +876,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   )
   playersAfterLicense = aiTransferResult.updatedPlayers
   clubsAfterLicense = aiTransferResult.updatedClubs
+  logSquadComposition('AFTER_AI_TRANSFERS', playersAfterLicense, clubsAfterLicense, game.managedClubId)
 
   // ── AI squad replenishment: ensure every AI club has ≥ 18 players ─────────
   const replenishRand = mulberry32(baseSeed + 77777)
@@ -911,6 +938,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     playersAfterLicense = [...playersAfterLicense, ...replenishedPlayers]
     clubsAfterLicense = replenishedClubs
   }
+  logSquadComposition('AFTER_REPLENISH', playersAfterLicense, clubsAfterLicense, game.managedClubId)
 
   const notableTransfers = aiTransferResult.transfers.filter(t => t.fee > 50000).slice(0, 3)
   if (notableTransfers.length > 0) {
