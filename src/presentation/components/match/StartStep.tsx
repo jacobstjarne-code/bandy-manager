@@ -83,9 +83,9 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
       {/* Atmosphere */}
       {fixture && (
         <div className="card-round" style={{
-          marginBottom: 12, padding: '10px 14px',
+          marginBottom: 12, padding: '8px 12px',
         }}>
-          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>📣 Pep-talk</p>
+          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>📣 Pep-talk</p>
           <p style={{
             fontFamily: 'var(--font-display)',
             fontStyle: 'italic',
@@ -101,15 +101,15 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
 
       {/* Klacken ritual */}
       {ritualText && (
-        <div className="card-round" style={{ marginBottom: 8, padding: '8px 14px' }}>
-          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>📯 KLACKEN</p>
+        <div className="card-round" style={{ marginBottom: 8, padding: '8px 12px' }}>
+          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>📯 KLACKEN</p>
           <p style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 11, lineHeight: 1.5, color: 'var(--text-muted)', margin: 0 }}>{ritualText}</p>
         </div>
       )}
 
       {/* Match context — attendance + arena */}
       {expectedAttendance != null && (
-        <div className="card-sharp" style={{ marginBottom: 8, padding: '8px 14px' }}>
+        <div className="card-sharp" style={{ marginBottom: 8, padding: '7px 10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
               🏟️ {arenaName ?? 'Bandyplanen'}
@@ -122,8 +122,8 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
       )}
 
       {/* Summary */}
-      <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
-        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>📋 Sammanfattning</p>
+      <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 12px' }}>
+        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>📋 Sammanfattning</p>
         {[
           { label: 'Startspelare', value: `${startingIds.length} valda ✓`, color: 'var(--success)' },
           { label: 'Mentalitet', value: tacticLabel('mentality', tacticState.mentality) },
@@ -141,7 +141,7 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
 
 
       {/* Match mode selector */}
-      <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>🎮 Spelläge</p>
+      <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>🎮 Spelläge</p>
       <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
         {([
           { mode: 'full' as MatchMode, icon: '🎥', label: 'Full', desc: 'Alla interaktioner' },

@@ -119,7 +119,7 @@ export function BoardMeetingScreen() {
     }}>
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px 24px' }}>
       {/* Header */}
-      <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 4 }}>
+      <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 4 }}>
         Styrelsemöte
       </p>
       <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
@@ -129,8 +129,8 @@ export function BoardMeetingScreen() {
 
       {/* Förra säsongen / Välkommen */}
       {isFirstSeason ? (
-        <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px', background: 'rgba(196,122,58,0.06)', borderColor: 'rgba(196,122,58,0.18)' }}>
-          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+        <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 12px', background: 'rgba(196,122,58,0.06)', borderColor: 'rgba(196,122,58,0.18)' }}>
+          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             👋 Välkommen
           </p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
@@ -140,8 +140,8 @@ export function BoardMeetingScreen() {
           </p>
         </div>
       ) : (
-        <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px', background: 'rgba(196,122,58,0.06)', borderColor: 'rgba(196,122,58,0.18)' }}>
-          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+        <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 12px', background: 'rgba(196,122,58,0.06)', borderColor: 'rgba(196,122,58,0.18)' }}>
+          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             {verdictEmoji} Förra säsongen
           </p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
@@ -151,8 +151,8 @@ export function BoardMeetingScreen() {
       )}
 
       {/* Säsongens mål */}
-      <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
-        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+      <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 12px' }}>
+        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
           📋 Säsongens mål
         </p>
         <p style={{ fontSize: 15, color: 'var(--accent)', fontWeight: 600, marginBottom: 6, fontFamily: 'var(--font-display)' }}>
@@ -169,8 +169,8 @@ export function BoardMeetingScreen() {
 
       {/* Styrelsens uppdrag */}
       {(game.boardObjectives ?? []).length > 0 && (
-        <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
-          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+        <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 12px' }}>
+          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
             📌 Styrelsens uppdrag
           </p>
           {(game.boardObjectives ?? []).map(obj => {
@@ -195,8 +195,8 @@ export function BoardMeetingScreen() {
       )}
 
       {/* Ekonomi */}
-      <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
-        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+      <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 12px' }}>
+        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
           💰 Ekonomi
         </p>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -268,8 +268,8 @@ export function BoardMeetingScreen() {
         ].filter(Boolean) as string[]
 
         return (
-          <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
-            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+          <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 12px' }}>
+            <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
               👥 Truppen just nu
             </p>
             <div style={{ fontSize: 12, lineHeight: 1.7, color: 'var(--text-secondary)', marginBottom: 8 }}>
@@ -287,11 +287,11 @@ export function BoardMeetingScreen() {
       {/* Styrelsemedlemmarnas röster */}
       {selectedQuotes.length > 0 && (
         <div className="card-sharp" style={{
-          marginBottom: 12, padding: '10px 14px',
+          marginBottom: 12, padding: '10px 12px',
           background: 'rgba(196,122,58,0.04)',
           borderColor: 'rgba(196,122,58,0.15)',
         }}>
-          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             💬 Styrelsemedlemmarna om läget
           </p>
           <p style={{ fontSize: 12, color: 'var(--text-primary)', marginBottom: 16, fontStyle: 'italic', fontFamily: 'var(--font-display)' }}>

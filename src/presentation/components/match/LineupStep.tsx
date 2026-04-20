@@ -41,11 +41,11 @@ interface LineupStepProps {
 }
 
 const GROUP_LABELS: Partial<Record<string, string>> = {
-  [PlayerPosition.Goalkeeper]: 'Målvakter',
-  [PlayerPosition.Defender]: 'Backar',
-  [PlayerPosition.Half]: 'Ytterhalvar',
-  [PlayerPosition.Midfielder]: 'Mittfältare',
-  [PlayerPosition.Forward]: 'Anfallare',
+  [PlayerPosition.Goalkeeper]: '🧤 Målvakter',
+  [PlayerPosition.Defender]: '🛡 Backar',
+  [PlayerPosition.Half]: '🏒 Ytterhalvar',
+  [PlayerPosition.Midfielder]: '⚙️ Mittfältare',
+  [PlayerPosition.Forward]: '⚔️ Anfallare',
 }
 
 export function LineupStep({
@@ -159,7 +159,7 @@ export function LineupStep({
             {groupedPlayers.map(group => (
               <div key={group.position} style={{ marginBottom: 6 }}>
                 <p style={{
-                  fontSize: 9, fontWeight: 600, letterSpacing: '2.5px',
+                  fontSize: 8, fontWeight: 600, letterSpacing: '2px',
                   textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 2,
                 }}>
                   {GROUP_LABELS[group.position] ?? group.position}

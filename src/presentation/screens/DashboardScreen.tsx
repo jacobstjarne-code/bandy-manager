@@ -556,7 +556,7 @@ export function DashboardScreen() {
 
         {/* ④ ÖVERBLICK — collapsed rows when primary card active, otherwise 2×2 grid */}
         {collapseGrid && (
-          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '6px 10px', display: 'flex', flexDirection: 'column', gap: 0 }}>
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '7px 10px', display: 'flex', flexDirection: 'column', gap: 0 }}>
             {standing && (
               <div onClick={() => navigate('/game/tabell')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
                 <span style={{ fontSize: 13, width: 20 }}>📊</span>

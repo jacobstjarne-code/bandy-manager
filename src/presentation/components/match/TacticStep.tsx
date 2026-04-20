@@ -76,8 +76,8 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
       )}
 
       {tacticHints.length > 0 && (
-        <div className="card-sharp" style={{ marginBottom: 10, padding: '10px 14px' }}>
-          <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+        <div className="card-sharp" style={{ marginBottom: 10, padding: '10px 12px' }}>
+          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             🎯 TAKTIKRÅD
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -121,8 +121,8 @@ export function TacticStep({ tacticState, matchWeatherData, startingIds, game, o
           const rows = tacticRows.filter(r => group.keys.includes(r.key as string))
           if (rows.length === 0) return null
           return (
-            <div key={gi} className="card-sharp" style={{ marginBottom: 8, padding: '10px 14px' }}>
-              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+            <div key={gi} className="card-sharp" style={{ marginBottom: 8, padding: '10px 12px' }}>
+              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
                 {group.label}
               </p>
               {rows.map(({ label, key, options }, ri) => {
