@@ -1010,19 +1010,7 @@ export function DashboardScreen() {
             data-coach-id="cta-button"
             onClick={handleAdvance}
             disabled={!canClickAdvance}
-            className="texture-leather"
-            style={{
-              width: '100%', padding: '18px',
-              background: canClickAdvance
-                ? 'linear-gradient(135deg, var(--accent-dark), var(--accent-deep))'
-                : 'var(--border)',
-              color: canClickAdvance ? 'var(--text-light)' : 'var(--text-muted)',
-              border: 'none', borderRadius: 12,
-              fontSize: 15, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase',
-              fontFamily: 'var(--font-body)',
-              cursor: canClickAdvance ? 'pointer' : 'not-allowed',
-              animation: canClickAdvance ? 'pulseCTA 3s ease-in-out infinite' : undefined,
-            }}
+            className={`btn btn-primary btn-cta texture-leather${canClickAdvance ? ' btn-pulse' : ''}`}
           >
             {advanceButtonText}
           </button>

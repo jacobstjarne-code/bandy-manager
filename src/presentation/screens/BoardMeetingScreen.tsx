@@ -324,13 +324,7 @@ export function BoardMeetingScreen() {
       {/* Knapp */}
       <button
         onClick={handleStart}
-        className="btn btn-copper"
-        style={{
-          width: '100%', padding: '16px',
-          fontSize: 15, fontWeight: 800,
-          letterSpacing: '1px', textTransform: 'uppercase',
-          borderRadius: 12,
-        }}
+        className="btn btn-primary btn-cta"
       >
         {isFirstSeason ? 'Kör igång! →' : 'Starta säsongen →'}
       </button>

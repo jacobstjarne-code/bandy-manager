@@ -173,10 +173,8 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
         }}>
           ← Taktik
         </button>
-        <button onClick={onPlay} className="btn btn-copper" style={{
-          flex: 2, padding: '13px', fontSize: 14, fontWeight: 700, letterSpacing: '0.3px',
-        }}>
-          SPELA MATCHEN →
+        <button onClick={onPlay} className="btn btn-primary btn-cta" style={{ flex: 2, width: 'auto' }}>
+          Spela matchen →
         </button>
       </div>
     </div>
