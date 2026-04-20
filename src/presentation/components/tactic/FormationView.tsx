@@ -1,7 +1,8 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { Player } from '../../../domain/entities/Player'
 import type { FormationType } from '../../../domain/entities/Formation'
-import { FORMATIONS, autoAssignFormation } from '../../../domain/entities/Formation'
+import { FORMATIONS, autoAssignFormation, getRecommendedFormation, FORMATION_META } from '../../../domain/entities/Formation'
 import type { Tactic } from '../../../domain/entities/Club'
 import { PlayerDot } from './PlayerDot'
 
@@ -12,6 +13,16 @@ interface FormationViewProps {
 }
 
 const FORMATION_OPTIONS: FormationType[] = ['5-3-2', '3-3-4', '4-3-3', '3-4-3', '2-3-2-3', '4-2-4']
+
+const MENTALITY_LABELS: Record<string, string> = {
+  defensive: 'Defensiv', balanced: 'Balanserad', offensive: 'Offensiv',
+}
+const TEMPO_LABELS: Record<string, string> = {
+  low: 'Lågt', normal: 'Normal', high: 'Högt',
+}
+const PRESS_LABELS: Record<string, string> = {
+  low: 'Lågt', medium: 'Medel', high: 'Högt',
+}
 
 function PitchLines() {
   return (
@@ -32,10 +43,12 @@ function PitchLines() {
 
 export function FormationView({ tactic, players, onChange }: FormationViewProps) {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
+  const navigate = useNavigate()
 
   const formation = tactic.formation ?? '5-3-2'
   const template = FORMATIONS[formation]
   const lineupSlots = tactic.lineupSlots ?? autoAssignFormation(template, players)
+  const recommended = getRecommendedFormation(players)
 
   // Starters: players currently in slots
   const starterIds = new Set(Object.values(lineupSlots).filter(Boolean) as string[])
@@ -79,29 +92,85 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
     setSelectedSlotId(null)
   }
 
+  const meta = FORMATION_META[formation]
+
   return (
     <>
-      {/* Formation selector */}
+      {/* B3c: Tactic overview — read-only, links to lineup */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 4,
+        padding: '6px 8px', borderRadius: 4,
+        background: 'var(--bg-elevated)', border: '0.5px solid var(--border)',
+        marginBottom: 10, flexWrap: 'wrap',
+      }}>
+        <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600 }}>
+          {MENTALITY_LABELS[tactic.mentality] ?? tactic.mentality}
+        </span>
+        <span style={{ fontSize: 9, color: 'var(--border)' }}>·</span>
+        <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600 }}>
+          Tempo: {TEMPO_LABELS[tactic.tempo] ?? tactic.tempo}
+        </span>
+        <span style={{ fontSize: 9, color: 'var(--border)' }}>·</span>
+        <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600 }}>
+          Press: {PRESS_LABELS[tactic.press] ?? tactic.press}
+        </span>
+        <button
+          onClick={() => navigate('/game/squad')}
+          style={{
+            marginLeft: 'auto', fontSize: 9, color: 'var(--accent)', fontWeight: 400,
+            background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+            textDecoration: 'underline',
+          }}
+        >
+          ändras i lineup
+        </button>
+      </div>
+
+      {/* B1c: Formation selector with coach recommendation */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' }}>
         {FORMATION_OPTIONS.map(f => (
-          <button
-            key={f}
-            onClick={() => changeFormation(f)}
-            style={{
-              padding: '5px 8px',
-              fontSize: 11,
-              fontWeight: 600,
-              borderRadius: 4,
-              border: formation === f ? 'none' : '1px solid var(--accent)',
-              background: formation === f ? 'var(--accent)' : 'transparent',
-              color: formation === f ? '#fff' : 'var(--accent)',
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
-          >
-            {f}
-          </button>
+          <div key={f} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+            <button
+              onClick={() => changeFormation(f)}
+              style={{
+                padding: '5px 8px',
+                fontSize: 11,
+                fontWeight: 600,
+                borderRadius: 4,
+                border: formation === f ? 'none' : '1px solid var(--accent)',
+                background: formation === f ? 'var(--accent)' : 'transparent',
+                color: formation === f ? '#fff' : 'var(--accent)',
+                cursor: 'pointer',
+                flexShrink: 0,
+                outline: recommended === f && formation !== f ? '1px solid var(--success)' : 'none',
+                outlineOffset: 1,
+              }}
+            >
+              {f}
+            </button>
+            {recommended === f && (
+              <span style={{ fontSize: 8, color: 'var(--success)', fontWeight: 700, letterSpacing: '0.5px' }}>
+                ★ COACH
+              </span>
+            )}
+          </div>
         ))}
+      </div>
+
+      {/* B2c: Formation anatomy tags + coach quote */}
+      <div style={{ marginBottom: 8 }}>
+        <div style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
+          {meta.tags.map(tag => (
+            <span key={tag} className="tag tag-ghost">{tag}</span>
+          ))}
+        </div>
+        <p style={{
+          fontFamily: 'var(--font-display)', fontSize: 11, fontStyle: 'italic',
+          color: 'var(--text-secondary)', lineHeight: 1.5,
+        }}>
+          "{meta.coachQuote}"
+        </p>
+        <p style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>— Coachen</p>
       </div>
 
       {/* Pitch SVG */}
