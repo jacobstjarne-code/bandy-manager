@@ -32,6 +32,8 @@ export function runSectionLabels(root: HTMLElement): Finding[] {
 
     // This looks like a section label — check compliance
     const fs = parseFloat(s.fontSize)
+    // Skip screen headings (fontSize > 10px are headings, not section labels)
+    if (!isNaN(fs) && fs > 10) continue
     const fw = parseFloat(s.fontWeight)
     const selector = cssPath(el)
     const text = el.textContent?.trim() ?? ''

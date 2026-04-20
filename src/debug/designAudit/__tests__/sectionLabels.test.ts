@@ -45,4 +45,10 @@ describe('sectionLabels', () => {
     const findings = runSectionLabels(root)
     expect(findings).toHaveLength(0)
   })
+
+  it('does not flag screen headings (fontSize > 10px)', () => {
+    root.innerHTML = `<p style="text-transform:uppercase;letter-spacing:3px;font-size:11px;font-weight:700">STYRELSEMÖTE</p>`
+    const findings = runSectionLabels(root)
+    expect(findings).toHaveLength(0)
+  })
 })
