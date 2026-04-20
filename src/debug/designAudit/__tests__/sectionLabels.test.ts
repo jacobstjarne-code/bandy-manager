@@ -39,4 +39,10 @@ describe('sectionLabels', () => {
     const warns = findings.filter(f => f.severity === 'warn')
     expect(warns.length).toBeGreaterThan(0)
   })
+
+  it('does not flag uppercase BUTTON elements', () => {
+    root.innerHTML = `<button style="text-transform:uppercase;letter-spacing:3px;font-size:13px;font-weight:700">STARTA KARRIÄREN</button>`
+    const findings = runSectionLabels(root)
+    expect(findings).toHaveLength(0)
+  })
 })

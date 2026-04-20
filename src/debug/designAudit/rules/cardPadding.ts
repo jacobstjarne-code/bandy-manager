@@ -106,6 +106,8 @@ export function runCardPadding(root: HTMLElement): Finding[] {
     // Extract the borderRadius value for the message
     const match = styleAttr.match(/border-?[Rr]adius:\s*([^;]+)/)
     const val = match ? match[1].trim() : 'unknown'
+    // Skip circular elements (borderRadius: 50%) and pill-radius patterns (9999)
+    if (val === '50%' || val.includes('9999')) continue
     findings.push({
       rule: 'cardPadding',
       severity: 'warn',

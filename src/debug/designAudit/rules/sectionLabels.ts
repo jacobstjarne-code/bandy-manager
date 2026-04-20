@@ -24,6 +24,7 @@ export function runSectionLabels(root: HTMLElement): Finding[] {
   const all = root.querySelectorAll('*')
 
   for (const el of all) {
+    if (el.tagName === 'BUTTON') continue
     const s = getComputedStyle(el)
     if (s.textTransform !== 'uppercase') continue
     const ls = parseFloat(s.letterSpacing)

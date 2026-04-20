@@ -59,6 +59,20 @@ describe('cardPadding', () => {
     expect(warns).toHaveLength(0)
   })
 
+  it('does not warn on borderRadius: 50% (circular portrait dot)', () => {
+    root.innerHTML = `<div style="border-radius: 50%; width: 22px; height: 22px">dot</div>`
+    const findings = runCardPadding(root)
+    const warns = findings.filter(f => f.severity === 'warn')
+    expect(warns).toHaveLength(0)
+  })
+
+  it('does not warn on borderRadius containing 9999 (pill pattern)', () => {
+    root.innerHTML = `<div style="border-radius: 9999px">pill</div>`
+    const findings = runCardPadding(root)
+    const warns = findings.filter(f => f.severity === 'warn')
+    expect(warns).toHaveLength(0)
+  })
+
   it('does not warn on inline borderRadius inside svg', () => {
     root.innerHTML = `<svg><g style="border-radius: 4px"></g></svg>`
     const findings = runCardPadding(root)

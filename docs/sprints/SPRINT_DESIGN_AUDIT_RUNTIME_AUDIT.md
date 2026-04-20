@@ -125,7 +125,38 @@ Tests       1444 passed (1444)
 
 Inget — alla spec-punkter implementerade.
 
+## Post-review — Opus-godkännande 2026-04-20
+
+Opus granskade FP-rapporten ovan och godkände två av tre regelpatchar.
+
+### Patch 1: cardPadding — skippa borderRadius 50% och 9999
+
+**Fil:** `src/debug/designAudit/rules/cardPadding.ts`  
+**Ändring:** Efter att `val` extraherats ur style-attributet — `if (val === '50%' || val.includes('9999')) continue` — antes findings.push.  
+**Motivering:** `50%` är standardmönstret för cirkulära element (portrait-dots). `9999px` är pill-mönstret. Ingen av dessa är regelbrott.  
+**Nya tester:** `cardPadding.test.ts` +2 testfall:
+- `'does not warn on borderRadius: 50% (circular portrait dot)'`
+- `'does not warn on borderRadius containing 9999 (pill pattern)'`
+
+### Patch 2: sectionLabels — skippa BUTTON-element
+
+**Fil:** `src/debug/designAudit/rules/sectionLabels.ts`  
+**Ändring:** `if (el.tagName === 'BUTTON') continue` i loopens inledning, före getComputedStyle.  
+**Motivering:** CTA-knappar med uppercase + letterSpacing för estetik matchar regelns detektionströskel men är inte sektions-labels. Regeln kan inte skilja dem åt via computed styles — enklaste lösningen är att utesluta alla BUTTON-element.  
+**Nytt test:** `sectionLabels.test.ts` +1 testfall:
+- `'does not flag uppercase BUTTON elements'`
+
+### FP3: gridGaps — INGEN ändring
+
+Opus bekräftade att warn-nivå är rätt för flex-column med gap > 6px på intro-skärmen. Intro-skärmens generösare spacing är troligen avsiktlig men regeln ska fortfarande flagga den för manuell granskning.
+
+### Status efter patch
+
+```
+Test Files  124 passed (124)
+Tests       1447 passed (1447)
+```
+
 ## Pending
 
 - Vercel-verifiering (Jacob sätter `VITE_AUDIT_ENABLED=true`)
-- 3 regelförfiningar väntar på Opus-godkännande (borderRadius 50%, button-exkludering i sectionLabels, gridGaps-threshold för intro-skärm)
