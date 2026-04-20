@@ -240,3 +240,17 @@ grep -rn "' as \(PlayerArchetype\|PlayerPosition\|ClubStyle\|TacticMentality\)" 
 **Känn igen:** Upprepade identiska PLAYOFF-loggrader med tom `completedThisRound` direkt efter en seriseger.
 
 **Historik:** Observerat i stress-test baseline Sprint 22.6. Inte fixat — potentiell bugg, låg prio.
+
+---
+
+## 12. Auto-play-scenarios behöver safety net
+
+**Mönster:** Funktioner som antar aktivt mänskligt ingripande (transfers, kontraktsförlängningar, rekrytering) degraderar gradvis spelet i auto-play (stress-test, passiva spelare) tills invariant-krasch.
+
+**Rotorsak:** Replenishment-loopen i `seasonEndProcessor` skippade explicit managed club (`if (club.id === game.managedClubId) return club`). AI-klubbar fick kompensation varje säsong; managed club aldrig. Kontraktsexpiry + retirements tömde truppen −5 till −9 spelare/säsong utan påfyllning.
+
+**Fix:** Definiera "minimum viable state" (trupp < 14 = kritisk) och auto-kompensera vid underskridning. Managed club får safety-net till 14 (bandy-minimum: 11 starter + 3 reserver). Inte 20 som AI — spelaren ska fortfarande känna press att rekrytera upp till full trupp.
+
+**Känn igen:** Stress-test visar gradvis degradering 2–3 säsonger i. Trupp-storlek minskar varje säsong med ingen uppgång. `positionCoverage` eller `squadSize` invariant-kraschar vid säsong 2–4.
+
+**Historik:** Sprint 22.7 (BUG-STRESS-02). Fixades med safety-net cap=14 + position-aware replenishment.

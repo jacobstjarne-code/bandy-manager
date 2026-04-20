@@ -28,28 +28,36 @@ import { checkSeasonEndArc } from '../../domain/services/trainerArcService'
 import { evaluateObjective, generateBoardObjectives } from '../../domain/services/boardObjectiveService'
 import { updateSilentShout, ageMecenater, checkMecenatRetirement } from '../../domain/services/mecenatService'
 import type { LicenseReview } from '../../domain/entities/SaveGame'
-import type { Club } from '../../domain/entities/Club'
 import type { AdvanceResult } from './advanceTypes'
 
-// ── Squad-composition diagnostik (STRESS_DEBUG only) ──────────────────────────
-function logSquadComposition(label: string, players: Player[], clubs: Club[], managedClubId: string): void {
-  if (!process.env.STRESS_DEBUG) return
-  const byClub = new Map<string, Player[]>()
-  for (const p of players) {
-    if (!byClub.has(p.clubId)) byClub.set(p.clubId, [])
-    byClub.get(p.clubId)!.push(p)
+// ── Position-aware replenishment helpers ──────────────────────────────────────
+const POSITION_MINIMUMS: Record<PlayerPosition, number> = {
+  [PlayerPosition.Goalkeeper]: 2,
+  [PlayerPosition.Defender]:   5,
+  [PlayerPosition.Half]:       2,
+  [PlayerPosition.Midfielder]: 2,
+  [PlayerPosition.Forward]:    4,
+}
+
+function pickPositionToFill(players: Player[]): PlayerPosition {
+  const counts: Record<PlayerPosition, number> = {
+    [PlayerPosition.Goalkeeper]: 0,
+    [PlayerPosition.Defender]:   0,
+    [PlayerPosition.Half]:       0,
+    [PlayerPosition.Midfielder]: 0,
+    [PlayerPosition.Forward]:    0,
   }
-  const summary = [...byClub.entries()].map(([clubId, ps]) => {
-    const gk  = ps.filter(p => p.position === PlayerPosition.Goalkeeper).length
-    const def = ps.filter(p => p.position === PlayerPosition.Defender).length
-    const mid = ps.filter(p => p.position === PlayerPosition.Midfielder || p.position === PlayerPosition.Half).length
-    const fwd = ps.filter(p => p.position === PlayerPosition.Forward).length
-    const total = ps.length
-    const clubName = clubs.find(c => c.id === clubId)?.name ?? clubId
-    const isManaged = clubId === managedClubId ? ' [MANAGED]' : ''
-    return `  ${clubName}${isManaged}: ${total}p (GK:${gk} DEF:${def} MID:${mid} FWD:${fwd})`
-  }).join('\n')
-  console.log(`\n[SQUAD-COMP ${label}]\n${summary}`)
+  for (const p of players) {
+    if (counts[p.position] !== undefined) counts[p.position]++
+  }
+  // First priority: positions below minimum, most underrepresented first
+  const belowMin = (Object.keys(POSITION_MINIMUMS) as PlayerPosition[])
+    .filter(pos => counts[pos] < POSITION_MINIMUMS[pos])
+    .sort((a, b) => (counts[a] - POSITION_MINIMUMS[a]) - (counts[b] - POSITION_MINIMUMS[b]))
+  if (belowMin.length > 0) return belowMin[0]
+  // Otherwise: fill least-represented position
+  return (Object.keys(counts) as PlayerPosition[])
+    .sort((a, b) => counts[a] - counts[b])[0]
 }
 
 export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
@@ -372,7 +380,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   // Reset player season stats, recover fitness, age players
   const allPlayers = [...game.players, ...youthPlayers]
-  logSquadComposition('AFTER_YOUTH', allPlayers, updatedClubs, game.managedClubId)
   const retirementRand = mulberry32(baseSeed + 99991)
   const retiredPlayerIds = new Set<string>()
   const retirementMessages: InboxItem[] = []
@@ -438,7 +445,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     }
   }
 
-  logSquadComposition('AFTER_RETIRE', resetPlayers.filter(p => !retiredPlayerIds.has(p.id)), updatedClubs, game.managedClubId)
   // ── WEAK-007: Nemesis pensioneras — rensa tracker, skicka inbox ───────────
   let updatedNemesisTracker = { ...(game.nemesisTracker ?? {}) }
   for (const pid of retiredPlayerIds) {
@@ -556,8 +562,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const activePlayers = resetPlayers
     .filter(p => !retiredPlayerIds.has(p.id))
     .map(p => contractExpiredIds.has(p.id) ? { ...p, clubId: 'free_agent' } : p)
-  logSquadComposition('AFTER_CONTRACT_EXPIRY', activePlayers, updatedClubs, game.managedClubId)
-
   // ── Board patience update ─────────────────────────────────────────────
   const totalTeams = game.clubs.length
   const finalPos = managedClubStanding?.position ?? totalTeams
@@ -631,7 +635,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     sponsorsAfterLicense = sponsorsAfterLicense.slice(0, keepCount)
 
   }
-  logSquadComposition('AFTER_LICENSE', playersAfterLicense, clubsAfterLicense, game.managedClubId)
 
   // ── Kommunval — every 4th season, 50% chance of new politician ───────────
   let nextPolitician = game.localPolitician
@@ -876,30 +879,26 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   )
   playersAfterLicense = aiTransferResult.updatedPlayers
   clubsAfterLicense = aiTransferResult.updatedClubs
-  logSquadComposition('AFTER_AI_TRANSFERS', playersAfterLicense, clubsAfterLicense, game.managedClubId)
 
-  // ── AI squad replenishment: ensure every AI club has ≥ 18 players ─────────
+  // ── AI squad replenishment: ensure every AI club has ≥ 20, managed club safety-net at 14 ──
   const replenishRand = mulberry32(baseSeed + 77777)
-  const replenishPositions = [
-    PlayerPosition.Goalkeeper,
-    PlayerPosition.Defender, PlayerPosition.Defender, PlayerPosition.Defender,
-    PlayerPosition.Midfielder, PlayerPosition.Midfielder,
-    PlayerPosition.Forward, PlayerPosition.Forward,
-  ]
   const emptySeasonStats = { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0 }
   const emptyCareerStats = { totalGames: 0, totalGoals: 0, totalAssists: 0, seasonsPlayed: 0 }
 
   const replenishedPlayers: Player[] = []
   const replenishedClubs = clubsAfterLicense.map(club => {
-    if (club.id === game.managedClubId) return club
+    const isManaged = club.id === game.managedClubId
+    const target = isManaged ? 14 : 20  // Managed: safety-net at 14 (bandy minimum), AI: full squad
     const squadSize = club.squadPlayerIds.length
-    if (squadSize >= 20) return club
+    if (squadSize >= target) return club
 
-    const needed = 20 - squadSize
+    const needed = target - squadSize
     const newIds: string[] = []
+    const currentPlayers = playersAfterLicense.filter(p => club.squadPlayerIds.includes(p.id))
+    const workingRoster = [...currentPlayers]
+
     for (let i = 0; i < needed; i++) {
-      const posIndex = i % replenishPositions.length
-      const pos = replenishPositions[posIndex]
+      const pos = pickPositionToFill(workingRoster)
       const caBase = Math.round(club.reputation * 0.45 + 15)
       const ca = Math.max(20, Math.min(70, caBase + Math.floor(replenishRand() * 16) - 8))
       const age = 20 + Math.floor(replenishRand() * 12)
@@ -929,6 +928,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         seasonStats: emptySeasonStats, careerStats: emptyCareerStats,
       }
       replenishedPlayers.push(player)
+      workingRoster.push(player)
       newIds.push(id)
     }
     return { ...club, squadPlayerIds: [...club.squadPlayerIds, ...newIds] }
@@ -938,7 +938,6 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     playersAfterLicense = [...playersAfterLicense, ...replenishedPlayers]
     clubsAfterLicense = replenishedClubs
   }
-  logSquadComposition('AFTER_REPLENISH', playersAfterLicense, clubsAfterLicense, game.managedClubId)
 
   const notableTransfers = aiTransferResult.transfers.filter(t => t.fee > 50000).slice(0, 3)
   if (notableTransfers.length > 0) {
