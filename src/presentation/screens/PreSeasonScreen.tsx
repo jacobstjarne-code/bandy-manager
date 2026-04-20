@@ -98,7 +98,7 @@ export function PreSeasonScreen() {
       <div style={{
         width: '100%', maxWidth: 390,
         display: 'flex', flexDirection: 'column', gap: 6,
-        paddingBottom: 'calc(var(--bottom-nav-height, 60px) + var(--safe-bottom, 0px) + 16px)',
+        paddingBottom: 'calc(var(--safe-bottom, 0px) + 16px)',
       }}>
 
         {/* ── Header ── */}
@@ -363,19 +363,8 @@ export function PreSeasonScreen() {
         {/* ── Start button ── */}
         <button
           onClick={handleStart}
-          style={{
-            marginTop: 8,
-            padding: '14px 0',
-            background: 'var(--accent)',
-            border: 'none',
-            borderRadius: 8,
-            color: 'var(--bg)',
-            fontSize: 14,
-            fontWeight: 700,
-            cursor: 'pointer',
-            letterSpacing: '1px',
-            fontFamily: 'var(--font-display)',
-          }}
+          className="btn btn-primary btn-cta"
+          style={{ marginTop: 8 }}
         >
           Starta säsongen →
         </button>

@@ -30,7 +30,7 @@ Skärmar via BottomNav ska INTE ha rubrik-rad. Undantag: hierarkisk navigering (
 
 ### Knapphierarki
 
-Fyra klasser i `global.css`. Använd rätt klass för rätt syfte:
+Klasser i `global.css`. Använd rätt klass för rätt syfte:
 
 | Klass | Utseende | Användning | Regel |
 |-------|----------|------------|-------|
@@ -38,8 +38,52 @@ Fyra klasser i `global.css`. Använd rätt klass för rätt syfte:
 | `.btn-secondary` | Solid `--accent` | Sekundär action (Välj, Sätt) | Fritt |
 | `.btn-ghost` | `--bg-surface` + border | Val i listor/modals | Fritt |
 | `.btn-outline` | Transparent + border | Neutral/Avbryt | Fritt |
+| `.btn-cta` | Förstorar en primary till skärm-avslutande storlek | Stor fullbredds-CTA | Se nedan |
 
 Alla knappar kombineras med `.btn` (bas-reset + flexbox + transition).
+
+### Stor CTA (skärm-avslutande)
+
+`.btn-cta` är modifier-klassen för den stora, ceremoniella CTA:n längst ner på en skärm — "Spela omgång", "Starta säsongen", "Kör igång!", "Acceptera uppdraget", "Spela matchen". **Kombineras alltid med `.btn .btn-primary`**:
+
+```tsx
+<button className="btn btn-primary btn-cta" onClick={...}>
+  Spela omgång 1 →
+</button>
+```
+
+Mått (definierade i global.css, ändra inte inline):
+- `width: 100%` (fullbredd)
+- `padding: 14px 16px`
+- `font-size: 14px`, `font-weight: 700`, `letter-spacing: 1.5px`
+- `text-transform: uppercase`
+- `border-radius: 12px`
+
+**Puls:** Lägg till `.btn-pulse` för pulserande uppmärksamhet (dashboard "redo"-state). Inte på andra skärmar.
+
+**Disabled-state:** `.btn-cta:disabled` hanteras automatiskt (grey bg, muted text, ingen puls). Skicka `disabled`-prop direkt, behöver inte klassbyten.
+
+**Förbjudet:** Inline-styling av padding/fontSize/fontWeight/letterSpacing/background/borderRadius på CTA. Bryter konsekvens (se Sprint 22.5 — fyra olika implementeringar identifierade).
+
+**Legacy:** `.btn-copper` finns i global.css som dublett till `.btn-primary` (identisk CSS). Använd `.btn-primary`. Migrera `.btn-copper`-användningar vid tillfälle.
+
+---
+
+## 1b. NAV-BETEENDE — transition-skärmar
+
+Dessa skärmar är ceremoniella övergångar (en eller få gånger per säsong) och ska **inte visa BottomNav**. Implementeras i `BottomNav.tsx` via `HIDDEN_PATHS`-listan:
+
+- `/game/board-meeting` — styrelsemöte
+- `/game/pre-season` — försäsong
+- `/game/season-summary` — säsongsslut
+- `/game/playoff-intro` — slutspelsintro
+- `/game/qf-summary` — kvartsfinalsammanfattning
+- `/game/champion` — SM-guld
+- `/game/game-over` — sparkad
+
+Mönstret: skärmar som **inte har någon funktion** utan krattar för nästa fas. Nav skulle bara vilseleda. Skärmen slutförs via sin egen `.btn-cta`.
+
+GameHeader och PhaseIndicator döljs redan på samma skärmar (se §8).
 
 ---
 

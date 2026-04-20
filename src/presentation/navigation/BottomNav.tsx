@@ -50,12 +50,27 @@ export function BottomNav() {
   const effectivelyLocked = locked || isOnMatchScreen
   const lockReason = reason ?? (isOnMatchScreen ? 'Match pågår — spela klart' : null)
 
+  // Hide nav entirely on ceremonial transition screens — full-screen flows
+  // där nav inte har någon funktion och bara skapar förvirring (bild 5-buggen).
+  const HIDDEN_PATHS = [
+    '/game/board-meeting',
+    '/game/pre-season',
+    '/game/season-summary',
+    '/game/playoff-intro',
+    '/game/qf-summary',
+    '/game/champion',
+    '/game/game-over',
+  ]
+  const isHiddenScreen = HIDDEN_PATHS.some(p => location.pathname.startsWith(p))
+
   useEffect(() => {
     if (location.pathname !== lastActive) {
       setLastActive(location.pathname)
       setBounceKey(prev => ({ ...prev, [location.pathname]: (prev[location.pathname] ?? 0) + 1 }))
     }
   }, [location.pathname, lastActive])
+
+  if (isHiddenScreen) return null
 
   const matchBadge = 0  // Removed: showed 1 when lineup was SET (not needed), dashboard CTA handles match flow
   const windowStatus = currentDate ? getTransferWindowStatus(currentDate).status : 'closed'

@@ -300,6 +300,30 @@ a {
   box-shadow: 0 3px 10px rgba(176,80,64,0.40);
 }
 
+/* ── CTA: large primary call-to-action (fullbredd, ceremoniell) ── */
+/* Används för skärm-avslutande primär-CTA: "Spela omgång", "Starta säsongen",
+   "Kör igång!", "SPELA MATCHEN", "Acceptera uppdraget". Kombineras med
+   .btn .btn-primary (bakgrund + skuggor). Lägg till .btn-pulse för
+   pulserande uppmärksamhet (dashboard redo-state). */
+.btn-cta {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-radius: 12px;
+  font-family: var(--font-body);
+}
+
+.btn-cta:disabled {
+  background: var(--border);
+  color: var(--text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+  animation: none;
+}
+
 /* ── Sharp cards: factual data display ── */
 .card-sharp {
   border-radius: 8px;
