@@ -200,3 +200,62 @@ export function autoAssignFormation(
 
   return lineupSlots
 }
+
+// ── Coach recommendation ────────────────────────────────────────────────────
+// Scores each formation by how many available players match required positions.
+// Returns the formation type with the highest score.
+export function getRecommendedFormation(players: Player[]): FormationType {
+  const available = players.filter(p => !p.isInjured && p.suspensionGamesRemaining === 0)
+  const countByPos: Record<string, number> = {}
+  for (const p of available) {
+    countByPos[p.position] = (countByPos[p.position] ?? 0) + 1
+  }
+
+  let best: FormationType = '4-3-3'
+  let bestScore = -1
+  for (const [fType, template] of Object.entries(FORMATIONS) as [FormationType, FormationTemplate][]) {
+    const required: Record<string, number> = {}
+    for (const slot of template.slots) {
+      required[slot.position] = (required[slot.position] ?? 0) + 1
+    }
+    let score = 0
+    for (const [pos, need] of Object.entries(required)) {
+      score += Math.min(need, countByPos[pos] ?? 0)
+    }
+    if (score > bestScore) {
+      bestScore = score
+      best = fType
+    }
+  }
+  return best
+}
+
+// ── Formation meta: anatomy tags + coach quotes ─────────────────────────────
+// Tags reflect slot anatomy (player requirements), NOT match-engine effects.
+// Texts approved in TEXT_REVIEW_formations_2026-04-20.md — copy exactly.
+export const FORMATION_META: Record<FormationType, { tags: string[]; coachQuote: string }> = {
+  '5-3-2': {
+    tags: ['TRYGG', 'KRÄVER LIBERO'],
+    coachQuote: 'Libero bak, tre halvor, två forwards. Så har vi alltid spelat — det finns en trygghet i det kända.',
+  },
+  '3-3-4': {
+    tags: ['4 FORWARDS', 'KLASSISK BANDY'],
+    coachQuote: 'Fyra forwards. Så här spelades bandy när jag växte upp — mycket folk framme, straffa dom när dom tappar bollen.',
+  },
+  '4-3-3': {
+    tags: ['STABIL BAKÅT', '4 BACKAR'],
+    coachQuote: 'Fyra bak. Tråkigt, kanske — men det vinner poäng när motståndarna är bättre än oss. Stabilitet först, chanser sen.',
+  },
+  '3-4-3': {
+    tags: ['STARK MITTLINJE', 'BOLLKONTROLL'],
+    coachQuote: 'Fyra på halvlinjen. Äger du mitten i bandy äger du matchen — så enkelt är det.',
+  },
+  '2-3-2-3': {
+    tags: ['BARA 2 BACKAR', 'RISK/REWARD'],
+    coachQuote: 'Bara två bak. Vi gasar. Funkar det inte i första halvlek får vi byta — men jag vill testa.',
+  },
+  '4-2-4': {
+    tags: ['4 FORWARDS', 'TUNN MITTLINJE'],
+    coachQuote: 'Fyra forwards, fyra backar — och två stackars halvor som ska hålla ihop det. Allt eller inget.',
+  },
+}
