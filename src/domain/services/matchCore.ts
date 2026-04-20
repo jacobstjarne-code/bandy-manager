@@ -594,6 +594,7 @@ function* simulateMatchCore(
     let saveOccurred      = false
     let suspensionOccurred = false
     let cornerOccurred    = false
+    let wasSituationalStep = false  // true only when a situational line was actually injected
     let scorerPlayerId:   string | undefined
     let gkPlayerId:       string | undefined
     let suspendedPlayerId: string | undefined
@@ -1173,7 +1174,7 @@ function* simulateMatchCore(
           } else if (situation === 'opened_up') {
             sitLine = fillTemplate(pickCommentary(commentary.situational_opened_up, rand), templateVars)
           }
-          if (sitLine && rand() < 0.70) commentaryText = sitLine
+          if (sitLine && rand() < 0.70) { commentaryText = sitLine; wasSituationalStep = true }
         }
 
         // Momentum swing
@@ -1286,7 +1287,7 @@ function* simulateMatchCore(
       if (seqType === 'player_duel')    return 'player_duel'
       if (seqType === 'tactical_shift') return 'tactical'
       if (goalScored && scorerPlayerId) return 'goal_context'
-      if (situation !== 'neutral' && !goalScored && !suspensionOccurred && !saveOccurred && !cornerOccurred) return 'situation'
+      if (wasSituationalStep) return 'situation'
       return 'normal'
     })()
 
