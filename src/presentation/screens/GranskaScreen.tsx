@@ -326,6 +326,81 @@ export function GranskaScreen() {
           </div>
         )}
 
+        {/* Events — tidskritiska, kräver val innan nästa omgång */}
+        {pendingEvents.map((event, ei) => {
+          const resolved = resolvedEventIds.has(event.id)
+          const chosenLabel = chosenLabels[event.id]
+          const relatedPlayer = event.relatedPlayerId ? game.players.find(p => p.id === event.relatedPlayerId) : null
+          const relatedClub = event.relatedClubId ? game.clubs.find(c => c.id === event.relatedClubId) : null
+          return (
+            <div key={event.id} className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(2 + ei) }}>
+              <div style={{ padding: '10px 12px' }}>
+                <SectionLabel style={{ marginBottom: resolved ? 4 : 6 }}>{event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}</SectionLabel>
+                {resolved ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{chosenLabel}</span>
+                  </div>
+                ) : (
+                  <>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 5, lineHeight: 1.3 }}>{event.title}</p>
+                    <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: 8, whiteSpace: 'pre-line' }}>{event.body}</p>
+                    {(relatedPlayer || relatedClub) && (
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                        {relatedPlayer && <span style={{ fontSize: 11, background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.3)', borderRadius: 20, padding: '3px 8px', color: 'var(--accent)', fontWeight: 600 }}>{relatedPlayer.firstName} {relatedPlayer.lastName} · Styrka {Math.round(relatedPlayer.currentAbility)}</span>}
+                        {relatedClub && <span style={{ fontSize: 11, background: 'rgba(126,179,212,0.10)', border: '1px solid rgba(126,179,212,0.25)', borderRadius: 20, padding: '3px 8px', color: 'var(--ice)', fontWeight: 600 }}>{relatedClub.name}</span>}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      {event.choices.map((choice: EventChoice) => (
+                        <button key={choice.id} onClick={() => handleChoice(event.id, choice.id, choice.label)}
+                          style={{ position: 'relative', zIndex: 1, width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
+                          {choice.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )
+        })}
+
+        {/* Presskonferens — tidskritisk, direkt efter events */}
+        {(() => {
+          const pc = game.pendingPressConference
+          if (!pc) return null
+          const pcResolved = resolvedEventIds.has(pc.id)
+          const pcChosenLabel = chosenLabels[pc.id]
+          return (
+            <div className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(4) }}>
+              <div style={{ padding: '10px 12px' }}>
+                <SectionLabel style={{ marginBottom: pcResolved ? 4 : 6 }}>🎤 PRESSKONFERENS</SectionLabel>
+                {pcResolved ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{pcChosenLabel}</span>
+                  </div>
+                ) : (
+                  <>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{pc.title}</p>
+                    <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, fontStyle: 'italic' }}>{pc.body}</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      {pc.choices.map((choice: EventChoice) => (
+                        <button key={choice.id} onClick={() => handleChoice(pc.id, choice.id, choice.label)}
+                          style={{ width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
+                          {choice.label}
+                          {choice.subtitle && <span style={{ display: 'block', fontSize: 10, color: 'var(--text-muted)', fontWeight: 400, marginTop: 2 }}>{choice.subtitle}</span>}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )
+        })()}
+
         {/* Media */}
         {(() => {
           const headlineItem = game.inbox
@@ -338,7 +413,7 @@ export function GranskaScreen() {
             : journalist?.persona === 'sensationalist' ? 'Sensationalistisk'
             : journalist?.persona === 'analytical' ? 'Analytisk' : null
           return (
-            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(2) }}>
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(5) }}>
               <SectionLabel style={{ marginBottom: 6 }}>📰 MEDIA</SectionLabel>
               {journalist && (
                 <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>
@@ -368,7 +443,7 @@ export function GranskaScreen() {
 
         {/* Nyckelmoment */}
         {keyMoments.length > 0 && (
-          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(3) }}>
+          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(6) }}>
             <SectionLabel style={{ marginBottom: 8 }}>NYCKELMOMENT</SectionLabel>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {keyMoments.map((e, i) => {
@@ -406,81 +481,6 @@ export function GranskaScreen() {
             </div>
           )
         })()}
-
-        {/* Presskonferens */}
-        {(() => {
-          const pc = game.pendingPressConference
-          if (!pc) return null
-          const pcResolved = resolvedEventIds.has(pc.id)
-          const pcChosenLabel = chosenLabels[pc.id]
-          return (
-            <div className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(4) }}>
-              <div style={{ padding: '10px 12px' }}>
-                <SectionLabel style={{ marginBottom: pcResolved ? 4 : 6 }}>🎤 PRESSKONFERENS</SectionLabel>
-                {pcResolved ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
-                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{pcChosenLabel}</span>
-                  </div>
-                ) : (
-                  <>
-                    <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{pc.title}</p>
-                    <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, fontStyle: 'italic' }}>{pc.body}</p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                      {pc.choices.map((choice: EventChoice) => (
-                        <button key={choice.id} onClick={() => handleChoice(pc.id, choice.id, choice.label)}
-                          style={{ width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
-                          {choice.label}
-                          {choice.subtitle && <span style={{ display: 'block', fontSize: 10, color: 'var(--text-muted)', fontWeight: 400, marginTop: 2 }}>{choice.subtitle}</span>}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )
-        })()}
-
-        {/* Events */}
-        {pendingEvents.map((event, ei) => {
-          const resolved = resolvedEventIds.has(event.id)
-          const chosenLabel = chosenLabels[event.id]
-          const relatedPlayer = event.relatedPlayerId ? game.players.find(p => p.id === event.relatedPlayerId) : null
-          const relatedClub = event.relatedClubId ? game.clubs.find(c => c.id === event.relatedClubId) : null
-          return (
-            <div key={event.id} className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(5 + ei) }}>
-              <div style={{ padding: '10px 12px' }}>
-                <SectionLabel style={{ marginBottom: resolved ? 4 : 6 }}>{event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}</SectionLabel>
-                {resolved ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
-                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{chosenLabel}</span>
-                  </div>
-                ) : (
-                  <>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 5, lineHeight: 1.3 }}>{event.title}</p>
-                    <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: 8, whiteSpace: 'pre-line' }}>{event.body}</p>
-                    {(relatedPlayer || relatedClub) && (
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-                        {relatedPlayer && <span style={{ fontSize: 11, background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.3)', borderRadius: 20, padding: '3px 8px', color: 'var(--accent)', fontWeight: 600 }}>{relatedPlayer.firstName} {relatedPlayer.lastName} · Styrka {Math.round(relatedPlayer.currentAbility)}</span>}
-                        {relatedClub && <span style={{ fontSize: 11, background: 'rgba(126,179,212,0.10)', border: '1px solid rgba(126,179,212,0.25)', borderRadius: 20, padding: '3px 8px', color: 'var(--ice)', fontWeight: 600 }}>{relatedClub.name}</span>}
-                      </div>
-                    )}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                      {event.choices.map((choice: EventChoice) => (
-                        <button key={choice.id} onClick={() => handleChoice(event.id, choice.id, choice.label)}
-                          style={{ position: 'relative', zIndex: 1, width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
-                          {choice.label}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )
-        })}
       </>
     )
   }
@@ -668,42 +668,45 @@ export function GranskaScreen() {
         <SectionLabel style={{ marginBottom: 8 }}>SKOTTBILD</SectionLabel>
         <div style={{ textAlign: 'center', marginBottom: 8 }}>
           <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: 320, display: 'block', margin: '0 auto' }}>
-            {/* Pitch background */}
-            <rect x="0" y="0" width={W} height={H} fill="var(--bg-surface)" rx="4" />
-            {/* Goal */}
-            <rect x={GOAL_X - 20} y={GOAL_Y - 8} width="40" height="8" fill="var(--border)" />
-            <rect x={GOAL_X - 20} y={GOAL_Y - 8} width="1" height="12" fill="var(--border)" />
-            <rect x={GOAL_X + 19} y={GOAL_Y - 8} width="1" height="12" fill="var(--border)" />
-            {/* Goal area */}
-            <rect x={GOAL_X - 40} y={GOAL_Y} width="80" height="30" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
-            {/* Opponent goal area */}
-            <rect x={GOAL_X - 40} y={H - 30} width="80" height="30" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+            {/* Pitch background — vit för tydlig kontrast mot prickar och text */}
+            <rect x="0" y="0" width={W} height={H} fill="#FFFFFF" stroke="rgba(0,0,0,0.12)" strokeWidth="0.5" rx="4" />
+            {/* Goal (top = motståndarens mål, där vi skjuter mot) */}
+            <rect x={GOAL_X - 20} y={GOAL_Y - 8} width="40" height="8" fill="rgba(0,0,0,0.25)" />
+            <rect x={GOAL_X - 20} y={GOAL_Y - 8} width="1" height="12" fill="rgba(0,0,0,0.25)" />
+            <rect x={GOAL_X + 19} y={GOAL_Y - 8} width="1" height="12" fill="rgba(0,0,0,0.25)" />
+            {/* Goal area (topp) */}
+            <rect x={GOAL_X - 40} y={GOAL_Y} width="80" height="30" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="1" />
+            {/* Opponent goal area (botten = vårt eget mål, där de skjuter) */}
+            <rect x={GOAL_X - 40} y={H - 30} width="80" height="30" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="1" />
             {/* Center arc */}
-            <ellipse cx={GOAL_X} cy={H} rx="80" ry="50" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+            <ellipse cx={GOAL_X} cy={H} rx="80" ry="50" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
             {/* Center line */}
-            <line x1="0" y1={H/2} x2={W} y2={H/2} stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="3,3" />
+            <line x1="0" y1={H/2} x2={W} y2={H/2} stroke="rgba(0,0,0,0.2)" strokeWidth="1" strokeDasharray="3,3" />
+            {/* Side labels */}
+            <text x={W - 4} y={GOAL_Y + 22} fontSize="8" fill="rgba(0,0,0,0.45)" textAnchor="end" fontWeight="600" letterSpacing="1">MOTSTÅNDARMÅL</text>
+            <text x={W - 4} y={H - 8} fontSize="8" fill="rgba(0,0,0,0.45)" textAnchor="end" fontWeight="600" letterSpacing="1">VÅRT MÅL</text>
             {/* Shot dots */}
             {dots.map((d, i) => (
               <g key={i}>
                 <circle
                   cx={d.x} cy={d.y}
                   r={d.kind === 'goal' ? 6 : 4}
-                  fill={d.kind === 'goal' ? 'rgba(90,154,74,0.85)' : d.kind === 'save' ? 'rgba(196,122,58,0.7)' : 'rgba(255,255,255,0.2)'}
-                  stroke={d.kind === 'goal' ? 'rgba(90,154,74,1)' : d.kind === 'save' ? 'rgba(196,122,58,1)' : 'rgba(255,255,255,0.4)'}
+                  fill={d.kind === 'goal' ? 'rgba(90,154,74,0.85)' : d.kind === 'save' ? 'rgba(196,122,58,0.7)' : 'rgba(0,0,0,0.15)'}
+                  stroke={d.kind === 'goal' ? 'rgba(90,154,74,1)' : d.kind === 'save' ? 'rgba(196,122,58,1)' : 'rgba(0,0,0,0.3)'}
                   strokeWidth="1"
                 />
                 {d.label && (() => {
                   const angle = (d.label.charCodeAt(0) % 8) * (Math.PI / 4)
                   const lx = d.x + Math.cos(angle) * 12
                   const ly = d.y + Math.sin(angle) * 12 + 2
-                  return <text x={lx} y={ly} fontSize="7" fill="rgba(255,255,255,0.7)">{d.label}</text>
+                  return <text x={lx} y={ly} fontSize="7" fill="rgba(0,0,0,0.55)">{d.label}</text>
                 })()}
               </g>
             ))}
             {/* Opponent goal at bottom */}
-            <rect x={GOAL_X - 20} y={H - 8} width="40" height="8" fill="var(--border)" />
-            <rect x={GOAL_X - 20} y={H - 12} width="1" height="12" fill="var(--border)" />
-            <rect x={GOAL_X + 19} y={H - 12} width="1" height="12" fill="var(--border)" />
+            <rect x={GOAL_X - 20} y={H - 8} width="40" height="8" fill="rgba(0,0,0,0.25)" />
+            <rect x={GOAL_X - 20} y={H - 12} width="1" height="12" fill="rgba(0,0,0,0.25)" />
+            <rect x={GOAL_X + 19} y={H - 12} width="1" height="12" fill="rgba(0,0,0,0.25)" />
             {/* Opponent shot dots */}
             {oppDots.map((d, i) => (
               <circle
@@ -711,10 +714,10 @@ export function GranskaScreen() {
                 cx={Math.max(10, Math.min(W - 10, d.x))}
                 cy={Math.max(10, Math.min(H - 8, d.y))}
                 r={d.kind === 'goal' ? 5 : 3}
-                fill={d.kind === 'goal' ? 'rgba(176,80,64,0.6)' : d.kind === 'save' ? 'rgba(196,122,58,0.4)' : 'rgba(255,255,255,0.1)'}
-                stroke={d.kind === 'goal' ? 'rgba(176,80,64,0.9)' : 'rgba(255,255,255,0.2)'}
+                fill={d.kind === 'goal' ? 'rgba(176,80,64,0.6)' : d.kind === 'save' ? 'rgba(196,122,58,0.4)' : 'rgba(0,0,0,0.1)'}
+                stroke={d.kind === 'goal' ? 'rgba(176,80,64,0.9)' : 'rgba(0,0,0,0.25)'}
                 strokeWidth="1"
-                opacity="0.6"
+                opacity="0.7"
               />
             ))}
           </svg>
@@ -725,7 +728,7 @@ export function GranskaScreen() {
           {[
             { color: 'var(--success)', label: `Mål (${scoredCount})` },
             { color: 'var(--accent)', label: `Räddad (${savedCount})` },
-            { color: 'rgba(255,255,255,0.3)', label: `Miss (${missCount})` },
+            { color: 'rgba(0,0,0,0.3)', label: `Miss (${missCount})` },
           ].map(l => (
             <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: l.color }} />
