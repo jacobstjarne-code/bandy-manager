@@ -201,17 +201,33 @@ const reason = pendingScreen ? (REASON_MAP[pendingScreen] ?? 'Slutför pågåend
 
 ---
 
-## 10. Enum-value ≠ key i map-konstant (TypeScript skyddar inte mot legacy-strängar)
+## 10. `as`-cast till enum från sträng — bypassar TypeScript-skyddet
 
-**Mönster:** `TypeError: Cannot read properties of undefined (reading 'X')` där X är en property på ett objekt från en map-lookup. Koden gör `MAP[someValue].X` och `MAP[someValue]` är `undefined`.
+**Mönster:** TypeError vid runtime: "Cannot read properties of undefined (reading 'X')" där X är en property på en map-lookup (t.ex. `ARCHETYPE_MULTIPLIERS[archetype][attr]`). Felet uppstår långt från där rotorsaken ligger.
 
-**Rotorsak:** En variabel är typad som `SomeEnum` men innehåller en raw sträng som inte matchar enum-värdet. TypeScript validerar inte satta strängar med `as SomeType`-casts, och savegame-JSON kan ha legacy-värden från när enum-nycklar stavades annorlunda.
+**Rotorsak:** Någon har skrivit `'MinString' as MinEnum` istället för att använda enum-värdet direkt. TypeScript godtar detta utan varning — as-cast är en "litar på mig"-assertion, inte en check. Vid runtime är strängen INTE ett enum-värde, bara en vanlig sträng som inte matchar någon key i parallella map-konstanter.
 
-**Fix:** (1) Sök alla ställen där enum-typen sätts explicit (`'EnumName' as Player['field']`) — byt till `SomeEnum.Value`. (2) Lägg defensiv guard i map-läsningen: `if (!MAP[value]) return fallback`. Guarden ska stå kvar permanent som skydd mot framtida JSON-import.
+Specifikt fall: `PlayerArchetype.TwoWaySkater = 'twoWaySkater'` (camelCase enum-värde), men två callsites hade hardkodat `'TwoWaySkater' as PlayerArchetype` (PascalCase sträng). `ARCHETYPE_MULTIPLIERS['TwoWaySkater']` = undefined, sen försök läsa `.skating` på undefined = krasch.
 
-**Känn igen:** Signalen är alltid `undefined (reading 'X')` där X är en nyckel på ett objekt — inte en primitiv. Kontrollera map-lookup ett steg upp. Grep efter `as Player['archetype']` eller liknande casts i filen.
+**Fix:** Ersätt rå-stringen med enum-värdet:
+```ts
+// Fel
+archetype: 'TwoWaySkater' as PlayerArchetype
 
-**Historik:** Sprint 22.6 — `'TwoWaySkater'` (PascalCase) i `seasonEndProcessor.ts:890` och `matchSimProcessor.ts:35`, enum-värdet är `'twoWaySkater'` (camelCase). Hittades via stress-test 10×5 (56 160 varningar per körning).
+// Rätt
+archetype: PlayerArchetype.TwoWaySkater
+```
+
+Plus: defensiv guard i map-lookup med console.warn så framtida diskrepans rapporteras tyst istället för att krascha.
+
+**Känn igen:** `as EnumName`-mönster i kod. Särskilt farligt när enum-värdena är camelCase men utvecklare skriver PascalCase strängar av gammal vana (eller tvärtom).
+
+**Grep-kommando för jakt:**
+```bash
+grep -rn "' as \(PlayerArchetype\|PlayerPosition\|ClubStyle\|TacticMentality\)" src/ --include="*.ts" --include="*.tsx"
+```
+
+**Historik:** Hittat av stress-test-infrastruktur 2026-04-20 (BUG-STRESS-01). 2 callsites: `seasonEndProcessor.ts:890` och `matchSimProcessor.ts:35`. Fixades i Sprint 22.6.
 
 ---
 
