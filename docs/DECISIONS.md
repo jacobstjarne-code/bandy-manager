@@ -99,4 +99,6 @@ AI-klubbar: ingen mekanism. Kan ha negativ ekonomi utan konsekvens. Game-design 
 
 **Konsekvens:** Managed club har nu hard floor på -2 MSEK. Stress-test kan inte längre driftas obegränsat i negativ ekonomi — kommer triggar game-over och säsongen avslutas. Invariant `finance` i stress-test bör ändras: acceptera managed-finances ned till -2 MSEK som giltig, inte som bugg.
 
+**Resolution (Sprint 22.9):** Implementerat. `evaluateFinanceStatus(finances)` i `economyService.ts` — tre trösklar, ingen once-per-season-logik (hanteras av call site). `financeWarningGivenThisSeason` i SaveGame reset varje säsongsstart. Invariant uppdaterad: −2M utan managerFired = crash; −2M med managerFired = warn. Stress-test: `finance: 0 crashes` i 10×10. 99/100 säsonger avklarade.
+
 **Resolution (Sprint 22.6):** Rotorsak identifierad: `seasonEndProcessor.ts:890` och `matchSimProcessor.ts:35` satte `archetype: 'TwoWaySkater' as Player['archetype']` — PascalCase literal. Enum-värdet är `'twoWaySkater'` (camelCase). Fix: importerade `PlayerArchetype`, ersatte raw-sträng med `PlayerArchetype.TwoWaySkater`. console.warn borttagen. Defensiv guard kvar.

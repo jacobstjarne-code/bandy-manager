@@ -29,7 +29,7 @@ import { updatePlayerMatchStats } from './processors/statsProcessor'
 import { applyRoundDevelopment } from '../../domain/services/playerDevelopmentService'
 import { processPlayoffRound } from './processors/playoffProcessor'
 import { processCupRound } from './processors/cupProcessor'
-import { appendFinanceLog, applyFinanceChange } from '../../domain/services/economyService'
+import { appendFinanceLog, applyFinanceChange, evaluateFinanceStatus } from '../../domain/services/economyService'
 import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/services/playerAvailabilityService'
 import { updateTrainerArc } from '../../domain/services/trainerArcService'
 import { checkInObjectives } from '../../domain/services/boardObjectiveService'
@@ -1220,6 +1220,34 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const currentOnboarding = updatedGame.onboardingStep ?? 0
   if (currentOnboarding < 4 && justCompletedManagedFixture) {
     updatedGame = { ...updatedGame, onboardingStep: currentOnboarding + 1 }
+  }
+
+  // ── Per-round bankruptcy check (BUG-STRESS-05) ───────────────────────────────
+  {
+    const managedClubCurrent = updatedGame.clubs.find(c => c.id === updatedGame.managedClubId)
+    if (managedClubCurrent) {
+      const finStatus = evaluateFinanceStatus(managedClubCurrent.finances)
+      const warnedThisSeason = updatedGame.financeWarningGivenThisSeason ?? false
+      if (finStatus.status === 'game-over') {
+        updatedGame = { ...updatedGame, managerFired: true }
+      } else if ((finStatus.status === 'license-denial' || finStatus.status === 'warning') && !warnedThisSeason) {
+        const isCritical = finStatus.status === 'license-denial'
+        updatedGame = {
+          ...updatedGame,
+          financeWarningGivenThisSeason: true,
+          inbox: [...updatedGame.inbox, {
+            id: `inbox_finance_${finStatus.status}_${updatedGame.currentSeason}_${nextMatchday}`,
+            date: updatedGame.currentDate,
+            type: InboxItemType.EconomicCrisis,
+            title: isCritical ? '🚨 KRITISK: Licensen i fara' : '⚠️ Ekonomisk varning',
+            body: isCritical
+              ? `Kassan är ${managedClubCurrent.finances.toLocaleString('sv-SE')} kr. Klubben riskerar att förlora licensen. Nödåtgärder krävs omedelbart.`
+              : `Kassan är ${managedClubCurrent.finances.toLocaleString('sv-SE')} kr. Klubben närmar sig farlig nivå. Kontrollera utgifterna.`,
+            isRead: false,
+          }],
+        }
+      }
+    }
   }
 
   return { game: updatedGame, roundPlayed: nextMatchday, seasonEnded: false, pendingEvents: allNewEvents, hasManagedCupMatch: hasManagedCupPending }

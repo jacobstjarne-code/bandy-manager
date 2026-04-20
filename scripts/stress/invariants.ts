@@ -115,11 +115,24 @@ function checkFinance(game: SaveGame): InvariantFinding[] {
   if (!managedClub) return findings
 
   const cash = managedClub.finances
-  if (cash < -1_000_000) {
+  if (cash < -2_000_000 && !game.managerFired) {
+    // < -2M without game-over = bug (evaluateFinanceStatus should have set managerFired)
     findings.push({
       name: 'finance',
       severity: 'crash',
-      message: `Managed club cash=${cash.toLocaleString('sv-SE')} kr (under -1 000 000, bankrutt ej triggad)`,
+      message: `Managed club cash=${cash.toLocaleString('sv-SE')} kr (under -2 000 000 utan game-over — konkurs-mekanik ej triggad)`,
+    })
+  } else if (cash < -2_000_000 && game.managerFired) {
+    findings.push({
+      name: 'finance',
+      severity: 'warn',
+      message: `Managed club cash=${cash.toLocaleString('sv-SE')} kr (game-over korrekt triggad via managerFired)`,
+    })
+  } else if (cash < -1_000_000) {
+    findings.push({
+      name: 'finance',
+      severity: 'warn',
+      message: `Managed club cash=${cash.toLocaleString('sv-SE')} kr (under -1 000 000, licens-varning ska ha skickats)`,
     })
   }
   if (cash > 50_000_000) {

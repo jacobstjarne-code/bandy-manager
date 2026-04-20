@@ -1134,6 +1134,8 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     schoolAssignmentThisSeason: undefined,
     // DREAM-002: reset crisis state at season rollover if resolved
     economicCrisisState: game.economicCrisisState?.phase === 'resolved' ? undefined : game.economicCrisisState,
+    // Reset per-season finance warning flag so new season can trigger fresh warnings
+    financeWarningGivenThisSeason: false,
   }
 
   return { game: { ...updatedGame, allTimeRecords: updateAllTimeRecords(updatedGame, seasonSummary) }, roundPlayed: null, seasonEnded: true }

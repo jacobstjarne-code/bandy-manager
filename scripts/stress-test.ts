@@ -141,7 +141,7 @@ async function main(): Promise<void> {
           roundPlayed = result.roundPlayed
           ring.push(`advance season=${season} round=${roundPlayed ?? 'season-end'} seed=${stepSeed - 1}`)
 
-          if (result.seasonEnded) {
+          if (result.seasonEnded || result.game.managerFired) {
             seasonDone = true
           }
         } catch (e) {

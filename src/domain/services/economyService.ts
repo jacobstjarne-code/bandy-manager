@@ -47,6 +47,25 @@ export function applyFinanceChange(
   )
 }
 
+// ── Bankruptcy thresholds ─────────────────────────────────────────────────────
+
+export type FinanceStatus =
+  | { status: 'healthy' }
+  | { status: 'warning' }
+  | { status: 'license-denial' }
+  | { status: 'game-over' }
+
+/**
+ * Maps managed club cash to a finance status tier.
+ * Call site is responsible for deduplication (once-per-season logic).
+ */
+export function evaluateFinanceStatus(finances: number): FinanceStatus {
+  if (finances < -2_000_000) return { status: 'game-over' }
+  if (finances < -1_000_000) return { status: 'license-denial' }
+  if (finances < -500_000) return { status: 'warning' }
+  return { status: 'healthy' }
+}
+
 /**
  * Appends a FinanceEntry to the log, capping it at FINANCE_LOG_MAX entries.
  */
