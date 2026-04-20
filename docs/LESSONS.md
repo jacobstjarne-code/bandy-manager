@@ -254,3 +254,19 @@ grep -rn "' as \(PlayerArchetype\|PlayerPosition\|ClubStyle\|TacticMentality\)" 
 **Känn igen:** Stress-test visar gradvis degradering 2–3 säsonger i. Trupp-storlek minskar varje säsong med ingen uppgång. `positionCoverage` eller `squadSize` invariant-kraschar vid säsong 2–4.
 
 **Historik:** Sprint 22.7 (BUG-STRESS-02). Fixades med safety-net cap=14 + position-aware replenishment.
+
+---
+
+## 13. Fix-villkor kan missa edge-case där fixen inte triggas
+
+**Mönster:** En fix löser 90% av fallen. Resterande 10% är ett scenario där fix-villkoret inte uppfylls — och det scenariot orsakar samma bugg igen.
+
+**Rotorsak:** Sprint 22.7 lade `if (squadSize >= target) return club` — korrekt för total-storlek men ignorerar position-obalans. AI-transfers kan ta bort forwards från en klubb som har 20+ spelare totalt. Replenishment triggas aldrig (stopp-villkoret slår till), forward-count nås ≠ minimum.
+
+**Fix:** Separera triggers. `needsMore = squadSize < target` OCH `needsRebalance = any position < minimum`. Exit bara om `!needsMore && !needsRebalance`. `needed = max(size-shortfall, position-shortfall)`.
+
+**Känn igen:** Stress-test: positionCoverage-kraschar kvarstår men sker nu senare (säsong 5-9 istf 2-3). Positiv progress men inte 0. Mönster: "fix reducerar kraschfrekvens men eliminerar inte" = fix-villkor för brett eller för smalt.
+
+**Check att göra efter varje fix:** Identifiera minst ett scenario där fixen INTE triggas och verifiera att det scenariot inte orsakar ny bugg.
+
+**Historik:** Sprint 22.8 (BUG-STRESS-03). `positionCoverage: 0 violations` efter fix.

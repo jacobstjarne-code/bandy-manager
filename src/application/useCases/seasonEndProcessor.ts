@@ -890,11 +890,28 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     const isManaged = club.id === game.managedClubId
     const target = isManaged ? 14 : 20  // Managed: safety-net at 14 (bandy minimum), AI: full squad
     const squadSize = club.squadPlayerIds.length
-    if (squadSize >= target) return club
 
-    const needed = target - squadSize
-    const newIds: string[] = []
     const currentPlayers = playersAfterLicense.filter(p => club.squadPlayerIds.includes(p.id))
+    const counts: Record<PlayerPosition, number> = {
+      [PlayerPosition.Goalkeeper]: 0,
+      [PlayerPosition.Defender]:   0,
+      [PlayerPosition.Half]:       0,
+      [PlayerPosition.Midfielder]: 0,
+      [PlayerPosition.Forward]:    0,
+    }
+    for (const p of currentPlayers) { if (counts[p.position] !== undefined) counts[p.position]++ }
+
+    const needsMore = squadSize < target
+    const needsRebalance = (Object.keys(POSITION_MINIMUMS) as PlayerPosition[])
+      .some(pos => counts[pos] < POSITION_MINIMUMS[pos])
+
+    if (!needsMore && !needsRebalance) return club
+
+    const shortfall = (Object.keys(POSITION_MINIMUMS) as PlayerPosition[])
+      .reduce((sum, pos) => sum + Math.max(0, POSITION_MINIMUMS[pos] - counts[pos]), 0)
+    const needed = Math.max(needsMore ? target - squadSize : 0, shortfall)
+
+    const newIds: string[] = []
     const workingRoster = [...currentPlayers]
 
     for (let i = 0; i < needed; i++) {
