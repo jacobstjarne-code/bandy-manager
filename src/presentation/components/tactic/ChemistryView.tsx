@@ -79,18 +79,18 @@ export function ChemistryView({ tactic, players, chemistryStats }: ChemistryView
       </svg>
 
       {/* Legend */}
-      <div style={{ marginTop: 10, padding: '8px 10px', background: 'var(--bg-dark-surface)', borderRadius: 4, border: '0.5px solid var(--border)' }}>
+      <div style={{ marginTop: 10, padding: '8px 10px', background: 'var(--bg-elevated)', borderRadius: 4, border: '0.5px solid var(--border)' }}>
         <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.5px', color: 'var(--text-muted)', marginBottom: 6 }}>
           KEMIN I LAGET
         </p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <div style={{ width: 20, height: 2, background: 'var(--success)', flexShrink: 0 }} />
-            <span style={{ fontSize: 10, color: 'var(--text-light-secondary)' }}>Stark koppling</span>
+            <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Stark koppling</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <div style={{ width: 20, height: 2, background: 'var(--danger)', flexShrink: 0, borderBottom: '1px dashed var(--danger)' }} />
-            <span style={{ fontSize: 10, color: 'var(--text-light-secondary)' }}>Svag koppling</span>
+            <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Svag koppling</span>
           </div>
         </div>
       </div>
@@ -104,7 +104,7 @@ export function ChemistryView({ tactic, players, chemistryStats }: ChemistryView
           <div key={`${pair.playerId1}-${pair.playerId2}`} style={{
             padding: '6px 10px', fontSize: 11, borderBottom: '0.5px solid var(--border)', display: 'flex', alignItems: 'center', gap: 6,
           }}>
-            <span style={{ fontFamily: 'var(--font-display)', color: 'var(--text-light)' }}>
+            <span style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
               {p1.lastName} × {p2.lastName}
             </span>
             <span style={{ color: 'var(--text-muted)', fontSize: 10 }}>

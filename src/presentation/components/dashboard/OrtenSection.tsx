@@ -7,10 +7,15 @@ interface Props {
   currentMatchday: number
 }
 
-export function OrtenSection({ game, currentMatchday: _currentMatchday }: Props) {
-  const moments = game.recentMoments ?? []
-  if (moments.length === 0) return null
-  const visible = moments.slice(0, 3)
+export function OrtenSection({ game, currentMatchday }: Props) {
+  const allMoments = game.recentMoments ?? []
+  // Fräschhetsfönster: visa bara moments från denna eller de 2 senaste omgångarna
+  const fresh = allMoments.filter(m =>
+    m.season === game.currentSeason &&
+    currentMatchday - m.matchday <= 2
+  )
+  if (fresh.length === 0) return null
+  const visible = fresh.slice(0, 3)
 
   return (
     <div style={{ margin: '8px 0' }}>
