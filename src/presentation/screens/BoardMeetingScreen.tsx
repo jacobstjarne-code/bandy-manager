@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
-import { BOARD_QUOTES, BOARD_CONTEXT_QUOTES, BOARD_MEETING_OPENERS } from '../../domain/data/boardData'
-import type { BoardPersonality } from '../../domain/entities/SaveGame'
+import { MEETING_OPENERS, BOARD_QUOTES as CURATED_QUOTES, BOARD_CHARACTERS } from '../../domain/data/boardQuotes'
+import type { BoardSituation } from '../../domain/data/boardQuotes'
 
 export function BoardMeetingScreen() {
   const navigate = useNavigate()
@@ -54,66 +54,30 @@ export function BoardMeetingScreen() {
   }
   const gameIdSeed = hashGameId(game!.id ?? 'default')
 
-  function getContextualQuote(personality: BoardPersonality, memberIndex: number): string {
-    const baseIdx = (gameIdSeed + game!.currentSeason * 7 + latestCompletedRound + memberIndex * 3)
-    const ctx = BOARD_CONTEXT_QUOTES[personality]
-    const lastSeasonGood = lastSummary?.expectationVerdict === 'exceeded' || lastSummary?.expectationVerdict === 'met'
-    const lastSeasonBad = lastSummary?.expectationVerdict === 'failed'
+  // Curated opener — plain narrative, deterministic
+  const curatedOpener = MEETING_OPENERS[(gameIdSeed + latestCompletedRound) % MEETING_OPENERS.length]
 
-    // Build a pool: context-specific quotes first, then generic quotes
-    let contextPool: string[] = []
+  // Derive situation from current game state
+  const situation: BoardSituation = (() => {
+    if (club!.finances < 100000) return 'tight'
+    if (club!.finances > 500000 || myPosition <= 3) return 'good'
+    if ((game.boardObjectives ?? []).length > 0) return 'investment'
+    return 'general'
+  })()
 
-    if (personality === 'supporter') {
-      if (myPosition <= 3) contextPool = ctx.topPosition
-      else if (myPosition >= 9) contextPool = ctx.bottomPosition
-      if (lastSeasonGood) contextPool = [...contextPool, ...ctx.lastSeasonGood]
-      if (lastSeasonBad) contextPool = [...contextPool, ...ctx.lastSeasonBad]
+  // Pick 2 curated quotes, situation-matched, no duplicate characters
+  const situationQuotes = CURATED_QUOTES.filter(q => q.situation === situation)
+  const generalQuotes = CURATED_QUOTES.filter(q => q.situation === 'general')
+  const quotePool = situationQuotes.length >= 2 ? situationQuotes : [...situationQuotes, ...generalQuotes]
+  const usedChars = new Set<string>()
+  const selectedQuotes: typeof CURATED_QUOTES = []
+  const quoteSeed = gameIdSeed + latestCompletedRound * 13
+  for (let i = 0; i < quotePool.length && selectedQuotes.length < 2; i++) {
+    const q = quotePool[(quoteSeed + i) % quotePool.length]
+    if (!usedChars.has(q.character)) {
+      usedChars.add(q.character)
+      selectedQuotes.push(q)
     }
-
-    if (personality === 'ekonom') {
-      if (club!.finances > 500000) contextPool = ctx.goodEconomy
-      else if (club!.finances < 50000) contextPool = ctx.badEconomy
-      if (sponsors.length < 2) contextPool = [...contextPool, ...ctx.fewSponsors]
-      if (lastSeasonGood) contextPool = [...contextPool, ...ctx.lastSeasonGood]
-      if (lastSeasonBad) contextPool = [...contextPool, ...ctx.lastSeasonBad]
-    }
-
-    if (personality === 'traditionalist') {
-      const formation = club!.activeTactic?.formation
-      if (formation && formation !== '3-3-4') contextPool = ctx.nonTraditionalFormation
-      else contextPool = ctx.traditionalFormation
-      if (lastSeasonGood) contextPool = [...contextPool, ...ctx.lastSeasonGood]
-      if (lastSeasonBad) contextPool = [...contextPool, ...ctx.lastSeasonBad]
-    }
-
-    if (personality === 'modernist') {
-      if (game!.communityActivities?.bandyplay) contextPool = ctx.hasCommunityActivities
-      else contextPool = ctx.noCommunityActivities
-      if (lastSeasonGood) contextPool = [...contextPool, ...ctx.lastSeasonGood]
-      if (lastSeasonBad) contextPool = [...contextPool, ...ctx.lastSeasonBad]
-    }
-
-    // Combine: 60% chance of context quote if available, else generic
-    const genericQuotes = BOARD_QUOTES[personality]
-    if (contextPool.length > 0 && (baseIdx % 5 < 3)) {
-      return contextPool[baseIdx % contextPool.length]
-    }
-    return genericQuotes[baseIdx % genericQuotes.length]
-  }
-
-  // Board meeting opener — deterministic based on season
-  const openerTemplate = BOARD_MEETING_OPENERS[game.currentSeason % BOARD_MEETING_OPENERS.length]
-  const ordforande = boardMembers.find(m => m.role === 'ordförande')
-  const kassor = boardMembers.find(m => m.role === 'kassör')
-  const openerText = openerTemplate
-    .replace('{ordförande}', ordforande?.name ?? 'Ordföranden')
-    .replace('{kassör}', kassor?.name ?? 'Kassören')
-
-  const personalityLabel: Record<BoardPersonality, string> = {
-    supporter: 'supporter',
-    ekonom: 'ekonom',
-    traditionalist: 'traditionalist',
-    modernist: 'modernist',
   }
 
   function handleStart() {
@@ -153,7 +117,7 @@ export function BoardMeetingScreen() {
       overflow: 'auto',
       background: 'var(--bg)',
     }}>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px 120px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px 24px' }}>
       {/* Header */}
       <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 4 }}>
         Styrelsemöte
@@ -213,7 +177,7 @@ export function BoardMeetingScreen() {
             const member = boardMembers.find(m => m.name === obj.ownerId)
             const roleLabel = member?.role === 'ordförande' ? 'Ordförande' : member?.role === 'kassör' ? 'Kassör' : 'Ledamot'
             return (
-              <div key={obj.id} className="card-round" style={{ padding: '10px 14px', marginBottom: 8 }}>
+              <div key={obj.id} className="card-sharp" style={{ padding: '10px 12px', marginBottom: 6 }}>
                 <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5, fontFamily: 'var(--font-display)', marginBottom: 6 }}>
                   "{obj.description.split(': "')[1]?.replace(/"$/, '') ?? obj.description}"
                 </p>
@@ -321,7 +285,7 @@ export function BoardMeetingScreen() {
       })()}
 
       {/* Styrelsemedlemmarnas röster */}
-      {boardMembers.length > 0 && (
+      {selectedQuotes.length > 0 && (
         <div className="card-sharp" style={{
           marginBottom: 12, padding: '10px 14px',
           background: 'rgba(196,122,58,0.04)',
@@ -330,43 +294,30 @@ export function BoardMeetingScreen() {
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
             💬 Styrelsemedlemmarna om läget
           </p>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16, fontStyle: 'italic', fontFamily: 'var(--font-display)' }}>
-            {openerText}
+          <p style={{ fontSize: 12, color: 'var(--text-primary)', marginBottom: 16, fontStyle: 'italic', fontFamily: 'var(--font-display)' }}>
+            {curatedOpener}
           </p>
-          {(() => {
-            const usedQuotes = new Set<string>()
-            // Skip ordföranden i citat-listan — de talar redan i openerText
-            const quotingMembers = boardMembers.filter(m => m.role !== 'ordförande')
-            return quotingMembers.map((member, i) => {
-            let quote = getContextualQuote(member.personality, i)
-            // If same quote already used, try next index
-            let attempts = 0
-            while (usedQuotes.has(quote) && attempts < 5) {
-              attempts++
-              quote = getContextualQuote(member.personality, i + attempts * 7)
-            }
-            usedQuotes.add(quote)
-            if (!quote) return null
+          {selectedQuotes.map((quote, i) => {
+            const char = BOARD_CHARACTERS[quote.character]
             return (
-              <div key={member.name + i} style={{
-                marginBottom: i < quotingMembers.length - 1 ? 8 : 0,
-                paddingBottom: i < quotingMembers.length - 1 ? 8 : 0,
-                borderBottom: i < quotingMembers.length - 1 ? '1px solid var(--border)' : 'none',
+              <div key={quote.character} style={{
+                marginBottom: i < selectedQuotes.length - 1 ? 8 : 0,
+                paddingBottom: i < selectedQuotes.length - 1 ? 8 : 0,
+                borderBottom: i < selectedQuotes.length - 1 ? '1px solid var(--border)' : 'none',
               }}>
                 <p style={{
-                  fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6,
+                  fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6,
                   fontStyle: 'italic', marginBottom: 6, fontFamily: 'var(--font-display)',
                 }}>
-                  {quote}
+                  {quote.quote}
                 </p>
                 <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                  <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{member.name}</span>
-                  {' · '}{member.role}{' · '}{personalityLabel[member.personality]}
+                  <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{char.name}</span>
+                  {' · '}{char.role}
                 </p>
               </div>
             )
-          })
-          })()}
+          })}
         </div>
       )}
 
