@@ -195,7 +195,7 @@ export function simulateRound(
     )
     roundMatchWeathers.push(matchWeather)
 
-    if (matchWeather.effects.cancelled) {
+    if (matchWeather.effects.cancelled && !fixture.isCup) {
       const opponentId = fixture.homeClubId === game.managedClubId ? fixture.awayClubId : fixture.homeClubId
       const opponentClub = game.clubs.find(c => c.id === opponentId)
       const isManaged = fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId

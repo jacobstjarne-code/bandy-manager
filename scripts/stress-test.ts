@@ -164,6 +164,7 @@ async function main(): Promise<void> {
             crashReason = `invariant:${f.name} — ${f.message}`
             crashSeason = season
             crashRound  = roundPlayed
+
             writeDump(seedIdx, season, roundPlayed, crashReason, undefined, game, ring.snapshot())
             seedCrashed    = true
             invariantCrash = true

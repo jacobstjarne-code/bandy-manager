@@ -371,6 +371,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   )
   const newFixtures = [...leagueFixtures, ...newCupFixtures]
 
+
   const newLeague = {
     ...game.league,
     id: `league_${nextSeason}`,

@@ -270,3 +270,17 @@ grep -rn "' as \(PlayerArchetype\|PlayerPosition\|ClubStyle\|TacticMentality\)" 
 **Check att göra efter varje fix:** Identifiera minst ett scenario där fixen INTE triggas och verifiera att det scenariot inte orsakar ny bugg.
 
 **Historik:** Sprint 22.8 (BUG-STRESS-03). `positionCoverage: 0 violations` efter fix.
+
+---
+
+## 14. Asymmetriska state-transitions mellan liga och cup
+
+**Mönster:** En status-transition som är giltig för ligamatcher introduceras generellt och appliceras även på cup-knockout. Buggen syns först säsonger senare när cup-matchen stöter på transitionen.
+
+**Rotorsak:** Väderavbokning sätter `status: Postponed` på fixtures. Ligamatcher klarar `Postponed` — poängen väntar, matchen räknas inte. Cup-knockoutmatcher KAN inte — de måste ha en vinnare för att bracket ska fortsätta. En `Postponed` cup-match orphanar bracketen permanent: `winnerId` förblir `null`, `generateNextCupRound` triggas aldrig, invariant `cupBracket` kraschar.
+
+**Fix:** Explicit fixture-typ-villkor vid state-transitions. Väder-cancel fick `&& !fixture.isCup`. Cup-matcher spelas alltid oavsett väder.
+
+**Känn igen:** Ny feature (väder, skador, utvisningar, force majeure) som lägger till state-transitions på fixtures. Fråga alltid: "Hur hanteras detta i cup-knockout där varje match MÅSTE ha vinnare?" Farliga states för cup: `postponed`, `cancelled`, `abandoned`. Kontrollera mot `generateNextCupRound` och `advancePlayoffRound` — båda förutsätter `winnerId` satt.
+
+**Historik:** Sprint 22.10 (BUG-STRESS-04). `cupBracket: 0 crashes` efter fix. 100/100 säsonger i 10×10.
