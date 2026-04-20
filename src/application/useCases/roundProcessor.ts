@@ -5,6 +5,7 @@ import type { Fixture } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
 import { FixtureStatus, MatchEventType, InboxItemType, PendingScreen, PlayoffStatus, TrainingType, TrainingIntensity } from '../../domain/enums'
 import { getTacticModifiers } from '../../domain/services/tacticModifiers'
+import { getRecommendedFormation } from '../../domain/entities/Formation'
 import { getRivalry } from '../../domain/data/rivalries'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import { calculateStandings } from '../../domain/services/standingsService'
@@ -1247,6 +1248,31 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           }],
         }
       }
+    }
+  }
+
+  // ── Recommendation change inbox (Sprint 23) ──────────────────────────────────
+  // Notify manager when squad changes cause a new formation to be recommended.
+  {
+    const managedSquad = updatedGame.players.filter(p => p.clubId === updatedGame.managedClubId)
+    const newRec = getRecommendedFormation(managedSquad)
+    const prevRec = updatedGame.previousRecommendedFormation
+    if (prevRec && prevRec !== newRec) {
+      updatedGame = {
+        ...updatedGame,
+        previousRecommendedFormation: newRec,
+        inbox: [...updatedGame.inbox, {
+          id: `inbox_rec_formation_${updatedGame.currentSeason}_${nextMatchday}`,
+          date: updatedGame.currentDate,
+          type: InboxItemType.Training,
+          title: '📋 Coachen byter rekommendation',
+          body: `Truppen har förändrats. Coachen rekommenderar nu ${newRec} istället för ${prevRec}.`,
+          isRead: false,
+        }],
+      }
+    } else if (!prevRec) {
+      // First round — just store without notifying
+      updatedGame = { ...updatedGame, previousRecommendedFormation: newRec }
     }
   }
 

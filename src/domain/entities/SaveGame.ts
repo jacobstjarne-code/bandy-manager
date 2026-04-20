@@ -152,6 +152,7 @@ export interface SaveGame {
   licenseReview?: LicenseReview
   licenseWarningCount?: number   // consecutive seasons with warning/continued_review
   financeWarningGivenThisSeason?: boolean  // true once warning/license-denial inbox sent; reset at season end
+  previousRecommendedFormation?: string    // last known coach recommendation; inbox sent when it changes
   communityStanding?: number     // 0-100, starts 50
   communityStandingDelta?: number  // delta since last round (positive = up, negative = down)
   journalistRelationship?: number  // 0-100, starts 50
