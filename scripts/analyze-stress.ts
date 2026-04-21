@@ -8,6 +8,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { accumulateScorelineMinutes } from './stress/scoreline-utils'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const STATS_PATH = resolve(__dirname, 'stress/season_stats.json')
@@ -305,5 +306,245 @@ for (const b of buckets) {
   console.log(`  ${b.label.padEnd(6)}  ${homePct.toFixed(1).padStart(5)}%  ${bar}`)
 }
 console.log(`  (Förväntat: ~53-55% per period — ingen exakt per-bucket-referens)`)
+
+console.log()
+
+// ══════════════════════════════════════════════════════════════════════════════
+// F. UTVISNINGAR × SPELLÄGE × FAS (stress-data)
+// Referens: SCORELINE_REFERENCE.md (bandygrytan 1.1+1.4)
+// ══════════════════════════════════════════════════════════════════════════════
+
+console.log(`\nF. UTVISNINGAR × SPELLÄGE × FAS (stress-data)`)
+console.log(DIV)
+
+// Bandygrytan-referens (från SCORELINE_REFERENCE.md, sektion 1.1):
+//   Ledning 22.5/kmin (1.04x), Jämnt 19.6/kmin (0.91x), Underläge 22.5/kmin (1.04x)
+const FOUL_REF = { leading: 22.5, tied: 19.6, trailing: 22.5 }
+
+type ScorelineStateF = 'leading' | 'tied' | 'trailing'
+const STATE_LABELS_F: Array<[string, ScorelineStateF]> = [
+  ['Ledning', 'leading'], ['Jämnt', 'tied'], ['Underläge', 'trailing'],
+]
+
+function computeStressFoulStats(matches: typeof allMatches) {
+  const stateMinutes: Record<ScorelineStateF, number> = { leading: 0, tied: 0, trailing: 0 }
+  const stateFouls:   Record<ScorelineStateF, number> = { leading: 0, tied: 0, trailing: 0 }
+
+  for (const m of matches) {
+    const { home, away } = accumulateScorelineMinutes(m.goals, 90)
+    stateMinutes.leading  += home.leading  + away.leading
+    stateMinutes.tied     += home.tied     + away.tied
+    stateMinutes.trailing += home.trailing + away.trailing
+
+    for (const s of m.suspensions) {
+      // Classify scoreline at suspension minute using accumulated goals up to that minute
+      let h = 0, a = 0
+      for (const g of m.goals) {
+        // Tie-break: goal at same minute = happened before the suspension
+        if (g.minute <= s.minute) { if (g.team === 'home') h++; else a++ }
+      }
+      const diff = s.team === 'home' ? h - a : a - h
+      const state: ScorelineStateF = diff > 0 ? 'leading' : diff < 0 ? 'trailing' : 'tied'
+      stateFouls[state]++
+    }
+  }
+
+  return { stateMinutes, stateFouls }
+}
+
+const phases_f = [
+  { key: 'regular'       as const, label: 'Grundserie' },
+  { key: 'playoff_qf'   as const, label: 'KVF'        },
+  { key: 'playoff_sf'   as const, label: 'SF'         },
+  { key: 'playoff_final'as const, label: 'Final'      },
+]
+
+// Overall (all phases)
+{
+  const { stateMinutes, stateFouls } = computeStressFoulStats(allMatches)
+  const totalSusp = Object.values(stateFouls).reduce((s, n) => s + n, 0)
+  console.log(`  Totala utvisningar klassificerade: ${totalSusp}`)
+  console.log()
+  console.log(`  ${''.padEnd(12)} ${'Minuter'.padStart(9)} ${'Utvisn'.padStart(9)} ${'Per 1kmin'.padStart(11)} ${'Referens'.padStart(10)} ${'Diff'.padStart(8)}`)
+  console.log('  ' + '─'.repeat(62))
+  for (const [label, state] of STATE_LABELS_F) {
+    const rate = stateMinutes[state] > 0 ? (stateFouls[state] / stateMinutes[state]) * 1000 : 0
+    const ref = FOUL_REF[state]
+    const diff = rate - ref
+    const sign = diff >= 0 ? '+' : ''
+    console.log(
+      `  ${label.padEnd(12)}` +
+      ` ${String(stateMinutes[state]).padStart(9)}` +
+      ` ${String(stateFouls[state]).padStart(9)}` +
+      ` ${rate.toFixed(2).padStart(11)}` +
+      ` ${ref.toFixed(1).padStart(10)}` +
+      ` ${(sign + diff.toFixed(2)).padStart(8)}`,
+    )
+  }
+}
+
+// Per phase
+console.log()
+console.log(`  ${''.padEnd(14)} ${'Grundserie'.padStart(12)} ${'KVF'.padStart(8)} ${'SF'.padStart(8)} ${'Final'.padStart(8)}`)
+console.log('  ' + '─'.repeat(52))
+
+const phaseRates_f: Record<string, Record<ScorelineStateF, number>> = {}
+for (const { key } of phases_f) {
+  const ms = allMatches.filter(m => m.phase === key)
+  const { stateMinutes, stateFouls } = computeStressFoulStats(ms)
+  phaseRates_f[key] = {
+    leading:  stateMinutes.leading  > 0 ? (stateFouls.leading  / stateMinutes.leading)  * 1000 : 0,
+    tied:     stateMinutes.tied     > 0 ? (stateFouls.tied     / stateMinutes.tied)     * 1000 : 0,
+    trailing: stateMinutes.trailing > 0 ? (stateFouls.trailing / stateMinutes.trailing) * 1000 : 0,
+  }
+}
+
+for (const [label, state] of STATE_LABELS_F) {
+  const vals = phases_f.map(({ key }) => {
+    const r = phaseRates_f[key]?.[state] ?? 0
+    return r > 0 ? r.toFixed(2) : '—'
+  })
+  const [v0, ...vRest] = vals
+  console.log(`  ${label.padEnd(14)} ${v0.padStart(12)} ${vRest.map(v => v.padStart(8)).join('')}`)
+}
+
+const matchCounts_f = phases_f.map(({ key }) => allMatches.filter(m => m.phase === key).length)
+console.log(`  ${'(n matcher)'.padEnd(14)} ${String(matchCounts_f[0]).padStart(12)} ${matchCounts_f.slice(1).map(n => String(n).padStart(8)).join('')}`)
+console.log()
+
+{
+  // Interpretation
+  const regRates = phaseRates_f.regular
+  if (regRates) {
+    const leading_rate = regRates.leading, tied_rate = regRates.tied, trailing_rate = regRates.trailing
+    const baseRate = (leading_rate + tied_rate + trailing_rate) / 3
+    const leadRel = baseRate > 0 ? leading_rate / baseRate : 1
+    const trailRel = baseRate > 0 ? trailing_rate / baseRate : 1
+    if (Math.abs(leadRel - 1) < 0.15 && Math.abs(trailRel - 1) < 0.15) {
+      console.log('  → Jämnt fördelat i stress-data (stämmer med bandygrytan-referens).')
+    } else if (trailRel > leadRel) {
+      console.log('  → Underläge dominerar i motor — frustrationsfouls överdrivna.')
+    } else {
+      console.log('  → Avvikelse mot bandygrytan-referens — motor-kalibrering krävs (Sprint 25b).')
+    }
+  }
+  // Check overall total
+  const totalStressSusp = allMatches.reduce((s, m) => s + m.suspensions.length, 0)
+  const avgPerMatch = totalStressSusp / allMatches.length
+  const refAvg = 3.77
+  const diff = avgPerMatch - refAvg
+  const sign = diff >= 0 ? '+' : ''
+  console.log(`  Snitt utvisningar/match: ${avgPerMatch.toFixed(2)} (bandygrytan: ${refAvg}, diff ${sign}${diff.toFixed(2)}) — Gap 3 bekräftat.`)
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// G. STRAFF × SPELLÄGE × FAS (stress-data)
+// Referens: SCORELINE_REFERENCE.md (bandygrytan 1.3)
+// ══════════════════════════════════════════════════════════════════════════════
+
+console.log(`\nG. STRAFF × SPELLÄGE × FAS (stress-data)`)
+console.log(DIV)
+
+// Bandygrytan-referens: ledning 3.04/kmin, jämnt 2.57/kmin, underläge 2.53/kmin
+const PEN_REF = { leading: 3.04, tied: 2.57, trailing: 2.53 }
+
+function computeStressPenaltyStats(matches: typeof allMatches) {
+  const stateMinutes: Record<ScorelineStateF, number> = { leading: 0, tied: 0, trailing: 0 }
+  const statePenalties: Record<ScorelineStateF, number> = { leading: 0, tied: 0, trailing: 0 }
+
+  for (const m of matches) {
+    const { home, away } = accumulateScorelineMinutes(m.goals, 90)
+    stateMinutes.leading  += home.leading  + away.leading
+    stateMinutes.tied     += home.tied     + away.tied
+    stateMinutes.trailing += home.trailing + away.trailing
+
+    for (const g of m.goals.filter(g => g.isPenaltyGoal)) {
+      // Score before this penalty goal: count goals with minute < g.minute
+      let h = 0, a = 0
+      for (const og of m.goals) {
+        if (og.minute < g.minute) { if (og.team === 'home') h++; else a++ }
+      }
+      const diff = g.team === 'home' ? h - a : a - h
+      const state: ScorelineStateF = diff > 0 ? 'leading' : diff < 0 ? 'trailing' : 'tied'
+      statePenalties[state]++
+    }
+  }
+
+  return { stateMinutes, statePenalties }
+}
+
+const totalPenGoals = allMatches.reduce((s, m) => s + m.goals.filter(g => g.isPenaltyGoal).length, 0)
+const totalAllGoals = allMatches.reduce((s, m) => s + m.goals.length, 0)
+const penPct = totalAllGoals > 0 ? (totalPenGoals / totalAllGoals * 100).toFixed(2) : '0'
+
+console.log(`  Totala straffmål: ${totalPenGoals} (${penPct}% av mål)`)
+if (totalPenGoals === 0) {
+  console.log('  → Gap 5 bekräftat: motor producerar inga straffmål. Kräver Sprint 25c.')
+} else {
+  console.log(`  Estimerat antal straffar (÷ 0.70): ~${Math.round(totalPenGoals / 0.70)}`)
+  console.log()
+
+  // Overall
+  {
+    const { stateMinutes, statePenalties } = computeStressPenaltyStats(allMatches)
+    const totalClass = Object.values(statePenalties).reduce((s, n) => s + n, 0)
+    console.log(`  Straffmål klassificerade: ${totalClass}`)
+    console.log()
+    console.log(`  ${''.padEnd(12)} ${'Minuter'.padStart(9)} ${'Straff'.padStart(9)} ${'Per 1kmin'.padStart(11)} ${'Referens'.padStart(10)} ${'Diff'.padStart(8)}`)
+    console.log('  ' + '─'.repeat(62))
+    for (const [label, state] of STATE_LABELS_F) {
+      const rate = stateMinutes[state] > 0 ? (statePenalties[state] / stateMinutes[state]) * 1000 : 0
+      const ref = PEN_REF[state]
+      const diff = rate - ref
+      const sign = diff >= 0 ? '+' : ''
+      console.log(
+        `  ${label.padEnd(12)}` +
+        ` ${String(stateMinutes[state]).padStart(9)}` +
+        ` ${String(statePenalties[state]).padStart(9)}` +
+        ` ${rate.toFixed(3).padStart(11)}` +
+        ` ${ref.toFixed(2).padStart(10)}` +
+        ` ${(sign + diff.toFixed(3)).padStart(8)}`,
+      )
+    }
+  }
+
+  // Per phase
+  console.log()
+  console.log(`  ${''.padEnd(14)} ${'Grundserie'.padStart(12)} ${'KVF'.padStart(8)} ${'SF'.padStart(8)} ${'Final'.padStart(8)}`)
+  console.log('  ' + '─'.repeat(52))
+
+  const phases_g = [
+    { key: 'regular'        as const, label: 'Grundserie' },
+    { key: 'playoff_qf'    as const, label: 'KVF'        },
+    { key: 'playoff_sf'    as const, label: 'SF'         },
+    { key: 'playoff_final' as const, label: 'Final'      },
+  ]
+
+  const phaseRates_g: Record<string, Record<ScorelineStateF, number>> = {}
+  const phasePenCounts: Record<string, number> = {}
+
+  for (const { key } of phases_g) {
+    const ms = allMatches.filter(m => m.phase === key)
+    const { stateMinutes, statePenalties } = computeStressPenaltyStats(ms)
+    phasePenCounts[key] = Object.values(statePenalties).reduce((s, n) => s + n, 0)
+    phaseRates_g[key] = {
+      leading:  stateMinutes.leading  > 0 ? (statePenalties.leading  / stateMinutes.leading)  * 1000 : 0,
+      tied:     stateMinutes.tied     > 0 ? (statePenalties.tied     / stateMinutes.tied)     * 1000 : 0,
+      trailing: stateMinutes.trailing > 0 ? (statePenalties.trailing / stateMinutes.trailing) * 1000 : 0,
+    }
+  }
+
+  for (const [label, state] of STATE_LABELS_F) {
+    const vals = phases_g.map(({ key }) => {
+      const n = phasePenCounts[key]
+      if (n === 0) return '—'
+      const r = phaseRates_g[key]?.[state] ?? 0
+      return r > 0 ? r.toFixed(3) : '0.000'
+    })
+    const [v0, ...vRest] = vals
+    console.log(`  ${label.padEnd(14)} ${v0.padStart(12)} ${vRest.map(v => v.padStart(8)).join('')}`)
+  }
+  console.log(`  ${'(n straffmål)'.padEnd(14)} ${String(phasePenCounts.regular).padStart(12)} ${['playoff_qf','playoff_sf','playoff_final'].map(k => String(phasePenCounts[k]).padStart(8)).join('')}`)
+}
 
 console.log()
