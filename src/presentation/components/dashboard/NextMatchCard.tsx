@@ -6,6 +6,7 @@ import { getCupRoundLabel, getCupRoundName } from '../../../domain/services/cupS
 import { getRivalry } from '../../../domain/data/rivalries'
 import { getCurrentAct } from '../../../domain/services/seasonActService'
 import { getCoachStyleLabel } from '../../../domain/services/aiCoachService'
+import { getRoundDate } from '../../../domain/services/scheduleGenerator'
 import type { PlayoffSeries } from '../../../domain/entities/Playoff'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
@@ -97,7 +98,8 @@ export function NextMatchCard({
   lineupConfirmedThisRound,
 }: NextMatchCardProps) {
   const rivalry = getRivalry(nextFixture.homeClubId, nextFixture.awayClubId)
-  const isAnnandagen = nextFixture.roundNumber === 10
+  const annandagenDate = !nextFixture.isCup ? getRoundDate(nextFixture.season, nextFixture.roundNumber) : ''
+  const isAnnandagen = annandagenDate.endsWith('-12-26')
   const isCup = nextFixture.isCup
   const isDerby = !!rivalry
   const derbyIntense = isDerby && rivalry!.intensity >= 2
@@ -169,8 +171,7 @@ export function NextMatchCard({
   } else if (isAnnandagen) {
     headerIcon = '🎄'
     headerLabel = 'Annandagsbandyn'
-    const d = new Date(game.currentDate)
-    headerTagText = `${d.getDate()} DEC`
+    headerTagText = '26 DEC'
     headerTagStyle = { background: 'rgba(100,140,80,0.15)', color: 'var(--match-positive)', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(100,140,80,0.25)' }
   } else {
     // Normal: show home/away + round

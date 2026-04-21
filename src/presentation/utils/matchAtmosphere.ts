@@ -1,5 +1,6 @@
 import type { Fixture } from '../../domain/entities/Fixture'
 import { getRivalry } from '../../domain/data/rivalries'
+import { getRoundDate } from '../../domain/services/scheduleGenerator'
 
 // ── E4: Card tinting based on content type ──────────────────────────────────
 
@@ -32,8 +33,9 @@ export function getMatchAtmosphere(fixture: Fixture): MatchAtmosphere {
   const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
   const isPlayoff = fixture.isKnockout === true
   const isCup = fixture.isCup === true
-  // Annandagen: liga omgång 10 = 26 dec
-  const isAnnandagen = fixture.roundNumber === 10 && !isCup
+  // Annandagen: 26 dec — kolla beräknat datum, inte omgångsnummer (mer robust mot schema-variationer)
+  const fixtureDate = !isCup ? getRoundDate(fixture.season, fixture.roundNumber) : ''
+  const isAnnandagen = fixtureDate.endsWith('-12-26')
 
   if (rivalry) {
     return {

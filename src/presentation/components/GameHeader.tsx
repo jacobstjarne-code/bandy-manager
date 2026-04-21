@@ -5,6 +5,7 @@ import { useGameStore, useManagedClub, useUnreadInboxCount } from '../store/game
 import { saveSaveGame } from '../../infrastructure/persistence/saveGameStorage'
 import { TownSilhouette } from './TownSilhouette'
 import { HelpOverlay } from './HelpOverlay'
+import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
 
 export function GameHeader() {
   const navigate = useNavigate()
@@ -16,12 +17,32 @@ export function GameHeader() {
   if (!game || !club) return null
 
   const lastPlayedRound = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup)
+    .filter(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
   const nextLeagueRound = game.fixtures
     .filter(f => f.status === 'scheduled' && !f.isCup && f.roundNumber <= 22)
     .reduce((min, f) => Math.min(min, f.roundNumber), Infinity)
   const currentRound = nextLeagueRound < Infinity ? nextLeagueRound : lastPlayedRound
+
+  // Playoff phase label
+  const bracket = game.playoffBracket
+  const isInPlayoff = bracket !== null && bracket.status !== PlayoffStatus.Completed
+  let playoffLabel: string | null = null
+  if (isInPlayoff && bracket) {
+    const allSeries = [...bracket.quarterFinals, ...bracket.semiFinals, ...(bracket.final ? [bracket.final] : [])]
+    const activeSeries = allSeries.find(s =>
+      !s.winnerId && (s.homeClubId === game.managedClubId || s.awayClubId === game.managedClubId)
+    )
+    if (activeSeries) {
+      const roundName = activeSeries.round === PlayoffRound.QuarterFinal ? 'Kvartsfinal'
+        : activeSeries.round === PlayoffRound.SemiFinal ? 'Semifinal'
+        : 'SM-Final'
+      const matchNum = activeSeries.homeWins + activeSeries.awayWins + 1
+      playoffLabel = `${roundName} · match ${matchNum}`
+    } else {
+      playoffLabel = 'Slutspel'
+    }
+  }
 
   const [showHelp, setShowHelp] = useState(false)
 
@@ -68,7 +89,7 @@ export function GameHeader() {
           lineHeight: 1.2,
         }}>
           {game.managerName} · {game.currentSeason}/{game.currentSeason + 1}
-          {currentRound > 0 ? ` · Omg ${currentRound}` : ''}
+          {playoffLabel ? ` · ${playoffLabel}` : currentRound > 0 ? ` · Omg ${currentRound}` : ''}
         </p>
       </div>
 

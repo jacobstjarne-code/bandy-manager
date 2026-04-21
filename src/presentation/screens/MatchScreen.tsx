@@ -31,6 +31,7 @@ import { MatchHeader } from '../components/match/MatchHeader'
 import { calcAttendance } from '../../domain/services/economyService'
 import { getMatchMood } from '../../domain/services/matchMoodService'
 import { getRitualText } from '../../domain/services/supporterRituals'
+import { getRoundDate } from '../../domain/services/scheduleGenerator'
 
 export function MatchScreen() {
   const { game, setPlayerLineup, advance, updateTactic, updateMatchMode } = useGameStore()
@@ -344,7 +345,7 @@ export function MatchScreen() {
           isDerby: false,
           isFinal: nextFixture.roundNumber > 22 && game!.playoffBracket?.final?.fixtures.includes(nextFixture.id),
           isSemiFinal: nextFixture.roundNumber > 22 && game!.playoffBracket?.semiFinals.some(s => s.fixtures.includes(nextFixture.id)),
-          isAnnandagen: nextFixture.roundNumber === 10,
+          isAnnandagen: !nextFixture.isCup && getRoundDate(nextFixture.season, nextFixture.roundNumber).endsWith('-12-26'),
         }) : undefined
         navigate('/game/match/live', {
           state: {

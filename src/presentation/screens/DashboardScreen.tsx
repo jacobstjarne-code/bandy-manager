@@ -310,7 +310,7 @@ export function DashboardScreen() {
   const obj = atRisk ?? active
   if (obj && nudges.length < 3) {
     const objTab = obj.type === 'academy' ? 'akademi' : obj.type === 'economic' ? 'ekonomi' : obj.type === 'community' ? 'orten' : 'ekonomi'
-    nudges.push({ text: `Styrelseuppdrag: ${obj.label}`, screen: 'club', state: { tab: objTab }, done: visited.includes('club'), color: atRisk ? 'red' : 'yellow' })
+    nudges.push({ text: `Styrelseuppdrag: ${obj.label}`, screen: 'club', state: { tab: objTab }, done: obj.status === 'met', color: atRisk ? 'red' : 'yellow' })
   }
   if (!isFirstRound && game.onboardingStep !== undefined && game.onboardingStep <= 4 && nudges.length < 3) {
     const onboardingHints: Record<number, { text: string; screen: string; state?: Record<string, unknown> }> = {
@@ -940,14 +940,16 @@ export function DashboardScreen() {
         ) : null}
 
         {/* ⑦ CTA-SEKTION */}
-        <div style={{ margin: '8px 0 0' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, padding: '0 2px' }}>
-            <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{currentDateStr}</span>
-            {currentRound > 0 && (
-              <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Omgång {currentRound}</span>
-            )}
-          </div>
-          <DiamondDivider />
+        <div style={{ margin: '4px 0 0' }}>
+          {currentRound > 0 && (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, padding: '0 2px' }}>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{currentDateStr}</span>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Omgång {currentRound}</span>
+              </div>
+              <DiamondDivider />
+            </>
+          )}
 
           {/* KAFFERUMMET */}
           {(() => {
