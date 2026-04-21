@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormResult } from '../utils/formUtils'
+import { ClubBadge } from './ClubBadge'
 
 export type { FormResult }
 
@@ -104,14 +105,22 @@ export function FormSquares({ results, size = 22 }: FormDotsProps & { size?: num
           style={{
             width: size, height: size, borderRadius: 4,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 10, fontWeight: 700,
+            overflow: 'hidden',
             background: BG_COLORS[r.result],
-            color: COLORS[r.result],
-            border: `1px solid ${BORDER_COLORS[r.result]}`,
+            border: `1.5px solid ${BORDER_COLORS[r.result]}`,
             cursor: r.score ? 'pointer' : 'default',
           }}
         >
-          {r.result}
+          {r.opponentId && r.opponentFullName ? (
+            <ClubBadge
+              clubId={r.opponentId}
+              name={r.opponentFullName}
+              size={size - 4}
+              strokeColor={BORDER_COLORS[r.result]}
+            />
+          ) : (
+            <span style={{ fontSize: 10, fontWeight: 700, color: COLORS[r.result] }}>{r.result}</span>
+          )}
         </div>
       ))}
       {results.length === 0 && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>—</span>}

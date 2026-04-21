@@ -5,6 +5,8 @@ export interface FormResult {
   result: 'V' | 'O' | 'F'
   score: string
   opponent: string
+  opponentId?: string
+  opponentFullName?: string
 }
 
 export function getFormResults(
@@ -29,6 +31,8 @@ export function getFormResults(
       result,
       score: `${myScore}–${theirScore}`,
       opponent: opponentClub?.shortName ?? opponentClub?.name ?? '?',
+      opponentId,
+      opponentFullName: opponentClub?.name,
     }
   })
 }
