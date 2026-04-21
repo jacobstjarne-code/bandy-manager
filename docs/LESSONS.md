@@ -284,3 +284,188 @@ grep -rn "' as \(PlayerArchetype\|PlayerPosition\|ClubStyle\|TacticMentality\)" 
 **Känn igen:** Ny feature (väder, skador, utvisningar, force majeure) som lägger till state-transitions på fixtures. Fråga alltid: "Hur hanteras detta i cup-knockout där varje match MÅSTE ha vinnare?" Farliga states för cup: `postponed`, `cancelled`, `abandoned`. Kontrollera mot `generateNextCupRound` och `advancePlayoffRound` — båda förutsätter `winnerId` satt.
 
 **Historik:** Sprint 22.10 (BUG-STRESS-04). `cupBracket: 0 crashes` efter fix. 100/100 säsonger i 10×10.
+
+---
+
+## 15. Managed-gated kodblock kör inte i stress-test
+
+**Mönster:** En motor-ändring mäts i stress-testet men ger mycket mindre utslag än förväntat. Orsak: logiken ligger inne i ett `if (managedIsHome !== undefined)`-block som inte aktiveras i headless-körningar.
+
+**Rotorsak:** `matchCore.ts` har historiskt haft logik skriven för managed-klubbens perspektiv (narrativ, UX-triggar). När motorfysik konsoliderades i samma block stannade grinden kvar. Stress-testet kör headless utan managed klubb → hela blocket överhoppat → fysik-ändringar triggar aldrig i mätning. Dessutom bör fysiken tekniskt vara per lag, inte per match, eftersom hemma och borta kan vara i olika lägen samtidigt.
+
+**Fix:** Bryt ut fysik-logiken ur managed-grinden och beräkna per lag. Exempel från Sprint 25a.2:
+```ts
+// Fel — hela blocket hoppas över i stress-test
+if (step >= 30 && managedIsHome !== undefined) {
+  const managedScore = managedIsHome ? homeScore : awayScore
+  const mode = getSecondHalfMode(managedScore, opponentScore, step, matchPhase)
+  // ... applicerar mode globalt
+}
+
+// Rätt — per-lag, alltid aktivt
+if (step >= 30) {
+  const homeMode = getSecondHalfMode(homeScore, awayScore, step, matchPhase)
+  const awayMode = getSecondHalfMode(awayScore, homeScore, step, matchPhase)
+  // ... applicerar respektive mode på respektive lags attack
+}
+```
+
+**Känn igen:** En ändring ska ge X procents effekt men stress-test visar <X/3. Leta efter `managedIsHome`-grinden i matchCore.ts runt det ändrade området. Samma mönster kan finnas i andra engines som byggts med en "hero-perspektiv"-historia.
+
+**Historik:** Sprint 25a ändrade tre konstanter; bara en (trailingBoost) körde i stress-testet eftersom de andra två satt innanför grinden. Upptäcktes genom avvikelse mätt-vs-förväntat effekt. Sprint 25a.2 bryt ut per-lag.
+
+---
+
+## 16. Missledande enum-namn gömmer tracking-buggar
+
+**Mönster:** Ett mätvärde ligger nära noll trots att motorn observerbart genererar händelsen. Orsak: loggningskoden filtrerar på fel enum-namn eftersom det faktiska enum-värdet har ett namn som inte passar fenomenet.
+
+**Rotorsak:** Bandy har 10-minuters utvisning, inte rött kort. Men `MatchEvent`-typen ärvdes från ett ramverk och behöll `MatchEventType.RedCard` som enum-värde även för bandy-utvisningar. Mätkod i stress-test filtrerade på `MatchEventType.Suspension` (intuitivt namn för utvisning) som inte existerar → 0 utvisningar loggade trots att motorn genererade dem.
+
+**Fix:** När ett missledande enum-namn upptäcks, lägg alltid en kommentar vid användningspunkten:
+```ts
+} else if (ev.type === MatchEventType.RedCard) {
+  // Bandy uses 10-min suspensions (MatchEventType.RedCard in matchCore.ts)
+  suspensions.push({ minute: ev.minute, team })
+}
+```
+
+Långsiktig fix: byt enum-värdet till `Suspension` och migrera alla användningspunkter. Kortare väg om tidspress: kommentarer på båda sidor (emit + consume) så nästa utvecklare inte missar det.
+
+**Känn igen:** Ett gap mellan "vad motorn borde göra" och "vad mätningen visar" som är exakt 0 eller nära 0. Första hypotes: tracking-bugg, inte motor-bugg. Leta efter enum-filter i loggkällan och jämför mot de enum-värden motorn faktiskt emitterar.
+
+**Historik:** Sprint 24.1 (post-Sprint-24). `avgSuspensionsPerMatch` loggades som 0.00 trots att motorn triggade utvisningar. Filtrering på icke-existerande `MatchEventType.Suspension`. Fixades genom att filtrera på `RedCard` + kommentar.
+
+---
+
+## 17. Fördelning utan normalisering ljuger
+
+**Mönster:** Klubbdata visar sned fördelning (t.ex. "X% av utvisningar sker vid ledning") och man drar slutsatsen att fenomenet är situations-känsligt. Men det är tid-i-situation-artefakt: topplag är i ledning 70% av tiden och får automatiskt 70% av sina utvisningar där.
+
+**Rotorsak:** Rå procentfördelning utan normalisering mot tillgänglig tid. En siffra "54% av utvisningar vid ledning" betyder ingenting tills man vet hur mycket tid laget tillbringar i varje läge.
+
+**Fix:** Alltid normalisera mot tid-i-tillstånd innan slutsatser om situations-känslighet dras. Format:
+```
+Ledning    X minuter    Y utvisningar    Z per 1000 min    Relation 1.0x
+Jämnt      X minuter    Y utvisningar    Z per 1000 min    Relation 0.Xx
+Underläge  X minuter    Y utvisningar    Z per 1000 min    Relation 1.0x
+```
+Relation nära 1.0x i alla rader → situationen påverkar inte frekvens. Stora avvikelser → verklig situations-känslighet.
+
+**Känn igen:** Fördelningsdata utan nämnaren. "X procent av Y sker vid Z" utan "av total tid Z tas W procent av matchen". Kräver att nämnaren görs explicit innan tolkning.
+
+**Historik:** Sprint 24.2. Klubbrapporter visade 54% utvisningar vid ledning för Nässjö (topplag, 66% vinstprocent). Hypotes: domarbias. Efter normalisering: 22.5/22.5/19.6 per kmin för ledning/underläge/jämnt — nästan jämnt. Hypotes förkastad. Infrastruktur för normalisering i SCORELINE_REFERENCE.md.
+
+---
+
+## 18. Mellanstegs-procent istället för absolutfrekvens
+
+**Mönster:** En multiplikator beräknas via procent-andelar i flera steg. Resultatet ser rimligt ut men introducerar avrundnings- och definitionsfel.
+
+**Rotorsak:** "22.5% av straffar faller i minut 75-89 som är 17% av speltid → 1.35x baseline" ser logiskt ut men:
+- 75-89 är 15 av 90 minuter = 16.7%, inte 17%
+- "17%" är redan en avrundning som bakas in i multiplikatorn
+- 22.5/17 = 1.32, 22.5/16.7 = 1.35 — olika värden beroende på vilken approximation
+
+**Fix:** Vid kalibreringsvärden som går direkt in i motorn, räkna multiplikatorer från absolutfrekvens i minuter, inte mellanstegs procent:
+```
+// Fel
+const peakMod = 22.5 / 17  // 1.32 — fel 17 i nämnaren
+
+// Rätt
+const peakFraction = 0.225             // 22.5% av straffar
+const peakMinutesPerMatch = 15         // minut 75-89
+const baselineFraction = peakMinutesPerMatch / 90  // 0.1667
+const peakMod = peakFraction / baselineFraction    // 1.35
+```
+
+**Känn igen:** Kalibreringsvärde som ser rimligt ut men härleds från procentuella mellansteg. Misstänk alltid att någon av procentsatserna är avrundning.
+
+**Historik:** Sprint 24.2-rapport skrev "17%" som speltid-andel för minut 75-89. Rätt värde är 16.7%. Liten skillnad i detta fall men värt att etablera vanan. Sprint 25b.1-specen använde absolutfrekvens.
+
+---
+
+## 19. `continue` i generator hoppar över yield — events når aldrig consumern
+
+**Mönster:** Logik i en `function*`-generator bygger upp en event-array korrekt men den konsumerande koden (t.ex. `fix.events`) ser aldrig eventen. Mekanismen körs, state uppdateras, men datan försvinner.
+
+**Rotorsak:** I en generator driver `yield` varje iteration av consumer-loopen. Om en kodväg i loopen använder `continue` före `yield`-satsen skippas hela yield:en för det steget. Eventen som pushades till `stepEvents` innan continue:en kommer aldrig ut ur generatorn.
+
+```ts
+function* simulate() {
+  for (let step = 0; step < 60; step++) {
+    const stepEvents: MatchEvent[] = []
+    
+    // Tidig trigger som pushar till stepEvents och sedan continue:ar
+    if (penaltyTriggered) {
+      stepEvents.push(penaltyEvent)  // läggs till
+      continue                        // MEN yield:en nedan skippas!
+    }
+    
+    // Normal logik
+    yield { step, events: stepEvents }  // NÅS ALDRIG när continue triggas
+  }
+}
+```
+
+**Fix:** Använd en flagga istället för `continue` så yield-satsen alltid nås:
+```ts
+let penaltyFiredThisStep = false
+if (penaltyCondition) {
+  stepEvents.push(penaltyEvent)
+  penaltyFiredThisStep = true
+}
+
+if (!penaltyFiredThisStep) {
+  // Normal logik som annars skulle köras
+}
+
+yield { step, events: stepEvents }  // NÅS ALLTID
+```
+
+**Känn igen:** Du pushar events/state i en generator men consumer-sidan (fix.events, state-dumps, UI) visar dem inte. Om du kan lägga en console.log före `yield` och se att raden aldrig triggas i rätt step → förmodligen en `continue`/early-return som hoppar över yield:en.
+
+**Historik:** Sprint 25b.1. Straff-triggers i attack-sekvensen pushade penalty- och goal-events men `fix.events` visade dem aldrig. Motor körde rätt (homeScore/awayScore ökade) men stats.ts såg inga events → penaltyGoalPct förblev 0%. Fixades genom `penaltyFiredThisStep`-flagga istället för `continue`.
+
+---
+
+## 20. roundProcessor strippar event-typer för minne — tracking dör tyst
+
+**Mönster:** Ett mätvärde ligger nära noll trots att motorn observerbart emitterar eventen. Enum-namnet stämmer (till skillnad från #16). Generatorn yieldar korrekt (till skillnad från #19). Men någonstans mellan match-generator och stats-extraktion försvinner eventen.
+
+**Rotorsak:** `roundProcessor.ts` (`stripCompletedFixture`) strippar event-typer från `fix.events` efter match för att minska save-game-storlek. Events som bara behövs för live-commentary räknas bort. Om stats-kod förlitar sig på strippade events → tyst misslyckande.
+
+**Komplett lista (verifierad Sprint 25b.1):**
+
+| Event-typ | Status | Kommentar |
+|---|---|---|
+| `Goal` | ✅ PERSISTENT | Bär `isCornerGoal`, `isPenaltyGoal` flaggor |
+| `RedCard` | ✅ PERSISTENT | Bandy 10-min utvisning (kallas RedCard i enum) |
+| `YellowCard` | ✅ PERSISTENT | Finns i filtret men emitteras aldrig av matchCore |
+| `Assist` | ❌ TRANSIENT | Strippad — används för ratings under match |
+| `Save` | ❌ TRANSIENT | Strippad — används för GK-ratings under match |
+| `Corner` | ❌ TRANSIENT | Strippad — räknare på stepEvent, ej persistent |
+| `Penalty` | ❌ TRANSIENT | Strippad — använd `isPenaltyGoal` flagga på Goal |
+| `Substitution` | ❌ TRANSIENT | Strippad — live-commentary |
+| `Shot` | ❌ TRANSIENT | Emitteras aldrig av matchCore (räknare only) |
+| `Injury` | ❌ TRANSIENT | Emitteras aldrig av matchCore |
+| `Suspension` | ❌ TRANSIENT | Emitteras aldrig av matchCore (RedCard används) |
+| `FullTime` | ❌ TRANSIENT | Emitteras aldrig i fix.events (yield-fas only) |
+
+Kommentar tillagd ovanför strip-filtret i `src/application/useCases/roundProcessor.ts`.
+
+**Fix:** Förlita dig på flaggor direkt på persistent-events:
+```ts
+// Fel — Penalty-event strippas, penaltyMinutes alltid tom
+const penaltyMinutes = new Set(
+  fix.events.filter(e => e.type === MatchEventType.Penalty).map(e => e.minute)
+)
+const isPenaltyGoal = penaltyMinutes.has(goal.minute)   // alltid false
+
+// Rätt — flaggan sitter på Goal-eventet och överlever strip
+const isPenaltyGoal = ev.isPenaltyGoal ?? false
+```
+
+**Känn igen:** Ny stats-tracking som läser Penalty/Save/Corner/Assist-events från `fix.events`. Ställ frågan: "är denna event-typ PERSISTENT enligt tabellen ovan?" Om nej — flytta signalen till en flagga på ett persistent event, eller lägg till typen i strip-filtret.
+
+**Historik:** Sprint 25b.1. `stats.ts` byggde på Penalty-event-lookup för `isPenaltyGoal`. Penalty-events strippades → penaltyMinutes alltid tom → penaltyGoalPct loggades som ~0% trots att motorn gjorde straffmål. Fixades med `ev.isPenaltyGoal ?? false`.

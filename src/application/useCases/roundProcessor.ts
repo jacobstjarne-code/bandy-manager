@@ -86,6 +86,20 @@ function stripCompletedFixture(f: Fixture, managedFixtureId?: string, managedClu
     getRivalry(f.homeClubId, f.awayClubId) !== null || f.matchday > 22 || margin >= 3
   )
 
+  // ── Event retention after match completion ──────────────────────────────────
+  // PERSISTENT (kept in fix.events for all completed fixtures):
+  //   Goal      — primary scoring record; carries isCornerGoal + isPenaltyGoal flags
+  //   RedCard   — bandy 10-min suspensions (MatchEventType.RedCard used for all suspensions)
+  //   YellowCard — kept for completeness (not emitted in current bandy engine)
+  //
+  // TRANSIENT (stripped to save memory — not available after this point):
+  //   Assist, Save, Corner, Penalty, Substitution, Shot, Injury, FullTime
+  //
+  // IF YOU ADD NEW TRACKING that needs to survive beyond the live match:
+  //   Option A — add a boolean flag on a persistent event (like isPenaltyGoal on Goal)
+  //   Option B — add the event type to the filter below
+  //   Do NOT use a transient event as your source of truth in stats.ts or any
+  //   post-match analysis. See LESSONS.md §20.
   const strippedEvents = f.events
     .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard || e.type === MatchEventType.YellowCard)
     .map(e => ({ ...e, description: '' }))
