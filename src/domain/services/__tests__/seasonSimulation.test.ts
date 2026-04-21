@@ -517,9 +517,11 @@ ${flagsSection}
     expect(avgTopScorerGoals, `Top scorer goals (${avgTopScorerGoals.toFixed(1)}) should be > 15`).toBeGreaterThan(15)
     expect(avgTopScorerGoals, `Top scorer goals (${avgTopScorerGoals.toFixed(1)}) should be < 70`).toBeLessThan(70)
 
-    // 6. Red cards per match between 0 and 2.0
+    // 6. Red cards per match between 0 and 6.0
+    // Target: 3.77/match (bandygrytan). Upper bound 6 allows for calibration variance.
+    // Updated Sprint 25b.2 (was < 2, before suspension-frequency calibration).
     expect(avgRedCardsPerMatch, `Red cards/match (${avgRedCardsPerMatch.toFixed(3)}) should be >= 0`).toBeGreaterThanOrEqual(0)
-    expect(avgRedCardsPerMatch, `Red cards/match (${avgRedCardsPerMatch.toFixed(3)}) should be < 2`).toBeLessThan(2.0)
+    expect(avgRedCardsPerMatch, `Red cards/match (${avgRedCardsPerMatch.toFixed(3)}) should be < 6`).toBeLessThan(6.0)
 
     // 7. No player should have an average rating above 10.0 or below 3.0
     if (globalMaxAvgRating > 0) {

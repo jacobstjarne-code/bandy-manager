@@ -957,7 +957,7 @@ function* simulateMatchCore(
       const foulProb = attDiscipline * 0.4 + defDiscipline * 0.3
       const r        = rand()
       const activeFoulMult = isHomeAttacking ? homeModeFoulMult : awayModeFoulMult
-      const foulThreshold = foulProb * 0.55 * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult * activeFoulMult
+      const foulThreshold = foulProb * 1.25 * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult * activeFoulMult  // Sprint 25b.2: was 0.55
 
       if (r < foulThreshold) {
         const isAttackZoneFoul = rand() < 0.70
