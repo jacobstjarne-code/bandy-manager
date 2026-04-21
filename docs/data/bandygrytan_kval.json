@@ -1,0 +1,3164 @@
+{
+  "_meta": {
+    "source": "bandygrytan.se via Firebase Realtime DB",
+    "description": "Elitserien Herr Kval — promotion/relegation play-off between Elitserien and Allsvenskan",
+    "schemaVersion": 2,
+    "scrapedAt": "2026-04-21T20:39:49.137Z",
+    "seasonsWithData": [
+      "2019-20",
+      "2020-21",
+      "2021-22",
+      "2022-23"
+    ],
+    "matchCount": 38,
+    "missingSeason": "2023-24 and 2024-25 (competition fixture list not in Firebase preCache)",
+    "eventTypes": {
+      "1": "Hörna",
+      "2": "Mål",
+      "3": "Utvisning",
+      "4": "Straff",
+      "13": "Halvtid"
+    }
+  },
+  "matches": [
+    {
+      "matchId": "30791",
+      "season": "2019-20",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2020-02-28",
+      "homeTeam": "Lidköpings AIK",
+      "awayTeam": "IK Sirius",
+      "homeTeamId": "164",
+      "awayTeamId": "116",
+      "homeScore": 4,
+      "awayScore": 4,
+      "halfTimeHome": 2,
+      "halfTimeAway": 0,
+      "attendance": 611,
+      "arenaName": "Sparbanken Lidköping Arena",
+      "goals": [
+        {
+          "minute": 24,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 41,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 47,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 56,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 72,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 75,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 80,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 92,
+          "team": "away",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 91,
+          "duration": 10
+        },
+        {
+          "minute": 95,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "30792",
+      "season": "2019-20",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2020-02-28",
+      "homeTeam": "Falu BS Bandy",
+      "awayTeam": "Frillesås BK",
+      "homeTeamId": "150",
+      "awayTeamId": "155",
+      "homeScore": 1,
+      "awayScore": 7,
+      "halfTimeHome": 0,
+      "halfTimeAway": 5,
+      "attendance": 281,
+      "arenaName": "Lugnets IP Falun",
+      "goals": [
+        {
+          "minute": 2,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 24,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 28,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 40,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 43,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 48,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 51,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 90,
+          "team": "away",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 4,
+          "duration": 10
+        },
+        {
+          "minute": 54,
+          "duration": 10
+        },
+        {
+          "minute": 77,
+          "duration": 10
+        },
+        {
+          "minute": 83,
+          "duration": 10
+        },
+        {
+          "minute": 83,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "30793",
+      "season": "2019-20",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2020-03-03",
+      "homeTeam": "Frillesås BK",
+      "awayTeam": "Lidköpings AIK",
+      "homeTeamId": "155",
+      "awayTeamId": "164",
+      "homeScore": 3,
+      "awayScore": 0,
+      "halfTimeHome": 1,
+      "halfTimeAway": 0,
+      "attendance": 434,
+      "arenaName": "Sjöaremossen",
+      "goals": [
+        {
+          "minute": 4,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 59,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 67,
+          "team": "home",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 18,
+          "duration": 10
+        },
+        {
+          "minute": 55,
+          "duration": 10
+        },
+        {
+          "minute": 90,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "30794",
+      "season": "2019-20",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2020-03-02",
+      "homeTeam": "IK Sirius",
+      "awayTeam": "Falu BS Bandy",
+      "homeTeamId": "116",
+      "awayTeamId": "150",
+      "homeScore": 3,
+      "awayScore": 6,
+      "halfTimeHome": 2,
+      "halfTimeAway": 2,
+      "attendance": 715,
+      "arenaName": "Studenternas IP",
+      "goals": [
+        {
+          "minute": 18,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 31,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 33,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 38,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 52,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 60,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 61,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 68,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 84,
+          "team": "away",
+          "type": "open"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 11,
+          "duration": 10
+        },
+        {
+          "minute": 12,
+          "duration": 10
+        },
+        {
+          "minute": 30,
+          "duration": 10
+        },
+        {
+          "minute": 31,
+          "duration": 10
+        },
+        {
+          "minute": 38,
+          "duration": 10
+        },
+        {
+          "minute": 56,
+          "duration": 10
+        },
+        {
+          "minute": 57,
+          "duration": 10
+        },
+        {
+          "minute": 64,
+          "duration": 10
+        },
+        {
+          "minute": 85,
+          "duration": 10
+        },
+        {
+          "minute": 87,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "30795",
+      "season": "2019-20",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2020-03-05",
+      "homeTeam": "Frillesås BK",
+      "awayTeam": "IK Sirius",
+      "homeTeamId": "155",
+      "awayTeamId": "116",
+      "homeScore": 4,
+      "awayScore": 4,
+      "halfTimeHome": 3,
+      "halfTimeAway": 2,
+      "attendance": 519,
+      "arenaName": "Sjöaremossen",
+      "goals": [
+        {
+          "minute": 6,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 24,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 27,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 35,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 39,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 53,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 60,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 90,
+          "team": "home",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 39,
+          "duration": 10
+        },
+        {
+          "minute": 47,
+          "duration": 10
+        },
+        {
+          "minute": 65,
+          "duration": 10
+        },
+        {
+          "minute": 89,
+          "duration": 10
+        },
+        {
+          "minute": 90,
+          "duration": 10
+        },
+        {
+          "minute": 92,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "30796",
+      "season": "2019-20",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2020-03-05",
+      "homeTeam": "Falu BS Bandy",
+      "awayTeam": "Lidköpings AIK",
+      "homeTeamId": "150",
+      "awayTeamId": "164",
+      "homeScore": 5,
+      "awayScore": 0,
+      "halfTimeHome": 1,
+      "halfTimeAway": 0,
+      "attendance": 296,
+      "arenaName": "Lugnets IP Falun",
+      "goals": [
+        {
+          "minute": 22,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 66,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 74,
+          "team": "home",
+          "type": "penalty"
+        },
+        {
+          "minute": 81,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 85,
+          "team": "home",
+          "type": "open"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 22,
+          "duration": 10
+        },
+        {
+          "minute": 72,
+          "duration": 10
+        },
+        {
+          "minute": 74,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "30797",
+      "season": "2019-20",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2020-03-08",
+      "homeTeam": "IK Sirius",
+      "awayTeam": "Frillesås BK",
+      "homeTeamId": "116",
+      "awayTeamId": "155",
+      "homeScore": 4,
+      "awayScore": 4,
+      "halfTimeHome": 2,
+      "halfTimeAway": 3,
+      "attendance": 685,
+      "arenaName": "Studenternas IP",
+      "goals": [
+        {
+          "minute": 3,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 16,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 23,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 25,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 35,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 67,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 76,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 96,
+          "team": "home",
+          "type": "penalty"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 28,
+          "duration": 10
+        },
+        {
+          "minute": 45,
+          "duration": 10
+        },
+        {
+          "minute": 53,
+          "duration": 10
+        },
+        {
+          "minute": 96,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "30798",
+      "season": "2019-20",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2020-03-08",
+      "homeTeam": "Lidköpings AIK",
+      "awayTeam": "Falu BS Bandy",
+      "homeTeamId": "164",
+      "awayTeamId": "150",
+      "homeScore": 5,
+      "awayScore": 5,
+      "halfTimeHome": 1,
+      "halfTimeAway": 3,
+      "attendance": 388,
+      "arenaName": "Sparbanken Lidköping Arena",
+      "goals": [
+        {
+          "minute": 12,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 16,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 26,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 28,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 55,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 57,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 65,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 71,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 72,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 75,
+          "team": "home",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 58,
+          "duration": 10
+        },
+        {
+          "minute": 62,
+          "duration": 10
+        },
+        {
+          "minute": 88,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "30799",
+      "season": "2019-20",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2020-03-11",
+      "homeTeam": "Lidköpings AIK",
+      "awayTeam": "Frillesås BK",
+      "homeTeamId": "164",
+      "awayTeamId": "155",
+      "homeScore": 2,
+      "awayScore": 6,
+      "halfTimeHome": 1,
+      "halfTimeAway": 1,
+      "attendance": 358,
+      "arenaName": "Sparbanken Lidköping Arena",
+      "goals": [
+        {
+          "minute": 27,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 29,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 46,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 50,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 70,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 77,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 82,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 83,
+          "team": "away",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 32,
+          "duration": 10
+        },
+        {
+          "minute": 52,
+          "duration": 10
+        },
+        {
+          "minute": 79,
+          "duration": 10
+        },
+        {
+          "minute": 85,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "30800",
+      "season": "2019-20",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2020-03-11",
+      "homeTeam": "Falu BS Bandy",
+      "awayTeam": "IK Sirius",
+      "homeTeamId": "150",
+      "awayTeamId": "116",
+      "homeScore": 1,
+      "awayScore": 5,
+      "halfTimeHome": 0,
+      "halfTimeAway": 3,
+      "attendance": 650,
+      "arenaName": "Lugnets IP Falun",
+      "goals": [
+        {
+          "minute": 1,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 33,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 45,
+          "team": "away",
+          "type": "penalty"
+        },
+        {
+          "minute": 60,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 63,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 76,
+          "team": "away",
+          "type": "open"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 8,
+          "duration": 10
+        },
+        {
+          "minute": 45,
+          "duration": 10
+        },
+        {
+          "minute": 57,
+          "duration": 10
+        },
+        {
+          "minute": 78,
+          "duration": 10
+        },
+        {
+          "minute": 92,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "30801",
+      "season": "2019-20",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2020-03-15",
+      "homeTeam": "Frillesås BK",
+      "awayTeam": "Falu BS Bandy",
+      "homeTeamId": "155",
+      "awayTeamId": "150",
+      "homeScore": 5,
+      "awayScore": 8,
+      "halfTimeHome": 2,
+      "halfTimeAway": 1,
+      "attendance": 1,
+      "arenaName": "Sjöaremossen",
+      "goals": [
+        {
+          "minute": 12,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 28,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 30,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 53,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 57,
+          "team": "home",
+          "type": "penalty"
+        },
+        {
+          "minute": 61,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 62,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 81,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 82,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 82,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 84,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 85,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 89,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 93,
+          "team": "away",
+          "type": "open"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 25,
+          "duration": 10
+        },
+        {
+          "minute": 26,
+          "duration": 10
+        },
+        {
+          "minute": 36,
+          "duration": 10
+        },
+        {
+          "minute": 41,
+          "duration": 10
+        },
+        {
+          "minute": 57,
+          "duration": 10
+        },
+        {
+          "minute": 86,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "30802",
+      "season": "2019-20",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2020-03-15",
+      "homeTeam": "IK Sirius",
+      "awayTeam": "Lidköpings AIK",
+      "homeTeamId": "116",
+      "awayTeamId": "164",
+      "homeScore": 9,
+      "awayScore": 0,
+      "halfTimeHome": 5,
+      "halfTimeAway": 0,
+      "attendance": 377,
+      "arenaName": "Relitahallen",
+      "goals": [
+        {
+          "minute": 4,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 25,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 26,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 37,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 39,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 51,
+          "team": "home",
+          "type": "penalty"
+        },
+        {
+          "minute": 60,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 75,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 80,
+          "team": "home",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 51,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "33749",
+      "season": "2020-21",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2021-03-06",
+      "homeTeam": "GripenTrollhättan BK",
+      "awayTeam": "IFK Rättvik",
+      "homeTeamId": "1053",
+      "awayTeamId": "1059",
+      "homeScore": 4,
+      "awayScore": 4,
+      "halfTimeHome": 1,
+      "halfTimeAway": 3,
+      "attendance": 8,
+      "arenaName": null,
+      "goals": [
+        {
+          "minute": 5,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 12,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 17,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 28,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 51,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 65,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 82,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 86,
+          "team": "home",
+          "type": "open"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 12,
+          "duration": 10
+        },
+        {
+          "minute": 28,
+          "duration": 10
+        },
+        {
+          "minute": 36,
+          "duration": 10
+        },
+        {
+          "minute": 42,
+          "duration": 10
+        },
+        {
+          "minute": 60,
+          "duration": 10
+        },
+        {
+          "minute": 71,
+          "duration": 10
+        },
+        {
+          "minute": 76,
+          "duration": 10
+        },
+        {
+          "minute": 88,
+          "duration": 10
+        },
+        {
+          "minute": 89,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "33750",
+      "season": "2020-21",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2021-03-13",
+      "homeTeam": "IFK Rättvik",
+      "awayTeam": "GripenTrollhättan BK",
+      "homeTeamId": "1059",
+      "awayTeamId": "1053",
+      "homeScore": 3,
+      "awayScore": 3,
+      "halfTimeHome": 2,
+      "halfTimeAway": 1,
+      "attendance": 8,
+      "arenaName": null,
+      "goals": [
+        {
+          "minute": 10,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 21,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 47,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 49,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 88,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 92,
+          "team": "home",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 7,
+          "duration": 10
+        },
+        {
+          "minute": 8,
+          "duration": 10
+        },
+        {
+          "minute": 42,
+          "duration": 10
+        },
+        {
+          "minute": 80,
+          "duration": 10
+        },
+        {
+          "minute": 84,
+          "duration": 10
+        },
+        {
+          "minute": 92,
+          "duration": 10
+        },
+        {
+          "minute": 93,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "37178",
+      "season": "2021-22",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herrar Kval",
+      "date": "2022-03-07",
+      "homeTeam": "Åby/Tjureda IF",
+      "awayTeam": "Frillesås BK",
+      "homeTeamId": "805",
+      "awayTeamId": "155",
+      "homeScore": 5,
+      "awayScore": 6,
+      "halfTimeHome": 2,
+      "halfTimeAway": 2,
+      "attendance": 325,
+      "arenaName": "Ericsson Arena Åby",
+      "goals": [
+        {
+          "minute": 14,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 20,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 41,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 41,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 59,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 62,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 68,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 70,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 85,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 87,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 89,
+          "team": "home",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 44,
+          "duration": 10
+        },
+        {
+          "minute": 93,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "37179",
+      "season": "2021-22",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herrar Kval",
+      "date": "2022-03-09",
+      "homeTeam": "Bollnäs GIF",
+      "awayTeam": "Åby/Tjureda IF",
+      "homeTeamId": "145",
+      "awayTeamId": "805",
+      "homeScore": 3,
+      "awayScore": 5,
+      "halfTimeHome": 1,
+      "halfTimeAway": 2,
+      "attendance": 1361,
+      "arenaName": "Sävstaås IP Bollnäs",
+      "goals": [
+        {
+          "minute": 2,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 3,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 40,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 58,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 71,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 79,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 84,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 87,
+          "team": "away",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 22,
+          "duration": 10
+        },
+        {
+          "minute": 38,
+          "duration": 10
+        },
+        {
+          "minute": 45,
+          "duration": 10
+        },
+        {
+          "minute": 53,
+          "duration": 10
+        },
+        {
+          "minute": 80,
+          "duration": 10
+        },
+        {
+          "minute": 90,
+          "duration": 10
+        },
+        {
+          "minute": 93,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "37180",
+      "season": "2021-22",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herrar Kval",
+      "date": "2022-03-09",
+      "homeTeam": "Lidköpings AIK",
+      "awayTeam": "Frillesås BK",
+      "homeTeamId": "164",
+      "awayTeamId": "155",
+      "homeScore": 4,
+      "awayScore": 6,
+      "halfTimeHome": 2,
+      "halfTimeAway": 5,
+      "attendance": 354,
+      "arenaName": "Sparbanken Lidköping Arena",
+      "goals": [
+        {
+          "minute": 2,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 6,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 10,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 11,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 19,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 27,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 41,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 50,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 73,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 90,
+          "team": "away",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 88,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "37181",
+      "season": "2021-22",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herrar Kval",
+      "date": "2022-03-11",
+      "homeTeam": "Åby/Tjureda IF",
+      "awayTeam": "Lidköpings AIK",
+      "homeTeamId": "805",
+      "awayTeamId": "164",
+      "homeScore": 4,
+      "awayScore": 2,
+      "halfTimeHome": 2,
+      "halfTimeAway": 2,
+      "attendance": 316,
+      "arenaName": "Ericsson Arena Åby",
+      "goals": [
+        {
+          "minute": 11,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 13,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 15,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 16,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 45,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 55,
+          "team": "home",
+          "type": "open"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 37,
+          "duration": 10
+        },
+        {
+          "minute": 78,
+          "duration": 10
+        },
+        {
+          "minute": 89,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "37182",
+      "season": "2021-22",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herrar Kval",
+      "date": "2022-03-11",
+      "homeTeam": "Frillesås BK",
+      "awayTeam": "Bollnäs GIF",
+      "homeTeamId": "155",
+      "awayTeamId": "145",
+      "homeScore": 6,
+      "awayScore": 6,
+      "halfTimeHome": 4,
+      "halfTimeAway": 4,
+      "attendance": 501,
+      "arenaName": "Sjöaremossen",
+      "goals": [
+        {
+          "minute": 2,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 4,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 15,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 17,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 20,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 35,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 40,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 45,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 58,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 59,
+          "team": "home",
+          "type": "penalty"
+        },
+        {
+          "minute": 61,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 63,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 77,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 85,
+          "team": "home",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 11,
+          "duration": 10
+        },
+        {
+          "minute": 58,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "37183",
+      "season": "2021-22",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herrar Kval",
+      "date": "2022-03-13",
+      "homeTeam": "Åby/Tjureda IF",
+      "awayTeam": "Bollnäs GIF",
+      "homeTeamId": "805",
+      "awayTeamId": "145",
+      "homeScore": 4,
+      "awayScore": 4,
+      "halfTimeHome": 1,
+      "halfTimeAway": 1,
+      "attendance": 445,
+      "arenaName": "Ericsson Arena Åby",
+      "goals": [
+        {
+          "minute": 3,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 20,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 45,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 51,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 81,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 86,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 88,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 92,
+          "team": "home",
+          "type": "penalty"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 43,
+          "duration": 10
+        },
+        {
+          "minute": 78,
+          "duration": 10
+        },
+        {
+          "minute": 92,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "37184",
+      "season": "2021-22",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herrar Kval",
+      "date": "2022-03-13",
+      "homeTeam": "Frillesås BK",
+      "awayTeam": "Lidköpings AIK",
+      "homeTeamId": "155",
+      "awayTeamId": "164",
+      "homeScore": 9,
+      "awayScore": 3,
+      "halfTimeHome": 4,
+      "halfTimeAway": 1,
+      "attendance": 425,
+      "arenaName": "Sjöaremossen",
+      "goals": [
+        {
+          "minute": 1,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 2,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 14,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 18,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 41,
+          "team": "home",
+          "type": "penalty"
+        },
+        {
+          "minute": 46,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 48,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 69,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 72,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 78,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 86,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 87,
+          "team": "home",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 12,
+          "duration": 10
+        },
+        {
+          "minute": 31,
+          "duration": 10
+        },
+        {
+          "minute": 57,
+          "duration": 10
+        },
+        {
+          "minute": 77,
+          "duration": 10
+        },
+        {
+          "minute": 79,
+          "duration": 10
+        },
+        {
+          "minute": 83,
+          "duration": 10
+        },
+        {
+          "minute": 85,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "37185",
+      "season": "2021-22",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herrar Kval",
+      "date": "2022-03-15",
+      "homeTeam": "Bollnäs GIF",
+      "awayTeam": "Frillesås BK",
+      "homeTeamId": "145",
+      "awayTeamId": "155",
+      "homeScore": 2,
+      "awayScore": 0,
+      "halfTimeHome": 0,
+      "halfTimeAway": 0,
+      "attendance": 1217,
+      "arenaName": "Sävstaås IP Bollnäs",
+      "goals": [
+        {
+          "minute": 46,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 77,
+          "team": "home",
+          "type": "open"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 33,
+          "duration": 10
+        },
+        {
+          "minute": 51,
+          "duration": 10
+        },
+        {
+          "minute": 61,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "37186",
+      "season": "2021-22",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herrar Kval",
+      "date": "2022-03-15",
+      "homeTeam": "Lidköpings AIK",
+      "awayTeam": "Åby/Tjureda IF",
+      "homeTeamId": "164",
+      "awayTeamId": "805",
+      "homeScore": 7,
+      "awayScore": 13,
+      "halfTimeHome": 3,
+      "halfTimeAway": 6,
+      "attendance": 174,
+      "arenaName": "Sparbanken Lidköping Arena",
+      "goals": [
+        {
+          "minute": 1,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 5,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 7,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 10,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 13,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 17,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 27,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 30,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 37,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 52,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 56,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 60,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 61,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 68,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 70,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 75,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 77,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 79,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 86,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 91,
+          "team": "away",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 41,
+          "duration": 10
+        },
+        {
+          "minute": 46,
+          "duration": 10
+        },
+        {
+          "minute": 64,
+          "duration": 10
+        },
+        {
+          "minute": 83,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "37187",
+      "season": "2021-22",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herrar Kval",
+      "date": "2022-03-17",
+      "homeTeam": "Bollnäs GIF",
+      "awayTeam": "Lidköpings AIK",
+      "homeTeamId": "145",
+      "awayTeamId": "164",
+      "homeScore": 11,
+      "awayScore": 1,
+      "halfTimeHome": 6,
+      "halfTimeAway": 0,
+      "attendance": 1303,
+      "arenaName": "Svenska Fönster Arena, Edsbyn",
+      "goals": [
+        {
+          "minute": 3,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 8,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 17,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 20,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 22,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 38,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 49,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 52,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 61,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 71,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 74,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 76,
+          "team": "away",
+          "type": "open"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 36,
+          "duration": 10
+        },
+        {
+          "minute": 57,
+          "duration": 10
+        },
+        {
+          "minute": 80,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "37188",
+      "season": "2021-22",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herrar Kval",
+      "date": "2022-03-17",
+      "homeTeam": "Frillesås BK",
+      "awayTeam": "Åby/Tjureda IF",
+      "homeTeamId": "155",
+      "awayTeamId": "805",
+      "homeScore": 4,
+      "awayScore": 1,
+      "halfTimeHome": 1,
+      "halfTimeAway": 1,
+      "attendance": 584,
+      "arenaName": "Sjöaremossen",
+      "goals": [
+        {
+          "minute": 1,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 3,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 62,
+          "team": "home",
+          "type": "penalty"
+        },
+        {
+          "minute": 81,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 86,
+          "team": "home",
+          "type": "open"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 42,
+          "duration": 10
+        },
+        {
+          "minute": 57,
+          "duration": 10
+        },
+        {
+          "minute": 62,
+          "duration": 10
+        },
+        {
+          "minute": 89,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "37189",
+      "season": "2021-22",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herrar Kval",
+      "date": "2022-03-07",
+      "homeTeam": "Lidköpings AIK",
+      "awayTeam": "Bollnäs GIF",
+      "homeTeamId": "164",
+      "awayTeamId": "145",
+      "homeScore": 4,
+      "awayScore": 5,
+      "halfTimeHome": 2,
+      "halfTimeAway": 3,
+      "attendance": 487,
+      "arenaName": null,
+      "goals": [
+        {
+          "minute": 12,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 25,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 34,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 37,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 39,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 71,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 78,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 86,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 91,
+          "team": "home",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 84,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "41819",
+      "season": "2022-23",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2023-02-28",
+      "homeTeam": "IFK Kungälv",
+      "awayTeam": "GripenTrollhättan BK",
+      "homeTeamId": "153",
+      "awayTeamId": "1053",
+      "homeScore": 2,
+      "awayScore": 2,
+      "halfTimeHome": 1,
+      "halfTimeAway": 1,
+      "attendance": 906,
+      "arenaName": "Skarpe Nord",
+      "goals": [
+        {
+          "minute": 20,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 28,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 49,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 91,
+          "team": "home",
+          "type": "open"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 17,
+          "duration": 10
+        },
+        {
+          "minute": 28,
+          "duration": 10
+        },
+        {
+          "minute": 33,
+          "duration": 10
+        },
+        {
+          "minute": 41,
+          "duration": 10
+        },
+        {
+          "minute": 56,
+          "duration": 10
+        },
+        {
+          "minute": 89,
+          "duration": 10
+        },
+        {
+          "minute": 90,
+          "duration": 10
+        },
+        {
+          "minute": 93,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "41820",
+      "season": "2022-23",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2023-02-28",
+      "homeTeam": "Åby/Tjureda IF",
+      "awayTeam": "Frillesås BK",
+      "homeTeamId": "805",
+      "awayTeamId": "155",
+      "homeScore": 3,
+      "awayScore": 7,
+      "halfTimeHome": 1,
+      "halfTimeAway": 1,
+      "attendance": 309,
+      "arenaName": "Ericsson Arena Åby",
+      "goals": [
+        {
+          "minute": 9,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 30,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 46,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 63,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 64,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 67,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 71,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 81,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 90,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 94,
+          "team": "away",
+          "type": "penalty"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 19,
+          "duration": 10
+        },
+        {
+          "minute": 73,
+          "duration": 10
+        },
+        {
+          "minute": 75,
+          "duration": 10
+        },
+        {
+          "minute": 76,
+          "duration": 10
+        },
+        {
+          "minute": 85,
+          "duration": 10
+        },
+        {
+          "minute": 85,
+          "duration": 10
+        },
+        {
+          "minute": 94,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "41821",
+      "season": "2022-23",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2023-03-03",
+      "homeTeam": "GripenTrollhättan BK",
+      "awayTeam": "Åby/Tjureda IF",
+      "homeTeamId": "1053",
+      "awayTeamId": "805",
+      "homeScore": 9,
+      "awayScore": 1,
+      "halfTimeHome": 5,
+      "halfTimeAway": 1,
+      "attendance": 726,
+      "arenaName": "Slättbergshallen",
+      "goals": [
+        {
+          "minute": 12,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 16,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 17,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 20,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 31,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 37,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 51,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 65,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 73,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 86,
+          "team": "home",
+          "type": "open"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 22,
+          "duration": 10
+        },
+        {
+          "minute": 34,
+          "duration": 10
+        },
+        {
+          "minute": 49,
+          "duration": 10
+        },
+        {
+          "minute": 91,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "41822",
+      "season": "2022-23",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2023-03-03",
+      "homeTeam": "Frillesås BK",
+      "awayTeam": "IFK Kungälv",
+      "homeTeamId": "155",
+      "awayTeamId": "153",
+      "homeScore": 6,
+      "awayScore": 2,
+      "halfTimeHome": 3,
+      "halfTimeAway": 1,
+      "attendance": 765,
+      "arenaName": "Sjöaremossen",
+      "goals": [
+        {
+          "minute": 7,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 9,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 13,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 23,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 48,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 56,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 78,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 89,
+          "team": "home",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 28,
+          "duration": 10
+        },
+        {
+          "minute": 75,
+          "duration": 10
+        },
+        {
+          "minute": 77,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "41823",
+      "season": "2022-23",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2023-03-05",
+      "homeTeam": "Åby/Tjureda IF",
+      "awayTeam": "IFK Kungälv",
+      "homeTeamId": "805",
+      "awayTeamId": "153",
+      "homeScore": 2,
+      "awayScore": 8,
+      "halfTimeHome": 1,
+      "halfTimeAway": 5,
+      "attendance": 207,
+      "arenaName": "Ericsson Arena Åby",
+      "goals": [
+        {
+          "minute": 3,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 8,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 9,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 15,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 44,
+          "team": "home",
+          "type": "penalty"
+        },
+        {
+          "minute": 45,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 56,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 58,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 61,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 78,
+          "team": "away",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 35,
+          "duration": 10
+        },
+        {
+          "minute": 44,
+          "duration": 10
+        },
+        {
+          "minute": 73,
+          "duration": 10
+        },
+        {
+          "minute": 81,
+          "duration": 10
+        },
+        {
+          "minute": 83,
+          "duration": 10
+        },
+        {
+          "minute": 86,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "41824",
+      "season": "2022-23",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2023-03-05",
+      "homeTeam": "Frillesås BK",
+      "awayTeam": "GripenTrollhättan BK",
+      "homeTeamId": "155",
+      "awayTeamId": "1053",
+      "homeScore": 4,
+      "awayScore": 4,
+      "halfTimeHome": 2,
+      "halfTimeAway": 3,
+      "attendance": 552,
+      "arenaName": "Sjöaremossen",
+      "goals": [
+        {
+          "minute": 17,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 18,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 22,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 30,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 33,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 54,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 56,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 59,
+          "team": "home",
+          "type": "open"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 73,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "41825",
+      "season": "2022-23",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2023-03-07",
+      "homeTeam": "IFK Kungälv",
+      "awayTeam": "Åby/Tjureda IF",
+      "homeTeamId": "153",
+      "awayTeamId": "805",
+      "homeScore": 9,
+      "awayScore": 4,
+      "halfTimeHome": 6,
+      "halfTimeAway": 0,
+      "attendance": 393,
+      "arenaName": "Skarpe Nord",
+      "goals": [
+        {
+          "minute": 12,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 16,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 23,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 25,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 29,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 33,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 53,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 55,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 67,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 74,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 76,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 82,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 87,
+          "team": "home",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 58,
+          "duration": 10
+        },
+        {
+          "minute": 61,
+          "duration": 10
+        },
+        {
+          "minute": 76,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "41826",
+      "season": "2022-23",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2023-03-07",
+      "homeTeam": "GripenTrollhättan BK",
+      "awayTeam": "Frillesås BK",
+      "homeTeamId": "1053",
+      "awayTeamId": "155",
+      "homeScore": 4,
+      "awayScore": 1,
+      "halfTimeHome": 2,
+      "halfTimeAway": 1,
+      "attendance": 509,
+      "arenaName": "Slättbergshallen",
+      "goals": [
+        {
+          "minute": 0,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 14,
+          "team": "home",
+          "type": "penalty"
+        },
+        {
+          "minute": 22,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 53,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 77,
+          "team": "home",
+          "type": "open"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 14,
+          "duration": 10
+        },
+        {
+          "minute": 31,
+          "duration": 10
+        },
+        {
+          "minute": 58,
+          "duration": 10
+        },
+        {
+          "minute": 69,
+          "duration": 10
+        },
+        {
+          "minute": 80,
+          "duration": 10
+        },
+        {
+          "minute": 88,
+          "duration": 10
+        },
+        {
+          "minute": 91,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "41827",
+      "season": "2022-23",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2023-03-10",
+      "homeTeam": "Åby/Tjureda IF",
+      "awayTeam": "GripenTrollhättan BK",
+      "homeTeamId": "805",
+      "awayTeamId": "1053",
+      "homeScore": 3,
+      "awayScore": 6,
+      "halfTimeHome": 2,
+      "halfTimeAway": 4,
+      "attendance": 134,
+      "arenaName": "Ericsson Arena Åby",
+      "goals": [
+        {
+          "minute": 11,
+          "team": "away",
+          "type": "penalty"
+        },
+        {
+          "minute": 11,
+          "team": "home",
+          "type": "penalty"
+        },
+        {
+          "minute": 21,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 32,
+          "team": "away",
+          "type": "penalty"
+        },
+        {
+          "minute": 36,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 38,
+          "team": "home",
+          "type": "penalty"
+        },
+        {
+          "minute": 45,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 61,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 69,
+          "team": "away",
+          "type": "penalty"
+        },
+        {
+          "minute": 86,
+          "team": "home",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 11,
+          "duration": 10
+        },
+        {
+          "minute": 32,
+          "duration": 10
+        },
+        {
+          "minute": 38,
+          "duration": 10
+        },
+        {
+          "minute": 76,
+          "duration": 10
+        },
+        {
+          "minute": 90,
+          "duration": 10
+        },
+        {
+          "minute": 90,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "41828",
+      "season": "2022-23",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2023-03-10",
+      "homeTeam": "IFK Kungälv",
+      "awayTeam": "Frillesås BK",
+      "homeTeamId": "153",
+      "awayTeamId": "155",
+      "homeScore": 4,
+      "awayScore": 10,
+      "halfTimeHome": 3,
+      "halfTimeAway": 4,
+      "attendance": 901,
+      "arenaName": "Skarpe Nord",
+      "goals": [
+        {
+          "minute": 5,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 16,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 26,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 35,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 36,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 43,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 47,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 47,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 49,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 59,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 63,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 64,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 72,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 87,
+          "team": "away",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 15,
+          "duration": 10
+        },
+        {
+          "minute": 40,
+          "duration": 10
+        },
+        {
+          "minute": 53,
+          "duration": 10
+        },
+        {
+          "minute": 90,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "41829",
+      "season": "2022-23",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2023-03-12",
+      "homeTeam": "GripenTrollhättan BK",
+      "awayTeam": "IFK Kungälv",
+      "homeTeamId": "1053",
+      "awayTeamId": "153",
+      "homeScore": 5,
+      "awayScore": 3,
+      "halfTimeHome": 3,
+      "halfTimeAway": 2,
+      "attendance": 513,
+      "arenaName": "Slättbergshallen",
+      "goals": [
+        {
+          "minute": 2,
+          "team": "away",
+          "type": "open"
+        },
+        {
+          "minute": 8,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 25,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 27,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 39,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 61,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 69,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 79,
+          "team": "away",
+          "type": "penalty"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 23,
+          "duration": 10
+        },
+        {
+          "minute": 45,
+          "duration": 10
+        },
+        {
+          "minute": 58,
+          "duration": 10
+        },
+        {
+          "minute": 72,
+          "duration": 10
+        },
+        {
+          "minute": 77,
+          "duration": 10
+        },
+        {
+          "minute": 81,
+          "duration": 10
+        }
+      ]
+    },
+    {
+      "matchId": "41830",
+      "season": "2022-23",
+      "phase": "qualification",
+      "competitionName": "Elitserien Herr Kval",
+      "date": "2023-03-12",
+      "homeTeam": "Frillesås BK",
+      "awayTeam": "Åby/Tjureda IF",
+      "homeTeamId": "155",
+      "awayTeamId": "805",
+      "homeScore": 5,
+      "awayScore": 1,
+      "halfTimeHome": 1,
+      "halfTimeAway": 1,
+      "attendance": 487,
+      "arenaName": "Sjöaremossen",
+      "goals": [
+        {
+          "minute": 34,
+          "team": "away",
+          "type": "corner"
+        },
+        {
+          "minute": 38,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 57,
+          "team": "home",
+          "type": "corner"
+        },
+        {
+          "minute": 64,
+          "team": "home",
+          "type": "open"
+        },
+        {
+          "minute": 76,
+          "team": "home",
+          "type": "penalty"
+        },
+        {
+          "minute": 84,
+          "team": "home",
+          "type": "corner"
+        }
+      ],
+      "fouls": [
+        {
+          "minute": 19,
+          "duration": 10
+        },
+        {
+          "minute": 57,
+          "duration": 10
+        },
+        {
+          "minute": 76,
+          "duration": 10
+        },
+        {
+          "minute": 81,
+          "duration": 10
+        },
+        {
+          "minute": 90,
+          "duration": 10
+        },
+        {
+          "minute": 90,
+          "duration": 10
+        }
+      ]
+    }
+  ]
+}
