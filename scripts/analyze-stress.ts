@@ -547,4 +547,94 @@ if (totalPenGoals === 0) {
   console.log(`  ${'(n straffmål)'.padEnd(14)} ${String(phasePenCounts.regular).padStart(12)} ${['playoff_qf','playoff_sf','playoff_final'].map(k => String(phasePenCounts[k]).padStart(8)).join('')}`)
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// H. PER-FAS ANALYS — goalsPerMatch / homeWin% / avgSusp / cornerGoalPct
+// Targets: ANALYS_SLUTSPEL.md + SCORELINE_REFERENCE.md
+// Tolerances from SPRINT_25D spec (wider for smaller playoff samples).
+// ══════════════════════════════════════════════════════════════════════════════
+
+console.log(`\nH. PER-FAS ANALYS (Sprint 25d)`)
+console.log(DIV)
+
+{
+  type PhaseKey = 'regular' | 'playoff_qf' | 'playoff_sf' | 'playoff_final'
+
+  const PHASE_META: Array<{
+    key: PhaseKey
+    label: string
+    targets: { goalsPerMatch: number; homeWinPct: number; avgSusp: number; cornerGoalPct: number }
+    tol:     { goalsPerMatch: number; homeWinPct: number; avgSusp: number; cornerGoalPct: number }
+  }> = [
+    {
+      key: 'regular',
+      label: 'Grundserie',
+      targets: { goalsPerMatch: 9.12, homeWinPct: 50.2, avgSusp: 3.77, cornerGoalPct: 22.2 },
+      tol:     { goalsPerMatch: 0.3,  homeWinPct: 2.0,  avgSusp: 0.3,  cornerGoalPct: 2.0  },
+    },
+    {
+      key: 'playoff_qf',
+      label: 'KVF',
+      targets: { goalsPerMatch: 8.81, homeWinPct: 60.3, avgSusp: 3.18, cornerGoalPct: 20.0 },
+      tol:     { goalsPerMatch: 0.5,  homeWinPct: 4.0,  avgSusp: 0.4,  cornerGoalPct: 3.0  },
+    },
+    {
+      key: 'playoff_sf',
+      label: 'SF',
+      targets: { goalsPerMatch: 8.39, homeWinPct: 57.9, avgSusp: 3.55, cornerGoalPct: 18.8 },
+      tol:     { goalsPerMatch: 0.6,  homeWinPct: 5.0,  avgSusp: 0.5,  cornerGoalPct: 4.0  },
+    },
+    {
+      key: 'playoff_final',
+      label: 'Final',
+      targets: { goalsPerMatch: 7.00, homeWinPct: 50.0, avgSusp: 4.08, cornerGoalPct: 16.7 },
+      tol:     { goalsPerMatch: 1.0,  homeWinPct: 8.0,  avgSusp: 0.7,  cornerGoalPct: 5.0  },
+    },
+  ]
+
+  // ✅ within tolerance, 🔶 within 2× tolerance, ❌ outside 2× tolerance
+  function grade(value: number, target: number, tol: number): string {
+    const d = Math.abs(value - target)
+    if (d <= tol) return '✅'
+    if (d <= tol * 2) return '🔶'
+    return '❌'
+  }
+
+  const COL = { label: 12, val: 7, tgt: 7, tol: 7, sym: 3 }
+  const header = `  ${'Fas'.padEnd(COL.label)} ${'mål/match'.padStart(COL.val)} ${'target'.padStart(COL.tgt)}   ${'homeWin%'.padStart(COL.val)} ${'target'.padStart(COL.tgt)}   ${'avgSusp'.padStart(COL.val)} ${'target'.padStart(COL.tgt)}   ${'corner%'.padStart(COL.val)} ${'target'.padStart(COL.tgt)}`
+  console.log(header)
+  console.log('  ' + '─'.repeat(header.length - 2))
+
+  for (const { key, label, targets, tol } of PHASE_META) {
+    const ms = allMatches.filter(m => m.phase === key)
+    if (ms.length === 0) { console.log(`  ${label.padEnd(COL.label)} (inga matcher)`); continue }
+
+    const totalGoals   = ms.reduce((s, m) => s + m.homeScore + m.awayScore, 0)
+    const gpm          = totalGoals / ms.length
+    const homeWins     = ms.filter(m => m.homeScore > m.awayScore).length
+    const homeWinPct   = (homeWins / ms.length) * 100
+    const totalSusp    = ms.reduce((s, m) => s + m.suspensions.length, 0)
+    const avgSusp      = totalSusp / ms.length
+    const allGoalsArr  = ms.flatMap(m => m.goals)
+    const cornerGoals  = allGoalsArr.filter(g => g.isCornerGoal).length
+    const cornerPct    = allGoalsArr.length > 0 ? (cornerGoals / allGoalsArr.length) * 100 : 0
+
+    const gG = grade(gpm,        targets.goalsPerMatch, tol.goalsPerMatch)
+    const gH = grade(homeWinPct, targets.homeWinPct,    tol.homeWinPct)
+    const gS = grade(avgSusp,    targets.avgSusp,       tol.avgSusp)
+    const gC = grade(cornerPct,  targets.cornerGoalPct, tol.cornerGoalPct)
+
+    console.log(
+      `  ${label.padEnd(COL.label)}` +
+      ` ${gG} ${gpm.toFixed(2).padStart(COL.val)} ${targets.goalsPerMatch.toFixed(2).padStart(COL.tgt)}` +
+      `   ${gH} ${homeWinPct.toFixed(1).padStart(COL.val)} ${targets.homeWinPct.toFixed(1).padStart(COL.tgt)}` +
+      `   ${gS} ${avgSusp.toFixed(2).padStart(COL.val)} ${targets.avgSusp.toFixed(2).padStart(COL.tgt)}` +
+      `   ${gC} ${cornerPct.toFixed(1).padStart(COL.val)} ${targets.cornerGoalPct.toFixed(1).padStart(COL.tgt)}` +
+      `  (n=${ms.length})`
+    )
+  }
+  console.log()
+  console.log('  Toleranser: ✅ inom tol  🔶 inom 2×tol  ❌ >2×tol')
+  console.log('  Tol per fas (mål/homeWin/susp/corner): regular ±0.3/±2/±0.3/±2 | KVF ±0.5/±4/±0.4/±3 | SF ±0.6/±5/±0.5/±4 | Final ±1.0/±8/±0.7/±5')
+}
+
 console.log()
