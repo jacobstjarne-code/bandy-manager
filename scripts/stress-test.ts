@@ -13,11 +13,14 @@ import { fileURLToPath } from 'node:url'
 
 import type { SaveGame } from '../src/domain/entities/SaveGame'
 import { advanceToNextEvent } from '../src/application/useCases/roundProcessor'
+import { FixtureStatus } from '../src/domain/enums'
 
 import { createHeadlessGame, autoSelectLineup, autoResolvePendingScreen } from './stress/fixtures'
 import { checkInvariants } from './stress/invariants'
 import { printSeedProgress, printFinalReport } from './stress/reporter'
 import type { SeedResult } from './stress/reporter'
+import { extractMatchStat, newSeasonStats } from './stress/stats'
+import type { SeasonStats } from './stress/stats'
 
 // ── Arg parsing ──────────────────────────────────────────────────────────────
 
@@ -95,6 +98,7 @@ async function main(): Promise<void> {
   console.log('─'.repeat(50))
 
   const results: SeedResult[] = []
+  const allSeasonStats: SeasonStats[] = []
   let exitCode = 0
 
   for (let seedIdx = 0; seedIdx < seeds; seedIdx++) {
@@ -128,6 +132,10 @@ async function main(): Promise<void> {
       seasonsAttempted++
       let seasonDone = false
       let stepSeed = seedIdx * 100_000 + season * 1_000
+      const seasonStats = newSeasonStats(seedIdx, season)
+      let previouslyCompletedIds = new Set<string>(
+        game.fixtures.filter(f => f.status === FixtureStatus.Completed).map(f => f.id)
+      )
 
       while (!seasonDone && !seedCrashed) {
         // Always set lineup before advancing (advance clears managedClubPendingLineup each round)
@@ -140,6 +148,17 @@ async function main(): Promise<void> {
           game = result.game
           roundPlayed = result.roundPlayed
           ring.push(`advance season=${season} round=${roundPlayed ?? 'season-end'} seed=${stepSeed - 1}`)
+
+          // Collect stats for newly completed fixtures
+          const newlyCompleted = result.game.fixtures.filter(f =>
+            f.status === FixtureStatus.Completed && !previouslyCompletedIds.has(f.id)
+          )
+          for (const fix of newlyCompleted) {
+            seasonStats.matches.push(extractMatchStat(fix, result.game, seedIdx, season))
+          }
+          previouslyCompletedIds = new Set(
+            result.game.fixtures.filter(f => f.status === FixtureStatus.Completed).map(f => f.id)
+          )
 
           if (result.seasonEnded || result.game.managerFired) {
             seasonDone = true
@@ -192,6 +211,7 @@ async function main(): Promise<void> {
 
       if (seedCrashed) break
       seasonsCompleted++
+      allSeasonStats.push(seasonStats)
     }
 
     const seedResult: SeedResult = {
@@ -213,6 +233,20 @@ async function main(): Promise<void> {
       if (bailOnCrash) break
     }
   }
+
+  // Write season stats JSON (written even if seeds crashed — includes all matches that ran)
+  const statsFile = resolve(__dirname, 'stress/season_stats.json')
+  const totalMatches = allSeasonStats.flatMap(s => s.matches).length
+  writeFileSync(statsFile, JSON.stringify({
+    _meta: {
+      seeds,
+      seasonsPerSeed: seasons,
+      totalMatches,
+      generatedAt: new Date().toISOString(),
+    },
+    seasons: allSeasonStats,
+  }, null, 2))
+  console.log(`\nSkriven ${statsFile} (${totalMatches} matcher)`)
 
   console.log()
   printFinalReport({ seeds, maxSeasons: seasons, results })
