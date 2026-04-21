@@ -421,12 +421,13 @@ Fixture-ordningen styrs av `fixture.matchday` — ett heltal som bestämmer glob
 12 fiktiva klubbar på riktiga bruksorter. Alla klubbnamn, arenanamn och klacknamn är PÅHITTADE — inga riktiga föreningar. Definerade i `CLUB_TEMPLATES` i `worldGenerator.ts`. Arena- och klacknamn är required fält.
 
 ### Matchmotor-kalibrering
-Kalibrerad mot 420 Elitseriematcher (bandygrytan.se, 2024-26). Data i `docs/data/bandygrytan_stats.json`. Nyckeltal:
-- 10.0 mål/match, 23.2% hörnmål, 5.1% straffmål
-- 50.7% hemmaseger, 9.0% oavgjort
-- 54.3% av mål i 2:a halvlek
+Kalibrerad mot 1124 Elitseriematcher (bandygrytan.se, 2019-26). Data i `docs/data/bandygrytan_detailed.json (1124 matcher, 6 säsonger)`. Nyckeltal:
+- 9.12 mål/match (target), 22.2% hörnmål, 5.4% straffmål
+- 50.2% hemmaseger, 11.6% oavgjort
+- 54.2% av mål i 2:a halvlek
 
 Verifieringsskript: `scripts/calibrate.ts` (varierad lagstyrka, 200 matcher).
+Säsongsanalys: `scripts/analyze-stress.ts` — jämför stress-test-loggen mot bandygrytan-targets (säsongsnivå, inte per-match).
 
 - **Offside FINNS i bandy** — ta aldrig bort offside-kommentarer
 - **Inga gula kort** — bandy har 10 min utvisning, inte gula/röda kort
@@ -504,7 +505,7 @@ Must return 0 results.
 - `docs/FIXSPEC_PARKERAT.md` — fullspecade framtida features: presskonferens-scen, transferdödline, rykte
 
 ### Kalibreringsdata
-- `docs/data/bandygrytan_stats.json` — 420 Elitseriematcher (2024-26), kalibreringsmål
+- `docs/data/bandygrytan_detailed.json` — 1124 Elitseriematcher (2019-26), kalibreringsmål
 - `docs/data/SCHEMA_DETAILED.md` — schema för detaljerad per-match-data (v2, 2010-26)
 - `docs/FIXSPEC_KALIBRERING.md` — matchmotor-konstanter (implementerat)
 - `scripts/calibrate.ts` — kör 200 matcher med varierad lagstyrka, jämför mot targets

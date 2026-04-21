@@ -9,7 +9,8 @@
     "start": "node server.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "stress": "node_modules/.bin/vite-node scripts/stress-test.ts"
+    "stress": "node_modules/.bin/vite-node scripts/stress-test.ts",
+    "analyze-stress": "node_modules/.bin/vite-node scripts/analyze-stress.ts"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
