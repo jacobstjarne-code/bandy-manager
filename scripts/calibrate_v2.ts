@@ -20,6 +20,7 @@ import { simulateMatch } from '../src/domain/services/matchEngine'
 import { PlayerPosition, PlayerArchetype, FixtureStatus, MatchEventType } from '../src/domain/enums'
 import type { Player } from '../src/domain/entities/Player'
 import type { Fixture, TeamSelection } from '../src/domain/entities/Fixture'
+import { accumulateScorelineMinutes, bucket30min, bucket15min } from './stress/scoreline-utils'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -37,6 +38,7 @@ interface MatchFoul {
   minute: number
   team: 'home' | 'away'
   duration: number | null
+  scoreAtTime?: { home: number; away: number }
 }
 
 interface DetailedMatch {
@@ -518,6 +520,447 @@ function analyzePlayoffVsRegular(matches: DetailedMatch[]) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+// 1.5 — VERIFIERINGSPASS: MÅLSNITT + HÖRNMÅL% × FAS
+// ══════════════════════════════════════════════════════════════════════════════
+
+function verifyPhaseStats(matches: DetailedMatch[]) {
+  console.log(`\n${'═'.repeat(70)}`)
+  console.log('  1.5  MÅLSNITT + HÖRNMÅL% × FAS (verifieringspass)')
+  console.log(`${'═'.repeat(70)}\n`)
+
+  const phases = [
+    { key: 'regular' as const,      label: 'Grundserie', goalTarget: 9.12, cornTarget: 22.2 },
+    { key: 'quarterfinal' as const, label: 'KVF',        goalTarget: 8.81, cornTarget: 20.0 },
+    { key: 'semifinal' as const,    label: 'SF',         goalTarget: 8.39, cornTarget: 18.8 },
+    { key: 'final' as const,        label: 'Final',      goalTarget: 7.00, cornTarget: 16.7 },
+  ]
+
+  console.log('  MÅLSNITT × FAS (target = ANALYS_SLUTSPEL.md):')
+  console.log('  ' + '─'.repeat(60))
+  for (const { key, label, goalTarget } of phases) {
+    const ms = matches.filter(m => m.phase === key)
+    if (ms.length === 0) { console.log(`  — ${label.padEnd(14)}: n/a`); continue }
+    const gpm = ms.reduce((s, m) => s + m.homeScore + m.awayScore, 0) / ms.length
+    const ok = Math.abs(gpm - goalTarget) < 0.5
+    console.log(`  ${ok ? '✅' : '❌'} ${label.padEnd(14)}: ${gpm.toFixed(2)} mål/match  (target ${goalTarget}, n=${ms.length})`)
+  }
+
+  console.log()
+  console.log('  HÖRNMÅL% × FAS:')
+  console.log('  ' + '─'.repeat(60))
+  for (const { key, label, cornTarget } of phases) {
+    const ms = matches.filter(m => m.phase === key)
+    if (ms.length === 0) { console.log(`  — ${label.padEnd(14)}: n/a`); continue }
+    const allGoals = ms.flatMap(m => m.goals)
+    const cornPct = allGoals.length > 0 ? allGoals.filter(g => g.type === 'corner').length / allGoals.length * 100 : 0
+    const ok = Math.abs(cornPct - cornTarget) < 2.0
+    console.log(`  ${ok ? '✅' : '❌'} ${label.padEnd(14)}: ${cornPct.toFixed(1)}%  (target ${cornTarget}%, n=${ms.length})`)
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 1.1 + 1.2 — UTVISNINGAR × SPELLÄGE (normaliserat mot tid)
+// ══════════════════════════════════════════════════════════════════════════════
+
+type ScorelineState = 'leading' | 'tied' | 'trailing'
+const STATE_LABELS: [string, ScorelineState][] = [
+  ['Ledning', 'leading'], ['Jämnt', 'tied'], ['Underläge', 'trailing'],
+]
+
+interface FoulScorelineStats {
+  stateMinutes: Record<ScorelineState, number>
+  stateFouls:   Record<ScorelineState, number>
+  periodStateMinutes: Record<string, Record<ScorelineState, number>>
+  periodStateFouls:   Record<string, Record<ScorelineState, number>>
+  matchCount: number
+  foulCount: number
+}
+
+const PERIODS_30 = ['0-29', '30-59', '60-89', '90+'] as const
+
+function computeFoulScorelineStats(matches: DetailedMatch[]): FoulScorelineStats {
+  const stateMinutes: Record<ScorelineState, number> = { leading: 0, tied: 0, trailing: 0 }
+  const stateFouls:   Record<ScorelineState, number> = { leading: 0, tied: 0, trailing: 0 }
+  const periodStateMinutes: Record<string, Record<ScorelineState, number>> = {}
+  const periodStateFouls:   Record<string, Record<ScorelineState, number>> = {}
+  let foulCount = 0
+
+  for (const p of PERIODS_30) {
+    periodStateMinutes[p] = { leading: 0, tied: 0, trailing: 0 }
+    periodStateFouls[p]   = { leading: 0, tied: 0, trailing: 0 }
+  }
+
+  for (const m of matches) {
+    // Accumulate total state minutes (both teams)
+    const { home, away } = accumulateScorelineMinutes(m.goals, 90)
+    stateMinutes.leading  += home.leading  + away.leading
+    stateMinutes.tied     += home.tied     + away.tied
+    stateMinutes.trailing += home.trailing + away.trailing
+
+    // Minute-by-minute per period × state for both teams
+    const sorted = [...m.goals].sort((a, b) => a.minute - b.minute)
+    let h = 0, a = 0, gi = 0
+    for (let min = 1; min <= 90; min++) {
+      while (gi < sorted.length && sorted[gi].minute <= min) {
+        if (sorted[gi].team === 'home') h++; else a++
+        gi++
+      }
+      const period = bucket30min(min)
+      const homeState: ScorelineState = h > a ? 'leading' : h < a ? 'trailing' : 'tied'
+      const awayState: ScorelineState = a > h ? 'leading' : a < h ? 'trailing' : 'tied'
+      periodStateMinutes[period][homeState]++
+      periodStateMinutes[period][awayState]++
+    }
+
+    // Fouls classified via pre-computed scoreAtTime
+    for (const foul of m.fouls ?? []) {
+      const sat = foul.scoreAtTime
+      if (!sat) continue
+      foulCount++
+      const diff = foul.team === 'home' ? sat.home - sat.away : sat.away - sat.home
+      const state: ScorelineState = diff > 0 ? 'leading' : diff < 0 ? 'trailing' : 'tied'
+      stateFouls[state]++
+      const period = bucket30min(foul.minute)
+      periodStateFouls[period][state]++
+    }
+  }
+
+  return {
+    stateMinutes, stateFouls, periodStateMinutes, periodStateFouls,
+    matchCount: matches.length, foulCount,
+  }
+}
+
+function analyzeScorelineFouls(matches: DetailedMatch[]) {
+  console.log(`\n${'═'.repeat(70)}`)
+  console.log('  1.1 + 1.2  UTVISNINGAR × SPELLÄGE (normaliserat mot tid)')
+  console.log(`${'═'.repeat(70)}\n`)
+
+  const matchesWithFouls = matches.filter(m => m.fouls?.some(f => f.scoreAtTime))
+  if (matchesWithFouls.length === 0) { console.log('  Ingen utvisningsdata med scoreAtTime.'); return }
+
+  const s = computeFoulScorelineStats(matchesWithFouls)
+
+  const rates: Record<ScorelineState, number> = {
+    leading:  s.stateMinutes.leading  > 0 ? s.stateFouls.leading  / s.stateMinutes.leading  : 0,
+    tied:     s.stateMinutes.tied     > 0 ? s.stateFouls.tied     / s.stateMinutes.tied     : 0,
+    trailing: s.stateMinutes.trailing > 0 ? s.stateFouls.trailing / s.stateMinutes.trailing : 0,
+  }
+  const baseRate = (rates.leading + rates.tied + rates.trailing) / 3
+
+  console.log(`  Matcher med utvisningsdata (scoreAtTime): ${matchesWithFouls.length}`)
+  console.log(`  Utvisningar klassificerade: ${s.foulCount}`)
+  console.log()
+  console.log(`  ${''.padEnd(16)} ${'Minuter'.padStart(9)} ${'Utvisn'.padStart(9)} ${'Per 1kmin'.padStart(11)} ${'Relation'.padStart(10)}`)
+  console.log('  ' + '─'.repeat(58))
+
+  for (const [label, state] of STATE_LABELS) {
+    const rel = baseRate > 0 ? rates[state] / baseRate : 0
+    console.log(
+      `  ${label.padEnd(16)}` +
+      ` ${String(s.stateMinutes[state]).padStart(9)}` +
+      ` ${String(s.stateFouls[state]).padStart(9)}` +
+      ` ${(rates[state] * 1000).toFixed(3).padStart(11)}` +
+      ` ${rel.toFixed(2).padStart(9)}x`,
+    )
+  }
+
+  console.log()
+  const rL = rates.leading, rT = rates.tied, rU = rates.trailing
+  if (rU > rL * 1.3 && rU > rT * 1.3) {
+    console.log('  → Underläge klart vanligast — frustrations-/pressfouls dominerar.')
+    console.log('    Hypotes 2 (domarfenomen) möjlig om period-breakdown visar fas-förändring.')
+  } else if (rL > rU * 1.3 && rL > rT * 1.3) {
+    console.log('  → Ledning klart vanligast — "skydda resultatet"-fouls dominerar.')
+  } else if (Math.max(rL, rU) / (rT > 0 ? rT : 1) < 1.2) {
+    console.log('  → Jämnt fördelat — spelläge påverkar inte utvisningsfrekvens.')
+    console.log('    Hypotes 1 (vinstprocent-bias) bekräftad.')
+  } else {
+    console.log('  → Svag spelläges-känslighet. Hypotes 1 delvis bekräftad.')
+  }
+
+  // 1.2: Period × state
+  console.log()
+  console.log('  UTVISNINGAR × PERIOD × SPELLÄGE (per 1000 min)')
+  console.log(`  ${''.padEnd(14)} ${PERIODS_30.map(p => p.padStart(8)).join('')}`)
+  console.log('  ' + '─'.repeat(46))
+  for (const [label, state] of STATE_LABELS) {
+    const vals = PERIODS_30.map(p => {
+      const mins = s.periodStateMinutes[p][state]
+      const fouls = s.periodStateFouls[p][state]
+      return mins > 0 ? ((fouls / mins) * 1000).toFixed(2) : '—'
+    })
+    console.log(`  ${label.padEnd(14)} ${vals.map(v => v.padStart(8)).join('')}`)
+  }
+  console.log('\n  (Utvisningar per 1000 spelade minuter)')
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 1.3 — STRAFF × SPELLÄGE (normaliserat mot tid)
+// ══════════════════════════════════════════════════════════════════════════════
+
+function analyzeScorelinePenalties(matches: DetailedMatch[]) {
+  console.log(`\n${'═'.repeat(70)}`)
+  console.log('  1.3  STRAFF × SPELLÄGE (straffmål + 70% konverteringsantagande)')
+  console.log(`${'═'.repeat(70)}\n`)
+
+  const totalGoals = matches.reduce((s, m) => s + m.goals.length, 0)
+  const penaltyGoals = matches.flatMap(m =>
+    m.goals.filter(g => g.type === 'penalty').map(g => ({ goal: g, matchGoals: m.goals })),
+  )
+
+  console.log(`  Totalt straffmål: ${penaltyGoals.length} (${pct(penaltyGoals.length, totalGoals)} av mål)`)
+  console.log(`  Estimerat antal straffar (÷ 0.70): ${Math.round(penaltyGoals.length / 0.70)}`)
+
+  if (penaltyGoals.length === 0) { console.log('  Inga straffmål — gap 5 bekräftat.'); return }
+
+  // Accumulate total state minutes across all matches for normalization
+  const stateMinutes: Record<ScorelineState, number> = { leading: 0, tied: 0, trailing: 0 }
+  for (const m of matches) {
+    const { home, away } = accumulateScorelineMinutes(m.goals, 90)
+    stateMinutes.leading  += home.leading  + away.leading
+    stateMinutes.tied     += home.tied     + away.tied
+    stateMinutes.trailing += home.trailing + away.trailing
+  }
+
+  const statePenalties: Record<ScorelineState, number> = { leading: 0, tied: 0, trailing: 0 }
+  const periodPenalties: Record<string, number> = {}
+
+  for (const { goal, matchGoals } of penaltyGoals) {
+    // Score before this goal: count all goals with minute < goal.minute (strict)
+    let h = 0, a = 0
+    for (const g of matchGoals) {
+      if (g.minute < goal.minute) {
+        if (g.team === 'home') h++; else a++
+      }
+    }
+    const diff = goal.team === 'home' ? h - a : a - h
+    const state: ScorelineState = diff > 0 ? 'leading' : diff < 0 ? 'trailing' : 'tied'
+    statePenalties[state]++
+
+    const b = bucket15min(goal.minute)
+    periodPenalties[b] = (periodPenalties[b] ?? 0) + 1
+  }
+
+  const rates: Record<ScorelineState, number> = {
+    leading:  stateMinutes.leading  > 0 ? statePenalties.leading  / stateMinutes.leading  : 0,
+    tied:     stateMinutes.tied     > 0 ? statePenalties.tied     / stateMinutes.tied     : 0,
+    trailing: stateMinutes.trailing > 0 ? statePenalties.trailing / stateMinutes.trailing : 0,
+  }
+
+  console.log()
+  console.log('  Per spelläge (normaliserat mot tid, per 1000 min):')
+  console.log('  ' + '─'.repeat(58))
+  for (const [label, state] of STATE_LABELS) {
+    console.log(
+      `  ${label.padEnd(14)}` +
+      ` ${String(statePenalties[state]).padStart(5)} straffmål` +
+      `  ${(rates[state] * 1000).toFixed(3).padStart(8)}/kmin`,
+    )
+  }
+
+  console.log()
+  console.log('  Per period (15-min buckets):')
+  console.log('  ' + '─'.repeat(40))
+  for (const p of ['0-14', '15-29', '30-44', '45-59', '60-74', '75-89', '90+']) {
+    const n = periodPenalties[p] ?? 0
+    console.log(`  ${p.padEnd(8)} ${pct(n, penaltyGoals.length).padStart(7)}  (${n})`)
+  }
+
+  console.log()
+  if (rates.tied > rates.leading * 1.2 && rates.tied > rates.trailing * 1.2) {
+    console.log('  → Jämnt läge ger flest straffar/min — chans-drivet (stämmer med teorin).')
+  } else if (rates.trailing > rates.leading * 1.2) {
+    console.log('  → Underläge ger flest — desperat press genererar försvarsfouls.')
+  } else {
+    console.log('  → Jämn fördelning per spelläge.')
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 1.4 — UTVISNINGAR + STRAFF × FAS × SPELLÄGE
+// ══════════════════════════════════════════════════════════════════════════════
+
+function analyzeScorelineByPhase(matches: DetailedMatch[]) {
+  console.log(`\n${'═'.repeat(70)}`)
+  console.log('  1.4  UTVISNINGAR + STRAFF × FAS × SPELLÄGE (per 1000 min)')
+  console.log(`${'═'.repeat(70)}\n`)
+
+  const phases = [
+    { key: 'regular' as const,      label: 'Grundserie' },
+    { key: 'quarterfinal' as const, label: 'KVF'        },
+    { key: 'semifinal' as const,    label: 'SF'         },
+    { key: 'final' as const,        label: 'Final'      },
+  ]
+
+  // ── Fouls per phase ──────────────────────────────────────────────────────
+
+  console.log('  UTVISNINGAR × FAS × SPELLÄGE (per 1000 min)')
+  console.log(`  ${''.padEnd(14)} ${'Grundserie'.padStart(12)} ${'KVF'.padStart(8)} ${'SF'.padStart(8)} ${'Final'.padStart(8)}`)
+  console.log('  ' + '─'.repeat(52))
+
+  const foulRates: Record<string, Record<ScorelineState, number>> = {}
+  const foulMatchCounts: Record<string, number> = {}
+
+  for (const { key } of phases) {
+    const ms = matches.filter(m => m.phase === key && m.fouls?.some(f => f.scoreAtTime))
+    foulMatchCounts[key] = ms.length
+    const s = computeFoulScorelineStats(ms)
+    foulRates[key] = {
+      leading:  s.stateMinutes.leading  > 0 ? (s.stateFouls.leading  / s.stateMinutes.leading)  * 1000 : 0,
+      tied:     s.stateMinutes.tied     > 0 ? (s.stateFouls.tied     / s.stateMinutes.tied)     * 1000 : 0,
+      trailing: s.stateMinutes.trailing > 0 ? (s.stateFouls.trailing / s.stateMinutes.trailing) * 1000 : 0,
+    }
+  }
+
+  for (const [label, state] of STATE_LABELS) {
+    const vals = phases.map(({ key }, i) => {
+      const rate = foulRates[key]?.[state] ?? 0
+      const n = foulMatchCounts[key]
+      if (n === 0) return '—'
+      const str = rate > 0 ? rate.toFixed(2) : '—'
+      // Small sample warning for KVF/SF/Final (i > 0) handled with asterisk if n<10
+      return i > 0 && n < 10 ? str + '*' : str
+    })
+    const [v0, ...vRest] = vals
+    console.log(`  ${label.padEnd(14)} ${v0.padStart(12)} ${vRest.map(v => v.padStart(8)).join('')}`)
+  }
+  console.log(`  ${'(n matcher)'.padEnd(14)} ${String(foulMatchCounts.regular).padStart(12)} ${['quarterfinal','semifinal','final'].map(k => String(foulMatchCounts[k]).padStart(8)).join('')}`)
+
+  // ── Penalties per phase ───────────────────────────────────────────────────
+
+  console.log()
+  console.log('  STRAFF × FAS × SPELLÄGE (per 1000 min)')
+  console.log(`  ${''.padEnd(14)} ${'Grundserie'.padStart(12)} ${'KVF'.padStart(8)} ${'SF'.padStart(8)} ${'Final'.padStart(8)}`)
+  console.log('  ' + '─'.repeat(52))
+
+  const penRates: Record<string, Record<ScorelineState, number>> = {}
+  const penGoalCounts: Record<string, number> = {}
+
+  for (const { key } of phases) {
+    const ms = matches.filter(m => m.phase === key)
+    const stateMinutes: Record<ScorelineState, number> = { leading: 0, tied: 0, trailing: 0 }
+    const statePenalties: Record<ScorelineState, number> = { leading: 0, tied: 0, trailing: 0 }
+    let penCount = 0
+
+    for (const m of ms) {
+      const { home, away } = accumulateScorelineMinutes(m.goals, 90)
+      stateMinutes.leading  += home.leading  + away.leading
+      stateMinutes.tied     += home.tied     + away.tied
+      stateMinutes.trailing += home.trailing + away.trailing
+
+      for (const g of m.goals.filter(g => g.type === 'penalty')) {
+        penCount++
+        let h = 0, a = 0
+        for (const og of m.goals) {
+          if (og.minute < g.minute) { if (og.team === 'home') h++; else a++ }
+        }
+        const diff = g.team === 'home' ? h - a : a - h
+        const state: ScorelineState = diff > 0 ? 'leading' : diff < 0 ? 'trailing' : 'tied'
+        statePenalties[state]++
+      }
+    }
+
+    penGoalCounts[key] = penCount
+    penRates[key] = {
+      leading:  stateMinutes.leading  > 0 ? (statePenalties.leading  / stateMinutes.leading)  * 1000 : 0,
+      tied:     stateMinutes.tied     > 0 ? (statePenalties.tied     / stateMinutes.tied)     * 1000 : 0,
+      trailing: stateMinutes.trailing > 0 ? (statePenalties.trailing / stateMinutes.trailing) * 1000 : 0,
+    }
+  }
+
+  for (const [label, state] of STATE_LABELS) {
+    const vals = phases.map(({ key }, i) => {
+      const n = penGoalCounts[key]
+      if (n === 0) return '—'
+      const rate = penRates[key]?.[state] ?? 0
+      const str = rate > 0 ? rate.toFixed(2) : '—'
+      return i > 0 && n < 10 ? str + '*' : str
+    })
+    const [v0, ...vRest] = vals
+    console.log(`  ${label.padEnd(14)} ${v0.padStart(12)} ${vRest.map(v => v.padStart(8)).join('')}`)
+  }
+  console.log(`  ${'(n straffmål)'.padEnd(14)} ${String(penGoalCounts.regular).padStart(12)} ${['quarterfinal','semifinal','final'].map(k => String(penGoalCounts[k]).padStart(8)).join('')}`)
+  console.log('\n  * = indikativt, litet urval')
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// 1.6 — HEMMAFÖRDEL I SLUTSPEL — DEKOMPONERAD PER SPELNUMMER
+// ══════════════════════════════════════════════════════════════════════════════
+
+function analyzePlayoffHomeAdvDecomposed(matches: DetailedMatch[]) {
+  console.log(`\n${'═'.repeat(70)}`)
+  console.log('  1.6  HEMMAFÖRDEL I SLUTSPEL — DEKOMPONERAD PER SPELNUMMER')
+  console.log(`${'═'.repeat(70)}\n`)
+
+  type PlayoffPhase = 'quarterfinal' | 'semifinal' | 'final'
+  const playoffPhases: PlayoffPhase[] = ['quarterfinal', 'semifinal', 'final']
+  const phaseLabels: Record<PlayoffPhase, string> = { quarterfinal: 'KVF', semifinal: 'SF', final: 'Final' }
+
+  // Group by (season, phase, canonical team pair) and sort by date within each group
+  const seriesMap: Record<string, DetailedMatch[]> = {}
+  for (const m of matches.filter(m => m.phase !== 'regular')) {
+    const pair = [m.homeTeam, m.awayTeam].sort().join('|')
+    const k = `${m.season}|${m.phase}|${pair}`
+    if (!seriesMap[k]) seriesMap[k] = []
+    seriesMap[k].push(m)
+  }
+  for (const series of Object.values(seriesMap)) {
+    series.sort((a, b) => a.date.localeCompare(b.date))
+  }
+
+  // Collect results per phase × game number
+  const results: Record<PlayoffPhase, Record<number, { homeWins: number; total: number }>> = {
+    quarterfinal: {}, semifinal: {}, final: {},
+  }
+
+  for (const series of Object.values(seriesMap)) {
+    const phase = series[0].phase as PlayoffPhase
+    if (!results[phase]) continue
+    for (let i = 0; i < series.length; i++) {
+      const gameNum = i + 1
+      if (!results[phase][gameNum]) results[phase][gameNum] = { homeWins: 0, total: 0 }
+      results[phase][gameNum].total++
+      if (series[i].homeScore > series[i].awayScore) results[phase][gameNum].homeWins++
+    }
+  }
+
+  const maxGame = Math.max(
+    ...Object.values(results).flatMap(r => Object.keys(r).map(Number)),
+    1,
+  )
+  const gameNums = Array.from({ length: maxGame }, (_, i) => i + 1)
+
+  console.log(`  ${''.padEnd(12)} ${gameNums.map(g => `Spel ${g}`.padStart(10)).join('')}`)
+  console.log('  ' + '─'.repeat(12 + gameNums.length * 10))
+
+  for (const phase of playoffPhases) {
+    const label = phaseLabels[phase]
+    const vals = gameNums.map(g => {
+      const d = results[phase][g]
+      if (!d || d.total === 0) return '—'
+      const h = (d.homeWins / d.total * 100).toFixed(0)
+      return `${h}% (${d.total})`
+    })
+    console.log(`  ${(label + ' hemma%').padEnd(12)} ${vals.map(v => v.padStart(10)).join('')}`)
+  }
+
+  console.log()
+  console.log('  Tolkning:')
+  const qfG1 = results.quarterfinal[1]
+  if (qfG1 && qfG1.total > 0) {
+    const pct1 = qfG1.homeWins / qfG1.total * 100
+    if (pct1 > 55) {
+      console.log(`  KVF Spel 1: ${pct1.toFixed(0)}% hemmaseger → rankingsfördel, inte plansfaktor.`)
+    } else {
+      console.log(`  KVF Spel 1: ${pct1.toFixed(0)}% → plansfaktor kan bidra utöver rankning.`)
+    }
+  }
+  const seriesCount = Object.keys(seriesMap).length
+  console.log(`  Baserat på ${seriesCount} serier (spel 1 = högre rankat lag hemma per definition).`)
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 // 7. MOTORSIMULERING
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -670,6 +1113,11 @@ if (hasDetailedData && detailedData) {
   analyzeCornerVariation(matches)
   analyzeComebacks(matches)
   analyzePlayoffVsRegular(matches)
+  verifyPhaseStats(matches)
+  analyzeScorelineFouls(matches)
+  analyzeScorelinePenalties(matches)
+  analyzeScorelineByPhase(matches)
+  analyzePlayoffHomeAdvDecomposed(matches)
 }
 
 runSimulation()
