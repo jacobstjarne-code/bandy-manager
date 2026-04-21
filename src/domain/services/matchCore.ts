@@ -145,7 +145,7 @@ type SecondHalfMode = 'chasing' | 'controlling' | 'even_battle' | 'cruise'
 function getSecondHalfMode(
   managedScore: number, opponentScore: number,
   step: number,
-  matchPhase: import('./matchUtils').MatchPhaseContext = 'regular',
+  _matchPhase: import('./matchUtils').MatchPhaseContext = 'regular',
 ): SecondHalfMode {
   const diff = managedScore - opponentScore
   const chasingThreshold = -1
