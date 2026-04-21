@@ -86,7 +86,8 @@ export function extractMatchStat(fix: Fixture, game: SaveGame, seed: number, sea
         if (isHome) htHome++
         else htAway++
       }
-    } else if (ev.type === MatchEventType.Suspension) {
+    } else if (ev.type === MatchEventType.RedCard) {
+      // Bandy uses 10-min suspensions (MatchEventType.RedCard in matchCore.ts)
       suspensions.push({ minute: ev.minute, team })
     } else if (ev.type === MatchEventType.Corner) {
       if (isHome) cornersHome++
