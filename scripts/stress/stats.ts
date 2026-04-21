@@ -52,14 +52,8 @@ function getPhase(fix: Fixture): MatchStat['phase'] {
 }
 
 export function extractMatchStat(fix: Fixture, game: SaveGame, seed: number, season: number): MatchStat {
-  // Build a set of minutes where a Penalty event fired per club (to identify penalty goals)
-  const penaltyMinutes = new Map<string, Set<number>>()
-  for (const ev of fix.events) {
-    if (ev.type === MatchEventType.Penalty) {
-      if (!penaltyMinutes.has(ev.clubId)) penaltyMinutes.set(ev.clubId, new Set())
-      penaltyMinutes.get(ev.clubId)!.add(ev.minute)
-    }
-  }
+  // Penalty events are stripped from fix.events by roundProcessor to save memory.
+  // Use the isPenaltyGoal flag set directly on Goal events instead.
 
   const goals: MatchStat['goals'] = []
   const suspensions: MatchStat['suspensions'] = []
@@ -75,12 +69,11 @@ export function extractMatchStat(fix: Fixture, game: SaveGame, seed: number, sea
     const team: 'home' | 'away' = isHome ? 'home' : 'away'
 
     if (ev.type === MatchEventType.Goal) {
-      const isPenaltyGoal = penaltyMinutes.get(ev.clubId)?.has(ev.minute) ?? false
       goals.push({
         minute: ev.minute,
         team,
         isCornerGoal: ev.isCornerGoal ?? false,
-        isPenaltyGoal,
+        isPenaltyGoal: ev.isPenaltyGoal ?? false,
       })
       if (ev.minute < 45) {
         if (isHome) htHome++

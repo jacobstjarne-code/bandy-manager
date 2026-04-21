@@ -16,6 +16,7 @@ export interface MatchEvent {
   secondaryPlayerId?: string
   description: string
   isCornerGoal?: boolean
+  isPenaltyGoal?: boolean
 }
 
 export interface MatchReport {

@@ -164,6 +164,28 @@ function pickRefStyle(rand: () => number): RefStyle {
   return 'inconsistent'
 }
 
+// ── Penalty period/scoreline modifiers ───────────────────────────────────────
+// Calibrated against SCORELINE_REFERENCE.md §1.3 (bandygrytan 648 penalty goals).
+// Periodic distribution: 75-89 min has 22.5% of penalties = 1.35x the average period.
+
+function getPenaltyPeriodMod(minute: number): number {
+  if (minute < 15) return 0.55   // 8.8% share
+  if (minute < 30) return 0.89   // 14.2%
+  if (minute < 45) return 0.90   // 14.4%
+  if (minute < 60) return 1.08   // 17.3%
+  if (minute < 75) return 0.98   // 15.6%
+  if (minute < 90) return 1.35   // 22.5% — late-game peak
+  return 0.73                     // 7.3% overtime
+}
+
+// Scoreline bias from attacking team's perspective.
+// Leading 3.04/kmin, Tied 2.57/kmin, Trailing 2.53/kmin (snitt 2.71).
+function getScorelinePenaltyMod(diff: number): number {
+  if (diff > 0) return 1.12   // leading — defensive fouls in box most common
+  if (diff === 0) return 0.95  // tied
+  return 0.93                  // trailing
+}
+
 // ── Core generator ────────────────────────────────────────────────────────────
 // Internal generator that both simulateFirstHalf and simulateSecondHalf delegate
 // to. endStep controls how far the loop runs before yielding fullTime/OT/penalties.
@@ -468,6 +490,81 @@ function* simulateMatchCore(
   const homeTeamRef = homeClubName ?? fixture.homeClubId
   const awayTeamRef = awayClubName ?? fixture.awayClubId
 
+  // ── Penalty trigger helper ────────────────────────────────────────────────────
+  // Reusable closure for all penalty trigger sites (attack, corner, etc).
+  // For interactive penalties (managed team), returns penaltyInteractionData without
+  // scoring — MatchLiveScreen resolves the outcome. For AI, auto-resolves immediately.
+  function resolvePenaltyTrigger(
+    attackingStarters: Player[],
+    defendingStarters: Player[],
+    isHomeAttacking: boolean,
+    minute: number,
+    attackingClubId: string,
+    curHomeScore: number,
+    curAwayScore: number,
+  ): {
+    goalScored: boolean
+    scorerPlayerId: string | undefined
+    penaltyInteractionData: PenaltyInteractionData | undefined
+    penaltyCauseText: string
+    events: MatchEvent[]
+  } {
+    const events: MatchEvent[] = []
+    const isManagedAttacking = managedIsHome !== undefined ? (managedIsHome === isHomeAttacking) : false
+    const shooter = getGoalScorer(attackingStarters)
+    const gk      = getGK(defendingStarters)
+    if (!shooter || !gk) {
+      return { goalScored: false, scorerPlayerId: undefined, penaltyInteractionData: undefined, penaltyCauseText: '', events }
+    }
+    const penEvent: MatchEvent = { minute, type: MatchEventType.Penalty, clubId: attackingClubId, description: 'Straff' }
+    events.push(penEvent)
+    if (!isFast && isManagedAttacking) {
+      // Interactive — MatchLiveScreen resolves outcome, no goal scored yet
+      const causeIdx = Math.floor(rand() * PENALTY_CAUSE_COMMENTARY.length)
+      const causeText = PENALTY_CAUSE_COMMENTARY[causeIdx](`${shooter.firstName} ${shooter.lastName}`)
+      return {
+        goalScored: false,
+        scorerPlayerId: undefined,
+        penaltyInteractionData: {
+          minute,
+          shooterName:  `${shooter.firstName} ${shooter.lastName}`,
+          shooterId:    shooter.id,
+          shooterSkill: shooter.currentAbility,
+          keeperName:   `${gk.firstName} ${gk.lastName}`,
+          keeperSkill:  gk.currentAbility,
+        },
+        penaltyCauseText: causeText,
+        events,
+      }
+    }
+    // AI auto-resolve
+    const mentality  = isHomeAttacking ? homeLineup.tactic.mentality : awayLineup.tactic.mentality
+    const keeperDive = resolveAIPenaltyKeeperDive(mentality ?? 'offensive', rand)
+    const aiDir      = rand() < 0.4 ? 'left' : rand() < 0.7 ? 'right' : 'center'
+    const aiHeight   = rand() < 0.65 ? 'low' : 'high'
+    const penData: PenaltyInteractionData = {
+      minute,
+      shooterName:  `${shooter.firstName} ${shooter.lastName}`,
+      shooterId:    shooter.id,
+      shooterSkill: shooter.currentAbility,
+      keeperName:   `${gk.firstName} ${gk.lastName}`,
+      keeperSkill:  gk.currentAbility,
+    }
+    const outcome = resolvePenalty(penData, aiDir as 'left' | 'center' | 'right', aiHeight as 'low' | 'high', keeperDive, rand)
+    if (outcome.type === 'goal' && canScore(isHomeAttacking, curHomeScore, curAwayScore)) {
+      trackGoal(shooter.id)
+      const ge: MatchEvent = {
+        minute, type: MatchEventType.Goal, clubId: attackingClubId,
+        playerId: shooter.id,
+        description: `Straffmål av ${shooter.firstName} ${shooter.lastName}`,
+        isPenaltyGoal: true,
+      }
+      events.push(ge)
+      return { goalScored: true, scorerPlayerId: shooter.id, penaltyInteractionData: undefined, penaltyCauseText: '', events }
+    }
+    return { goalScored: false, scorerPlayerId: undefined, penaltyInteractionData: undefined, penaltyCauseText: '', events }
+  }
+
   // ── Main loop ───────────────────────────────────────────────────────────────
 
   for (let step = startStep; step < endStep; step++) {
@@ -624,7 +721,30 @@ function* simulateMatchCore(
       const base         = attAttack * 0.6 - defDefense * 0.4 + randRange(rand, -0.2, 0.2)
       const chanceQuality = clamp(base * 1.2 + 0.15 + 0.15 + derbyChanceMult, 0.05, 0.95)
 
-      if (chanceQuality > 0.10) {
+      // Standalone penalty trigger — fires before shot resolution for high-quality chances.
+      // Base 0.13 calibrated for ~5.4% penaltyGoalPct (SCORELINE_REFERENCE.md §1.3).
+      // Spec sanity check assumed 150 steps; engine runs 60 → 10x correction over spec's 0.012.
+      // Period and scoreline mods applied per bandygrytan distribution.
+      // Flag skips normal shot resolution for this step (penalty replaces shot).
+      let penaltyFiredThisStep = false
+      if (chanceQuality > 0.40) {
+        const scoreDiff = isHomeAttacking ? homeScore - awayScore : awayScore - homeScore
+        const penProb = 0.13 * getPenaltyPeriodMod(minute) * getScorelinePenaltyMod(scoreDiff)
+        if (rand() < penProb) {
+          const result = resolvePenaltyTrigger(attackingStarters, defendingStarters, isHomeAttacking, minute, attackingClubId, homeScore, awayScore)
+          for (const ev of result.events) { stepEvents.push(ev); allEvents.push(ev) }
+          if (result.goalScored) {
+            if (isHomeAttacking) { homeScore++ } else { awayScore++ }
+            scorerPlayerId = result.scorerPlayerId
+            goalScored = true
+          }
+          if (result.penaltyInteractionData) penaltyInteractionData = result.penaltyInteractionData
+          if (result.penaltyCauseText) penaltyCauseText = result.penaltyCauseText
+          penaltyFiredThisStep = true
+        }
+      }
+
+      if (!penaltyFiredThisStep && chanceQuality > 0.10) {
         if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
 
         const shotResult   = rand()
@@ -841,10 +961,9 @@ function* simulateMatchCore(
 
       if (r < foulThreshold) {
         const isAttackZoneFoul = rand() < 0.70
-        const isPenalty        = isAttackZoneFoul && rand() < 0.60
 
         // Free kick interaction (full mode, managed attacking, max 1/match)
-        if (!isFast && isAttackZoneFoul && !isPenalty && interactiveFreeKicksUsed < 1 && rand() < 0.15) {
+        if (!isFast && isAttackZoneFoul && interactiveFreeKicksUsed < 1 && rand() < 0.15) {
           const isManagedAttacking = managedIsHome !== undefined ? (managedIsHome === isHomeAttacking) : false
           if (isManagedAttacking) {
             const kicker = attackingStarters.filter(p => p.position !== PlayerPosition.Goalkeeper).sort((a, b) => (b.attributes.shooting + b.attributes.passing) - (a.attributes.shooting + a.attributes.passing))[0]
@@ -863,71 +982,24 @@ function* simulateMatchCore(
           }
         }
 
-        if (isPenalty) {
-          const isManagedAttacking = managedIsHome !== undefined ? (managedIsHome === isHomeAttacking) : false
-          const shooter = getGoalScorer(attackingStarters)
-          const gk      = getGK(defendingStarters)
-
-          if (shooter && gk) {
-            const penEvent: MatchEvent = { minute, type: MatchEventType.Penalty, clubId: attackingClubId, description: 'Straff' }
-            stepEvents.push(penEvent); allEvents.push(penEvent)
-
-            if (!isFast && isManagedAttacking) {
-              // Interactive penalty — resolved by MatchLiveScreen
-              penaltyInteractionData = {
-                minute,
-                shooterName:  `${shooter.firstName} ${shooter.lastName}`,
-                shooterId:    shooter.id,
-                shooterSkill: shooter.currentAbility,
-                keeperName:   `${gk.firstName} ${gk.lastName}`,
-                keeperSkill:  gk.currentAbility,
-              }
-              const causeIdx = Math.floor(rand() * PENALTY_CAUSE_COMMENTARY.length)
-              penaltyCauseText = PENALTY_CAUSE_COMMENTARY[causeIdx](`${shooter.firstName} ${shooter.lastName}`)
-            } else {
-              // AI penalty — auto-resolve
-              const mentality  = isHomeAttacking ? homeLineup.tactic.mentality : awayLineup.tactic.mentality
-              const keeperDive = resolveAIPenaltyKeeperDive(mentality ?? 'offensive', rand)
-              const aiDir      = rand() < 0.4 ? 'left' : rand() < 0.7 ? 'right' : 'center'
-              const aiHeight   = rand() < 0.65 ? 'low' : 'high'
-              const penData: PenaltyInteractionData = {
-                minute,
-                shooterName:  `${shooter.firstName} ${shooter.lastName}`,
-                shooterId:    shooter.id,
-                shooterSkill: shooter.currentAbility,
-                keeperName:   `${gk.firstName} ${gk.lastName}`,
-                keeperSkill:  gk.currentAbility,
-              }
-              const outcome = resolvePenalty(penData, aiDir as 'left' | 'center' | 'right', aiHeight as 'low' | 'high', keeperDive, rand)
-              if (outcome.type === 'goal' && canScore(isHomeAttacking, homeScore, awayScore)) {
-                if (isHomeAttacking) { homeScore++ } else { awayScore++ }
-                scorerPlayerId = shooter.id
-                goalScored = true
-                trackGoal(shooter.id)
-                const ge: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: shooter.id, description: `Strafftmål av ${shooter.firstName} ${shooter.lastName}` }
-                stepEvents.push(ge); allEvents.push(ge)
-              }
-            }
+        // All fouls in foul sequences become suspensions — penalties handled separately in attack sequences
+        const attackScore  = isHomeAttacking ? homeScore : awayScore
+        const defendScore  = isHomeAttacking ? awayScore : homeScore
+        const suspPlayer   = getDefendingPlayer(defendingStarters, attackScore, defendScore)
+        if (suspPlayer) {
+          suspendedPlayerId  = suspPlayer.id
+          suspensionOccurred = true
+          const duration     = 3 + Math.floor(rand() * 4)
+          if (isHomeAttacking) {
+            awayActiveSuspensions++
+            awaySuspensionTimers.push(duration)
+          } else {
+            homeActiveSuspensions++
+            homeSuspensionTimers.push(duration)
           }
-        } else {
-          const attackScore  = isHomeAttacking ? homeScore : awayScore
-          const defendScore  = isHomeAttacking ? awayScore : homeScore
-          const suspPlayer   = getDefendingPlayer(defendingStarters, attackScore, defendScore)
-          if (suspPlayer) {
-            suspendedPlayerId  = suspPlayer.id
-            suspensionOccurred = true
-            const duration     = 3 + Math.floor(rand() * 4)
-            if (isHomeAttacking) {
-              awayActiveSuspensions++
-              awaySuspensionTimers.push(duration)
-            } else {
-              homeActiveSuspensions++
-              homeSuspensionTimers.push(duration)
-            }
-            trackRed(suspPlayer.id)
-            const ev: MatchEvent = { minute, type: MatchEventType.RedCard, clubId: defendingClubId, playerId: suspPlayer.id, description: `Utvisning av ${suspPlayer.firstName} ${suspPlayer.lastName}` }
-            stepEvents.push(ev); allEvents.push(ev)
-          }
+          trackRed(suspPlayer.id)
+          const ev: MatchEvent = { minute, type: MatchEventType.RedCard, clubId: defendingClubId, playerId: suspPlayer.id, description: `Utvisning av ${suspPlayer.firstName} ${suspPlayer.lastName}` }
+          stepEvents.push(ev); allEvents.push(ev)
         }
       }
     }
