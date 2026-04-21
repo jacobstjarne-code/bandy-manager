@@ -355,8 +355,14 @@ export function SeasonSummaryScreen() {
             })
           }
 
-          // arc storylines
-          const seasonStorylines = game.storylines?.filter(s => s.season === summary.season) ?? []
+          // arc storylines — deduplicera per typ
+          const allSeasonStorylines = game.storylines?.filter(s => s.season === summary.season) ?? []
+          const seenSlTypes = new Set<string>()
+          const seasonStorylines = allSeasonStorylines.filter(s => {
+            if (seenSlTypes.has(s.type)) return false
+            seenSlTypes.add(s.type)
+            return true
+          })
           const storylineEmoji = (type: string): string => {
             switch (type) {
               case 'rescued_from_unemployment': return '🏭'
@@ -425,11 +431,18 @@ export function SeasonSummaryScreen() {
         {(() => {
           const seasonStorylines = (game.storylines ?? []).filter(s => s.season === summary.season)
           if (seasonStorylines.length === 0) return null
+          // Deduplicera per typ — en storyline-typ räcker per berättelse
+          const seenTypes = new Set<string>()
+          const dedupedStorylines = seasonStorylines.filter(s => {
+            if (seenTypes.has(s.type)) return false
+            seenTypes.add(s.type)
+            return true
+          })
           return (
             <div className="card-round" style={{ padding: '10px 12px', marginBottom: 8 }}>
               <SectionLabel style={{ marginBottom: 6 }}>📖 SÄSONGENS BERÄTTELSER</SectionLabel>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {seasonStorylines.slice(-5).map((s, i) => {
+                {dedupedStorylines.slice(-5).map((s, i) => {
                   const player = s.playerId ? game.players.find(p => p.id === s.playerId) : null
                   const playerName = player ? `${player.firstName} ${player.lastName}` : null
                   return (
