@@ -518,10 +518,10 @@ function* simulateMatchCore(
       const mode = getSecondHalfMode(managedScore, opponentScore, step, matchPhase)
       const managedTD = managedIsHome ? homeTacticalDiscipline : awayTacticalDiscipline
       if (mode === 'chasing') {
-        secondHalfGoalMod = 1.08
-        secondHalfFoulMod = 1.15
+        secondHalfGoalMod = 1.14
+        secondHalfFoulMod = 1.20
       } else if (mode === 'controlling') {
-        secondHalfGoalMod = 0.92
+        secondHalfGoalMod = 0.96
         secondHalfFoulMod = 1.0 + (1.0 - managedTD) * 0.25
       } else if (mode === 'even_battle') {
         secondHalfGoalMod = step >= 50 ? 1.04 : 1.0
