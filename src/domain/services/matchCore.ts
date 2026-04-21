@@ -554,7 +554,7 @@ function* simulateMatchCore(
     const awayPenaltyFactor = awayActiveSuspensions > 0 ? 0.75 : 1.0
 
     // Trailing boost in second half
-    const trailingBoost = (diff: number) => diff < 0 ? Math.min(-diff, 3) * 0.07 : 0
+    const trailingBoost = (diff: number) => diff < 0 ? Math.min(-diff, 3) * 0.11 : 0
     const homeTrailBoost = trailingBoost(homeScore - awayScore)
     const awayTrailBoost = trailingBoost(awayScore - homeScore)
     const effectiveHomeAttack = step >= 30 ? clamp(homeAttack * (1 + homeTrailBoost), 0, 1) : homeAttack
