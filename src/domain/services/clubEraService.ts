@@ -5,6 +5,7 @@ import type { SaveGame, ClubEra } from '../entities/SaveGame'
  *
  * legacy       — ≥5 säsonger OCH (bästa placering ≤4 ELLER ≥1 titel) OCH CS ≥70
  * establishment — ≥3 säsonger OCH bästa placering ≤10 OCH CS ≥50
+ * fotfaste     — bästa placering ≤6 (övre halvan i 12-lagsserie) OCH ej survival-villkor
  * survival     — annars
  */
 export function calculateClubEra(game: SaveGame): ClubEra {
@@ -19,12 +20,17 @@ export function calculateClubEra(game: SaveGame): ClubEra {
   if (arc.seasonCount >= 3 && arc.bestFinish <= 10 && cs >= 50) {
     return 'establishment'
   }
+  // Fotfäste: ett bra resultat (topp 6) räcker — oavsett antal säsonger
+  if (arc.bestFinish <= 6) {
+    return 'fotfaste'
+  }
   return 'survival'
 }
 
 export function eraLabel(era: ClubEra): string {
   switch (era) {
     case 'survival': return 'Överlevnad'
+    case 'fotfaste': return 'Fotfäste'
     case 'establishment': return 'Etablering'
     case 'legacy': return 'Storhetstid'
   }
@@ -33,6 +39,7 @@ export function eraLabel(era: ClubEra): string {
 export function eraFullLabel(era: ClubEra): string {
   switch (era) {
     case 'survival': return 'Kamp för överlevnad'
+    case 'fotfaste': return 'Fotfäste i serien'
     case 'establishment': return 'Etablering'
     case 'legacy': return 'Klubbens storhetstid'
   }
@@ -41,6 +48,7 @@ export function eraFullLabel(era: ClubEra): string {
 export function eraDescription(era: ClubEra): string {
   switch (era) {
     case 'survival': return 'Klubben befinner sig i ett kritiskt läge. Varje poäng räknas.'
+    case 'fotfaste': return 'Ett ordentligt resultat visar att ni hör hemma här. Bygg vidare.'
     case 'establishment': return 'Orten räknar er inte längre som nykomlingar. Förväntningarna växer.'
     case 'legacy': return 'Det är inte längre bara bandy. Det är ortens identitet.'
   }

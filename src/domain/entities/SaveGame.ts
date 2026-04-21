@@ -39,7 +39,7 @@ export type { RoundSummaryData }
 export type { Moment, MomentSource }
 export type { AssistantCoach, CoachPersonality, CoachBackground } from './AssistantCoach'
 
-export type ClubEra = 'survival' | 'establishment' | 'legacy'
+export type ClubEra = 'survival' | 'fotfaste' | 'establishment' | 'legacy'
 
 export interface YouthIntakeRecord {
   season: number

@@ -252,6 +252,7 @@ export function PreSeasonScreen() {
           if (eraShiftMoment) {
             const expectationByEra: Record<typeof era, string> = {
               survival: 'Håll laget sammanhållet. En placering som inte tvingar krisåtgärder.',
+              fotfaste: 'Befäst platsen i topp 6. Visa att förra säsongen inte var en slump.',
               establishment: 'Topp 8, bygga akademin, utveckla en egen stjärna.',
               legacy: 'Titeln är förväntningen. Inget annat räcker.',
             }
