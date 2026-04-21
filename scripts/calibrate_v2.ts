@@ -571,8 +571,9 @@ function makeSquad(clubId: string, ca = 55): Player[] {
 }
 
 const defaultTactic = {
-  mentality: 'balanced' as const, tempo: 'medium' as const, press: 'medium' as const,
-  width: 'medium' as const, cornerStrategy: 'standard' as const, passingRisk: 'safe' as const,
+  mentality: 'balanced' as const, tempo: 'normal' as const, press: 'medium' as const,
+  width: 'normal' as const, attackingFocus: 'mixed' as const,
+  cornerStrategy: 'standard' as const, passingRisk: 'safe' as const, penaltyKillStyle: 'active' as const,
 }
 
 function runSimulation() {
@@ -581,11 +582,11 @@ function runSimulation() {
   console.log(`${'═'.repeat(70)}\n`)
 
   const TARGETS = {
-    goalsPerMatch:   { target: 10.0,  tolerance: 1.5  },
-    cornerGoalShare: { target: 0.232, tolerance: 0.03 },
-    homeWinRate:     { target: 0.507, tolerance: 0.05 },
-    drawRate:        { target: 0.090, tolerance: 0.03 },
-    secondHalfShare: { target: 0.543, tolerance: 0.03 },
+    goalsPerMatch:   { target: 9.12,  tolerance: 1.5  },
+    cornerGoalShare: { target: 0.222, tolerance: 0.03 },
+    homeWinRate:     { target: 0.502, tolerance: 0.05 },
+    drawRate:        { target: 0.116, tolerance: 0.03 },
+    secondHalfShare: { target: 0.542, tolerance: 0.03 },
   }
 
   const N = 200
@@ -603,7 +604,7 @@ function runSimulation() {
       date:'2025-01-01', homeScore:0, awayScore:0, events:[], attendance:500,
       isCup:false, isKnockout:false, isNeutralVenue:false } as Fixture
 
-    const result = simulateMatch({ fixture:fix, homeLineup:hl, awayLineup:al, homePlayers:hp, awayPlayers:ap, homeAdvantage:0.035, seed:i*1337 })
+    const result = simulateMatch({ fixture:fix, homeLineup:hl, awayLineup:al, homePlayers:hp, awayPlayers:ap, homeAdvantage:0.14, seed:i*1337 })
     const f = result.fixture
     const gs = (f.homeScore??0) + (f.awayScore??0)
     totalGoals += gs
