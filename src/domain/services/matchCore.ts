@@ -509,26 +509,33 @@ function* simulateMatchCore(
     // DREAM-004: seasonal ice hardness
     stepGoalMod *= iceHardnessMod
 
-    // Second-half mode modifiers
-    let secondHalfGoalMod = 1.0
-    let secondHalfFoulMod = 1.0
-    if (step >= 30 && managedIsHome !== undefined) {
-      const managedScore  = managedIsHome ? homeScore : awayScore
-      const opponentScore = managedIsHome ? awayScore : homeScore
-      const mode = getSecondHalfMode(managedScore, opponentScore, step, matchPhase)
-      const managedTD = managedIsHome ? homeTacticalDiscipline : awayTacticalDiscipline
-      if (mode === 'chasing') {
-        secondHalfGoalMod = 1.14
-        secondHalfFoulMod = 1.20
-      } else if (mode === 'controlling') {
-        secondHalfGoalMod = 0.96
-        secondHalfFoulMod = 1.0 + (1.0 - managedTD) * 0.25
-      } else if (mode === 'even_battle') {
-        secondHalfGoalMod = step >= 50 ? 1.04 : 1.0
-        secondHalfFoulMod = 1.10
+    // Per-lag mode i 2:a halvlek — kör alltid, oberoende av managed-status.
+    // Mode appliceras separat på varje lags attack (nedan) och på foul-threshold.
+    let homeModeAttackMult = 1.0
+    let awayModeAttackMult = 1.0
+    let homeModeFoulMult   = 1.0
+    let awayModeFoulMult   = 1.0
+
+    if (step >= 30) {
+      const homeMode = getSecondHalfMode(homeScore, awayScore, step, matchPhase)
+      const awayMode = getSecondHalfMode(awayScore, homeScore, step, matchPhase)
+
+      const applyMode = (mode: SecondHalfMode, td: number): { attack: number; foul: number } => {
+        if (mode === 'chasing')     return { attack: 1.14, foul: 1.20 }
+        if (mode === 'controlling') return { attack: 0.96, foul: 1.0 + (1.0 - td) * 0.25 }
+        if (mode === 'even_battle') return { attack: step >= 50 ? 1.04 : 1.0, foul: 1.10 }
+        // cruise
+        return { attack: 0.92, foul: 1.0 }
       }
+
+      const homeModeFx = applyMode(homeMode, homeTacticalDiscipline)
+      const awayModeFx = applyMode(awayMode, awayTacticalDiscipline)
+
+      homeModeAttackMult = homeModeFx.attack
+      awayModeAttackMult = awayModeFx.attack
+      homeModeFoulMult   = homeModeFx.foul
+      awayModeFoulMult   = awayModeFx.foul
     }
-    stepGoalMod *= secondHalfGoalMod
 
     // Global second-half boost — only in second half (emitFullTime = true), not overtime
     if (emitFullTime) stepGoalMod *= SECOND_HALF_BOOST
@@ -557,8 +564,12 @@ function* simulateMatchCore(
     const trailingBoost = (diff: number) => diff < 0 ? Math.min(-diff, 3) * 0.11 : 0
     const homeTrailBoost = trailingBoost(homeScore - awayScore)
     const awayTrailBoost = trailingBoost(awayScore - homeScore)
-    const effectiveHomeAttack = step >= 30 ? clamp(homeAttack * (1 + homeTrailBoost), 0, 1) : homeAttack
-    const effectiveAwayAttack = step >= 30 ? clamp(awayAttack * (1 + awayTrailBoost), 0, 1) : awayAttack
+    const effectiveHomeAttack = step >= 30
+      ? clamp(homeAttack * (1 + homeTrailBoost) * homeModeAttackMult, 0, 1)
+      : homeAttack
+    const effectiveAwayAttack = step >= 30
+      ? clamp(awayAttack * (1 + awayTrailBoost) * awayModeAttackMult, 0, 1)
+      : awayAttack
 
     const homeWeight = effectiveHomeAttack * (1 + homeMods.pressModifier * 0.2) * (1 + effectiveHomeAdvantage) * homePenaltyFactor
     const awayWeight = effectiveAwayAttack * (1 + awayMods.pressModifier * 0.2) * awayPenaltyFactor
@@ -825,7 +836,8 @@ function* simulateMatchCore(
     } else if (seqType === 'foul') {
       const foulProb = attDiscipline * 0.4 + defDiscipline * 0.3
       const r        = rand()
-      const foulThreshold = foulProb * 0.55 * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult * secondHalfFoulMod
+      const activeFoulMult = isHomeAttacking ? homeModeFoulMult : awayModeFoulMult
+      const foulThreshold = foulProb * 0.55 * phaseConst.suspMod * SUSP_TIMING_BY_PERIOD[period] * derbyFoulMult * activeFoulMult
 
       if (r < foulThreshold) {
         const isAttackZoneFoul = rand() < 0.70
