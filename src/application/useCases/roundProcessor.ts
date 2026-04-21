@@ -1067,7 +1067,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     trainerArc: updatedArc,
     previousKommunBidrag: game.localPolitician?.kommunBidrag,
     mecenater: updatedMecenater,
-    lastCoffeeQuoteHash: currentLeagueRound !== null ? currentLeagueRound * 7 + game.currentSeason * 31 : game.lastCoffeeQuoteHash,
+    // Spara förra omgångens seed — pick()-funktionen hoppar över det värdet för att undvika upprepning
+    lastCoffeeQuoteHash: currentLeagueRound !== null ? (currentLeagueRound - 1) * 11 + game.currentSeason * 31 : game.lastCoffeeQuoteHash,
     lastEconomicStressRound: eventResult.lastEconomicStressRound,
     pendingPressConference: simResult.pressEvent ?? undefined,
     ...(() => {

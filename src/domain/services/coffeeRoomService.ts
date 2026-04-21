@@ -85,7 +85,8 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     .filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
     .sort((a, b) => b.matchday - a.matchday)[0]
 
-  const seed = round * 7 + game.currentSeason * 31
+  // Multiplier 11 (coprime to 7 och 3) gör att idx roterar genom alla värden per omgång
+  const seed = round * 11 + game.currentSeason * 31
 
   let soldItem: typeof game.inbox[number] | undefined
   let boughtItem: typeof game.inbox[number] | undefined
