@@ -128,7 +128,7 @@ const LOSS_QUOTES: Record<CoachPersonality, string[]> = {
   philosophical: [
     'Alla gör förluster. Frågan är vad man gör dan efter.',
     'En match är en match. En säsong är något helt annat.',
-    'Det där var inte oss. Vi hittar tillbaka.',
+    'Det där var inte vi. Vi hittar tillbaka.',
   ],
 }
 

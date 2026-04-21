@@ -11,9 +11,12 @@ const SENDER_ORIGINS = [
   'Örebro', 'Västerås', 'Falun', 'Borlänge',
 ]
 
-const SENDER_FIRST_NAMES = [
+const SENDER_MALE_NAMES = [
   'Göran', 'Stig', 'Lennart', 'Rune', 'Bertil', 'Åke', 'Gunnar', 'Lars',
-  'Ingrid', 'Maj', 'Britt', 'Elsa', 'Karin', 'Birgit',
+]
+
+const SENDER_FEMALE_NAMES = [
+  'Ingrid', 'Maj', 'Britt', 'Elsa', 'Karin', 'Birgit', 'Gun', 'Inga',
 ]
 
 const SENDER_LAST_NAMES = [
@@ -39,7 +42,10 @@ export function generateBandyLetterEvent(game: SaveGame, nextMatchday: number): 
 
   // Deterministic names from matchday + season
   const seed = nextMatchday * 13 + game.currentSeason * 7
-  const firstName = pickRng(SENDER_FIRST_NAMES, seed)
+  const templateIdx = seed % 3 // must match templates.length below
+  // Template 2 (änka-brevet) kräver ett kvinnonamn
+  const firstNamePool = templateIdx === 2 ? SENDER_FEMALE_NAMES : SENDER_MALE_NAMES
+  const firstName = pickRng(firstNamePool, seed)
   const lastName = pickRng(SENDER_LAST_NAMES, seed + 3)
   const origin = pickRng(SENDER_ORIGINS, seed + 5)
   const age = 68 + (seed % 18) // 68-85 år
@@ -69,7 +75,7 @@ export function generateBandyLetterEvent(game: SaveGame, nextMatchday: number): 
     },
   ]
 
-  const template = templates[seed % templates.length]
+  const template = templates[templateIdx]
 
   return {
     id: eventId,
