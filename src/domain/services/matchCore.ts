@@ -148,7 +148,7 @@ function getSecondHalfMode(
   matchPhase: import('./matchUtils').MatchPhaseContext = 'regular',
 ): SecondHalfMode {
   const diff = managedScore - opponentScore
-  const chasingThreshold = matchPhase === 'quarterfinal' ? -1 : -2
+  const chasingThreshold = -1
   if (diff <= chasingThreshold) return 'chasing'
   if (diff >= 3)                return 'cruise'
   if (diff >= 1 && step > 45)   return 'controlling'
