@@ -449,7 +449,7 @@ function* simulateMatchCore(
     let wTransition   = 15
     let wCorner       = 40  // calibrated: 8.83 corners/team/match
     let wHalfchance   = 10
-    let wFoul         = 12
+    let wFoul         = 24  // Sprint 25b.2: doubled for suspension calibration (was 12)
     let wLostball     = 8
     let wTacticalShift = 4
     let wPlayerDuel   = 6
