@@ -91,12 +91,14 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   const allEvents = [...firstHalfEvents, ...secondHalfEvents]
   const finalStep = lastStep ?? lastFirstHalfStep
 
-  const homeScore = finalStep?.homeScore ?? 0
-  const awayScore = finalStep?.awayScore ?? 0
-  const shotsHome  = finalStep?.shotsHome  ?? 0
-  const shotsAway  = finalStep?.shotsAway  ?? 0
-  const cornersHome = finalStep?.cornersHome ?? 0
-  const cornersAway = finalStep?.cornersAway ?? 0
+  const homeScore   = finalStep?.homeScore    ?? 0
+  const awayScore   = finalStep?.awayScore    ?? 0
+  const shotsHome   = finalStep?.shotsHome    ?? 0
+  const shotsAway   = finalStep?.shotsAway    ?? 0
+  const onTargetHome = finalStep?.onTargetHome ?? 0
+  const onTargetAway = finalStep?.onTargetAway ?? 0
+  const cornersHome = finalStep?.cornersHome  ?? 0
+  const cornersAway = finalStep?.cornersAway  ?? 0
 
   // ── Compute player ratings from collected events ─────────────────────────
   const playerGoals:    Record<string, number> = {}
@@ -165,10 +167,18 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   const possessionHome = totalShots > 0 ? Math.round((shotsHome / totalShots) * 100) : 50
   const possessionAway = 100 - possessionHome
 
+  // Saves: count Save events per club (defending club = club making the save)
+  const savesHome = allEvents.filter(e => e.type === MatchEventType.Save && e.clubId === fixture.homeClubId).length
+  const savesAway = allEvents.filter(e => e.type === MatchEventType.Save && e.clubId === fixture.awayClubId).length
+
   const report: MatchReport = {
     playerRatings,
     shotsHome,
     shotsAway,
+    onTargetHome,
+    onTargetAway,
+    savesHome,
+    savesAway,
     cornersHome,
     cornersAway,
     penaltiesHome: 0,

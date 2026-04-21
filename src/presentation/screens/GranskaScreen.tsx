@@ -591,12 +591,14 @@ export function GranskaScreen() {
 
     const managedClubId = isHome ? fixture.homeClubId : fixture.awayClubId
     const goals = fixture.events.filter(e => e.type === MatchEventType.Goal && e.clubId === managedClubId)
-    const saves = fixture.events.filter(e => e.type === MatchEventType.Save && e.clubId !== managedClubId)
 
-    const totalShots = isHome ? fixture.report.shotsHome : fixture.report.shotsAway
-    const scoredCount = goals.length
-    const savedCount = Math.min(saves.length, totalShots - scoredCount)
-    const missCount = Math.max(0, totalShots - scoredCount - savedCount)
+    const totalShots   = isHome ? fixture.report.shotsHome   : fixture.report.shotsAway
+    const onTarget     = isHome ? (fixture.report.onTargetHome ?? 0)  : (fixture.report.onTargetAway  ?? 0)
+    const scoredCount  = goals.length
+    // savedCount = opponent GK saves of our shots; use report.savesAway (away GK) if we're home, savesHome if we're away
+    const savedCount   = isHome ? (fixture.report.savesAway ?? 0) : (fixture.report.savesHome ?? 0)
+    const onTargetCount = onTarget > 0 ? onTarget : (scoredCount + savedCount)
+    const missCount    = Math.max(0, totalShots - onTargetCount)
 
     // Generate seeded positions in attack half (SVG: 280×190 viewBox, goal at top center)
     const GOAL_Y = 20
@@ -743,7 +745,7 @@ export function GranskaScreen() {
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
             <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Den här matchen</span>
             <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
-              {totalShots} skott · {totalShots > 0 ? Math.round(scoredCount / totalShots * 100) : 0}% konvertering
+              {totalShots} skott · {onTargetCount} på mål · {onTargetCount > 0 ? Math.round(scoredCount / onTargetCount * 100) : 0}% konv.
             </span>
           </div>
           {(() => {
@@ -780,7 +782,7 @@ export function GranskaScreen() {
         {(() => {
           const oppClubId = isHome ? fixture.awayClubId : fixture.homeClubId
           const oppClub = game.clubs.find(c => c.id === oppClubId)
-          const oppSavedByUs = saves.length  // saves by our keeper = opp shots saved
+          const oppSavedByUs = isHome ? (fixture.report.savesHome ?? 0) : (fixture.report.savesAway ?? 0)
           const oppConversion = oppShots > 0 ? Math.round(oppGoals / oppShots * 100) : 0
           if (!oppClub) return null
           return (
@@ -788,18 +790,27 @@ export function GranskaScreen() {
               <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: 8 }}>
                 🛡 {oppClub.name.toUpperCase()}
               </p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Skott</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
-                  {oppShots} skott · {oppConversion}% konvertering
-                </span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Vår MV räddade</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: oppSavedByUs > 0 ? 'var(--success)' : 'var(--text-primary)' }}>
-                  {oppSavedByUs} räddningar
-                </span>
-              </div>
+              {(() => {
+                const oppOnTarget = isHome ? (fixture.report.onTargetAway ?? 0) : (fixture.report.onTargetHome ?? 0)
+                const oppOnTargetDisplay = oppOnTarget > 0 ? oppOnTarget : (oppGoals + oppSavedByUs)
+                const savePct = oppOnTargetDisplay > 0 ? Math.round(oppSavedByUs / oppOnTargetDisplay * 100) : 0
+                return (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                      <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Skott / på mål</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
+                        {oppShots} / {oppOnTargetDisplay} · {oppConversion}% konv.
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Vår MV</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: oppSavedByUs > 0 ? 'var(--success)' : 'var(--text-primary)' }}>
+                        {oppSavedByUs} räddningar · {savePct}% räddningsprocent
+                      </span>
+                    </div>
+                  </>
+                )
+              })()}
             </div>
           )
         })()}

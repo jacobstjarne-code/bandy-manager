@@ -233,10 +233,16 @@ export function MatchLiveScreen() {
     const overtimeResult = otStep?.overtimeResult
     const penaltyResult = penStep?.penaltyFinalResult
 
+    const savesHome = allEvents.filter(e => e.type === MatchEventType.Save && e.clubId === fixture.homeClubId).length
+    const savesAway = allEvents.filter(e => e.type === MatchEventType.Save && e.clubId === fixture.awayClubId).length
     const report = {
       playerRatings,
       shotsHome: lastStep.shotsHome,
       shotsAway: lastStep.shotsAway,
+      onTargetHome: lastStep.onTargetHome ?? 0,
+      onTargetAway: lastStep.onTargetAway ?? 0,
+      savesHome,
+      savesAway,
       cornersHome: lastStep.cornersHome,
       cornersAway: lastStep.cornersAway,
       penaltiesHome: penaltyResult?.home ?? 0,

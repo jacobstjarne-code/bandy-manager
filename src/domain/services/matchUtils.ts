@@ -251,6 +251,8 @@ export interface MatchStep {
   activeSuspensions: { homeCount: number; awayCount: number }
   shotsHome: number
   shotsAway: number
+  onTargetHome: number
+  onTargetAway: number
   cornersHome: number
   cornersAway: number
   weatherNote?: string

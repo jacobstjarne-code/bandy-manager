@@ -338,8 +338,10 @@ function* simulateMatchCore(
   const awaySuspensionTimers: number[] = []
 
   // Counters
-  let shotsHome  = input.initialShotsHome   ?? 0
-  let shotsAway  = input.initialShotsAway   ?? 0
+  let shotsHome   = input.initialShotsHome   ?? 0
+  let shotsAway   = input.initialShotsAway   ?? 0
+  let onTargetHome = 0
+  let onTargetAway = 0
   let cornersHome = input.initialCornersHome ?? 0
   let cornersAway = input.initialCornersAway ?? 0
   let interactiveCornersUsed  = 0
@@ -752,6 +754,7 @@ function* simulateMatchCore(
         const goalThreshold = chanceQuality * 1.05 * (1 - defGK * 0.35) * stepGoalMod
 
         if (shotResult < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {
+          if (isHomeAttacking) { onTargetHome++ } else { onTargetAway++ }
           const scorer  = getGoalScorer(attackingStarters)
           const assister = getAssistProvider(attackingStarters, scorer?.id)
           if (scorer) {
@@ -768,6 +771,7 @@ function* simulateMatchCore(
             }
           }
         } else if (shotResult < goalThreshold + 0.25) {
+          if (isHomeAttacking) { onTargetHome++ } else { onTargetAway++ }
           const gk = getGK(defendingStarters)
           if (gk) {
             gkPlayerId = gk.id
@@ -813,6 +817,7 @@ function* simulateMatchCore(
         const goalThreshold = chanceQuality * 0.58 * (1 - defGK * 0.4) * 1.15 * stepGoalMod
 
         if (shotResult < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {
+          if (isHomeAttacking) { onTargetHome++ } else { onTargetAway++ }
           const scorer   = getGoalScorer(attackingStarters)
           const assister = getAssistProvider(attackingStarters, scorer?.id)
           if (scorer) {
@@ -829,6 +834,7 @@ function* simulateMatchCore(
             }
           }
         } else if (shotResult < goalThreshold + 0.25) {
+          if (isHomeAttacking) { onTargetHome++ } else { onTargetAway++ }
           const gk = getGK(defendingStarters)
           if (gk) {
             gkPlayerId = gk.id
@@ -941,8 +947,10 @@ function* simulateMatchCore(
       const chanceQuality  = randRange(rand, 0.05, 0.25) * halfchancePlayoffBonus
       // matchEngine-calibrated (0.63, was 0.30)
       const goalThreshold  = chanceQuality * 0.63 * stepGoalMod
+      const shotResult     = rand()
 
-      if (rand() < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {
+      if (shotResult < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {
+        if (isHomeAttacking) { onTargetHome++ } else { onTargetAway++ }
         const scorer = getGoalScorer(attackingStarters)
         if (scorer) {
           if (isHomeAttacking) { homeScore++ } else { awayScore++ }
@@ -950,6 +958,17 @@ function* simulateMatchCore(
           goalScored = true
           trackGoal(scorer.id)
           const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, description: `Halvchans av ${scorer.firstName} ${scorer.lastName}` }
+          stepEvents.push(ev); allEvents.push(ev)
+        }
+      } else if (shotResult < goalThreshold + 0.45) {
+        // On target — GK makes the save (~45% of non-scoring halfchances hit the target)
+        if (isHomeAttacking) { onTargetHome++ } else { onTargetAway++ }
+        const gk = getGK(defendingStarters)
+        if (gk) {
+          gkPlayerId = gk.id
+          saveOccurred = true
+          trackSave(gk.id)
+          const ev: MatchEvent = { minute, type: MatchEventType.Save, clubId: defendingClubId, playerId: gk.id, description: `Räddning av ${gk.firstName} ${gk.lastName}` }
           stepEvents.push(ev); allEvents.push(ev)
         }
       }
@@ -1387,6 +1406,8 @@ function* simulateMatchCore(
       activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
       shotsHome,
       shotsAway,
+      onTargetHome,
+      onTargetAway,
       cornersHome,
       cornersAway,
       weatherNote: (!isFast && step === 0) ? openingWeatherNote : undefined,
@@ -1418,7 +1439,7 @@ function* simulateMatchCore(
     step: 60, minute: 90, events: [], homeScore, awayScore,
     commentary: fullTimeText, intensity: 'high',
     activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
-    shotsHome, shotsAway, cornersHome, cornersAway, phase: 'regular',
+    shotsHome, shotsAway, onTargetHome, onTargetAway, cornersHome, cornersAway, phase: 'regular',
   }
 
   if (!fixture.isKnockout || homeScore !== awayScore) return
@@ -1429,7 +1450,7 @@ function* simulateMatchCore(
     commentary: isFast ? 'Förlängning' : pickCommentary(commentary.overtimeStart, rand),
     intensity: 'high',
     activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
-    shotsHome, shotsAway, cornersHome, cornersAway, phase: 'overtime',
+    shotsHome, shotsAway, onTargetHome, onTargetAway, cornersHome, cornersAway, phase: 'overtime',
   }
 
   // 20 overtime steps
@@ -1495,7 +1516,7 @@ function* simulateMatchCore(
       commentary: otCommentary,
       intensity: otGoalScored ? 'high' : 'medium',
       activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
-      shotsHome, shotsAway, cornersHome, cornersAway, phase: 'overtime',
+      shotsHome, shotsAway, onTargetHome, onTargetAway, cornersHome, cornersAway, phase: 'overtime',
       overtimeResult: otGoalScored ? (isHA ? 'home' : 'away') : undefined,
     }
 
@@ -1505,7 +1526,7 @@ function* simulateMatchCore(
         commentary: `Matchen är avgjord i förlängningen! ${homeScore}–${awayScore}.`,
         intensity: 'high',
         activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
-        shotsHome, shotsAway, cornersHome, cornersAway, phase: 'overtime',
+        shotsHome, shotsAway, onTargetHome, onTargetAway, cornersHome, cornersAway, phase: 'overtime',
         overtimeResult: isHA ? 'home' : 'away',
       }
       return
@@ -1524,7 +1545,7 @@ function* simulateMatchCore(
     commentary: isFast ? 'Straffar' : pickCommentary(commentary.penaltyStart, rand),
     intensity: 'high',
     activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
-    shotsHome, shotsAway, cornersHome, cornersAway, phase: 'penalties',
+    shotsHome, shotsAway, onTargetHome, onTargetAway, cornersHome, cornersAway, phase: 'penalties',
   }
 
   let runningHome = 0
@@ -1547,7 +1568,7 @@ function* simulateMatchCore(
       commentary: penCommentary,
       intensity: isLastRound ? 'high' : 'medium',
       activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
-      shotsHome, shotsAway, cornersHome, cornersAway, phase: 'penalties',
+      shotsHome, shotsAway, onTargetHome, onTargetAway, cornersHome, cornersAway, phase: 'penalties',
       penaltyRound: penRound,
       penaltyHomeTotal: runningHome,
       penaltyAwayTotal: runningAway,

@@ -23,6 +23,10 @@ export interface MatchReport {
   playerRatings: Record<string, number>
   shotsHome: number
   shotsAway: number
+  onTargetHome: number
+  onTargetAway: number
+  savesHome: number
+  savesAway: number
   cornersHome: number
   cornersAway: number
   penaltiesHome: number

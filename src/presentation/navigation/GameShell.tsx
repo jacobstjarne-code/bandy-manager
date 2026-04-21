@@ -14,7 +14,7 @@ export function GameGuard() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <GameHeader />
       <PhaseIndicatorAuto />
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
         <Outlet />
       </div>
       <EventOverlay />
