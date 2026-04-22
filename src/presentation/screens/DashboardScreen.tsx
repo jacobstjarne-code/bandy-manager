@@ -495,8 +495,8 @@ export function DashboardScreen() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
                 {([
                   { id: 'book_nice' as const, label: 'Bättre hotell — 8k kr', sub: '+2 moral på startelvan' },
-                  { id: 'ask_foundation' as const, label: 'Fråga föreningen om mattstöd', sub: '−2 orten' },
-                  { id: 'stay_home' as const, label: 'Åk samma kväll', sub: '−3 form på startelvan' },
+                  { id: 'ask_foundation' as const, label: 'Fråga föreningen om matchstöd', sub: '−2 orten' },
+                  { id: 'stay_home' as const, label: 'Åk samma dag', sub: '−3 form på startelvan' },
                 ] as const).map(opt => (
                   <button
                     key={opt.id}
