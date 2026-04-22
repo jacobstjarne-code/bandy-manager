@@ -19,34 +19,54 @@ export function PhaseIndicator({ currentPhase }: PhaseIndicatorProps) {
       display: 'flex', alignItems: 'center', padding: '6px 20px 8px',
       background: 'var(--bg-dark)',
     }}>
-      {phases.map((phase, i) => (
-        <Fragment key={phase.key}>
-          {i > 0 && (
-            <div style={{
-              flex: '0 0 20px', height: 1.5,
-              background: i <= currentIdx ? 'var(--accent)' : 'rgba(255,255,255,0.15)',
-              margin: '0 2px',
-            }} />
-          )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, justifyContent: 'center' }}>
-            <div style={{
-              width: 8, height: 8, borderRadius: '50%',
-              background: i < currentIdx ? 'var(--accent)'
-                : i === currentIdx ? 'rgba(139,115,50,0.3)'
-                : 'transparent',
-              border: `1.5px solid ${i <= currentIdx ? 'var(--accent)' : 'rgba(255,255,255,0.2)'}`,
-              boxShadow: i === currentIdx ? '0 0 0 3px rgba(139,115,50,0.1)' : 'none',
-            }} />
-            <span style={{
-              fontSize: 9, fontWeight: i === currentIdx ? 700 : 400,
-              letterSpacing: '0.8px', textTransform: 'uppercase',
-              color: i === currentIdx ? 'var(--accent)' : i < currentIdx ? 'var(--accent)' : 'rgba(255,255,255,0.35)',
-            }}>
-              {phase.label}
-            </span>
-          </div>
-        </Fragment>
-      ))}
+      {phases.map((phase, i) => {
+        const state = i < currentIdx ? 'done' : i === currentIdx ? 'current' : 'upcoming'
+        return (
+          <Fragment key={phase.key}>
+            {i > 0 && (
+              /* Connector: heavy (2px) when bridging done→current, thin (1px) when upcoming */
+              <div style={{
+                flex: '0 0 20px',
+                height: i <= currentIdx ? 2 : 1,
+                background: i <= currentIdx ? 'rgba(201,122,58,0.55)' : 'rgba(255,255,255,0.12)',
+                margin: '0 2px',
+              }} />
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1, justifyContent: 'center' }}>
+              {/* Step node */}
+              <div style={{
+                width: 8, height: 8, borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: state === 'done' ? 'rgba(201,122,58,0.25)'
+                  : state === 'current' ? 'rgba(201,122,58,0.35)'
+                  : 'transparent',
+                border: `1.5px solid ${state === 'upcoming' ? 'rgba(255,255,255,0.18)' : 'rgba(201,122,58,0.65)'}`,
+                /* Halo only on current */
+                boxShadow: state === 'current' ? '0 0 0 3px rgba(201,122,58,0.12)' : 'none',
+              }}>
+                {/* Checkmark for done steps */}
+                {state === 'done' && (
+                  <svg width="5" height="4" viewBox="0 0 5 4" fill="none">
+                    <polyline points="0.5,2 2,3.5 4.5,0.5" stroke="rgba(201,122,58,0.8)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </div>
+              <span style={{
+                fontSize: 9,
+                fontWeight: state === 'current' ? 700 : 400,
+                letterSpacing: '0.8px',
+                textTransform: 'uppercase',
+                /* Only active step gets full copper — done gets muted copper, upcoming fades */
+                color: state === 'current' ? 'var(--accent)'
+                  : state === 'done' ? 'rgba(201,122,58,0.55)'
+                  : 'rgba(255,255,255,0.28)',
+              }}>
+                {phase.label}
+              </span>
+            </div>
+          </Fragment>
+        )
+      })}
     </div>
   )
 }

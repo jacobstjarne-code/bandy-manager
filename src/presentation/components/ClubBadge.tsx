@@ -29,6 +29,7 @@ function deterministicColor(name: string): string {
   return colors[hash % colors.length]
 }
 
+// TODO(FAS 4): byt mot riktig klubblogga · se CLUB-BRIEF.md
 function renderSymbol(symbol: Symbol, primary: string, secondary: string) {
   switch (symbol) {
     case 'tree':

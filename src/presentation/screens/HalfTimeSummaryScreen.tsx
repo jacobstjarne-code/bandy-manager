@@ -47,6 +47,7 @@ export function HalfTimeSummaryScreen() {
         {/* ── TABELLLÄGE ── */}
         <div className="card-sharp" style={{ margin: '0 0 6px', padding: '14px 16px' }}>
           <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 10 }}>
+            {/* TODO(FAS 1): byt mot piktogram · statistik · se ICON-BRIEF.md */}
             📊 TABELLLÄGE
           </p>
           <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
@@ -80,6 +81,7 @@ export function HalfTimeSummaryScreen() {
         {summary.moments.length > 0 && (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '14px 16px' }}>
             <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 10 }}>
+              {/* TODO(FAS 1): byt mot piktogram · highlight · se ICON-BRIEF.md */}
               ⚡ HÖSTENS STUNDER
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -100,6 +102,7 @@ export function HalfTimeSummaryScreen() {
         {summary.arcText && (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '14px 16px' }}>
             <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 8 }}>
+              {/* TODO(FAS 1): byt mot piktogram · spelartrupp · se ICON-BRIEF.md */}
               🔔 SPELARSITUATION
             </p>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>

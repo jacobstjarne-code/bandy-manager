@@ -43,6 +43,7 @@ export function PressConferenceScene({ event, journalist, onChoice }: Props) {
           borderBottom: '1px solid var(--border)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
+          {/* TODO(FAS 1): byt mot piktogram · press · se ICON-BRIEF.md */}
           <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>
             🎤 PRESSKONFERENS
           </p>

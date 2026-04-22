@@ -265,6 +265,7 @@ export function InboxScreen() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 12, color: unreadCount > 0 ? 'var(--accent)' : 'var(--text-muted)', fontWeight: 600 }}>
+            {/* TODO(FAS 1): byt mot piktogram · inkorg · se ICON-BRIEF.md */}
             📬 INKORG{unreadCount > 0 ? ` · ${unreadCount} olästa` : ''}
           </span>
           <button

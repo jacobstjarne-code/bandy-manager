@@ -218,6 +218,7 @@ function PlayerDot({ player, x, y, dotSize, isCaptain, isInner, opacity = 1, onH
         transition: 'transform 0.1s',
       }}
       title={`${player.firstName} ${player.lastName}`}
+      // TODO(FAS 5): byt mot riktig karaktärsillustration · se CHARACTER-BRIEF.md
       dangerouslySetInnerHTML={{ __html: getPortraitSvg(player.id, player.age, player.position) }}
     />
   )

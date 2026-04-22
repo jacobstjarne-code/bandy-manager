@@ -186,6 +186,7 @@ export function RoundSummaryScreen() {
           >
             <div style={{ padding: '12px 14px 10px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                {/* TODO(FAS 1): byt mot piktogram · sport · se ICON-BRIEF.md */}
                 <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0 }}>
                   🏒 {lastFixture.isCup ? 'CUPMATCH' : 'MATCHEN'}
                 </p>
@@ -240,6 +241,7 @@ export function RoundSummaryScreen() {
         {standing && (
           <div style={{ display: 'flex', gap: 8, margin: '0 0 8px', ...fadeIn(2) }}>
             <div className="card-sharp" style={{ flex: 1, padding: '10px 14px' }}>
+              {/* TODO(FAS 1): byt mot piktogram · statistik · se ICON-BRIEF.md */}
               <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
                 📊 TABELL
               </p>
@@ -255,6 +257,7 @@ export function RoundSummaryScreen() {
               </div>
             </div>
             <div className="card-sharp" style={{ flex: 1, padding: '10px 14px' }}>
+              {/* TODO(FAS 1): byt mot piktogram · trend · se ICON-BRIEF.md */}
               <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
                 📈 FORM
               </p>
@@ -337,6 +340,7 @@ export function RoundSummaryScreen() {
             style={{ flex: 1, padding: '10px 14px', cursor: 'pointer' }}
             onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}
           >
+            {/* TODO(FAS 1): byt mot piktogram · ekonomi · se ICON-BRIEF.md */}
             <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
               💰 EKONOMI
             </p>
@@ -384,6 +388,7 @@ export function RoundSummaryScreen() {
         {/* ── ANDRA MATCHER ── */}
         {otherResults.length > 0 && (
           <div className="card-sharp" style={{ margin: '0 0 8px', padding: '10px 14px', ...fadeIn(7) }}>
+            {/* TODO(FAS 1): byt mot piktogram · sport · se ICON-BRIEF.md */}
             <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
               🏒 ANDRA MATCHER
             </p>
@@ -430,6 +435,7 @@ export function RoundSummaryScreen() {
             onClick={() => navigate('/game/inbox')}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              {/* TODO(FAS 1): byt mot piktogram · press · se ICON-BRIEF.md */}
               <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 }}>
                 📰 PRESSKLIPP
               </p>

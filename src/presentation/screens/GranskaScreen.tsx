@@ -375,6 +375,7 @@ export function GranskaScreen() {
           return (
             <div className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(4) }}>
               <div style={{ padding: '10px 12px' }}>
+                {/* TODO(FAS 1): byt mot piktogram · press · se ICON-BRIEF.md */}
                 <SectionLabel style={{ marginBottom: pcResolved ? 4 : 6 }}>🎤 PRESSKONFERENS</SectionLabel>
                 {pcResolved ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -542,6 +543,7 @@ export function GranskaScreen() {
                 borderBottom: i < starters.length - 1 ? '1px solid var(--border)' : 'none',
                 background: isPOTM ? 'rgba(196,122,58,0.06)' : 'transparent',
               }}>
+                {/* TODO(FAS 5): byt mot riktig karaktärsillustration · se CHARACTER-BRIEF.md */}
                 <div style={{ width: 22, height: 22, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--bg-surface)', border: isCap ? '1.5px solid var(--accent)' : '1px solid var(--border)' }}
                   dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -571,6 +573,7 @@ export function GranskaScreen() {
               const r = ratings[p.id] ?? 0
               return (
                 <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderBottom: i < bench.length - 1 ? '1px solid var(--border)' : 'none', opacity: 0.7 }}>
+                  {/* TODO(FAS 5): byt mot riktig karaktärsillustration · se CHARACTER-BRIEF.md */}
                   <div style={{ width: 18, height: 18, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}
                     dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
                   <span style={{ flex: 1, fontSize: 11, color: 'var(--text-secondary)' }}>{p.firstName[0]}. {p.lastName}</span>

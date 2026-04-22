@@ -153,6 +153,7 @@ export function BoardMeetingScreen() {
       {/* Säsongens mål */}
       <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 12px' }}>
         <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+          {/* TODO(FAS 1): byt mot piktogram · schema · se ICON-BRIEF.md */}
           📋 Säsongens mål
         </p>
         <p style={{ fontSize: 15, color: 'var(--accent)', fontWeight: 600, marginBottom: 6, fontFamily: 'var(--font-display)' }}>
@@ -197,6 +198,7 @@ export function BoardMeetingScreen() {
       {/* Ekonomi */}
       <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 12px' }}>
         <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+          {/* TODO(FAS 1): byt mot piktogram · ekonomi · se ICON-BRIEF.md */}
           💰 Ekonomi
         </p>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -270,6 +272,7 @@ export function BoardMeetingScreen() {
         return (
           <div className="card-sharp" style={{ marginBottom: 8, padding: '10px 12px' }}>
             <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
+              {/* TODO(FAS 1): byt mot piktogram · spelartrupp · se ICON-BRIEF.md */}
               👥 Truppen just nu
             </p>
             <div style={{ fontSize: 12, lineHeight: 1.7, color: 'var(--text-secondary)', marginBottom: 8 }}>

@@ -5,11 +5,17 @@ import { useInjuredInLineup, useExpiringContracts, useGameStore, useNavigationLo
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 
 const tabs = [
+  // TODO(FAS 1): byt mot BottomNav-ikon "Hem" · se ICON-BRIEF.md
   { to: '/game/dashboard', label: 'Hem', Icon: Home },
+  // TODO(FAS 1): byt mot BottomNav-ikon "Trupp" · se ICON-BRIEF.md
   { to: '/game/squad', label: 'Trupp', Icon: Users },
+  // TODO(FAS 1): byt mot BottomNav-ikon "Match" · se ICON-BRIEF.md
   { to: '/game/match', label: 'Match', Icon: Swords },
+  // TODO(FAS 1): byt mot BottomNav-ikon "Tabell" · se ICON-BRIEF.md
   { to: '/game/tabell', label: 'Tabell', Icon: Table2 },
+  // TODO(FAS 1): byt mot BottomNav-ikon "Transfers" · se ICON-BRIEF.md
   { to: '/game/transfers', label: 'Transfers', Icon: ArrowLeftRight },
+  // TODO(FAS 1): byt mot BottomNav-ikon "Klubb" · se ICON-BRIEF.md
   { to: '/game/club', label: 'Klubb', Icon: Building2 },
 ]
 
@@ -46,12 +52,12 @@ export function BottomNav() {
   const [lastActive, setLastActive] = useState<string>(location.pathname)
   const [bounceKey, setBounceKey] = useState<Record<string, number>>({})
 
-  const isOnMatchScreen = location.pathname.includes('/match/live')
-  const effectivelyLocked = locked || isOnMatchScreen
-  const lockReason = reason ?? (isOnMatchScreen ? 'Match pågår — spela klart' : null)
+  const effectivelyLocked = locked
+  const lockReason = reason
 
-  // Hide nav entirely on ceremonial transition screens — full-screen flows
-  // där nav inte har någon funktion och bara skapar förvirring (bild 5-buggen).
+  // Hide nav entirely on ceremonial transition screens + under pausad/live match
+  // — full-screen flows där nav inte har någon funktion och bara skapar förvirring.
+  // /game/match inkluderas så halvtidsoverlay/modals inte slåss med nav om z-index.
   const HIDDEN_PATHS = [
     '/game/board-meeting',
     '/game/pre-season',
@@ -60,6 +66,7 @@ export function BottomNav() {
     '/game/qf-summary',
     '/game/champion',
     '/game/game-over',
+    '/game/match',
   ]
   const isHiddenScreen = HIDDEN_PATHS.some(p => location.pathname.startsWith(p))
 

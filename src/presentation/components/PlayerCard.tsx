@@ -289,6 +289,7 @@ export function PlayerCard({
     : scoutReport ? 'fresh' : null
   const isStale = reportAge === 'stale'
   const effectiveReport = isStale ? undefined : scoutReport
+  // TODO(FAS 5): byt mot riktig karaktärsillustration · se CHARACTER-BRIEF.md
   const portraitSvg = getPortraitSvg(player.id, player.age, player.position)
 
   const topStats = isOwned

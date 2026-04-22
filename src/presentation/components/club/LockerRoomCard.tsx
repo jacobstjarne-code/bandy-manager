@@ -51,6 +51,7 @@ function PlayerRow({ player, isCaptain, section, onClick }: {
           background: 'var(--bg-surface)',
           border: isCaptain ? '1.5px solid var(--accent)' : '1px solid var(--border)',
         }}
+        // TODO(FAS 5): byt mot riktig karaktärsillustration · se CHARACTER-BRIEF.md
         dangerouslySetInnerHTML={{ __html: getPortraitSvg(player.id, player.age, player.position) }}
       />
 

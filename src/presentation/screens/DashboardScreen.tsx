@@ -390,6 +390,7 @@ export function DashboardScreen() {
         {/* ① VÄLKOMSTKORT (omgång 1) eller AGENDA (övriga omgångar) */}
         {isFirstRound ? (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+            {/* TODO(FAS 1): byt mot piktogram · sport · se ICON-BRIEF.md */}
             <SectionLabel style={{ marginBottom: 8 }}>🏒 SÄSONGSSTART {game.currentSeason}</SectionLabel>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 10, fontFamily: 'var(--font-body)' }}>
               Säsongen börjar. Sätt din startelva för {club.name} och kör.
@@ -590,6 +591,7 @@ export function DashboardScreen() {
                   TOPP 8
                 </span>
               )}
+              {/* TODO(FAS 1): byt mot piktogram · statistik · se ICON-BRIEF.md */}
               <SectionLabel style={{ marginBottom: 6 }}>📊 Tabell</SectionLabel>
               {standing.played === 0 ? (
                 <>
@@ -650,6 +652,7 @@ export function DashboardScreen() {
             </div>
           ) : (
             <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}>
+              {/* TODO(FAS 1): byt mot piktogram · mål · se ICON-BRIEF.md */}
               <SectionLabel style={{ marginBottom: 6 }}>🎯 Styrelsens mål</SectionLabel>
               {(game.boardObjectives ?? []).slice(0, 2).map((o, i) => (
                 <p key={i} style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)', marginBottom: 2, lineHeight: 1.4 }}>"{o.label}"</p>
@@ -686,6 +689,7 @@ export function DashboardScreen() {
 
           {/* Ekonomi */}
           <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/club', { state: { tab: 'ekonomi' } })}>
+            {/* TODO(FAS 1): byt mot piktogram · ekonomi · se ICON-BRIEF.md */}
             <SectionLabel style={{ marginBottom: 6 }}>💰 Ekonomi</SectionLabel>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
               <span style={{ fontSize: 18, fontWeight: 700, color: finances < 0 ? 'var(--danger)' : 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
