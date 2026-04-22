@@ -375,8 +375,6 @@ export function GranskaScreen() {
           return (
             <div className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(4) }}>
               <div style={{ padding: '10px 12px' }}>
-                {/* TODO(FAS 1): byt mot piktogram · press · se ICON-BRIEF.md */}
-                <SectionLabel style={{ marginBottom: pcResolved ? 4 : 6 }}>🎤 PRESSKONFERENS</SectionLabel>
                 {pcResolved ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
