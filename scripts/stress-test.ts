@@ -19,7 +19,7 @@ import { createHeadlessGame, autoSelectLineup, autoResolvePendingScreen } from '
 import { checkInvariants } from './stress/invariants'
 import { printSeedProgress, printFinalReport } from './stress/reporter'
 import type { SeedResult } from './stress/reporter'
-import { extractMatchStat, newSeasonStats } from './stress/stats'
+import { extractMatchStat, extractEconSnapshot, newSeasonStats } from './stress/stats'
 import type { SeasonStats } from './stress/stats'
 
 // ── Arg parsing ──────────────────────────────────────────────────────────────
@@ -132,7 +132,8 @@ async function main(): Promise<void> {
       seasonsAttempted++
       let seasonDone = false
       let stepSeed = seedIdx * 100_000 + season * 1_000
-      const seasonStats = newSeasonStats(seedIdx, season)
+      const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+      const seasonStats = newSeasonStats(seedIdx, season, game.managedClubId, managedClub?.reputation ?? 0)
       let previouslyCompletedIds = new Set<string>(
         game.fixtures.filter(f => f.status === FixtureStatus.Completed).map(f => f.id)
       )
@@ -159,6 +160,13 @@ async function main(): Promise<void> {
           previouslyCompletedIds = new Set(
             result.game.fixtures.filter(f => f.status === FixtureStatus.Completed).map(f => f.id)
           )
+
+          // Capture economy + puls snapshot once per round (not per advance call)
+          if (roundPlayed !== null) {
+            seasonStats.econSnapshots.push(
+              extractEconSnapshot(result.game, roundPlayed, result.game.standings ?? [])
+            )
+          }
 
           if (result.seasonEnded || result.game.managerFired) {
             seasonDone = true

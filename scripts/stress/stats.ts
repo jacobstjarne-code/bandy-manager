@@ -35,10 +35,20 @@ export interface MatchStat {
   weather?: string
 }
 
+export interface EconSnapshot {
+  round: number
+  finances: number  // managed club finances after this round
+  puls: number      // communityStanding after this round
+  leaguePosition: number
+}
+
 export interface SeasonStats {
   seed: number
   season: number
+  clubId: string
+  clubRep: number
   matches: MatchStat[]
+  econSnapshots: EconSnapshot[]
 }
 
 function getPhase(fix: Fixture): MatchStat['phase'] {
@@ -125,6 +135,17 @@ export function extractMatchStat(fix: Fixture, game: SaveGame, seed: number, sea
   }
 }
 
-export function newSeasonStats(seed: number, season: number): SeasonStats {
-  return { seed, season, matches: [] }
+export function newSeasonStats(seed: number, season: number, clubId: string, clubRep: number): SeasonStats {
+  return { seed, season, clubId, clubRep, matches: [], econSnapshots: [] }
+}
+
+export function extractEconSnapshot(
+  game: SaveGame,
+  round: number,
+  standings: Array<{ clubId: string; position: number }>,
+): EconSnapshot {
+  const finances = game.clubs.find(c => c.id === game.managedClubId)?.finances ?? 0
+  const puls = game.communityStanding ?? 50
+  const leaguePosition = standings.find(s => s.clubId === game.managedClubId)?.position ?? 6
+  return { round, finances, puls, leaguePosition }
 }

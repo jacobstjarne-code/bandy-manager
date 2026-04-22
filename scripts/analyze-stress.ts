@@ -73,7 +73,15 @@ type MatchStat = {
   attendance: number
 }
 
-type SeasonStats = { seed: number; season: number; matches: MatchStat[] }
+type EconSnapshot = { round: number; finances: number; puls: number; leaguePosition: number }
+type SeasonStats = {
+  seed: number
+  season: number
+  clubId: string
+  clubRep: number
+  matches: MatchStat[]
+  econSnapshots: EconSnapshot[]
+}
 
 const allSeasons = statsRaw.seasons as SeasonStats[]
 const allMatches = allSeasons.flatMap(s => s.matches)
@@ -635,6 +643,214 @@ console.log(DIV)
   console.log()
   console.log('  Toleranser: ✅ inom tol  🔶 inom 2×tol  ❌ >2×tol')
   console.log('  Tol per fas (mål/homeWin/susp/corner): regular ±0.3/±2/±0.3/±2 | KVF ±0.5/±4/±0.4/±3 | SF ±0.6/±5/±0.5/±4 | Final ±1.0/±8/±0.7/±5')
+}
+
+// ── Section H: Ekonomi ────────────────────────────────────────────────────────
+
+{
+  const seasonsWithEcon = allSeasons.filter(s => s.econSnapshots?.length > 0)
+  if (seasonsWithEcon.length === 0) {
+    console.log('\n── H. EKONOMI ──────────────────────────────────────────────')
+    console.log('  (Ingen ekonomidata — kör stress-test på nytt för att samla in)')
+  } else {
+    console.log('\n── H. EKONOMI (per seed, säsong för säsong) ────────────────')
+
+    // Group by seed+club, list seasons in order
+    type SeedKey = string
+    const bySeed = new Map<SeedKey, SeasonStats[]>()
+    for (const s of seasonsWithEcon) {
+      const key = `${s.seed}:${s.clubId}`
+      if (!bySeed.has(key)) bySeed.set(key, [])
+      bySeed.get(key)!.push(s)
+    }
+
+    // Aggregate across all seasons for summary
+    const seasonEndFinances: Record<number, number[]> = {}  // season → finances list
+    let totalNegRounds = 0, totalRounds = 0
+    let clubsUnder100k = 0, clubsOver2M = 0
+    const seasonCount = Math.max(...seasonsWithEcon.map(s => s.season))
+
+    for (const [key, seasons] of bySeed) {
+      const clubName = seasons[0].clubId.replace('club_', '')
+      const rep = seasons[0].clubRep
+
+      const cells: string[] = []
+      let prevEnd = seasons[0].econSnapshots[0]?.finances ?? 0
+
+      for (const s of seasons.sort((a, b) => a.season - b.season)) {
+        const snaps = s.econSnapshots
+        if (snaps.length === 0) { cells.push('      —'); continue }
+        const endFin = snaps[snaps.length - 1].finances
+        const negRounds = snaps.filter((snap, i) => {
+          if (i === 0) return false
+          return snaps[i].finances < snaps[i - 1].finances
+        }).length
+
+        cells.push(`${(endFin / 1000).toFixed(0)}k`)
+        totalNegRounds += negRounds
+        totalRounds += snaps.length
+
+        if (!seasonEndFinances[s.season]) seasonEndFinances[s.season] = []
+        seasonEndFinances[s.season].push(endFin)
+
+        if (s.season === seasonCount) {
+          if (endFin < 100_000) clubsUnder100k++
+          if (endFin > 2_000_000) clubsOver2M++
+        }
+        prevEnd = endFin
+      }
+
+      console.log(
+        `  ${(clubName + ` r${rep}`).padEnd(18)} ` +
+        cells.map((c, i) => `ssg${i + 1}: ${c.padStart(6)}`).join('  ')
+      )
+    }
+
+    // Acceleration check: is median growing faster each season?
+    console.log('\n  Median slutkapital per säsong:')
+    for (let ssg = 1; ssg <= seasonCount; ssg++) {
+      const arr = (seasonEndFinances[ssg] ?? []).sort((a, b) => a - b)
+      if (arr.length === 0) continue
+      const median = arr[Math.floor(arr.length / 2)]
+      const bar = '█'.repeat(Math.min(30, Math.round(median / 100_000)))
+      console.log(`    Säsong ${ssg}: ${(median / 1000).toFixed(0).padStart(5)}k  ${bar}`)
+    }
+
+    const allFinalFinances = seasonsWithEcon
+      .filter(s => s.season === seasonCount)
+      .map(s => s.econSnapshots[s.econSnapshots.length - 1]?.finances ?? 0)
+    const totalFinal = allFinalFinances.length
+
+    console.log(`\n  Andel omgångar med negativt netto: ${totalNegRounds}/${totalRounds} (${Math.round(totalNegRounds / totalRounds * 100)}%)`)
+    if (totalFinal > 0) {
+      console.log(`  Klubbar med <100k efter ssg ${seasonCount}: ${clubsUnder100k}/${totalFinal} (${Math.round(clubsUnder100k / totalFinal * 100)}%)`)
+      console.log(`  Klubbar med >2M efter ssg ${seasonCount}:  ${clubsOver2M}/${totalFinal} (${Math.round(clubsOver2M / totalFinal * 100)}%)`)
+    }
+  }
+}
+
+// ── Section I: Bygdens Puls ───────────────────────────────────────────────────
+
+{
+  const seasonsWithEcon = allSeasons.filter(s => s.econSnapshots?.length > 0)
+  if (seasonsWithEcon.length > 0) {
+    console.log('\n── I. BYGDENS PULS ─────────────────────────────────────────')
+
+    let totalRounds = 0
+    let roundsIn0_30 = 0, roundsIn30_60 = 0, roundsIn60_90 = 0, roundsIn90_100 = 0
+    let highVolatilityRounds = 0   // puls change > 5 between consecutive rounds
+    let roundsAt100 = 0
+    let seasonEndPuls: Record<number, number[]> = {}
+    let maxStuckAt100 = 0
+    let currentStreak = 0
+    let recoveredSeasons = 0  // seasons where puls was ≤30 at some point but ended ≥60
+
+    const seasonCount = Math.max(...seasonsWithEcon.map(s => s.season))
+
+    for (const s of seasonsWithEcon) {
+      const snaps = s.econSnapshots
+      if (snaps.length === 0) continue
+
+      totalRounds += snaps.length
+
+      for (const snap of snaps) {
+        if (snap.puls <= 30) roundsIn0_30++
+        else if (snap.puls <= 60) roundsIn30_60++
+        else if (snap.puls <= 90) roundsIn60_90++
+        else roundsIn90_100++
+
+        if (snap.puls >= 100) roundsAt100++
+      }
+
+      // Volatility: rounds where puls changed > 5
+      for (let i = 1; i < snaps.length; i++) {
+        if (Math.abs(snaps[i].puls - snaps[i - 1].puls) > 5) highVolatilityRounds++
+      }
+
+      // Longest streak at 100
+      let streak = 0
+      for (const snap of snaps) {
+        if (snap.puls >= 98) { streak++; maxStuckAt100 = Math.max(maxStuckAt100, streak) }
+        else streak = 0
+      }
+
+      // Recovery: did puls dip to ≤30 and recover to ≥60?
+      const minPuls = Math.min(...snaps.map(s => s.puls))
+      const endPuls = snaps[snaps.length - 1].puls
+      if (minPuls <= 30 && endPuls >= 60) recoveredSeasons++
+
+      if (!seasonEndPuls[s.season]) seasonEndPuls[s.season] = []
+      seasonEndPuls[s.season].push(endPuls)
+    }
+
+    console.log(`  Fördelning av omgångar (${totalRounds} totalt):`)
+    const pct = (n: number) => `${Math.round(n / totalRounds * 100)}%`.padStart(5)
+    console.log(`    0–30:   ${pct(roundsIn0_30)}  ${'░'.repeat(Math.round(roundsIn0_30/totalRounds*40))}`)
+    console.log(`    31–60:  ${pct(roundsIn30_60)}  ${'░'.repeat(Math.round(roundsIn30_60/totalRounds*40))}`)
+    console.log(`    61–90:  ${pct(roundsIn60_90)}  ${'░'.repeat(Math.round(roundsIn60_90/totalRounds*40))}`)
+    console.log(`    91–100: ${pct(roundsIn90_100)}  ${'█'.repeat(Math.round(roundsIn90_100/totalRounds*40))}  ← takeffekt?`)
+    console.log(`\n  Omgångar vid exakt 100: ${roundsAt100}/${totalRounds} (${Math.round(roundsAt100/totalRounds*100)}%)`)
+    console.log(`  Längsta sammanhängande streak vid ≥98: ${maxStuckAt100} omgångar`)
+    console.log(`  Volatile omgångar (förändring >5): ${highVolatilityRounds}/${totalRounds} (${Math.round(highVolatilityRounds/totalRounds*100)}%)`)
+    console.log(`  Säsonger med återhämtning (≤30→≥60): ${recoveredSeasons}/${seasonsWithEcon.length}`)
+
+    console.log('\n  Median puls säsongsslut per säsong:')
+    for (let ssg = 1; ssg <= seasonCount; ssg++) {
+      const arr = (seasonEndPuls[ssg] ?? []).sort((a, b) => a - b)
+      if (arr.length === 0) continue
+      const median = arr[Math.floor(arr.length / 2)]
+      const bar = '█'.repeat(Math.round(median / 4))
+      console.log(`    Säsong ${ssg}: ${String(median).padStart(3)}  ${bar}`)
+    }
+  }
+}
+
+// ── Section J: Korrelationer ──────────────────────────────────────────────────
+
+{
+  const seasonsWithEcon = allSeasons.filter(s => s.econSnapshots?.length > 0)
+  if (seasonsWithEcon.length > 0) {
+    console.log('\n── J. KORRELATIONER ────────────────────────────────────────')
+
+    function pearson(xs: number[], ys: number[]): number {
+      const n = xs.length
+      if (n < 3) return NaN
+      const mx = xs.reduce((a, b) => a + b, 0) / n
+      const my = ys.reduce((a, b) => a + b, 0) / n
+      const num = xs.reduce((s, x, i) => s + (x - mx) * (ys[i] - my), 0)
+      const den = Math.sqrt(
+        xs.reduce((s, x) => s + (x - mx) ** 2, 0) *
+        ys.reduce((s, y) => s + (y - my) ** 2, 0)
+      )
+      return den === 0 ? NaN : num / den
+    }
+
+    // Per season: collect end-of-season values for correlation
+    const seasonCount = Math.max(...seasonsWithEcon.map(s => s.season))
+    for (let ssg = 1; ssg <= seasonCount; ssg++) {
+      const ssgSeasons = seasonsWithEcon.filter(s => s.season === ssg && s.econSnapshots.length > 0)
+      if (ssgSeasons.length < 3) continue
+
+      const endFinances   = ssgSeasons.map(s => s.econSnapshots[s.econSnapshots.length - 1].finances)
+      const endPuls       = ssgSeasons.map(s => s.econSnapshots[s.econSnapshots.length - 1].puls)
+      const endPos        = ssgSeasons.map(s => s.econSnapshots[s.econSnapshots.length - 1].leaguePosition)
+      const reps          = ssgSeasons.map(s => s.clubRep)
+
+      const rFvPos  = pearson(endFinances, endPos.map(p => -p))  // invert: lower pos = better
+      const rPvFin  = pearson(endPuls, endFinances)
+      const rPvRep  = pearson(endPuls, reps)
+      const rFvRep  = pearson(endFinances, reps)
+
+      const fmt = (r: number) => isNaN(r) ? '  n/a' : r.toFixed(2).padStart(5)
+      console.log(`  Säsong ${ssg} (n=${ssgSeasons.length}):`)
+      console.log(`    Kapital vs placering (neg=bättre):  r=${fmt(rFvPos)}  ${Math.abs(rFvPos) > 0.5 ? '← stark' : Math.abs(rFvPos) > 0.3 ? '← måttlig' : '← svag'}`)
+      console.log(`    Puls vs kapital:                    r=${fmt(rPvFin)}  ${Math.abs(rPvFin) > 0.5 ? '← stark' : Math.abs(rPvFin) > 0.3 ? '← måttlig' : '← svag'}`)
+      console.log(`    Puls vs reputation:                 r=${fmt(rPvRep)}  ${Math.abs(rPvRep) > 0.5 ? '← stark' : Math.abs(rPvRep) > 0.3 ? '← måttlig' : '← svag'}`)
+      console.log(`    Kapital vs reputation:              r=${fmt(rFvRep)}  ${Math.abs(rFvRep) > 0.5 ? '← stark' : Math.abs(rFvRep) > 0.3 ? '← måttlig' : '← svag'}`)
+    }
+    console.log()
+    console.log('  r > 0.5 = stark, 0.3–0.5 = måttlig, <0.3 = svag')
+  }
 }
 
 console.log()
