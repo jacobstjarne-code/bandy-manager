@@ -67,7 +67,7 @@ export function MatchDoneOverlay({
   const lateGoalCount = steps.filter(s => s.minute >= 80 && s.events.some(e => e.type === MatchEventType.Goal)).length
   const cornerGoalCount = allEvents.filter(e => e.type === MatchEventType.Goal && e.isCornerGoal).length
   const myClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
-  const suspUs = allEvents.filter(e => e.type === MatchEventType.Suspension && e.clubId === myClubId).length
+  const suspUs = allEvents.filter(e => e.type === MatchEventType.RedCard && e.clubId === myClubId).length
   const finalSummary = getFinalWhistleSummary({
     myScore: managedGoals,
     theirScore: oppGoals,

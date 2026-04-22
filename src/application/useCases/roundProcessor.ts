@@ -101,7 +101,7 @@ function stripCompletedFixture(f: Fixture, managedFixtureId?: string, managedClu
   //   Do NOT use a transient event as your source of truth in stats.ts or any
   //   post-match analysis. See LESSONS.md §20.
   const strippedEvents = f.events
-    .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard || e.type === MatchEventType.YellowCard)
+    .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard)
     .map(e => ({ ...e, description: '' }))
 
   return {

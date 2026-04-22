@@ -512,22 +512,9 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     roundPoints.push(cumulativePoints)
   }
 
-  // Injuries (count Injury events from this season's fixtures)
-  const injuryEvents = clubFixtures.flatMap(f =>
-    f.events.filter(e => e.type === MatchEventType.Injury && e.clubId === managedClubId)
-  )
-  const totalInjuries = injuryEvents.length
-  const injuryCountByPlayer: Record<string, number> = {}
-  for (const e of injuryEvents) {
-    if (e.playerId) injuryCountByPlayer[e.playerId] = (injuryCountByPlayer[e.playerId] ?? 0) + 1
-  }
-  const topInjuredEntry = Object.entries(injuryCountByPlayer).sort((a, b) => b[1] - a[1])[0]
-  const mostInjuredPlayer = topInjuredEntry
-    ? (() => {
-        const p = managedPlayers.find(pl => pl.id === topInjuredEntry[0])
-        return p ? { name: `${p.firstName} ${p.lastName}`, injuries: topInjuredEntry[1] } : null
-      })()
-    : null
+  // Injuries — MatchEventType.Injury is never emitted by the match engine
+  const totalInjuries = 0
+  const mostInjuredPlayer = null
 
   // Finances
   const startFinances = game.seasonStartFinances ?? club.finances

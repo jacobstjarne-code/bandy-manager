@@ -46,9 +46,6 @@ export function updatePlayerMatchStats(
       const cornerGoals = fixture.events.filter(
         e => e.type === MatchEventType.Goal && e.playerId === id && e.isCornerGoal
       ).length
-      const yellows = fixture.events.filter(
-        e => e.type === MatchEventType.YellowCard && e.playerId === id
-      ).length
       const reds = fixture.events.filter(
         e => e.type === MatchEventType.RedCard && e.playerId === id
       ).length
@@ -200,7 +197,7 @@ export function updatePlayerMatchStats(
           goals: p.seasonStats.goals + goals,
           assists: p.seasonStats.assists + assists,
           cornerGoals: p.seasonStats.cornerGoals + cornerGoals,
-          yellowCards: p.seasonStats.yellowCards + yellows,
+          yellowCards: p.seasonStats.yellowCards + 0,
           redCards: p.seasonStats.redCards + reds,
           averageRating: Math.round(newAvgRating * 100) / 100,
           minutesPlayed: p.seasonStats.minutesPlayed + minutesThisGame,

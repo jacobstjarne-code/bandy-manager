@@ -290,10 +290,9 @@ export function MatchLiveScreen() {
 
     if (step.homeScore === prevHomeScore.current && step.awayScore === prevAwayScore.current) {
       const hasRedCard = step.events.some(e => e.type === MatchEventType.RedCard)
-      const hasYellow = step.events.some(e => e.type === MatchEventType.YellowCard)
       const hasSave = step.events.some(e => e.type === MatchEventType.Save)
       const hasCorner = step.events.some(e => e.type === MatchEventType.Corner)
-      if (hasRedCard || hasYellow) playSound('card')
+      if (hasRedCard) playSound('card')
       else if (hasSave) playSound('save')
       else if (hasCorner) playSound('corner')
     }

@@ -219,7 +219,6 @@ export function CommentaryFeed({
         const hasGoal = s.events.some(e => e.type === MatchEventType.Goal)
         const hasSuspension = s.events.some(e => e.type === MatchEventType.RedCard)
         const hasCorner = s.events.some(e => e.type === MatchEventType.Corner) && !hasGoal
-        const hasYellow = s.events.some(e => e.type === MatchEventType.YellowCard)
         const isDerby = s.isDerbyComment || s.commentary.toLowerCase().includes('derby')
         const hasCornerGoal = s.events.some(e => e.type === MatchEventType.Goal && e.isCornerGoal)
 
@@ -252,9 +251,6 @@ export function CommentaryFeed({
             color = 'var(--danger)'
             fontWeight = 500
           }
-        } else if (hasYellow) {
-          borderLeft = '3px solid var(--warning)'
-          color = 'var(--text-primary)'
         } else if (hasCorner) {
           borderLeft = '3px solid rgba(196,122,58,0.4)'
           color = 'var(--text-primary)'
@@ -282,8 +278,7 @@ export function CommentaryFeed({
 
         const primaryEvent = s.events.find(e =>
           e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard ||
-          e.type === MatchEventType.YellowCard || e.type === MatchEventType.Save ||
-          e.type === MatchEventType.Corner
+          e.type === MatchEventType.Save || e.type === MatchEventType.Corner
         )
         const icon = primaryEvent ? eventIcon(primaryEvent.type)
           : ct === 'player_duel' ? '⚔️' : ''

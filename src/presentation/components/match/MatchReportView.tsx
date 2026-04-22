@@ -42,7 +42,6 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
 
   const visibleEvents = fixture.events.filter(e =>
     e.type === MatchEventType.Goal ||
-    e.type === MatchEventType.YellowCard ||
     e.type === MatchEventType.RedCard
   ).sort((a, b) => a.minute - b.minute)
 
@@ -245,13 +244,11 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
                     : (() => {
                         const name = getPlayerName(event.playerId)
                         if (event.type === MatchEventType.Goal) return `${name} 🏒`
-                        if (event.type === MatchEventType.YellowCard) return `${name} ⚠️ Varning`
                         if (event.type === MatchEventType.RedCard) return `${name} 🚫 Utvisning 10 min`
                         return event.description
                       })()
                   }
                   {event.playerId && event.type === MatchEventType.Goal && ' 🏒'}
-                  {event.playerId && event.type === MatchEventType.YellowCard && ' ⚠️ Varning'}
                   {event.playerId && event.type === MatchEventType.RedCard && ' 🚫 Utvisning 10 min'}
                 </span>
               </div>

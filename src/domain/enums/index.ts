@@ -60,16 +60,16 @@ export enum ClubStyle {
 export enum MatchEventType {
   Goal = 'goal',
   Assist = 'assist',
-  Shot = 'shot',
+  Shot = 'shot', // never emitted
   Corner = 'corner',
   Penalty = 'penalty',
-  YellowCard = 'yellowCard',
+  YellowCard = 'yellowCard', // never emitted
   RedCard = 'redCard',
-  Injury = 'injury',
+  Injury = 'injury', // never emitted
   Save = 'save',
   Substitution = 'substitution',
-  Suspension = 'suspension',
-  FullTime = 'fullTime',
+  Suspension = 'suspension', // never emitted — use RedCard for suspensions
+  FullTime = 'fullTime', // never emitted
 }
 
 export enum InboxItemType {
