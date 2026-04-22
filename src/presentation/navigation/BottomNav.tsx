@@ -52,12 +52,12 @@ export function BottomNav() {
   const [lastActive, setLastActive] = useState<string>(location.pathname)
   const [bounceKey, setBounceKey] = useState<Record<string, number>>({})
 
-  const effectivelyLocked = locked
-  const lockReason = reason
+  const isOnMatchLive = location.pathname.startsWith('/game/match/live')
+  const effectivelyLocked = locked || isOnMatchLive
+  const lockReason = reason ?? (isOnMatchLive ? 'Match pågår — spela klart' : null)
 
-  // Hide nav entirely on ceremonial transition screens + under pausad/live match
-  // — full-screen flows där nav inte har någon funktion och bara skapar förvirring.
-  // /game/match inkluderas så halvtidsoverlay/modals inte slåss med nav om z-index.
+  // Hide nav entirely on ceremonial transition screens — full-screen flows
+  // där nav inte har någon funktion och bara skapar förvirring.
   const HIDDEN_PATHS = [
     '/game/board-meeting',
     '/game/pre-season',
@@ -66,7 +66,6 @@ export function BottomNav() {
     '/game/qf-summary',
     '/game/champion',
     '/game/game-over',
-    '/game/match/live',
   ]
   const isHiddenScreen = HIDDEN_PATHS.some(p => location.pathname.startsWith(p))
 

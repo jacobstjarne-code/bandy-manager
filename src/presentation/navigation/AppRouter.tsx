@@ -72,9 +72,9 @@ export function AppRouter() {
           <Route path="qf-summary" element={<QFSummaryScreen />} />
           <Route path="sim-summary" element={<SimSummaryScreen />} />
           <Route path="taktik" element={<TaktikScreen />} />
+          <Route path="review" element={<GranskaScreen />} />
         </Route>
         <Route element={<GameGuard />}>
-          <Route path="/game/review" element={<GranskaScreen />} />
           <Route path="/game/round-summary" element={<RoundSummaryScreen />} />
           <Route path="/game/match-result" element={<MatchResultScreen />} />
           <Route path="/game/game-over" element={<GameOverScreen />} />
