@@ -1,7 +1,18 @@
 # BANDY MANAGER — KVAR
 
-**Datum:** 2026-04-22 (kväll — session 4, HANDOFF-BATCH-1 + Sprint 26 komplett)
-**Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DESIGN_SYSTEM.md/HANDOVER_2026-04-22.md är lästa.
+**Datum:** 2026-04-23
+**Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DESIGN_SYSTEM.md/HANDOVER_2026-04-23.md är lästa.
+
+---
+
+## KLART IDAG (2026-04-23)
+
+| # | Fix | Rotorsak / Leverans | Fil(er) |
+|---|-----|---------------------|---------|
+| 21 | BottomNav saknas på /game/match/live | Cursor tog bort isOnMatchLive-lås, ersatte med HIDDEN_PATHS → nav osynlig istf dimmad | `BottomNav.tsx` |
+| 22 | BottomNav saknas på /game/review | GranskaScreen låg under GameGuard (ingen BottomNav) istf GameShell | `AppRouter.tsx` |
+| 23 | Dubblad 🎤 PRESSKONFERENS-rubrik i Granska | SectionLabel + pc.title renderades båda → visuell dubblering | `GranskaScreen.tsx` |
+| 24 | Skottbild redesign — två isolerade straffzoner | Mittlinje + ellips förvirrande (plan ej i skala); bågarna gick åt fel håll | `GranskaScreen.tsx` |
 
 ---
 
