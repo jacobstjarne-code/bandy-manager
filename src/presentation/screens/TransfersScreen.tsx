@@ -2,12 +2,10 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import { useGameStore } from '../store/gameStore'
-import { saveSaveGame } from '../../infrastructure/persistence/saveGameStorage'
 import type { Player } from '../../domain/entities/Player'
 import { getTransferWindowStatus } from '../../domain/services/transferWindowService'
 import { formatCurrency, positionShort } from '../utils/formatters'
 import { SectionLabel } from '../components/SectionLabel'
-import { bidReceivedEvent } from '../../domain/services/events/eventFactories'
 import { FirstVisitHint } from '../components/FirstVisitHint'
 
 import { RenewContractModal } from '../components/transfers/RenewContractModal'
@@ -26,6 +24,9 @@ export function TransfersScreen() {
   const game = useGameStore(s => s.game)
   const startEvaluation = useGameStore(s => s.startEvaluation)
   const placeOutgoingBid = useGameStore(s => s.placeOutgoingBid)
+  const renewContract = useGameStore(s => s.renewContract)
+  const signFreeAgent = useGameStore(s => s.signFreeAgent)
+  const listPlayerForSale = useGameStore(s => s.listPlayerForSale)
   const startTalentSearch = useGameStore(s => s.startTalentSearch)
   const markScreenVisited = useGameStore(s => s.markScreenVisited)
   const dismissHint = useGameStore(s => s.dismissHint)
@@ -117,15 +118,14 @@ export function TransfersScreen() {
     if (projectedWageBill > club.wageBudget) {
       setWageWarning(`OBS: Lönekostnaderna överstiger budgeten med ${formatCurrency(projectedWageBill - club.wageBudget)}/mån`)
     }
-    const isMinSalary = newSalary === minSalary
-    const updatedPlayers = game.players.map(p =>
-      p.id === playerId
-        ? { ...p, contractUntilSeason: game.currentSeason + years, salary: newSalary, morale: isMinSalary ? Math.max(20, p.morale - 12) : p.morale }
-        : p
-    )
-    const updatedGame = { ...game, players: updatedPlayers }
-    useGameStore.setState({ game: updatedGame })
-    saveSaveGame(updatedGame).catch(e => console.warn('Save failed:', e))
+    const result = renewContract(playerId, newSalary, years)
+    if (!result.success) {
+      setRenewError(result.error ?? 'Kunde inte förlänga kontraktet')
+      return
+    }
+    if (result.wageWarning) {
+      setWageWarning(`OBS: Lönekostnaderna överstiger budgeten med ${formatCurrency(result.wageWarning)}/mån`)
+    }
     setRenewingPlayerId(null)
     setRenewError(null)
     setRenewConfirmText(`✅ Kontrakt förlängt till ${game.currentSeason + years}`)
@@ -136,42 +136,12 @@ export function TransfersScreen() {
     if (!game) return
     const agent = game.transferState.freeAgents.find(p => p.id === agentId)
     if (!agent) return
-    const agentWithClub = { ...agent, clubId: game.managedClubId, contractUntilSeason: game.currentSeason + 2 }
-    const updatedPlayers = [...game.players, agentWithClub]
-    const updatedFreeAgents = game.transferState.freeAgents.filter(p => p.id !== agentId)
-    const updatedClubs = game.clubs.map(c =>
-      c.id === game.managedClubId
-        ? { ...c, squadPlayerIds: [...c.squadPlayerIds, agentId] }
-        : c
-    )
-    useGameStore.setState({ game: { ...game, players: updatedPlayers, clubs: updatedClubs, transferState: { ...game.transferState, freeAgents: updatedFreeAgents } } })
+    signFreeAgent(agentId)
   }
 
   function handleListForSale(playerId: string) {
     if (!game) return
-    const player = game.players.find(p => p.id === playerId)
-    if (!player) return
-    const otherClubs = game.clubs.filter(c => c.id !== game.managedClubId)
-    if (otherClubs.length === 0) return
-    const buyingClub = otherClubs[Math.floor(Math.random() * otherClubs.length)]
-    const marketVal = player.marketValue ?? 50000
-    const offerAmount = Math.round(marketVal * 0.9 / 5000) * 5000
-    const offeredSalary = Math.round(player.salary * 1.1 / 1000) * 1000
-    const bid = {
-      id: `bid_sell_${Date.now()}_${playerId}`,
-      playerId,
-      buyingClubId: buyingClub.id,
-      sellingClubId: game.managedClubId,
-      offerAmount,
-      offeredSalary,
-      contractYears: 3,
-      direction: 'incoming' as const,
-      status: 'pending' as const,
-      createdRound: Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup).map(f => f.roundNumber)),
-      expiresRound: Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup).map(f => f.roundNumber)) + 2,
-    }
-    const event = bidReceivedEvent(bid, game)
-    useGameStore.setState({ game: { ...game, transferBids: [...(game.transferBids ?? []), bid], pendingEvents: [...(game.pendingEvents ?? []), event] } })
+    listPlayerForSale(playerId)
   }
 
   function handleBid(playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) {

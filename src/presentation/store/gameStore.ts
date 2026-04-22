@@ -23,6 +23,8 @@ import { transferActions } from './actions/transferActions'
 import { academyActions } from './actions/academyActions'
 import { gameFlowActions } from './actions/gameFlowActions'
 
+type SaveActionResult = { success: boolean; error?: string }
+
 interface GameState {
   game: SaveGame | null
   isLoading: boolean
@@ -36,13 +38,18 @@ interface GameState {
   setPlayerLineup: (startingPlayerIds: string[], benchPlayerIds: string[], captainPlayerId?: string) => { success: boolean; error?: string }
   updateTactic: (tactic: Tactic) => void
   setTraining: (focus: TrainingFocus) => void
-  markCoachMarksSeen: () => void
+  markCoachMarksSeen: () => Promise<SaveActionResult>
+  restartCoachMarks: () => void
+  saveGame: () => Promise<SaveActionResult>
   dismissHint: (screenId: string) => void
-  updateMatchMode: (mode: 'full' | 'commentary' | 'quicksim' | 'silent') => void
+  updateMatchMode: (mode: 'full' | 'commentary' | 'quicksim' | 'silent') => Promise<SaveActionResult>
   markInboxRead: (itemId: string) => void
   markAllInboxRead: () => void
   startEvaluation: (playerId: string, clubId: string, sameRegion: boolean, hasPlayedAgainst?: boolean) => { success: boolean; error?: string }
   placeOutgoingBid: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => { success: boolean; error?: string }
+  renewContract: (playerId: string, newSalary: number, years: number) => { success: boolean; error?: string; wageWarning?: number }
+  signFreeAgent: (agentId: string) => { success: boolean; error?: string }
+  listPlayerForSale: (playerId: string) => { success: boolean; error?: string }
   resolveEvent: (eventId: string, choiceId: string) => void
   saveLiveMatchResult: (fixtureId: string, homeScore: number, awayScore: number, events: MatchEvent[], report: MatchReport, homeLineup: TeamSelection, awayLineup: TeamSelection, overtimeResult?: 'home' | 'away', penaltyResult?: { home: number; away: number }, attendance?: number) => void
   markMatchStarted: (fixtureId: string, homeLineup?: import('../../domain/entities/Fixture').TeamSelection, awayLineup?: import('../../domain/entities/Fixture').TeamSelection) => void
@@ -93,6 +100,17 @@ const indexedDBStorage = {
   removeItem: async (name: string): Promise<void> => {
     await idbDel(name)
   },
+}
+
+async function persistGameSnapshot(game: SaveGame | null): Promise<SaveActionResult> {
+  if (!game) return { success: false, error: 'Inget spel laddat' }
+  try {
+    await saveSaveGame(game)
+    return { success: true }
+  } catch (e) {
+    console.warn('Save failed:', e)
+    return { success: false, error: 'Kunde inte spara spelet' }
+  }
 }
 
 export const useGameStore = create<GameState>()(
@@ -194,12 +212,22 @@ export const useGameStore = create<GameState>()(
         set({ game: { ...game, clubs: updatedClubs } })
       },
 
-      markCoachMarksSeen: () => {
+      markCoachMarksSeen: async () => {
         const { game } = get()
-        if (!game) return
+        if (!game) return { success: false, error: 'Inget spel laddat' }
         const updated = { ...game, coachMarksSeen: true }
         set({ game: updated })
-        saveSaveGame(updated).catch(e => console.warn('Save failed:', e))
+        return persistGameSnapshot(updated)
+      },
+
+      restartCoachMarks: () => {
+        const { game } = get()
+        if (!game) return
+        set({ game: { ...game, coachMarksSeen: false } })
+      },
+
+      saveGame: async () => {
+        return persistGameSnapshot(get().game)
       },
 
       dismissHint: (screenId) => {
@@ -211,14 +239,13 @@ export const useGameStore = create<GameState>()(
         })
       },
 
-      updateMatchMode: (mode) => {
-        set(s => {
-          if (!s.game) return s
-          if (s.game.preferredMatchMode === mode) return s
-          const updated = { ...s.game, preferredMatchMode: mode }
-          saveSaveGame(updated).catch(e => console.warn('Save failed:', e))
-          return { game: updated }
-        })
+      updateMatchMode: async (mode) => {
+        const { game } = get()
+        if (!game) return { success: false, error: 'Inget spel laddat' }
+        if (game.preferredMatchMode === mode) return { success: true }
+        const updated = { ...game, preferredMatchMode: mode }
+        set({ game: updated })
+        return persistGameSnapshot(updated)
       },
 
       markInboxRead: (itemId) => {

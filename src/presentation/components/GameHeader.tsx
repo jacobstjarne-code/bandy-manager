@@ -1,19 +1,59 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, Settings } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import { useGameStore, useManagedClub, useUnreadInboxCount } from '../store/gameStore'
-import { saveSaveGame } from '../../infrastructure/persistence/saveGameStorage'
 import { TownSilhouette } from './TownSilhouette'
 import { HelpOverlay } from './HelpOverlay'
+import { Logo } from './Logo'
 import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
+
+/** Handritad SVG-kuvert-glyph i koppar. Ersätter 🔔-emoji. */
+function EnvelopeIcon({ size = 18, color = 'currentColor' }: { size?: number; color?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 18 18"
+      fill="none"
+      stroke={color}
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {/* Kuvert-kropp */}
+      <rect x="2" y="4" width="14" height="10" rx="1.5" />
+      {/* Veck uppifrån */}
+      <polyline points="2,4 9,10.5 16,4" />
+    </svg>
+  )
+}
 
 export function GameHeader() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
+  const restartCoachMarks = useGameStore(s => s.restartCoachMarks)
+  const saveGame = useGameStore(s => s.saveGame)
   const club = useManagedClub()
   const unreadInbox = useUnreadInboxCount()
   const [showMenu, setShowMenu] = useState(false)
-  const [saveToast, setSaveToast] = useState(false)
+  const [saveToast, setSaveToast] = useState<{ visible: boolean; ok: boolean; text: string }>({
+    visible: false,
+    ok: true,
+    text: '',
+  })
+  const [showHelp, setShowHelp] = useState(false)
+
+  async function handleSaveGame() {
+    const result = await saveGame()
+    if (result.success) {
+      setSaveToast({ visible: true, ok: true, text: '✓ Sparat' })
+    } else {
+      setSaveToast({ visible: true, ok: false, text: result.error ?? 'Kunde inte spara' })
+    }
+    setTimeout(() => setSaveToast(prev => ({ ...prev, visible: false })), 2400)
+  }
+
   if (!game || !club) return null
 
   const lastPlayedRound = game.fixtures
@@ -44,15 +84,15 @@ export function GameHeader() {
     }
   }
 
-  const [showHelp, setShowHelp] = useState(false)
+  const roundChipLabel = playoffLabel ?? (currentRound > 0 ? `Omg ${currentRound}` : null)
 
   return (
     <div style={{
-      display: 'flex',
-      justifyContent: 'space-between',
+      display: 'grid',
+      gridTemplateColumns: '44px 1fr auto',
       alignItems: 'center',
       position: 'relative',
-      padding: '10px 12px',
+      padding: '8px 10px',
       background: 'var(--bg-dark)',
       borderBottom: '2px solid var(--accent)',
       flexShrink: 0,
@@ -63,38 +103,60 @@ export function GameHeader() {
         <TownSilhouette clubId={game.managedClubId} width={375} height={20} />
       </div>
 
-      {/* Left: logo */}
-      <img
-        src="/bandymanager-logo.png"
-        alt="Bandy Manager"
-        style={{ height: 26, width: 'auto', opacity: 0.85 }}
-      />
+      {/* Kolumn 1: Logo */}
+      <Logo variant="light" height={26} />
 
-      {/* Center: club + season */}
-      <div style={{ textAlign: 'center', flex: 1, padding: '0 8px' }}>
+      {/* Kolumn 2: Klubbnamn + devis/krönika */}
+      <div style={{ padding: '0 6px', overflow: 'hidden' }}>
         <p style={{
           fontSize: 12,
-          color: 'rgba(245,241,235,0.85)',
+          color: 'rgba(245,241,235,0.90)',
           fontWeight: 700,
           fontFamily: 'var(--font-display)',
           margin: 0,
           lineHeight: 1.2,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         }}>
           {club.shortName ?? club.name}
         </p>
         <p style={{
           fontSize: 9,
-          color: 'rgba(245,241,235,0.55)',
+          color: '#C9B89A',
           margin: 0,
-          lineHeight: 1.2,
+          lineHeight: 1.3,
+          fontFamily: 'Georgia, serif',
+          fontStyle: 'italic',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         }}>
           {game.managerName} · {game.currentSeason}/{game.currentSeason + 1}
-          {playoffLabel ? ` · ${playoffLabel}` : currentRound > 0 ? ` · Omg ${currentRound}` : ''}
         </p>
       </div>
 
-      {/* Right: help + inbox + menu */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      {/* Kolumn 3: Meta (sigill-chip + kuvert + inställningar) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+        {/* Omgångs-sigill */}
+        {roundChipLabel && (
+          <div style={{
+            padding: '2px 7px',
+            borderRadius: 3,
+            border: '1px solid var(--accent)',
+            background: 'rgba(201,122,58,0.10)',
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: '0.5px',
+            color: 'var(--accent)',
+            whiteSpace: 'nowrap',
+            lineHeight: 1.4,
+          }}>
+            {roundChipLabel}
+          </div>
+        )}
+
+        {/* Hjälp */}
         <button
           onClick={() => setShowHelp(true)}
           style={{
@@ -105,33 +167,36 @@ export function GameHeader() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >?</button>
+
+        {/* Kuvert-notifikation — SVG-glyph, inte emoji */}
         <button
           onClick={() => navigate('/game/inbox')}
           style={{
             position: 'relative',
             background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-            color: unreadInbox > 0 ? 'var(--accent)' : 'rgba(245,241,235,0.5)',
+            color: unreadInbox > 0 ? 'var(--accent)' : 'rgba(245,241,235,0.45)',
           }}
         >
-          <Bell size={18} strokeWidth={2} />
+          {/* TODO(FAS 1): kuvert-glyphen ersätts av finalt handritad ikon · se ICON-BRIEF.md */}
+          <EnvelopeIcon size={17} color="currentColor" />
+          {/* Notifikationsprick — separat element, kan visas/döljas oberoende */}
           {unreadInbox > 0 && (
             <span style={{
-              position: 'absolute', top: -2, right: -4,
-              minWidth: 14, height: 14, borderRadius: 99,
-              background: 'var(--danger)', color: 'var(--text-light)',
-              fontSize: 9, fontWeight: 800,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              position: 'absolute', top: 1, right: 1,
+              width: 8, height: 8, borderRadius: '50%',
+              background: 'var(--danger)',
               border: '1.5px solid var(--bg-dark)',
-            }}>
-              {unreadInbox > 9 ? '9+' : unreadInbox}
-            </span>
+              display: 'block',
+            }} />
           )}
         </button>
+
+        {/* Inställningar */}
         <button
           onClick={() => setShowMenu(!showMenu)}
           style={{
             background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-            color: 'rgba(245,241,235,0.5)',
+            color: 'rgba(245,241,235,0.45)',
           }}
         >
           <Settings size={16} strokeWidth={2} />
@@ -139,36 +204,32 @@ export function GameHeader() {
       </div>
 
       {/* Save toast */}
-      {saveToast && (
+      {saveToast.visible && (
         <div style={{
           position: 'absolute', top: 50, left: '50%', transform: 'translateX(-50%)',
-          background: 'var(--success)', color: 'var(--text-light)',
+          background: saveToast.ok ? 'var(--success)' : 'var(--danger)',
+          color: 'var(--text-light)',
           padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, zIndex: 201,
         }}>
-          ✓ Sparat
+          {saveToast.text}
         </div>
       )}
 
-      {/* Settings dropdown */}
+      {/* Inställnings-dropdown */}
       {showMenu && (
         <div style={{
-          position: 'absolute', top: 48, right: 12,
+          position: 'absolute', top: 48, right: 10,
           background: 'var(--bg-surface)', border: '1px solid var(--border)',
           borderRadius: 8, padding: '4px 0',
           boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
           zIndex: 200, minWidth: 160,
         }}>
           {[
-            { label: '💾 Spara spel', action: () => {
-              const currentGame = useGameStore.getState().game
-              if (currentGame) saveSaveGame(currentGame)
-              setSaveToast(true); setTimeout(() => setSaveToast(false), 2000)
-            } },
+            { label: '💾 Spara spel', action: handleSaveGame },
             { label: '📂 Ladda spel', action: () => navigate('/') },
-
             { label: '📖 Spelguide', action: () => setShowHelp(true) },
           ].map((item, i) => (
-            <button key={i} onClick={() => { item.action(); setShowMenu(false) }}
+            <button key={i} onClick={() => { void item.action(); setShowMenu(false) }}
               style={{
                 display: 'block', width: '100%', textAlign: 'left',
                 padding: '10px 14px', background: 'none', border: 'none',
@@ -184,15 +245,9 @@ export function GameHeader() {
       {showHelp && (
         <HelpOverlay
           onClose={() => setShowHelp(false)}
-          onRestartCoachMarks={() => {
-            const currentGame = useGameStore.getState().game
-            if (currentGame) {
-              useGameStore.setState({ game: { ...currentGame, coachMarksSeen: false } })
-            }
-          }}
+          onRestartCoachMarks={restartCoachMarks}
         />
       )}
-
     </div>
   )
 }

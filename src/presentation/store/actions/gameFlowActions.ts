@@ -20,6 +20,14 @@ interface GetState {
 type Get = () => GetState
 type Set = (partial: Partial<{ game: SaveGame | null; roundSummary: RoundSummaryData | null; lastAdvanceResult: AdvanceResult | null }>) => void
 
+async function persistAutosave(game: SaveGame, context: string): Promise<void> {
+  try {
+    await saveSaveGame(game)
+  } catch (e) {
+    console.warn(`Autosave misslyckades (${context}):`, e)
+  }
+}
+
 export function gameFlowActions(get: Get, set: Set) {
   return {
     advance: (suppressMatchNavigation?: boolean): AdvanceResult | null => {
@@ -134,7 +142,7 @@ export function gameFlowActions(get: Get, set: Set) {
 
       const gameToSave = { ...result.game, lastSavedAt: new Date().toISOString() }
       set({ game: gameToSave, lastAdvanceResult: result, roundSummary: summary })
-      saveSaveGame(gameToSave).catch(e => console.warn('Autosave misslyckades:', e))
+      void persistAutosave(gameToSave, 'advance')
 
       const managerFired = result.game.managerFired
       if (managerFired) {
@@ -274,7 +282,7 @@ export function gameFlowActions(get: Get, set: Set) {
       }
 
       set({ game: updatedGame })
-      saveSaveGame(updatedGame).catch(e => console.warn('Autosave misslyckades:', e))
+      void persistAutosave(updatedGame, 'resolveWeeklyDecision')
     },
 
     resolveAwayTrip: (decision: 'stay_home' | 'book_nice' | 'ask_foundation') => {
@@ -318,7 +326,7 @@ export function gameFlowActions(get: Get, set: Set) {
       }
 
       set({ game: updatedGame })
-      saveSaveGame(updatedGame).catch(e => console.warn('Autosave misslyckades:', e))
+      void persistAutosave(updatedGame, 'resolveAwayTrip')
     },
 
     markScreenVisited: (screen: string) => {

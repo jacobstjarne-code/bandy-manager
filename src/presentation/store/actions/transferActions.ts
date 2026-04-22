@@ -3,6 +3,7 @@ import { startScoutAssignment } from '../../../domain/services/scoutingService'
 import { createOutgoingBid } from '../../../domain/services/transferService'
 import { generateSponsorOffer } from '../../../domain/services/sponsorService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
+import { bidReceivedEvent } from '../../../domain/services/events/eventFactories'
 
 interface GetState { game: SaveGame | null }
 type Get = () => GetState
@@ -35,6 +36,103 @@ export function transferActions(get: Get, set: Set) {
       const result = createOutgoingBid(game, playerId, offerAmount, offeredSalary, contractYears, currentRound)
       if (!result.success || !result.bid) return { success: false, error: result.error }
       set({ game: { ...game, transferBids: [...(game.transferBids ?? []), result.bid] } })
+      return { success: true }
+    },
+
+    renewContract: (playerId: string, newSalary: number, years: number) => {
+      const { game } = get()
+      if (!game) return { success: false, error: 'Inget spel laddat' }
+      const player = game.players.find(p => p.id === playerId && p.clubId === game.managedClubId)
+      if (!player) return { success: false, error: 'Spelaren hittades inte' }
+
+      const isFullTimePro = !player.dayJob
+      const minSalary = Math.round((isFullTimePro ? player.currentAbility * 200 * 0.80 : player.currentAbility * 80 * 0.80) / 500) * 500
+      if (newSalary < minSalary) return { success: false, error: `${player.firstName} avslår — kräver minst ${minSalary} kr/mån` }
+
+      const currentWageBill = game.players
+        .filter(p => p.clubId === game.managedClubId)
+        .reduce((sum, p) => sum + p.salary, 0)
+      const projectedWageBill = currentWageBill - player.salary + newSalary
+      const club = game.clubs.find(c => c.id === game.managedClubId)
+      if (!club) return { success: false, error: 'Ingen klubb hittad' }
+
+      const isMinSalary = newSalary === minSalary
+      const updatedPlayers = game.players.map(p =>
+        p.id === playerId
+          ? { ...p, contractUntilSeason: game.currentSeason + years, salary: newSalary, morale: isMinSalary ? Math.max(20, p.morale - 12) : p.morale }
+          : p
+      )
+
+      set({ game: { ...game, players: updatedPlayers } })
+      return {
+        success: true,
+        wageWarning: projectedWageBill > club.wageBudget
+          ? projectedWageBill - club.wageBudget
+          : undefined,
+      }
+    },
+
+    signFreeAgent: (agentId: string) => {
+      const { game } = get()
+      if (!game) return { success: false, error: 'Inget spel laddat' }
+      const agent = game.transferState.freeAgents.find(p => p.id === agentId)
+      if (!agent) return { success: false, error: 'Spelaren hittades inte' }
+
+      const agentWithClub = { ...agent, clubId: game.managedClubId, contractUntilSeason: game.currentSeason + 2 }
+      const updatedPlayers = [...game.players, agentWithClub]
+      const updatedFreeAgents = game.transferState.freeAgents.filter(p => p.id !== agentId)
+      const updatedClubs = game.clubs.map(c =>
+        c.id === game.managedClubId
+          ? { ...c, squadPlayerIds: [...c.squadPlayerIds, agentId] }
+          : c
+      )
+
+      set({
+        game: {
+          ...game,
+          players: updatedPlayers,
+          clubs: updatedClubs,
+          transferState: { ...game.transferState, freeAgents: updatedFreeAgents },
+        },
+      })
+      return { success: true }
+    },
+
+    listPlayerForSale: (playerId: string) => {
+      const { game } = get()
+      if (!game) return { success: false, error: 'Inget spel laddat' }
+      const player = game.players.find(p => p.id === playerId)
+      if (!player) return { success: false, error: 'Spelaren hittades inte' }
+
+      const otherClubs = game.clubs.filter(c => c.id !== game.managedClubId)
+      if (otherClubs.length === 0) return { success: false, error: 'Inga motståndarklubbar tillgängliga' }
+
+      const buyingClub = otherClubs[Math.floor(Math.random() * otherClubs.length)]
+      const marketVal = player.marketValue ?? 50000
+      const offerAmount = Math.round(marketVal * 0.9 / 5000) * 5000
+      const offeredSalary = Math.round(player.salary * 1.1 / 1000) * 1000
+      const currentRound = Math.max(0, ...game.fixtures.filter(f => f.status === 'completed' && !f.isCup).map(f => f.roundNumber))
+      const bid = {
+        id: `bid_sell_${Date.now()}_${playerId}`,
+        playerId,
+        buyingClubId: buyingClub.id,
+        sellingClubId: game.managedClubId,
+        offerAmount,
+        offeredSalary,
+        contractYears: 3,
+        direction: 'incoming' as const,
+        status: 'pending' as const,
+        createdRound: currentRound,
+        expiresRound: currentRound + 2,
+      }
+      const event = bidReceivedEvent(bid, game)
+      set({
+        game: {
+          ...game,
+          transferBids: [...(game.transferBids ?? []), bid],
+          pendingEvents: [...(game.pendingEvents ?? []), event],
+        },
+      })
       return { success: true }
     },
 

@@ -624,7 +624,7 @@ export function MatchScreen() {
           matchWeatherData={matchWeatherData}
           matchMode={matchMode}
           lineupError={lineupError}
-          onSetMatchMode={m => { updateMatchMode(m) }}
+          onSetMatchMode={m => { void updateMatchMode(m) }}
           onBack={() => setMatchStep('tactic')}
           onPlay={handlePlayMatch}
           fixture={nextFixture ?? undefined}
