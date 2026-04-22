@@ -5,7 +5,7 @@
 
 ---
 
-## KLART IDAG (2026-04-22, post-playtest session 2)
+## KLART IDAG (2026-04-22, kväll — session 3)
 
 | # | Fix | Rotorsak | Fil(er) |
 |---|-----|----------|---------|
@@ -17,6 +17,8 @@
 | 6 | Shotmap — motståndarmål för långt ned, saknar straffbåge | `GOAL_Y=20` asymmetriskt; ingen `<path>`-arc | `GranskaScreen.tsx` |
 | 7 | "bryter igenom" → "slår igenom" | Svengelska-fras i tre filer | `CounterInteraction.tsx`, `matchCommentary.ts`, `youthProcessor.ts` |
 | 8 | "brittningen" + "Dominerar sitt område" | Stavfel/felaktig fras | `matchCommentary.ts` |
+| 9 | Död MatchEventType-kod (YellowCard, Shot, Injury, Suspension, FullTime) | Ärvd fotbollskod, aldrig emitterad av matchCore — rensat ur 10 filer | `enums/index.ts`, `statsProcessor.ts`, `roundProcessor.ts`, `seasonSummaryService.ts`, `CommentaryFeed.tsx`, `MatchDoneOverlay.tsx`, `MatchReportView.tsx`, `MatchLiveScreen.tsx`, `formatters.ts`, `matchRatings.ts` |
+| 10 | Bug: MatchDoneOverlay räknade utvisningar som 0 | Använde `MatchEventType.Suspension` (aldrig emitterat) istf `MatchEventType.RedCard` | `MatchDoneOverlay.tsx` |
 
 **Ny lärdom i LESSONS §2:** `overflowY: auto` på en wrapper + `height: 100%` i child bryter child-höjdsberäkningen. Wrapper som ska klippa ska ha `overflow: hidden`, inte `overflowY: auto`.
 
@@ -387,24 +389,6 @@ loggingQuality,
 
 ## PARKERAT — ICKE-KRASCH
 
-### Död kod i MatchEventType-ekosystemet
-
-Sprint 25b.1-utredningen avslöjade att flera enum-värden aldrig emitteras av matchCore men har kvar filtrerings- och renderings-logik i andra filer:
-
-- `YellowCard` — filtreras i roundProcessor, statsProcessor, matchRatings, formatters. Aldrig emitteras. Ärvd från fotbollskod.
-- `Shot` — finns som enum men aldrig emitterat. Skott spelas via `fix.report.shotsHome/Away`-räknare i stället.
-- `Injury`, `Suspension`, `FullTime` — finns som enum men emitteras aldrig.
-
-Inget är trasigt. Men varje gång någon läser koden måste de räkna ut vad som är aktivt. När vi är klara med motorkalibreringen är det värt att rensa:
-
-- Ta bort döda enum-värden (eller behåll med kommentar "reserved")
-- Ta bort filter-kod som aldrig triggar
-- Ta bort renderings-kod (emoji, rating-justeringar) för events som aldrig existerar
-
-Uppskattning: 15-30 min rensning, 4-6 filer. Tas ej nu, ligger under `avgSuspensionsPerMatch`-gapet i prioritet.
-
----
-
 ### BUG-STRESS-06 — saveGameSize warnings
 
 Stress-testet varnar för save-game-storlek i långa körningar. Inte krasch, ingen funktionell påverkan. Parkerat sedan 22.8.
@@ -456,12 +440,12 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 | Fil | Senast uppdaterad | Status |
 |-----|-------------------|--------|
 | `CLAUDE.md` | 2026-04-21 | Aktuell |
-| `LESSONS.md` | 2026-04-21 (§15-18) | Aktuell |
+| `LESSONS.md` | 2026-04-22 (§2 uppdaterad) | Aktuell |
 | `DECISIONS.md` | 2026-04-21 | Aktuell |
 | `DESIGN_SYSTEM.md` | 2026-04-14 | OK |
 | `STATUS.md` | 2026-04-21 | Aktuell |
-| `KVAR.md` | 2026-04-21 (förmiddag) | Denna fil |
-| `HANDOVER_2026-04-21.md` | 2026-04-21 | Senaste handover |
+| `KVAR.md` | 2026-04-22 (kväll) | Denna fil |
+| `HANDOVER_2026-04-22.md` | 2026-04-22 | Senaste handover |
 | `SCORELINE_REFERENCE.md` | 2026-04-21 | Referens för 25b/c/d |
 | `SPRINT_25B_1_PENALTY_SEPARATION.md` | 2026-04-21 | Aktiv spec |
 | `TEXT_REVIEW_formations_2026-04-20.md` | 2026-04-20 (kväll) | GODKÄND |
@@ -470,7 +454,7 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 
 ## NÄSTA SESSION — FÖRESLAGEN ORDNING
 
-1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-04-21.md`.
+1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-04-22.md`.
 2. Kontrollera Sprint 25b.1-leveransen (npm run build && npm test grönt, `SPRINT_25B_1_MEASUREMENT.md` finns).
 3. Läs mätrapporten — lär specifikt:
    - `penaltyGoalPct` landar inom 3-7%? → ok, gå vidare till 25b.2
