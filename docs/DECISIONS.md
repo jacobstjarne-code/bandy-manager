@@ -99,6 +99,96 @@ AI-klubbar: ingen mekanism. Kan ha negativ ekonomi utan konsekvens. Game-design 
 
 **Konsekvens:** Managed club har nu hard floor på -2 MSEK. Stress-test kan inte längre driftas obegränsat i negativ ekonomi — kommer triggar game-over och säsongen avslutas. Invariant `finance` i stress-test bör ändras: acceptera managed-finances ned till -2 MSEK som giltig, inte som bugg.
 
+---
+
+## 2026-04-20 — Cup-matcher cancelleras aldrig pga väder (Sprint 22.10)
+
+**Problem:** BUG-STRESS-04: Väder-avbokning satte `status="postponed"` på cup-matcher. Ligamatcher klarar postponed (poeng väntar, matchen spelas senare), men cup-knockoutmatcher kräver `winnerId` för att bracket ska fortsätta. En postponed cup-match orphanar bracketen permanent: matchen spelas aldrig om, winnerId förblir null, bracket markeras aldrig completed. Diagnos via stress-test failure-dump bug04-seed5-s10.
+
+**Beslut:** Cup-matcher cancelleras aldrig pga väder. Explicit `&& !fixture.isCup` i väder-cancel-villkoret i matchSimProcessor.ts. Väder påverkar fortfarande commentary, chanser, attendance — bara inte cancellation.
+
+**Alternativ övervägt:** (a) Omschemalägga postponed cup-match till nästa lediga matchday — avvisat, kräver schedule-refactor, scope för stor. (b) Postponed cup = forfeit för ett av lagen — avvisat, känns oschyst mekaniskt. (c) Ta bort väder-cancel helt — avvisat, ligamatcher drar nytta av väder-dramatiken.
+
+**Konsekvens:** Cup-matcher spelas alltid oavsett väder. Narrativt tolkat som "arrangören sätter tak / flyttar till alternativ arena / skrapar isen extra". Om vi i framtiden vill implementera realistisk omschemaläggning är det en egen sprint. Mer generellt: varje ny feature som inför state-transitions på fixtures måste fråga "hur hanteras detta i cup-knockout?" (se LESSONS.md #12).
+
+**Meta:** Sista stress-test-buggen. Efter Sprint 22.10 har dagens infrastruktur-arbete levererat: design-audit + stress-test + tre fixar (22.5, 22.6, 22.7) + fyra bugfixes (BUG-STRESS-01 till -05, minus -02 som var två buggar) — från "kraschar i säsong 2" till "100/100 säsonger på 10×10" på en dag.
+
 **Resolution (Sprint 22.9):** Implementerat. `evaluateFinanceStatus(finances)` i `economyService.ts` — tre trösklar, ingen once-per-season-logik (hanteras av call site). `financeWarningGivenThisSeason` i SaveGame reset varje säsongsstart. Invariant uppdaterad: −2M utan managerFired = crash; −2M med managerFired = warn. Stress-test: `finance: 0 crashes` i 10×10. 99/100 säsonger avklarade.
 
 **Resolution (Sprint 22.6):** Rotorsak identifierad: `seasonEndProcessor.ts:890` och `matchSimProcessor.ts:35` satte `archetype: 'TwoWaySkater' as Player['archetype']` — PascalCase literal. Enum-värdet är `'twoWaySkater'` (camelCase). Fix: importerade `PlayerArchetype`, ersatte raw-sträng med `PlayerArchetype.TwoWaySkater`. console.warn borttagen. Defensiv guard kvar.
+
+---
+
+## 2026-04-20 — Kalibreringsinfrastruktur: stress-test loggar matchstats, analyze-stress jämför mot bandygrytan (Sprint 24)
+
+**Problem:** Playtest gav 13-14 mål/match. Target enligt bandygrytan 9.12. Ingen mätinfrastruktur för att isolera var felet låg — calibrate.ts mätte neutral lab-motor (10.3, inom tolerans), stress-testet mätte bara invariants/krascher, ingen loggning av säsongs-aggregat från live-motorn med alla modifiers aktiva.
+
+**Beslut:** Utvidga stress-test med `stats.ts` som loggar `season_stats.json` per match (goals[], suspensions[], cornersHome, etc). Ny `analyze-stress.ts` jämför mot `bandygrytan_detailed.json.calibrationTargets.herr`. Etablerar pipeline: `npm run stress && npm run analyze-stress` → ger klara siffror, inte magänsla, för alla efterföljande motor-sprintar.
+
+**Alternativ övervagt:** (a) Fixa calibrate.ts istället — avvisat, den kör isolerat utan modifier-stacking. (b) Mäta direkt i browser via devtool — avvisat, kan inte köra 7000+ matcher per session. (c) Bara öka playtest-mängden — avvisat, statistisk brus på 10 matcher = ±1 mål standardavvikelse.
+
+**Konsekvens:** Varje motor-sprint har nu ett numeriskt target, inte ett spelkänslo-target. Sprint 25a-d specades med specifika förväntade utslag per ändring. Första mätrapporten (SPRINT_24_FIRST_MEASUREMENT.md) blev referenspunkt som alla efterföljande mättes mot. Infrastruktur är additiv — invariants-checkningen rörs inte.
+
+---
+
+## 2026-04-20 — Sprint 25 splittras i delsprintar per rotorsak (Sprint 25a-d-serien)
+
+**Problem:** Sprint 24-mätningen avslöjade fem gap mot bandygrytan. Att ändra flera saker samtidigt gör det omöjligt att veta vilken ändring som gjorde vad. Dessutom första hypotes: gap 1+2 hänger ihop, gap 3+5 hänger ihop, gap 4 kan lösa sig själv.
+
+**Beslut:** Splittra Sprint 25 i fyra delsprintar, en rotorsak per sprint:
+- **25a:** Comeback-dynamik (gap 1+2, parameterjustering i matchCore)
+- **25b.1:** Straff till egen trigger (del av gap 5, strukturell separation)
+- **25b.2:** Utvisnings-basfrekvens (gap 3, höja wFoul+foulThreshold-multiplikator)
+- **25d:** Fas-konstanter (verifiera PHASE_CONSTANTS mot slutspelsdata)
+
+Mellan varje delsprint: mät via analyze-stress, läs rapporten, avgör om nästa sprint behöver justeras.
+
+**Alternativ övervagt:** (a) En enda Sprint 25 med alla fem gap — avvisat, kan inte mäta enskild effekt. (b) Bara Sprint 25a, skippa straff+utvisning — avvisat, htLeadWinPct-gapet är för stort för att bara comeback-justering ska lösa det. (c) Sprint 25 som Big Bang-refaktor av hela matchmotorn — avvisat, för stor risk.
+
+**Konsekvens:** Etablerar kulturen "en rotorsak per sprint, mät mellan". Varje sprint har tydliga förväntade mätutslag i speccen. Om utslaget avviker från förväntan → pausa, analysera, justera. Sprint 25a upptäckte managed-grinden (LESSONS #15) genom att mätutslaget var <1/3 av förväntat — det hade försvunnit i ett Big Bang.
+
+---
+
+## 2026-04-21 — Straff som separat fenomen från utvisningar (Sprint 25b.1)
+
+**Problem:** Motorn triggar straff som bi-produkt av `seqType === 'foul'`: 70% av fouls är i attack-zon, 60% av dem blir straff → 42% av alla foul-sekvenser blir straff. Bandygrytan säger straff utgör ~5.4% av mål och utvisningar är ~3.77/match — straff är ungefär 13% av utvisnings-liknande incidenter, inte 42%. Dessutom: om vi höjer foul-frekvensen 9x för att nå utvisnings-target (Sprint 25b.2) höjs straff också 9x, vilket överskjuter.
+
+**Beslut:** Separera straff till egen trigger i `seqType === 'attack'`-sekvensen. Straff-sannolikhet bygger på chanceQuality (nära-målchanser), inte på discipline. Period- och spellägesmodifierare från SCORELINE_REFERENCE.md (ledning +12%, peak 75-89 min 1.35x). Fouls i foul-sekvensen blir nu 100% utvisningar, inte 30%.
+
+**Alternativ övervagt:** (a) Behålla straff i foul-sekvens men sänka sannolikheten — avvisat, kopplingen mellan straff- och utvisnings-frekvens blir kvar, inte skötselmässigt separerbara. (b) Trigga straff i corner-sekvens också — avvisat tills data visar att det behövs. (c) Separera först efter 25b.2 är klar — avvisat, kopplingen stör 25b.2-kalibreringen.
+
+**Konsekvens:** Straff och utvisningar kan nu kalibreras oberoende. `isPenaltyGoal`-flagga på Goal-event för korrekt tracking. Sido-effekt: utvisningar 3x (från att alla foul-sekvens-fouls blir utvisningar) — det förväntas lyfta `avgSuspensionsPerMatch` 0.47 → ~1.4, förberäknat i speccen. Återstående gap till 3.77 hanteras i 25b.2.
+
+---
+
+## 2026-04-21 — Mini-edits direkt av Opus istället för Code-sprint (25b.2.2 + 25d.2)
+
+**Problem:** Sprint 25d-mätningen avslöjade två konstanta-nivå-problem: `avgSuspensionsPerMatch` 3.23 (0.07 under spec 3.3), KVF `homeWin%` 50.8% (gap 9.5pp). Båda lösbara med enkla konstant-ändringar. Att skriva hela Code-sprintar för två rader kod är dyrt i credits.
+
+**Beslut:** Opus gjorde båda ändringarna direkt via workspace:edit_file. Två rader i två filer. Sedan får Code bara köra stress-mätning för att verifiera.
+
+**Alternativ övervagt:** Två separata Code-sprintar. Avvisat — spec+implementation+audit-cycle för en-rads-ändringar är pattern-tvingande overhead.
+
+**Konsekvens:** Etablerar mönstret: enkla konstant-ändringar under 5 rader görs direkt av Opus, mätning sker i nästa Code-körning tillsammans med annat arbete. Sparar credits. Viktigt: Opus loggar ändringar i KVAR.md och DECISIONS.md (som nu) så spårbarhet bibehålls.
+
+---
+
+## 2026-04-22 — Centraliserad save-logik via store actions (Cursor-refaktor)
+
+**Problem:** `saveSaveGame()` anropades direkt i komponenter (`TransfersScreen`, `GameHeader`) med rå `.catch(console.warn)` — ingen felhantering synlig för användaren, business logic (renewContract, signFreeAgent, listPlayerForSale) inlinead i skärm-filen, `useGameStore.setState` anropades direkt från komponenter och kringgick actions-lagret.
+
+**Beslut:** (1) `persistGameSnapshot()` i `gameStore.ts` — enda platsen för explicit save, returnerar `{ success, error }`. (2) `persistAutosave(game, context)` i `gameFlowActions.ts` för advance-flödet. (3) Ny publik `saveGame()` action. (4) `renewContract` / `signFreeAgent` / `listPlayerForSale` flyttade från inline-kod i `TransfersScreen` till `transferActions.ts`. (5) `markCoachMarksSeen` och `updateMatchMode` async med `SaveActionResult`.
+
+**Alternativ övervägt:** Behålla komponent-nivå save men lägga till error-toast — avvisat, löser inte att business logic sitter i fel lager.
+
+**Konsekvens:** Inga fler direkta `saveSaveGame`-importer i presentation-lagret. Toast i `GameHeader` visar nu fel-state (röd) om save misslyckas. `useGameStore.setState` direkt från screens reducerat till tre läs-only `getState()`-anrop i sim-loopar (legitimt mönster).
+
+---
+
+## 2026-04-22 — getState() i sim-loopar är legitimt, setState i screens är inte det
+
+**Problem:** Code review flaggade inkonsekvent state-mutation. Distinktionen var oklar.
+
+**Beslut:** `useGameStore.getState()` i event-handlers och sim-loopar är korrekt Zustand-mönster för att undvika stale closures — inte regression. `useGameStore.setState()` direkt från screen-komponenter är inte okej — kringgår actions och deras invarianter. Kvarvarande `getState()`-läsningar i `DashboardScreen` (sim-loop) är avsiktliga och ska lämnas.
+
+**Konsekvens:** Regel: mutera aldrig state direkt från screens. Läs via `getState()` i callbacks är OK.

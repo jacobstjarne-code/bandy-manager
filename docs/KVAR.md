@@ -17,6 +17,8 @@
 | 16 | HANDOFF-BATCH-1 B3 — ClubBadge TODO-markering | `TODO(FAS 4)` ovan renderSymbol | `ClubBadge.tsx` |
 | 17 | HANDOFF-BATCH-1 B4 — Porträtt TODO-markeringar | 6 × `TODO(FAS 5)` på alla call-sites | `LockerRoomMap.tsx`, `LockerRoomCard.tsx`, `PlayerCard.tsx`, `SquadScreen.tsx`, `GranskaScreen.tsx` |
 | 18 | HANDOFF-BATCH-1 B1 — Emoji-sektionsrubriker TODO | 16 × `TODO(FAS 1)` i 7 skärmfiler | `RoundSummaryScreen`, `DashboardScreen`, `BoardMeetingScreen`, `HalfTimeSummaryScreen`, `InboxScreen`, `GranskaScreen`, `PressConferenceScene` |
+| 19 | Cursor: centralisera save-logik (persistGameSnapshot, renewContract/signFreeAgent/listPlayerForSale till store) | Business logic i screen, direkt saveSaveGame i komponenter | `gameStore.ts`, `gameFlowActions.ts`, `transferActions.ts`, `TransfersScreen.tsx`, `GameHeader.tsx` |
+| 20 | Uppstädning: eliminera getState()-anrop i screens | `startFacilityProject` och `dismissHint` hämtades via getState istf hook | `ClubScreen.tsx`, `MatchLiveScreen.tsx` |
 
 ## KLART IDAG (2026-04-22, kväll — session 3)
 
@@ -148,6 +150,37 @@ Stress-test: baseline 41% → 100/100 på 10×10 seeds.
 - Straff-peak: minut 75-89 (1.35x baseline)
 
 Referensfil: `docs/data/SCORELINE_REFERENCE.md`
+
+---
+
+## TEKNISK SKULD — PARKERAT (kräver spec innan implementation)
+
+### TS-1: roundProcessor är en monolit
+
+**Fil:** `src/application/useCases/roundProcessor.ts`
+**Problem:** ~500+ rader, ett use-case med många kopplade steg: sim → ekonomi → event → inbox → playoff. Hög blast radius vid ändringar — en bugg i ett steg kan förstöra state som ett senare steg förväntar sig.
+**Önskad lösning:** Bryt ut till tydlig pipeline med ett kontrakt per steg (liknande det som redan gjorts med `economyProcessor`, `communityProcessor` etc i `processors/`-mappen). Varje processor returnerar ett resultat som nästa steg tar emot.
+**Prioritet:** Hög på sikt. Gör inte utan fullständig spec — hög regressionsrisk.
+**Estimat:** Halvdag implementering + halvdag tester.
+
+---
+
+### TS-2: Tester saknas för store actions (gameFlowActions, transferActions)
+
+**Filer:** `src/presentation/store/actions/gameFlowActions.ts`, `transferActions.ts`, `matchActions.ts`
+**Problem:** Domäntesterna är bra, men store/actions-slices saknar tester. Regressionsrisk sitter här — `advance()`, `renewContract()`, `resolveEvent()` etc. är komplexa orkestreringsfunktioner som är svåra att felsöka utan testtäckning.
+**Önskad lösning:** Enhetstester per action-slice som mockar domain-services och verifierar store-state-transformationer.
+**Prioritet:** Medel. Gör som ett dedikerat test-sprint.
+**Estimat:** En dag.
+
+---
+
+### TS-3: Dubbla migreringsläger
+
+**Filer:** `src/infrastructure/persistence/saveGameMigration.ts`, `src/presentation/store/gameStore.ts`
+**Problem:** Migration sker på två ställen — i infra-lagret och vid `loadGame` i store. Risk för divergerande beteende om något ändras i ett av lagren.
+**Önskad lösning:** All migration i ett lager (infra). Store kallar bara `migrateGame()` utan att veta om logiken.
+**Prioritet:** Låg tills migration-filen växer eller en divergens-bugg uppstår.
 
 ---
 

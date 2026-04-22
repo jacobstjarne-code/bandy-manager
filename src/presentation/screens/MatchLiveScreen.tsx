@@ -52,6 +52,7 @@ export function MatchLiveScreen() {
   const location = useLocation()
   const navigate = useNavigate()
   const { game, saveLiveMatchResult, advance, markMatchStarted } = useGameStore()
+  const dismissHint = useGameStore(s => s.dismissHint)
 
   const state = location.state as LocationState | null
   const fixture = state?.fixture
@@ -995,7 +996,7 @@ export function MatchLiveScreen() {
         <FirstVisitHint
           screenId="matchLive"
           text="Matchen rullar automatiskt. Vid hörnor får du välja — titta efter hörn-kortet i feeden."
-          onDismiss={() => useGameStore.getState().dismissHint('matchLive')}
+          onDismiss={() => dismissHint('matchLive')}
         />
       )}
 
