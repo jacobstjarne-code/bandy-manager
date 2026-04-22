@@ -60,10 +60,11 @@ export function processCommunity(
   if (csActivities?.pensionarskaffe) csBoost += 0.10
   if (csActivities?.soppkvall) csBoost += 0.08
   if (csActivities?.skolbesok) csBoost += 0.12
-  // ── Frivilligbonus ────────────────────────────────────────────────────────
+  // ── Frivilligbonus (puls) ─────────────────────────────────────────────────
+  // Sprint 26: cap på +1.5/omg oavsett antal volontärer (ekonomiskt bidrag cappas ej)
   const volunteerCount = (game.volunteers ?? []).length
   if (volunteerCount > 0) {
-    csBoost += Math.min(15, volunteerCount * 0.3)
+    csBoost += Math.min(1.5, volunteerCount * 0.3)
   }
 
   const csPos = standings.find(s => s.clubId === game.managedClubId)?.position ?? 6

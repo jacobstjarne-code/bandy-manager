@@ -9,6 +9,7 @@ export type FinanceReason =
   | 'wages'
   | 'match_revenue'
   | 'weekly_base'
+  | 'arena_maintenance'
   | 'sponsorship'
   | 'community_round'
   | 'cup_prize'
@@ -82,7 +83,7 @@ export function appendFinanceLog(
 // ── Canonical round income calculation ───────────────────────────────────────
 
 export interface RoundIncomeBreakdown {
-  weeklyBase: number             // reputation × 120
+  weeklyBase: number             // 2000 + reputation × 50
   sponsorIncome: number          // active sponsors' weeklyIncome
   matchRevenue: number           // ticket/gate revenue for a home match (0 if away/no match)
   communityMatchIncome: number   // kiosk/vipTent/functionaries/bandyplay per home match, net
@@ -90,7 +91,8 @@ export interface RoundIncomeBreakdown {
   volunteerIncome: number        // active volunteers × 600 per round
   kommunBidrag: number           // reputation × communityStanding-based bidrag (once at round 1)
   weeklyWages: number            // monthly salary total / 4
-  netPerRound: number            // sum of all income − wages
+  weeklyArenaCost: number        // arenaCapacity × 8 per round
+  netPerRound: number            // sum of all income − wages − arena cost
 }
 
 export interface CalcRoundIncomeParams {
@@ -132,7 +134,8 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
   const weeklyWages = Math.round(totalSalary / 4)
 
   // ── Weekly base (reputation) ───────────────────────────────────────────────
-  const weeklyBase = Math.round(club.reputation * 120)
+  // Sprint 26: 2000 + rep × 50 (was rep × 120). Progressive — big clubs lose proportionally more.
+  const weeklyBase = Math.round(2000 + club.reputation * 50)
 
   // ── Sponsors ──────────────────────────────────────────────────────────────
   const sponsorIncome = sponsors
@@ -203,17 +206,23 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
 
   const volunteerIncome = getActiveVolunteerBonus(volunteers ?? []).weeklyIncome
 
+  // ── Arena-underhåll (fast kostnad per omgång) ─────────────────────────────
+  const arenaCapacity = club.arenaCapacity ?? Math.round(club.reputation * 7 + 150)
+  const weeklyArenaCost = Math.round(arenaCapacity * 8)
+
   // ── Kommunbidrag (utbetalas en gång per säsong, omgång 1) ─────────────────
   let kommunBidrag = 0
   if (isFirstRound) {
     const kommunBase = 60000
-    const repFactor = 0.5 + (club.reputation / 100) * 1.0        // 0.5–1.5
-    const csFactor = 0.7 + ((communityStanding ?? 50) / 100) * 0.6  // 0.7–1.3
+    const repFactor = 0.5 + (club.reputation / 100) * 1.0           // 0.5–1.5
+    // Sprint 26: kvadratisk csFactor — belönar hög puls, straffar låg (var linjär 0.7–1.3)
+    const csNormalized = 0.3 + ((communityStanding ?? 50) / 100) * 0.7  // 0.3–1.0
+    const csFactor = csNormalized * csNormalized                         // 0.09–1.0
     kommunBidrag = Math.round(kommunBase * repFactor * csFactor)
   }
 
   const netPerRound = weeklyBase + sponsorIncome + matchRevenue + communityMatchIncome
-    + communityRoundIncome + volunteerIncome + kommunBidrag - weeklyWages
+    + communityRoundIncome + volunteerIncome + kommunBidrag - weeklyWages - weeklyArenaCost
 
   return {
     weeklyBase,
@@ -224,6 +233,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     volunteerIncome,
     kommunBidrag,
     weeklyWages,
+    weeklyArenaCost,
     netPerRound,
   }
 }

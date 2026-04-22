@@ -90,6 +90,9 @@ export function processEconomy(
   if (managedIncome.weeklyWages !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.weeklyWages, reason: 'wages', label: 'Löner' })
   }
+  if (managedIncome.weeklyArenaCost !== 0) {
+    roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.weeklyArenaCost, reason: 'arena_maintenance', label: 'Arena-underhåll' })
+  }
 
   let updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, managedIncome.netPerRound)
 

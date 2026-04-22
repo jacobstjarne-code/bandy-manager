@@ -196,14 +196,14 @@ describe('appendFinanceLog', () => {
 // ── Group 3: calcRoundIncome — wages and base income ─────────────────────────
 
 describe('calcRoundIncome — wages and base income', () => {
-  it('weeklyBase = reputation × 120', () => {
+  it('weeklyBase = 2000 + reputation × 50', () => {
     const club = makeClub({ reputation: 60 })
     const result = calcRoundIncome({
       club, players: [], sponsors: [], communityActivities: undefined,
       fanMood: 50, isHomeMatch: false, matchIsKnockout: false, matchIsCup: false,
       matchHasRivalry: false, standing: null, rand: deterministicRand,
     })
-    expect(result.weeklyBase).toBe(60 * 120)
+    expect(result.weeklyBase).toBe(2000 + 60 * 50)
   })
 
   it('weeklyWages = Math.round(totalSalary / 4)', () => {
@@ -228,7 +228,7 @@ describe('calcRoundIncome — wages and base income', () => {
     expect(result.weeklyWages).toBe(0)
   })
 
-  it('netPerRound = sum of incomes − wages', () => {
+  it('netPerRound = sum of incomes − wages − arena cost', () => {
     const players = [makePlayer({ salary: 20000 })]
     const result = calcRoundIncome({
       club: makeClub(), players, sponsors: [], communityActivities: undefined,
@@ -236,7 +236,7 @@ describe('calcRoundIncome — wages and base income', () => {
       matchHasRivalry: false, standing: null, rand: deterministicRand,
     })
     const expected = result.weeklyBase + result.sponsorIncome + result.matchRevenue
-      + result.communityMatchIncome + result.communityRoundIncome - result.weeklyWages
+      + result.communityMatchIncome + result.communityRoundIncome - result.weeklyWages - result.weeklyArenaCost
     expect(result.netPerRound).toBe(expected)
   })
 })
