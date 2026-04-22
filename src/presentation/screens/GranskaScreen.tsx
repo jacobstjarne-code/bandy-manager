@@ -594,11 +594,12 @@ export function GranskaScreen() {
     const goals = fixture.events.filter(e => e.type === MatchEventType.Goal && e.clubId === managedClubId)
 
     const totalShots   = isHome ? fixture.report.shotsHome   : fixture.report.shotsAway
-    const onTarget     = isHome ? (fixture.report.onTargetHome ?? 0)  : (fixture.report.onTargetAway  ?? 0)
     const scoredCount  = goals.length
     // savedCount = opponent GK saves of our shots; use report.savesAway (away GK) if we're home, savesHome if we're away
     const savedCount   = isHome ? (fixture.report.savesAway ?? 0) : (fixture.report.savesHome ?? 0)
-    const onTargetCount = onTarget > 0 ? onTarget : (scoredCount + savedCount)
+    // onTargetHome/Away in matchCore only counts non-corner shots on target — corner goals are excluded,
+    // which causes conversion% > 100% in corner-heavy matches. Use scoredCount+savedCount instead.
+    const onTargetCount = scoredCount + savedCount
     const missCount    = Math.max(0, totalShots - onTargetCount)
 
     // Two isolated penalty zones — top: our attack, bottom: opponent attack

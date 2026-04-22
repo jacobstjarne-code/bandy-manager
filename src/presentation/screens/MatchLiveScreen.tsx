@@ -248,8 +248,10 @@ export function MatchLiveScreen() {
       cornersAway: lastStep.cornersAway,
       penaltiesHome: penaltyResult?.home ?? 0,
       penaltiesAway: penaltyResult?.away ?? 0,
-      possessionHome: 50,
-      possessionAway: 50,
+      possessionHome: lastStep.shotsHome + lastStep.shotsAway > 0
+        ? Math.round((lastStep.shotsHome / (lastStep.shotsHome + lastStep.shotsAway)) * 100) : 50,
+      possessionAway: lastStep.shotsHome + lastStep.shotsAway > 0
+        ? Math.round((lastStep.shotsAway / (lastStep.shotsHome + lastStep.shotsAway)) * 100) : 50,
       playerOfTheMatchId: potmId,
     }
     saveLiveMatchResult(
