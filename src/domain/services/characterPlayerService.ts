@@ -87,6 +87,7 @@ export function generateCharacterPlayerEvents(
   currentRound: number,
   alreadyQueued: Set<string>,
   rand: () => number,
+  captainPlayerId?: string,
 ): GameEvent[] {
   const events: GameEvent[] = []
   const characterPlayers = players.filter(p => p.isCharacterPlayer)
@@ -156,8 +157,8 @@ export function generateCharacterPlayerEvents(
       }
     }
 
-    // Leader gets captain role — round 2
-    if (player.trait === 'ledare' && currentRound === 2) {
+    // Leader gets captain role — round 2, only if no captain has been chosen yet
+    if (player.trait === 'ledare' && currentRound === 2 && !captainPlayerId) {
       const eid = `captain_${player.id}`
       if (!alreadyQueued.has(eid)) {
         events.push({

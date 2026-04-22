@@ -169,7 +169,7 @@ export function processYouth(
       gameEvents.push({
         id: breakthroughId,
         type: 'academyEvent',
-        title: `${player.firstName} ${player.lastName} bryter igenom`,
+        title: `${player.firstName} ${player.lastName} slår igenom`,
         body: `I debuten mot ${opponent?.name ?? 'motståndaren'}. Minut ${goal.minute ?? '?'}. ${player.age} år gammal. Akademitränaren har ringt redan. "Han har varit den mest hungrige på träning i två år. Det är inte tur."`,
         choices: [{ id: 'ack', label: 'Grattis akademin', effect: { type: 'noOp' } }],
         resolved: false,

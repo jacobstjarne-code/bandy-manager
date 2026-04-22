@@ -22,7 +22,7 @@ export function generateEvents(
     ...generatePatronEvents(game, currentRound, alreadyQueued, rand),
     ...generatePoliticianEvents(game, currentRound, alreadyQueued, rand),
     ...generateSponsorEvents(game, currentRound, alreadyQueued, rand),
-    ...generateCharacterPlayerEvents(game.players ?? [], currentRound, alreadyQueued, rand),
+    ...generateCharacterPlayerEvents(game.players ?? [], currentRound, alreadyQueued, rand, game.captainPlayerId),
     ...generateSupporterEvents(game, currentRound, alreadyQueued, rand),
   ]
 }

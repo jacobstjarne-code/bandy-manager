@@ -601,7 +601,7 @@ export function GranskaScreen() {
     const missCount    = Math.max(0, totalShots - onTargetCount)
 
     // Generate seeded positions in attack half (SVG: 280×190 viewBox, goal at top center)
-    const GOAL_Y = 20
+    const GOAL_Y = 8
     const GOAL_X = 140
     const W = 280
     const H = 190
@@ -678,15 +678,19 @@ export function GranskaScreen() {
             <rect x={GOAL_X + 19} y={GOAL_Y - 8} width="1" height="12" fill="rgba(0,0,0,0.25)" />
             {/* Goal area (topp) */}
             <rect x={GOAL_X - 40} y={GOAL_Y} width="80" height="30" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="1" />
+            {/* Penalty arc (top) — bulgar nedåt från straffområdets nederkant */}
+            <path d={`M ${GOAL_X - 25} ${GOAL_Y + 30} A 25 25 0 0 1 ${GOAL_X + 25} ${GOAL_Y + 30}`} fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
             {/* Opponent goal area (botten = vårt eget mål, där de skjuter) */}
             <rect x={GOAL_X - 40} y={H - 30} width="80" height="30" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="1" />
+            {/* Penalty arc (bottom) — bulgar uppåt från straffområdets överkant */}
+            <path d={`M ${GOAL_X - 25} ${H - 30} A 25 25 0 0 0 ${GOAL_X + 25} ${H - 30}`} fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
             {/* Center arc */}
             <ellipse cx={GOAL_X} cy={H} rx="80" ry="50" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
             {/* Center line */}
             <line x1="0" y1={H/2} x2={W} y2={H/2} stroke="rgba(0,0,0,0.2)" strokeWidth="1" strokeDasharray="3,3" />
             {/* Side labels */}
-            <text x={W - 4} y={GOAL_Y + 22} fontSize="8" fill="rgba(0,0,0,0.45)" textAnchor="end" fontWeight="600" letterSpacing="1">MOTSTÅNDARMÅL</text>
-            <text x={W - 4} y={H - 8} fontSize="8" fill="rgba(0,0,0,0.45)" textAnchor="end" fontWeight="600" letterSpacing="1">VÅRT MÅL</text>
+            <text x={W - 4} y={GOAL_Y + 14} fontSize="8" fill="rgba(0,0,0,0.45)" textAnchor="end" fontWeight="600" letterSpacing="1">MOTSTÅNDARMÅL</text>
+            <text x={W - 4} y={H - 22} fontSize="8" fill="rgba(0,0,0,0.45)" textAnchor="end" fontWeight="600" letterSpacing="1">VÅRT MÅL</text>
             {/* Shot dots */}
             {dots.map((d, i) => (
               <g key={i}>

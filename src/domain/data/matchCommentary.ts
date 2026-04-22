@@ -600,7 +600,7 @@ export const commentary = {
   player_duel: [
     '{player} och deras mittback har gått på varandra hela matchen. Personligt.',
     'Hård duell vid sargen! {player} reser sig, borstar av knäna och kör vidare.',
-    '{player} vinner brittningen — tredje gången i rad. Dominerar sitt område.',
+    '{player} vinner brottningen — tredje gången i rad. Dominerar sin yta.',
     'Kroppsspråket säger allt. {player} har hittat sin motståndare.',
   ],
 
@@ -720,7 +720,7 @@ export function getTraitCommentary(
 
   const traitGoals: Record<string, string[]> = {
     hungrig: [
-      `Den hungriga forwarden bryter igenom! ${name} har väntat på det här.`,
+      `Den hungriga forwarden slår igenom! ${name} har väntat på det här.`,
       `${name} ger sig aldrig. Hungern driver honom framåt.`,
       `Där satt den! ${name} har jagat det här målet i veckor.`,
     ],

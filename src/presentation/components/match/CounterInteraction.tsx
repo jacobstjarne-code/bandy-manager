@@ -114,7 +114,7 @@ export function CounterInteraction({ data, outcome, onChoose, coach }: CounterIn
       stats={
         <>
           <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-light)' }}>
-            {data.runnerName} bryter igenom!
+            {data.runnerName} slår igenom!
           </span>
           <span style={{ fontSize: 10, color: 'var(--text-light-secondary)', marginLeft: 'auto' }}>{defText}</span>
         </>

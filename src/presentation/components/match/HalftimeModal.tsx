@@ -227,52 +227,60 @@ export function HalftimeModal({
       position: 'fixed', inset: 0,
       background: 'rgba(0,0,0,0.6)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
-      paddingTop: '40px', zIndex: 'var(--z-modal)', overflowY: 'auto',
+      paddingTop: '40px', zIndex: 'var(--z-modal)',
     }}>
       <div style={{
         background: 'var(--bg)',
         border: isBigMatch ? '1px solid rgba(196,122,58,0.4)' : '1px solid var(--border)',
-        borderRadius: 'var(--radius)', padding: '20px 20px 16px',
+        borderRadius: 'var(--radius)',
         textAlign: 'center', minWidth: 260, maxWidth: 330, width: '90%',
         marginBottom: 24,
+        display: 'flex', flexDirection: 'column',
+        maxHeight: 'calc(100dvh - 80px)',
+        overflow: 'hidden',
       }}>
-        {/* Header */}
-        <p style={{
-          fontSize: isBigMatch ? 13 : 11, fontWeight: 700, textTransform: 'uppercase',
-          letterSpacing: '1px', color: isBigMatch ? 'var(--accent)' : 'var(--text-muted)', marginBottom: 10,
-        }}>
-          {isSmFinal ? '⏸ HALVTID · SM-FINALEN' : isCupFinal ? '⏸ HALVTID · CUPFINALEN' : '⏸ HALVTID'}
-        </p>
+        {/* Header — fixed, non-scrollable */}
+        <div style={{ padding: '20px 20px 0', flexShrink: 0 }}>
+          <p style={{
+            fontSize: isBigMatch ? 13 : 11, fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '1px', color: isBigMatch ? 'var(--accent)' : 'var(--text-muted)', marginBottom: 10,
+          }}>
+            {isSmFinal ? '⏸ HALVTID · SM-FINALEN' : isCupFinal ? '⏸ HALVTID · CUPFINALEN' : '⏸ HALVTID'}
+          </p>
 
-        {/* Score */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(homeClubName, 12)}</p>
-            <span style={{ fontSize: 40, fontWeight: 800 }}>{htHomeGoals}</span>
+          {/* Score */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(homeClubName, 12)}</p>
+              <span style={{ fontSize: 40, fontWeight: 800 }}>{htHomeGoals}</span>
+            </div>
+            <span style={{ fontSize: 24, color: 'var(--text-muted)' }}>—</span>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(awayClubName, 12)}</p>
+              <span style={{ fontSize: 40, fontWeight: 800 }}>{htAwayGoals}</span>
+            </div>
           </div>
-          <span style={{ fontSize: 24, color: 'var(--text-muted)' }}>—</span>
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 4 }}>{truncate(awayClubName, 12)}</p>
-            <span style={{ fontSize: 40, fontWeight: 800 }}>{htAwayGoals}</span>
+
+          {/* Tab bar */}
+          <div style={{ display: 'flex', gap: 4, marginBottom: 12, background: 'var(--bg-elevated)', borderRadius: 8, padding: 3 }}>
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  flex: 1, padding: '7px 4px', fontSize: 10, fontWeight: 700,
+                  background: activeTab === tab.id ? 'rgba(196,122,58,0.12)' : 'transparent',
+                  border: 'none', borderRadius: 6,
+                  color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
+                  cursor: 'pointer', letterSpacing: '0.5px',
+                }}
+              >{tab.label}</button>
+            ))}
           </div>
         </div>
 
-        {/* Tab bar */}
-        <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'var(--bg-elevated)', borderRadius: 8, padding: 3 }}>
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                flex: 1, padding: '7px 4px', fontSize: 10, fontWeight: 700,
-                background: activeTab === tab.id ? 'rgba(196,122,58,0.12)' : 'transparent',
-                border: 'none', borderRadius: 6,
-                color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
-                cursor: 'pointer', letterSpacing: '0.5px',
-              }}
-            >{tab.label}</button>
-          ))}
-        </div>
+        {/* Tab content — scrollable */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px' }}>
 
         {/* ÖVERSIKT tab */}
         {activeTab === 'oversikt' && (
@@ -469,14 +477,18 @@ export function HalftimeModal({
           </div>
         )}
 
-        {/* Continue button — always visible */}
-        <button
-          onClick={htSubs.length > 0 || htMentality || htTempo || htPress ? onApplyTactic : onContinue}
-          className="btn btn-primary"
-          style={{ width: '100%', marginTop: 16 }}
-        >
-          {tacticChanged || htSubs.length > 0 ? '🔄 ' : ''}{isSmFinal || isCupFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}
-        </button>
+        </div>
+
+        {/* CTA footer — fixed, always visible */}
+        <div style={{ padding: '4px 20px 16px', flexShrink: 0 }}>
+          <button
+            onClick={htSubs.length > 0 || htMentality || htTempo || htPress ? onApplyTactic : onContinue}
+            className="btn btn-primary"
+            style={{ width: '100%' }}
+          >
+            {tacticChanged || htSubs.length > 0 ? '🔄 ' : ''}{isSmFinal || isCupFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}
+          </button>
+        </div>
       </div>
     </div>
   )

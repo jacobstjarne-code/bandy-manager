@@ -41,7 +41,7 @@ Format per lärdom: Mönster (symptom), Rotorsak (varför), Fix, Känn igen (sig
 
 **Känn igen:** Container med `flex: 1` och `overflow: auto` där scroll inte triggar.
 
-**Historik:** GranskaScreen (Spelare-flik) och PlayerModal — två separata fall samma sprint.
+**Historik:** GranskaScreen (Spelare-flik) och PlayerModal — två separata fall samma sprint. Tredje gången (2026-04-22): `GameGuard` hade `overflowY: 'auto'` på sin Outlet-wrapper → child med `height: 100%` fick naturlig contenthöjd istället för containerhöjden → intern scroll triggade aldrig. Fix: `overflow: 'hidden'` på GameGuard-wrappern. Variant på samma mönster: `overflowY: auto` i wrapper + `height: 100%` i child = child tror att "100%" är innehållets naturliga höjd. **Regel: wrapper som ska fungera som klipgräns för inre scroll ska ha `overflow: hidden`, inte `overflowY: auto`.**
 
 ---
 

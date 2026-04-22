@@ -254,8 +254,8 @@ export function NewGameScreen() {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
       {/* Club selection heading */}
       <div style={{ padding: '14px 16px 10px' }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', margin: 0 }}>
-          Välj klubb
+        <h2 style={{ fontSize: 18, fontWeight: 400, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', margin: 0, letterSpacing: '1px' }}>
+          Varje klubb har en historia, välj din:
         </h2>
         <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
           {capitalizeName(managerName)} · 2026/2027
@@ -263,10 +263,7 @@ export function NewGameScreen() {
       </div>
 
       {/* Club list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px', paddingBottom: 20 }}>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: 12, fontSize: 14 }}>
-          Varje klubb har sin historia. Välj din.
-        </p>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px', paddingBottom: 8 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {CLUBS.map(club => {
             const isSelected = selectedClubId === club.id
@@ -314,10 +311,7 @@ export function NewGameScreen() {
 
       {/* CTA — in content flow, same pattern as name step */}
       {selectedClub && (
-        <div style={{ padding: '16px 20px' }}>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 10, textAlign: 'center' }}>
-            Starta karriären som tränare för {selectedClub.name}?
-          </p>
+        <div style={{ padding: '8px 12px' }}>
           <button
             onClick={handleStart}
             disabled={isStarting}

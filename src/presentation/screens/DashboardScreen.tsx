@@ -385,7 +385,7 @@ export function DashboardScreen() {
     <div className="screen-enter" style={{ position: 'relative', minHeight: '100%', background: getSeasonalBackground(currentDateObj) }}>
 
 
-      <div className="texture-wood card-stack" style={{ paddingTop: 8, paddingBottom: 'var(--scroll-padding-bottom)' }}>
+      <div className="texture-wood card-stack" style={{ paddingTop: 8, paddingBottom: 8 }}>
 
         {/* ① VÄLKOMSTKORT (omgång 1) eller AGENDA (övriga omgångar) */}
         {isFirstRound ? (
@@ -940,10 +940,10 @@ export function DashboardScreen() {
         ) : null}
 
         {/* ⑦ CTA-SEKTION */}
-        <div style={{ margin: '4px 0 0' }}>
+        <div style={{ margin: '0' }}>
           {currentRound > 0 && (
             <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, padding: '0 2px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, padding: '0 2px' }}>
                 <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{currentDateStr}</span>
                 <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Omgång {currentRound}</span>
               </div>
@@ -1018,7 +1018,7 @@ export function DashboardScreen() {
           </button>
         </div>
 
-        <p style={{ textAlign: 'center', fontSize: 9, color: 'var(--text-secondary)', marginTop: 16 }}>
+        <p style={{ textAlign: 'center', fontSize: 9, color: 'var(--text-secondary)', marginTop: 6 }}>
           build {(typeof __GIT_HASH__ !== 'undefined' ? __GIT_HASH__ : '?')} · {(typeof __BUILD_DATE__ !== 'undefined' ? __BUILD_DATE__ : '')}
         </p>
       </div>
