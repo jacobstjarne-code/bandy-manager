@@ -66,7 +66,7 @@ export function BottomNav() {
     '/game/qf-summary',
     '/game/champion',
     '/game/game-over',
-    '/game/match',
+    '/game/match/live',
   ]
   const isHiddenScreen = HIDDEN_PATHS.some(p => location.pathname.startsWith(p))
 
