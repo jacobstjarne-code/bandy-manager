@@ -1,9 +1,22 @@
 # BANDY MANAGER — KVAR
 
-**Datum:** 2026-04-22 (kväll, efter post-playtest session 2 — 8 fixar pushade)
-**Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DESIGN_SYSTEM.md/HANDOVER_2026-04-21.md är lästa.
+**Datum:** 2026-04-22 (kväll — session 4, HANDOFF-BATCH-1 + Sprint 26 komplett)
+**Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DESIGN_SYSTEM.md/HANDOVER_2026-04-22.md är lästa.
 
 ---
+
+## KLART IDAG (2026-04-22 — session 4)
+
+| # | Fix | Rotorsak / Leverans | Fil(er) |
+|---|-----|---------------------|---------|
+| 11 | Sprint 26 — Ekonomi & Puls-balansering | 5 motkrafter implementerade, stresstest kört, mätrapport skapad | `economyService.ts`, `communityProcessor.ts`, `roundProcessor.ts`, `economyProcessor.ts`, ekonomiService.test.ts |
+| 12 | Ny analyze-stress sektioner H/I/J | Kapital per seed/säsong, puls-bucket-fördelning, Pearson-korrelationer | `scripts/analyze-stress.ts`, `scripts/stress/stats.ts` |
+| 13 | HANDOFF-BATCH-1 A1 — GameHeader redesign | 3-kolumn grid, SVG-kuvert, Logo-komponent | `GameHeader.tsx`, `Logo.tsx` |
+| 14 | HANDOFF-BATCH-1 A2 — PhaseIndicator tre states | done/current/upcoming med checkmark, halo, connector-vikt | `PhaseIndicator.tsx` |
+| 15 | HANDOFF-BATCH-1 B2 — BottomNav TODO-markeringar | 6 × `TODO(FAS 1)` ovan tab-ikoner | `BottomNav.tsx` |
+| 16 | HANDOFF-BATCH-1 B3 — ClubBadge TODO-markering | `TODO(FAS 4)` ovan renderSymbol | `ClubBadge.tsx` |
+| 17 | HANDOFF-BATCH-1 B4 — Porträtt TODO-markeringar | 6 × `TODO(FAS 5)` på alla call-sites | `LockerRoomMap.tsx`, `LockerRoomCard.tsx`, `PlayerCard.tsx`, `SquadScreen.tsx`, `GranskaScreen.tsx` |
+| 18 | HANDOFF-BATCH-1 B1 — Emoji-sektionsrubriker TODO | 16 × `TODO(FAS 1)` i 7 skärmfiler | `RoundSummaryScreen`, `DashboardScreen`, `BoardMeetingScreen`, `HalfTimeSummaryScreen`, `InboxScreen`, `GranskaScreen`, `PressConferenceScene` |
 
 ## KLART IDAG (2026-04-22, kväll — session 3)
 
@@ -140,7 +153,25 @@ Referensfil: `docs/data/SCORELINE_REFERENCE.md`
 
 ## AKTIVA JOBB — HOS CODE NU
 
-*(Inget aktivt — playtest pågår, 25e specas efter)*
+### Sprint 26 — Ekonomi & Bygdens Puls-balansering
+
+**Status:** LEVERERAD + MÄTT 2026-04-22. Mätrapport: `docs/sprints/SPRINT_26_BALANCE_MEASUREMENT.md`.
+
+**Uppnådda mål ✅:**
+- Takeffekt på puls bruten (91-100 bucket: 51% → 11%)
+- Längsta puls-streak halverad (34 → 10 omgångar)
+- Median-kapital sänkt kraftigt (ssg1: 570k → 219k, ssg4: 3.5M → 1.6M)
+- Rep↔kapital korrelation ssg1: r=0.97 → r=0.78
+
+**Flaggade problem (väntar på Opus-beslut):**
+- Söderfors (rep=55) och Målilla (rep=65) i permanent minus från säsong 2
+- Arena-underhåll `capacity × 8` ger ~70-90k/säsong, för hårt för medelklubbar
+- Andel negativt-netto-omgångar 57% (target 30-45%)
+- Rep↔kapital korrelation ssg4 fortfarande 0.96
+
+**Rekommendationer till nästa justering:**
+1. Sänk arena-underhåll `capacity × 8` → `capacity × 5` (eller progressiv formel)
+2. Höj weeklyBase-konstant 2000 → 3000 för att ge medelklubbar mer golv
 
 ---
 
@@ -308,6 +339,40 @@ Identifierat efter playtest-session 2026-04-22. Vi har redan träningsskador via
 **Estimat V1:** 3-5 timmars implementation + kurerad commentary. Samma storleksordning som 25f (domare).
 
 **Förslag: paketera 25f + 25g till "Sprint 25 — Matchens karaktärer"** — båda är post-match-narrativ som berikar matchen utan att röra motorkärnan. Opus skriver kurerad text för båda parallellt. Code implementerar båda services på en gång. Totalestimat: 8-10h kod + 2-3h text.
+
+### Sprint 25h (kandidat) — Bandyskandaler
+
+Identifierat 2026-04-22 efter diskussion om bandy-Sveriges verklighet. Ekonomiska skandaler, licensgranskningar och sponsor-kollapser är en återkommande del av svensk bandy. VSK Bandy +4.2M skuld till VSK Fotboll 2024. Hammarby/Choki AB 2024. Edsbyn/Järvefelt (3 års fängelse). Lönetak-debatten har pågått sedan 2019. Om allt annat i spelet är autentiskt behöver detta finnas.
+
+**Designprincip:** Skandaler primärt i **andras klubbar** (atmosfär, ingen frustration). Sekundärt hos spelaren **bara som konsekvens av egna val** (engagement, inte slumpvåld).
+
+**Tre lager:**
+
+**Lager 1 — Världshändelser (andras klubbar):**
+- 2-4 större skandaler per säsong i bandyvärlden
+- Inbox-meddelanden, tidningsrubriker, kafferum-snack
+- Mekanisk effekt: transfermarknad påverkas, tabellen påverkas vid poängavdrag
+- Arketyper: sponsor-kollaps, klubb-till-klubb-lån, kassör avgick, fantomlöner, insamling försvann
+- Estimat: 4h implementation + kurerad text
+
+**Lager 2 — Egna beslut med risk:**
+- Värvning över budget (styrelsen varnar, spelaren kan ignorera)
+- Marknadsavtal med skumma partners (erbjudande i inbox: "500k/säsong men partnern granskas av Skatteverket")
+- Patron-krav som systematiskt ignoreras (patron drar tillbaka tidigare inves teringar)
+- Spelaren sätter sig i situationen — utfall är konsekvent
+- Estimat: 3h implementation
+
+**Lager 3 — Licensnämnden (långsiktig broms):**
+- Trigger: klubben minusresultat 2+ säsonger i rad
+- Första varningen: "Hemläxa. Inlämna handlingsplan."
+- Andra: "Poängavdrag 3p nästa säsong."
+- Tredje: "Elitlicens nekad. Ni flyttas ner."
+- Spelaren har alltid 2 säsonger på sig att rätta till
+- Estimat: 2h implementation
+
+**Totalestimat:** 9h kod + 2-3h kurerad text.
+
+**Blockeras av Sprint 26 (ekonomibalansering).** Meningslöst att implementera skandal-features innan basekonomin är rätt — en patron-skandal på -400k saknar bett när spelaren har +1.2M på kontot.
 
 ### FREDAGSJOBB — Utvidga bandygrytan-scraping med fler event-typer
 
