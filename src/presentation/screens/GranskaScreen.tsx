@@ -601,11 +601,15 @@ export function GranskaScreen() {
     const onTargetCount = onTarget > 0 ? onTarget : (scoredCount + savedCount)
     const missCount    = Math.max(0, totalShots - onTargetCount)
 
-    // Generate seeded positions in attack half (SVG: 280×190 viewBox, goal at top center)
-    const GOAL_Y = 8
-    const GOAL_X = 140
+    // Two isolated penalty zones — top: our attack, bottom: opponent attack
+    // No center line or full-pitch illusion — shows only what matters
     const W = 280
-    const H = 190
+    const H = 210
+    const GX = 140
+    const GT = 4    // top goal crossbar y
+    const GB = 206  // bottom goal crossbar y
+    const TOP_MAX = 100  // bottom edge of our-attack zone
+    const BOT_MIN = 110  // top edge of opponent-attack zone
 
     type ShotDot = { x: number; y: number; kind: 'goal' | 'save' | 'miss'; label?: string }
     const dots: ShotDot[] = []
@@ -617,16 +621,13 @@ export function GranskaScreen() {
       const r2 = seededRand(seed * 13 + 1)
       let x: number, y: number
       if (kind === 'goal') {
-        x = GOAL_X + (r1 - 0.5) * 90
-        y = GOAL_Y + 10 + r2 * 80
+        x = GX + (r1 - 0.5) * 60;  y = GT + 12 + r2 * 38
       } else if (kind === 'save') {
-        x = GOAL_X + (r1 - 0.5) * 100
-        y = GOAL_Y + 15 + r2 * 100
+        x = GX + (r1 - 0.5) * 100;  y = GT + 10 + r2 * 65
       } else {
-        x = W * 0.1 + r1 * W * 0.8
-        y = GOAL_Y + 20 + r2 * 130
+        x = 15 + r1 * 250;  y = GT + 15 + r2 * 78
       }
-      return { x: Math.max(10, Math.min(W - 10, x)), y: Math.max(GOAL_Y + 5, Math.min(H - 10, y)) }
+      return { x: Math.max(6, Math.min(W - 6, x)), y: Math.max(GT + 4, Math.min(TOP_MAX - 4, y)) }
     }
 
     goals.forEach(e => {
@@ -634,18 +635,12 @@ export function GranskaScreen() {
       const scorer = e.playerId ? game.players.find(p => p.id === e.playerId) : null
       dots.push({ ...pos, kind: 'goal', label: scorer?.lastName })
     })
-    for (let i = 0; i < savedCount; i++) {
-      dots.push({ ...nextPos('save'), kind: 'save' })
-    }
-    for (let i = 0; i < missCount; i++) {
-      dots.push({ ...nextPos('miss'), kind: 'miss' })
-    }
+    for (let i = 0; i < savedCount; i++) dots.push({ ...nextPos('save'), kind: 'save' })
+    for (let i = 0; i < missCount; i++) dots.push({ ...nextPos('miss'), kind: 'miss' })
 
     const oppShots = isHome ? fixture.report.shotsAway : fixture.report.shotsHome
     const oppGoals = fixture.events.filter(e => e.type === MatchEventType.Goal && e.clubId !== managedClubId).length
 
-    // Opponent shots in lower half (mirrored)
-    const OPP_GOAL_Y = H - 20
     type OppDot = { x: number; y: number; kind: 'goal' | 'save' | 'miss' }
     const oppDots: OppDot[] = []
     let oppSeed = 100
@@ -654,45 +649,68 @@ export function GranskaScreen() {
       oppSeed++
       const r1 = seededRand(oppSeed * 11)
       const r2 = seededRand(oppSeed * 17)
-      if (kind === 'goal') return { x: GOAL_X + (r1 - 0.5) * 90, y: OPP_GOAL_Y - 10 - r2 * 80 }
-      if (kind === 'save') return { x: GOAL_X + (r1 - 0.5) * 100, y: OPP_GOAL_Y - 15 - r2 * 100 }
-      return { x: W * 0.1 + r1 * W * 0.8, y: OPP_GOAL_Y - 20 - r2 * 130 }
+      let x: number, y: number
+      if (kind === 'goal') {
+        x = GX + (r1 - 0.5) * 60;  y = GB - 12 - r2 * 38
+      } else if (kind === 'save') {
+        x = GX + (r1 - 0.5) * 100;  y = GB - 10 - r2 * 65
+      } else {
+        x = 15 + r1 * 250;  y = GB - 15 - r2 * 78
+      }
+      return { x: Math.max(6, Math.min(W - 6, x)), y: Math.max(BOT_MIN + 4, Math.min(GB - 4, y)) }
     }
 
-    const oppGoalCount = fixture.events.filter(e => e.type === MatchEventType.Goal && e.clubId !== managedClubId).length
-    const oppSavedCount = Math.min(oppShots - oppGoalCount, oppShots)
-    const oppMissCount = Math.max(0, oppShots - oppGoalCount - oppSavedCount)
-    for (let i = 0; i < oppGoalCount; i++) oppDots.push({ ...nextOppPos('goal'), kind: 'goal' })
+    const oppSavedCount = Math.min(oppShots - oppGoals, oppShots)
+    const oppMissCount = Math.max(0, oppShots - oppGoals - oppSavedCount)
+    for (let i = 0; i < oppGoals; i++) oppDots.push({ ...nextOppPos('goal'), kind: 'goal' })
     for (let i = 0; i < oppSavedCount; i++) oppDots.push({ ...nextOppPos('save'), kind: 'save' })
     for (let i = 0; i < oppMissCount; i++) oppDots.push({ ...nextOppPos('miss'), kind: 'miss' })
 
     return (
       <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
         <SectionLabel style={{ marginBottom: 8 }}>SKOTTBILD</SectionLabel>
-        <div style={{ textAlign: 'center', marginBottom: 8 }}>
+        <div style={{ marginBottom: 8 }}>
           <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: 320, display: 'block', margin: '0 auto' }}>
-            {/* Pitch background — vit för tydlig kontrast mot prickar och text */}
-            <rect x="0" y="0" width={W} height={H} fill="#FFFFFF" stroke="rgba(0,0,0,0.12)" strokeWidth="0.5" rx="4" />
-            {/* Goal (top = motståndarens mål, där vi skjuter mot) */}
-            <rect x={GOAL_X - 20} y={GOAL_Y - 8} width="40" height="8" fill="rgba(0,0,0,0.25)" />
-            <rect x={GOAL_X - 20} y={GOAL_Y - 8} width="1" height="12" fill="rgba(0,0,0,0.25)" />
-            <rect x={GOAL_X + 19} y={GOAL_Y - 8} width="1" height="12" fill="rgba(0,0,0,0.25)" />
-            {/* Goal area (topp) */}
-            <rect x={GOAL_X - 40} y={GOAL_Y} width="80" height="30" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="1" />
-            {/* Penalty arc (top) — bulgar nedåt från straffområdets nederkant */}
-            <path d={`M ${GOAL_X - 25} ${GOAL_Y + 30} A 25 25 0 0 1 ${GOAL_X + 25} ${GOAL_Y + 30}`} fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
-            {/* Opponent goal area (botten = vårt eget mål, där de skjuter) */}
-            <rect x={GOAL_X - 40} y={H - 30} width="80" height="30" fill="none" stroke="rgba(0,0,0,0.2)" strokeWidth="1" />
-            {/* Penalty arc (bottom) — bulgar uppåt från straffområdets överkant */}
-            <path d={`M ${GOAL_X - 25} ${H - 30} A 25 25 0 0 0 ${GOAL_X + 25} ${H - 30}`} fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
-            {/* Center arc */}
-            <ellipse cx={GOAL_X} cy={H} rx="80" ry="50" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
-            {/* Center line */}
-            <line x1="0" y1={H/2} x2={W} y2={H/2} stroke="rgba(0,0,0,0.2)" strokeWidth="1" strokeDasharray="3,3" />
-            {/* Side labels */}
-            <text x={W - 4} y={GOAL_Y + 14} fontSize="8" fill="rgba(0,0,0,0.45)" textAnchor="end" fontWeight="600" letterSpacing="1">MOTSTÅNDARMÅL</text>
-            <text x={W - 4} y={H - 22} fontSize="8" fill="rgba(0,0,0,0.45)" textAnchor="end" fontWeight="600" letterSpacing="1">VÅRT MÅL</text>
-            {/* Shot dots */}
+            {/* ── TOP ZONE: våra skott → motståndarens mål (topp) ── */}
+            <rect x="0" y="0" width={W} height={TOP_MAX} fill="#fff" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" rx="3" />
+            {/* Net hint + crossbar + posts */}
+            <rect x={121} y={0} width={38} height={GT} fill="rgba(0,0,0,0.05)" />
+            <line x1={120} y1={GT} x2={160} y2={GT} stroke="rgba(0,0,0,0.65)" strokeWidth="2.5" strokeLinecap="round" />
+            <line x1={120} y1={0} x2={120} y2={GT} stroke="rgba(0,0,0,0.55)" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1={160} y1={0} x2={160} y2={GT} stroke="rgba(0,0,0,0.55)" strokeWidth="1.5" strokeLinecap="round" />
+            {/* Goal area */}
+            <rect x={105} y={GT} width={70} height={20} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
+            {/* Penalty area */}
+            <rect x={80} y={GT} width={120} height={46} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
+            {/* Penalty spot */}
+            <circle cx={GX} cy={34} r={1.5} fill="rgba(0,0,0,0.3)" />
+            {/* Penalty D — arc from penalty spot (140,34) r=25, intersects PA bottom (y=50)
+                at x≈121 and x≈159; sweep=1 (clockwise) curves away from goal */}
+            <path d="M 121 50 A 25 25 0 0 1 159 50" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
+            <text x={GX} y={95} fontSize="7" fill="rgba(0,0,0,0.28)" textAnchor="middle" fontWeight="600" letterSpacing="1.5">MOTSTÅNDARMÅL</text>
+
+            {/* ── SEPARATOR ── */}
+            <rect x="0" y={TOP_MAX} width={W} height={BOT_MIN - TOP_MAX} fill="rgba(0,0,0,0.07)" />
+
+            {/* ── BOTTOM ZONE: motståndarens skott → vårt mål (botten) ── */}
+            <rect x="0" y={BOT_MIN} width={W} height={H - BOT_MIN} fill="#fff" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" rx="3" />
+            {/* Net hint + crossbar + posts */}
+            <rect x={121} y={GB} width={38} height={H - GB} fill="rgba(0,0,0,0.05)" />
+            <line x1={120} y1={GB} x2={160} y2={GB} stroke="rgba(0,0,0,0.65)" strokeWidth="2.5" strokeLinecap="round" />
+            <line x1={120} y1={GB} x2={120} y2={H} stroke="rgba(0,0,0,0.55)" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1={160} y1={GB} x2={160} y2={H} stroke="rgba(0,0,0,0.55)" strokeWidth="1.5" strokeLinecap="round" />
+            {/* Goal area */}
+            <rect x={105} y={186} width={70} height={20} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
+            {/* Penalty area */}
+            <rect x={80} y={160} width={120} height={46} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
+            {/* Penalty spot */}
+            <circle cx={GX} cy={176} r={1.5} fill="rgba(0,0,0,0.3)" />
+            {/* Penalty D — arc from penalty spot (140,176) r=25, intersects PA top (y=160)
+                at x≈121 and x≈159; sweep=0 (counter-clockwise) curves away from goal */}
+            <path d="M 121 160 A 25 25 0 0 0 159 160" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
+            <text x={GX} y={115} fontSize="7" fill="rgba(0,0,0,0.28)" textAnchor="middle" fontWeight="600" letterSpacing="1.5">VÅRT MÅL</text>
+
+            {/* Our shot dots (top zone) */}
             {dots.map((d, i) => (
               <g key={i}>
                 <circle
@@ -710,21 +728,17 @@ export function GranskaScreen() {
                 })()}
               </g>
             ))}
-            {/* Opponent goal at bottom */}
-            <rect x={GOAL_X - 20} y={H - 8} width="40" height="8" fill="rgba(0,0,0,0.25)" />
-            <rect x={GOAL_X - 20} y={H - 12} width="1" height="12" fill="rgba(0,0,0,0.25)" />
-            <rect x={GOAL_X + 19} y={H - 12} width="1" height="12" fill="rgba(0,0,0,0.25)" />
-            {/* Opponent shot dots */}
+
+            {/* Opponent shot dots (bottom zone) */}
             {oppDots.map((d, i) => (
               <circle
                 key={`opp-${i}`}
-                cx={Math.max(10, Math.min(W - 10, d.x))}
-                cy={Math.max(10, Math.min(H - 8, d.y))}
+                cx={d.x} cy={d.y}
                 r={d.kind === 'goal' ? 5 : 3}
                 fill={d.kind === 'goal' ? 'rgba(176,80,64,0.6)' : d.kind === 'save' ? 'rgba(196,122,58,0.4)' : 'rgba(0,0,0,0.1)'}
                 stroke={d.kind === 'goal' ? 'rgba(176,80,64,0.9)' : 'rgba(0,0,0,0.25)'}
                 strokeWidth="1"
-                opacity="0.7"
+                opacity="0.75"
               />
             ))}
           </svg>
