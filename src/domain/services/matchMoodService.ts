@@ -41,7 +41,7 @@ export function getMatchMood(
 
   // Snow
   if (weather?.weather.condition === 'heavySnow') {
-    return '❄️ Snöfall. Linjerna syns knappt. Det blir en kamp om viljan.'
+    return '❄️ Snöfall. Linjerna syns knappt. Det blir en viljornas kamp.'
   }
 
   // Top of table clash

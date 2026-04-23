@@ -700,7 +700,7 @@ export function PlayerCard({
         for (const m of player.careerMilestones ?? []) {
           if (currentSeason !== undefined && m.season !== currentSeason) continue
           if (m.type === 'debutGoal') entries.push({ matchday: m.round, text: 'Första A-lagsmålet', type: 'milestone', season: m.season })
-          if (m.type === 'hatTrick') entries.push({ matchday: m.round, text: 'Hattrick', type: 'milestone', season: m.season })
+          // hatTrick utelämnat — narrativeLog täcker det med fullständig text (mål + motståndare)
           if (m.type === 'games100') entries.push({ matchday: m.round, text: '100 A-lagsmatcher', type: 'milestone', season: m.season })
         }
 
