@@ -138,6 +138,7 @@ export function generatePostMatchHeadline(
   managedClubId: string,
   currentDate: string,
   season: number,
+  prevLoss: boolean,
 ): InboxItem | null {
   const isHome = fixture.homeClubId === managedClubId
   const myScore = isHome ? fixture.homeScore : fixture.awayScore
@@ -161,7 +162,7 @@ export function generatePostMatchHeadline(
     }
   } else if (bigLoss) {
     switch (persona) {
-      case 'sensationalist': headline = `Ny förlust ${myScore}–${theirScore} — hur länge håller tränaren?`; break
+      case 'sensationalist': headline = prevLoss ? `Ny förlust ${myScore}–${theirScore} — hur länge håller tränaren?` : `Tungt ${myScore}–${theirScore} — hur länge håller tränaren?`; break
       case 'critical':       headline = `Släppte in ${Math.abs(margin)} mål i andra halvlek — defensiven fungerar inte`; break
       case 'analytical':     headline = `Analysen: Strukturella problem bakom storförlusten`; break
       case 'supportive':     headline = `Tung dag — men det finns mer i det här laget än resultatet visar`; break
@@ -176,9 +177,9 @@ export function generatePostMatchHeadline(
   } else if (loss) {
     switch (persona) {
       case 'supportive':     headline = `Hårfint — formen är bättre än resultatet visar`; break
-      case 'sensationalist': headline = `Tredje nederlaget på fem matcher`; break
-      case 'analytical':     headline = `Förlorade igen — defensiven hade klara brister`; break
-      case 'critical':       headline = `Återigen utan poäng — tränaren har svaret att leva upp till`; break
+      case 'sensationalist': headline = prevLoss ? `Tredje nederlaget på fem matcher` : `Förlust — borttappade poäng i jämn match`; break
+      case 'analytical':     headline = prevLoss ? `Förlorade igen — defensiven hade klara brister` : `Förlorade — defensiven hade klara brister`; break
+      case 'critical':       headline = prevLoss ? `Återigen utan poäng — tränaren har svaret att leva upp till` : `Utan poäng — tränaren har svaret att leva upp till`; break
     }
   } else {
     // Draw — only sensationalist and supportive bother headlining

@@ -36,12 +36,26 @@ export function processMedia(
 
   // Journalist post-match headline
   if (justCompletedManagedFixture && game.journalist && !isSecondPassForManagedMatch) {
+    const prevManagedFixture = game.fixtures
+      .filter(f =>
+        f.status === 'completed' &&
+        f.matchday < justCompletedManagedFixture.matchday &&
+        (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId),
+      )
+      .sort((a, b) => b.matchday - a.matchday)[0]
+    const prevLoss = prevManagedFixture != null && (() => {
+      const isHome = prevManagedFixture.homeClubId === game.managedClubId
+      const myScore = isHome ? prevManagedFixture.homeScore : prevManagedFixture.awayScore
+      const theirScore = isHome ? prevManagedFixture.awayScore : prevManagedFixture.homeScore
+      return (myScore ?? 0) < (theirScore ?? 0)
+    })()
     const headlineItem = generatePostMatchHeadline(
       game.journalist,
       justCompletedManagedFixture,
       game.managedClubId,
       newDate,
       game.currentSeason,
+      prevLoss,
     )
     if (headlineItem) inboxItems.push(headlineItem)
   }
