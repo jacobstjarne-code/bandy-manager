@@ -639,8 +639,12 @@ export function GranskaScreen() {
     for (let i = 0; i < savedCount; i++) dots.push({ ...nextPos('save'), kind: 'save' })
     for (let i = 0; i < missCount; i++) dots.push({ ...nextPos('miss'), kind: 'miss' })
 
+    const oppClubId = isHome ? fixture.awayClubId : fixture.homeClubId
+    const managedClub = game.clubs.find(c => c.id === managedClubId)
+    const oppClub = game.clubs.find(c => c.id === oppClubId)
     const oppShots = isHome ? fixture.report.shotsAway : fixture.report.shotsHome
     const oppGoals = fixture.events.filter(e => e.type === MatchEventType.Goal && e.clubId !== managedClubId).length
+    const oppSavedByUs = isHome ? (fixture.report.savesHome ?? 0) : (fixture.report.savesAway ?? 0)
 
     type OppDot = { x: number; y: number; kind: 'goal' | 'save' | 'miss' }
     const oppDots: OppDot[] = []
@@ -661,7 +665,7 @@ export function GranskaScreen() {
       return { x: Math.max(6, Math.min(W - 6, x)), y: Math.max(BOT_MIN + 4, Math.min(GB - 4, y)) }
     }
 
-    const oppSavedCount = Math.min(oppShots - oppGoals, oppShots)
+    const oppSavedCount = oppSavedByUs
     const oppMissCount = Math.max(0, oppShots - oppGoals - oppSavedCount)
     for (let i = 0; i < oppGoals; i++) oppDots.push({ ...nextOppPos('goal'), kind: 'goal' })
     for (let i = 0; i < oppSavedCount; i++) oppDots.push({ ...nextOppPos('save'), kind: 'save' })
@@ -716,7 +720,7 @@ export function GranskaScreen() {
               <g key={i}>
                 <circle
                   cx={d.x} cy={d.y}
-                  r={d.kind === 'goal' ? 6 : 4}
+                  r={d.kind === 'goal' ? 6 : d.kind === 'save' ? 3 : 2}
                   fill={d.kind === 'goal' ? 'rgba(90,154,74,0.85)' : d.kind === 'save' ? 'rgba(196,122,58,0.7)' : 'rgba(0,0,0,0.15)'}
                   stroke={d.kind === 'goal' ? 'rgba(90,154,74,1)' : d.kind === 'save' ? 'rgba(196,122,58,1)' : 'rgba(0,0,0,0.3)'}
                   strokeWidth="1"
@@ -735,7 +739,7 @@ export function GranskaScreen() {
               <circle
                 key={`opp-${i}`}
                 cx={d.x} cy={d.y}
-                r={d.kind === 'goal' ? 5 : 3}
+                r={d.kind === 'goal' ? 5 : d.kind === 'save' ? 2.5 : 2}
                 fill={d.kind === 'goal' ? 'rgba(176,80,64,0.6)' : d.kind === 'save' ? 'rgba(196,122,58,0.4)' : 'rgba(0,0,0,0.1)'}
                 stroke={d.kind === 'goal' ? 'rgba(176,80,64,0.9)' : 'rgba(0,0,0,0.25)'}
                 strokeWidth="1"
@@ -745,16 +749,26 @@ export function GranskaScreen() {
           </svg>
         </div>
 
-        {/* Legend */}
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 8 }}>
+        {/* Legend — en rad per zon (topp = vi anfaller, botten = de anfaller) */}
+        <div style={{ marginBottom: 8 }}>
           {[
-            { color: 'var(--success)', label: `Mål (${scoredCount})` },
-            { color: 'var(--accent)', label: `Räddad (${savedCount})` },
-            { color: 'rgba(0,0,0,0.3)', label: `Miss (${missCount})` },
-          ].map(l => (
-            <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: l.color }} />
-              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{l.label}</span>
+            { name: managedClub?.shortName ?? 'Vi', goal: scoredCount, save: savedCount, miss: missCount, goalColor: 'var(--success)' },
+            { name: oppClub?.shortName ?? 'De', goal: oppGoals, save: oppSavedByUs, miss: oppMissCount, goalColor: 'rgba(176,80,64,0.8)' },
+          ].map((row, ri) => (
+            <div key={ri} style={{ display: 'flex', alignItems: 'center', gap: 7, justifyContent: 'center', marginBottom: 3 }}>
+              <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', minWidth: 44, textAlign: 'right', letterSpacing: '0.3px' }}>
+                {row.name.toUpperCase()}
+              </span>
+              {[
+                { color: row.goalColor, label: `${row.goal} mål` },
+                { color: 'var(--accent)', label: `${row.save} räddade` },
+                { color: 'rgba(0,0,0,0.28)', label: `${row.miss} miss` },
+              ].map(l => (
+                <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: l.color }} />
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{l.label}</span>
+                </div>
+              ))}
             </div>
           ))}
         </div>
@@ -800,19 +814,16 @@ export function GranskaScreen() {
 
         {/* MOTSTÅNDAREN */}
         {(() => {
-          const oppClubId = isHome ? fixture.awayClubId : fixture.homeClubId
-          const oppClub = game.clubs.find(c => c.id === oppClubId)
-          const oppSavedByUs = isHome ? (fixture.report.savesHome ?? 0) : (fixture.report.savesAway ?? 0)
-          const oppConversion = oppShots > 0 ? Math.round(oppGoals / oppShots * 100) : 0
           if (!oppClub) return null
+          const oppOnTargetDisplay = oppGoals + oppSavedByUs
+          const oppConversion = oppOnTargetDisplay > 0 ? Math.round(oppGoals / oppOnTargetDisplay * 100) : 0
           return (
             <div className="card-sharp" style={{ marginTop: 6, padding: '10px 12px' }}>
               <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: 8 }}>
                 🛡 {oppClub.name.toUpperCase()}
               </p>
               {(() => {
-                const oppOnTarget = isHome ? (fixture.report.onTargetAway ?? 0) : (fixture.report.onTargetHome ?? 0)
-                const oppOnTargetDisplay = oppOnTarget > 0 ? oppOnTarget : (oppGoals + oppSavedByUs)
+                const oppOnTargetDisplay = oppGoals + oppSavedByUs
                 const savePct = oppOnTargetDisplay > 0 ? Math.round(oppSavedByUs / oppOnTargetDisplay * 100) : 0
                 return (
                   <>
