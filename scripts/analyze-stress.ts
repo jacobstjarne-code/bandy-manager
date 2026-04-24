@@ -712,7 +712,7 @@ console.log(DIV)
       const arr = (seasonEndFinances[ssg] ?? []).sort((a, b) => a - b)
       if (arr.length === 0) continue
       const median = arr[Math.floor(arr.length / 2)]
-      const bar = '█'.repeat(Math.min(30, Math.round(median / 100_000)))
+      const bar = median > 0 ? '█'.repeat(Math.min(30, Math.round(median / 100_000))) : '▼'
       console.log(`    Säsong ${ssg}: ${(median / 1000).toFixed(0).padStart(5)}k  ${bar}`)
     }
 
