@@ -60,10 +60,21 @@ const T_CORNER = 1
 const T_SUSPENSION = 3
 const T_PENALTY = 4
 const T_HALFEND = 13
+const T_SHOT = 11
+const T_SAVE = 23
+const T_FREESTROKE = 10
+const T_OFFSIDE = 107
 
 // ── Parse events ──────────────────────────────────────────────────────────
-function parseEvents(eventsRaw) {
-  if (!eventsRaw) return { goals: [], fouls: [], halfTimeHome: null, halfTimeAway: null }
+function parseEvents(eventsRaw, homeTeamId, awayTeamId) {
+  if (!eventsRaw) return {
+    goals: [], fouls: [], halfTimeHome: null, halfTimeAway: null,
+    shotsOnGoalHome: null, shotsOnGoalAway: null,
+    savesHome: null, savesAway: null,
+    freestrokesHome: 0, freestrokesAway: 0,
+    offsidesHome: 0, offsidesAway: 0,
+    loggingQuality: 'minimal',
+  }
 
   const events = Object.values(eventsRaw)
   events.sort((a, b) => (a.min * 60 + (a.sec || 0)) - (b.min * 60 + (b.sec || 0)))
@@ -73,6 +84,11 @@ function parseEvents(eventsRaw) {
   let halfTimeHome = null
   let halfTimeAway = null
 
+  const shotsByTeam = {}
+  const savesByTeam = {}
+  let freestrokesHome = 0, freestrokesAway = 0
+  let offsidesHome = 0, offsidesAway = 0
+
   const htEvent = events.find(e => e.type === T_HALFEND)
   if (htEvent) {
     halfTimeHome = htEvent.homeGoals ?? null
@@ -81,8 +97,19 @@ function parseEvents(eventsRaw) {
 
   for (let i = 0; i < events.length; i++) {
     const e = events[i]
+    const tid = e.teamID ? String(e.teamID) : null
 
-    if (e.type === T_GOAL) {
+    if (e.type === T_SHOT && tid) {
+      shotsByTeam[tid] = (shotsByTeam[tid] || 0) + 1
+    } else if (e.type === T_SAVE && tid) {
+      savesByTeam[tid] = (savesByTeam[tid] || 0) + 1
+    } else if (e.type === T_FREESTROKE) {
+      if (tid === String(homeTeamId)) freestrokesHome++
+      else freestrokesAway++
+    } else if (e.type === T_OFFSIDE) {
+      if (tid === String(homeTeamId)) offsidesHome++
+      else offsidesAway++
+    } else if (e.type === T_GOAL) {
       const homeGoals = e.homeGoals ?? 0
       const awayGoals = e.awayGoals ?? 0
       const prev = [...goals].reverse()[0]
@@ -105,7 +132,28 @@ function parseEvents(eventsRaw) {
   }
 
   for (const g of goals) { delete g._h; delete g._a }
-  return { goals, fouls, halfTimeHome, halfTimeAway }
+
+  const shotsOnGoalHome = shotsByTeam[String(homeTeamId)] ?? null
+  const shotsOnGoalAway = shotsByTeam[String(awayTeamId)] ?? null
+  // savesHome = saves BY home GK (i.e. teamID on save event = defending team = home)
+  const savesHome = savesByTeam[String(homeTeamId)] ?? null
+  const savesAway = savesByTeam[String(awayTeamId)] ?? null
+
+  const totalGoals = goals.length
+  const totalShots = (shotsOnGoalHome || 0) + (shotsOnGoalAway || 0)
+  const loggingQuality =
+    totalShots >= Math.max(3, totalGoals * 1.5) ? 'full'
+    : totalShots >= 3 ? 'partial'
+    : 'minimal'
+
+  return {
+    goals, fouls, halfTimeHome, halfTimeAway,
+    shotsOnGoalHome, shotsOnGoalAway,
+    savesHome, savesAway,
+    freestrokesHome, freestrokesAway,
+    offsidesHome, offsidesAway,
+    loggingQuality,
+  }
 }
 
 // ── Fetch a single fixture ────────────────────────────────────────────────
@@ -121,7 +169,10 @@ async function fetchFixture(fixtureID, competitionName, season, phase) {
     // Accept both old ("signed") and new ("ended") completed-match statuses
     if (fd.status !== 'signed' && fd.status !== 'ended') return null
 
-    const { goals, fouls, halfTimeHome, halfTimeAway } = parseEvents(ev)
+    const { goals, fouls, halfTimeHome, halfTimeAway,
+            shotsOnGoalHome, shotsOnGoalAway, savesHome, savesAway,
+            freestrokesHome, freestrokesAway, offsidesHome, offsidesAway,
+            loggingQuality } = parseEvents(ev, fd.homeTeamID, fd.awayTeamID)
 
     let htHome = halfTimeHome
     let htAway = halfTimeAway
@@ -148,6 +199,15 @@ async function fetchFixture(fixtureID, competitionName, season, phase) {
       arenaName: fd.stadiumName ?? null,
       goals,
       fouls,
+      shotsOnGoalHome,
+      shotsOnGoalAway,
+      savesHome,
+      savesAway,
+      freestrokesHome,
+      freestrokesAway,
+      offsidesHome,
+      offsidesAway,
+      loggingQuality,
     }
   } catch (err) {
     process.stderr.write(`  [warn] fixture ${fixtureID}: ${err.message}\n`)
@@ -225,7 +285,7 @@ async function main() {
         seasonsWithData: [...new Set(dedupKval.map(m => m.season))].sort(),
         matchCount: dedupKval.length,
         missingSeason: '2023-24 and 2024-25 (competition fixture list not in Firebase preCache)',
-        eventTypes: { 1: 'Hörna', 2: 'Mål', 3: 'Utvisning', 4: 'Straff', 13: 'Halvtid' },
+        eventTypes: { 1: 'Hörna', 2: 'Mål', 3: 'Utvisning', 4: 'Straff', 10: 'Frislag', 11: 'Skott på mål', 13: 'Halvtid', 23: 'Målvakt räddar', 107: 'Offside' },
       },
       matches: dedupKval,
     }, null, 2)
@@ -244,7 +304,7 @@ async function main() {
         seasonsWithData: [...new Set(dedupAllsv.map(m => m.season))].sort(),
         matchCount: dedupAllsv.length,
         caveat2024_25: 'Only Övre (upper group, ~28 matches) available; Nedre not in Firebase preCache',
-        eventTypes: { 1: 'Hörna', 2: 'Mål', 3: 'Utvisning', 4: 'Straff', 13: 'Halvtid' },
+        eventTypes: { 1: 'Hörna', 2: 'Mål', 3: 'Utvisning', 4: 'Straff', 10: 'Frislag', 11: 'Skott på mål', 13: 'Halvtid', 23: 'Målvakt räddar', 107: 'Offside' },
       },
       matches: dedupAllsv,
     }, null, 2)
@@ -255,6 +315,39 @@ async function main() {
   const bySeason = arr => arr.reduce((acc, m) => { acc[m.season] = (acc[m.season]||0)+1; return acc }, {})
   process.stdout.write('\nKval by season: ' + JSON.stringify(bySeason(dedupKval)) + '\n')
   process.stdout.write('Allsvenskan by season: ' + JSON.stringify(bySeason(dedupAllsv)) + '\n')
+
+  // ── loggingQuality rapport ────────────────────────────────────────────
+  const allMatches = [...dedupKval, ...dedupAllsv]
+  const qualCounts = { full: 0, partial: 0, minimal: 0 }
+  for (const m of allMatches) qualCounts[m.loggingQuality] = (qualCounts[m.loggingQuality] || 0) + 1
+
+  process.stdout.write('\n── loggingQuality-fördelning ──────────────────────────────────\n')
+  process.stdout.write(`  full:    ${qualCounts.full}  matcher (${pct(qualCounts.full, allMatches.length)})\n`)
+  process.stdout.write(`  partial: ${qualCounts.partial}  matcher (${pct(qualCounts.partial, allMatches.length)})\n`)
+  process.stdout.write(`  minimal: ${qualCounts.minimal}  matcher (${pct(qualCounts.minimal, allMatches.length)})\n`)
+
+  const fullMatches = allMatches.filter(m => m.loggingQuality === 'full')
+  if (fullMatches.length > 0) {
+    const totalShots = fullMatches.reduce((s, m) => s + (m.shotsOnGoalHome || 0) + (m.shotsOnGoalAway || 0), 0)
+    const avgShots = (totalShots / fullMatches.length).toFixed(1)
+    process.stdout.write(`\n── Skott på mål (full-matcher, n=${fullMatches.length}) ──────────────────\n`)
+    process.stdout.write(`  Snitt skott/match: ${avgShots}  (Bandypuls-referens: ~28/match)\n`)
+    if (parseFloat(avgShots) >= 25 && parseFloat(avgShots) <= 31) {
+      process.stdout.write('  → Nära Bandypuls. Bandygrytan och Bandypuls mäter på samma sätt.\n')
+    } else if (parseFloat(avgShots) >= 18 && parseFloat(avgShots) < 25) {
+      process.stdout.write('  → Lägre än Bandypuls (~28). Bandygrytan verkar mäta striktare (skott på mål = räddningar + mål).\n')
+    } else {
+      process.stdout.write(`  → Avviker från Bandypuls (${avgShots} vs ~28). Undersök definition.\n`)
+    }
+  }
+
+  const allsvFull = dedupAllsv.filter(m => m.loggingQuality === 'full')
+  if (allsvFull.length > 0) {
+    const totalShotsAllsv = allsvFull.reduce((s, m) => s + (m.shotsOnGoalHome || 0) + (m.shotsOnGoalAway || 0), 0)
+    process.stdout.write(`\n── Allsvenskan full-matcher: ${allsvFull.length} st, snitt ${(totalShotsAllsv/allsvFull.length).toFixed(1)} skott/match ──\n`)
+  }
 }
+
+function pct(n, total) { return total > 0 ? ((n/total)*100).toFixed(0) + '%' : '0%' }
 
 main().catch(err => { process.stderr.write(err.stack + '\n'); process.exit(1) })

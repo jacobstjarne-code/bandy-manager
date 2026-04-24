@@ -3,7 +3,7 @@
     "source": "bandygrytan.se via Firebase Realtime DB",
     "description": "Elitserien Herr Kval — promotion/relegation play-off between Elitserien and Allsvenskan",
     "schemaVersion": 2,
-    "scrapedAt": "2026-04-21T20:39:49.137Z",
+    "scrapedAt": "2026-04-24T09:07:31.487Z",
     "seasonsWithData": [
       "2019-20",
       "2020-21",
@@ -17,7 +17,11 @@
       "2": "Mål",
       "3": "Utvisning",
       "4": "Straff",
-      "13": "Halvtid"
+      "10": "Frislag",
+      "11": "Skott på mål",
+      "13": "Halvtid",
+      "23": "Målvakt räddar",
+      "107": "Offside"
     }
   },
   "matches": [
@@ -88,7 +92,16 @@
           "minute": 95,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 2,
+      "shotsOnGoalAway": 6,
+      "savesHome": null,
+      "savesAway": null,
+      "freestrokesHome": 17,
+      "freestrokesAway": 13,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "30792",
@@ -169,7 +182,16 @@
           "minute": 83,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 3,
+      "shotsOnGoalAway": 8,
+      "savesHome": 8,
+      "savesAway": 3,
+      "freestrokesHome": 9,
+      "freestrokesAway": 9,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "30793",
@@ -217,7 +239,16 @@
           "minute": 90,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 7,
+      "shotsOnGoalAway": 5,
+      "savesHome": 5,
+      "savesAway": 7,
+      "freestrokesHome": 20,
+      "freestrokesAway": 10,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "30794",
@@ -323,7 +354,16 @@
           "minute": 87,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 6,
+      "shotsOnGoalAway": 5,
+      "savesHome": 5,
+      "savesAway": 6,
+      "freestrokesHome": 22,
+      "freestrokesAway": 23,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "30795",
@@ -408,7 +448,16 @@
           "minute": 92,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 4,
+      "shotsOnGoalAway": 1,
+      "savesHome": 2,
+      "savesAway": 4,
+      "freestrokesHome": 11,
+      "freestrokesAway": 9,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "30796",
@@ -466,7 +515,16 @@
           "minute": 74,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 2,
+      "shotsOnGoalAway": 5,
+      "savesHome": 5,
+      "savesAway": 2,
+      "freestrokesHome": 8,
+      "freestrokesAway": 14,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "30797",
@@ -543,7 +601,16 @@
           "minute": 96,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 6,
+      "shotsOnGoalAway": 6,
+      "savesHome": 6,
+      "savesAway": 6,
+      "freestrokesHome": 15,
+      "freestrokesAway": 16,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "30798",
@@ -626,7 +693,16 @@
           "minute": 88,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 9,
+      "shotsOnGoalAway": 5,
+      "savesHome": null,
+      "savesAway": null,
+      "freestrokesHome": 9,
+      "freestrokesAway": 12,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "30799",
@@ -703,7 +779,16 @@
           "minute": 85,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 1,
+      "shotsOnGoalAway": 10,
+      "savesHome": 9,
+      "savesAway": 2,
+      "freestrokesHome": 7,
+      "freestrokesAway": 10,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "30800",
@@ -774,7 +859,16 @@
           "minute": 92,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 4,
+      "shotsOnGoalAway": 13,
+      "savesHome": 13,
+      "savesAway": 4,
+      "freestrokesHome": 19,
+      "freestrokesAway": 8,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "30801",
@@ -889,7 +983,16 @@
           "minute": 86,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 2,
+      "shotsOnGoalAway": 8,
+      "savesHome": 7,
+      "savesAway": 2,
+      "freestrokesHome": 13,
+      "freestrokesAway": 12,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "30802",
@@ -959,7 +1062,16 @@
           "minute": 51,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 7,
+      "shotsOnGoalAway": 8,
+      "savesHome": 8,
+      "savesAway": 7,
+      "freestrokesHome": 10,
+      "freestrokesAway": 15,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "33749",
@@ -1056,7 +1168,16 @@
           "minute": 89,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 2,
+      "shotsOnGoalAway": null,
+      "savesHome": null,
+      "savesAway": 2,
+      "freestrokesHome": 18,
+      "freestrokesAway": 11,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "minimal"
     },
     {
       "matchId": "33750",
@@ -1135,7 +1256,16 @@
           "minute": 93,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 6,
+      "shotsOnGoalAway": 3,
+      "savesHome": 1,
+      "savesAway": null,
+      "freestrokesHome": 14,
+      "freestrokesAway": 9,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "37178",
@@ -1219,7 +1349,16 @@
           "minute": 93,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 10,
+      "shotsOnGoalAway": 11,
+      "savesHome": 11,
+      "savesAway": 9,
+      "freestrokesHome": 9,
+      "freestrokesAway": 14,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "37179",
@@ -1308,7 +1447,16 @@
           "minute": 93,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 2,
+      "shotsOnGoalAway": 2,
+      "savesHome": 2,
+      "savesAway": 2,
+      "freestrokesHome": 20,
+      "freestrokesAway": 9,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "37180",
@@ -1383,7 +1531,16 @@
           "minute": 88,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 2,
+      "shotsOnGoalAway": 6,
+      "savesHome": 5,
+      "savesAway": 2,
+      "freestrokesHome": 9,
+      "freestrokesAway": 7,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "37181",
@@ -1446,7 +1603,16 @@
           "minute": 89,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 5,
+      "shotsOnGoalAway": 5,
+      "savesHome": 5,
+      "savesAway": 4,
+      "freestrokesHome": 15,
+      "freestrokesAway": 19,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "37182",
@@ -1545,7 +1711,16 @@
           "minute": 58,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 8,
+      "shotsOnGoalAway": 5,
+      "savesHome": 5,
+      "savesAway": 7,
+      "freestrokesHome": 9,
+      "freestrokesAway": 10,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "37183",
@@ -1618,7 +1793,16 @@
           "minute": 92,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 6,
+      "shotsOnGoalAway": 6,
+      "savesHome": 6,
+      "savesAway": 5,
+      "freestrokesHome": 14,
+      "freestrokesAway": 9,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "37184",
@@ -1727,7 +1911,16 @@
           "minute": 85,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 3,
+      "shotsOnGoalAway": 2,
+      "savesHome": 1,
+      "savesAway": 4,
+      "freestrokesHome": 13,
+      "freestrokesAway": 17,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "37185",
@@ -1770,7 +1963,16 @@
           "minute": 61,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 6,
+      "shotsOnGoalAway": null,
+      "savesHome": null,
+      "savesAway": 6,
+      "freestrokesHome": 16,
+      "freestrokesAway": 16,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "37186",
@@ -1907,7 +2109,16 @@
           "minute": 83,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 9,
+      "shotsOnGoalAway": 6,
+      "savesHome": 2,
+      "savesAway": null,
+      "freestrokesHome": 8,
+      "freestrokesAway": 9,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "37187",
@@ -2000,7 +2211,16 @@
           "minute": 80,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 6,
+      "shotsOnGoalAway": 1,
+      "savesHome": 1,
+      "savesAway": 6,
+      "freestrokesHome": 20,
+      "freestrokesAway": 16,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "37188",
@@ -2062,7 +2282,16 @@
           "minute": 89,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 8,
+      "shotsOnGoalAway": 3,
+      "savesHome": 2,
+      "savesAway": 6,
+      "freestrokesHome": 18,
+      "freestrokesAway": 16,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "37189",
@@ -2132,7 +2361,16 @@
           "minute": 84,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 10,
+      "shotsOnGoalAway": 8,
+      "savesHome": 6,
+      "savesAway": 5,
+      "freestrokesHome": 10,
+      "freestrokesAway": 8,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "41819",
@@ -2205,7 +2443,16 @@
           "minute": 93,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 2,
+      "shotsOnGoalAway": 7,
+      "savesHome": 7,
+      "savesAway": 2,
+      "freestrokesHome": 12,
+      "freestrokesAway": 20,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "41820",
@@ -2304,7 +2551,16 @@
           "minute": 94,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 3,
+      "shotsOnGoalAway": 2,
+      "savesHome": 3,
+      "savesAway": 3,
+      "freestrokesHome": 15,
+      "freestrokesAway": 17,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "41821",
@@ -2391,7 +2647,16 @@
           "minute": 91,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 9,
+      "shotsOnGoalAway": 9,
+      "savesHome": 7,
+      "savesAway": 14,
+      "freestrokesHome": 6,
+      "freestrokesAway": 20,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "41822",
@@ -2464,7 +2729,16 @@
           "minute": 77,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 13,
+      "shotsOnGoalAway": 3,
+      "savesHome": 3,
+      "savesAway": 8,
+      "freestrokesHome": 8,
+      "freestrokesAway": 12,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "41823",
@@ -2559,7 +2833,16 @@
           "minute": 86,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 3,
+      "shotsOnGoalAway": 1,
+      "savesHome": 1,
+      "savesAway": 2,
+      "freestrokesHome": 16,
+      "freestrokesAway": 5,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "41824",
@@ -2624,7 +2907,16 @@
           "minute": 73,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 8,
+      "shotsOnGoalAway": 12,
+      "savesHome": 4,
+      "savesAway": 3,
+      "freestrokesHome": 10,
+      "freestrokesAway": 19,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "41825",
@@ -2722,7 +3014,16 @@
           "minute": 76,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 4,
+      "shotsOnGoalAway": 4,
+      "savesHome": 4,
+      "savesAway": 4,
+      "freestrokesHome": 10,
+      "freestrokesAway": 19,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "41826",
@@ -2796,7 +3097,16 @@
           "minute": 91,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 13,
+      "shotsOnGoalAway": 8,
+      "savesHome": 9,
+      "savesAway": 13,
+      "freestrokesHome": 21,
+      "freestrokesAway": 26,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "41827",
@@ -2891,7 +3201,16 @@
           "minute": 90,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 2,
+      "shotsOnGoalAway": 2,
+      "savesHome": 2,
+      "savesAway": 2,
+      "freestrokesHome": 16,
+      "freestrokesAway": 13,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "partial"
     },
     {
       "matchId": "41828",
@@ -2998,7 +3317,16 @@
           "minute": 90,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": null,
+      "shotsOnGoalAway": null,
+      "savesHome": 1,
+      "savesAway": null,
+      "freestrokesHome": 8,
+      "freestrokesAway": 6,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "minimal"
     },
     {
       "matchId": "41829",
@@ -3083,7 +3411,16 @@
           "minute": 81,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 9,
+      "shotsOnGoalAway": 16,
+      "savesHome": 11,
+      "savesAway": 11,
+      "freestrokesHome": 24,
+      "freestrokesAway": 11,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     },
     {
       "matchId": "41830",
@@ -3158,7 +3495,16 @@
           "minute": 90,
           "duration": 10
         }
-      ]
+      ],
+      "shotsOnGoalHome": 11,
+      "shotsOnGoalAway": 10,
+      "savesHome": 10,
+      "savesAway": 8,
+      "freestrokesHome": 9,
+      "freestrokesAway": 5,
+      "offsidesHome": 0,
+      "offsidesAway": 0,
+      "loggingQuality": "full"
     }
   ]
 }

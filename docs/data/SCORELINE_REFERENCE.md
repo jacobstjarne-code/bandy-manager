@@ -7,6 +7,36 @@
 
 ---
 
+## ⚠️ VARNING — Skottdata från bandygrytan är underrapporterad
+
+Bandygrytans `avgShotsPerMatch: 10.5` bygger på event-type 11 ("Skott på mål") men underrapporterar vs verkligheten. **Bandypuls uppger 28 skott/match och 63-64% räddningsprocent** — ~2.7x skillnad.
+
+**Verifierat 2026-04-24 via Allsvenskan-scraping (scrape-allsvenskan.mjs):**
+
+| Mått | Värde |
+|------|-------|
+| Antal allsvenskan-matcher med skottdata | 887 totalt |
+| loggingQuality full | 222 matcher (24%) |
+| loggingQuality partial | 546 matcher (59%) |
+| loggingQuality minimal | 157 matcher (17%) |
+| Snitt skott/match (full-matcher, n=222) | **15.8** |
+| Bandypuls-referens | ~28 |
+| Differens | ~12 (55% lägre) |
+
+**Slutsats:** Bandygrytan räknar event-typ 11 inkonsekvent — sannolikt bara skott som uppfattades som på mål av rapportören (=räddningar + mål), INTE alla skott. Bandypuls räknar alla skott inklusive off-target och blockade. Skillnaden ~55% bekräftar att bandygrytans typ-11 ≈ "shots on frame" medan Bandypuls ≈ "all shots attempted".
+
+Trolig orsak: live-rapportörer loggar inte alla skott, bara dramatiska eller tydliga på-mål-skott.
+
+**Motorn kalibrerad mot Bandypuls-targets (post-25b-playtest):**
+- 28 skott/match totalt
+- 14 skott/lag
+- ~9 räddningar/match (63-64% räddningsprocent)
+- ~36-37% av skott på mål blir mål
+
+**Använd EJ** `bandygrytan_detailed.json.calibrationTargets.avgShotsPerMatch` som kalibreringsmål. Använd Bandypuls-siffrorna ovan.
+
+---
+
 ## Verifiering (sektion 1.5)
 
 Alla fas-targets stämmer exakt mot `ANALYS_SLUTSPEL.md`:
