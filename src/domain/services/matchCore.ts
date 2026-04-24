@@ -880,14 +880,15 @@ function* simulateMatchCore(
                                : 1.0
         const cornerChance  = attCorner * 0.7 + randRange(rand, 0, 0.3) + specialistBonus
         const defenseResist = defDefense * 0.5 + defGK * 0.3 + randRange(rand, 0, 0.2)
-        // matchEngine-calibrated (base +0.14, clamp 0.10-0.30 — was +0.08, clamp 0.06-0.18)
+        // matchEngine-calibrated (base +0.105, clamp 0.07-0.30 — was +0.14, clamp 0.10-0.30)
         // Both base and clamp scale with SECOND_HALF_BOOST so corner share stays proportional.
         // phaseConst.goalMod applied to cornerBase and clamp floor so cornerGoalPct scales
         // with regular goals across phases without double-counting SECOND_HALF_BOOST (Sprint 25e).
+        // Base reduced 0.14→0.105 to bring grundserie cornerGoalPct toward target 22.2% (Sprint 25e.2).
         const phaseGoalMod   = phaseConst.goalMod
-        const cornerBase     = emitFullTime ? 0.14 * SECOND_HALF_BOOST * phaseGoalMod : 0.14 * phaseGoalMod
+        const cornerBase     = emitFullTime ? 0.105 * SECOND_HALF_BOOST * phaseGoalMod : 0.105 * phaseGoalMod
         const cornerClampMax = emitFullTime ? 0.30 * SECOND_HALF_BOOST : 0.30
-        const cornerClampMin = emitFullTime ? 0.10 * SECOND_HALF_BOOST * phaseGoalMod : 0.10 * phaseGoalMod
+        const cornerClampMin = emitFullTime ? 0.07 * SECOND_HALF_BOOST * phaseGoalMod : 0.07 * phaseGoalMod
         const goalThreshold = clamp(
           (cornerChance - defenseResist) * 0.30 * stepGoalMod * cornerStateMod + cornerBase,
           cornerClampMin,
