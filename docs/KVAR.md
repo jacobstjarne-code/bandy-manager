@@ -1,7 +1,17 @@
 # BANDY MANAGER — KVAR
 
-**Datum:** 2026-04-23
-**Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DESIGN_SYSTEM.md/HANDOVER_2026-04-23.md är lästa.
+**Datum:** 2026-04-24
+**Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DESIGN_SYSTEM.md/HANDOVER_2026-04-24.md är lästa.
+
+---
+
+## KLART IDAG (2026-04-24)
+
+| # | Fix | Rotorsak / Leverans | Fil(er) |
+|---|-----|---------------------|---------|
+| 29 | Journalistrubriker — "igen"/"ny" oavsett historik | `generatePostMatchHeadline` fick inte form-data; nu beräknas `prevLoss` i mediaProcessor och skickas in | `journalistService.ts`, `mediaProcessor.ts` |
+| 28 | Vädertext "kamp om viljan" | Felaktig fras i matchMoodService | `matchMoodService.ts` |
+| 27 | Hattrick-duplikat i spelarkort | `careerMilestones` + `narrativeLog` visade båda hattrick i timeline | `PlayerCard.tsx` |
 
 ---
 
@@ -13,6 +23,8 @@
 | 22 | BottomNav saknas på /game/review | GranskaScreen låg under GameGuard (ingen BottomNav) istf GameShell | `AppRouter.tsx` |
 | 23 | Dubblad 🎤 PRESSKONFERENS-rubrik i Granska | SectionLabel + pc.title renderades båda → visuell dubblering | `GranskaScreen.tsx` |
 | 24 | Skottbild redesign — två isolerade straffzoner | Mittlinje + ellips förvirrande (plan ej i skala); bågarna gick åt fel håll | `GranskaScreen.tsx` |
+| 25 | Skottstatistik — konvertering >100%, bollinnehav 50/50, motståndares skott-på-mål | `onTargetHome/Away` uppdateras aldrig av hörnmål; bollinnehav hårdkodat; `oppSavedCount` uppskattad | `GranskaScreen.tsx`, `MatchLiveScreen.tsx` |
+| 26 | Bortaresa-kort — "mattstöd" + "samma kväll" | Stavfel + dagsform-fel | `DashboardScreen.tsx` |
 
 ---
 
