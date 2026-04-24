@@ -70,7 +70,12 @@ type MatchStat = {
   cornersAway: number
   shotsHome: number
   shotsAway: number
+  onTargetHome: number
+  onTargetAway: number
+  savesHome: number
+  savesAway: number
   attendance: number
+  matchProfile?: string
 }
 
 type EconSnapshot = { round: number; finances: number; puls: number; leaguePosition: number }
@@ -147,6 +152,8 @@ if (regular.length === 0) {
   const totalCorners = regular.reduce((s, m) => s + m.cornersHome + m.cornersAway, 0)
   const totalSuspensions = regular.reduce((s, m) => s + m.suspensions.length, 0)
   const totalHtGoals = regular.reduce((s, m) => s + m.halfTimeHome + m.halfTimeAway, 0)
+  const totalOnTarget = regular.reduce((s, m) => s + (m.onTargetHome ?? 0) + (m.onTargetAway ?? 0), 0)
+  const totalSaves = regular.reduce((s, m) => s + (m.savesHome ?? 0) + (m.savesAway ?? 0), 0)
 
   // htLeadWinPct: matches where leading team at HT won the match
   const htLeadMatches = regular.filter(m => m.halfTimeHome !== m.halfTimeAway)
@@ -169,6 +176,19 @@ if (regular.length === 0) {
   checkVal('avgHalfTimeGoals',     totalHtGoals / n,       targets.avgHalfTimeGoals,   0.5, 2)
   checkPct('htLeadWinPct',         pct(htLeadWins, htLeadMatches.length), targets.htLeadWinPct, 5.0)
   checkPct('goalsSecondHalfPct',   pct(secondHalfGoals, totalGoals), targets.goalsSecondHalfPct, 3.0)
+
+  const avgOnTarget = totalOnTarget / n
+  const avgSaves = totalSaves / n
+  console.log(`\n  ── Skott på mål (motor, från fix.report) ──────────────`)
+  console.log(`  avgOnTargetPerMatch:  ${avgOnTarget.toFixed(1)}   (bandygrytan full-matcher: 15.8, Bandypuls: ~28)`)
+  console.log(`  avgSavesPerMatch:     ${avgSaves.toFixed(1)}`)
+  if (avgOnTarget >= 14 && avgOnTarget <= 18) {
+    console.log('  → Matchar bandygrytan (shots on frame). Motor räknar skott-på-mål korrekt.')
+  } else if (avgOnTarget >= 24 && avgOnTarget <= 32) {
+    console.log('  → Matchar Bandypuls (alla skott). Motor räknar totalskott.')
+  } else {
+    console.log(`  → Avviker från båda referenserna (14-18 = bandygrytan, 24-32 = Bandypuls).`)
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -854,3 +874,86 @@ console.log(DIV)
 }
 
 console.log()
+
+// ══════════════════════════════════════════════════════════════════════════════
+// I. MATCH-PROFIL-FÖRDELNING
+// ══════════════════════════════════════════════════════════════════════════════
+
+console.log(`\nI. MATCH-PROFIL-FÖRDELNING`)
+console.log(DIV)
+console.log(`  Design-targets: defensive_battle 20% / standard 55% / open_game 20% / chaotic 5%`)
+console.log()
+
+const PROFILES = ['defensive_battle', 'standard', 'open_game', 'chaotic'] as const
+type Profile = typeof PROFILES[number]
+
+const profileSets: Record<string, { regular: MatchStat[]; playoff: MatchStat[] }> = {}
+for (const p of PROFILES) {
+  profileSets[p] = { regular: [], playoff: [] }
+}
+
+const unknownProfile: MatchStat[] = []
+
+for (const m of allMatches) {
+  const prof = m.matchProfile
+  if (!prof || !(PROFILES as readonly string[]).includes(prof)) {
+    unknownProfile.push(m)
+    continue
+  }
+  const isPlayoff = m.phase === 'playoff_qf' || m.phase === 'playoff_sf' || m.phase === 'playoff_final'
+  if (isPlayoff) {
+    profileSets[prof].playoff.push(m)
+  } else {
+    profileSets[prof].regular.push(m)
+  }
+}
+
+const totalWithProfile = allMatches.length - unknownProfile.length
+
+if (unknownProfile.length > 0) {
+  console.log(`  ⚠️  ${unknownProfile.length} matcher utan matchProfile (äldre logg?) — exkluderas`)
+  console.log()
+}
+
+console.log(`  Fördelning — alla matcher (n=${totalWithProfile}):`)
+const profileTargets: Record<Profile, number> = { defensive_battle: 20, standard: 55, open_game: 20, chaotic: 5 }
+for (const p of PROFILES) {
+  const n = profileSets[p].regular.length + profileSets[p].playoff.length
+  const pctVal = pct(n, totalWithProfile)
+  const target = profileTargets[p]
+  const ok = Math.abs(pctVal - target) <= 5
+  console.log(`  ${ok ? '✅' : '❌'} ${p.padEnd(20)} ${String(n).padStart(5)} matcher   ${pctVal.toFixed(1)}%   (target ${target}%)`)
+}
+
+console.log()
+console.log(`  Per profil — snitt (regular season):`)
+console.log(`  ${'Profil'.padEnd(20)} ${'Goals'.padStart(6)} ${'Shots'.padStart(6)} ${'Susp'.padStart(6)} ${'n'.padStart(5)}`)
+console.log(`  ${'-'.repeat(47)}`)
+
+const standardRegular = profileSets['standard'].regular
+const baselineGoals = standardRegular.length > 0
+  ? standardRegular.reduce((s, m) => s + m.homeScore + m.awayScore, 0) / standardRegular.length
+  : 0
+const goalMods: Record<Profile, number> = { defensive_battle: 0.60, standard: 1.00, open_game: 1.25, chaotic: 1.55 }
+
+for (const p of PROFILES) {
+  const ms = profileSets[p].regular
+  if (ms.length === 0) { console.log(`  ${p.padEnd(20)} (inga matcher)`); continue }
+  const goals  = ms.reduce((s, m) => s + m.homeScore + m.awayScore, 0) / ms.length
+  const shots  = ms.reduce((s, m) => s + m.shotsHome + m.shotsAway, 0) / ms.length
+  const susp   = ms.reduce((s, m) => s + m.suspensions.length, 0) / ms.length
+  const expectedGoals = baselineGoals * goalMods[p]
+  const goalOk = baselineGoals === 0 || Math.abs(goals - expectedGoals) <= 1.5
+  console.log(`  ${goalOk ? '✅' : '❌'} ${p.padEnd(20)} ${goals.toFixed(2).padStart(6)} ${shots.toFixed(1).padStart(6)} ${susp.toFixed(2).padStart(6)} ${String(ms.length).padStart(5)}`)
+}
+
+console.log()
+const playoffTotal = PROFILES.reduce((s, p) => s + profileSets[p].playoff.length, 0)
+if (playoffTotal > 0) {
+  console.log(`  Playoff-fördelning (n=${playoffTotal}):`)
+  for (const p of PROFILES) {
+    const n = profileSets[p].playoff.length
+    console.log(`    ${p.padEnd(20)} ${String(n).padStart(4)} (${pct(n, playoffTotal).toFixed(1)}%)`)
+  }
+  console.log()
+}

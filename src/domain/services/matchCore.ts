@@ -620,8 +620,8 @@ function* simulateMatchCore(
       const awayMode = getSecondHalfMode(awayScore, homeScore, step, matchPhase)
 
       const applyMode = (mode: SecondHalfMode, td: number): { attack: number; foul: number } => {
-        if (mode === 'chasing')     return { attack: 1.14, foul: 1.20 }
-        if (mode === 'controlling') return { attack: 0.96, foul: 1.0 + (1.0 - td) * 0.25 }
+        if (mode === 'chasing')     return { attack: 1.22, foul: 1.25 }
+        if (mode === 'controlling') return { attack: 0.88, foul: 1.0 + (1.0 - td) * 0.25 }
         if (mode === 'even_battle') return { attack: step >= 50 ? 1.04 : 1.0, foul: 1.10 }
         // cruise
         return { attack: 0.92, foul: 1.0 }
@@ -659,15 +659,18 @@ function* simulateMatchCore(
     const homePenaltyFactor = homeActiveSuspensions > 0 ? 0.75 : 1.0
     const awayPenaltyFactor = awayActiveSuspensions > 0 ? 0.75 : 1.0
 
-    // Trailing boost in second half
-    const trailingBoost = (diff: number) => diff < 0 ? Math.min(-diff, 3) * 0.11 : 0
+    // Trailing boost / leading brake in second half (Sprint 25f)
+    const trailingBoost = (diff: number) => diff < 0 ? Math.min(-diff, 3) * 0.16 : 0
+    const leadingBrake  = (diff: number) => diff > 0 ? Math.min(diff, 3) * 0.08 : 0
     const homeTrailBoost = trailingBoost(homeScore - awayScore)
     const awayTrailBoost = trailingBoost(awayScore - homeScore)
+    const homeLeadBrake  = leadingBrake(homeScore - awayScore)
+    const awayLeadBrake  = leadingBrake(awayScore - homeScore)
     const effectiveHomeAttack = step >= 30
-      ? clamp(homeAttack * (1 + homeTrailBoost) * homeModeAttackMult, 0, 1)
+      ? clamp(homeAttack * (1 + homeTrailBoost) * (1 - homeLeadBrake) * homeModeAttackMult, 0, 1)
       : homeAttack
     const effectiveAwayAttack = step >= 30
-      ? clamp(awayAttack * (1 + awayTrailBoost) * awayModeAttackMult, 0, 1)
+      ? clamp(awayAttack * (1 + awayTrailBoost) * (1 - awayLeadBrake) * awayModeAttackMult, 0, 1)
       : awayAttack
 
     const homeWeight = effectiveHomeAttack * (1 + homeMods.pressModifier * 0.2) * (1 + effectiveHomeAdvantage) * homePenaltyFactor

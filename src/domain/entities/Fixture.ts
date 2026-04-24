@@ -34,6 +34,7 @@ export interface MatchReport {
   possessionHome: number
   possessionAway: number
   playerOfTheMatchId?: string
+  matchProfile?: string
 }
 
 export interface Fixture {

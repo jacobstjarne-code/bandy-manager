@@ -31,8 +31,13 @@ export interface MatchStat {
   cornersAway: number
   shotsHome: number
   shotsAway: number
+  onTargetHome: number
+  onTargetAway: number
+  savesHome: number
+  savesAway: number
   attendance: number
   weather?: string
+  matchProfile?: string
 }
 
 export interface EconSnapshot {
@@ -101,12 +106,20 @@ export function extractMatchStat(fix: Fixture, game: SaveGame, seed: number, sea
     }
   }
 
-  // Use report values for corners/shots if available (more accurate than event counting)
+  // Use report values for corners/shots/onTarget/saves if available (more accurate than event counting)
+  let onTargetHome = 0
+  let onTargetAway = 0
+  let savesHome = 0
+  let savesAway = 0
   if (fix.report) {
     cornersHome = fix.report.cornersHome
     cornersAway = fix.report.cornersAway
     shotsHome = fix.report.shotsHome
     shotsAway = fix.report.shotsAway
+    onTargetHome = fix.report.onTargetHome
+    onTargetAway = fix.report.onTargetAway
+    savesHome = fix.report.savesHome
+    savesAway = fix.report.savesAway
   }
 
   const weather = game.matchWeathers?.find(w =>
@@ -130,8 +143,13 @@ export function extractMatchStat(fix: Fixture, game: SaveGame, seed: number, sea
     cornersAway,
     shotsHome,
     shotsAway,
+    onTargetHome,
+    onTargetAway,
+    savesHome,
+    savesAway,
     attendance: fix.attendance ?? 0,
     weather: weather ? String((weather as unknown as Record<string, unknown>).condition ?? '') : undefined,
+    matchProfile: fix.report?.matchProfile,
   }
 }
 

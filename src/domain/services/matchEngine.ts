@@ -12,8 +12,10 @@ import { FixtureStatus, MatchEventType, PlayerPosition } from '../enums'
 import type { MatchEvent } from '../entities/Fixture'
 import type { SimulateMatchInput, SimulateMatchResult, MatchStep } from './matchUtils'
 import { clamp } from './matchUtils'
-import { simulateFirstHalf, simulateSecondHalf } from './matchCore'
+import { simulateFirstHalf, simulateSecondHalf, pickMatchProfileFromSeed } from './matchCore'
 import { fixtureSeed } from '../utils/random'
+import { evaluateSquad } from './squadEvaluator'
+import { WeatherCondition } from '../enums'
 
 export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   const {
@@ -171,6 +173,14 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   const savesHome = allEvents.filter(e => e.type === MatchEventType.Save && e.clubId === fixture.homeClubId).length
   const savesAway = allEvents.filter(e => e.type === MatchEventType.Save && e.clubId === fixture.awayClubId).length
 
+  // Re-derive matchProfile deterministically (same inputs → same result as matchCore)
+  const isHeavyWeather = weather?.condition === WeatherCondition.HeavySnow || weather?.condition === WeatherCondition.Thaw
+  const hasRivalry = rivalry != null
+  const homeEvalForProfile = evaluateSquad(homeStarters, homeLineup.tactic)
+  const awayEvalForProfile = evaluateSquad(awayStarters, awayLineup.tactic)
+  const largeCaDiff = Math.abs(homeEvalForProfile.offenseScore - awayEvalForProfile.offenseScore) >= 15
+  const matchProfile = pickMatchProfileFromSeed(seedVal, { isPlayoff: isPlayoff ?? false, hasRivalry, isHeavyWeather, largeCaDiff })
+
   const report: MatchReport = {
     playerRatings,
     shotsHome,
@@ -186,6 +196,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     possessionHome,
     possessionAway,
     playerOfTheMatchId,
+    matchProfile,
   }
 
   // Overtime / penalty metadata from events and last step
