@@ -1,7 +1,7 @@
 import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { ScoutReport } from '../../../domain/entities/Scouting'
-import { generateMediaHeadlines, generateTrendArticles } from '../../../domain/services/mediaService'
+import { generateMediaHeadlines, generateTrendArticles, generateAbsurdityArticles } from '../../../domain/services/mediaService'
 import { generatePostMatchHeadline } from '../../../domain/services/journalistService'
 import { generateTransferRumor } from '../../../domain/services/rumorService'
 import { checkMidSeasonEvents } from '../../../domain/services/midSeasonEventService'
@@ -64,6 +64,10 @@ export function processMedia(
   // Trend articles
   const trendArticles = generateTrendArticles(game, nextMatchday, localRand)
   inboxItems.push(...trendArticles)
+
+  // Småskandal-artiklar (Lager 1 småskandal-arketyp som triggade i denna omgång)
+  const absurdityArticles = generateAbsurdityArticles(game, nextMatchday)
+  inboxItems.push(...absurdityArticles)
 
   // Transfer rumors (matchday 5-18)
   const rumorResult = generateTransferRumor(game, localRand)

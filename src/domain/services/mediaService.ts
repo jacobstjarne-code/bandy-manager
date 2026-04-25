@@ -2,6 +2,7 @@ import type { SaveGame, InboxItem } from '../entities/SaveGame'
 import type { Fixture } from '../entities/Fixture'
 import { FixtureStatus, InboxItemType } from '../enums'
 import { getHeadlinePrefix } from './journalistService'
+import { SMALL_ABSURDITIES } from '../data/smallAbsurditiesData'
 
 function mediaItem(title: string, date: string, id: string, game?: SaveGame): InboxItem {
   // Prefix with journalist name if available
@@ -177,4 +178,54 @@ export function generateTrendArticles(
   }
 
   return articles.slice(0, 1)
+}
+
+// ── Småskandalartiklar (Sprint 25h Lager 1, addendum) ────────────────────
+
+export function generateAbsurdityArticles(
+  game: SaveGame,
+  round: number,
+): InboxItem[] {
+  // Plocka småskandaler som triggade i denna omgång (de resolveras direkt så de
+  // hamnar i scandalHistory med samma triggerRound = resolutionRound).
+  const recent = (game.scandalHistory ?? []).filter(s =>
+    s.type === 'small_absurdity' &&
+    s.season === game.currentSeason &&
+    s.triggerRound === round,
+  )
+  if (recent.length === 0) return []
+
+  const articles: InboxItem[] = []
+  for (const scandal of recent) {
+    // Välj absurditet baserat på scandal-id (deterministiskt så testkörningar
+    // är reproducerbara, men variation över olika triggers under en säsong).
+    const seedNum = scandal.id.split('').reduce((s, c) => s + c.charCodeAt(0), 0)
+    const absurdity = SMALL_ABSURDITIES[seedNum % SMALL_ABSURDITIES.length]
+
+    // Tidningsrubrik (en mediaheadline-inbox-item).
+    const headlinePrefix = game.journalist ? getHeadlinePrefix(game.journalist, false) : ''
+    articles.push({
+      id: `media_absurdity_${scandal.id}`,
+      date: game.currentDate,
+      type: InboxItemType.Media,
+      title: headlinePrefix ? headlinePrefix + absurdity.newspaperHeadline : absurdity.newspaperHeadline,
+      body: '',
+      isRead: false,
+    })
+
+    // Kafferum-quote (separat inbox-item, samma format som scandalService).
+    const cafeBody = absurdity.coffeeRoomExchange
+      .map(line => `${line.speaker}: "${line.line}"`)
+      .join('\n')
+    articles.push({
+      id: `media_absurdity_cr_${scandal.id}`,
+      date: game.currentDate,
+      type: InboxItemType.Scandal,
+      title: 'Kafferummet',
+      body: cafeBody,
+      isRead: false,
+    })
+  }
+
+  return articles
 }

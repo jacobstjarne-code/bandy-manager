@@ -13,6 +13,7 @@ import { BidModal } from '../components/transfers/BidModal'
 import { TransferPlayerCard } from '../components/transfers/TransferPlayerCard'
 import { ActiveBidsList } from '../components/transfers/ActiveBidsList'
 import { FreeAgentList } from '../components/transfers/FreeAgentList'
+import { WageOverrunWarning } from '../components/transfers/WageOverrunWarning'
 
 function formatValue(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
@@ -38,6 +39,8 @@ export function TransfersScreen() {
   const [wageWarning, setWageWarning] = useState<string | null>(null)
   const [scoutMessage, setScoutMessage] = useState<string | null>(null)
   const [biddingPlayerId, setBiddingPlayerId] = useState<string | null>(null)
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
+  const [overrunPct, setOverrunPct] = useState(0)
   const [activeTab, setActiveTab] = useState<'marknad' | 'scouting' | 'contracts' | 'freeagents' | 'sell'>('marknad')
   const [spaningPosition, setSpanningPosition] = useState<string>('any')
   const [spaningMaxAge, setSpanningMaxAge] = useState<number>(30)
@@ -115,21 +118,31 @@ export function TransfersScreen() {
     }
     const currentWageBill = squadPlayers.reduce((sum, p) => sum + p.salary, 0)
     const projectedWageBill = currentWageBill - currentPlayer.salary + newSalary
-    if (projectedWageBill > club.wageBudget) {
-      setWageWarning(`OBS: Lönekostnaderna överstiger budgeten med ${formatCurrency(projectedWageBill - club.wageBudget)}/mån`)
+    const weeklyEquiv = Math.round(projectedWageBill / 4)
+    const wouldExceed = weeklyEquiv > club.wageBudget
+
+    const doRenew = () => {
+      const result = renewContract(playerId, newSalary, years)
+      if (!result.success) {
+        setRenewError(result.error ?? 'Kunde inte förlänga kontraktet')
+        return
+      }
+      if (result.wageWarning) {
+        setWageWarning(`OBS: Lönekostnaderna överstiger budgeten med ${formatCurrency(result.wageWarning)}/mån`)
+      }
+      setRenewingPlayerId(null)
+      setRenewError(null)
+      setRenewConfirmText(`✅ Kontrakt förlängt till ${game.currentSeason + years}`)
+      setTimeout(() => setRenewConfirmText(null), 2000)
     }
-    const result = renewContract(playerId, newSalary, years)
-    if (!result.success) {
-      setRenewError(result.error ?? 'Kunde inte förlänga kontraktet')
-      return
+
+    if (wouldExceed) {
+      const pct = Math.round(((weeklyEquiv - club.wageBudget) / club.wageBudget) * 100)
+      setOverrunPct(pct)
+      setPendingAction(() => doRenew)
+    } else {
+      doRenew()
     }
-    if (result.wageWarning) {
-      setWageWarning(`OBS: Lönekostnaderna överstiger budgeten med ${formatCurrency(result.wageWarning)}/mån`)
-    }
-    setRenewingPlayerId(null)
-    setRenewError(null)
-    setRenewConfirmText(`✅ Kontrakt förlängt till ${game.currentSeason + years}`)
-    setTimeout(() => setRenewConfirmText(null), 2000)
   }
 
   function handleSignFreeAgent(agentId: string) {
@@ -145,14 +158,31 @@ export function TransfersScreen() {
   }
 
   function handleBid(playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) {
-    const result = placeOutgoingBid(playerId, offerAmount, offeredSalary, contractYears)
-    setBiddingPlayerId(null)
-    if (result.success) {
-      setScoutMessage('Bud skickat! Svar om 1 omgång.')
-      setTimeout(() => setScoutMessage(null), 4000)
+    if (!game) return
+    const club = game.clubs.find(c => c.id === game.managedClubId)
+    const squadPlayers = game.players.filter(p => p.clubId === game.managedClubId)
+    const currentWageBill = squadPlayers.reduce((sum, p) => sum + p.salary, 0)
+    const weeklyEquiv = Math.round((currentWageBill + offeredSalary) / 4)
+    const wouldExceed = club ? weeklyEquiv > club.wageBudget : false
+
+    const doBid = () => {
+      const result = placeOutgoingBid(playerId, offerAmount, offeredSalary, contractYears)
+      setBiddingPlayerId(null)
+      if (result.success) {
+        setScoutMessage('Bud skickat! Svar om 1 omgång.')
+        setTimeout(() => setScoutMessage(null), 4000)
+      } else {
+        setScoutMessage(result.error ?? 'Kunde inte lägga bud.')
+        setTimeout(() => setScoutMessage(null), 3000)
+      }
+    }
+
+    if (wouldExceed && club) {
+      const pct = Math.round(((weeklyEquiv - club.wageBudget) / club.wageBudget) * 100)
+      setOverrunPct(pct)
+      setPendingAction(() => doBid)
     } else {
-      setScoutMessage(result.error ?? 'Kunde inte lägga bud.')
-      setTimeout(() => setScoutMessage(null), 3000)
+      doBid()
     }
   }
 
@@ -506,6 +536,18 @@ export function TransfersScreen() {
           />
         )
       })()}
+
+      {pendingAction && (
+        <WageOverrunWarning
+          overrunPct={overrunPct}
+          seasonSeed={game.currentSeason}
+          onCancel={() => setPendingAction(null)}
+          onConfirm={() => {
+            setPendingAction(null)
+            pendingAction()
+          }}
+        />
+      )}
     </div>
   )
 }
