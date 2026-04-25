@@ -1,0 +1,107 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 045 — VSK och Vetlanda nära ligasnittet i hörnakonvertering"
+  description="VSK konverterar 12,7 % av sina hörnor till mål, Vetlanda 11,6 %. Ligasnittet ligger på 11,3 %. Båda befinner sig alltså nära medel."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 045 · 25 april 2026</p>
+    <h1 class="finding-title">VSK och Vetlanda nära ligasnittet i hörnakonvertering</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">11,3 %</span><span class="key-number__label">Ligasnitt, konvertering</span><span class="key-number__note">ovägt medelvärde, 30 lagidentiteter</span></div>
+          <div class="key-number"><span class="key-number__value">11,6 %</span><span class="key-number__label">Vetlanda BK</span><span class="key-number__note">+0,3 pp vs. snitt, 158 matcher</span></div>
+          <div class="key-number"><span class="key-number__value">12,7 %</span><span class="key-number__label">Västerås SK</span><span class="key-number__note">+1,4 pp vs. snitt, 76 matcher</span></div>
+          <div class="key-number"><span class="key-number__value">9,4 %</span><span class="key-number__label">Västerås SK/BK</span><span class="key-number__note">−1,9 pp vs. snitt, 82 matcher</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>VSK och Vetlanda är två av Elitseriens mer etablerade klubbar med lång närvaro i högseriespelet. Vi ville undersöka om deras hörnakonvertering — andelen hörnor som resulterar i mål — avviker från ligasnittet, och i så fall i vilken riktning och med vilken magnitud.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Underlaget hämtas från Finding 018, som täcker herrbandyns högserie över en period som sammanlagt rymmer 1 124 matcher fördelade på ett trettiotal lagidentiteter. För varje lag finns antal matcher, totalt antal hörnor, hörnmål och den beräknade konverteringsgraden (hörnmål dividerat med hörnor, i procent). Ligasnittet för konvertering beräknas som ett ovägt snitt över samtliga lagidentiteter i datasetet. Notera att flera lag förekommer under olika namnvarianter som speglar namnbyten eller sammanslagningar över tid.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Ligasnittet för hörnakonvertering, beräknat som ovägt medelvärde över samtliga 30 lagidentiteter i datasetet, uppgår till 11,3 %. VSK förekommer under två identiteter: Västerås SK (76 matcher, 12,7 %) och Västerås SK/BK (82 matcher, 9,4 %). Vetlanda BK har spelat 158 matcher med en konverteringsgrad på 11,6 %.<br><br><table><thead><tr><th>Lag</th><th>Matcher</th><th>Hörnor</th><th>Hörnmål</th><th>Konvertering (%)</th><th>Vs. snitt</th></tr></thead><tbody><tr><td>Västerås SK</td><td>76</td><td>790</td><td>100</td><td>12,7</td><td>+1,4 pp</td></tr><tr><td>Västerås SK/BK</td><td>82</td><td>752</td><td>71</td><td>9,4</td><td>−1,9 pp</td></tr><tr><td>Vetlanda BK</td><td>158</td><td>1 314</td><td>152</td><td>11,6</td><td>+0,3 pp</td></tr><tr><td>Ligasnitt</td><td>—</td><td>—</td><td>—</td><td>11,3</td><td>—</td></tr></tbody></table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Vetlanda BK:s konverteringsgrad på 11,6 % ligger 0,3 procentenheter över ligasnittet — en marginell avvikelse som med 158 matcherss underlag sannolikt inte är meningsfull. Vetlanda hämtar alltså inte någon systematisk fördel eller nackdel från hörnspelet jämfört med övriga lag, sett till denna enda dimension.</p>
+      <p>VSK:s situation är mer komplex på grund av namnbytet. Under identiteten Västerås SK/BK uppvisas en konvertering på 9,4 %, vilket är 1,9 procentenheter under snittet. Under den senare identiteten Västerås SK stiger siffran till 12,7 %, vilket placerar laget 1,4 procentenheter över snittet. Det är oklart om skillnaden speglar en faktisk förändring i hur laget arbetar med hörnor, en förändring i spelarstyrkans sammansättning, eller om den är en artefakt av de 76 respektive 82 matcherna som var och en är ett relativt litet urval.</p>
+      <p>Spridningen i datasetet är i övrigt påtaglig. IFK Motala (6,9 %) och Örebro SK Bandy (6,6 %) ligger väsentligt under snittet, medan Edsbyns IF Bandyförening (15,8 %) och Bollnäs GOIF BF (14,8 %) ligger väsentligt över. I det perspektivet befinner sig både VSK och Vetlanda i mitten av fördelningen, utan extrema värden i någondera riktning.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Ligasnittet är beräknat som ett ovägt medelvärde och ger därmed lika vikt till lag med 21 matcher som till lag med 158 matcher.</li>
+        <li>VSK förekommer under två namnidentiteter vars tidsmässiga avgränsning inte är specificerad i källdatan, vilket försvårar jämförelse.</li>
+        <li>Datasetet innehåller sannolikt flera säsonger och eventuella regelförändringar eller spelstilsförändringar över tid fångas inte upp.</li>
+        <li>Hörnmål definieras inte explicit — det är oklart om enbart direktmål från hörna räknas eller även mål som uppstår ur hörnspel.</li>
+        <li>Låga matchantal för vissa lagidentiteter gör deras konverteringssiffror volatila och svårjämförda.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Hur ser VSK:s hörnakonvertering ut per säsong — finns det en tydlig trend kring namnbytet?</li>
+        <li>Finns det ett samband mellan antal hörnor per match och konverteringsgrad på ligaövergripande nivå?</li>
+        <li>Hur förhåller sig hörnakonvertering till totalt målsnittet per match för respektive lag?</li>
+        <li>Vilka lag har störst absolut bidrag från hörnmål till sin totala målproduktion?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("018")} class="fact-ref">018</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+045:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+045:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

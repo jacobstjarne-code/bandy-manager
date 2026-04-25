@@ -1,0 +1,106 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 027 — Data saknas för taktisk hörnanalys"
+  description="Underlag för att jämföra kort hörna mot långt inlägg mellan bandyserier saknas i nuvarande dataset."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 027 · 25 april 2026</p>
+    <h1 class="finding-title">Data saknas för taktisk hörnanalys<br>mellan serier</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">0</span><span class="key-number__label">Serier med data</span><span class="key-number__note">Av okänt antal förväntade serier</span></div>
+          <div class="key-number"><span class="key-number__value">0</span><span class="key-number__label">Observationer totalt</span><span class="key-number__note">Tom array returnerad från Finding 012</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi ville undersöka om det finns systematiska skillnader i hur lag i olika bandyserier väljer att ta hörnor taktiskt — specifikt om andelen korta hörnor (spel till nära medspelare) kontra långa inlägg (direktslag mot mål eller till fri yta) varierar beroende på serienivå, och om dessa val korrelerar med målproduktion från hörnor.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen baseras på Finding 012, som avsåg att innehålla jämförelsedata för hörnhantering uppdelat per serie. Det inkomna dataunderlaget har följande struktur:<ul><li>Typ: corner_efficiency_comparison</li><li>Serier: tom lista (inga poster)</li></ul>Inget numeriskt material för hörntyper, frekvenser eller utfall per serie finns tillgängligt i det returnerade datasetet.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Datasetet innehåller inga observationer. Fältet <code>series</code> returnerade en tom array, vilket innebär att inga serier, lag eller matchdata har levererats för analys. Det går därmed inte att redovisa någon statistik över taktiska val vid hörnor — varken aggregerat eller per serienivå.<table><thead><tr><th>Serie</th><th>Antal hörnor</th><th>Kort hörna (%)</th><th>Långt inlägg (%)</th><th>Mål per hörna</th></tr></thead><tbody><tr><td colspan="5" style="text-align:center;">Inga data tillgängliga</td></tr></tbody></table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>När ett dataset returneras tomt är det inte möjligt att dra slutsatser om fenomenet som undersöks. Det går inte att avgöra om tomheten beror på att hörntyper aldrig kodats i källdata, att ett tekniskt fel uppstått i datapipelinen, eller att Finding 012 bygger på ett underlag som ännu inte insamlats.</p>
+      <p>Frågan i sig är analytiskt motiverad. Taktiska val vid hörnor — kort spel mot press kontra direktinlägg mot mål — påverkar hur snabbt ett anfall kan avslutas och vilket försvarstryck som uppstår. Om sådana val skiljer sig systematiskt mellan exempelvis Elitserien och Division 1 skulle det kunna säga något om taktisk mognad, tränarpreferenser eller spelarresurser i respektive serie.</p>
+      <p>Tills data finns tillgängligt är denna finding ett nollresultat av teknisk snarare än analytisk karaktär. Resultatet dokumenteras för att markera att frågan ställts men inte kunnat besvaras, och för att underlätta uppföljning när rätt underlag kan levereras.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Datasetet innehåller inga observationer — all nedanstående analys är hypotetisk.</li>
+        <li>Det är oklart om hörntyper (kort/lång) överhuvudtaget kodas i befintliga källsystem.</li>
+        <li>Finding 012 kan ha genererats mot ett ännu icke-populerat datalager.</li>
+        <li>Utan definition av vad som räknas som 'kort hörna' respektive 'långt inlägg' är jämförbarhet mellan eventuella framtida datakällor osäker.</li>
+        <li>Mänsklig kodning av hörntyp i videomaterial introducerar subjektivitetsbias.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Kodas hörntyper (kort/lång/direkt skott) i något befintligt statistiksystem för svensk bandy?</li>
+        <li>Skiljer sig målfrekvensen per hörna mellan serier, oavsett hörntyp?</li>
+        <li>Finns det lag som avviker konsekvent från sin series genomsnittliga hörnstrategi?</li>
+        <li>Hur förändras valet av hörntyp beroende på matchläge (leder/förlorar) och tidpunkt i match?</li>
+        <li>Går det att via videokodning av ett begränsat urval matcher etablera ett referensvärde för hörntypsfördelning?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("Finding 012")} class="fact-ref">Finding 012</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+027:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+027:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

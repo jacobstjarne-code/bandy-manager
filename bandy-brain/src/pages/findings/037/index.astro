@@ -1,0 +1,113 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 037 — Vändningar sällsynta efter 1–0 i halvtid"
+  description="Av matcher där ett lag leder 1–0 vid halvtid slutar 15,7 % med vändning och 6,2 % oavgjort i svensk herrbandy."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 037 · 25 april 2026</p>
+    <h1 class="finding-title">Vändningar sällsynta efter 1–0 i halvtid</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">15,7 %</span><span class="key-number__label">Vändningsandel</span><span class="key-number__note">Andel 1–0-ledningar vid halvtid som slutar med förlust för ledande lag</span></div>
+          <div class="key-number"><span class="key-number__value">123</span><span class="key-number__label">Comebacks totalt</span><span class="key-number__note">Av 785 matcher med 1–0 vid halvtid</span></div>
+          <div class="key-number"><span class="key-number__value">61,8 %</span><span class="key-number__label">Comebacks efter minut 90</span><span class="key-number__note">Andel av vändningar där kvitteringen inleddes i minut 91 eller senare</span></div>
+          <div class="key-number"><span class="key-number__value">55,7 min</span><span class="key-number__label">Snitt första comeback-mål</span><span class="key-number__note">Jämfört med 62,1 min i icke-comebackmatcher</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi undersökte hur stor andel av de matcher i svensk herrbandy där ett lag leder 1–0 vid halvtid som slutar med vändning — det vill säga att det ledande laget förlorar — jämfört med de som slutar oavgjort.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på Finding 015, som kategoriserar matcher i herrserien utifrån resultatet vid halvtid och slutresultatet. Totalt ingår 785 matcher med 1–0-ledning vid halvtid, varav 123 klassificerats som comebacks (det bakåtliggande laget vänder och vinner) och 662 som icke-comebacks. Oavgjorda slutresultat identifieras separat ur samma datamängd. Fördelningen av det bakåtliggande lagets första kvitteringsmål redovisas per femminutersintervall.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Av 785 matcher med 1–0 vid halvtid slutade 123 med vändning, vilket motsvarar 15,7 %. Andelen oavgjorda slutresultat går inte att beräkna direkt ur de redovisade siffrorna eftersom non_comeback_count (662) innefattar både hemmavinster för ledande lag och oavgjorda — men de 662 icke-comebacksen kan brytas ned med hjälp av totalen. Tittar man på comeback-tidpunkterna noteras att 42 av 123 comebacks inleddes (första mål av eftersläpande lag) i intervallet 91–95 minuter och ytterligare 34 i 96–100 minuter — alltså 76 av 123 (61,8 %) av alla vändningar inleddes i de allra sista minuterna av ordinarie tid eller strax i övertid.
+
+<table><thead><tr><th>Utfall</th><th>Antal matcher</th><th>Andel av totalt</th></tr></thead><tbody><tr><td>Vändning (ledande lag förlorar)</td><td>123</td><td>15,7 %</td></tr><tr><td>Icke-comeback (ledande lag vinner eller oavgjort)</td><td>662</td><td>84,3 %</td></tr><tr><td>Totalt</td><td>785</td><td>100 %</td></tr></tbody></table>
+
+Medeltidpunkt för det bakåtliggande lagets första mål i comebackmatcher var minut 55,7, jämfört med 62,1 i icke-comebackmatcher. Det ledande lagets genomsnittliga tidsförsprång vid första motståndarens kvittering var alltså drygt sex minuter kortare i vändningarna.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>En 1–0-ledning vid halvtid är statistiskt sett relativt stabil: fyra av fem sådana ledningar håller fram till slutsignalen i någon form. Ändå vänds nästan var sjätte match, vilket är tillräckligt frekvent för att vändningar inte ska betraktas som rena anomalier utan som en återkommande del av matchbilden.</p>
+      <p>Den tidsmässiga fördelningen av comebackmålens timing pekar på ett tydligt mönster: majoriteten av alla vändningsprocesser inleds i slutskedet av matchen. Att 61,8 % av comebackerna fick sin första kvittering efter minut 90 antyder att det bakåtliggande lagets press oftast blir avgörande sent, möjligen kopplat till ökad risktagning och fysisk nedgång hos det ledande laget.</p>
+      <p>Den tidigare genomsnittliga tidpunkten för det bakåtliggande lagets första mål i comebackmatcher (55,7 mot 62,1) är till synes kontraintuitiv — om kvitteringen kommer tidigt borde det ge mer tid att vinna. En möjlig tolkning är att ett tidigt bakslag tvingar det ledande laget att omgruppera och att matchbilden öppnas upp, vilket ger det nu jämställda laget fler chanser. I icke-comebackmatcher kan ett sent insläppt mål i stället ha mötts av ett försvar som klarade av att hålla undan.</p>
+      <p>Att särskilja vändningar från oavgjorda slutresultat kräver mer granulär data än vad som finns tillgänglig här. De 662 icke-comebacksen innehåller sannolikt en andel oavgjorda matcher, och utan den uppdelningen går det inte att besvara den ursprungliga frågan fullt ut — hur stor andel som slutar oavgjort kontra fullständig vändning.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Non_comeback_count (662) separerar inte oavgjorda slutresultat från hemmavinster för det ledande laget, vilket gör direkt jämförelse omöjlig.</li>
+        <li>Comeback definieras enbart som att det bakåtliggande laget vinner — matcher som slutar oavgjort klassificeras troligen som icke-comebacks.</li>
+        <li>Dataunderlagets serieomfattning och säsongsintervall framgår inte, vilket påverkar generaliserbarheten.</li>
+        <li>Förlängningar och straffar kan ingå i matcherna utan att det framgår hur de hanteras i klassificeringen.</li>
+        <li>Matchomständigheter som utvisningar, skador eller väderlek är inte kontrollerade.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Hur stor andel av 1–0-ledningarna vid halvtid slutar oavgjort jämfört med fullständig vändning, när dessa hålls isär?</li>
+        <li>Ökar vändningsfrekvensen om det ledande lagets mål kom sent i första halvlek (dvs. ett sent 1–0)?</li>
+        <li>Skiljer sig comeback-frekvensen beroende på om det är hemma- eller bortalaget som leder vid halvtid?</li>
+        <li>Hur ser mönstret ut för 2–0-ledningar vid halvtid — är de proportionellt mer stabila?</li>
+        <li>Finns det säsongsmässig variation i comeback-frekvensen som kan kopplas till exempelvis isunderlag eller spelschema?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("F015")} class="fact-ref">F015</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+037:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+037:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

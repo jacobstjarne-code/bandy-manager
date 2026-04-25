@@ -1,0 +1,104 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 028 — Hörneffektivitet damserie: data saknas"
+  description="Underliggande data för hörneffektivitet per säsong i damserien returnerade tomma serier – finding kan inte skrivas."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 028 · 25 april 2026</p>
+    <h1 class="finding-title">Hörneffektivitet damserie: data saknas<br>Analys kan inte genomföras</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">0</span><span class="key-number__label">Säsonger med data</span><span class="key-number__note">Returnerade serier i analysobjektet</span></div>
+          <div class="key-number"><span class="key-number__value">0</span><span class="key-number__label">Datapunkter totalt</span><span class="key-number__note">Fältet series är en tom array</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi ville undersöka om hörneffektiviteten i damserien – det vill säga andelen hörnsparkar som leder till mål – har förändrats systematiskt över säsonger, eller om nivån är relativt stabil. Frågan är relevant eftersom förändringar kan indikera taktiska skiften, regeländringar eller förändrad spelstyrka i serien.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på Finding 012, som i sin tur refererar till ett dataobjekt av typen <code>corner_efficiency_comparison</code>. Det objektet returnerade en tom array för fältet <code>series</code>, vilket innebär att inga säsongsspecifika datapunkter fanns tillgängliga vid körning. Ingen ytterligare datakälla har använts i detta steg.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Det finns inga data att rapportera. Fältet <code>series</code> i det returnerade analysobjektet är tomt (<code>[]</code>), varför inga siffror på hörneffektivitet per säsong kan presenteras. Det är inte möjligt att avgöra om effektiviteten har ökat, minskat eller legat stabilt.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>När ett analysobjekt returnerar tomma serier kan det bero på flera saker: att den underliggande databasen saknar hörnstatistik för damserien, att kopplingen mellan Finding 012 och dess datakälla är trasig, eller att filtreringen på seriebeteckning inte matchar hur data är märkt.</p>
+      <p>Det faktum att objekttypen existerar – <code>corner_efficiency_comparison</code> – antyder att analysflödet är designat för att hantera frågan, men att data ännu inte är inmatad eller korrekt länkad. Det är alltså troligare ett dataproblem än ett strukturproblem.</p>
+      <p>Ingen slutsats om hörneffektivitetens stabilitet eller förändring kan dras förrän data är verifierad och tillgänglig. Alla siffror som skulle presenteras här vore konstruerade och saknar värde.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Primärdatan saknas helt – inga hörneffektivitetsvärden per säsong finns i det returnerade objektet.</li>
+        <li>Det är okänt om bristen beror på dataingestion, felaktig filtrering eller faktisk frånvaro av hörnregistrering i damserien.</li>
+        <li>Finding 012, som är källan, kan självt vara baserat på ofullständig data – dess ursprungliga begränsningar ärvs här.</li>
+        <li>Utan data går det inte att avgöra om problemet är säsongsspecifikt eller gäller hela damserien.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Finns hörnstatistik registrerad för damserien överhuvudtaget, och i så fall från vilka säsonger?</li>
+        <li>Hur definierar Finding 012 'hörneffektivitet' – mål direkt på hörna, eller även följdmål inom en definierad tidsram?</li>
+        <li>Skiljer sig datakvaliteten åt mellan dam- och herrserien vad gäller registrering av dödbollar?</li>
+        <li>Om data kompletteras – vilket minimiantal säsonger krävs för att en trend ska vara statistiskt meningsfull?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("Finding 012")} class="fact-ref">Finding 012</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+028:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+028:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

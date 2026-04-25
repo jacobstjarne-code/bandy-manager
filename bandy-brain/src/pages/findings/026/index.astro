@@ -1,0 +1,108 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 026 — Hemmafördel stärker halvtidsledningens prediktiva kraft"
+  description="Lag som leder i halvtid vinner matchen i 80 % av fallen hemma, mot 75 % borta – en skillnad på 4,9 procentenheter."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 026 · 25 april 2026</p>
+    <h1 class="finding-title">Hemmafördel stärker halvtidsledningens prediktiva kraft</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">80,1 %</span><span class="key-number__label">Hemma – vinstprocent vid HT-ledning</span><span class="key-number__note">423 av 528 matcher</span></div>
+          <div class="key-number"><span class="key-number__value">75,2 %</span><span class="key-number__label">Borta – vinstprocent vid HT-ledning</span><span class="key-number__note">285 av 379 matcher</span></div>
+          <div class="key-number"><span class="key-number__value">4,9 pp</span><span class="key-number__label">Differens hemma vs borta</span><span class="key-number__note">till hemmalagenes fördel</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Finding 011 visade att halvtidsledning är en stark prediktor för matchresultat i herrbandy. Frågan vi ställde oss här är om denna prediktiva kraft är jämnt fördelad oavsett var matchen spelas, eller om hemmafördelen förstärker eller försvagar sambandet mellan halvtidsledning och slutseger.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på samma matchunderlag som Finding 011, hämtat från herrserien. Matcherna delades in i två grupper baserat på om det ledande laget vid halvtid spelade hemma eller borta. För varje grupp beräknades andelen matcher där det halvtidsledande laget också vann matchen.<ul><li>Hemmalag som ledde i halvtid: 528 matcher</li><li>Bortalag som ledde i halvtid: 379 matcher</li></ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Hemmalag som ledde vid halvtid vann 423 av 528 matcher, vilket motsvarar 80,1 %. Bortalag som ledde vid halvtid vann 285 av 379 matcher, motsvarande 75,2 %. Skillnaden uppgår till 4,9 procentenheter till hemmalagenes fördel.<table><thead><tr><th>Situation</th><th>Vinster</th><th>Totalt</th><th>Vinstprocent</th></tr></thead><tbody><tr><td>Hemmalag leder HT</td><td>423</td><td>528</td><td>80,1 %</td></tr><tr><td>Bortalag leder HT</td><td>285</td><td>379</td><td>75,2 %</td></tr><tr><td>Differens</td><td>—</td><td>—</td><td>4,9 pp</td></tr></tbody></table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Halvtidsledning fungerar som prediktor i båda fallen, men hemmafördelen adderar en mätbar effekt ovanpå ledningens självständiga förklaringskraft. Det innebär att hemmafördelen och halvtidsledning inte är oberoende faktorer – de interagerar på ett sätt som gynnar hemmalaget ytterligare om de redan leder vid paus.</p>
+      <p>En möjlig förklaring är att bortalag som leder i halvtid möter en hårdare motreaktion under den andra halvleken: hemmapubliken pressar upp intensiteten, hemmalagets spelare motiveras att vända underläget i sin egen hall, och bortalaget kan välja ett defensivare upplägg för att försvara ledningen. Dessa faktorer reducerar bortalagets konverteringsfrekvens jämfört med ett hemmalag i samma situation.</p>
+      <p>Det är också värt att notera att antalet matcher där bortalaget leder vid halvtid är färre (379) än de där hemmalaget leder (528), vilket i sig speglar hemmafördelen på matchnivå – hemmalag tar oftare täten vid paus. Grupperna är alltså inte symmetriska, vilket kan påverka jämförelsen om det finns systematiska skillnader i motståndets kvalitet beroende på situation.</p>
+      <p>Skillnaden på 4,9 procentenheter är inte trivial men inte heller dominerande. Halvtidsledning förblir en stark prediktor oavsett hemma eller borta; hemmafördelen justerar snarare marginalerna än vänder på logiken.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Analysen kontrollerar inte för matchens context, exempelvis om bortalaget leder med ett eller flera mål vid halvtid.</li>
+        <li>Kvalitetsskillnader mellan lag är inte justerade för – svagare bortalag kan ha större tendens att tappa ledningar.</li>
+        <li>Seriesäsong och eventuella regeländringar under datainsamlingsperioden är inte redovisade.</li>
+        <li>Statistisk signifikanstest för 4,9-procentenhetsskillnaden har inte genomförts i detta material.</li>
+        <li>Analysen gäller enbart herrserien och kan inte utan vidare generaliseras till dam- eller juniorserier.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Hur förändras konverteringsfrekvensen beroende på ledningens storlek vid halvtid – skiljer sig mönstret hemma och borta?</li>
+        <li>Finns det specifika matcher eller arenor där hemmafördelen är extra stor i den andra halvleken?</li>
+        <li>Hur ser andelen halvtidsledningar ut för hemma- respektive bortalag – leder hemmalag oftare, och i så fall med större marginaler?</li>
+        <li>Minskar hemmafördelseffekten i slutspel jämfört med grundserie, där de neutrala arenaeffekterna kan vara annorlunda?</li>
+        <li>Är 4,9-procentenhetsskillnaden statistiskt signifikant givet stickprovsstorlekarna 528 och 379?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("S011")} class="fact-ref">S011</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+026:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+026:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

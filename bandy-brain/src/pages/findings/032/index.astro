@@ -1,0 +1,105 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 032 — Målminutsfördelning per division: ingen data tillgänglig"
+  description="Analys av målminutsfördelning uppdelat på divisioner kunde inte genomföras — källdatan saknar serieinformation."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 032 · 25 april 2026</p>
+    <h1 class="finding-title">Målminutsfördelning per division: ingen data tillgänglig</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">0</span><span class="key-number__label">Divisioner analyserade</span><span class="key-number__note">Tomt resultat — inga serier returnerades</span></div>
+          <div class="key-number"><span class="key-number__value">okänt</span><span class="key-number__label">Målhändelser inlästa</span><span class="key-number__note">Kan inte fastställas ur returnerad data</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi ville undersöka om det finns systematiska skillnader i när mål faller under en match beroende på vilken division som spelas — exempelvis om högre divisioner inom herr- respektive damserien uppvisar andra tidsmönster än lägre divisioner. Frågan bygger på Finding 013, som identifierade tidsmönster för mål aggregerat, och syftar till att bryta ned dessa mönster på divisionsnivå.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen försökte använda samma datakälla som Finding 013, det vill säga matchhändelser med tidsstämpling för mål, kompletterat med metadata om vilken serie och division respektive match tillhör. Det returnerade analysresultatet innehåller dock ett tomt seriefält:<ul><li>Fälttyp: <code>time_distribution_comparison</code></li><li>Fält <code>series</code>: tom array (<code>[]</code>)</li><li>Ingen uppdelning på division, kön eller tidsspann finns i returnerad data</li></ul>Det är oklart om bristen beror på ett pipelinefel, att divisionsmärkning saknas i källdatan, eller att frågan ännu inte körts mot rätt datamängd.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Analysresultatet innehåller inga observationer. Fältet <code>series</code> är tomt, vilket innebär att varken herr- eller damseriens divisioner kan jämföras. Inga siffror, fördelningar eller trendvärden kan redovisas i detta skede.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Utan data går det inte att dra några slutsatser om huruvida målminutsfördelningen skiljer sig åt mellan divisioner. Det är principiellt möjligt att sådana skillnader existerar — exempelvis kan intensitetsskillnader mellan elitnivå och lägre divisioner påverka när under matchen mål tenderar att falla — men det förblir en hypotes tills data finns på plats.</p>
+      <p>En trolig förklaring till det tomma resultatet är att matchdata i källsystemet inte konsekvent märkts med divisionstillhörighet, eller att kopplingen mellan matchhändelser och seriemetadata inte lösts upp korrekt i analyspipelinen. Det kan också röra sig om ett filterfel som exkluderat alla rader.</p>
+      <p>För att finding-frågan ska kunna besvaras behöver datapipelinen åtgärdas så att varje målhändelse bär med sig serieidentifierare. Först därefter är en meningsfull jämförelse möjlig.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Källdatan returnerade en tom array — inga faktiska observationer finns att analysera.</li>
+        <li>Det är okänt om felet är tekniskt (pipeline) eller strukturellt (saknad divisionsmärkning i källan).</li>
+        <li>Finding 013, som detta bygger på, kan ha aggregerat data på ett sätt som försvårar vidare uppdelning.</li>
+        <li>Utan data kan inte heller representativiteten eller täckningen av divisioner bedömas.</li>
+        <li>Det är oklart om dam- och herrserier har jämförbar divisionsnomenklatur i källsystemet.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Varför returnerar analysen ett tomt seriefält — är det ett pipeline-fel eller saknas divisionsmärkning i källdatan?</li>
+        <li>Om data kompletteras: skiljer sig målminutsfördelningen mellan Elitserien och lägre divisioner inom herrbandy?</li>
+        <li>Finns det säsongsvariationer i när mål faller, och interagerar dessa med divisionsnivå?</li>
+        <li>Är täckningen av matchhändelser jämn över divisioner, eller är lägre divisioner underrepresenterade?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("S013")} class="fact-ref">S013</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+032:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+032:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

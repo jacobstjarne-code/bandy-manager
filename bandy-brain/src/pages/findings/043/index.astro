@@ -1,0 +1,109 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 043 — Tidiga 2H-comeback: lag och spelarstilar"
+  description="Analys av om specifika lag eller spelarstilar är överrepresenterade bland comebackmål tidigt i andra halvlek i herrbandyn."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 043 · 25 april 2026</p>
+    <h1 class="finding-title">Tidiga 2H-comeback: lag och spelarstilar<br>Vem gör comebackmålen 91–100?</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">61,8 %</span><span class="key-number__label">Comeback-mål 91–100</span><span class="key-number__note">Andel av comeback-inledningar inom matchens första 10 min av 2H</span></div>
+          <div class="key-number"><span class="key-number__value">39,6 %</span><span class="key-number__label">Ej comeback 91–100</span><span class="key-number__note">Motsvarande andel för icke-comeback-matcher</span></div>
+          <div class="key-number"><span class="key-number__value">123</span><span class="key-number__label">Totala comebacks</span><span class="key-number__note">Av 785 herrmatcher i datasetet</span></div>
+          <div class="key-number"><span class="key-number__value">42</span><span class="key-number__label">Mål i 91–95 (comeback)</span><span class="key-number__note">Det enskilt vanligaste intervallet för comeback-inledning</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Finding 017 visade att comebackmål i andra halvlek klustrar markant tidigt — 76 av 123 comeback-inledande mål (62 %) föll inom minut 91–100. Det väckte frågan om detta mönster drivs av specifika lag med offensiva omställningsstilar, eller om det är ett generellt fenomen spritt över hela serien.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på samma dataset som Finding 017: 785 matcher i herrbandyserien där ett lag vände ett halvtidsunderläge till seger eller oavgjort. Comeback-matcherna (n=123) jämfördes med icke-comeback-matcher (n=662) avseende tidpunkt för första målet i andra halvlek.<ul><li>Comeback-distribution per tidsintervall (minuter) finns tillgänglig för 2H</li><li>Lagtillhörighet och spelarstilar saknas i det tillgängliga analysresultatet — se begränsningar</li><li>Serien: herr</li></ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Av 123 comebackmatcher inleddes 42 stycken (34,1 %) med ett mål i intervallet 91–95 minuter, och ytterligare 34 (27,6 %) i intervallet 96–100. Sammantaget stod de första tio minuterna av andra halvlek för 76 comeback-inledningar (61,8 %). I icke-comeback-matcher var motsvarande andel för 91–95 och 96–100 sammantaget 262 av 662 matcher (39,6 %). Ingen fördelning per lag eller spelarprofil finns i det aktuella analysresultatet — frågan om överrepresentation på lagnivå kan därmed inte besvaras direkt med tillgänglig data.<table><thead><tr><th>Intervall (min)</th><th>Comeback (n=123)</th><th>Andel comeback</th><th>Ej comeback (n=662)</th><th>Andel ej comeback</th></tr></thead><tbody><tr><td>91–95</td><td>42</td><td>34,1 %</td><td>170</td><td>25,7 %</td></tr><tr><td>96–100</td><td>34</td><td>27,6 %</td><td>92</td><td>13,9 %</td></tr><tr><td>101–105</td><td>18</td><td>14,6 %</td><td>92</td><td>13,9 %</td></tr><tr><td>106–110</td><td>8</td><td>6,5 %</td><td>73</td><td>11,0 %</td></tr><tr><td>111–115</td><td>10</td><td>8,1 %</td><td>53</td><td>8,0 %</td></tr><tr><td>116–120</td><td>9</td><td>7,3 %</td><td>57</td><td>8,6 %</td></tr><tr><td>121+</td><td>2</td><td>1,6 %</td><td>125</td><td>18,9 %</td></tr></tbody></table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Tidigt i andra halvlek — minut 91–100 — är comebackmål klart överrepresenterade i förhållande till matcher som inte resulterar i comeback. 61,8 % av all comeback-inledning sker här, mot 39,6 % av icke-comeback-matchernas första 2H-mål. Det antyder att halvtidspausen i sig skapar ett fönster för omställning: taktiska justeringar, byte av spelare eller förändrat tempo kan ge ett undansittande lag ett momentant övertag direkt när matchen återupptas.</p>
+      <p>Det går dock inte att avgöra utifrån befintlig data om detta mönster drivs av ett fåtal lag med systematisk press tidigt i halvlekar, eller om det är ett generellt beteende spritt över hela serien. Frågan om specifika lag är svaret på fenomenet förblir obesvarad.</p>
+      <p>En alternativ förklaring är psykologisk: ett ledande lags benägenhet att sänka intensiteten direkt efter paus kan vara tillräcklig för att förklara klustringen, oberoende av vilket lag som anfaller. I så fall är det det ledande lagets beteende — snarare än det jagande lagets stil — som producerar mönstret.</p>
+      <p>För att avgöra om spelarstilar spelar in krävs data på individnivå: vilka spelare gör comeback-målen, och delar de egenskaper som hög löpvolym, offensiva inbyten eller specialisering på tidiga anfall? Utan den dimensionen är lagnivå den närmast tillgängliga analysnivån, och den saknas i nuvarande dataset.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Lagtillhörighet per mål finns inte i analysresultatet — lagnivå-överrepresentation kan inte kvantifieras.</li>
+        <li>Spelarprofiler och stilegenskaper (löpdata, rollkategori) saknas helt.</li>
+        <li>Det är okänt om samma lag återkommer i en oproportionerlig andel av comeback-matcherna.</li>
+        <li>Matchkontext som hemma/borta, tabellposition och väderförhållanden är inte kontrollerade.</li>
+        <li>Urvalet av 123 comeback-matcher kan vara otillräckligt för att detektera lagnivå-effekter statistiskt säkert.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Vilka specifika lag är avsändare av comeback-inledande mål i intervallet 91–100?</li>
+        <li>Är det samma lag som konsekvent inleder comebacks, eller varierar det från säsong till säsong?</li>
+        <li>Finns det spelare som är statistiskt överrepresenterade som målgörare i comeback-situationer tidigt i 2H?</li>
+        <li>Hur ser bytesbeteendet ut i halvtidspausen för lag som lyckas komma tillbaka — fler offensiva byten?</li>
+        <li>Är klustringen i 91–100 lika stark i damserien, eller är det ett herr-specifikt mönster?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("S017")} class="fact-ref">S017</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+043:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+043:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

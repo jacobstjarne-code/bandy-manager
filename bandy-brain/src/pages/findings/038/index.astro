@@ -1,0 +1,109 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 038 — Större halvtidsledning ger markant högre vinstchans"
+  description="Med 1 måls ledning vid halvtid vinner laget i 62% av fallen. Med 3+ mål stiger siffran till 96%."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 038 · 25 april 2026</p>
+    <h1 class="finding-title">Större halvtidsledning ger markant högre vinstchans</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">61,6%</span><span class="key-number__label">1 måls ledning vid HT</span><span class="key-number__note">vinstchans i 375 matcher</span></div>
+          <div class="key-number"><span class="key-number__value">80,0%</span><span class="key-number__label">2 måls ledning vid HT</span><span class="key-number__note">vinstchans i 210 matcher</span></div>
+          <div class="key-number"><span class="key-number__value">96,0%</span><span class="key-number__label">3+ måls ledning vid HT</span><span class="key-number__note">vinstchans i 322 matcher</span></div>
+          <div class="key-number"><span class="key-number__value">+18,4 pp</span><span class="key-number__label">Ökning 1→2 mål</span><span class="key-number__note">största relativa steget</span></div>
+          <div class="key-number"><span class="key-number__value">907</span><span class="key-number__label">Totalt analyserade matcher</span><span class="key-number__note">alla med halvtidsledning</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi undrade om storleken på ett lags ledning vid halvtid har ett linjärt samband med slutlig vinstsannolikhet, eller om det finns ett tröskelläge där ytterligare mål i praktiken avgör matchen.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på 907 matcher i herrbandy där ett lag ledde vid halvtid, hämtade från Finding 016. Matcherna är fördelade på tre kategorier efter ledningens storlek vid paus:<ul><li>1 måls ledning: 375 matcher</li><li>2 måls ledning: 210 matcher</li><li>3 eller fler måls ledning: 322 matcher</li></ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Vinstsannolikheten ökar tydligt med ledningens storlek. Ett mål vid halvtid ger 61,6% vinstchans, två mål ger 80,0% och tre eller fler mål ger 96,0%.<table><thead><tr><th>Ledning vid HT</th><th>Antal matcher</th><th>Vinstprocent</th></tr></thead><tbody><tr><td>1 mål</td><td>375</td><td>61,6%</td></tr><tr><td>2 mål</td><td>210</td><td>80,0%</td></tr><tr><td>3+ mål</td><td>322</td><td>96,0%</td></tr></tbody></table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Steget från en till två måls ledning är det relativt sett största i materialet: vinstsannolikheten ökar med 18,4 procentenheter. Det antyder att ett ensamt mål vid halvtid fortfarande lämnar utrymme för jämnspelta andra halvlekar, medan ett tvåmålsövertag i betydligt högre grad låser matchbilden.</p>
+      <p>Steget från två till tre eller fler mål är ännu större i absoluta tal, 16 procentenheter, men den praktiska innebörden är annorlunda: vid tre måls ledning är förlorarrisken nere på 4%. Det innebär att comebacks från tre mål i underläge vid halvtid är statistiskt sällsynta snarare än omöjliga.</p>
+      <p>Det finns inget tecken på att sambandet planar ut tidigt. Varje tillägg av ett mål i ledning vid paus motsvarar en meningsfull ökning av slutlig vinstchans, vilket tyder på att marginaler i bandys första halvlek har ett bestående inflytande på matchutfallet. Huruvida det rör sig om ett direkt orsakssamband eller om starka lag tenderar att leda med mer mål och också vinna oftare av andra skäl kan inte avgöras ur dessa data.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Data täcker enbart herrserien — resultaten kan skilja sig i dambandy eller lägre divisioner.</li>
+        <li>Kategorin '3+' är brett definierad och döljer eventuella skillnader mellan t.ex. tre och fem måls ledning.</li>
+        <li>Antalet matcher per kategori varierar, vilket påverkar statistisk precision, särskilt för tvåmålskategorin (210 matcher).</li>
+        <li>Vi vet inte om matcherna är jämnt fördelade över säsonger, serieformat eller motståndarstyrka.</li>
+        <li>Andelen oavgjorda matcher vid halvtid ingår inte, vilket begränsar helhetsbilden av halvtidslägets betydelse.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Hur ser comeback-frekvensen ut specificerat per ledningsstorlek — hur ofta vinner det ledande laget respektive förlorar det?</li>
+        <li>Skiljer sig sambandet beroende på vilket lag som leder — hemma- kontra bortalagets halvtidsledning?</li>
+        <li>Påverkar matchens tidpunkt i seriespelet (tidig vs. sen säsong) hur ofta ledningar hålls?</li>
+        <li>Finns det skillnader i mönstret mellan topplaget och bottenlag — är svaga lag sämre på att försvara halvtidsledningar?</li>
+        <li>Hur förändras sannolikheterna om man delar upp på ledningens storlek i relation till matchens totala målantal?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("F016")} class="fact-ref">F016</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+038:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+038:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

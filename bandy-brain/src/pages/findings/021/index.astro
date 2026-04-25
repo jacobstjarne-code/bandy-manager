@@ -1,0 +1,109 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 021 — Mellankategorin: måldistribution vid 2–3 måls marginal"
+  description="Hur ser måldistributionen ut under matchens gång när slutresultatet skiljer med 2–3 mål? En analys av mellankategorin."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 021 · 25 april 2026</p>
+    <h1 class="finding-title">Mellankategorin: måldistribution vid 2–3 måls marginal</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">1 124</span><span class="key-number__label">Matcher i datasetet</span><span class="key-number__note">Herrmatcher, Finding 009</span></div>
+          <div class="key-number"><span class="key-number__value">17,5 %</span><span class="key-number__label">Jämna matcher – andel mål 0–9 min</span><span class="key-number__note">0–1 måls slutmarginal</span></div>
+          <div class="key-number"><span class="key-number__value">20,3 %</span><span class="key-number__label">Öppna matcher – andel mål 80–89 min</span><span class="key-number__note">4+ måls slutmarginal</span></div>
+          <div class="key-number"><span class="key-number__value">saknas</span><span class="key-number__label">Mellankategorins distribution</span><span class="key-number__note">2–3 måls marginal ej redovisad i källdata</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Finding 009 analyserade jämna matcher (0–1 måls marginal) och öppna matcher (4+ måls marginal) separat, men utelämnade mellankategorin: matcher där slutresultatet skiljer med exakt 2–3 mål. Frågan är hur målen fördelas över matchens tio minuters-intervall i dessa matcher, och om distributionen liknar den jämna eller öppna kategorin — eller uppvisar ett eget mönster.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på 1 124 herrmatcher från Finding 009, där varje match klassificerats efter slutresultatets målskillnad. Mellankategorin (2–3 måls marginal) extraherades som en separat grupp. Måldistributionen redovisas per tio-minutersintervall (0–9, 10–19, … 80–89, 90–99 minuter). Jämförelsepunkter är:<ul><li>Jämna matcher (0–1 måls marginal): tyngre distribuerade mot matchens inledning.</li><li>Öppna matcher (4+ måls marginal): tyngre distribuerade mot matchens slutskede.</li></ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Mellankategorin saknas i det underliggande datasetet — Finding 009 redovisar enbart de två ytterlighetskategorierna. Nedanstående tabell visar de tillgängliga distributionerna för jämna och öppna matcher, som utgör referenspunkter för att förstå var mellankategorin rimligen befinner sig.<table><thead><tr><th>Intervall</th><th>Jämna matcher (0–1 mål) %</th><th>Öppna matcher (4+ mål) %</th></tr></thead><tbody><tr><td>0–9</td><td>17,5</td><td>0,5</td></tr><tr><td>10–19</td><td>15,6</td><td>3,9</td></tr><tr><td>20–29</td><td>12,9</td><td>7,1</td></tr><tr><td>30–39</td><td>10,6</td><td>9,9</td></tr><tr><td>40–49</td><td>10,9</td><td>13,8</td></tr><tr><td>50–59</td><td>9,7</td><td>13,0</td></tr><tr><td>60–69</td><td>7,9</td><td>14,1</td></tr><tr><td>70–79</td><td>7,1</td><td>15,4</td></tr><tr><td>80–89</td><td>6,9</td><td>20,3</td></tr><tr><td>90–99</td><td>0,7</td><td>1,9</td></tr></tbody></table>Mellankategorins faktiska siffror kan inte beräknas ur detta dataset utan tillgång till rådata per match.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>De två ytterlighetskategorierna uppvisar nästan spegelvänd distribution. I jämna matcher (0–1 mål) görs nästan en femtedel av alla mål redan under matchens första tio minuter, och andelen sjunker sedan konsekvent. I öppna matcher (4+ mål) är det tvärtom: de sista tjugo minuterna dominerar kraftigt, med 20,3 procent enbart i intervallet 80–89.</p>
+      <p>En rimlig hypotes om mellankategorin är att den uppvisar en flackare, mer jämnt fördelad kurva — en slags kompromiss mellan de två extremerna. Matcher som slutar med 2–3 måls marginal kan ha inletts jämnt men avgjorts gradvis, vilket skulle ge en distribution som liknar de jämna matchernas i tidig fas men de öppna matchernas i sen fas.</p>
+      <p>Det är också möjligt att mellankategorin är heterogen: en del av dessa matcher är reellt jämna fram till matchens sista tredjedel, medan andra är avgjorda tidigt men inte tillräckligt öppna för att klassas som stormatch. I så fall blandas två beteendemönster inom samma kategori, vilket kan ge en artificiellt jämn fördelning som inte speglar något enskilt spelmönster.</p>
+      <p>För att besvara frågan direkt krävs rådata på matchnivå. Utan det kan mellankategorins distribution enbart beräknas indirekt om det totala antalet mål per intervall är känt — något som inte redovisas i Finding 009.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Mellankategorins (2–3 måls marginal) faktiska distribution finns inte i det tillgängliga datasetet.</li>
+        <li>Det är okänt hur stor andel av de 1 124 matcherna som faller i mellankategorin.</li>
+        <li>Slutresultatets marginal klassificerar inte hur matchen utvecklades — en 3–0-match och en 4–3-match ger olika marginal men kan ha haft likartad speldynamik.</li>
+        <li>Tio-minutersintervall är grova mått; variation inom intervallen syns inte.</li>
+        <li>Herrmatcher från en okänd tidsperiod — säsongsvariation eller regelförändringar beaktas inte.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Vad är den faktiska måldistributionen för matcher med exakt 2 respektive 3 måls marginal, beräknad ur rådata?</li>
+        <li>Hur stor andel av alla matcher faller i respektive marginalkategori (0–1, 2–3, 4+)?</li>
+        <li>Vid vilken tidpunkt i matchen avgörs typiskt en match som slutar med 2–3 måls skillnad?</li>
+        <li>Skiljer sig mellankategorins distribution åt mellan dambandy och herrbandy?</li>
+        <li>Finns det ett samband mellan vilken minut den avgörande målskillnaden uppstår och det slutliga resultatet?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("Finding 009")} class="fact-ref">Finding 009</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+021:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+021:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

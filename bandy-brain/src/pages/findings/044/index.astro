@@ -1,0 +1,110 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 044 — Bortalag gör fler mål på hörnor"
+  description="Bortaspelande lag i herrbandy står för 22,7 % hörnmålsandel mot hemmalagets 21,8 % — men konverterar hörnor något sämre."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 044 · 25 april 2026</p>
+    <h1 class="finding-title">Bortalag gör fler mål på hörnor<br>— men omvandlingsgraden är lägre</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">21,8 %</span><span class="key-number__label">Hörnmålsandel hemma</span><span class="key-number__note">Andel av hemmalagets mål via hörnor</span></div>
+          <div class="key-number"><span class="key-number__value">22,7 %</span><span class="key-number__label">Hörnmålsandel borta</span><span class="key-number__note">Andel av bortalagets mål via hörnor</span></div>
+          <div class="key-number"><span class="key-number__value">11,6 %</span><span class="key-number__label">Omvandlingsgrad hemma</span><span class="key-number__note">Andel hörnor som ger mål för hemmalaget</span></div>
+          <div class="key-number"><span class="key-number__value">11,3 %</span><span class="key-number__label">Omvandlingsgrad borta</span><span class="key-number__note">Andel hörnor som ger mål för bortalaget</span></div>
+          <div class="key-number"><span class="key-number__value">1 124</span><span class="key-number__label">Antal matcher</span><span class="key-number__note">Underlagets storlek</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi ville undersöka om andelen mål som tillkommer via hörnor skiljer sig åt beroende på om ett lag spelar hemma eller borta, och om det finns en skillnad i hur effektivt lagen omvandlar hörnor till mål i respektive situation.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Underlaget hämtas från Finding 018 och omfattar 1 124 matcher i svensk herrbandy. För varje match särskiljs statistik för hemma- respektive bortaspelande lag, vilket ger separata värden för mål, hörnmål och antal hörnor i de två situationerna.<ul><li>Hemmamatcher: 5 489 mål, 1 198 hörnmål, 10 358 hörnor</li><li>Bortamatcher: 4 764 mål, 1 081 hörnmål, 9 564 hörnor</li></ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Hörnmålsandelen — andelen av ett lags totala mål som kom via hörnor — är något högre för bortaspelande lag (22,7 %) än för hemmaspelande lag (21,8 %), en skillnad på 0,9 procentenheter. Omvandlingsgraden, det vill säga andelen hörnor som direkt resulterar i mål, är däremot marginellt högre för hemmalaget (11,6 %) jämfört med bortalaget (11,3 %).<table><thead><tr><th>Situation</th><th>Mål</th><th>Hörnmål</th><th>Hörnor</th><th>Hörnmålsandel</th><th>Omvandlingsgrad</th></tr></thead><tbody><tr><td>Hemma</td><td>5 489</td><td>1 198</td><td>10 358</td><td>21,8 %</td><td>11,6 %</td></tr><tr><td>Borta</td><td>4 764</td><td>1 081</td><td>9 564</td><td>22,7 %</td><td>11,3 %</td></tr></tbody></table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Skillnaden i hörnmålsandel mellan hemma och borta är liten men konsekvent i riktningen att bortaspelande lag har en något större andel av sina mål via hörnor. En möjlig förklaring är att bortalag generellt sett skapar färre fria målchanser i spelet och därmed är mer beroende av dödbollar som hörnor för att nå nätet. Om ett bortalag har sämre spelkontroll kan det paradoxalt nog innebära att en högre andel av de mål man ändå gör härstammar från just dödbollar.</p>
+      <p>Omvandlingsgraden pekar i motsatt riktning: hemmalaget är något effektivare på att göra mål direkt på hörnor (11,6 % mot 11,3 %). Det antyder att hemmalaget, när det väl får en hörna, är marginellt bättre på att utnyttja den — möjligen till följd av bättre självförtroende, bättre inövade rutiner på hemmaplan eller att motståndaren försvarar något sämre i bortamatch.</p>
+      <p>De två måtten rör sig alltså i olika riktningar beroende på perspektiv: bortalagets hörnmål utgör en större andel av det totala målskörden, men varje enskild hörna är något mer sannolik att resultera i mål för hemmalaget. Detta är inte nödvändigtvis motsägelsefullt — det kan spegla att bortalag får hörnor i situationer där de annars har svårt att skapa chanser, inte att de är bättre på att utnyttja dem.</p>
+      <p>Skillnaderna är sammantaget små och bör inte övertolkas utan statistisk signifikansprövning. De indikerar ändå ett mönster som är värt att följa upp med mer granulär data.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Ingen signifikansprövning har genomförts, så det går inte att utesluta att skillnaderna är slumpmässiga.</li>
+        <li>Det framgår inte vilka lag som ingår i underlaget, vilket begränsar generaliserbarheten.</li>
+        <li>Definitionen av 'hörnmål' (direkt mål på hörna kontra mål i följdspel) är inte specificerad och kan påverka värdena.</li>
+        <li>Matchurvalet kan vara snedvridet om starka och svaga lag är ojämnt fördelade i hemma- och bortakategorier.</li>
+        <li>Säsongsvariationer och regelförändringar över tid fångas inte i aggregerad data.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Är skillnaden i hörnmålsandel statistiskt signifikant över de 1 124 matcherna?</li>
+        <li>Varierar hörnomvandlingsgraden hemma/borta beroende på lagets serieplacering?</li>
+        <li>Hur ser fördelningen ut per säsong — har hemma/borta-mönstret förändrats över tid?</li>
+        <li>Finns det lag som avviker markant från genomsnittet i sin hörneffektivitet hemma kontra borta?</li>
+        <li>Skiljer sig mönstret om man enbart tittar på matcher med jämna slutresultat?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("F018")} class="fact-ref">F018</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+044:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+044:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

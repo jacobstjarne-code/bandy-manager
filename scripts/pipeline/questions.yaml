@@ -118,10 +118,11 @@
 - id: Q015
   source_finding: 008
   question: Är klustret lika jämnt fördelat i dammatcherna som i herrmatcherna?
-  status: open
+  status: answered
   analysis_type: goals_by_margin
   params:
     series: herr
+  answered_by: 019
 - id: Q016
   source_finding: 008
   question: Hur ser minutfördelningen ut på minutnivå (40, 41, 42 … 50) — finns det
@@ -149,10 +150,11 @@
 - id: Q019
   source_finding: 009
   question: Syns samma inverterade mönster i dambandy med liknande marginaluppdelning?
-  status: open
+  status: answered
   analysis_type: goals_by_margin
   params:
     series: herr
+  answered_by: '020'
 - id: Q020
   source_finding: 009
   question: Finns det lag-specifika skillnader — scorer vissa lag oproportionerligt
@@ -165,10 +167,11 @@
   source_finding: 009
   question: Hur ser distributionen ut för matcher med marginal 2–3 mål, dvs. mellankategorin
     som inte inkluderades här?
-  status: open
+  status: answered
   analysis_type: goals_by_margin
   params:
     series: herr
+  answered_by: '021'
 - id: Q022
   source_finding: 009
   question: Påverkas mönstret av om matchen spelas hemma eller borta för det dominerande
@@ -189,17 +192,19 @@
   source_finding: '010'
   question: Skiljer sig hörnmålens tidsmönster åt beroende på om laget är hemma eller
     borta?
-  status: open
+  status: answered
   analysis_type: corner_home_away
   params:
     series: herr
+  answered_by: '022'
 - id: Q025
   source_finding: '010'
   question: Hur ser målminutsfördelningen ut för damherrar — är sluttrycket lika uttalat?
-  status: open
+  status: answered
   analysis_type: time_distribution_comparison
   params:
     series: herr
+  answered_by: '023'
 - id: Q026
   source_finding: '010'
   question: Är öppet spel-toppen i 80–89 driven av specifika lag eller trupper, eller
@@ -220,17 +225,19 @@
   source_finding: '011'
   question: Hur vanliga är vändningar (laget som leder i HT förlorar) per fas, och
     i vilka minuter sker avgörande mål?
-  status: open
+  status: answered
   analysis_type: comeback_timing
   params:
     series: herr
+  answered_by: '024'
 - id: Q029
   source_finding: '011'
   question: Skiljer sig målfördelningen per halvlek åt mellan kvartsfinal och semifinal?
-  status: open
+  status: answered
   analysis_type: goals_by_phase_detail
   params:
     series: herr
+  answered_by: '025'
 - id: Q030
   source_finding: '011'
   question: Är halvtidsledningens prognosvärde i semifinal stabilt över tid, eller
@@ -251,10 +258,11 @@
   source_finding: '011'
   question: Påverkar hemmafördel halvtidsledningens prediktiva kraft olika i de olika
     faserna?
-  status: open
+  status: answered
   analysis_type: ht_lead_home_away
   params:
     series: herr
+  answered_by: '026'
 - id: Q033
   source_finding: '012'
   question: Varierar hörneffektiviteten mellan olika lag i damserien, eller är skillnaden
@@ -267,50 +275,56 @@
   source_finding: '012'
   question: Finns det skillnader i hur hörnor tas om hand taktiskt — exempelvis kort
     hörna vs. långt inlägg — mellan serierna?
-  status: open
+  status: answered
   analysis_type: corner_efficiency_comparison
   params:
     series: herr
+  answered_by: '027'
 - id: Q035
   source_finding: '012'
   question: Har hörneffektiviteten i damserien förändrats över säsonger, eller är
     nivån stabil?
-  status: open
+  status: answered
   analysis_type: corner_efficiency_comparison
   params:
     series: herr
+  answered_by: 028
 - id: Q036
   source_finding: '012'
   question: Via vilka typer av aktioner skapas de mål i damserien som inte härrör
     från hörnor?
-  status: open
+  status: answered
   analysis_type: corner_efficiency_comparison
   params:
     series: herr
+  answered_by: 029
 - id: Q037
   source_finding: '012'
   question: Påverkar matchens ställning (ledning/underläge) sannolikheten att en hörna
     leder till mål, och skiljer sig det mönstret mellan serierna?
-  status: open
+  status: answered
   analysis_type: corner_efficiency_comparison
   params:
     series: herr
+  answered_by: '030'
 - id: Q038
   source_finding: '013'
   question: Är slutminutstoppen i herr kopplad till täta matchresultat snarare än
     serietillhörighet?
-  status: open
+  status: answered
   analysis_type: time_distribution_comparison
   params:
     series: herr
+  answered_by: '031'
 - id: Q039
   source_finding: '013'
   question: Skiljer sig målminutsfördelningen mellan olika divisioner inom herr- respektive
     damserien?
-  status: open
+  status: answered
   analysis_type: time_distribution_comparison
   params:
     series: herr
+  answered_by: '032'
 - id: Q040
   source_finding: '013'
   question: Påverkar hemma/borta-faktorn när under matchen mål görs, och är den effekten
@@ -346,26 +360,29 @@
   source_finding: '014'
   question: Hur fördelar sig hörnmål per period — syns en hemmaeffekt starkare i slutet
     av matcher?
-  status: open
+  status: answered
   analysis_type: corner_home_away
   params:
     series: herr
+  answered_by: '033'
 - id: Q045
   source_finding: '014'
   question: Skiljer sig enskilda lags hörneffektivitet hemma/borta, eller är mönstret
     jämnt fördelat?
-  status: open
+  status: answered
   analysis_type: corner_home_away
   params:
     series: herr
+  answered_by: '034'
 - id: Q046
   source_finding: '014'
   question: Påverkar bortalagets defensiva uppställning (antal spelare bakom bollen)
     hur ofta hemmalaget konverterar hörnor?
-  status: open
+  status: answered
   analysis_type: corner_home_away
   params:
     series: herr
+  answered_by: '035'
 - id: Q047
   source_finding: '014'
   question: Finns samma mönster i damserien, eller är hemma/borta-effekten annorlunda
@@ -385,18 +402,20 @@
 - id: Q049
   source_finding: '015'
   question: Skiljer sig mönstret mellan hemma- och bortamatcher för samma halvtidsledning?
-  status: open
+  status: answered
   analysis_type: ht_lead_home_away
   params:
     series: herr
+  answered_by: '036'
 - id: Q050
   source_finding: '015'
   question: Hur stor andel av 1–0-ledningarna vid halvtid slutar med vändning jämfört
     med oavgjort?
-  status: open
+  status: answered
   analysis_type: comeback_timing
   params:
     series: herr
+  answered_by: '037'
 - id: Q051
   source_finding: '015'
   question: Finns det skillnad i winrate beroende på vilken minut det ledande målet
@@ -416,26 +435,29 @@
   source_finding: '016'
   question: Hur påverkar ledningens storlek vid halvtid (1 mål vs. 2+ mål) sannolikheten
     att vinna?
-  status: open
+  status: answered
   analysis_type: ht_lead_by_size
   params:
     series: herr
+  answered_by: 038
 - id: Q054
   source_finding: '016'
   question: Finns det säsongsvariationer — har hemmafördelen vid halvtidsledning förändrats
     över tid?
-  status: open
+  status: answered
   analysis_type: ht_lead_home_away
   params:
     series: herr
+  answered_by: 039
 - id: Q055
   source_finding: '016'
   question: Hur stor andel av halvtidsledningar uppstår för hemma- respektive bortalag
     — och förklarar det matchmönstret?
-  status: open
+  status: answered
   analysis_type: ht_lead_home_away
   params:
     series: herr
+  answered_by: '040'
 - id: Q056
   source_finding: '016'
   question: Skiljer sig mönstret mellan toppserie och lägre divisioner?
@@ -447,18 +469,20 @@
   source_finding: '017'
   question: Skiljer sig comeback-mönstret beroende på storleken på underläget vid
     halvtid (1 mål vs. 2+ mål)?
-  status: open
+  status: answered
   analysis_type: comeback_timing
   params:
     series: herr
+  answered_by: '041'
 - id: Q058
   source_finding: '017'
   question: Är comeback-andelen i intervallet 96–100 minuter statistiskt skild från
     slumpen givet basfrekvensen?
-  status: open
+  status: answered
   analysis_type: comeback_timing
   params:
     series: herr
+  answered_by: '042'
 - id: Q059
   source_finding: '017'
   question: Hur ser matchdynamiken ut efter det första 2H-målet — gör comeback-lagen
@@ -471,10 +495,11 @@
   source_finding: '017'
   question: Finns det specifika lag eller spelarstilar som är överrepresenterade i
     tidiga 2H-comeback-mål?
-  status: open
+  status: answered
   analysis_type: comeback_timing
   params:
     series: herr
+  answered_by: '043'
 - id: Q061
   source_finding: '017'
   question: Skiljer sig tidsmönstret mellan hemmamatcher och bortamatcher för det
@@ -495,18 +520,20 @@
   source_finding: 018
   question: Skiljer sig hörnmålsandelen beroende på hemma- eller bortamatch för dessa
     två lag?
-  status: open
+  status: answered
   analysis_type: corner_home_away
   params:
     series: herr
+  answered_by: '044'
 - id: Q064
   source_finding: 018
   question: Hur förhåller sig VSK:s och Vetlandas hörnakonvertering till ligasnittet
     som helhet?
-  status: open
+  status: answered
   analysis_type: corner_by_team
   params:
     series: herr
+  answered_by: '045'
 - id: Q065
   source_finding: 018
   question: Finns det ett samband mellan antal hörnor per match och total målproduktion
@@ -520,5 +547,1022 @@
   question: Vad förklarar den stora skillnaden i konvertering mellan de två VSK-perioderna?
   status: open
   analysis_type: unknown
+  params:
+    series: herr
+- id: Q067
+  source_finding: '?'
+  question: är målvakter som är inaktiva, det vill säga som måste ta få skott under
+    en längre period, sämre på att rädda skott när de väl får skott på sig?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q068
+  source_finding: 019
+  question: Hur ser målfördelningen per tiominutersintervall ut i damelit under samma
+    tidsperiod?
+  status: open
+  analysis_type: time_distribution_comparison
+  params:
+    series: herr
+- id: Q069
+  source_finding: 019
+  question: Skiljer sig andelen täta matcher åt mellan dam- och herrbandy, och påverkar
+    det jämförbarheten?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q070
+  source_finding: 019
+  question: Är slutminutsklustret i öppna herrmatchers lika starkt i cupspel som i
+    seriespel?
+  status: open
+  analysis_type: time_distribution_comparison
+  params:
+    series: herr
+- id: Q071
+  source_finding: 019
+  question: Påverkar bytesregler eller konditionsprofil klustrets styrka i slutminuterna?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q072
+  source_finding: 019
+  question: Finns det lagspecifika mönster — dvs. är vissa herrlag mer benägna att
+    göra tidiga mål än andra?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q073
+  source_finding: '020'
+  question: Finns målminutdata för damseriens matcher i samma format som herrseriens?
+  status: open
+  analysis_type: time_distribution_comparison
+  params:
+    series: herr
+- id: Q074
+  source_finding: '020'
+  question: Är målfrekvensen per match i damserien tillräckligt hög för att tiominutersintervall
+    ska ge stabila skattningar?
+  status: open
+  analysis_type: time_distribution_comparison
+  params:
+    series: herr
+- id: Q075
+  source_finding: '020'
+  question: Skiljer sig andelen jämna kontra öppna matcher strukturellt mellan herr-
+    och damserien?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q076
+  source_finding: '020'
+  question: Skulle en grövre uppdelning (t.ex. tre perioder om 30 minuter) ge tydligare
+    mönster i damdata?
+  status: open
+  analysis_type: time_distribution_comparison
+  params:
+    series: herr
+- id: Q077
+  source_finding: '020'
+  question: Finns tidsserieskillnader inom damserien som kan störa en poolad analys?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q078
+  source_finding: '021'
+  question: Vad är den faktiska måldistributionen för matcher med exakt 2 respektive
+    3 måls marginal, beräknad ur rådata?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q079
+  source_finding: '021'
+  question: Hur stor andel av alla matcher faller i respektive marginalkategori (0–1,
+    2–3, 4+)?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q080
+  source_finding: '021'
+  question: Vid vilken tidpunkt i matchen avgörs typiskt en match som slutar med 2–3
+    måls skillnad?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q081
+  source_finding: '021'
+  question: Skiljer sig mellankategorins distribution åt mellan dambandy och herrbandy?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q082
+  source_finding: '021'
+  question: Finns det ett samband mellan vilken minut den avgörande målskillnaden
+    uppstår och det slutliga resultatet?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q083
+  source_finding: '022'
+  question: Förändras hörnmålsandelen beroende på matchställning — gör bortalag mer
+    hörnmål när de ligger under?
+  status: open
+  analysis_type: corner_home_away
+  params:
+    series: herr
+- id: Q084
+  source_finding: '022'
+  question: Finns det tidsmässiga mönster inom matchen för när hemma- respektive bortalag
+    gör hörnmål?
+  status: open
+  analysis_type: corner_home_away
+  params:
+    series: herr
+- id: Q085
+  source_finding: '022'
+  question: Skiljer sig enskilda lag systematiskt från genomsnittet i hur väl de utnyttjar
+    hörnor hemma kontra borta?
+  status: open
+  analysis_type: corner_home_away
+  params:
+    series: herr
+- id: Q086
+  source_finding: '022'
+  question: Är konverteringsfrekvensen kopplad till hörnvolym — slår lag som får många
+    hörnor in dem mer sällan?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q087
+  source_finding: '023'
+  question: Finns tidsstämplade måldata från damelitserien i bandy, och i så fall
+    i vilket format?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q088
+  source_finding: '023'
+  question: Uppvisar dambandy samma sluttryck som herrbandy när korrekt data finns
+    tillgänglig?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q089
+  source_finding: '023'
+  question: Skiljer sig målminutsfördelningen åt mellan olika nivåer inom dambandy
+    (elitserie vs. division 1)?
+  status: open
+  analysis_type: time_distribution_comparison
+  params:
+    series: herr
+- id: Q090
+  source_finding: '023'
+  question: Går det att kombinera dam- och herrdata för att testa om sluttryck är
+    ett generellt bandyfenomen oberoende av serie?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q091
+  source_finding: '024'
+  question: Hur påverkar ledningens storlek vid halvtid (1–0 vs 2–0 vs 3–0+) sannolikheten
+    för en vändning?
+  status: open
+  analysis_type: ht_lead_by_size
+  params:
+    series: herr
+- id: Q092
+  source_finding: '024'
+  question: Skiljer sig vändningsfrekvensen åt beroende på vilken serienivå eller
+    division matcherna spelades i?
+  status: open
+  analysis_type: comeback_timing
+  params:
+    series: herr
+- id: Q093
+  source_finding: '024'
+  question: Finns det lag som är signifikant bättre eller sämre på att hålla halvtidsledningar?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q094
+  source_finding: '024'
+  question: Påverkar bortamatch kontra hemmamatch hur ofta vändningar sker?
+  status: open
+  analysis_type: comeback_timing
+  params:
+    series: herr
+- id: Q095
+  source_finding: '024'
+  question: Korrelerar ett tidigt mål i andra halvlek (91–95) med ökad sannolikhet
+    att vändningen fullföljs?
+  status: open
+  analysis_type: comeback_timing
+  params:
+    series: herr
+- id: Q096
+  source_finding: '025'
+  question: Hur stor halvtidsledning (antal mål) krävs för att prediktionskraften
+    ska vara jämförbar mellan kvartsfinal och semifinal?
+  status: open
+  analysis_type: goals_by_phase_detail
+  params:
+    series: herr
+- id: Q097
+  source_finding: '025'
+  question: Har halvtidsledningens prediktiva kraft förändrats över säsonger, exempelvis
+    i takt med att spelarmarknaden jämnats ut?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q098
+  source_finding: '025'
+  question: Skiljer sig andelen matcher som är oavgjorda vid halvtid åt mellan turneringsfaserna?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q099
+  source_finding: '025'
+  question: Finns det specifika lag som bryter mot mönstret och vänder halvtidsunderlägen
+    oftare i semifinal än förväntat?
+  status: open
+  analysis_type: goals_by_phase_detail
+  params:
+    series: herr
+- id: Q100
+  source_finding: '026'
+  question: Hur förändras konverteringsfrekvensen beroende på ledningens storlek vid
+    halvtid – skiljer sig mönstret hemma och borta?
+  status: open
+  analysis_type: ht_lead_by_size
+  params:
+    series: herr
+- id: Q101
+  source_finding: '026'
+  question: Finns det specifika matcher eller arenor där hemmafördelen är extra stor
+    i den andra halvleken?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q102
+  source_finding: '026'
+  question: Hur ser andelen halvtidsledningar ut för hemma- respektive bortalag –
+    leder hemmalag oftare, och i så fall med större marginaler?
+  status: open
+  analysis_type: ht_lead_home_away
+  params:
+    series: herr
+- id: Q103
+  source_finding: '026'
+  question: Minskar hemmafördelseffekten i slutspel jämfört med grundserie, där de
+    neutrala arenaeffekterna kan vara annorlunda?
+  status: open
+  analysis_type: goals_by_phase_detail
+  params:
+    series: herr
+- id: Q104
+  source_finding: '026'
+  question: Är 4,9-procentenhetsskillnaden statistiskt signifikant givet stickprovsstorlekarna
+    528 och 379?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q105
+  source_finding: '027'
+  question: Kodas hörntyper (kort/lång/direkt skott) i något befintligt statistiksystem
+    för svensk bandy?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q106
+  source_finding: '027'
+  question: Skiljer sig målfrekvensen per hörna mellan serier, oavsett hörntyp?
+  status: open
+  analysis_type: corner_efficiency_comparison
+  params:
+    series: herr
+- id: Q107
+  source_finding: '027'
+  question: Finns det lag som avviker konsekvent från sin series genomsnittliga hörnstrategi?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q108
+  source_finding: '027'
+  question: Hur förändras valet av hörntyp beroende på matchläge (leder/förlorar)
+    och tidpunkt i match?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q109
+  source_finding: '027'
+  question: Går det att via videokodning av ett begränsat urval matcher etablera ett
+    referensvärde för hörntypsfördelning?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q110
+  source_finding: 028
+  question: Finns hörnstatistik registrerad för damserien överhuvudtaget, och i så
+    fall från vilka säsonger?
+  status: open
+  analysis_type: corner_efficiency_comparison
+  params:
+    series: herr
+- id: Q111
+  source_finding: 028
+  question: Hur definierar Finding 012 'hörneffektivitet' – mål direkt på hörna, eller
+    även följdmål inom en definierad tidsram?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q112
+  source_finding: 028
+  question: Skiljer sig datakvaliteten åt mellan dam- och herrserien vad gäller registrering
+    av dödbollar?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q113
+  source_finding: 028
+  question: Om data kompletteras – vilket minimiantal säsonger krävs för att en trend
+    ska vara statistiskt meningsfull?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q114
+  source_finding: 029
+  question: Finns det ett befintligt klassifikationsschema för aktionstyper i det
+    bakomliggande datasystemet?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q115
+  source_finding: 029
+  question: Har mål utanför hörnor kodats manuellt i någon delsäsong som kan användas
+    som pilotstudie?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q116
+  source_finding: 029
+  question: Skiljer sig fördelningen av aktionstyper åt mellan dam- och herrserien
+    om data samlas in?
+  status: open
+  analysis_type: time_distribution_comparison
+  params:
+    series: herr
+- id: Q117
+  source_finding: 029
+  question: Hur stor andel av alla mål i damserien härrör överhuvudtaget inte från
+    hörnor?
+  status: open
+  analysis_type: corner_efficiency_comparison
+  params:
+    series: herr
+- id: Q118
+  source_finding: '030'
+  question: Innehåller händelsedatabasen matchställning (hemma-borta-mål) per tidsstämpel
+    för varje hörnhändelse?
+  status: open
+  analysis_type: corner_home_away
+  params:
+    series: herr
+- id: Q119
+  source_finding: '030'
+  question: Kan Finding 012 köras om med explicit angivet säsongsintervall och serie
+    för att verifiera att data finns?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q120
+  source_finding: '030'
+  question: Finns det en validerad datakälla för hörnhändelser med matchkontext som
+    kan användas som alternativ ingång?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q121
+  source_finding: '030'
+  question: 'Om data väl finns: skiljer sig hörneffektiviteten statistiskt signifikant
+    mellan matchlägen, eller är variansen för stor för att dra slutsatser?'
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q122
+  source_finding: '030'
+  question: Går det att bryta ned analysen per period (första/andra halvlek) utöver
+    matchläge, för att separera trötthet från taktisk anpassning?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q123
+  source_finding: '031'
+  question: Kan databasen utökas med löpande marginaler per minut för att möjliggöra
+    resultatklasskoppling?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q124
+  source_finding: '031'
+  question: Håller slutminutstoppen enbart i matcher där marginalen är 0–1 mål under
+    den sista perioden?
+  status: open
+  analysis_type: time_split
+  params:
+    series: herr
+- id: Q125
+  source_finding: '031'
+  question: Skiljer sig målkurvans form statistiskt signifikant mellan Elitserien
+    och Division 2?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q126
+  source_finding: '031'
+  question: Finns det en interaktionseffekt mellan serienivå och resultattäthet på
+    slutminutstoppen?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q127
+  source_finding: '031'
+  question: Hur ser motsvarande mönster ut i dambandy — är slutminutstoppen lika stark
+    och drivs den av samma faktorer?
+  status: open
+  analysis_type: time_distribution_comparison
+  params:
+    series: herr
+- id: Q128
+  source_finding: '032'
+  question: Varför returnerar analysen ett tomt seriefält — är det ett pipeline-fel
+    eller saknas divisionsmärkning i källdatan?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q129
+  source_finding: '032'
+  question: 'Om data kompletteras: skiljer sig målminutsfördelningen mellan Elitserien
+    och lägre divisioner inom herrbandy?'
+  status: open
+  analysis_type: time_distribution_comparison
+  params:
+    series: herr
+- id: Q130
+  source_finding: '032'
+  question: Finns det säsongsvariationer i när mål faller, och interagerar dessa med
+    divisionsnivå?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q131
+  source_finding: '032'
+  question: Är täckningen av matchhändelser jämn över divisioner, eller är lägre divisioner
+    underrepresenterade?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q132
+  source_finding: '033'
+  question: Hur fördelar sig hörnmål per period — ökar eller minskar konverteringsgraden
+    i tredje period?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q133
+  source_finding: '033'
+  question: Påverkar matchläget (ledning/underläge) hur ofta lag väljer att anfalla
+    via hörnor?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q134
+  source_finding: '033'
+  question: Finns det lag som konverterar hörnor till mål i väsentligt högre takt
+    än genomsnittet, och vad utmärker dem taktiskt?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q135
+  source_finding: '033'
+  question: Skiljer sig hörnmålsandelen mellan divisioner eller säsonger?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q136
+  source_finding: '033'
+  question: Är hörnor vanligare i slutminuterna av perioder, och om så, konverteras
+    de annorlunda?
+  status: open
+  analysis_type: time_split
+  params:
+    series: herr
+- id: Q137
+  source_finding: '034'
+  question: Vilka enskilda lag har störst absolut skillnad i hörnkonvertering hemma
+    jämfört med borta?
+  status: open
+  analysis_type: corner_home_away
+  params:
+    series: herr
+- id: Q138
+  source_finding: '034'
+  question: Korrelerar hög hörnkonvertering hemma med specifika taktiska system, exempelvis
+    höjdspel eller presspel?
+  status: open
+  analysis_type: corner_home_away
+  params:
+    series: herr
+- id: Q139
+  source_finding: '034'
+  question: Är skillnaden i antal hörnor per match (hemma vs. borta) konsekvent över
+    säsonger, eller varierar den?
+  status: open
+  analysis_type: corner_home_away
+  params:
+    series: herr
+- id: Q140
+  source_finding: '034'
+  question: Finns det säsongsmässig variation i hörneffektivitet som kan kopplas till
+    isbana eller väder?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q141
+  source_finding: '034'
+  question: Hur förhåller sig hörnkonverteringen till övriga standardsituationer (fristötar,
+    straffar) i samma hem/borta-uppdelning?
+  status: open
+  analysis_type: corner_home_away
+  params:
+    series: herr
+- id: Q142
+  source_finding: '035'
+  question: Finns det matchdata där defensiv formation vid hörnor är kodad, exempelvis
+    via video-taggning?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q143
+  source_finding: '035'
+  question: Skiljer sig hörnkonvertering beroende på vilken sida av planen hörnan
+    tas?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q144
+  source_finding: '035'
+  question: Hur förändras konverteringsfrekvensen om man separerar direkta hörnmål
+    från mål efter returspel?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q145
+  source_finding: '035'
+  question: Är hörnkonvertering korrelerad med laget som slår hörnorna snarare än
+    motståndets defensiv?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q146
+  source_finding: '035'
+  question: Påverkar matchläget (om laget leder eller förlorar) hur aggressivt bortalaget
+    försvarar hörnor?
+  status: open
+  analysis_type: corner_home_away
+  params:
+    series: herr
+- id: Q147
+  source_finding: '036'
+  question: Är skillnaden mellan hemma och borta större vid knappa ledningar (1–0)
+    än vid tydliga ledningar (3–0 eller mer)?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q148
+  source_finding: '036'
+  question: Hur ser vinstprocenten ut för bortalaget som leder vid halvtid uppdelat
+    per division eller ligans toppskikt kontra botten?
+  status: open
+  analysis_type: ht_lead_home_away
+  params:
+    series: herr
+- id: Q149
+  source_finding: '036'
+  question: Finns det en interaktionseffekt mellan hemmafördel och matchens tidpunkt
+    i säsongen — t.ex. slutspurten?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q150
+  source_finding: '036'
+  question: Hur förändras mönstret om bortalaget leder med mer än ett mål vid halvtid
+    — försvinner då hemmaplansfördelen?
+  status: open
+  analysis_type: ht_lead_home_away
+  params:
+    series: herr
+- id: Q151
+  source_finding: '036'
+  question: Stämmer samma mönster för dambandy, eller är hemma/borta-skillnaden annorlunda
+    i det seriesystemet?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q152
+  source_finding: '037'
+  question: Hur stor andel av 1–0-ledningarna vid halvtid slutar oavgjort jämfört
+    med fullständig vändning, när dessa hålls isär?
+  status: open
+  analysis_type: comeback_timing
+  params:
+    series: herr
+- id: Q153
+  source_finding: '037'
+  question: Ökar vändningsfrekvensen om det ledande lagets mål kom sent i första halvlek
+    (dvs. ett sent 1–0)?
+  status: open
+  analysis_type: comeback_timing
+  params:
+    series: herr
+- id: Q154
+  source_finding: '037'
+  question: Skiljer sig comeback-frekvensen beroende på om det är hemma- eller bortalaget
+    som leder vid halvtid?
+  status: open
+  analysis_type: ht_lead_home_away
+  params:
+    series: herr
+- id: Q155
+  source_finding: '037'
+  question: Hur ser mönstret ut för 2–0-ledningar vid halvtid — är de proportionellt
+    mer stabila?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q156
+  source_finding: '037'
+  question: Finns det säsongsmässig variation i comeback-frekvensen som kan kopplas
+    till exempelvis isunderlag eller spelschema?
+  status: open
+  analysis_type: comeback_timing
+  params:
+    series: herr
+- id: Q157
+  source_finding: 038
+  question: Hur ser comeback-frekvensen ut specificerat per ledningsstorlek — hur
+    ofta vinner det ledande laget respektive förlorar det?
+  status: open
+  analysis_type: comeback_timing
+  params:
+    series: herr
+- id: Q158
+  source_finding: 038
+  question: Skiljer sig sambandet beroende på vilket lag som leder — hemma- kontra
+    bortalagets halvtidsledning?
+  status: open
+  analysis_type: ht_lead_home_away
+  params:
+    series: herr
+- id: Q159
+  source_finding: 038
+  question: Påverkar matchens tidpunkt i seriespelet (tidig vs. sen säsong) hur ofta
+    ledningar hålls?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q160
+  source_finding: 038
+  question: Finns det skillnader i mönstret mellan topplaget och bottenlag — är svaga
+    lag sämre på att försvara halvtidsledningar?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q161
+  source_finding: 038
+  question: Hur förändras sannolikheterna om man delar upp på ledningens storlek i
+    relation till matchens totala målantal?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q162
+  source_finding: 039
+  question: Hur ser vinstprocenten vid halvtidsledning ut uppdelat per säsong — syns
+    en trend mot utjämning eller förstärkning av hemmafördelen?
+  status: open
+  analysis_type: ht_lead_home_away
+  params:
+    series: herr
+- id: Q163
+  source_finding: 039
+  question: Skiljer sig mönstret åt beroende på hur stor ledningen är i halvtid —
+    är en tvåmålsledning hemma mer säker än borta i samma utsträckning som en enmålsledning?
+  status: open
+  analysis_type: ht_lead_home_away
+  params:
+    series: herr
+- id: Q164
+  source_finding: 039
+  question: Finns det specifika lag som systematiskt vänder halvtidsledningar mot
+    sig, oavsett hemma eller borta?
+  status: open
+  analysis_type: ht_lead_home_away
+  params:
+    series: herr
+- id: Q165
+  source_finding: 039
+  question: Ser damernas serie ut på samma sätt, eller är hemmafördelen vid halvtidsledning
+    ett renodlat herrmönster?
+  status: open
+  analysis_type: ht_lead_home_away
+  params:
+    series: herr
+- id: Q166
+  source_finding: 039
+  question: Påverkar säsongens period — tidig, mitt eller sen — hur ofta halvtidsledningar
+    hålls?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q167
+  source_finding: '040'
+  question: Skiljer sig vinstprocenten beroende på hur stor halvtidsledningen är (1
+    mål vs. 3+ mål)?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q168
+  source_finding: '040'
+  question: Hur ofta vänder bortalaget en halvtidsledning för hemmalaget — och i vilka
+    matchsituationer sker det?
+  status: open
+  analysis_type: ht_lead_home_away
+  params:
+    series: herr
+- id: Q169
+  source_finding: '040'
+  question: Finns det säsongs- eller serienivåskillnader i hur stabila halvtidsledningar
+    är?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q170
+  source_finding: '040'
+  question: Hur ser matchens målmönster ut i andra halvlek när bortalaget leder vid
+    paus?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q171
+  source_finding: '040'
+  question: Påverkar arenastorlek eller publiknärvaro sannolikheten att hålla en halvtidsledning?
+  status: open
+  analysis_type: ht_lead_by_size
+  params:
+    series: herr
+- id: Q172
+  source_finding: '041'
+  question: Hur skiljer sig comeback-frekvensen och tajmingen när underläget vid halvtid
+    är exakt ett mål jämfört med två eller fler?
+  status: open
+  analysis_type: comeback_timing
+  params:
+    series: herr
+- id: Q173
+  source_finding: '041'
+  question: Finns det ett kritiskt tidsfönster — exempelvis minut 91–100 — där en
+    reducering statistiskt sett fördubblar sannolikheten för full comeback?
+  status: open
+  analysis_type: comeback_timing
+  params:
+    series: herr
+- id: Q174
+  source_finding: '041'
+  question: Påverkar matchens poängläge i tabellen (topplag vs. bottenlag) hur snabbt
+    det eftersläntrande laget reducerar?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q175
+  source_finding: '041'
+  question: Hur ser mönstret ut i damserie — reducerar lag där lika tidigt relativt
+    halvtid som i herrserien?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q176
+  source_finding: '041'
+  question: Finns det en tröskeleffekt där lag med tre eller fler måls underläge uppvisar
+    ett fundamentalt annorlunda beteende än lag med ett eller två måls underläge?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q177
+  source_finding: '042'
+  question: Håller mönstret i 96–100 min när man kontrollerar för om det bakåtliggande
+    laget faktiskt spelar med extra målvakt?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q178
+  source_finding: '042'
+  question: Är comeback-andelen i 96–100 min signifikant även efter Bonferroni-korrigering
+    för alla testade tidsfönster?
+  status: open
+  analysis_type: comeback_timing
+  params:
+    series: herr
+- id: Q179
+  source_finding: '042'
+  question: Skiljer sig tidsfönstrets effekt åt beroende på hur många mål bakåt det
+    bakåtliggande laget är?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q180
+  source_finding: '042'
+  question: Finns ett liknande mönster i dammatcherna, eller är det specifikt för
+    herrbandy?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q181
+  source_finding: '042'
+  question: Hur påverkas resultatet om definitionen av comeback ändras till enbart
+    matcher där lagen vinner (snarare än kvitterar)?
+  status: open
+  analysis_type: comeback_timing
+  params:
+    series: herr
+- id: Q182
+  source_finding: '043'
+  question: Vilka specifika lag är avsändare av comeback-inledande mål i intervallet
+    91–100?
+  status: open
+  analysis_type: comeback_timing
+  params:
+    series: herr
+- id: Q183
+  source_finding: '043'
+  question: Är det samma lag som konsekvent inleder comebacks, eller varierar det
+    från säsong till säsong?
+  status: open
+  analysis_type: comeback_timing
+  params:
+    series: herr
+- id: Q184
+  source_finding: '043'
+  question: Finns det spelare som är statistiskt överrepresenterade som målgörare
+    i comeback-situationer tidigt i 2H?
+  status: open
+  analysis_type: comeback_timing
+  params:
+    series: herr
+- id: Q185
+  source_finding: '043'
+  question: Hur ser bytesbeteendet ut i halvtidspausen för lag som lyckas komma tillbaka
+    — fler offensiva byten?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q186
+  source_finding: '043'
+  question: Är klustringen i 91–100 lika stark i damserien, eller är det ett herr-specifikt
+    mönster?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q187
+  source_finding: '044'
+  question: Är skillnaden i hörnmålsandel statistiskt signifikant över de 1 124 matcherna?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q188
+  source_finding: '044'
+  question: Varierar hörnomvandlingsgraden hemma/borta beroende på lagets serieplacering?
+  status: open
+  analysis_type: corner_home_away
+  params:
+    series: herr
+- id: Q189
+  source_finding: '044'
+  question: Hur ser fördelningen ut per säsong — har hemma/borta-mönstret förändrats
+    över tid?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr
+- id: Q190
+  source_finding: '044'
+  question: Finns det lag som avviker markant från genomsnittet i sin hörneffektivitet
+    hemma kontra borta?
+  status: open
+  analysis_type: corner_home_away
+  params:
+    series: herr
+- id: Q191
+  source_finding: '044'
+  question: Skiljer sig mönstret om man enbart tittar på matcher med jämna slutresultat?
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+- id: Q192
+  source_finding: '045'
+  question: Hur ser VSK:s hörnakonvertering ut per säsong — finns det en tydlig trend
+    kring namnbytet?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q193
+  source_finding: '045'
+  question: Finns det ett samband mellan antal hörnor per match och konverteringsgrad
+    på ligaövergripande nivå?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q194
+  source_finding: '045'
+  question: Hur förhåller sig hörnakonvertering till totalt målsnittet per match för
+    respektive lag?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q195
+  source_finding: '045'
+  question: Vilka lag har störst absolut bidrag från hörnmål till sin totala målproduktion?
+  status: open
+  analysis_type: corner_by_team
   params:
     series: herr

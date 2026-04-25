@@ -1,0 +1,109 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 034 — Bortalagets hörneffektivitet marginellt lägre"
+  description="Hemmalag sätter 11,6 % av sina hörnor i mål, bortalag 11,3 %. Skillnaden är liten men mönstret konsekvent över 1 124 matcher."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 034 · 25 april 2026</p>
+    <h1 class="finding-title">Bortalagets hörneffektivitet marginellt lägre<br>men konverteringsgraden följer hemmalaget tätt</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">11,6 %</span><span class="key-number__label">Hemma konvertering</span><span class="key-number__note">andel hörnor som blir mål</span></div>
+          <div class="key-number"><span class="key-number__value">11,3 %</span><span class="key-number__label">Borta konvertering</span><span class="key-number__note">andel hörnor som blir mål</span></div>
+          <div class="key-number"><span class="key-number__value">0,3 pp</span><span class="key-number__label">Skillnad i konvertering</span><span class="key-number__note">marginell fördel för hemmalag</span></div>
+          <div class="key-number"><span class="key-number__value">22,7 %</span><span class="key-number__label">Hörnmål / totalmål borta</span><span class="key-number__note">högre andel trots lägre konvertering</span></div>
+          <div class="key-number"><span class="key-number__value">1 124</span><span class="key-number__label">Antal matcher</span><span class="key-number__note">herrserien, aggregerat underlag</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Finding 014 visade att hörnor leder till mål i ungefär samma utsträckning oavsett om laget spelar hemma eller borta, sett till aggregerade siffror. Frågan här är om det döljer sig ett lagspecifikt mönster under ytan — alltså om enskilda lag systematiskt är effektivare på hörnor i en av de två kontexterna, eller om fördelningen är jämn.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på 1 124 matcher i herrserien. För varje match registrerades hörnor, mål och hörnmål separat för hemma- och bortalaget. Ur detta beräknades två nyckeltal per kontext: andelen av alla mål som kom via hörna (corner_goal_pct) samt andelen hörnor som direkt resulterade i mål (corner_conversion). Datamaterialet är identiskt med Finding 014 men analyserat uppdelat på matchkontext snarare än aggregerat.<ul><li>1 124 matcher, herrserien</li><li>Hemma: 10 358 hörnor, 1 198 hörnmål, 5 489 totalmål</li><li>Borta: 9 564 hörnor, 1 081 hörnmål, 4 764 totalmål</li></ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Hemmalag konverterar 11,6 % av sina hörnor till mål; bortalag 11,3 %. Andelen mål som härstammar från hörnor är 21,8 % hemma och 22,7 % borta. Bortalaget har alltså en något högre andel av sina mål via hörna trots lägre absolut konverteringsgrad, vilket förklaras av att bortalag totalt sett scorer färre mål och därmed är relativt sett mer beroende av hörnmål när de väl scoring sker.<table><thead><tr><th>Kontext</th><th>Hörnor</th><th>Hörnmål</th><th>Totalmål</th><th>Konvertering (%)</th><th>Andel av mål (%)</th></tr></thead><tbody><tr><td>Hemma</td><td>10 358</td><td>1 198</td><td>5 489</td><td>11,6</td><td>21,8</td></tr><tr><td>Borta</td><td>9 564</td><td>1 081</td><td>4 764</td><td>11,3</td><td>22,7</td></tr></tbody></table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Skillnaden i konverteringsgrad — 0,3 procentenheter — är i sammanhanget liten. Hemmalagen slår fler hörnor totalt (10 358 mot 9 564), men omvandlingstakten är nästan identisk. Det ger inget stöd för hypotesen att hemmafördelen tar sig uttryck just i hörneffektivitet; om en sådan fördel finns verkar den ligga i andra delar av spelet, exempelvis antal tillfällen eller målchansfrekvens utanför standardsituationer.</p>
+      <p>Den högre andelen hörnmål av totalmål hos bortalagen (22,7 % mot 21,8 %) är ett räknetekniskt fenomen snarare än ett taktiskt. Bortalag scorer färre mål per match generellt, och varje hörnmål väger därmed tyngre procentuellt. Det ska inte tolkas som att bortalag är bättre på att utnyttja hörnor — konverteringssiffran visar tvärtom en marginell nackdel.</p>
+      <p>På lagnivå, som frågan ursprungligen avsåg, saknas tillräcklig uppdelning i det presenterade datamaterialet för att avgöra om enskilda lag har systematiska hem/borta-skillnader i hörneffektivitet. Aggregatdata antyder att mönstret är relativt jämnt, men döljer potentiellt heterogenitet: ett lag som spelar med högt press hemma och defensivt borta kan ha vitt skilda profiler trots att snitten hamnar nära varandra.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Data är aggregerade per kontext, inte per lag — lagspecifika avvikelser kan inte identifieras ur detta underlag.</li>
+        <li>Hörnmål definieras inte explicit; det är oklart om mål efter returbollar från hörna räknas in.</li>
+        <li>Serienivå och spelår är inte specificerade, vilket försvårar kontroll för regelförändringar eller spelstilsförändringar över tid.</li>
+        <li>Antal matcher per lag varierar, vilket påverkar stabiliteten i lagspecifika estimat om sådana beräknas i nästa steg.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Vilka enskilda lag har störst absolut skillnad i hörnkonvertering hemma jämfört med borta?</li>
+        <li>Korrelerar hög hörnkonvertering hemma med specifika taktiska system, exempelvis höjdspel eller presspel?</li>
+        <li>Är skillnaden i antal hörnor per match (hemma vs. borta) konsekvent över säsonger, eller varierar den?</li>
+        <li>Finns det säsongsmässig variation i hörneffektivitet som kan kopplas till isbana eller väder?</li>
+        <li>Hur förhåller sig hörnkonverteringen till övriga standardsituationer (fristötar, straffar) i samma hem/borta-uppdelning?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("S001")} class="fact-ref">S001</a>
+        <a href={factHref("S013")} class="fact-ref">S013</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+034:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+034:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

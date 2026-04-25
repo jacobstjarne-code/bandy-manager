@@ -1,0 +1,109 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 035 — Hörnkonvertering skiljer knappt mellan hemma och borta"
+  description="Hemmalaget konverterar 11,6% av sina hörnor mot bortalagets 11,3%. Skillnaden är marginell och ger inget stöd för en stark defensiv effekt."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 035 · 25 april 2026</p>
+    <h1 class="finding-title">Hörnkonvertering skiljer knappt mellan hemma och borta<br>Defensiv uppställning mäts inte direkt</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">11,6%</span><span class="key-number__label">Hemmalagets hörnkonvertering</span><span class="key-number__note">andel hörnor som leder till mål</span></div>
+          <div class="key-number"><span class="key-number__value">11,3%</span><span class="key-number__label">Bortalagets hörnkonvertering</span><span class="key-number__note">andel hörnor som leder till mål</span></div>
+          <div class="key-number"><span class="key-number__value">0,3 pp</span><span class="key-number__label">Skillnad i konvertering</span><span class="key-number__note">ingen praktiskt meningsfull skillnad</span></div>
+          <div class="key-number"><span class="key-number__value">1 124</span><span class="key-number__label">Antal analyserade matcher</span><span class="key-number__note">svensk herrbandy</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi undrade om bortalagets val av defensiv uppställning – hur många spelare som placeras bakom bollen vid en hörna – påverkar hur ofta hemmalaget lyckas göra mål på sina hörnor. Hypotesen är att ett djupt försvar med många spelare i försvarszon borde reducera hemmalagets konverteringsfrekvens.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på Finding 014, som omfattar 1 124 matcher i svensk herrbandy. Datamängden innehåller hörnstatistik separerat på hemma- och bortaroller:<ul><li>Hemmalaget: 10 358 hörnor, 1 198 hörnmål, 5 489 totala mål</li><li>Bortalaget: 9 564 hörnor, 1 081 hörnmål, 4 764 totala mål</li></ul>Defensiv uppställning per situation är inte insamlad i källdatan – det finns ingen variabel för antal försvarsspelare bakom bollen vid varje given hörna.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Hemmalagets hörnkonvertering ligger på 11,6 procent mot bortalagets 11,3 procent – en skillnad på 0,3 procentenheter. Hörnmålens andel av totala mål är 21,8 procent för hemmalaget och 22,7 procent för bortalaget. Ingenting i dessa aggregat tyder på att den defensiva kontexten vid hörnor systematiskt missgynnar hemmalaget.<table><thead><tr><th>Roll</th><th>Hörnor</th><th>Hörnmål</th><th>Konvertering %</th><th>Hörnmål % av totalt</th></tr></thead><tbody><tr><td>Hemma</td><td>10 358</td><td>1 198</td><td>11,6</td><td>21,8</td></tr><tr><td>Borta</td><td>9 564</td><td>1 081</td><td>11,3</td><td>22,7</td></tr></tbody></table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Skillnaden på 0,3 procentenheter i konverteringsfrekvens är så liten att den i praktiken inte särskiljer hemma- och bortaroller när det gäller hörneffektivitet. Om bortalagets defensiva uppställning hade en systematisk dämpande effekt på hemmalagets hörnor borde vi förvänta oss ett tydligare gap – det syns inte här.</p>
+      <p>Det som komplicerar tolkningen är att datamängden saknar information om defensiv formation vid enskilda hörnor. Aggregaten döljer potentiellt stor variation: ett bortalag som konsekvent placerar åtta spelare bakom bollen kan ha mycket lägre konvertering mot sig än ett bortalag som försvarar med sex. Den observerade likheten kan alltså bero på att variationen tar ut varandra snarare än att defensiv uppställning saknar betydelse.</p>
+      <p>Den marginellt högre andelen hörnmål av totala mål för bortalaget (22,7 % mot 21,8 %) antyder att bortalaget i något högre grad är beroende av standardsituationer för att göra mål – inte att bortalaget är bättre på hörnor, utan att deras övriga anfallsspel genererar färre mål. Det är en indirekt observation om matchdynamik snarare än om defensiv taktik.</p>
+      <p>För att besvara grundfrågan krävs situationsdata: antal försvarsspelare bakom bollen, presslinje och formationsval per hörna. Utan den granulariteten kan vi konstatera att hemma- och bortaroller i sig inte förklarar hörnkonvertering – men frågan om defensiv uppställning förblir öppen.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Defensiv uppställning per hörna är inte registrerad i källdatan – grundfrågan kan inte besvaras direkt.</li>
+        <li>Aggregerade konverteringsprocent döljer situationsvariation som kan vara stor.</li>
+        <li>Matchurval täcker endast herrbandy och kan inte generaliseras till dam- eller ungdomsserier.</li>
+        <li>Hörnmål kan inkludera rekylar och situationskedjor som är svåra att attribuera renodlat till hörnan.</li>
+        <li>1 124 matcher ger robusta totaler men utesluter inte att enstaka säsonger med annorlunda taktiktrender påverkar snittet.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Finns det matchdata där defensiv formation vid hörnor är kodad, exempelvis via video-taggning?</li>
+        <li>Skiljer sig hörnkonvertering beroende på vilken sida av planen hörnan tas?</li>
+        <li>Hur förändras konverteringsfrekvensen om man separerar direkta hörnmål från mål efter returspel?</li>
+        <li>Är hörnkonvertering korrelerad med laget som slår hörnorna snarare än motståndets defensiv?</li>
+        <li>Påverkar matchläget (om laget leder eller förlorar) hur aggressivt bortalaget försvarar hörnor?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("S014")} class="fact-ref">S014</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+035:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+035:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

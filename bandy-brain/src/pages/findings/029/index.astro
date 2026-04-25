@@ -1,0 +1,104 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 029 — Mållagens ursprung utanför hörnor i damserien"
+  description="Vilka aktionstyper ligger bakom mål i damserien som inte kommer från hörnor? Data saknas – finding redovisar kunskapsluckan."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 029 · 25 april 2026</p>
+    <h1 class="finding-title">Mållagens ursprung utanför hörnor i damserien</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">0</span><span class="key-number__label">Levererade serier</span><span class="key-number__note">Dataobjektet var tomt</span></div>
+          <div class="key-number"><span class="key-number__value">0</span><span class="key-number__label">Aktionstyper med data</span><span class="key-number__note">Ingen klassificering tillgänglig</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi ville kartlägga via vilka typer av aktioner – fristötar, genombrott, kombinationsspel, returer eller annat – som mål skapas i damserien när hörnor utesluts som ursprung. Frågan är en naturlig följd av Finding 012, som undersökte hörnornas effektivitet, och syftar till att ge en fullständigare bild av målbildningen i serien.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen byggde på det strukturerade resultatet från Finding 012, som klassificerades som en corner_efficiency_comparison. Dataobjektet innehöll fältet series som en tom lista, vilket innebär att ingen seriespecifik data levererats till denna analys.<ul><li>Käll-finding: Finding 012 (corner_efficiency_comparison)</li><li>Levererade serier: 0</li><li>Levererade datapunkter om aktionstyper: 0</li></ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Det underliggande dataobjektet innehöll inga poster. Fältet <code>series</code> returnerades som en tom array (<code>[]</code>), vilket betyder att varken aktionstyper, målantal per typ, frekvenser eller andelar finns tillgängliga för damserien i detta underlag. Det går därmed inte att redovisa några faktiska siffror om hur mål utanför hörnor fördelar sig på olika aktioner.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>När ett dataunderlag är tomt är det i sig ett fynd: antingen har klassificeringen av aktionstyper inte genomförts för damserien, eller så har data inte exporterats korrekt från källsystemet. Båda scenarierna pekar på en lucka i datainsamlingen snarare än på frånvaro av fenomenet.</p>
+      <p>Frågan om aktionstyper är metodologiskt komplex. En aktion kan vara en direkt fristöt, ett inlägg efter genombrott, ett retursparksscenario eller ett uppspel via kombinationer – och gränserna mellan kategorierna är inte alltid skarpa. Utan ett överenskommet klassifikationsschema riskerar manuell kodning att bli inkonsekvent, vilket kan förklara varför data saknas.</p>
+      <p>Det finns alltså ingen grund för att dra slutsatser om damseriens målbild i detta avseende. En finding som saknar data bör inte ersättas med antaganden; den bör i stället användas för att precisera vilket datainsamlingsarbete som återstår.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Dataobjektet är tomt – inga faktiska observationer ligger till grund för analysen.</li>
+        <li>Det är okänt om bristen beror på utebliven datainsamling, ett exportfel eller att klassificeringen av aktionstyper ännu inte är definierad.</li>
+        <li>Finding 012 avgränsade sig till hörneffektivitet och kan ha lämnats utan aktionskodning för övriga mål.</li>
+        <li>Damserien kan ha andra registreringsrutiner än herrserien, vilket gör jämförelser osäkra även om data tillkommer.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Finns det ett befintligt klassifikationsschema för aktionstyper i det bakomliggande datasystemet?</li>
+        <li>Har mål utanför hörnor kodats manuellt i någon delsäsong som kan användas som pilotstudie?</li>
+        <li>Skiljer sig fördelningen av aktionstyper åt mellan dam- och herrserien om data samlas in?</li>
+        <li>Hur stor andel av alla mål i damserien härrör överhuvudtaget inte från hörnor?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("Finding 012")} class="fact-ref">Finding 012</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+029:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+029:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

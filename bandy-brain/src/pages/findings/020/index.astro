@@ -1,0 +1,107 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 020 — Dammatchdata saknas för jämförelse"
+  description="Finding 009 visar tydliga tidsmönster i herrbandy men damdata saknas — jämförelsen kan inte göras med befintligt underlag."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 020 · 25 april 2026</p>
+    <h1 class="finding-title">Dammatchdata saknas för jämförelse<br>Det inverterade mönstret är belagt enbart i herr</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">1 124</span><span class="key-number__label">Herrmatchar i underlaget</span><span class="key-number__note">Damdata saknas helt</span></div>
+          <div class="key-number"><span class="key-number__value">17,5 %</span><span class="key-number__label">Jämna matcher, 0–9 min (herr)</span><span class="key-number__note">Högsta intervallet i jämna matcher</span></div>
+          <div class="key-number"><span class="key-number__value">20,3 %</span><span class="key-number__label">Öppna matcher, 80–89 min (herr)</span><span class="key-number__note">Högsta intervallet i öppna matcher</span></div>
+          <div class="key-number"><span class="key-number__value">19,8 pp</span><span class="key-number__label">Differens ytterintervall (öppna herr)</span><span class="key-number__note">Skillnad mellan 0–9 och 80–89-minuten</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Finding 009 visade att jämna herrmatchar domineras av mål tidigt i matchen medan öppna matcher domineras av sena mål — ett inverterat tidsmönster beroende på marginalklass. Frågan är om samma fenomen går att belägga i dambandy, och om marginaluppdelningens procentuella fördelning liknar herrseriens.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Det analysresultat som ligger till grund för denna finding gäller uteslutande herrserien (series: 'herr') och omfattar 1 124 matcher. Ingen motsvarande dataset för dambandy har levererats till analysen.<ul><li>1 124 herrmatchar med målminutdata uppdelat per tiominutersintervall</li><li>Två matchkategorier: jämna matcher (vinnarmarginal ≤ 2 mål) och öppna matcher (vinnarmarginal ≥ 5 mål)</li><li>Ingen damseriesdata i underlaget</li></ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Herrseriens inverterade mönster är tydligt: i jämna matcher faller 17,5 % av målen under matchens första tiominut och andelen sjunker sedan monotont mot 6,9 % på 80–89-minuten. I öppna matcher är fördelningen omvänd — 0,5 % av målen faller under 0–9-minuten och andelen stiger till 20,3 % under 80–89-minuten. Damdata för motsvarande analys finns inte i det levererade underlaget och jämförelsen kan därför inte genomföras.<table><thead><tr><th>Minut</th><th>Jämna (herr)</th><th>Öppna (herr)</th><th>Jämna (dam)</th><th>Öppna (dam)</th></tr></thead><tbody><tr><td>0–9</td><td>17,5 %</td><td>0,5 %</td><td>–</td><td>–</td></tr><tr><td>40–49</td><td>10,9 %</td><td>13,8 %</td><td>–</td><td>–</td></tr><tr><td>80–89</td><td>6,9 %</td><td>20,3 %</td><td>–</td><td>–</td></tr></tbody></table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Det inverterade mönstret i herrbandy — att jämna matcher är front-loaded och öppna matcher är back-loaded — har en rimlig förklaring i matchdynamik: när ett lag leder stort mot slutet sänker motståndaren defensivt fokus och fler mål faller sent, medan jämna matcher präglas av tidig intensitet och ett mer slutet slutskede.</p>
+      <p>Om samma mekanismer gäller i dambandy är en öppen empirisk fråga. Speltempo, fysiska förutsättningar och taktiska konventioner skiljer sig delvis åt mellan herr- och damserier, och det är inte självklart att marginalklassernas tidsprofil är identisk.</p>
+      <p>En direkt jämförelse kräver ett damseriedataset med samma struktur: målminut, match-id och slutresultat. Utan det kan varken likheter eller skillnader beläggas, och frågan förblir obesvarad tills rätt data finns tillgänglig.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Inget damseriedataset har levererats — jämförelsen är inte genomförbar med befintligt underlag.</li>
+        <li>Marginalklassernas gränser (≤2 respektive ≥5) är satta för herrserien och kanske inte optimala för damserien om målfrekvensen skiljer sig.</li>
+        <li>Antalet jämna kontra öppna matcher i damserien är okänt och kan påverka statistisk tillförlitlighet.</li>
+        <li>Det är oklart om tiominutersintervall är rätt upplösning — dambandy spelas under samma tid men med möjligen annan målfrekvensfördelning.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Finns målminutdata för damseriens matcher i samma format som herrseriens?</li>
+        <li>Är målfrekvensen per match i damserien tillräckligt hög för att tiominutersintervall ska ge stabila skattningar?</li>
+        <li>Skiljer sig andelen jämna kontra öppna matcher strukturellt mellan herr- och damserien?</li>
+        <li>Skulle en grövre uppdelning (t.ex. tre perioder om 30 minuter) ge tydligare mönster i damdata?</li>
+        <li>Finns tidsserieskillnader inom damserien som kan störa en poolad analys?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("F009")} class="fact-ref">F009</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+020:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+020:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

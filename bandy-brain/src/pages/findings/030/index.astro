@@ -1,0 +1,106 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 030 — Hörneffektivitet och matchläge: data saknas"
+  description="Analysen av hörnmålsfrekvens kopplad till matchläge kunde inte genomföras – källdatan returnerade tomma serier."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 030 · 25 april 2026</p>
+    <h1 class="finding-title">Hörneffektivitet och matchläge: data saknas</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">0</span><span class="key-number__label">Serier med data</span><span class="key-number__note">Av förväntat >0 i källresultatet</span></div>
+          <div class="key-number"><span class="key-number__value">0</span><span class="key-number__label">Observationer</span><span class="key-number__note">Inga hörnhändelser med matchlägesdata returnerades</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi ville undersöka om ett lags situation i matchen – om man leder, är jämnt eller ligger under – påverkar sannolikheten att en hörna resulterar i mål, och om det mönstret skiljer sig åt mellan olika bandyserier. Tanken bakom frågan är att pressade lag kan spela hörnen annorlunda, exempelvis med fler spelare i anfallspositioner, medan ledande lag kanske prioriterar säkerhet.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen baseras på Finding 012, som i sin tur skulle innehålla händelsedata på matchnivå med information om hörntillfällen, matchställning vid varje hörna och eventuellt efterföljande mål. Det inkommande analysresultatet hade dock strukturen <code>type: corner_efficiency_comparison</code> med ett tomt <code>series</code>-fält, vilket innebär att ingen seriedata faktiskt skickades med.<ul><li>Förväntat innehåll: hörnhändelser per matchläge (ledning/jämnt/underläge) per serie.</li><li>Faktiskt innehåll: tom array – inga observationer att analysera.</li></ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Det finns inga kvantitativa fynd att redovisa. Datakällan returnerade ett tomt resultat och inga siffror om hörneffektivitet per matchläge eller serie finns tillgängliga i detta underlag. Utan observationer kan inga frekvenser, andelar eller jämförelser beräknas.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Att datakällan är tom kan bero på flera saker: hörnhändelser kan sakna koppling till matchställningsdata i databasen, Finding 012 kan ha körts mot ett tomt dataurval, eller pipeline-steget som klassificerar matchläge per händelse kan ha ett fel som gör att alla rader filtreras bort.</p>
+      <p>Det är metodologiskt viktigt att notera att frågan i sig är välformulerad och analytiskt relevant. Matchlägets påverkan på taktiska val – inklusive hur hörn utförs och besätts – är ett känt fenomen i bollsporter generellt. Att svara på frågan kräver dock att varje hörnhändelse kan länkas till exakt matchställning vid tidpunkten för hörnan, vilket ställer krav på granularitet i händelseloggen.</p>
+      <p>Ingen slutsats om huruvida ledande eller underlägsna lag är mer eller mindre effektiva på hörn kan dras från detta underlag. Resultatet är tekniskt null, inte noll effektivitet.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Källdatan innehöll inga observationer – alla slutsatser om faktiska mönster är omöjliga att dra.</li>
+        <li>Det är okänt om tomma serier beror på ett tekniskt fel, ett tomt dataurval eller en strukturell brist i händelsedatabasen.</li>
+        <li>Matchläge per händelse kräver tidsstämplad ställningsdata, vilket kan saknas i källsystemet.</li>
+        <li>Finding 012 kan ha körts mot ett begränsat säsongsurval som råkade vara tomt.</li>
+        <li>Utan serienamn går det inte att bedöma om problemet är generellt eller serie-specifikt.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Innehåller händelsedatabasen matchställning (hemma-borta-mål) per tidsstämpel för varje hörnhändelse?</li>
+        <li>Kan Finding 012 köras om med explicit angivet säsongsintervall och serie för att verifiera att data finns?</li>
+        <li>Finns det en validerad datakälla för hörnhändelser med matchkontext som kan användas som alternativ ingång?</li>
+        <li>Om data väl finns: skiljer sig hörneffektiviteten statistiskt signifikant mellan matchlägen, eller är variansen för stor för att dra slutsatser?</li>
+        <li>Går det att bryta ned analysen per period (första/andra halvlek) utöver matchläge, för att separera trötthet från taktisk anpassning?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("Finding 012")} class="fact-ref">Finding 012</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+030:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+030:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>
