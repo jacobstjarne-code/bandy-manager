@@ -315,4 +315,16 @@ export interface SaveGame {
   pointDeductions?: Record<string, number>
   // Point deductions applied at next season start
   pendingPointDeductions?: Record<string, number>
+
+  // Sprint 25h — Lager 2: Egna beslut med risk
+  wageBudgetOverrunRounds?: number     // consecutive rounds above wageBudget
+  wageBudgetWarningSent?: boolean      // first Licensnämnden warning sent
+  riskySponsorContract?: {
+    sponsorId: string
+    riskMaturityRound: number          // earliest round when risk can fire
+    acceptedRound: number
+    season: number
+  }
+  riskySponsorOfferSentThisSeason?: number  // season when last offer was generated
+  patronWithdrawnSeason?: number       // managed club mecenat locked until this season + 2
 }

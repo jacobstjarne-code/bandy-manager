@@ -551,6 +551,26 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   let updatedMecenater = eventResult.updatedMecenater
   newInboxItems.push(...eventResult.inboxItems)
 
+  // ── 2B: Risky sponsor risk maturation check ───────────────────────────────
+  if (game.riskySponsorContract && game.riskySponsorContract.season === game.currentSeason) {
+    const rc = game.riskySponsorContract
+    if (nextMatchday >= rc.riskMaturityRound && localRand() < 0.25) {
+      const matId = `risky_sponsor_exposed_${rc.sponsorId}`
+      if (!game.inbox.some(i => i.id === matId)) {
+        newInboxItems.push({
+          id: matId,
+          date: newDate,
+          type: InboxItemType.BoardFeedback,
+          title: '🚨 Borgvik Bygg AB: Skatteverket-granskning publik',
+          body: 'Borgvik Bygg AB:s Skatteverket-granskning har blivit offentlig. Styrelsen kräver att ni avslutar avtalet omedelbart. Ni betalar tillbaka en säsongs intäkter.',
+          isRead: false,
+        } as InboxItem)
+        // Remove the risky sponsor from sponsors list + claw back income
+        // (handled in SaveGame assembly below)
+      }
+    }
+  }
+
   // ── Youth processing (P19 sim, mentor effects, academy events, rep delta) ─
   const youthResult = processYouth(game, availabilityUpdatedPlayers, nextMatchday, newDate, baseSeed, localRand)
   newInboxItems.push(...youthResult.inboxItems)
@@ -901,6 +921,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     scandalHistory: scandalResult.updatedScandalHistory,
     pointDeductions: scandalResult.pointDeductions,
     pendingPointDeductions: scandalResult.pendingPointDeductions,
+    // Lager 2 state
+    wageBudgetOverrunRounds: eventResult.wageBudgetOverrunRounds,
+    wageBudgetWarningSent: eventResult.wageBudgetWarningSent,
+    riskySponsorOfferSentThisSeason: eventResult.riskySponsorOfferSentThisSeason,
+    patronWithdrawnSeason: eventResult.patronWithdrawnSeason,
   }
 
   // Append market value change notifications to inbox

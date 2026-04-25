@@ -18,6 +18,11 @@ export interface EventProcessorResult {
   inboxItems: InboxItem[]
   updatedMecenater: NonNullable<SaveGame['mecenater']>
   lastEconomicStressRound: number | undefined
+  // Lager 2 state updates
+  wageBudgetOverrunRounds: number
+  wageBudgetWarningSent: boolean
+  riskySponsorOfferSentThisSeason: number | undefined
+  patronWithdrawnSeason: number | undefined
 }
 
 export function processGameEvents(
@@ -28,6 +33,7 @@ export function processGameEvents(
   localRand: () => number,
 ): EventProcessorResult {
   const inboxItems: InboxItem[] = []
+  let patronWithdrawnSeason: number | undefined = game.patronWithdrawnSeason
 
   const newEvents = generatePostAdvanceEvents(game, newBids, nextMatchday, localRand, justCompletedManagedFixture ?? undefined)
   const communityEvents = generateEvents(game, nextMatchday, localRand)
@@ -118,9 +124,147 @@ export function processGameEvents(
         } as InboxItem)
       }
     }
+
+    // ── 2C: Mecenat permanent withdrawal (happiness < 20, 3+ ignorerade krav) ──
+    if (mec.happiness < 20 && mec.demands.length >= 3) {
+      const withdrawalId = `mecenat_withdrawal_${mec.id}_${game.currentSeason}`
+      const alreadyWithdrawn = game.pendingEvents?.some(e => e.id === withdrawalId) ||
+        game.inbox.some(i => i.id === withdrawalId)
+      if (!alreadyWithdrawn) {
+        // Financial penalty based on wealth tier (estimated from happiness × wealth proxy)
+        const wealthLevel = (mec.happiness < 10) ? 3 : (mec.happiness < 15) ? 2 : 1
+        const penalty = wealthLevel === 3 ? -1_000_000 : wealthLevel === 2 ? -600_000 : -300_000
+        const penaltyText = Math.abs(penalty).toLocaleString('sv-SE')
+
+        const withdrawalEvent: GameEvent = {
+          id: withdrawalId,
+          type: 'mecenatWithdrawal',
+          title: `${mec.name} drar sig ur`,
+          body: `${mec.name} har tröttnat. Han lämnar och kräver tillbaka det han investerat — ${penaltyText} kr dras från kassan. Det kan dröja länge innan nästa mecenat dyker upp.`,
+          choices: [
+            {
+              id: 'acknowledge',
+              label: 'Noterat',
+              effect: {
+                type: 'finance',
+                amount: penalty,
+              },
+            },
+          ],
+          resolved: false,
+        }
+        gameEvents.push(withdrawalEvent)
+        updatedMecenater = updatedMecenater.map((m, idx) =>
+          idx === i ? { ...m, isActive: false, happiness: 0 } : m,
+        )
+        patronWithdrawnSeason = game.currentSeason
+      }
+    }
   }
 
-  return { gameEvents, inboxItems, updatedMecenater, lastEconomicStressRound }
+  // ── 2A: Wage budget overrun tracking ──────────────────────────────────────
+  let wageBudgetOverrunRounds = game.wageBudgetOverrunRounds ?? 0
+  let wageBudgetWarningSent = game.wageBudgetWarningSent ?? false
+  if (managedClub) {
+    const totalSalary = game.players
+      .filter(p => p.clubId === game.managedClubId)
+      .reduce((s, p) => s + (p.salary ?? 0), 0)
+    const weeklyWageEquivalent = Math.round(totalSalary / 4)
+    if (weeklyWageEquivalent > managedClub.wageBudget) {
+      wageBudgetOverrunRounds++
+      // After 5 rounds: Licensnämnden warning
+      if (wageBudgetOverrunRounds >= 5 && !wageBudgetWarningSent) {
+        wageBudgetWarningSent = true
+        const warnId = `inbox_wage_overrun_warn_${game.currentSeason}`
+        if (!game.inbox.some(i => i.id === warnId)) {
+          inboxItems.push({
+            id: warnId,
+            date: game.currentDate,
+            type: InboxItemType.LicenseReview,
+            title: '⚠️ Licensnämnden: Lönekostnad',
+            body: 'Licensnämnden noterar att era lönekostnader överstiger den godkända lönebudgeten. Om överskridandet fortsätter i ytterligare fem omgångar tillkommer poängavdrag.',
+            isRead: false,
+          } as InboxItem)
+        }
+      }
+      // After 10 rounds: point deduction (stored in pendingPointDeductions for next season)
+      if (wageBudgetOverrunRounds >= 10) {
+        const deductId = `inbox_wage_deduct_${game.currentSeason}`
+        if (!game.inbox.some(i => i.id === deductId)) {
+          inboxItems.push({
+            id: deductId,
+            date: game.currentDate,
+            type: InboxItemType.LicenseReview,
+            title: '🚨 Licensnämnden: Poängavdrag',
+            body: 'Lönekostnaderna har överskridit budgeten i 10 omgångar. Tre poängs avdrag tillämpas nästa säsong.',
+            isRead: false,
+          } as InboxItem)
+        }
+      }
+    } else {
+      // Back within budget — reset
+      wageBudgetOverrunRounds = 0
+      wageBudgetWarningSent = false
+    }
+  }
+
+  // ── 2B: Risky sponsor offer (1-2x per season, at rounds 8 or 16) ──────────
+  let riskySponsorOfferSentThisSeason = game.riskySponsorOfferSentThisSeason
+  const triggerRiskyOffer = (nextMatchday === 8 || nextMatchday === 16) &&
+    riskySponsorOfferSentThisSeason !== game.currentSeason &&
+    localRand() < 0.4  // 40% chance at each trigger round → ~1-2x per season
+  if (triggerRiskyOffer) {
+    riskySponsorOfferSentThisSeason = game.currentSeason
+    const offerId = `risky_sponsor_${game.currentSeason}_${nextMatchday}`
+    const riskySponsor = {
+      id: offerId,
+      name: 'Borgvik Bygg AB',
+      category: 'Bygg & Fastighet',
+      weeklyIncome: 2_000,
+      contractRounds: 44,  // 2 seasons
+      signedRound: nextMatchday,
+      tier: 'risky' as const,
+      triggeredBy: 'risky_offer' as const,
+      triggeredSeason: game.currentSeason,
+      expiresSeason: game.currentSeason + 2,
+      riskMaturityRound: nextMatchday + 6,
+    }
+    const riskyEvent: GameEvent = {
+      id: offerId,
+      type: 'riskySponsorOffer',
+      title: 'Sponsorerbjudande: Borgvik Bygg AB',
+      body: 'Borgvik Bygg AB erbjuder 2 000 kr/omgång i marknadsavtal. Notera: företaget är föremål för en Skatteverkets-granskning. Det kan bli komplicerat om granskningen leder till åtal.',
+      choices: [
+        {
+          id: 'accept',
+          label: 'Acceptera (2 000 kr/omg)',
+          subtitle: '⚠️ Risk: Skatteverket-granskning kan bli publik',
+          effect: {
+            type: 'acceptSponsor',
+            sponsorData: JSON.stringify(riskySponsor),
+          },
+        },
+        {
+          id: 'reject',
+          label: 'Avböj',
+          effect: { type: 'noOp' },
+        },
+      ],
+      resolved: false,
+    }
+    gameEvents.push(riskyEvent)
+  }
+
+  return {
+    gameEvents,
+    inboxItems,
+    updatedMecenater,
+    lastEconomicStressRound,
+    wageBudgetOverrunRounds,
+    wageBudgetWarningSent,
+    riskySponsorOfferSentThisSeason,
+    patronWithdrawnSeason,
+  }
 }
 
 // ── Mecenat spawn ─────────────────────────────────────────────────────────
@@ -139,6 +283,11 @@ export function applyMecenatSpawn(
     currentLeagueRound < 6 ||
     currentLeagueRound > 18
   ) {
+    return { updatedMecenater, newEvents: [] }
+  }
+  // 2C: Lock out new mecenater for 2 seasons after a patron withdrawal
+  const withdrawnSeason = game.patronWithdrawnSeason
+  if (withdrawnSeason !== undefined && game.currentSeason <= withdrawnSeason + 2) {
     return { updatedMecenater, newEvents: [] }
   }
   const cs = game.communityStanding ?? 50

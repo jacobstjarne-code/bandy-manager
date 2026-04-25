@@ -36,6 +36,9 @@ export type GameEventType =
   | 'criticalEconomy'
   | 'schoolAssignment'
   | 'mecenatDinner'
+  | 'refereeMeeting'
+  | 'riskySponsorOffer'
+  | 'mecenatWithdrawal'
 
 export interface EventChoice {
   id: string
@@ -88,7 +91,9 @@ export interface EventEffect {
     | 'resolveEconomicCrisis'
     | 'saveSchoolAssignment'
     | 'scoutBudget'
+    | 'refereeRelationship'
   value?: number
+  refereeId?: string
   amount?: number
   targetPlayerId?: string
   targetClubId?: string
@@ -147,6 +152,7 @@ export interface GameEvent {
   relatedPlayerId?: string
   relatedClubId?: string
   relatedBidId?: string
+  relatedFixtureId?: string
   sponsorData?: string
   resolved: boolean
   followUpText?: string      // Simple follow-up inbox text (3-5 matchdays later)

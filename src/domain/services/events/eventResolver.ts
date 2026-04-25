@@ -13,6 +13,8 @@ export function resolveEvent(
   rand: () => number = Math.random,
 ): SaveGame {
   const event = (game.pendingEvents ?? []).find(e => e.id === eventId)
+    ?? (game.pendingPressConference?.id === eventId ? game.pendingPressConference : undefined)
+    ?? (game.pendingRefereeMeeting?.id === eventId ? game.pendingRefereeMeeting : undefined)
   if (!event) return game
 
   const choice = event.choices.find(c => c.id === choiceId)
@@ -26,6 +28,45 @@ export function resolveEvent(
         ...game,
         pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
         sponsors: [...(game.sponsors ?? []), sponsor],
+      }
+    }
+    return {
+      ...game,
+      pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
+    }
+  }
+
+  // 2B: Risky sponsor offer — accept adds sponsor AND stores risk contract
+  if (event.type === 'riskySponsorOffer') {
+    if (choiceId === 'accept') {
+      const rawData = choice.effect.sponsorData
+      if (rawData) {
+        try {
+          const sponsorData = JSON.parse(rawData)
+          const sponsor: Sponsor = {
+            id: sponsorData.id,
+            name: sponsorData.name,
+            category: sponsorData.category,
+            weeklyIncome: sponsorData.weeklyIncome,
+            contractRounds: sponsorData.contractRounds,
+            signedRound: sponsorData.signedRound,
+            tier: sponsorData.tier,
+            triggeredBy: sponsorData.triggeredBy,
+            triggeredSeason: sponsorData.triggeredSeason,
+            expiresSeason: sponsorData.expiresSeason,
+          }
+          return {
+            ...game,
+            pendingEvents: game.pendingEvents.filter(e => e.id !== eventId),
+            sponsors: [...(game.sponsors ?? []), sponsor],
+            riskySponsorContract: {
+              sponsorId: sponsor.id,
+              riskMaturityRound: sponsorData.riskMaturityRound,
+              acceptedRound: sponsorData.signedRound,
+              season: game.currentSeason,
+            },
+          }
+        } catch {}
       }
     }
     return {
@@ -741,6 +782,43 @@ export function resolveEvent(
       }
       break
     }
+    case 'refereeRelationship': {
+      const delta = effect.value ?? 0
+      const refId = effect.refereeId
+      if (refId && (updatedGame.refereeRelations !== undefined)) {
+        const existing = updatedGame.refereeRelations.find(r => r.refereeId === refId)
+        if (existing) {
+          const newReaction = Math.max(-2, Math.min(2, existing.clubReaction + delta)) as -2 | -1 | 0 | 1 | 2
+          updatedGame = {
+            ...updatedGame,
+            refereeRelations: updatedGame.refereeRelations.map(r =>
+              r.refereeId === refId ? { ...r, clubReaction: newReaction } : r
+            ),
+          }
+        } else {
+          // First time — create relation
+          const newReaction = Math.max(-2, Math.min(2, delta)) as -2 | -1 | 0 | 1 | 2
+          updatedGame = {
+            ...updatedGame,
+            refereeRelations: [
+              ...(updatedGame.refereeRelations ?? []),
+              {
+                refereeId: refId,
+                lastMatchSeason: updatedGame.currentSeason,
+                lastMatchRound: 0,
+                totalMatches: 0,
+                totalCardsGiven: 0,
+                totalPenaltiesGiven: 0,
+                clubReaction: newReaction,
+              },
+            ],
+          }
+        }
+      }
+      // Also clear pending referee meeting
+      updatedGame = { ...updatedGame, pendingRefereeMeeting: undefined }
+      break
+    }
     case 'openNegotiation':
     default:
       break
@@ -887,6 +965,13 @@ export function resolveEvent(
         journalist: updatedJournalist,
         inbox: [article, ...updatedGame.inbox],
       }
+    }
+  }
+
+  // Special: refereeMeeting — clear pendingRefereeMeeting
+  if (event.type === 'refereeMeeting') {
+    if (updatedGame.pendingRefereeMeeting?.id === eventId) {
+      updatedGame = { ...updatedGame, pendingRefereeMeeting: undefined }
     }
   }
 
