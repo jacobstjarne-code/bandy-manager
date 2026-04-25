@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import { loadFacts } from '../lib/facts';
 
 const facts = loadFacts();
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const statsCount = facts.filter(f => f.category === 'stats').length;
 const rulesCount = facts.filter(f => f.category === 'rules').length;
 ---
@@ -18,7 +19,7 @@ const rulesCount = facts.filter(f => f.category === 'rules').length;
         epistemisk asymmetri — och den ger svar på frågor som verklig serie
         aldrig hinner samla data för.
       </p>
-      <a href="/findings/" class="hero__cta">Läs findings →</a>
+      <a href={`${base}/findings/`} class="hero__cta">Läs findings →</a>
     </div>
   </section>
 
@@ -33,7 +34,7 @@ const rulesCount = facts.filter(f => f.category === 'rules').length;
         <div class="finding-card">
           <p class="finding-card__number">Finding 001 · 25 april 2026</p>
           <h3 class="finding-card__title">
-            <a href="/findings/001/">
+            <a href={`${base}/findings/001/`}>
               Halvtidsledning i bandy är starkare än i fotboll
             </a>
           </h3>
@@ -44,7 +45,7 @@ const rulesCount = facts.filter(f => f.category === 'rules').length;
             än i fotboll.
           </p>
           <p style="margin-top: 1rem; font-family: var(--font-ui); font-size: 0.85rem;">
-            <a href="/findings/001/">Läs finding →</a>
+            <a href={`${base}/findings/001/`}>Läs finding →</a>
           </p>
         </div>
       </section>
@@ -58,7 +59,7 @@ const rulesCount = facts.filter(f => f.category === 'rules').length;
           och {statsCount} statistiska parametrar kalibrerade mot Bandygrytans matchdatabas (2019–2026).
         </p>
         <p style="font-family: var(--font-ui); font-size: 0.85rem; margin-top: 0.75rem;">
-          <a href="/sources/">Bläddra i källorna →</a>
+          <a href={`${base}/sources/`}>Bläddra i källorna →</a>
         </p>
       </section>
 

@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <Base
@@ -75,7 +76,7 @@ import Base from '../../layouts/Base.astro';
         Alla facts som findings bygger på är strukturerade och offentliga.
         Varje fact har ett ID, ett påstående, en källa, ett verifieringsdatum
         och invarianter som kontrolleras automatiskt.
-        Se <a href="/sources/">källförteckningen</a>.
+        Se <a href={`${base}/sources/`}>källförteckningen</a>.
       </p>
 
       <h2>Vem som gör det</h2>

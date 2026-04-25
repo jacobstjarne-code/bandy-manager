@@ -25,13 +25,14 @@ interface Props {
 
 const { fact } = Astro.props;
 const catLabel = CATEGORY_LABELS[fact.category] ?? fact.category;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 function relatedFactHref(relId: string): string {
   const catChar = relId[0].toLowerCase();
   const num = relId.slice(1).replace(/^0+/, '');
   const slugMap: Record<string, string> = { r: 'r', s: 's', d: 'd', w: 'w', h: 'h' };
   const slug = slugMap[catChar] ?? catChar;
-  return `/sources/${slug}/${num}`;
+  return `${base}/sources/${slug}/${num}`;
 }
 ---
 
@@ -41,7 +42,7 @@ function relatedFactHref(relId: string): string {
 >
   <div class="fact-detail">
 
-    <a href="/sources/" class="back-link">← Alla källor</a>
+    <a href={`${base}/sources/`} class="back-link">← Alla källor</a>
 
     <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
       <span class={`tag tag--${fact.category === 'design_principles' ? 'design' : fact.category === 'world_canon' ? 'world' : fact.category}`}>

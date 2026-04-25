@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <Base title="Findings">
@@ -18,7 +19,7 @@ import Base from '../../layouts/Base.astro';
         <div class="finding-card">
           <p class="finding-card__number">Finding 001 · 25 april 2026</p>
           <h2 class="finding-card__title">
-            <a href="/findings/001/">
+            <a href={`${base}/findings/001/`}>
               Halvtidsledning i bandy är starkare än i fotboll
             </a>
           </h2>

@@ -119,7 +119,8 @@ export function factHref(factId: string): string {
   };
   const catSlug = slugMap[catChar] ?? catChar;
   const numId = factId.slice(1).replace(/^0+/, '');
-  return `/sources/${catSlug}/${numId}`;
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+  return `${base}/sources/${catSlug}/${numId}`;
 }
 
 export function getFactsByCategory(category: string): Fact[] {
@@ -152,9 +153,10 @@ export function extractFactRefs(text: string): string[] {
  * Replace [S013] patterns in text with HTML links to the fact detail page.
  */
 export function linkifyFactRefs(text: string): string {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   return text.replace(
     /\[([RSDWH]\d{3})\]/g,
-    (_, id) => `<a href="/sources/${id.toLowerCase().replace(/^([rsdwh])(\d+)/, '$1/$2')}" class="fact-ref" title="Visa fact ${id}">${id}</a>`
+    (_, id) => `<a href="${base}/sources/${id.toLowerCase().replace(/^([rsdwh])(\d+)/, '$1/$2')}" class="fact-ref" title="Visa fact ${id}">${id}</a>`
   );
 }
 
