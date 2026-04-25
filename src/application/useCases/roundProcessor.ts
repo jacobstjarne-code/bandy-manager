@@ -15,7 +15,6 @@ import {
   createRecoveryItem,
 } from '../../domain/services/inboxService'
 import { updateAllMarketValues } from '../../domain/services/marketValueService'
-import { executeTransfer } from '../../domain/services/transferService'
 import { generateWeeklyDecision } from '../../domain/services/weeklyDecisionService'
 import { evaluateBoard, generateBoardMessage } from '../../domain/services/boardService'
 import { mulberry32 } from '../../domain/utils/random'
@@ -29,26 +28,25 @@ import { updatePlayerMatchStats } from './processors/statsProcessor'
 import { applyRoundDevelopment } from '../../domain/services/playerDevelopmentService'
 import { processPlayoffRound } from './processors/playoffProcessor'
 import { processCupRound } from './processors/cupProcessor'
-import { appendFinanceLog, applyFinanceChange } from '../../domain/services/economyService'
+import { appendFinanceLog } from '../../domain/services/economyService'
 import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/services/playerAvailabilityService'
 import { updateTrainerArc } from '../../domain/services/trainerArcService'
 import { checkInObjectives } from '../../domain/services/boardObjectiveService'
-import { generateMecenat, generateMecenatIntroEvent } from '../../domain/services/mecenatService'
 import { processEconomy } from './processors/economyProcessor'
 import { processCommunity } from './processors/communityProcessor'
 import { processScouts } from './processors/scoutProcessor'
-import { processTransferBids, processLoans } from './processors/transferProcessor'
+import { processTransferBids, processLoans, executeAcceptedTransfers } from './processors/transferProcessor'
 import { processSponsors } from './processors/sponsorProcessor'
 import { checkContextualSponsors, applyOneTimeKommunstod } from '../../domain/services/contextualSponsorService'
 import { calculateClubEra, eraLabel } from '../../domain/services/clubEraService'
 import { simulateRound } from './processors/matchSimProcessor'
 import { processYouth } from './processors/youthProcessor'
 import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
-import { generatePreMatchOpponentQuote } from '../../domain/services/opponentManagerService'
 import { generateAwayTrip } from '../../domain/services/awayTripService'
-import { processNarrative } from './processors/narrativeProcessor'
+import { processNarrative, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
 import { processMedia } from './processors/mediaProcessor'
-import { processGameEvents } from './processors/eventProcessor'
+import { processGameEvents, applyMecenatSpawn } from './processors/eventProcessor'
+import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
 import { applyRipples, mergeRippleDeltas } from '../../domain/services/rippleEffectService'
 
 export type { AdvanceResult }
@@ -215,27 +213,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   newInboxItems.push(...milestoneInboxItems)
 
   // ── WEAK-006/DEV-009: Captain morale cascade ──────────────────────────────
-  if (game.captainPlayerId) {
-    const captain = finalPlayers.find(p => p.id === game.captainPlayerId)
-    if (captain && captain.morale < 40) {
-      const alreadySentId = `inbox_captain_crisis_r${nextMatchday}_${game.currentSeason}`
-      const alreadySent = newInboxItems.some(i => i.id === alreadySentId) || game.inbox.some(i => i.id === alreadySentId)
-      if (!alreadySent) {
-        finalPlayers = finalPlayers.map(p => {
-          if (p.clubId !== game.managedClubId || p.id === captain.id) return p
-          return { ...p, morale: Math.max(0, p.morale - 5) }
-        })
-        newMoments.push({
-          id: alreadySentId,
-          source: 'captain_crisis',
-          matchday: nextMatchday,
-          season: game.currentSeason,
-          title: 'Omklädningsrummet är tyst',
-          body: `Kapten ${captain.firstName} ${captain.lastName} har inte sagt mycket denna vecka. Det märks i hela truppen.`,
-          subjectPlayerId: captain.id,
-        })
-      }
-    }
+  {
+    const cascadeResult = applyCaptainMoraleCascade(finalPlayers, game, nextMatchday, newInboxItems)
+    finalPlayers = cascadeResult.updatedPlayers
+    if (cascadeResult.captainCrisisMoment) newMoments.push(cascadeResult.captainCrisisMoment)
   }
 
   // ── Per-round development for managed club players ────────────────────────
@@ -478,53 +459,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   ).values()]
 
   // Derby notification: if next matchday has a derby for managed club
-  const remainingScheduled = finalAllFixtures.filter(f => f.status === FixtureStatus.Scheduled)
-  if (remainingScheduled.length > 0) {
-    const upcomingMatchday = Math.min(...remainingScheduled.map(f => f.matchday))
-    const upcomingManagedFixture = remainingScheduled.find(
-      f => f.matchday === upcomingMatchday &&
-      (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-    )
-
-    if (upcomingManagedFixture) {
-      const derbyRivalry = getRivalry(upcomingManagedFixture.homeClubId, upcomingManagedFixture.awayClubId)
-      if (derbyRivalry) {
-        const opponentClubId = upcomingManagedFixture.homeClubId === game.managedClubId
-          ? upcomingManagedFixture.awayClubId
-          : upcomingManagedFixture.homeClubId
-        const opponentClub = game.clubs.find(c => c.id === opponentClubId)
-        const managedClub = game.clubs.find(c => c.id === game.managedClubId)
-        const alreadySent = game.inbox.some(
-          item => item.id === `inbox_derby_${upcomingManagedFixture.id}`
-        )
-        if (!alreadySent) {
-          newInboxItems.push({
-            id: `inbox_derby_${upcomingManagedFixture.id}`,
-            date: game.currentDate,
-            type: InboxItemType.Derby,
-            title: `🔥 Derby nästa omgång! ${derbyRivalry.name}`,
-            body: `${managedClub?.name ?? 'Ni'} möter ${opponentClub?.name ?? 'motståndaren'} i ${derbyRivalry.name}. Intensiteten kommer vara hög.`,
-            isRead: false,
-          })
-
-          // DREAM-001: pre-match opponent manager quote
-          if (opponentClub) {
-            const opponentQuote = generatePreMatchOpponentQuote(opponentClub, true)
-            if (opponentQuote) {
-              newInboxItems.push({
-                id: `inbox_prematch_quote_${upcomingManagedFixture.id}`,
-                date: game.currentDate,
-                type: InboxItemType.MediaEvent,
-                title: `Inför derbyt: ${opponentClub.shortName ?? opponentClub.name}`,
-                body: opponentQuote,
-                isRead: false,
-              })
-            }
-          }
-        }
-      }
-    }
-  }
+  newInboxItems.push(...processUpcomingDerbyNotification(finalAllFixtures, game))
 
   const marketUpdatedPlayers = updateAllMarketValues(
     updateLowMoraleDays(finalPlayers),
@@ -748,117 +683,21 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // Apply accepted transfer bids to final player/club state
   const prevBids = game.transferBids ?? []
-  let postTransferPlayers = loanAndRegenPlayers
-  let postTransferClubs = regenUpdatedClubs
-  let sponsorNetworkMoodDelta = 0
-  for (const bid of resolvedBids) {
-    if (bid.direction !== 'outgoing' || bid.status !== 'accepted') continue
-    const wasPending = prevBids.find(b => b.id === bid.id)?.status === 'pending'
-    if (!wasPending) continue
-    const tmpGame = { ...preEventGame, players: postTransferPlayers, clubs: postTransferClubs }
-    const result = executeTransfer(tmpGame, bid)
-    postTransferPlayers = result.players
-    postTransferClubs = result.clubs
-
-    // Nemesis no more — om vi just värvat en nemesis-spelare
-    const nemesis = updatedNemesisTracker[bid.playerId]
-    if (nemesis && nemesis.goalsAgainstUs >= 3) {
-      const signedPlayer = postTransferPlayers.find(p => p.id === bid.playerId)
-      if (signedPlayer) {
-        updatedNemesisTracker[bid.playerId] = { ...nemesis, signedBy: game.managedClubId }
-        newMoments.push({
-          id: `moment_nemesis_${bid.playerId}_${game.currentSeason}`,
-          source: 'nemesis_signed',
-          matchday: nextMatchday,
-          season: game.currentSeason,
-          title: `${signedPlayer.firstName} ${signedPlayer.lastName} — i rätt färger nu`,
-          body: `${nemesis.goalsAgainstUs} mål MOT oss. Nu bär han våra.`,
-          subjectPlayerId: bid.playerId,
-        })
-      }
-    }
-
-    // WEAK-022B: Mecenat cost-share vid transferköp (inkommande spelare)
-    if (bid.direction === 'outgoing' && bid.status === 'accepted' && bid.offerAmount > 0) {
-      const activeMec = (game.mecenater ?? []).find(m => m.isActive && (m.happiness ?? 50) >= 60 &&
-        (m.businessType === 'brukspatron' || m.businessType === 'entrepreneur'))
-      if (activeMec) {
-        const share = Math.min(50000, Math.round(bid.offerAmount * 0.20))
-        postTransferClubs = applyFinanceChange(postTransferClubs, game.managedClubId, share)
-        const boughtPlayer = postTransferPlayers.find(p => p.id === bid.playerId)
-        newMoments.push({
-          id: `moment_mec_costshare_${bid.playerId}_${nextMatchday}`,
-          source: 'mecenat_costshare',
-          matchday: nextMatchday,
-          season: game.currentSeason,
-          title: `${activeMec.name} täcker 20%`,
-          body: `${boughtPlayer ? `${boughtPlayer.firstName} ${boughtPlayer.lastName}` : 'Affären'} blev lite billigare. ${share.toLocaleString('sv-SE')} kr tillbaka i kassan.`,
-          subjectPlayerId: boughtPlayer?.id,
-        })
-      }
-    }
-
-    // WEAK-022C: Sponsor-reaktion vid stora transferer
-    const transferPlayer = postTransferPlayers.find(p => p.id === bid.playerId)
-    if (transferPlayer) {
-      if (bid.direction === 'outgoing' && bid.status === 'accepted' && transferPlayer.currentAbility > 70) {
-        // Köp av stark spelare → sponsorer nöjda
-        sponsorNetworkMoodDelta += 3
-        newMoments.push({
-          id: `moment_sponsor_buy_${bid.playerId}_${nextMatchday}`,
-          source: 'sponsor_positive',
-          matchday: nextMatchday,
-          season: game.currentSeason,
-          title: 'Sponsornätverket reagerar positivt',
-          body: `Huvudsponsorn nöjd med värvningen av ${transferPlayer.firstName} ${transferPlayer.lastName}.`,
-          subjectPlayerId: bid.playerId,
-        })
-      }
-    }
-  }
-
-  // WEAK-022C: Försäljning av klackfavorit → sponsorer oroliga
-  for (const bid of resolvedBids) {
-    if (bid.direction !== 'incoming' || bid.status !== 'accepted') continue
-    const wasPending = prevBids.find(b => b.id === bid.id)?.status === 'pending'
-    if (!wasPending) continue
-    const soldPlayer = loanAndRegenPlayers.find(p => p.id === bid.playerId)
-    const isFavorite = soldPlayer && game.supporterGroup?.favoritePlayerId === bid.playerId
-    if (isFavorite) {
-      sponsorNetworkMoodDelta -= 5
-      newMoments.push({
-        id: `moment_sponsor_sell_${bid.playerId}_${nextMatchday}`,
-        source: 'sponsor_negative',
-        matchday: nextMatchday,
-        season: game.currentSeason,
-        title: 'Sponsornätverket oroligt',
-        body: `Sponsornätverket oroligt efter stjärnförsäljningen av ${soldPlayer.firstName} ${soldPlayer.lastName}.`,
-        subjectPlayerId: bid.playerId,
-      })
-    }
-
-    // Hook 7: transfer story Moment for historically significant sales from managed club
-    if (soldPlayer) {
-      const isCaptain = game.captainPlayerId === bid.playerId
-      const isFanFavorite = game.supporterGroup?.favoritePlayerId === bid.playerId
-      const isLegend = soldPlayer.careerStats.totalGames >= 80
-      const isHomegrown = !!(soldPlayer.isHomegrown && soldPlayer.academyClubId === game.managedClubId)
-      if (isCaptain || isFanFavorite || isLegend || isHomegrown) {
-        const buyerClub = game.clubs.find(c => c.id === bid.buyingClubId)
-        const role = isCaptain ? 'kapten' : isFanFavorite ? 'klackfavorit' : isLegend ? 'legend' : 'akademiprodukt'
-        newMoments.push({
-          id: `moment_transfer_${bid.playerId}_${nextMatchday}`,
-          source: 'transfer_story',
-          matchday: nextMatchday,
-          season: game.currentSeason,
-          title: `${soldPlayer.firstName} ${soldPlayer.lastName} lämnar`,
-          body: `Vår ${role} lämnar${buyerClub ? ` till ${buyerClub.name}` : ''}. Det är inte lätt att ta in.`,
-          subjectPlayerId: bid.playerId,
-          subjectClubId: buyerClub?.id,
-        })
-      }
-    }
-  }
+  const transferExecResult = executeAcceptedTransfers({
+    game,
+    preEventGame,
+    players: loanAndRegenPlayers,
+    clubs: regenUpdatedClubs,
+    resolvedBids,
+    prevBids,
+    nemesisTracker: updatedNemesisTracker,
+    nextMatchday,
+  })
+  let postTransferPlayers = transferExecResult.players
+  let postTransferClubs = transferExecResult.clubs
+  updatedNemesisTracker = transferExecResult.nemesisTracker
+  let sponsorNetworkMoodDelta = transferExecResult.sponsorNetworkMoodDelta
+  newMoments.push(...transferExecResult.moments)
 
   // ── Community standing, politician/mecenat inbox, facility projects ────────
   const communityResult = processCommunity(
@@ -894,34 +733,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // ── Mecenat spawn ─────────────────────────────────────────────────────────
-  // Trigger: communityStanding >= 65, reputation >= 55, inga aktiva mecenater
-  // Max 1 mecenat per säsong. Spawnar som GameEvent (intro) som spelaren accepterar/avvisar.
-  if (
-    !isSecondPassForManagedMatch &&
-    currentLeagueRound !== null &&
-    currentLeagueRound >= 6 &&
-    currentLeagueRound <= 18
-  ) {
-    const cs = game.communityStanding ?? 50
-    const rep = postTransferClubs.find(c => c.id === game.managedClubId)?.reputation ?? 50
-    const activeMecenater = (game.mecenater ?? []).filter(m => m.isActive)
-    const maxMecenater = cs >= 85 ? 3 : cs >= 70 ? 2 : 1
-    const alreadySpawnedThisSeason = (game.mecenater ?? []).some(
-      m => m.arrivedSeason === game.currentSeason
+  {
+    const mecenatResult = applyMecenatSpawn(
+      game,
+      postTransferClubs,
+      isSecondPassForManagedMatch,
+      currentLeagueRound,
+      updatedMecenater,
+      localRand,
     )
-
-    if (
-      cs >= 65 &&
-      rep >= 55 &&
-      activeMecenater.length < maxMecenater &&
-      !alreadySpawnedThisSeason &&
-      localRand() < 0.15
-    ) {
-      const newMecenat = generateMecenat(game.managedClubId, game.currentSeason, localRand)
-      const introEvent = generateMecenatIntroEvent(newMecenat)
-      updatedMecenater = [...updatedMecenater, { ...newMecenat, isActive: false }]
-      allNewEvents.push(introEvent)
-    }
+    updatedMecenater = mecenatResult.updatedMecenater
+    allNewEvents.push(...mecenatResult.newEvents)
   }
 
   // ── WEAK-019: Away trip microdecision — generate for upcoming away fixture ──

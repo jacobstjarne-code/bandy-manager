@@ -1,10 +1,11 @@
 import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { GameEvent, TransferBid } from '../../../domain/entities/GameEvent'
+import type { Club } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import { InboxItemType } from '../../../domain/enums'
 import { generatePostAdvanceEvents, generateEvents } from '../../../domain/services/eventService'
 import { createEconomicStressEvent } from '../../../domain/services/events/eventFactories'
-import { generateSocialEvent, generateSilentShoutEvent } from '../../../domain/services/mecenatService'
+import { generateSocialEvent, generateSilentShoutEvent, generateMecenat, generateMecenatIntroEvent } from '../../../domain/services/mecenatService'
 import { generateBandyLetterEvent } from '../../../domain/services/bandyLetterService'
 import { checkEconomicCrisis } from '../../../domain/services/economicCrisisService'
 import { generateSchoolAssignmentEvent } from '../../../domain/services/schoolAssignmentService'
@@ -118,4 +119,45 @@ export function processGameEvents(
   }
 
   return { gameEvents, inboxItems, updatedMecenater, lastEconomicStressRound }
+}
+
+// ── Mecenat spawn ─────────────────────────────────────────────────────────
+
+export function applyMecenatSpawn(
+  game: SaveGame,
+  postTransferClubs: Club[],
+  isSecondPass: boolean,
+  currentLeagueRound: number | null,
+  updatedMecenater: NonNullable<SaveGame['mecenater']>,
+  localRand: () => number,
+): { updatedMecenater: NonNullable<SaveGame['mecenater']>; newEvents: GameEvent[] } {
+  if (
+    isSecondPass ||
+    currentLeagueRound === null ||
+    currentLeagueRound < 6 ||
+    currentLeagueRound > 18
+  ) {
+    return { updatedMecenater, newEvents: [] }
+  }
+  const cs = game.communityStanding ?? 50
+  const rep = postTransferClubs.find(c => c.id === game.managedClubId)?.reputation ?? 50
+  const activeMecenater = updatedMecenater.filter(m => m.isActive)
+  const maxMecenater = cs >= 85 ? 3 : cs >= 70 ? 2 : 1
+  const alreadySpawnedThisSeason = updatedMecenater.some(m => m.arrivedSeason === game.currentSeason)
+
+  if (
+    cs >= 65 &&
+    rep >= 55 &&
+    activeMecenater.length < maxMecenater &&
+    !alreadySpawnedThisSeason &&
+    localRand() < 0.15
+  ) {
+    const newMecenat = generateMecenat(game.managedClubId, game.currentSeason, localRand)
+    const introEvent = generateMecenatIntroEvent(newMecenat)
+    return {
+      updatedMecenater: [...updatedMecenater, { ...newMecenat, isActive: false }],
+      newEvents: [introEvent],
+    }
+  }
+  return { updatedMecenater, newEvents: [] }
 }

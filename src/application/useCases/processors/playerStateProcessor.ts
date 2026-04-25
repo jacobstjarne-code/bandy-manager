@@ -1,8 +1,9 @@
-import type { SaveGame } from '../../../domain/entities/SaveGame'
+import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
 import type { Player } from '../../../domain/entities/Player'
 import type { Club } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Weather } from '../../../domain/entities/Weather'
+import type { Moment } from '../../../domain/entities/Moment'
 import { FixtureStatus, MatchEventType } from '../../../domain/enums'
 import { computeWeatherTacticInteraction } from '../../../domain/services/matchSimulator'
 import { getTacticModifiers } from '../../../domain/services/tacticModifiers'
@@ -210,5 +211,39 @@ export function applyPlayerStateUpdates(
     updatedPlayers: finalPlayers,
     newlyInjured,
     newlySuspended,
+  }
+}
+
+// ── WEAK-006/DEV-009: Captain morale cascade ──────────────────────────────
+
+export function applyCaptainMoraleCascade(
+  players: Player[],
+  game: SaveGame,
+  nextMatchday: number,
+  existingNewInboxItems: InboxItem[],
+): { updatedPlayers: Player[]; captainCrisisMoment: Moment | null } {
+  if (!game.captainPlayerId) return { updatedPlayers: players, captainCrisisMoment: null }
+  const captain = players.find(p => p.id === game.captainPlayerId)
+  if (!captain || captain.morale >= 40) return { updatedPlayers: players, captainCrisisMoment: null }
+
+  const alreadySentId = `inbox_captain_crisis_r${nextMatchday}_${game.currentSeason}`
+  const alreadySent = existingNewInboxItems.some(i => i.id === alreadySentId) || game.inbox.some(i => i.id === alreadySentId)
+  if (alreadySent) return { updatedPlayers: players, captainCrisisMoment: null }
+
+  const updatedPlayers = players.map(p => {
+    if (p.clubId !== game.managedClubId || p.id === captain.id) return p
+    return { ...p, morale: Math.max(0, p.morale - 5) }
+  })
+  return {
+    updatedPlayers,
+    captainCrisisMoment: {
+      id: alreadySentId,
+      source: 'captain_crisis',
+      matchday: nextMatchday,
+      season: game.currentSeason,
+      title: 'Omklädningsrummet är tyst',
+      body: `Kapten ${captain.firstName} ${captain.lastName} har inte sagt mycket denna vecka. Det märks i hela truppen.`,
+      subjectPlayerId: captain.id,
+    },
   }
 }

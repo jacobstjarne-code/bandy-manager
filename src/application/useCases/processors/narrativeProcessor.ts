@@ -6,6 +6,7 @@ import { InboxItemType, MatchEventType, FixtureStatus } from '../../../domain/en
 import { getRivalry } from '../../../domain/data/rivalries'
 import { updateSupporterMembers, reevaluateFavoritePlayer } from '../../../domain/services/supporterService'
 import { classifyVictory, generateVictoryEcho } from '../../../domain/services/postVictoryNarrativeService'
+import { generatePreMatchOpponentQuote } from '../../../domain/services/opponentManagerService'
 
 export interface NarrativeResult {
   fanMood: number
@@ -246,4 +247,57 @@ export function processNarrative(
     nemesisTracker,
     inboxItems,
   }
+}
+
+// ── Derby notification ───────────────────────────────────────────────────────
+
+export function processUpcomingDerbyNotification(
+  finalAllFixtures: Fixture[],
+  game: SaveGame,
+): InboxItem[] {
+  const inboxItems: InboxItem[] = []
+  const remainingScheduled = finalAllFixtures.filter(f => f.status === FixtureStatus.Scheduled)
+  if (remainingScheduled.length === 0) return inboxItems
+
+  const upcomingMatchday = Math.min(...remainingScheduled.map(f => f.matchday))
+  const upcomingManagedFixture = remainingScheduled.find(
+    f => f.matchday === upcomingMatchday &&
+    (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+  )
+  if (!upcomingManagedFixture) return inboxItems
+
+  const derbyRivalry = getRivalry(upcomingManagedFixture.homeClubId, upcomingManagedFixture.awayClubId)
+  if (!derbyRivalry) return inboxItems
+
+  const opponentClubId = upcomingManagedFixture.homeClubId === game.managedClubId
+    ? upcomingManagedFixture.awayClubId
+    : upcomingManagedFixture.homeClubId
+  const opponentClub = game.clubs.find(c => c.id === opponentClubId)
+  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+  const alreadySent = game.inbox.some(item => item.id === `inbox_derby_${upcomingManagedFixture.id}`)
+  if (alreadySent) return inboxItems
+
+  inboxItems.push({
+    id: `inbox_derby_${upcomingManagedFixture.id}`,
+    date: game.currentDate,
+    type: InboxItemType.Derby,
+    title: `🔥 Derby nästa omgång! ${derbyRivalry.name}`,
+    body: `${managedClub?.name ?? 'Ni'} möter ${opponentClub?.name ?? 'motståndaren'} i ${derbyRivalry.name}. Intensiteten kommer vara hög.`,
+    isRead: false,
+  })
+
+  if (opponentClub) {
+    const opponentQuote = generatePreMatchOpponentQuote(opponentClub, true)
+    if (opponentQuote) {
+      inboxItems.push({
+        id: `inbox_prematch_quote_${upcomingManagedFixture.id}`,
+        date: game.currentDate,
+        type: InboxItemType.MediaEvent,
+        title: `Inför derbyt: ${opponentClub.shortName ?? opponentClub.name}`,
+        body: opponentQuote,
+        isRead: false,
+      })
+    }
+  }
+  return inboxItems
 }

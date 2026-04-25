@@ -3,9 +3,11 @@ import type { Player } from '../../../domain/entities/Player'
 import type { Club } from '../../../domain/entities/Club'
 import type { TransferBid } from '../../../domain/entities/GameEvent'
 import type { LoanDeal } from '../../../domain/entities/Academy'
+import type { Moment } from '../../../domain/entities/Moment'
 import { InboxItemType } from '../../../domain/enums'
-import { resolveOutgoingBid, generateIncomingBids, getCounterOfferAmount } from '../../../domain/services/transferService'
+import { resolveOutgoingBid, generateIncomingBids, getCounterOfferAmount, executeTransfer } from '../../../domain/services/transferService'
 import { getTransferWindowStatus } from '../../../domain/services/transferWindowService'
+import { applyFinanceChange } from '../../../domain/services/economyService'
 
 export interface TransferProcessorResult {
   resolvedBids: TransferBid[]
@@ -300,4 +302,139 @@ export function processLoans(
     })
 
   return { loanUpdatedPlayers, updatedClubs, updatedLoanDeals, inboxItems }
+}
+
+// ── Apply accepted transfer bids (nemesis, mecenat cost-share, sponsor reactions) ──
+
+export interface TransferExecutionInput {
+  game: SaveGame
+  preEventGame: SaveGame
+  players: Player[]
+  clubs: Club[]
+  resolvedBids: TransferBid[]
+  prevBids: TransferBid[]
+  nemesisTracker: NonNullable<SaveGame['nemesisTracker']>
+  nextMatchday: number
+}
+
+export interface TransferExecutionResult {
+  players: Player[]
+  clubs: Club[]
+  nemesisTracker: NonNullable<SaveGame['nemesisTracker']>
+  sponsorNetworkMoodDelta: number
+  moments: Moment[]
+}
+
+export function executeAcceptedTransfers(input: TransferExecutionInput): TransferExecutionResult {
+  const { game, preEventGame, resolvedBids, prevBids, nextMatchday } = input
+  let players = input.players
+  let clubs = input.clubs
+  let nemesisTracker = { ...input.nemesisTracker }
+  let sponsorNetworkMoodDelta = 0
+  const moments: Moment[] = []
+
+  for (const bid of resolvedBids) {
+    if (bid.direction !== 'outgoing' || bid.status !== 'accepted') continue
+    const wasPending = prevBids.find(b => b.id === bid.id)?.status === 'pending'
+    if (!wasPending) continue
+    const tmpGame = { ...preEventGame, players, clubs }
+    const result = executeTransfer(tmpGame, bid)
+    players = result.players
+    clubs = result.clubs
+
+    const nemesis = nemesisTracker[bid.playerId]
+    if (nemesis && nemesis.goalsAgainstUs >= 3) {
+      const signedPlayer = players.find(p => p.id === bid.playerId)
+      if (signedPlayer) {
+        nemesisTracker[bid.playerId] = { ...nemesis, signedBy: game.managedClubId }
+        moments.push({
+          id: `moment_nemesis_${bid.playerId}_${game.currentSeason}`,
+          source: 'nemesis_signed',
+          matchday: nextMatchday,
+          season: game.currentSeason,
+          title: `${signedPlayer.firstName} ${signedPlayer.lastName} — i rätt färger nu`,
+          body: `${nemesis.goalsAgainstUs} mål MOT oss. Nu bär han våra.`,
+          subjectPlayerId: bid.playerId,
+        })
+      }
+    }
+
+    if (bid.direction === 'outgoing' && bid.status === 'accepted' && bid.offerAmount > 0) {
+      const activeMec = (game.mecenater ?? []).find(m => m.isActive && (m.happiness ?? 50) >= 60 &&
+        (m.businessType === 'brukspatron' || m.businessType === 'entrepreneur'))
+      if (activeMec) {
+        const share = Math.min(50000, Math.round(bid.offerAmount * 0.20))
+        clubs = applyFinanceChange(clubs, game.managedClubId, share)
+        const boughtPlayer = players.find(p => p.id === bid.playerId)
+        moments.push({
+          id: `moment_mec_costshare_${bid.playerId}_${nextMatchday}`,
+          source: 'mecenat_costshare',
+          matchday: nextMatchday,
+          season: game.currentSeason,
+          title: `${activeMec.name} täcker 20%`,
+          body: `${boughtPlayer ? `${boughtPlayer.firstName} ${boughtPlayer.lastName}` : 'Affären'} blev lite billigare. ${share.toLocaleString('sv-SE')} kr tillbaka i kassan.`,
+          subjectPlayerId: boughtPlayer?.id,
+        })
+      }
+    }
+
+    const transferPlayer = players.find(p => p.id === bid.playerId)
+    if (transferPlayer) {
+      if (bid.direction === 'outgoing' && bid.status === 'accepted' && transferPlayer.currentAbility > 70) {
+        sponsorNetworkMoodDelta += 3
+        moments.push({
+          id: `moment_sponsor_buy_${bid.playerId}_${nextMatchday}`,
+          source: 'sponsor_positive',
+          matchday: nextMatchday,
+          season: game.currentSeason,
+          title: 'Sponsornätverket reagerar positivt',
+          body: `Huvudsponsorn nöjd med värvningen av ${transferPlayer.firstName} ${transferPlayer.lastName}.`,
+          subjectPlayerId: bid.playerId,
+        })
+      }
+    }
+  }
+
+  for (const bid of resolvedBids) {
+    if (bid.direction !== 'incoming' || bid.status !== 'accepted') continue
+    const wasPending = prevBids.find(b => b.id === bid.id)?.status === 'pending'
+    if (!wasPending) continue
+    const soldPlayer = players.find(p => p.id === bid.playerId)
+    const isFavorite = soldPlayer && game.supporterGroup?.favoritePlayerId === bid.playerId
+    if (isFavorite) {
+      sponsorNetworkMoodDelta -= 5
+      moments.push({
+        id: `moment_sponsor_sell_${bid.playerId}_${nextMatchday}`,
+        source: 'sponsor_negative',
+        matchday: nextMatchday,
+        season: game.currentSeason,
+        title: 'Sponsornätverket oroligt',
+        body: `Sponsornätverket oroligt efter stjärnförsäljningen av ${soldPlayer.firstName} ${soldPlayer.lastName}.`,
+        subjectPlayerId: bid.playerId,
+      })
+    }
+
+    if (soldPlayer) {
+      const isCaptain = game.captainPlayerId === bid.playerId
+      const isFanFavorite = game.supporterGroup?.favoritePlayerId === bid.playerId
+      const isLegend = soldPlayer.careerStats.totalGames >= 80
+      const isHomegrown = !!(soldPlayer.isHomegrown && soldPlayer.academyClubId === game.managedClubId)
+      if (isCaptain || isFanFavorite || isLegend || isHomegrown) {
+        const buyerClub = game.clubs.find(c => c.id === bid.buyingClubId)
+        const role = isCaptain ? 'kapten' : isFanFavorite ? 'klackfavorit' : isLegend ? 'legend' : 'akademiprodukt'
+        moments.push({
+          id: `moment_transfer_${bid.playerId}_${nextMatchday}`,
+          source: 'transfer_story',
+          matchday: nextMatchday,
+          season: game.currentSeason,
+          title: `${soldPlayer.firstName} ${soldPlayer.lastName} lämnar`,
+          body: `Vår ${role} lämnar${buyerClub ? ` till ${buyerClub.name}` : ''}. Det är inte lätt att ta in.`,
+          subjectPlayerId: bid.playerId,
+          subjectClubId: buyerClub?.id,
+        })
+      }
+    }
+  }
+
+  return { players, clubs, nemesisTracker, sponsorNetworkMoodDelta, moments }
 }
