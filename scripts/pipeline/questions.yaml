@@ -1,0 +1,98 @@
+# Öppna frågor som findings-pipeline ska besvara.
+# status: open | answered | skipped
+# analysis_type matchar en funktion i analysis.py
+
+- id: Q001
+  source_finding: "005"
+  question: "Är målminutsklustret vid 40-50 koncentrerat till 40-45 eller 46-50?"
+  status: open
+  analysis_type: time_split
+  params:
+    bucket_start: 40
+    bucket_end: 50
+    split_at: 45
+    series: herr
+
+- id: Q002
+  source_finding: "005"
+  question: "Är mönstret starkare i jämna matcher (±1 mål) än i övertygande ledningar?"
+  status: open
+  analysis_type: goals_by_margin
+  params:
+    series: herr
+
+- id: Q003
+  source_finding: "005"
+  question: "Skiljer sig målminutsmönstret för hörnmål vs öppet spel?"
+  status: open
+  analysis_type: goals_by_type_over_time
+  params:
+    series: herr
+
+- id: Q004
+  source_finding: "006"
+  question: "Skiljer sig mönstret mellan kvartsfinal, semifinal och final?"
+  status: open
+  analysis_type: goals_by_phase_detail
+  params:
+    phases: [quarterfinal, semifinal, final]
+
+- id: Q005
+  source_finding: "006"
+  question: "Hur ser match 1-2 ut mot match 4-5 i en slutspelsserie?"
+  status: skipped
+  reason: "Bandygrytan har inte matchserienummer per omgång"
+
+- id: Q006
+  source_finding: "007"
+  question: "Varför är hörneffektiviteten lägre i damserien?"
+  status: open
+  analysis_type: corner_efficiency_comparison
+  params:
+    series: [herr, dam]
+
+- id: Q007
+  source_finding: "007"
+  question: "Skiljer sig målminutsfördelningen mellan dam och herr?"
+  status: open
+  analysis_type: time_distribution_comparison
+  params:
+    series: [herr, dam]
+
+- id: Q008
+  source_finding: "003"
+  question: "Är hemmafördelen starkare i slutspel än grundserie?"
+  status: answered
+  answered_by: "006"
+
+- id: Q009
+  source_finding: "002"
+  question: "Skiljer sig hörneffektiviteten hemma/borta?"
+  status: open
+  analysis_type: corner_home_away
+  params:
+    series: herr
+
+- id: Q010
+  source_finding: "001"
+  question: "Hur ser winrate ut splittat på 1-0 vs 2-0 vs 3+-0 vid halvtid?"
+  status: open
+  analysis_type: ht_lead_by_size
+  params:
+    series: herr
+
+- id: Q011
+  source_finding: "001"
+  question: "Skiljer sig hemma/borta-ledning vid halvtid?"
+  status: open
+  analysis_type: ht_lead_home_away
+  params:
+    series: herr
+
+- id: Q012
+  source_finding: "004"
+  question: "Korrelerar comeback med specifika matchminuter (tidiga 2H-mål)?"
+  status: open
+  analysis_type: comeback_timing
+  params:
+    series: herr

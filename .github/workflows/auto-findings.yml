@@ -1,0 +1,81 @@
+name: Auto-generate findings
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # Varje måndag 06:00 UTC
+  push:
+    paths:
+      - 'docs/data/bandygrytan_detailed.json'  # Ny data → kör direkt
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Max antal findings (tom = alla)'
+        required: false
+        default: ''
+      question_id:
+        description: 'Specifik fråga (t.ex. Q001, tom = alla)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  issues: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python deps
+        run: pip install anthropic pyyaml
+
+      - name: Run findings pipeline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.limit }}" ]; then
+            ARGS="$ARGS --limit ${{ github.event.inputs.limit }}"
+          fi
+          if [ -n "${{ github.event.inputs.question_id }}" ]; then
+            ARGS="$ARGS --id ${{ github.event.inputs.question_id }}"
+          fi
+          python3 scripts/findings_pipeline.py $ARGS
+
+      - name: Check for new findings
+        id: check
+        run: |
+          if git diff --quiet HEAD -- bandy-brain/src/pages/findings/ scripts/pipeline/questions.yaml; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            COUNT=$(git diff --name-only HEAD -- bandy-brain/src/pages/findings/ | grep -c 'index.astro' || true)
+            echo "count=$COUNT" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit new findings
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          git config user.name "bandy-brain-bot"
+          git config user.email "noreply@github.com"
+          git add bandy-brain/src/pages/findings/ scripts/pipeline/questions.yaml
+          git commit -m "feat: auto-generated ${{ steps.check.outputs.count }} finding(s) [pipeline]"
+          git push
+
+      - name: Trigger deploy
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'bandy-brain-deploy.yml',
+              ref: 'main',
+            });

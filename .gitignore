@@ -3,3 +3,5 @@ dist/
 .DS_Store
 *.local
 scripts/stress/failures/*.json
+scripts/pipeline/__pycache__
+scripts/pipeline/feedback_cache.json
