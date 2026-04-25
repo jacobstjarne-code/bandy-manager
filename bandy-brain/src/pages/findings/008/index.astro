@@ -1,0 +1,111 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 008 — Klustret 40–50 är jämnt fördelat"
+  description="Målklustret vid 40–50 minuter i herrbandy är näst intill exakt lika fördelat mellan de två halvorna av intervallet."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 008 · 25 april 2026</p>
+    <h1 class="finding-title">Klustret 40–50 är jämnt fördelat<br>49,6 % faller i 40–45, 50,4 % i 46–50</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">672</span><span class="key-number__label">Mål 40–45 min</span><span class="key-number__note">49,6 % av bucket</span></div>
+          <div class="key-number"><span class="key-number__value">682</span><span class="key-number__label">Mål 46–50 min</span><span class="key-number__note">50,4 % av bucket</span></div>
+          <div class="key-number"><span class="key-number__value">10 mål</span><span class="key-number__label">Skillnad</span><span class="key-number__note">0,8 procentenheter</span></div>
+          <div class="key-number"><span class="key-number__value">1 354</span><span class="key-number__label">Totalt i bucket</span><span class="key-number__note">13,1 % av alla mål</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Finding 005 visade att minuter 40–50 innehåller ett tydligt kluster av mål i herrbandy. Frågan som uppstod var om detta kluster i huvudsak drivs av den första halvan (40–45 minuter) eller den andra halvan (46–50 minuter), eller om fördelningen är jämn.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på 10 321 mål fördelade över 1 124 matcher i herrbandy. Bucket-intervallet 40–50 minuter innehåller totalt 1 354 mål och delades i två lika stora femminutersintervall:<ul><li>40–45 minuter: 672 mål (49,6 % av bucket, 6,5 % av alla mål)</li><li>46–50 minuter: 682 mål (50,4 % av bucket, 6,6 % av alla mål)</li></ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Fördelningen inom bucket 40–50 är i det närmaste perfekt symmetrisk. Intervallet 40–45 svarar för 672 mål och 46–50 för 682 mål — en skillnad på 10 mål och 0,8 procentenheter. Inget av de två delintervallen dominerar det sammantagna klustret.
+
+| Intervall | Mål | Andel av bucket | Andel av totalt |
+|-----------|-----|-----------------|------------------|
+| 40–45 min | 672 | 49,6 % | 6,5 % |
+| 46–50 min | 682 | 50,4 % | 6,6 % |
+| Totalt | 1 354 | 100 % | 13,1 % |
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Att fördelningen är så pass jämn — 49,6 mot 50,4 procent — innebär att klustret vid 40–50 minuter inte kan förklaras av ett specifikt händelseförlopp koncentrerat till endera änden av intervallet. Klustret är brett och relativt stabilt över hela tioминuterspannet.</p>
+      <p>En möjlig tolkning är att periodslutet i sig (perioden avslutas normalt runt minut 45) inte skapar en tydlig spike vid en enstaka minut, utan snarare en förhöjd målfrekvens under hela avslutningsfasen av andraperioden inklusive eventuell övertid och omspel inom intervallet.</p>
+      <p>Den marginella övervikten för 46–50 kan i teorin spegla matcher som drar ut på perioden eller har oregelbundna avbrott, men skillnaden på 10 mål över 1 124 matcher är för liten för att motivera en sådan slutsats utan ytterligare kontroll.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Vi vet inte om matcher med övertid i andra perioden påverkar fördelningen systematiskt.</li>
+        <li>Matchuret kan redovisas med varierande precision i källdata, vilket kan jämna ut toppar.</li>
+        <li>Analysen separerar inte på hemma/borta, ledning/underläge eller överspel — faktorer som kan koncentreras till specifika minutintervall.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Ser fördelningen 40–45 vs 46–50 annorlunda ut om man filtrerar bort matcher med förlängd speltid i perioden?</li>
+        <li>Är klustret lika jämnt fördelat i dammatcherna som i herrmatcherna?</li>
+        <li>Hur ser minutfördelningen ut på minutnivå (40, 41, 42 … 50) — finns det en enskild toppminut inom intervallet?</li>
+        <li>Är andelen powerplay-mål högre i 40–50-intervallet än i övriga delar av matchen?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("F005")} class="fact-ref">F005</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+008:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+008:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

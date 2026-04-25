@@ -1,0 +1,108 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 018 — VSK och Nässjö: hörnamål jämfört"
+  description="Analys av hörnakonvertering och hörnafrekvens för Västerås SK och Vetlanda BK i svensk bandyherr."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 018 · 25 april 2026</p>
+    <h1 class="finding-title">VSK och Nässjö: hörnamål jämfört<br>Västerås SK mot Vetlanda BK</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">12,7 %</span><span class="key-number__label">VSK konvertering (bästa period)</span><span class="key-number__note">76 matcher som 'Västerås SK'</span></div>
+          <div class="key-number"><span class="key-number__value">11,6 %</span><span class="key-number__label">Vetlanda konvertering</span><span class="key-number__note">158 matcher</span></div>
+          <div class="key-number"><span class="key-number__value">10,4</span><span class="key-number__label">VSK hörnor/match (bästa period)</span><span class="key-number__note">mot Vetlandas 8,3</span></div>
+          <div class="key-number"><span class="key-number__value">9,4 %</span><span class="key-number__label">VSK konvertering (svagare period)</span><span class="key-number__note">82 matcher som 'Västerås SK/BK'</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi undersökte om Västerås SK (VSK) eller Vetlanda BK (Nässjö) har bättre förutsättningar att göra mål på hörna — dels hur ofta de lyckas konvertera en hörna till mål, dels hur många hörnor de får per match.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Datan kommer från ett analysunderlag över svenska bandyserier på herrsidan, totalt 1 124 matcher. Varje lag har matchats mot antal hörnor, hörnmål, hörnakonvertering (hörnmål per hörna, %) samt hur stor andel av lagets totala mål som kommit på hörna. Västerås SK förekommer under två poster i datan: 'Västerås SK' (76 matcher) och 'Västerås SK/BK' (82 matcher), vilket sannolikt speglar namnbyte eller säsongsindelning. Vetlanda BK förekommer under ett namn med 158 matcher.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Sammanställning av relevanta nyckeltal för de två lagen:
+
+| Lag | Matcher | Hörnmål | Hörnor | Konvertering (%) | Andel av mål (%) | Hörnor/match |
+|---|---|---|---|---|---|---|
+| Västerås SK | 76 | 100 | 790 | 12,7 | 21,1 | 10,4 |
+| Västerås SK/BK | 82 | 71 | 752 | 9,4 | 16,7 | 9,2 |
+| Vetlanda BK | 158 | 152 | 1 314 | 11,6 | 19,7 | 8,3 |
+
+Under posten 'Västerås SK' (76 matcher) är konverteringsgraden 12,7 % och hörnor per match 10,4. Under 'Västerås SK/BK' (82 matcher) är konverteringen 9,4 % och hörnor per match 9,2. Vetlanda BK håller 11,6 % konvertering och 8,3 hörnor per match.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Betraktar vi den period då laget heter 'Västerås SK' (76 matcher) har VSK en högre konverteringsgrad än Vetlanda BK — 12,7 % mot 11,6 %. VSK tar också fler hörnor per match under denna period, 10,4 mot Vetlandas 8,3. Det innebär att VSK i snitt skapar fler hörntillfällen per match och omsätter dem till mål i något högre takt, vilket sammantaget ger bättre förutsättningar att göra hörnamål.</p>
+      <p>Under perioden 'Västerås SK/BK' (82 matcher) vänder bilden. Konverteringen faller till 9,4 % och frekvensen till 9,2 hörnor per match — båda lägre än Vetlandas värden. Skillnaden i namn antyder att dessa perioder inte är direkt jämförbara; det kan röra sig om olika säsonger, sammanslagningar eller datakvalitetsproblem.</p>
+      <p>Vetlanda BK:s värden är stabila över 158 matcher, vilket gör dem mer tillförlitliga som bastal. Konverteringen på 11,6 % är konsekvent och lagets andel hörnamål av totala mål (19,7 %) visar att hörnor är en relativt viktig del av deras anfallsspel. VSK:s bästa period överträffar Vetlanda på båda parametrar, men spridningen mellan de två VSK-perioderna är för stor för att dra säkra slutsatser om ett samlat VSK-värde.</p>
+      <p>Sammanfattningsvis: om man utgår från 'Västerås SK'-perioden har VSK bättre förutsättningar — fler hörnor och högre konvertering. Förklaringen är sannolikt att VSK under den perioden skapar fler situationer som leder till hörna och har ett effektivare uppspel eller avslut från hörna. Utan säsongsnivå-data går det inte att avgöra om skillnaden beror på spelstil, spelarunderlag eller periodval.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Västerås SK förekommer under två skilda poster med påtagligt olika värden — det är oklart om det rör sig om olika säsonger, namnbyten eller datainkonsekvenser.</li>
+        <li>Vetlanda BK används som proxy för 'Nässjö' men lagets arena ligger i Vetlanda; frågan förutsätter att dessa är samma lag.</li>
+        <li>Konverteringsgrad mäter hörnmål per hörna men säger inget om vilken typ av hörna eller varifrån avsluten tas.</li>
+        <li>Datan saknar säsongsuppdelning, vilket gör det omöjligt att särskilja trender över tid från strukturella skillnader.</li>
+        <li>Matchantal skiljer sig kraftigt (76–82 för VSK, 158 för Vetlanda), vilket påverkar statistisk stabilitet.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Hur ser konverteringsgraden ut per säsong för respektive lag — finns det en trend över tid?</li>
+        <li>Skiljer sig hörnmålsandelen beroende på hemma- eller bortamatch för dessa två lag?</li>
+        <li>Hur förhåller sig VSK:s och Vetlandas hörnakonvertering till ligasnittet som helhet?</li>
+        <li>Finns det ett samband mellan antal hörnor per match och total målproduktion för lagen i datasetet?</li>
+        <li>Vad förklarar den stora skillnaden i konvertering mellan de två VSK-perioderna?</li>
+      </ul>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+018:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+018:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

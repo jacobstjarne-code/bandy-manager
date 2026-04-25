@@ -1,0 +1,119 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 012 — Damserien omvandlar hörnor till mål mer sällan"
+  description="Hörneffektiviteten skiljer sig påtagligt mellan dam- och herrserien trots identiskt målsnitt per match."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 012 · 25 april 2026</p>
+    <h1 class="finding-title">Damserien omvandlar hörnor till mål mer sällan<br>Trots samma målsnitt som herrserien</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">9,12</span><span class="key-number__label">Mål per match (båda serier)</span><span class="key-number__note">Identiskt snitt i dam och herr</span></div>
+          <div class="key-number"><span class="key-number__value">22,2 %</span><span class="key-number__label">Andel mål via hörna – herr</span><span class="key-number__note">Drygt var femte mål</span></div>
+          <div class="key-number"><span class="key-number__value">15,4 %</span><span class="key-number__label">Andel mål via hörna – dam</span><span class="key-number__note">Knappt var sjunde mål</span></div>
+          <div class="key-number"><span class="key-number__value">11,4</span><span class="key-number__label">Hörnor per hörnamål – herr</span><span class="key-number__note">Fler hörnor krävs trots högre andel</span></div>
+          <div class="key-number"><span class="key-number__value">8,3</span><span class="key-number__label">Hörnor per hörnamål – dam</span><span class="key-number__note">Färre hörnor per hörnamål</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Finding 007 visade att dam- och herrserien producerar exakt lika många mål per match i genomsnitt, men att hörneffektiviteten skiljer sig åt. Vi ville undersöka om det stämmer och vad som kan förklara skillnaden.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på matchdata från totalt 1 500 matcher fördelade på två serier:<ul><li>Herrserien: 1 124 matcher</li><li>Damserien: 376 matcher</li></ul>För varje match har vi tillgång till antal mål, antal hörnor samt andelen mål som föregåtts av hörna. Hörnkonvertering mäts som antal hörnor per mål som uppstår via hörnfas.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Båda serierna har ett identiskt snitt på 9,12 mål per match. Antalet hörnor per match är nära varandra: 17,72 i herrserien mot 16,92 i damserien. Däremot skiljer sig effektivitetsmåtten tydligt:
+
+| Mått | Herrserien | Damserien |
+|---|---|---|
+| Mål per match | 9,12 | 9,12 |
+| Hörnor per match | 17,72 | 16,92 |
+| Andel mål via hörna (%) | 22,2 | 15,4 |
+| Hörnkonvertering (hörnor/mål) | 11,4 | 8,3 |
+
+I herrserien härrör alltså drygt var femte mål från en hörnfas, mot knappt var sjunde i damserien. Herrserien kräver 11,4 hörnor per hörnamål, damserien 8,3.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Att målet per match är identiskt medan hörnornas bidrag skiljer sig innebär att damserien skapar sina mål via andra vägar än hörnor i högre utsträckning. Spelmönster, pressing och övergångsspel kan därmed vara relativt mer produktiva i damserien jämfört med stillastående situationer.</p>
+      <p>En möjlig förklaring är fysiska förutsättningar vid inlägg och nickdueller. Hörnor i bandy utnyttjas ofta via luftdueller eller direktavslut i rörelse, och om kroppsstyrka och hopphöjd spelar roll för att konvertera sådana situationer kan det bidra till lägre utfall i damserien. Det är dock en hypotes som kräver mer detaljerad data för att beläggas.</p>
+      <p>En annan tolkning är taktisk: om damserieteam mer konsekvent försvarar hörnor med zona eller tätt personförsvar kan det pressa ner konverteringsgraden utan att det säger något om spelarnas individuella kvalitet i dessa situationer.</p>
+      <p>Det bör noteras att hörnkonverteringstalet ser ut att gå i motsatt riktning mot andelen mål via hörna — herrserien har fler hörnor per hörnamål (11,4 mot 8,3) men en högre andel mål som uppstår via hörna. Det beror på att herrserien även har fler hörnor totalt, vilket ger fler tillfällen trots ett lägre procentuellt utfall per hörna. Siffrorna mäter alltså delvis olika saker och bör tolkas separat.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Vi saknar uppgift om vilka säsonger data avser, vilket gör det svårt att bedöma om skillnaderna är stabila över tid.</li>
+        <li>Matchantalet i damserien (376) är avsevärt lägre än i herrserien (1 124), vilket ökar osäkerheten i damseriens estimat.</li>
+        <li>Vi vet inte hur 'mål via hörna' definieras operationellt — exempelvis om mål efter andrahandslägen från hörnor räknas in.</li>
+        <li>Data innehåller inga uppgifter om lag, division eller matchnivå, vilket omöjliggör kontroll för kvalitetsskillnader.</li>
+        <li>Hörnkonverteringsmåttet (hörnor/mål via hörna) och andelen mål via hörna mäter delvis överlappande fenomen och bör inte adderas analytiskt.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Varierar hörneffektiviteten mellan olika lag i damserien, eller är skillnaden mot herrserien jämnt fördelad?</li>
+        <li>Finns det skillnader i hur hörnor tas om hand taktiskt — exempelvis kort hörna vs. långt inlägg — mellan serierna?</li>
+        <li>Har hörneffektiviteten i damserien förändrats över säsonger, eller är nivån stabil?</li>
+        <li>Via vilka typer av aktioner skapas de mål i damserien som inte härrör från hörnor?</li>
+        <li>Påverkar matchens ställning (ledning/underläge) sannolikheten att en hörna leder till mål, och skiljer sig det mönstret mellan serierna?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("F007")} class="fact-ref">F007</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+012:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+012:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

@@ -1,0 +1,123 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 013 — Dam och herr visar likartad målminutsfördelning"
+  description="Jämförelse av målminutsfördelning mellan dam- och herrbandy visar snarlik kurva men med avvikelser kring minut 30–39."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 013 · 25 april 2026</p>
+    <h1 class="finding-title">Dam och herr visar likartad målminutsfördelning<br>med små skillnader i mittfältet</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">13,3 %</span><span class="key-number__label">Herr, topintervall 80–89</span><span class="key-number__note">Högsta andelen mål i något intervall för herrserien</span></div>
+          <div class="key-number"><span class="key-number__value">12,8 %</span><span class="key-number__label">Dam, topintervall 40–49</span><span class="key-number__note">Högsta andelen mål i något intervall för damserien</span></div>
+          <div class="key-number"><span class="key-number__value">−1,2 pp</span><span class="key-number__label">Störst avvikelse</span><span class="key-number__note">Intervall 30–39, dam lägre än herr</span></div>
+          <div class="key-number"><span class="key-number__value">1,3 %</span><span class="key-number__label">Identiska intervall</span><span class="key-number__note">Intervall 90–99 är lika i båda serierna</span></div>
+          <div class="key-number"><span class="key-number__value">13 341</span><span class="key-number__label">Totalt analyserade mål</span><span class="key-number__note">9 984 herr + 3 357 dam</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi undrade om målens fördelning över matchminuterna skiljer sig systematiskt mellan dam- och herrserier i bandy, eller om de uppvisar samma grundmönster med toppar sent i varje halvlek.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på finding 007 och täcker två matchserier med tidsstämplad måldata. Herrserien innehåller 1 124 matcher och 9 984 mål, damserien 376 matcher och 3 357 mål. Målen är grupperade i 10-minutersintervall från minut 0 till 99, och andelen per intervall redovisas i procent av seriens totala målvolym.<ul><li>Herrbandy: 1 124 matcher, 9 984 mål</li><li>Dambandy: 376 matcher, 3 357 mål</li><li>Periodindelning: 10-minutersintervall, 10 grupper</li></ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Båda serierna uppvisar tydliga toppar i intervallen 40–49 och 80–89, det vill säga strax innan paus respektive matchslut. Herr når sin högsta andel i 80–89 (13,3 %) och sin näst högsta i 40–49 (12,2 %). Dam uppvisar samma intervall som toppar men med omvänd tyngd: 40–49 är högst (12,8 %) och 80–89 något lägre (12,2 %). Den tydligaste avvikelsen finns i intervallet 30–39, där herr noterar 10,3 % mot dams 9,1 %. Intervallets 90–99 är identiskt lågt i båda serierna (1,3 %).
+
+| Intervall | Herr (%) | Dam (%) | Diff (pp) |
+|-----------|----------|---------|----------|
+| 0–9       | 9,5      | 9,9     | +0,4     |
+| 10–19     | 10,1     | 10,7    | +0,6     |
+| 20–29     | 10,2     | 10,2    | 0,0      |
+| 30–39     | 10,3     | 9,1     | −1,2     |
+| 40–49     | 12,2     | 12,8    | +0,6     |
+| 50–59     | 11,3     | 11,9    | +0,6     |
+| 60–69     | 10,9     | 11,0    | +0,1     |
+| 70–79     | 11,0     | 10,8    | −0,2     |
+| 80–89     | 13,3     | 12,2    | −1,1     |
+| 90–99     | 1,3      | 1,3     | 0,0      |
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Det övergripande mönstret är slående likt: båda serierna koncentrerar mål till slutminuterna av varje halvlek och håller en relativt jämn fördelning under resten av speltiden. Det tyder på att de strukturella krafterna bakom målfrekvensen — trötthet, taktiska öppningar mot halvtid och matchslut, ökad desperation vid underskott — verkar på likartat sätt oavsett serie.</p>
+      <p>Den mest påtagliga skillnaden är att herr har en högre andel mål i 80–89 (13,3 % mot 12,2 %), medan dam i stället är relativt starkare i 40–49 (12,8 % mot 12,2 %). En möjlig förklaring är att herrserien innehåller fler täta matcher där slutskedet avgör, vilket pressar upp målandelen i sista tio minuterna. Det är dock en spekulation som kräver matchresultatdata för att prövas.</p>
+      <p>Intervallet 30–39 visar dams lägsta andel (9,1 %) och en negativ avvikelse om 1,2 procentenheter mot herr. Det är svårt att förklara utan information om taktiska mönster eller bytesfrekvens per serie. Skillnaden kan vara ett statistiskt brus givet att damserien är drygt tre gånger mindre än herrserien.</p>
+      <p>Sammanfattningsvis är likheterna större än skillnaderna. De avvikelser som finns är under 1,2 procentenheter i samtliga intervall utom ett, och kurvornas form — låg start, tvåtoppig profil, minimalt i övertid — är i princip identisk.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Damserien är betydligt mindre (376 matcher) än herrserien (1 124 matcher), vilket ger bredare konfidensintervall för dammålen.</li>
+        <li>Vi vet inte vilka säsonger och divisioner som ingår, vilket kan påverka jämförbarheten om serierna täcker olika spelperioder.</li>
+        <li>Analysen kontrollerar inte för matchläge, vilket gör det omöjligt att avgöra om slutminutstoppar drivs av desperation vid underskott eller av annat.</li>
+        <li>Tidsstämpling kan skilja sig i noggrannhet mellan damens och herrens datakällor.</li>
+        <li>Intervall 90–99 innehåller troligen övertidsmål och eventuell förlängning, vilket inte särskiljs i data.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Är slutminutstoppen i herr kopplad till täta matchresultat snarare än serietillhörighet?</li>
+        <li>Skiljer sig målminutsfördelningen mellan olika divisioner inom herr- respektive damserien?</li>
+        <li>Påverkar hemma/borta-faktorn när under matchen mål görs, och är den effekten likartad i dam och herr?</li>
+        <li>Hur ser fördelningen ut enbart för avgörande mål (det mål som avgjorde slutresultatet)?</li>
+        <li>Har fördelningen förändrats över tid inom respektive serie?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("F007")} class="fact-ref">F007</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+013:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+013:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

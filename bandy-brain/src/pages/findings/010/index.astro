@@ -1,0 +1,122 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 010 — Hörnmål toppar mitten, öppet spel slutet"
+  description="Hörnmål koncentreras till matchens mittfas, medan öppet spel och straffar pekar tydligt mot slutet av matcherna."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 010 · 25 april 2026</p>
+    <h1 class="finding-title">Hörnmål toppar mitten, öppet spel slutet<br>Olika målminutsmönster beroende på måltyp</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">16,0 %</span><span class="key-number__label">Straffar i 80–89 min</span><span class="key-number__note">Högsta enskilda värde i hela datasetet</span></div>
+          <div class="key-number"><span class="key-number__value">13,6 %</span><span class="key-number__label">Öppet spel i 80–89 min</span><span class="key-number__note">Klart över periodens snitt ~10 %</span></div>
+          <div class="key-number"><span class="key-number__value">12,3 %</span><span class="key-number__label">Hörnmål i 40–49 min</span><span class="key-number__note">Hörnornas tydligaste topp</span></div>
+          <div class="key-number"><span class="key-number__value">9 984</span><span class="key-number__label">Totalt antal mål</span><span class="key-number__note">Fördelat på 1 124 herrmatchar</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi undersökte om fördelningen av mål över matchens minuter skiljer sig åt beroende på om målet kom via hörna, öppet spel eller straff — eller om alla tre måltyper följer samma tidsmönster.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på 1 124 herrmatchers måldata från Bandy-Brains databas (finding 005), totalt 9 984 registrerade mål fördelade på tre måltyper: hörna (2 219 mål), öppet spel (7 240 mål) och straff (525 mål). Varje mål är kopplat till en tiominutersperiod (0–9, 10–19, … 90–99) och en måltyp. Procentsiffrorna anger andelen av respektive typs totala mål som föll inom varje period.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Hörnmål visar ett relativt jämnt men svagt klockat mönster med en topp i period 40–49 (12,3 %) och 80–89 (11,6 %). Öppet spel har en markant topp i 80–89-perioden (13,6 %), vilket är den högsta enskilda siffran i hela datamaterialet för den måltypen. Straffar uppvisar det skevaste mönstret med hela 16,0 % i period 80–89 — den högsta värdet för samtliga typer och perioder utom 90–99. Perioden 40–49 är den enda period där alla tre typer är förhöjda simultant (hörnor 12,3 %, öppet spel 12,2 %, straff 13,0 %).
+
+| Period | Hörna % | Öppet spel % | Straff % |
+|--------|---------|--------------|----------|
+| 0–9    | 9,5     | 9,8          | 5,3      |
+| 10–19  | 9,5     | 10,2         | 10,5     |
+| 20–29  | 11,1    | 9,9          | 9,3      |
+| 30–39  | 11,5    | 10,0         | 8,6      |
+| 40–49  | 12,3    | 12,2         | 13,0     |
+| 50–59  | 12,1    | 11,1         | 10,9     |
+| 60–69  | 11,2    | 10,7         | 11,6     |
+| 70–79  | 10,5    | 11,1         | 12,8     |
+| 80–89  | 11,6    | 13,6         | 16,0     |
+| 90–99  | 0,8     | 1,4          | 2,1      |
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Hörnmålens fördelning är den mest jämna av de tre. Det finns en svag topp i matchens mittfas (40–59) och en sekundär topp i 80–89, men inga dramatiska utslag. Det tyder på att hörnmål inte i lika hög grad som andra måltyper är ett utpräglat sen-matchfenomen — de uppstår relativt konstant under hela matchen.</p>
+      <p>Öppet spel visar ett tydligare sluttryck: 13,6 % av alla öppna mål faller i period 80–89, vilket är klart högre än periodens snitt om 10 %. Det är rimligt att förklara med att det defensiva trycket lättar när lag antingen trycker för utjämning eller tappar koncentration sent i matchen, vilket skapar fler och bättre lägen i öppet spel.</p>
+      <p>Straffarna har det mest extrema slutmönstret: 16,0 % i 80–89 och 2,1 % i 90–99 — sammantaget drygt 18 % av alla straffar faller i matchens sista tio fullspelda minuter. En möjlig förklaring är att försvararnas riskbenägenhet ökar sent i täta matcher, vilket leder till fler regelbrott i farliga lägen. Det kan också vara att domarna uppfattas som mer benägna att döma straff när resultatet är öppet och pressen är hög.</p>
+      <p>Den gemensamma höjdpunkten kring 40–49 för samtliga typer antyder att det finns en generell strukturell faktor — möjligen trötthet mot halvtid eller taktiska omställningar — som höjer målfrekvensen oberoende av måltyp. Men effekten är starkare och mer ihållande för straff och öppet spel i slutskedet än för hörnmål.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Datamaterialet täcker enbart herrbandy, vilket begränsar generaliserbarhet till damserier eller lägre divisioner.</li>
+        <li>Definitionen av 'hörna' som måltyp kan variera beroende på hur data registrerats — direkta hörnmål kontra mål efter hörna i nästa fas är inte nödvändigtvis separerade.</li>
+        <li>Straff-underlaget är litet (525 mål) vilket gör procentuella utslag i enskilda perioder mer volatila.</li>
+        <li>Matchminuter nära 90 är sannolikt underregistrerade om matcher sällan eller aldrig går till förlängning i serien.</li>
+        <li>Vi vet inte om datamaterialet är jämnt fördelat över säsonger och serienivåer, vilket kan påverka strukturella mönster.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Är sluttrycket för straff starkare i täta matcher (en eller noll måls marginal) än i ojämna?</li>
+        <li>Skiljer sig hörnmålens tidsmönster åt beroende på om laget är hemma eller borta?</li>
+        <li>Hur ser målminutsfördelningen ut för damherrar — är sluttrycket lika uttalat?</li>
+        <li>Är öppet spel-toppen i 80–89 driven av specifika lag eller trupper, eller är det ett generellt fenomen?</li>
+        <li>Korrelerar antalet tilldelade straffar per match med matchminut på ett sätt som stöder hypotesen om ökad riskbenägenhet sent?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("F005")} class="fact-ref">F005</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+010:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+010:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

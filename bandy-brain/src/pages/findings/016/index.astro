@@ -1,0 +1,111 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 016 — Hemmaled vid halvtid vinner oftare"
+  description="Lag som leder hemma vid halvtid vinner i 80,1 % av fallen. Bortaledande lag vinner i 75,2 % — en skillnad på knappt 5 procentenheter."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 016 · 25 april 2026</p>
+    <h1 class="finding-title">Hemmaled vid halvtid vinner oftare<br>men skillnaden är måttlig</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">80,1 %</span><span class="key-number__label">Hemmalag vinner från HT-ledning</span><span class="key-number__note">423 av 528 matcher</span></div>
+          <div class="key-number"><span class="key-number__value">75,2 %</span><span class="key-number__label">Bortalag vinner från HT-ledning</span><span class="key-number__note">285 av 379 matcher</span></div>
+          <div class="key-number"><span class="key-number__value">4,9 pp</span><span class="key-number__label">Skillnad hemma/borta</span><span class="key-number__note">procentenheter till hemmalagets fördel</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi ville undersöka om det spelar någon roll var på planen ett lag befinner sig när det leder vid halvtid — konkret: omvandlar hemmalag sin halvtidsledning till seger i högre utsträckning än bortalag?</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på Finding 001, som täcker samtliga herrmatcher i den studerade serien där ett lag ledde vid halvtid. Matcherna delades in i två grupper:<ul><li>Hemmalagets ledning vid halvtid</li><li>Bortalagens ledning vid halvtid</li></ul>För varje grupp räknades andelen matcher där det ledande laget också vann på slutresultatet.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      | Grupp | Ledningar | Segrar | Vinstprocent |
+|---|---|---|---|
+| Hemmalag leder HT | 528 | 423 | 80,1 % |
+| Bortalag leder HT | 379 | 285 | 75,2 % |
+
+Skillnaden uppgår till 4,9 procentenheter till hemmalagen fördel. Bortalag som leder vid halvtid förlorar eller spelar oavgjort alltså i vart fjärde fall, mot ungefär vart femte fall för hemmalag.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>En halvtidsledning är i bägge fallen en stark prediktor för slutseger — tre av fyra bortaledande lag och fyra av fem hemmalederande lag tar till slut segern. Det faktum att hemmalag konverterar sin ledning något oftare är konsistent med den generella hemmafördelen i bandy, men det är värt att notera att skillnaden inte är dramatisk.</p>
+      <p>En möjlig förklaring är att hemmalag som leder vid halvtid har uppnått ledningen under gynnsamma förhållanden — stöd från publik, känd planyta — och kan fortsätta spela på sina styrkor i andra halvlek. Bortalag i ledning kan i stället möta ett hemmalag som höjer sig, tar fler risker och eventuellt får stöd av omgivningen för att vända matchen.</p>
+      <p>Det bör också beaktas att urvalen skiljer sig i storlek: 528 hemmaledarfall mot 379 bortaledande fall. Det är i sig ett mönster — hemmalag leder vid halvtid i fler matcher totalt, vilket speglar att hemmalag generellt presterar starkare under matchernas första del.</p>
+      <p>Skillnaden på 4,9 procentenheter är statistiskt meningsfull givet underlaget, men den är inte tillräckligt stor för att ensam förklara hemmafördelen. Halvtidsledningens värde är alltså relativt stabilt oavsett om man är hemma eller borta — läget på tavlan väger tyngre än vart man spelar.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Vi vet inte hur stora ledningarna var vid halvtid — en enåledning och en fyramålsledning behandlas likvärdigt.</li>
+        <li>Analysen skiljer inte på division eller säsong, vilket kan dölja trendförändringar över tid.</li>
+        <li>Oavgjorda halvtidsresultat ingår inte i underlaget och deras utfall analyseras separat.</li>
+        <li>Matcherna viktas inte efter motståndarens styrka, vilket kan påverka jämförelsen.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Hur påverkar ledningens storlek vid halvtid (1 mål vs. 2+ mål) sannolikheten att vinna?</li>
+        <li>Finns det säsongsvariationer — har hemmafördelen vid halvtidsledning förändrats över tid?</li>
+        <li>Hur stor andel av halvtidsledningar uppstår för hemma- respektive bortalag — och förklarar det matchmönstret?</li>
+        <li>Skiljer sig mönstret mellan toppserie och lägre divisioner?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("S001")} class="fact-ref">S001</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+016:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+016:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

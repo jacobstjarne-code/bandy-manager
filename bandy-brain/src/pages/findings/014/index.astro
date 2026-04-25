@@ -1,0 +1,115 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 014 — Bortalagets hörnor konverteras lika ofta"
+  description="Hörn hemma och borta ger nästan identisk måleffektivitet. Analys av 1 124 herrmatchers hörnstatistik."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 014 · 25 april 2026</p>
+    <h1 class="finding-title">Bortalagets hörnor konverteras lika ofta<br>— hemmafördelens gräns</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">11,6 %</span><span class="key-number__label">Hemma konvertering</span><span class="key-number__note">andel hörnor → mål</span></div>
+          <div class="key-number"><span class="key-number__value">11,3 %</span><span class="key-number__label">Borta konvertering</span><span class="key-number__note">andel hörnor → mål</span></div>
+          <div class="key-number"><span class="key-number__value">0,3 pp</span><span class="key-number__label">Differens</span><span class="key-number__note">hemma minus borta</span></div>
+          <div class="key-number"><span class="key-number__value">1 124</span><span class="key-number__label">Matcher i underlaget</span><span class="key-number__note">herrserie</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Finding 002 visade att hörn omvandlas till mål i drygt vart nionde fall. En naturlig följdfråga är om det finns en hemmaeffekt: slår hemmalaget sina hörnor skarpare, eller utjämnas den fördelen när bollen väl läggs i hörnet?</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Datamaterialet omfattar 1 124 herrmatchers komplett händelselogg, där varje hörn och varje mål kodats med match-id, period och lagroll (hemma/borta). Från detta har andelen av ett lags totala mål som kom via hörn (corner_goal_pct) och andelen hörnor som direkt resulterade i mål (corner_conversion) beräknats separat för hemma- respektive bortalagsrollen.<ul><li>Hemma: 10 358 hörnor, 1 198 hörnmål, 5 489 totalmål</li><li>Borta: 9 564 hörnor, 1 081 hörnmål, 4 764 totalmål</li></ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Hörnkonverteringsgraden — andelen hörnor som ger mål — är 11,6 % för hemmalaget och 11,3 % för bortalaget, en differens på 0,3 procentenheter. Andelen av totala mål som kom från hörn är 21,8 % för hemmalaget och 22,7 % för bortalaget, alltså marginellt högre för bortalaget.
+
+| Mått | Hemma | Borta | Differens |
+|---|---|---|---|
+| Hörnor totalt | 10 358 | 9 564 | +794 |
+| Hörnmål | 1 198 | 1 081 | +117 |
+| Konverteringsgrad | 11,6 % | 11,3 % | +0,3 pp |
+| Andel av totalmål | 21,8 % | 22,7 % | −0,9 pp |
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Hemmalaget slår fler hörnor i absoluta tal — 794 fler under den undersökta perioden — och gör fler hörnmål. Det speglar sannolikt den bredare hemmaeffekten: mer bollinnehav, mer tryck framåt, fler situationer som leder till hörn överhuvudtaget.</p>
+      <p>Däremot är konverteringsgraden nästan identisk. Skillnaden på 0,3 procentenheter är så liten att den ryms väl inom normal slumpmässig variation i ett material av den här storleken. Hemmalaget verkar alltså inte vara skickligare på att omsätta ett hörntillfälle till mål — det får bara fler tillfällen.</p>
+      <p>Att bortalagets hörnor utgör en något större andel av dess totalmål (22,7 % mot 21,8 %) kan tolkas som att bortalaget är mer beroende av standardsituationer för att ta sig in på resultattavlan. Om bortalaget har svårare att skapa öppet spel kan hörn bli en oproportionerligt viktig väg till mål — men det kräver en separat analys av hur bortalagets totala målskapande är fördelat.</p>
+      <p>Sammanfattningsvis tyder siffrorna på att hemmaeffekten i bandyhörn är kvantitativ snarare än kvalitativ: fler hörnor, inte effektivare hörnor.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Konverteringsgrad definieras här som direkta hörnmål; mål efter returstudsar eller förlängningar kan vara felinräknade beroende på källsystemets kodning.</li>
+        <li>Materialet är begränsat till herrserien och resultaten är inte nödvändigtvis generaliserbara till damserie eller lägre divisioner.</li>
+        <li>Inga statistiska signifikanstester har genomförts — 0,3 pp-differensen kan vara slumpmässig.</li>
+        <li>Hörn per match kan variera systematiskt mellan arenor, underlag och säsong, vilket inte kontrollerats för.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Är skillnaden i konverteringsgrad statistiskt signifikant med ett chi²-test eller liknande?</li>
+        <li>Hur fördelar sig hörnmål per period — syns en hemmaeffekt starkare i slutet av matcher?</li>
+        <li>Skiljer sig enskilda lags hörneffektivitet hemma/borta, eller är mönstret jämnt fördelat?</li>
+        <li>Påverkar bortalagets defensiva uppställning (antal spelare bakom bollen) hur ofta hemmalaget konverterar hörnor?</li>
+        <li>Finns samma mönster i damserien, eller är hemma/borta-effekten annorlunda där?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("F002")} class="fact-ref">F002</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+014:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+014:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

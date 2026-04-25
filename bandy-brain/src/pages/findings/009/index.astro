@@ -1,0 +1,125 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 009 — Mål faller tidigare i jämna matcher"
+  description="Jämna matcher (±1 mål) domineras av tidiga mål, medan öppna matcher har tyngdpunkten i slutminuterna. Analys av 1 124 herrmatcher."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 009 · 25 april 2026</p>
+    <h1 class="finding-title">Mål faller tidigare i jämna matcher<br>— men klumpar sig sent i öppna</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">33,1 %</span><span class="key-number__label">Mål i minut 0–20 (jämna matcher)</span><span class="key-number__note">Nästan en tredjedel av alla mål i jämna matcher görs i öppningskvarten</span></div>
+          <div class="key-number"><span class="key-number__value">4,4 %</span><span class="key-number__label">Mål i minut 0–20 (öppna matcher)</span><span class="key-number__note">Öppna matcher startar nästan alltid utan tidig avgöring</span></div>
+          <div class="key-number"><span class="key-number__value">49,8 %</span><span class="key-number__label">Mål i minut 60–89 (öppna matcher)</span><span class="key-number__note">Hälften av målen i öppna matcher faller i slutskedet</span></div>
+          <div class="key-number"><span class="key-number__value">21,9 %</span><span class="key-number__label">Mål i minut 60–89 (jämna matcher)</span><span class="key-number__note">Jämna matcher har ett mer utspritt slutskede</span></div>
+          <div class="key-number"><span class="key-number__value">1 124</span><span class="key-number__label">Antal matcher i analysen</span><span class="key-number__note">Herrserie, samma underlag som Finding 005</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Finding 005 visade att mål inte är jämnt fördelade över matchminuterna. Frågan här är om det mönstret ser olika ut beroende på matchläget: är tidiga mål ett fenomen som framför allt kännetecknar jämna, öppna matcher där varje mål väger tungt, eller syns det tvärtom i matcher där ett lag redan skapat en klar ledning?</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på 1 124 herrmatcher ur samma dataset som Finding 005. Målen delades upp i två grupper utifrån slutresultatets marginal: <ul><li><strong>Jämna matcher (tight):</strong> slutmarginal ±1 mål — båda lagen var starka konkurrenter hela matchen.</li><li><strong>Öppna matcher (open):</strong> slutmarginal ≥4 mål — ett lag dominerade tydligt.</li></ul> Varje grupps mål fördelades sedan på tiominutersintervall (0–9 min, 10–19 min osv.) och normaliserades till procentandel av gruppens totala målvolym.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Distributionerna skiljer sig markant åt:
+
+| Minut | Jämna matcher (%) | Öppna matcher (%) |
+|-------|-------------------|-------------------|
+| 0–9   | 17,5              | 0,5               |
+| 10–19 | 15,6              | 3,9               |
+| 20–29 | 12,9              | 7,1               |
+| 30–39 | 10,6              | 9,9               |
+| 40–49 | 10,9              | 13,8              |
+| 50–59 | 9,7               | 13,0              |
+| 60–69 | 7,9               | 14,1              |
+| 70–79 | 7,1               | 15,4              |
+| 80–89 | 6,9               | 20,3              |
+| 90–99 | 0,7               | 1,9               |
+
+I jämna matcher görs 33,1 % av alla mål under de första 20 minuterna. I öppna matcher är motsvarande siffra 4,4 %. Öppna matcher har sin tyngdpunkt i slutskedet: 49,8 % av målen faller i minuterna 60–89, jämfört med 21,9 % i jämna matcher.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Mönstret är omvänt i de två grupperna. I jämna matcher koncentreras målen till matchens inledning och avtar sedan stadigt — en kurva som pekar nedåt från vänster till höger. I öppna matcher är rörelsen den motsatta: målen ökar i takt med att matchen fortskrider och toppar i den sista halvtimmen.</p>
+      <p>En möjlig förklaring till det tidiga trycket i jämna matcher är att lagen är välmatchade och att det initiala spelet är intensivt och öppet, vilket skapar tidiga målchanser. När lagen läser varandra och matchen stabiliseras minskar målfrekvensen. I öppna matcher kan det tidiga skedet vara relativt händelsefattigt fram till att ett lag bryter igenom — varefter det dominanta laget fortsätter att göra mål i allt snabbare takt under matchens gång.</p>
+      <p>Den extremt låga andelen tidiga mål i öppna matcher (0,5 % i minut 0–9) är värd att notera separat. Det tyder på att de matcher som slutar med stor marginal sällan avgörs av en tidig chock — de avgörs snarare av att ett lag successivt tar över matchen. Omvänt verkar tidiga ledningar i de jämnare matcherna inte leda till lika tydlig dominans, vilket håller matcherna täta länge nog för att de ska klassificeras som jämna.</p>
+      <p>Sammanfattningsvis: mönstret från Finding 005 är inte ett generellt fenomen — det är i hög grad kopplat till matchtyp. Tidigt mål-mönstret tillhör de jämna matcherna; de öppna matcherna uppvisar ett nästan spegelvint beteende.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Gränsen för 'öppen match' (≥4 mål) är arbiträr och påverkar vilka matcher som ingår i respektive grupp.</li>
+        <li>Kausaliteten är oklar: vi vet inte om tidiga mål orsakar att matchen förblir jämn, eller om jämna lag per definition producerar fler tidiga mål.</li>
+        <li>Normalisering till procentandelar döljer skillnader i absolut målvolym mellan grupperna.</li>
+        <li>Data gäller enbart herrserie och kan inte utan vidare generaliseras till dam- eller ungdomsserier.</li>
+        <li>Minuten 90–99 är troligen underrepresenterad om matchdata inte konsekvent inkluderar övertid.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Leder tidiga mål i jämna matcher (±1) till att det scorande laget faktiskt vinner, eller kvitteras de bort?</li>
+        <li>Syns samma inverterade mönster i dambandy med liknande marginaluppdelning?</li>
+        <li>Finns det lag-specifika skillnader — scorer vissa lag oproportionerligt många tidiga mål i jämna matcher?</li>
+        <li>Hur ser distributionen ut för matcher med marginal 2–3 mål, dvs. mellankategorin som inte inkluderades här?</li>
+        <li>Påverkas mönstret av om matchen spelas hemma eller borta för det dominerande laget?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("F005")} class="fact-ref">F005</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+009:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+009:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

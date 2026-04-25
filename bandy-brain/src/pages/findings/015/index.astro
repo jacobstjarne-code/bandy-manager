@@ -1,0 +1,118 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 015 — Större halvtidsledning ger dramatiskt högre vinst"
+  description="Winrate vid halvtidsledning i herrbandy: 1-0 ger 62%, 2-0 ger 80% och 3+-0 ger 96% seger."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 015 · 25 april 2026</p>
+    <h1 class="finding-title">Större halvtidsledning ger dramatiskt högre vinst<br>1–0: 62% — 2–0: 80% — 3+–0: 96%</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">61,6 %</span><span class="key-number__label">Winrate 1–0 HT</span><span class="key-number__note">375 matcher</span></div>
+          <div class="key-number"><span class="key-number__value">80,0 %</span><span class="key-number__label">Winrate 2–0 HT</span><span class="key-number__note">210 matcher</span></div>
+          <div class="key-number"><span class="key-number__value">96,0 %</span><span class="key-number__label">Winrate 3+–0 HT</span><span class="key-number__note">322 matcher</span></div>
+          <div class="key-number"><span class="key-number__value">+18,4 pp</span><span class="key-number__label">Steg 1→2 mål</span><span class="key-number__note">procentenheter i vinst</span></div>
+          <div class="key-number"><span class="key-number__value">4,0 %</span><span class="key-number__label">Förlustfrekvens 3+–0</span><span class="key-number__note">nästan aldrig</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi ville veta hur stor skillnad det är i slutlig vinstandel beroende på om ett lag leder med ett, två eller tre eller fler mål vid halvtid — och om relationen är linjär eller om det finns ett tydligt tröskelläge.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på herrseriedata från Finding 001, som kategoriserar matcher efter halvtidsledningens storlek. Totalt ingår 907 matcher där det ledande laget vid halvtid haft ett positivt målgap mot nollställd motståndare.<ul><li>1–0 vid halvtid: 375 matcher</li><li>2–0 vid halvtid: 210 matcher</li><li>3+–0 vid halvtid: 322 matcher</li></ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Winrate ökar tydligt med ledningens storlek:
+
+| Halvtidsledning | Antal matcher | Winrate |
+|---|---|---|
+| 1–0 | 375 | 61,6 % |
+| 2–0 | 210 | 80,0 % |
+| 3+–0 | 322 | 96,0 % |
+
+Skillnaden mellan 1–0 och 2–0 är 18,4 procentenheter. Skillnaden mellan 2–0 och 3+–0 är 16,0 procentenheter. Vid 3+–0 är förlorarfrekvensen 4,0 %.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Sambandet är inte linjärt i absoluta tal, men stegen är relativt jämna: varje ytterligare mål i ledning vid halvtid adderar ungefär 16–18 procentenheter i vintsannolikhet. Det finns inget enskilt tröskelläge som sticker ut — snarare en konsekvent gradient.</p>
+      <p>Att 1–0 vid halvtid 'bara' ger 62 % vinst är värt att notera. Det innebär att det ledande laget förlorar eller spelar oavgjort i nästan fyra av tio fall. Enkelmålsledning är alltså ett osäkert tillstånd — tillräckligt för att vara favorit, men långt ifrån avgörande.</p>
+      <p>Vid 3+–0 är däremot tänd i princip bara ett teoretiskt fenomen: förlustandelen på 4 % kan till stor del förklaras av statistisk brus, extremt ovanliga matcher eller möjligen data med registreringsfel. I praktiken är en tregålsledning vid halvtid nästan synonymt med seger.</p>
+      <p>Den höga matchvolymen i kategorin 3+–0 (322 matcher) antyder att sådana ledningar inte är ovanliga i herrbandy — troligen ett utslag av spelets höga poängtakt jämfört med exempelvis fotboll.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Data gäller enbart herrserien — motsvarande mönster för damserien eller lägre divisioner är okänt.</li>
+        <li>Kategorin '3+–0' slår ihop allt från 3–0 till potentiellt 10–0, vilket döljer intern variation.</li>
+        <li>Analysen säger inget om hur ledningen uppstod — tidiga mål kan skilja sig strukturellt från sena halvtidsmål.</li>
+        <li>Oavgjort-utfall vid slutet är inte separat redovisat, vilket gör att 'ej vinst' innefattar både förlust och delad poäng.</li>
+        <li>Säsongsurval och eventuella datakvalitetsbrister i grundmaterialet är okända.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Hur ser winrate ut för det jagande laget — dvs. vid 0–1, 0–2 och 0–3+ vid halvtid?</li>
+        <li>Skiljer sig mönstret mellan hemma- och bortamatcher för samma halvtidsledning?</li>
+        <li>Hur stor andel av 1–0-ledningarna vid halvtid slutar med vändning jämfört med oavgjort?</li>
+        <li>Finns det skillnad i winrate beroende på vilken minut det ledande målet kom under första halvlek?</li>
+        <li>Hur ser motsvarande siffror ut i damserien?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("S001")} class="fact-ref">S001</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+015:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+015:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

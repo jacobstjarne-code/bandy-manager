@@ -1,0 +1,116 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 011 — Halvledning förutsäger seger — men olika starkt"
+  description="Kvartsfinalsledare vinner i 93 % av fallen. I semifinal sjunker siffran till 75 %. Finalen landar däremellan."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 011 · 25 april 2026</p>
+    <h1 class="finding-title">Halvledning förutsäger seger — men olika starkt<br>beroende på fas i slutspelet</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">93,2 %</span><span class="key-number__label">Kvartsfinal — HT-ledning → vinst</span><span class="key-number__note">59 matcher med halvtidsledning av 68 totalt</span></div>
+          <div class="key-number"><span class="key-number__value">75,0 %</span><span class="key-number__label">Semifinal — HT-ledning → vinst</span><span class="key-number__note">Lägst av de tre faserna</span></div>
+          <div class="key-number"><span class="key-number__value">87,5 %</span><span class="key-number__label">Final — HT-ledning → vinst</span><span class="key-number__note">Litet underlag, 8 matcher med HT-ledning</span></div>
+          <div class="key-number"><span class="key-number__value">8,81</span><span class="key-number__label">Snittmål, kvartsfinal</span><span class="key-number__note">Högst målproduktion av de tre faserna</span></div>
+          <div class="key-number"><span class="key-number__value">7,00</span><span class="key-number__label">Snittmål, final</span><span class="key-number__note">Lägst målproduktion — tätare matcher</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Finding 006 visade att halvtidsledning är en stark prediktor för slutseger i bandyns slutspel. En naturlig följdfråga är om detta samband håller lika starkt genom hela slutspelet, eller om kvartsfinal, semifinal och final uppvisar olika mönster — i målproduktion, jämnhet och halvtidsledningens prognosvärde.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på samma matchunderlag som Finding 006, uppdelat per fas i slutspelet. Totalt ingår 118 matcher fördelade enligt:<ul><li>Kvartsfinal: 68 matcher</li><li>Semifinal: 38 matcher</li><li>Final: 12 matcher</li></ul>Halvtidsledning avser att ett lag leder efter 45 minuter (ej oavgjort i halvtid). Vinstprocenten gäller andelen av dessa matcher där det ledande laget vann.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      | Fas | Matcher | Snittmål | HT-ledning leder till vinst | Antal HT-ledare |
+|---|---|---|---|---|
+| Kvartsfinal | 68 | 8,81 | 93,2 % | 59 |
+| Semifinal | 38 | 8,39 | 75,0 % | 28 |
+| Final | 12 | 7,00 | 87,5 % | 8 |
+
+Målsnittet sjunker med varje fas: från 8,81 i kvartsfinal till 7,00 i final. Halvtidsledningens prognosvärde är lägst i semifinal (75,0 %) och högst i kvartsfinal (93,2 %). Finalen befinner sig däremellan med 87,5 %, men bygger på ett litet underlag (8 matcher med halvtidsledning).
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Kvartsfinalen uppvisar det tydligaste mönstret: ett lag som leder i halvtid vinner i nio av tio fall, och matcherna producerar flest mål i snitt. Det tyder på att styrkesskillnaderna mellan lagen fortfarande är märkbara i denna fas — starka lag tar täten tidigt och håller den.</p>
+      <p>Semifinalen bryter mönstret. Trots ett halvtidsledning vinner det ledande laget bara tre av fyra gånger, vilket är en markant nedgång. Det kan spegla att de åtta kvarvarande lagen är mer jämnt matchade, och att vändningar i andra halvlek är reella snarare än undantag. Målsnittet sjunker något, men inte dramatiskt — det är alltså inte en defensivt låst fas, utan snarare en fas med fler jämna uppgörelser.</p>
+      <p>Finalen är svår att tolka statistiskt givet att underlaget är tolv matcher totalt, varav åtta med halvtidsledning. Siffran 87,5 % ligger mellan kvartsfinal och semifinal, men konfidensintervallet är brett. Det är rimligt att anta att finaler generellt är jämna och att vändningar förekommer, men data räcker inte för att belägga ett strukturellt mönster.</p>
+      <p>Sammanfattningsvis tycks halvtidsledningens prediktiva kraft inte vara konstant genom slutspelet. Den är starkast tidigt, när lagskillnaderna är större, och avtar när de jämnaste lagen möts. Målsnittet rör sig i samma riktning — färre mål när matcherna är tätare.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Finalunderlaget (12 matcher) är för litet för säkra slutsatser om procenttal.</li>
+        <li>Oavgjorda halvtidsställningar exkluderas, vilket påverkar denominatorn olika mycket per fas.</li>
+        <li>Det är okänt om data spänner över samma antal säsonger för alla tre faser.</li>
+        <li>Serieformat och hemma/borta-struktur kan skilja sig åt mellan faser och påverka resultaten.</li>
+        <li>Ingen kontroll för övertid eller straffar — det är oklart hur sådana matcher hanteras.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Hur vanliga är vändningar (laget som leder i HT förlorar) per fas, och i vilka minuter sker avgörande mål?</li>
+        <li>Skiljer sig målfördelningen per halvlek åt mellan kvartsfinal och semifinal?</li>
+        <li>Är halvtidsledningens prognosvärde i semifinal stabilt över tid, eller drivs det av enstaka säsonger?</li>
+        <li>Hur ser matcherna ut där halvtidsledaren förlorar — är det jämna slutresultat eller tydliga vändningar?</li>
+        <li>Påverkar hemmafördel halvtidsledningens prediktiva kraft olika i de olika faserna?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("F006")} class="fact-ref">F006</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+011:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+011:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

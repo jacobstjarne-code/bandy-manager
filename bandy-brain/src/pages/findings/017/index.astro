@@ -1,0 +1,125 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 017 — Comebacks startar tidigare i andra halvlek"
+  description="Lag som vänder matcher gör det första målet i andra halvlek snitt 6 minuter tidigare än icke-comeback-lag."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 017 · 25 april 2026</p>
+    <h1 class="finding-title">Comebacks startar tidigare i andra halvlek<br>Första 2H-mål avgör vändningens chans</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">55,7</span><span class="key-number__label">Genomsnittlig minut, comeback</span><span class="key-number__note">Räknat från matchstart</span></div>
+          <div class="key-number"><span class="key-number__value">62,1</span><span class="key-number__label">Genomsnittlig minut, icke-comeback</span><span class="key-number__note">Räknat från matchstart</span></div>
+          <div class="key-number"><span class="key-number__value">6,4 min</span><span class="key-number__label">Skillnad i snittminut</span><span class="key-number__note">Comebacks reducerar tidigare</span></div>
+          <div class="key-number"><span class="key-number__value">62 %</span><span class="key-number__label">Comebacks med mål 91–100 min</span><span class="key-number__note">76 av 123 comebacks</span></div>
+          <div class="key-number"><span class="key-number__value">27 %</span><span class="key-number__label">Comeback-andel 96–100 min</span><span class="key-number__note">Högsta andelen i något intervall</span></div>
+          <div class="key-number"><span class="key-number__value">123</span><span class="key-number__label">Totalt antal comebacks</span><span class="key-number__note">Av 785 matcher med halvtidsunderläge</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi undersökte om tidpunkten för det första målet i andra halvlek korrelerar med sannolikheten att ett lag lyckas vända ett underläge. Specifikt ville vi se om comebacks klustrar kring tidiga andra halvleksmål, eller om vändningar sprider sig jämt över matchklockan.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på 785 matcher i herrbandyn där ett lag inledde andra halvlek med ett underläge. Varje match klassificerades som comeback (123 st) eller icke-comeback (662 st) baserat på slutresultatet. För varje match registrerades minuten för det första målet som underdogslaget gjorde i andra halvlek.<ul><li>Totalt 785 matcher med underläge vid halvtid</li><li>Comeback definieras som slutseger eller oavgjort för det efterslänkande laget</li><li>Minutfördelningen grupperas i 5-minutersintervall från minut 91 till 135+</li><li>Källa: Finding 004, herrserie</li></ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Comebacks hade i genomsnitt sitt första andra halvleksmål vid minut 55,7 (räknat från matchstart), jämfört med 62,1 för icke-comebacks — en skillnad på 6,4 minuter. Fördelningen av comebacks var starkt koncentrerad till de allra första minuterna av andra halvlek:
+
+| Intervall | Comeback | Icke-comeback | Comeback-andel |
+|-----------|----------|---------------|----------------|
+| 91–95 min | 42 | 170 | 20 % |
+| 96–100 min | 34 | 92 | 27 % |
+| 101–105 min | 18 | 92 | 16 % |
+| 106–110 min | 8 | 73 | 10 % |
+| 111–115 min | 10 | 53 | 16 % |
+| 116–120 min | 9 | 57 | 14 % |
+| 121–125 min | 0 | 46 | 0 % |
+| 126–130 min | 1 | 28 | 3 % |
+| 131–135 min | 1 | 34 | 3 % |
+
+Nästan tre fjärdedelar (76 av 123, ca 62 %) av alla comebacks hade sitt första mål i intervallet 91–100 minuter.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Mönstret är tydligt: sannolikheten för en lyckad vändning minskar snabbt om det underdogslaget inte reducerar tidigt i andra halvlek. Comeback-andelen är som högst i intervallet 96–100 minuter (27 %), och faller sedan stegvis. Från minut 121 och framåt är comeback i princip obefintligt i detta material.</p>
+      <p>En möjlig förklaring är att tidiga mål i andra halvlek förändrar matchbilden på ett sätt som senare mål inte gör. Ett tidigt reduceringsmål ger det efterslänkande laget maximalt med tid att spela om matchen, vilket sänker motståndaren och öppnar upp spelet. Sena mål reducerar utan att ge tid till fortsatt press.</p>
+      <p>Det bör noteras att sambandet inte nödvändigtvis är kausalt. Lag som gör tidiga 2H-mål kan vara de lag som generellt är starkare eller har ett bättre tempo in i halvleken — det är inte säkert att det tidiga målet i sig orsakar comebacken. Matchdynamiken kan driva båda variablerna parallellt.</p>
+      <p>Siffrorna antyder ändå att den kritiska perioden för ett potentiellt comeback är de första tio minuterna av andra halvlek. Om laget inte reducerar då minskar chanserna påtagligt, vilket kan ha praktisk relevans för taktiska beslut kring halvtidspausen.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Comeback definieras binärt (vann/oavgjort) utan hänsyn till hur stort underläget var vid halvtid.</li>
+        <li>Materialet anger inte hur många mål det efterslänkande laget behövde göra för att vända — ett 0–1-underläge kräver ett mål, ett 0–3-underläge kräver fyra.</li>
+        <li>Minutfördelningen för comebacks saknar data för intervallet 121–125 minuter, vilket kan tyda på ett registreringsfel snarare än verklig nollförekomst.</li>
+        <li>Analysen täcker enbart herrserie och kan inte generaliseras till dam- eller juniorserier.</li>
+        <li>Konfunderade variabler som motståndarens kvalitet, hemmaplan och väder är inte kontrollerade.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Skiljer sig comeback-mönstret beroende på storleken på underläget vid halvtid (1 mål vs. 2+ mål)?</li>
+        <li>Är comeback-andelen i intervallet 96–100 minuter statistiskt skild från slumpen givet basfrekvensen?</li>
+        <li>Hur ser matchdynamiken ut efter det första 2H-målet — gör comeback-lagen fler mål per tidsenhet efteråt?</li>
+        <li>Finns det specifika lag eller spelarstilar som är överrepresenterade i tidiga 2H-comeback-mål?</li>
+        <li>Skiljer sig tidsmönstret mellan hemmamatcher och bortamatcher för det underdogslaget?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("F004")} class="fact-ref">F004</a>
+      </p>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+017:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+017:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>
