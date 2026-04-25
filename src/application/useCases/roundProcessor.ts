@@ -5,7 +5,6 @@ import type { Fixture } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
 import { FixtureStatus, MatchEventType, InboxItemType, PendingScreen, PlayoffStatus, TrainingType, TrainingIntensity } from '../../domain/enums'
 import { getTacticModifiers } from '../../domain/services/tacticModifiers'
-import { getRecommendedFormation } from '../../domain/entities/Formation'
 import { getRivalry } from '../../domain/data/rivalries'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import { calculateStandings } from '../../domain/services/standingsService'
@@ -21,16 +20,16 @@ import { generateWeeklyDecision } from '../../domain/services/weeklyDecisionServ
 import { evaluateBoard, generateBoardMessage } from '../../domain/services/boardService'
 import { mulberry32 } from '../../domain/utils/random'
 import { getRoundDate, buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
-import { handleSeasonEnd } from './seasonEndProcessor'
-import { handlePlayoffStart } from './playoffTransition'
 import type { AdvanceResult } from './advanceTypes'
+import { derivePreRoundContext } from './processors/preRoundContextProcessor'
+import { applyPostRoundFlags } from './processors/postRoundFlagsProcessor'
 import { applyRoundTraining } from './processors/trainingProcessor'
 import { applyPlayerStateUpdates } from './processors/playerStateProcessor'
 import { updatePlayerMatchStats } from './processors/statsProcessor'
 import { applyRoundDevelopment } from '../../domain/services/playerDevelopmentService'
 import { processPlayoffRound } from './processors/playoffProcessor'
 import { processCupRound } from './processors/cupProcessor'
-import { appendFinanceLog, applyFinanceChange, evaluateFinanceStatus } from '../../domain/services/economyService'
+import { appendFinanceLog, applyFinanceChange } from '../../domain/services/economyService'
 import { updatePlayerAvailability, updateLowMoraleDays } from '../../domain/services/playerAvailabilityService'
 import { updateTrainerArc } from '../../domain/services/trainerArcService'
 import { checkInObjectives } from '../../domain/services/boardObjectiveService'
@@ -114,74 +113,18 @@ function stripCompletedFixture(f: Fixture, managedFixtureId?: string, managedClu
 }
 
 export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult {
-  const scheduledFixtures = game.fixtures.filter(f => f.status === FixtureStatus.Scheduled)
-  // League fixtures only (non-cup) for deciding playoff/season-end triggers
-  const scheduledLeagueFixtures = scheduledFixtures.filter(f => !f.isCup)
+  const preRound = derivePreRoundContext(game, seed)
+  if (preRound.kind === 'earlyReturn') return preRound.result
+  const {
+    nextMatchday,
+    roundFixtures,
+    currentLeagueRound,
+    isCupRound,
+    isPlayoffRound,
+    isSecondPassForManagedMatch,
+    baseSeed,
+  } = preRound.context
 
-  // No scheduled league fixtures — decide what comes next
-  if (scheduledLeagueFixtures.length === 0) {
-    if (!game.playoffBracket) {
-      return handlePlayoffStart(game, seed)
-    } else if (game.playoffBracket.status === PlayoffStatus.Completed) {
-      // Wait for cup to finish before ending the season
-      const pendingCupFixtures = scheduledFixtures.filter(f => f.isCup)
-      if (pendingCupFixtures.length === 0) {
-        return handleSeasonEnd(game, seed)
-      }
-      // Cup still running — fall through to simulate cup round below
-    } else {
-      // Bracket exists but incomplete with no fixtures — shouldn't happen normally
-      return handleSeasonEnd(game, seed)
-    }
-  }
-
-  // nextMatchday is the global play order index — sort by matchday, not roundNumber
-  const nextMatchday = Math.min(...scheduledFixtures.map(f => f.matchday))
-
-  // Diagnostic: log advance state for omgångshopp debugging
-  if (typeof window !== 'undefined') {
-    console.log('[ADVANCE] nextMatchday:', nextMatchday,
-      'scheduled:', scheduledFixtures.slice(0, 8).map(f => ({ md: f.matchday, isCup: !!f.isCup, r: f.roundNumber })))
-  }
-
-  // Guard: detect matchday skips (diagnostic for omgångshopp bug)
-  const lastPlayedMatchday = game.fixtures
-    .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
-    .reduce((max, f) => Math.max(max, f.matchday ?? f.roundNumber), 0)
-  if (nextMatchday > lastPlayedMatchday + 2 && lastPlayedMatchday > 0) {
-    console.warn(`[MATCHDAY SKIP] last=${lastPlayedMatchday} next=${nextMatchday} — possible scheduling gap`)
-  }
-
-  // Collect fixtures for this matchday (scheduled + already-completed live-played)
-  const roundFixtures = game.fixtures.filter(f =>
-    f.matchday === nextMatchday &&
-    (f.status === FixtureStatus.Scheduled || f.status === FixtureStatus.Completed)
-  )
-
-  // Guard: detect cup+league collision on same matchday
-  const hasCup = roundFixtures.some(f => f.isCup)
-  const hasLeague = roundFixtures.some(f => !f.isCup && f.roundNumber <= 22)
-  if (hasCup && hasLeague) {
-    console.error(`[MATCHDAY CONFLICT] md${nextMatchday} has both cup and league fixtures!`)
-  }
-
-  // Detect second-pass scenario: advance() is called twice for cup/playoff matchdays —
-  // first to sim AI matches (managed skipped), then again after user sets lineup.
-  // On pass 2, all AI fixtures are already Completed. Skip training/economy/injuries
-  // to avoid double side-effects; only the managed fixture simulation is needed.
-  let aiCount = 0, aiCompletedCount = 0, hasManagedScheduled = false
-  for (const f of roundFixtures) {
-    const isManaged = f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId
-    if (isManaged) {
-      if (f.status === FixtureStatus.Scheduled) hasManagedScheduled = true
-    } else {
-      aiCount++
-      if (f.status === FixtureStatus.Completed) aiCompletedCount++
-    }
-  }
-  const isSecondPassForManagedMatch = aiCount > 0 && aiCompletedCount === aiCount && hasManagedScheduled
-
-  const baseSeed = seed ?? (nextMatchday * 1000 + game.currentSeason * 7)
   const localRand = mulberry32(baseSeed + 9999)
 
   // Collect player IDs who played in this round (for fitness updates)
@@ -197,13 +140,6 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // Detect if there is a pending (unplayed) cup match for the managed club this round
   let hasManagedCupPending = false
-
-  // Determine if this round contains cup or playoff fixtures
-  const isCupRound = roundFixtures.some(f => f.isCup)
-  const isPlayoffRound = !isCupRound && game.playoffBracket !== null && nextMatchday > 26
-
-  // League round number (1-22) for board milestones and training — null during cup/playoff rounds
-  const currentLeagueRound = roundFixtures.find(f => !f.isCup && f.roundNumber <= 22)?.roundNumber ?? null
 
   // ── Apply training for all clubs this round ────────────────────────────
   // Skip on second pass (AI fixtures already done, only managed match left) to prevent double side-effects
@@ -1231,74 +1167,13 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // ── Halvtidssummering — trigger efter liga-omgång 11 ───────────────────────
-  if (
-    justCompletedManagedFixture &&
-    !justCompletedManagedFixture.isCup &&
-    justCompletedManagedFixture.roundNumber === 11 &&
-    game.pendingScreen !== PendingScreen.HalfTimeSummary
-  ) {
-    updatedGame = { ...updatedGame, pendingScreen: PendingScreen.HalfTimeSummary }
-  }
-
-  // Onboarding step progression (advances after first 3 managed matches)
-  const currentOnboarding = updatedGame.onboardingStep ?? 0
-  if (currentOnboarding < 4 && justCompletedManagedFixture) {
-    updatedGame = { ...updatedGame, onboardingStep: currentOnboarding + 1 }
-  }
-
-  // ── Per-round bankruptcy check (BUG-STRESS-05) ───────────────────────────────
-  {
-    const managedClubCurrent = updatedGame.clubs.find(c => c.id === updatedGame.managedClubId)
-    if (managedClubCurrent) {
-      const finStatus = evaluateFinanceStatus(managedClubCurrent.finances)
-      const warnedThisSeason = updatedGame.financeWarningGivenThisSeason ?? false
-      if (finStatus.status === 'game-over') {
-        updatedGame = { ...updatedGame, managerFired: true }
-      } else if ((finStatus.status === 'license-denial' || finStatus.status === 'warning') && !warnedThisSeason) {
-        const isCritical = finStatus.status === 'license-denial'
-        updatedGame = {
-          ...updatedGame,
-          financeWarningGivenThisSeason: true,
-          inbox: [...updatedGame.inbox, {
-            id: `inbox_finance_${finStatus.status}_${updatedGame.currentSeason}_${nextMatchday}`,
-            date: updatedGame.currentDate,
-            type: InboxItemType.EconomicCrisis,
-            title: isCritical ? '🚨 KRITISK: Licensen i fara' : '⚠️ Ekonomisk varning',
-            body: isCritical
-              ? `Kassan är ${managedClubCurrent.finances.toLocaleString('sv-SE')} kr. Klubben riskerar att förlora licensen. Nödåtgärder krävs omedelbart.`
-              : `Kassan är ${managedClubCurrent.finances.toLocaleString('sv-SE')} kr. Klubben närmar sig farlig nivå. Kontrollera utgifterna.`,
-            isRead: false,
-          }],
-        }
-      }
-    }
-  }
-
-  // ── Recommendation change inbox (Sprint 23) ──────────────────────────────────
-  // Notify manager when squad changes cause a new formation to be recommended.
-  {
-    const managedSquad = updatedGame.players.filter(p => p.clubId === updatedGame.managedClubId)
-    const newRec = getRecommendedFormation(managedSquad)
-    const prevRec = updatedGame.previousRecommendedFormation
-    if (prevRec && prevRec !== newRec) {
-      updatedGame = {
-        ...updatedGame,
-        previousRecommendedFormation: newRec,
-        inbox: [...updatedGame.inbox, {
-          id: `inbox_rec_formation_${updatedGame.currentSeason}_${nextMatchday}`,
-          date: updatedGame.currentDate,
-          type: InboxItemType.Training,
-          title: '📋 Coachen byter rekommendation',
-          body: `Truppen har förändrats. Coachen rekommenderar nu ${newRec} istället för ${prevRec}.`,
-          isRead: false,
-        }],
-      }
-    } else if (!prevRec) {
-      // First round — just store without notifying
-      updatedGame = { ...updatedGame, previousRecommendedFormation: newRec }
-    }
-  }
+  // Post-round flags (halftime trigger, onboarding, bankruptcy, formation recommendation)
+  const flagsResult = applyPostRoundFlags({
+    game: updatedGame,
+    justCompletedManagedFixture,
+    nextMatchday,
+  })
+  updatedGame = flagsResult.updatedGame
 
   return { game: updatedGame, roundPlayed: nextMatchday, seasonEnded: false, pendingEvents: allNewEvents, hasManagedCupMatch: hasManagedCupPending }
 }
