@@ -1,7 +1,50 @@
 # BANDY MANAGER — KVAR
 
-**Datum:** 2026-04-24
-**Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DESIGN_SYSTEM.md/HANDOVER_2026-04-24.md är lästa.
+**Datum:** 2026-04-25
+**Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DESIGN_SYSTEM.md/HANDOVER_2026-04-25.md är lästa.
+
+---
+
+## FIX-NUMRERING — notering
+
+Fix-nummer (#1–29, växer) är separat räknare för enskilda buggfixar. **Förväxla inte med Sprint-nummer** (25b.1, 26 etc.). När någon säger "fix 26" menas raden i denna tabell — inte Sprint 26 (ekonomibalans).
+
+---
+
+## BANDY-BRAIN — STATUS (2026-04-25)
+
+Sajt live: `https://jacobstjarne-code.github.io/bandy-manager/`
+
+| Del | Status |
+|-----|--------|
+| Pass 1–3 (schema, 59 facts, validator) | ✅ Klart |
+| Pass 4 — Astro-sajt + GitHub Pages | ✅ Klart |
+| Finding 001–004 | ✅ Klart |
+| CLAUDE.md → fact-referenser | ⏸ Parkerat (låg prio) |
+| `noindex` borttagen | ⏸ Väntar på Eriks bekräftelse |
+| Findings-generator | ⏸ Parkerat per UI_SPRINT_INSTRUCTION |
+
+Nästa: skicka URL till Erik. Finding 005 (utvisningar, S011) är nästa naturliga ämne.
+
+---
+
+## KLART IDAG (2026-04-25)
+
+| Leverans | Commits | Detalj |
+|---------|---------|--------|
+| Sprint TS-1 (roundProcessor refactor) | `122fd42` `96fa060` `be55ea3` | Tre pass: preRoundContext, processor-flytt, skipSideEffects-option |
+| Sprint 25h Pass 1 — Lager 1 (Bandyskandaler) | `9d82e28` | 6→8 arketyper, scandalService, processScandals, 18 tester |
+| Sprint 25h Pass 2 — Lager 2 (Egna beslut) | `5671cf1` | 2A löneöverskridande, 2B skum sponsor, 2C mecenat-utträde |
+| Sprint 25h Pass 3 — Lager 3 (Licensnämnden) | `3a591ab` | licenseService, status-maskin, seasonEndProcessor-integration, 13 tester |
+| Sprint 25h Addendum — revision 2 + small_absurdity | `c1297a5` | municipal_scandal (hanterar managed club), rev2-text, 8:e arketyp |
+| Sprint 25h Text-integration — kurerad text | `1062093` | 30 strängar: licenseService, eventProcessor (2A/2B/2C), roundProcessor |
+| Sprint 25-HT — halvtidsledning-analys | `aec3be0` | Bombfynd: motor 80.4% vs target 78.1% (+2.3pp) — väl inom tolerans |
+| Kalibreringstarget-revision — htLeadWinPct rättat | `089e698` | 46.6 → 78.1 i JSON, nytt fält homeHtLeadFraction: 46.6 |
+| Sprint 25g — Matchens karaktärer (verifierad) | — | Förimplementerad: refereeService (144r), matchInjuryService (189r), refereeData (8 domare), GranskaScreen + MatchLiveScreen integration |
+| Sprint 26b — Arena-underhåll + weeklyBase | `99ec953` | Underhåll ×8→×5, weeklyBase 2000→3000. Söderfors −394k, Målilla −654k (inom spec-mål) |
+| Sprint 25h Opus-direkt-edits | — | sponsor_collapse −3k/v, generateAbsurdityArticles, riskySponsorTriggered-state, calibration JSON |
+| Sprint 25h A1 — WageOverrunWarning | — | `<WageOverrunWarning>` 3 varianter, intercepterar handleRenew + handleBid i TransfersScreen |
+| Sprint 25h A2-A4 — Dashboard-indikatorer | — | Licensnämnden-banner, skum sponsor-rad i ekonomikort, mecenat happiness-sektion |
 
 ---
 
@@ -178,16 +221,6 @@ Referensfil: `docs/data/SCORELINE_REFERENCE.md`
 
 ## TEKNISK SKULD — PARKERAT (kräver spec innan implementation)
 
-### TS-1: roundProcessor är en monolit
-
-**Fil:** `src/application/useCases/roundProcessor.ts`
-**Problem:** ~500+ rader, ett use-case med många kopplade steg: sim → ekonomi → event → inbox → playoff. Hög blast radius vid ändringar — en bugg i ett steg kan förstöra state som ett senare steg förväntar sig.
-**Önskad lösning:** Bryt ut till tydlig pipeline med ett kontrakt per steg (liknande det som redan gjorts med `economyProcessor`, `communityProcessor` etc i `processors/`-mappen). Varje processor returnerar ett resultat som nästa steg tar emot.
-**Prioritet:** Hög på sikt. Gör inte utan fullständig spec — hög regressionsrisk.
-**Estimat:** Halvdag implementering + halvdag tester.
-
----
-
 ### TS-2: Tester saknas för store actions (gameFlowActions, transferActions)
 
 **Filer:** `src/presentation/store/actions/gameFlowActions.ts`, `transferActions.ts`, `matchActions.ts`
@@ -209,25 +242,7 @@ Referensfil: `docs/data/SCORELINE_REFERENCE.md`
 
 ## AKTIVA JOBB — HOS CODE NU
 
-### Sprint 26 — Ekonomi & Bygdens Puls-balansering
-
-**Status:** LEVERERAD + MÄTT 2026-04-22. Mätrapport: `docs/sprints/SPRINT_26_BALANCE_MEASUREMENT.md`.
-
-**Uppnådda mål ✅:**
-- Takeffekt på puls bruten (91-100 bucket: 51% → 11%)
-- Längsta puls-streak halverad (34 → 10 omgångar)
-- Median-kapital sänkt kraftigt (ssg1: 570k → 219k, ssg4: 3.5M → 1.6M)
-- Rep↔kapital korrelation ssg1: r=0.97 → r=0.78
-
-**Flaggade problem (väntar på Opus-beslut):**
-- Söderfors (rep=55) och Målilla (rep=65) i permanent minus från säsong 2
-- Arena-underhåll `capacity × 8` ger ~70-90k/säsong, för hårt för medelklubbar
-- Andel negativt-netto-omgångar 57% (target 30-45%)
-- Rep↔kapital korrelation ssg4 fortfarande 0.96
-
-**Rekommendationer till nästa justering:**
-1. Sänk arena-underhåll `capacity × 8` → `capacity × 5` (eller progressiv formel)
-2. Höj weeklyBase-konstant 2000 → 3000 för att ge medelklubbar mer golv
+*(Inga aktiva jobb just nu — Sprint 25g verifierad som levererad, Sprint 25h stängd.)*
 
 ---
 
@@ -564,9 +579,11 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 | `LESSONS.md` | 2026-04-22 (§2 uppdaterad) | Aktuell |
 | `DECISIONS.md` | 2026-04-21 | Aktuell |
 | `DESIGN_SYSTEM.md` | 2026-04-14 | OK |
-| `STATUS.md` | 2026-04-21 | Aktuell |
-| `KVAR.md` | 2026-04-22 (kväll) | Denna fil |
-| `HANDOVER_2026-04-22.md` | 2026-04-22 | Senaste handover |
+| `STATUS.md` | 2026-04-25 | Uppdaterad med Sprint 25-HT + 25h |
+| `KVAR.md` | 2026-04-25 | Denna fil |
+| `HANDOVER_2026-04-25.md` | 2026-04-25 | Senaste handover |
+| `HANDOVER_2026-04-23.md` | 2026-04-23 | Föregående |
+| `HANDOVER_2026-04-22.md` | 2026-04-22 | Arkiv |
 | `SCORELINE_REFERENCE.md` | 2026-04-21 | Referens för 25b/c/d |
 | `SPRINT_25B_1_PENALTY_SEPARATION.md` | 2026-04-21 | Aktiv spec |
 | `TEXT_REVIEW_formations_2026-04-20.md` | 2026-04-20 (kväll) | GODKÄND |
@@ -575,12 +592,7 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 
 ## NÄSTA SESSION — FÖRESLAGEN ORDNING
 
-1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-04-22.md`.
-2. Kontrollera Sprint 25b.1-leveransen (npm run build && npm test grönt, `SPRINT_25B_1_MEASUREMENT.md` finns).
-3. Läs mätrapporten — lär specifikt:
-   - `penaltyGoalPct` landar inom 3-7%? → ok, gå vidare till 25b.2
-   - Landar utanför? → Sprint 25b.1.2 finjusterar base-värdet 0.012
-   - Andra sido-effekter på htLeadWinPct, goalsPerMatch?
-4. **Sprint 25b.2** (utvisnings-basfrekvens) specas baserat på hur mycket suspensions/match lyfte från 25b.1 och hur mycket som kvarstår till target 3.77.
-5. Efter 25b.2 → 25d (fas-konstanter).
-6. Uppdatera STATUS.md.
+1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-04-25.md`.
+2. **Öppna motor-kalibreringsval:** htLeadWinPct LÖST. Kvar: awayWinPct 43.9% vs 38.3% (−5.6pp) och playoff_final mål/match 9.17 vs 7.00 (+2.17). Välj nästa motorsprint (25d/25e) eller fortsätt med narrativa features.
+3. **Motor: awayWinPct** − 5.6pp gap (43.9% vs 38.3%). Kandidat Sprint 25e (powerplay-effektivitet) eller ny sprint.
+4. Fredagsjobb: utvidga `scrape-allsvenskan.mjs` med skott på mål / räddningar per teamID + `loggingQuality`-flagga.
