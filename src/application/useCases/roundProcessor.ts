@@ -140,10 +140,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   let hasManagedCupPending = false
 
   // ── Apply training for all clubs this round ────────────────────────────
-  // Skip on second pass (AI fixtures already done, only managed match left) to prevent double side-effects
-  const trainingResult = isSecondPassForManagedMatch
-    ? { players: game.players, trainingHistory: game.trainingHistory ?? [], inboxItems: [] as InboxItem[], trainingProjects: game.trainingProjects ?? [], trainingEffects: [] }
-    : applyRoundTraining(game, baseSeed, currentLeagueRound ?? nextMatchday)
+  const trainingResult = applyRoundTraining(game, baseSeed, currentLeagueRound ?? nextMatchday, { skipSideEffects: isSecondPassForManagedMatch })
   let trainingPlayers = trainingResult.players
   const updatedTrainingHistory = trainingResult.trainingHistory
   newInboxItems.push(...trainingResult.inboxItems)
@@ -515,19 +512,17 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   }
 
   // ── Economy: wages, match revenue, sponsorship per round ─────────────────
-  // Skip on second pass to prevent double wage/income application
-  const economyResult = isSecondPassForManagedMatch
-    ? { roundFinanceLog: [], updatedClubs: game.clubs }
-    : processEconomy(
-        game,
-        simulatedFixtures,
-        availabilityUpdatedPlayers,
-        game.fanMood ?? 50,
-        standings,
-        nextMatchday,
-        cupResult.prizeMoneyByClub,
-        localRand,
-      )
+  const economyResult = processEconomy(
+    game,
+    simulatedFixtures,
+    availabilityUpdatedPlayers,
+    game.fanMood ?? 50,
+    standings,
+    nextMatchday,
+    cupResult.prizeMoneyByClub,
+    localRand,
+    { skipSideEffects: isSecondPassForManagedMatch },
+  )
   const { roundFinanceLog, updatedClubs: socialMediaBoostedClubs } = economyResult
 
   // ── Transfer bids ────────────────────────────────────────────────────────
@@ -588,8 +583,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     nextMatchday,
     currentLeagueRound,
     newDate,
-    isSecondPassForManagedMatch,
     localRand,
+    { skipSideEffects: isSecondPassForManagedMatch },
   )
   newInboxItems.push(...mediaResult.inboxItems)
   const rumorScoutReports = { ...game.scoutReports, ...mediaResult.scoutReportUpdates }
@@ -628,36 +623,33 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const strippedFixtures = finalAllFixtures.map(f => stripCompletedFixture(f, managedFixtureId, game.managedClubId))
 
   // ── Sponsor chain effects, patron inbox, nudges ──────────────────────────
-  // Skip on second pass (same as processEconomy) to prevent double contract-round decrement
-  const sponsorResult = isSecondPassForManagedMatch
-    ? { updatedSponsors: game.sponsors ?? [], inboxItems: [] }
-    : processSponsors(
-        game,
-        justCompletedManagedFixture ?? null,
-        finalPlayers,
-        nextMatchday,
-        newDate,
-        baseSeed,
-        localRand,
-      )
+  const sponsorResult = processSponsors(
+    game,
+    justCompletedManagedFixture ?? null,
+    finalPlayers,
+    nextMatchday,
+    newDate,
+    baseSeed,
+    localRand,
+    { skipSideEffects: isSecondPassForManagedMatch },
+  )
   newInboxItems.push(...sponsorResult.inboxItems)
   let updatedSponsors = sponsorResult.updatedSponsors
 
   // M13: contextual sponsors (top4, CS>70, attendance>1000)
-  const contextualResult = isSecondPassForManagedMatch
-    ? { newSponsors: [], newMoments: [] }
-    : checkContextualSponsors(
-        { ...game, sponsors: updatedSponsors },
-        standings,
-        nextMatchday,
-      )
+  const contextualResult = checkContextualSponsors(
+    { ...game, sponsors: updatedSponsors },
+    standings,
+    nextMatchday,
+    { skipSideEffects: isSecondPassForManagedMatch },
+  )
   if (contextualResult.newSponsors.length > 0) {
     updatedSponsors = [...updatedSponsors, ...contextualResult.newSponsors]
     newMoments.push(...contextualResult.newMoments)
   }
   // Apply one-time kommunstöd payment if triggered (80k to managed club finances)
   let kommunstodBonus = 0
-  const kommunResult = applyOneTimeKommunstod({ ...game, sponsors: updatedSponsors })
+  const kommunResult = applyOneTimeKommunstod({ ...game, sponsors: updatedSponsors }, { skipSideEffects: isSecondPassForManagedMatch })
   if (kommunResult.paid) {
     updatedSponsors = kommunResult.updatedGame.sponsors ?? updatedSponsors
     kommunstodBonus = kommunResult.updatedGame.clubs.find(c => c.id === game.managedClubId)?.finances ?? 0

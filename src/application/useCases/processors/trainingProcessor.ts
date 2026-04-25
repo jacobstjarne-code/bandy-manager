@@ -19,7 +19,17 @@ export function applyRoundTraining(
   game: SaveGame,
   baseSeed: number,
   nextRound: number,
+  options?: { skipSideEffects?: boolean },
 ): TrainingProcessorResult {
+  if (options?.skipSideEffects) {
+    return {
+      players: game.players,
+      trainingHistory: game.trainingHistory ?? [],
+      inboxItems: [],
+      trainingProjects: game.trainingProjects ?? [],
+      trainingEffects: { attributeBoosts: {}, fitnessChange: 0, injuryRiskModifier: 0, moraleEffect: 0, sharpnessEffect: 0 },
+    }
+  }
   const newInboxItems: InboxItem[] = []
   const managedClubTraining = game.managedClubTraining ?? { type: TrainingType.Physical, intensity: TrainingIntensity.Normal }
 

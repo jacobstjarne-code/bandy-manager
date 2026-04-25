@@ -37,7 +37,11 @@ export function processEconomy(
   nextMatchday: number,
   prizeMoneyByClub: Record<string, number>,
   localRand: () => number,
+  options?: { skipSideEffects?: boolean },
 ): EconomyProcessorResult {
+  if (options?.skipSideEffects) {
+    return { roundFinanceLog: [], updatedClubs: game.clubs }
+  }
   const roundFinanceLog: FinanceEntry[] = []
 
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)!

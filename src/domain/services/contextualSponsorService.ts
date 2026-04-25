@@ -16,7 +16,11 @@ export function checkContextualSponsors(
   game: SaveGame,
   standings: StandingRow[],
   currentRound: number,
+  options?: { skipSideEffects?: boolean },
 ): ContextualSponsorResult {
+  if (options?.skipSideEffects) {
+    return { newSponsors: [], newMoments: [] }
+  }
   const newSponsors: Sponsor[] = []
   const newMoments: Moment[] = []
   const season = game.currentSeason
@@ -119,7 +123,11 @@ export function checkContextualSponsors(
 // Apply one-time kommunstöd payment to club finances
 export function applyOneTimeKommunstod(
   game: SaveGame,
+  options?: { skipSideEffects?: boolean },
 ): { updatedGame: SaveGame; paid: boolean } {
+  if (options?.skipSideEffects) {
+    return { updatedGame: game, paid: false }
+  }
   const season = game.currentSeason
   const kommunSponsor = (game.sponsors ?? []).find(
     s => s.isOneTime && s.triggeredBy === 'cs_over_70' && s.triggeredSeason === season && !s.paidOutSeason,

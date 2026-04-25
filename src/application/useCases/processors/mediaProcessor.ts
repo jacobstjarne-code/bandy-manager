@@ -22,9 +22,10 @@ export function processMedia(
   nextMatchday: number,
   currentLeagueRound: number | null,
   newDate: string,
-  isSecondPassForManagedMatch: boolean,
   localRand: () => number,
+  options?: { skipSideEffects?: boolean },
 ): MediaResult {
+  const isSecondPassForManagedMatch = options?.skipSideEffects ?? false
   const inboxItems: InboxItem[] = []
   const scoutReportUpdates: Record<string, ScoutReport> = {}
   let resolvedEventIds = [...(game.resolvedEventIds ?? [])]

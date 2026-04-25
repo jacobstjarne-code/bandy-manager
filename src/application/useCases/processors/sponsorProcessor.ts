@@ -27,7 +27,11 @@ export function processSponsors(
   newDate: string,
   baseSeed: number,
   localRand: () => number,
+  options?: { skipSideEffects?: boolean },
 ): SponsorProcessorResult {
+  if (options?.skipSideEffects) {
+    return { updatedSponsors: game.sponsors ?? [], inboxItems: [] }
+  }
   const inboxItems: InboxItem[] = []
   const v09Rand = mulberry32(baseSeed + 999777)
 
