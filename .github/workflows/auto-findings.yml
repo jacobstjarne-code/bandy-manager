@@ -50,6 +50,10 @@ jobs:
           if [ -n "${{ github.event.inputs.question_id }}" ]; then
             ARGS="$ARGS --id ${{ github.event.inputs.question_id }}"
           fi
+          # Default max 5 per körning om inte annat anges
+          if [ -z "${{ github.event.inputs.limit }}" ]; then
+            ARGS="$ARGS --limit 5"
+          fi
           python3 scripts/findings_pipeline.py $ARGS
 
       - name: Check for new findings
