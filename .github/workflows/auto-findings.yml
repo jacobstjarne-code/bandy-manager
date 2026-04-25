@@ -2,7 +2,7 @@ name: Auto-generate findings
 
 on:
   schedule:
-    - cron: '0 6 * * 1'   # Varje måndag 06:00 UTC
+    - cron: '0 6 */2 * *'  # Varannan dag 06:00 UTC
   push:
     paths:
       - 'docs/data/bandygrytan_detailed.json'  # Ny data → kör direkt
