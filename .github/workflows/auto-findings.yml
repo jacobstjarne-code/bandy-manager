@@ -3,6 +3,8 @@ name: Auto-generate findings
 on:
   schedule:
     - cron: '0 6 */2 * *'  # Varannan dag 06:00 UTC
+  issues:
+    types: [labeled]        # Triggar direkt när new-question-label sätts
   push:
     paths:
       - 'docs/data/bandygrytan_detailed.json'  # Ny data → kör direkt
@@ -24,6 +26,7 @@ permissions:
 jobs:
   generate:
     runs-on: ubuntu-latest
+    if: github.event_name != 'issues' || github.event.label.name == 'new-question'
     steps:
       - uses: actions/checkout@v4
 
