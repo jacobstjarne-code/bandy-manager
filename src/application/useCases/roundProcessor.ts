@@ -45,7 +45,7 @@ import { detectArcTriggers, progressArcs } from '../../domain/services/arcServic
 import { generateAwayTrip } from '../../domain/services/awayTripService'
 import { processNarrative, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
 import { processMedia } from './processors/mediaProcessor'
-import { processGameEvents, applyMecenatSpawn } from './processors/eventProcessor'
+import { processGameEvents, applyMecenatSpawn, processScandals } from './processors/eventProcessor'
 import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
 import { applyRipples, mergeRippleDeltas } from '../../domain/services/rippleEffectService'
 
@@ -162,7 +162,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // Update standings — exclude cup fixtures so they don't inflate played/goal counts
   const completedFixtures = allFixtures.filter(f => f.status === FixtureStatus.Completed && !f.isCup)
-  const standings = calculateStandings(game.league.teamIds, completedFixtures)
+  const standings = calculateStandings(game.league.teamIds, completedFixtures, game.pointDeductions)
 
   // Snapshot injury state before updates (for recovery notifications)
   const injuredBeforeRound = new Set(
@@ -724,6 +724,26 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     )
   }
 
+  // ── Scandals (Lager 1 — Världshändelser) ──────────────────────────────────
+  const scandalResult = processScandals(preEventGame, nextMatchday, localRand, { skipSideEffects: isSecondPassForManagedMatch })
+  newInboxItems.push(...scandalResult.inboxItems)
+  // Apply scandal-driven club changes (finances/reputation) as deltas on top of postTransferClubs
+  if (scandalResult.updatedClubs !== preEventGame.clubs) {
+    for (const scandalClub of scandalResult.updatedClubs) {
+      const baseline = preEventGame.clubs.find(c => c.id === scandalClub.id)
+      if (!baseline) continue
+      const fd = scandalClub.finances - baseline.finances
+      const rd = scandalClub.reputation - baseline.reputation
+      if (fd !== 0 || rd !== 0) {
+        postTransferClubs = postTransferClubs.map(c =>
+          c.id === scandalClub.id
+            ? { ...c, finances: c.finances + fd, reputation: Math.max(0, Math.min(100, c.reputation + rd)) }
+            : c,
+        )
+      }
+    }
+  }
+
   // ── Mecenat spawn ─────────────────────────────────────────────────────────
   {
     const mecenatResult = applyMecenatSpawn(
@@ -877,6 +897,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         .slice(0, 5)
     })(),
     currentEra: calculateClubEra(game),
+    activeScandals: scandalResult.updatedScandals,
+    scandalHistory: scandalResult.updatedScandalHistory,
+    pointDeductions: scandalResult.pointDeductions,
+    pendingPointDeductions: scandalResult.pendingPointDeductions,
   }
 
   // Append market value change notifications to inbox

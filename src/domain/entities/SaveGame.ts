@@ -22,6 +22,7 @@ import type { Moment, MomentSource } from './Moment'
 import type { AssistantCoach } from './AssistantCoach'
 
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
+import type { Referee, RefereeRelation } from './Referee'
 import type { CommunityActivities, BoardMember, BoardPersonality, BoardRole, Patron, PatronPersonality, LocalPolitician, PoliticalAgenda, PoliticianInteractionLog, FacilityProject, FacilityFinancingMode, BoardObjective, LicenseReview, SupporterGroup, SupporterCharacter, SupporterRole, MediaProfile, PersonalInterest } from './Community'
 import type { Journalist, JournalistPersona, JournalistMemory, TrainerArc, ArcPhase, ArcTransition, StorylineEntry, StorylineType, ClubLegend, AllTimeRecords, NamedCharacter, ArcType, ActiveArc, BandyLetter, SchoolAssignmentRecord } from './Narrative'
 
@@ -301,4 +302,17 @@ export interface SaveGame {
 
   // M14 — Klubbens era (beräknas varje säsongsstart)
   currentEra?: ClubEra
+
+  // Sprint 25g — Domarsystem
+  referees?: Referee[]
+  refereeRelations?: RefereeRelation[]
+  pendingRefereeMeeting?: import('./GameEvent').GameEvent
+
+  // Sprint 25h — Bandyskandaler (Lager 1)
+  activeScandals?: import('../services/scandalService').Scandal[]
+  scandalHistory?: import('../services/scandalService').Scandal[]
+  // Point deductions applied in calculateStandings (current season)
+  pointDeductions?: Record<string, number>
+  // Point deductions applied at next season start
+  pendingPointDeductions?: Record<string, number>
 }

@@ -10,6 +10,8 @@ import { generateBandyLetterEvent } from '../../../domain/services/bandyLetterSe
 import { checkEconomicCrisis } from '../../../domain/services/economicCrisisService'
 import { generateSchoolAssignmentEvent } from '../../../domain/services/schoolAssignmentService'
 import { generateDinnerEvent } from '../../../domain/services/mecenatDinnerService'
+import type { Scandal } from '../../../domain/services/scandalService'
+import { checkScandalTrigger, applyScandalEffect, resolveExpiredScandals } from '../../../domain/services/scandalService'
 
 export interface EventProcessorResult {
   gameEvents: GameEvent[]
@@ -160,4 +162,64 @@ export function applyMecenatSpawn(
     }
   }
   return { updatedMecenater, newEvents: [] }
+}
+
+// ── Scandals (Lager 1 — Världshändelser) ─────────────────────────────────
+
+export interface ScandalProcessorResult {
+  inboxItems: InboxItem[]
+  updatedClubs: Club[]
+  updatedScandals: Scandal[]
+  updatedScandalHistory: Scandal[]
+  pointDeductions: Record<string, number>
+  pendingPointDeductions: Record<string, number>
+}
+
+export function processScandals(
+  game: SaveGame,
+  nextMatchday: number,
+  localRand: () => number,
+  options?: { skipSideEffects?: boolean },
+): ScandalProcessorResult {
+  const neutral: ScandalProcessorResult = {
+    inboxItems: [],
+    updatedClubs: game.clubs,
+    updatedScandals: game.activeScandals ?? [],
+    updatedScandalHistory: game.scandalHistory ?? [],
+    pointDeductions: game.pointDeductions ?? {},
+    pendingPointDeductions: game.pendingPointDeductions ?? {},
+  }
+  if (options?.skipSideEffects) return neutral
+
+  // 1. Resolve expired scandals first
+  const resolved = resolveExpiredScandals(game, nextMatchday)
+  const gameAfterResolution: SaveGame = {
+    ...game,
+    clubs: resolved.updatedClubs,
+    activeScandals: resolved.updatedScandals,
+    scandalHistory: resolved.updatedScandalHistory,
+  }
+
+  // 2. Check for new scandal trigger
+  const newScandal = checkScandalTrigger(gameAfterResolution, nextMatchday, localRand)
+  if (!newScandal) {
+    return {
+      ...neutral,
+      updatedClubs: resolved.updatedClubs,
+      updatedScandals: resolved.updatedScandals,
+      updatedScandalHistory: resolved.updatedScandalHistory,
+    }
+  }
+
+  // 3. Apply effects
+  const effects = applyScandalEffect(gameAfterResolution, newScandal, localRand)
+
+  return {
+    inboxItems: effects.inboxItems,
+    updatedClubs: effects.updatedClubs,
+    updatedScandals: [...resolved.updatedScandals, newScandal],
+    updatedScandalHistory: resolved.updatedScandalHistory,
+    pointDeductions: effects.pointDeductions,
+    pendingPointDeductions: effects.pendingPointDeductions,
+  }
 }

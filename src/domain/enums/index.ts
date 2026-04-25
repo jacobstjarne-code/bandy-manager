@@ -103,6 +103,7 @@ export enum InboxItemType {
   BandyLetter = 'bandyLetter',
   SchoolAssignment = 'schoolAssignment',
   EconomicCrisis = 'economicCrisis',
+  Scandal = 'scandal',
 }
 
 export enum TrainingType {

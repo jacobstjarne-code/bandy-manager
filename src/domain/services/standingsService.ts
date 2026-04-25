@@ -2,7 +2,7 @@ import type { Fixture } from '../entities/Fixture'
 import type { StandingRow } from '../entities/SaveGame'
 import { FixtureStatus } from '../enums'
 
-export function calculateStandings(teamIds: string[], fixtures: Fixture[]): StandingRow[] {
+export function calculateStandings(teamIds: string[], fixtures: Fixture[], pointDeductions?: Record<string, number>): StandingRow[] {
   const rowMap = new Map<string, StandingRow>()
 
   for (const id of teamIds) {
@@ -57,6 +57,13 @@ export function calculateStandings(teamIds: string[], fixtures: Fixture[]): Stan
   }
 
   const rows = Array.from(rowMap.values())
+
+  if (pointDeductions) {
+    for (const row of rows) {
+      const deduction = pointDeductions[row.clubId] ?? 0
+      if (deduction > 0) row.points = Math.max(0, row.points - deduction)
+    }
+  }
 
   rows.sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points
