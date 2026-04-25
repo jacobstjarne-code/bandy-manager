@@ -1,0 +1,195 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+---
+
+<Base
+  title="Finding 001 — Halvtidsledning i bandy"
+  description="Hur ofta vinner ett bandylag som leder vid halvtid? Verklig Elitseriedata och simuleringssmotor samstämmer: 78%. Starkare än i fotboll."
+>
+  <div class="finding-layout">
+
+    <a href="/findings/" class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 001 · 25 april 2026</p>
+    <h1 class="finding-title">Halvtidsledning i bandy<br>är starkare än i fotboll</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>
+        Hur ofta vinner ett bandylag som leder vid halvtid? 60%? 80%?
+        Bandy har 2×45 minuter, fri substitution och hörnan som ett
+        högvärde offensivt vapen. Är comebacks vanligare här än i fotboll —
+        eller är halvtidsledningen lika stabil?
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>
+        Två oberoende källor:
+      </p>
+      <ul>
+        <li>
+          <strong>Bandygrytan 2019–2026</strong> —
+          <a href={factHref("S013")} class="fact-ref">S013</a>
+          907 Elitseriematcher med halvtidsresultat registrerat (av 1 124 totalt),
+          sex säsonger. Varje match med ett halvtidsresultat som inte är oavgjort
+          är inkluderad i beräkningen.
+        </li>
+        <li>
+          <strong>Bandy Manager-motorn</strong> — 10 seeds × 200 simulerade matcher,
+          kalibrerade mot Bandygrytan. Motorns
+          <code>htLeadWinPct</code>-parameter är den direkta jämförelsepunkten.
+        </li>
+      </ul>
+      <p>
+        Hemmaplansfördelen är ett sidospår men relevant som kontext:
+        hemmalaget leder vid halvtid i 46,6% av matcherna
+        <a href={factHref("S016")} class="fact-ref">S016</a>.
+        Det är inte mer än slumpen skulle förvänta — bandys hemmafördel
+        syns i seger&shy;procenten
+        <a href={factHref("S004")} class="fact-ref">S004</a>
+        (50,2%), inte i halvtidsledningsfrekvensen.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Källa</th>
+            <th>htLeadWinPct</th>
+            <th>Underlag</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Bandygrytan (verklig data) <a href={factHref("S013")} class="fact-ref">S013</a></td>
+            <td><strong>78,1%</strong></td>
+            <td>907 matcher, 2019–2026</td>
+          </tr>
+          <tr>
+            <td>Bandy Manager (simuleringsmotor)</td>
+            <td><strong>77%</strong></td>
+            <td>10 seeds × 200 matcher</td>
+          </tr>
+          <tr>
+            <td>Fotbolls-VM/CL (extern referens)</td>
+            <td>~80%</td>
+            <td>Publicerade studier, varierar</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        Motorns 77% och Bandygrytans 78,1% är så nära varandra att de i
+        praktiken bekräftar samma sak: halvtidsledning håller i ungefär
+        fyra av fem bandymatcher.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+
+      <p>
+        Siffran är inte overraskande om man tänker på att ett lag
+        som leder vid halvtid redan visat att det kan producera mål
+        mot den specifika motståndaren den kvällen. Halvtidsledning
+        är ett bra filter för "laget som är bättre i denna match".
+      </p>
+
+      <p>
+        Det som är mer intressant är vad siffran <em>inte</em> säger.
+        78% är inte 100% — det är 22% comebacks. I 907 matcher innebär
+        det ungefär 200 matcher där halvtidsledningen gick förlorad.
+        Bandys fria substitution och hörnornas offensiva vikt
+        <a href={factHref("S008")} class="fact-ref">S008</a>
+        borde teoretiskt gynna chasande lag. Datan visar varken att
+        det stämmer eller att det är fel — den säger bara att comebacks
+        är ovanliga, inte omöjliga.
+      </p>
+
+      <p>
+        Det viktigaste fyndet är att <strong>simuleringsmotorn och
+        verkligheten samstämmer</strong>. Det är inte självklart —
+        motorn är en abstraktion med parameteriserade sannolikheter,
+        inte en avspegling av verkliga bandy-matchdynamiker. Att de
+        hamnar på 77% resp. 78,1% ger viss tilltro till att motorns
+        halvtidslogik fungerar som avsett.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>
+          Datan är från Elitserien specifikt. Lägre divisioner kan ha
+          annorlunda mönster med större skillnader i lagstyrka.
+        </li>
+        <li>
+          Halvtidsledningens storlek är inte splittad — 1–0 och 4–0
+          räknas lika. Flermålsledning förväntas ge ännu högre winrate.
+        </li>
+        <li>
+          Hemma/borta är inte splittad i grundanalysen. Att leda hemma
+          vs att leda borta är troligen olika saker.
+        </li>
+        <li>
+          907 av 1 124 matcher har halvtidsdata — de 217 saknade matcherna
+          är troligen jämnt fördelade men det är inte verifierat.
+        </li>
+        <li>
+          Motorns 77% kommer från 10 seeds × 200 matcher. Konfidensintervallet
+          är inte beräknat men avvikelsen mot 78,1% är under 2 procentenheter.
+        </li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Hur ser winrate ut splittat på 1–0 vs 2–0 vs 3+–0 vid halvtid?</li>
+        <li>Skiljer sig hemma/borta-ledning åt?</li>
+        <li>Korrelerar comeback med specifika matchminuter (tidiga 2H-mål)?</li>
+        <li>Finns säsongsmässig variation (höst vs vinter vs slutspel)?</li>
+      </ul>
+      <p>Dessa kan bli egna findings.</p>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        {[
+          { id: 'S013', label: 'htLeadWinPct — 78,1%' },
+          { id: 'S016', label: 'homeHtLeadFraction — 46,6%' },
+          { id: 'S004', label: 'Hemmaseger-procent' },
+          { id: 'S008', label: 'Hörnmålsprocent' },
+        ].map((ref, i) => (
+          <>
+            {i > 0 && <span style="color: var(--color-border); margin: 0 4px">·</span>}
+            <a href={factHref(ref.id)} class="fact-ref">{ref.id}</a>
+            <span style="font-family: var(--font-ui); font-size: 0.8rem; color: var(--color-muted); margin-left: 4px">{ref.label}</span>
+          </>
+        ))}
+      </p>
+    </div>
+
+  </div>
+</Base>

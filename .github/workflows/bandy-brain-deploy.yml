@@ -1,0 +1,72 @@
+# Bandy-Brain — Deploy to GitHub Pages
+#
+# STATUS: CREATED BUT NOT YET ENABLED
+# Jacob must review and approve before this is triggered.
+#
+# Prerequisites before enabling:
+#   1. Create a new GitHub repo (e.g. bandy-brain or use this repo with gh-pages branch)
+#   2. In repo Settings → Pages → Source: GitHub Actions
+#   3. Optionally add custom domain (bandy-brain.bury-fen.se) in Pages settings
+#      and create CNAME file in bandy-brain/public/
+#
+# To enable: remove the "if: false" line in the trigger section, or
+# manually trigger via GitHub Actions → Run workflow.
+
+name: Deploy Bandy-Brain
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'bandy-brain/**'
+      - 'docs/findings/facts/**'
+      - 'docs/findings/*.md'
+      - '.github/workflows/bandy-brain-deploy.yml'
+  workflow_dispatch:   # Manual trigger from GitHub Actions UI
+
+# Prevent concurrent deployments
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: bandy-brain/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: bandy-brain
+
+      - name: Build
+        run: npm run build
+        working-directory: bandy-brain
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: bandy-brain/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

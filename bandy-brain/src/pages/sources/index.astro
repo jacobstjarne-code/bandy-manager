@@ -1,0 +1,62 @@
+---
+import Base from '../../layouts/Base.astro';
+import { loadFacts, formatValue, CATEGORY_LABELS, factHref } from '../../lib/facts';
+
+const facts = loadFacts();
+const categories = ['stats', 'rules', 'design_principles', 'world_canon'] as const;
+---
+
+<Base title="Källor">
+  <div class="page-container">
+    <h1 style="font-family: var(--font-ui); font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem;">
+      Källor
+    </h1>
+    <p style="max-width: 600px; color: var(--color-muted); font-size: 0.9rem; font-family: var(--font-ui); margin-bottom: 2.5rem; line-height: 1.6;">
+      Findings bygger på strukturerade facts. Varje fact har ett ID, ett påstående,
+      en källa och invarianter som kontrolleras automatiskt. Klicka på ett ID för detaljvy.
+    </p>
+
+    {categories.map(cat => {
+      const catFacts = facts.filter(f => f.category === cat);
+      if (catFacts.length === 0) return null;
+      return (
+        <section style="margin-bottom: 3rem">
+          <h2 style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-muted); margin-bottom: 1rem; font-weight: 700; border-bottom: 1px solid var(--color-border); padding-bottom: 0.5rem;">
+            {CATEGORY_LABELS[cat]} ({catFacts.length})
+          </h2>
+          <table class="sources-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Påstående</th>
+                <th>Värde</th>
+                <th>Källa</th>
+              </tr>
+            </thead>
+            <tbody>
+              {catFacts.map(f => {
+                const href = factHref(f.fact_id);
+                return (
+                  <tr>
+                    <td>
+                      <a href={href} class="fact-id-badge" style="text-decoration: none">
+                        {f.fact_id}
+                      </a>
+                    </td>
+                    <td style="max-width: 400px">{f.claim}</td>
+                    <td style="font-family: var(--font-ui); white-space: nowrap">
+                      {formatValue(f) !== '—' ? formatValue(f) : ''}
+                    </td>
+                    <td style="font-family: var(--font-ui); color: var(--color-muted); font-size: 0.8rem">
+                      {f.source?.name ?? f.source?.type ?? ''}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </section>
+      );
+    })}
+  </div>
+</Base>

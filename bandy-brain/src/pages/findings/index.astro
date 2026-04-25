@@ -1,0 +1,36 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+
+<Base title="Findings">
+  <div class="page-container">
+    <h1 style="font-family: var(--font-ui); font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem;">
+      Findings
+    </h1>
+    <p style="max-width: 560px; color: var(--color-muted); font-size: 0.95rem; margin-bottom: 2.5rem; font-family: var(--font-ui);">
+      En finding är en rapport om ett specifikt fenomen i bandy — baserad på
+      Bandygrytans verkliga matchdata och Bandy Managers simuleringsmotor.
+      Varje finding har en fråga, en datakälla, ett fynd och en tolkning.
+    </p>
+
+    <ul class="findings-list">
+      <li>
+        <div class="finding-card">
+          <p class="finding-card__number">Finding 001 · 25 april 2026</p>
+          <h2 class="finding-card__title">
+            <a href="/findings/001/">
+              Halvtidsledning i bandy är starkare än i fotboll
+            </a>
+          </h2>
+          <p class="finding-card__excerpt">
+            Hur ofta vinner ett bandylag som leder vid halvtid? 78,1% visar
+            verklig Elitseriedata från 907 matcher (Bandygrytan 2019–2026).
+            Bandy Managers simuleringsmotor matchar med 77%. Båda källorna
+            samstämmer om att halvtidsledning är en stark prediktor — starkare
+            än i de flesta andra lagsporter.
+          </p>
+        </div>
+      </li>
+    </ul>
+  </div>
+</Base>

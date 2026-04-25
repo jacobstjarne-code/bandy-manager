@@ -1,0 +1,49 @@
+---
+export interface Props {
+  title: string;
+  description?: string;
+  noindex?: boolean;
+}
+
+const { title, description = 'Insikter om bandy från Bandy Manager — simuleringsbaserad analys.', noindex = true } = Astro.props;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} — Bandy-Brain</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a href="/" class="site-header__logo">Bandy-Brain</a>
+        <nav>
+          <ul class="site-header__nav">
+            <li><a href="/findings/" aria-current={Astro.url.pathname.startsWith('/findings') ? 'page' : undefined}>Findings</a></li>
+            <li><a href="/sources/" aria-current={Astro.url.pathname.startsWith('/sources') ? 'page' : undefined}>Källor</a></li>
+            <li><a href="/about/" aria-current={Astro.url.pathname === '/about/' ? 'page' : undefined}>Om projektet</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      Bandy-Brain — insikter ur Bandy Manager-simuleringar.
+      Datan är offentlig, metoden är öppen, begränsningarna erkänns.
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  @import '../styles/global.css';
+</style>

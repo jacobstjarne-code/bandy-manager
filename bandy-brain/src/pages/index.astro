@@ -1,0 +1,67 @@
+---
+import Base from '../layouts/Base.astro';
+import { loadFacts } from '../lib/facts';
+
+const facts = loadFacts();
+const statsCount = facts.filter(f => f.category === 'stats').length;
+const rulesCount = facts.filter(f => f.category === 'rules').length;
+---
+
+<Base title="Bandy-Brain">
+  <section class="hero">
+    <div class="hero__inner">
+      <p class="hero__kicker">Simuleringsbaserad bandyanalys</p>
+      <h1 class="hero__title">Vad 10 000 simulerade matcher lär oss om bandy</h1>
+      <p class="hero__body">
+        Elitserien producerar ungefär 300 matcher per säsong. Bandy Manager kan
+        simulera det på tio minuter och köra om det tusen gånger. Det är en
+        epistemisk asymmetri — och den ger svar på frågor som verklig serie
+        aldrig hinner samla data för.
+      </p>
+      <a href="/findings/" class="hero__cta">Läs findings →</a>
+    </div>
+  </section>
+
+  <div class="page-container">
+    <div style="max-width: 720px">
+
+      <section style="margin-bottom: 3rem">
+        <h2 style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-muted); margin-bottom: 1.5rem; font-weight: 700;">
+          Senaste finding
+        </h2>
+
+        <div class="finding-card">
+          <p class="finding-card__number">Finding 001 · 25 april 2026</p>
+          <h3 class="finding-card__title">
+            <a href="/findings/001/">
+              Halvtidsledning i bandy är starkare än i fotboll
+            </a>
+          </h3>
+          <p class="finding-card__excerpt">
+            Hur ofta vinner ett bandylag som leder vid halvtid? Vi jämförde
+            verklig Elitseriedata (Bandygrytan, 907 matcher) med Bandy Managers
+            simuleringsmotor. Resultaten är nästan identiska — och starkare
+            än i fotboll.
+          </p>
+          <p style="margin-top: 1rem; font-family: var(--font-ui); font-size: 0.85rem;">
+            <a href="/findings/001/">Läs finding →</a>
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2 style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-muted); margin-bottom: 1rem; font-weight: 700;">
+          Kunskapsbasen
+        </h2>
+        <p style="font-family: var(--font-ui); font-size: 0.9rem; color: var(--color-muted); line-height: 1.6;">
+          Findings bygger på {facts.length} strukturerade facts — {rulesCount} regler ur SvBF:s regelbok
+          och {statsCount} statistiska parametrar kalibrerade mot Bandygrytans matchdatabas (2019–2026).
+        </p>
+        <p style="font-family: var(--font-ui); font-size: 0.85rem; margin-top: 0.75rem;">
+          <a href="/sources/">Bläddra i källorna →</a>
+        </p>
+      </section>
+
+    </div>
+  </div>
+</Base>

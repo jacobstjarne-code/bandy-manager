@@ -1,0 +1,90 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+
+<Base
+  title="Om projektet"
+  description="Vad Bandy-Brain är, hur datan genereras och vad begränsningarna är."
+>
+  <div class="finding-layout">
+
+    <h1 class="finding-title">Om Bandy-Brain</h1>
+
+    <div class="prose">
+      <h2>Vad det här är</h2>
+      <p>
+        Bandy-Brain är ett biprodukt-projekt till Bandy Manager — ett
+        bandyspel under utveckling. När vi kalibrerar spelets matchmotor
+        mot verklig Elitseriedata upptäcker vi mönster som varken är
+        allmänt diskuterade eller väldokumenterade. Det här är ett
+        ställe att lägga upp de insikterna.
+      </p>
+
+      <h2>Hur datan genereras</h2>
+      <p>
+        Bandy Manager simulerar bandymatcher med en motormodell kalibrerad
+        mot Bandygrytans matchdatabas. Bandygrytan är ett community-projekt
+        som samlar Elitserie-statistik från säsong 2019–20 och framåt —
+        1 124 matcher i den version vi arbetar med.
+      </p>
+      <p>
+        Kalibreringen innebär att motorns parametrar justeras tills
+        simulerade säsonger producerar samma statistiska fördelningar
+        som verkliga Elitseriematcher: målfrekvens, hörnmålsprocent,
+        hemmafördel, utvisningsfrekvens och så vidare.
+      </p>
+      <p>
+        När motorn är kalibrerad kan vi köra den i stor skala — 10 000 matcher
+        på ett dygn. Det ger statistisk styrka att besvara frågor som kräver
+        fler matcher än vad verklig serie hinner producera på rimlig tid.
+      </p>
+
+      <h2>Varför det är användbart</h2>
+      <p>
+        Elitserien spelar ungefär 300 matcher per säsong. En full säsong
+        tar åtta månader. Frågor som kräver 5 000 matcher för tillförlitliga
+        svar tar alltså 15–20 år av verklig serie att besvara.
+      </p>
+      <p>
+        Bandy Manager kan köra det på en eftermiddag. Det är inte detsamma
+        som verklig data — men det är ett komplement som besvarar specifika
+        frågor snabbare och med kontrollerade förutsättningar.
+      </p>
+
+      <h2>Begränsningarna</h2>
+      <p>
+        Motorn är en abstraktion. Den modellerar bandy som en serie
+        parametriserade sannolikheter. Vad den inte modellerar: spelarnas
+        psykologi, taktiska justeringar i realtid, skadors inverkan,
+        väder, is-kvalitet, domarbeslut.
+      </p>
+      <p>
+        Det innebär att findings från simuleringen alltid ska läsas med
+        brasklappen: <em>detta stämmer om modellen är korrekt</em>. Varje
+        finding anger tydligt hur motorns resultat förhåller sig till
+        verklig Bandygrytan-data. Stämmer de överens är det ett tecken på
+        att modellen fångar något reellt. Skiljer de sig åt är det antingen
+        en modelleringssvaghet eller en dold faktor i verkligheten.
+      </p>
+      <p>
+        Vi gissar inte vilket det är. Vi rapporterar avvikelsen.
+      </p>
+
+      <h2>Källorna</h2>
+      <p>
+        Alla facts som findings bygger på är strukturerade och offentliga.
+        Varje fact har ett ID, ett påstående, en källa, ett verifieringsdatum
+        och invarianter som kontrolleras automatiskt.
+        Se <a href="/sources/">källförteckningen</a>.
+      </p>
+
+      <h2>Vem som gör det</h2>
+      <p>
+        Jacob Stjärne bygger Bandy Manager. Erik är den förste
+        läsaren av findings. Fler perspectives välkomnas — hör av dig
+        om du har bandydata, kalibreringsfrågor eller hittar något som
+        inte stämmer.
+      </p>
+    </div>
+  </div>
+</Base>

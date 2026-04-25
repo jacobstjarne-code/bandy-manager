@@ -1,0 +1,173 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { loadFacts, formatValue, CATEGORY_LABELS, type Fact } from '../../../lib/facts';
+
+export function getStaticPaths() {
+  const facts = loadFacts();
+  return facts.map(f => {
+    const cat = f.category;
+    // catSlug: s, r, d, w, h
+    const catSlug = cat === 'design_principles' ? 'd'
+                  : cat === 'world_canon' ? 'w'
+                  : cat === 'hypothesis' ? 'h'
+                  : cat[0]; // s or r
+    const numId = f.fact_id.slice(1).replace(/^0+/, '');
+    return {
+      params: { catSlug, numId },
+      props: { fact: f },
+    };
+  });
+}
+
+interface Props {
+  fact: Fact;
+}
+
+const { fact } = Astro.props;
+const catLabel = CATEGORY_LABELS[fact.category] ?? fact.category;
+
+function relatedFactHref(relId: string): string {
+  const catChar = relId[0].toLowerCase();
+  const num = relId.slice(1).replace(/^0+/, '');
+  const slugMap: Record<string, string> = { r: 'r', s: 's', d: 'd', w: 'w', h: 'h' };
+  const slug = slugMap[catChar] ?? catChar;
+  return `/sources/${slug}/${num}`;
+}
+---
+
+<Base
+  title={`${fact.fact_id} — ${fact.claim.slice(0, 60)}`}
+  description={fact.claim}
+>
+  <div class="fact-detail">
+
+    <a href="/sources/" class="back-link">← Alla källor</a>
+
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+      <span class={`tag tag--${fact.category === 'design_principles' ? 'design' : fact.category === 'world_canon' ? 'world' : fact.category}`}>
+        {catLabel}
+      </span>
+      <span style="font-family: var(--font-ui); font-size: 0.75rem; color: var(--color-muted);">
+        Verifierat {fact.verified_at} av {fact.verified_by}
+      </span>
+    </div>
+
+    <h1 style="font-family: var(--font-ui); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-accent); margin-bottom: 0.25rem;">
+      {fact.fact_id}
+    </h1>
+
+    <p style="font-size: 1.5rem; line-height: 1.35; margin: 0 0 1.5rem;">
+      {fact.claim}
+    </p>
+
+    {fact.value !== undefined && (
+      <div style="margin-bottom: 1.5rem;">
+        <div class="fact-detail__value">
+          {Array.isArray(fact.value) ? fact.value.join(', ') : String(fact.value)}
+        </div>
+        {fact.unit && <div class="fact-detail__unit">{fact.unit}</div>}
+      </div>
+    )}
+
+    {fact.source && (
+      <section style="margin-bottom: 1.5rem;">
+        <p style="font-family: var(--font-ui); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-muted); font-weight: 700; margin-bottom: 0.5rem;">
+          Källa
+        </p>
+        <table style="font-family: var(--font-ui); font-size: 0.85rem; border-collapse: collapse; width: 100%; max-width: 480px;">
+          <tbody>
+            <tr>
+              <td style="padding: 4px 12px 4px 0; color: var(--color-muted); width: 120px;">Typ</td>
+              <td style="padding: 4px 0;">{fact.source.type}</td>
+            </tr>
+            {fact.source.name && (
+              <tr>
+                <td style="padding: 4px 12px 4px 0; color: var(--color-muted);">Namn</td>
+                <td style="padding: 4px 0;">{fact.source.name}</td>
+              </tr>
+            )}
+            {fact.source.match_count && (
+              <tr>
+                <td style="padding: 4px 12px 4px 0; color: var(--color-muted);">Matcher</td>
+                <td style="padding: 4px 0;">{fact.source.match_count}</td>
+              </tr>
+            )}
+            {fact.source.seasons && fact.source.seasons.length > 0 && (
+              <tr>
+                <td style="padding: 4px 12px 4px 0; color: var(--color-muted);">Säsonger</td>
+                <td style="padding: 4px 0;">{fact.source.seasons.join(', ')}</td>
+              </tr>
+            )}
+            {fact.source.doc && (
+              <tr>
+                <td style="padding: 4px 12px 4px 0; color: var(--color-muted);">Referens</td>
+                <td style="padding: 4px 0;">{fact.source.doc}</td>
+              </tr>
+            )}
+            {fact.source.decided_by && (
+              <tr>
+                <td style="padding: 4px 12px 4px 0; color: var(--color-muted);">Beslutad av</td>
+                <td style="padding: 4px 0;">{fact.source.decided_by}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </section>
+    )}
+
+    {fact.invariants && fact.invariants.length > 0 && (
+      <section style="margin-bottom: 1.5rem;">
+        <p style="font-family: var(--font-ui); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-muted); font-weight: 700; margin-bottom: 0.5rem;">
+          Invarianter
+        </p>
+        <ul style="list-style: none; padding: 0; margin: 0; font-family: var(--font-mono); font-size: 0.85rem;">
+          {fact.invariants.map(inv => (
+            <li style="padding: 3px 0; color: var(--color-muted);">
+              <span style="color: #1a7a3c; margin-right: 6px;">✓</span>{inv}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {fact.notes && (
+      <section style="margin-bottom: 1.5rem;">
+        <p style="font-family: var(--font-ui); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-muted); font-weight: 700; margin-bottom: 0.5rem;">
+          Noter
+        </p>
+        <div class="fact-notes">{fact.notes}</div>
+      </section>
+    )}
+
+    {fact.related_facts && fact.related_facts.length > 0 && (
+      <section style="margin-bottom: 1.5rem;">
+        <p style="font-family: var(--font-ui); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-muted); font-weight: 700; margin-bottom: 0.5rem;">
+          Relaterade facts
+        </p>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+          {fact.related_facts.map(relId => (
+            <a href={relatedFactHref(relId)} class="fact-ref">{relId}</a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {fact.revisions && fact.revisions.length > 0 && (
+      <section>
+        <p style="font-family: var(--font-ui); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-muted); font-weight: 700; margin-bottom: 0.5rem;">
+          Revisionshistorik
+        </p>
+        <ul class="fact-revisions">
+          {fact.revisions.map(rev => (
+            <li>
+              <span class="fact-revisions__date">{rev.date}</span>
+              <span style="margin-right: 8px;">Värde: {String(rev.value)}</span>
+              <span style="color: var(--color-muted);">{rev.note}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+  </div>
+</Base>
