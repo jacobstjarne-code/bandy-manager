@@ -55,6 +55,8 @@ jobs:
       - name: Build
         run: npm run build
         working-directory: bandy-brain
+        env:
+          PUBLIC_ISSUES_TOKEN: ${{ secrets.ISSUES_TOKEN }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

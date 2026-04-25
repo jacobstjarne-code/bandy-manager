@@ -32,7 +32,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             <li><a href={`${base}/findings/`} aria-current={Astro.url.pathname.startsWith(`${base}/findings`) ? 'page' : undefined}>Findings</a></li>
             <li><a href={`${base}/sources/`} aria-current={Astro.url.pathname.startsWith(`${base}/sources`) ? 'page' : undefined}>Källor</a></li>
             <li><a href={`${base}/about/`} aria-current={Astro.url.pathname === `${base}/about/` ? 'page' : undefined}>Om</a></li>
-            <li><a href="https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=new-question&title=" target="_blank" rel="noopener" class="site-header__nav-cta">Ställ en fråga</a></li>
+            <li><a href={`${base}/ask/`} class="site-header__nav-cta">Ställ en fråga</a></li>
           </ul>
         </nav>
       </div>

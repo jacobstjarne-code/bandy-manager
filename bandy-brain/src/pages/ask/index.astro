@@ -1,0 +1,90 @@
+---
+import Base from '../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const token = import.meta.env.PUBLIC_ISSUES_TOKEN ?? '';
+---
+
+<Base title="Ställ en fråga" description="Skicka in en fråga om bandy till Bandy-Brain-pipelinen.">
+  <div class="finding-layout">
+    <a href={`${base}/`} class="back-link">← Startsidan</a>
+
+    <h1 class="finding-title" style="font-size: 1.8rem;">Ställ en fråga</h1>
+    <p style="color: var(--color-muted); font-family: var(--font-ui); font-size: 0.95rem; max-width: 52ch; margin-bottom: 2rem;">
+      Undrar du något om bandy? Skriv frågan nedan — pipelinen analyserar Bandygrytans matchdata och publicerar ett svar som en finding.
+    </p>
+
+    <form id="ask-form">
+      <div style="margin-bottom: 1.5rem;">
+        <label for="question" style="display: block; font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-muted); margin-bottom: 0.5rem;">
+          Din fråga
+        </label>
+        <textarea
+          id="question"
+          name="question"
+          rows="3"
+          placeholder="T.ex. Hur ofta vinner laget som leder vid halvtid med två mål?"
+          style="width: 100%; padding: 10px 12px; font-family: var(--font-body); font-size: 1rem; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); resize: vertical; line-height: 1.5;"
+        ></textarea>
+      </div>
+
+      <button
+        type="submit"
+        id="submit-btn"
+        style="font-family: var(--font-ui); font-size: 0.875rem; font-weight: 600; color: white; background: var(--color-accent); border: none; padding: 10px 20px; cursor: pointer;"
+      >
+        Skicka fråga
+      </button>
+    </form>
+
+    <div id="status" style="display: none; margin-top: 1.5rem; font-family: var(--font-ui); font-size: 0.9rem;"></div>
+  </div>
+</Base>
+
+<script define:vars={{ token }}>
+  const form = document.getElementById('ask-form');
+  const status = document.getElementById('status');
+  const btn = document.getElementById('submit-btn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const question = document.getElementById('question').value.trim();
+    if (!question) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Skickar…';
+    status.style.display = 'none';
+
+    try {
+      const res = await fetch('https://api.github.com/repos/jacobstjarne-code/bandy-manager/issues', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: question,
+          labels: ['new-question'],
+        }),
+      });
+
+      if (res.ok) {
+        form.style.display = 'none';
+        status.style.display = 'block';
+        status.style.color = 'var(--color-text)';
+        status.innerHTML = `
+          <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">Frågan är registrerad.</p>
+          <p style="color: var(--color-muted); font-size: 0.875rem;">Pipelinen kör en analys och publicerar svaret som en finding — brukar ta någon minut.</p>
+        `;
+      } else {
+        throw new Error(`${res.status}`);
+      }
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Skicka fråga';
+      status.style.display = 'block';
+      status.style.color = '#c0392b';
+      status.textContent = 'Något gick fel. Försök igen.';
+    }
+  });
+</script>
