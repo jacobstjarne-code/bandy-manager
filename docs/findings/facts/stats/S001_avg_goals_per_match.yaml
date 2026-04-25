@@ -14,8 +14,9 @@ status: active
 invariants:
   - "value > 8"
   - "value < 11"
-related_facts: [S012, S013]
+  - "value == S002.value + S003.value"
+related_facts: [S002, S003]
 notes: |
-  Grundläggande kalibreringsmål för matchmotorn. Summan av S012
-  (avgHomeGoals 4.88) + S013 (avgAwayGoals 4.24) = 9.12 — aritmetiskt
-  konsistent. Regular season only, slutspel exkluderat.
+  Grundläggande kalibreringsmål. Summan av S002 (avgHomeGoals 4.88) +
+  S003 (avgAwayGoals 4.24) = 9.12 — aritmetiskt konsistent.
+  Regular season only, slutspel exkluderat.

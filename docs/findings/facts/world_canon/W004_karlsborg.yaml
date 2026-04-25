@@ -1,0 +1,14 @@
+fact_id: W004
+category: world_canon
+claim: "Karlsborg är fiktiv norrbottensklubb, hemmaarena Bastionen, klack Norrskensklacken"
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/worldGenerator.ts:187"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+notes: |
+  reputation: 68. hasArtificialIce: false. Region: Norrbotten.
+  boardExpectation: ChallengeTop. preferredStyle: Balanced.
+  Startkapital: 400 000 kr.

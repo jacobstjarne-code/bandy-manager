@@ -21,7 +21,8 @@
     "avgSuspensionsPerMatch":{ "value": 3.77,  "tolerance": 0.5 },
     "avgShotsPerMatch":      { "value": 10.5,  "tolerance": 2.0 },
     "avgHalfTimeGoals":      { "value": 4.19,  "tolerance": 0.5 },
-    "htLeadWinPct":          { "value": 46.6,  "tolerance": 5.0 },
+    "htLeadWinPct":          { "value": 78.1,  "tolerance": 5.0,  "note": "Verifierat 2026-04-25 mot rådata (n=907 HT-ledningar i 1124 matcher)." },
+    "homeHtLeadFraction":    { "value": 46.6,  "tolerance": 5.0,  "note": "Andel matcher där hemmalaget leder vid HT (529/1124). Tidigare felmärkt som htLeadWinPct." },
     "goalsSecondHalfPct":    { "value": 60.7,  "tolerance": 3.0,  "note": "OBS: 60.7% inte 54.3% — föregående mål var fel" }
   },
 

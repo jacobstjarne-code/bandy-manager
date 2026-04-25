@@ -1,0 +1,17 @@
+fact_id: R011
+category: rules
+claim: "Offside-regel finns i bandy: spelare i offsideposition när bollen spelas av medspelare på motståndarens planhalva med färre än 2 motspelare emellan"
+source:
+  type: rulebook
+  name: SvBF-Regelbok-2025-2026
+  doc: "Regel 10.1, sida 29-30"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "no_code_path_removes_offside_logic"
+notes: |
+  Offside bedöms i "båll-/rygghöjd". Spelare avblåses BARA om de tar emot
+  bollen, försöker vinna fördel, eller inverkar på spelet inom spelavstånd
+  (klubba fullarmlängd från vardera sida). Liknar fotbollsoffside men med
+  denna precisering av "spelavstånd".

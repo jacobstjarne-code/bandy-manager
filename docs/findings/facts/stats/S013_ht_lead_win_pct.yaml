@@ -1,0 +1,38 @@
+fact_id: S013
+category: stats
+claim: "Vinst-procent för laget som leder vid halvtid, Herrbandy Elitserien"
+value: 78.1
+unit: percent
+source:
+  type: dataset
+  name: bandygrytan
+  match_count: 907
+  seasons: ["2019-20", "2020-21", "2021-22", "2022-23", "2024-25", "2025-26"]
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value > 60"
+  - "value < 90"
+  - "value >= S004.value"
+related_facts: [S004, S016]
+notes: |
+  match_count 907 = matcher med halvtidsresultat registrerat (av 1124 totalt).
+  Halvtidsledning är stark prediktor i bandy — starkare än i fotboll.
+  Ej splittat på 1-måls vs flermålsledning.
+
+  S016 (homeHtLeadFraction = 46.6 %) är ett distinkt mått: andelen matcher
+  där hemmalaget leder vid halvtid. Förväxlingen av dessa gav upphov till
+  revision 2026-04-14 nedan.
+revisions:
+  - date: 2026-04-14
+    value: 46.6
+    note: |
+      Felmärkt i calibrationTargets. Fältet innehöll homeHtLeadFraction
+      (andel matcher där hemmalaget leder vid halvtid ≈ 46.6 %) — ett
+      helt annat mått. Upptäcktes i Sprint 25-HT-analysen.
+      Invarianterna value > 60 och value >= S004.value hade ensamt fångat
+      felet om de hade funnits när värdet skrevs in.
+  - date: 2026-04-25
+    value: 78.1
+    note: "Verifierat manuellt ur rådata under audit."

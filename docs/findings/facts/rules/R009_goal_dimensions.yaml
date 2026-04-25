@@ -1,0 +1,18 @@
+fact_id: R009
+category: rules
+claim: "Målets invändiga mått: 2,1 m hög × 3,5 m bred"
+value: [2.1, 3.5]
+unit: meters [height, width]
+source:
+  type: rulebook
+  name: SvBF-Regelbok-2025-2026
+  doc: "Regel 1.5, sida 7"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value[0] == 2.1"
+  - "value[1] == 3.5"
+notes: |
+  Djup: 1 meter upptill, 2 meter nertill. Målribba och stolpar:
+  min 5 cm, max 8 cm breda.

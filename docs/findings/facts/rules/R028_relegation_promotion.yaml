@@ -1,0 +1,14 @@
+fact_id: R028
+category: rules
+claim: "Elitserien: plats 14 direktnedflyttad, plats 12-13 till negativt kval mot Bandyallsvenskan"
+source:
+  type: rulebook
+  name: SvBF-TB-Bilaga-9-2025-2026
+  doc: "Bilaga 9, sida 8"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+related_facts: [R023]
+notes: |
+  Positivt kval: lag 2-3 från Bandyallsvenskan + lag 1-2 från Division 1 (totalt 3 lag)
+  möter Elitseriens lag 12-13 i kval. 2 vinnare spelar i Elitserien nästa säsong.

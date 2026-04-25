@@ -1,0 +1,14 @@
+fact_id: W008
+category: world_canon
+claim: "Lesjöfors är fiktiv värmlandsklubb, hemmaarena Kolbottnen, klack Skogsklacken"
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/worldGenerator.ts:263"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+notes: |
+  reputation: 62. hasArtificialIce: false. Region: Värmland.
+  boardExpectation: MidTable. preferredStyle: Defensive.
+  Startkapital: 320 000 kr.

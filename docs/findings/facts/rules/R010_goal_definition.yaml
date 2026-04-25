@@ -1,0 +1,13 @@
+fact_id: R010
+category: rules
+claim: "Mål räknas när bollen i sin helhet passerat över mållinjen, mellan stolparna och under ribban"
+source:
+  type: rulebook
+  name: SvBF-Regelbok-2025-2026
+  doc: "Regel 8.1, sida 25"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+notes: |
+  Mål kan göras direkt från avslag, straffslag, frislag och hörnslag samt tekning.
+  Mål i motståndarmålet kan INTE göras direkt vid målkast eller utkast från målvakten.

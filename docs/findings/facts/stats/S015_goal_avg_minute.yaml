@@ -1,0 +1,20 @@
+fact_id: S015
+category: stats
+claim: "Genomsnittlig matchminut för mål, Herrbandy Elitserien"
+value: 48.2
+unit: minute
+source:
+  type: dataset
+  name: bandygrytan
+  match_count: 1124
+  seasons: ["2019-20", "2020-21", "2021-22", "2022-23", "2024-25", "2025-26"]
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value > 40"
+  - "value < 55"
+notes: |
+  Medianminuten är 49 (goalMedianMin i calibrationTargets). Att snittet
+  ligger nära median indikerar relativt symmetrisk målfördelning över matchtiden
+  med lätt tyngdpunkt mot 2H (jfr S014).

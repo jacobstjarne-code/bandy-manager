@@ -1,0 +1,14 @@
+fact_id: W001
+category: world_canon
+claim: "Forsbacka är fiktiv toppklubb i Gävleborg, hemmaarena Slagghögen, klack Järnklacken"
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/worldGenerator.ts:129"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+notes: |
+  reputation: 85 (högst av 12 klubbar — toppfavorit). hasArtificialIce: true.
+  boardExpectation: WinLeague. preferredStyle: Technical.
+  Startkapital: 800 000 kr.

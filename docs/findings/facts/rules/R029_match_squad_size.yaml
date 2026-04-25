@@ -1,0 +1,17 @@
+fact_id: R029
+category: rules
+claim: "Matchuppställning Elitserien: 16 spelare, varav 5 avbytare inklusive 1 målvaktsavbytare"
+value: [16, 5, 1]
+unit: [total, substitutes, gk_substitutes]
+source:
+  type: rulebook
+  name: SvBF-Regelbok-2025-2026
+  doc: "Regel 3.2, sida 12-13"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value[0] == 16"
+  - "value[1] == 5"
+  - "value[2] == 1"
+related_facts: [R003]

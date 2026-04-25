@@ -1,0 +1,14 @@
+fact_id: W006
+category: world_canon
+claim: "Gagnef är fiktiv dalaklubb, hemmaarena Älvvallen, klack Dalkurvan"
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/worldGenerator.ts:225"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+notes: |
+  reputation: 63. hasArtificialIce: false. Region: Dalarna.
+  boardExpectation: MidTable. preferredStyle: Physical.
+  Startkapital: 350 000 kr.

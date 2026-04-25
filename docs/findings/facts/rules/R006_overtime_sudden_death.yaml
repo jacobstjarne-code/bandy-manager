@@ -1,0 +1,19 @@
+fact_id: R006
+category: rules
+claim: "Förlängning vid oavgjort i utslagstävling spelas 2×10 minuter enligt sudden death"
+value: 20
+unit: minutes total (2×10)
+source:
+  type: rulebook
+  name: SvBF-Regelbok-2025-2026
+  doc: "Regel 4.1, sida 15"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value == 20"
+related_facts: [R027]
+notes: |
+  "Sudden death" innebär att matchen avslutas direkt när ett mål faller
+  under förlängningen. Om 2×10 min spelas utan mål avgörs det med straffslag (R027).
+  R027 är TB-varianten av samma regel — samma innehåll, annan källa.

@@ -1,0 +1,31 @@
+fact_id: H001
+category: hypothesis
+claim: "Spelets modellering av utvisningar (bara tidsbegränsade, inga varningar/matchstraff) är ett förenklande designval — inte en faktauppgift om bandy"
+source:
+  type: observation
+  name: "Konflikt mellan CLAUDE.md och SvBF-Regelbok-2025-2026"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+related_facts: [R014, R015]
+notes: |
+  CLAUDE.md (projektets kodkonvention) säger: "Inga gula kort — bandy har
+  10 min utvisning, inte gula/röda kort."
+
+  SvBF-Regelbok-2025-2026 §16 anger faktiskt fyra nivåer:
+  1. Varning (gult-kort-liknande) — §16.2
+  2. 5-min utvisning — §16.3
+  3. 10-min utvisning — §16.4
+  4. Matchstraff (rött-kort-liknande, lindrigt §16.6 / grovt §16.7)
+
+  HYPOTES: CLAUDE.md:s formulering är en förenkling som är korrekt
+  ur implementationsperspektiv (spelet modellerar bara tidsbegränsade
+  utvisningar) men felaktig som faktauppgift om bandy-regelboken.
+
+  TESTKRITERIUM: Jacob bekräftar om spelimplementationen medvetet
+  ska ignorera varningar och matchstraff (D-fact) eller om den ska
+  uppdateras att modellera alla fyra nivåer.
+
+  ÅTGÄRD VID BEKRÄFTELSE: Skapa D-fact "Bandy Manager modellerar
+  bara tidsbegränsad utvisning" + uppdatera CLAUDE.md:s "Inga gula kort"
+  till "Spelet modellerar bara 5- och 10-minutersutvisningar".

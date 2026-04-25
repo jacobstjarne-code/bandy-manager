@@ -1,0 +1,20 @@
+fact_id: S010
+category: stats
+claim: "Genomsnittligt antal skott på mål per match, Herrbandy Elitserien"
+value: 10.5
+unit: shots/match
+source:
+  type: dataset
+  name: bandygrytan
+  match_count: 1124
+  seasons: ["2019-20", "2020-21", "2021-22", "2022-23", "2024-25", "2025-26"]
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value > 8"
+  - "value < 15"
+notes: |
+  Bandygrytan registrerar skott på mål (eventtype 11). Måttet inkluderar
+  räddningar + mål, men inte skott utanför mål. Kan vara underskattning
+  p.g.a. inkonsekvent registrering i källdatan.

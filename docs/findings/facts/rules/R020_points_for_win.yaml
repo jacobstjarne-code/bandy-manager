@@ -1,0 +1,16 @@
+fact_id: R020
+category: rules
+claim: "Vinst ger 2 poäng i tabellen"
+value: 2
+unit: points
+source:
+  type: rulebook
+  name: SvBF-TB-Bilaga-9-2025-2026
+  doc: "Bilaga 9, sida 1-9"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value == 2"
+  - "no_code_path_grants_3_points_for_win"
+related_facts: [R021, R022]

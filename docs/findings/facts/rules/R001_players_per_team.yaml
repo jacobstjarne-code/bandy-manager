@@ -1,0 +1,12 @@
+fact_id: R001
+category: rules
+claim: "Varje lag har högst 11 spelare på spelplanen, varav 1 målvakt och 1 lagkapten"
+source:
+  type: rulebook
+  name: SvBF-Regelbok-2025-2026
+  doc: "Regel 3.1, sida 11-13"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "no_code_path_allows_more_than_11_outfield_plus_gk"

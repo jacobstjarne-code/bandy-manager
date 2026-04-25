@@ -1,0 +1,10 @@
+fact_id: R002
+category: rules
+claim: "Minst 8 spelare måste vara namngivna i laguppställningen för att matchen får startas"
+source:
+  type: rulebook
+  name: SvBF-Regelbok-2025-2026
+  doc: "Regel 3.1, sida 11-13"
+verified_at: 2026-04-25
+verified_by: code
+status: active

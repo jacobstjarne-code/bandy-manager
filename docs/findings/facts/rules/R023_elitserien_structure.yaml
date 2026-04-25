@@ -1,0 +1,20 @@
+fact_id: R023
+category: rules
+claim: "Elitserien Herr: 14 lag, 26 omgångar (rak dubbelserie)"
+value: [14, 26]
+unit: [teams, rounds]
+source:
+  type: rulebook
+  name: SvBF-TB-Bilaga-9-2025-2026
+  doc: "Bilaga 9, säsong 2025-2026"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value[0] == 14"
+  - "value[1] == 26"
+notes: |
+  14 lag × 2 möten = 26 omgångar. Serieformat: lag 1-6 till slutspel,
+  lag 7-10 till åttondelsfinaler (best-of-3), lag 11 spelar klart,
+  lag 12-13 till negativt kval, lag 14 direktnedflyttad.
+  Bandy Manager:s fiktiva serie har 12 lag — ett designval (D-fact).

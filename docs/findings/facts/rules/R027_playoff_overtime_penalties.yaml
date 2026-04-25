@@ -1,0 +1,14 @@
+fact_id: R027
+category: rules
+claim: "Vid oavgjort i slutspel: 2×10 min sudden death, därefter straffslag (5 per lag)"
+source:
+  type: rulebook
+  name: SvBF-TB-Bilaga-9-2025-2026
+  doc: "Bilaga 9, sida 10"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+related_facts: [R006]
+notes: |
+  Identisk regel som R006 (spelreglerna) men med TB-källa.
+  5 straffslag per lag. Om lika efter 5: sudden death straffslag tills vinnare.

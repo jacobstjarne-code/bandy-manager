@@ -1,0 +1,15 @@
+fact_id: R021
+category: rules
+claim: "Oavgjort ger 1 poäng per lag i tabellen"
+value: 1
+unit: points
+source:
+  type: rulebook
+  name: SvBF-TB-Bilaga-9-2025-2026
+  doc: "Bilaga 9, sida 1-9"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value == 1"
+related_facts: [R020, R022]

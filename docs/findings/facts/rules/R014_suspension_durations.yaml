@@ -1,0 +1,30 @@
+fact_id: R014
+category: rules
+claim: "Utvisningsnivåer: varning, 5-minutersutvisning, 10-minutersutvisning, matchstraff"
+value: [5, 10]
+unit: minutes (timed suspensions; matchstraff är full match)
+source:
+  type: rulebook
+  name: SvBF-Regelbok-2025-2026
+  doc: "Regel 16.1-16.7, sida 41-47"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value[0] == 5"
+  - "value[1] == 10"
+notes: |
+  Fyra nivåer enligt regelboken 2025/2026:
+  1. Varning (gult kort-liknande signal) — lindriga regelöverträdelser §16.2
+  2. 5 min utvisning — Regel 16.3
+  3. 10 min utvisning — Regel 16.4 (grövre förseelser, våldsamt angrepp)
+  4. Matchstraff (rött kort-liknande, lindrigt §16.6 eller grovt §16.7)
+
+  KONFLIKT MED CLAUDE.md: CLAUDE.md säger "Inga gula kort — bandy har
+  10 min utvisning, inte gula/röda kort". Regelboken 2025/2026 anger
+  faktiskt en varningsnivå (§16.2) och matchstraff (§16.6-16.7) med
+  symboler liknande gula/röda kort. Spelets implementation (CLAUDE.md)
+  är en förenkling som bara modellerar tidsbegränsade utvisningar.
+  Det är ett korrekt designval (D-fact) men inte en faktauppgift om bandy.
+  Se H001 för öppen hypotes om implementation.
+related_facts: [R015]

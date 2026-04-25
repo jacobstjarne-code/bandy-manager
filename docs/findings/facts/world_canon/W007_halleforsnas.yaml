@@ -1,0 +1,14 @@
+fact_id: W007
+category: world_canon
+claim: "Hälleforsnäs är fiktiv södermanlandsklubb, hemmaarena Gjutarvallen, klack Härdarna"
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/worldGenerator.ts:244"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+notes: |
+  reputation: 60. hasArtificialIce: false. Region: Södermanland.
+  boardExpectation: MidTable. preferredStyle: Balanced.
+  Startkapital: 300 000 kr.

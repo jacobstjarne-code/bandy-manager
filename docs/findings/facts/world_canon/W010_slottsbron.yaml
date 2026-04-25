@@ -1,0 +1,14 @@
+fact_id: W010
+category: world_canon
+claim: "Slottsbron är fiktiv värmlandsklubb, hemmaarena Forsvallen, klack Bropelarna"
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/worldGenerator.ts:301"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+notes: |
+  reputation: 48. hasArtificialIce: false. Region: Värmland.
+  boardExpectation: AvoidBottom. preferredStyle: Balanced.
+  Startkapital: 180 000 kr.

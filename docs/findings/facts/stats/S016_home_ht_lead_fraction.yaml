@@ -1,0 +1,26 @@
+fact_id: S016
+category: stats
+claim: "Andel matcher där hemmalaget leder vid halvtid, Herrbandy Elitserien"
+value: 46.6
+unit: percent
+source:
+  type: dataset
+  name: bandygrytan
+  match_count: 907
+  seasons: ["2019-20", "2020-21", "2021-22", "2022-23", "2024-25", "2025-26"]
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value > 30"
+  - "value < 70"
+  - "value < S013.value"
+related_facts: [S013]
+notes: |
+  Distinkt från S013 (htLeadWinPct = 78.1 %). S016 mäter hur ofta hemmalaget
+  leder vid halvtid. S013 mäter hur ofta det ledande laget (oavsett hemma/borta)
+  vinner. Förväxlingen av dessa gav upphov till S013:s revision 2026-04-14.
+
+  Invarianten value < S013.value är formellt korrekt: andelen matcher hemmalaget
+  leder vid halvtid (≈ 47 %) är lägre än vinst-procenten för det ledande laget
+  (78 %) — de mäter olika saker men siffrorna råkar stärka distinktionen.

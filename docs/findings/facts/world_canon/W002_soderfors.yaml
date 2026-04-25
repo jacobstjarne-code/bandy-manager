@@ -1,0 +1,14 @@
+fact_id: W002
+category: world_canon
+claim: "Söderfors är fiktiv medelklubb i Uppland, hemmaarena Ässjan, klack Hammarsmederna"
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/worldGenerator.ts:149"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+notes: |
+  reputation: 55. hasArtificialIce: false.
+  boardExpectation: MidTable. preferredStyle: Balanced.
+  Startkapital: 350 000 kr.

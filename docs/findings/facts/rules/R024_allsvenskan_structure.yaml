@@ -1,0 +1,18 @@
+fact_id: R024
+category: rules
+claim: "Bandyallsvenskan Herr: 13 lag, 24 omgångar (rak dubbelserie)"
+value: [13, 24]
+unit: [teams, rounds]
+source:
+  type: rulebook
+  name: SvBF-TB-Bilaga-9-2025-2026
+  doc: "Bilaga 9, sida 9"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value[0] == 13"
+  - "value[1] == 24"
+notes: |
+  13 lag × 2 = 26 matcher per lag men 24 omgångar p.g.a. serieformat.
+  Lag 1 upp, lag 2-3 till positivt kval, lag 12-13 negativt kval.

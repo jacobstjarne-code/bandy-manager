@@ -1,0 +1,16 @@
+fact_id: R003
+category: rules
+claim: "I Elitserien Herr/Dam och Allsvenskan Herr får laget sätta upp 16 spelare (5 avbytare varav 1 målvaktsavbytare)"
+source:
+  type: rulebook
+  name: SvBF-Regelbok-2025-2026
+  doc: "Regel 3.2, sida 12-13"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "no_code_path_allows_elite_squad_larger_than_16"
+notes: |
+  Övriga serier: rätt till 21 spelare (max 10 avbytare). Spelet simulerar
+  Elitserien och Bandyallsvenskan — 16-spelarregeln är auktoritativ.
+  Faktum (R029) bekräftar: 16 spelare, 5 avbytare varav 1 MV.

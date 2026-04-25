@@ -1,0 +1,18 @@
+fact_id: S003
+category: stats
+claim: "Genomsnittliga bortamål per match, Herrbandy Elitserien"
+value: 4.24
+unit: goals/match
+source:
+  type: dataset
+  name: bandygrytan
+  match_count: 1124
+  seasons: ["2019-20", "2020-21", "2021-22", "2022-23", "2024-25", "2025-26"]
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value > 3.5"
+  - "value < 5.5"
+  - "value + S002.value == S001.value"
+related_facts: [S001, S002]

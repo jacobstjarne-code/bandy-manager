@@ -333,15 +333,23 @@ Pass 1 är klart när:
 
 ## PASS 2 — Migrering (klar 2026-04-25)
 
-Befintliga kalibreringskonstanter och regler migrerade till facts:
+59 facts skapade från 4 källtyper. Se [AUDIT_PASS_2_2026-04-25.md](AUDIT_PASS_2_2026-04-25.md) för fullständig rapport.
 
-**Stats (S001–S013):** 13 facts från `calibrationTargets.herr` i
-`bandygrytan_detailed.json` — alla verifierade mot REVISION_2026-04-25.
+**Stats (S001–S016):** 16 facts från `calibrationTargets.herr` i
+`bandygrytan_detailed.json` — verifierade mot REVISION_2026-04-25.
 
-**Rules (R001–R006):** 6 facts från CLAUDE.md bandyspecifika regler +
-SBF/FIB terminologi.
+**Rules (R001–R015):** 15 facts från SvBF-Regelbok-2025-2026.pdf
+(Regler 1, 3, 4, 8, 10, 11, 14-16). PDFen nedladdad till `docs/data/`.
 
-**Design principles (D001–D005):** 5 facts från `economyService.ts`
-— weeklyBase, arenaCapacity, arenaCost, finansstatus-trösklar, matchbonusar.
+**Rules (R020–R029):** 10 facts från SvBF-TB-Bilaga-9-2025-2026.pdf
+(poängsystem, seriestruktur, slutspelsformat). PDFen nedladdad till `docs/data/`.
+
+**Design principles (D001–D005):** 5 facts från `economyService.ts`.
+
+**World canon (W001–W012):** 12 facts, en per fiktiv klubb, från `worldGenerator.ts`.
+
+**Öppen hypotes (H001):** Konflikt identifierad — CLAUDE.md:s "inga gula kort"
+stämmer inte med §16 i regelbok 2025/2026 som anger varning + matchstraff.
+Kräver Jacobs beslut.
 
 Pass 3 (validator-skript) kan nu starta.

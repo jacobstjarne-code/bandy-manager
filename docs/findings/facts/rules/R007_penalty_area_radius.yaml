@@ -1,0 +1,15 @@
+fact_id: R007
+category: rules
+claim: "Straffområdet är en halvcirkel med 17 meters radie från målets mittpunkt"
+value: 17
+unit: meters
+source:
+  type: rulebook
+  name: SvBF-Regelbok-2025-2026
+  doc: "Regel 1.4, sida 6"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value == 17"
+related_facts: [R008]

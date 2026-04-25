@@ -21,7 +21,10 @@ det finns 5-10 finds.
 
 ## STRUKTUR
 
-En fil per find. Numrering: löpande, utan sprint-nummer.
+Två parallella system i detta mappträd:
+
+### Narrativa findings (denna fil)
+En fil per find, numrering löpande. Analysrapporter om specifika fenomen.
 
 Format per find:
 1. **Frågan** — vad var det vi undrade?
@@ -29,6 +32,13 @@ Format per find:
 3. **Det vi fann** — siffror, mönster, fördelning
 4. **Tolkning** — vad det säger om bandy
 5. **Begränsningar** — varför det kanske inte stämmer
+
+### Bandy-Brain (atomära facts)
+Strukturerade YAML-facts om regler, statistik, designval och världs-kanon.
+Schema: [SCHEMA.md](SCHEMA.md) — läs den innan du skapar eller ändrar facts.
+Fakta: `facts/rules/` (R001–), `facts/stats/` (S001–), `facts/design_principles/` (D001–), `facts/world_canon/` (W001–)
+Hypoteser: `hypotheses/` (H001–)
+Senaste audit: [AUDIT_PASS_2_2026-04-25.md](AUDIT_PASS_2_2026-04-25.md)
 
 ---
 

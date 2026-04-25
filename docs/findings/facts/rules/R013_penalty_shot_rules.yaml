@@ -1,0 +1,17 @@
+fact_id: R013
+category: rules
+claim: "Straffslag utförs från 12-meterspunkten — den felande spelaren MÅSTE utvisas"
+source:
+  type: rulebook
+  name: SvBF-Regelbok-2025-2026
+  doc: "Regel 14.1, 15.1, sida 37-38"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+related_facts: [R008]
+notes: |
+  Döms för förseelse inom straffområdet som hindrar klar målsituation.
+  Målvakten ska stå på mållinjen men har rätt att röra sig i sidled
+  innan bollen är i spel. Straffslagsläggare och MV är enda spelare
+  tillåtna inom straffområdet vid utförandet.
+  Mål på straffslag är giltigt så länge bollen inte lämnat straffområdet.

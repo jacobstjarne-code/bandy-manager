@@ -1,0 +1,14 @@
+fact_id: W012
+category: world_canon
+claim: "Heros är fiktiv dalaklubb och svagast i ligan, hemmaarena Hedvallen, klack Hjältarna"
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/worldGenerator.ts:339"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+notes: |
+  reputation: 45 (lägst av 12 klubbar). hasArtificialIce: false. Region: Dalarna.
+  boardExpectation: AvoidBottom. preferredStyle: Defensive.
+  Startkapital: 160 000 kr.

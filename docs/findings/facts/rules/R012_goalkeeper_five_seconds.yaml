@@ -1,0 +1,18 @@
+fact_id: R012
+category: rules
+claim: "Målvakten får hålla bollen i högst 5 sekunder — därefter måste annan spelare kunna spela den"
+value: 5
+unit: seconds
+source:
+  type: rulebook
+  name: SvBF-Regelbok-2025-2026
+  doc: "Regel 11.1, sida 31-32"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value == 5"
+notes: |
+  Målvakten kan använda vilken kroppsdel som helst inom eget straffområde.
+  Har INTE rätt att använda klubba. Motspelaren får inte hindra målvakten
+  i arbetet att sätta bollen i spel.

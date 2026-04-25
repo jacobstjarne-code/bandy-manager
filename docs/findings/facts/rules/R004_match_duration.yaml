@@ -1,0 +1,13 @@
+fact_id: R004
+category: rules
+claim: "En match spelas i två halvlekar om vardera 45 minuter"
+source:
+  type: rulebook
+  name: SvBF-Regelbok-2025-2026
+  doc: "Regel 4.1, sida 15"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "no_code_path_simulates_match_duration_other_than_2x45"
+related_facts: [R005, R006]
