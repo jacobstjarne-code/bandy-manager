@@ -3,13 +3,13 @@ import Base from '../../layouts/Base.astro';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 const findings = [
-  { num: '007', date: '25 april 2026', title: 'Dam och herr: samma mål, men annorlunda bandy', excerpt: 'Damserien och herrserien producerar exakt 9,12 mål/match — men halvtidsledningens stabilitet (89,1% vs 78,1%) och hörnornas andel (15,4% vs 22,2%) skiljer sig påtagligt.' },
-  { num: '006', date: '25 april 2026', title: 'Slutspelet: färre mål, starkare ledningar', excerpt: 'Slutspelsmatcher producerar 8,55 mål/match mot grundseriens 9,12. Trots färre mål håller halvtidsledningar i 85,3% av slutspelsmatcherna — mot 78,1% i grundserien.' },
-  { num: '005', date: '25 april 2026', title: 'Mål faller inte jämnt — två kluster sticker ut', excerpt: 'Minuterna 40–50 (11,8%) och 80–90 (12,9%) är bandymatchens tätaste målperioder. Resten av matchen är anmärkningsvärt jämn. Halvtidsgränsen och slutminuterna har sin egen logik.' },
-  { num: '004', date: '25 april 2026', title: '9,12 mål per match — bandy i ett målperspektiv', excerpt: 'Bandy är en av de mest målrika lagsporterna med målvakt. Genomsnittlig målminut är 48,2 och 54% av målen faller i andra halvlek.' },
-  { num: '003', date: '25 april 2026', title: 'Hemmafördelen i bandy är svagare än du tror', excerpt: 'Hemmalaget vinner 50,2% av Elitseriematcherna — knappt över slumpen. I fotboll är motsvarande ~60%, i ishockey ~55%.' },
-  { num: '002', date: '25 april 2026', title: 'Hörnor är fem gånger mer värda i bandy än i fotboll', excerpt: '22,2% av alla mål i Elitserien kommer från hörnlägen. I fotboll är motsvarande siffra 4%. Skillnaden förklarar varför hörnan är ett centralt taktiskt vapen.' },
-  { num: '001', date: '25 april 2026', title: 'Halvtidsledning i bandy är starkare än i fotboll', excerpt: '78,1% av lag som leder vid halvtid vinner matchen (Bandygrytan, 907 matcher). Bandy Managers simuleringsmotor matchar med 77%.' },
+      { num: '007', date: '25 april 2026', title: 'Dam vs herr: lika mål, men olika dynamik', excerpt: '' },
+      { num: '006', date: '25 april 2026', title: 'Slutspelet: färre mål, starkare ledningar', excerpt: '' },
+      { num: '005', date: '25 april 2026', title: 'Mål faller inte jämnt', excerpt: '' },
+      { num: '004', date: '25 april 2026', title: 'Bandy och mål', excerpt: '' },
+      { num: '003', date: '25 april 2026', title: 'Hemmafördelen i bandy', excerpt: '' },
+      { num: '002', date: '25 april 2026', title: 'Hörnornas värde i bandy', excerpt: '' },
+      { num: '001', date: '25 april 2026', title: 'Halvtidsledning i bandy', excerpt: '' },
 ];
 ---
 
@@ -21,7 +21,6 @@ const findings = [
     <p style="max-width: 560px; color: var(--color-muted); font-size: 0.95rem; margin-bottom: 2.5rem; font-family: var(--font-ui);">
       En finding är en rapport om ett specifikt fenomen i bandy — baserad på
       Bandygrytans verkliga matchdata och Bandy Managers simuleringsmotor.
-      Varje finding har en fråga, en datakälla, ett fynd och en tolkning.
     </p>
 
     <ul class="findings-list">
