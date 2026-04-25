@@ -25,6 +25,110 @@ export interface EventProcessorResult {
   patronWithdrawnSeason: number | undefined
 }
 
+// ── Lager 2 text ───────────────────────────────────────────────────────────
+
+const WAGE_OVERRUN_WARNING_TEXT = [
+  {
+    title: 'Licensnämnden: Formell varning',
+    body: 'Licensnämnden har noterat att {KLUBB}s lönekostnader överstiger budgeten med mer än 20%. Detta är en formell varning. Om förhållandet kvarstår vid säsongsslut kommer åtgärder att övervägas.',
+  },
+  {
+    title: 'RF:s licensnämnd kräver plan',
+    body: 'RF:s licensnämnd skriver till klubben: "Vi har granskat {KLUBB}s ekonomiska redovisning för innevarande säsong. Lönebudgeten är överskriden. Vi förväntar oss en plan för återställning inom fyra veckor."',
+  },
+  {
+    title: 'Licensnämnden: Krav på åtgärd',
+    body: '"Det är inte en fråga om huruvida ni har råd just nu", står det i brevet från Licensnämnden. "Det är en fråga om hur ni planerar er verksamhet långsiktigt. Vi vill se en plan."',
+  },
+]
+
+const WAGE_OVERRUN_DEDUCTION_TEXT = [
+  {
+    title: 'Licensnämnden: −2 poäng nästa säsong',
+    body: 'Licensnämnden har beslutat: {KLUBB} får ett avdrag på 2 poäng inför nästa säsong. Beslutet är slutgiltigt och kan inte överklagas. Lönebudgeten är fortsatt överskriden — fortsätter det blir det större.',
+  },
+  {
+    title: 'Poängavdrag bekräftat — {KLUBB} −2',
+    body: 'Två poäng dras inför nästa säsong. Det står i beslutet från Licensnämnden. "Klubben har inte följt sina egna ekonomiska planer", skriver de. "Detta är konsekvensen."',
+  },
+  {
+    title: 'Licensnämnden verkställer: −2 poäng',
+    body: 'Det blev konkret. Två poäng. Ordföranden samlar styrelsen för krismöte. "Vi måste bestämma vad som ska bort", säger han. "För något ska bort."',
+  },
+]
+
+const RISKY_SPONSOR_OFFERS = [
+  {
+    name: 'Borgvik Bygg AB',
+    category: 'Bygg & Fastighet',
+    weeklyIncome: 550,      // ≈ 12 000 kr/säsong
+    title: 'Borgvik Bygg AB erbjuder marknadsavtal — 12 000/säsong',
+    body: 'Borgvik Bygg AB erbjuder marknadsavtal med {KLUBB} på 12 000 per säsong i tre säsonger. VD:n nämner i samtal att företaget "går igenom en granskning från Skatteverket men det är rutin". Avtalet är klart att skriva på.',
+    acceptLabel: 'Acceptera (12 000 kr/säsong)',
+    risk: '⚠️ Risk: Skatteverket-granskning kan bli publik',
+  },
+  {
+    name: 'Nordström Logistik AB',
+    category: 'Logistik & Transport',
+    weeklyIncome: 365,      // ≈ 8 000 kr/säsong
+    title: 'Nordström Logistik AB vill bli sponsor — 8 000/säsong',
+    body: 'Nordström Logistik AB hör av sig genom sin nytillträdde VD. Företaget är okänt på orten men har god kontakt med tre andra klubbar i regionen. VD:n vill träffas snart. Hans bakgrund finns inte på företagets hemsida ännu.',
+    acceptLabel: 'Acceptera (8 000 kr/säsong)',
+    risk: '⚠️ Risk: Okänt bolag med oklar bakgrund',
+  },
+  {
+    name: 'Hellström & Co',
+    category: 'Konsult',
+    weeklyIncome: 680,      // ≈ 15 000 kr/säsong
+    title: 'Hellström & Co — kontakt via gemensam vän — 15 000/säsong',
+    body: '"Vi har gemensamma bekanta", står det i mejlet från Hellström & Co. Företaget vill betala 15 000 per säsong i marknadsavtal. När du frågar vilka bekanta blir svaret "det är en småstad". Det stämmer, men du har ingen aning om vem de menar.',
+    acceptLabel: 'Acceptera (15 000 kr/säsong)',
+    risk: '⚠️ Risk: Oklar koppling, inga references',
+  },
+  {
+    name: 'Lindström Holdings',
+    category: 'Holding',
+    weeklyIncome: 910,      // ≈ 20 000 kr/säsong
+    title: 'Lindström Holdings: 20 000 i förskott — direkt avtal',
+    body: 'Lindström Holdings erbjuder 20 000 i förskott för ett tre års marknadsavtal. "Inga byråkratiska processer", skriver han, "vi vill bara stötta lokal idrott". Beloppet är osedvanligt högt. Bolaget registrerades för fyra månader sedan.',
+    acceptLabel: 'Acceptera (20 000 kr/säsong)',
+    risk: '⚠️ Risk: Nystartat bolag, osedvanligt högt belopp',
+  },
+]
+
+const MECENAT_WITHDRAWAL_TEXT: Record<string, { title: string; body: string }> = {
+  kontrollfreak: {
+    title: '{MECENAT} drar sig ur',
+    body: '{MECENAT} ringer. Tonen är iskall.\n\n"Du har ignorerat mig tre gånger nu. Det är tydligt att klubben vill gå sin egen väg. Det är ert val. Men ni får göra det utan mig — och utan de pengar jag investerat i fastighetssidan. Det jag betalat är förbrukat. Det som var planerat dras tillbaka."\n\n{MECENAT} lämnar klubben permanent.',
+  },
+  filantropen: {
+    title: '{MECENAT} avslutar samarbetet',
+    body: '{MECENAT} ber om ett möte. Det är inte ilska i rösten, det är besvikelse — vilket är värre.\n\n"Jag har försökt förstå er. Men ni gör det inte enkelt. Jag drar mig ur det här samarbetet — det fungerar inte att ge när det inte tas emot. Jag önskar er lycka till."\n\n{MECENAT} lämnar permanent. Pengar som var öronmärkta för ungdomssatsningar dras tillbaka.',
+  },
+  nostalgiker: {
+    title: '{MECENAT} tar farväl',
+    body: '{MECENAT} sitter på sitt kontor och stirrar ut genom fönstret när du kommer in. Han ser äldre ut än vanligt.\n\n"Jag växte upp med {KLUBB}. Min far gick på matcherna i femtiotalet. Jag har försökt ge tillbaka. Men det måste vara åt båda håll. Jag drar mig tillbaka. Det är inte mot dig. Det är åt mig själv."\n\n{MECENAT} lämnar. Det blir tyst på orten — gamla supportrar tar det här illa.',
+  },
+}
+
+const MECENAT_WITHDRAWAL_FALLBACK = [
+  MECENAT_WITHDRAWAL_TEXT.kontrollfreak,
+  MECENAT_WITHDRAWAL_TEXT.filantropen,
+  MECENAT_WITHDRAWAL_TEXT.nostalgiker,
+]
+
+function pickByIndex<T>(arr: T[], seed: number): T {
+  return arr[seed % arr.length]
+}
+
+function fillL2Tokens(text: string, tokens: Record<string, string>): string {
+  let result = text
+  for (const [key, value] of Object.entries(tokens)) {
+    result = result.replace(new RegExp(`{${key}}`, 'g'), value)
+  }
+  return result
+}
+
 export function processGameEvents(
   game: SaveGame,
   newBids: TransferBid[],
@@ -136,11 +240,18 @@ export function processGameEvents(
         const penalty = wealthLevel === 3 ? -1_000_000 : wealthLevel === 2 ? -600_000 : -300_000
         const penaltyText = Math.abs(penalty).toLocaleString('sv-SE')
 
+        const withdrawalTemplate =
+          MECENAT_WITHDRAWAL_TEXT[mec.personality] ??
+          pickByIndex(MECENAT_WITHDRAWAL_FALLBACK, game.currentSeason)
+        const clubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? 'Klubben'
+        const withdrawalTitle = fillL2Tokens(withdrawalTemplate.title, { MECENAT: mec.name, KLUBB: clubName })
+        const withdrawalBody = fillL2Tokens(withdrawalTemplate.body, { MECENAT: mec.name, KLUBB: clubName })
+
         const withdrawalEvent: GameEvent = {
           id: withdrawalId,
           type: 'mecenatWithdrawal',
-          title: `${mec.name} drar sig ur`,
-          body: `${mec.name} har tröttnat. Han lämnar och kräver tillbaka det han investerat — ${penaltyText} kr dras från kassan. Det kan dröja länge innan nästa mecenat dyker upp.`,
+          title: withdrawalTitle,
+          body: `${withdrawalBody}\n\nEkonomisk effekt: ${penaltyText} kr dras från kassan.`,
           choices: [
             {
               id: 'acknowledge',
@@ -172,17 +283,19 @@ export function processGameEvents(
     const weeklyWageEquivalent = Math.round(totalSalary / 4)
     if (weeklyWageEquivalent > managedClub.wageBudget) {
       wageBudgetOverrunRounds++
+      const wageClubName = managedClub?.name ?? 'Klubben'
       // After 5 rounds: Licensnämnden warning
       if (wageBudgetOverrunRounds >= 5 && !wageBudgetWarningSent) {
         wageBudgetWarningSent = true
         const warnId = `inbox_wage_overrun_warn_${game.currentSeason}`
         if (!game.inbox.some(i => i.id === warnId)) {
+          const wt = pickByIndex(WAGE_OVERRUN_WARNING_TEXT, game.currentSeason)
           inboxItems.push({
             id: warnId,
             date: game.currentDate,
             type: InboxItemType.LicenseReview,
-            title: '⚠️ Licensnämnden: Lönekostnad',
-            body: 'Licensnämnden noterar att era lönekostnader överstiger den godkända lönebudgeten. Om överskridandet fortsätter i ytterligare fem omgångar tillkommer poängavdrag.',
+            title: `⚠️ ${fillL2Tokens(wt.title, { KLUBB: wageClubName })}`,
+            body: fillL2Tokens(wt.body, { KLUBB: wageClubName }),
             isRead: false,
           } as InboxItem)
         }
@@ -191,12 +304,13 @@ export function processGameEvents(
       if (wageBudgetOverrunRounds >= 10) {
         const deductId = `inbox_wage_deduct_${game.currentSeason}`
         if (!game.inbox.some(i => i.id === deductId)) {
+          const dt = pickByIndex(WAGE_OVERRUN_DEDUCTION_TEXT, game.currentSeason + 1)
           inboxItems.push({
             id: deductId,
             date: game.currentDate,
             type: InboxItemType.LicenseReview,
-            title: '🚨 Licensnämnden: Poängavdrag',
-            body: 'Lönekostnaderna har överskridit budgeten i 10 omgångar. Tre poängs avdrag tillämpas nästa säsong.',
+            title: `🚨 ${fillL2Tokens(dt.title, { KLUBB: wageClubName })}`,
+            body: fillL2Tokens(dt.body, { KLUBB: wageClubName }),
             isRead: false,
           } as InboxItem)
         }
@@ -216,12 +330,14 @@ export function processGameEvents(
   if (triggerRiskyOffer) {
     riskySponsorOfferSentThisSeason = game.currentSeason
     const offerId = `risky_sponsor_${game.currentSeason}_${nextMatchday}`
+    const offerVariant = pickByIndex(RISKY_SPONSOR_OFFERS, game.currentSeason + nextMatchday)
+    const offerClubName = managedClub?.name ?? 'Klubben'
     const riskySponsor = {
       id: offerId,
-      name: 'Borgvik Bygg AB',
-      category: 'Bygg & Fastighet',
-      weeklyIncome: 2_000,
-      contractRounds: 44,  // 2 seasons
+      name: offerVariant.name,
+      category: offerVariant.category,
+      weeklyIncome: offerVariant.weeklyIncome,
+      contractRounds: 44,
       signedRound: nextMatchday,
       tier: 'risky' as const,
       triggeredBy: 'risky_offer' as const,
@@ -232,13 +348,13 @@ export function processGameEvents(
     const riskyEvent: GameEvent = {
       id: offerId,
       type: 'riskySponsorOffer',
-      title: 'Sponsorerbjudande: Borgvik Bygg AB',
-      body: 'Borgvik Bygg AB erbjuder 2 000 kr/omgång i marknadsavtal. Notera: företaget är föremål för en Skatteverkets-granskning. Det kan bli komplicerat om granskningen leder till åtal.',
+      title: `Sponsorerbjudande: ${offerVariant.title}`,
+      body: fillL2Tokens(offerVariant.body, { KLUBB: offerClubName, SPONSOR: offerVariant.name }),
       choices: [
         {
           id: 'accept',
-          label: 'Acceptera (2 000 kr/omg)',
-          subtitle: '⚠️ Risk: Skatteverket-granskning kan bli publik',
+          label: offerVariant.acceptLabel,
+          subtitle: offerVariant.risk,
           effect: {
             type: 'acceptSponsor',
             sponsorData: JSON.stringify(riskySponsor),

@@ -23,53 +23,57 @@ const TEXT: Record<LicenseActionType, { titles: string[]; bodies: string[] }> = 
   cleared: {
     titles: [
       'Licensnämnden: Granskningen avslutad',
-      'Ekonomin räddad — nämnden lämnar',
+      'Licensnämnden: Inga vidare åtgärder',
     ],
     bodies: [
-      'Ni har vänt den ekonomiska trenden. Licensnämnden avslutar sin bevakning och ger er grönt ljus. Välkommen tillbaka.',
-      'Hemläxan godkänd. Licensnämnden konstaterar att klubben nu uppfyller de ekonomiska kraven.',
+      'Ni har vänt skutan. RF:s licensnämnd avslutar bevakningen av {KLUBB}s ekonomi. "Vi noterar att klubben har återgått till sund finansiell verksamhet", står det i beslutet. Det är inte en utmärkelse. Men det är inte ett problem heller.',
+      'Bekräftelsen kom i ett kort brev. {KLUBB}s ekonomi är åter i balans. Licensnämnden kommer inte att vidta ytterligare åtgärder. "Vi förväntar oss att den positiva utvecklingen fortsätter."',
     ],
   },
   first_warning: {
     titles: [
-      'Licensnämnden: Första varningen',
-      'Ekonomisk varning från RF',
-      'Licensnämnden noterar underskotten',
+      'Licensnämnden: Första varningen efter två förlustsäsonger',
+      'Två röda år — RF kräver plan',
+      'Licensnämnden bevakar {KLUBB}',
     ],
     bodies: [
-      'Licensnämnden har registrerat två säsonger med underskott i rad. En formell varning utfärdas. Fortsätter trenden riskeras poängavdrag.',
-      'RF:s licensnämnd noterar de upprepade förlusterna och ber er presentera en plan för ekonomisk återhämtning.',
-      'Två år med röda siffror. Licensnämnden bevakar nu er ekonomi noggrant — nästa år kan bli kännbart.',
+      'RF:s licensnämnd har granskat {KLUBB}s räkenskaper. Två säsonger med underskott. Detta är en formell varning. "Vi förväntar oss en återhämtningsplan inom åtta veckor", står det i beslutet. Klubbens ekonomi är under övervakning fram till dess.',
+      'Brevet från Licensnämnden är formellt och tre sidor långt. Innehållet kan sammanfattas i en mening: två förlustsäsonger i rad är inte acceptabelt. {KLUBB} ska presentera en plan för återhämtning. Tiden räknas i veckor, inte månader.',
+      'Två säsonger med underskott. Det räcker. RF:s licensnämnd inleder formell bevakning av {KLUBB}s ekonomi. Det är inte slutet — men det är ett första steg dit. Nästa förlustår kommer kosta poäng.',
     ],
   },
   point_deduction: {
     titles: [
-      'Licensnämnden: Tre poäng dras av',
-      'Tredje förlustår — poängavdrag nästa säsong',
-      'RF beslutar: −3 poäng inför nästa säsong',
+      'Licensnämnden: −3 poäng inför nästa säsong',
+      'Det blev poängavdrag — {KLUBB} −3',
+      'RF beslutar: Tre poäng från {KLUBB}',
     ],
     bodies: [
-      'Tre säsonger i rad med negativa resultat. Licensnämnden beslutar om tre poängs avdrag inför nästa säsong.',
-      'RF:s disciplinutskott bekräftar poängavdrag. Ni startar nästa säsong med −3. Vänd det om ni kan.',
-      'Varningen ignorerades. Nu är det verkliga konsekvenser. Tre poäng försvinner ur tabellen inför nästa säsong.',
+      'Tre säsonger med underskott. Tre poäng. {KLUBB} startar nästa säsong med ett underläge som klubbens egen ekonomi har orsakat. Beslutet är slutgiltigt — ingen överklagan tas upp. RF:s ord är: "Konsekvensen är välbalanserad."',
+      'Brevet kom på en tisdag. Tre poängs avdrag inför nästa säsong. Inget mer att säga. Styrelsemöte på torsdag — det enda alla redan vet är att något måste bort. Frågan är vem.',
+      'Licensnämnden har genomfört sin tredje granskning av {KLUBB}. Beslutet är minskning av poäng inför nästa säsong med 3 enheter. Klubben har inte följt återhämtningsplanen. "Vi har gett er chanser. Det är slut nu."',
     ],
   },
   license_denied: {
     titles: [
-      'LICENSNÄMNDEN: LICENS NEKAD',
-      'RF nekar elitlicens — spelet är över',
-      'Fyra förlustår: Licensen dras in',
+      'LICENSNÄMNDEN: Elitlicens nekad',
+      'Spelet är slut för {KLUBB} i elitserien',
+      'RF nekar elitlicens — {KLUBB} flyttas ner',
     ],
     bodies: [
-      'Fyra säsonger av underskott. Licensnämnden har inget annat val än att neka licens. Ni kan inte delta i nästa säsongs elitbandyliga.',
-      'Det har gått för långt. RF:s licensnämnd konstaterar att klubben inte är finansiellt bärkraftig och nekar elitlicens. Det är slut.',
-      'Styrelsen kallar till presskonferens. Tränaren avgår. Licensnämndens beslut är slutgiltigt — elitbandyn spelas utan er nästa säsong.',
+      'Fyra säsonger av underskott. Det går inte längre. RF:s licensnämnd har idag fattat beslutet att inte bevilja {KLUBB} elitlicens för nästa säsong. Klubben kommer att placeras i lägre serie. "Detta är inte en straff", står det i beslutet. "Det är en konsekvens." Tränaren får sparken samma kväll.',
+      'Beslutet kom som ingen överraskning, men det blev ändå tyst i styrelserummet när det kom. {KLUBB} förlorar elitlicensen. Inga undantag, inga överklaganden. Tränaren avgår innan kvällen är slut. Säsongen — och din tid på jobbet — tar slut här.',
+      'Tränaren samlar styrelsen i klubbhuset. Det blir kort. RF:s beslut är slutgiltigt — elitlicensen dras in. {KLUBB} kommer att spela en serie ner från och med nästa säsong. Det här är inte en omstart. Det är ett slut. Tränaren tar farväl utan tårar och utan ord.',
     ],
   },
 }
 
 function pick(arr: string[], seed: number): string {
   return arr[seed % arr.length]
+}
+
+function fillTokens(text: string, clubName: string): string {
+  return text.replace(/{KLUBB}/g, clubName)
 }
 
 // ── Core logic ─────────────────────────────────────────────────────────────
@@ -88,6 +92,7 @@ export function checkLicenseStatus(
   const netResult = computeNetResult(game)
   const currentStatus: LicenseStatus = game.licenseStatus ?? 'clear'
   const consecutiveLoss = game.consecutiveLossSeasons ?? 0
+  const clubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? 'Klubben'
 
   if (netResult > 0) {
     const newConsecutive = 0
@@ -96,8 +101,8 @@ export function checkLicenseStatus(
       return {
         action: {
           type: 'cleared',
-          message: pick(t.bodies, seasonSeed),
-          inboxTitle: pick(t.titles, seasonSeed + 1),
+          message: fillTokens(pick(t.bodies, seasonSeed), clubName),
+          inboxTitle: fillTokens(pick(t.titles, seasonSeed + 1), clubName),
         },
         newConsecutiveLossSeasons: newConsecutive,
         newLicenseStatus: 'clear',
@@ -113,8 +118,8 @@ export function checkLicenseStatus(
     return {
       action: {
         type: 'first_warning',
-        message: pick(t.bodies, seasonSeed),
-        inboxTitle: pick(t.titles, seasonSeed + 1),
+        message: fillTokens(pick(t.bodies, seasonSeed), clubName),
+        inboxTitle: fillTokens(pick(t.titles, seasonSeed + 1), clubName),
       },
       newConsecutiveLossSeasons: newConsecutive,
       newLicenseStatus: 'first_warning',
@@ -126,8 +131,8 @@ export function checkLicenseStatus(
     return {
       action: {
         type: 'point_deduction',
-        message: pick(t.bodies, seasonSeed),
-        inboxTitle: pick(t.titles, seasonSeed + 1),
+        message: fillTokens(pick(t.bodies, seasonSeed), clubName),
+        inboxTitle: fillTokens(pick(t.titles, seasonSeed + 1), clubName),
       },
       newConsecutiveLossSeasons: newConsecutive,
       newLicenseStatus: 'point_deduction',
@@ -139,8 +144,8 @@ export function checkLicenseStatus(
     return {
       action: {
         type: 'license_denied',
-        message: pick(t.bodies, seasonSeed),
-        inboxTitle: pick(t.titles, seasonSeed + 1),
+        message: fillTokens(pick(t.bodies, seasonSeed), clubName),
+        inboxTitle: fillTokens(pick(t.titles, seasonSeed + 1), clubName),
       },
       newConsecutiveLossSeasons: newConsecutive,
       newLicenseStatus: 'license_denied',

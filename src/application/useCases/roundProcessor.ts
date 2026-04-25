@@ -557,12 +557,29 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     if (nextMatchday >= rc.riskMaturityRound && localRand() < 0.25) {
       const matId = `risky_sponsor_exposed_${rc.sponsorId}`
       if (!game.inbox.some(i => i.id === matId)) {
+        const sponsorName = game.sponsors?.find(s => s.id === rc.sponsorId)?.name ?? 'Sponsorn'
+        const riskConsequences = [
+          {
+            title: `🚨 ${sponsorName}: Skatteverket-granskning publik`,
+            body: `Skatteverket har gripit in mot ${sponsorName}. Företagets bankmedel är frysta och avtal med tredje part avslutas. {KLUBB} förlorar sponsorn i förtid och måste betala tillbaka del av redan utbetalda medel. Anseendet tar en törn.`,
+          },
+          {
+            title: `🚨 ${sponsorName}: Försatt i konkurs`,
+            body: `${sponsorName} har försatts i konkurs. Det fanns inget att granska — företaget hade inga riktiga kunder. {KLUBB}s avtal är värdelöst. Pengarna som kommit in betalas tillbaka till konkursboet.`,
+          },
+          {
+            title: `🚨 ${sponsorName} i lokaltidningen`,
+            body: `Lokaltidningen har börjat skriva om ${sponsorName}. Reportagen handlar om okända ägare, suspekta bolagsstrukturer och kopplingar till en tidigare brottsmisstänkt person. {KLUBB} avslutar avtalet före det blir värre.`,
+          },
+        ]
+        const clubName = game.clubs.find(c => c.id === game.managedClubId)?.name ?? 'Klubben'
+        const picked = riskConsequences[game.currentSeason % riskConsequences.length]
         newInboxItems.push({
           id: matId,
           date: newDate,
           type: InboxItemType.BoardFeedback,
-          title: '🚨 Borgvik Bygg AB: Skatteverket-granskning publik',
-          body: 'Borgvik Bygg AB:s Skatteverket-granskning har blivit offentlig. Styrelsen kräver att ni avslutar avtalet omedelbart. Ni betalar tillbaka en säsongs intäkter.',
+          title: picked.title,
+          body: picked.body.replace(/{KLUBB}/g, clubName),
           isRead: false,
         } as InboxItem)
         // Remove the risky sponsor from sponsors list + claw back income
