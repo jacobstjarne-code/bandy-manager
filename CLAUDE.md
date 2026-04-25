@@ -1,11 +1,36 @@
 # Bandy Manager — Project Instructions for Claude Code
 
+## TIMESTAMP FÖRST — OBLIGATORISKT
+
+**Första handling i varje ny session (innan något annat):** hämta aktuell tid via web_search + web_fetch mot en tids-API som innehåller timestamp i responsen (t.ex. `timeapi.world`). Extrahera datum + klockslag + veckodag och skriv överst i sessionen: `2026-04-22, onsdag morgon (09:41 CEST)`.
+
+Förhåll dig till den timestampen när du refererar till tid. "Idag", "igår", "förra veckan" ska räknas från den, inte från antaganden.
+
+Kostnad: 1 sök + 1 fetch per sessionsstart. Billig. Värt det för att undvika att säga "igår" om något som hände för 20 minuter sedan.
+
+Om tid-API:t inte svarar — fråga Jacob som fallback.
+
 ## LÄS VID SESSIONSTART — OBLIGATORISKT
 
 1. **`docs/LESSONS.md`** — återkommande buggmönster. Känn igen innan du fixar. Om en ny bugg matchar ett mönster där, använd lärdomen först.
 2. **`docs/DECISIONS.md`** — arkitekturbeslut.
 3. **`docs/DESIGN_SYSTEM.md`** — visuell grund.
-4. **Aktuell sprintfil** i `docs/sprints/`.
+4. **`docs/KVAR.md`** — aktuell karta över aktiva jobb, parkerat och nästa steg.
+5. **Senaste `docs/HANDOVER_YYYY-MM-DD.md`** — dagsläge från föregående session.
+6. **Aktuell sprintfil** i `docs/sprints/`.
+
+---
+
+## VID SESSIONSSLUT
+
+Skriv eller uppdatera `docs/HANDOVER_YYYY-MM-DD.md` med:
+- Vad som levererades och vilka commits
+- Aktiva jobb som pågår
+- Nyckelbeslut fattade idag
+- Kvarstående frågor
+- Föreslagen ordning för nästa session
+
+Format: ren markdown (.md), inte RTF eller annat.
 
 ---
 
@@ -491,30 +516,37 @@ Must return 0 results.
 
 ### Projektguides (läs alltid)
 - `CLAUDE.md` — denna fil, kodregler och arbetsfördelning
+- `docs/LESSONS.md` — 18 återkommande buggmönster
+- `docs/DECISIONS.md` — arkitekturbeslut kronologiskt
 - `docs/DESIGN_SYSTEM.md` — visuellt designsystem (20 sektioner)
-- `docs/CODE_SPRINT_PLAYTEST2.md` — aktuella instruktioner till Code
-
-### Aktuella sprintdokument
-- `docs/SPRINT_ALLT_KVAR.md` — **HUVUDDOK** — 15 kvarstående buggar + checklista
-- `docs/mockups/sprint_allt_kvar_mockups.html` — 5 mockups (straff, cup-progress, kapten, arena)
+- `docs/KVAR.md` — aktuell karta
+- `docs/STATUS.md` — enda sanning om vad som är byggt
+- Senaste `docs/HANDOVER_YYYY-MM-DD.md`
 
 ### Visionsdokument (långsiktig roadmap)
 - `docs/THE_BOMB.md` — narrativ vision: korsreferenser mellan system, milestone-moments, atmosfär, share-images
 - `docs/SPEC_KLUBBUTVECKLING.md` — ekonomisk progression: utbyggnadsträd, sponsortillväxt, löneeskalering, inomhushallen
-- `docs/SPEC_RIK_MATCHUPPLEVELSE.md` — kontextuell kommentar, narrativ båge, händelsevariation, domartyper
-- `docs/FIXSPEC_PARKERAT.md` — fullspecade framtida features: presskonferens-scen, transferdödline, rykte
 
 ### Kalibreringsdata
-- `docs/data/bandygrytan_detailed.json` — 1124 Elitseriematcher (2019-26), kalibreringsmål
-- `docs/data/SCHEMA_DETAILED.md` — schema för detaljerad per-match-data (v2, 2010-26)
-- `docs/FIXSPEC_KALIBRERING.md` — matchmotor-konstanter (implementerat)
-- `scripts/calibrate.ts` — kör 200 matcher med varierad lagstyrka, jämför mot targets
-- `scripts/calibrate_v2.ts` — 7-sektionsanalys (tidmönster, utvisningar, powerplay, säsongskurvor, hörnvariation, comeback, slutspel) + motorsimulering
+- `docs/data/bandygrytan_detailed.json` — 1242 elitseriematcher (2019-26, inkl slutspel)
+- `docs/data/SCORELINE_REFERENCE.md` — utvisningar/straff per spelläge, period, fas — normaliserat
+- `docs/data/ANALYS_MATCHMONSTER.md` — hela matchen (comeback, utvisningstid, hemmafördel)
+- `docs/data/ANALYS_SLUTSPEL.md` — grundserie vs KVF/SF/Final
+- `docs/data/SCHEMA_DETAILED.md` — schema för detaljerad per-match-data
 
-### Feature-specar (redan implementerade, behåll som referens)
-- `docs/FIXSPEC_NYA_FEATURES.md` — arenanamn, klacknamn, straffar, kapten, hörn-SVG
-- `docs/FIXSPEC_COACHMARKS_REWRITE.md` — coach marks (löst via migrering)
-- `docs/FIXSPEC_PLAYTEST2.md` — 25 buggar från playtest 2 (de flesta fixade)
+### Kalibreringsskript
+- `scripts/calibrate.ts` — kör 200 matcher med varierad lagstyrka, jämför mot targets
+- `scripts/calibrate_v2.ts` — 7-sektionsanalys av bandygrytan + motorsimulering + scoreline-extraktion
+- `scripts/stress-test.ts` — 10×5 säsonger headless, loggar `stress/season_stats.json`
+- `scripts/analyze-stress.ts` — jämför stress-logg mot bandygrytan-targets (sektion A-G)
+
+### Aktuella sprintdokument
+Lever kort, arkiveras efter audit.
+- `docs/sprints/SPRINT_25B_1_PENALTY_SEPARATION.md` — aktiv spec
+- `docs/sprints/SPRINT_25A_2_AUDIT.md` — senast godkänd audit
+- `docs/sprints/SPRINT_24_2_AUDIT.md` — senast godkänd audit
+
+Alla äldre sprintdokument och fixspecar ligger i `docs/archive/`.
 
 ## Commit Convention
 ```
@@ -522,4 +554,72 @@ fix: [short description]
 feat: [short description]
 design: [short description]
 refactor: [short description]
+```
+
+---
+
+## BANDY-BRAIN — Kunskapsbasen
+
+Bandy-Brain är ett biprojekt som lagrar atomära facts om bandy — regler, statistiska
+parametrar, designval och världskanon. Det lever i `docs/findings/facts/` och
+`docs/findings/hypotheses/`. Schemat finns i `docs/findings/SCHEMA.md`.
+
+### Namnrymd
+
+| Prefix | Mapp | Innehåll |
+|--------|------|----------|
+| R001– | `facts/rules/` | Bandyregler (SBF/FIB) |
+| S001– | `facts/stats/` | Bandygrytan-data |
+| D001– | `facts/design_principles/` | Spelets designval |
+| W001– | `facts/world_canon/` | Fiktiv värld |
+| H001– | `hypotheses/` | Öppna frågor |
+
+### Regler för att skriva ett fact
+
+1. **Rotorsak före fact.** Formulera i en mening varifrån värdet
+   kommer och varför du tror det. Vet du inte — slå upp källan.
+
+2. **Verifiera mot källa, inte mot minne.** Innan `verified_at`
+   uppdateras: räkna ut värdet ur rådata eller läs koden.
+   Att ett värde "ser rimligt ut" räcker inte.
+
+3. **Invarianter ska vara sanna vid skrivtillfället.**
+   Skriv inte ett invariant du inte kan verifiera nu.
+   Typ 3 (code-cross-reference) är undantag — märk dem tydligt.
+
+4. **Revision vid meningsfull ändring.** Vardagliga `verified_at`-
+   uppdateringar kräver ingen revision. Värdeändringar,
+   omtolkningar eller metodbyten kräver det.
+
+5. **deprecated, aldrig raderat.** Om ett fact är fel — sätt
+   `status: deprecated` och skapa nytt ID. Gamla ID:n återanvänds
+   inte.
+
+### Regler för att konsultera ett fact
+
+- Slå upp fact-ID:t i rätt mapp (`facts/{kategori}/{id}_*.yaml`)
+- Kontrollera `status: active` — deprecated-facts gäller inte längre
+- Kolla `verified_at` — är det mer än 6 månader sedan? Verifiera
+  på nytt om beslutet är viktig för pågående arbete
+- Cross-fact-invarianter (`value >= S002.value`) är *dokumentation*,
+  inte automatiskt verifierade — kontrollera manuellt
+
+### Pass-struktur
+
+- **Pass 1** — schema + mappstruktur (klar 2026-04-25)
+- **Pass 2** — migrering av befintliga kalibreringskonstanter (klar 2026-04-25)
+- **Pass 3** — validator-skript (YAML-validering + numeriska invarianter)
+- **Pass 4** — Eriks UI (framtida, beslutas separat)
+
+### Verifieringsprotokoll vid pass-slut
+
+Ingen pass får markeras klar utan att dessa steg gjorts:
+
+```
+□ Alla nya facts har status: active (inte draft)
+□ Alla numeriska invarianter är manuellt verifierade mot källan
+□ Cross-fact-invarianter är kontrollerade (S002 + S004 + S005 = 100?)
+□ Inga ID:n dubblerade (grep -r "fact_id:" docs/findings/facts/)
+□ SCHEMA.md pass-checklista uppdaterad
+□ commit: "facts: pass X — [kort beskrivning]"
 ```

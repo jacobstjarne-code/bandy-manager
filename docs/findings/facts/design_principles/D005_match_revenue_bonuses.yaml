@@ -1,0 +1,21 @@
+fact_id: D005
+category: design_principles
+claim: "Matchintäktsbonusar: slutspel 1.40×, cup 1.20×, derby 1.25×"
+value: [1.40, 1.20, 1.25]
+unit: multiplier (knockout, cup, rivalry)
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/economyService.ts:157"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value[0] > 1"
+  - "value[1] > 1"
+  - "value[2] > 1"
+  - "value[0] >= value[1]"
+notes: |
+  Bonusarna multipliceras oberoende — en cup-derby-match får 1.20 × 1.25.
+  Bonusarna tillämpas på baseRevenue efter formbonus (position 1-3: +15 %,
+  position 1-6: +5 %, position 10+: −12 %).

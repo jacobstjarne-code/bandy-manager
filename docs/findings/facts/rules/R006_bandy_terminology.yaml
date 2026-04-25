@@ -1,0 +1,17 @@
+fact_id: R006
+category: rules
+claim: "Bandytermer: avslag (inte avspark), brytning (inte tackling), frislag (inte frispark)"
+source:
+  type: rulebook
+  name: "SBF terminologilista"
+verified_at: 2026-04-25
+verified_by: jacob
+status: active
+notes: |
+  Fullständig termlista för spelets kontext:
+  - avslag (fotboll: avspark)
+  - brytning (fotboll: tackling)
+  - frislag (fotboll: frispark)
+  - vaden (fotboll: vadden — notera stavning)
+  - plan (fotboll/ishockey: plan/rink)
+  Termerna ska användas konsekvent i matchkommentarer och UI-text.

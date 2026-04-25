@@ -1,0 +1,21 @@
+fact_id: S001
+category: stats
+claim: "Genomsnittligt antal mål per match i Herrbandy Elitserien"
+value: 9.12
+unit: goals/match
+source:
+  type: dataset
+  name: bandygrytan
+  match_count: 1124
+  seasons: ["2019-20", "2020-21", "2021-22", "2022-23", "2024-25", "2025-26"]
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value > 8"
+  - "value < 11"
+related_facts: [S012, S013]
+notes: |
+  Grundläggande kalibreringsmål för matchmotorn. Summan av S012
+  (avgHomeGoals 4.88) + S013 (avgAwayGoals 4.24) = 9.12 — aritmetiskt
+  konsistent. Regular season only, slutspel exkluderat.

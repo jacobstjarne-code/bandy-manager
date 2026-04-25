@@ -1,0 +1,23 @@
+fact_id: D004
+category: design_principles
+claim: "Finansstatusens tröskel-värden: warning −500k, license-denial −1M, game-over −2M SEK"
+value: [-500000, -1000000, -2000000]
+unit: SEK (warning, license-denial, game-over)
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/economyService.ts:63"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value[0] > value[1]"
+  - "value[1] > value[2]"
+  - "value[2] < 0"
+notes: |
+  Tre nivåer under noll:
+  - warning: < −500 000
+  - license-denial: < −1 000 000 (klubben riskerar licens)
+  - game-over: < −2 000 000 (spelet avslutas)
+  Lönebudget (wageBudget) varnar vid överskridning men blockerar aldrig
+  kontraktsförlängningar — design-beslut för att undvika frustrationsmoment.

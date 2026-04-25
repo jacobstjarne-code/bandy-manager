@@ -1,0 +1,20 @@
+fact_id: S008
+category: stats
+claim: "Genomsnittligt antal utvisningar per match, Herrbandy Elitserien"
+value: 3.77
+unit: suspensions/match
+source:
+  type: dataset
+  name: bandygrytan
+  match_count: 1124
+  seasons: ["2019-20", "2020-21", "2021-22", "2022-23", "2024-25", "2025-26"]
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value > 2.5"
+  - "value < 5.5"
+notes: |
+  Sprint 25b.2 + 25d.2: wFoul-basfrekvens och foulThreshold kalibrerades
+  för att nå detta target. Testsuite (seasonSimulation.test.ts) validerar
+  mot övre gräns < 6 per match (tolerans för variation i stresstest).

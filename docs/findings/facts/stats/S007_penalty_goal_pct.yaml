@@ -1,0 +1,19 @@
+fact_id: S007
+category: stats
+claim: "Andel mål som kommer ur straff, Herrbandy Elitserien"
+value: 5.4
+unit: percent
+source:
+  type: dataset
+  name: bandygrytan
+  match_count: 1124
+  seasons: ["2019-20", "2020-21", "2021-22", "2022-23", "2024-25", "2025-26"]
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value > 3"
+  - "value < 9"
+notes: |
+  Sprint 25b.1 separerade straff till egen trigger för att nå detta target.
+  Tidigare räknades straffmål in i den generella målfrekvensen.

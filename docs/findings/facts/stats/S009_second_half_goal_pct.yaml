@@ -1,0 +1,22 @@
+fact_id: S009
+category: stats
+claim: "Andel mål i andra halvlek, Herrbandy Elitserien"
+value: 54.2
+unit: percent
+source:
+  type: dataset
+  name: bandygrytan
+  match_count: 1124
+  seasons: ["2019-20", "2020-21", "2021-22", "2022-23", "2024-25", "2025-26"]
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value > 50"
+  - "value < 62"
+notes: |
+  Mätmetod: halvtidsbaserad (totalGoals − halvtidsmål) / totalGoals = 54.3 %.
+  Minute-baserad metod (mål med minute ≥ 45) ger 55.7 % p.g.a. att tilläggstidens
+  mål (minute = 45) tillhör tekniskt sett 1H men räknas som 2H i minute-metoden.
+  analyze-stress.ts använder minute-metoden → jämför egentligen +1.5 pp högre
+  än target. Toleransnivå ±3 pp täcker gapet. Ingen akut fix.

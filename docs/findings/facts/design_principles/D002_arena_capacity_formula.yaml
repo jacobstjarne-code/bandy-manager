@@ -1,0 +1,20 @@
+fact_id: D002
+category: design_principles
+claim: "Standard arenakpacitet beräknas som reputation × 7 + 150 platser"
+value: [7, 150]
+unit: seats (slope × reputation + intercept)
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/economyService.ts:150"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value[0] > 0"
+  - "value[1] > 0"
+notes: |
+  Formel: capacity = club.arenaCapacity ?? Math.round(reputation × 7 + 150)
+  Ger rep-50 ca 500 platser, rep-100 ca 850 platser. Kalibrerad för svenska
+  bandyklubbar div 1-2 (inte Elitserien). Kan overrides av club.arenaCapacity.
+  Slutspel och final får tillfällig kapacitetsökning — se D003.

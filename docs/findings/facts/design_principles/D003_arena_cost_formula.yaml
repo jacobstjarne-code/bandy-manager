@@ -1,0 +1,23 @@
+fact_id: D003
+category: design_principles
+claim: "Arenakostnad per omgång beräknas som arenaCapacity × 5 SEK/vecka"
+value: 5
+unit: SEK per seat per week
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/economyService.ts:211"
+verified_at: 2026-04-25
+verified_by: code
+status: active
+invariants:
+  - "value > 0"
+  - "value < 20"
+notes: |
+  Formel: weeklyArenaCost = arenaCapacity × 5
+  Uppdaterades i Sprint 26b från 8 → 5 (−37.5 %) för att bromsa
+  ekonomisk spiral för medelklubbar. Ger rep-50 ca 2500 kr/v i arenakostnad.
+revisions:
+  - date: 2026-04-25
+    value: 8
+    note: "Originalvärde. Sprint 26b sänkte från 8 → 5."
