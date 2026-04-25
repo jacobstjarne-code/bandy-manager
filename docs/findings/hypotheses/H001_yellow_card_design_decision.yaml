@@ -6,9 +6,27 @@ source:
   name: "Konflikt mellan CLAUDE.md och SvBF-Regelbok-2025-2026"
 verified_at: 2026-04-25
 verified_by: code
-status: active
+status: deprecated
+closed_at: 2026-04-25
+closed_by: jacob
 related_facts: [R014, R015]
 notes: |
+  STÄNGD 2026-04-25 av Jacob.
+
+  Resolution: Bandy Manager fortsätter modellera bara 10-minutersutvisning.
+  Jacob bekräftar att 10-min är det som tillämpas i praktiken i svensk
+  bandy, även om regelboken §16 formellt anger fyra nivåer
+  (varning, 5-min, 10-min, matchstraff). Spelet behöver inte uppdateras.
+
+  R014 står kvar oförändrad — den beskriver regelboken korrekt, vilket
+  är dess jobb. CLAUDE.md:s "Inga gula kort" är konsistent med praktisk
+  tillämpning.
+
+  Inga D-facts skapas. Inga sprintar genereras. Pass 3 startar.
+
+  ---
+  Ursprunglig hypotes-text (för historik):
+
   CLAUDE.md (projektets kodkonvention) säger: "Inga gula kort — bandy har
   10 min utvisning, inte gula/röda kort."
 
@@ -21,11 +39,3 @@ notes: |
   HYPOTES: CLAUDE.md:s formulering är en förenkling som är korrekt
   ur implementationsperspektiv (spelet modellerar bara tidsbegränsade
   utvisningar) men felaktig som faktauppgift om bandy-regelboken.
-
-  TESTKRITERIUM: Jacob bekräftar om spelimplementationen medvetet
-  ska ignorera varningar och matchstraff (D-fact) eller om den ska
-  uppdateras att modellera alla fyra nivåer.
-
-  ÅTGÄRD VID BEKRÄFTELSE: Skapa D-fact "Bandy Manager modellerar
-  bara tidsbegränsad utvisning" + uppdatera CLAUDE.md:s "Inga gula kort"
-  till "Spelet modellerar bara 5- och 10-minutersutvisningar".
