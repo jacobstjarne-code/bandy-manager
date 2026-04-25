@@ -96,3 +96,12 @@
   analysis_type: comeback_timing
   params:
     series: herr
+
+- id: Q013
+  source_finding: '?'
+  question: "har vsk eller nässjö bättre förutsättningar att göra mål på hörna, varför\
+    \ i så fall?"
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr

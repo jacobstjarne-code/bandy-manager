@@ -191,6 +191,8 @@ def _infer_type(question: str) -> str:
         return "comeback_timing"
     if "hörn" in q and ("hemma" in q or "borta" in q):
         return "corner_home_away"
+    if "hörn" in q and ("lag" in q or "bättre" in q or any(t in q for t in ["vsk", "nässjö", "villa", "edsbyn", "bollnäs", "broberg", "hammarby", "sandviken", "ljusdal"])):
+        return "corner_by_team"
     if "hörn" in q and ("dam" in q or "herr" in q or "serie" in q):
         return "corner_efficiency_comparison"
     if ("dam" in q or "herr" in q) and ("minut" in q or "fördeln" in q):
@@ -201,7 +203,7 @@ def _infer_type(question: str) -> str:
         return "goals_by_phase_detail"
     if "jämn" in q or "marginal" in q or "ledning" in q:
         return "goals_by_margin"
-    return "unknown"
+    return "corner_by_team" if "hörn" in q else "unknown"
 
 
 def main() -> None:

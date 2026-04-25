@@ -170,7 +170,7 @@ def corner_efficiency_comparison(data: dict, params: dict) -> dict:
             continue
         total_goals = sum(m['homeScore']+m['awayScore'] for m in matches)
         corner_goals = sum(m.get('cornerGoalsHome',0)+m.get('cornerGoalsAway',0) for m in matches)
-        corners = sum(m.get('corners', 0) for m in matches)
+        corners = sum((m.get('corners') or {}).get('home', 0) + (m.get('corners') or {}).get('away', 0) for m in matches)
         result.append({
             'series': series,
             'match_count': len(matches),
@@ -213,18 +213,23 @@ def corner_home_away(data: dict, params: dict) -> dict:
     away_cg = sum(m.get('cornerGoalsAway', 0) for m in matches)
     home_g = sum(m['homeScore'] for m in matches)
     away_g = sum(m['awayScore'] for m in matches)
-    home_c = sum(m.get('corners', 0) // 2 for m in matches)  # approx half each
+    home_c = sum((m.get('corners') or {}).get('home', 0) for m in matches)
+    away_c = sum((m.get('corners') or {}).get('away', 0) for m in matches)
     return {
         'type': 'corner_home_away',
         'home': {
             'corner_goal_pct': round(home_cg/(home_g or 1)*100, 1),
+            'corner_conversion': round(home_cg/(home_c or 1)*100, 1),
             'goals': home_g,
             'corner_goals': home_cg,
+            'corners': home_c,
         },
         'away': {
             'corner_goal_pct': round(away_cg/(away_g or 1)*100, 1),
+            'corner_conversion': round(away_cg/(away_c or 1)*100, 1),
             'goals': away_g,
             'corner_goals': away_cg,
+            'corners': away_c,
         },
         'match_count': len(matches),
         'series': params.get('series', 'herr'),
@@ -328,8 +333,54 @@ def comeback_timing(data: dict, params: dict) -> dict:
     }
 
 
+def corner_by_team(data: dict, params: dict) -> dict:
+    """Corner stats per team — goals, conversion, home vs away."""
+    matches = _load_series(data, params.get('series', 'herr'))
+    teams: dict[str, dict] = defaultdict(lambda: {
+        'corners_home': 0, 'corners_away': 0,
+        'corner_goals_home': 0, 'corner_goals_away': 0,
+        'goals_home': 0, 'goals_away': 0,
+        'matches_home': 0, 'matches_away': 0,
+    })
+    for m in matches:
+        ht = m['homeTeam']
+        at = m['awayTeam']
+        c = m.get('corners') or {}
+        teams[ht]['corners_home'] += c.get('home', 0)
+        teams[at]['corners_away'] += c.get('away', 0)
+        teams[ht]['corner_goals_home'] += m.get('cornerGoalsHome', 0)
+        teams[at]['corner_goals_away'] += m.get('cornerGoalsAway', 0)
+        teams[ht]['goals_home'] += m['homeScore']
+        teams[at]['goals_away'] += m['awayScore']
+        teams[ht]['matches_home'] += 1
+        teams[at]['matches_away'] += 1
+
+    result = []
+    for team, v in sorted(teams.items()):
+        total_cg = v['corner_goals_home'] + v['corner_goals_away']
+        total_g = v['goals_home'] + v['goals_away']
+        total_c = v['corners_home'] + v['corners_away']
+        result.append({
+            'team': team,
+            'matches': v['matches_home'] + v['matches_away'],
+            'corner_goals': total_cg,
+            'corners': total_c,
+            'corner_goal_pct': round(total_cg / (total_g or 1) * 100, 1),
+            'corner_conversion': round(total_cg / (total_c or 1) * 100, 1),
+            'avg_corners_per_match': round(total_c / ((v['matches_home'] + v['matches_away']) or 1), 1),
+        })
+
+    return {
+        'type': 'corner_by_team',
+        'teams': result,
+        'match_count': len(matches),
+        'series': params.get('series', 'herr'),
+    }
+
+
 REGISTRY: dict[str, Any] = {
     'time_split': time_split,
+    'corner_by_team': corner_by_team,
     'goals_by_margin': goals_by_margin,
     'goals_by_type_over_time': goals_by_type_over_time,
     'goals_by_phase_detail': goals_by_phase_detail,
