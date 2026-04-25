@@ -37,7 +37,7 @@ Skriv en finding baserat på dessa data. Svara med JSON:
   "description": "En mening för meta-description, max 160 tecken",
   "fragan": "Frågans text (prosa, 1 stycke)",
   "datan": "Beskrivning av datakällan (prosa + ev. HTML-lista med <ul><li>)",
-  "fynd": "Vad vi fann — prosa + ev. tabell som markdown-sträng",
+  "fynd": "Vad vi fann — prosa + ev. tabell som HTML (<table><thead><tr><th>...</th></tr></thead><tbody><tr><td>...</td></tr></tbody></table>), aldrig markdown-tabeller",
   "tolkning": "Tolkande prosa (2-4 stycken separerade med \\n\\n)",
   "begransningar": ["punkt 1", "punkt 2", "punkt 3"],
   "vidare_fragor": ["fråga 1", "fråga 2", "fråga 3"],
