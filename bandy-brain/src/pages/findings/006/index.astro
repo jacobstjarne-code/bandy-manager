@@ -1,0 +1,185 @@
+---
+import Base from '../../../layouts/Base.astro';
+import BarChart from '../../../components/BarChart.astro';
+import { factHref } from '../../../lib/facts';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const goalBars = [
+  { label: 'Grundserie', value: 9.12, highlight: false },
+  { label: 'Kval/playoff', value: 9.33, highlight: false },
+  { label: 'Slutspel', value: 8.55, highlight: true },
+];
+
+const htBars = [
+  { label: 'Grundserie', value: 78.1, highlight: false },
+  { label: 'Kval/playoff', value: 76.9, highlight: false },
+  { label: 'Slutspel', value: 85.3, highlight: true },
+];
+---
+
+<Base
+  title="Finding 006 — Slutspelet: färre mål, starkare ledningar"
+  description="Slutspelsmatcher i Elitserien producerar 8,55 mål per match mot grundseriens 9,12. Samtidigt håller halvtidsledningar i 85,3% av slutspelsmatcherna, mot 78,1% i grundserien."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 006 · 25 april 2026</p>
+    <h1 class="finding-title">Slutspelet: färre mål,<br>starkare ledningar</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>
+        Slutspel brukar beskrivas som tätare, mer försiktigt spel — lag
+        vill inte göra misstag när ett förlust innebär elimination.
+        Stämmer det i bandy? Och om spelet är tätare, leder det i sin
+        tur till att ledningar håller bättre?
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>
+        Bandygrytans 1 321 matcher (2019–2026) fördelade på fas:
+        1 124 grundseriematcher, 131 slutspelsmatcher (kvartsfinal,
+        semifinal, final) och 66 kval/playoff-matcher.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+
+      <p style="font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-muted); margin-bottom: 0.25rem; font-weight: 700;">Mål per match</p>
+      <BarChart
+        bars={goalBars}
+        maxValue={10.5}
+        unit=""
+        caption="Mål per match per fas. Slutspel (markerat) skiljer sig tydligast."
+      />
+
+      <p style="font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-muted); margin-bottom: 0.25rem; font-weight: 700; margin-top: 1.5rem;">Halvtidsledning håller i (%)</p>
+      <BarChart
+        bars={htBars}
+        maxValue={100}
+        unit="%"
+        caption="Andel matcher där halvtidsledande lag vinner. Slutspel (markerat) är klart högst."
+      />
+
+      <table style="margin-top: 1.5rem">
+        <thead>
+          <tr>
+            <th>Fas</th>
+            <th>Matcher</th>
+            <th>Mål/match</th>
+            <th>htLeadWinPct</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Grundserie</td>
+            <td>1 124</td>
+            <td>9,12</td>
+            <td>78,1% <a href={factHref("S013")} class="fact-ref">S013</a></td>
+          </tr>
+          <tr>
+            <td>Kval / playoff</td>
+            <td>66</td>
+            <td>9,33</td>
+            <td>76,9%</td>
+          </tr>
+          <tr style="font-weight: 600">
+            <td>Slutspel (KVF–Final)</td>
+            <td>131</td>
+            <td>8,55</td>
+            <td>85,3%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+
+      <p>
+        De två rörelserna är sammanhängande men berättar olika saker.
+      </p>
+      <p>
+        Att mål faller med 0,57 per match i slutspelet — från 9,12 till 8,55 —
+        är relativt liten i absoluta tal men statistiskt konsistent.
+        Förklaringen är troligen taktisk: slutspelslag möts i bättre förberedda
+        matchups (lag känner varandra från grundserien), tränare prioriterar
+        defensiv struktur och lag utan ledning drar sig inte tillbaka lika
+        villigt som i grundserien när alla tre poäng inte är i spel.
+      </p>
+      <p>
+        Att halvtidsledningar håller <em>bättre</em> i slutspelet (85,3%
+        mot 78,1%) är det mer överraskande resultatet. En möjlig förklaring:
+        i slutspelet väljer det ledande laget att låsa matchen snarare än
+        att fortsätta pressa. Det ger färre mål totalt, men minskar också
+        risken för comeback. Grundserielaget kan ta chansen att pressa för
+        en övertygande seger — slutspelslaget nöjer sig med 1–0.
+      </p>
+      <p>
+        Kval/playoff-siffran (9,33 mål/match) går i motsatt riktning — fler
+        mål än grundserien. En möjlig orsak: dessa matcher avgör om ett lag
+        åker ur eller stannar kvar, vilket skapar desperationsanfall från
+        det undre laget och öppet spel.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>
+          131 slutspelsmatcher är tillräckligt för trender men konfidensintervallen
+          är bredare än för grundseriens 1 124 matcher.
+        </li>
+        <li>
+          Slutspelsmatcher kan ha andra lagstyrkebetingelser (de bästa lagen
+          möts) vilket påverkar matchbilden oavsett fas.
+        </li>
+        <li>
+          Data inkluderar inte matchserieformat (slutspel spelas i bäst av 5) —
+          matcher 4 och 5 i en serie kan ha andra mönster än matcher 1–2.
+        </li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Skiljer sig mönstret mellan kvartsfinal, semifinal och final?</li>
+        <li>Hur ser match 1–2 ut mot match 4–5 i en slutspelsserie?</li>
+        <li>Är ledningsstabiliteten (85,3%) driven av att ledande lag förändrar sitt spel, eller att de möter svagare motstånd statistiskt?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("S013")} class="fact-ref">S013</a>
+        <span style="font-family: var(--font-ui); font-size: 0.8rem; color: var(--color-muted); margin-left: 4px">htLeadWinPct grundserie — 78,1%</span>
+        <span style="color: var(--color-border); margin: 0 4px">·</span>
+        <a href={factHref("S001")} class="fact-ref">S001</a>
+        <span style="font-family: var(--font-ui); font-size: 0.8rem; color: var(--color-muted); margin-left: 4px">Mål per match grundserie — 9,12</span>
+      </p>
+    </div>
+
+  </div>
+</Base>

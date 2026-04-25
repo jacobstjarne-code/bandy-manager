@@ -1,0 +1,181 @@
+---
+import Base from '../../../layouts/Base.astro';
+import BarChart from '../../../components/BarChart.astro';
+import { factHref } from '../../../lib/facts';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const goalBars = [
+  { label: 'Herr', value: 9.12, highlight: false },
+  { label: 'Dam', value: 9.12, highlight: false },
+];
+
+const htBars = [
+  { label: 'Herr', value: 78.1, highlight: false },
+  { label: 'Dam', value: 89.1, highlight: true },
+];
+
+const cornerBars = [
+  { label: 'Herr', value: 22.2, highlight: false },
+  { label: 'Dam', value: 15.4, highlight: true },
+];
+
+const homeBars = [
+  { label: 'Herr', value: 50.2, highlight: false },
+  { label: 'Dam', value: 47.6, highlight: false },
+];
+---
+
+<Base
+  title="Finding 007 — Dam vs herr: lika mål, men olika dynamik"
+  description="Damserien och herrserien producerar exakt samma målsnitt — 9,12 mål per match. Men under ytan skiljer sig serierna på tre punkter: halvtidsledningens stabilitet, hörnornas andel och hemmafördelen."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 007 · 25 april 2026</p>
+    <h1 class="finding-title">Dam och herr: samma mål,<br>men annorlunda bandy</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>
+        Skiljer sig bandyn i damserien från herrserien på mätbara sätt?
+        Det enkla svaret kan vara "nej, samma sport, samma regler" — men
+        det enkla svaret är inte alltid rätt. Fyra nyckeltal jämförs.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>
+        376 grundseriematcher i Damserien (2019–2026) mot
+        1 124 i Herrserien
+        <a href={factHref("S001")} class="fact-ref">S001</a>.
+        Samma Bandygrytan-databas, samma metodologi.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+
+      <p style="font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-muted); margin-bottom: 0.25rem; font-weight: 700;">Mål per match — identiskt</p>
+      <BarChart bars={goalBars} maxValue={12} caption="9,12 mål/match i båda serierna. Ingen mätbar skillnad." />
+
+      <p style="font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-muted); margin-bottom: 0.25rem; font-weight: 700; margin-top: 1.5rem;">Halvtidsledning håller i (%)</p>
+      <BarChart bars={htBars} maxValue={100} unit="%" caption="Damserien (markerad): 89,1% mot herrseriens 78,1%. En skillnad på 11 procentenheter." />
+
+      <p style="font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-muted); margin-bottom: 0.25rem; font-weight: 700; margin-top: 1.5rem;">Hörnmålsprocent</p>
+      <BarChart bars={cornerBars} maxValue={30} unit="%" caption="Herrserien producerar 22,2% av mål från hörnor, damserien 15,4% (markerad)." />
+
+      <p style="font-family: var(--font-ui); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-muted); margin-bottom: 0.25rem; font-weight: 700; margin-top: 1.5rem;">Hemmaseger-procent</p>
+      <BarChart bars={homeBars} maxValue={60} unit="%" caption="Svag hemmafördel i båda serierna. Damserien (47,6%) är under 50%." />
+
+      <table style="margin-top: 1.5rem">
+        <thead>
+          <tr><th>Nyckeltal</th><th>Herr</th><th>Dam</th><th>Diff</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Mål per match</td><td>9,12</td><td><strong>9,12</strong></td><td>0,00</td></tr>
+          <tr><td>htLeadWinPct</td><td>78,1%</td><td><strong>89,1%</strong></td><td>+11,0 pp</td></tr>
+          <tr><td>Hörnmålsprocent</td><td>22,2%</td><td><strong>15,4%</strong></td><td>−6,8 pp</td></tr>
+          <tr><td>Hemmaseger-%</td><td>50,2%</td><td><strong>47,6%</strong></td><td>−2,6 pp</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+
+      <p>
+        Det slående är kombinationen: exakt samma målsnitt, men tre
+        mätbara skillnader i underliggande dynamik.
+      </p>
+
+      <p>
+        <strong>Halvtidsledningen är betydligt starkare i damserien.</strong>
+        89,1% mot 78,1% är en skillnad på 11 procentenheter. En möjlig
+        förklaring är lagstyrke-spridning: om spridningen är större i
+        damserien — det vill säga att de bästa lagen är klart bättre
+        än de sämsta — är det logiskt att ledningar håller bättre.
+        Men det är en hypotes, inte ett verifierat faktum.
+      </p>
+
+      <p>
+        <strong>Hörnornas roll är klart lägre i damserien.</strong>
+        15,4% mot 22,2% är en substantiell skillnad. En möjlig förklaring:
+        slagteknik och kraft i hörnexekveringen påverkar hur effektiv
+        hörnalternativet är. Det är ett område som förtjänar djupare analys.
+      </p>
+
+      <p>
+        <strong>Hemmafördelen är svagare i damserien.</strong>
+        47,6% hemmaseger är under 50% — bortalaget vinner statistiskt
+        marginellt oftare. Det är ett litet urval (376 matcher) och kan
+        vara slumpmässig variation, men mönstret är konsistent med att
+        hemmaplansfördelen generellt är svag i bandy
+        (Finding 003 <a href={`${base}/findings/003/`} style="font-family: var(--font-ui); font-size: 0.85rem;">→</a>).
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>
+          376 dam-matcher mot 1 124 herr-matcher — konfidensintervallen
+          är bredare för dam. Skillnader under ~3 pp bör läsas med försiktighet.
+        </li>
+        <li>
+          Damserien inkluderar bara Elitserien Dam. Säsongsvariation är
+          stor (11,02 mål/match 2024–25, mot 8,43 mål/match 2025–26).
+        </li>
+        <li>
+          Lagstyrke-spridning är inte kvantifierad i datan — hypotesen om
+          varför htLeadWinPct är högre kan inte verifieras utan rankingdata.
+        </li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Varför är hörneffektiviteten lägre i damserien — teknik, taktik, eller slump?</li>
+        <li>Är lagstyrke-spridningen faktiskt större i damserien?</li>
+        <li>Skiljer sig målminutsfördelningen (Finding 005) mellan dam och herr?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        {[
+          { id: 'S001', label: 'Mål per match herr — 9,12' },
+          { id: 'S008', label: 'Hörnmålsprocent herr — 22,2%' },
+          { id: 'S013', label: 'htLeadWinPct herr — 78,1%' },
+          { id: 'S004', label: 'Hemmaseger herr — 50,2%' },
+        ].map((ref, i) => (
+          <>
+            {i > 0 && <span style="color: var(--color-border); margin: 0 4px">·</span>}
+            <a href={factHref(ref.id)} class="fact-ref">{ref.id}</a>
+            <span style="font-family: var(--font-ui); font-size: 0.8rem; color: var(--color-muted); margin-left: 4px">{ref.label}</span>
+          </>
+        ))}
+      </p>
+    </div>
+
+  </div>
+</Base>

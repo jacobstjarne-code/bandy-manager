@@ -43,6 +43,23 @@ export interface Fact {
 // process.cwd() during Astro build = the bandy-brain/ project root.
 // The facts live one level up in docs/findings/facts.
 const FACTS_DIR = resolve(process.cwd(), '..', 'docs', 'findings', 'facts');
+const BANDYGRYTAN_PATH = resolve(process.cwd(), '..', 'docs', 'data', 'bandygrytan_detailed.json');
+
+export interface GoalDecile { range: string; count: number; pct: number; }
+export interface TimeDistribution { label: string; total: number; avgMinute: number; median: number; byDecile: GoalDecile[]; }
+
+let _bandygrytanCache: any = null;
+function loadBandygrytan() {
+  if (_bandygrytanCache) return _bandygrytanCache;
+  _bandygrytanCache = JSON.parse(readFileSync(BANDYGRYTAN_PATH, 'utf-8'));
+  return _bandygrytanCache;
+}
+
+export function getHerr(): any { return loadBandygrytan().herr; }
+export function getDam(): any { return loadBandygrytan().dam; }
+export function getGoalTimeDistribution(): TimeDistribution {
+  return loadBandygrytan().herr.timeDistributions.goals;
+}
 
 const CATEGORIES = ['rules', 'stats', 'design_principles', 'world_canon'] as const;
 

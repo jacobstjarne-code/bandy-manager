@@ -1,0 +1,89 @@
+---
+export interface Bar {
+  label: string;
+  value: number;
+  highlight?: boolean;
+}
+
+export interface Props {
+  bars: Bar[];
+  maxValue?: number;
+  unit?: string;
+  height?: number;
+  caption?: string;
+}
+
+const { bars, maxValue, unit = '', height = 160, caption } = Astro.props;
+const max = maxValue ?? Math.max(...bars.map(b => b.value));
+
+const barWidth = 32;
+const gap = 6;
+const labelH = 20;
+const chartH = height;
+const totalW = bars.length * (barWidth + gap) - gap;
+const svgH = chartH + labelH + 24;
+---
+
+<figure class="chart-figure">
+  <svg
+    viewBox={`0 0 ${totalW} ${svgH}`}
+    width="100%"
+    style={`max-width: ${Math.min(totalW * 2, 720)}px; display: block;`}
+    aria-label={caption ?? 'Stapeldiagram'}
+    role="img"
+  >
+    {bars.map((bar, i) => {
+      const x = i * (barWidth + gap);
+      const barH = (bar.value / max) * chartH;
+      const y = chartH - barH;
+      const fill = bar.highlight ? 'var(--color-accent)' : 'var(--color-muted)';
+      const opacity = bar.highlight ? '1' : '0.45';
+      const valY = y - 4;
+      return (
+        <>
+          <rect
+            x={x}
+            y={y}
+            width={barWidth}
+            height={barH}
+            fill={fill}
+            opacity={opacity}
+            rx="2"
+          />
+          {bar.highlight && (
+            <text
+              x={x + barWidth / 2}
+              y={valY < 12 ? valY + 16 : valY}
+              text-anchor="middle"
+              font-size="9"
+              font-family="var(--font-ui)"
+              fill="var(--color-accent)"
+              font-weight="700"
+            >
+              {bar.value}{unit}
+            </text>
+          )}
+          <text
+            x={x + barWidth / 2}
+            y={chartH + labelH}
+            text-anchor="middle"
+            font-size="9"
+            font-family="var(--font-ui)"
+            fill="var(--color-muted)"
+          >
+            {bar.label}
+          </text>
+        </>
+      );
+    })}
+    {/* Baseline */}
+    <line x1="0" y1={chartH} x2={totalW} y2={chartH} stroke="var(--color-border)" stroke-width="1" />
+  </svg>
+  {caption && <figcaption style="font-family: var(--font-ui); font-size: 0.75rem; color: var(--color-muted); margin-top: 0.5rem;">{caption}</figcaption>}
+</figure>
+
+<style>
+  .chart-figure {
+    margin: 1.5rem 0;
+  }
+</style>

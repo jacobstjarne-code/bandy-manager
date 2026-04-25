@@ -1,0 +1,170 @@
+---
+import Base from '../../../layouts/Base.astro';
+import BarChart from '../../../components/BarChart.astro';
+import { factHref, getGoalTimeDistribution } from '../../../lib/facts';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const td = getGoalTimeDistribution();
+const deciles = td.byDecile;
+
+const bars = deciles.map(d => ({
+  label: d.range,
+  value: d.pct,
+  highlight: d.range === '40-50' || d.range === '80-90',
+}));
+---
+
+<Base
+  title="Finding 005 — Mål faller inte jämnt"
+  description="Två kluster sticker ut i Elitseriematchernas målfördelning: minuterna 40–50 och 80–90. Resten av matchen är anmärkningsvärt jämn."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 005 · 25 april 2026</p>
+    <h1 class="finding-title">Mål faller inte jämnt —<br>två kluster sticker ut</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>
+        Om mål vore slumpmässigt fördelade över 90 minuter vore varje
+        10-minutersintervall lika troligt. Men stämmer det? Finns det
+        minuter eller perioder under en bandymatch då sannolikheten för
+        mål är systematiskt högre — och i så fall varför?
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>
+        1 124 grundseriematcher i Herr-Elitserien (Bandygrytan 2019–2026)
+        <a href={factHref("S001")} class="fact-ref">S001</a>.
+        Varje mål är tidsstämplat med matchminut.
+        Fördelningen analyseras i 10-minutersintervall.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+
+      <BarChart
+        bars={bars}
+        unit="%"
+        caption="Andel mål per 10-minutersintervall, Herr-Elitserien 2019–2026. Markerade staplar är avvikande kluster."
+      />
+
+      <table>
+        <thead>
+          <tr><th>Intervall</th><th>Andel mål</th><th>Notering</th></tr>
+        </thead>
+        <tbody>
+          {deciles.map(d => (
+            <tr style={d.range === '40-50' || d.range === '80-90' ? 'font-weight: 600' : ''}>
+              <td>{d.range} min</td>
+              <td>{d.pct}%</td>
+              <td style="font-family: var(--font-ui); font-size: 0.8rem; color: var(--color-muted);">
+                {d.range === '40-50' ? '← halvtidsgräns' : d.range === '80-90' ? '← slutminuterna' : ''}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <p>
+        Intervallen 0–30 min är slående jämna: 9,7–9,8% vardera. Det är
+        precis vad man förväntar sig av en jämn fördelning. Sedan händer
+        det två saker:
+      </p>
+      <ul>
+        <li>
+          <strong>Minuter 40–50:</strong> 11,8% — det högsta intervallet
+          förutom slutminuterna. Klustret sträcker sig över halvtidsgränsen.
+        </li>
+        <li>
+          <strong>Minuter 80–90:</strong> 12,9% — matchens tätaste
+          målperiod. Nästan en tredjedel mer mål än ett neutralt intervall.
+        </li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+
+      <p>
+        Slutminuters-klustret är förväntat och väl dokumenterat i lagsporter
+        generellt: lag som ligger under börjar ta risker, öppnar upp spelet
+        och producerar fler mål i båda riktningarna. Det är ett desperation-mönster.
+      </p>
+
+      <p>
+        Halvtidsgräns-klustret är mer intressant. Att minuterna 40–50
+        producerar 11,8% av alla mål — mer än vilket annat 10-minutersintervall
+        som helst utom slutminuterna — kan ha flera förklaringar.
+        En möjlig: lag som vill in i halvtid med ledning pressar hårdare
+        i matchens sista fem minuter. Motståndaren, som ännu inte dragit
+        sig tillbaka taktiskt, är mer exponerad. Samma press fortsätter
+        precis efter halvtid när lag vill etablera kontroll tidigt.
+      </p>
+
+      <p>
+        Det är också värt att notera vad som <em>inte</em> syns: ingen
+        trötthetsdipp i mitten av halvlekarna (25–35 min är helt normalt),
+        inget "öppningsrusning" i minut 1–5 utöver det förväntade.
+        Bandys fria substitution verkar effektivt motverka konditionen
+        som faktor under matchens mitt.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>
+          10-minutersintervall döljer finstruktur. Det är möjligt att
+          klustret i 40–50 är koncentrerat till minut 44–46 snarare
+          än jämnt fördelat.
+        </li>
+        <li>
+          Tidsstämpling i Bandygrytan kan ha systematiska fel
+          (avrundning, sen registrering).
+        </li>
+        <li>
+          Datan exkluderar övertidsmål (3,9% av alla mål faller efter
+          minut 90 i databasen — dessa är inte med i fördelningen).
+        </li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Är klustret vid 40–50 koncentrerat till 40–45 eller 46–50?</li>
+        <li>Är mönstret starkare i jämna matcher (±1 mål) än i övertygande ledningar?</li>
+        <li>Skiljer sig mönstret för hörnmål vs öppet spel?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        <a href={factHref("S001")} class="fact-ref">S001</a>
+        <span style="font-family: var(--font-ui); font-size: 0.8rem; color: var(--color-muted); margin-left: 4px">Mål per match — 9,12 · Bandygrytan 1 124 matcher</span>
+      </p>
+    </div>
+
+  </div>
+</Base>

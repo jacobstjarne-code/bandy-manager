@@ -1,6 +1,16 @@
 ---
 import Base from '../../layouts/Base.astro';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const findings = [
+  { num: '007', date: '25 april 2026', title: 'Dam och herr: samma mål, men annorlunda bandy', excerpt: 'Damserien och herrserien producerar exakt 9,12 mål/match — men halvtidsledningens stabilitet (89,1% vs 78,1%) och hörnornas andel (15,4% vs 22,2%) skiljer sig påtagligt.' },
+  { num: '006', date: '25 april 2026', title: 'Slutspelet: färre mål, starkare ledningar', excerpt: 'Slutspelsmatcher producerar 8,55 mål/match mot grundseriens 9,12. Trots färre mål håller halvtidsledningar i 85,3% av slutspelsmatcherna — mot 78,1% i grundserien.' },
+  { num: '005', date: '25 april 2026', title: 'Mål faller inte jämnt — två kluster sticker ut', excerpt: 'Minuterna 40–50 (11,8%) och 80–90 (12,9%) är bandymatchens tätaste målperioder. Resten av matchen är anmärkningsvärt jämn. Halvtidsgränsen och slutminuterna har sin egen logik.' },
+  { num: '004', date: '25 april 2026', title: '9,12 mål per match — bandy i ett målperspektiv', excerpt: 'Bandy är en av de mest målrika lagsporterna med målvakt. Genomsnittlig målminut är 48,2 och 54% av målen faller i andra halvlek.' },
+  { num: '003', date: '25 april 2026', title: 'Hemmafördelen i bandy är svagare än du tror', excerpt: 'Hemmalaget vinner 50,2% av Elitseriematcherna — knappt över slumpen. I fotboll är motsvarande ~60%, i ishockey ~55%.' },
+  { num: '002', date: '25 april 2026', title: 'Hörnor är fem gånger mer värda i bandy än i fotboll', excerpt: '22,2% av alla mål i Elitserien kommer från hörnlägen. I fotboll är motsvarande siffra 4%. Skillnaden förklarar varför hörnan är ett centralt taktiskt vapen.' },
+  { num: '001', date: '25 april 2026', title: 'Halvtidsledning i bandy är starkare än i fotboll', excerpt: '78,1% av lag som leder vid halvtid vinner matchen (Bandygrytan, 907 matcher). Bandy Managers simuleringsmotor matchar med 77%.' },
+];
 ---
 
 <Base title="Findings">
@@ -15,68 +25,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     </p>
 
     <ul class="findings-list">
-      <li>
-        <div class="finding-card">
-          <p class="finding-card__number">Finding 004 · 25 april 2026</p>
-          <h2 class="finding-card__title">
-            <a href={`${base}/findings/004/`}>
-              9,12 mål per match — bandy i ett målperspektiv
-            </a>
-          </h2>
-          <p class="finding-card__excerpt">
-            Bandy är en av de mest målrika lagsporterna med målvakt.
-            Genomsnittlig målminut är 48,2 — nästan exakt halvtid — och
-            54% av målen faller i andra halvlek. Vad berättar siffrorna
-            om sportens karaktär?
-          </p>
-        </div>
-      </li>
-      <li>
-        <div class="finding-card">
-          <p class="finding-card__number">Finding 003 · 25 april 2026</p>
-          <h2 class="finding-card__title">
-            <a href={`${base}/findings/003/`}>
-              Hemmafördelen i bandy är svagare än du tror
-            </a>
-          </h2>
-          <p class="finding-card__excerpt">
-            Hemmalaget vinner 50,2% av Elitseriematcherna — knappt över
-            slumpen. I fotboll är motsvarande siffra ~60%, i ishockey ~55%.
-            Varför är hemmafördelen så liten i bandy?
-          </p>
-        </div>
-      </li>
-      <li>
-        <div class="finding-card">
-          <p class="finding-card__number">Finding 002 · 25 april 2026</p>
-          <h2 class="finding-card__title">
-            <a href={`${base}/findings/002/`}>
-              Hörnor är fem gånger mer värda i bandy än i fotboll
-            </a>
-          </h2>
-          <p class="finding-card__excerpt">
-            22,2% av alla mål i Elitserien kommer från hörnlägen.
-            I fotboll är motsvarande siffra 4%. Skillnaden förklarar
-            varför hörnan behandlas som ett centralt taktiskt vapen
-            i bandy, inte en dödbolls-situation.
-          </p>
-        </div>
-      </li>
-      <li>
-        <div class="finding-card">
-          <p class="finding-card__number">Finding 001 · 25 april 2026</p>
-          <h2 class="finding-card__title">
-            <a href={`${base}/findings/001/`}>
-              Halvtidsledning i bandy är starkare än i fotboll
-            </a>
-          </h2>
-          <p class="finding-card__excerpt">
-            Hur ofta vinner ett bandylag som leder vid halvtid? 78,1% visar
-            verklig Elitseriedata från 907 matcher (Bandygrytan 2019–2026).
-            Bandy Managers simuleringsmotor matchar med 77%.
-          </p>
-        </div>
-      </li>
+      {findings.map(f => (
+        <li>
+          <div class="finding-card">
+            <p class="finding-card__number">Finding {f.num} · {f.date}</p>
+            <h2 class="finding-card__title">
+              <a href={`${base}/findings/${f.num}/`}>{f.title}</a>
+            </h2>
+            <p class="finding-card__excerpt">{f.excerpt}</p>
+          </div>
+        </li>
+      ))}
     </ul>
   </div>
 </Base>
