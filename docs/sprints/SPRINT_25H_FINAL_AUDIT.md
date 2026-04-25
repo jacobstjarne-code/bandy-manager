@@ -48,9 +48,9 @@
 - [x] Hindrar inte köpet — spelaren kan alltid gå vidare
 
 ### A2–A4, B
-- [ ] A2: UI för licensnämnden-status (saknas — backloggad)
-- [ ] A3: Sponsorhistorik i dashboard (saknas — backloggad)
-- [ ] A4: Mecenat happiness-indikator (saknas — backloggad)
+- [x] A2: Licensnämnden-status — warning-banner i DashboardScreen vid `licenseStatus !== 'clear'`. Tre varianter: first_warning (⚠️), point_deduction (🔴), license_denied (🚨). Visar antal förlustsäsonger och konsekvens.
+- [x] A3: Skum sponsor-varning — rad i Ekonomi-kortet om `game.riskySponsorContract` är aktiv. Visar risk-mognadssrunda.
+- [x] A4: Mecenat happiness-indikator — separat kortsektion under 2×2-grid vid aktiva mecenater. Namn + happiness-label (Missnöjd/Otålig/Nöjd/Entusiastisk) + 5-punkts pip-rad färgkodad per happiness.
 - [ ] B: Speltest playtest-runda 4 (ej utförd)
 
 ---

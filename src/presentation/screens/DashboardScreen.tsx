@@ -555,6 +555,28 @@ export function DashboardScreen() {
         {/* ③c TRÄNARKARRIÄR */}
         <CareerStatsCard game={game} />
 
+        {/* A2: LICENSNÄMNDEN-STATUS */}
+        {(() => {
+          const ls = game.licenseStatus
+          if (!ls || ls === 'clear') return null
+          const cfg = ls === 'license_denied'
+            ? { emoji: '🚨', label: 'Elitlicensen nekad', sub: 'Spelet avslutas denna säsong', color: 'var(--danger)' }
+            : ls === 'point_deduction'
+            ? { emoji: '🔴', label: '−3 poäng väntar nästa säsong', sub: `${game.consecutiveLossSeasons ?? 3} förlustsäsonger — ekonomin måste vändas`, color: 'var(--danger)' }
+            : { emoji: '⚠️', label: 'Licensnämnden bevakar er ekonomi', sub: `${game.consecutiveLossSeasons ?? 2} förlustsäsonger i rad — nästa förlust ger poängavdrag`, color: 'var(--warning)' }
+          return (
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '8px 12px', borderLeft: `3px solid ${cfg.color}` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 14 }}>{cfg.emoji}</span>
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: cfg.color, margin: 0, fontFamily: 'var(--font-display)' }}>{cfg.label}</p>
+                  <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '2px 0 0', fontFamily: 'var(--font-body)' }}>{cfg.sub}</p>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+
         {/* ④ ÖVERBLICK — collapsed rows when primary card active, otherwise 2×2 grid */}
         {collapseGrid && (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '7px 10px', display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -709,8 +731,42 @@ export function DashboardScreen() {
                 )}
               </p>
             )}
+            {/* A3: skum sponsor-varning */}
+            {game.riskySponsorContract && (
+              <p style={{ fontSize: 9, color: 'var(--warning)', marginTop: 3, fontFamily: 'var(--font-body)' }}>
+                ⚠️ Skum sponsor aktiv — risk mognar omg {game.riskySponsorContract.riskMaturityRound}
+              </p>
+            )}
           </div>
         </div>}
+
+        {/* A4: MECENAT HAPPINESS */}
+        {(() => {
+          const active = (game.mecenater ?? []).filter(m => m.isActive)
+          if (active.length === 0) return null
+          return (
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '8px 12px' }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-primary)', fontFamily: 'var(--font-body)', marginBottom: 6 }}>
+                🤝 MECENATER
+              </p>
+              {active.map(m => {
+                const hColor = m.happiness < 20 ? 'var(--danger)' : m.happiness < 50 ? 'var(--warning)' : 'var(--success)'
+                const hLabel = m.happiness < 20 ? 'Missnöjd' : m.happiness < 50 ? 'Otålig' : m.happiness < 75 ? 'Nöjd' : 'Entusiastisk'
+                return (
+                  <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-secondary)', flex: 1, fontFamily: 'var(--font-body)' }}>{m.name}</span>
+                    <span style={{ fontSize: 10, color: hColor, fontWeight: 600, fontFamily: 'var(--font-body)' }}>{hLabel}</span>
+                    <div style={{ display: 'flex', gap: 1 }}>
+                      {[0,1,2,3,4].map(i => (
+                        <div key={i} style={{ width: 6, height: 6, borderRadius: 2, background: i < Math.round(m.happiness / 20) ? hColor : 'var(--border-dark)' }} />
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })()}
 
         {/* ⑩ KLACKEN */}
         {(() => {

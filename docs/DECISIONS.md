@@ -192,3 +192,15 @@ Mellan varje delsprint: mät via analyze-stress, läs rapporten, avgör om näst
 **Beslut:** `useGameStore.getState()` i event-handlers och sim-loopar är korrekt Zustand-mönster för att undvika stale closures — inte regression. `useGameStore.setState()` direkt från screen-komponenter är inte okej — kringgår actions och deras invarianter. Kvarvarande `getState()`-läsningar i `DashboardScreen` (sim-loop) är avsiktliga och ska lämnas.
 
 **Konsekvens:** Regel: mutera aldrig state direkt från screens. Läs via `getState()` i callbacks är OK.
+
+---
+
+## 2026-04-25 — Verifiera calibrationTargets mot rådata istället för att sprintplanera motorsprint (Sprint 25-HT)
+
+**Problem:** `analyze-stress.ts` rapporterade `htLeadWinPct` motor 82-83% vs target 46.6% — ett gap på ~35pp som såg ut som ett allvarligt motorfel. Tre möjliga hypoteser: (a) motorn är för tuff på ledande lag, (b) trailing-boost räcker inte, (c) target-värdet är fel.
+
+**Beslut:** Verifiera target-värdet från rådata INNAN kod rörs. Räknade om `htLeadWinPct` direkt ur `bandygrytan_detailed.json` (1124 grundseriematcher): 78.1%. Target-värdet 46.6 var `homeHtLeadFraction` (andel matcher hemmalaget leder vid halvtid, ~47%) som felaktigt lagrats under nyckeln `htLeadWinPct`. Fix: uppdatera JSON, inte motorn. Motor 80.4% = +2.3pp mot korrekt 78.1% — acceptabelt gap, ingen motorsprint.
+
+**Alternativ övervägt:** Sprintat direkt på hypotes (a) eller (b). Avvisat — verifiering av target är billig (en skript-körning) och bör alltid ske före motorändring.
+
+**Konsekvens:** Ny regel i LESSONS.md #21: innan motorsprint planeras för ett specifikt target, räkna om det måttet från rådata och jämför mot stored target. Om diff >2pp — fix JSON-filen. Target-audit dokumenterad i `docs/findings/REVISION_2026-04-25_calibration_targets.md` (13 av 14 targets korrekta). `homeHtLeadFraction: 46.6` tillagt som eget fält. Sprint 25b/25e/25f behövde inte rullas tillbaka — de fixade korrekta motorproblem mot korrekta targets.

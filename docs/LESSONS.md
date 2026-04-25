@@ -469,3 +469,33 @@ const isPenaltyGoal = ev.isPenaltyGoal ?? false
 **Känn igen:** Ny stats-tracking som läser Penalty/Save/Corner/Assist-events från `fix.events`. Ställ frågan: "är denna event-typ PERSISTENT enligt tabellen ovan?" Om nej — flytta signalen till en flagga på ett persistent event, eller lägg till typen i strip-filtret.
 
 **Historik:** Sprint 25b.1. `stats.ts` byggde på Penalty-event-lookup för `isPenaltyGoal`. Penalty-events strippades → penaltyMinutes alltid tom → penaltyGoalPct loggades som ~0% trots att motorn gjorde straffmål. Fixades med `ev.isPenaltyGoal ?? false`.
+
+---
+
+## 21. Felnamngivet kalibreringsmål — analysera targeten INNAN du specsar sprinten
+
+**Mönster:** Analyze-stress visar ett massivt gap (t.ex. motor 82% vs target 47% = −35pp). Man specsar en motorsprint för att sluta gapet. Hela sprinten löser ett problem som inte existerar.
+
+**Rotorsak:** Kalibreringstarget-värdet stämmer inte med vad nyckelnamnet antyder. Värdet hamnade under fel nyckel när calibrationTargets byggdes — samma rådata, fel rubrik. Eftersom targets sällan verifieras mot rå källdata lever felet vidare tills någon frågar sig "vänta, ska en win-rate verkligen vara 46%?"
+
+**Konkret fall:** `calibrationTargets.herr.htLeadWinPct = 46.6` innehöll egentligen `homeHtLeadFraction` (andel matcher hemmalaget leder vid halvtid, ~47%). Motorsimuleringen gav 80.4% — ett korrekt värde mot korrekt target 78.1%. Felet hittades under Sprint 25-HT genom att räkna om måttet direkt från rå matchdata.
+
+**Fix:** Innan en motorsprint specas för ett specifikt target — räkna om det måttet från rådata i `bandygrytan_detailed.json` och jämför mot stored target. Om stored ≠ beräknat med >2pp: fixa JSON, inte motorn.
+
+```bash
+# Räkna htLeadWinPct ur rådata:
+node -e "
+const d = require('./docs/data/bandygrytan_detailed.json')
+const ms = d.herr.matches.filter(m => m.phase === 'regular')
+const leads = ms.filter(m => m.htHomeGoals !== undefined && (m.htHomeGoals > m.htAwayGoals || m.htAwayGoals > m.htHomeGoals))
+const leadWins = leads.filter(m => {
+  const homeLeads = m.htHomeGoals > m.htAwayGoals
+  return homeLeads ? m.homeGoals > m.awayGoals : m.awayGoals > m.homeGoals
+})
+console.log((leadWins.length / leads.length * 100).toFixed(1) + '%')
+"
+```
+
+**Känn igen:** Target-värdet hamnar utanför förväntad range för den metriken (win-rates bör vara 60-90%; en win-rate på 46% ska trigga skepticism). Kalibreringsgap >10pp utan tydlig motorhypotes = börja med target-audit, inte motorsprint.
+
+**Historik:** Sprint 25-HT, 2026-04-25. `htLeadWinPct: 46.6` i JSON fixades till 78.1 och nytt fält `homeHtLeadFraction: 46.6` lades till. Motor 80.4% = +2.3pp mot korrekt target — väl inom tolerans. Ingen motorsprint behövdes. Fullständig target-audit dokumenterad i `docs/findings/REVISION_2026-04-25_calibration_targets.md`.
