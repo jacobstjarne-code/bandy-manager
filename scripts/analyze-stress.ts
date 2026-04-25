@@ -48,6 +48,7 @@ const targets = targetsRaw.calibrationTargets.herr as {
   avgSuspensionsPerMatch: number
   avgHalfTimeGoals: number
   htLeadWinPct: number
+  homeHtLeadFraction?: number
   goalsSecondHalfPct: number
 }
 
