@@ -1,7 +1,8 @@
 # Sprint Design Audit Runtime — audit
 
-Verifierat lokalt mot dev-server 2026-04-20.
-Vercel-verifiering pending tills VITE_AUDIT_ENABLED=true sätts av Jacob.
+Verifierat lokalt mot dev-server 2026-04-20T09:30:47Z.
+Verifierat mot prod (bandy-manager.vercel.app) 2026-04-20T10:50–10:53Z efter Patch 1+2.
+Verifierat mot prod 2026-04-20T11:18–11:20Z efter Sprint 22.2 + 22.3.
 
 ---
 
@@ -9,154 +10,134 @@ Vercel-verifiering pending tills VITE_AUDIT_ENABLED=true sätts av Jacob.
 
 - [x] §2.1 Filstruktur — `src/debug/designAudit/` med index.ts, types.ts, reporter.ts, rules/ (9 filer), __tests__/ (8 filer)
 - [x] §2.2 Exponering — `src/main.tsx` uppdaterad med dynamic import under `DEV || VITE_AUDIT_ENABLED`
-- [x] §2.3 API — `window.__designAudit()`, `window.__designAudit({ format: 'text' })`, `window.__designAudit({ format: 'json' })`, `window.__designAudit({ rules: [...] })` — alla fungerar
-- [x] §2.4 Types — `Finding`, `Report`, `Severity` exporterade från `types.ts`
-- [x] §4.1 cardPadding — implementerad
-- [x] §4.2 sectionLabels — implementerad
-- [x] §4.3 hexColors — implementerad
-- [x] §4.4 gridGaps — implementerad
-- [x] §4.5 chevronButtons — implementerad
-- [x] §4.6 emojiConsistency — implementerad
-- [x] §4.7 fontSizes — implementerad
-- [x] §4.8 overlaps — implementerad
-- [x] §4.9 consoleErrors — implementerad (inkl. `window.__clearAuditBuffer()` och reaktInfiniteLoop-detection)
-- [x] §5 Reporter — text-format matchar spec §5 bokstavligt
-- [x] §6.3 Tester — 8 testfiler (en per regel + types), 32 tester gröna
-- [x] §7 Leveranskriterier — `npm run build` + `npm test` passerar (1444/1444 tester)
-- [x] DESIGN_SYSTEM.md §19 uppdaterad med runtime-audit-sektion
+- [x] §2.3 API — `window.__designAudit()`, text/json-format, rule-filtrering — alla fungerar
+- [x] §2.4 Types — `Finding`, `Report`, `Severity` exporterade
+- [x] §4.1–§4.9 Alla 9 regler implementerade
+- [x] §5 Reporter — text-format matchar spec bokstavligt
+- [x] §6.3 Tester — 1451/1451 efter alla patchar
+- [x] §7 Leveranskriterier — build + test passerar
+- [x] DESIGN_SYSTEM.md §19 uppdaterad
+- [x] VITE_AUDIT_ENABLED satt på Vercel
+- [x] Prod-verifiering genomförd (två rundor)
 
 ---
 
-## §6 Implementationsordning — verifiering
+## Dev-server-körning 2026-04-20T09:30Z (initial)
 
-### Steg 1: Skelett → window.__designAudit() returnerar { findings: [] }
-
-Verifierat: med tomma regelmoduler returnerade auditen:
-```json
-{ "timestamp": "...", "screenPath": "/", "totalFindings": 0, "byRule": {}, "bySeverity": {"error":0,"warn":0,"info":0}, "findings": [] }
-```
-
-### Steg 2–9: Regel för regel
-
-Varje regel implementerades och bygget verifierades grön efter varje. Testerna kördes mot den slutgiltiga impl.
+**Screen:** `/` (intro/NewGameScreen)
+**Resultat:** 30 findings (2 error, 28 warn)
+3 FP-kategorier identifierade, rapporterade till Opus.
 
 ---
 
-## window.__designAudit() — faktisk körning mot dev-server
+## Post-review 1 — Opus-godkännande 2026-04-20
 
-**Dev-server:** `http://localhost:5174/`  
-**Datum:** 2026-04-20T09:30:47Z  
-**Screen:** `/` (intro/NewGameScreen — appen startar utan sparat spel)
+### Patch 1: cardPadding — skippa borderRadius 50% och 9999
+Cirkel- och pill-mönster. +2 tester.
 
-```
-═══ DESIGN AUDIT ═══
-Path: /
-2026-04-20T09:30:47.383Z
-30 findings (2 error, 28 warn, 0 info)
+### Patch 2: sectionLabels — skippa BUTTON-element
+CTA-knappar med uppercase/letterSpacing är inte labels. +1 test.
 
-── cardPadding (24 findings) ──
-⚠️  Inline borderRadius på okänd komponent (×23)
-   actual: borderRadius: 50%
-   — se "False positives" nedan —
-⚠️  Inline borderRadius på okänd komponent
-   at: div:nth-child(28) > div:nth-child(2) > button:nth-child(1)
-   actual: borderRadius: 10px
+### FP3: gridGaps — INGEN ändring
+Intro-skärmens generösare spacing flaggas fortsatt som warn för manuell granskning.
 
-── sectionLabels (3 findings) ──
-❌ Sektions-label fontSize 13px (förväntat 8px)
-   at: div:nth-child(28) > div:nth-child(2) > button:nth-child(1)
-❌ Sektions-label letterSpacing 3px (förväntat 2px)
-   at: div:nth-child(28) > div:nth-child(2) > button:nth-child(1)
-⚠️  Sektions-label utan emoji i början: "STARTA KARRIÄREN"
-   at: div:nth-child(28) > div:nth-child(2) > button:nth-child(1)
-
-── gridGaps (3 findings) ──
-⚠️  Flex-column med gap 14px (förväntat 4-6px)
-   at: div#root > div:nth-child(1) > div:nth-child(27)
-⚠️  Flex-column med gap 18px (förväntat 4-6px)
-   at: div:nth-child(1) > div:nth-child(28) > div:nth-child(1)
-⚠️  Flex-column med gap 22px (förväntat 4-6px)
-   at: div:nth-child(1) > div:nth-child(28) > div:nth-child(2)
-```
+Status efter Patch 1+2: 1447/1447 tester gröna.
 
 ---
 
-## Analys: false positives vs genuina buggar
+## Prod-verifiering 1 — 2026-04-20T10:50–10:53Z
 
-### 1. borderRadius: 50% — FALSE POSITIVE (n=23)
-**Vad:** 23 `div`-element på intro-skärmen med `borderRadius: 50%`.  
-**Vad det faktiskt är:** Cirkulära portrait-dots i NewGameScreen (spelarna presenteras i cirklar).  
-`borderRadius: 50%` är standardsättet att göra cirklar i CSS — detta är en genuin design-komponent, inte ett regelbrott.  
-**Åtgärd:** Regeln bör undanta `borderRadius: 50%` (och `borderRadius: 99px`/`'50%'` — cirkelpattern). **Väntar på Opus-godkännande innan ändring.**
+VITE_AUDIT_ENABLED satt på Vercel. Fyra skärmar auditerade (`/game/tactic` finns inte, `/game/match` användes istället).
 
-### 2. sectionLabels på CTA-knapp — FALSE POSITIVE
-**Vad:** `sectionLabels`-regeln flaggar CTA-knappen "STARTA KARRIÄREN" (fontSize 13px, letterSpacing 3px, uppercase).  
-**Vad det faktiskt är:** CTA-knapp med uppercase letter-spacing för estetik — matchar regelns detektionströskel (uppercase + ls >= 1.5px) men är inte en sektions-label.  
-**Rotorsak:** Regeln kan inte skilja på sektions-labels och knappar med uppercase-styling enbart via computed styles.  
-**Åtgärd:** Regeln bör exkludera `button`-element. **Väntar på Opus-godkännande.**
+| Skärm | Findings | Error | Warn |
+|---|---|---|---|
+| /game/dashboard | 14 | 5 | 9 |
+| /game/board-meeting | 32 | 22 | 10 |
+| /game/squad | 78 | 8 | 70 |
+| /game/match | 33 | 19 | 14 |
 
-### 3. gridGaps på intro-skärm — EVENTUELL GENUIN BUGG
-**Vad:** Tre flex-columns med gap 14px / 18px / 22px på NewGameScreen.  
-**Vad det faktiskt är:** NewGameScreen är en onboarding-vy med generösare spacing än spelskärmarna — troligen avsiktligt.  
-**Status:** Osäkert om detta är ett regelbrott eller ett legitimt undantag. **Rapporteras för Opus-granskning.**
+Patch 1+2 bekräftat borttaget de initiala FP:erna. Fyra nya FP-kategorier (A–D) och ~24 genuina buggar identifierade.
 
 ---
 
-## Tester
+## Post-review 2 — Sprint 22.2 + 22.3, 2026-04-20
+
+### Sprint 22.2: Regel-kalibrering (FP-A till FP-D)
+
+**FP-A:** cardPadding — skip-listan utökad från `9999` till regex `/^9+px$/` (fångar `99px`, `9999px` etc).
+**FP-B:** cardPadding — `if (el.tagName === 'BUTTON') continue` i inline-borderRadius-checken.
+**FP-C:** cardPadding — `if (val.startsWith('var(')) continue` för CSS-variabler.
+**FP-D:** sectionLabels — `if (fs > 10) continue` (skärmrubriker är inte labels).
+
++4 tester. Status: 1451/1451.
+
+### Sprint 22.3: Buggfixar
+
+Utökat scope från Opus ursprungliga lista (BoardMeetingScreen + MatchScreen) efter att Code identifierat att `/game/match` är en container för StartStep/LineupStep/TacticStep.
+
+- `BoardMeetingScreen.tsx`: 7× `10px 14px → 10px 12px`, 7× `fontSize 9/letterSpacing 2.5 → 8/2`
+- `TacticStep.tsx`: 2× padding, 2× labels
+- `StartStep.tsx`: 2× card-round `→ 8px 12px`, 1× `8px 14px → 7px 10px`, 1× `10px 14px → 10px 12px`, 4× labels
+- `LineupStep.tsx`: 1× label + emoji-prefix (🧤/🛡/🏒/⚙️/⚔️) på positionsrubriker
+- `DashboardScreen.tsx`: 1× `6px 10px → 7px 10px`
+
+Status: 1451/1451.
+
+---
+
+## Prod-verifiering 2 — 2026-04-20T11:18–11:20Z
+
+Efter Sprint 22.2 + 22.3-push och Vercel-redeploy.
+
+| Skärm | Prod 1 (findings) | Prod 2 (findings) | Delta |
+|---|---|---|---|
+| /game/dashboard | 14 (5E/9W) | 12 (6E/6W) | -2 |
+| /game/board-meeting | 32 (22E/10W) | 2 (0E/2W) | **-30** |
+| /game/match | 33 (19E/14W) | 8 (2E/6W)* | -25 |
+
+*match auditerades som `/game/match/live` i runda 2 (live-match istället för pre-match lineup). Inte direkt jämförbart men samma filer i scope.
+
+### Verifiering av patchar
+
+- **Sprint 22.2 (FP-A–FP-D):** inga `99px`/`var()`/BUTTON-warnings kvar i cardPadding. Inga 11px+-labels flaggade. Bekräftat.
+- **Sprint 22.3:** samtliga `10px 14px`-errors på card-sharp/card-round borta. Samtliga 9/2.5-labels i BoardMeetingScreen och MatchScreen (sub-steps) borta. Bekräftat.
+
+### Kvarvarande findings efter Prod 2
+
+**Ej åtgärdat av patch, kräver manuell bedömning (FP-E):**
+- Dashboard: 3 × `card-sharp padding: 0px` — kan vara legitima wrapper-kort vars padding sitter på child-element, eller genuin bugg. Bedöms visuellt.
+
+**Nya fynd som inte var i Sprint 22.3-scopet:**
+- Dashboard: 1 × label `fontSize: 9, letterSpacing: 2.5` — missad i 22.3, samma rotorsak som de som fixades.
+- Dashboard: 1 × label `fontSize: 10` — gränsfall (FP-D skippar >10, så 10 fortfarande flaggas medvetet).
+- Match/live: 1 × label `fontSize: 9, letterSpacing: 1.5` — MatchLiveScreen har egna labels som 22.3 inte täckte (fixade StartStep/LineupStep/TacticStep i pre-match).
+- Flera skärmar: ~10 inline-borderRadius-warnings på wrappers (3px/6px/8px/10px/13px). Ingen systematisk bugg, kräver manuell granskning per fall.
+- Board-meeting: "Styrelsemöte"-rubrik saknar emoji (warn, mindre prioritet).
+
+### Tolkning
+
+Infrastrukturen fungerar som specen avsåg. Sprint 22-serien levererade det scopet den tog på sig. Prod 2 avslöjar ytterligare avvikelser av samma typ på andra platser — detta är löpande designsystem-hygien, inte en ny sprint. Plockas upp när någon ändå rör filerna, eller vid nästa planerade UI-städ-runda.
+
+---
+
+## Tester (slutstatus)
 
 ```
 Test Files  124 passed (124)
-Tests       1444 passed (1444)
+Tests       1451 passed (1451)
 ```
-
-8 nya testfiler i `src/debug/designAudit/__tests__/`:
-- cardPadding.test.ts — 7 tester
-- sectionLabels.test.ts — 4 tester
-- hexColors.test.ts — 5 tester
-- emojiConsistency.test.ts — 4 tester
-- fontSizes.test.ts — 4 tester
-- chevronButtons.test.ts — 3 tester
-- overlaps.test.ts — 3 tester
-- consoleErrors.test.ts — 2 tester
-
----
 
 ## Ej levererat
 
-Inget — alla spec-punkter implementerade.
+Inget — alla spec-punkter implementerade och verifierade i prod (två rundor).
 
-## Post-review — Opus-godkännande 2026-04-20
+## Framtida städ (ej blockerande)
 
-Opus granskade FP-rapporten ovan och godkände två av tre regelpatchar.
+- Dashboard `padding: 0px` × 3 — bedöm visuellt
+- Dashboard + match/live: 2–3 missade labels, samma 9/2.5-rotorsak
+- ~10 inline borderRadius-warnings att granska fall för fall
+- Emoji-prefix på återstående rubriker enligt DESIGN_SYSTEM.md §18
 
-### Patch 1: cardPadding — skippa borderRadius 50% och 9999
+## Lärdom till framtida sprint-promptar
 
-**Fil:** `src/debug/designAudit/rules/cardPadding.ts`  
-**Ändring:** Efter att `val` extraherats ur style-attributet — `if (val === '50%' || val.includes('9999')) continue` — antes findings.push.  
-**Motivering:** `50%` är standardmönstret för cirkulära element (portrait-dots). `9999px` är pill-mönstret. Ingen av dessa är regelbrott.  
-**Nya tester:** `cardPadding.test.ts` +2 testfall:
-- `'does not warn on borderRadius: 50% (circular portrait dot)'`
-- `'does not warn on borderRadius containing 9999 (pill pattern)'`
-
-### Patch 2: sectionLabels — skippa BUTTON-element
-
-**Fil:** `src/debug/designAudit/rules/sectionLabels.ts`  
-**Ändring:** `if (el.tagName === 'BUTTON') continue` i loopens inledning, före getComputedStyle.  
-**Motivering:** CTA-knappar med uppercase + letterSpacing för estetik matchar regelns detektionströskel men är inte sektions-labels. Regeln kan inte skilja dem åt via computed styles — enklaste lösningen är att utesluta alla BUTTON-element.  
-**Nytt test:** `sectionLabels.test.ts` +1 testfall:
-- `'does not flag uppercase BUTTON elements'`
-
-### FP3: gridGaps — INGEN ändring
-
-Opus bekräftade att warn-nivå är rätt för flex-column med gap > 6px på intro-skärmen. Intro-skärmens generösare spacing är troligen avsiktlig men regeln ska fortfarande flagga den för manuell granskning.
-
-### Status efter patch
-
-```
-Test Files  124 passed (124)
-Tests       1447 passed (1447)
-```
-
-## Pending
-
-- Vercel-verifiering (Jacob sätter `VITE_AUDIT_ENABLED=true`)
+Code missade att uppdatera audit-filen enligt instruktionen "Klistra in rapporten i auditen som 'Prod-verifiering 2'". Rotorsak: Code kan inte enkelt köra audit mot Vercel-redeploy själv — det kräver väntan på CI och extern Chrome-åtkomst. Framtida prompts som kräver prod-verifiering ska antingen (a) be Code köra mot lokal dev-server och dokumentera *den*, eller (b) vänta på Jacobs prod-data och dokumenteras av Opus separat (som i detta fall).
