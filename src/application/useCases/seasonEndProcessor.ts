@@ -27,6 +27,7 @@ import { generateNominations, generateGalaEvent, generateGalaInbox } from '../..
 import { checkSeasonEndArc } from '../../domain/services/trainerArcService'
 import { evaluateObjective, generateBoardObjectives } from '../../domain/services/boardObjectiveService'
 import { updateSilentShout, ageMecenater, checkMecenatRetirement } from '../../domain/services/mecenatService'
+import { checkLicenseStatus, buildLicenseInboxItem } from '../../domain/services/licenseService'
 import type { LicenseReview } from '../../domain/entities/SaveGame'
 import type { AdvanceResult } from './advanceTypes'
 
@@ -797,6 +798,21 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     managerFired = true
   }
 
+  // ── Lager 3: Licensnämnden — consecutive loss season check ───────────────
+  const licenseCheck = checkLicenseStatus(game, baseSeed)
+  const newLicenseStatus = licenseCheck.newLicenseStatus
+  const newConsecutiveLossSeasons = licenseCheck.newConsecutiveLossSeasons
+  const licensePendingDeductions: Record<string, number> = {}
+  if (licenseCheck.action) {
+    if (licenseCheck.action.type === 'license_denied') {
+      managerFired = true
+    }
+    if (licenseCheck.action.type === 'point_deduction') {
+      licensePendingDeductions[game.managedClubId] = 3
+    }
+    newInboxItems.push(buildLicenseInboxItem(licenseCheck.action, game.currentDate, game.currentSeason))
+  }
+
   const objRand = mulberry32((seed ?? 42) + game.currentSeason * 777)
   const managedClubForObj = updatedClubs.find(c => c.id === game.managedClubId)
   const newSeasonObjectives = managedClubForObj && game.boardPersonalities
@@ -1137,6 +1153,26 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     economicCrisisState: game.economicCrisisState?.phase === 'resolved' ? undefined : game.economicCrisisState,
     // Reset per-season finance warning flag so new season can trigger fresh warnings
     financeWarningGivenThisSeason: false,
+    // Lager 3: Licensnämnden
+    licenseStatus: newLicenseStatus,
+    consecutiveLossSeasons: newConsecutiveLossSeasons,
+    // pendingPointDeductions from this season → pointDeductions for next season
+    pointDeductions: game.pendingPointDeductions ?? {},
+    // pendingPointDeductions for next season: merge scandal-accumulated + license-generated
+    pendingPointDeductions: (() => {
+      const merged: Record<string, number> = {}
+      for (const [id, pts] of Object.entries(licensePendingDeductions)) {
+        merged[id] = (merged[id] ?? 0) + pts
+      }
+      return Object.keys(merged).length > 0 ? merged : undefined
+    })(),
+    // Reset per-season scandal trackers
+    activeScandals: [],
+    scandalHistory: [...(game.scandalHistory ?? []), ...(game.activeScandals ?? [])],
+    // Reset per-season lager 2 trackers
+    wageBudgetOverrunRounds: 0,
+    wageBudgetWarningSent: false,
+    riskySponsorOfferSentThisSeason: undefined,
   }
 
   return { game: { ...updatedGame, allTimeRecords: updateAllTimeRecords(updatedGame, seasonSummary) }, roundPlayed: null, seasonEnded: true }

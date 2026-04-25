@@ -316,6 +316,10 @@ export interface SaveGame {
   // Point deductions applied at next season start
   pendingPointDeductions?: Record<string, number>
 
+  // Sprint 25h — Lager 3: Licensnämnden
+  licenseStatus?: import('../services/licenseService').LicenseStatus
+  consecutiveLossSeasons?: number      // consecutive seasons with net deficit
+
   // Sprint 25h — Lager 2: Egna beslut med risk
   wageBudgetOverrunRounds?: number     // consecutive rounds above wageBudget
   wageBudgetWarningSent?: boolean      // first Licensnämnden warning sent
