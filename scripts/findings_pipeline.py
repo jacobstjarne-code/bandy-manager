@@ -28,7 +28,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).parent))
 
 from pipeline.analysis import REGISTRY
-from pipeline.feedback import load_feedback, get_type_weights
+from pipeline.feedback import load_feedback, get_type_weights, import_new_questions
 from pipeline.generate import generate_finding
 from pipeline.render import next_finding_number, write_finding, update_findings_index, _sv_date
 from datetime import date
@@ -80,6 +80,13 @@ def get_existing_findings_meta() -> list[dict]:
 def run_pipeline(args: argparse.Namespace) -> int:
     questions = load_questions()
     data = load_bandygrytan()
+
+    # Import new questions from GitHub Issues
+    if not args.dry_run and not args.id:
+        questions, n_imported = import_new_questions(questions)
+        if n_imported:
+            print(f"{n_imported} ny(a) fråga(or) importerade från GitHub Issues.")
+            save_questions(questions)
 
     # Filter
     open_qs = [q for q in questions if q.get("status") == "open"]

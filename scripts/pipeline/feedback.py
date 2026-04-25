@@ -1,14 +1,19 @@
 """
-Reads thumbs-up/thumbs-down feedback from GitHub Issues.
-Issues are tagged: "finding-feedback" label, title "Finding NNN: 👍" or "Finding NNN: 👎"
+Reads thumbs-up/thumbs-down feedback and new questions from GitHub Issues.
 
-Pipeline uses feedback to weight which analysis types to prioritise.
+Labels:
+  finding-feedback  — title "Finding NNN: 👍" or "Finding NNN: 👎"
+  new-question      — title is the question text, body (optional) is analysis_type hint
+
+Pipeline uses feedback to weight which analysis types to prioritise,
+and imports new-question issues into questions.yaml automatically.
 """
 
 import json
 import os
 import re
 import urllib.request
+import urllib.request as _ur
 from collections import defaultdict
 from pathlib import Path
 
@@ -16,15 +21,18 @@ REPO = "jacobstjarne-code/bandy-manager"
 CACHE_PATH = Path(__file__).parent / "feedback_cache.json"
 
 
-def _fetch_issues() -> list[dict]:
-    """Fetch issues labelled 'finding-feedback' via GitHub API."""
+def _gh_headers() -> dict:
     token = os.environ.get("GITHUB_TOKEN", "")
-    url = f"https://api.github.com/repos/{REPO}/issues?labels=finding-feedback&state=open&per_page=100"
-    req = urllib.request.Request(url, headers={
+    return {
         "Accept": "application/vnd.github+json",
         "User-Agent": "bandy-brain-pipeline",
         **({"Authorization": f"Bearer {token}"} if token else {}),
-    })
+    }
+
+
+def _fetch_issues(label: str) -> list[dict]:
+    url = f"https://api.github.com/repos/{REPO}/issues?labels={label}&state=open&per_page=100"
+    req = urllib.request.Request(url, headers=_gh_headers())
     try:
         with urllib.request.urlopen(req, timeout=10) as r:
             return json.loads(r.read())
@@ -32,7 +40,103 @@ def _fetch_issues() -> list[dict]:
         return []
 
 
-def load_feedback(use_cache: bool = True) -> dict:
+def _close_issue_with_comment(issue_number: int, comment: str) -> None:
+    """Add a comment and close the issue."""
+    token = os.environ.get("GITHUB_TOKEN", "")
+    if not token:
+        return
+    headers = {**_gh_headers(), "Content-Type": "application/json"}
+
+    # Post comment
+    comment_url = f"https://api.github.com/repos/{REPO}/issues/{issue_number}/comments"
+    comment_req = urllib.request.Request(
+        comment_url,
+        data=json.dumps({"body": comment}).encode(),
+        headers=headers,
+        method="POST",
+    )
+    try:
+        urllib.request.urlopen(comment_req, timeout=10)
+    except Exception:
+        pass
+
+    # Close issue
+    close_url = f"https://api.github.com/repos/{REPO}/issues/{issue_number}"
+    close_req = urllib.request.Request(
+        close_url,
+        data=json.dumps({"state": "closed"}).encode(),
+        headers=headers,
+        method="PATCH",
+    )
+    try:
+        urllib.request.urlopen(close_req, timeout=10)
+    except Exception:
+        pass
+
+
+def import_new_questions(questions: list[dict]) -> tuple[list[dict], int]:
+    """
+    Fetch open issues with label 'new-question', add them to questions list.
+    Closes each issue after import with a confirmation comment.
+    Returns (updated_questions, count_added).
+    """
+    issues = _fetch_issues("new-question")
+    existing_texts = {q["question"].strip().lower() for q in questions}
+    added = 0
+
+    for issue in issues:
+        title = issue.get("title", "").strip()
+        if not title or title.lower() in existing_texts:
+            _close_issue_with_comment(
+                issue["number"],
+                "Frågan finns redan i pipelinen — ingen ny rad skapad."
+            )
+            continue
+
+        new_q = {
+            "id": f"Q{len(questions) + 1:03d}",
+            "source_finding": "?",
+            "question": title,
+            "status": "open",
+            "analysis_type": _infer_type_from_text(title),
+            "params": {"series": "herr"},
+        }
+        questions.append(new_q)
+        existing_texts.add(title.lower())
+        added += 1
+
+        _close_issue_with_comment(
+            issue["number"],
+            f"Tillagd som {new_q['id']} i pipelinen. Besvaras vid nästa körning."
+        )
+
+    return questions, added
+
+
+def _infer_type_from_text(question: str) -> str:
+    q = question.lower()
+    if "halvtid" in q and ("storlek" in q or "1-0" in q or "2-0" in q):
+        return "ht_lead_by_size"
+    if "halvtid" in q and ("hemma" in q or "borta" in q):
+        return "ht_lead_home_away"
+    if "comeback" in q or "vändning" in q:
+        return "comeback_timing"
+    if "hörn" in q and ("hemma" in q or "borta" in q):
+        return "corner_home_away"
+    if "hörn" in q and ("dam" in q or "herr" in q):
+        return "corner_efficiency_comparison"
+    if ("dam" in q or "herr" in q) and ("minut" in q or "fördeln" in q):
+        return "time_distribution_comparison"
+    if "minut" in q and ("kluster" in q or "period" in q):
+        return "time_split"
+    if "slutspel" in q or "kvartsfinal" in q or "semifinal" in q:
+        return "goals_by_phase_detail"
+    if "jämn" in q or "marginal" in q or "ledning" in q:
+        return "goals_by_margin"
+    return "unknown"
+
+
+def load_feedback(use_cache: bool = True, label: str = "finding-feedback") -> dict:
     """
     Returns:
       {
@@ -44,7 +148,7 @@ def load_feedback(use_cache: bool = True) -> dict:
     if use_cache and CACHE_PATH.exists():
         return json.loads(CACHE_PATH.read_text())
 
-    issues = _fetch_issues()
+    issues = _fetch_issues(label)
     by_finding: dict[str, dict] = defaultdict(lambda: {"up": 0, "down": 0})
 
     for issue in issues:
