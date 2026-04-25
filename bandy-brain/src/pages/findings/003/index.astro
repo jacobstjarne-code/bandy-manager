@@ -1,0 +1,201 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 003 — Hemmafördelen i bandy"
+  description="Hemmalaget vinner 50,2% av Elitseriematcherna. Det är knappt över slumpen — och svagare än i nästan alla andra lagsporter. Varför är hemmafördelen så liten i bandy?"
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 003 · 25 april 2026</p>
+    <h1 class="finding-title">Hemmafördelen i bandy<br>är svagare än du tror</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>
+        Alla lagsporter har en hemmafördel. Lagen vinner mer hemma än borta —
+        det är dokumenterat i fotboll, ishockey, basket och handboll. Men
+        hur stor är hemmafördelen i bandy? Och är den lika stark som i
+        andra sporter, eller finns det något i bandys speciella karaktär
+        som dämpar den?
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>
+        Bandygrytans 1 124 Elitseriematcher (2019–2026) ger ett tydligt underlag.
+        Tre facts sammanfattar matchutfallet:
+      </p>
+      <ul>
+        <li>
+          <strong>Hemmaseger</strong> —
+          <a href={factHref("S004")} class="fact-ref">S004</a>
+          50,2% av matcherna vinns av hemmalaget.
+        </li>
+        <li>
+          <strong>Oavgjort</strong> —
+          <a href={factHref("S005")} class="fact-ref">S005</a>
+          11,6% slutar lika.
+        </li>
+        <li>
+          <strong>Bortaseger</strong> —
+          <a href={factHref("S006")} class="fact-ref">S006</a>
+          38,3% vinns av bortalaget.
+        </li>
+      </ul>
+      <p>
+        Målskillnaden berättar en liknande historia:
+        hemmalaget gör i snitt 4,88 mål
+        <a href={factHref("S002")} class="fact-ref">S002</a>
+        mot bortallagets 4,24
+        <a href={factHref("S003")} class="fact-ref">S003</a>
+        — en skillnad på 0,64 mål per match.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Sport</th>
+            <th>Hemmaseger-%</th>
+            <th>Källa</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Bandy Elitserien</strong></td>
+            <td><strong>50,2%</strong></td>
+            <td><a href={factHref("S004")} class="fact-ref">S004</a> Bandygrytan 2019–2026</td>
+          </tr>
+          <tr>
+            <td>Fotboll (Premier League)</td>
+            <td>~45%</td>
+            <td>Publicerade studier, post-covid</td>
+          </tr>
+          <tr>
+            <td>Ishockey (NHL)</td>
+            <td>~55%</td>
+            <td>NHL.com, säsongerna 2018–2024</td>
+          </tr>
+          <tr>
+            <td>Handboll (SHE)</td>
+            <td>~58%</td>
+            <td>Referensvärde</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        Bandys 50,2% är knappt över det neutrala värdet 50%. I ett system
+        med oavgjort som möjligt utfall är det mer rättvisande att jämföra
+        hemmalagets andel av <em>avgjorda</em> matcher: 50,2 / (50,2 + 38,3) = 56,7%.
+        Det är mer i linje med övriga sporter — men fortfarande i det lägre spannet.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+
+      <p>
+        En möjlig förklaring är att bandyplanen är stor — ofta 90×65 meter,
+        jämfört med fotbollsplanens 105×68 men på is. En större yta kan
+        dämpa hemmalagets press-fördel och ge bortalaget mer utrymme att
+        spela strukturerat.
+      </p>
+
+      <p>
+        En annan faktor är de flygande bytena. I fotboll är byten begränsade
+        och tidssatta — ett bortalag som sitter djupt kan hålla strukturen
+        utan att tröttna. I bandy kan båda lagen rotera fritt, vilket
+        minskar den konditionsmässiga fördel ett hemmalag annars kan bygga
+        upp sent i matcher.
+      </p>
+
+      <p>
+        Det är också möjligt att publiktrycket är lägre i snitt.
+        Elitserie-arenor har kapacitet för 200–3 000 åskådare —
+        de flesta matcher spelas inte inför fullsatta läktare.
+        Forskning på andra sporter pekar på att publikstorlek och
+        hemmaseger korrelerar.
+      </p>
+
+      <p>
+        Ingenting av ovanstående är verifierat i data — det är spekulativa
+        förklaringar till ett mätbart mönster. Mönstret i sig är dock tydligt:
+        bandy är en sport där bortalaget har realistiska vinstchanser
+        i varje match.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>
+          Jämförelsetalen för andra sporter är approximativa och gäller
+          specifika tävlingar och perioder — fotbollsdata post-2020 inkluderar
+          covid-perioden utan publik vilket sänkte hemmafördelen tillfälligt.
+        </li>
+        <li>
+          Elitserie-data inkluderar inte säsongens slutspelsmatcher separat —
+          det är möjligt att hemmafördelen är starkare i kval och slutspel.
+        </li>
+        <li>
+          Data är från 2019–2026. Äldre säsonger kan ha andra mönster.
+        </li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Är hemmafördelen starkare i slutspel än grundserie?</li>
+        <li>Skiljer sig hemmafördelen mellan starka och svaga hemmalag?</li>
+        <li>Korrelerar arenakapacitet (fylld vs halvfull) med hemmasegers-procent?</li>
+        <li>Vad händer med hemmafördelen om man kontrollerar för lagstyrka?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        {[
+          { id: 'S004', label: 'Hemmaseger-procent — 50,2%' },
+          { id: 'S005', label: 'Oavgjort-procent — 11,6%' },
+          { id: 'S006', label: 'Bortaseger-procent — 38,3%' },
+          { id: 'S002', label: 'Hemmamål per match — 4,88' },
+          { id: 'S003', label: 'Bortamål per match — 4,24' },
+        ].map((ref, i) => (
+          <>
+            {i > 0 && <span style="color: var(--color-border); margin: 0 4px">·</span>}
+            <a href={factHref(ref.id)} class="fact-ref">{ref.id}</a>
+            <span style="font-family: var(--font-ui); font-size: 0.8rem; color: var(--color-muted); margin-left: 4px">{ref.label}</span>
+          </>
+        ))}
+      </p>
+    </div>
+
+  </div>
+</Base>

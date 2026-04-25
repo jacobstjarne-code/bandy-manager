@@ -1,0 +1,179 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 002 — Hörnornas värde i bandy"
+  description="22,2% av alla mål i Elitserien kommer från hörnlägen. I fotboll är motsvarande siffra 4%. Den höga andelen förklarar varför hörnor är ett centralt taktiskt vapen i bandy."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 002 · 25 april 2026</p>
+    <h1 class="finding-title">Hörnor är fem gånger<br>mer värda i bandy än i fotboll</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>
+        Bandy har en regel som saknar direkt motsvarighet i fotboll: hörnan
+        slås in från sidan, bollen kan vara spelbar direkt, och det finns
+        ingen sexmetersgräns för försvarare. Det gör hörnan till något mer
+        än en dödbolls-situation — den är en genuin offensiv resurs. Men
+        hur mycket? Hur stor andel av målen i verklig Elitserie kommer
+        faktiskt från hörnlägen?
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>
+        Bandygrytans databas över 1 124 Elitseriematcher (2019–2026) innehåller
+        uppgifter om måltyp — bland annat om målet föregicks av en hörna.
+        Två facts är centrala:
+      </p>
+      <ul>
+        <li>
+          <strong>Hörnor per match</strong> —
+          <a href={factHref("S007")} class="fact-ref">S007</a>
+          17,72 hörnor spelas i snitt per match. Det är en hög frekvens
+          och bekräftar att hörnor är en löpande händelse, inte ett sällsynt inslag.
+        </li>
+        <li>
+          <strong>Hörnmålsprocent</strong> —
+          <a href={factHref("S008")} class="fact-ref">S008</a>
+          22,2% av alla mål i Elitserien kommer direkt eller indirekt från
+          ett hörnläge. Det innebär ungefär två hörnmål per match.
+        </li>
+      </ul>
+      <p>
+        Jämförelsetalet för fotboll är 3–5% beroende på tävling och
+        definition (direkta hörnmål, trycksituationer från hörna etc.).
+        Vi använder 4% som ett representativt referensvärde.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Sport</th>
+            <th>Hörnmålsprocent</th>
+            <th>Hörnor per match (snitt)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Bandy Elitserien</strong> <a href={factHref("S008")} class="fact-ref">S008</a></td>
+            <td><strong>22,2%</strong></td>
+            <td>17,72 <a href={factHref("S007")} class="fact-ref">S007</a></td>
+          </tr>
+          <tr>
+            <td>Fotboll (referens)</td>
+            <td>~4%</td>
+            <td>~10</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        Med 17,72 hörnor och 22,2% målprocent producerar en genomsnittsmatch
+        ungefär 3,9 mål från hörnlägen — av totalt 9,12 mål per match
+        <a href={factHref("S001")} class="fact-ref">S001</a>.
+        Det är fyra av tio mål.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+
+      <p>
+        Skillnaden mot fotboll är inte marginal — det är en faktor fem.
+        Förklaringen ligger sannolikt i regelskillnaderna: i bandy finns
+        ingen regel som begränsar var försvarare kan stå vid en hörna,
+        bollen kan slås hårt och direkt mot mål, och bandyspelares
+        slagsteknik gör det möjligt att variera leveransen på ett sätt
+        som är svårare att förutse än en insvingad fotbollshörna.
+      </p>
+
+      <p>
+        Det förklarar varför bandy-taktik investerar i hörnutövande på
+        ett sätt som saknar direkt motsvarighet i fotboll. En specialiserad
+        hörnaslagare är inte ett lyxval — det är rationellt givet att
+        hörnan producerar nästan var fjärde mål.
+      </p>
+
+      <p>
+        Det är också en av anledningarna till att Bandy Managers motor
+        behandlar hörnan som en separat interaktion snarare än ett
+        passivt standardläge: spelarens tekniska kapacitet och lagets
+        hörnstrategi påverkar faktiskt utfallet på ett mätbart sätt.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>
+          Definitionen av "hörnmål" i Bandygrytan är inte specificerad
+          i detalj — det är oklart om det inkluderar mål från direkta
+          returlägen efter en hörna som rensats.
+        </li>
+        <li>
+          Fotbolls-jämförelsen bygger på ett sammansatt referensvärde,
+          inte en enskild studie med identisk definition.
+        </li>
+        <li>
+          Data är från Herr-Elitserien. Damserie och lägre divisioner
+          kan ha andra fördelningar.
+        </li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Vilka lag har högst hörnmålsprocent — och korrelerar det med slutplacering?</li>
+        <li>Skiljer sig hörneffektiviteten hemma/borta?</li>
+        <li>Finns det säsongsmässig variation (tidig säsong vs slutspel)?</li>
+        <li>Hur hög är "indirekt hörnmål"-andelen — mål efter rensad hörna?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        {[
+          { id: 'S007', label: 'Hörnor per match — 17,72' },
+          { id: 'S008', label: 'Hörnmålsprocent — 22,2%' },
+          { id: 'S001', label: 'Mål per match — 9,12' },
+        ].map((ref, i) => (
+          <>
+            {i > 0 && <span style="color: var(--color-border); margin: 0 4px">·</span>}
+            <a href={factHref(ref.id)} class="fact-ref">{ref.id}</a>
+            <span style="font-family: var(--font-ui); font-size: 0.8rem; color: var(--color-muted); margin-left: 4px">{ref.label}</span>
+          </>
+        ))}
+      </p>
+    </div>
+
+  </div>
+</Base>

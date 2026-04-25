@@ -1,0 +1,193 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 004 — Bandy och mål"
+  description="9,12 mål per match gör bandy till en av de mest målrika lagsporterna med målvakt. Genomsnittlig målminut är 48,2 — nästan exakt halvtid. Vad berättar siffrorna om sportens karaktär?"
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 004 · 25 april 2026</p>
+    <h1 class="finding-title">9,12 mål per match —<br>bandy i ett målperspektiv</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>
+        Bandy är känt för att vara en målrik sport. Men hur målrik är den
+        egentligen — och vad säger målfördelningen om hur spelet är uppbyggt?
+        Faller mål jämnt över matchens 90 minuter, eller finns det
+        tydliga mönster i när mål görs?
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>
+        Bandygrytans 1 124 Elitseriematcher (2019–2026) ger fyra centrala mätvärden:
+      </p>
+      <ul>
+        <li>
+          <strong>Mål per match</strong> —
+          <a href={factHref("S001")} class="fact-ref">S001</a>
+          9,12 mål i snitt.
+        </li>
+        <li>
+          <strong>Mål i första halvlek</strong> —
+          <a href={factHref("S012")} class="fact-ref">S012</a>
+          4,19 mål per match i första halvlek.
+        </li>
+        <li>
+          <strong>Andel mål i andra halvlek</strong> —
+          <a href={factHref("S014")} class="fact-ref">S014</a>
+          54,2% av alla mål faller i andra halvlek, alltså ungefär 4,93 per match.
+        </li>
+        <li>
+          <strong>Genomsnittlig målminut</strong> —
+          <a href={factHref("S015")} class="fact-ref">S015</a>
+          48,2 — precis strax efter halvtid.
+        </li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Mätvärde</th>
+            <th>Bandy Elitserien</th>
+            <th>Jämförelse</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Mål per match</td>
+            <td><strong>9,12</strong> <a href={factHref("S001")} class="fact-ref">S001</a></td>
+            <td>Fotboll ~2,7 · Ishockey ~5,5</td>
+          </tr>
+          <tr>
+            <td>Mål 1:a halvlek</td>
+            <td><strong>4,19</strong> <a href={factHref("S012")} class="fact-ref">S012</a></td>
+            <td>45,8% av matchens mål</td>
+          </tr>
+          <tr>
+            <td>Mål 2:a halvlek</td>
+            <td><strong>4,93</strong> (beräknat)</td>
+            <td>54,2% av matchens mål <a href={factHref("S014")} class="fact-ref">S014</a></td>
+          </tr>
+          <tr>
+            <td>Genomsnittlig målminut</td>
+            <td><strong>48,2</strong> <a href={factHref("S015")} class="fact-ref">S015</a></td>
+            <td>Av 90 minuter total matchtid</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        Om mål vore jämnt fördelade över matchen vore den genomsnittliga
+        målminuten exakt 45 och andelen andra-halvleksmål exakt 50%.
+        Bandy är inte perfekt jämnt — andra halvleken är något tyngre —
+        men avvikelsen är liten. Målminuten 48,2 är nästintill neutral.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+
+      <p>
+        9,12 mål per match är en hög siffra för en sport med målvakt.
+        Fotboll producerar 2,7, ishockey runt 5,5 i NHL (och lägre i
+        europeisk hockey). Bandy är inte en sport där mål är sällsynta
+        händelser som avgör matcher ensamt — det är en sport där
+        målscoraren sker i ett konstant flöde, och enskilda mål väger
+        statistiskt lättare.
+      </p>
+
+      <p>
+        Det påverkar hur man läser ställningar. En 2–0-ledning i fotboll
+        är ett starkt signaltecken. I bandy, med 9 mål i snitt, är
+        2–0 efter 30 minuter ett normalt spelläge som inte är avgörande.
+        Det är en av anledningarna till att halvtidsledningsanalysen
+        <a href={`${base}/findings/001/`} style="font-family: var(--font-ui); font-size: 0.85rem;">Finding 001</a>
+        landar på 78% snarare än de 90%+ man kanske kan förvänta sig av en
+        sport med hög poängsättningshastighet.
+      </p>
+
+      <p>
+        Den nästan neutrala målminutfördelningen — 54/46 andra/första halvlek —
+        tyder på att spelet inte har en utpräglad "press-effekt" i slutminuterna
+        som i fotboll, där matchminuterna 80–90 är överrepresenterade.
+        Bandys fria byten och höga tempo innebär att lag inte "låser in"
+        en ledning på samma sätt.
+      </p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>
+          Jämförelsetalen för fotboll och ishockey är aggregerade referensvärden,
+          inte beräknade ur identiska datamängder.
+        </li>
+        <li>
+          "Genomsnittlig målminut" döljer den faktiska fördelningen —
+          det är möjligt att det finns kluster (t.ex. strax efter halvtid)
+          som inte syns i ett medelvärde.
+        </li>
+        <li>
+          Data inkluderar slutspelsmatcher. Slutspel kan ha andra mönster
+          (lägre målsnitt, tätare spel) än grundserie.
+        </li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Är målminuts-fördelningen faktiskt jämn, eller finns det kluster?</li>
+        <li>Skiljer sig grundserie mot slutspel i målsnitt?</li>
+        <li>Korrelerar högt målsnitt med jämnare matcher (fler byten av ledning)?</li>
+        <li>Hur ser målsnittet ut i andra bandyserier (dam, division 1)?</li>
+      </ul>
+    </div>
+
+    <div class="finding-sources-list">
+      <p style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; font-weight: 700; color: var(--color-muted);">
+        Källor i denna finding
+      </p>
+      <p>
+        {[
+          { id: 'S001', label: 'Mål per match — 9,12' },
+          { id: 'S012', label: 'Mål 1:a halvlek — 4,19' },
+          { id: 'S014', label: 'Andel mål 2:a halvlek — 54,2%' },
+          { id: 'S015', label: 'Genomsnittlig målminut — 48,2' },
+        ].map((ref, i) => (
+          <>
+            {i > 0 && <span style="color: var(--color-border); margin: 0 4px">·</span>}
+            <a href={factHref(ref.id)} class="fact-ref">{ref.id}</a>
+            <span style="font-family: var(--font-ui); font-size: 0.8rem; color: var(--color-muted); margin-left: 4px">{ref.label}</span>
+          </>
+        ))}
+      </p>
+    </div>
+
+  </div>
+</Base>
