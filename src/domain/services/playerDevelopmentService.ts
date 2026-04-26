@@ -349,6 +349,20 @@ export function applyRoundDevelopment(
   })
 }
 
+// Sprint 28-B: Flag active players in the managed club as legends if they
+// meet the career threshold. Called at season end so the flag is set before
+// the next season's matches begin. AI-club legends are seeded by worldGenerator.
+export function updateActiveLegendFlags(players: Player[], managedClubId: string): Player[] {
+  return players.map(p => {
+    if (p.clubId !== managedClubId) return p
+    const seasonsPlayed = p.careerStats?.seasonsPlayed ?? 0
+    const totalGames    = p.careerStats?.totalGames    ?? 0
+    const qualifies     = seasonsPlayed >= 5 && totalGames >= 100
+    if (qualifies === !!p.isClubLegend) return p
+    return { ...p, isClubLegend: qualifies }
+  })
+}
+
 export function shouldRetire(player: Player, rand: () => number): boolean {
   const age = player.age
   const baseAge = player.position === PlayerPosition.Goalkeeper ? 39 : 37

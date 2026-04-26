@@ -15,7 +15,7 @@ import {
   createYouthIntakeItem,
 } from '../../domain/services/inboxService'
 import { mulberry32 } from '../../domain/utils/random'
-import { shouldRetire } from '../../domain/services/playerDevelopmentService'
+import { shouldRetire, updateActiveLegendFlags } from '../../domain/services/playerDevelopmentService'
 import { generateRetirementData, generateFarewellQuote } from '../../domain/services/retirementService'
 import { generateYouthTeam, carryOverYouthTeam } from '../../domain/services/academyService'
 import { calculateKommunBidrag, generateNewPolitician } from '../../domain/services/politicianService'
@@ -621,6 +621,11 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       } as InboxItem)
     }
   }
+
+  // Sprint 28-B: Update isClubLegend flag for active managed-club players.
+  // AI-club legends are seeded once in worldGenerator — managed-club legends
+  // are computed dynamically each season end (≥5 seasons + ≥100 matches).
+  resetPlayers = updateActiveLegendFlags(resetPlayers, game.managedClubId) as typeof resetPlayers
 
   const activePlayers = resetPlayers
     .filter(p => !retiredPlayerIds.has(p.id))

@@ -707,6 +707,41 @@ export const commentary = {
     '🎵 {members} på läktaren. Ljudtopparna är där. Bottnarna är längre än vanligt.',
     '📯 Trumman går. Flaggorna går. Det går — men det knaggar i synkningen.',
   ],
+
+  // Sprint 28-B: Legend commentary
+  legend_goal: [
+    'Den där killen igen. {seasons} säsonger. Han har gjort det här tusen gånger.',
+    '{lastName} hittar nätet. Som han alltid gjort.',
+    '{minute}:e minuten — och det är {lastName}. Naturligtvis.',
+    'Klacken sjunger {lastName}s namn innan bollen ens lämnat klubban.',
+    'Tröjan är gammal. Skotten är nya. {lastName} är fortfarande {lastName}.',
+    'Han skulle ha slutat förra säsongen, sa de. {lastName} har annat på gång.',
+    '{totalGoals} mål för klubben nu. Han räknade aldrig själv.',
+    'Det är som att se ett gammalt fotografi röra sig. {lastName} skjuter, bollen går in.',
+    'Pensionärer i klacken minns hans första mål. Ungdomar lär sig av det här.',
+    'Nya nummer på tröjan, samma kille under. {lastName} igen.',
+    'Bortalaget visste vad som väntade. Det hjälpte inte. {lastName} hittade vägen.',
+    'En generation har gått sedan {lastName} kom till klubben. Han är fortfarande här.',
+  ],
+
+  legend_assist: [
+    '{lastName} ser passningen. Som han alltid sett dem.',
+    'En sån passning gör inte vem som helst. {lastName} gör dem i sömnen.',
+    'Han hade kunnat skjuta själv. {lastName} valde att ge bort den. Som vanligt.',
+    'Bollen kommer från ingenstans — fast vi vet att det var {lastName}. Det är alltid {lastName}.',
+  ],
+
+  legend_gk_save: [
+    '{lastName} står där. {seasons} säsonger på samma plats. Han vet vart bollen ska.',
+    'Räddning av {lastName}. Klacken har sett tusen sådana. De jublar ändå.',
+    'Den räddningen — den var av en spelare som varit här länge. {lastName} läser spelet.',
+  ],
+
+  legend_late: [
+    '{minute}:e minuten. Det är {lastName}. Det är så det ska vara.',
+    'En match att minnas. {lastName} avgör — som han gjort sedan han var ung.',
+    'Sista minuterna. {lastName} hittar utrymmet. Ingen är förvånad. Alla jublar ändå.',
+  ],
 }
 
 // Helper to fill in a template

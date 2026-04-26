@@ -157,6 +157,28 @@ function getSecondHalfMode(
 
 type RefStyle = 'strict' | 'lenient' | 'inconsistent'
 
+// Sprint 28-B: Pick a legend commentary string and fill template vars.
+// eventType: 'goal' | 'assist' | 'gk_save' | 'late_goal'
+function pickLegendCommentary(
+  player: import('../entities/Player').Player,
+  eventType: 'goal' | 'assist' | 'gk_save' | 'late_goal',
+  minute: number,
+  rand: () => number,
+): string {
+  const pool =
+    eventType === 'assist'   ? commentary.legend_assist   :
+    eventType === 'gk_save'  ? commentary.legend_gk_save  :
+    eventType === 'late_goal' ? commentary.legend_late     :
+    commentary.legend_goal
+  const template = pool[Math.floor(rand() * pool.length)]
+  return fillTemplate(template, {
+    lastName:   player.lastName,
+    seasons:    String(player.careerStats?.seasonsPlayed ?? '?'),
+    totalGoals: String(player.careerStats?.totalGoals    ?? '?'),
+    minute:     String(minute),
+  })
+}
+
 function pickRefStyle(rand: () => number): RefStyle {
   const r = rand()
   if (r < 0.33) return 'strict'
@@ -710,8 +732,9 @@ function* simulateMatchCore(
     let suspensionOccurred = false
     let cornerOccurred    = false
     let wasSituationalStep = false  // true only when a situational line was actually injected
-    let scorerPlayerId:   string | undefined
-    let gkPlayerId:       string | undefined
+    let scorerPlayerId:    string | undefined
+    let assisterPlayerId:  string | undefined
+    let gkPlayerId:        string | undefined
     let suspendedPlayerId: string | undefined
 
     // Interaction data (full mode only)
@@ -770,6 +793,7 @@ function* simulateMatchCore(
             const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Mål av ${scorer.firstName} ${scorer.lastName}` }
             stepEvents.push(ev); allEvents.push(ev)
             if (assister) {
+              assisterPlayerId = assister.id
               trackAssist(assister.id)
               const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, secondaryPlayerId: scorer.id, description: `Assist av ${assister.firstName} ${assister.lastName}` }
               stepEvents.push(ae); allEvents.push(ae)
@@ -833,6 +857,7 @@ function* simulateMatchCore(
             const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Omställningsmål av ${scorer.firstName} ${scorer.lastName}` }
             stepEvents.push(ev); allEvents.push(ev)
             if (assister) {
+              assisterPlayerId = assister.id
               trackAssist(assister.id)
               const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, secondaryPlayerId: scorer.id, description: `Assist av ${assister.firstName} ${assister.lastName}` }
               stepEvents.push(ae); allEvents.push(ae)
@@ -917,6 +942,7 @@ function* simulateMatchCore(
             const ev: MatchEvent = { minute, type: MatchEventType.Goal, clubId: attackingClubId, playerId: scorer.id, secondaryPlayerId: assister?.id, description: `Hörnmål av ${scorer.firstName} ${scorer.lastName}`, isCornerGoal: true }
             stepEvents.push(ev); allEvents.push(ev)
             if (assister) {
+              assisterPlayerId = assister.id
               trackAssist(assister.id)
               const ae: MatchEvent = { minute, type: MatchEventType.Assist, clubId: attackingClubId, playerId: assister.id, secondaryPlayerId: scorer.id, description: `Hörnassist av ${assister.firstName} ${assister.lastName}` }
               stepEvents.push(ae); allEvents.push(ae)
@@ -1114,7 +1140,22 @@ function* simulateMatchCore(
         commentaryText = cornerIntro + ' ' + goalText
       } else if (goalScored && scorerPlayerId) {
         templateVars = { ...templateVars, player: findPlayerName(scorerPlayerId) }
-        if (matchPhase === 'final' && rand() < 0.60) {
+        const scorerPlayer    = allPlayers.find(p => p.id === scorerPlayerId)
+        const scorerIsManaged = managedIsHome !== undefined ? (managedIsHome ? isHomeAttacking : !isHomeAttacking) : false
+        const scorerName      = findPlayerName(scorerPlayerId)
+        const currentMargin   = Math.abs(homeScore - awayScore)
+
+        // Sprint 28-B: Legend commentary — fires before all other pools (70% chance).
+        // Scorer legend takes precedence; fall through to assister legend if scorer isn't one.
+        if (scorerIsManaged && scorerPlayer?.isClubLegend && rand() < 0.70) {
+          const eventType = (minute >= 80 && currentMargin <= 1) ? 'late_goal' : 'goal'
+          commentaryText = pickLegendCommentary(scorerPlayer, eventType, minute, rand)
+        } else if (scorerIsManaged && assisterPlayerId && rand() < 0.70) {
+          const assisterPlayer = allPlayers.find(p => p.id === assisterPlayerId)
+          if (assisterPlayer?.isClubLegend) {
+            commentaryText = pickLegendCommentary(assisterPlayer, 'assist', minute, rand)
+          }
+        } else if (matchPhase === 'final' && rand() < 0.60) {
           commentaryText = fillTemplate(pickCommentary(commentary.final_goal, rand), templateVars)
         } else if (matchPhase === 'semifinal' && rand() < 0.50) {
           commentaryText = fillTemplate(pickCommentary(commentary.semifinal_goal, rand), templateVars)
@@ -1123,7 +1164,6 @@ function* simulateMatchCore(
           isDerbyStep = true
         } else if (input.storylines && rand() < 0.30) {
           const scorerStories = input.storylines.filter(s => s.playerId === scorerPlayerId)
-          const scorerName    = findPlayerName(scorerPlayerId)
           const storylineMap: Record<string, string> = {
             rescued_from_unemployment: `MÅL! ${scorerName} — mannen som nästan förlorade allt. Nu gör han säsongens viktigaste mål!`,
             went_fulltime_pro:         `MÅL! ${scorerName} har gått hela vägen från deltid till proffs — och levererar!`,
@@ -1140,10 +1180,6 @@ function* simulateMatchCore(
           }
         } else if (rand() < 0.40) {
           // Contextual commentary (THE BOMB 1.3)
-          const scorerPlayer   = allPlayers.find(p => p.id === scorerPlayerId)
-          const scorerIsManaged = managedIsHome ? isHomeAttacking : !isHomeAttacking
-          const scorerName     = findPlayerName(scorerPlayerId)
-          const currentMargin  = Math.abs(homeScore - awayScore)
           let contextual: string | null = null
 
           if (scorerIsManaged && scorerPlayer?.promotedFromAcademy && scorerPlayer.age <= 22) {
@@ -1195,7 +1231,14 @@ function* simulateMatchCore(
         }
       } else if (saveOccurred && gkPlayerId) {
         templateVars = { ...templateVars, goalkeeper: findPlayerName(gkPlayerId) }
-        commentaryText = fillTemplate(pickCommentary(commentary.save, rand), templateVars)
+        // Sprint 28-B: Legend GK save commentary (70% override)
+        const gkPlayer    = allPlayers.find(p => p.id === gkPlayerId)
+        const gkIsManaged = managedIsHome !== undefined ? (managedIsHome ? !isHomeAttacking : isHomeAttacking) : false
+        if (gkIsManaged && gkPlayer?.isClubLegend && rand() < 0.70) {
+          commentaryText = pickLegendCommentary(gkPlayer, 'gk_save', minute, rand)
+        } else {
+          commentaryText = fillTemplate(pickCommentary(commentary.save, rand), templateVars)
+        }
       } else if (suspensionOccurred && suspendedPlayerId) {
         templateVars = { ...templateVars, player: findPlayerName(suspendedPlayerId) }
         if (rivalry && rand() < 0.50) {
