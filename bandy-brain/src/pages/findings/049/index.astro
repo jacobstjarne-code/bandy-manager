@@ -1,0 +1,119 @@
+---
+import Base from '../../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 049 — Parametrisering av canScore-grindar och empirisk data inför takhöjning"
+  description="MATCH_TOTAL_GOAL_CAP och MATCH_GOAL_DIFFERENCE_CAP extraherades som namngivna konstanter. Empirisk Elitseriedata: 99:e percentilen är 17, max 25. Kalibreringstest avslöjar att attack-multiplier ensam inte räcker — takhöjning kräver global GOAL_RATE_MOD."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 049 · 26 april 2026</p>
+    <h1 class="finding-title">Parametrisering av canScore-grindar<br>och empirisk data inför takhöjning</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number"><span class="key-number__value">17</span><span class="key-number__label">99:e percentilen, Elitserien</span><span class="key-number__note">Empirisk data, 1 124 matcher grundserie herr</span></div>
+      <div class="key-number"><span class="key-number__value">25</span><span class="key-number__label">Högsta registrerade totalmål</span><span class="key-number__note">Förekommer 2 gånger i Bandygrytan-data</span></div>
+      <div class="key-number"><span class="key-number__value">11,9 %</span><span class="key-number__label">Matcher med marginal > 6</span><span class="key-number__note">MATCH_GOAL_DIFFERENCE_CAP = 6 är ett designval</span></div>
+      <div class="key-number"><span class="key-number__value">+0,46</span><span class="key-number__label">Mål/match-ökning vid cap=17</span><span class="key-number__note">9,29 → 9,75 — kräver global GOAL_RATE_MOD för att kompensera</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Bakgrund</p>
+      <p>Finding 047 identifierade att 23,7 % av simulerade matcher fastnar vid totalmålet 13 mot verklighetens 5,0 %. Motorns <code>canScore()</code>-funktion innehöll två hårdkodade magic numbers: <code>13</code> som total-tak och <code>6</code> som marginalbegränsning. Ingen kommentar förklarade varför dessa värden valdes.</p>
+      <p>Motor v1.1.1 extraherar dessa till namngivna konstanter med dokumentation — ingen beteendeförändring. Motor v1.2.0 höjer <code>MATCH_TOTAL_GOAL_CAP</code> baserat på data från detta finding.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Empirisk data: Elitseriens totalmålsfördelning</p>
+      <table>
+        <thead>
+          <tr><th>Gräns</th><th>Matcher ≥ gränsen</th><th>Andel (%)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>≥ 13</td><td>160</td><td>14,2 %</td></tr>
+          <tr><td>≥ 14</td><td>104</td><td>9,3 %</td></tr>
+          <tr><td>≥ 15</td><td>61</td><td>5,4 %</td></tr>
+          <tr><td>≥ 16</td><td>37</td><td>3,3 %</td></tr>
+          <tr><td>≥ 17</td><td>23</td><td>2,0 %</td></tr>
+          <tr><td>≥ 18</td><td>10</td><td>0,9 %</td></tr>
+          <tr><td>≥ 20</td><td>5</td><td>0,4 %</td></tr>
+        </tbody>
+      </table>
+      <p>95:e percentilen: 15 mål. 99:e percentilen: 17 mål. Maximum i datat: 25 mål. Det innebär att <code>MATCH_TOTAL_GOAL_CAP = 17</code> täcker 98,0 % av verkliga Elitseriematcher — inte 99 % som togs för givet utan data.</p>
+      <p>För <code>MATCH_GOAL_DIFFERENCE_CAP = 6</code>: 11,9 % av verkliga matcher har marginal > 6. Verklighetens 95:e percentil är 9 och maximum är 17. Nuvarande cap=6 är ett designval, inte ett empiriskt kalibreringsvärde. Det utesluter en väsentlig del av verkliga utfall.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Kalibrerings-discovery: attack-multiplier räcker inte</p>
+      <p>Under förberedelse av v1.2.0 testades cap=17 med attack-multiplikatorn justerad från 1,05 till 0,983. Förväntat utfall: 9,12 mål/match. Faktiskt utfall: 9,50 mål/match.</p>
+      <p>Orsaken: motorns mål genereras via fyra separata vägar, var och en med egna hårdkodade konstanter:</p>
+      <ul>
+        <li><strong>Attack</strong> (attack-sekvenser): använder scoring multiplier — påverkas av justering</li>
+        <li><strong>Transition</strong> (kontrar): hardcoded 0,58 — påverkas <em>inte</em></li>
+        <li><strong>Corner</strong> (hörn): hardcoded cornerBase=0,105 — påverkas <em>inte</em></li>
+        <li><strong>Freekick</strong> (frislag/halvchans): hardcoded 0,63 — påverkas <em>inte</em></li>
+        <li><strong>Penalty</strong> (straff): penProb=0,19 (kalibrerad i v1.1.0) — påverkas <em>inte</em></li>
+      </ul>
+      <p>Attack-vägens andel av alla mål är uppskattningsvis 50 %. En 6,4 % reduktion av attack-multiplier ger därför bara ~3 % reduktion av totalmål — långt ifrån tillräckligt för att kompensera +0,46 mål/match från cap-höjningen.</p>
+      <p>Motor v1.2.0 introducerar <code>GOAL_RATE_MOD</code> — en global konstant som multipliceras in i <em>alla</em> måltrösklar proportionellt. Den rätta kalibrerade nivån beräknas empiriskt: kör stress-test med cap=17 och <code>GOAL_RATE_MOD=1.0</code>, mät faktisk snitt, justera <code>GOAL_RATE_MOD = 9.12 / faktisk_snitt</code>.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad v1.1.1 ändrar</p>
+      <p>Extraherade konstanter med kommentarer (ingen beteendeförändring):</p>
+      <pre><code>// Två oberoende grindar i canScore(): båda måste vara uppfyllda
+// för att en målscen ska kunna konvertera.
+//
+// MATCH_TOTAL_GOAL_CAP — empirisk gräns. 99:e percentilen i Elitserien
+// herr (1 124 matcher) är 17 totalmål. Höjs i motor v1.2.0 baserat på data.
+//
+// MATCH_GOAL_DIFFERENCE_CAP — designval. Förhindrar matcher med
+// målskillnad > 6. Verkliga Elitseriematcher har >6 i marginal i 11,9 %
+// av fallen. Bör testas via playtest.
+const MATCH_TOTAL_GOAL_CAP    = 13   // höjs i v1.2.0
+const MATCH_GOAL_DIFFERENCE_CAP = 6  // designval, se kommentar</code></pre>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Vilken GOAL_RATE_MOD-nivå ger 9,12 mål/match med cap=17? (empirisk fråga, besvaras i v1.2.0)</li>
+        <li>Bör MATCH_GOAL_DIFFERENCE_CAP höjas till 8 eller 9 för att spegla verklighetens 95:e percentil?</li>
+        <li>Hur påverkar en global GOAL_RATE_MOD kalibreringen av de enskilda vägarna — tål corner, transition och freekick proportionell nedskalning?</li>
+        <li>Finding 047 noterade att hemmaseger är 4 pp under målvärdet — kvarstår detta gap efter GOAL_RATE_MOD-kalibreringen i v1.2.0?</li>
+      </ul>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+049:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+049:+%F0%9F%91%8E&body=Vad+st%C3%A4mmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

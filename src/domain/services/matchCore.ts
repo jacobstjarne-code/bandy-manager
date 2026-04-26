@@ -1,5 +1,19 @@
 // matchCore.ts — Unified match simulation engine
-export const MATCH_ENGINE_VERSION = '1.1.0'
+export const MATCH_ENGINE_VERSION = '1.1.1'
+
+// Två oberoende grindar i canScore(): båda måste vara uppfyllda
+// för att en målscen ska kunna konvertera.
+//
+// MATCH_TOTAL_GOAL_CAP — empirisk gräns. 99:e percentilen i Elitserien
+// herr (1 124 matcher) är 17 totalmål. Sätts något under 99:e percentilen
+// som kompromiss för spelupplevelse. Höjs i motor v1.2.0 baserat på data.
+//
+// MATCH_GOAL_DIFFERENCE_CAP — designval. Förhindrar att spelet producerar
+// matcher med målskillnad > 6, vilket bedöms försämra spelupplevelse i
+// Bandy Manager. Verkliga Elitseriematcher har >6 i marginal i 11,9 %
+// av fallen — detta är ett medvetet avkall. Bör testas via playtest.
+const MATCH_TOTAL_GOAL_CAP    = 13  // v1.1.1: oförändrat, höjs i v1.2.0
+const MATCH_GOAL_DIFFERENCE_CAP = 6  // designval, se kommentar ovan
 
 // Bumpa vid varje förändring som påverkar simuleringsutfall.
 // Schema-kompatibla ändringar (utan utfallspåverkan) bumpar patch.
@@ -348,11 +362,10 @@ function* simulateMatchCore(
     openingWeatherNote = `${tempStr} i ${weather.region}. ${getConditionLabel(weather.condition)}. ${getIceQualityLabel(weather.iceQuality)}.`
   }
 
-  // Hard cap helper (from matchEngine)
   const canScore = (attackingHome: boolean, hs: number, as_: number): boolean => {
-    if (hs + as_ >= 13) return false
+    if (hs + as_ >= MATCH_TOTAL_GOAL_CAP) return false
     const newDiff = attackingHome ? hs + 1 - as_ : as_ + 1 - hs
-    return Math.abs(newDiff) <= 6
+    return Math.abs(newDiff) <= MATCH_GOAL_DIFFERENCE_CAP
   }
 
   // Match state — seeded from SecondHalfInput if provided
@@ -784,7 +797,8 @@ function* simulateMatchCore(
         if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
 
         const shotResult   = rand()
-        // matchEngine-calibrated multiplier (1.05, was 0.45 in matchStepByStep)
+        // matchEngine-calibrated multiplier (1.05, was 0.45 in matchStepByStep).
+        // Justeras i v1.2.0 när MATCH_TOTAL_GOAL_CAP höjs.
         const goalThreshold = chanceQuality * 1.05 * (1 - defGK * 0.35) * stepGoalMod
 
         if (shotResult < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {
