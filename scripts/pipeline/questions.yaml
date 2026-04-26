@@ -1566,13 +1566,57 @@
   analysis_type: corner_by_team
   params:
     series: herr
-
 - id: Q196
   source_finding: '?'
-  question: "Sjunker hörnmålsandelen progressivt från grundserie mot final — och vad\
-    \ kan förklara det?"
+  question: Sjunker hörnmålsandelen progressivt från grundserie mot final — och vad
+    kan förklara det?
+  status: answered
+  analysis_type: goals_by_phase_detail
+  params:
+    phases:
+    - regular
+    - quarterfinal
+    - semifinal
+    - final
+    include_corner_pct: true
+  answered_by: '046'
+- id: Q197
+  source_finding: '046'
+  question: Minskar antalet beviljade hörnor per match i slutspelet, eller är det
+    konverteringsgraden som faller?
   status: open
   analysis_type: goals_by_phase_detail
   params:
-    phases: [regular, quarterfinal, semifinal, final]
-    include_corner_pct: true
+    series: herr
+- id: Q198
+  source_finding: '046'
+  question: Skiljer sig hörnmålsandelens förändring åt beroende på om matchen avgörs
+    i ordinarie tid, förlängning eller straffar?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q199
+  source_finding: '046'
+  question: Finns det enskilda lag som konsekvent producerar hög hörnmålsandel även
+    i finaler, och vad karaktäriserar deras spelsystem?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q200
+  source_finding: '046'
+  question: Korrelerar låg hörnmålsandel med hög hållningstid på boll, och i så fall
+    i vilken riktning löper kausaliteten?
+  status: open
+  analysis_type: corner_by_team
+  params:
+    series: herr
+- id: Q201
+  source_finding: '046'
+  question: Ser vi samma progressiva minskning om vi bryter ned data per säsong snarare
+    än aggregerat?
+  status: open
+  analysis_type: unknown
+  params:
+    series: herr

@@ -1,0 +1,101 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { factHref } from '../../../lib/facts';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 046 — Hörnmålsandelen faller stadigt mot final"
+  description="I grundserien görs 22,2 % av målen på hörna. I finaler är andelen 16,7 %. Trenden är konsekvent i alla fyra faser."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 046 · 26 april 2026</p>
+    <h1 class="finding-title">Hörnmålsandelen faller stadigt mot final<br>från 22,2 % till 16,7 %</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+          <div class="key-number"><span class="key-number__value">22,2 %</span><span class="key-number__label">Grundserie hörnmålsandel</span><span class="key-number__note">Baserat på 2 279 hörnmål av 10 253 totalt</span></div>
+          <div class="key-number"><span class="key-number__value">16,7 %</span><span class="key-number__label">Final hörnmålsandel</span><span class="key-number__note">Baserat på 14 hörnmål av 84 totalt — litet urval</span></div>
+          <div class="key-number"><span class="key-number__value">−25 %</span><span class="key-number__label">Relativ minskning</span><span class="key-number__note">Från grundserie till final i relativa termer</span></div>
+          <div class="key-number"><span class="key-number__value">7,00</span><span class="key-number__label">Snittmål final</span><span class="key-number__note">Lägst av alla faser, jämfört med 9,12 i grundserien</span></div>
+          <div class="key-number"><span class="key-number__value">5,5 pp</span><span class="key-number__label">Absolut skillnad</span><span class="key-number__note">Procentenheter från grundserie till final</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Vi undrade om hörnmålsandelen — andelen mål som tillkommer direkt eller indirekt från hörnor — sjunker progressivt när spelformen skiftar från grundserie till slutspelsfinal, och i så fall vad som kan förklara en sådan rörelse.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      Analysen bygger på matchdata från fyra tävlingsfaser i svensk elitbandy: grundserie, kvartsfinaler, semifinaler och finaler. Totalt ingår 1 242 matcher och 11 255 mål. För varje fas har vi hörnmål, totala mål och hörnmålsandel i procent.<ul><li>Grundserie: 1 124 matcher, 10 253 mål, 2 279 hörnmål</li><li>Kvartsfinaler: 68 matcher, 599 mål, 120 hörnmål</li><li>Semifinaler: 38 matcher, 319 mål, 60 hörnmål</li><li>Finaler: 12 matcher, 84 mål, 14 hörnmål</li></ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      Hörnmålsandelen sjunker i varje övergång från en fas till nästa, utan undantag. Samtliga siffror redovisas nedan.<table><thead><tr><th>Fas</th><th>Totala mål</th><th>Hörnmål</th><th>Hörnmålsandel</th><th>Snittmål/match</th></tr></thead><tbody><tr><td>Grundserie</td><td>10 253</td><td>2 279</td><td>22,2 %</td><td>9,12</td></tr><tr><td>Kvartsfinaler</td><td>599</td><td>120</td><td>20,0 %</td><td>8,81</td></tr><tr><td>Semifinaler</td><td>319</td><td>60</td><td>18,8 %</td><td>8,39</td></tr><tr><td>Finaler</td><td>84</td><td>14</td><td>16,7 %</td><td>7,00</td></tr></tbody></table>Från grundserie till final minskar hörnmålsandelen med 5,5 procentenheter, vilket motsvarar en relativ minskning på 25 %. Parallellt sjunker snittmålen per match från 9,12 till 7,00.
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p>Den monotona nedgången i hörnmålsandel sammanfaller med en generell målfattigdom ju längre in i slutspelet lagen befinner sig. Dessa två rörelser är sannolikt kopplade: färre mål totalt kan delvis förklaras av att defensivt orienterat spel tränger undan just de situationer — hörnor, omspel i anfallszon — som producerar hörnmålstillfällen.</p>
+      <p>En möjlig mekanism är att slutspelslag, med mer att förlora, prioriterar defensiv stabilitet framför aggressivt anfallsspel längs sidlinjerna. Hörnor uppstår typiskt när försvaret tvingas pressa ut bollen — om anfallsspelet är mer kontrollerat och centralt minskar antalet hörnlägen och därmed hörnmålens andel av totalen.</p>
+      <p>Det är också värt att notera att finalmatcherna är ett litet urval — 12 matcher och 84 mål. Den uppmätta andelen 16,7 % bygger på bara 14 hörnmål, vilket innebär att slumpvariationen är hög i det segmentet. Trenden från grundserie via kvarts- och semifinal är däremot baserad på tillräckligt stora volymer för att inte enkelt avfärdas som brus.</p>
+      <p>En alternativ förklaring är selektionseffekten: de lag som tar sig till final är generellt sett de bäst organiserade defensivt, och mötet mellan två sådana lag producerar naturligen färre situationer av den typ som leder till hörna och hörnmål. Grundseriematchar inkluderar fler ojämna möten där det svagare laget tvingas försvara djupt och det starkare laget trycker in bollen från alla vinklar.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Finalsamplet är litet — 12 matcher och 14 hörnmål — vilket ger hög statistisk osäkerhet för just den fasen.</li>
+        <li>Definitionen av 'hörnmål' (direkt, indirekt eller efter omspel) är inte explicit angiven och kan variera i källdata.</li>
+        <li>Vi saknar data om antalet hörnor per match, vilket omöjliggör analys av konverteringsgrad separat från frekvens.</li>
+        <li>Matcherna sträcker sig troligen över flera säsonger; taktiktrender över tid fångas inte upp i aggregerade fasdata.</li>
+        <li>Urvalet av lag i slutspel är inte slumpmässigt — starkare lag är överrepresenterade i senare faser.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Minskar antalet beviljade hörnor per match i slutspelet, eller är det konverteringsgraden som faller?</li>
+        <li>Skiljer sig hörnmålsandelens förändring åt beroende på om matchen avgörs i ordinarie tid, förlängning eller straffar?</li>
+        <li>Finns det enskilda lag som konsekvent producerar hög hörnmålsandel även i finaler, och vad karaktäriserar deras spelsystem?</li>
+        <li>Korrelerar låg hörnmålsandel med hög hållningstid på boll, och i så fall i vilken riktning löper kausaliteten?</li>
+        <li>Ser vi samma progressiva minskning om vi bryter ned data per säsong snarare än aggregerat?</li>
+      </ul>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+046:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+046:+%F0%9F%91%8E&body=Vad+stämmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>
