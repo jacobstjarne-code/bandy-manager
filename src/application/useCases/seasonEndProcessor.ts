@@ -385,6 +385,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
   const retirementRand = mulberry32(baseSeed + 99991)
   const retiredPlayerIds = new Set<string>()
   const retirementMessages: InboxItem[] = []
+  let nextCaptainPlayerId: string | undefined = game.captainPlayerId
 
   let resetPlayers = allPlayers.map(player => ({
     ...player,
@@ -532,6 +533,60 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
           },
         ],
       } as GameEvent)
+    }
+  }
+
+  // ── 28-A: Pension-impact på morale + kapten-vakuum ───────────────────────
+  for (const pid of retiredPlayerIds) {
+    const player = resetPlayers.find(p => p.id === pid)
+    if (!player || player.clubId !== game.managedClubId) continue
+    const seasonsInClub = player.careerStats?.seasonsPlayed ?? 0
+    const wasCaptain = player.id === game.captainPlayerId
+    const wasLongtime = seasonsInClub >= 3
+
+    if (wasCaptain) nextCaptainPlayerId = undefined
+
+    if (!wasCaptain && !wasLongtime) continue
+
+    const playerSeasonSet = new Set(
+      (player.seasonHistory ?? [])
+        .filter(h => h.clubId === game.managedClubId)
+        .map(h => h.season),
+    )
+
+    let affectedCount = 0
+    resetPlayers = resetPlayers.map(tm => {
+      if (tm.id === pid || retiredPlayerIds.has(tm.id)) return tm
+      if (tm.clubId !== game.managedClubId) return tm
+      const sharedSeasons = (tm.seasonHistory ?? [])
+        .filter(h => h.clubId === game.managedClubId && playerSeasonSet.has(h.season))
+        .length
+      if (sharedSeasons < 2) return tm
+      affectedCount++
+      const moraleHit = wasCaptain
+        ? Math.min(15, 5 + sharedSeasons * 2)
+        : Math.min(10, 3 + sharedSeasons)
+      return { ...tm, morale: Math.max(0, tm.morale - moraleHit) }
+    })
+
+    const playerName = `${player.firstName} ${player.lastName}`
+    let moraleBody: string | null = null
+    if (wasCaptain && affectedCount >= 3) {
+      moraleBody = `Omklädningsrummet är tystare än vanligt. Halva truppen spelade med ${playerName} i ${seasonsInClub} år. Det märks i morgonens träning.`
+    } else if (wasCaptain && affectedCount > 0) {
+      moraleBody = `De som var nya när ${playerName} ledde laget pratar inte mycket om det. De som var där länge säger inget alls.`
+    } else if (!wasCaptain && affectedCount > 0) {
+      moraleBody = `${playerName} var inte kapten. Men han var ${player.lastName}. Det är skillnad. Det märks nu när han inte är där.`
+    }
+    if (moraleBody) {
+      retirementMessages.push({
+        id: `inbox_morale_impact_${pid}_${nextSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.BoardFeedback,
+        title: `Truppen saknar ${player.lastName}`,
+        body: moraleBody,
+        isRead: false,
+      } as InboxItem)
     }
   }
 
@@ -1007,6 +1062,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
 
   const updatedGame: SaveGame = {
     ...game,
+    captainPlayerId: nextCaptainPlayerId,
     currentSeason: nextSeason,
     currentDate: `${nextSeason}-10-01`,
     clubs: clubsAfterLicense,
