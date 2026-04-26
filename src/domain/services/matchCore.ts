@@ -1,4 +1,10 @@
 // matchCore.ts — Unified match simulation engine
+export const MATCH_ENGINE_VERSION = '1.1.0'
+
+// Bumpa vid varje förändring som påverkar simuleringsutfall.
+// Schema-kompatibla ändringar (utan utfallspåverkan) bumpar patch.
+// Mekaniska förändringar bumpar minor. Kalibreringsförändringar bumpar major.
+export const ENGINE_VERSION = '1.0.0'
 // PENALTY_CAUSE_COMMENTARY — shown as step commentary when interactive penalty is triggered
 const PENALTY_CAUSE_COMMENTARY: Array<(attacker: string) => string> = [
   (a) => `Straff! ${a} fälls i straffområdet — domaren tvekar inte.`,
@@ -752,14 +758,14 @@ function* simulateMatchCore(
       const chanceQuality = clamp(base * 1.2 + 0.15 + 0.15 + derbyChanceMult, 0.05, 0.95)
 
       // Standalone penalty trigger — fires before shot resolution for high-quality chances.
-      // Base 0.13 calibrated for ~5.4% penaltyGoalPct (SCORELINE_REFERENCE.md §1.3).
+      // Base 0.19 calibrated for ~5.4% penaltyGoalPct (finding:047 — 0.13 gav 3.6%, skalat 1.46x).
       // Spec sanity check assumed 150 steps; engine runs 60 → 10x correction over spec's 0.012.
       // Period and scoreline mods applied per bandygrytan distribution.
       // Flag skips normal shot resolution for this step (penalty replaces shot).
       let penaltyFiredThisStep = false
       if (chanceQuality > 0.40) {
         const scoreDiff = isHomeAttacking ? homeScore - awayScore : awayScore - homeScore
-        const penProb = 0.13 * getPenaltyPeriodMod(minute) * getScorelinePenaltyMod(scoreDiff)
+        const penProb = 0.19 * getPenaltyPeriodMod(minute) * getScorelinePenaltyMod(scoreDiff)
         if (rand() < penProb) {
           const result = resolvePenaltyTrigger(attackingStarters, defendingStarters, isHomeAttacking, minute, attackingClubId, homeScore, awayScore)
           for (const ev of result.events) { stepEvents.push(ev); allEvents.push(ev) }

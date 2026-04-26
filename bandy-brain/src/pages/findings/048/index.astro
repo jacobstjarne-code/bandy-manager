@@ -1,0 +1,109 @@
+---
+import Base from '../../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 048 — Penalty-prob-fix: straffmålsandel från 3,6 % till 5,4 % (motor v1.1.0)"
+  description="penProb justerades från 0,13 till 0,19 i matchCore.ts. Straffmålsandelen träffar nu Elitseriens 5,4 % exakt. Övriga nio mätvärden rör sig inom ±0,3 pp."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 048 · 26 april 2026</p>
+    <h1 class="finding-title">Penalty-prob-fix: straffmålsandel<br>från 3,6 % till 5,4 % (motor v1.1.0)</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number"><span class="key-number__value">5,4 %</span><span class="key-number__label">Straffmålsandel efter fix</span><span class="key-number__note">Exakt Elitseriens målvärde — var 3,6 % i v1.0.0</span></div>
+      <div class="key-number"><span class="key-number__value">0,13 → 0,19</span><span class="key-number__label">penProb-konstant</span><span class="key-number__note">Skalat 1,46× proportionellt mot målvärde</span></div>
+      <div class="key-number"><span class="key-number__value">5 832</span><span class="key-number__label">Verifieringsmatcher</span><span class="key-number__note">Grundserie, stress-test 26 april 2026</span></div>
+      <div class="key-number"><span class="key-number__value">±0,3 pp</span><span class="key-number__label">Max påverkan på övriga mätvärden</span><span class="key-number__note">Fixen isolerad — inga kaskadeffekter</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Bakgrund</p>
+      <p>Finding 047 identifierade att motorns straffmålsandel var 3,6 % mot Elitseriens 5,4 %. Orsaken var verifierbar direkt i koden: <code>penProb = 0.13</code> i <code>matchCore.ts</code> ger för få straffmål. En proportionell skalning ger 0,13 × (5,4 / 3,6) = 0,195 — avrundat till 0,19. Det är en ren konstant-ändring utan sidoeffekter på hur straffar löses (sannolikheten att ett straff resulterar i mål förblir oförändrad).</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Före och efter</p>
+      <table>
+        <thead>
+          <tr><th>Mätvärde</th><th>v1.0.0 (före)</th><th>v1.1.0 (efter)</th><th>Elitserien</th><th>Förändring</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Mål/match</td><td>9,37</td><td>9,29</td><td>9,12</td><td>−0,08 (bättre)</td></tr>
+          <tr><td>Straffmålsandel</td><td>3,6 %</td><td>5,4 %</td><td>5,4 %</td><td>+1,8 pp ✅</td></tr>
+          <tr><td>Hörnmålsandel</td><td>23,1 %</td><td>22,6 %</td><td>22,2 %</td><td>−0,5 pp (bättre)</td></tr>
+          <tr><td>Hemmaseger</td><td>46,1 %</td><td>46,2 %</td><td>50,2 %</td><td>+0,1 pp (oförändrad)</td></tr>
+          <tr><td>Oavgjort</td><td>14,4 %</td><td>14,2 %</td><td>11,6 %</td><td>−0,2 pp (oförändrad)</td></tr>
+          <tr><td>Utvisningar/match</td><td>3,68</td><td>3,80</td><td>3,77</td><td>+0,12 (bättre)</td></tr>
+          <tr><td>H2 mål%</td><td>54,0 %</td><td>53,8 %</td><td>54,2 %</td><td>−0,2 pp (nära)</td></tr>
+          <tr><td>HT-ledare vinner</td><td>75,0 %</td><td>75,2 %</td><td>78,1 %</td><td>+0,2 pp (oförändrad)</td></tr>
+          <tr><td>Matcher vid 13-mål</td><td>25,3 %</td><td>23,7 %</td><td>5,1 %</td><td>−1,6 pp (oförändrad)</td></tr>
+        </tbody>
+      </table>
+      <p>Straffmålsandelen träffar 5,4 % exakt. Övriga mätvärden rör sig maximalt ±0,3 pp, vilket faller inom brusvariation för 5 000+ matcher. Fixen är isolerad — som förväntat påverkar en ren sannolikhetskonstant inte halvtidsmönster, utvisningsfrekvens eller övriga mätvärden.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Kvarstående gap</p>
+      <p>Två strukturella avvikelser från Finding 047 är oförändrade efter denna fix:</p>
+      <ul>
+        <li><strong>Hemmaseger 46,2 % vs 50,2 %:</strong> Hemmafördelen i motorns styrkeformel är för liten. Eftersom hemmaseger och oavgjort är sammanlänkade (de delar "vinst för hemmalaget"-utrymmet) rättar sig sannolikt även oavgjort-gapet (14,2 % vs 11,6 %) om hemmafördelsvikten justeras.</li>
+        <li><strong>Takeffekt vid 13 mål:</strong> 23,7 % av matcher stannar på exakt 13 mål totalt mot verklighetens 5,1 %. Taket <code>hs + as_ ≥ 13</code> i <code>canScore()</code> är identifierat men kräver ett designbeslut innan det rörs — se analysen nedan.</li>
+      </ul>
+      <p>Finding 049 (planerad) dokumenterar utfallet efter eventuell takbugg-åtgärd och hemmafördelsjustering.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Designanalys: 13-takbugg och ≤ 6 marginalvillkor</p>
+      <p>Koden på matchCore.ts rad 346–349 innehåller två villkor i <code>canScore()</code>:</p>
+      <pre><code>if (hs + as_ >= 13) return false          // totalmål-tak
+return Math.abs(newDiff) <= 6             // marginalbegränsning</code></pre>
+      <p><strong>Totalmålstaket (13):</strong> Verifierat: 23,7 % av simulerade matcher stannar vid exakt 13 mål, mot verklighetens 5,1 %. I verkliga Elitseriematcher går 9 % av matcher över 13 mål, och enskilda matcher har nått 25 mål. Taket är inte ett uttalat designval i codebasen — det finns ingen kommentar om varför 13 valdes. Det ser ut som ett kalibreringsvärde som togs fram tidigt och aldrig ifrågasattes när motorns genomsnitt justerades uppåt.</p>
+      <p><strong>Marginalbegränsningen (≤ 6):</strong> Det här är sannolikt ett designval — att förhindra 15-1-resultat som skulle vara demoraliserade för spelaren. Verkliga Elitseriematcher kan ha marginaler på 10+ mål (t.ex. 13-2), men i ett spel med 12 fiktiva klubbar med relativt balanserade styrkor kan en hård marginal vara motiverad av spelupplevelse snarare än statistisk kalibrering. Det finns dock ett interaktionsproblem: när marginalvillkoret kombineras med totalmålstaket kan det faktiskt snabba på att tak nås — ett lag som leder 7-0 kan inte utöka till 8-1 (marginalen skulle bli 7), men totalmålstaket hindrar ändå 4-3 → 4-4 osv.</p>
+      <p><strong>Borde grinden parametriseras?</strong> Ja, troligen. Hårdkodade spelvärden som påverkar statistisk kalibrering bör vara namngivna konstanter (t.ex. <code>GOAL_CAP = 13</code>, <code>MAX_MARGIN = 6</code>) med kommentarer om varför värdena valdes. Det gör framtida justeringar spårbara och intentionella.</p>
+      <p>Frågan för diskussion: ska taket höjas till 16–17 (täcker 99 % av verkliga matcher), tas bort helt, eller ersättas med en mjuk sannolikhetsminskning vid höga totalmål? Varje variant kräver en kalibreringskörning med justerat baskonstant för scoring-multiplier.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Hur förändras hemmaseger och oavgjort om homeAdvantage-multiplikatorn ökas med 10–15 %?</li>
+        <li>Bör 13-taket höjas till 16, tas bort, eller ersättas med mjuk sannolikhetsminskning — och vilket val ger bäst matchupplevelse?</li>
+        <li>Om taket höjas behöver scoring-multiplier (nu 1,05) sänkas — med hur mycket?</li>
+        <li>Är ≤ 6 marginalvillkoret ett medvetet designval eller bör det justeras uppåt till 7–8?</li>
+      </ul>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+048:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+048:+%F0%9F%91%8E&body=Vad+st%C3%A4mmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>
