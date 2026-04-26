@@ -286,13 +286,30 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
   const legends = game.clubLegends ?? []
   if (legends.length > 0 && seed % 7 === 0) {
     const legend = legends[Math.abs(seed + 11) % legends.length]
-    const legendRef: Array<[string, string, string, string]> = [
-      ['Materialaren', `${legend.name} var nere på träningen igår. Grabbarna lyssnade.`, 'Vaktmästaren', 'Det är så det ska vara.'],
+    const generalPool: Array<[string, string, string, string]> = [
+      ['Materialaren', `${legend.name} var nere på akademiträningen igår. Grabbarna lyssnade.`, 'Vaktmästaren', 'Det är så det ska vara.'],
       ['Kioskvakten', `${legend.name} köpte korv. Sa inget. Men han såg glad ut.`, 'Kassören', 'Det betyder något.'],
       ['Vaktmästaren', `${legend.name} ringer fortfarande när vi vinner.`, 'Materialaren', 'Naturligtvis.'],
+      ['Kassören', `${legend.name} satt på läktaren i lördags. Ensam. Men han var här.`, 'Materialaren', 'Det räcker.'],
+      ['Kioskvakten', `${legend.name} hälsade på efter matchen. Pratade med alla. Som om han aldrig slutat.`, 'Vaktmästaren', 'Det är hans grej.'],
     ]
-    const refIdx = Math.abs(seed + 13) % legendRef.length
-    const ref = legendRef[refIdx]
+    // TODO: OPUS TEXT — granska och förfina roll-specifika quotes
+    const youthCoachPool: Array<[string, string, string, string]> = [
+      ['Materialaren', `${legend.name} hade P19-grabben inne en och en igår.`, 'Vaktmästaren', 'Personliga samtal. Det är det som gör skillnad.'],
+      ['Kioskvakten', `${legend.name} var nere på konstisbanan tidigt. Tog i med P19.`, 'Kassören', 'Grabbarna lyssnar på honom. Det märks.'],
+      ['Vaktmästaren', `${legend.name} ser något i den unge Lindgren. Säger att han är den nästa.`, 'Materialaren', 'Hoppas han har rätt.'],
+    ]
+    // TODO: OPUS TEXT — granska och förfina roll-specifika quotes
+    const scoutPool: Array<[string, string, string, string]> = [
+      ['Kioskvakten', `${legend.name} kom från Boltic-matchen. Hade hittat något.`, 'Kassören', 'Hade han namn?'],
+      ['Materialaren', `${legend.name} hade fyra namn på pappret. Tre av dem är värda att titta på.`, 'Vaktmästaren', 'Det räcker.'],
+      ['Kassören', `${legend.name} är borta hela helgen. Tre matcher på tre orter.`, 'Kioskvakten', 'Det är ett bra tecken.'],
+    ]
+    const pool = legend.role === 'youth_coach' ? youthCoachPool
+      : legend.role === 'scout' ? scoutPool
+      : generalPool
+    const refIdx = Math.abs(seed + 13) % pool.length
+    const ref = pool[refIdx]
     return { speaker: ref[0], text: `"${ref[1]}" — ${ref[2]}: "${ref[3]}"` }
   }
 

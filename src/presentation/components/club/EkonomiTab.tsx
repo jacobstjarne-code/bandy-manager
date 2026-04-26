@@ -31,6 +31,8 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
   const activeSponsors = (game.sponsors ?? []).filter(s => s.contractRounds > 0)
   const maxSponsors = Math.min(6, 2 + Math.floor(club.reputation / 20))
   const ca = game.communityActivities
+  const legendSalaryCost = ((game.clubLegends ?? [])
+    .filter(l => l.role === 'youth_coach' || l.role === 'scout').length) * 500
   const income = calcRoundIncome({
     club,
     players: managedPlayers,
@@ -43,6 +45,7 @@ export function EkonomiTab({ club, game, seekSponsor, activateCommunity, setTran
     matchHasRivalry: false,
     standing: game.standings.find(s => s.clubId === game.managedClubId) ?? null,
     rand: () => 0.5,
+    legendSalaryCost,
   })
   const weeklySponsors = income.sponsorIncome
   const weeklyIncome = income.weeklyBase + income.sponsorIncome + income.communityMatchIncome + income.communityRoundIncome

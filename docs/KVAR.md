@@ -10,14 +10,25 @@
 **Sprint 25-L:** ✅ Levererad + auditerad (commit `a6e24b4`).
 **Sprint 25-E:** ✅ Levererad + auditerad (commit `4362ebf`).
 **Sprint 26 — cross-system skandalreferenser:** ✅ Levererad + kod-verifierad audit (commits `11802e1` + `6bbf8ca`).
-
-Alla aktiva sprintar stängda. Inga pågående jobb.
+**Sprint 27 — narrativ djup-paket:** 🟡 Pågående. Fas A + B (Opus-audit) klara, fas C utgår. Fas D + E (Code-impl) skickas till Code.
 
 **Motor-kalibrering kvarstår:** `awayWinPct` 43.9% vs 38.3% (−5.6pp), `playoff_final` mål/match 9.17 vs 7.00 (+2.17), `cornerGoalPct` 26.2% vs 22.2%. Ingen aktiv sprint mot dessa.
 
-**THE_BOMB-status:** verifierad mot kod 2026-04-26. Faktisk siffra 65-75% klar (inte 40-50% som strukturanalysen 2026-04-25 antydde). Se `docs/THE_BOMB_STATUS_2026-04-26.md` för detaljerad genomgång per subprojekt.
+**THE_BOMB-status:** verifierad mot kod 2026-04-26. Faktisk siffra 65-75% klar (inte 40-50% som strukturanalysen 2026-04-25 antydde). Se `docs/THE_BOMB_STATUS_2026-04-26.md` för detaljerad genomgång per subprojekt. **Uppdatering 2026-04-26 efter Sprint 27 audit:** 3.1 State of the Club bevisat klar, 2.2 Årets match bevisat klar (med dead code att städa).
 
-**Tre nya designprinciper** införda i CLAUDE.md 2026-04-26 — se DECISIONS.md för motivering.
+**Tre nya designprinciper** införda i CLAUDE.md 2026-04-26 — se DECISIONS.md för motivering. **Sprint 27 fas A+B var första gillt-tillfället för princip 2 (pre-spec cross-check)** — räddade ~2-3h dubbelarbete genom att verifiera State of the Club innan Code byggde det.
+
+---
+
+## TEKNISK SKULD
+
+**`pickSeasonHighlight()` i seasonSummaryService.ts — dead code (upptäckt 2026-04-26).**
+Funktionen är exporterad men aldrig importerad. `selectMatchOfTheSeason()` (matchHighlightService.ts) är den som används av seasonEndProcessor och SeasonSummaryScreen. Lika typsystem `SeasonHighlight` (egen typ, används bara i döda funktionen).
+
+- **Städ-jobb:** Ta bort `pickSeasonHighlight` + `SeasonHighlight`-typen.
+- **Insats:** ~5 min Code.
+- **Akut?** Nej. Inget UI-problem. Kan ligga till nästa passande sprint.
+- **Refferens:** SPRINT_27_AUDIT.md § Fas A.
 
 ---
 

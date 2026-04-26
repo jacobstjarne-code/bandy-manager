@@ -499,3 +499,52 @@ console.log((leadWins.length / leads.length * 100).toFixed(1) + '%')
 **Känn igen:** Target-värdet hamnar utanför förväntad range för den metriken (win-rates bör vara 60-90%; en win-rate på 46% ska trigga skepticism). Kalibreringsgap >10pp utan tydlig motorhypotes = börja med target-audit, inte motorsprint.
 
 **Historik:** Sprint 25-HT, 2026-04-25. `htLeadWinPct: 46.6` i JSON fixades till 78.1 och nytt fält `homeHtLeadFraction: 46.6` lades till. Motor 80.4% = +2.3pp mot korrekt target — väl inom tolerans. Ingen motorsprint behövdes. Fullständig target-audit dokumenterad i `docs/findings/REVISION_2026-04-25_calibration_targets.md`.
+
+---
+
+## 22. Kalibreringsskript måste köra med motorns produktion-defaults
+
+**Mönster:** Stresstest visar ett gap (t.ex. awayWinPct +5.6pp). Man kalibrerade en motor som inte är samma motor som spelet använder.
+
+**Rotorsak:** Kalibreringsskriptet (`calibrate_v2.ts`) initierar parametrar med ett värde, motorns runtime-kod (`matchSimProcessor.ts`) initierar med ett annat. Skriptet mäter en hypotetisk motor; spelet kör en annan. Kalibreringen är värdelös tills synket återställs.
+
+**Konkret fall:** `calibrate_v2.ts:1050` körde med `homeAdvantage: 0.14`. `matchSimProcessor.ts:266` initierade `baseAdv = 0.05`. Spelet hade alltså 36% av den hemmafördel som kalibreringen förutsatte. awayWinPct landade +3.9pp över target eftersom motorn aldrig fick det `homeAdvantage`-värde kalibreringen testade.
+
+**Fix:** Vid varje kalibreringsändring — diffa skriptets parametrar mot motorns startvärden. Eller bättre: importera samma konstant båda håll. Värdet ska existera på *en* plats.
+
+```ts
+// matchSimProcessor.ts
+const baseAdv = homeClub?.hasIndoorArena ? 0.14 * 0.85 : 0.14
+
+// calibrate_v2.ts
+homeAdvantage: 0.14   // måste vara samma
+```
+
+**Känn igen:** Ett kalibreringsgap som inte kan förklaras av motormekanik. Innan motorändring — verifiera att skriptet och motorn kör på exakt samma parametervärden. Om de inte gör det är gapet artefakt, inte motorbugg.
+
+**Historik:** Sprint 25-I/J, 2026-04-26. `baseAdv 0.05 → 0.14` löste awayWinPct-gapet utan annan motorändring. En rad. Misstaget hade levt sedan kalibreringen senast tunades.
+
+---
+
+## 23. cornerTrailingMod är fel hävstång — multiplicerar deltatermet, inte cornerBase
+
+**Mönster:** Spec hypotetiserar `cornerTrailingMod` som rotorsak till per-fas cornerGoalPct-avvikelse. Implementation av spec-värde-justering ger insignifikant effekt (−0.5pp per 0.15 parameter-steg). Spec verkade ha rätt rotorsak, men effekten är minimal.
+
+**Rotorsak:** `cornerStateMod` (= cornerTrailingMod eller cornerLeadingMod) multiplicerar bara *deltatermet* i `goalThreshold`-formeln:
+
+```ts
+goalThreshold = clamp(
+  (cornerChance - defenseResist) * 0.30 * stepGoalMod * cornerStateMod + cornerBase,
+  min, max
+)
+```
+
+`cornerBase ≈ 0.105 * phaseGoalMod` dominerar `goalThreshold` i de flesta hörnsituationer. När `cornerStateMod` ändras från 1.20 till 1.05, påverkas bara den lilla deltatermen — `cornerBase` förblir oförändrad. Aggregerad cornerGoalPct rör sig därför minimalt.
+
+**Fix:** Rätt hävstång är `cornerBase` direkt, via ett separat `cornerGoalMod`-fält i PHASE_CONSTANTS som skalar `cornerBase` och `cornerClampMin`. Nyckelobservation: en formelvariabels namn (cornerTrailingMod) säger ingenting om dess inflytande — det är *positionen i formeln* som avgör. En modifier som multiplicerar en liten delta-term har minimal aggregerad effekt även med stora värden.
+
+**Sidoeffekt att bevaka:** `cornerGoalMod` reducerar både cornerGoalPct och totalmål proportionellt. Vid sänkning av cornerGoalMod i KVF/SF sjunker mål/match med ~0.5. Kompensera vid behov via `goalMod`.
+
+**Känn igen:** En spec-justering av en fas-konstant ger förvånansvärt liten effekt på den targetade metriken. Innan ny iteration — spåra parametern i formeln och kontrollera vilken term den faktiskt multiplicerar. Om den sitter på en liten delta är det fel hävstång.
+
+**Historik:** Sprint 25-K, 2026-04-26. Spec föreslog `cornerTrailingMod` 1.20→1.05 (QF) och 1.05→0.93 (SF). Implementation gav −0.5pp förändring trots korrekt parameterskifte. Verifiering avslöjade att `cornerStateMod` är fel hävstång. Ny mekanism `cornerGoalMod` infördes som direktskalar `cornerBase`.

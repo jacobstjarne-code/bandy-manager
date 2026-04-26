@@ -92,6 +92,7 @@ export interface EventEffect {
     | 'saveSchoolAssignment'
     | 'scoutBudget'
     | 'refereeRelationship'
+    | 'setLegendRole'
   value?: number
   refereeId?: string
   amount?: number
@@ -110,6 +111,7 @@ export interface EventEffect {
   // For startEconomicCrisis / resolveEconomicCrisis
   crisisPhase?: string
   removePlayerId?: string
+  legendRole?: string
 }
 
 export type EventPriority = 'critical' | 'high' | 'normal' | 'low'

@@ -8,6 +8,62 @@ Syftet är inte formalism. Syftet är att om 6 månader ha ett svar på "varför
 
 ---
 
+## 2026-04-26 (kväll) — Pre-spec cross-check räddade Sprint 27 fas C
+
+**Problem:** Sprint 27-specen innehöll fas C "State of the Club-implementation" som planerade ny komponent + ny `seasonStartSnapshot`-lösning + ny PreSeasonScreen-rendering. Estimat 2-3h Code + ~30 min Opus-text.
+
+**Vad som hände:** Fas A+B-audit (körd av Opus innan Code startade impl) avslöjade att State of the Club redan är fullt implementerad i PreSeasonScreen som "LÄGET I KLUBBEN"-card med pilar, färgkodning, invert-logik för tabellplats och dynamisk narrativ-text i fyra varianter. Bättre än den nya specen.
+
+**Konsekvens:** Fas C utgår. Sprint 27-estimat reviderat från 7-8h till 5-6h.
+
+**Lärdom:** Det här är första dokumenterade vinsten av designprincip 2 (pre-spec cross-check) som infördes 2026-04-26. Utan auditen hade Code byggt om existerande funktionalitet — inte bara slukad tid utan introducerat regression-risk. Principens värde är konkret: ~2-3h besparing på en singel sprint.
+
+**Meta:** Det är värt att notera att specen var skriven *efter* att principen infördes — men auditen var där medvetet, som en gate. Specen behandlade princip 2 som en "audit-fas" snarare än en pre-spec-aktivitet. Det fungerade. Antagligen är "audit som första sprint-fas" en bra arbetsform för framtida THE_BOMB-paket där implementation-status är osaklart.
+
+---
+
+## 2026-04-26 — Kod-verifierad simulation som audit-alternativ
+
+**Problem:** Sprint 26 levererade 65 kurerade strängar från fyra system, villkorade på skandalhändelser som triggar i specifika omgångar. Code rapporterade `1895/1895 grönt` + ren build och behövde stoppas eftersom det inte är audit enligt CLAUDE.md (kräver "verifierat i UI"). Men full manuell playtest per sprint är inte praktiskt; Jacob playtestar on-the-fly. Risk: sprintar markeras klara med teknisk-verifiering-bara.
+
+**Beslut:** Inför kod-verifierad simulation som audit-alternativ i CLAUDE.md § SJÄLVAUDIT. Code skriver test-script som triggar villkor, dumpar output, kopierar in i SPRINT_XX_AUDIT.md. Krav: konkret output per spec-punkt, edge-cases verifierade, reproducerbart med seed.
+
+**Alternativ övervägt:** (a) Manuell playtest som enda form — avvisat, ej realistiskt. (b) Build+tester som audit — avvisat, fångar inte runtime-buggar i text/lookup-logik. (c) Ny separat audit-nivå — avvisat, byråkratisk overhead.
+
+**Konsekvens:** Text-/data-tunga sprintar får använda kod-simulation. Visuella/UX-tunga kräver manuell verifiering — markeras "awaiting playtest-verification" i KVAR.md.
+
+**Meta:** Skiljer *teknisk verifiering* (inga kraschar) från *audit* (vad ser spelaren). Kod-simulation svarar på audit-frågan utan manuell playtest.
+
+---
+
+## 2026-04-26 — Tre designprinciper införda i CLAUDE.md (post-Sprint 25h, pre-Sprint 26)
+
+**Problem:** Trots LESSONS.md, audits och självaudit-regel missade vi tre konkreta saker under april:
+1. Strukturanalysen 2026-04-25 bedömde THE_BOMB till 40-50% klar. Faktisk siffra efter kodverifikation 65-75%. THE_BOMB 1.3 (kontextuell match-commentary) var fullt implementerad i `matchCore.ts` med en explicit `// Contextual commentary (THE BOMB 1.3)`-kommentar — ändå missad.
+2. `pickSeasonHighlight()` i seasonSummaryService verkar duplicera funktionalitet av `summary.matchOfTheSeason`-fält. Möjlig redundans byggd för att ingen sökte efter befintlig implementation först.
+3. Sprint 25h levererade 8 skandalarketyper. De bodde isolerat i inbox-rader och inbox-formatterade kafferum-quotes. Ingen integration till dashboard-kafferum, klack-commentary, presskonferens, eller motståndartränaren. Krävde Sprint 26 i efterhand.
+
+Gemensam nämnare: dokumentation av *det som hänt* är bra. *Beslutsögonblicken* (innan kod skrivs, innan spec klubbas) är otillräckligt strukturerade.
+
+**Beslut:** Tre nya principer i CLAUDE.md mellan DESIGN_SYSTEM och VERIFIERINGSPROTOKOLL, under rubriken "DESIGNPRINCIPER — LÄS FÖRE SPEC":
+
+1. **Inbox-principen** — koppling som bara manifesterar sig som ny inbox-rad räknas inte som leverans. Riktig koppling = system A's händelse syns/ändrar text i system B's vy.
+2. **Pre-spec cross-check** — innan ny feature specas, 60-sekunders grep efter befintlig implementation. Ingen träff → bygg. Träff → läs den först, beslut om återanvändning eller medveten ersättning.
+3. **Integration-completeness-check** — när feature levererar narrativ data, lista vilka vyer som ska visa den. Specen ska adressera alla relevanta vyer eller medvetet välja vilka som lämnas utanför med skäl.
+
+**Alternativ övervägt:**
+- (a) Lägga in principerna som lärdomar i LESSONS.md. Avvisat — LESSONS.md är formaterad för buggmönster med rotorsak/fix/historik. Designprinciper passar inte det formatet.
+- (b) Ny separat fil DESIGNPRINCIPER.md. Avvisat — fler filer = mer fragmentering. CLAUDE.md är redan obligatorisk vid sessionsstart.
+- (c) Bara dokumentera missarna i en handover utan principer. Avvisat — handovers är dagsläges-rapporter, inte återkommande regler.
+
+**Konsekvens:** Innan ny feature specas, kör 60-sekunders grep på huvudkonceptet (princip 2). När feature producerar narrativ data, lista alla vyer som logiskt borde visa den (princip 3). Vid kodgranskning, kontrollera att inga "kopplingar" är inbox-only (princip 1).
+
+Framtida sprintar som följer detta mönster ska reverseras till specen om någon av principerna är överträdd. T.ex. om en spec föreslår "ny ekonomisk händelse-typ" utan att lista visningsvyer — Opus stoppar och frågar.
+
+**Meta:** Beslutet är meta-beslut — beslut om hur framtida beslut ska fattas. Det är värt att notera att vi inte hade kunnat formulera principerna utan att först gjort missarna. Process-evolution är reaktiv, inte proaktiv.
+
+---
+
 ## 2026-04-20 — `.btn-cta` istället för fyra inline-CTA:er (Sprint 22.5)
 
 **Problem:** Fyra skärmar (Dashboard, BoardMeeting, PreSeason, StartStep) hade fyra olika implementeringar av skärm-avslutande CTA. Padding 18/16/14, fontSize 15/15/14/14, fontWeight 600/800/700/700, letterSpacing 2/1/0.3/1px. DESIGN_SYSTEM.md §1 saknade stor CTA-klass.

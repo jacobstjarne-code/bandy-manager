@@ -92,6 +92,7 @@ export interface RoundIncomeBreakdown {
   kommunBidrag: number           // reputation × communityStanding-based bidrag (once at round 1)
   weeklyWages: number            // monthly salary total / 4
   weeklyArenaCost: number        // arenaCapacity × 5 per round
+  weeklyLegendCost: number       // 500 kr/omgång per aktiv legend (youth_coach | scout)
   netPerRound: number            // sum of all income − wages − arena cost
 }
 
@@ -110,6 +111,7 @@ export interface CalcRoundIncomeParams {
   rand: () => number
   communityStanding?: number     // 0-100, used for kommunBidrag calculation
   isFirstRound?: boolean         // true only at matchday 1 — triggers kommunBidrag payout
+  legendSalaryCost?: number      // 500 kr × antal aktiva legendroller (youth_coach | scout)
 }
 
 /**
@@ -127,7 +129,7 @@ export interface CalcRoundIncomeParams {
 export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreakdown {
   const { club, players, sponsors, communityActivities, volunteers, fanMood, isHomeMatch,
     matchIsKnockout, matchIsCup, matchHasRivalry, standing, rand,
-    communityStanding, isFirstRound } = params
+    communityStanding, isFirstRound, legendSalaryCost } = params
 
   // ── Wages ─────────────────────────────────────────────────────────────────
   const totalSalary = players.reduce((sum, p) => sum + p.salary, 0)
@@ -221,8 +223,10 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     kommunBidrag = Math.round(kommunBase * repFactor * csFactor)
   }
 
+  const weeklyLegendCost = legendSalaryCost ?? 0
+
   const netPerRound = weeklyBase + sponsorIncome + matchRevenue + communityMatchIncome
-    + communityRoundIncome + volunteerIncome + kommunBidrag - weeklyWages - weeklyArenaCost
+    + communityRoundIncome + volunteerIncome + kommunBidrag - weeklyWages - weeklyArenaCost - weeklyLegendCost
 
   return {
     weeklyBase,
@@ -234,6 +238,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     kommunBidrag,
     weeklyWages,
     weeklyArenaCost,
+    weeklyLegendCost,
     netPerRound,
   }
 }

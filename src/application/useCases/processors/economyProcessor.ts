@@ -50,6 +50,8 @@ export function processEconomy(
     f => f.homeClubId === game.managedClubId && f.status === FixtureStatus.Completed,
   )
   const isHomeMatch = !!managedHomeMatch
+  const legendSalaryCost = ((game.clubLegends ?? [])
+    .filter(l => l.role === 'youth_coach' || l.role === 'scout').length) * 500
   const managedIncome = calcRoundIncome({
     club: managedClub,
     players: managedClubPlayers,
@@ -67,6 +69,7 @@ export function processEconomy(
     rand: localRand,
     communityStanding: game.communityStanding,
     isFirstRound: nextMatchday === 1,
+    legendSalaryCost,
   })
 
   if (managedIncome.weeklyBase !== 0) {
@@ -96,6 +99,9 @@ export function processEconomy(
   }
   if (managedIncome.weeklyArenaCost !== 0) {
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.weeklyArenaCost, reason: 'arena_maintenance', label: 'Arena-underhåll' })
+  }
+  if (managedIncome.weeklyLegendCost !== 0) {
+    roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.weeklyLegendCost, reason: 'wages', label: 'Legendlöner' })
   }
 
   let updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, managedIncome.netPerRound)

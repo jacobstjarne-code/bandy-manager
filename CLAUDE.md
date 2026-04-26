@@ -13,11 +13,15 @@ Om tid-API:t inte svarar — fråga Jacob som fallback.
 ## LÄS VID SESSIONSTART — OBLIGATORISKT
 
 1. **`docs/LESSONS.md`** — återkommande buggmönster. Känn igen innan du fixar. Om en ny bugg matchar ett mönster där, använd lärdomen först.
-2. **`docs/DECISIONS.md`** — arkitekturbeslut.
+2. **`docs/DECISIONS.md`** — arkitekturbeslut. Öppna den vid varje session — nya designprinciper introduceras där före de räknas som etablerade.
 3. **`docs/DESIGN_SYSTEM.md`** — visuell grund.
 4. **`docs/KVAR.md`** — aktuell karta över aktiva jobb, parkerat och nästa steg.
 5. **Senaste `docs/HANDOVER_YYYY-MM-DD.md`** — dagsläge från föregående session.
 6. **Aktuell sprintfil** i `docs/sprints/`.
+
+**Vid arbete med THE_BOMB-frågor:** läs `docs/THE_BOMB.md` (vision) och `docs/THE_BOMB_STATUS_2026-04-26.md` (kod-verifierad status per subprojekt).
+
+**Vid spec-skrivande:** läs "DESIGNPRINCIPER — LÄS FÖRE SPEC" längre ner i denna fil. Tre principer som förhindrar att ny funktionalitet byggs isolerat eller dubbelt.
 
 ---
 
@@ -83,6 +87,51 @@ Mall:
 ```
 
 "Verifierat i" ska vara en konkret observation i appen, inte "komponenten finns i filen".
+
+### ALTERNATIV: KOD-VERIFIERAD SIMULATION
+
+När manuell playtest inte är praktiskt (t.ex. text-/data-tunga sprintar där utfallet kräver specifika trigger-villkor som tar lång tid att framkalla i live-spel) får Code använda kod-verifierad simulation som audit-form.
+
+**Vad det innebär:** Code skriver ett kort test-script eller kör befintlig stress-infrastruktur som triggar relevanta villkor och dumpar exempel-output från varje system specen berör. Output kopieras in i auditen som bevis.
+
+**Krav för att kod-verifierad simulation ska räknas:**
+1. **Konkret output per spec-punkt.** Inte bara "funktionen anropas" — faktisk genererad sträng/state visas.
+2. **Edge-cases verifierade.** Lista vilka villkor som testats (t.ex. "tom lookup-array", "villkor som ska filtreras bort", "förra säsongens data").
+3. **Reproducerbart med seed/parametrar.** Någon ska kunna köra om samma test och få motsvarande resultat.
+
+**Mall för kod-verifierad audit:**
+
+```markdown
+# Sprint XX — audit
+
+## Punkter i spec
+- [x] Del 1 [system] — verifierat via simulation: [konkret output-exempel]
+- [x] Del 2 [system] — verifierat via simulation: [konkret output-exempel]
+- ...
+
+## Kod-verifiering
+- 1895/1895 grönt
+- Build ren
+- Stresstest: [resultat eller "ej kört, motivering"]
+
+## Edge-cases verifierade
+- [Edge-case 1]: [hur det testades, utfall]
+- [Edge-case 2]: ...
+
+## Ej verifierat / antaganden
+[lista vad som inte gick att simulera och varför — ska tas i nästa playtest]
+```
+
+**När manuell playtest är obligatorisk (kod-simulation räcker INTE):**
+- Visuella ändringar (layout, färger, animationer, scroll-beteende)
+- UX-flöden där interaktion/timing/feedback är poängen
+- Sprintar som berör MatchLiveScreen-rendering eller andra perception-tunga vyer
+
+För dessa: kod-simulation kan komplettera men ersatter inte manuell verifiering. Markera som "awaiting playtest-verification" i KVAR.md tills Jacob hunnit playtesta.
+
+**Notera:** Build + tester grönt är *teknisk* verifiering, inte audit. Audit kräver att man kan svara på frågan "vad ser spelaren?" — antingen via direkt observation eller via simulation som dumpar output.
+
+**Historik:** Sprint 26 (2026-04-26) var första sprint där kod-verifierad simulation användes. Sprintens 65 nya strängar från fyra system krävde att skandalfönster triggades (omg 6-8/12-14/18-20/24-26) i specifika klubbar med specifika seeds för att se output — inte praktiskt i manuellt spel.
 
 ---
 

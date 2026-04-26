@@ -325,6 +325,8 @@ export function DashboardScreen() {
 
   // ── Ekonomi data ───────────────────────────────────────────────
   const finances = club.finances ?? 0
+  const legendSalaryCost = ((game.clubLegends ?? [])
+    .filter(l => l.role === 'youth_coach' || l.role === 'scout').length) * 500
   const { netPerRound } = calcRoundIncome({
     club,
     players: squadPlayers,
@@ -337,6 +339,7 @@ export function DashboardScreen() {
     matchHasRivalry: false,
     standing: standing ?? null,
     rand: () => 0.5,
+    legendSalaryCost,
   })
 
   // ── Community standing ─────────────────────────────────────────

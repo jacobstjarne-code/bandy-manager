@@ -474,7 +474,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     const player = resetPlayers.find(p => p.id === pid)
     if (!player || player.clubId !== game.managedClubId) continue
     const seasonsInClub = (player.careerStats?.seasonsPlayed ?? 1)
-    if (seasonsInClub >= 3) {
+    const totalGames = player.careerStats?.totalGames ?? 0
+    const isLegendEligible = totalGames >= 100
+      || (player.trait === 'veteran' && seasonsInClub >= 3)
+      || (player.trait === 'ledare' && seasonsInClub >= 2)
+      || seasonsInClub >= 4
+    if (isLegendEligible) {
       const storyline = (game.storylines ?? []).find(s => s.playerId === pid && s.resolved)
       newLegends.push({
         name: `${player.firstName[0]}. ${player.lastName}`,
@@ -485,6 +490,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         titles: [],
         memorableStory: storyline?.displayText,
         retiredSeason: nextSeason,
+        playerId: player.id,
       })
       // Special inbox for legend
       retirementMessages.push({
@@ -510,19 +516,19 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
           {
             id: 'youth_coach',
             label: 'Erbjud roll som ungdomstränare',
-            subtitle: '⭐ +5 reputation',
-            effect: { type: 'reputation', amount: 5 },
+            subtitle: '🌱 +ungdomskvalitet',
+            effect: { type: 'setLegendRole', legendRole: 'youth_coach' },
           },
           {
             id: 'scout',
             label: 'Erbjud roll som scout',
-            subtitle: '🔍 +3 scoutbudget',
-            effect: { type: 'scoutBudget', amount: 3 },
+            subtitle: '🔍 +scoutresurser',
+            effect: { type: 'setLegendRole', legendRole: 'scout' },
           },
           {
             id: 'farewell',
             label: 'Tack och lycka till',
-            effect: { type: 'noOp' },
+            effect: { type: 'setLegendRole', legendRole: 'farewell' },
           },
         ],
       } as GameEvent)

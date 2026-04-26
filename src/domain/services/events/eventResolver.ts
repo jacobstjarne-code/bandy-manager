@@ -819,6 +819,33 @@ export function resolveEvent(
       updatedGame = { ...updatedGame, pendingRefereeMeeting: undefined }
       break
     }
+    case 'setLegendRole': {
+      const role = effect.legendRole as 'youth_coach' | 'scout' | 'farewell' | undefined
+      if (role && event.relatedPlayerId) {
+        updatedGame = {
+          ...updatedGame,
+          clubLegends: (updatedGame.clubLegends ?? []).map(l =>
+            l.playerId === event.relatedPlayerId ? { ...l, role } : l
+          ),
+        }
+        if (role === 'youth_coach') {
+          updatedGame = {
+            ...updatedGame,
+            clubs: updatedGame.clubs.map(c =>
+              c.id === updatedGame.managedClubId
+                ? { ...c, youthQuality: Math.min(100, (c.youthQuality ?? 50) + 5) }
+                : c
+            ),
+          }
+        } else if (role === 'scout') {
+          updatedGame = {
+            ...updatedGame,
+            scoutBudget: Math.min(30, (updatedGame.scoutBudget ?? 10) + 3),
+          }
+        }
+      }
+      break
+    }
     case 'openNegotiation':
     default:
       break

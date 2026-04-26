@@ -141,6 +141,8 @@ export interface ClubLegend {
   titles: string[]
   memorableStory?: string
   retiredSeason: number
+  playerId?: string
+  role?: 'youth_coach' | 'scout' | 'farewell'
 }
 
 export interface AllTimeRecords {

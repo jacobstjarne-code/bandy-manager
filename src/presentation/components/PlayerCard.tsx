@@ -8,6 +8,7 @@ import { ClubBadge } from './ClubBadge'
 import { getPortraitSvg } from '../../domain/services/portraitService'
 import { getPlayerVoice } from '../../domain/services/playerVoiceService'
 import type { RecentMatchRating } from './playerCardUtils'
+import { CareerJourney } from './player/CareerJourney'
 
 export interface PlayerCardProps {
   player: Player
@@ -273,7 +274,6 @@ export function PlayerCard({
   isOwned = true,
   currentSeason,
   onClick,
-  storylines,
   onExtendContract,
   onClose,
   game,
@@ -687,58 +687,19 @@ export function PlayerCard({
         )
       })()}
 
-      {/* ═══ ⑦ KARRIÄRRESA (dagbok) — owned only ═══ */}
+      {/* ═══ ⑦ KARRIÄRRESA — owned only ═══ */}
       {isOwned && (() => {
-        type DiaryEntry = { matchday: number; text: string; type: string; season?: number }
-        const entries: DiaryEntry[] = []
-
-        for (const n of player.narrativeLog ?? []) {
-          if (currentSeason !== undefined && n.season !== currentSeason) continue
-          entries.push({ matchday: n.matchday, text: n.text, type: n.type, season: n.season })
-        }
-
-        for (const m of player.careerMilestones ?? []) {
-          if (currentSeason !== undefined && m.season !== currentSeason) continue
-          if (m.type === 'debutGoal') entries.push({ matchday: m.round, text: 'Första A-lagsmålet', type: 'milestone', season: m.season })
-          // hatTrick utelämnat — narrativeLog täcker det med fullständig text (mål + motståndare)
-          if (m.type === 'games100') entries.push({ matchday: m.round, text: '100 A-lagsmatcher', type: 'milestone', season: m.season })
-        }
-
-        for (const s of storylines ?? []) {
-          entries.push({ matchday: s.matchday ?? 99, text: s.displayText, type: 'storyline' })
-        }
-
         const bio = generateBio(player, clubName)
-        if (entries.length === 0 && !bio) return null
-        entries.sort((a, b) => a.matchday - b.matchday)
-
-        function typeIcon(t: string) {
-          if (t === 'milestone') return '🏅'
-          if (t === 'injury') return '🩹'
-          if (t === 'form') return '📈'
-          if (t === 'storyline') return '📖'
-          return '•'
-        }
-
+        const hasJourney = (player.narrativeLog?.length ?? 0) > 0 || (player.careerStats?.seasonsPlayed ?? 0) >= 2
+        if (!bio && !hasJourney) return null
         return (
           <div style={SECTION_STYLE}>
-            <p style={{ ...LABEL_STYLE, marginBottom: 6 }}>📖 KARRIÄRRESA</p>
             {bio && (
               <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', lineHeight: 1.5, marginBottom: 8, fontFamily: 'var(--font-display)' }}>
                 {bio}
               </p>
             )}
-            {entries.slice(0, 5).map((e, i) => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'flex-start', gap: 8,
-                padding: '5px 0', borderBottom: i < Math.min(entries.length, 5) - 1 ? '1px solid var(--border)' : 'none',
-              }}>
-                <span style={{ fontSize: 10, color: 'var(--text-muted)', minWidth: 36, flexShrink: 0 }}>O{e.matchday}</span>
-                <span style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-                  {typeIcon(e.type)} {e.text}
-                </span>
-              </div>
-            ))}
+            {hasJourney && <CareerJourney player={player} currentSeason={currentSeason} />}
           </div>
         )
       })()}
