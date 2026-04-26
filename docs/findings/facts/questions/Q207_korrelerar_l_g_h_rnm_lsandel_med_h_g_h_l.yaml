@@ -4,7 +4,9 @@ claim: Korrelerar låg hörnmålsandel med hög hållningstid på boll, och i s�
   vilken riktning löper kausaliteten?
 spawned_by: finding:046
 spawned_at: '2026-04-26'
-status: open
+status: answered
 verified_at: '2026-04-26'
 verified_by: code
 domain: bandy
+answered_by: finding:012
+answered_at: '2026-04-26'

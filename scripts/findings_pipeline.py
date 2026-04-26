@@ -85,17 +85,77 @@ def _similarity(a: str, b: str) -> float:
     return matches / max(len(bg_short), len(bg_long))
 
 
-def _find_duplicate_q(claim: str, q_facts: dict, threshold: float = 0.80) -> str | None:
+def _find_duplicate_q(claim: str, q_facts: dict, threshold: float = 0.80,
+                       api_key: str | None = None) -> str | None:
     """
     Return the fact_id of an existing Q-fact that is >threshold similar
     to the given claim. Returns None if no match found.
+
+    Step 1: String-based bigram similarity (fast).
+    Step 2: Claude semantic matching fallback (if api_key provided and no string match).
     """
+    # 1. String match
     for fid, data in q_facts.items():
-        if data.get("status") == "answered":
+        if data.get("status") in ("answered", "closed"):
             continue
         existing_claim = data.get("claim", "")
         if _similarity(claim, existing_claim) > threshold:
             return fid
+
+    # 2. Claude semantic matching fallback
+    if api_key:
+        return _claude_semantic_match(claim, q_facts, api_key)
+
+    return None
+
+
+def _claude_semantic_match(claim: str, q_facts: dict, api_key: str) -> str | None:
+    """
+    Ask Claude if claim semantically matches any open Q-fact.
+    Returns matching fact_id or None.
+    Uses claude-haiku for cost efficiency.
+    """
+    try:
+        import anthropic
+        import json as _json
+
+        open_qs = [
+            (fid, data["claim"])
+            for fid, data in q_facts.items()
+            if data.get("status") == "open"
+        ][:50]  # max 50 to keep token count reasonable
+
+        if not open_qs:
+            return None
+
+        q_list = "\n".join(f"- {fid}: {c}" for fid, c in open_qs)
+        prompt = (
+            f'Ny fråga: "{claim}"\n\n'
+            f"Existerande öppna frågor:\n{q_list}\n\n"
+            f"Returnera JSON: {{\"match\": \"Q012\"}} om en fråga är semantiskt ekvivalent "
+            f"(samma fråga, annat ordval).\n"
+            f"Returnera {{\"match\": null}} om ingen matchning finns.\n"
+            f"Returnera BARA JSON."
+        )
+
+        client = anthropic.Anthropic(api_key=api_key)
+        msg = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=100,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        import re as _re
+        text = msg.content[0].text.strip()
+        json_m = _re.search(r'\{.*\}', text, _re.DOTALL)
+        if json_m:
+            result = _json.loads(json_m.group(0))
+            match = result.get("match")
+            # Validate that the returned ID exists in our Q-facts
+            if match and match in q_facts:
+                return match
+    except Exception as e:
+        print(f"[WARN] Claude semantic match failed: {e}", file=sys.stderr)
+
     return None
 
 
@@ -104,14 +164,17 @@ def create_q_fact(
     spawned_by_num: str,
     spawned_at_date,
     q_facts: dict,
+    api_key: str | None = None,
 ) -> str | None:
     """
     Create a new Q-fact YAML file for `claim` spawned by finding `spawned_by_num`.
     Returns the new Q-fact ID, or the existing ID if a near-duplicate was found.
     Mutates `q_facts` in place.
+
+    api_key: if provided, uses Claude semantic matching as fallback for dedup.
     """
-    # Deduplicate
-    dup = _find_duplicate_q(claim, q_facts)
+    # Deduplicate (string match + optional Claude fallback)
+    dup = _find_duplicate_q(claim, q_facts, api_key=api_key)
     if dup:
         return dup  # link to existing, don't create new
 
@@ -344,6 +407,7 @@ def run_pipeline(args: argparse.Namespace) -> int:
                 spawned_by_num=num_str,
                 spawned_at_date=date.today(),
                 q_facts=q_facts,
+                api_key=os.environ.get("ANTHROPIC_API_KEY"),
             )
             if q_id and q_id not in answered_q_ids:
                 # Check if this was a dedup link (already existed)

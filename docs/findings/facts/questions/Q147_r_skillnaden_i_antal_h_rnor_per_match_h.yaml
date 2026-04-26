@@ -4,7 +4,9 @@ claim: Är skillnaden i antal hörnor per match (hemma vs. borta) konsekvent öv
   eller varierar den?
 spawned_by: finding:034
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:022
+answered_at: '2026-04-26'

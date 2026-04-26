@@ -3,7 +3,9 @@ category: questions
 claim: Skiljer sig andelen matcher som är oavgjorda vid halvtid åt mellan turneringsfaserna?
 spawned_by: finding:025
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:006
+answered_at: '2026-04-26'

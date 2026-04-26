@@ -3,7 +3,9 @@ category: questions
 claim: Skiljer sig hörnkonvertering beroende på vilken sida av planen hörnan tas?
 spawned_by: finding:035
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:002
+answered_at: '2026-04-26'

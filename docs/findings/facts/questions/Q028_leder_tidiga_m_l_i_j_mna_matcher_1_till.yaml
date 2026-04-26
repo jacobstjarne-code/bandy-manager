@@ -4,7 +4,9 @@ claim: Leder tidiga mål i jämna matcher (±1) till att det scorande laget fakt
   vinner, eller kvitteras de bort?
 spawned_by: finding:009
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:005
+answered_at: '2026-04-26'

@@ -29,7 +29,7 @@ AUDIT_DIR = REPO_ROOT / "docs/findings"
 
 REQUIRED_FIELDS = ["fact_id", "category", "claim", "verified_at", "verified_by", "status"]
 VALID_CATEGORIES = {"rules", "stats", "design_principles", "world_canon", "hypothesis", "questions"}
-VALID_STATUSES = {"active", "deprecated", "disputed", "open", "answered"}
+VALID_STATUSES = {"active", "deprecated", "disputed", "open", "answered", "closed"}
 VALID_VERIFIED_BY = {"opus", "code", "jacob", "erik"}
 FACT_ID_RE = re.compile(r"^[RSDWHQ]\d{3}$")
 
@@ -204,6 +204,14 @@ def validate_structure(fact):
                         f"Tvåvägslänk saknas: finding:{finding_num}/index.astro "
                         f"innehåller inte '<!-- answers: {fid} -->'"
                     )
+
+        # Kontroll 1 — closed_reason obligatorisk vid status: closed
+        if status == "closed" and not fact.get("closed_reason"):
+            errors.append(f"status=closed saknar closed_reason")
+
+        # Kontroll 3 — data_required obligatorisk vid data_unavailable
+        if fact.get("closed_reason") == "data_unavailable" and not fact.get("data_required"):
+            errors.append("closed_reason=data_unavailable saknar data_required")
 
     return errors, warnings
 

@@ -16,6 +16,8 @@ interface QFact {
   spawned_by: string;
   spawned_at: string | Date;
   status: string;
+  closed_reason?: string;
+  answered_by?: string;
   verified_at?: string;
   verified_by?: string;
   domain?: string;
@@ -40,38 +42,95 @@ function normalizeDate(d: string | Date): string {
   return String(d);
 }
 
-const questions: QFact[] = files
+const allQuestions: QFact[] = files
   .map((f: string) => {
     const raw = yaml.load(readFileSync(`${questionsDir}/${f}`, 'utf8')) as QFact;
     return raw;
   })
-  .filter((q: QFact) => q && q.status === 'open')
+  .filter((q: QFact) => q != null)
   .sort((a: QFact, b: QFact) => {
     const da = normalizeDate(a.spawned_at);
     const db = normalizeDate(b.spawned_at);
     return db.localeCompare(da);
   });
+
+// Filter groups
+const openQuestions = allQuestions.filter(q => q.status === 'open');
+const answeredQuestions = allQuestions.filter(q => q.status === 'answered');
+const blockedQuestions = allQuestions.filter(q => q.status === 'closed' && q.closed_reason === 'data_unavailable');
+const otherClosed = allQuestions.filter(q => q.status === 'closed' && q.closed_reason !== 'data_unavailable');
 ---
 
 <Base
-  title="Öppna frågor"
-  description="208 öppna frågor väckta av findings — fenomen i bandy som ännu inte är undersökta."
+  title="Frågor"
+  description={`${allQuestions.length} frågor väckta av findings — ${openQuestions.length} öppna, ${answeredQuestions.length} besvarade, ${blockedQuestions.length} blockerade på data.`}
 >
   <div class="page-container">
     <h1 style="font-family: var(--font-ui); font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
-      Öppna frågor
+      Frågor
     </h1>
-    <p style="max-width: 560px; color: var(--color-muted); font-size: 0.95rem; margin-bottom: 2.5rem; font-family: var(--font-ui);">
-      Varje finding väcker nya frågor. Här samlas de som ännu inte undersökts —
-      {questions.length} öppna frågor från {new Set(questions.map(q => q.spawned_by)).size} findings.
+    <p style="max-width: 560px; color: var(--color-muted); font-size: 0.95rem; margin-bottom: 1.5rem; font-family: var(--font-ui);">
+      Varje finding väcker nya frågor. Här samlas de som väckts av analysen —
+      {allQuestions.length} totalt.
     </p>
+
+    <!-- Statistik-rad -->
+    <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; font-family: var(--font-ui); font-size: 0.875rem;">
+      <span style="color: var(--color-text);">
+        <strong style="color: var(--color-accent);">{openQuestions.length}</strong> öppna
+      </span>
+      <span style="color: var(--color-text);">
+        <strong style="color: #4ade80;">{answeredQuestions.length}</strong> besvarade
+      </span>
+      <span style="color: var(--color-text);">
+        <strong style="color: #f59e0b;">{blockedQuestions.length}</strong> blockerade (väntar på damdata)
+      </span>
+      {otherClosed.length > 0 && (
+        <span style="color: var(--color-text);">
+          <strong style="color: var(--color-muted);">{otherClosed.length}</strong> stängda
+        </span>
+      )}
+    </div>
+
+    <!-- Filter-knappar -->
+    <div id="q-filters" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+      <button
+        data-filter="open"
+        class="q-filter-btn active"
+        style="font-family: var(--font-ui); font-size: 0.8rem; padding: 0.35em 0.75em; border: 1px solid var(--color-accent); border-radius: 3px; background: var(--color-accent); color: #000; cursor: pointer; font-weight: 700;"
+      >
+        Öppna ({openQuestions.length})
+      </button>
+      <button
+        data-filter="answered"
+        class="q-filter-btn"
+        style="font-family: var(--font-ui); font-size: 0.8rem; padding: 0.35em 0.75em; border: 1px solid var(--color-border); border-radius: 3px; background: transparent; color: var(--color-muted); cursor: pointer;"
+      >
+        Besvarade ({answeredQuestions.length})
+      </button>
+      <button
+        data-filter="blocked"
+        class="q-filter-btn"
+        style="font-family: var(--font-ui); font-size: 0.8rem; padding: 0.35em 0.75em; border: 1px solid var(--color-border); border-radius: 3px; background: transparent; color: var(--color-muted); cursor: pointer;"
+      >
+        Blockerade ({blockedQuestions.length})
+      </button>
+      <button
+        data-filter="all"
+        class="q-filter-btn"
+        style="font-family: var(--font-ui); font-size: 0.8rem; padding: 0.35em 0.75em; border: 1px solid var(--color-border); border-radius: 3px; background: transparent; color: var(--color-muted); cursor: pointer;"
+      >
+        Alla ({allQuestions.length})
+      </button>
+    </div>
 
     <p style="font-family: var(--font-ui); font-size: 0.85rem; margin-bottom: 1.5rem;">
       <a href={`${base}/tree/`} style="color: var(--color-accent);">Visa som träd →</a>
     </p>
 
-    <ul style="list-style: none; padding: 0; margin: 0;">
-      {questions.map(q => {
+    <!-- Öppna frågor -->
+    <ul id="list-open" class="q-list" style="list-style: none; padding: 0; margin: 0;">
+      {openQuestions.map(q => {
         const finding = findingHref(q.spawned_by);
         const dateStr = normalizeDate(q.spawned_at);
         const days = daysSince(dateStr);
@@ -94,6 +153,131 @@ const questions: QFact[] = files
           </li>
         );
       })}
+      {openQuestions.length === 0 && (
+        <li style="padding: 1rem 0; color: var(--color-muted); font-family: var(--font-ui); font-size: 0.9rem;">
+          Inga öppna frågor just nu.
+        </li>
+      )}
+    </ul>
+
+    <!-- Besvarade frågor -->
+    <ul id="list-answered" class="q-list" style="list-style: none; padding: 0; margin: 0; display: none;">
+      {answeredQuestions.map(q => {
+        const finding = findingHref(q.spawned_by);
+        const answeredRef = q.answered_by ? findingHref(q.answered_by) : null;
+        return (
+          <li style="border-bottom: 1px solid var(--color-border); padding: 0.75rem 0;">
+            <div style="display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;">
+              <span style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; color: var(--color-muted); min-width: 3.5rem;">
+                <a href={`${base}/questions/${q.fact_id}/`} style="color: var(--color-muted); text-decoration: none;">{q.fact_id}</a>
+              </span>
+              <span style="font-family: var(--font-ui); font-size: 0.9rem; color: var(--color-text); flex: 1;">
+                <a href={`${base}/questions/${q.fact_id}/`} style="color: var(--color-text); text-decoration: none;">{q.claim}</a>
+              </span>
+              <span style="font-family: var(--font-ui); font-size: 0.75rem; color: #4ade80; white-space: nowrap;">
+                {answeredRef
+                  ? <>Svarad av <a href={answeredRef.href} style="color: #4ade80;">Finding {answeredRef.num}</a></>
+                  : <>Besvarad</>
+                }
+              </span>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+
+    <!-- Blockerade frågor -->
+    <ul id="list-blocked" class="q-list" style="list-style: none; padding: 0; margin: 0; display: none;">
+      <li style="padding: 0.75rem; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 4px; margin-bottom: 1rem; font-family: var(--font-ui); font-size: 0.875rem; color: #f59e0b;">
+        Dessa frågor väntar på damdata — se <a href="/findings/" style="color: #f59e0b; text-decoration: underline;">META_DAMDATA</a> för detaljer.
+        Frågorna återöppnas när Damelitserien skrapats.
+      </li>
+      {blockedQuestions.map(q => {
+        const finding = findingHref(q.spawned_by);
+        return (
+          <li style="border-bottom: 1px solid var(--color-border); padding: 0.75rem 0; opacity: 0.7;">
+            <div style="display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;">
+              <span style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; color: var(--color-muted); min-width: 3.5rem;">
+                <a href={`${base}/questions/${q.fact_id}/`} style="color: var(--color-muted); text-decoration: none;">{q.fact_id}</a>
+              </span>
+              <span style="font-family: var(--font-ui); font-size: 0.9rem; color: var(--color-text); flex: 1;">
+                <a href={`${base}/questions/${q.fact_id}/`} style="color: var(--color-text); text-decoration: none;">{q.claim}</a>
+              </span>
+              <span style="font-family: var(--font-ui); font-size: 0.75rem; color: #f59e0b; white-space: nowrap;">
+                ⏳ väntar på damdata
+              </span>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+
+    <!-- Alla frågor -->
+    <ul id="list-all" class="q-list" style="list-style: none; padding: 0; margin: 0; display: none;">
+      {allQuestions.map(q => {
+        const finding = findingHref(q.spawned_by);
+        const answeredRef = q.answered_by ? findingHref(q.answered_by) : null;
+        const isBlocked = q.status === 'closed' && q.closed_reason === 'data_unavailable';
+        return (
+          <li style={`border-bottom: 1px solid var(--color-border); padding: 0.75rem 0;${isBlocked ? ' opacity: 0.6;' : ''}`}>
+            <div style="display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;">
+              <span style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; color: var(--color-muted); min-width: 3.5rem;">
+                <a href={`${base}/questions/${q.fact_id}/`} style="color: var(--color-muted); text-decoration: none;">{q.fact_id}</a>
+              </span>
+              <span style="font-family: var(--font-ui); font-size: 0.9rem; color: var(--color-text); flex: 1;">
+                <a href={`${base}/questions/${q.fact_id}/`} style="color: var(--color-text); text-decoration: none;">{q.claim}</a>
+              </span>
+              <span style="font-family: var(--font-ui); font-size: 0.75rem; color: var(--color-muted); white-space: nowrap;">
+                {q.status === 'open' && (finding
+                  ? <><a href={finding.href} style="color: var(--color-accent);">Finding {finding.num}</a></>
+                  : <>öppen</>
+                )}
+                {q.status === 'answered' && (answeredRef
+                  ? <><span style="color: #4ade80;">Svarad</span></>
+                  : <><span style="color: #4ade80;">Besvarad</span></>
+                )}
+                {isBlocked && <span style="color: #f59e0b;">⏳ damdata</span>}
+                {q.status === 'closed' && !isBlocked && <span style="color: var(--color-muted);">stängd</span>}
+              </span>
+            </div>
+          </li>
+        );
+      })}
     </ul>
   </div>
 </Base>
+
+<script>
+  const buttons = document.querySelectorAll('.q-filter-btn');
+  const lists: Record<string, HTMLElement | null> = {
+    open: document.getElementById('list-open'),
+    answered: document.getElementById('list-answered'),
+    blocked: document.getElementById('list-blocked'),
+    all: document.getElementById('list-all'),
+  };
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const filter = (btn as HTMLElement).dataset.filter ?? 'open';
+
+      // Update button styles
+      buttons.forEach(b => {
+        const el = b as HTMLElement;
+        el.style.background = 'transparent';
+        el.style.color = 'var(--color-muted)';
+        el.style.borderColor = 'var(--color-border)';
+        el.classList.remove('active');
+      });
+      const activeEl = btn as HTMLElement;
+      activeEl.style.background = 'var(--color-accent)';
+      activeEl.style.color = '#000';
+      activeEl.style.borderColor = 'var(--color-accent)';
+      activeEl.classList.add('active');
+
+      // Show/hide lists
+      Object.entries(lists).forEach(([key, el]) => {
+        if (el) el.style.display = key === filter ? '' : 'none';
+      });
+    });
+  });
+</script>

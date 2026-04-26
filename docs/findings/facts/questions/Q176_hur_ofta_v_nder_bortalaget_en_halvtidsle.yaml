@@ -4,7 +4,9 @@ claim: Hur ofta vänder bortalaget en halvtidsledning för hemmalaget — och i 
   matchsituationer sker det?
 spawned_by: finding:040
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:016
+answered_at: '2026-04-26'

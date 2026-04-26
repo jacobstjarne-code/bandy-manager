@@ -4,7 +4,9 @@ claim: Skiljer sig mönstret åt beroende på hur stor ledningen är i halvtid �
   tvåmålsledning hemma mer säker än borta i samma utsträckning som en enmålsledning?
 spawned_by: finding:039
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:001
+answered_at: '2026-04-26'

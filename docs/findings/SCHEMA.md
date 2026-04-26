@@ -256,8 +256,9 @@ istället för i basformatet:
   annars `"manual"`.
 - `spawned_at:` (obligatorisk) — datum när frågan skapades.
   Sätts till findingens datum vid backfill.
-- `status:` — för Q-facts: `open` (väntar på svar) eller `answered`
-  (besvarad). Standardstatus-fältet används men med utökad enum.
+- `status:` — för Q-facts: `open` (väntar på svar), `answered`
+  (besvarad), eller `closed` (stängd av annan anledning).
+  Standardstatus-fältet används men med utökad enum.
 - `answered_by:` (obligatorisk när `status: answered`) — finding som
   besvarar frågan. Format: `"finding:NNN"`.
 - `domain:` (valfri) — `bandy` eller `game`, ärvs från `spawned_by`-
@@ -268,6 +269,22 @@ istället för i basformatet:
 - `claim:` används som frågans text (frågans fullständiga formulering).
 - `verified_at:` och `verified_by:` sätts till datum/person som skapade
   frågan (typiskt `code` vid pipeline-generering, `jacob` vid manuell).
+
+### Stängda Q-facts (status: closed)
+
+Q-facts kan stängas utan att besvaras. Obligatoriskt vid `status: closed`:
+
+- `closed_reason:` — orsak. Enum: `superseded` | `data_unavailable` |
+  `out_of_scope` | `too_vague`
+- `closed_at:` — datum (YYYY-MM-DD)
+
+Vid `closed_reason: data_unavailable` är ytterligare fält obligatoriska:
+
+- `data_required:` — vilken data som krävs (t.ex. `damdata`)
+- `unblocks_when:` — vad som krävs för återöppning (t.ex. `"Damelitserien skrapad"`)
+
+Stängda Q-facts tas **inte** bort — de kan återöppnas när blockaden löses.
+Grep på `unblocks_when: "X"` för att hitta alla frågor som väntar på X.
 
 ---
 

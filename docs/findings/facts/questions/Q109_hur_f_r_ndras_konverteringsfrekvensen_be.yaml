@@ -4,7 +4,9 @@ claim: Hur förändras konverteringsfrekvensen beroende på ledningens storlek v
   – skiljer sig mönstret hemma och borta?
 spawned_by: finding:026
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:011
+answered_at: '2026-04-26'

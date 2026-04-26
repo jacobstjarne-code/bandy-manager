@@ -4,7 +4,9 @@ claim: Är sluttrycket för straff starkare i täta matcher (en eller noll måls
   än i ojämna?
 spawned_by: finding:010
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:019
+answered_at: '2026-04-26'

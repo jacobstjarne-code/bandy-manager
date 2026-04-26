@@ -4,7 +4,9 @@ claim: 'Om data kompletteras: skiljer sig målminutsfördelningen mellan Elitser
   och lägre divisioner inom herrbandy?'
 spawned_by: finding:032
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:013
+answered_at: '2026-04-26'

@@ -4,7 +4,9 @@ claim: Hur förändras valet av hörntyp beroende på matchläge (leder/förlora
   i match?
 spawned_by: finding:027
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:002
+answered_at: '2026-04-26'

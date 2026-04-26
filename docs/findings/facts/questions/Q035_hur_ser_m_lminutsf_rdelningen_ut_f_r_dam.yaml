@@ -3,7 +3,9 @@ category: questions
 claim: Hur ser målminutsfördelningen ut för damherrar — är sluttrycket lika uttalat?
 spawned_by: finding:010
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:004
+answered_at: '2026-04-26'

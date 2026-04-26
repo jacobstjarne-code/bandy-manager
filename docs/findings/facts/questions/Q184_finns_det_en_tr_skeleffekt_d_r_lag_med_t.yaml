@@ -4,7 +4,9 @@ claim: Finns det en tröskeleffekt där lag med tre eller fler måls underläge 
   ett fundamentalt annorlunda beteende än lag med ett eller två måls underläge?
 spawned_by: finding:041
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:001
+answered_at: '2026-04-26'

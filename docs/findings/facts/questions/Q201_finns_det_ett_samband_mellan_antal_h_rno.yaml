@@ -4,7 +4,9 @@ claim: Finns det ett samband mellan antal hörnor per match och konverteringsgra
   ligaövergripande nivå?
 spawned_by: finding:045
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:002
+answered_at: '2026-04-26'

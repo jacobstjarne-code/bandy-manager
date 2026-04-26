@@ -4,7 +4,9 @@ claim: Hur förändras konverteringsfrekvensen om man separerar direkta hörnmå
   mål efter returspel?
 spawned_by: finding:035
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:002
+answered_at: '2026-04-26'

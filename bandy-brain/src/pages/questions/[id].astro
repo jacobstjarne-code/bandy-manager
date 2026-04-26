@@ -33,6 +33,10 @@ interface QFact {
   spawned_by?: string;
   spawned_at?: string | Date;
   status?: string;
+  closed_reason?: string;
+  closed_at?: string;
+  data_required?: string;
+  unblocks_when?: string;
   answered_by?: string;
   related_questions?: string[];
   hypotheses?: string[];
@@ -141,6 +145,16 @@ const pageTitle = `${id} — ${qfact.claim}`;
           öppen sedan {days} dagar
         </span>
       )}
+      {qfact.status === 'closed' && qfact.closed_reason === 'data_unavailable' && (
+        <span style="margin-left: 0.75rem; font-family: var(--font-ui); font-size: 0.75rem; background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 0.15em 0.5em; border-radius: 3px; font-weight: 700;">
+          ⏳ Väntar på data
+        </span>
+      )}
+      {qfact.status === 'closed' && qfact.closed_reason !== 'data_unavailable' && (
+        <span style="margin-left: 0.75rem; font-family: var(--font-ui); font-size: 0.75rem; background: rgba(100,100,100,0.2); color: var(--color-muted); padding: 0.15em 0.5em; border-radius: 3px; font-weight: 700;">
+          Stängd
+        </span>
+      )}
     </div>
 
     <h1 style="font-family: var(--font-ui); font-size: 1.25rem; font-weight: 700; margin-bottom: 2rem; max-width: 640px; line-height: 1.4;">
@@ -188,6 +202,19 @@ const pageTitle = `${id} — ${qfact.claim}`;
         </tr>
       )}
     </table>
+
+    <!-- Blockerad-banner för data_unavailable -->
+    {qfact.status === 'closed' && qfact.closed_reason === 'data_unavailable' && (
+      <div style="padding: 1rem; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 4px; margin-bottom: 2rem; font-family: var(--font-ui); font-size: 0.875rem; color: #f59e0b; max-width: 560px;">
+        <strong>Blockerad fråga</strong> — Denna fråga väntar på damdata och kan inte besvaras med nuvarande dataunderlag.
+        Bandygrytan-scrapern täcker bara herrserien.
+        {qfact.unblocks_when && <span> Återöppnas när: {qfact.unblocks_when}.</span>}
+        <br />
+        <a href="/findings/" style="color: #f59e0b; text-decoration: underline; font-size: 0.8rem; margin-top: 0.5rem; display: inline-block;">
+          Se META_DAMDATA för fullständig förklaring →
+        </a>
+      </div>
+    )}
 
     <!-- Hypoteser -->
     {qfact.hypotheses && qfact.hypotheses.length > 0 && (

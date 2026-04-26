@@ -4,7 +4,9 @@ claim: Ser vi samma progressiva minskning om vi bryter ned data per säsong snar
   än aggregerat?
 spawned_by: finding:046
 spawned_at: '2026-04-26'
-status: open
+status: answered
 verified_at: '2026-04-26'
 verified_by: code
 domain: bandy
+answered_by: finding:009
+answered_at: '2026-04-26'

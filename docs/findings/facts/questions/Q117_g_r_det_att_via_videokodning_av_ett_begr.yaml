@@ -4,7 +4,9 @@ claim: Går det att via videokodning av ett begränsat urval matcher etablera et
   för hörntypsfördelning?
 spawned_by: finding:027
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:010
+answered_at: '2026-04-26'

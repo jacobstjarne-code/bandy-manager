@@ -4,7 +4,9 @@ claim: Finns det spelare som är statistiskt överrepresenterade som målgörare
   tidigt i 2H?
 spawned_by: finding:043
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:026
+answered_at: '2026-04-26'

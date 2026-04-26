@@ -4,7 +4,9 @@ claim: Varför returnerar analysen ett tomt seriefält — är det ett pipeline-
   saknas divisionsmärkning i källdatan?
 spawned_by: finding:032
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:023
+answered_at: '2026-04-26'

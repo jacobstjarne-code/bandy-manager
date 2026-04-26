@@ -13,6 +13,7 @@ interface QFact {
   claim: string;
   spawned_by?: string;
   status?: string;
+  closed_reason?: string;
   answered_by?: string;
 }
 
@@ -55,104 +56,156 @@ for (const q of allQ) {
   }
 }
 
-// Filter findings with at least one Q-connection
-// Sort by Q-count desc, cap at top 40 nodes
-const findingsSorted = [...findingToQs.entries()]
-  .sort((a, b) => b[1].length - a[1].length);
+// Counts
+const totalAnswered = qToAnsweredBy.size;
+const totalOpen = allQ.filter(q => q.status === 'open').length;
+const totalBlocked = allQ.filter(q => q.status === 'closed' && q.closed_reason === 'data_unavailable').length;
 
-// Collect which findings to include (limit to produce max ~40 nodes)
-let nodeCount = 0;
-const includedFindings = new Set<string>();
-const includedQs = new Set<string>();
+// ---- Build two graphs: "answered" and "all" ----
 
-for (const [fnum, qids] of findingsSorted) {
-  if (nodeCount >= 40) break;
-  includedFindings.add(fnum);
-  nodeCount++;
-  for (const qid of qids) {
-    if (nodeCount >= 40) break;
-    includedQs.add(qid);
+function buildGraph(includeAll: boolean): string {
+  // If includeAll: include open + answered
+  // If !includeAll (default): only show answered Q-facts (most informative)
+  const targetQ = includeAll
+    ? allQ.filter(q => q.status === 'open' || q.status === 'answered')
+    : allQ.filter(q => q.status === 'answered');
+
+  // Sort findings by Q-count desc
+  const findingsSorted = [...findingToQs.entries()]
+    .sort((a, b) => b[1].length - a[1].length);
+
+  // Limit to max 50 nodes
+  let nodeCount = 0;
+  const includedFindings = new Set<string>();
+  const includedQs = new Set<string>();
+  const targetQIds = new Set(targetQ.map(q => q.fact_id));
+
+  for (const [fnum, qids] of findingsSorted) {
+    if (nodeCount >= 50) break;
+    const relevantQs = qids.filter(qid => targetQIds.has(qid));
+    if (relevantQs.length === 0) continue;
+    includedFindings.add(fnum);
     nodeCount++;
+    for (const qid of relevantQs) {
+      if (nodeCount >= 50) break;
+      includedQs.add(qid);
+      nodeCount++;
+    }
   }
-}
 
-// Build Mermaid diagram
-const claimShort = (claim: string) => {
-  const c = claim.length > 40 ? claim.slice(0, 40) + '…' : claim;
-  // Escape quotes and special chars for Mermaid labels
-  return c.replace(/"/g, '&quot;').replace(/[[\](){}]/g, '');
-};
+  const claimShort = (claim: string) => {
+    const c = claim.length > 38 ? claim.slice(0, 38) + '…' : claim;
+    return c.replace(/"/g, '&quot;').replace(/[[\](){}]/g, '');
+  };
 
-// Build node declarations + edges
-const lines: string[] = ['graph LR'];
+  const lines: string[] = ['graph LR'];
 
-// Finding nodes
-for (const fnum of includedFindings) {
-  lines.push(`  F${fnum}["Finding ${fnum}"]`);
-}
+  // Finding nodes
+  for (const fnum of includedFindings) {
+    lines.push(`  F${fnum}["Finding ${fnum}"]`);
+  }
 
-// Q nodes
-for (const qid of includedQs) {
-  const q = allQ.find((x) => x.fact_id === qid);
-  const label = q ? claimShort(q.claim) : qid;
-  lines.push(`  ${qid}["${qid}: ${label}"]`);
-}
+  // Q nodes
+  for (const qid of includedQs) {
+    const q = allQ.find((x) => x.fact_id === qid);
+    const label = q ? claimShort(q.claim) : qid;
+    const isAnswered = q?.status === 'answered';
+    lines.push(`  ${qid}["${qid}: ${label}"]`);
+    if (isAnswered) {
+      lines.push(`  style ${qid} fill:#1a3a1a,stroke:#4ade80`);
+    }
+  }
 
-// Spawning edges: finding → Q
-for (const [fnum, qids] of findingToQs.entries()) {
-  if (!includedFindings.has(fnum)) continue;
-  for (const qid of qids) {
+  // Spawning edges: finding → Q
+  for (const [fnum, qids] of findingToQs.entries()) {
+    if (!includedFindings.has(fnum)) continue;
+    for (const qid of qids) {
+      if (!includedQs.has(qid)) continue;
+      lines.push(`  F${fnum} -.->|spawned| ${qid}`);
+    }
+  }
+
+  // Answered-by edges: Q → finding
+  for (const [qid, aNum] of qToAnsweredBy.entries()) {
     if (!includedQs.has(qid)) continue;
-    lines.push(`  F${fnum} -.->|spawned| ${qid}`);
+    if (!includedFindings.has(aNum)) {
+      lines.push(`  F${aNum}["Finding ${aNum}"]`);
+    }
+    lines.push(`  ${qid} -->|answered by| F${aNum}`);
   }
+
+  return lines.join('\n');
 }
 
-// Answered-by edges: Q → finding
-for (const [qid, aNum] of qToAnsweredBy.entries()) {
-  if (!includedQs.has(qid)) continue;
-  const label = `F${aNum}`;
-  if (!includedFindings.has(aNum)) {
-    // Add the answering finding even if it wasn't in the spawn list
-    lines.push(`  F${aNum}["Finding ${aNum}"]`);
-  }
-  lines.push(`  ${qid} -.->|answered_by| F${aNum}`);
-}
+const mermaidAnswered = buildGraph(false);
+const mermaidAll = buildGraph(true);
 
-const mermaidCode = lines.join('\n');
-
-const hasAnswered = qToAnsweredBy.size > 0;
-const totalNodes = includedFindings.size + includedQs.size;
+const answeredNodeCount = allQ.filter(q => q.status === 'answered').length;
+const allNodeCount = allQ.filter(q => q.status === 'open' || q.status === 'answered').length;
 ---
 
 <Base
   title="Kunskapsträdet"
-  description="Relationer mellan findings och öppna frågor i Bandy-Brain."
+  description={`Relationer mellan findings och frågor i Bandy-Brain. ${totalAnswered} besvarade, ${totalOpen} öppna.`}
 >
   <div class="page-container">
     <h1 style="font-family: var(--font-ui); font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">
       Kunskapsträdet
     </h1>
     <p style="max-width: 560px; color: var(--color-muted); font-size: 0.9rem; margin-bottom: 0.5rem; font-family: var(--font-ui);">
-      Varje finding väcker frågor. Grafen visar vilka findings som har fött Q-facts,
-      och — om en fråga fått svar — vilken finding som besvarade den.
-    </p>
-    <p style="font-family: var(--font-ui); font-size: 0.85rem; margin-bottom: 2rem;">
-      <a href={`${base}/questions/`} style="color: var(--color-accent);">← Alla öppna frågor</a>
+      Varje finding väcker frågor. Grafen visar vilka findings som har fött Q-facts
+      och vilka findings som besvarade dem.
     </p>
 
-    {!hasAnswered && (
-      <p style="font-family: var(--font-ui); font-size: 0.85rem; color: var(--color-muted); margin-bottom: 1.5rem; font-style: italic;">
-        Inga besvarade frågor ännu — grafen visar bara ursprung.
-      </p>
-    )}
+    <!-- Statistik -->
+    <div style="display: flex; gap: 1.5rem; margin-bottom: 1rem; flex-wrap: wrap; font-family: var(--font-ui); font-size: 0.875rem;">
+      <span><strong style="color: #4ade80;">{totalAnswered}</strong> besvarade</span>
+      <span><strong style="color: var(--color-accent);">{totalOpen}</strong> öppna</span>
+      <span><strong style="color: #f59e0b;">{totalBlocked}</strong> blockerade (damdata)</span>
+    </div>
 
-    <div class="mermaid" style="overflow-x: auto; background: var(--color-surface, #0a1520); padding: 1.5rem; border-radius: 4px; margin-bottom: 1rem;">
-      {mermaidCode}
+    <p style="font-family: var(--font-ui); font-size: 0.85rem; margin-bottom: 1.5rem;">
+      <a href={`${base}/questions/`} style="color: var(--color-accent);">← Alla frågor</a>
+    </p>
+
+    <!-- Filter-knappar -->
+    <div id="tree-filters" style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+      <button
+        id="btn-answered"
+        style="font-family: var(--font-ui); font-size: 0.8rem; padding: 0.35em 0.75em; border: 1px solid var(--color-accent); border-radius: 3px; background: var(--color-accent); color: #000; cursor: pointer; font-weight: 700;"
+      >
+        Besvarade Q ({totalAnswered})
+      </button>
+      <button
+        id="btn-all"
+        style="font-family: var(--font-ui); font-size: 0.8rem; padding: 0.35em 0.75em; border: 1px solid var(--color-border); border-radius: 3px; background: transparent; color: var(--color-muted); cursor: pointer;"
+      >
+        Alla Q ({allNodeCount})
+      </button>
+    </div>
+
+    <!-- Legend -->
+    <div style="font-family: var(--font-ui); font-size: 0.8rem; color: var(--color-muted); margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+      <span>
+        <span style="display: inline-block; width: 12px; height: 12px; background: #1a3a1a; border: 1px solid #4ade80; border-radius: 2px; margin-right: 4px;"></span>
+        Besvarad Q
+      </span>
+      <span>- - →  spawnad av finding</span>
+      <span>——→  besvarad av finding</span>
+    </div>
+
+    <!-- Graf: besvarade -->
+    <div id="graph-answered" style="overflow-x: auto; background: var(--color-surface, #0a1520); padding: 1.5rem; border-radius: 4px; margin-bottom: 1rem;">
+      <div class="mermaid">{mermaidAnswered}</div>
+    </div>
+
+    <!-- Graf: alla (dold default) -->
+    <div id="graph-all" style="display: none; overflow-x: auto; background: var(--color-surface, #0a1520); padding: 1.5rem; border-radius: 4px; margin-bottom: 1rem;">
+      <div class="mermaid">{mermaidAll}</div>
     </div>
 
     <p style="font-family: var(--font-ui); font-size: 0.8rem; color: var(--color-muted); margin-top: 1rem;">
-      Visar {totalNodes} noder ({includedFindings.size} findings, {includedQs.size} frågor).
-      Uppdateras automatiskt när nya findings och frågor tillkommer.
+      Grafen visar max 50 noder per vy. Uppdateras automatiskt när nya findings och frågor tillkommer.
     </p>
   </div>
 </Base>
@@ -163,5 +216,33 @@ const totalNodes = includedFindings.size + includedQs.size;
     startOnLoad: true,
     theme: 'dark',
     flowchart: { useMaxWidth: false, htmlLabels: true },
+  });
+
+  const btnAnswered = document.getElementById('btn-answered');
+  const btnAll = document.getElementById('btn-all');
+  const graphAnswered = document.getElementById('graph-answered');
+  const graphAll = document.getElementById('graph-all');
+
+  function setActive(btn) {
+    [btnAnswered, btnAll].forEach(b => {
+      b.style.background = 'transparent';
+      b.style.color = 'var(--color-muted)';
+      b.style.borderColor = 'var(--color-border)';
+    });
+    btn.style.background = 'var(--color-accent)';
+    btn.style.color = '#000';
+    btn.style.borderColor = 'var(--color-accent)';
+  }
+
+  btnAnswered?.addEventListener('click', () => {
+    setActive(btnAnswered);
+    graphAnswered.style.display = '';
+    graphAll.style.display = 'none';
+  });
+
+  btnAll?.addEventListener('click', () => {
+    setActive(btnAll);
+    graphAnswered.style.display = 'none';
+    graphAll.style.display = '';
   });
 </script>

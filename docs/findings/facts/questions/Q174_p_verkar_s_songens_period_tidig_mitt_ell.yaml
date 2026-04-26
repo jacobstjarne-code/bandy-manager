@@ -4,7 +4,9 @@ claim: Påverkar säsongens period — tidig, mitt eller sen — hur ofta halvti
   hålls?
 spawned_by: finding:039
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:006
+answered_at: '2026-04-26'

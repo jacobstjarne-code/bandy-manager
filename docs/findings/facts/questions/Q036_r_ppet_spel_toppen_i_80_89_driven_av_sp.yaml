@@ -4,7 +4,9 @@ claim: Är öppet spel-toppen i 80–89 driven av specifika lag eller trupper, e
   det ett generellt fenomen?
 spawned_by: finding:010
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:009
+answered_at: '2026-04-26'

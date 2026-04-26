@@ -4,7 +4,9 @@ claim: Kan Finding 012 köras om med explicit angivet säsongsintervall och seri
   att verifiera att data finns?
 spawned_by: finding:030
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:012
+answered_at: '2026-04-26'

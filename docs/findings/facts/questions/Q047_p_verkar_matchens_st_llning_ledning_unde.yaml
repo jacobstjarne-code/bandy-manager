@@ -4,7 +4,9 @@ claim: Påverkar matchens ställning (ledning/underläge) sannolikheten att en h
   leder till mål, och skiljer sig det mönstret mellan serierna?
 spawned_by: finding:012
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:016
+answered_at: '2026-04-26'

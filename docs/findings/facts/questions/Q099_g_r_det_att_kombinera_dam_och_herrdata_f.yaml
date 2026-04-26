@@ -4,7 +4,18 @@ claim: Går det att kombinera dam- och herrdata för att testa om sluttryck är 
   bandyfenomen oberoende av serie?
 spawned_by: finding:023
 spawned_at: '2026-04-25'
-status: open
+status: closed
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:005
+answered_at: '2026-04-26'
+closed_at: '2026-04-26'
+closed_reason: data_unavailable
+data_required: damdata
+unblocks_when: Damelitserien skrapad
+notes: 'Frågan är giltig men kan inte besvaras med nuvarande dataunderlag.
+
+  Bandygrytan-scrapern täcker bara herrserien. Frågan återöppnas om
+
+  och när damdata finns tillgänglig.'

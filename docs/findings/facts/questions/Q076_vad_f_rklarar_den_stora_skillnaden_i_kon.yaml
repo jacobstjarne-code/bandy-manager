@@ -3,7 +3,9 @@ category: questions
 claim: Vad förklarar den stora skillnaden i konvertering mellan de två VSK-perioderna?
 spawned_by: finding:018
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:018
+answered_at: '2026-04-26'

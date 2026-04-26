@@ -4,7 +4,9 @@ claim: Hur ser andelen halvtidsledningar ut för hemma- respektive bortalag – 
   hemmalag oftare, och i så fall med större marginaler?
 spawned_by: finding:026
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:003
+answered_at: '2026-04-26'

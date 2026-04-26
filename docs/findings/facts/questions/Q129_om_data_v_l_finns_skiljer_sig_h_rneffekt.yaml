@@ -4,7 +4,9 @@ claim: 'Om data väl finns: skiljer sig hörneffektiviteten statistiskt signifik
   mellan matchlägen, eller är variansen för stor för att dra slutsatser?'
 spawned_by: finding:030
 spawned_at: '2026-04-25'
-status: open
+status: answered
 verified_at: '2026-04-25'
 verified_by: code
 domain: bandy
+answered_by: finding:010
+answered_at: '2026-04-26'
