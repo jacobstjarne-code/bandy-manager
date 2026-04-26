@@ -1566,3 +1566,13 @@
   analysis_type: corner_by_team
   params:
     series: herr
+
+- id: Q196
+  source_finding: '?'
+  question: "Sjunker hörnmålsandelen progressivt från grundserie mot final — och vad\
+    \ kan förklara det?"
+  status: open
+  analysis_type: goals_by_phase_detail
+  params:
+    phases: [regular, quarterfinal, semifinal, final]
+    include_corner_pct: true

@@ -1,0 +1,34 @@
+fact_id: S017
+category: stats
+claim: "Hörnmålsandel (cornerGoalPct) per fas, Herrbandy Elitserien — sjunker progressivt mot slutspel"
+value: null
+unit: percent
+breakdown:
+  regular: 22.2
+  quarterfinal: 20.0
+  semifinal: 18.7
+  final: 16.7
+source:
+  type: dataset
+  name: bandygrytan
+  match_count: 1242
+  seasons: ["2019-20", "2020-21", "2021-22", "2022-23", "2024-25", "2025-26"]
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "breakdown.regular > breakdown.quarterfinal"
+  - "breakdown.quarterfinal > breakdown.semifinal"
+  - "breakdown.semifinal > breakdown.final"
+  - "breakdown.regular == S008.value"
+related_facts: [S008]
+notes: |
+  Hörnmålsandelen sjunker steg för steg från grundserie mot final. Tolkning:
+  slutspelslag är bättre på att försvara hörnor, alternativt spelar de mer
+  direkt spel när målen är avgörande.
+
+  Final-siffran (16.7 %) baseras på n≈29 matcher och är osäker.
+
+  Simulatorn (sprint 25-K) replikerar grundserie (23.0 %) och KVF/SF (≈22.9/22.6 %)
+  väl, men modellerar inte fas-variation — cornerGoalPct är konstant i motorn.
+  Fas-skillnaden i rådata är alltså inte kalibrerad, utan emergent.

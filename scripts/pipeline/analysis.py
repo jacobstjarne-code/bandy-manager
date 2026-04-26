@@ -151,12 +151,17 @@ def goals_by_phase_detail(data: dict, params: dict) -> dict:
             ht_total += 1
             if (hh > ha and m['homeScore'] > m['awayScore']) or (ha > hh and m['awayScore'] > m['homeScore']):
                 ht_wins += 1
+        corner_goals = sum(m.get('cornerGoalsHome', 0) + m.get('cornerGoalsAway', 0) for m in ms)
+        total_goals = sum(m['homeScore'] + m['awayScore'] for m in ms)
         result.append({
             'phase': phase,
             'match_count': len(ms),
             'avg_goals': round(avg, 2),
             'ht_lead_win_pct': round(ht_wins/ht_total*100, 1) if ht_total else None,
             'ht_total': ht_total,
+            'corner_goal_pct': round(corner_goals / (total_goals or 1) * 100, 1),
+            'corner_goals': corner_goals,
+            'total_goals': total_goals,
         })
     return {'type': 'goals_by_phase_detail', 'phases': result}
 
