@@ -21,6 +21,13 @@ En finding har alltid dessa sektioner:
 Stil: Swedish. Saklig. Erkänner begränsningar. Inga adjektiv som "fascinerande" eller "anmärkningsvärd" —
 låt siffrorna tala. Max en mening per punkt i listor. Prosa i stycken, inte bullets, när det är tolkning.
 
+VIKTIGT — sifferdata i findings:
+Använd INTE hårdkodade siffror som kan hämtas från facts. Istället för att skriva
+"78,1 %" direkt, skriv {factPct("S013")} i Astro-JSX-koden. Alla tal som
+direkt motsvarar ett S-fact, R-fact eller D-fact-värde ska templateras.
+Undantag: härledda tal (beräknade ur flera facts) — dessa kommenteras med
+<!-- derived from S012 + S014 --> istället.
+
 Svara ALLTID med ett JSON-objekt och ingenting annat. Inga förklaringar utanför JSON."""
 
 USER_TEMPLATE = """Fråga som ska besvaras: {question}

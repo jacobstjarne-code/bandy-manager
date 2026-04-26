@@ -203,3 +203,31 @@ export const CATEGORY_LABELS: Record<string, string> = {
   design_principles: 'Designval',
   world_canon: 'Spelvärlden',
 };
+
+/**
+ * Return a fact's value as a string, with optional formatting.
+ * Returns "[ID?]" if the fact is not found.
+ */
+export function factValue(id: string, formatter?: (v: any) => string): string {
+  const facts = loadFacts();
+  const fact = facts.find(f => f.fact_id === id);
+  if (!fact) return `[${id}?]`;
+  if (formatter) return formatter(fact.value);
+  return String(fact.value ?? '');
+}
+
+/**
+ * Return a fact's percentage value in Swedish format: "78,1 %"
+ */
+export function factPct(id: string): string {
+  const v = factValue(id);
+  // Ersätt . med , för svensk konvention
+  return v.replace('.', ',') + ' %';
+}
+
+/**
+ * Return a goals-per-match value in Swedish format: "9,12"
+ */
+export function factGoals(id: string): string {
+  return factValue(id).replace('.', ',');
+}
