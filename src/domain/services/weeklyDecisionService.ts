@@ -179,9 +179,9 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       id: 'survival_emergency_lotto',
       category: 'community',
       requiredEra: ['survival'],
-      question: `${leader} vill sälja lottsedlar vid hemmamatcherna. Enkelt, men inte alla gillar det.`,
+      question: `${leader} vill starta ett 50-50-lotteri vid hemmamatcherna. Halva potten till vinnaren, resten till att starta en ungdomsklack.`,
       optionA: { label: 'Kör igång', effect: '+5 tkr · +klackstämning', effectColor: 'success' },
-      optionB: { label: 'Inte vår grej', effect: '${leader} besviken', effectColor: 'muted' },
+      optionB: { label: 'Inte nu', effect: `${leader} besviken`, effectColor: 'muted' },
     },
   ]
 
