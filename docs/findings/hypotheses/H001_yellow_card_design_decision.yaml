@@ -1,5 +1,6 @@
 fact_id: H001
 category: hypothesis
+domain: bandy
 claim: "Spelets modellering av utvisningar (bara tidsbegränsade, inga varningar/matchstraff) är ett förenklande designval — inte en faktauppgift om bandy"
 source:
   type: observation

@@ -48,14 +48,23 @@ ska prägla hela sajten.
 /findings/001              Detaljvy med refererade facts klickbara
 /about/                    Vad Bandy-Brain är, hur datan genereras,
                            begränsningar i metoden
-/sources/                  Bakgrund — facts grupperat per kategori
-/sources/rules/R014        Detaljvy för fact (för dem som vill djupdyka)
+
+/bandy/                    Bandy-domänen — externa sanningar om bandy
+/bandy/rules/R014          Detaljvy regelfakta
+/bandy/stats/S008          Detaljvy statistikfakta
+
+/spelet/                   Spel-domänen — interna sanningar om Bandy Manager
+/spelet/design/D005        Detaljvy designval
+/spelet/varlden/W001       Detaljvy fiktiv klubb
+
 /data/                     Länkar till regelboken, TB, bilaga 9 (PDFer)
 ```
 
-`/findings/` är *huvudet*. `/sources/` är *footnoter*. UIet ska
-spegla det visuellt — findings får utrymme och rytm, sources är
-kompakt referens.
+`/findings/` är *huvudet*. `/bandy/` och `/spelet/` är *footnoter* —
+kompakta referensvyer som findings länkar till. De ska inte presenteras
+som likvärdiga toppnav-poster: findings är huvudinnehållet, källorna är
+underordnade. Förstasidan kan ha två enkla footnoter: "Källor om bandy"
+→ /bandy/, "Om spelet" → /spelet/.
 
 ---
 
@@ -96,7 +105,7 @@ Källor i denna finding: S013, S004, S002, R014
 [Diskutera denna finding] [Ladda ner PDF]
 ```
 
-`[S013]` är klickbar och tar läsaren till `/sources/stats/S013` med
+`[S013]` är klickbar och tar läsaren till `/bandy/stats/S013` med
 fact-detaljerna. Tillbaka-knapp för att fortsätta läsa findingen.
 
 ---

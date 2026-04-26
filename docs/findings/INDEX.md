@@ -47,6 +47,7 @@ Senaste audit: [AUDIT_PASS_2_2026-04-25.md](AUDIT_PASS_2_2026-04-25.md)
 | # | Datum | Titel | Status |
 |---|-------|-------|--------|
 | 001 | 2026-04-25 | Halvtidsledning vs verkligt utfall | Utkast — väntar på Sprint 25-HT-data |
+| 005 | 2026-04-26 | Hörnmål-andelens fall genom slutspelsfaserna | Verifierad rådata-observation |
 
 ---
 

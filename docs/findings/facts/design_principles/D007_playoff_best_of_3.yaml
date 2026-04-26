@@ -1,0 +1,20 @@
+fact_id: D007
+category: design_principles
+claim: "Bandy Manager kör KVF best-of-3 istället för regelbokens best-of-5"
+value: 3
+unit: max matches
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/playoffService.ts (isSeriesDecided: homeWins >= 3 || awayWins >= 3)"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value == 3"
+related_facts: [R025]
+notes: |
+  Designval: best-of-3 håller slutspelet kortare för spelets tempo.
+  Regelboken (R025) anger best-of-5 i verklig Elitserie. Avvikelsen är
+  medveten. Om spelet senare utvidgas till längre slutspel, uppdatera
+  värdet och lägg en revisions-post.

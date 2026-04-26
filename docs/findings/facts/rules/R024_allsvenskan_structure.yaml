@@ -14,5 +14,9 @@ invariants:
   - "value[0] == 13"
   - "value[1] == 24"
 notes: |
-  13 lag × 2 = 26 matcher per lag men 24 omgångar p.g.a. serieformat.
-  Lag 1 upp, lag 2-3 till positivt kval, lag 12-13 negativt kval.
+  13 lag i rak dubbelserie. Varje lag spelar 24 matcher (möter
+  varje motståndare två gånger = 12 × 2 = 24). Serien har 24 omgångar
+  totalt; varje lag står över 2 omgångar eftersom antalet lag är ojämnt.
+
+  Lag 1 upp till Elitserien, lag 2-3 till positivt kval, lag 12-13 till
+  negativt kval mot Division 1.

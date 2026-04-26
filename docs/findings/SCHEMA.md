@@ -51,6 +51,36 @@ motsäger Y (S012)". Men en finding är inte ett fact.
 
 ---
 
+## Domäner
+
+Facts faller i två sanningsdomäner. Distinktionen är central för hur
+facts citeras och presenteras — särskilt på publika gränssnitt.
+
+**Bandy-domänen — externa sanningar om bandy:**
+- R-facts (rules) — fastställda regler från SBF/FIB
+- S-facts (stats) — empiriska mönster i verkligt bandy
+
+**Spel-domänen — interna sanningar om Bandy Manager:**
+- D-facts (design_principles) — designval för spelet
+- W-facts (world_canon) — fiktiv värld i spelet
+
+**Hypoteser** (H-facts) tillhör en av domänerna beroende på vad de
+handlar om. Ange `domain:` (`bandy` eller `game`) i hypotes-YAMLen.
+
+### Citatregler
+
+När en finding citerar facts från olika domäner ska det framgå:
+
+- Bandy-domän-citat skrivs naturligt i prosa: "Bandygrytan visar 22%
+  hörnmålsandel [S008]" — läsaren förstår att S008 är en bandyfakta.
+- Spel-domän-citat ska kontextualiseras: "I Bandy Manager-motorn
+  modelleras detta som... [D005]" eller "Bandy Manager:s fiktiva
+  serie har 12 lag istället för regelbokens 14 [D006 vs R023]".
+
+Aldrig citera ett D-fact som om det vore en bandyobservation.
+
+---
+
 ## FACT-ID-KONVENTION
 
 Fyra tecken: en bokstav (kategori) + tre siffror.
@@ -172,6 +202,32 @@ revisions:
 `revisions:` är för revisioner som är *meningsfulla för förståelsen*
 — typiskt rättningar, omtolkningar, eller stora omkalibreringar.
 Vardagliga uppdateringar (verified_at flyttas fram) hör inte hit.
+
+### Tilläggsfält per kategori
+
+Vissa fält är specifika för en kategori och dokumenteras här
+istället för i basformatet:
+
+**Hypoteser (H-facts):**
+- `domain:` (obligatorisk) — `bandy` eller `game`
+- `closed_at:` (vid stängning) — datum när hypotesen avgjordes
+- `closed_by:` (vid stängning) — vem som avgjorde
+- `status: deprecated` används när hypotes stängs (verifierad,
+  motbevisad, eller obsolet)
+
+**Statistik (S-facts) med uppdelning:**
+- `breakdown:` (valfri) — strukturerat värde när statiken har
+  naturlig fas/grupp-indelning. Exempel: `breakdown.regular: 22.2`,
+  `breakdown.quarterfinal: 20.0`. Cross-fact-invarianter kan referera
+  enskilda nycklar: `breakdown.regular > breakdown.quarterfinal`.
+
+  När `breakdown:` används kan `value:` sättas till `null` eller
+  utelämnas. `unit:` gäller alla värden i `breakdown:`.
+
+**Designval (D-facts) med ekvivalens till regel:**
+- `related_facts:` ska inkludera motsvarande R-fact när designvalet
+  avviker från regelboken. Notes ska tydligt ange att avvikelsen är
+  medveten.
 
 ---
 

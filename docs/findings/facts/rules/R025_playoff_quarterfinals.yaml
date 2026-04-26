@@ -12,9 +12,10 @@ verified_by: code
 status: active
 invariants:
   - "value == 5"
+related_facts: [D007]
 notes: |
   PASS_2_INSTRUCTION angav best-of-3 för KVF — det var ett fel i spec-utkastet.
   Bilaga 9 anger tydligt best-of-5. Verifierat av Code vid PDF-läsning 2026-04-25.
   Även åttondelsfinaler (lag 7-10) spelas best-of-3.
   Bandy Manager implementerar best-of-3 i kvartsfinaler — det är ett designval,
-  inte en regelenlig simulering. Se D-fact för spelet-specifik regel.
+  inte en regelenlig simulering. Se D007 för spelet-specifik regel.

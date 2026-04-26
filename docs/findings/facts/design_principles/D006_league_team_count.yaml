@@ -1,0 +1,20 @@
+fact_id: D006
+category: design_principles
+claim: "Bandy Manager simulerar 12-lags fiktiv Elitserie istället för regelbokens 14 lag"
+value: 12
+unit: teams
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/worldGenerator.ts (CLUB_TEMPLATES)"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value == 12"
+related_facts: [R023]
+notes: |
+  Designval: 12 lag ger en hanterlig serie för spelet utan att förlora
+  spelmekaniken. Regelboken (R023) anger 14 lag i verklig Elitserie Herr.
+  Avvikelsen är medveten — alla 12 W-facts (W001-W012) är konsistenta
+  med detta antal.
