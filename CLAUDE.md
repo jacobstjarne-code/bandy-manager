@@ -102,6 +102,70 @@ Om en bugg uppträder 2+ gånger, eller om en ny bugg matchar ett mönster som r
 - CSS-variabler ENBART — inga hårdkodade färger
 - Events som overlay (zIndex 300) — INTE egna routes
 
+---
+
+## DESIGNPRINCIPER — LÄS FÖRE SPEC
+
+Dessa tre principer adresserar ett mönster vi observerat 2026-04: vi har bra dokumentation av *det som hänt*, men beslutsögonblicken (innan kod skrivs, innan spec klubbas) är otillräckligt strukturerade. Det är där missarna sker.
+
+### 1. INBOX-PRINCIPEN
+
+**Inbox dokumenterar, driver inte funktionalitet.**
+
+En koppling som bara manifesterar sig som ny inbox-rad räknas inte som leverans. Riktig koppling = system A's händelse syns/ändrar text i system B's *vy* (kafferum, klack, presskonferens, granska-screen, dashboard-kort, motståndartränare, etc.).
+
+**Konkret:**
+- Skandal i kafferum (kioskvakten kommenterar) → räknas
+- Skandal som inbox-rad → räknas inte som koppling till kafferum
+- En feature som producerar inbox-text utan att synas någon annanstans är *halvbyggd*
+
+**Historik:** Sprint 25h byggde 8 skandalarketyper med inbox-rader och kafferum-quote *som inbox-rad*. Skandalerna syntes inte i dashboard-kafferum, klack-commentary, eller pressfrågor. Spelaren såg dem inte i någon annan vy än inboxen. Sprint 26 åtgärdade detta i efterhand.
+
+### 2. PRE-SPEC CROSS-CHECK
+
+**Innan ny feature specas — sök efter befintlig implementation.**
+
+För varje funktion/koncept i specen, grep efter motsvarande logik i kodbasen. Två tecken på redundansrisk:
+- Funktionen har redan ett namn i kodbasen (sökord från specen ger träffar)
+- Specen beskriver något "som inte finns" — verifiera, fråga inte din magkänsla
+
+**Konkret check innan ny service/funktion skrivs:**
+```bash
+# 60-sekunders grep på huvudkonceptet:
+grep -rn "keyword1\|keyword2" src/domain/services --include="*.ts" | head -20
+```
+Ingen träff → bygg. Träff → läs den först. Beslut: återanvänd eller medvetet ersätt med dokumenterad anledning.
+
+**Historik:**
+- *2026-04:* Strukturanalys missade att THE_BOMB 1.3 (kontextuell match-commentary för akademi/kapten/klackfavorit/dayJob) var fullt implementerad i `matchCore.ts`. En 30-sekunders grep på "promotedFromAcademy" hade visat det.
+- *2026-04:* `pickSeasonHighlight()` finns i `seasonSummaryService.ts`. SeasonSummaryScreen renderar `summary.matchOfTheSeason`. Möjlig redundans — två mekanismer för samma sak.
+
+### 3. INTEGRATION-COMPLETENESS-CHECK
+
+**När en feature levererar narrativ data — lista vilka vyer som ska visa den.**
+
+En feature som producerar text/state utan att specifikt koppla till relevanta UI-vyer är halvbyggd. Specen ska adressera *alla* logiska vyer eller medvetet välja vilka som lämnas utanför (med skäl).
+
+**Konkret check innan sprint-spec skrivs:**
+
+Lista alla vyer som logiskt borde påverkas av den nya featuren. Exempel för en "händelse i klubbvärlden"-feature:
+- Inbox (alltid)
+- Dashboard-kafferum (`coffeeRoomService.ts` — visas varje omgång)
+- Klack-commentary (`matchCommentary.ts` `supporter_*`-categories)
+- Presskonferens (`pressConferenceService.ts` QUESTIONS)
+- Motståndartränaren (`opponentManagerService.ts`)
+- Granska-screen (efter match)
+- Daily briefing (om relevant)
+- Tidningsrubriker (`mediaService.ts`)
+
+Specen ska antingen:
+- Adressera varje relevant vy explicit, ELLER
+- Lista de som lämnas utanför med medveten anledning ("klacken har inte cross-trigger eftersom...")
+
+**Historik:** Sprint 25h-skandaler byggdes utan att specen listade integration-vyer. Resultat: 4 vyer fick aldrig referenser. Adresserades i Sprint 26 men kostade en hel ny sprint.
+
+---
+
 ## VERIFIERINGSPROTOKOLL — OBLIGATORISKT
 
 Gäller ALLA som granskar eller implementerar: Claude Code, 
@@ -442,7 +506,7 @@ Fixture-ordningen styrs av `fixture.matchday` — ett heltal som bestämmer glob
 ### Ekonomi
 - `calcRoundIncome()` i `economyService.ts` — enda stället för intäktsberäkning
 - Capacity: `reputation * 7 + 150` (anpassat för svenska bandyklubbar, 200-700 åskådare)
-- weeklyBase: `reputation * 120`
+- weeklyBase: `3000 + reputation * 50`
 - Matchintäkter BARA vid hemmamatch (`isHomeMatch = true`)
 - Derby/slutspel/cup ger bonus (1.4x / 1.5x / 1.25x)
 - Lönebudget (`wageBudget`) VARNAR vid överskridning men BLOCKERAR ALDRIG kontraktsförlängningar

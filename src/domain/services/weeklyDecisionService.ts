@@ -155,7 +155,7 @@ function makeDecisions(game: SaveGame): WeeklyDecision[] {
       requiredEra: ['legacy'],
       question: `Kommunen vill döpa om arenan efter en lokal sponsor. ${veteran} är emot. Acceptera?`,
       optionA: { label: 'Acceptera', effect: '+20 tkr engång · −stolthet', effectColor: 'success' },
-      optionB: { label: 'Behåll namnet', effect: '+${groupName}-stämning · −boardpatience', effectColor: 'muted' },
+      optionB: { label: 'Behåll namnet', effect: `+${groupName}-stämning · −boardpatience`, effectColor: 'muted' },
     },
     {
       id: 'legacy_youth_showcase',
