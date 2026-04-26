@@ -127,17 +127,23 @@ export function getFactById(id: string): Fact | undefined {
 
 /**
  * Return the URL path for a fact's detail page.
- * E.g. "S013" → "/sources/s/13", "R014" → "/sources/r/14"
+ * R-facts → /bandy/rules/R014
+ * S-facts → /bandy/stats/S008
+ * D-facts → /spelet/design/D005
+ * W-facts → /spelet/varlden/W001
  */
 export function factHref(factId: string): string {
-  const catChar = factId[0].toLowerCase();
-  const slugMap: Record<string, string> = {
-    r: 'r', s: 's', d: 'd', w: 'w', h: 'h'
-  };
-  const catSlug = slugMap[catChar] ?? catChar;
-  const numId = factId.slice(1).replace(/^0+/, '');
+  const catChar = factId[0].toUpperCase();
   const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-  return `${base}/sources/${catSlug}/${numId}`;
+  const domainMap: Record<string, string> = {
+    R: 'bandy/rules',
+    S: 'bandy/stats',
+    D: 'spelet/design',
+    W: 'spelet/varlden',
+    H: 'spelet/design', // hypotheses fallback
+  };
+  const domainPath = domainMap[catChar] ?? 'sources';
+  return `${base}/${domainPath}/${factId}`;
 }
 
 export function getFactsByCategory(category: string): Fact[] {
@@ -170,10 +176,9 @@ export function extractFactRefs(text: string): string[] {
  * Replace [S013] patterns in text with HTML links to the fact detail page.
  */
 export function linkifyFactRefs(text: string): string {
-  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   return text.replace(
     /\[([RSDWH]\d{3})\]/g,
-    (_, id) => `<a href="${base}/sources/${id.toLowerCase().replace(/^([rsdwh])(\d+)/, '$1/$2')}" class="fact-ref" title="Visa fact ${id}">${id}</a>`
+    (_, id) => `<a href="${factHref(id)}" class="fact-ref" title="Visa fact ${id}">${id}</a>`
   );
 }
 

@@ -3,47 +3,24 @@ import Base from '../../../layouts/Base.astro';
 import { loadFacts, formatValue, CATEGORY_LABELS, factHref, type Fact } from '../../../lib/facts';
 
 export function getStaticPaths() {
-  const facts = loadFacts();
-  return facts.map(f => {
-    const cat = f.category;
-    // catSlug: s, r, d, w, h
-    const catSlug = cat === 'design_principles' ? 'd'
-                  : cat === 'world_canon' ? 'w'
-                  : cat === 'hypothesis' ? 'h'
-                  : cat[0]; // s or r
-    const numId = f.fact_id.slice(1).replace(/^0+/, '');
-    return {
-      params: { catSlug, numId },
-      props: { fact: f },
-    };
-  });
+  return loadFacts()
+    .filter(f => f.category === 'rules')
+    .map(f => ({ params: { factId: f.fact_id }, props: { fact: f } }));
 }
 
-interface Props {
-  fact: Fact;
-}
-
+interface Props { fact: Fact; }
 const { fact } = Astro.props;
 const catLabel = CATEGORY_LABELS[fact.category] ?? fact.category;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-
-function relatedFactHref(relId: string): string {
-  return factHref(relId);
-}
 ---
 
-<Base
-  title={`${fact.fact_id} — ${fact.claim.slice(0, 60)}`}
-  description={fact.claim}
->
+<Base title={`${fact.fact_id} — ${fact.claim.slice(0, 60)}`} description={fact.claim}>
   <div class="fact-detail">
 
-    <a href={`${base}/sources/`} class="back-link">← Alla källor</a>
+    <a href={`${base}/bandy/`} class="back-link">← Källor om bandy</a>
 
     <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-      <span class={`tag tag--${fact.category === 'design_principles' ? 'design' : fact.category === 'world_canon' ? 'world' : fact.category}`}>
-        {catLabel}
-      </span>
+      <span class={`tag tag--${fact.category}`}>{catLabel}</span>
       <span style="font-family: var(--font-ui); font-size: 0.75rem; color: var(--color-muted);">
         Verifierat {fact.verified_at} av {fact.verified_by}
       </span>
@@ -143,7 +120,7 @@ function relatedFactHref(relId: string): string {
         </p>
         <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
           {fact.related_facts.map(relId => (
-            <a href={relatedFactHref(relId)} class="fact-ref">{relId}</a>
+            <a href={factHref(relId)} class="fact-ref">{relId}</a>
           ))}
         </div>
       </section>

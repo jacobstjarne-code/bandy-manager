@@ -134,6 +134,23 @@ a:hover {
   text-align: center;
 }
 
+.site-footer__links {
+  display: block;
+  margin-top: 0.4rem;
+  color: var(--color-muted);
+}
+
+.site-footer__links a {
+  color: var(--color-muted);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.site-footer__links a:hover {
+  color: var(--color-accent);
+}
+
 .page-container {
   max-width: 1100px;
   margin: 0 auto;
