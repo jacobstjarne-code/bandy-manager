@@ -1,0 +1,119 @@
+---
+import Base from '../../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 047 — Motorkalibrering mot Elitserien: sex mätvärden nära, tre med gap"
+  description="Bandy Managers matchmotor jämförd mot 1 124 Elitseriematcher. Halvtidsmönster, hörn och utvisningar träffar väl. Hemmafördel, straffmål och målfördelning har kvarvarande gap."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 047 · 26 april 2026</p>
+    <h1 class="finding-title">Motorkalibrering mot Elitserien<br>Sex mätvärden nära, tre med gap</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number"><span class="key-number__value">9,37</span><span class="key-number__label">Simulerade mål/match</span><span class="key-number__note">Mål: 9,12 — avvikelse +2,7 %</span></div>
+      <div class="key-number"><span class="key-number__value">54,0 %</span><span class="key-number__label">Mål i 2:a halvlek</span><span class="key-number__note">Mål: 54,2 % — avvikelse −0,2 pp</span></div>
+      <div class="key-number"><span class="key-number__value">3,68</span><span class="key-number__label">Utvisningar/match</span><span class="key-number__note">Mål: 3,77 — avvikelse −2,4 %</span></div>
+      <div class="key-number"><span class="key-number__value">3,6 %</span><span class="key-number__label">Straffmålsandel</span><span class="key-number__note">Mål: 5,4 % — störst gap i hela jämförelsen</span></div>
+      <div class="key-number"><span class="key-number__value">46,1 %</span><span class="key-number__label">Hemmaseger</span><span class="key-number__note">Mål: 50,2 % — hemmafördelen underskattad</span></div>
+      <div class="key-number"><span class="key-number__value">25,3 %</span><span class="key-number__label">Matcher vid 13-målstaket</span><span class="key-number__note">Verkligheten: 5,1 % — takseffekt identifierad</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Frågan</p>
+      <p>Bandy Managers matchmotor är kalibrerad mot statistik från bandygrytan.se — men hur väl stämmer simuleringen faktiskt med verkligheten? Vi körde 4 980 matcher (10 seeds × 3 säsonger × ~166 matcher per säsong, varav 3 952 grundseriematcher) och jämförde nio nyckeltal mot 1 124 grundseriematcher från Elitserien herr 2019–2026.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Datan</p>
+      <p>Referensdata är Elitserien herrar, grundserie, säsongerna 2019–20 t.o.m. 2025–26 exklusive 2023–24, totalt 1 124 matcher. Simuleringsdata genererades av stress-test 26 april 2026 med seed 0–9, tre säsonger per seed, lagstyrkor slumpade kring klubbspecifik reputation (45–95). Bara grundseriematcher ingår i jämförelsen.</p>
+      <p>Straffmålsandel definieras som straffmål dividerat med totala mål. HT-ledare vinner definieras som andelen matcher där det lag som leder i halvtid vinner matchen (oavgjort halvtid exkluderat). 13-målstaket är andelen matcher som slutar på exakt 13 mål totalt.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad vi fann</p>
+      <table>
+        <thead>
+          <tr><th>Mätvärde</th><th>Simulator</th><th>Elitserien</th><th>Avvikelse</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Mål/match</td><td>9,37</td><td>9,12</td><td>+2,7 %</td><td>✅ Nära</td></tr>
+          <tr><td>Mål 2:a halvlek</td><td>54,0 %</td><td>54,2 %</td><td>−0,2 pp</td><td>✅ Nära</td></tr>
+          <tr><td>Utvisningar/match</td><td>3,68</td><td>3,77</td><td>−2,4 %</td><td>✅ Nära</td></tr>
+          <tr><td>Hörnmålsandel</td><td>23,1 %</td><td>22,2 %</td><td>+0,9 pp</td><td>✅ Nära</td></tr>
+          <tr><td>HT-ledare vinner</td><td>75,0 %</td><td>78,1 %</td><td>−3,1 pp</td><td>✅ Nära</td></tr>
+          <tr><td>Hörn/match</td><td>16,7</td><td>17,72</td><td>−1,0</td><td>⚠️ Rimligt gap</td></tr>
+          <tr><td>Hemmaseger</td><td>46,1 %</td><td>50,2 %</td><td>−4,1 pp</td><td>⚠️ Rimligt gap</td></tr>
+          <tr><td>Oavgjort</td><td>14,4 %</td><td>11,6 %</td><td>+2,8 pp</td><td>⚠️ Rimligt gap</td></tr>
+          <tr><td>Straffmålsandel</td><td>3,6 %</td><td>5,4 %</td><td>−1,8 pp</td><td>❌ Gap</td></tr>
+          <tr><td>Matcher vid 13-mål</td><td>25,3 %</td><td>5,1 %</td><td>+20,2 pp</td><td>❌ Takeffekt</td></tr>
+        </tbody>
+      </table>
+      <p>Motorsimuleringen träffar halvtidsmönstret (54,0 % vs 54,2 %) exakt och utvisningar nära nog för att inte kräva åtgärd. Hörnmålsandelen är +0,9 pp högt men faller inom acceptabel variation. Straffmål är det enskilt tydligaste numeriska gapet. Takeffekten på 13 mål är en strukturell avvikelse — i verkligheten slutar bara 5,1 % av matcher på exakt 13 mål, i simulatorn är det 25,3 % (en effekt av att motorns hårda tak stänger målproduktionen vid 13 totalt).</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Tolkning</p>
+      <p><strong>Verifierat:</strong> Straffmålsgapet beror på att <code>penProb = 0.13</code> i matchCore.ts är för lågt. En proportionell skalning mot 5,4 % ger 0,19. Det är en direkt konstant i koden, inte en emergent effekt av andra parametrar.</p>
+      <p><strong>Verifierat:</strong> Takeffekten uppstår för att <code>canScore()</code> returnerar <code>false</code> när totalmålen överstiger 13. Verkliga Elitseriematcher går upp till 25 mål, och 14-16 mål förekommer i ungefär 9 % av matcher. Motorns fördelning staplas artificiellt vid 13.</p>
+      <p><strong>Hypotes (ej verifierat):</strong> Hemmasegergapet beror sannolikt på att <code>homeAdvantage</code>-konstanten i styrkeformeln är för liten relativt Elitseriens faktiska hemmafördel (50,2 %). Simulatorns 46,1 % är konsistent med ett lägre hemmavärde, men att stärka det kompenserar också oavgjort-gapet (för många kryss, 14,4 % vs 11,6 %) eftersom de flesta "extra" oavgjorten sannolikt är hemmasegrar som inte konverteras.</p>
+      <p><strong>Hypotes (ej verifierat):</strong> Hörnfrekvensen (16,7 vs 17,72/match) beror möjligen på att taktiken väger corner-sekvensen något lägre än vad bandygrytan-data motiverar. Det kan också vara en interaktionseffekt med takbugg: matcher vid taket kan generera färre sena hörn om canScore-stoppet hejdar sekvensflödet.</p>
+      <p>Finding 048 dokumenterar penalty-prob-fixen (0,13 → 0,19) och visar kalibreringsdata före och efter.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Begränsningar</p>
+      <ul>
+        <li>Simulatorn kör mot fiktiva klubbar med reputation 45–95 — inte mot Elitseriens faktiska styrkedistribution. Det kan ge systematisk skillnad i hemmaseger och oavgjort även om motorn vore perfekt kalibrerad mot ett "likastarkt" scenario.</li>
+        <li>Stresseltest-seedarna är 0–9 med tre säsonger per seed. Det är 4 980 matcher totalt — tillräckligt för de flesta mätvärden, men straffmål (0,19/match) bygger på ca 750 straffmålsevent vilket ger viss brusvariation.</li>
+        <li>Takeffektens exakta storlek beror på lagstyrkefördelningen i simulatorn. Starka hemmalag mot svaga bortalag genererar fler högscorematcher och påverkar i vilken utsträckning taket nås.</li>
+        <li>Referensdata för HT-ledare vinner reviderades under sessionen 2026-04-26 — det korrekta värdet är 78,1 %, inte 46,6 % som stod i ett äldre kalibreringsdokument. Simulatorns 75,0 % jämförs mot det korrekta värdet här.</li>
+      </ul>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Hur förändras straffmålsandelen efter penalty-prob-fixen — hamnar vi inom 0,5 pp av 5,4 %?</li>
+        <li>Hur stort är hemmasegergapet efter att takbugg åtgärdats — finns det ett restvärde som kräver en separat homeAdvantage-justering?</li>
+        <li>Bör 13-taket höjas, tas bort, eller ersättas med en mjuk sannolikhetsminskning vid höga totalmål?</li>
+        <li>Är ≤ 6 marginalvillkoret ett designval eller en legacy-parameter — och ändrar det svar på föregående fråga?</li>
+        <li>Hur nära verkligheten hamnar oavgjort-andelen om hemmaseger stiger till ~50 %?</li>
+      </ul>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+047:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+047:+%F0%9F%91%8E&body=Vad+st%C3%A4mmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>
