@@ -1,0 +1,23 @@
+fact_id: D019
+category: design_principles
+claim: "Chasing-attackmultiplikator i 2:a halvlek (SecondHalfMode=chasing) — laget som jagar minst 1 mål attackerar med 1.22x"
+value: 1.22
+unit: multiplier
+source:
+  type: design_decision
+  doc: "src/domain/services/matchCore.ts:623 (if (mode === 'chasing') return { attack: 1.22, foul: 1.25 })"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value > 1"
+related_facts: [S013]
+notes: |
+  SecondHalfMode 'chasing' triggas när managedScore - opponentScore <= -1
+  i andra halvlek (step >= 30). Appliceras via applyMode() på
+  homeModeAttackMult / awayModeAttackMult och multipliceras med
+  effectiveAttack.
+  Foul-multiplikatorn vid 'chasing' är 1.25 (mer aggressivt spel).
+  Separerat från D017/D018 (trailing/leading-boost) — D019 appliceras
+  oberoende av exakt målsdifferens, D017 skalas per mål.
+  Kalibrerat mot S013 (comeback-frekvens). Sprint 25f-implementering.

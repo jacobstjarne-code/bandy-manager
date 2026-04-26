@@ -10,6 +10,7 @@ verified_by: code
 status: deprecated
 closed_at: 2026-04-25
 closed_by: jacob
+closed_with: "superseded_by:D008"
 related_facts: [R014, R015]
 notes: |
   STÄNGD 2026-04-25 av Jacob.

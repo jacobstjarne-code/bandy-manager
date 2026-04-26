@@ -109,6 +109,8 @@ Hörnan i bandy är extremt central och kameran-igenkännbar. I avgörande
 matcher kan den psykologiska pressen påverka exekveringen. Detta är
 spekulation — inte mätt här.
 
+Båda hypoteserna är formaliserade som H002 och H003.
+
 ---
 
 ## BEGRÄNSNINGAR
@@ -154,6 +156,13 @@ Den intressantaste uppföljningsdata vore:
   (Ryssland, Finland) också möjliga.
 
 Dessa kan bli egna findings om datan finns.
+
+---
+
+## ÖPPNA HYPOTESER
+
+- **Slutspelslag är bättre på hörnförsvar (konversionsgraden sjunker, frekvensen är stabil)** — H002 (formaliserad)
+- **Avgörande matcher driver mer direkt spel och färre hörnor (frekvensen sjunker, konversionen är stabil)** — H003 (formaliserad)
 
 ---
 

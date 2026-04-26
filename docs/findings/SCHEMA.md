@@ -210,8 +210,20 @@ istället för i basformatet:
 
 **Hypoteser (H-facts):**
 - `domain:` (obligatorisk) — `bandy` eller `game`
-- `closed_at:` (vid stängning) — datum när hypotesen avgjordes
-- `closed_by:` (vid stängning) — vem som avgjorde
+- `predicted_value:` (obligatorisk för `status: testable` eller `status: active`) —
+  vad hypotesen förutsäger kvantitativt. Kan vara en siffra, ett intervall, eller
+  en riktningsbeskrivning ("X > Y"). Utan detta fält kan hypotesen inte testas.
+- `test_method:` (obligatorisk för `status: testable` eller `status: active`) —
+  hur hypotesen ska/kan verifieras. Fritext men ska vara operationellt: "kör
+  kalibrerings-skriptet med 200 matcher och jämför cornerGoalPct per fas" är
+  bättre än "analysera datan".
+- `closed_at:` (obligatorisk vid stängning) — datum när hypotesen avgjordes.
+  Saknas `closed_at` på en stängd hypotes är det ett validatorfel, inte varning.
+- `closed_by:` (obligatorisk vid stängning) — vem som avgjorde.
+  Samma krav som `closed_at`.
+- `closed_with:` (obligatorisk vid stängning) — vad hypotesen stängdes med.
+  Format: `"verified"`, `"refuted"`, `"obsolete"`, eller `"superseded_by:DXXX"`.
+  Saknas detta fält på en stängd hypotes är det ett validatorfel.
 - `status: deprecated` används när hypotes stängs (verifierad,
   motbevisad, eller obsolet)
 

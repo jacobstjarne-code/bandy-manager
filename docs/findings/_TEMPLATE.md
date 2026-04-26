@@ -56,6 +56,18 @@ Skriv begränsningarna innan slutsatsen — inte som ett efterord.]
 
 ---
 
+## ÖPPNA HYPOTESER
+
+[Om fyndet väcker en hypotes som kan formaliseras i Bandy-Brain, lista den här
+och ange om ett H-fact redan är skapat. Format:
+
+- **[Hypotes i en mening]** — H001 (formaliserad) / ej formaliserad ännu
+
+Om tolknings-sektionen leder till en formaliserad hypotes ska den sektionen
+avslutas med: "Hypotesen är formaliserad som HXXX."]
+
+---
+
 ## STATUS
 
 [Utkast — väntar på data från X. / Klar — revideras vid ny Bandygrytan-import.]

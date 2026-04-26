@@ -1,0 +1,24 @@
+fact_id: D014
+category: design_principles
+claim: "Hörn-goalThreshold basvärde (cornerBase) för första halvlek — adderas till den taktiska hörnchansen"
+value: 0.105
+unit: probability
+source:
+  type: design_decision
+  doc: "src/domain/services/matchCore.ts:895 (cornerBase = emitFullTime ? 0.105 * SECOND_HALF_BOOST * phaseGoalMod * phaseCornerMod : 0.105 * phaseGoalMod * phaseCornerMod)"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value > 0"
+  - "value < 0.30"
+related_facts: [S008, S017]
+notes: |
+  I andra halvlek multipliceras cornerBase med SECOND_HALF_BOOST (D011)
+  och phaseGoalMod/phaseCornerMod (PHASE_CONSTANTS). Clamp: 0.07–0.30
+  (halvtidskorrigerade). Kalibrerat mot S008 (22.2% hörnmålsandel).
+  Var 0.14 — reducerat till 0.105 i Sprint 25e.2 för att ta ner
+  cornerGoalPct mot target. Kommentaren i koden: "Base reduced 0.14→0.105
+  to bring grundserie cornerGoalPct toward target 22.2%".
+  Mest känslig konstant för hörnmålskalibrering — liten förändring här
+  syns tydligt i stress-testet (scripts/stress-test.ts).

@@ -38,7 +38,12 @@ Strukturerade YAML-facts om regler, statistik, designval och världs-kanon.
 Schema: [SCHEMA.md](SCHEMA.md) — läs den innan du skapar eller ändrar facts.
 Fakta: `facts/rules/` (R001–), `facts/stats/` (S001–), `facts/design_principles/` (D001–), `facts/world_canon/` (W001–)
 Hypoteser: `hypotheses/` (H001–)
-Senaste audit: [AUDIT_PASS_2_2026-04-25.md](AUDIT_PASS_2_2026-04-25.md)
+Senaste audit: [AUDIT_PASS_5_2026-04-26.md](AUDIT_PASS_5_2026-04-26.md)
+
+**D-fact täckning (pass 5):** D010–D024 täcker alla kalibreringskritiska
+magnituder i matchCore.ts som identifierades i PASS_5A_INVENTORY.md.
+Totalt 80 aktiva facts. Regeln för D-fact-uppdatering vid magnitudändringar
+finns i CLAUDE.md under "LÖPANDE KVALITET — 5. D-FACT-UPPDATERING VID MAGNITUDÄNDRINGAR".
 
 ---
 
@@ -48,6 +53,24 @@ Senaste audit: [AUDIT_PASS_2_2026-04-25.md](AUDIT_PASS_2_2026-04-25.md)
 |---|-------|-------|--------|
 | 001 | 2026-04-25 | Halvtidsledning vs verkligt utfall | Utkast — väntar på Sprint 25-HT-data |
 | 005 | 2026-04-26 | Hörnmål-andelens fall genom slutspelsfaserna | Verifierad rådata-observation |
+
+---
+
+## FRÅN FINDING TILL H-FACT
+
+Om ett finding identifierar en möjlig förklaring som kan testas, ska den
+formaliseras som en hypotes i `hypotheses/` (H-fact). Reglerna:
+
+1. **En finding kan generera noll eller flera H-facts.** Inte varje finding
+   behöver en hypotes — men om tolknings-sektionen innehåller ett testbart
+   påstående ska det formaliseras.
+2. **H-factet skapas vid samma tillfälle som finding skrivs** (eller strax
+   efter). Inte retroaktivt månader senare.
+3. **Findings ska referera sina H-facts.** Avsluta tolknings-sektionen med
+   "Hypotesen är formaliserad som H002." — eller "Öppna hypoteser"-sektionen
+   i templaten listar dem.
+4. **H-factet äger status.** Finding-dokumentet ändras inte när en hypotes
+   stängs — men H-factet uppdateras till `deprecated` med `closed_with`.
 
 ---
 

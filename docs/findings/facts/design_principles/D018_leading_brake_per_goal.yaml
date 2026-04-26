@@ -1,0 +1,23 @@
+fact_id: D018
+category: design_principles
+claim: "Leading-brake per målsdifferens i 2:a halvlek — ledande lag får -0.12 attackmultiplikator per mål framme (max 3 mål)"
+value: 0.12
+unit: multiplier per goal
+source:
+  type: design_decision
+  doc: "src/domain/services/matchCore.ts:666 (leadingBrake = (diff: number) => diff > 0 ? Math.min(diff, 3) * 0.12 : 0)"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value > 0"
+  - "value < 1"
+related_facts: [S013]
+notes: |
+  Implementeras som: effectiveAttack = attack * (1 - leadingBrake) * ...
+  Asymmetriskt mot D017 (trailingBoost = 0.16 per mål bakom) —
+  ledande lagets inbromsning är svagare än jagande lagets acceleration.
+  Aktiveras bara i andra halvlek (step >= 30).
+  Max broms vid 3 mål framme: -36% attackmultiplikator.
+  Pardesign med D017 för att återskapa comeback-frekvensen i S013.
+  Sprint 25f-implementering.

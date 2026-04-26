@@ -262,6 +262,18 @@ Om en port skippas och buggen hittas i playtest:
 
 Utöver spec-lydnad och kvalitetsportar finns fyra löpande discipliner som körs kontinuerligt, inte per sprint.
 
+### 5. D-FACT-UPPDATERING VID MAGNITUDÄNDRINGAR
+
+När en sprint ändrar en spelmagnitud (sannolikhet, multiplier, tröskel, formel-konstant) ska motsvarande D-fact uppdateras i samma commit. Om D-fact saknas — skapa det. Om magnituden inte har ett D-fact och inte är kalibreringskritisk — minst en kort not i commit-meddelandet om varför.
+
+**Code's Definition of Done för sprintar som rör magnituder:**
+1. Koden ändrad
+2. D-fact uppdaterad eller skapad
+3. Revisions-post i D-fact om värdet ändrats
+4. Validatorn körd och ren (`python3 scripts/validate_brain.py`)
+
+
+
 ### 1. TESTRYTM
 
 Design-audit (`window.__designAudit`) och stress-test (`npm run stress`) är projektets två runtime-verifieringsverktyg.

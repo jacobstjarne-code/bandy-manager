@@ -1,0 +1,28 @@
+fact_id: D008
+category: design_principles
+claim: "Bandy Manager modellerar bara 10-minutersutvisning — inga varningar, 5-min-utvisningar eller matchstraff"
+source:
+  type: design_decision
+  decided_by: jacob
+  doc: "src/domain/services/matchCore.ts (foul-sekvens, rad ~992-1036)"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "no_code_path_grants_3_points_for_win"
+related_facts: [R014, R015]
+notes: |
+  Designval bekräftat av Jacob 2026-04-25 (stängning av H001).
+
+  SvBF-Regelbok §16 anger fyra nivåer: varning (§16.2), 5-min (§16.3),
+  10-min (§16.4), matchstraff (§16.6–16.7). Spelet implementerar bara
+  10-minutersutvisning eftersom det är den dominerande formen i praktisk
+  elitbandy (Jacob: "10-min är det som tillämpas i praktiken").
+
+  Implementationsdetalj: `duration = 3 + Math.floor(rand() * 4)` steg
+  (varje steg ≈ 1.5 min → 4.5–10.5 min simulerad tid). Konstanten 3 och
+  övre bound 4 är kalibreringsparametrar, inte regelbok-citat.
+
+  Avvikelsen från R014 är medveten och dokumenterad. Om spelet i framtiden
+  ska modellera matchstraff (röda kort) — skapa nytt D-fact och uppdatera
+  detta till deprecated.

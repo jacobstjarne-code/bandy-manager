@@ -1,0 +1,23 @@
+fact_id: D017
+category: design_principles
+claim: "Trailing-boost per målsdifferens i 2:a halvlek — jagande lag får +0.16 attackmultiplikator per mål bakom (max 3 mål)"
+value: 0.16
+unit: multiplier per goal
+source:
+  type: design_decision
+  doc: "src/domain/services/matchCore.ts:665 (trailingBoost = (diff: number) => diff < 0 ? Math.min(-diff, 3) * 0.16 : 0)"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value > 0"
+  - "value < 1"
+related_facts: [S013]
+notes: |
+  Implementeras som: effectiveAttack = attack * (1 + trailingBoost) * ...
+  Asymmetriskt mot D018 (leadingBrake = 0.12 per mål framme) —
+  jagande laget pushar hårdare än ledande laget bromsar.
+  Aktiveras bara i andra halvlek (step >= 30).
+  Max boost vid 3 mål bakom: +48% attackmultiplikator.
+  Kalibrerat mot S013 (78.1% halvtidsledning vinner — comeback-mekanik).
+  Sprint 25f-implementering.

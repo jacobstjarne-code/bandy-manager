@@ -1,0 +1,21 @@
+fact_id: D013
+category: design_principles
+claim: "Attacksekvens goalThreshold-multiplikator (chanceQuality × 1.05) i normal shot-resolution"
+value: 1.05
+unit: multiplier
+source:
+  type: design_decision
+  doc: "src/domain/services/matchCore.ts:759 (goalThreshold = chanceQuality * 1.05 * (1 - defGK * 0.35) * stepGoalMod)"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value > 0"
+related_facts: [S001]
+notes: |
+  Appliceras i attack-sekvensens shot-resolution (inte vid penalty-trigger).
+  Kommentaren i koden: "matchEngine-calibrated multiplier (1.05, was 0.45 in
+  matchStepByStep)". Stor höjning från 0.45 eftersom matchCore har lägre
+  step-count per match än matchStepByStep.
+  Påverkar totalmålen (S001) kollektivt med D020 (transition) och D021
+  (halfchance). Justera med försiktighet — ändring här påverkar alla matches.

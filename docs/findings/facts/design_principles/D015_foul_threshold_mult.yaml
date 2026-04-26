@@ -1,0 +1,22 @@
+fact_id: D015
+category: design_principles
+claim: "Utvisnings-foulThreshold multiplikator — kalibrerar utvisningsfrekvens mot S011"
+value: 1.46
+unit: multiplier
+source:
+  type: design_decision
+  doc: "src/domain/services/matchCore.ts:994 (foulThreshold = foulProb * 1.46 * phaseConst.suspMod * ...)"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value > 0"
+related_facts: [S011]
+notes: |
+  Kommentaren i koden: "Sprint 25b.2.2: was 1.25 (0.55 pre-25b.2)".
+  Ingår i foulThreshold-beräkningen tillsammans med phaseConst.suspMod,
+  SUSP_TIMING_BY_PERIOD[period], derbyFoulMult och activeFoulMult
+  (mode-multiplikator för chasing/controlling m.m.).
+  Kalibrerat mot S011 (3.77 utvisningar/match). Höjdes från 1.25 till 1.46
+  i Sprint 25b.2.2 efter att utvisningsfrekvensen låg för lågt.
+  Öka värdet → fler utvisningar. Minska → färre.

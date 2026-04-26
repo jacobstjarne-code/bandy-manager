@@ -1,0 +1,23 @@
+fact_id: D011
+category: design_principles
+claim: "SECOND_HALF_BOOST — global multiplikator på stepGoalMod i andra halvlek, kalibrerad mot 54.2% av mål i 2:a halvlek"
+value: 1.19
+unit: multiplier
+source:
+  type: design_decision
+  doc: "src/domain/services/matchCore.ts:67 (const SECOND_HALF_BOOST = 1.19)"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value > 1"
+  - "value < 2"
+related_facts: [S014]
+notes: |
+  Appliceras på stepGoalMod för alla sekvenser i andra halvlek
+  (emitFullTime = true). Också applicerat på cornerBase och
+  cornerClampMin för att hålla hörnmålsandelen proportionell
+  (se D014).
+  Matematisk grund: 1.19 / (1 + 1.19) = 54.3% share, matchar
+  S014 (54.2%). Var 1.25 — för högt totalmål.
+  Påverkar INTE övertid (emitFullTime = false i OT-halvlek).

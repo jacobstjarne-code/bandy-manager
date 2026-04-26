@@ -1,0 +1,22 @@
+fact_id: D021
+category: design_principles
+claim: "Halvchans goalThreshold-multiplikator (halfchance-sekvens) — låg chans per steg men bidrar marginellt till S001"
+value: 0.63
+unit: multiplier
+source:
+  type: design_decision
+  doc: "src/domain/services/matchCore.ts:964 (goalThreshold = chanceQuality * 0.63 * stepGoalMod)"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value > 0"
+  - "value < 2"
+related_facts: [S001]
+notes: |
+  Kommentaren i koden: "matchEngine-calibrated (0.63, was 0.30)".
+  chanceQuality för halfchance: randRange(0.05, 0.25) — betydligt lägre
+  range än attack (indirekt 0.05-0.95) och transition (0.30-0.70).
+  Trots multiplikatorn 0.63 är absoluta målfrekvensen låg p.g.a. låg
+  chanceQuality. Bidrar ~5-10% av totalmålen (S001).
+  Påverkar S001 kollektivt med D013 (attack) och D020 (transition).

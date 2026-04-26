@@ -1,0 +1,23 @@
+fact_id: D016
+category: design_principles
+claim: "Spelreduktion vid aktiv utvisning — laget spelar med 0.65x attackstyrka vid numerärt underläge"
+value: 0.65
+unit: multiplier
+source:
+  type: design_decision
+  doc: "src/domain/services/matchCore.ts:659-660 (homePenaltyFactor = homeActiveSuspensions > 0 ? 0.65 : 1.0)"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value > 0"
+  - "value < 1"
+related_facts: [S011]
+notes: |
+  Appliceras på attackerande lags weight i initiativ-beräkningen.
+  Motparten är homePowerplayBoost = 1.20 för motståndarens lags attack.
+  Symmetriskt: awayPenaltyFactor = 0.65 vid awayActiveSuspensions > 0.
+  Indirekt koppling till S011 — påverkar hur länge och hur kraftigt
+  numerärt underläge påverkar matchen. Inte direkt kalibrerat mot ett
+  specifikt statistikmål utan satt som rimligt gameplay-värde.
+  Duration av utvisningen styrs av D024.

@@ -1,0 +1,22 @@
+fact_id: D010
+category: design_principles
+claim: "Hemmafördelsmultiplikator (homeAdvantage default) styr hur mycket mer hemmalaget attackerar"
+value: 0.14
+unit: additive weight modifier
+source:
+  type: design_decision
+  doc: "src/domain/services/matchCore.ts:207 (homeAdvantage = 0.14)"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value > 0"
+  - "value < 1"
+related_facts: [S004]
+notes: |
+  Adderas till homeWeight i initiativ-beräkningen:
+    homeWeight = effectiveHomeAttack * (1 + effectiveHomeAdvantage) * ...
+  Kalibrerat mot S004 (50.2% hemmaseger i Elitserien 2019-26).
+  Var 0.05 i matchStepByStep — höjt till 0.14 vid matchCore-kalibrering
+  för att nå rätt hemmavinstandel utan att förvränga totalmålen.
+  Om S004 ändras (mer data eller ny kalibrering) — justera detta värde.

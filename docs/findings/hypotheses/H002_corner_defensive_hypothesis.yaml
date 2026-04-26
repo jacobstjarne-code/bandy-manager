@@ -1,0 +1,37 @@
+fact_id: H002
+category: hypothesis
+domain: bandy
+claim: "Hörnmålsandelens fall i slutspel beror på att slutspelslag är systematiskt bättre på hörnförsvar"
+predicted_value: "Hörnfrekvens per match är konstant (eller nära konstant) över faserna; konversionsgraden sjunker"
+test_method: |
+  Kör räknescript mot bandygrytan_detailed.json och extrahera:
+  (a) antal hörnor per match per fas (regular / kvartsfinal / semifinal / final)
+  (b) antal hörnmål per hörnor per fas (konversionsgrad)
+
+  Om (a) är relativt konstant och (b) sjunker monotont — stöder det H002 (försvarshypotesen).
+  Om (a) sjunker och (b) är relativt konstant — stöder det H003 (offensiv omläggning).
+  Om båda sjunker — blandat stöd, kan inte särskilja.
+
+  Räknescript-skelett:
+    const phases = ['regular','quarterfinal','semifinal','final']
+    for (const phase of phases) {
+      const ms = d.herr.matches.filter(m => m.phase === phase)
+      let corners = 0, cornerGoals = 0
+      for (const m of ms) { corners += (m.cornersHome??0)+(m.cornersAway??0); for (const g of m.goals??[]) if (g.fromCorner) cornerGoals++ }
+      console.log(phase, 'corners/match:', (corners/ms.length).toFixed(1), 'conversion:', (cornerGoals/corners*100).toFixed(1)+'%')
+    }
+source:
+  type: observation
+  name: "005_hornmal_per_slutspelsfas.md + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+related_facts: [S008, S017]
+notes: |
+  Genererad från finding 005. Datan visar att hörnmålsandelen faller monotont
+  22.2% → 20.0% → 18.7% → 16.7% genom grundserie till final. Två hypoteser
+  kan förklara det; denna (H002) och H003. Datan kan inte i sig särskilja dem
+  utan ytterligare splitting på hörnfrekvens vs konversionsgrad.
+
+  Finding 005 skrevs utan att ha hörnfrekvens-data — det är det saknade
+  mätvärdet för att avgöra vilket. Se test_method.

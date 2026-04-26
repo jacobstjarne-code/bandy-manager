@@ -1,0 +1,24 @@
+fact_id: D012
+category: design_principles
+claim: "Straff-grundsannolikhet per attacksteg när chanceQuality > 0.40 (penProb base)"
+value: 0.13
+unit: probability
+source:
+  type: design_decision
+  doc: "src/domain/services/matchCore.ts:739 (const penProb = 0.13 * getPenaltyPeriodMod(minute) * ...)"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value > 0"
+  - "value < 1"
+related_facts: [S009]
+notes: |
+  Triggas bara när chanceQuality > 0.40 i en attack-sekvens.
+  Multipliceras med getPenaltyPeriodMod (period-justeringen) och
+  getScorelinePenaltyMod (resultatjustering) vid varje trigger.
+  Kalibrerat mot S009 (5.4% straffmålsandel). Kommentaren i koden
+  förklarar att motorn kör ~60 steg per match (inte 150 som ett
+  tidigt spec-antagande), vilket krävde 10x-korrektion från 0.012.
+  Om S009 ändras — justera detta värde. Perioden och scoreline-modarna
+  ändras separat i matchUtils.ts.

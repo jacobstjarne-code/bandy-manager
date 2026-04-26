@@ -1,0 +1,23 @@
+fact_id: D022
+category: design_principles
+claim: "Basfrekvens-vikt för hörnsekvens (wCorner i buildSequenceWeights) — styr hur ofta hörnsekvenser triggas relativt andra sekvenstyper"
+value: 40
+unit: weight
+source:
+  type: design_decision
+  doc: "src/domain/services/matchCore.ts:452 (let wCorner = 40  // calibrated: 8.83 corners/team/match)"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value > 0"
+related_facts: [S007, S008]
+notes: |
+  Kommentaren i koden: "calibrated: 8.83 corners/team/match".
+  Kalibrerat mot S007 (8.83 hörnor/match totalt).
+  Hörnvikten påverkar också S008 (hörnmålsandelen) via att fler
+  hörnsekvenser ger fler hörnmålchanser (se D014).
+  Taktikmodifieringar ökar/minskar wCorner:
+    +3 vid tempo=high, +5 vid width=wide, +3 vid cornerStrategy=aggressive.
+  Basvik 40 bland totalt ~156 baspoäng (attack=40, transition=15,
+  corner=40, halfchance=10, foul=24, etc.).

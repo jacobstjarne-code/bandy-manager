@@ -1,0 +1,28 @@
+fact_id: D024
+category: design_principles
+claim: "Utvisningstid i steg: duration = 3 + Math.floor(rand() * 4), ger 3–6 steg ≈ 4.5–9 min simulerad tid"
+value:
+  min: 3
+  range: 4
+unit: steps
+source:
+  type: design_decision
+  doc: "src/domain/services/matchCore.ts:1026 (const duration = 3 + Math.floor(rand() * 4))"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value.min >= 1"
+  - "value.range >= 1"
+  - "value.min + value.range <= 30"
+related_facts: [S011]
+notes: |
+  Utfall: 3, 4, 5 eller 6 steg (likformigt fördelade).
+  Varje steg ≈ 1.5 min → simulerad tid 4.5–9 min per utvisning.
+  Bandyregelbok: 10 minuter (R014). Spelet underskattar något på
+  grund av att steg-granulariteten är grov.
+  D016 (penaltyFactor = 0.65) appliceras under hela duration.
+  Indirekt koppling till S011 — längre duration = längre numerärt
+  underläge per utvisning. Inte direkt kalibrerat mot ett target;
+  designval för spelkänsla.
+  Se D008 för den bredare modellbeskrivningen av utvisningssystemet.

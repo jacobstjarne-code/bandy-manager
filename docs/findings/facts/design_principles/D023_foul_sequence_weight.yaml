@@ -1,0 +1,22 @@
+fact_id: D023
+category: design_principles
+claim: "Basfrekvens-vikt för foulsekvens (wFoul i buildSequenceWeights) — styr hur ofta foulsekvenser triggas relativt andra sekvenstyper"
+value: 24
+unit: weight
+source:
+  type: design_decision
+  doc: "src/domain/services/matchCore.ts:454 (let wFoul = 24  // Sprint 25b.2: doubled for suspension calibration (was 12))"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value > 0"
+related_facts: [S011]
+notes: |
+  Kommentaren i koden: "Sprint 25b.2: doubled for suspension calibration (was 12)".
+  Kalibrerat mot S011 (3.77 utvisningar/match). Foulsekvensens vikt styr
+  hur ofta sekvenstypen triggas — men inte alla foulsekvenser leder till
+  utvisning (styrs av D015, foulThreshold inom sekvensen).
+  Taktikmodifieringar ökar wFoul:
+    +2 vid tempo=high, +5 vid press=high.
+  Covarierar med D015 — höj ena, sänk det andra för att behålla S011-kalibrering.

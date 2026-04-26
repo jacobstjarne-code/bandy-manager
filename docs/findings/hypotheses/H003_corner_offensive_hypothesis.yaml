@@ -1,0 +1,36 @@
+fact_id: H003
+category: hypothesis
+domain: bandy
+claim: "Hörnmålsandelens fall i slutspel beror på att avgörande matcher driver lag mot mer direkt offensivt spel — färre hörnor totalt"
+predicted_value: "Hörnfrekvens per match sjunker monotont från grundserie till final; konversionsgraden är relativt stabil"
+test_method: |
+  Kör räknescript mot bandygrytan_detailed.json och extrahera:
+  (a) antal hörnor per match per fas (regular / kvartsfinal / semifinal / final)
+  (b) antal hörnmål per hörnor per fas (konversionsgrad)
+
+  Om (a) sjunker monotont och (b) är relativt konstant — stöder det H003 (offensiv omläggning).
+  Om (a) är konstant och (b) sjunker — stöder det H002 (försvarshypotesen).
+
+  Samma räknescript som H002:s test_method. Samma körning ger svar på båda.
+
+  Motorkonsekvens: om H003 stämmer kan `cornerTrailingMod` / `cornerLeadingMod` i
+  PHASE_CONSTANTS (matchUtils.ts) inte ensamt fixa felet — frekvensen måste sjunka,
+  inte bara konversionen. Det kräver att `wCorner` i buildSequenceWeights sänks
+  per fas (en ännu inte implementerad justering).
+source:
+  type: observation
+  name: "005_hornmal_per_slutspelsfas.md + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+related_facts: [S008, S017]
+notes: |
+  Genererad från finding 005. Komplementär till H002 — datan kan inte avgöra
+  vilken som stämmer utan hörnfrekvens-splitting. En tredje möjlighet
+  (nervositet/exekveringsproblem under press) är spekulativ och ej mätbar
+  med tillgänglig data.
+
+  H003 har direkt implikation för Bandy Manager-motorns PHASE_CONSTANTS:
+  om hypotesen stämmer är den nuvarande kalibreringen (cornerGoalMod per fas)
+  ett trubbigt instrument — den justerar konversionen men inte frekvensen.
+  Modellskulden i finding 005 är sannolikt strukturell snarare än parametrisk.

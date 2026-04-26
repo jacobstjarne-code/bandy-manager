@@ -1,0 +1,22 @@
+fact_id: D020
+category: design_principles
+claim: "Omställningsmål goalThreshold-multiplikator (transition-sekvens) — lägre än attack för att spegla kontringssvårigheter"
+value: 0.58
+unit: multiplier
+source:
+  type: design_decision
+  doc: "src/domain/services/matchCore.ts:822 (goalThreshold = chanceQuality * 0.58 * (1 - defGK * 0.4) * 1.15 * stepGoalMod)"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+invariants:
+  - "value > 0"
+  - "value < 2"
+related_facts: [S001]
+notes: |
+  Kommentaren i koden: "matchEngine-calibrated (0.58, was 0.28)".
+  Ingår i goalThreshold för transition-sekvensen:
+    goalThreshold = chanceQuality * 0.58 * (1 - defGK * 0.4) * 1.15 * stepGoalMod
+  chanceQuality för transition: randRange(0.3, 0.7) — bredare spread än attack.
+  Bidrar ~10-15% av totalmålen (S001). Påverkar S001 kollektivt med
+  D013 (attack) och D021 (halfchance).
