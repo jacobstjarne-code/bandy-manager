@@ -27,7 +27,12 @@ permissions:
 jobs:
   generate:
     runs-on: ubuntu-latest
-    if: github.event_name != 'issues' || github.event.label.name == 'new-question'
+    if: |
+      github.event_name != 'issues' ||
+      (github.event_name == 'issues' &&
+       github.event.action == 'labeled' &&
+       (github.event.label.name == 'new-question' ||
+        github.event.label.name == 'review-flagged'))
     steps:
       - uses: actions/checkout@v4
 

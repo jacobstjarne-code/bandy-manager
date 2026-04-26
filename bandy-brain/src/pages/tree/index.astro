@@ -1,0 +1,167 @@
+---
+import Base from '../../layouts/Base.astro';
+import { readFileSync, readdirSync } from 'fs';
+import yaml from 'js-yaml';
+import { resolve } from 'path';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const questionsDir = resolve(process.cwd(), '..', 'docs', 'findings', 'facts', 'questions');
+
+interface QFact {
+  fact_id: string;
+  claim: string;
+  spawned_by?: string;
+  status?: string;
+  answered_by?: string;
+}
+
+function loadAllQFacts(): QFact[] {
+  let files: string[] = [];
+  try {
+    files = readdirSync(questionsDir).filter((f: string) => f.endsWith('.yaml'));
+  } catch {
+    return [];
+  }
+  return files
+    .map((f: string) => {
+      try { return yaml.load(readFileSync(`${questionsDir}/${f}`, 'utf8')) as QFact; } catch { return null; }
+    })
+    .filter((q): q is QFact => !!q);
+}
+
+function findingNum(ref: string | undefined): string | null {
+  if (!ref) return null;
+  const m = ref.match(/finding:(\d{1,4})/i);
+  if (!m) return null;
+  return m[1].padStart(3, '0');
+}
+
+const allQ = loadAllQFacts();
+
+// Build finding → Q mappings
+const findingToQs = new Map<string, string[]>();
+const qToAnsweredBy = new Map<string, string>();
+
+for (const q of allQ) {
+  const fnum = findingNum(q.spawned_by);
+  if (fnum) {
+    if (!findingToQs.has(fnum)) findingToQs.set(fnum, []);
+    findingToQs.get(fnum)!.push(q.fact_id);
+  }
+  if (q.status === 'answered' && q.answered_by) {
+    const aNum = findingNum(q.answered_by);
+    if (aNum) qToAnsweredBy.set(q.fact_id, aNum);
+  }
+}
+
+// Filter findings with at least one Q-connection
+// Sort by Q-count desc, cap at top 40 nodes
+const findingsSorted = [...findingToQs.entries()]
+  .sort((a, b) => b[1].length - a[1].length);
+
+// Collect which findings to include (limit to produce max ~40 nodes)
+let nodeCount = 0;
+const includedFindings = new Set<string>();
+const includedQs = new Set<string>();
+
+for (const [fnum, qids] of findingsSorted) {
+  if (nodeCount >= 40) break;
+  includedFindings.add(fnum);
+  nodeCount++;
+  for (const qid of qids) {
+    if (nodeCount >= 40) break;
+    includedQs.add(qid);
+    nodeCount++;
+  }
+}
+
+// Build Mermaid diagram
+const claimShort = (claim: string) => {
+  const c = claim.length > 40 ? claim.slice(0, 40) + '…' : claim;
+  // Escape quotes and special chars for Mermaid labels
+  return c.replace(/"/g, '&quot;').replace(/[[\](){}]/g, '');
+};
+
+// Build node declarations + edges
+const lines: string[] = ['graph LR'];
+
+// Finding nodes
+for (const fnum of includedFindings) {
+  lines.push(`  F${fnum}["Finding ${fnum}"]`);
+}
+
+// Q nodes
+for (const qid of includedQs) {
+  const q = allQ.find((x) => x.fact_id === qid);
+  const label = q ? claimShort(q.claim) : qid;
+  lines.push(`  ${qid}["${qid}: ${label}"]`);
+}
+
+// Spawning edges: finding → Q
+for (const [fnum, qids] of findingToQs.entries()) {
+  if (!includedFindings.has(fnum)) continue;
+  for (const qid of qids) {
+    if (!includedQs.has(qid)) continue;
+    lines.push(`  F${fnum} -.->|spawned| ${qid}`);
+  }
+}
+
+// Answered-by edges: Q → finding
+for (const [qid, aNum] of qToAnsweredBy.entries()) {
+  if (!includedQs.has(qid)) continue;
+  const label = `F${aNum}`;
+  if (!includedFindings.has(aNum)) {
+    // Add the answering finding even if it wasn't in the spawn list
+    lines.push(`  F${aNum}["Finding ${aNum}"]`);
+  }
+  lines.push(`  ${qid} -.->|answered_by| F${aNum}`);
+}
+
+const mermaidCode = lines.join('\n');
+
+const hasAnswered = qToAnsweredBy.size > 0;
+const totalNodes = includedFindings.size + includedQs.size;
+---
+
+<Base
+  title="Kunskapsträdet"
+  description="Relationer mellan findings och öppna frågor i Bandy-Brain."
+>
+  <div class="page-container">
+    <h1 style="font-family: var(--font-ui); font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">
+      Kunskapsträdet
+    </h1>
+    <p style="max-width: 560px; color: var(--color-muted); font-size: 0.9rem; margin-bottom: 0.5rem; font-family: var(--font-ui);">
+      Varje finding väcker frågor. Grafen visar vilka findings som har fött Q-facts,
+      och — om en fråga fått svar — vilken finding som besvarade den.
+    </p>
+    <p style="font-family: var(--font-ui); font-size: 0.85rem; margin-bottom: 2rem;">
+      <a href={`${base}/questions/`} style="color: var(--color-accent);">← Alla öppna frågor</a>
+    </p>
+
+    {!hasAnswered && (
+      <p style="font-family: var(--font-ui); font-size: 0.85rem; color: var(--color-muted); margin-bottom: 1.5rem; font-style: italic;">
+        Inga besvarade frågor ännu — grafen visar bara ursprung.
+      </p>
+    )}
+
+    <div class="mermaid" style="overflow-x: auto; background: var(--color-surface, #0a1520); padding: 1.5rem; border-radius: 4px; margin-bottom: 1rem;">
+      {mermaidCode}
+    </div>
+
+    <p style="font-family: var(--font-ui); font-size: 0.8rem; color: var(--color-muted); margin-top: 1rem;">
+      Visar {totalNodes} noder ({includedFindings.size} findings, {includedQs.size} frågor).
+      Uppdateras automatiskt när nya findings och frågor tillkommer.
+    </p>
+  </div>
+</Base>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    flowchart: { useMaxWidth: false, htmlLabels: true },
+  });
+</script>

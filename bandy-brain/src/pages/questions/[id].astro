@@ -1,0 +1,243 @@
+---
+import Base from '../../layouts/Base.astro';
+import { readFileSync, readdirSync } from 'fs';
+import yaml from 'js-yaml';
+import { resolve } from 'path';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+export async function getStaticPaths() {
+  const questionsDir = resolve(process.cwd(), '..', 'docs', 'findings', 'facts', 'questions');
+  let files: string[] = [];
+  try {
+    files = readdirSync(questionsDir).filter((f: string) => f.endsWith('.yaml'));
+  } catch {
+    return [];
+  }
+
+  return files.map((f: string) => {
+    const raw = yaml.load(readFileSync(`${questionsDir}/${f}`, 'utf8')) as any;
+    const id = raw?.fact_id ?? f.replace('.yaml', '');
+    return { params: { id } };
+  });
+}
+
+const { id } = Astro.params;
+
+const questionsDir = resolve(process.cwd(), '..', 'docs', 'findings', 'facts', 'questions');
+
+interface QFact {
+  fact_id: string;
+  category: string;
+  claim: string;
+  spawned_by?: string;
+  spawned_at?: string | Date;
+  status?: string;
+  answered_by?: string;
+  related_questions?: string[];
+  hypotheses?: string[];
+  notes?: string;
+  domain?: string;
+}
+
+function loadQFact(factId: string): QFact | null {
+  let files: string[] = [];
+  try {
+    files = readdirSync(questionsDir).filter((f: string) => f.startsWith(factId + '_') || f === factId + '.yaml');
+  } catch {
+    return null;
+  }
+  for (const f of files) {
+    try {
+      const raw = yaml.load(readFileSync(`${questionsDir}/${f}`, 'utf8')) as QFact;
+      if (raw && raw.fact_id === factId) return raw;
+    } catch { /* skip */ }
+  }
+  return null;
+}
+
+function loadAllOpenQ(): QFact[] {
+  let files: string[] = [];
+  try {
+    files = readdirSync(questionsDir).filter((f: string) => f.endsWith('.yaml'));
+  } catch {
+    return [];
+  }
+  return files
+    .map((f: string) => {
+      try { return yaml.load(readFileSync(`${questionsDir}/${f}`, 'utf8')) as QFact; } catch { return null; }
+    })
+    .filter((q): q is QFact => !!q);
+}
+
+const qfact = loadQFact(id);
+if (!qfact) {
+  return Astro.redirect(`${base}/questions/`);
+}
+
+// Normalize date
+function normalizeDate(d: string | Date | undefined): string {
+  if (!d) return '';
+  if (d instanceof Date) return d.toISOString().slice(0, 10);
+  return String(d);
+}
+
+const today = new Date('2026-04-26');
+function daysSince(d: string | Date | undefined): number {
+  const str = normalizeDate(d);
+  if (!str) return 0;
+  return Math.floor((today.getTime() - new Date(str).getTime()) / (1000 * 60 * 60 * 24));
+}
+
+// spawned_by finding link
+function findingRef(ref: string | undefined): { num: string; href: string } | null {
+  if (!ref) return null;
+  const m = ref.match(/finding:(\d{1,4})/i);
+  if (!m) return null;
+  const num = m[1].padStart(3, '0');
+  return { num, href: `${base}/findings/${num}/` };
+}
+
+const spawnedByRef = findingRef(qfact.spawned_by);
+const answeredByRef = findingRef(qfact.answered_by);
+
+// Find related Q-facts that share related_questions with this one
+const allQ = loadAllOpenQ();
+const relatedIds = new Set<string>([
+  ...(qfact.related_questions ?? []),
+  // Also find Q-facts whose related_questions list includes this Q
+  ...allQ
+    .filter((q) => q.fact_id !== id && q.related_questions?.includes(id))
+    .map((q) => q.fact_id),
+]);
+const relatedQFacts = [...relatedIds]
+  .map((rid) => allQ.find((q) => q.fact_id === rid))
+  .filter((q): q is QFact => !!q);
+
+const days = daysSince(qfact.spawned_at);
+const pageTitle = `${id} — ${qfact.claim}`;
+---
+
+<Base
+  title={pageTitle}
+  description={qfact.claim}
+>
+  <div class="page-container">
+    <a href={`${base}/questions/`} style="font-family: var(--font-ui); font-size: 0.85rem; color: var(--color-accent); text-decoration: none; display: inline-block; margin-bottom: 1.5rem;">
+      ← Alla frågor
+    </a>
+
+    <div style="margin-bottom: 0.5rem;">
+      <span style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.05em;">
+        {id}
+      </span>
+      {qfact.status === 'answered' && (
+        <span style="margin-left: 0.75rem; font-family: var(--font-ui); font-size: 0.75rem; background: var(--color-accent); color: #000; padding: 0.15em 0.5em; border-radius: 3px; font-weight: 700;">
+          Besvarad
+        </span>
+      )}
+      {qfact.status === 'open' && (
+        <span style="margin-left: 0.75rem; font-family: var(--font-ui); font-size: 0.75rem; color: var(--color-muted);">
+          öppen sedan {days} dagar
+        </span>
+      )}
+    </div>
+
+    <h1 style="font-family: var(--font-ui); font-size: 1.25rem; font-weight: 700; margin-bottom: 2rem; max-width: 640px; line-height: 1.4;">
+      {qfact.claim}
+    </h1>
+
+    <!-- Meta-tabell -->
+    <table style="border-collapse: collapse; width: 100%; max-width: 560px; margin-bottom: 2.5rem; font-family: var(--font-ui); font-size: 0.875rem;">
+      {spawnedByRef && (
+        <tr>
+          <td style="padding: 0.4rem 0; color: var(--color-muted); width: 8rem; vertical-align: top;">Väckt av</td>
+          <td style="padding: 0.4rem 0;">
+            <a href={spawnedByRef.href} style="color: var(--color-accent);">Finding {spawnedByRef.num}</a>
+          </td>
+        </tr>
+      )}
+      {!spawnedByRef && qfact.spawned_by && (
+        <tr>
+          <td style="padding: 0.4rem 0; color: var(--color-muted); width: 8rem; vertical-align: top;">Väckt av</td>
+          <td style="padding: 0.4rem 0; color: var(--color-text);">{qfact.spawned_by}</td>
+        </tr>
+      )}
+      <tr>
+        <td style="padding: 0.4rem 0; color: var(--color-muted); vertical-align: top;">Status</td>
+        <td style="padding: 0.4rem 0; color: var(--color-text);">{qfact.status ?? 'okänd'}</td>
+      </tr>
+      {answeredByRef && (
+        <tr>
+          <td style="padding: 0.4rem 0; color: var(--color-muted); vertical-align: top;">Besvarad av</td>
+          <td style="padding: 0.4rem 0;">
+            <a href={answeredByRef.href} style="color: var(--color-accent);">Finding {answeredByRef.num}</a>
+          </td>
+        </tr>
+      )}
+      {qfact.domain && (
+        <tr>
+          <td style="padding: 0.4rem 0; color: var(--color-muted); vertical-align: top;">Domän</td>
+          <td style="padding: 0.4rem 0; color: var(--color-text);">{qfact.domain}</td>
+        </tr>
+      )}
+      {normalizeDate(qfact.spawned_at) && (
+        <tr>
+          <td style="padding: 0.4rem 0; color: var(--color-muted); vertical-align: top;">Skapad</td>
+          <td style="padding: 0.4rem 0; color: var(--color-text);">{normalizeDate(qfact.spawned_at)}</td>
+        </tr>
+      )}
+    </table>
+
+    <!-- Hypoteser -->
+    {qfact.hypotheses && qfact.hypotheses.length > 0 && (
+      <section style="margin-bottom: 2rem;">
+        <h2 style="font-family: var(--font-ui); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted); margin-bottom: 0.75rem;">
+          Hypoteser
+        </h2>
+        <ul style="list-style: none; padding: 0; margin: 0;">
+          {qfact.hypotheses.map((hid: string) => (
+            <li style="padding: 0.3rem 0; font-family: var(--font-ui); font-size: 0.875rem;">
+              <span style="color: var(--color-muted);">{hid}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <!-- Relaterade frågor -->
+    {relatedQFacts.length > 0 && (
+      <section style="margin-bottom: 2rem;">
+        <h2 style="font-family: var(--font-ui); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted); margin-bottom: 0.75rem;">
+          Relaterade frågor
+        </h2>
+        <ul style="list-style: none; padding: 0; margin: 0;">
+          {relatedQFacts.map((rq) => (
+            <li style="border-bottom: 1px solid var(--color-border); padding: 0.5rem 0;">
+              <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <span style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; color: var(--color-muted); min-width: 3.5rem;">
+                  <a href={`${base}/questions/${rq.fact_id}/`} style="color: var(--color-muted); text-decoration: none;">{rq.fact_id}</a>
+                </span>
+                <span style="font-family: var(--font-ui); font-size: 0.875rem; color: var(--color-text); flex: 1;">
+                  <a href={`${base}/questions/${rq.fact_id}/`} style="color: var(--color-text); text-decoration: none;">{rq.claim}</a>
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <!-- Notes -->
+    {qfact.notes && (
+      <section style="margin-bottom: 2rem;">
+        <h2 style="font-family: var(--font-ui); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted); margin-bottom: 0.75rem;">
+          Anteckningar
+        </h2>
+        <p style="font-family: var(--font-ui); font-size: 0.875rem; color: var(--color-text); max-width: 560px; white-space: pre-wrap;">
+          {qfact.notes}
+        </p>
+      </section>
+    )}
+  </div>
+</Base>

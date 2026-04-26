@@ -18,6 +18,7 @@ Exit-kod 1 = fel (API-nyckel saknas, parse-fel, etc.)
 
 import argparse
 import json
+import os
 import sys
 import re
 from pathlib import Path
@@ -226,6 +227,18 @@ def run_pipeline(args: argparse.Namespace) -> int:
     questions = load_questions()
     data = load_bandygrytan()
     q_facts = _load_q_facts()
+
+    # Steg D: Hantera review-flagged issues (körs alltid om token finns)
+    github_token = os.environ.get("GITHUB_TOKEN", "")
+    github_repo = os.environ.get("GITHUB_REPOSITORY", "")
+    if github_token and github_repo and not args.dry_run:
+        try:
+            from pipeline.review_flags import handle_review_flags
+            n_flags = handle_review_flags(github_token, github_repo)
+            if n_flags:
+                print(f"{n_flags} ny(a) review-flagged issue(s) loggade i REVIEW_FLAGS.md.")
+        except Exception as e:
+            print(f"  review_flags: oväntat fel: {e}")
 
     # Import new questions from GitHub Issues
     if not args.dry_run and not args.id:

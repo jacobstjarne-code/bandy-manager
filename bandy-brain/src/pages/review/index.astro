@@ -1,0 +1,266 @@
+---
+import Base from '../../layouts/Base.astro';
+import { readFileSync, readdirSync } from 'fs';
+import yaml from 'js-yaml';
+import { resolve } from 'path';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+// ── Sektion 1: Findings att verifiera ────────────────────────────────────────
+
+// findings/index.astro uses a hardcoded list; we replicate that list here
+// and enrich it with verification state from the finding files themselves.
+const findingsDir = resolve(process.cwd(), '..', 'bandy-brain', 'src', 'pages', 'findings');
+
+interface FindingMeta {
+  num: string;
+  title: string;
+  date: string;
+  verified_by: string | null;
+  factRefCount: number;
+  href: string;
+}
+
+function extractFindingMeta(dir: string): FindingMeta[] {
+  let entries: string[] = [];
+  try {
+    entries = readdirSync(dir).filter((d) => /^\d{3}$/.test(d));
+  } catch {
+    return [];
+  }
+
+  return entries.map((num) => {
+    const astroPath = `${dir}/${num}/index.astro`;
+    let content = '';
+    try { content = readFileSync(astroPath, 'utf8'); } catch { /* skip */ }
+
+    // verified_by from JS variable in frontmatter script
+    const verifiedMatch = content.match(/const verified_by[:\s]+[^=]*=\s*([^;\n]+)/);
+    let verified_by: string | null = null;
+    if (verifiedMatch) {
+      const raw = verifiedMatch[1].trim().replace(/['"]/g, '');
+      if (raw !== 'null' && raw !== '') verified_by = raw;
+    }
+
+    // Count factHref calls as proxy for importance
+    const factRefCount = (content.match(/factHref\(/g) || []).length;
+
+    // Title from <Base title="...">
+    const titleMatch = content.match(/title="Finding \d+ — (.+?)"/);
+    const title = titleMatch ? titleMatch[1] : `Finding ${num}`;
+
+    // Date from finding-meta paragraph
+    const dateMatch = content.match(/<p class="finding-meta">Finding \d+ · (.+?)<\/p>/);
+    const date = dateMatch ? dateMatch[1].trim() : '';
+
+    return { num, title, date, verified_by, factRefCount, href: `${base}/findings/${num}/` };
+  });
+}
+
+const allFindings = extractFindingMeta(findingsDir);
+const unverified = allFindings
+  .filter((f) => !f.verified_by)
+  .sort((a, b) => b.factRefCount - a.factRefCount);
+
+const top10 = unverified.slice(0, 10);
+const hasMore = unverified.length > 10;
+
+// ── Sektion 2: H-facts utan svar ─────────────────────────────────────────────
+
+const hypothesesDir = resolve(process.cwd(), '..', 'docs', 'findings', 'hypotheses');
+
+interface HFact {
+  fact_id: string;
+  claim: string;
+  spawned_by?: string;
+  status?: string;
+}
+
+function loadOpenHFacts(): HFact[] {
+  let files: string[] = [];
+  try { files = readdirSync(hypothesesDir).filter((f: string) => f.endsWith('.yaml')); } catch { return []; }
+
+  return files
+    .map((f: string) => {
+      try {
+        return yaml.load(readFileSync(`${hypothesesDir}/${f}`, 'utf8')) as HFact;
+      } catch { return null; }
+    })
+    .filter((h): h is HFact => !!h && h.status === 'open')
+    .sort((a: HFact, b: HFact) => a.fact_id.localeCompare(b.fact_id));
+}
+
+const openHFacts = loadOpenHFacts();
+
+// ── Sektion 3: Öppna Q-facts, äldst först ────────────────────────────────────
+
+const questionsDir = resolve(process.cwd(), '..', 'docs', 'findings', 'facts', 'questions');
+
+interface QFact {
+  fact_id: string;
+  claim: string;
+  spawned_by?: string;
+  spawned_at?: string | Date;
+  status?: string;
+}
+
+function normalizeDate(d: string | Date | undefined): string {
+  if (!d) return '';
+  if (d instanceof Date) return d.toISOString().slice(0, 10);
+  return String(d);
+}
+
+const today = new Date('2026-04-26');
+function daysSince(d: string | Date | undefined): number {
+  const str = normalizeDate(d);
+  if (!str) return 0;
+  return Math.floor((today.getTime() - new Date(str).getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function loadOpenQFacts(): QFact[] {
+  let files: string[] = [];
+  try { files = readdirSync(questionsDir).filter((f: string) => f.endsWith('.yaml')); } catch { return []; }
+
+  return files
+    .map((f: string) => {
+      try {
+        return yaml.load(readFileSync(`${questionsDir}/${f}`, 'utf8')) as QFact;
+      } catch { return null; }
+    })
+    .filter((q): q is QFact => !!q && q.status === 'open')
+    .sort((a: QFact, b: QFact) => normalizeDate(a.spawned_at).localeCompare(normalizeDate(b.spawned_at)));
+}
+
+const openQFacts = loadOpenQFacts().slice(0, 15);
+---
+
+<Base
+  title="Granska"
+  description="Findings och frågor som väntar på Eriks granskning."
+>
+  <div class="page-container">
+    <h1 style="font-family: var(--font-ui); font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">
+      Granska
+    </h1>
+    <p style="max-width: 560px; color: var(--color-muted); font-size: 0.9rem; margin-bottom: 2.5rem; font-family: var(--font-ui);">
+      Findings och frågor som inte granskats av en domänexpert.
+      Verifiering sker via git: sätt <code>verified_by</code> + <code>verified_at</code>
+      i finding-frontmatter. Problem? Öppna en issue med label <code>review-flagged</code>.
+    </p>
+
+    <!-- Sektion 1: Findings att verifiera -->
+    <section style="margin-bottom: 3rem;">
+      <h2 style="font-family: var(--font-ui); font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted); margin-bottom: 1rem;">
+        Findings att verifiera
+        <span style="font-weight: 400; font-size: 0.85em;">({unverified.length} totalt)</span>
+      </h2>
+
+      {top10.length === 0 && (
+        <p style="color: var(--color-muted); font-family: var(--font-ui); font-size: 0.9rem;">
+          Alla findings är verifierade.
+        </p>
+      )}
+
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        {top10.map((f) => (
+          <li style="border-bottom: 1px solid var(--color-border); padding: 0.65rem 0;">
+            <div style="display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;">
+              <span style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; color: var(--color-muted); min-width: 3rem;">
+                F{f.num}
+              </span>
+              <span style="font-family: var(--font-ui); font-size: 0.9rem; color: var(--color-text); flex: 1;">
+                <a href={f.href} style="color: var(--color-text); text-decoration: none;">{f.title}</a>
+              </span>
+              <span style="font-family: var(--font-ui); font-size: 0.75rem; color: var(--color-muted); white-space: nowrap;">
+                {f.factRefCount} fact-ref{f.factRefCount !== 1 ? 's' : ''}
+              </span>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      {hasMore && (
+        <p style="margin-top: 1rem; font-family: var(--font-ui); font-size: 0.85rem;">
+          <a href={`${base}/findings/`} style="color: var(--color-accent);">
+            Se alla {unverified.length} overifierade findings →
+          </a>
+        </p>
+      )}
+    </section>
+
+    <!-- Sektion 2: H-facts utan svar -->
+    <section style="margin-bottom: 3rem;">
+      <h2 style="font-family: var(--font-ui); font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted); margin-bottom: 1rem;">
+        Öppna hypoteser
+        <span style="font-weight: 400; font-size: 0.85em;">({openHFacts.length} st)</span>
+      </h2>
+
+      {openHFacts.length === 0 && (
+        <p style="color: var(--color-muted); font-family: var(--font-ui); font-size: 0.9rem;">
+          Inga öppna hypoteser.
+        </p>
+      )}
+
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        {openHFacts.map((h) => (
+          <li style="border-bottom: 1px solid var(--color-border); padding: 0.65rem 0;">
+            <div style="display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;">
+              <span style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; color: var(--color-muted); min-width: 3.5rem;">
+                {h.fact_id}
+              </span>
+              <span style="font-family: var(--font-ui); font-size: 0.875rem; color: var(--color-text); flex: 1;">
+                {h.claim.length > 100 ? h.claim.slice(0, 100) + '…' : h.claim}
+              </span>
+              {h.spawned_by && (
+                <span style="font-family: var(--font-ui); font-size: 0.75rem; color: var(--color-muted); white-space: nowrap;">
+                  {h.spawned_by}
+                </span>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <!-- Sektion 3: Öppna Q-facts, äldst först -->
+    <section>
+      <h2 style="font-family: var(--font-ui); font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-muted); margin-bottom: 1rem;">
+        Äldst öppna frågor
+        <span style="font-weight: 400; font-size: 0.85em;">(topp 15, äldst först)</span>
+      </h2>
+
+      {openQFacts.length === 0 && (
+        <p style="color: var(--color-muted); font-family: var(--font-ui); font-size: 0.9rem;">
+          Inga öppna frågor.
+        </p>
+      )}
+
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        {openQFacts.map((q) => {
+          const days = daysSince(q.spawned_at);
+          return (
+            <li style="border-bottom: 1px solid var(--color-border); padding: 0.65rem 0;">
+              <div style="display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;">
+                <span style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; color: var(--color-muted); min-width: 3.5rem;">
+                  <a href={`${base}/questions/${q.fact_id}/`} style="color: var(--color-muted); text-decoration: none;">{q.fact_id}</a>
+                </span>
+                <span style="font-family: var(--font-ui); font-size: 0.875rem; color: var(--color-text); flex: 1;">
+                  {q.claim.length > 100 ? q.claim.slice(0, 100) + '…' : q.claim}
+                </span>
+                <span style="font-family: var(--font-ui); font-size: 0.75rem; color: var(--color-muted); white-space: nowrap;">
+                  öppen sedan {days} dagar
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      <p style="margin-top: 1rem; font-family: var(--font-ui); font-size: 0.85rem;">
+        <a href={`${base}/questions/`} style="color: var(--color-accent);">
+          Se alla öppna frågor →
+        </a>
+      </p>
+    </section>
+  </div>
+</Base>

@@ -66,6 +66,10 @@ const questions: QFact[] = files
       {questions.length} öppna frågor från {new Set(questions.map(q => q.spawned_by)).size} findings.
     </p>
 
+    <p style="font-family: var(--font-ui); font-size: 0.85rem; margin-bottom: 1.5rem;">
+      <a href={`${base}/tree/`} style="color: var(--color-accent);">Visa som träd →</a>
+    </p>
+
     <ul style="list-style: none; padding: 0; margin: 0;">
       {questions.map(q => {
         const finding = findingHref(q.spawned_by);
@@ -75,10 +79,10 @@ const questions: QFact[] = files
           <li style="border-bottom: 1px solid var(--color-border); padding: 0.75rem 0;">
             <div style="display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;">
               <span style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; color: var(--color-muted); min-width: 3.5rem;">
-                {q.fact_id}
+                <a href={`${base}/questions/${q.fact_id}/`} style="color: var(--color-muted); text-decoration: none;">{q.fact_id}</a>
               </span>
               <span style="font-family: var(--font-ui); font-size: 0.9rem; color: var(--color-text); flex: 1;">
-                {q.claim}
+                <a href={`${base}/questions/${q.fact_id}/`} style="color: var(--color-text); text-decoration: none;">{q.claim}</a>
               </span>
               <span style="font-family: var(--font-ui); font-size: 0.75rem; color: var(--color-muted); white-space: nowrap;">
                 {finding
