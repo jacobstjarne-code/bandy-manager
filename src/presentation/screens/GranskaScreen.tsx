@@ -471,7 +471,12 @@ export function GranskaScreen() {
           const opponentClub = isHome ? awayClub : homeClub
           if (!opponentClub) return null
           const theyWon = margin < 0
-          const quote = generatePostMatchOpponentQuote(opponentClub, theyWon)
+          const opponentScandal = (game.scandalHistory ?? []).some(s =>
+            s.affectedClubId === opponentClub.id &&
+            s.season === game.currentSeason &&
+            s.type !== 'small_absurdity'
+          )
+          const quote = generatePostMatchOpponentQuote(opponentClub, theyWon, opponentScandal)
           if (!quote) return null
           return (
             <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>

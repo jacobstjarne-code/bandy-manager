@@ -1079,6 +1079,9 @@ function* simulateMatchCore(
         } else if (supporterCtx && supporterCtx.members <= 30 && rand() < 0.50) {
           const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
           commentaryText = fillTemplate(pickCommentary(commentary.supporter_attendance_low, rand), sv)
+        } else if (input.ownScandalThisSeason && supporterCtx && rand() < 0.20) {
+          const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
+          commentaryText = fillTemplate(pickCommentary(commentary.supporter_scandal_recent, rand), sv)
         } else if (supporterCtx && rand() < 0.30) {
           const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
           commentaryText = fillTemplate(pickCommentary(commentary.supporter_kickoff, rand), sv)
@@ -1086,7 +1089,10 @@ function* simulateMatchCore(
           commentaryText = fillTemplate(pickCommentary(commentary.kickoff, rand), templateVars)
         }
       } else if (step === 30) {
-        if (supporterCtx && rand() < 0.25) {
+        if (input.ownScandalThisSeason && supporterCtx && rand() < 0.20) {
+          const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
+          commentaryText = fillTemplate(pickCommentary(commentary.supporter_scandal_recent, rand), sv)
+        } else if (supporterCtx && rand() < 0.25) {
           const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
           commentaryText = fillTemplate(pickCommentary(commentary.supporter_halfTime, rand), sv)
         } else {

@@ -12,10 +12,15 @@ interface PressQuestion {
   text: string
   preferIds: string[]  // response IDs that directly answer this question
   minRound?: number    // earliest round this question makes sense
+  minScandalThisSeason?: boolean  // requires at least one scandal this season
 }
 
 const QUESTIONS: Record<string, PressQuestion[]> = {
   bigWin: [
+    { text: 'Bandysverige skakas av rubriker just nu — ni vinner ändå. Är det ett tecken på något?', preferIds: ['bw_c1', 'bw_h2', 'bw_d2'], minScandalThisSeason: true },
+    { text: 'Det är turbulent runt sporten den här säsongen. Hur håller ni er fokuserade?', preferIds: ['bw_h4', 'bw_d1', 'cl04'], minScandalThisSeason: true },
+    { text: 'Tidningarna pratar mer om ekonomi än bandy just nu. Hur landar det hos er?', preferIds: ['bw_d2', 'bw_h1', 'cl07'], minScandalThisSeason: true },
+    { text: 'Det är inte den lugnaste säsongen för svensk bandy. Märks det i kalendern eller bara på rubrikerna?', preferIds: ['bw_h1', 'bw_d1', 'cl04'], minScandalThisSeason: true },
     { text: 'Tydlig seger. Var det er bästa match den här säsongen?', preferIds: ['bw_c1', 'bw_h2', 'cl01'], minRound: 6 },
     { text: 'Laget spelade bra idag. Vad är skillnaden jämfört med tidigare omgångar?', preferIds: ['bw_c2', 'bw_h5', 'cl04'] },
     { text: 'Tvåsiffrigt idag — är det ett mönster eller en engångsgrej?', preferIds: ['bw_c3', 'bw_h4', 'cl02'] },
@@ -26,6 +31,10 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Det pratas om er i hela kommunen. Är det press eller inspiration?', preferIds: ['w_h1', 'w_c1', 'cl01'], minRound: 5 },
   ],
   win: [
+    { text: 'Bandysverige skakas av rubriker just nu — ni vinner ändå. Är det ett tecken på något?', preferIds: ['w_c7', 'w_h2', 'bw_d2'], minScandalThisSeason: true },
+    { text: 'Det är turbulent runt sporten den här säsongen. Hur håller ni er fokuserade?', preferIds: ['w_c4', 'bw_d1', 'cl03'], minScandalThisSeason: true },
+    { text: 'Tidningarna pratar mer om ekonomi än bandy just nu. Hur landar det hos er?', preferIds: ['bw_d2', 'w_h2', 'cl07'], minScandalThisSeason: true },
+    { text: 'Det är inte den lugnaste säsongen för svensk bandy. Märks det i kalendern eller bara på rubrikerna?', preferIds: ['w_c4', 'bw_d1', 'cl03'], minScandalThisSeason: true },
     { text: 'Seger! Berätta om matchen.', preferIds: ['w_h1', 'w_c1', 'w_d1'] },
     { text: 'Två viktiga poäng. Hur påverkar det stämningen i laget?', preferIds: ['w_p2', 'w_h2', 'w_p4'] },
     { text: 'Vilken spelare stack ut idag?', preferIds: ['w_p3', 'w_h3', 'w_c3'] },
@@ -39,6 +48,10 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Kaptenen {captainName} — hur ser han på insatsen?', preferIds: ['w_p2', 'w_h3'], minRound: 3 },
   ],
   loss: [
+    { text: 'Det rör om i ligan med skandaler den här säsongen. Påverkar det stämningen i omklädningsrummet?', preferIds: ['l_h9', 'l_p5', 'cl11'], minScandalThisSeason: true },
+    { text: 'Förbundet har sina händer fulla just nu. Stör det fokuset på matchen?', preferIds: ['l_h1', 'l_c2', 'bw_d1'], minScandalThisSeason: true },
+    { text: 'Tidningarna pratar mer om ekonomi än bandy just nu. Hur landar det hos er?', preferIds: ['l_h9', 'bw_d2', 'cl11'], minScandalThisSeason: true },
+    { text: 'Det är inte den lugnaste säsongen för svensk bandy. Märks det i kalendern eller bara på rubrikerna?', preferIds: ['l_c6', 'bw_d1', 'cl15'], minScandalThisSeason: true },
     { text: 'Tung förlust. Vad gick fel?', preferIds: ['l_h1', 'l_c2', 'cl11'] },
     { text: 'Laget såg trötta ut i andra halvlek. Kondition?', preferIds: ['l_h2', 'l_h1', 'l_d1'] },
     { text: 'Supportrarna är besvikna. Vad säger du till dem?', preferIds: ['l_p3', 'l_h3', 'cl14'] },
@@ -51,6 +64,8 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Publiken sviker. Hur påverkar det laget?', preferIds: ['l_h1', 'l_c2', 'cl14'], minRound: 5 },
   ],
   bigLoss: [
+    { text: 'Det rör om i ligan med skandaler den här säsongen. Påverkar det stämningen i omklädningsrummet?', preferIds: ['bl_p3', 'bl_d2', 'cl13'], minScandalThisSeason: true },
+    { text: 'Förbundet har sina händer fulla just nu. Stör det fokuset på matchen?', preferIds: ['bl_h1', 'bl_p1', 'cl12'], minScandalThisSeason: true },
     { text: 'En mörk kväll. Hur tar ni er vidare härifrån?', preferIds: ['bl_h1', 'bl_p1', 'cl12'] },
     { text: 'Är du orolig för lagets form?', preferIds: ['bl_h2', 'bl_c2', 'cl13'] },
     { text: 'Det här resultatet kan stå er dyrt i tabellen. Hur reagerar styrelsen?', preferIds: ['bl_p3', 'bl_d2', 'bl_a1'], minRound: 5 },
@@ -59,6 +74,9 @@ const QUESTIONS: Record<string, PressQuestion[]> = {
     { text: 'Behöver du ta in ny spetskompetens för att vända skutan?', preferIds: ['bl_c6', 'bl_c2', 'bl_p1'] },
   ],
   draw: [
+    { text: 'En match i en orolig säsong — för bandyn i stort. Vad säger du om läget i ligan?', preferIds: ['dr_h1', 'bw_d1', 'dr_d1'], minScandalThisSeason: true },
+    { text: 'Tidningarna pratar mer om ekonomi än bandy just nu. Hur landar det hos er?', preferIds: ['bw_d2', 'dr_h1', 'cl07'], minScandalThisSeason: true },
+    { text: 'Det är inte den lugnaste säsongen för svensk bandy. Märks det i kalendern eller bara på rubrikerna?', preferIds: ['dr_c4', 'bw_d1', 'dr_h1'], minScandalThisSeason: true },
     { text: 'Oavgjort — nöjd eller besviken?', preferIds: ['dr_h1', 'dr_c1', 'dr_d1'] },
     { text: 'Ni kvitterade sent. Vad säger det om lagets karaktär?', preferIds: ['dr_p2', 'dr_h2', 'dr_d1'] },
     { text: 'En poäng på bortaplan — räknas det som bra?', preferIds: ['dr_c3', 'dr_h3', 'dr_d1'] },
@@ -527,7 +545,11 @@ export function generatePressConference(
   const round = fixture.roundNumber ?? 0
   const allQuestions = QUESTIONS[contextKey]
   if (!allQuestions || allQuestions.length === 0) return null
-  const questions = allQuestions.filter(q => !q.minRound || round >= q.minRound)
+  const hasCurrentSeasonScandal = (game.scandalHistory ?? []).some(s => s.season === game.currentSeason)
+  const questions = allQuestions.filter(q =>
+    (!q.minRound || round >= q.minRound) &&
+    (!q.minScandalThisSeason || hasCurrentSeasonScandal)
+  )
   const questionPool = questions.length > 0 ? questions : allQuestions
 
   let question = questionPool[Math.floor(rand() * questionPool.length)]

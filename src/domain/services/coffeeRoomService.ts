@@ -1,4 +1,5 @@
 import type { SaveGame } from '../entities/SaveGame'
+import type { ScandalType } from './scandalService'
 import { InboxItemType } from '../enums'
 import { getCharacterName } from './supporterService'
 
@@ -66,6 +67,81 @@ const RESULT_EXCHANGES: Record<'win' | 'loss' | 'draw', Array<[string, string]>>
   draw: [
     ['Kioskvakten', 'Kryss igen. Folket vet inte om de ska vara nöjda.'],
     ['Vaktmästaren', 'En poäng är en poäng. Isen klagade inte.'],
+  ],
+}
+
+const SCANDAL_DASHBOARD_OWN: Partial<Record<ScandalType, Array<[string, string, string, string]>>> = {
+  municipal_scandal: [
+    ['Kioskvakten', 'Hörde att Granskning ringde i veckan.', 'Vaktmästaren', 'Lokaltidningen eller riktiga?" Kioskvakten: "Riktiga.'],
+    ['Kassören', 'Jag har räknat fram det tre gånger.', 'Ordföranden', 'Stämmer det?" Kassören: "Det är därför jag räknat tre gånger.'],
+    ['Vaktmästaren', 'Politikern har slutat svara.', 'Materialaren', 'Bra. Då slipper han säga något.'],
+  ],
+  sponsor_collapse: [
+    ['Kassören', 'Tröjorna ska tryckas om.', 'Materialaren', 'När då?" Kassören: "När någon betalat.'],
+    ['Kioskvakten', 'Han ringde inte ens.', 'Vaktmästaren', 'Bara mejl?" Kioskvakten: "Bara mejl.'],
+    ['Ordföranden', 'Nya förfrågningar har inte kommit än.', 'Kassören', 'Det går två veckor till.'],
+  ],
+  treasurer_resigned: [
+    ['Vaktmästaren', 'Är det någon som öppnat kontoret?', 'Kioskvakten', 'Inte sen i tisdags." Vaktmästaren: "Då." Kioskvakten: "Då.'],
+    ['Materialaren', 'Jag försökte få fram papperna till skatteverket.', 'Ordföranden', 'Och?" Materialaren: "Pärmen är där hon lämnade den.'],
+    ['Kioskvakten', 'Hon kom in på matchen i lördags.', 'Kassören', 'Sa hon något?" Kioskvakten: "Hon köpte korv.'],
+  ],
+  phantom_salaries: [
+    ['Kassören', 'Två poäng.', 'Ordföranden', 'Två." Kassören: "Det är en match.'],
+    ['Vaktmästaren', 'Vi hade kunnat göra någonting bättre med tiden.', 'Materialaren', 'Vad menar du?" Vaktmästaren: "Allt.'],
+    ['Kioskvakten', 'Det var inte ens samma kassör som lade upp det.', 'Materialaren', 'Spelar ingen roll nu.'],
+  ],
+  club_to_club_loan: [
+    ['Ordföranden', 'Det skulle hjälpa bägge.', 'Kassören', 'Det blev så." Ordföranden: "Hjälpen gick åt fel håll.'],
+    ['Vaktmästaren', 'Hörde att de fick poängavdraget igår.', 'Kioskvakten', 'Bra för dem att vi hjälpte till." Vaktmästaren: "Mhm.'],
+  ],
+  fundraiser_vanished: [
+    ['Materialaren', 'Birger frågade igen idag.', 'Kioskvakten', 'Vad sa du?" Materialaren: "Att vi tittar på det.'],
+    ['Kioskvakten', 'Vi ska ha medlemsmöte.', 'Vaktmästaren', 'Frivilligt?" Kioskvakten: "Inte direkt.'],
+    ['Kassören', 'Polisen har inte hört av sig.', 'Ordföranden', 'Det är en månad sedan." Kassören: "Jag vet.'],
+  ],
+  coach_meltdown: [
+    ['Vaktmästaren', 'Jag plogade tidigt idag. Han var där redan.', 'Materialaren', 'Sa något?" Vaktmästaren: "Bara hej.'],
+    ['Kioskvakten', 'Assisterande verkar göra vad han kan.', 'Materialaren', 'Han är inte tränaren, det är skillnaden." Kioskvakten: "Vi får hoppas.'],
+    ['Kassören', 'Ingen frågar efter ett presskonferensdatum.', 'Ordföranden', 'Bra." Kassören: "Ja. Det är bra.'],
+  ],
+}
+
+const SCANDAL_DASHBOARD_OTHER: Partial<Record<ScandalType, Array<[string, string, string, string]>>> = {
+  municipal_scandal: [
+    ['Kioskvakten', 'Politiker bråkar om {KLUBB}-bidraget igen.', 'Vaktmästaren', 'Igen?" Kioskvakten: "Tredje gången på fem år.'],
+    ['Kassören', '{KLUBB} ska skolas av kommunen.', 'Ordföranden', 'Det skulle vi också." Kassören: "Vi har ingen mark att sälja.'],
+    ['Materialaren', 'Hörde att {KLUBB} fick stryk i fullmäktige.', 'Vaktmästaren', 'Av vem?" Materialaren: "Alla.'],
+  ],
+  sponsor_collapse: [
+    ['Kioskvakten', '{KLUBB} förlorade en sponsor i veckan.', 'Kassören', 'Stor?" Kioskvakten: "Lagom.'],
+    ['Vaktmästaren', 'Tror dom hade Borgvik Bygg också.', 'Materialaren', 'Då har dom det jobbigt." Vaktmästaren: "Det har alla.'],
+    ['Ordföranden', '{KLUBB} söker ny huvudsponsor enligt tidningen.', 'Kassören', 'Lycka till.'],
+  ],
+  treasurer_resigned: [
+    ['Materialaren', '{KLUBB}s kassör är borta.', 'Kioskvakten', 'Vad hände?" Materialaren: "Personliga skäl, står det.'],
+    ['Kassören', 'Hörde att {KLUBB} inte kan göra transfers nu.', 'Ordföranden', 'Inte?" Kassören: "Pärmarna är låsta.'],
+    ['Vaktmästaren', 'Hon var hyfsat ung.', 'Kioskvakten', 'Vem?" Vaktmästaren: "{KLUBB}s kassör.'],
+  ],
+  phantom_salaries: [
+    ['Kassören', '{KLUBB} fick två poäng dragna.', 'Ordföranden', 'På vad?" Kassören: "Spelare som inte fanns.'],
+    ['Kioskvakten', 'Skatteverket var tydligen klara med {KLUBB}.', 'Materialaren', 'Och?" Kioskvakten: "Det stod två poäng på fakturan.'],
+    ['Vaktmästaren', 'Bra att vi har vår kassör.', 'Materialaren', 'Hon räknar två gånger." Vaktmästaren: "Tre.'],
+  ],
+  club_to_club_loan: [
+    ['Ordföranden', '{KLUBB} och deras grannar gjorde en deal.', 'Kassören', 'Kreativ?" Ordföranden: "Det säger Förbundet.'],
+    ['Materialaren', 'Tre poäng nästa säsong för {KLUBB}.', 'Vaktmästaren', 'Det är en tabellplats." Materialaren: "Minst.'],
+    ['Kioskvakten', 'Hörde att kassören sitter på båda klubbarnas kontor.', 'Vaktmästaren', 'Då blev det som det blev.'],
+  ],
+  fundraiser_vanished: [
+    ['Kassören', '{KLUBB}s korv-pengar är borta.', 'Vaktmästaren', '300 spänn?" Kassören: "300 tusen.'],
+    ['Kioskvakten', 'Klacken i {KLUBB} står utanför kansliet.', 'Materialaren', 'Och?" Kioskvakten: "Ingen kommer ut.'],
+    ['Ordföranden', 'Det är en sån grej man lär sig av.', 'Kassören', 'Att räkna oftare." Ordföranden: "Mhm.'],
+  ],
+  coach_meltdown: [
+    ['Vaktmästaren', '{KLUBB}s tränare är borta.', 'Kioskvakten', 'Vad hände?" Vaktmästaren: "Personliga skäl.'],
+    ['Materialaren', 'Han ringde en kollega här i veckan.', 'Kassören', 'Sa något?" Materialaren: "Sa att han söker hjälp.'],
+    ['Kioskvakten', 'Det är såna grejer man inte glädjs över.', 'Vaktmästaren', 'Nej." Kioskvakten: "Spelar ingen roll vilket lag.'],
   ],
 }
 
@@ -142,6 +218,31 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     const idx = Math.abs(seed * 11) % TRANSFER_BUY_EXCHANGES.length
     const ex = TRANSFER_BUY_EXCHANGES[idx]
     return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
+  }
+
+  // Scandal reference (25% chance when recent scandal this season)
+  const recentScandal = (game.scandalHistory ?? []).find(s =>
+    s.season === game.currentSeason &&
+    s.triggerRound >= round - 1 &&
+    s.type !== 'small_absurdity'
+  )
+  if (recentScandal && seed % 4 === 0) {
+    const isOwn = recentScandal.affectedClubId === game.managedClubId
+    const pool = isOwn ? SCANDAL_DASHBOARD_OWN[recentScandal.type] : SCANDAL_DASHBOARD_OTHER[recentScandal.type]
+    if (pool && pool.length > 0) {
+      const ex = pool[Math.abs(seed * 17) % pool.length]
+      if (!isOwn) {
+        const affectedClub = game.clubs.find(c => c.id === recentScandal.affectedClubId)
+        const secondaryClub = recentScandal.secondaryClubId
+          ? game.clubs.find(c => c.id === recentScandal.secondaryClubId)
+          : null
+        const klubb = affectedClub?.name ?? 'grannklubben'
+        const andraKlubb = secondaryClub?.name ?? 'grannklubben'
+        const sub = (s: string) => s.replace(/\{KLUBB\}/g, klubb).replace(/\{ANDRA_KLUBB\}/g, andraKlubb)
+        return { speaker: sub(ex[0]), text: `"${sub(ex[1])}" — ${sub(ex[2])}: "${sub(ex[3])}"` }
+      }
+      return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
+    }
   }
 
   const lastHash = game.lastCoffeeQuoteHash ?? -1

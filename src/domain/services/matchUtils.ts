@@ -304,6 +304,7 @@ export interface StepByStepInput {
     totalRounds?: number       // 22 för grundserie
     isFirstRound?: boolean     // säsongspremiär
   }
+  ownScandalThisSeason?: boolean  // for supporter_scandal_recent commentary
   // Second-half restart fields (optional — omit for full match from step 0)
   startStep?: number
   initialHomeScore?: number

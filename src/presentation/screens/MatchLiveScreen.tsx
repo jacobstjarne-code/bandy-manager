@@ -178,6 +178,11 @@ export function MatchLiveScreen() {
         members: game.supporterGroup.members,
         leaderName: game.supporterGroup.leader.name,
       } : undefined,
+      ownScandalThisSeason: (game.scandalHistory ?? []).some(s =>
+        s.season === game.currentSeason &&
+        s.affectedClubId === game.managedClubId &&
+        s.type !== 'small_absurdity'
+      ),
     })
     const allSteps: MatchStep[] = []
     for (const step of gen) allSteps.push(step)

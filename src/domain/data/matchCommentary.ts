@@ -696,6 +696,17 @@ export const commentary = {
     '📯 Trumman ekar lite ensamt i kvällen. {members} som höll ord.',
     '{leader} spelar för det lilla gänget. De som alltid kommer.',
   ],
+
+  supporter_scandal_recent: [
+    '📯 {leader} börjar slå trumman tidigt. Ramsorna kommer inte med på första försöket.',
+    '📣 "Hejsan alla är ni klara?" Svaret kommer från halva läktaren. {leader} drar den en gång till.',
+    '🎵 Växelramsan tappar i bortre sektionen. {leader} tittar dit, tar i lite mer.',
+    '📯 Trumslagen kommer i takt. Sångerna ligger ett halvt slag efter.',
+    '{leader} går runt arenan ändå. Tunn tröja, bara handskar — som alltid. Som om ingenting hade hänt.',
+    '📣 "Öka takten sista kvarten" — fjärde gången idag. {leader} hittar inte rätt timing ikväll.',
+    '🎵 {members} på läktaren. Ljudtopparna är där. Bottnarna är längre än vanligt.',
+    '📯 Trumman går. Flaggorna går. Det går — men det knaggar i synkningen.',
+  ],
 }
 
 // Helper to fill in a template

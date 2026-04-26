@@ -45,9 +45,34 @@ export function generatePreMatchOpponentQuote(opponentClub: Club, isDerby: boole
   return pool[Math.floor(Math.random() * pool.length)]
 }
 
-export function generatePostMatchOpponentQuote(opponentClub: Club, theyWon: boolean): string {
+const SCANDAL_AFFECTED_LOST = [
+  '"Det har varit mycket runtomkring oss. Spelarna har försökt — det är allt jag kan säga om saken."',
+  '"Vi förlorade. Vi vet varför. Lagets fokus har inte varit perfekt, men det är inte en ursäkt — det är en förklaring."',
+  '"Det är säsongen vi haft. Vi får ta det här och gå vidare. Inget mer än så."',
+  '"Vi har grejer att lösa hemma också. Det här var inte lätt, men det är inget vi kan dröja vid."',
+]
+
+const SCANDAL_AFFECTED_WON = [
+  '"Killarna höll fokus. Det är inte självklart i läget vi är i."',
+  '"Truppen har stängt allt utanför planen ute. Det är jag stolt över. Mer behöver inte sägas."',
+  '"Bra för killarna. De förtjänar att slippa rubriker en gång."',
+]
+
+const SCANDAL_AFFECTED_GENERIC = [
+  '"Vi spelade. Det är vad jag bryr mig om idag."',
+]
+
+export function generatePostMatchOpponentQuote(opponentClub: Club, theyWon: boolean, hasScandal?: boolean): string {
   const mgr = opponentClub.opponentManager
   if (!mgr) return ''
+
+  if (hasScandal) {
+    const pool = theyWon
+      ? [...SCANDAL_AFFECTED_WON, ...SCANDAL_AFFECTED_GENERIC]
+      : [...SCANDAL_AFFECTED_LOST, ...SCANDAL_AFFECTED_GENERIC]
+    const quote = pool[Math.floor(Math.random() * pool.length)]
+    return `${mgr.name}: ${quote}`
+  }
 
   const quotes: Record<string, string[]> = {
     confident: theyWon
