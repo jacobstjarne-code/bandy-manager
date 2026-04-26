@@ -54,8 +54,8 @@ export const PHASE_CONSTANTS: Record<MatchPhaseContext, {
   cornerGoalMod: number
 }> = {
   regular:     { goalMod: 1.000, homeAdvDelta: 0.00, suspMod: 1.00, cornerTrailingMod: 1.11, cornerLeadingMod: 0.90, cornerGoalMod: 1.00 },
-  quarterfinal:{ goalMod: 0.966, homeAdvDelta: 0.06, suspMod: 0.84, cornerTrailingMod: 1.05, cornerLeadingMod: 0.81, cornerGoalMod: 0.78 },
-  semifinal:   { goalMod: 0.920, homeAdvDelta: 0.05, suspMod: 0.94, cornerTrailingMod: 0.93, cornerLeadingMod: 0.86, cornerGoalMod: 0.75 },
+  quarterfinal:{ goalMod: 0.995, homeAdvDelta: 0.06, suspMod: 0.84, cornerTrailingMod: 1.05, cornerLeadingMod: 0.81, cornerGoalMod: 0.78 },
+  semifinal:   { goalMod: 0.965, homeAdvDelta: 0.05, suspMod: 0.94, cornerTrailingMod: 0.93, cornerLeadingMod: 0.86, cornerGoalMod: 0.75 },
   final:       { goalMod: 0.768, homeAdvDelta: 0.00, suspMod: 1.08, cornerTrailingMod: 0.58, cornerLeadingMod: 1.24, cornerGoalMod: 0.92 },
 }
 
