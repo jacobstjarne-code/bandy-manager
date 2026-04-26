@@ -1,0 +1,95 @@
+---
+import Base from '../../layouts/Base.astro';
+import { readFileSync, readdirSync } from 'fs';
+import yaml from 'js-yaml';
+import { resolve } from 'path';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const questionsDir = resolve(process.cwd(), '..', 'docs', 'findings', 'facts', 'questions');
+const files = readdirSync(questionsDir).filter((f: string) => f.endsWith('.yaml'));
+
+interface QFact {
+  fact_id: string;
+  category: string;
+  claim: string;
+  spawned_by: string;
+  spawned_at: string | Date;
+  status: string;
+  verified_at?: string;
+  verified_by?: string;
+  domain?: string;
+}
+
+const today = new Date('2026-04-26');
+
+function daysSince(dateStr: string | Date): number {
+  const d = dateStr instanceof Date ? dateStr : new Date(dateStr);
+  return Math.floor((today.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function findingHref(spawnedBy: string): { num: string; href: string } | null {
+  const m = spawnedBy.match(/finding:(\d{1,4})/i);
+  if (!m) return null;
+  const num = m[1].padStart(3, '0');
+  return { num, href: `${base}/findings/${num}/` };
+}
+
+function normalizeDate(d: string | Date): string {
+  if (d instanceof Date) return d.toISOString().slice(0, 10);
+  return String(d);
+}
+
+const questions: QFact[] = files
+  .map((f: string) => {
+    const raw = yaml.load(readFileSync(`${questionsDir}/${f}`, 'utf8')) as QFact;
+    return raw;
+  })
+  .filter((q: QFact) => q && q.status === 'open')
+  .sort((a: QFact, b: QFact) => {
+    const da = normalizeDate(a.spawned_at);
+    const db = normalizeDate(b.spawned_at);
+    return db.localeCompare(da);
+  });
+---
+
+<Base
+  title="Öppna frågor"
+  description="208 öppna frågor väckta av findings — fenomen i bandy som ännu inte är undersökta."
+>
+  <div class="page-container">
+    <h1 style="font-family: var(--font-ui); font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+      Öppna frågor
+    </h1>
+    <p style="max-width: 560px; color: var(--color-muted); font-size: 0.95rem; margin-bottom: 2.5rem; font-family: var(--font-ui);">
+      Varje finding väcker nya frågor. Här samlas de som ännu inte undersökts —
+      {questions.length} öppna frågor från {new Set(questions.map(q => q.spawned_by)).size} findings.
+    </p>
+
+    <ul style="list-style: none; padding: 0; margin: 0;">
+      {questions.map(q => {
+        const finding = findingHref(q.spawned_by);
+        const dateStr = normalizeDate(q.spawned_at);
+        const days = daysSince(dateStr);
+        return (
+          <li style="border-bottom: 1px solid var(--color-border); padding: 0.75rem 0;">
+            <div style="display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;">
+              <span style="font-family: var(--font-ui); font-size: 0.75rem; font-weight: 700; color: var(--color-muted); min-width: 3.5rem;">
+                {q.fact_id}
+              </span>
+              <span style="font-family: var(--font-ui); font-size: 0.9rem; color: var(--color-text); flex: 1;">
+                {q.claim}
+              </span>
+              <span style="font-family: var(--font-ui); font-size: 0.75rem; color: var(--color-muted); white-space: nowrap;">
+                {finding
+                  ? <><a href={finding.href} style="color: var(--color-accent);">Finding {finding.num}</a> · öppen sedan {days} dagar</>
+                  : <>öppen sedan {days} dagar</>
+                }
+              </span>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  </div>
+</Base>

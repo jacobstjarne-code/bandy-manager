@@ -2,6 +2,10 @@
 import Base from '../../../layouts/Base.astro';
 import { factHref } from '../../../lib/facts';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+// Verifieringsdata — sätt verified_by + verified_at när finding är verifierad
+const verified_by: string | null = null;
+const verified_at: string | null = null;
 ---
 
 <Base
@@ -12,7 +16,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
     <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
 
-    <p class="finding-meta">Finding 001 · 25 april 2026</p>
+    <p class="finding-meta">
+      Finding 001 · 25 april 2026
+      {verified_by && <span class="verified-badge">✓ Verifierad av {verified_by}</span>}
+    </p>
     <h1 class="finding-title">Halvtidsledning i bandy<br>är starkare än i fotboll</h1>
 
     <hr class="finding-divider" />

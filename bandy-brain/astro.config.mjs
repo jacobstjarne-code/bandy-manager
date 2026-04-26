@@ -8,4 +8,11 @@ export default defineConfig({
   site: 'https://jacobstjarne-code.github.io',
   base: '/bandy-manager',
   output: 'static',
+  redirects: {
+    '/bandy-manager/sources/': '/bandy-manager/bandy/',
+    '/bandy-manager/sources/rules/': '/bandy-manager/bandy/',
+    '/bandy-manager/sources/stats/': '/bandy-manager/bandy/',
+    '/bandy-manager/sources/design_principles/': '/bandy-manager/spelet/',
+    '/bandy-manager/sources/world_canon/': '/bandy-manager/spelet/',
+  },
 });

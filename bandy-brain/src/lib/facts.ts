@@ -131,10 +131,23 @@ export function getFactById(id: string): Fact | undefined {
  * S-facts → /bandy/stats/S008
  * D-facts → /spelet/design/D005
  * W-facts → /spelet/varlden/W001
+ * F-refs  → /findings/002/ (cross-reference to another finding)
  */
 export function factHref(factId: string): string {
-  const catChar = factId[0].toUpperCase();
   const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+  // Handle finding cross-references: "F002" → /findings/002/
+  // Also handle "Finding 002" and "Finding NNN" formats
+  const findingShort = factId.match(/^F(\d{3,4})$/i);
+  if (findingShort) {
+    return `${base}/findings/${findingShort[1]}/`;
+  }
+  const findingLong = factId.match(/^[Ff]inding\s+(\d{3,4})$/);
+  if (findingLong) {
+    return `${base}/findings/${findingLong[1].padStart(3, '0')}/`;
+  }
+
+  const catChar = factId[0].toUpperCase();
   const domainMap: Record<string, string> = {
     R: 'bandy/rules',
     S: 'bandy/stats',

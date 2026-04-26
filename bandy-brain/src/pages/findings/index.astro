@@ -62,18 +62,53 @@ const findings = [
       Bandygrytans verkliga matchdata och Bandy Managers simuleringsmotor.
     </p>
 
-    <ul class="findings-list">
+    <div class="filter-bar" id="filter-bar">
+      <button class="filter-btn is-active" data-filter="all">Alla</button>
+      <button class="filter-btn" data-filter="verified" disabled title="Inga findings är verifierade ännu">Verifierade</button>
+    </div>
+
+    <ul class="findings-list" id="findings-list">
       {findings.map(f => (
         <li>
-          <div class="finding-card">
+          <div class="finding-card" data-verified={f.verified_by ? 'true' : 'false'}>
             <p class="finding-card__number">Finding {f.num} · {f.date}</p>
             <h2 class="finding-card__title">
               <a href={`${base}/findings/${f.num}/`}>{f.title}</a>
             </h2>
-            <p class="finding-card__excerpt">{f.excerpt}</p>
+            {f.verified_by && (
+              <p class="finding-card__excerpt">
+                Verifierad av {f.verified_by}
+              </p>
+            )}
+            {!f.verified_by && f.excerpt && (
+              <p class="finding-card__excerpt">{f.excerpt}</p>
+            )}
           </div>
         </li>
       ))}
     </ul>
   </div>
+
+  <script>
+    const bar = document.getElementById('filter-bar');
+    const list = document.getElementById('findings-list');
+    if (bar && list) {
+      const btns = bar.querySelectorAll<HTMLButtonElement>('.filter-btn:not(:disabled)');
+      btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          btns.forEach(b => b.classList.remove('is-active'));
+          btn.classList.add('is-active');
+          const filter = btn.dataset.filter;
+          list.querySelectorAll<HTMLLIElement>('li').forEach(li => {
+            const card = li.querySelector('.finding-card');
+            if (filter === 'all') {
+              li.style.display = '';
+            } else {
+              li.style.display = card?.dataset.verified === 'true' ? '' : 'none';
+            }
+          });
+        });
+      });
+    }
+  </script>
 </Base>
