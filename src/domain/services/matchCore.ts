@@ -656,12 +656,14 @@ function* simulateMatchCore(
     }
 
     // Determine initiative
-    const homePenaltyFactor = homeActiveSuspensions > 0 ? 0.75 : 1.0
-    const awayPenaltyFactor = awayActiveSuspensions > 0 ? 0.75 : 1.0
+    const homePenaltyFactor   = homeActiveSuspensions > 0 ? 0.65 : 1.0
+    const awayPenaltyFactor   = awayActiveSuspensions > 0 ? 0.65 : 1.0
+    const homePowerplayBoost  = awayActiveSuspensions > 0 ? 1.20 : 1.0
+    const awayPowerplayBoost  = homeActiveSuspensions > 0 ? 1.20 : 1.0
 
     // Trailing boost / leading brake in second half (Sprint 25f)
     const trailingBoost = (diff: number) => diff < 0 ? Math.min(-diff, 3) * 0.16 : 0
-    const leadingBrake  = (diff: number) => diff > 0 ? Math.min(diff, 3) * 0.08 : 0
+    const leadingBrake  = (diff: number) => diff > 0 ? Math.min(diff, 3) * 0.12 : 0
     const homeTrailBoost = trailingBoost(homeScore - awayScore)
     const awayTrailBoost = trailingBoost(awayScore - homeScore)
     const homeLeadBrake  = leadingBrake(homeScore - awayScore)
@@ -673,8 +675,8 @@ function* simulateMatchCore(
       ? clamp(awayAttack * (1 + awayTrailBoost) * (1 - awayLeadBrake) * awayModeAttackMult, 0, 1)
       : awayAttack
 
-    const homeWeight = effectiveHomeAttack * (1 + homeMods.pressModifier * 0.2) * (1 + effectiveHomeAdvantage) * homePenaltyFactor
-    const awayWeight = effectiveAwayAttack * (1 + awayMods.pressModifier * 0.2) * awayPenaltyFactor
+    const homeWeight = effectiveHomeAttack * (1 + homeMods.pressModifier * 0.2) * (1 + effectiveHomeAdvantage) * homePenaltyFactor * homePowerplayBoost
+    const awayWeight = effectiveAwayAttack * (1 + awayMods.pressModifier * 0.2) * awayPenaltyFactor * awayPowerplayBoost
 
     const homeInitiative  = homeWeight / (homeWeight + awayWeight)
     const isHomeAttacking = rand() < homeInitiative
