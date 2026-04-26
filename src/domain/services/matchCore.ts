@@ -889,9 +889,10 @@ function* simulateMatchCore(
         // with regular goals across phases without double-counting SECOND_HALF_BOOST (Sprint 25e).
         // Base reduced 0.14→0.105 to bring grundserie cornerGoalPct toward target 22.2% (Sprint 25e.2).
         const phaseGoalMod   = phaseConst.goalMod
-        const cornerBase     = emitFullTime ? 0.105 * SECOND_HALF_BOOST * phaseGoalMod : 0.105 * phaseGoalMod
+        const phaseCornerMod = phaseConst.cornerGoalMod
+        const cornerBase     = emitFullTime ? 0.105 * SECOND_HALF_BOOST * phaseGoalMod * phaseCornerMod : 0.105 * phaseGoalMod * phaseCornerMod
         const cornerClampMax = emitFullTime ? 0.30 * SECOND_HALF_BOOST : 0.30
-        const cornerClampMin = emitFullTime ? 0.07 * SECOND_HALF_BOOST * phaseGoalMod : 0.07 * phaseGoalMod
+        const cornerClampMin = emitFullTime ? 0.07 * SECOND_HALF_BOOST * phaseGoalMod * phaseCornerMod : 0.07 * phaseGoalMod * phaseCornerMod
         const goalThreshold = clamp(
           (cornerChance - defenseResist) * 0.30 * stepGoalMod * cornerStateMod + cornerBase,
           cornerClampMin,
