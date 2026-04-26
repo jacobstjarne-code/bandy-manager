@@ -1,6 +1,6 @@
 # BANDY MANAGER — STATUS
 
-**Uppdaterad:** 25 april 2026  
+**Uppdaterad:** 26 april 2026  
 **Syfte:** Enda sanning om vad som är byggt, vad som funkar, och vad som återstår.
 
 ---
@@ -36,6 +36,7 @@
 - Matchkommentarer refererar dagsjobb, kapten, klackfavorit, akademispelare, nemesis, storylines
 - Klacken sjunger vid avslag, halvtid, sena mål
 - DailyBriefing med säsongsfas-specifika texter (SEASON_MOOD)
+- **Skandalreferenser cross-system (Sprint 26, 2026-04-26)** — aktiv säsongsskandal syns i kafferum (25% chans per omgång, 7 typer × egna/andras), klack-commentary vid kickoff/halvtid (20% chans), pressfrågor (4-7 nya frågor per match-utfall), motståndartränare (8 skandal-quotes i SCANDAL_AFFECTED_LOST/WON)
 
 ### Orten & Community
 - Anläggningsprojekt startbara med tre finansieringsalternativ (egen/kommun/mecenat)
@@ -114,6 +115,8 @@ Stress-test (3978 matcher, 6 seeds × 4 säsonger) vs bandygrytan:
 - **Sprint 25b.2.2 + 25d.2** — LEVERERAD (foulThreshold 1.25→1.46, avgSusp ✅)
 - **Sprint 25d** vilande — fas-konstanter vs slutspelsdata (delvis täckt av 25d.2)
 - **Sprint 25-HT** LEVERERAD 25 april — target var felinmatat (46.6 var homeHtLeadFraction, korrekt target 78.1 %). Motor 80.4 % = +2.3 pp gap. Ingen motorsprint krävs.
+- **Sprint 25E** LEVERERAD 26 april — powerplay-effektivitet, riktig comeback-mekanik
+- **Sprint 25L** LEVERERAD 26 april — KVF/SF goalMod-kalibrering
 - **Sprint 25f+25g** vilande — domare + matchskador (paketerade)
 
 ### Sprint 25h — Bandyskandaler (LEVERERAD 25 april 2026)
@@ -199,7 +202,7 @@ Från THE_BOMB.md och SPEC_KLUBBUTVECKLING.md — idéer som INTE är i koden:
 | `docs/DECISIONS.md` | Arkitekturbeslut kronologiskt | Aktuell |
 | `docs/DESIGN_SYSTEM.md` | 20 designregler | OK |
 | `docs/KVAR.md` | Aktuell karta + pågående + parkerat | Aktuell |
-| `docs/HANDOVER_2026-04-24.md` | Senaste handover | Aktuell |
+| `docs/HANDOVER_2026-04-26.md` | Senaste handover | Aktuell |
 | `docs/STATUS.md` | Denna fil | Aktuell |
 | `docs/THE_BOMB.md` | Narrativ vision | Referens |
 | `docs/SPEC_KLUBBUTVECKLING.md` | Ekonomisk progression | Referens |

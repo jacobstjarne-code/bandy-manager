@@ -1,7 +1,23 @@
 # BANDY MANAGER — KVAR
 
-**Datum:** 2026-04-25
-**Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DESIGN_SYSTEM.md/HANDOVER_2026-04-25.md är lästa.
+**Datum:** 2026-04-26
+**Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DECISIONS.md/DESIGN_SYSTEM.md är lästa.
+
+---
+
+## AKTUELLT LÄGE (2026-04-26, kväll)
+
+**Sprint 25-L:** ✅ Levererad + auditerad (commit `a6e24b4`).
+**Sprint 25-E:** ✅ Levererad + auditerad (commit `4362ebf`).
+**Sprint 26 — cross-system skandalreferenser:** ✅ Levererad + kod-verifierad audit (commits `11802e1` + `6bbf8ca`).
+
+Alla aktiva sprintar stängda. Inga pågående jobb.
+
+**Motor-kalibrering kvarstår:** `awayWinPct` 43.9% vs 38.3% (−5.6pp), `playoff_final` mål/match 9.17 vs 7.00 (+2.17), `cornerGoalPct` 26.2% vs 22.2%. Ingen aktiv sprint mot dessa.
+
+**THE_BOMB-status:** verifierad mot kod 2026-04-26. Faktisk siffra 65-75% klar (inte 40-50% som strukturanalysen 2026-04-25 antydde). Se `docs/THE_BOMB_STATUS_2026-04-26.md` för detaljerad genomgång per subprojekt.
+
+**Tre nya designprinciper** införda i CLAUDE.md 2026-04-26 — se DECISIONS.md för motivering.
 
 ---
 
@@ -25,6 +41,17 @@ Sajt live: `https://jacobstjarne-code.github.io/bandy-manager/`
 | Findings-generator | ⏸ Parkerat per UI_SPRINT_INSTRUCTION |
 
 Nästa: skicka URL till Erik. Finding 005 (utvisningar, S011) är nästa naturliga ämne.
+
+---
+
+## KLART IDAG (2026-04-26)
+
+| Leverans | Commits | Detalj |
+|---------|---------|--------|
+| Sprint 25-L — KVF/SF goalMod-kalibrering | `a6e24b4` | Verifiering + audit |
+| Sprint 25-E — Powerplay-effektivitet | `4362ebf` | Comeback-mekanik: riktig powerplay-fördel |
+| Sprint 26 — Cross-system skandalreferenser | `11802e1` | 8 filer: kafferum (42 utbyten), klack (8 strängar), press (7 frågor), motståndarcoach (8 quotes) |
+| Sprint 26 Audit — kod-verifierad simulation | `6bbf8ca` | Seed-baserad körning, alla 4 delsystem, edge cases |
 
 ---
 
@@ -247,6 +274,10 @@ Referensfil: `docs/data/SCORELINE_REFERENCE.md`
 ---
 
 ## SENAST LEVERERAT
+
+### Sprint 26 — Cross-system skandalreferenser (LEVERERAT 2026-04-26)
+
+8 filer modifierade. Skandalers cross-system-integration levererad enligt Integration-completeness-check-principen. Audit: kod-verifierad simulation (seed-baserad, 200+ seeds per delsystem). Edge cases verifierade: `small_absurdity` triggar inte, tom scandalHistory inga undefined-fel, gammal säsong filtreras, `{KLUBB}` aldrig exponerat.
 
 ### Sprint 25b.2.2 + 25d.2 — mini-edits (LEVERERAT 2026-04-21)
 
@@ -580,9 +611,9 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 | `DECISIONS.md` | 2026-04-21 | Aktuell |
 | `DESIGN_SYSTEM.md` | 2026-04-14 | OK |
 | `STATUS.md` | 2026-04-25 | Uppdaterad med Sprint 25-HT + 25h |
-| `KVAR.md` | 2026-04-25 | Denna fil |
-| `HANDOVER_2026-04-25.md` | 2026-04-25 | Senaste handover |
-| `HANDOVER_2026-04-23.md` | 2026-04-23 | Föregående |
+| `KVAR.md` | 2026-04-26 | Denna fil |
+| `HANDOVER_2026-04-26.md` | 2026-04-26 | Senaste handover |
+| `HANDOVER_2026-04-25.md` | 2026-04-25 | Föregående |
 | `HANDOVER_2026-04-22.md` | 2026-04-22 | Arkiv |
 | `SCORELINE_REFERENCE.md` | 2026-04-21 | Referens för 25b/c/d |
 | `SPRINT_25B_1_PENALTY_SEPARATION.md` | 2026-04-21 | Aktiv spec |
@@ -592,7 +623,10 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 
 ## NÄSTA SESSION — FÖRESLAGEN ORDNING
 
-1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-04-25.md`.
-2. **Öppna motor-kalibreringsval:** htLeadWinPct LÖST. Kvar: awayWinPct 43.9% vs 38.3% (−5.6pp) och playoff_final mål/match 9.17 vs 7.00 (+2.17). Välj nästa motorsprint (25d/25e) eller fortsätt med narrativa features.
-3. **Motor: awayWinPct** − 5.6pp gap (43.9% vs 38.3%). Kandidat Sprint 25e (powerplay-effektivitet) eller ny sprint.
+1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-04-26.md`.
+2. **Kvarstående motor-gap:** Välj nästa motorsprint:
+   - `awayWinPct` 43.9% vs 38.3% (−5.6pp) — källa oklar, kan kräva strukturell ändring
+   - `cornerGoalPct` 26.2% vs 22.2% — eskalerar i slutspel, separat sprint
+   - `playoff_final mål/match` 9.17 vs 7.00 (+2.17) — fas-konstant i Sprint 25d
+3. **Playtest-runda 4:** Skandaler (kafferum, klack, press, motståndarcoach), riskySponsorContract, WageOverrunWarning. Inget av Sprint 25h/26 är verifierat i live-spel.
 4. Fredagsjobb: utvidga `scrape-allsvenskan.mjs` med skott på mål / räddningar per teamID + `loggingQuality`-flagga.
