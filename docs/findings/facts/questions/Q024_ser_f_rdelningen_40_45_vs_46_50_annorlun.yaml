@@ -1,0 +1,10 @@
+fact_id: Q024
+category: questions
+claim: Ser fördelningen 40–45 vs 46–50 annorlunda ut om man filtrerar bort matcher
+  med förlängd speltid i perioden?
+spawned_by: finding:008
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

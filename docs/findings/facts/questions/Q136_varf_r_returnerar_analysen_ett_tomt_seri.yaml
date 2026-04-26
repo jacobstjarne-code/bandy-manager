@@ -1,0 +1,10 @@
+fact_id: Q136
+category: questions
+claim: Varför returnerar analysen ett tomt seriefält — är det ett pipeline-fel eller
+  saknas divisionsmärkning i källdatan?
+spawned_by: finding:032
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

@@ -1,0 +1,10 @@
+fact_id: Q132
+category: questions
+claim: Håller slutminutstoppen enbart i matcher där marginalen är 0–1 mål under den
+  sista perioden?
+spawned_by: finding:031
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

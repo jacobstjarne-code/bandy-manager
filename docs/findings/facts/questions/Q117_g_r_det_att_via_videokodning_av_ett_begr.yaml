@@ -1,0 +1,10 @@
+fact_id: Q117
+category: questions
+claim: Går det att via videokodning av ett begränsat urval matcher etablera ett referensvärde
+  för hörntypsfördelning?
+spawned_by: finding:027
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

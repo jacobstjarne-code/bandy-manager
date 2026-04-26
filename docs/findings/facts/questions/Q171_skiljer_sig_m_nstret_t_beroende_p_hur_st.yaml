@@ -1,0 +1,10 @@
+fact_id: Q171
+category: questions
+claim: Skiljer sig mönstret åt beroende på hur stor ledningen är i halvtid — är en
+  tvåmålsledning hemma mer säker än borta i samma utsträckning som en enmålsledning?
+spawned_by: finding:039
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

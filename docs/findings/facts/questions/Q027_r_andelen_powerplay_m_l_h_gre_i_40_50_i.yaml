@@ -1,0 +1,9 @@
+fact_id: Q027
+category: questions
+claim: Är andelen powerplay-mål högre i 40–50-intervallet än i övriga delar av matchen?
+spawned_by: finding:008
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

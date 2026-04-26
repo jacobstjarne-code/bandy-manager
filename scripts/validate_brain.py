@@ -23,14 +23,20 @@ from datetime import date as Date
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FACTS_ROOT = REPO_ROOT / "docs/findings/facts"
 HYPO_ROOT = REPO_ROOT / "docs/findings/hypotheses"
+BRAIN_FINDINGS_DIR = REPO_ROOT / "bandy-brain" / "src" / "pages" / "findings"
 SRC_ROOT = REPO_ROOT / "src"
 AUDIT_DIR = REPO_ROOT / "docs/findings"
 
 REQUIRED_FIELDS = ["fact_id", "category", "claim", "verified_at", "verified_by", "status"]
-VALID_CATEGORIES = {"rules", "stats", "design_principles", "world_canon", "hypothesis"}
-VALID_STATUSES = {"active", "deprecated", "disputed"}
+VALID_CATEGORIES = {"rules", "stats", "design_principles", "world_canon", "hypothesis", "questions"}
+VALID_STATUSES = {"active", "deprecated", "disputed", "open", "answered"}
 VALID_VERIFIED_BY = {"opus", "code", "jacob", "erik"}
-FACT_ID_RE = re.compile(r"^[RSDWH]\d{3}$")
+FACT_ID_RE = re.compile(r"^[RSDWHQ]\d{3}$")
+
+# Q-facts: obligatoriska fält utöver REQUIRED_FIELDS
+Q_REQUIRED_FIELDS = ["spawned_by", "spawned_at"]
+# Max dagar en Q-fact kan vara öppen innan varning
+Q_OPEN_WARNING_DAYS = 90
 CROSS_REF_RE = re.compile(r"\b([RSDWH]\d{3})\.value\b")
 
 # Type-3 grep checks.
@@ -94,10 +100,32 @@ def load_all_facts():
     return facts, file_map
 
 
+def _grep_astro_for_answers(q_id: str) -> bool:
+    """
+    Check if any finding's index.astro contains <!-- answers: Q{NNN} -->.
+    Simple grep-based two-way link check.
+    """
+    if not BRAIN_FINDINGS_DIR.exists():
+        return False
+    pattern = re.compile(rf"<!--\s*answers:\s*{re.escape(q_id)}\s*-->", re.IGNORECASE)
+    for astro_file in BRAIN_FINDINGS_DIR.rglob("index.astro"):
+        try:
+            if pattern.search(astro_file.read_text(encoding="utf-8", errors="ignore")):
+                return True
+        except Exception:
+            pass
+    return False
+
+
 # ── Strukturvalidering ───────────────────────────────────────────────────────
+
+CLOSED_STATUSES = {"deprecated"}
+OPEN_H_STATUSES = {"testable", "active"}
+
 
 def validate_structure(fact):
     errors = []
+    warnings = []
     fid = fact.get("fact_id", "MISSING")
 
     for field in REQUIRED_FIELDS:
@@ -119,7 +147,65 @@ def validate_structure(fact):
     if vby not in VALID_VERIFIED_BY:
         errors.append(f"Ogiltig verified_by: '{vby}'")
 
-    return errors
+    # H-fact specific validation
+    if cat == "hypothesis" or str(fid).startswith("H"):
+        # Open hypotheses (testable/active) must have predicted_value and test_method
+        if status in OPEN_H_STATUSES:
+            if "predicted_value" not in fact:
+                warnings.append(f"H-fact med status '{status}' saknar 'predicted_value' — hypotesen kan inte testas")
+            if "test_method" not in fact:
+                warnings.append(f"H-fact med status '{status}' saknar 'test_method' — hypotesen kan inte testas")
+
+        # Closed hypotheses (deprecated) must have closed_at, closed_by, closed_with
+        if status in CLOSED_STATUSES:
+            for field in ("closed_at", "closed_by", "closed_with"):
+                if field not in fact:
+                    errors.append(f"Stängd H-fact saknar obligatoriskt fält: '{field}'")
+
+    # Q-fact specific validation
+    if cat == "questions" or str(fid).startswith("Q"):
+        # Obligatoriska Q-fält
+        for field in Q_REQUIRED_FIELDS:
+            if field not in fact:
+                errors.append(f"Q-fact saknar obligatoriskt fält: '{field}'")
+
+        # Svarad Q måste ha answered_by
+        if status == "answered" and "answered_by" not in fact:
+            errors.append("Q-fact med status 'answered' saknar 'answered_by'")
+
+        # Varning om Q är öppen längre än 90 dagar
+        if status == "open":
+            spawned_at = fact.get("spawned_at")
+            if spawned_at:
+                try:
+                    from datetime import date as _date
+                    if isinstance(spawned_at, str):
+                        spawned_date = _date.fromisoformat(spawned_at)
+                    else:
+                        spawned_date = spawned_at  # already a date object from YAML
+                    age_days = (_date.today() - spawned_date).days
+                    if age_days > Q_OPEN_WARNING_DAYS:
+                        warnings.append(
+                            f"Q-fact har varit öppen i {age_days} dagar (>{Q_OPEN_WARNING_DAYS}) — "
+                            f"överväg att besvara eller markera som deprecated"
+                        )
+                except (ValueError, TypeError):
+                    pass
+
+        # Tvåvägslänk-check: om answered, kontrollera att finding-sidan har <!-- answers: Q{id} -->
+        if status == "answered":
+            answered_by = fact.get("answered_by", "")
+            # Extract finding number from "finding:NNN" or plain "NNN"
+            m = re.match(r"(?:finding:)?(\d+)", str(answered_by))
+            if m:
+                finding_num = m.group(1).zfill(3)
+                if not _grep_astro_for_answers(fid):
+                    warnings.append(
+                        f"Tvåvägslänk saknas: finding:{finding_num}/index.astro "
+                        f"innehåller inte '<!-- answers: {fid} -->'"
+                    )
+
+    return errors, warnings
 
 
 # ── Invariant-evaluering ─────────────────────────────────────────────────────
@@ -223,14 +309,15 @@ def run_type3(inv_str):
 # ── Rapport ──────────────────────────────────────────────────────────────────
 
 def run_validation(facts, file_map):
-    results = {}  # fact_id → {struct_errors, invariant_results}
+    results = {}  # fact_id → {struct_errors, struct_warnings, invariant_results}
 
     for fid, fact in sorted(facts.items()):
-        struct_errors = validate_structure(fact)
+        struct_errors, struct_warnings = validate_structure(fact)
         inv_results = []
 
-        # Kör invarianter bara för aktiva facts
-        if fact.get("status") == "active":
+        # Kör invarianter bara för aktiva facts (inte Q-facts, de har inga invarianter)
+        is_q = fact.get("category") == "questions" or str(fid).startswith("Q")
+        if fact.get("status") == "active" and not is_q:
             for inv in fact.get("invariants", []):
                 result, detail = eval_invariant(inv, fact, facts)
                 inv_results.append((inv, result, detail))
@@ -239,6 +326,7 @@ def run_validation(facts, file_map):
             "fact": fact,
             "file": file_map.get(fid),
             "struct_errors": struct_errors,
+            "struct_warnings": struct_warnings,
             "inv_results": inv_results,
         }
 
@@ -248,10 +336,12 @@ def run_validation(facts, file_map):
 def summarize(results):
     total = len(results)
     struct_ok = sum(1 for r in results.values() if not r["struct_errors"])
+    struct_warn = sum(len(r.get("struct_warnings", [])) for r in results.values())
     inv_pass = inv_fail = inv_manual = inv_skip = 0
 
     for r in results.values():
-        if r["fact"].get("status") != "active":
+        is_q = r["fact"].get("category") == "questions" or str(r["fact"].get("fact_id", "")).startswith("Q")
+        if r["fact"].get("status") != "active" or is_q:
             inv_skip += 1
             continue
         for _, res, _ in r["inv_results"]:
@@ -266,6 +356,7 @@ def summarize(results):
         "total": total,
         "struct_ok": struct_ok,
         "struct_fail": total - struct_ok,
+        "struct_warn": struct_warn,
         "inv_pass": inv_pass,
         "inv_fail": inv_fail,
         "inv_manual": inv_manual,
@@ -293,6 +384,8 @@ def format_report(results, summary, as_markdown=False):
     lines.append(f"Struktur OK:         {s['struct_ok']}/{s['total']}")
     if s['struct_fail']:
         lines.append(f"Struktur FAILED:     {s['struct_fail']}  ← ÅTGÄRDA")
+    if s.get('struct_warn', 0):
+        lines.append(f"Struktur VARNINGAR:  {s['struct_warn']}  ← granska")
     lines.append(f"Invarianter OK:      {s['inv_pass']}")
     lines.append(f"Invarianter FAILED:  {s['inv_fail']}" + ("  ← ÅTGÄRDA" if s['inv_fail'] else ""))
     lines.append(f"Manuell granskning:  {s['inv_manual']}")
@@ -320,6 +413,21 @@ def format_report(results, summary, as_markdown=False):
                 if res is False:
                     lines.append(f"  {CROSS} {inv}")
                     lines.append(f"         → {detail}")
+            lines.append("")
+
+    # Varnings-sektion (H-fact saknar predicted_value / test_method)
+    warned = {
+        fid: r for fid, r in results.items()
+        if r.get("struct_warnings")
+    }
+    if warned:
+        lines.append(f"{H2}Varningar (H-facts)")
+        lines.append("")
+        for fid, r in sorted(warned.items()):
+            lines.append(f"**{fid}** — {r['fact'].get('claim', '')[:60]}" if as_markdown
+                         else f"  {fid}  {r['fact'].get('claim', '')[:60]}")
+            for warn in r["struct_warnings"]:
+                lines.append(f"  {QUEST} [VARNING] {warn}")
             lines.append("")
 
     # Manuella facts
@@ -354,13 +462,14 @@ def format_report(results, summary, as_markdown=False):
         inv_bad = sum(1 for _, res, _ in r["inv_results"] if res is False)
         inv_man = sum(1 for _, res, _ in r["inv_results"] if res is None)
         struct_tag = "" if not r["struct_errors"] else " ⚠STRUCT"
+        warn_tag = " ⚠WARN" if r.get("struct_warnings") else ""
 
         if as_markdown:
             inv_summary = f"{inv_ok}✅" + (f" {inv_bad}❌" if inv_bad else "") + (f" {inv_man}⚠️" if inv_man else "")
-            lines.append(f"| {fid} | {claim} | {inv_summary or '—'} | {status}{struct_tag} |")
+            lines.append(f"| {fid} | {claim} | {inv_summary or '—'} | {status}{struct_tag}{warn_tag} |")
         else:
             inv_summary = f"{inv_ok}/{inv_count}" + (f" FAIL:{inv_bad}" if inv_bad else "") + (f" MAN:{inv_man}" if inv_man else "")
-            lines.append(f"  {fid:5}  {claim:<55}  inv:{inv_summary}{struct_tag}")
+            lines.append(f"  {fid:5}  {claim:<55}  inv:{inv_summary}{struct_tag}{warn_tag}")
 
     lines.append("")
     return "\n".join(lines)

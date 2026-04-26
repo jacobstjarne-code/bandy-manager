@@ -1,0 +1,10 @@
+fact_id: Q050
+category: questions
+claim: Påverkar hemma/borta-faktorn när under matchen mål görs, och är den effekten
+  likartad i dam och herr?
+spawned_by: finding:013
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

@@ -1,0 +1,10 @@
+fact_id: Q162
+category: questions
+claim: Skiljer sig comeback-frekvensen beroende på om det är hemma- eller bortalaget
+  som leder vid halvtid?
+spawned_by: finding:037
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

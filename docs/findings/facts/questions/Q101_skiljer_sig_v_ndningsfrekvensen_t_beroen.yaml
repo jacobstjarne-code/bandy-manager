@@ -1,0 +1,10 @@
+fact_id: Q101
+category: questions
+claim: Skiljer sig vändningsfrekvensen åt beroende på vilken serienivå eller division
+  matcherna spelades i?
+spawned_by: finding:024
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

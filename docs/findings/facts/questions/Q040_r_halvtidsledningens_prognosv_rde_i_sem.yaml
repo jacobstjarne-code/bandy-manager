@@ -1,0 +1,10 @@
+fact_id: Q040
+category: questions
+claim: Är halvtidsledningens prognosvärde i semifinal stabilt över tid, eller drivs
+  det av enstaka säsonger?
+spawned_by: finding:011
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

@@ -1,0 +1,10 @@
+fact_id: Q061
+category: questions
+claim: Finns det skillnad i winrate beroende på vilken minut det ledande målet kom
+  under första halvlek?
+spawned_by: finding:015
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

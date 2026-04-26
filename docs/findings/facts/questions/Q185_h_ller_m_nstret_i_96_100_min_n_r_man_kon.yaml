@@ -1,0 +1,10 @@
+fact_id: Q185
+category: questions
+claim: Håller mönstret i 96–100 min när man kontrollerar för om det bakåtliggande
+  laget faktiskt spelar med extra målvakt?
+spawned_by: finding:042
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

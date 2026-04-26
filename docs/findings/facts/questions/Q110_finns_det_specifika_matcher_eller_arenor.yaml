@@ -1,0 +1,10 @@
+fact_id: Q110
+category: questions
+claim: Finns det specifika matcher eller arenor där hemmafördelen är extra stor i
+  den andra halvleken?
+spawned_by: finding:026
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

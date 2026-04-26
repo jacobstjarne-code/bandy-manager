@@ -1,0 +1,9 @@
+fact_id: Q195
+category: questions
+claim: Är skillnaden i hörnmålsandel statistiskt signifikant över de 1 124 matcherna?
+spawned_by: finding:044
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

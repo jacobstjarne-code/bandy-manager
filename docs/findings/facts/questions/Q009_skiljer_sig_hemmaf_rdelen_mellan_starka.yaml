@@ -1,0 +1,9 @@
+fact_id: Q009
+category: questions
+claim: Skiljer sig hemmafördelen mellan starka och svaga hemmalag?
+spawned_by: finding:003
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

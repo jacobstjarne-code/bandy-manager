@@ -1,0 +1,9 @@
+fact_id: Q003
+category: questions
+claim: Korrelerar comeback med specifika matchminuter (tidiga 2H-mål)?
+spawned_by: finding:001
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

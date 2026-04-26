@@ -1,0 +1,10 @@
+fact_id: Q043
+category: questions
+claim: Varierar hörneffektiviteten mellan olika lag i damserien, eller är skillnaden
+  mot herrserien jämnt fördelad?
+spawned_by: finding:012
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

@@ -1,0 +1,10 @@
+fact_id: Q116
+category: questions
+claim: Hur förändras valet av hörntyp beroende på matchläge (leder/förlorar) och tidpunkt
+  i match?
+spawned_by: finding:027
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

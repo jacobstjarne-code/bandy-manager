@@ -1,0 +1,10 @@
+fact_id: Q068
+category: questions
+claim: Är comeback-andelen i intervallet 96–100 minuter statistiskt skild från slumpen
+  givet basfrekvensen?
+spawned_by: finding:017
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

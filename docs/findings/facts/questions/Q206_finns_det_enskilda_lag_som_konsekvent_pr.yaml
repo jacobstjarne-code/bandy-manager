@@ -1,0 +1,10 @@
+fact_id: Q206
+category: questions
+claim: Finns det enskilda lag som konsekvent producerar hög hörnmålsandel även i finaler,
+  och vad karaktäriserar deras spelsystem?
+spawned_by: finding:046
+spawned_at: '2026-04-26'
+status: open
+verified_at: '2026-04-26'
+verified_by: code
+domain: bandy

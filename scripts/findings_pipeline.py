@@ -37,10 +37,155 @@ from datetime import date
 QUESTIONS_PATH = REPO_ROOT / "scripts" / "pipeline" / "questions.yaml"
 BANDYGRYTAN_PATH = REPO_ROOT / "docs" / "data" / "bandygrytan_detailed.json"
 FINDINGS_DIR = REPO_ROOT / "bandy-brain" / "src" / "pages" / "findings"
+Q_FACTS_DIR = REPO_ROOT / "docs" / "findings" / "facts" / "questions"
 
 
 def load_questions() -> list[dict]:
     return yaml.safe_load(QUESTIONS_PATH.read_text(encoding="utf-8")) or []
+
+
+# ── Q-fact helpers ────────────────────────────────────────────────────────────
+
+def _load_q_facts() -> dict[str, dict]:
+    """Return {fact_id: data} for all Q-facts on disk."""
+    q_facts = {}
+    if not Q_FACTS_DIR.exists():
+        return q_facts
+    for f in sorted(Q_FACTS_DIR.glob("Q*.yaml")):
+        data = yaml.safe_load(f.read_text(encoding="utf-8"))
+        if data and "fact_id" in data:
+            q_facts[data["fact_id"]] = data
+    return q_facts
+
+
+def _next_q_id(q_facts: dict) -> str:
+    """Return next available Q-fact ID (Q001, Q002, ...)."""
+    existing = {int(k[1:]) for k in q_facts if re.match(r"^Q\d{3}$", k)}
+    n = 1
+    while n in existing:
+        n += 1
+    return f"Q{n:03d}"
+
+
+def _similarity(a: str, b: str) -> float:
+    """Simple character-level similarity between two strings (0-1)."""
+    a, b = a.lower().strip(), b.lower().strip()
+    if not a or not b:
+        return 0.0
+    shorter, longer = (a, b) if len(a) <= len(b) else (b, a)
+    # Count matching bigrams
+    def bigrams(s):
+        return [s[i:i+2] for i in range(len(s) - 1)]
+    bg_short = bigrams(shorter)
+    bg_long  = bigrams(longer)
+    if not bg_short:
+        return 1.0 if shorter in longer else 0.0
+    matches = sum(1 for bg in bg_short if bg in bg_long)
+    return matches / max(len(bg_short), len(bg_long))
+
+
+def _find_duplicate_q(claim: str, q_facts: dict, threshold: float = 0.80) -> str | None:
+    """
+    Return the fact_id of an existing Q-fact that is >threshold similar
+    to the given claim. Returns None if no match found.
+    """
+    for fid, data in q_facts.items():
+        if data.get("status") == "answered":
+            continue
+        existing_claim = data.get("claim", "")
+        if _similarity(claim, existing_claim) > threshold:
+            return fid
+    return None
+
+
+def create_q_fact(
+    claim: str,
+    spawned_by_num: str,
+    spawned_at_date,
+    q_facts: dict,
+) -> str | None:
+    """
+    Create a new Q-fact YAML file for `claim` spawned by finding `spawned_by_num`.
+    Returns the new Q-fact ID, or the existing ID if a near-duplicate was found.
+    Mutates `q_facts` in place.
+    """
+    # Deduplicate
+    dup = _find_duplicate_q(claim, q_facts)
+    if dup:
+        return dup  # link to existing, don't create new
+
+    q_id = _next_q_id(q_facts)
+    slug = re.sub(r"[^a-z0-9]+", "_", claim.lower())[:40].strip("_")
+    filename = f"{q_id}_{slug}.yaml"
+
+    spawned_at_str = (
+        spawned_at_date.isoformat()
+        if hasattr(spawned_at_date, "isoformat")
+        else str(spawned_at_date)
+    )
+
+    data = {
+        "fact_id": q_id,
+        "category": "questions",
+        "claim": claim,
+        "spawned_by": f"finding:{spawned_by_num}",
+        "spawned_at": spawned_at_str,
+        "status": "open",
+        "verified_at": spawned_at_str,
+        "verified_by": "code",
+    }
+    Q_FACTS_DIR.mkdir(parents=True, exist_ok=True)
+    (Q_FACTS_DIR / filename).write_text(
+        yaml.dump(data, allow_unicode=True, default_flow_style=False, sort_keys=False),
+        encoding="utf-8",
+    )
+    q_facts[q_id] = data
+    return q_id
+
+
+def mark_q_answered(q_id: str, answered_by_num: str, q_facts: dict) -> None:
+    """
+    Set status=answered + answered_by on an existing Q-fact file.
+    Mutates `q_facts` in place.
+    """
+    data = q_facts.get(q_id)
+    if not data:
+        return
+    data["status"] = "answered"
+    data["answered_by"] = f"finding:{answered_by_num}"
+    # Find the file
+    for f in sorted(Q_FACTS_DIR.glob(f"{q_id}_*.yaml")):
+        f.write_text(
+            yaml.dump(data, allow_unicode=True, default_flow_style=False, sort_keys=False),
+            encoding="utf-8",
+        )
+        break
+
+
+def append_answers_comment(finding_num: str, q_ids: list[str]) -> None:
+    """
+    Append <!-- answers: Q001 Q002 --> comment to a finding's index.astro.
+    """
+    if not q_ids:
+        return
+    astro_path = FINDINGS_DIR / finding_num.zfill(3) / "index.astro"
+    if not astro_path.exists():
+        return
+    content = astro_path.read_text(encoding="utf-8")
+    comment = f"<!-- answers: {' '.join(q_ids)} -->\n"
+    if comment.strip() not in content:
+        content += comment
+        astro_path.write_text(content, encoding="utf-8")
+
+
+def find_open_q_matching(claim: str, q_facts: dict, threshold: float = 0.80) -> str | None:
+    """Find an open Q-fact whose claim matches the given claim above threshold."""
+    for fid, data in q_facts.items():
+        if data.get("status") != "open":
+            continue
+        if _similarity(claim, data.get("claim", "")) > threshold:
+            return fid
+    return None
 
 
 def save_questions(questions: list[dict]) -> None:
@@ -80,10 +225,11 @@ def get_existing_findings_meta() -> list[dict]:
 def run_pipeline(args: argparse.Namespace) -> int:
     questions = load_questions()
     data = load_bandygrytan()
+    q_facts = _load_q_facts()
 
     # Import new questions from GitHub Issues
     if not args.dry_run and not args.id:
-        questions, n_imported = import_new_questions(questions)
+        questions, n_imported = import_new_questions(questions, q_facts=q_facts)
         if n_imported:
             print(f"{n_imported} ny(a) fråga(or) importerade från GitHub Issues.")
             save_questions(questions)
@@ -149,17 +295,28 @@ def run_pipeline(args: argparse.Namespace) -> int:
         out_path = write_finding(finding, num)
         print(f"    ✓ Finding {str(num).zfill(3)} skriven: {out_path.relative_to(REPO_ROOT)}")
 
-        # Mark answered
+        num_str = str(num).zfill(3)
+
+        # Mark answered in questions.yaml
         idx = q_id_to_idx.get(qid)
         if idx is not None:
             questions[idx]["status"] = "answered"
-            questions[idx]["answered_by"] = str(num).zfill(3)
+            questions[idx]["answered_by"] = num_str
 
-        # Extract vidare_fragor → add to questions
+        # Step B: If there's an open Q-fact matching the question being answered, close it
+        answered_q_ids: list[str] = []
+        matching_q_id = find_open_q_matching(q.get("question", ""), q_facts)
+        if matching_q_id:
+            mark_q_answered(matching_q_id, num_str, q_facts)
+            answered_q_ids.append(matching_q_id)
+            print(f"    → Q-fact {matching_q_id} stängd (answered)")
+
+        # Step A: Extract vidare_fragor → create Q-facts + add to questions.yaml
         for vf in finding.get("vidare_fragor", []):
+            # Add to questions.yaml (existing behaviour)
             new_q = {
                 "id": f"Q{len(questions)+1:03d}",
-                "source_finding": str(num).zfill(3),
+                "source_finding": num_str,
                 "question": vf,
                 "status": "open",
                 "analysis_type": _infer_type(vf),
@@ -167,6 +324,25 @@ def run_pipeline(args: argparse.Namespace) -> int:
             }
             questions.append(new_q)
             print(f"    + Ny fråga tillagd: {new_q['id']}")
+
+            # Create/link Q-fact
+            q_id = create_q_fact(
+                claim=vf,
+                spawned_by_num=num_str,
+                spawned_at_date=date.today(),
+                q_facts=q_facts,
+            )
+            if q_id and q_id not in answered_q_ids:
+                # Check if this was a dedup link (already existed)
+                existing = q_facts.get(q_id, {})
+                if existing.get("spawned_by") != f"finding:{num_str}":
+                    print(f"    ~ Dublikat mot befintlig Q-fact: {q_id}")
+                else:
+                    print(f"    + Q-fact skapad: {q_id}")
+
+        # Step B cont.: Append <!-- answers: ... --> to finding's index.astro
+        if answered_q_ids:
+            append_answers_comment(num_str, answered_q_ids)
 
         new_findings += 1
 

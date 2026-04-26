@@ -1,0 +1,10 @@
+fact_id: Q100
+category: questions
+claim: Hur påverkar ledningens storlek vid halvtid (1–0 vs 2–0 vs 3–0+) sannolikheten
+  för en vändning?
+spawned_by: finding:024
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

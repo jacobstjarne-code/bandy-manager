@@ -1,0 +1,9 @@
+fact_id: Q097
+category: questions
+claim: Uppvisar dambandy samma sluttryck som herrbandy när korrekt data finns tillgänglig?
+spawned_by: finding:023
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

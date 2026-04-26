@@ -37,7 +37,8 @@ docs/findings/
 │   ├── rules/             ← bandyregler (R001-)
 │   ├── stats/             ← Bandygrytan-fakta (S001-)
 │   ├── design_principles/ ← spelets designval (D001-)
-│   └── world_canon/       ← fiktiv värld (W001-)
+│   ├── world_canon/       ← fiktiv värld (W001-)
+│   └── questions/         ← öppna forskningsfrågor (Q001-)
 ├── hypotheses/            ← öppna frågor (H001-)
 └── findings/              ← verifierade insikter (existerande, t.ex. 001_halvtidsledning.md)
 ```
@@ -67,6 +68,12 @@ facts citeras och presenteras — särskilt på publika gränssnitt.
 **Hypoteser** (H-facts) tillhör en av domänerna beroende på vad de
 handlar om. Ange `domain:` (`bandy` eller `game`) i hypotes-YAMLen.
 
+**Frågor** (Q-facts) är öppna forskningsfrågor som väntar på svar.
+De lever i `facts/questions/` och har prefix Q001–Q999. En Q-fact
+skapas automatiskt av pipelinen när en finding genererar "Vidare frågor",
+och stängs (status: answered) när en finding besvarar frågan.
+Q-facts tillhör ingen domän — de refererar till domänen via `spawned_by`.
+
 ### Citatregler
 
 När en finding citerar facts från olika domäner ska det framgå:
@@ -90,6 +97,7 @@ Fyra tecken: en bokstav (kategori) + tre siffror.
 - `D001-D999` — design_principles
 - `W001-W999` — world_canon
 - `H001-H999` — hypotheses (separat namnrymd)
+- `Q001-Q999` — questions (öppna frågor, skapas av pipelinen)
 
 ID:n återanvänds inte. Om R047 visar sig vara fel — markera som
 `status: deprecated`, behåll filen, skapa nytt fact med nytt ID om
@@ -240,6 +248,26 @@ istället för i basformatet:
 - `related_facts:` ska inkludera motsvarande R-fact när designvalet
   avviker från regelboken. Notes ska tydligt ange att avvikelsen är
   medveten.
+
+**Frågor (Q-facts):**
+- `spawned_by:` (obligatorisk) — finding som skapade frågan.
+  Format: `"finding:NNN"` (t.ex. `"finding:001"`). För frågor som
+  skapats manuellt (backfill): samma format om käll-finding är känd,
+  annars `"manual"`.
+- `spawned_at:` (obligatorisk) — datum när frågan skapades.
+  Sätts till findingens datum vid backfill.
+- `status:` — för Q-facts: `open` (väntar på svar) eller `answered`
+  (besvarad). Standardstatus-fältet används men med utökad enum.
+- `answered_by:` (obligatorisk när `status: answered`) — finding som
+  besvarar frågan. Format: `"finding:NNN"`.
+- `domain:` (valfri) — `bandy` eller `game`, ärvs från `spawned_by`-
+  findingens kontext om inte explicit angivet.
+- Q-facts har **inte** `value:`, `unit:`, `source:`, eller `invariants:`.
+  De är frågor, inte påståenden.
+- `category:` sätts till `questions` för alla Q-facts.
+- `claim:` används som frågans text (frågans fullständiga formulering).
+- `verified_at:` och `verified_by:` sätts till datum/person som skapade
+  frågan (typiskt `code` vid pipeline-generering, `jacob` vid manuell).
 
 ---
 

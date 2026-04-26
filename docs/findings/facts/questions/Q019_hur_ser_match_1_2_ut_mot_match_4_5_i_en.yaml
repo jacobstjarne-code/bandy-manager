@@ -1,0 +1,9 @@
+fact_id: Q019
+category: questions
+claim: Hur ser match 1–2 ut mot match 4–5 i en slutspelsserie?
+spawned_by: finding:006
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

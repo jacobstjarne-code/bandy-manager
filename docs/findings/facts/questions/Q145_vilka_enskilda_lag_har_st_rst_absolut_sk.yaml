@@ -1,0 +1,10 @@
+fact_id: Q145
+category: questions
+claim: Vilka enskilda lag har störst absolut skillnad i hörnkonvertering hemma jämfört
+  med borta?
+spawned_by: finding:034
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

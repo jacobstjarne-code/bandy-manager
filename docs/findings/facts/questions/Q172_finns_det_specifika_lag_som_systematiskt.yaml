@@ -1,0 +1,10 @@
+fact_id: Q172
+category: questions
+claim: Finns det specifika lag som systematiskt vänder halvtidsledningar mot sig,
+  oavsett hemma eller borta?
+spawned_by: finding:039
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

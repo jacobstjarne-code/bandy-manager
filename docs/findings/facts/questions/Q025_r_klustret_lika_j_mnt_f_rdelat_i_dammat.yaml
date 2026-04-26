@@ -1,0 +1,9 @@
+fact_id: Q025
+category: questions
+claim: Är klustret lika jämnt fördelat i dammatcherna som i herrmatcherna?
+spawned_by: finding:008
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

@@ -1,0 +1,9 @@
+fact_id: Q048
+category: questions
+claim: Är slutminutstoppen i herr kopplad till täta matchresultat snarare än serietillhörighet?
+spawned_by: finding:013
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

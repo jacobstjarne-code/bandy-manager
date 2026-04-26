@@ -1,0 +1,9 @@
+fact_id: Q052
+category: questions
+claim: Har fördelningen förändrats över tid inom respektive serie?
+spawned_by: finding:013
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

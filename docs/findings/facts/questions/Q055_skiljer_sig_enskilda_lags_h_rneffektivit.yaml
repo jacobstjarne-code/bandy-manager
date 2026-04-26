@@ -1,0 +1,10 @@
+fact_id: Q055
+category: questions
+claim: Skiljer sig enskilda lags hörneffektivitet hemma/borta, eller är mönstret jämnt
+  fördelat?
+spawned_by: finding:014
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

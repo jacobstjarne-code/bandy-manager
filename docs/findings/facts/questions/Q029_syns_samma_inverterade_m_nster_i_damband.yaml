@@ -1,0 +1,9 @@
+fact_id: Q029
+category: questions
+claim: Syns samma inverterade mönster i dambandy med liknande marginaluppdelning?
+spawned_by: finding:009
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

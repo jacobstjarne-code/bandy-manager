@@ -1,0 +1,10 @@
+fact_id: Q106
+category: questions
+claim: Har halvtidsledningens prediktiva kraft förändrats över säsonger, exempelvis
+  i takt med att spelarmarknaden jämnats ut?
+spawned_by: finding:025
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

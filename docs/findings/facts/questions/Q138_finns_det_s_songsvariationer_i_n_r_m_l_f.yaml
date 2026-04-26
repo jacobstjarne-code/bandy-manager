@@ -1,0 +1,9 @@
+fact_id: Q138
+category: questions
+claim: Finns det säsongsvariationer i när mål faller, och interagerar dessa med divisionsnivå?
+spawned_by: finding:032
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

@@ -1,0 +1,10 @@
+fact_id: Q129
+category: questions
+claim: 'Om data väl finns: skiljer sig hörneffektiviteten statistiskt signifikant
+  mellan matchlägen, eller är variansen för stor för att dra slutsatser?'
+spawned_by: finding:030
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

@@ -1,0 +1,10 @@
+fact_id: Q142
+category: questions
+claim: Finns det lag som konverterar hörnor till mål i väsentligt högre takt än genomsnittet,
+  och vad utmärker dem taktiskt?
+spawned_by: finding:033
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

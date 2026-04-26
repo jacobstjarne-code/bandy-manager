@@ -74,22 +74,89 @@ def _close_issue_with_comment(issue_number: int, comment: str) -> None:
         pass
 
 
-def import_new_questions(questions: list[dict]) -> tuple[list[dict], int]:
+def _bigrams(s: str) -> list[str]:
+    return [s[i:i+2] for i in range(len(s) - 1)]
+
+
+def _text_similarity(a: str, b: str) -> float:
+    """Simple bigram-based similarity (0-1)."""
+    a, b = a.lower().strip(), b.lower().strip()
+    if not a or not b:
+        return 0.0
+    shorter, longer = (a, b) if len(a) <= len(b) else (b, a)
+    bg_short = _bigrams(shorter)
+    bg_long  = _bigrams(longer)
+    if not bg_short:
+        return 1.0 if shorter in longer else 0.0
+    matches = sum(1 for bg in bg_short if bg in bg_long)
+    return matches / max(len(bg_short), len(bg_long))
+
+
+def import_new_questions(questions: list[dict], q_facts: dict | None = None) -> tuple[list[dict], int]:
     """
     Fetch open issues with label 'new-question', add them to questions list.
     Closes each issue after import with a confirmation comment.
+
+    Step C: If an incoming issue matches an existing open Q-fact (>80% similarity),
+    comment and close as duplicate instead of creating a new question.
+
     Returns (updated_questions, count_added).
     """
     issues = _fetch_issues("new-question")
     existing_texts = {q["question"].strip().lower() for q in questions}
     added = 0
+    threshold = 0.80
 
     for issue in issues:
         title = issue.get("title", "").strip()
-        if not title or title.lower() in existing_texts:
+        if not title:
+            continue
+
+        # Exact match in questions.yaml
+        if title.lower() in existing_texts:
             _close_issue_with_comment(
                 issue["number"],
                 "Frågan finns redan i pipelinen — ingen ny rad skapad."
+            )
+            continue
+
+        # Step C: fuzzy match against existing open Q-facts
+        if q_facts:
+            for q_id, q_data in q_facts.items():
+                if q_data.get("status") != "open":
+                    continue
+                sim = _text_similarity(title, q_data.get("claim", ""))
+                if sim > threshold:
+                    _close_issue_with_comment(
+                        issue["number"],
+                        f"Liknande fråga finns redan som Q-fact {q_id} "
+                        f"(likhet {sim:.0%}): \"{q_data.get('claim', '')}\" — "
+                        f"stänger som duplikat."
+                    )
+                    break
+            else:
+                # No Q-fact match — proceed with adding
+                pass
+            # Re-check: if we broke out of the loop (duplikat), skip
+            matched_q = next(
+                (q_id for q_id, q_data in q_facts.items()
+                 if q_data.get("status") == "open"
+                 and _text_similarity(title, q_data.get("claim", "")) > threshold),
+                None,
+            )
+            if matched_q:
+                continue
+
+        # Also fuzzy-check against existing questions.yaml entries
+        dup_in_yaml = next(
+            (q["question"] for q in questions
+             if _text_similarity(title, q.get("question", "")) > threshold),
+            None,
+        )
+        if dup_in_yaml:
+            _close_issue_with_comment(
+                issue["number"],
+                f"Liknande fråga finns redan i pipelinen — stänger som duplikat."
             )
             continue
 

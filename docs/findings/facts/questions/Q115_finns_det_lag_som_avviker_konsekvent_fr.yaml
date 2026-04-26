@@ -1,0 +1,9 @@
+fact_id: Q115
+category: questions
+claim: Finns det lag som avviker konsekvent från sin series genomsnittliga hörnstrategi?
+spawned_by: finding:027
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

@@ -1,0 +1,10 @@
+fact_id: Q111
+category: questions
+claim: Hur ser andelen halvtidsledningar ut för hemma- respektive bortalag – leder
+  hemmalag oftare, och i så fall med större marginaler?
+spawned_by: finding:026
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

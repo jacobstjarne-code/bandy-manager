@@ -1,0 +1,9 @@
+fact_id: Q023
+category: questions
+claim: Skiljer sig målminutsfördelningen (Finding 005) mellan dam och herr?
+spawned_by: finding:007
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

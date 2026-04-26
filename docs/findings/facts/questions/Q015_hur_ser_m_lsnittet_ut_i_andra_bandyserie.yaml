@@ -1,0 +1,9 @@
+fact_id: Q015
+category: questions
+claim: Hur ser målsnittet ut i andra bandyserier (dam, division 1)?
+spawned_by: finding:004
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

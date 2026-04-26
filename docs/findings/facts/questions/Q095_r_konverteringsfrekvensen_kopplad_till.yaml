@@ -1,0 +1,10 @@
+fact_id: Q095
+category: questions
+claim: Är konverteringsfrekvensen kopplad till hörnvolym — slår lag som får många
+  hörnor in dem mer sällan?
+spawned_by: finding:022
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

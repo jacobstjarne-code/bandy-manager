@@ -1,0 +1,9 @@
+fact_id: Q131
+category: questions
+claim: Kan databasen utökas med löpande marginaler per minut för att möjliggöra resultatklasskoppling?
+spawned_by: finding:031
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

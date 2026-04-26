@@ -1,0 +1,10 @@
+fact_id: Q037
+category: questions
+claim: Korrelerar antalet tilldelade straffar per match med matchminut på ett sätt
+  som stöder hypotesen om ökad riskbenägenhet sent?
+spawned_by: finding:010
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

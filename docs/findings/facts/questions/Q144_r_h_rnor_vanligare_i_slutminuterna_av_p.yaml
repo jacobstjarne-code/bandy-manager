@@ -1,0 +1,10 @@
+fact_id: Q144
+category: questions
+claim: Är hörnor vanligare i slutminuterna av perioder, och om så, konverteras de
+  annorlunda?
+spawned_by: finding:033
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

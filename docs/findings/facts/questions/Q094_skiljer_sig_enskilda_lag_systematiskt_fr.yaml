@@ -1,0 +1,10 @@
+fact_id: Q094
+category: questions
+claim: Skiljer sig enskilda lag systematiskt från genomsnittet i hur väl de utnyttjar
+  hörnor hemma kontra borta?
+spawned_by: finding:022
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

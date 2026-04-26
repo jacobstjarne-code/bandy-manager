@@ -1,0 +1,10 @@
+fact_id: Q207
+category: questions
+claim: Korrelerar låg hörnmålsandel med hög hållningstid på boll, och i så fall i
+  vilken riktning löper kausaliteten?
+spawned_by: finding:046
+spawned_at: '2026-04-26'
+status: open
+verified_at: '2026-04-26'
+verified_by: code
+domain: bandy

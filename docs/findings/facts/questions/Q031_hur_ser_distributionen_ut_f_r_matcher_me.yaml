@@ -1,0 +1,10 @@
+fact_id: Q031
+category: questions
+claim: Hur ser distributionen ut för matcher med marginal 2–3 mål, dvs. mellankategorin
+  som inte inkluderades här?
+spawned_by: finding:009
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

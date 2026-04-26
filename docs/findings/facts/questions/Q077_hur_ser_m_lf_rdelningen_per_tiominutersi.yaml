@@ -1,0 +1,9 @@
+fact_id: Q077
+category: questions
+claim: Hur ser målfördelningen per tiominutersintervall ut i damelit under samma tidsperiod?
+spawned_by: finding:019
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

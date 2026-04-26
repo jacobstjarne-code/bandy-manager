@@ -1,0 +1,10 @@
+fact_id: Q065
+category: questions
+claim: Hur stor andel av halvtidsledningar uppstår för hemma- respektive bortalag
+  — och förklarar det matchmönstret?
+spawned_by: finding:016
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

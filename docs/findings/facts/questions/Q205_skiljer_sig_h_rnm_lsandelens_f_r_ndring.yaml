@@ -1,0 +1,10 @@
+fact_id: Q205
+category: questions
+claim: Skiljer sig hörnmålsandelens förändring åt beroende på om matchen avgörs i
+  ordinarie tid, förlängning eller straffar?
+spawned_by: finding:046
+spawned_at: '2026-04-26'
+status: open
+verified_at: '2026-04-26'
+verified_by: code
+domain: bandy

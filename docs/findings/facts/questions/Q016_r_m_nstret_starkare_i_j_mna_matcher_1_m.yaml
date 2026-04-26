@@ -1,0 +1,9 @@
+fact_id: Q016
+category: questions
+claim: Är mönstret starkare i jämna matcher (±1 mål) än i övertygande ledningar?
+spawned_by: finding:005
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

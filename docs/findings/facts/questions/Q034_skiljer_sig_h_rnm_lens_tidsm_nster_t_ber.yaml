@@ -1,0 +1,9 @@
+fact_id: Q034
+category: questions
+claim: Skiljer sig hörnmålens tidsmönster åt beroende på om laget är hemma eller borta?
+spawned_by: finding:010
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

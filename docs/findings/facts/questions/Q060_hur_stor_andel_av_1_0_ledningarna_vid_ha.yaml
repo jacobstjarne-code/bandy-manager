@@ -1,0 +1,10 @@
+fact_id: Q060
+category: questions
+claim: Hur stor andel av 1–0-ledningarna vid halvtid slutar med vändning jämfört med
+  oavgjort?
+spawned_by: finding:015
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

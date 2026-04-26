@@ -1,0 +1,10 @@
+fact_id: Q201
+category: questions
+claim: Finns det ett samband mellan antal hörnor per match och konverteringsgrad på
+  ligaövergripande nivå?
+spawned_by: finding:045
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

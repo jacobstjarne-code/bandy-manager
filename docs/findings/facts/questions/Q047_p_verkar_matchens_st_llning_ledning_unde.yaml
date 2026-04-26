@@ -1,0 +1,10 @@
+fact_id: Q047
+category: questions
+claim: Påverkar matchens ställning (ledning/underläge) sannolikheten att en hörna
+  leder till mål, och skiljer sig det mönstret mellan serierna?
+spawned_by: finding:012
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

@@ -1,0 +1,10 @@
+fact_id: Q182
+category: questions
+claim: Påverkar matchens poängläge i tabellen (topplag vs. bottenlag) hur snabbt det
+  eftersläntrande laget reducerar?
+spawned_by: finding:041
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

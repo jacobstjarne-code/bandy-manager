@@ -1,0 +1,10 @@
+fact_id: Q123
+category: questions
+claim: Har mål utanför hörnor kodats manuellt i någon delsäsong som kan användas som
+  pilotstudie?
+spawned_by: finding:029
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

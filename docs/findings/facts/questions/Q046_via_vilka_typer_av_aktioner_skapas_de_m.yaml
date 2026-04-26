@@ -1,0 +1,10 @@
+fact_id: Q046
+category: questions
+claim: Via vilka typer av aktioner skapas de mål i damserien som inte härrör från
+  hörnor?
+spawned_by: finding:012
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

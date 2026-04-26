@@ -1,0 +1,9 @@
+fact_id: Q079
+category: questions
+claim: Är slutminutsklustret i öppna herrmatchers lika starkt i cupspel som i seriespel?
+spawned_by: finding:019
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

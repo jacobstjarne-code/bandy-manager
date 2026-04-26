@@ -1,0 +1,10 @@
+fact_id: Q026
+category: questions
+claim: Hur ser minutfördelningen ut på minutnivå (40, 41, 42 … 50) — finns det en
+  enskild toppminut inom intervallet?
+spawned_by: finding:008
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

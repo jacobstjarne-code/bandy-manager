@@ -1,0 +1,9 @@
+fact_id: Q022
+category: questions
+claim: Är lagstyrke-spridningen faktiskt större i damserien?
+spawned_by: finding:007
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

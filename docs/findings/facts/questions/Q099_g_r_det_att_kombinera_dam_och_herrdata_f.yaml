@@ -1,0 +1,10 @@
+fact_id: Q099
+category: questions
+claim: Går det att kombinera dam- och herrdata för att testa om sluttryck är ett generellt
+  bandyfenomen oberoende av serie?
+spawned_by: finding:023
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

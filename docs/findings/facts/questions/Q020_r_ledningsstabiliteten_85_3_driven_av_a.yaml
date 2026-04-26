@@ -1,0 +1,10 @@
+fact_id: Q020
+category: questions
+claim: Är ledningsstabiliteten (85,3%) driven av att ledande lag förändrar sitt spel,
+  eller att de möter svagare motstånd statistiskt?
+spawned_by: finding:006
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

@@ -1,0 +1,10 @@
+fact_id: Q159
+category: questions
+claim: Stämmer samma mönster för dambandy, eller är hemma/borta-skillnaden annorlunda
+  i det seriesystemet?
+spawned_by: finding:036
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

@@ -1,0 +1,10 @@
+fact_id: Q126
+category: questions
+claim: Innehåller händelsedatabasen matchställning (hemma-borta-mål) per tidsstämpel
+  för varje hörnhändelse?
+spawned_by: finding:030
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

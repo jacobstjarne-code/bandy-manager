@@ -1,0 +1,9 @@
+fact_id: Q107
+category: questions
+claim: Skiljer sig andelen matcher som är oavgjorda vid halvtid åt mellan turneringsfaserna?
+spawned_by: finding:025
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

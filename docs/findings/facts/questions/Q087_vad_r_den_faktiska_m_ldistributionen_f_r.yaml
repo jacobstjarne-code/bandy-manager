@@ -1,0 +1,10 @@
+fact_id: Q087
+category: questions
+claim: Vad är den faktiska måldistributionen för matcher med exakt 2 respektive 3
+  måls marginal, beräknad ur rådata?
+spawned_by: finding:021
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

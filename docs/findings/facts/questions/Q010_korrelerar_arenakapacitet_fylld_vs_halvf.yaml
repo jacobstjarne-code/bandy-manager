@@ -1,0 +1,9 @@
+fact_id: Q010
+category: questions
+claim: Korrelerar arenakapacitet (fylld vs halvfull) med hemmasegers-procent?
+spawned_by: finding:003
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

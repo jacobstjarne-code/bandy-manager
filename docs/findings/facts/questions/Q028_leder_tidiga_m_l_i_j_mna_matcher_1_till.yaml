@@ -1,0 +1,10 @@
+fact_id: Q028
+category: questions
+claim: Leder tidiga mål i jämna matcher (±1) till att det scorande laget faktiskt
+  vinner, eller kvitteras de bort?
+spawned_by: finding:009
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

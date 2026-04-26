@@ -1,0 +1,10 @@
+fact_id: Q130
+category: questions
+claim: Går det att bryta ned analysen per period (första/andra halvlek) utöver matchläge,
+  för att separera trötthet från taktisk anpassning?
+spawned_by: finding:030
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

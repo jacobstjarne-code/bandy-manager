@@ -1,0 +1,10 @@
+fact_id: Q150
+category: questions
+claim: Finns det matchdata där defensiv formation vid hörnor är kodad, exempelvis
+  via video-taggning?
+spawned_by: finding:035
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

@@ -1,0 +1,9 @@
+fact_id: Q014
+category: questions
+claim: Korrelerar högt målsnitt med jämnare matcher (fler byten av ledning)?
+spawned_by: finding:004
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

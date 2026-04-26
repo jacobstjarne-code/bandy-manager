@@ -1,0 +1,10 @@
+fact_id: Q127
+category: questions
+claim: Kan Finding 012 köras om med explicit angivet säsongsintervall och serie för
+  att verifiera att data finns?
+spawned_by: finding:030
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

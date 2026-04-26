@@ -1,0 +1,10 @@
+fact_id: Q108
+category: questions
+claim: Finns det specifika lag som bryter mot mönstret och vänder halvtidsunderlägen
+  oftare i semifinal än förväntat?
+spawned_by: finding:025
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

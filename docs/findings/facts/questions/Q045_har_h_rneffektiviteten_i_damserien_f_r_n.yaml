@@ -1,0 +1,10 @@
+fact_id: Q045
+category: questions
+claim: Har hörneffektiviteten i damserien förändrats över säsonger, eller är nivån
+  stabil?
+spawned_by: finding:012
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

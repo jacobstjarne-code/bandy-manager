@@ -1,0 +1,9 @@
+fact_id: Q125
+category: questions
+claim: Hur stor andel av alla mål i damserien härrör överhuvudtaget inte från hörnor?
+spawned_by: finding:029
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

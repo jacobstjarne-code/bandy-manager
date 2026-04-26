@@ -1,0 +1,10 @@
+fact_id: Q063
+category: questions
+claim: Hur påverkar ledningens storlek vid halvtid (1 mål vs. 2+ mål) sannolikheten
+  att vinna?
+spawned_by: finding:016
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

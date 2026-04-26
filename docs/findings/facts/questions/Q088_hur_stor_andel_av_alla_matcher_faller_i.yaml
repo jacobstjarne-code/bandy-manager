@@ -1,0 +1,10 @@
+fact_id: Q088
+category: questions
+claim: Hur stor andel av alla matcher faller i respektive marginalkategori (0–1, 2–3,
+  4+)?
+spawned_by: finding:021
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

@@ -1,0 +1,10 @@
+fact_id: Q053
+category: questions
+claim: Är skillnaden i konverteringsgrad statistiskt signifikant med ett chi²-test
+  eller liknande?
+spawned_by: finding:014
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

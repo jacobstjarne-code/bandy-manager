@@ -1,0 +1,9 @@
+fact_id: Q062
+category: questions
+claim: Hur ser motsvarande siffror ut i damserien?
+spawned_by: finding:015
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

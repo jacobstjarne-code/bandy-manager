@@ -1,0 +1,9 @@
+fact_id: Q076
+category: questions
+claim: Vad förklarar den stora skillnaden i konvertering mellan de två VSK-perioderna?
+spawned_by: finding:018
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy

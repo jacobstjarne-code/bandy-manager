@@ -1,0 +1,9 @@
+fact_id: Q008
+category: questions
+claim: Är hemmafördelen starkare i slutspel än grundserie?
+spawned_by: finding:003
+spawned_at: '2026-04-25'
+status: open
+verified_at: '2026-04-25'
+verified_by: code
+domain: bandy
