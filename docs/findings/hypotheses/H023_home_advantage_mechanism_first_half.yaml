@@ -1,0 +1,36 @@
+fact_id: H023
+category: hypothesis
+domain: bandy
+claim: "Hemmafördelen verkar primärt i första halvlek — ~58% av halvtidsledningar innehas av hemmalaget, vilket förklarar varför halvtidsledning och hemmafördel samverkar"
+competing_hypotheses:
+  - "Hemmafördelen manifesteras i slutskedet av matcher där hemmalaget motstår press bättre, inte i att skapa halvtidsledning"
+predicted_value: "~58% av halvtidsledningar innehas av hemmalaget (mot 50% om ingen hemmafördel)"
+test_method: |
+  Testa om fördelningen av halvtidsledningar hemma/borta avviker signifikant från
+  50/50; regressionsanalys.
+
+  Operationellt:
+  (a) Extrahera halvtidsställningar ur bandygrytan_detailed.json för alla matcher
+  (b) Klassificera halvtidsledning: hemmalag leder / oavgjort / bortalag leder
+  (c) Chi-kvadrattest mot 50/50 för "hemmalag leder vid halvtid"
+  (d) Jämför hemmalags halvtidsledningprocent med slutresultat-hemmasegerprocent (~50.2%)
+  (e) Om hemmalagens halvtidsledningandel överstiger 50% signifikant — stöder H023
+  (f) Komplettera med analys av 2H-målfördelning: om hemmalaget tar igen matcher
+      i 2H — stöder competing_hypothesis
+
+  Observera: detta test kräver halvtidsställning per match vilket inte alltid finns
+  i bandygrytan-data — verifiera datatillgång innan test körs.
+spawned_by: "finding:040"
+source:
+  type: observation
+  name: "finding:040 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: opus
+status: open
+notes: |
+  Genererad från finding 040. Hemmafördelen i bandy (~50.2% hemmaseger) är lägre
+  än i fotboll (~60%) men fortfarande statistiskt signifikant. Om ~58% av
+  halvtidsledningar innehas av hemmalaget, och halvtidsledning konverteras i ~78%,
+  skulle det förklara en stor del av hemmalagsfördelen via "etablera ledning i 1H"-mekanismen.
+  Competing_hypothesis antyder att hemmafördelen istället verkar defensivt i 2H.
+  Related: H007, H014, H006.

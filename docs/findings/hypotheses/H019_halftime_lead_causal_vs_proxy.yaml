@@ -1,0 +1,33 @@
+fact_id: H019
+category: hypothesis
+domain: bandy
+claim: "Målskillnad vid halvtid har ett direkt orsakssamband med matchutfallet via psykologisk/momentum-effekt, inte enbart som proxy för lagstyrka"
+competing_hypotheses:
+  - "Starka lag leder vid halvtid och vinner av samma underliggande skäl — halvtidsledning är en proxy för lagstyrka, inte en självständig kausal faktor"
+predicted_value: "Halvtidsledning predikterar slutresultat även när lagstyrka hålls konstant"
+test_method: |
+  Kontrollera för lagstyrka och testa om halvtidsledning tillför prediktiv kraft
+  utöver lagstyrkan.
+
+  Operationellt:
+  (a) Bygg regressionsmodell med slutresultat som utfall, lagstyrka (ELO/rating) som
+      kontrollvariabel och halvtidsmålskillnad som testprediktor
+  (b) Om halvtidsledning har signifikant β utöver lagstyrka — stöder H019 (kausal effekt)
+  (c) Om β försvinner när lagstyrka inkluderas — stöder competing_hypothesis (proxy)
+  (d) Komplettera med matched-pair-analys: jämsharka matcher (liknande lagstyrka)
+      där halvtidsledning varierar — behåller den prediktiv kraft?
+
+  Om halvtidsledning predikterar utfall oberoende av lagstyrka stöds kausal tolkning.
+spawned_by: "finding:038"
+source:
+  type: observation
+  name: "finding:038 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: opus
+status: open
+notes: |
+  Genererad från finding 038. Halvtidsledning konverteras i ~78.1% av fall men det är
+  oklart hur stor del som drivs av kausala momentum-effekter (psykologi, press, taktisk
+  omställning) kontra att starka lag både leder vid halvtid och vinner på grund av
+  underliggande lagkvalitet. Utan kontroll för lagstyrka kan inte de två förklaringarna
+  särskiljas. Kausal verifiering kräver quasi-experimentell design eller ELO-kontroll.

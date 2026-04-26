@@ -1,0 +1,34 @@
+fact_id: H021
+category: hypothesis
+domain: bandy
+claim: "Hörnmålsandelens fall i slutspelet (22.2% grundserie → 16.7% final) beror på defensivt orienterat spel som reducerar hörnlägen"
+competing_hypotheses:
+  - "Minskningen beror på selektionseffekt — lag i slutspelet är generellt bättre defensivt organiserade, vilket producerar färre hörnlägen oavsett taktisk intention"
+predicted_value: "Hörnmålsandel faller per slutspelsfas: kvartsfinal > semifinal > final"
+test_method: |
+  Jämföra hörnmålsandel och totalt hörnantal per fas; kontrollera för defensiv
+  organisation via lagrating.
+
+  Operationellt:
+  (a) Extrahera hörnantal per match per fas (regular/QF/SF/final)
+  (b) Beräkna hörnmålsandel per fas
+  (c) Om hörnantal per match minskar monotont — stöder defensiv-intensivering (H021)
+  (d) Om hörnantal är konstant men konversionsgrad faller — selektionseffekt
+  (e) Kontrollera för genomsnittlig lagrating per fas; om starkare lag dominerar
+      slutspelet kan selektionen förklara utan taktisk omläggning
+
+  Se H002 och H003 för parallell analys av konverteringsgrad vs frekvens.
+spawned_by: "finding:046"
+source:
+  type: observation
+  name: "finding:046 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: opus
+status: open
+notes: |
+  Genererad från finding 046. Hörnmålsandelen faller från 22.2% i grundserien till
+  16.7% i final. H021 och H002 är nära besläktade men betonar olika mekanismer:
+  H021 fokuserar på att defensivt orienterat spel i slutspelet skapar färre hörnlägen,
+  medan H002 fokuserar på bättre hörnförsvar (konverteringsgrad). Test-metoden
+  delar på frekvens och konverteringsgrad för att avgöra vilken mekanism som dominerar.
+  Related: H002, H003.

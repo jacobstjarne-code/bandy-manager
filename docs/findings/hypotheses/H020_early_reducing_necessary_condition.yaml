@@ -1,0 +1,35 @@
+fact_id: H020
+category: hypothesis
+domain: bandy
+claim: "En tidig reducering (minut 91-100) är en nödvändig förutsättning för comeback — lag som reducerar senare lyckas nästan aldrig vända"
+competing_hypotheses:
+  - "Tidig reducering korrelerar med comeback utan att vara kausal — starka lag reducerar tidigt OCH vinner på grund av lagstyrka, inte för att timing är avgörande"
+predicted_value: "~67% av comebacks inleds inom minut 91-100; comeback-frekvens < 5% för reduceringar efter minut 110"
+test_method: |
+  Analysera comeback-frekvens per reduceringsintervall; kontrollera för lagstyrka
+  och matchkontext.
+
+  Operationellt:
+  (a) Extrahera alla matcher med halvtidsledning ur bandygrytan_detailed.json
+  (b) Klassificera efter när (om) ledarskapets förändring sker i 2H
+  (c) Beräkna comeback-frekvens för reduceringar i: 91-100, 101-110, 111-120
+  (d) Kontrollera för lagstyrka (rating-differens) per tidsfönster
+  (e) Om comeback-frekvens är lägre för sena reduceringar efter ELO-kontroll
+      stöder det H020 (timing är kausal)
+
+  Om comeback-frekvensen för sena reduceringar förklaras av sämre lagkvalitet
+  — stöder competing_hypothesis.
+spawned_by: "finding:041"
+source:
+  type: observation
+  name: "finding:041 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: opus
+status: open
+notes: |
+  Genererad från finding 041. Datan antyder att tidiga reduceringsmål i 2H är starkt
+  kopplade till comeback-utfall. Hypotesen formulerar en nästan-nödvändig-villkor-logik:
+  utan tidig reducering stannar comeback-chansen på < 5%. Alternativförklaringen är att
+  lagstyrka driver både timing och utfall. Utan ELO-kontroll kan inte dessa separeras.
+  Tidsfönstret 91-100 sammanfaller med finding:024 om halvtidsledningens sårbarhet
+  direkt efter paus.
