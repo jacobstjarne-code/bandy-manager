@@ -77,9 +77,9 @@ jobs:
         run: |
           git config user.name "bandy-brain-bot"
           git config user.email "noreply@github.com"
-          git add bandy-brain/src/pages/findings/ scripts/pipeline/questions.yaml
-          git commit -m "feat: auto-generated ${{ steps.check.outputs.count }} finding(s) [pipeline]"
           git pull --rebase origin main
+          git add bandy-brain/src/pages/findings/ scripts/pipeline/questions.yaml docs/findings/facts/questions/
+          git commit -m "feat: auto-generated ${{ steps.check.outputs.count }} finding(s) [pipeline]"
           git push origin main
 
       - name: Trigger deploy
