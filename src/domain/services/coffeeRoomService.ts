@@ -293,17 +293,23 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
       ['Kassören', `${legend.name} satt på läktaren i lördags. Ensam. Men han var här.`, 'Materialaren', 'Det räcker.'],
       ['Kioskvakten', `${legend.name} hälsade på efter matchen. Pratade med alla. Som om han aldrig slutat.`, 'Vaktmästaren', 'Det är hans grej.'],
     ]
-    // TODO: OPUS TEXT — granska och förfina roll-specifika quotes
+    // youthCoach-pool: legenden som ungdomstränare
     const youthCoachPool: Array<[string, string, string, string]> = [
-      ['Materialaren', `${legend.name} hade P19-grabben inne en och en igår.`, 'Vaktmästaren', 'Personliga samtal. Det är det som gör skillnad.'],
-      ['Kioskvakten', `${legend.name} var nere på konstisbanan tidigt. Tog i med P19.`, 'Kassören', 'Grabbarna lyssnar på honom. Det märks.'],
-      ['Vaktmästaren', `${legend.name} ser något i den unge Lindgren. Säger att han är den nästa.`, 'Materialaren', 'Hoppas han har rätt.'],
+      ['Materialaren', `${legend.name} hade en P19-grabb inne i veckan. En och en. Över en timme.`, 'Vaktmästaren', 'Det är så dom byggs.'],
+      ['Kioskvakten', `${legend.name} står på isen kvart i sju varje morgon nu.`, 'Vaktmästaren', 'Det gör han tills han inte kan längre.'],
+      ['Vaktmästaren', `${legend.name} sa att en av P19-killarna ska upp i vår.`, 'Materialaren', 'Sa han vilken?" Vaktmästaren: "Nej. Han säger inget innan det är klart.'],
+      ['Materialaren', `${legend.name} skällde på grabbarna igår. Riktigt skällde.`, 'Kioskvakten', 'Bra." Materialaren: "Bra.'],
+      ['Kassören', `${legend.name} har börjat ringa föräldrarna också.`, 'Ordföranden', 'Vad pratar dom om?" Kassören: "Läxor.'],
+      ['Kioskvakten', `${legend.name} satt och tittade på P16-matchen i söndags. Antecknade.`, 'Materialaren', 'Han ser något vi inte ser.'],
     ]
-    // TODO: OPUS TEXT — granska och förfina roll-specifika quotes
+    // scout-pool: legenden som scout
     const scoutPool: Array<[string, string, string, string]> = [
-      ['Kioskvakten', `${legend.name} kom från Boltic-matchen. Hade hittat något.`, 'Kassören', 'Hade han namn?'],
       ['Materialaren', `${legend.name} hade fyra namn på pappret. Tre av dem är värda att titta på.`, 'Vaktmästaren', 'Det räcker.'],
-      ['Kassören', `${legend.name} är borta hela helgen. Tre matcher på tre orter.`, 'Kioskvakten', 'Det är ett bra tecken.'],
+      ['Kioskvakten', `${legend.name} är borta hela helgen. Tre matcher på tre orter.`, 'Kassören', 'Det är så dom är.'],
+      ['Kassören', `${legend.name} ringde i tisdags. Sa bara "inte han".`, 'Ordföranden', 'Då sparade vi pengar.'],
+      ['Vaktmästaren', `${legend.name} hittade en kille i Norrland. Hade kollat honom tre gånger.`, 'Materialaren', 'Tre?" Vaktmästaren: "Han litar inte på första intrycket.'],
+      ['Kioskvakten', `${legend.name} kom hem från bortamatchen på kvällen. Klockan var över elva.`, 'Vaktmästaren', 'Han kunde åkt på morgonen." Kioskvakten: "Han kunde det. Men det gör han inte.'],
+      ['Materialaren', `${legend.name} sa nej till en agent som ringde.`, 'Kassören', 'Vad sa han?" Materialaren: "Att han hittar killar själv.'],
     ]
     const pool = legend.role === 'youth_coach' ? youthCoachPool
       : legend.role === 'scout' ? scoutPool

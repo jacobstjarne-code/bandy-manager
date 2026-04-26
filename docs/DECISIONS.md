@@ -64,6 +64,23 @@ Framtida sprintar som följer detta mönster ska reverseras till specen om någo
 
 ---
 
+## 2026-04-26 — Code+Opus-arbetsform för text-tunga sprintar (Sprint 27 prejudikat)
+
+**Problem:** Text-tunga sprintar (kafferums-quotes, matchkommentarer, presskonferens) kräver dels korrekt kod-struktur, dels kurerad ton. Code skriver korrekt struktur men generisk text med LLM-reflexer (bekräftande svar utan substans, hårdkodade namn, "Det är så det ska vara"-mönster). Opus kan inte alltid bygga strukturen direkt.
+
+**Beslut:** Dela i två pass. Code bygger struktur + stubs (platshållare med TODO-flaggor). Opus uppgraderar text i ett separat text-pass. Stubs ska vara funktionell text — inte `""` eller `"PLACEHOLDER"` — men kan vara generiska. TODO-flaggor märker vilka pooler som är under-kurerade.
+
+**Konkret från Sprint 27:**
+- Code byggde `youthCoachPool` (3 stubs) och `scoutPool` (3 stubs) med TODO-kommentarer
+- Opus ersatte med 6+6 utbyten med tydliga tonregler:
+  1. Inga bekräftande svar utan substans ("Det är så det ska vara")
+  2. Inga hårdkodade spelar- eller klubbnamn
+  3. 3-parts-dialog samma encoding-mönster som Sprint 26
+
+**Konsekvens:** Vid framtida text-tunga sprintar — Code bygger struktur, lägger `// TODO: OPUS TEXT` på stub-pooler. Opus gör textpass separat. Inte parallellt — Opus behöver se hur Code encodade 3-parts-dialog för att matcha formatet.
+
+---
+
 ## 2026-04-20 — `.btn-cta` istället för fyra inline-CTA:er (Sprint 22.5)
 
 **Problem:** Fyra skärmar (Dashboard, BoardMeeting, PreSeason, StartStep) hade fyra olika implementeringar av skärm-avslutande CTA. Padding 18/16/14, fontSize 15/15/14/14, fontWeight 600/800/700/700, letterSpacing 2/1/0.3/1px. DESIGN_SYSTEM.md §1 saknade stor CTA-klass.

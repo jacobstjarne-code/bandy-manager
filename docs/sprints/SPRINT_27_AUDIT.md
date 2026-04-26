@@ -188,9 +188,27 @@ Farewell, seed = 7:
 | `farewell`-val → inga mekaniska effekter, men `role: 'farewell'` sätts → framtida kafferums-logik möjlig | ✅ |
 | `youthQuality ?? 50` — säkert vid saknat fält i befintliga saves | ✅ |
 
-### Flaggor för Opus-text-pass
+### Text-pass (Opus, 2026-04-26)
 
-- `coffeeRoomService.ts` rad 296, 302: `// TODO: OPUS TEXT` — youthCoachPool och scoutPool är stubs. Opus bör granska och ersätta med kurerade utbyten (3-5 per pool).
+Opus levererade 12 nya legend-quotes (6 youthCoach + 6 scout) 2026-04-26. TODO-flaggor borttagna. Hårdkodade namn (Lindgren, Boltic) ersatta med generiska referenser (P19-grabb, kille i Norrland, bortamatchen).
+
+**youthCoachPool (6 utbyten):**
+1. P19-grabb inne en och en — "Det är så dom byggs."
+2. Kvart i sju på isen — "Det gör han tills han inte kan längre."
+3. En av P19-killarna ska upp (3-parts: "Sa han vilken?" — "Nej. Han säger inget...")
+4. Skällde på grabbarna — Kioskvakten: "Bra." Materialaren: "Bra."
+5. Ringer föräldrarna — "Vad pratar dom om?" — "Läxor."
+6. Tittade på P16-matchen. Antecknade — "Han ser något vi inte ser."
+
+**scoutPool (6 utbyten):**
+1. Fyra namn, tre värda — "Det räcker." (Code's original, behållt)
+2. Tre matcher tre orter — "Det är så dom är."
+3. Ringde och sa "inte han" — "Då sparade vi pengar."
+4. Kille i Norrland, kollat tre gånger — "Han litar inte på första intrycket."
+5. Kom hem klockan elva — "Han kunde åkt på morgonen... men det gör han inte."
+6. Sa nej till agent — "Att han hittar killar själv."
+
+**Tonregler bekräftade:** Inga "Det är så det ska vara"-svar (LLM-fluff). Inga hårdkodade spelar- eller klubbnamn.
 
 ---
 
