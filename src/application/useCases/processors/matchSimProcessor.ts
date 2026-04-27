@@ -268,7 +268,7 @@ export function simulateRound(
 
     const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
     const isManagedHome = fixture.homeClubId === game.managedClubId
-    const baseAdv = homeClub?.hasIndoorArena ? 0.14 * 0.85 : 0.14
+    const baseAdv = homeClub?.hasIndoorArena ? 0.19 * 0.85 : 0.19
     const isManaged = fixture.homeClubId === game.managedClubId
     const communityBonus = isManaged
       ? ((game.communityStanding ?? 50) - 50) / 50 * 0.02
