@@ -1130,6 +1130,8 @@ function* simulateMatchCore(
           weather: input.weather ? {
             tempC: input.weather.temperature,
             condition: input.weather.condition,
+            // INTERIM — ersätts av SPEC_VADER fas 1 — 3×30 triggas vid extrem kyla
+            matchFormat: input.weather.temperature <= -17 ? '3x30' as const : undefined,
           } : undefined,
         }
         if (fixture.isFinaldag) {
