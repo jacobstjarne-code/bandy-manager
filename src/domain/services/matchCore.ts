@@ -289,7 +289,7 @@ function* simulateMatchCore(
   const profileGoalMod = PROFILE_GOAL_MODS[profile]
 
   // Ref style (full mode only)
-  const refStyle: RefStyle = isFast ? 'lenient' : pickRefStyle(rand)
+  const refStyle: RefStyle = isFast ? 'lenient' : (input.refStyle as RefStyle ?? pickRefStyle(rand))
 
   // Resolve starters
   const homeStarters = homeLineup.startingPlayerIds

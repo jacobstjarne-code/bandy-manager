@@ -1007,6 +1007,19 @@ export function MatchLiveScreen() {
         />
       )}
 
+      {(() => {
+        const refereeId = fixture?.refereeId
+        const referee = refereeId ? game?.referees?.find(r => r.id === refereeId) : undefined
+        if (!referee) return null
+        return (
+          <div style={{ padding: '4px 12px', background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border)' }}>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+              Matchdomare: {referee.firstName} {referee.lastName} ({referee.homeTown}, {referee.yearsOfExperience} år)
+            </span>
+          </div>
+        )
+      })()}
+
       <CommentaryFeed
         displayedSteps={displayedSteps}
         currentMatchStep={currentMatchStep}

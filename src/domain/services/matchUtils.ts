@@ -82,6 +82,8 @@ export interface SimulateMatchInput {
   managedIsHome?: boolean
   storylines?: Array<{ playerId?: string; type: string; displayText: string }>
   fixtureMonth?: number  // 1-12, for seasonal ice hardness (DREAM-004)
+  refStyle?: 'strict' | 'lenient' | 'inconsistent'
+  refereeName?: string  // for opening commentary display
 }
 
 export function computeWeatherEffects(w: Weather) {
@@ -305,6 +307,8 @@ export interface StepByStepInput {
     isFirstRound?: boolean     // säsongspremiär
   }
   ownScandalThisSeason?: boolean  // for supporter_scandal_recent commentary
+  refStyle?: 'strict' | 'lenient' | 'inconsistent'
+  refereeName?: string  // for opening commentary display
   // Second-half restart fields (optional — omit for full match from step 0)
   startStep?: number
   initialHomeScore?: number

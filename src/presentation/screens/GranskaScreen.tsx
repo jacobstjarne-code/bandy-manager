@@ -400,6 +400,40 @@ export function GranskaScreen() {
           )
         })()}
 
+        {/* Domarmöte */}
+        {(() => {
+          const rm = game.pendingRefereeMeeting
+          if (!rm) return null
+          const rmResolved = resolvedEventIds.has(rm.id)
+          const rmChosenLabel = chosenLabels[rm.id]
+          return (
+            <div className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(4) }}>
+              <div style={{ padding: '10px 12px' }}>
+                <SectionLabel style={{ marginBottom: rmResolved ? 4 : 6 }}>🏟️ DOMARENS LOCKER ROOM</SectionLabel>
+                {rmResolved ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{rmChosenLabel}</span>
+                  </div>
+                ) : (
+                  <>
+                    <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>{rm.sender?.name}</p>
+                    <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, fontStyle: 'italic' }}>{rm.body}</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      {rm.choices.map((choice: EventChoice) => (
+                        <button key={choice.id} onClick={() => handleChoice(rm.id, choice.id, choice.label)}
+                          style={{ width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
+                          {choice.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )
+        })()}
+
         {/* Media */}
         {(() => {
           const headlineItem = game.inbox

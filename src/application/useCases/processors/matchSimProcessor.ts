@@ -4,7 +4,7 @@ import type { Club } from '../../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
-import { FixtureStatus, PlayerPosition, InboxItemType, ClubStyle, PlayerArchetype } from '../../../domain/enums'
+import { FixtureStatus, PlayerPosition, InboxItemType, ClubStyle, PlayerArchetype, MatchEventType } from '../../../domain/enums'
 import type { FormationType } from '../../../domain/entities/Formation'
 import { simulateMatch } from '../../../domain/services/matchSimulator'
 import type { MatchPhaseContext } from '../../../domain/services/matchUtils'
@@ -13,6 +13,9 @@ import { generateMatchWeather } from '../../../domain/services/weatherService'
 import { calcAttendance } from '../../../domain/services/economyService'
 import { generatePressConference } from '../../../domain/services/pressConferenceService'
 import { mulberry32 } from '../../../domain/utils/random'
+import { pickRefereeForMatch, shouldTriggerRefereeMeeting, updateRefereeRelation, REFEREE_MEETING_QUOTES, getRefereeDisplayName, generateReferees } from '../../../domain/services/refereeService'
+import type { Referee } from '../../../domain/entities/Referee'
+import { checkForMatchInjury } from '../../../domain/services/matchInjuryService'
 
 const AI_FORMATIONS: Record<ClubStyle, FormationType> = {
   [ClubStyle.Defensive]: '4-3-3',
@@ -116,6 +119,9 @@ export interface MatchSimResult {
   hasManagedCupPending: boolean
   inboxItems: InboxItem[]
   pressEvent: GameEvent | null
+  pendingRefereeMeeting?: GameEvent
+  injuredPlayers: Array<{ player: Player; event: import('../../../domain/services/matchInjuryService').MatchInjuryEvent }>
+  updatedReferees: Referee[]
 }
 
 /**
@@ -142,7 +148,12 @@ export function simulateRound(
   const allRoundRegenPlayers: Player[] = []
   const roundMatchWeathers: MatchWeather[] = []
   const inboxItems: InboxItem[] = []
+  const injuredPlayers: Array<{ player: Player; event: import('../../../domain/services/matchInjuryService').MatchInjuryEvent }> = []
   let hasManagedCupPending = false
+  let pendingRefereeMeeting: GameEvent | undefined = undefined
+
+  // Initialize referees if not yet generated
+  const allRefs: Referee[] = game.referees?.length ? game.referees : generateReferees()
 
   for (let i = 0; i < roundFixtures.length; i++) {
     const fixture = roundFixtures[i]
@@ -267,6 +278,9 @@ export function simulateRound(
       : isPlayoffRound ? 'quarterfinal'
       : 'regular'
 
+    // Pick referee for this fixture
+    const referee = pickRefereeForMatch(allRefs, game.refereeRelations ?? [], nextMatchday, mulberry32(baseSeed + i + 9999))
+
     const result = simulateMatch({
       fixture,
       homeLineup,
@@ -283,7 +297,76 @@ export function simulateRound(
       managedIsHome: isManagedHome,
       storylines: (game.storylines ?? []).filter(s => s.resolved),
       fixtureMonth: new Date(game.currentDate).getMonth() + 1,
+      refStyle: referee.style,
+      refereeName: getRefereeDisplayName(referee),
     })
+
+    // Post-match: referee meeting check (managed fixture only)
+    const isManaged2 = fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId
+    if (isManaged2) {
+      const suspCount = result.fixture.events.filter(
+        e => e.type === MatchEventType.RedCard && e.clubId === game.managedClubId
+      ).length
+      const penCount = result.fixture.events.filter(e => e.isPenaltyGoal).length
+      const meetingRand = mulberry32(baseSeed + i + 7777)
+      if (shouldTriggerRefereeMeeting(suspCount, penCount, referee.style, meetingRand)) {
+        const quotes = REFEREE_MEETING_QUOTES[referee.style]
+        const quoteIndex = Math.floor(meetingRand() * quotes.length)
+        const quote = quotes[quoteIndex]
+        const meetingEvent: GameEvent = {
+          id: `referee_meeting_${fixture.id}`,
+          type: 'refereeMeeting',
+          title: `${referee.firstName} ${referee.lastName} vill träffas`,
+          body: quote,
+          sender: { name: getRefereeDisplayName(referee), role: 'Domare' },
+          choices: [
+            { id: 'respect', label: 'Respektera', effect: { type: 'refereeRelationship', refereeId: referee.id, value: 1 } },
+            { id: 'neutral', label: 'Neutral', effect: { type: 'refereeRelationship', refereeId: referee.id, value: 0 } },
+            { id: 'protest', label: 'Protestera', effect: { type: 'refereeRelationship', refereeId: referee.id, value: -1 } },
+          ],
+          resolved: false,
+        }
+        pendingRefereeMeeting = meetingEvent
+      }
+
+      // Update referee relation for managed fixture
+      const existingRelation = (game.refereeRelations ?? []).find(r => r.refereeId === referee.id)
+      const suspCount2 = result.fixture.events.filter(
+        e => e.type === MatchEventType.RedCard && e.clubId === game.managedClubId
+      ).length
+      const penCount2 = result.fixture.events.filter(e => e.isPenaltyGoal).length
+      updateRefereeRelation(
+        existingRelation,
+        referee.id,
+        result.fixture,
+        'neutral',
+        game.currentSeason,
+        nextMatchday,
+        suspCount2,
+        penCount2,
+      )
+    }
+
+    // Post-match injury checks for all starters
+    const allFixturePlayers = [...homePlayers, ...awayPlayers]
+    for (const playerId of [...homeLineup.startingPlayerIds, ...awayLineup.startingPlayerIds]) {
+      const player = allFixturePlayers.find(p => p.id === playerId)
+      if (!player || player.isInjured) continue
+      const injuryRand = mulberry32(baseSeed + i + (playerId.charCodeAt(0) || 0))
+      const isDerby = !!rivalry
+      const injuryEvent = checkForMatchInjury({
+        player,
+        minute: Math.floor(injuryRand() * 90),
+        isGoalkeeperInjury: false,
+        weather: matchWeather.weather,
+        isDerby,
+        playerMorale: player.morale,
+        tactic: player.clubId === fixture.homeClubId ? homeLineup.tactic : awayLineup.tactic,
+      }, injuryRand)
+      if (injuryEvent) {
+        injuredPlayers.push({ player, event: injuryEvent })
+      }
+    }
 
     const homeClubForAttendance = game.clubs.find(c => c.id === fixture.homeClubId)
     const isFinalFixture = fixture.roundNumber > 22 && game.playoffBracket?.final?.fixtures.includes(fixture.id)
@@ -300,7 +383,7 @@ export function simulateRound(
       isAnnandagen: nextMatchday === 12,
       fixtureMonth: new Date(game.currentDate).getMonth() + 1,
     }) : undefined
-    simulatedFixtures.push({ ...result.fixture, attendance })
+    simulatedFixtures.push({ ...result.fixture, attendance, refereeId: referee.id })
   }
 
   // Generate press conference for the managed club's completed fixture (snabbsim path)
@@ -325,5 +408,8 @@ export function simulateRound(
     hasManagedCupPending,
     inboxItems,
     pressEvent,
+    pendingRefereeMeeting,
+    injuredPlayers,
+    updatedReferees: allRefs,
   }
 }

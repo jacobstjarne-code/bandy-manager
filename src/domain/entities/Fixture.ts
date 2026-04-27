@@ -69,4 +69,5 @@ export interface Fixture {
   report?: MatchReport
   attendance?: number
   matchStartedAt?: number  // timestamp set when live simulation begins, cleared on completion
+  refereeId?: string
 }

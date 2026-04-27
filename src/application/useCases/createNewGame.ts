@@ -25,6 +25,7 @@ import { generateSupporterGroup } from '../../domain/services/supporterService'
 import { generateAICoaches } from '../../domain/services/aiCoachService'
 import { generateAssistantCoach } from '../../domain/services/assistantCoachService'
 import { updatePlayerAvailability } from '../../domain/services/playerAvailabilityService'
+import { generateReferees } from '../../domain/services/refereeService'
 
 function pickRandom<T>(arr: T[], rand: () => number): T {
   return arr[Math.floor(rand() * arr.length)]
@@ -390,6 +391,8 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     averageAttendance: undefined,
     previousAverageAttendance: undefined,
     recentMoments: [],
+    referees: generateReferees(),
+    refereeRelations: [],
   }
 
   const playersWithAvailability = updatePlayerAvailability(game)

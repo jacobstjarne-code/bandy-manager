@@ -48,6 +48,7 @@ import { processMedia } from './processors/mediaProcessor'
 import { processGameEvents, applyMecenatSpawn, processScandals } from './processors/eventProcessor'
 import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
 import { applyRipples, mergeRippleDeltas } from '../../domain/services/rippleEffectService'
+import { applyMatchInjury, generateInjuryInboxItem } from '../../domain/services/matchInjuryService'
 
 export type { AdvanceResult }
 
@@ -199,6 +200,20 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const newlyInjured = playerStateResult.newlyInjured
   const newlySuspended = playerStateResult.newlySuspended
   let finalPlayers = updatedPlayers
+
+  // Apply match injuries from matchSimProcessor (post-match batch injury checks)
+  if (simResult.injuredPlayers.length > 0) {
+    for (const { player, event } of simResult.injuredPlayers) {
+      const playerInFinal = finalPlayers.find(p => p.id === player.id)
+      if (!playerInFinal || playerInFinal.isInjured) continue
+      const injuredPlayer = applyMatchInjury(playerInFinal, event)
+      finalPlayers = finalPlayers.map(p => p.id === injuredPlayer.id ? injuredPlayer : p)
+      // Only generate inbox for managed club players with ≥1 week out
+      if (player.clubId === game.managedClubId && event.weeksOut >= 1) {
+        newInboxItems.push(generateInjuryInboxItem(player, event, game.currentSeason, nextMatchday))
+      }
+    }
+  }
 
   // Update seasonStats and careerStats for all players in completed fixtures this round
   // Also detect career milestones for managed club players
@@ -887,6 +902,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     lastCoffeeQuoteHash: currentLeagueRound !== null ? (currentLeagueRound - 1) * 11 + game.currentSeason * 31 : game.lastCoffeeQuoteHash,
     lastEconomicStressRound: eventResult.lastEconomicStressRound,
     pendingPressConference: simResult.pressEvent ?? undefined,
+    pendingRefereeMeeting: simResult.pendingRefereeMeeting ?? undefined,
+    referees: simResult.updatedReferees,
+    refereeRelations: game.refereeRelations ?? [],
     ...(() => {
       // Update rolling average attendance for home matches
       if (!justCompletedManagedFixture) return {}
