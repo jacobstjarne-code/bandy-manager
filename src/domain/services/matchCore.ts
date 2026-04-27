@@ -56,7 +56,8 @@ import { evaluateSquad } from './squadEvaluator'
 import { getTacticModifiers } from './tacticModifiers'
 import { mulberry32, fixtureSeed } from '../utils/random'
 import { commentary, fillTemplate, pickCommentary, getTraitCommentary } from '../data/matchCommentary'
-import { pickSpecialDateCommentary } from '../data/specialDateStrings'
+import { pickSpecialDateCommentary } from './specialDateService'
+import type { SpecialDateContext } from '../data/specialDateStrings'
 import { getConditionLabel, getIceQualityLabel } from './weatherService'
 import {
   clamp, randRange, weightedPick, pickWeightedPlayer,
@@ -1119,15 +1120,26 @@ function* simulateMatchCore(
       }
 
       if (step === 0) {
-        const arenaCtx = { arenaName: input.arenaName ?? homeClubName ?? '', homeClubName: homeClubName ?? '', awayClubName: awayClubName ?? '' }
+        const sdCtx: SpecialDateContext = {
+          isHomePlayer: managedIsHome === true,
+          homeClubName: homeClubName ?? '',
+          awayClubName: awayClubName ?? '',
+          arenaName: fixture.arenaName ?? input.arenaName ?? '',
+          venueCity: fixture.venueCity ?? '',
+          isPlayerInFinal: !!fixture.isFinaldag,
+          weather: input.weather ? {
+            tempC: input.weather.temperature,
+            condition: input.weather.condition,
+          } : undefined,
+        }
         if (fixture.isFinaldag) {
-          commentaryText = pickSpecialDateCommentary('finaldag', arenaCtx, fixture.season, fixture.matchday)
+          commentaryText = pickSpecialDateCommentary('finaldag', sdCtx, fixture.season, fixture.matchday)
         } else if (input.isCupFinalhelgen && fixture.isCup) {
-          commentaryText = pickSpecialDateCommentary('cupfinal', arenaCtx, fixture.season, fixture.matchday)
+          commentaryText = pickSpecialDateCommentary('cupfinal', sdCtx, fixture.season, fixture.matchday)
         } else if (input.isAnnandagen) {
-          commentaryText = pickSpecialDateCommentary('annandagen', arenaCtx, fixture.season, fixture.matchday)
+          commentaryText = pickSpecialDateCommentary('annandagen', sdCtx, fixture.season, fixture.matchday)
         } else if (input.isNyarsbandy) {
-          commentaryText = pickSpecialDateCommentary('nyarsbandy', arenaCtx, fixture.season, fixture.matchday)
+          commentaryText = pickSpecialDateCommentary('nyarsbandy', sdCtx, fixture.season, fixture.matchday)
         } else if (rivalry) {
           commentaryText = fillTemplate(pickCommentary(commentary.derby_kickoff, rand), { ...templateVars, rivalry: rivalry.name })
           isDerbyStep = true

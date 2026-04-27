@@ -13,8 +13,8 @@ import {
   finaldagBriefingSpectator,
   cupFinalBriefingPlaying,
   cupFinalBriefingSpectator,
-  type SpecialDateContext,
-} from '../data/specialDateStrings'
+} from './specialDateService'
+import type { SpecialDateContext } from '../data/specialDateStrings'
 
 const SEASON_MOOD: Record<SeasonPhase, string[]> = {
   pre_season: ['Ny säsong. Nya möjligheter.'],

@@ -1,6 +1,7 @@
 import type { CupBracket, CupMatch } from '../entities/Cup'
 import type { Fixture } from '../entities/Fixture'
 import { FixtureStatus } from '../enums'
+import { CUP_FINAL_VENUE } from '../data/specialDateStrings'
 
 // Matchdays for cup rounds — försäsong aug-okt, before liga starts at matchday 5
 const CUP_MATCHDAYS: Record<number, number> = {
@@ -156,6 +157,7 @@ export function generateNextCupRound(
     const awayClubId = winners[i * 2 + 1]
     const fixtureId = `cup-r${nextRound}-m${i}`
 
+    const isCupFinalWeekend = nextRound >= 3
     const fixture: Fixture = {
       id: fixtureId,
       leagueId: `league_${season}`,
@@ -173,6 +175,11 @@ export function generateNextCupRound(
       awayLineup: undefined,
       isCup: true,
       isKnockout: true,
+      ...(isCupFinalWeekend ? {
+        arenaName: CUP_FINAL_VENUE.arenaName,
+        venueCity: CUP_FINAL_VENUE.city,
+        isCupFinalhelgen: true,
+      } : {}),
     }
 
     const cupMatch: CupMatch = {

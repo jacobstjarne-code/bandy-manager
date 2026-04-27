@@ -2,6 +2,7 @@ import type { StandingRow } from '../entities/SaveGame'
 import type { Fixture } from '../entities/Fixture'
 import type { PlayoffBracket, PlayoffSeries } from '../entities/Playoff'
 import { PlayoffStatus, PlayoffRound, FixtureStatus } from '../enums'
+import { SM_FINAL_VENUE } from '../data/specialDateStrings'
 
 export function generatePlayoffBracket(standings: StandingRow[], season: number): PlayoffBracket {
   const top8 = standings
@@ -64,6 +65,8 @@ export function generatePlayoffFixtures(
       isNeutralVenue: true,
       isKnockout: true,
       isFinaldag: true,
+      arenaName: SM_FINAL_VENUE.arenaName,
+      venueCity: SM_FINAL_VENUE.city,
     }]
   }
 
