@@ -63,6 +63,7 @@ export function generatePlayoffFixtures(
       awayLineup: undefined,
       isNeutralVenue: true,
       isKnockout: true,
+      isFinaldag: true,
     }]
   }
 

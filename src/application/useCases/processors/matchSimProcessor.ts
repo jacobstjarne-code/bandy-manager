@@ -16,6 +16,7 @@ import { mulberry32 } from '../../../domain/utils/random'
 import { pickRefereeForMatch, shouldTriggerRefereeMeeting, updateRefereeRelation, REFEREE_MEETING_QUOTES, getRefereeDisplayName, generateReferees } from '../../../domain/services/refereeService'
 import type { Referee } from '../../../domain/entities/Referee'
 import { checkForMatchInjury } from '../../../domain/services/matchInjuryService'
+import { buildSeasonCalendar } from '../../../domain/services/scheduleGenerator'
 
 const AI_FORMATIONS: Record<ClubStyle, FormationType> = {
   [ClubStyle.Defensive]: '4-3-3',
@@ -154,6 +155,9 @@ export function simulateRound(
 
   // Initialize referees if not yet generated
   const allRefs: Referee[] = game.referees?.length ? game.referees : generateReferees()
+
+  const seasonCalendar = buildSeasonCalendar(game.currentSeason)
+  const currentCalendarSlot = seasonCalendar.find(s => s.matchday === nextMatchday)
 
   for (let i = 0; i < roundFixtures.length; i++) {
     const fixture = roundFixtures[i]
@@ -380,7 +384,7 @@ export function simulateRound(
       isDerby: !!rivalry,
       isFinal: isFinalFixture || (fixture.isCup && fixture.roundNumber === 4),
       isSemiFinal: isSemiFixture || (fixture.isCup && fixture.roundNumber === 3),
-      isAnnandagen: nextMatchday === 12,
+      isAnnandagen: !!currentCalendarSlot?.isAnnandagen,
       fixtureMonth: new Date(game.currentDate).getMonth() + 1,
     }) : undefined
     simulatedFixtures.push({ ...result.fixture, attendance, refereeId: referee.id })

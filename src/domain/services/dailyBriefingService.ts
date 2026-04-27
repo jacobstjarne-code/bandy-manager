@@ -5,6 +5,7 @@ import { getTransferWindowStatus } from './transferWindowService'
 import { FixtureStatus } from '../enums'
 import { getCurrentAct } from './seasonActService'
 import { getSeasonPhase, type SeasonPhase } from '../data/seasonPhases'
+import { buildSeasonCalendar } from './scheduleGenerator'
 
 const SEASON_MOOD: Record<SeasonPhase, string[]> = {
   pre_season: ['Ny säsong. Nya möjligheter.'],
@@ -152,8 +153,32 @@ export function generateBriefing(game: SaveGame): Briefing | null {
     }
   }
 
-  // 1. Derby?
+  // 0.5. Specialdatum — högprioriterat, visas direkt inför den speciella matchen
   const nextFixture = getNextManagedFixture(game)
+  if (nextFixture) {
+    if (nextFixture.isFinaldag) {
+      const opponentId = nextFixture.homeClubId === game.managedClubId
+        ? nextFixture.awayClubId
+        : nextFixture.homeClubId
+      const opponent = game.clubs.find(c => c.id === opponentId)
+      return { text: `🏆 SM-FINALEN. Idag avgörs det. ${opponent?.name ?? 'Motståndaren'} väntar i Västerås.` }
+    }
+    const seasonCal = buildSeasonCalendar(game.currentSeason)
+    const nextSlot = seasonCal.find(s => s.matchday === nextFixture.matchday)
+    if (nextSlot?.isAnnandagen) {
+      return { text: `🎄 Annandagsbandyn. Hela orten på läktaren — den dag bandyt äger Sverige.` }
+    }
+    if (nextSlot?.isNyarsbandy) {
+      return { text: `🎆 Nyårsbandy ikväll. Säsongens kortaste dag, avslag 13:15. Räkna med full läktare.` }
+    }
+    if (nextSlot?.isCupFinalhelgen && nextFixture.isCup) {
+      return nextFixture.roundNumber === 4
+        ? { text: `🏆 Cupfinalen. En chans att lyfta bucklan.` }
+        : { text: `🏆 Cupsemifinalen. Vinn idag och du är i cupfinalen imorgon.` }
+    }
+  }
+
+  // 1. Derby?
   if (nextFixture) {
     const rivalry = getRivalry(nextFixture.homeClubId, nextFixture.awayClubId)
     if (rivalry) {

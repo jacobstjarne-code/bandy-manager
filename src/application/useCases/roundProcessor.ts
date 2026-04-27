@@ -72,6 +72,66 @@ function stripLineup(lineup: Lineup): Lineup {
   }
 }
 
+function generateSpecialDateInbox(
+  fixture: Fixture,
+  game: SaveGame,
+  matchday: number,
+): InboxItem[] {
+  const items: InboxItem[] = []
+  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+  const opponentId = fixture.homeClubId === game.managedClubId ? fixture.awayClubId : fixture.homeClubId
+  const opponent = game.clubs.find(c => c.id === opponentId)
+
+  if (fixture.isFinaldag) {
+    items.push({
+      id: `inbox_finaldag_${game.currentSeason}`,
+      date: game.currentDate,
+      type: InboxItemType.Playoff,
+      title: '🏆 SM-finalen',
+      body: `${managedClub?.name ?? 'Ni'} möter ${opponent?.name ?? 'motståndaren'} i SM-finalen i Västerås. Det finns inget större än detta.`,
+      isRead: false,
+    })
+    return items
+  }
+
+  const seasonCal = buildSeasonCalendar(game.currentSeason)
+  const slot = seasonCal.find(s => s.matchday === matchday)
+
+  if (slot?.isAnnandagen) {
+    items.push({
+      id: `inbox_annandagen_match_${game.currentSeason}`,
+      date: game.currentDate,
+      type: InboxItemType.Derby,
+      title: '🎄 Annandagsbandyn nästa',
+      body: `Annandagen spelar ${managedClub?.name ?? 'ni'} hemma mot ${opponent?.name ?? 'motståndaren'}. Hela orten samlas på läktaren — den tradition som inte sviker.`,
+      isRead: false,
+    })
+  } else if (slot?.isNyarsbandy) {
+    items.push({
+      id: `inbox_nyarsbandy_${game.currentSeason}`,
+      date: game.currentDate,
+      type: InboxItemType.Derby,
+      title: '🎆 Nyårsbandy',
+      body: `${managedClub?.name ?? 'Ni'} spelar nyårsafton mot ${opponent?.name ?? 'motståndaren'}. Avslag 13:15. Klacken firar in det nya året på läktaren.`,
+      isRead: false,
+    })
+  } else if (slot?.isCupFinalhelgen && fixture.isCup) {
+    const isFinal = fixture.roundNumber === 4
+    items.push({
+      id: `inbox_cupfinalhelg_${fixture.id}`,
+      date: game.currentDate,
+      type: InboxItemType.Derby,
+      title: isFinal ? '🏆 Cupfinalen' : '🏆 Cupsemifinalen',
+      body: isFinal
+        ? `${managedClub?.name ?? 'Ni'} är i cupfinalen mot ${opponent?.name ?? 'motståndaren'}. Bucklan är ett steg bort.`
+        : `${managedClub?.name ?? 'Ni'} möter ${opponent?.name ?? 'motståndaren'} i cupsemifinalen. Vinn och spela final imorgon.`,
+      isRead: false,
+    })
+  }
+
+  return items
+}
+
 function stripCompletedFixture(f: Fixture, managedFixtureId?: string, managedClubId?: string): Fixture {
   if (f.id === managedFixtureId) return f
   if (f.status !== FixtureStatus.Completed) return f
@@ -472,6 +532,24 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // Derby notification: if next matchday has a derby for managed club
   newInboxItems.push(...processUpcomingDerbyNotification(finalAllFixtures, game))
+
+  // Special-date day-before inbox: annandagen, nyårsbandy, finaldag, cup-finalhelgen
+  const remainingScheduled2 = finalAllFixtures.filter(f => f.status === FixtureStatus.Scheduled)
+  if (remainingScheduled2.length > 0) {
+    const upcomingMatchday2 = Math.min(...remainingScheduled2.map(f => f.matchday))
+    const upcomingManagedFix = remainingScheduled2.find(
+      f => f.matchday === upcomingMatchday2 &&
+      (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+    )
+    if (upcomingManagedFix) {
+      const specialInboxItems = generateSpecialDateInbox(upcomingManagedFix, game, upcomingMatchday2)
+      for (const item of specialInboxItems) {
+        if (!game.inbox.some(i => i.id === item.id)) {
+          newInboxItems.push(item)
+        }
+      }
+    }
+  }
 
   const marketUpdatedPlayers = updateAllMarketValues(
     updateLowMoraleDays(finalPlayers),
