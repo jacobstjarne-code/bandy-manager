@@ -175,3 +175,8 @@ export function initCardBag(): void {
   initialized = true
   setCardBag(PORTAL_CARDS)
 }
+
+/** Nollställ bag — för tester som behöver köra initCardBag() mer än en gång. */
+export function resetCardBag(): void {
+  initialized = false
+}
