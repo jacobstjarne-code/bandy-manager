@@ -14,13 +14,13 @@ export type MatchPhaseContext = 'regular' | 'quarterfinal' | 'semifinal' | 'fina
 // Index = getTimingPeriod(minute). Normalized so weighted step-sum ≈ old TIMING_WEIGHTS total.
 // Real data: 9.7 / 9.8 / 9.8 / 10.0 / 11.8 / 10.9 / 10.5 / 10.7 / 12.9 % per 10-min period.
 export const GOAL_TIMING_BY_PERIOD: number[] = [
-  0.954,  // 0–10 min   (9.7% of goals)
+  1.320,  // 0–10 min   (target 9.7% — höjd från 0.954 för att kompensera steg-distortion)
   0.964,  // 10–20 min  (9.8%)
   0.964,  // 20–30 min  (9.8%)
   0.984,  // 30–40 min  (10.0%)
   1.160,  // 40–50 min  (11.8%) ← halvtidsjakt
   1.072,  // 50–60 min  (10.9%)
-  1.032,  // 60–70 min  (10.5%)
+  0.810,  // 60–70 min  (target 10.5% — sänkt från 1.032 för att kompensera chasing-mode)
   1.052,  // 70–80 min  (10.7%)
   1.269,  // 80–90 min  (12.9%) ← slutryckning
 ]
