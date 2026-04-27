@@ -10,6 +10,8 @@ function NavigateSetter() {
   return null
 }
 import { NewGameScreen } from '../screens/NewGameScreen'
+import { NameInputScreen } from '../screens/NameInputScreen'
+import { ClubSelectionScreen } from '../screens/ClubSelectionScreen'
 import { IntroSequence } from '../screens/IntroSequence'
 import { GameShell, GameGuard } from './GameShell'
 import { DashboardScreen } from '../screens/DashboardScreen'
@@ -50,7 +52,9 @@ export function AppRouter() {
       <NavigateSetter />
       <Routes>
         <Route path="/" element={<IntroSequence />} />
-        <Route path="/new-game" element={<NewGameScreen />} />
+        <Route path="/new-game" element={<NameInputScreen />} />
+        <Route path="/club-selection" element={<ClubSelectionScreen />} />
+        <Route path="/new-game-legacy" element={<NewGameScreen />} />
         <Route path="/game" element={<GameShell />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<DashboardScreen />} />
