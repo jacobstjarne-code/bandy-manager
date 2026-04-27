@@ -130,7 +130,7 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     id: 'club_forsbacka',
     name: 'Forsbacka',
     shortName: 'Forsbacka',
-    region: 'Gävleborg',
+    region: 'Gästrikland',
     reputation: 85,
     finances: 800000,
     wageBudget: 120000,

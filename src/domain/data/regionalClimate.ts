@@ -33,6 +33,14 @@ export const REGIONAL_CLIMATE: Record<string, MonthlyClimate[]> = {
     { month: 2, avgTemp: -10, tempVariance: 6, snowChance: 0.40, heavySnowChance: 0.12, fogChance: 0.05, thawChance: 0.05 },
     { month: 3, avgTemp: -5, tempVariance: 5, snowChance: 0.30, heavySnowChance: 0.08, fogChance: 0.10, thawChance: 0.12 },
   ],
+  'Gästrikland': [
+    { month: 10, avgTemp: 4, tempVariance: 4, snowChance: 0.15, heavySnowChance: 0.03, fogChance: 0.10, thawChance: 0.10 },
+    { month: 11, avgTemp: -1, tempVariance: 5, snowChance: 0.30, heavySnowChance: 0.08, fogChance: 0.10, thawChance: 0.08 },
+    { month: 12, avgTemp: -5, tempVariance: 6, snowChance: 0.35, heavySnowChance: 0.10, fogChance: 0.08, thawChance: 0.05 },
+    { month: 1, avgTemp: -8, tempVariance: 7, snowChance: 0.30, heavySnowChance: 0.08, fogChance: 0.08, thawChance: 0.05 },
+    { month: 2, avgTemp: -6, tempVariance: 6, snowChance: 0.30, heavySnowChance: 0.08, fogChance: 0.10, thawChance: 0.08 },
+    { month: 3, avgTemp: -1, tempVariance: 5, snowChance: 0.20, heavySnowChance: 0.05, fogChance: 0.12, thawChance: 0.20 },
+  ],
   'Gävleborg': [
     { month: 10, avgTemp: 4, tempVariance: 4, snowChance: 0.15, heavySnowChance: 0.03, fogChance: 0.10, thawChance: 0.10 },
     { month: 11, avgTemp: -1, tempVariance: 5, snowChance: 0.30, heavySnowChance: 0.08, fogChance: 0.10, thawChance: 0.08 },
