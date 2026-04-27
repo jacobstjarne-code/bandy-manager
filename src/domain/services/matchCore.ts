@@ -671,21 +671,16 @@ function* simulateMatchCore(
       const homeMode = getSecondHalfMode(homeScore, awayScore, step, matchPhase)
       const awayMode = getSecondHalfMode(awayScore, homeScore, step, matchPhase)
 
-      const applyMode = (mode: SecondHalfMode, td: number, scoreDiff: number): { attack: number; foul: number } => {
-        if (mode === 'chasing') {
-          // Differentierat: -1 ger lägre boost (minskar onödiga utjämningar),
-          // -2+ ger högre boost (bevarar djupa comebacks)
-          const boost = scoreDiff === -1 ? 1.18 : 1.28
-          return { attack: boost, foul: 1.25 }
-        }
+      const applyMode = (mode: SecondHalfMode, td: number): { attack: number; foul: number } => {
+        if (mode === 'chasing')     return { attack: 1.22, foul: 1.25 }
         if (mode === 'controlling') return { attack: 0.88, foul: 1.0 + (1.0 - td) * 0.25 }
-        if (mode === 'even_battle') return { attack: step >= 45 ? 1.12 : 1.01, foul: 1.10 }
+        if (mode === 'even_battle') return { attack: step >= 50 ? 1.04 : 1.0, foul: 1.10 }
         // cruise
         return { attack: 0.92, foul: 1.0 }
       }
 
-      const homeModeFx = applyMode(homeMode, homeTacticalDiscipline, homeScore - awayScore)
-      const awayModeFx = applyMode(awayMode, awayTacticalDiscipline, awayScore - homeScore)
+      const homeModeFx = applyMode(homeMode, homeTacticalDiscipline)
+      const awayModeFx = applyMode(awayMode, awayTacticalDiscipline)
 
       homeModeAttackMult = homeModeFx.attack
       awayModeAttackMult = awayModeFx.attack
