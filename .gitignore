@@ -5,3 +5,8 @@ dist/
 scripts/stress/failures/*.json
 scripts/pipeline/__pycache__
 scripts/pipeline/feedback_cache.json
+
+# Data warehouse — DB-fil ingår inte i repo (regenereras via warehouse:generate)
+data-warehouse/matches.db
+data-warehouse/matches.db-shm
+data-warehouse/matches.db-wal

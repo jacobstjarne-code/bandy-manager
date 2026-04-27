@@ -51,6 +51,9 @@ export default defineConfig({
       },
     },
   },
+  ssr: {
+    external: ['better-sqlite3'],
+  },
   test: {
     globals: true,
     environment: 'jsdom',

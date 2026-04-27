@@ -10,13 +10,17 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "stress": "node_modules/.bin/vite-node scripts/stress-test.ts",
-    "analyze-stress": "node_modules/.bin/vite-node scripts/analyze-stress.ts"
+    "analyze-stress": "node_modules/.bin/vite-node scripts/analyze-stress.ts",
+    "warehouse:generate": "node_modules/.bin/vite-node scripts/data-warehouse/generate.ts",
+    "warehouse:validate": "node_modules/.bin/vite-node scripts/data-warehouse/validate.ts"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^20.0.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.7.0",
+    "better-sqlite3": "^12.9.0",
     "jsdom": "^29.0.1",
     "typescript": "^5.4.0",
     "vite": "^5.2.0",
