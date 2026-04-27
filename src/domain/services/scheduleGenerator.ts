@@ -77,12 +77,34 @@ export interface MatchdaySlot {
   isCupFinalhelgen?: boolean
 }
 
-// Cup rounds are inserted after these league rounds (Fas 1 — unchanged, moved in Fas 2)
-const CUP_AFTER_LEAGUE_ROUND: Record<number, number> = {
-  2: 1,   // Cup förstarunda after liga omg 2 → matchday 3
-  6: 2,   // Cup kvartsfinal after liga omg 6 → matchday 8
-  10: 3,  // Cup semifinal after liga omg 10 → matchday 13
-  15: 4,  // Cup final after liga omg 15 → matchday 19
+// Cup played as pre-season tournament in August–October, before liga starts.
+// Returns date + metadata for each cup round (matchday 1-4).
+function getCupRoundDate(season: number, cupRound: number): { date: string; weekday: number; tipoffHour: number; isCupFinalhelgen?: boolean } {
+  const aug1 = new Date(Date.UTC(season, 7, 1, 12))
+  const aug1Dow = aug1.getUTCDay()
+  const firstSatAug = new Date(aug1.getTime() + ((6 - aug1Dow + 7) % 7) * 86400000)
+
+  if (cupRound === 1) {
+    // 3rd Saturday of August (~Aug 15-21)
+    const d = new Date(firstSatAug.getTime() + 14 * 86400000)
+    return { date: d.toISOString().slice(0, 10), weekday: 6, tipoffHour: 14 }
+  }
+  if (cupRound === 2) {
+    // 5th Saturday of August / last weekend of August (~Aug 29 - Sep 4)
+    const d = new Date(firstSatAug.getTime() + 28 * 86400000)
+    return { date: d.toISOString().slice(0, 10), weekday: 6, tipoffHour: 14 }
+  }
+  // Cup finalhelgen — first Saturday/Sunday of October (before liga R1 Oct 8+)
+  const oct1 = new Date(Date.UTC(season, 9, 1, 12))
+  const oct1Dow = oct1.getUTCDay()
+  const daysToFirstSat = (6 - oct1Dow + 7) % 7
+  if (cupRound === 3) {
+    const d = new Date(oct1.getTime() + daysToFirstSat * 86400000)
+    return { date: d.toISOString().slice(0, 10), weekday: 6, tipoffHour: 14, isCupFinalhelgen: true }
+  }
+  // cupRound === 4: final — day after semifinal
+  const d = new Date(oct1.getTime() + (daysToFirstSat + 1) * 86400000)
+  return { date: d.toISOString().slice(0, 10), weekday: 0, tipoffHour: 14, isCupFinalhelgen: true }
 }
 
 // Allowed weekdays per round-type (0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat)
@@ -216,12 +238,22 @@ function pickRoundDate(
 
 /**
  * Builds an ordered calendar of matchdays for a full season.
- * Liga omg 1-22 + 4 cup rounds = 26 matchdays. Playoff starts at 27+.
- * Dates use per-round windows (Oct–Feb) with seeded RNG, always on bandydagar.
+ * Cup rounds 1-4 (matchday 1-4): försäsong aug-okt.
+ * Liga rounds 1-22 (matchday 5-26): okt-feb, always on bandydagar.
+ * Playoff starts at matchday 27+.
  */
 export function buildSeasonCalendar(season: number): MatchdaySlot[] {
   const calendar: MatchdaySlot[] = []
   let day = 0
+
+  // CUP-MATCHDAGAR (matchday 1-4, august–october — before liga starts)
+  for (let cupRound = 1; cupRound <= 4; cupRound++) {
+    day++
+    const { date, weekday, tipoffHour, isCupFinalhelgen } = getCupRoundDate(season, cupRound)
+    calendar.push({ matchday: day, type: 'cup', cupRound, date, weekday, tipoffHour, isCupFinalhelgen })
+  }
+
+  // LIGA-MATCHDAGAR (matchday 5-26, october–february)
   let seqFloor = new Date(Date.UTC(season, 9, 8, 12)) // Sequential floor starts Oct 8
 
   for (let round = 1; round <= 22; round++) {
@@ -240,23 +272,15 @@ export function buildSeasonCalendar(season: number): MatchdaySlot[] {
         tipoffHour: 13,
         isAnnandagen: true,
       })
-      const cupRound = CUP_AFTER_LEAGUE_ROUND[10]
-      if (cupRound) {
-        day++
-        const cupObj = new Date(Date.UTC(season, 11, 29, 12)) // Dec 29
-        calendar.push({ matchday: day, type: 'cup', cupRound, date: cupObj.toISOString().slice(0, 10), weekday: cupObj.getUTCDay(), tipoffHour: 14 })
-        seqFloor = new Date(Date.UTC(season, 11, 30, 12))
-      } else {
-        seqFloor = new Date(Date.UTC(season, 11, 28, 12))
-      }
+      seqFloor = new Date(Date.UTC(season, 11, 28, 12))
       continue
     }
 
     const rand = mulberry32(season * 31337 + round * 7919)
     const dayType = ROUND_DAY_TYPE[round] ?? 'mixed_VH'
     const allowed = allowedDaysFor(dayType)
-    let pickedDate = pickRoundDate(season, round, allowed, seqFloor, rand)
-    let pickedDay = pickedDate.getUTCDay()
+    const pickedDate = pickRoundDate(season, round, allowed, seqFloor, rand)
+    const pickedDay = pickedDate.getUTCDay()
 
     const dateStr = pickedDate.toISOString().slice(0, 10)
     const tipoffHour = (() => {
@@ -276,15 +300,6 @@ export function buildSeasonCalendar(season: number): MatchdaySlot[] {
 
     // Sequential floor: next round must start at least 2 days after this one
     seqFloor = new Date(pickedDate.getTime() + 2 * 86400000)
-
-    const cupRound = CUP_AFTER_LEAGUE_ROUND[round]
-    if (cupRound) {
-      day++
-      const cupObj = new Date(pickedDate.getTime() + 3 * 86400000)
-      const cupDate = cupObj.toISOString().slice(0, 10)
-      calendar.push({ matchday: day, type: 'cup', cupRound, date: cupDate, weekday: cupObj.getUTCDay(), tipoffHour: 14 })
-      seqFloor = new Date(cupObj.getTime() + 2 * 86400000)
-    }
   }
 
   return calendar

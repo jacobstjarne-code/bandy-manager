@@ -54,32 +54,38 @@ function advanceWithLineup(game: SaveGame, seed: number) {
 }
 
 describe('advanceToNextEvent', () => {
-  it('after one advance: exactly 6 fixtures are Completed or Postponed', () => {
+  it('after one advance: exactly 4 cup fixtures are Completed or Postponed', () => {
+    // Cup R1 (matchday 1) has 4 play-in matches among the 8 non-bye teams.
+    // Liga starts at matchday 5.
     const game = makeGame()
-    const result = advanceToNextEvent(game, 1)
+    const result = advanceWithLineup(game, 1)
     const resolved = result.game.fixtures.filter(
       f => f.status === FixtureStatus.Completed || f.status === FixtureStatus.Postponed
     )
-    expect(resolved.length).toBe(6)
+    expect(resolved.length).toBe(4)
     expect(result.roundPlayed).toBe(1)
     expect(result.seasonEnded).toBe(false)
   })
 
-  it('after one advance: standings have been updated (some teams have non-zero points)', () => {
-    const game = makeGame()
-    const result = advanceToNextEvent(game, 1)
-    const hasPoints = result.game.standings.some(s => s.points > 0)
+  it('after cup rounds + liga R1: standings have been updated (some teams have non-zero points)', () => {
+    // Cup (matchdays 1-4) doesn't affect standings; liga R1 (matchday 5) does.
+    let game = makeGame()
+    for (let i = 1; i <= 5; i++) {
+      game = advanceWithLineup(game, i).game
+    }
+    const hasPoints = game.standings.some(s => s.points > 0)
     expect(hasPoints).toBe(true)
   })
 
-  it('after two advances: 12 fixtures are Completed or Postponed', () => {
+  it('after two advances: 8 cup fixtures are Completed or Postponed', () => {
+    // Cup R1 (4 matches) + Cup R2 quarterfinals (4 matches) = 8 total.
     const game = makeGame()
     const r1 = advanceWithLineup(game, 1)
     const r2 = advanceWithLineup(r1.game, 2)
     const resolved = r2.game.fixtures.filter(
       f => f.status === FixtureStatus.Completed || f.status === FixtureStatus.Postponed
     )
-    expect(resolved.length).toBe(12)
+    expect(resolved.length).toBe(8)
   })
 
   it('after all league rounds: all 132 fixtures are Completed or Postponed and seasonEnded is false', () => {
@@ -216,11 +222,15 @@ describe('advanceToNextEvent', () => {
     }
   })
 
-  it('managed club gets inbox item of matchResult type after advance', () => {
-    const game = makeGame()
-    const result = advanceToNextEvent(game, 1)
+  it('managed club gets inbox item of matchResult type after liga round', () => {
+    // Cup rounds (matchdays 1-4) may not produce MatchResult for clubs with byes.
+    // Advance past cup to liga R1 (matchday 5) which always produces a match result.
+    let game = makeGame()
+    for (let i = 1; i <= 5; i++) {
+      game = advanceWithLineup(game, i).game
+    }
 
-    const matchResultItems = result.game.inbox.filter(
+    const matchResultItems = game.inbox.filter(
       item => item.type === InboxItemType.MatchResult,
     )
     expect(matchResultItems.length).toBeGreaterThanOrEqual(1)

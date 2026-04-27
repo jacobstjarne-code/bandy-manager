@@ -2,12 +2,12 @@ import type { CupBracket, CupMatch } from '../entities/Cup'
 import type { Fixture } from '../entities/Fixture'
 import { FixtureStatus } from '../enums'
 
-// Matchdays for cup rounds — between liga rounds, never overlapping
+// Matchdays for cup rounds — försäsong aug-okt, before liga starts at matchday 5
 const CUP_MATCHDAYS: Record<number, number> = {
-  1: 3,   // förstarunda: after liga omg 2
-  2: 8,   // kvartsfinal: after liga omg 6
-  3: 13,  // semifinal: after liga omg 10
-  4: 19,  // final: after liga omg 15
+  1: 1,   // förstarunda: matchday 1 (~mitten aug)
+  2: 2,   // kvartsfinal: matchday 2 (~slutet aug)
+  3: 3,   // semifinal: matchday 3 (lördag första okt-helgen)
+  4: 4,   // final: matchday 4 (söndag första okt-helgen)
 }
 
 export function generateCupFixtures(
