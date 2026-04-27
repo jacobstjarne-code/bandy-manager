@@ -1,6 +1,6 @@
 # BANDY MANAGER — STATUS
 
-**Uppdaterad:** 26 april 2026  
+**Uppdaterad:** 27 april 2026  
 **Syfte:** Enda sanning om vad som är byggt, vad som funkar, och vad som återstår.
 
 ---
@@ -37,6 +37,8 @@
 - Klacken sjunger vid avslag, halvtid, sena mål
 - DailyBriefing med säsongsfas-specifika texter (SEASON_MOOD)
 - **Skandalreferenser cross-system (Sprint 26, 2026-04-26)** — aktiv säsongsskandal syns i kafferum (25% chans per omgång, 7 typer × egna/andras), klack-commentary vid kickoff/halvtid (20% chans), pressfrågor (4-7 nya frågor per match-utfall), motståndartränare (8 skandal-quotes i SCANDAL_AFFECTED_LOST/WON)
+- **Legend-roller i kafferummet (Sprint 27, 2026-04-26)** — `youthCoachPool` (6 kurerade utbyten) + `scoutPool` (6 kurerade utbyten) + `generalPool` (5). Rolle väljer pool i `coffeeRoomService.ts`
+- **Legend match-commentary (Sprint 28-B, 2026-04-27)** — 70% override när legend scorer/assisterar/räddar i managed clubs matcher. Fyra pooler (22 strängar). Bara aktiva managed-club legends (`isClubLegend = true` via `updateActiveLegendFlags()`)
 
 ### Orten & Community
 - Anläggningsprojekt startbara med tre finansieringsalternativ (egen/kommun/mecenat)
@@ -62,6 +64,15 @@
 - Relationer (kapten/klackfavorit/nemesis, senaste samtalet, mentor)
 - Karriärresa (dagbok med kronologisk timeline)
 - Prata med spelaren (sticky footer)
+- **CareerJourney-tidslinje (Sprint 27-E, 2026-04-26)** — vertikal tidslinje i PlayerCard, grupperad per säsong (nyast först), max 4 entries + overflow-räknare
+
+### Legend-systemet (Sprint 27-D + Sprint 28-A/B, 2026-04-26/27)
+- `ClubLegend` med `playerId?` + `role?: 'youth_coach' | 'scout' | 'farewell'`
+- `setLegendRole` EventEffect — roll + mekaniska sidoeffekter (youthQuality +5, scoutBudget +3)
+- Legend-lön: 500 kr/vecka per aktiv roll, visas i EkonomiTab + Dashboard
+- Pension-impact på morale: kvarvarande spelare (≥2 gemensamma säsonger) påverkas vid kapten/legend-pension
+- Kapten-vakuum: `captainPlayerId` → `undefined` om aktiv kapten pensioneras, inbox-notis
+- Aktiv legend-flagga: `updateActiveLegendFlags()` körs varje säsongslut (≥5 säsonger + ≥100 matcher)
 
 ### Övrigt
 - 12 fiktiva klubbar med SVG-emblem, arenanamn, klacknamn
@@ -202,7 +213,7 @@ Från THE_BOMB.md och SPEC_KLUBBUTVECKLING.md — idéer som INTE är i koden:
 | `docs/DECISIONS.md` | Arkitekturbeslut kronologiskt | Aktuell |
 | `docs/DESIGN_SYSTEM.md` | 20 designregler | OK |
 | `docs/KVAR.md` | Aktuell karta + pågående + parkerat | Aktuell |
-| `docs/HANDOVER_2026-04-26.md` | Senaste handover | Aktuell |
+| `docs/HANDOVER_2026-04-27.md` | Senaste handover | Aktuell |
 | `docs/STATUS.md` | Denna fil | Aktuell |
 | `docs/THE_BOMB.md` | Narrativ vision | Referens |
 | `docs/SPEC_KLUBBUTVECKLING.md` | Ekonomisk progression | Referens |

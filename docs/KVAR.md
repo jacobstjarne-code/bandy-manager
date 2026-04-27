@@ -1,16 +1,17 @@
 # BANDY MANAGER — KVAR
 
-**Datum:** 2026-04-26
+**Datum:** 2026-04-27
 **Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DECISIONS.md/DESIGN_SYSTEM.md är lästa.
 
 ---
 
-## AKTUELLT LÄGE (2026-04-26, kväll)
+## AKTUELLT LÄGE (2026-04-27, kväll)
 
 **Sprint 25-L:** ✅ Levererad + auditerad (commit `a6e24b4`).
 **Sprint 25-E:** ✅ Levererad + auditerad (commit `4362ebf`).
 **Sprint 26 — cross-system skandalreferenser:** ✅ Levererad + kod-verifierad audit (commits `11802e1` + `6bbf8ca`).
-**Sprint 27 — narrativ djup-paket:** 🟡 Pågående. Fas A + B (Opus-audit) klara, fas C utgår. Fas D + E (Code-impl) skickas till Code.
+**Sprint 27 — narrativ djup-paket:** ✅ Levererad. Fas D (legend-roller + kafferum-pooler) commit `be33b3b`, text-pass commit `a814314`, fas E (karriärs-tidslinje) ingår i `be33b3b`.
+**Sprint 28 — narrativ djup-paket 2:** 🟡 Pågående. Fas A (pension-impact morale + kapten-vakuum) commit `701044a` ✅, fas B (legend match-commentary + aktiv legend-flagga) commit `abee31c` ✅. **Fas C (skärmdump-audit, Opus-only) återstår.**
 
 **Motor-kalibrering kvarstår:** `awayWinPct` 43.9% vs 38.3% (−5.6pp), `playoff_final` mål/match 9.17 vs 7.00 (+2.17), `cornerGoalPct` 26.2% vs 22.2%. Ingen aktiv sprint mot dessa.
 
@@ -52,6 +53,16 @@ Sajt live: `https://jacobstjarne-code.github.io/bandy-manager/`
 | Findings-generator | ⏸ Parkerat per UI_SPRINT_INSTRUCTION |
 
 Nästa: skicka URL till Erik. Finding 005 (utvisningar, S011) är nästa naturliga ämne.
+
+---
+
+## KLART IDAG (2026-04-27)
+
+| Leverans | Commits | Detalj |
+|---------|---------|--------|
+| Sprint 28-A — pension-impact morale + kapten-vakuum | `701044a` | For-loop över retiredPlayerIds, shared seasons-beräkning, morale-hit kapten/legend, 3-variant inbox-narrativ, captainPlayerId → undefined |
+| Sprint 28-B — legend match-commentary + aktiv legend-flagga | `abee31c` | updateActiveLegendFlags(), 22 nya commentary-strängar (4 pooler), pickLegendCommentary(), assisterPlayerId-spårning, 70% override-check i mål/assist/räddning |
+| Taktisk audit — read-only rapport | — | Mekanisk vs parametrisk klassificering av alla taktiska dimensioner. 5 variationer motorn inte kan särskilja. |
 
 ---
 
@@ -621,11 +632,11 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 | `LESSONS.md` | 2026-04-22 (§2 uppdaterad) | Aktuell |
 | `DECISIONS.md` | 2026-04-21 | Aktuell |
 | `DESIGN_SYSTEM.md` | 2026-04-14 | OK |
-| `STATUS.md` | 2026-04-25 | Uppdaterad med Sprint 25-HT + 25h |
-| `KVAR.md` | 2026-04-26 | Denna fil |
-| `HANDOVER_2026-04-26.md` | 2026-04-26 | Senaste handover |
-| `HANDOVER_2026-04-25.md` | 2026-04-25 | Föregående |
-| `HANDOVER_2026-04-22.md` | 2026-04-22 | Arkiv |
+| `STATUS.md` | 2026-04-27 | Uppdaterad med Sprint 27 + 28-A/B |
+| `KVAR.md` | 2026-04-27 | Denna fil |
+| `HANDOVER_2026-04-27.md` | 2026-04-27 | Senaste handover |
+| `HANDOVER_2026-04-26.md` | 2026-04-26 | Föregående |
+| `HANDOVER_2026-04-25.md` | 2026-04-25 | Arkiv |
 | `SCORELINE_REFERENCE.md` | 2026-04-21 | Referens för 25b/c/d |
 | `SPRINT_25B_1_PENALTY_SEPARATION.md` | 2026-04-21 | Aktiv spec |
 | `TEXT_REVIEW_formations_2026-04-20.md` | 2026-04-20 (kväll) | GODKÄND |
@@ -634,10 +645,10 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 
 ## NÄSTA SESSION — FÖRESLAGEN ORDNING
 
-1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-04-26.md`.
-2. **Kvarstående motor-gap:** Välj nästa motorsprint:
+1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-04-27.md`.
+2. **Sprint 28-C** — skärmdump-vänlighet-audit (Opus-only, ~1h). Output: `docs/SCREENSHOT_AUDIT_2026-04-26.md`. Stäng Sprint 28 med `SPRINT_28_AUDIT.md`.
+3. **Kvarstående motor-gap:** Välj nästa motorsprint:
    - `awayWinPct` 43.9% vs 38.3% (−5.6pp) — källa oklar, kan kräva strukturell ändring
    - `cornerGoalPct` 26.2% vs 22.2% — eskalerar i slutspel, separat sprint
    - `playoff_final mål/match` 9.17 vs 7.00 (+2.17) — fas-konstant i Sprint 25d
-3. **Playtest-runda 4:** Skandaler (kafferum, klack, press, motståndarcoach), riskySponsorContract, WageOverrunWarning. Inget av Sprint 25h/26 är verifierat i live-spel.
-4. Fredagsjobb: utvidga `scrape-allsvenskan.mjs` med skott på mål / räddningar per teamID + `loggingQuality`-flagga.
+4. **Playtest-runda 4:** Skandaler (kafferum, klack, press, motståndarcoach), riskySponsorContract, WageOverrunWarning. Inget av Sprint 25h/26 är verifierat i live-spel. Nu även Sprint 27+28: legend-roller i kafferummet, morale-hit vid pension, legend commentary i matchen.
