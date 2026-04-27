@@ -8,6 +8,7 @@ import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
 import { MatchEventType, TacticMentality, TacticTempo, TacticPress, PlayerPosition } from '../../domain/enums'
 import { getRivalry } from '../../domain/data/rivalries'
+import { buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
 import { computePlayerRatings } from '../utils/matchRatings'
 import { playSound, isMuted, toggleMute } from '../audio/soundEffects'
 import { PhaseOverlay } from '../components/match/PhaseOverlay'
@@ -159,6 +160,9 @@ export function MatchLiveScreen() {
 
     const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
     const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
+    const homeClubObj = game.clubs.find(c => c.id === fixture.homeClubId)
+    const seasonCal = buildSeasonCalendar(fixture.season)
+    const liveSlot = seasonCal.find(s => s.matchday === fixture.matchday)
     const gen = simulateMatchStepByStep({
       fixture, homeLineup, awayLineup, homePlayers, awayPlayers,
       homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,
@@ -183,6 +187,10 @@ export function MatchLiveScreen() {
         s.affectedClubId === game.managedClubId &&
         s.type !== 'small_absurdity'
       ),
+      arenaName: homeClubObj?.arenaName,
+      isAnnandagen: !!liveSlot?.isAnnandagen,
+      isNyarsbandy: !!liveSlot?.isNyarsbandy,
+      isCupFinalhelgen: !!liveSlot?.isCupFinalhelgen,
     })
     const allSteps: MatchStep[] = []
     for (const step of gen) allSteps.push(step)

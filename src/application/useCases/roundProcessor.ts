@@ -49,6 +49,13 @@ import { processGameEvents, applyMecenatSpawn, processScandals } from './process
 import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
 import { applyRipples, mergeRippleDeltas } from '../../domain/services/rippleEffectService'
 import { applyMatchInjury, generateInjuryInboxItem } from '../../domain/services/matchInjuryService'
+import {
+  annandagsbandyInbox,
+  finaldagInboxPlaying,
+  finaldagInboxSpectator,
+  cupFinalInboxPlaying,
+  type SpecialDateContext,
+} from '../../domain/data/specialDateStrings'
 
 export type { AdvanceResult }
 
@@ -78,17 +85,28 @@ function generateSpecialDateInbox(
   matchday: number,
 ): InboxItem[] {
   const items: InboxItem[] = []
-  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
-  const opponentId = fixture.homeClubId === game.managedClubId ? fixture.awayClubId : fixture.homeClubId
-  const opponent = game.clubs.find(c => c.id === opponentId)
+  const isHome = fixture.homeClubId === game.managedClubId
+  const homeClub = game.clubs.find(c => c.id === fixture.homeClubId)
+  const awayClub = game.clubs.find(c => c.id === fixture.awayClubId)
+  const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
+
+  const ctx: SpecialDateContext = {
+    isHomePlayer: isHome,
+    homeClubName: homeClub?.name ?? '',
+    awayClubName: awayClub?.name ?? '',
+    arenaName: homeClub?.arenaName ?? 'arenan',
+    venueCity: homeClub?.shortName ?? '',
+    rivalryName: rivalry?.name,
+  }
 
   if (fixture.isFinaldag) {
+    const { subject, body } = finaldagInboxPlaying(ctx)
     items.push({
       id: `inbox_finaldag_${game.currentSeason}`,
       date: game.currentDate,
       type: InboxItemType.Playoff,
-      title: '🏆 SM-finalen',
-      body: `${managedClub?.name ?? 'Ni'} möter ${opponent?.name ?? 'motståndaren'} i SM-finalen i Västerås. Det finns inget större än detta.`,
+      title: subject,
+      body,
       isRead: false,
     })
     return items
@@ -98,38 +116,61 @@ function generateSpecialDateInbox(
   const slot = seasonCal.find(s => s.matchday === matchday)
 
   if (slot?.isAnnandagen) {
+    const { subject, body } = annandagsbandyInbox(ctx)
     items.push({
       id: `inbox_annandagen_match_${game.currentSeason}`,
       date: game.currentDate,
       type: InboxItemType.Derby,
-      title: '🎄 Annandagsbandyn nästa',
-      body: `Annandagen spelar ${managedClub?.name ?? 'ni'} hemma mot ${opponent?.name ?? 'motståndaren'}. Hela orten samlas på läktaren — den tradition som inte sviker.`,
+      title: subject,
+      body,
       isRead: false,
     })
-  } else if (slot?.isNyarsbandy) {
-    items.push({
-      id: `inbox_nyarsbandy_${game.currentSeason}`,
-      date: game.currentDate,
-      type: InboxItemType.Derby,
-      title: '🎆 Nyårsbandy',
-      body: `${managedClub?.name ?? 'Ni'} spelar nyårsafton mot ${opponent?.name ?? 'motståndaren'}. Avslag 13:15. Klacken firar in det nya året på läktaren.`,
-      isRead: false,
-    })
-  } else if (slot?.isCupFinalhelgen && fixture.isCup) {
-    const isFinal = fixture.roundNumber === 4
+  } else if (slot?.isCupFinalhelgen && fixture.isCup && fixture.roundNumber === 4) {
+    const { subject, body } = cupFinalInboxPlaying(ctx)
     items.push({
       id: `inbox_cupfinalhelg_${fixture.id}`,
       date: game.currentDate,
       type: InboxItemType.Derby,
-      title: isFinal ? '🏆 Cupfinalen' : '🏆 Cupsemifinalen',
-      body: isFinal
-        ? `${managedClub?.name ?? 'Ni'} är i cupfinalen mot ${opponent?.name ?? 'motståndaren'}. Bucklan är ett steg bort.`
-        : `${managedClub?.name ?? 'Ni'} möter ${opponent?.name ?? 'motståndaren'} i cupsemifinalen. Vinn och spela final imorgon.`,
+      title: subject,
+      body,
       isRead: false,
     })
   }
+  // Nyårsbandy: ingen inbox per spec
 
   return items
+}
+
+function generateSpecialDateInboxSpectator(game: SaveGame): InboxItem[] {
+  const smFinal = game.fixtures.find(f =>
+    f.isFinaldag &&
+    f.status !== 'completed' &&
+    f.homeClubId !== game.managedClubId &&
+    f.awayClubId !== game.managedClubId
+  )
+  if (!smFinal) return []
+
+  const alreadySent = game.inbox.some(i => i.id === `inbox_finaldag_spectator_${game.currentSeason}`)
+  if (alreadySent) return []
+
+  const homeClub = game.clubs.find(c => c.id === smFinal.homeClubId)
+  const awayClub = game.clubs.find(c => c.id === smFinal.awayClubId)
+  const ctx: SpecialDateContext = {
+    isHomePlayer: false,
+    homeClubName: homeClub?.name ?? '',
+    awayClubName: awayClub?.name ?? '',
+    arenaName: homeClub?.arenaName ?? 'arenan',
+    venueCity: homeClub?.shortName ?? '',
+  }
+  const { subject, body } = finaldagInboxSpectator(ctx)
+  return [{
+    id: `inbox_finaldag_spectator_${game.currentSeason}`,
+    date: game.currentDate,
+    type: InboxItemType.Playoff,
+    title: subject,
+    body,
+    isRead: false,
+  }]
 }
 
 function stripCompletedFixture(f: Fixture, managedFixtureId?: string, managedClubId?: string): Fixture {
@@ -547,6 +588,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         if (!game.inbox.some(i => i.id === item.id)) {
           newInboxItems.push(item)
         }
+      }
+    } else {
+      // Managed club not playing — check for SM-final spectator inbox
+      for (const item of generateSpecialDateInboxSpectator(game)) {
+        newInboxItems.push(item)
       }
     }
   }

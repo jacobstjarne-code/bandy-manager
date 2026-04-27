@@ -309,6 +309,10 @@ export interface StepByStepInput {
   ownScandalThisSeason?: boolean  // for supporter_scandal_recent commentary
   refStyle?: 'strict' | 'lenient' | 'inconsistent'
   refereeName?: string  // for opening commentary display
+  arenaName?: string
+  isAnnandagen?: boolean
+  isNyarsbandy?: boolean
+  isCupFinalhelgen?: boolean
   // Second-half restart fields (optional — omit for full match from step 0)
   startStep?: number
   initialHomeScore?: number

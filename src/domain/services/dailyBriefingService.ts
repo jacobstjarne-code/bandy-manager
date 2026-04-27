@@ -6,6 +6,15 @@ import { FixtureStatus } from '../enums'
 import { getCurrentAct } from './seasonActService'
 import { getSeasonPhase, type SeasonPhase } from '../data/seasonPhases'
 import { buildSeasonCalendar } from './scheduleGenerator'
+import {
+  annandagsbandyBriefing,
+  nyarsbandyBriefing,
+  finaldagBriefingPlaying,
+  finaldagBriefingSpectator,
+  cupFinalBriefingPlaying,
+  cupFinalBriefingSpectator,
+  type SpecialDateContext,
+} from '../data/specialDateStrings'
 
 const SEASON_MOOD: Record<SeasonPhase, string[]> = {
   pre_season: ['Ny säsong. Nya möjligheter.'],
@@ -156,26 +165,110 @@ export function generateBriefing(game: SaveGame): Briefing | null {
   // 0.5. Specialdatum — högprioriterat, visas direkt inför den speciella matchen
   const nextFixture = getNextManagedFixture(game)
   if (nextFixture) {
-    if (nextFixture.isFinaldag) {
-      const opponentId = nextFixture.homeClubId === game.managedClubId
-        ? nextFixture.awayClubId
-        : nextFixture.homeClubId
-      const opponent = game.clubs.find(c => c.id === opponentId)
-      return { text: `🏆 SM-FINALEN. Idag avgörs det. ${opponent?.name ?? 'Motståndaren'} väntar i Västerås.` }
-    }
+    const homeClub = game.clubs.find(c => c.id === nextFixture.homeClubId)
+    const awayClub = game.clubs.find(c => c.id === nextFixture.awayClubId)
+    const isHome = nextFixture.homeClubId === game.managedClubId
+    const rivalry = getRivalry(nextFixture.homeClubId, nextFixture.awayClubId)
     const seasonCal = buildSeasonCalendar(game.currentSeason)
     const nextSlot = seasonCal.find(s => s.matchday === nextFixture.matchday)
+
+    if (nextFixture.isFinaldag) {
+      // Check if we're playing (fixture exists for managed club) or spectating
+      const smFinalFixture = game.fixtures.find(f => f.isFinaldag && f.status !== 'completed')
+      const managedIsPlaying = smFinalFixture &&
+        (smFinalFixture.homeClubId === game.managedClubId || smFinalFixture.awayClubId === game.managedClubId)
+      const ctx: SpecialDateContext = {
+        isHomePlayer: isHome,
+        homeClubName: homeClub?.name ?? '',
+        awayClubName: awayClub?.name ?? '',
+        arenaName: homeClub?.arenaName ?? 'arenan',
+        venueCity: homeClub?.shortName ?? '',
+      }
+      const text = managedIsPlaying
+        ? finaldagBriefingPlaying(ctx, game.currentSeason, nextFixture.matchday)
+        : finaldagBriefingSpectator(ctx, game.currentSeason, nextFixture.matchday)
+      return { text }
+    }
+
     if (nextSlot?.isAnnandagen) {
-      return { text: `🎄 Annandagsbandyn. Hela orten på läktaren — den dag bandyt äger Sverige.` }
+      const ctx: SpecialDateContext = {
+        isHomePlayer: isHome,
+        homeClubName: homeClub?.name ?? '',
+        awayClubName: awayClub?.name ?? '',
+        arenaName: homeClub?.arenaName ?? 'arenan',
+        venueCity: homeClub?.shortName ?? '',
+        rivalryName: rivalry?.name,
+      }
+      return { text: annandagsbandyBriefing(ctx, game.currentSeason, nextFixture.matchday) }
     }
+
     if (nextSlot?.isNyarsbandy) {
-      return { text: `🎆 Nyårsbandy ikväll. Säsongens kortaste dag, avslag 13:15. Räkna med full läktare.` }
+      const tipoffH = nextSlot.tipoffHour
+      const tipoffStr = `${tipoffH}:00`
+      const ctx: SpecialDateContext = {
+        isHomePlayer: isHome,
+        homeClubName: homeClub?.name ?? '',
+        awayClubName: awayClub?.name ?? '',
+        arenaName: homeClub?.arenaName ?? 'arenan',
+        venueCity: homeClub?.shortName ?? '',
+        tipoffHour: tipoffStr,
+      }
+      return { text: nyarsbandyBriefing(ctx, game.currentSeason, nextFixture.matchday) }
     }
+
     if (nextSlot?.isCupFinalhelgen && nextFixture.isCup) {
-      return nextFixture.roundNumber === 4
-        ? { text: `🏆 Cupfinalen. En chans att lyfta bucklan.` }
-        : { text: `🏆 Cupsemifinalen. Vinn idag och du är i cupfinalen imorgon.` }
+      const isFinal = nextFixture.roundNumber === 4
+      const ctx: SpecialDateContext = {
+        isHomePlayer: isHome,
+        homeClubName: homeClub?.name ?? '',
+        awayClubName: awayClub?.name ?? '',
+        arenaName: homeClub?.arenaName ?? 'arenan',
+        venueCity: homeClub?.shortName ?? '',
+      }
+      if (isFinal) {
+        return { text: cupFinalBriefingPlaying(ctx, game.currentSeason, nextFixture.matchday) }
+      }
+      // Semifinal — check if spectator scenario (cup R3 involves the managed club)
+      return { text: cupFinalBriefingPlaying(ctx, game.currentSeason, nextFixture.matchday) }
     }
+  }
+
+  // Spectator: SM-final happening but managed club not playing
+  const smFinalToday = game.fixtures.find(f =>
+    f.isFinaldag &&
+    f.status !== 'completed' &&
+    f.homeClubId !== game.managedClubId &&
+    f.awayClubId !== game.managedClubId
+  )
+  if (smFinalToday) {
+    const homeC = game.clubs.find(c => c.id === smFinalToday.homeClubId)
+    const awayC = game.clubs.find(c => c.id === smFinalToday.awayClubId)
+    const ctx: SpecialDateContext = {
+      isHomePlayer: false,
+      homeClubName: homeC?.name ?? '',
+      awayClubName: awayC?.name ?? '',
+      arenaName: homeC?.arenaName ?? 'arenan',
+      venueCity: homeC?.shortName ?? '',
+    }
+    return { text: finaldagBriefingSpectator(ctx, game.currentSeason, smFinalToday.matchday) }
+  }
+
+  // Cup-finalhelgen spectator
+  const cupFinalToday = game.fixtures.find(f =>
+    f.isCup && f.roundNumber === 4 && f.status !== 'completed' &&
+    f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId
+  )
+  if (cupFinalToday) {
+    const homeC = game.clubs.find(c => c.id === cupFinalToday.homeClubId)
+    const awayC = game.clubs.find(c => c.id === cupFinalToday.awayClubId)
+    const ctx: SpecialDateContext = {
+      isHomePlayer: false,
+      homeClubName: homeC?.name ?? '',
+      awayClubName: awayC?.name ?? '',
+      arenaName: homeC?.arenaName ?? 'arenan',
+      venueCity: homeC?.shortName ?? '',
+    }
+    return { text: cupFinalBriefingSpectator(ctx, game.currentSeason, cupFinalToday.matchday) }
   }
 
   // 1. Derby?
