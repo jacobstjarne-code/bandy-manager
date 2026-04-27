@@ -15,6 +15,7 @@ import { ClubSelectionScreen } from '../screens/ClubSelectionScreen'
 import { IntroSequence } from '../screens/IntroSequence'
 import { GameShell, GameGuard } from './GameShell'
 import { DashboardScreen } from '../screens/DashboardScreen'
+import { PortalScreen } from '../screens/PortalScreen'
 import { SquadScreen } from '../screens/SquadScreen'
 import { MatchScreen } from '../screens/MatchScreen'
 import { MatchLiveScreen } from '../screens/MatchLiveScreen'
@@ -46,6 +47,12 @@ function BoardMeetingGuard() {
   return <BoardMeetingScreen />
 }
 
+function DashboardOrPortal() {
+  const game = useGameStore(s => s.game)
+  if (game?.portalEnabled) return <PortalScreen />
+  return <DashboardScreen />
+}
+
 export function AppRouter() {
   return (
     <BrowserRouter>
@@ -57,7 +64,7 @@ export function AppRouter() {
         <Route path="/new-game-legacy" element={<NewGameScreen />} />
         <Route path="/game" element={<GameShell />}>
           <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardScreen />} />
+          <Route path="dashboard" element={<DashboardOrPortal />} />
           <Route path="squad" element={<SquadScreen />} />
           <Route path="match" element={<MatchScreen />} />
           <Route path="match/live" element={<MatchLiveScreen />} />
