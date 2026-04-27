@@ -100,6 +100,7 @@ export function pickMatchProfileFromSeed(
   seed: number,
   opts: {
     isPlayoff?: boolean
+    isFinal?: boolean         // SM-final (isFinaldag === true) — staplas ovanpå isPlayoff
     hasRivalry?: boolean
     isHeavyWeather?: boolean  // HeavySnow or Thaw
     largeCaDiff?: boolean     // CA difference >= 15
@@ -117,6 +118,8 @@ export function pickMatchProfileFromSeed(
   if (opts.isHeavyWeather) { wDefensive += 15; wStandard -= 10; wOpen -= 5 }
   if (opts.hasRivalry)     { wChaotic += 10;  wDefensive += 5;  wStandard -= 10; wOpen -= 5 }
   if (opts.isPlayoff)      { wDefensive += 15; wStandard -= 5;  wOpen -= 10 }
+  // isFinal staplas ovanpå isPlayoff — SM-finaler ska vara markant mer defensiva (target 7.00 vs 9.28 reguljär)
+  if (opts.isFinal)        { wDefensive += 28; wStandard -= 18; wOpen -= 9; wChaotic -= 1 }
   if (opts.largeCaDiff)    { wOpen += 15;     wDefensive -= 10 }
 
   wDefensive = Math.max(1, wDefensive)
@@ -287,7 +290,7 @@ function* simulateMatchCore(
     awayLineup.tactic,
   )
   const largeCaDiff = Math.abs(homeEvalTemp.offenseScore - awayEvalTemp.offenseScore) >= 15
-  const profile = pickMatchProfileFromSeed(seed ?? 0, { isPlayoff, hasRivalry, isHeavyWeather, largeCaDiff })
+  const profile = pickMatchProfileFromSeed(seed ?? 0, { isPlayoff, isFinal: !!fixture.isFinaldag, hasRivalry, isHeavyWeather, largeCaDiff })
   const profileGoalMod = PROFILE_GOAL_MODS[profile]
 
   // Ref style (full mode only)

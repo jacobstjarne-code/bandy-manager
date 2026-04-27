@@ -179,7 +179,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   const homeEvalForProfile = evaluateSquad(homeStarters, homeLineup.tactic)
   const awayEvalForProfile = evaluateSquad(awayStarters, awayLineup.tactic)
   const largeCaDiff = Math.abs(homeEvalForProfile.offenseScore - awayEvalForProfile.offenseScore) >= 15
-  const matchProfile = pickMatchProfileFromSeed(seedVal, { isPlayoff: isPlayoff ?? false, hasRivalry, isHeavyWeather, largeCaDiff })
+  const matchProfile = pickMatchProfileFromSeed(seedVal, { isPlayoff: isPlayoff ?? false, isFinal: !!(fixture?.isFinaldag), hasRivalry, isHeavyWeather, largeCaDiff })
 
   const report: MatchReport = {
     playerRatings,
