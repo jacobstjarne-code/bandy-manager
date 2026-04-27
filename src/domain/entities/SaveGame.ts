@@ -57,6 +57,8 @@ export interface SaveGame {
 
   currentDate: string    // ISO date
   currentSeason: number
+  currentMatchday?: number   // Aktuell matchdag (för portal-seed)
+  portalEnabled?: boolean    // Feature flag — sätts till true när Portal är verifierad
 
   clubs: Club[]
   players: Player[]
