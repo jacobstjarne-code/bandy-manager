@@ -1,0 +1,111 @@
+---
+import Base from '../../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base
+  title="Finding 050 — Takhöjning till 17 (motor v1.2.0): takeffekt löst, hemmafördel exponeras"
+  description="MATCH_TOTAL_GOAL_CAP höjdes till 17 med GOAL_RATE_MOD=0.936. Takeffekten är löst (13-mål 5.1% mot 5.0%). Men cap-höjningen avslöjar att taket vid 13 kompenserade dolda kalibrerings-gap i hemmafördel och H2-balans."
+>
+  <div class="finding-layout">
+
+    <a href={`${base}/findings/`} class="back-link">← Alla findings</a>
+
+    <p class="finding-meta">Finding 050 · 26 april 2026</p>
+    <h1 class="finding-title">Takhöjning till 17 (motor v1.2.0)<br>Takeffekt löst — hemmafördel exponeras</h1>
+
+    <hr class="finding-divider" />
+
+    <div class="key-numbers">
+      <div class="key-number"><span class="key-number__value">5,1 %</span><span class="key-number__label">Matcher vid 13 mål (var 23,7 %)</span><span class="key-number__note">Elitserien: 5,0 % — i praktiken perfekt</span></div>
+      <div class="key-number"><span class="key-number__value">22,3 %</span><span class="key-number__label">Hörnmålsandel</span><span class="key-number__note">Elitserien: 22,2 % — nästan exakt</span></div>
+      <div class="key-number"><span class="key-number__value">+6,1 pp</span><span class="key-number__label">Oavgjort-gap efter fix</span><span class="key-number__note">17,7 % vs 11,6 % — var 14,2 % i v1.1.0</span></div>
+      <div class="key-number"><span class="key-number__value">−5,7 pp</span><span class="key-number__label">Hemmaseger-gap efter fix</span><span class="key-number__note">44,5 % vs 50,2 % — var 46,2 % i v1.1.0</span></div>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Bakgrund</p>
+      <p>Finding 049 identifierade att MATCH_TOTAL_GOAL_CAP=13 var ett legacy-värde som fastnade 23,7 % av matcher vid taket (Elitserien: 5,0 %). Värdet är empiriskt motiverat till 17 (99:e percentil i 1 124 Elitseriematcher). Finding 049 visade också att attack-multiplier ensam inte kan kompensera för cap-höjningens effekt — krävs en global GOAL_RATE_MOD på alla fem målvägar.</p>
+      <p>Motor v1.2.0 implementerar: <code>MATCH_TOTAL_GOAL_CAP = 17</code>, <code>GOAL_RATE_MOD = 0.936</code> (deriverat: stress-test med cap=17 och bas-rates gav 9,748 mål/match → 9,12 / 9,748 = 0,936).</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Före och efter — komplett kalibreringstabell</p>
+      <table>
+        <thead>
+          <tr><th>Mätvärde</th><th>v1.0.0</th><th>v1.1.0</th><th>v1.2.0</th><th>Elitserien</th><th>Delta v1.2.0</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Mål/match</td><td>9,37</td><td>9,29</td><td>9,28</td><td>9,12</td><td>+0,16 ✅</td></tr>
+          <tr><td>H2 mål%</td><td>54,0 %</td><td>54,0 %</td><td>56,2 %</td><td>54,2 %</td><td>+2,0 pp ⚠️</td></tr>
+          <tr><td>Hörnmål%</td><td>23,1 %</td><td>22,6 %</td><td>22,3 %</td><td>22,2 %</td><td>+0,1 pp ✅</td></tr>
+          <tr><td>Straffmål%</td><td>3,6 %</td><td>5,4 %</td><td>5,3 %</td><td>5,4 %</td><td>−0,1 pp ✅</td></tr>
+          <tr><td>Utvisningar/match</td><td>3,68</td><td>3,80</td><td>3,81</td><td>3,77</td><td>+0,04 ✅</td></tr>
+          <tr><td>Hemmaseger%</td><td>46,1 %</td><td>46,2 %</td><td>44,5 %</td><td>50,2 %</td><td>−5,7 pp ❌</td></tr>
+          <tr><td>Oavgjort%</td><td>14,4 %</td><td>14,2 %</td><td>17,7 %</td><td>11,6 %</td><td>+6,1 pp ❌</td></tr>
+          <tr><td>HT-ledare vinner%</td><td>75,0 %</td><td>75,2 %</td><td>73,1 %</td><td>78,1 %</td><td>−5,0 pp ⚠️</td></tr>
+          <tr><td>Matcher vid 13 mål</td><td>25,3 %</td><td>23,7 %</td><td>5,1 %</td><td>5,0 %</td><td>+0,1 pp ✅</td></tr>
+          <tr><td>Max mål/match</td><td>13</td><td>13</td><td>17</td><td>25</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad förbättrades</p>
+      <p><strong>Takeffekten är löst.</strong> Andelen matcher vid 13 totalmål sjönk från 23,7 % till 5,1 %, i linje med Elitseriens 5,0 %. Fördelningen av totalmål ser nu naturlig ut upp till 16 — cap vid 17 slår fortfarande (4,7 % vs reellt 1,2 %) men är en bråkdel av den gamla problemet.</p>
+      <p><strong>Hörnmålsandelen är nästan perfekt:</strong> 22,3 % mot 22,2 %. Det är den bäst kalibrerade metriken hittills.</p>
+      <p><strong>Straffmål, utvisningar och totalmål</strong> håller sig nära sina målvärden.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vad försämrades — och varför</p>
+      <p>Cap-höjningen exponerar ett dolt kalibreringsgap i hemmafördelen. Hemmaseger sjönk ytterligare från 46,2 % till 44,5 % (mot målvärdet 50,2 %), och oavgjort steg från 14,2 % till 17,7 % (mot 11,6 %). H2-målsandelen försämrades från 54,0 % till 56,2 %.</p>
+      <p><strong>Hypotes (ej verifierat):</strong> Det gamla taket på 13 fungerade som en oavsiktlig hemmafördels-kompensator. Hemmalag leder ofta vid halvlek — i matcher som närmade sig taket gynnade begränsningen det ledande laget (oftast hemmalaget) eftersom bortalaget inte kunde hämta in. Utan taket kan bortalag fortsätta att poängsätta, vilket skapar fler oavgjort och färre hemmasegrar.</p>
+      <p><strong>Hypotes (ej verifierat):</strong> H2-mål% ökar till 56,2 % för att de nytillkomna målen (de som tidigare blockerades av taket) tenderar att inträffa sent i matchen — oftast i 2:a halvlek när matcher är tätare och stressen är hög.</p>
+      <p>Korrigering av dessa mätvärden kräver att den explicita hemmafördelsvikten i motorns styrkeformel stärks. Det är motor v1.3.0.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Takeffektens kvarstående del</p>
+      <p>Det nya taket vid 17 slår fortfarande i 4,7 % av matcher (Elitserien: 1,2 %). Verkliga matcher med 18-25 mål förekommer i 0,9 % av fallen. Alternativen: höj taket ytterligare till 19-20, eller byt till en mjuk minskning av målsannolikheten vid höga totalmål istället för ett hårt tak. Det är ett designbeslut — inte en nödvändig kalibrering.</p>
+    </div>
+
+    <hr class="finding-divider" />
+
+    <div class="finding-section prose">
+      <p class="finding-section-label">Vidare frågor</p>
+      <ul>
+        <li>Stärkt homeAdvantage-vikt i motor v1.3.0 — hur stor justering krävs för 50,2 % hemmaseger?</li>
+        <li>Räcker hemmafördelsjustering ensam för att korrigera oavgjort (17,7 % → 11,6 %) och HT-ledare vinner (73,1 % → 78,1 %)?</li>
+        <li>Är H2-mål%-försämringen (56,2 % vs 54,2 %) en effekt av hemmafördelsbristen eller en separat mekanism?</li>
+        <li>Bör det nya taket höjas till 19-20 eller ersättas med en mjuk sannolikhetsminskning?</li>
+      </ul>
+    </div>
+
+    <div class="finding-feedback">
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+050:+%F0%9F%91%8D&body=Bra+finding!`}
+        class="feedback-btn feedback-btn--up"
+        target="_blank"
+        rel="noopener"
+      >👍</a>
+      <a
+        href={`https://github.com/jacobstjarne-code/bandy-manager/issues/new?labels=finding-feedback&title=Finding+050:+%F0%9F%91%8E&body=Vad+st%C3%A4mmer+inte?`}
+        class="feedback-btn feedback-btn--down"
+        target="_blank"
+        rel="noopener"
+      >👎</a>
+    </div>
+
+  </div>
+</Base>

@@ -1,5 +1,11 @@
 // matchCore.ts — Unified match simulation engine
-export const MATCH_ENGINE_VERSION = '1.1.1'
+export const MATCH_ENGINE_VERSION = '1.2.0'
+
+// Global goal-rate modifier. Multipliceras in i ALLA fem målvägar (attack,
+// transition, corner, freekick, penalty) för att bevara kalibrering när
+// MATCH_TOTAL_GOAL_CAP höjs. Deriverat empiriskt: stress-test med cap=17
+// och bas-rates gav 9.748 mål/match → GOAL_RATE_MOD = 9.12 / 9.748 = 0.936.
+const GOAL_RATE_MOD = 0.936
 
 // Två oberoende grindar i canScore(): båda måste vara uppfyllda
 // för att en målscen ska kunna konvertera.
@@ -12,7 +18,7 @@ export const MATCH_ENGINE_VERSION = '1.1.1'
 // matcher med målskillnad > 6, vilket bedöms försämra spelupplevelse i
 // Bandy Manager. Verkliga Elitseriematcher har >6 i marginal i 11,9 %
 // av fallen — detta är ett medvetet avkall. Bör testas via playtest.
-const MATCH_TOTAL_GOAL_CAP    = 13  // v1.1.1: oförändrat, höjs i v1.2.0
+const MATCH_TOTAL_GOAL_CAP    = 17  // empirisk 99:e percentil Elitserien (finding:049)
 const MATCH_GOAL_DIFFERENCE_CAP = 6  // designval, se kommentar ovan
 
 // Bumpa vid varje förändring som påverkar simuleringsutfall.
@@ -778,7 +784,7 @@ function* simulateMatchCore(
       let penaltyFiredThisStep = false
       if (chanceQuality > 0.40) {
         const scoreDiff = isHomeAttacking ? homeScore - awayScore : awayScore - homeScore
-        const penProb = 0.19 * getPenaltyPeriodMod(minute) * getScorelinePenaltyMod(scoreDiff)
+        const penProb = 0.19 * GOAL_RATE_MOD * getPenaltyPeriodMod(minute) * getScorelinePenaltyMod(scoreDiff)
         if (rand() < penProb) {
           const result = resolvePenaltyTrigger(attackingStarters, defendingStarters, isHomeAttacking, minute, attackingClubId, homeScore, awayScore)
           for (const ev of result.events) { stepEvents.push(ev); allEvents.push(ev) }
@@ -797,9 +803,8 @@ function* simulateMatchCore(
         if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
 
         const shotResult   = rand()
-        // matchEngine-calibrated multiplier (1.05, was 0.45 in matchStepByStep).
-        // Justeras i v1.2.0 när MATCH_TOTAL_GOAL_CAP höjs.
-        const goalThreshold = chanceQuality * 1.05 * (1 - defGK * 0.35) * stepGoalMod
+        // matchEngine-calibrated multiplier (1.05). GOAL_RATE_MOD kompenserar för cap-höjning.
+        const goalThreshold = chanceQuality * 1.05 * GOAL_RATE_MOD * (1 - defGK * 0.35) * stepGoalMod
 
         if (shotResult < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {
           if (isHomeAttacking) { onTargetHome++ } else { onTargetAway++ }
@@ -863,7 +868,7 @@ function* simulateMatchCore(
         if (isHomeAttacking) { shotsHome++ } else { shotsAway++ }
         const shotResult   = rand()
         // matchEngine-calibrated (0.58, was 0.28)
-        const goalThreshold = chanceQuality * 0.58 * (1 - defGK * 0.4) * 1.15 * stepGoalMod
+        const goalThreshold = chanceQuality * 0.58 * GOAL_RATE_MOD * (1 - defGK * 0.4) * 1.15 * stepGoalMod
 
         if (shotResult < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {
           if (isHomeAttacking) { onTargetHome++ } else { onTargetAway++ }
@@ -944,7 +949,7 @@ function* simulateMatchCore(
           (cornerChance - defenseResist) * 0.30 * stepGoalMod * cornerStateMod + cornerBase,
           cornerClampMin,
           cornerClampMax,
-        )
+        ) * GOAL_RATE_MOD
 
         const r = rand()
         if (r < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {
@@ -1007,7 +1012,7 @@ function* simulateMatchCore(
       const halfchancePlayoffBonus = isPlayoff ? 1.05 : 1.0
       const chanceQuality  = randRange(rand, 0.05, 0.25) * halfchancePlayoffBonus
       // matchEngine-calibrated (0.63, was 0.30)
-      const goalThreshold  = chanceQuality * 0.63 * stepGoalMod
+      const goalThreshold  = chanceQuality * 0.63 * GOAL_RATE_MOD * stepGoalMod
       const shotResult     = rand()
 
       if (shotResult < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {
@@ -1561,7 +1566,7 @@ function* simulateMatchCore(
     let otScorerPlayerId: string | undefined
 
     const chQ   = clamp(attAtt * 0.5 - defDef * 0.3 + randRange(rand, -0.15, 0.25), 0.05, 0.90)
-    const gT    = chQ * 0.40 * (1 - defGKot * 0.35) * otGoalMod
+    const gT    = chQ * 0.40 * GOAL_RATE_MOD * (1 - defGKot * 0.35) * otGoalMod
     const r     = rand()
 
     if (r < gT && canScore(isHA, homeScore, awayScore)) {
