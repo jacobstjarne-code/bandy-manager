@@ -5,19 +5,23 @@
 
 ---
 
-## AKTUELLT LÄGE (2026-04-28)
+## AKTUELLT LÄGE (2026-04-28, eftermiddag)
 
-**SPEC_INLEDNING_FAS_1:** ✅ Implementerad. Alla 7 komponenter + 4 datafiler + service. Pixel-audit klar (se `SPEC_PORTAL_FAS_1_PIXEL_AUDIT.md`). Citat-pooler är Opus-jobb — 3 citat/klubb levererade, mer tillkommer.
-**SPEC_SCENES_FAS_1:** ✅ Implementerad. SceneScreen, SundayTrainingScene, SMFinalVictoryScene, CoffeeRoomScene. Feature-flags borttagna. Pixel-audit klar.
-**SPEC_PORTAL_FAS_1:** ✅ Implementerad. Bag-of-cards (17 kort), PortalScreen, seasonal tone, 16 komponenter. Feature-flags borttagna. Pixel-audit klar. Token-isolering verifierad mot scene-systemet.
-**SPEC_KAFFERUMMET_FAS_1:** ✅ Implementerad. CoffeeRoomScene, CoffeeExchange, CoffeeRoomSecondary, getCoffeeRoomScene. Pixel-audit klar.
+**SPEC_INLEDNING_FAS_1:** ✅ Implementerad. Pixel-audit klar. Citat-pooler är Opus-jobb.
+**SPEC_SCENES_FAS_1:** ✅ Implementerad. Pixel-audit klar.
+**SPEC_PORTAL_FAS_1:** ✅ Implementerad. Token-isolering verifierad. Pixel-audit klar.
+**SPEC_KAFFERUMMET_FAS_1:** ✅ Implementerad. Pixel-audit klar.
+**SPEC_JOURNALIST_KAPITEL_A:** ✅ Implementerad (commit `2b41a8f`). Pixel-audit: 3 avvikelser fixade. 27 tester. Effekter: ±10% besöksintäkt, ±1 community.
+**SPEC_KLUBBMINNET_KAPITEL_B:** ✅ Implementerad (commit `bad787b`). Minne-flik i ClubScreen, 6 komponenter, 21 tester. Pixel-audit: inga avvikelser.
+**SPEC_SAESONGSSIGNATUR_KAPITEL_C:** ✅ Implementerad (commit `53b1fda`). 6 signaturer, reveal-scen, portal-kort, säsongsslut-rubrik, modifierare i weather/scandal/injury. Pixel-audit: inga avvikelser. 15 tester.
 
-**Pixel-audit-rapport:** `docs/sprints/SPEC_PORTAL_FAS_1_PIXEL_AUDIT.md`
-**Commits:** `feea364` (feature-flags), `f761545` (portal dark tokens), `e9a8024` (portal useEffect cleanup), `7173af3` (pixel-audit fixes: 4 avvikelser)
+**Kapitel C — saknar fortfarande:**
+- `rumorFrequencyMultiplier` + `incomingBidMultiplier` ej i rumorService/transferService
+- `underdogBoost` (dream_round) ej i matchEngine
 
-**Vad som SAKNAS för playtest-verifiering:**
-- Citat-pooler (SPEC_INLEDNING_FAS_1 §clubOfferQuotes) — 3/5 citat per klubb skrivna, inte fullständiga pooler
-- Pixel-jämförelse skärmdumpar i SPRINT_AUDIT.md — gjordes som kod-verifierad audit, inte visuell
+**Playtest:** Ingen av de levererade specarna är playtestad (prio 1 nästa session).
+
+**Pixel-audit-rapporter:** `docs/sprints/SPEC_PORTAL_FAS_1_PIXEL_AUDIT.md`, `SPRINT_JOURNALIST_KAPITEL_A_AUDIT.md`, `SPRINT_SAESONGSSIGNATUR_KAPITEL_C_AUDIT.md`
 
 ---
 
