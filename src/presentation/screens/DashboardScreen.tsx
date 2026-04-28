@@ -123,6 +123,11 @@ export function DashboardScreen() {
     })
     .sort((a, b) => a.matchday - b.matchday || (b.isCup ? 1 : 0) - (a.isCup ? 1 : 0))[0] ?? null
 
+  const scheduledFixturesAll = game.fixtures.filter(f => f.status === 'scheduled')
+  const nextSimEff = scheduledFixturesAll.length > 0
+    ? Math.min(...scheduledFixturesAll.map(f => f.matchday))
+    : Infinity
+
   const matchWeather = nextFixture ? (game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id) : undefined
   const opponent = nextFixture ? game.clubs.find(c => c.id === (nextFixture.homeClubId === game.managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId)) ?? null : null
   const isHome = nextFixture ? nextFixture.homeClubId === game.managedClubId : false
@@ -365,7 +370,7 @@ export function DashboardScreen() {
     const hasCriticalEvent = (game!.pendingEvents ?? []).some(e => !e.resolved && e.type !== 'pressConference')
     if (hasCriticalEvent) return 'event'
     if (game!.pendingWeeklyDecision) return 'weekly_decision'
-    if (nextFixture && !game!.lineupConfirmedThisRound) return 'match'
+    if (nextFixture && nextFixture.matchday <= nextSimEff && !game!.lineupConfirmedThisRound) return 'match'
     if (game!.trainerArc?.current === 'crisis') return 'arc'
     const lastWasSpecial = lastCompletedFixture && (() => {
       const isHome = lastCompletedFixture.homeClubId === game!.managedClubId
