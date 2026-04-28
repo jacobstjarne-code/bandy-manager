@@ -90,20 +90,21 @@ export function OffersView({ offers, onSelect, onShowAll }: Props) {
           style={{
             display: 'block',
             textAlign: 'center',
-            background: 'transparent',
-            border: '1px dashed var(--border)',
+            background: 'none',
+            border: 'none',
             color: 'var(--text-muted)',
-            padding: 12,
-            borderRadius: 6,
-            marginTop: 8,
+            padding: '12px 0',
+            marginTop: 4,
             fontSize: 11,
             cursor: 'pointer',
             width: '100%',
             fontFamily: 'var(--font-body)',
-            transition: 'all 0.2s',
+            textDecoration: 'underline',
+            textDecorationColor: 'var(--border)',
+            textUnderlineOffset: 3,
           }}
         >
-          📋 Visa alla 12 klubbar i bandysverige
+          Visa alla 12 klubbar i bandysverige
         </button>
       </div>
     </div>

@@ -14,7 +14,6 @@ interface Props {
 
 export function OfferCard({ offer, clubName, region, extendedInfo, quote, onSelect }: Props) {
   const displayText = quote ? quote.text : `"${extendedInfo.briefDescription}"`
-  const displayAttrib = quote ? quote.attribution : 'Klubben, generisk'
 
   return (
     <div
@@ -57,9 +56,6 @@ export function OfferCard({ offer, clubName, region, extendedInfo, quote, onSele
         }}
       >
         {displayText}
-        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6, fontStyle: 'normal', fontFamily: 'var(--font-body)' }}>
-          — {displayAttrib}
-        </div>
       </div>
 
       <div style={{ display: 'flex', gap: 14, paddingTop: 10, borderTop: '1px solid var(--bg-leather)', fontSize: 10, color: 'var(--text-muted)' }}>

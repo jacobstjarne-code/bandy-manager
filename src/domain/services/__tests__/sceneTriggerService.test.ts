@@ -16,7 +16,6 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
     currentDate: '2026-10-04',
     currentSeason: 1,
     currentMatchday: 1,
-    scenesEnabled: true,
     clubs: [],
     players: [],
     fixtures: [],
@@ -76,12 +75,6 @@ describe('sceneTriggerService — söndagsträningen', () => {
   it('triggar inte på matchday 3', () => {
     const g = makeGame({ currentSeason: 1, currentMatchday: 3 })
     expect(shouldTriggerSundayTraining(g)).toBe(false)
-  })
-
-  it('triggar inte när scenesEnabled är false', () => {
-    const g = makeGame({ scenesEnabled: false })
-    expect(shouldTriggerSundayTraining(g)).toBe(false)
-    expect(detectSceneTrigger(g)).toBe(null)
   })
 
   it('triggar inte när redan visad', () => {

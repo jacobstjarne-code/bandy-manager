@@ -29,7 +29,6 @@ export function detectSceneTrigger(game: SaveGame): SceneId | null {
 }
 
 export function shouldTriggerSundayTraining(game: SaveGame): boolean {
-  if (!game.scenesEnabled) return false
   if (game.currentSeason !== 1) return false
   const matchday = game.currentMatchday ?? 0
   if (matchday > 2) return false
@@ -38,7 +37,6 @@ export function shouldTriggerSundayTraining(game: SaveGame): boolean {
 }
 
 export function shouldTriggerSMFinalVictory(game: SaveGame): boolean {
-  if (!game.scenesEnabled) return false
   if ((game.shownScenes ?? []).includes('sm_final_victory')) return false
 
   const managedFixtures = game.fixtures.filter(
@@ -67,7 +65,6 @@ export function shouldTriggerSMFinalVictory(game: SaveGame): boolean {
 }
 
 export function shouldTriggerCoffeeRoom(game: SaveGame): boolean {
-  if (!game.scenesEnabled) return false
   // Kräver riktig data — om coffeeRoomService inte hittar något att visa, trigga inte
   if (getCoffeeRoomScene(game) === null) return false
 

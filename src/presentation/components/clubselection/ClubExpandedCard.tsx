@@ -79,9 +79,6 @@ export function ClubExpandedCard({
         }}
       >
         {displayQuote ? displayQuote.text : `"${fallbackText}"`}
-        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4, fontStyle: 'normal', fontFamily: 'var(--font-body)' }}>
-          — {displayQuote ? displayQuote.attribution : 'Klubben, generisk'}
-        </div>
       </div>
 
       <button

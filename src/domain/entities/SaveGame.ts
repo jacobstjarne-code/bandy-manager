@@ -59,10 +59,7 @@ export interface SaveGame {
   currentDate: string    // ISO date
   currentSeason: number
   currentMatchday?: number   // Aktuell matchdag (för portal-seed)
-  portalEnabled?: boolean    // Feature flag — sätts till true när Portal är verifierad
-
   // Scene-system (SPEC_SCENES_FAS_1 + SPEC_KAFFERUMMET_FAS_1)
-  scenesEnabled?: boolean              // Feature flag för scene-systemet
   pendingScene?: PendingScene          // Sätts av sceneTriggerService
   shownScenes?: SceneId[]              // Permanent historik (gäller ej recurring coffee_room)
   sceneChoices?: Record<string, string> // Spelarens val per sceneId

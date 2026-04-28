@@ -26,7 +26,6 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
     currentDate: '2026-10-15',
     currentSeason: 2026,
     currentMatchday: 7,
-    portalEnabled: true,
     clubs: [],
     players: [],
     league: { id: 'l1', name: 'Test', clubs: [] } as never,

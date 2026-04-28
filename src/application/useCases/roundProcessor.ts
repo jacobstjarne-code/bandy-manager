@@ -1199,7 +1199,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   updatedGame = flagsResult.updatedGame
 
   // Scene-trigger (SPEC_SCENES_FAS_1) — sätter pendingScene som AppRouter plockar upp
-  if (updatedGame.scenesEnabled && !updatedGame.pendingScene) {
+  if (!updatedGame.pendingScene) {
     const sceneId = detectSceneTrigger(updatedGame)
     if (sceneId) {
       const isRecurring = sceneId === 'coffee_room'

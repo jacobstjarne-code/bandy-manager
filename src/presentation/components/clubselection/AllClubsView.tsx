@@ -14,8 +14,6 @@ interface Props {
 // Region-ordning norr → söder
 const REGION_ORDER = ['Norrbotten', 'Gästrikland', 'Dalarna', 'Västmanland', 'Värmland', 'Uppland', 'Södermanland', 'Småland', 'Skåne']
 
-type Alignment = 'left' | 'center' | 'right'
-const ALIGNMENTS: Alignment[] = ['left', 'center', 'right']
 
 export function AllClubsView({ onSelect, onBack }: Props) {
   const [selectedClubId, setSelectedClubId] = useState<string | null>(null)
@@ -70,13 +68,13 @@ export function AllClubsView({ onSelect, onBack }: Props) {
                 color: 'var(--accent)',
                 opacity: 0.6,
                 marginBottom: 6,
-                padding: '0 4px',
+                textAlign: 'center',
               }}
             >
               {region}
             </div>
-            {clubs.map((club, i) => {
-              const alignment = ALIGNMENTS[i % ALIGNMENTS.length]
+            {clubs.map((club) => {
+              const alignment: 'center' = 'center'
               const extInfo = CLUB_EXTENDED_INFO[club.id]
               const quotePool = CLUB_OFFER_QUOTES[club.id] ?? []
               const quote = quotePool.length > 0 ? quotePool[0] : null
