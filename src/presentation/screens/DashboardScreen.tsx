@@ -588,7 +588,7 @@ export function DashboardScreen() {
                 <span style={{ fontSize: 13, width: 20 }}>📊</span>
                 <span style={{ fontSize: 12, color: 'var(--text-muted)', flex: 1 }}>Tabell</span>
                 <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {standing.position}:a · {standing.points}p
+                  {standing.played === 0 ? '– · –' : `${standing.position}:a · ${standing.points}p`}
                 </span>
               </div>
             )}
@@ -599,10 +599,17 @@ export function DashboardScreen() {
                 {formatFinanceAbs(finances)}
               </span>
             </div>
-            <div onClick={() => navigate('/game/club', { state: { tab: 'orten' } })} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', cursor: 'pointer' }}>
+            <div onClick={() => navigate('/game/club', { state: { tab: 'orten' } })} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}>
               <span style={{ fontSize: 13, width: 20 }}>🏘</span>
               <span style={{ fontSize: 12, color: 'var(--text-muted)', flex: 1 }}>Orten</span>
               <span style={{ fontSize: 12, fontWeight: 600, color: csColor(cs) }}>CS {cs}</span>
+            </div>
+            <div onClick={() => navigate('/game/squad')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', cursor: 'pointer' }}>
+              <span style={{ fontSize: 13, width: 20 }}>👥</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)', flex: 1 }}>Trupp</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: injuredCount > 0 ? 'var(--danger)' : 'var(--text-primary)' }}>
+                {readyCount} redo{injuredCount > 0 ? ` · ${injuredCount} skadad${injuredCount > 1 ? 'e' : ''}` : ''}
+              </span>
             </div>
           </div>
         )}
@@ -739,6 +746,55 @@ export function DashboardScreen() {
               <p style={{ fontSize: 9, color: 'var(--warning)', marginTop: 3, fontFamily: 'var(--font-body)' }}>
                 ⚠️ Skum sponsor aktiv — risk mognar omg {game.riskySponsorContract.riskMaturityRound}
               </p>
+            )}
+          </div>
+
+          {/* Trupp */}
+          <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/squad')}>
+            <SectionLabel style={{ marginBottom: 6 }}>👥 Trupp</SectionLabel>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+              <span style={{ fontSize: 22, fontWeight: 700, color: injuredCount > 0 ? 'var(--warning)' : 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
+                {readyCount}
+              </span>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>redo</span>
+            </div>
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3, fontFamily: 'var(--font-body)' }}>
+              Form {avgForm} · Kond {avgFitness}
+            </p>
+            {injuredCount > 0 && (
+              <p style={{ fontSize: 10, color: 'var(--danger)', marginTop: 2, fontFamily: 'var(--font-body)' }}>
+                {injuredCount} skadad{injuredCount > 1 ? 'e' : ''}
+              </p>
+            )}
+          </div>
+
+          {/* Säsong / mål */}
+          <div className="card-sharp" style={{ padding: '8px 10px', cursor: 'pointer' }} onClick={() => navigate('/game/tabell')}>
+            <SectionLabel style={{ marginBottom: 6 }}>🥅 Säsong</SectionLabel>
+            {standing && standing.played > 0 ? (
+              <>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                  <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
+                    {standing.goalsFor}
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-display)' }}>–</span>
+                  <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-secondary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
+                    {standing.goalsAgainst}
+                  </span>
+                </div>
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3, fontFamily: 'var(--font-body)' }}>
+                  mål · {standing.wins}V {standing.draws}O {standing.losses}F
+                </p>
+              </>
+            ) : (
+              <>
+                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3, fontFamily: 'var(--font-display)' }}>
+                  Säsongen börjar
+                </p>
+                <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, fontFamily: 'var(--font-body)' }}>
+                  Statistik fylls på
+                </p>
+              </>
             )}
           </div>
         </div>}
