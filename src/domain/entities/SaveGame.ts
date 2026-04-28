@@ -1,4 +1,5 @@
 import type { PendingScreen } from '../enums'
+import type { SeasonSignature } from './SeasonSignature'
 import type { Club } from './Club'
 import type { Player } from './Player'
 import type { League } from './League'
@@ -326,6 +327,11 @@ export interface SaveGame {
   // Sprint 25h — Lager 3: Licensnämnden
   licenseStatus?: import('../services/licenseService').LicenseStatus
   consecutiveLossSeasons?: number      // consecutive seasons with net deficit
+
+  // Säsongssignatur (SPEC_SAESONGSSIGNATUR_KAPITEL_C)
+  currentSeasonSignature?: SeasonSignature
+  pastSeasonSignatures?: SeasonSignature[]
+  shownSeasonSignatureRevealSeason?: number  // season when reveal was last shown
 
   // Sprint 25h — Lager 2: Egna beslut med risk
   wageBudgetOverrunRounds?: number     // consecutive rounds above wageBudget

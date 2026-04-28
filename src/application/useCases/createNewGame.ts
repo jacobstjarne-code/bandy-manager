@@ -26,6 +26,7 @@ import { generateAICoaches } from '../../domain/services/aiCoachService'
 import { generateAssistantCoach } from '../../domain/services/assistantCoachService'
 import { updatePlayerAvailability } from '../../domain/services/playerAvailabilityService'
 import { generateReferees } from '../../domain/services/refereeService'
+import { createSeasonSignature } from '../../domain/services/seasonSignatureService'
 
 function pickRandom<T>(arr: T[], rand: () => number): T {
   return arr[Math.floor(rand() * arr.length)]
@@ -393,6 +394,8 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     recentMoments: [],
     referees: generateReferees(),
     refereeRelations: [],
+    currentSeasonSignature: createSeasonSignature({ clubs: clubsFixed, scandalHistory: [], currentSeason: season } as unknown as import('../../domain/entities/SaveGame').SaveGame, mulberry32((input.seed ?? 42) + season * 1337 + 99)),
+    pastSeasonSignatures: [],
   }
 
   const playersWithAvailability = updatePlayerAvailability(game)

@@ -1172,6 +1172,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         homeClub,
         f.id,
         baseSeed + 50000 + i * 7919,
+        game.currentSeasonSignature,
       )
       nextWeathers.push(weather)
     }

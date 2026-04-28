@@ -3,6 +3,7 @@ import type { SeasonSummary } from '../entities/SeasonSummary'
 import type { Fixture } from '../entities/Fixture'
 import { ClubExpectation, FixtureStatus, MatchEventType, PlayoffRound } from '../enums'
 import { getRivalry } from '../data/rivalries'
+import { summarizeSignature } from './seasonSignatureService'
 
 function generateStoryTriggers(game: SaveGame): SeasonSummary['storyTriggers'] {
   const managedClubId = game.managedClubId
@@ -595,5 +596,8 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     communityStandingStart: game.communityStanding ?? 50,
     communityStandingEnd: communityStandingEnd ?? game.communityStanding ?? 50,
     communityHighlights: [],
+    signatureRubric: game.currentSeasonSignature
+      ? summarizeSignature(game.currentSeasonSignature)
+      : undefined,
   }
 }

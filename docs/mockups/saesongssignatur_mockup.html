@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Säsongens signatur — mock</title>
+<style>
+  :root {
+    --bg: #1a1612;
+    --bg-surface: #221d18;
+    --bg-elevated: #2a241e;
+    --bg-dark: #0f0c09;
+    --bg-deepdark: #08060a;
+    --bg-leather: #1f1a14;
+    --bg-dark-elevated: #14110d;
+    --bg-scene: #14110d;
+    --bg-scene-deep: #08060a;
+    --border: #3a322a;
+    --border-dark: #2a241e;
+    --text-primary: #e8e0d0;
+    --text-secondary: #b8ad9a;
+    --text-muted: #7a7060;
+    --text-light: #f0e8d8;
+    --text-light-secondary: #c8bda8;
+    --accent: #b8884c;
+    --accent-dark: #8b6638;
+    --accent-deep: #6b4d28;
+    --accent-glow: #d4a060;
+    --success: #5a8c4a;
+    --danger: #a04848;
+    --gold: #d4a460;
+    --ice: #6a8aa0;
+    --warm: #8c6e3a;
+    --cold: #4a6680;
+    --font-display: Georgia, serif;
+    --font-body: -apple-system, system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0806;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  h1.title {
+    max-width: 430px;
+    margin: 0 auto 8px;
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--text-light);
+    font-weight: 700;
+  }
+  h2.subtitle {
+    max-width: 430px;
+    margin: 0 auto 20px;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .scenario-picker {
+    max-width: 430px;
+    margin: 0 auto 20px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .scenario-picker button {
+    flex: 1;
+    min-width: 0;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 10px;
+    font-family: var(--font-body);
+    transition: all 0.2s;
+  }
+  .scenario-picker button:hover { border-color: var(--accent); color: var(--accent); }
+  .scenario-picker button.active {
+    background: var(--accent-deep);
+    border-color: var(--accent);
+    color: var(--text-light);
+  }
+
+  .phone {
+    max-width: 430px;
+    margin: 0 auto;
+    background: var(--bg);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    min-height: 740px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── REVEAL-SCEN ───────────────────────────── */
+
+  .scene-frame {
+    background: var(--bg-scene-deep);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-light);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Atmosfär-textur per signatur */
+  .scene-frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .scene-frame.cold::before {
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(74, 102, 128, 0.10) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 80%, rgba(74, 102, 128, 0.08) 0%, transparent 60%);
+  }
+  .scene-frame.scandal::before {
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(160, 72, 72, 0.08) 0%, transparent 60%);
+  }
+  .scene-frame.transfer::before {
+    background:
+      radial-gradient(ellipse at 60% 40%, rgba(212, 164, 96, 0.10) 0%, transparent 60%);
+  }
+  .scene-frame.injury::before {
+    background:
+      radial-gradient(ellipse at 40% 50%, rgba(184, 136, 76, 0.06) 0%, transparent 70%);
+  }
+  .scene-frame.dream::before {
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(212, 164, 96, 0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, rgba(184, 136, 76, 0.08) 0%, transparent 60%);
+  }
+
+  .genre-tag {
+    text-align: center;
+    padding: 28px 0 8px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--accent);
+    opacity: 0.7;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+  }
+
+  .scene-emoji {
+    text-align: center;
+    font-size: 64px;
+    padding: 24px 0 12px;
+    opacity: 0.95;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 0 18px rgba(212, 164, 96, 0.18));
+  }
+
+  .scene-title {
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-light);
+    letter-spacing: 4px;
+    padding: 0 24px 8px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .scene-subtitle {
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-style: italic;
+    color: var(--text-light-secondary);
+    padding: 0 32px 24px;
+    line-height: 1.4;
+    position: relative;
+    z-index: 1;
+  }
+
+  .scene-body {
+    flex: 1;
+    padding: 8px 32px 16px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-light-secondary);
+    line-height: 1.7;
+    position: relative;
+    z-index: 1;
+  }
+
+  .scene-cta {
+    padding: 16px 20px 28px;
+    position: relative;
+    z-index: 1;
+  }
+  .scene-cta button {
+    width: 100%;
+    padding: 14px;
+    background: var(--bg-dark-elevated);
+    color: var(--text-light);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-body);
+  }
+  .scene-cta button:hover {
+    background: var(--accent-deep);
+    border-color: var(--accent);
+  }
+
+  /* ─── PORTAL-KORT ───────────────────────────── */
+
+  .portal-frame {
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .portal-context-label {
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  .portal-primary-stub {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: 0.5;
+  }
+  .portal-primary-stub .stub-title {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-light);
+    font-weight: 600;
+  }
+  .portal-primary-stub .stub-subtitle {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .portal-primary-stub .stub-cta {
+    font-size: 11px;
+    color: var(--accent);
+  }
+
+  .portal-secondary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  /* SIGNATURE SECONDARY CARD */
+  .signature-secondary {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: all 0.2s;
+    grid-column: span 2;
+  }
+  .signature-secondary:hover {
+    border-color: var(--accent);
+  }
+  .signature-secondary.cold       { border-left: 2px solid var(--cold); }
+  .signature-secondary.scandal    { border-left: 2px solid var(--danger); }
+  .signature-secondary.transfer   { border-left: 2px solid var(--gold); }
+  .signature-secondary.injury     { border-left: 2px solid var(--warm); }
+  .signature-secondary.dream      { border-left: 2px solid var(--accent-glow); }
+
+  .ss-row-1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ss-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .ss-name .emoji {
+    font-size: 16px;
+    letter-spacing: normal;
+  }
+
+  .ss-tag {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .ss-fact {
+    font-size: 10.5px;
+    color: var(--text-secondary);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  .ss-fact .strong {
+    color: var(--text-light);
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  /* Dimmade andra-kort */
+  .other-secondary {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 12px;
+    opacity: 0.4;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .other-secondary .os-label {
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .other-secondary .os-value {
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--text-light);
+  }
+
+  /* ─── SÄSONGSSAMMANFATTNING ──────────────────── */
+
+  .summary-frame {
+    flex: 1;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .summary-context {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .summary-rubric {
+    background: var(--bg-leather);
+    border-left: 3px solid var(--accent);
+    padding: 16px 18px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 24px;
+  }
+  .summary-rubric .rubric-emoji {
+    font-size: 22px;
+    margin-bottom: 6px;
+    opacity: 0.9;
+  }
+  .summary-rubric .rubric-text {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--text-light);
+    line-height: 1.4;
+  }
+  .summary-rubric .rubric-text .accent {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .summary-section {
+    margin-bottom: 16px;
+  }
+  .summary-section .lbl {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .summary-section .val {
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.4;
+  }
+
+  .vy { display: none; }
+  .vy.active { display: flex; flex-direction: column; flex: 1; }
+</style>
+</head>
+<body>
+
+<h1 class="title">Säsongens signatur — mock</h1>
+<h2 class="subtitle">
+  Sex signaturer slumpas vid säsongsstart. "Lugn säsong" (50%) visar ingen scen.
+  De andra fem visas som reveal-scen, påminns om i Portal, rubriceras i SeasonSummary.
+</h2>
+
+<div class="scenario-picker">
+  <button class="active" data-vy="reveal-cold">Reveal · Köldvinter</button>
+  <button data-vy="reveal-scandal">Reveal · Skandal</button>
+  <button data-vy="reveal-transfer">Reveal · Transfer</button>
+  <button data-vy="reveal-injury">Reveal · Skadekurva</button>
+  <button data-vy="reveal-dream">Reveal · Drömrunda</button>
+  <button data-vy="portal">Portal-kort</button>
+  <button data-vy="summary">Säsongsslut-rubrik</button>
+</div>
+
+<div class="phone">
+
+  <!-- ─── REVEAL: Köldvinter ─── -->
+  <div class="vy active" id="reveal-cold">
+    <div class="scene-frame cold">
+      <div class="genre-tag">⬩ I DETTA ÖGONBLICK ⬩</div>
+      <div class="scene-emoji">🌨</div>
+      <div class="scene-title">KÖLDVINTERN</div>
+      <div class="scene-subtitle">Vintern ser ut att bli kallare än vanligt.</div>
+      <div class="scene-body">
+        Långtidsprognosen pekar på minusgrader långt in i mars. Tre-gånger-trettio är att vänta. Klubborna har redan beställt fler klubbor.
+      </div>
+      <div class="scene-cta">
+        <button>Då kör vi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── REVEAL: Skandalsäsong ─── -->
+  <div class="vy" id="reveal-scandal">
+    <div class="scene-frame scandal">
+      <div class="genre-tag">⬩ I DETTA ÖGONBLICK ⬩</div>
+      <div class="scene-emoji">📰</div>
+      <div class="scene-title">SKANDALSÄSONGEN</div>
+      <div class="scene-subtitle">Förbundet är skakat innan säsongen börjat.</div>
+      <div class="scene-body">
+        Fyra klubbar har redan haft offentliga gräl i sommar. Lokaltidningarna kommer skriva om allt utom bandyn. Fokusera på spelet.
+      </div>
+      <div class="scene-cta">
+        <button>Vi håller oss utanför</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── REVEAL: Transfer ─── -->
+  <div class="vy" id="reveal-transfer">
+    <div class="scene-frame transfer">
+      <div class="genre-tag">⬩ I DETTA ÖGONBLICK ⬩</div>
+      <div class="scene-emoji">💼</div>
+      <div class="scene-title">HET TRANSFERMARKNAD</div>
+      <div class="scene-subtitle">Pengarna har börjat flöda i ligan.</div>
+      <div class="scene-body">
+        Sponsorer har sökt sig till bandyn och plötsligt finns det budgetar att räkna med. Telefonen kommer ringa. Fönstret kommer stänga med dramatik.
+      </div>
+      <div class="scene-cta">
+        <button>Sätt en plan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── REVEAL: Skadekurva ─── -->
+  <div class="vy" id="reveal-injury">
+    <div class="scene-frame injury">
+      <div class="genre-tag">⬩ I DETTA ÖGONBLICK ⬩</div>
+      <div class="scene-emoji">🩹</div>
+      <div class="scene-title">SKADEKURVAN</div>
+      <div class="scene-subtitle">Mellansäsongens skadeperiod blir tuff.</div>
+      <div class="scene-body">
+        Höstens första hårda matcher har redan tagit ut sitt — fysioterapeuterna varnar för kommande veckor. Akademin behöver kliva fram.
+      </div>
+      <div class="scene-cta">
+        <button>Förbered laget</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── REVEAL: Drömrunda ─── -->
+  <div class="vy" id="reveal-dream">
+    <div class="scene-frame dream">
+      <div class="genre-tag">⬩ I DETTA ÖGONBLICK ⬩</div>
+      <div class="scene-emoji">✨</div>
+      <div class="scene-title">DRÖMRUNDAN</div>
+      <div class="scene-subtitle">Småklubbarna spelar över sin förmåga.</div>
+      <div class="scene-body">
+        Något har hänt i bandyn. Underdogs vinner. Storlagen tappar oväntat. Det här är säsongen där allt kan hända — också för er.
+      </div>
+      <div class="scene-cta">
+        <button>Vi tar vår chans</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── PORTAL-KORT ─── -->
+  <div class="vy" id="portal">
+    <div class="portal-frame">
+      <div class="portal-context-label">⬩ PORTAL · OMGÅNG 9 ⬩</div>
+
+      <div class="portal-primary-stub">
+        <div>
+          <div class="stub-title">Forsbacka — Karlsborg</div>
+          <div class="stub-subtitle">Hemma · söndag 14:00</div>
+        </div>
+        <div class="stub-cta">→</div>
+      </div>
+
+      <div class="portal-secondary-grid">
+        <div class="signature-secondary cold">
+          <div class="ss-row-1">
+            <div class="ss-name"><span class="emoji">🌨</span>KÖLDVINTERN</div>
+            <div class="ss-tag">aktiv signatur</div>
+          </div>
+          <div class="ss-fact"><span class="strong">2 av 8</span> matcher har spelats i 3×30 hittills.</div>
+        </div>
+
+        <div class="other-secondary">
+          <div class="os-label">📊 Tabell</div>
+          <div class="os-value">5:a · 11p</div>
+        </div>
+        <div class="other-secondary">
+          <div class="os-label">💰 Kassa</div>
+          <div class="os-value">340 tkr</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── SÄSONGSSLUT-RUBRIK ─── -->
+  <div class="vy" id="summary">
+    <div class="summary-frame">
+      <div class="summary-context">⬩ Säsong 2027-28 ⬩</div>
+
+      <div class="summary-rubric">
+        <div class="rubric-emoji">🌨</div>
+        <div class="rubric-text">
+          Detta blev <span class="accent">köldvintern 2027</span> — 9 matcher i 3×30, 4 inställda matcher, isen höll till slutet av mars.
+        </div>
+      </div>
+
+      <div class="summary-section">
+        <div class="lbl">Slutplacering</div>
+        <div class="val">3:a · 27 poäng — högsta hittills</div>
+      </div>
+
+      <div class="summary-section">
+        <div class="lbl">Toppscorer</div>
+        <div class="val">Staffan Henriksson — 14 mål</div>
+      </div>
+
+      <div class="summary-section">
+        <div class="lbl">Årets match</div>
+        <div class="val">Forsbacka 4–3 Söderfors (Omg 18) — derbyseger efter 3×30</div>
+      </div>
+
+      <div class="summary-section">
+        <div class="lbl">Övriga signaturer i framtid</div>
+        <div class="val" style="font-size: 11px; color: var(--text-muted); font-style: italic;">
+          Slumpas vid nästa säsongsstart. Lugn säsong är default — andra slumpas mot klubbens situation.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  document.querySelectorAll('.scenario-picker button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.scenario-picker button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.vy').forEach(v => v.classList.remove('active'));
+      document.getElementById(btn.dataset.vy).classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

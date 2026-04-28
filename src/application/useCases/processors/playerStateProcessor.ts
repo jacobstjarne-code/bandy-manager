@@ -169,7 +169,10 @@ export function applyPlayerStateUpdates(
       const twi = computeWeatherTacticInteraction(managedFixtureWeather, managedClubForTactic.activeTactic)
       tacticInjuryMod += twi.extraInjuryRisk
     }
-    const injuryChance = 0.06 * Math.max(0.1, proneFactor) * fatigueFactor * tacticInjuryMod
+    const midSeasonMult = (nextRound >= 8 && nextRound <= 15)
+      ? (game.currentSeasonSignature?.modifiers.midSeasonInjuryMultiplier ?? 1.0)
+      : 1.0
+    const injuryChance = 0.06 * Math.max(0.1, proneFactor) * fatigueFactor * tacticInjuryMod * midSeasonMult
 
     if (localRand() < injuryChance) {
       const days = 7 + Math.floor(localRand() * 28)  // 1–5 weeks

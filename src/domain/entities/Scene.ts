@@ -9,6 +9,7 @@ export type SceneId =
   | 'sm_final_victory'
   | 'coffee_room'
   | 'journalist_relationship'
+  | 'season_signature_reveal'
 
 export type SceneTrigger =
   | { kind: 'first_round_of_season' }

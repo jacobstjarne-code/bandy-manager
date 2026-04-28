@@ -135,7 +135,8 @@ export function checkScandalTrigger(
   )
   if (alreadyFiredThisWindow) return null
 
-  if (rand() > SCANDAL_CHANCE_PER_WINDOW) return null
+  const scandalMultiplier = game.currentSeasonSignature?.modifiers.scandalFrequencyMultiplier ?? 1.0
+  if (rand() > SCANDAL_CHANCE_PER_WINDOW * scandalMultiplier) return null
 
   // Pick type first so club selection can depend on it
   const type = pickScandalType(rand)

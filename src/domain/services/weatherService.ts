@@ -1,5 +1,6 @@
 import type { Club } from '../entities/Club'
 import type { MatchWeather, Weather, WeatherEffects } from '../entities/Weather'
+import type { SeasonSignature } from '../entities/SeasonSignature'
 import { WeatherCondition, IceQuality } from '../enums'
 import { getClimateForRegionAndMonth } from '../data/regionalClimate'
 import { mulberry32 } from '../utils/random'
@@ -18,15 +19,17 @@ export function generateMatchWeather(
   roundNumber: number,
   homeClub: Club,
   fixtureId: string,
-  seed: number
+  seed: number,
+  signature?: SeasonSignature,
 ): MatchWeather {
   void season
   const rand = mulberry32(seed)
   const month = roundToMonth(roundNumber)
   const climate = getClimateForRegionAndMonth(homeClub.region, month)
 
-  // Temperature
-  const temp = Math.round(climate.avgTemp + (rand() * climate.tempVariance * 2 - climate.tempVariance))
+  // Temperature — cold_winter signature shifts temperature generation colder
+  const coldWinterBoost = signature?.id === 'cold_winter' ? -3 : 0
+  const temp = Math.round(climate.avgTemp + coldWinterBoost + (rand() * climate.tempVariance * 2 - climate.tempVariance))
 
   // Condition
   let condition: WeatherCondition

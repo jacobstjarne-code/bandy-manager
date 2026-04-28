@@ -25,6 +25,7 @@ import { updateLoyaltyScores } from '../../domain/services/characterPlayerServic
 import { processAITransfers } from '../../domain/services/aiTransferService'
 import { generateNominations, generateGalaEvent, generateGalaInbox } from '../../domain/services/bandyGalaService'
 import { checkSeasonEndArc } from '../../domain/services/trainerArcService'
+import { createSeasonSignature } from '../../domain/services/seasonSignatureService'
 import { evaluateObjective, generateBoardObjectives } from '../../domain/services/boardObjectiveService'
 import { updateSilentShout, ageMecenater, checkMecenatRetirement } from '../../domain/services/mecenatService'
 import { checkLicenseStatus, buildLicenseInboxItem } from '../../domain/services/licenseService'
@@ -1233,6 +1234,18 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       }
       return Object.keys(merged).length > 0 ? merged : undefined
     })(),
+    // Säsongssignatur: flytta aktuell till historik, skapa ny för kommande säsong
+    currentSeasonSignature: (() => {
+      const sigRand = mulberry32(nextSeason * 1337 + 99)
+      // Build a minimal game context for next season signature
+      const nextGameCtx = { ...game, currentSeason: nextSeason }
+      return createSeasonSignature(nextGameCtx, sigRand)
+    })(),
+    pastSeasonSignatures: [
+      ...(game.pastSeasonSignatures ?? []),
+      ...(game.currentSeasonSignature ? [game.currentSeasonSignature] : []),
+    ].slice(-10),
+    shownSeasonSignatureRevealSeason: game.shownSeasonSignatureRevealSeason,
     // Reset per-season scandal trackers
     activeScandals: [],
     scandalHistory: [...(game.scandalHistory ?? []), ...(game.activeScandals ?? [])],

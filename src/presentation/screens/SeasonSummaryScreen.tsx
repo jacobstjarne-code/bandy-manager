@@ -11,6 +11,15 @@ import { collectSeasonDecisions } from '../../domain/services/seasonDecisionsSer
 import { generateTeamPhotoSvg } from '../utils/teamPhotoGenerator'
 import { saveTeamPhoto, loadTeamPhoto } from '../../infrastructure/teamPhotoStorage'
 
+function getSignatureEmojiFromRubric(rubric: string): string {
+  if (rubric.includes('köldvintern')) return '🌨'
+  if (rubric.includes('kandsalsäsongen') || rubric.includes('Skandal')) return '📰'
+  if (rubric.includes('transfersommaren') || rubric.includes('transfer')) return '💼'
+  if (rubric.includes('Skadekurvan') || rubric.includes('skadekurvan')) return '🩹'
+  if (rubric.includes('Drömrundan') || rubric.includes('drömrundan')) return '✨'
+  return ''
+}
+
 export function SeasonSummaryScreen() {
   const navigate = useNavigate()
   const params = useParams<{ season?: string }>()
@@ -234,6 +243,24 @@ export function SeasonSummaryScreen() {
             </span>
           </div>
         </div>
+
+        {/* SIGNATURE RUBRIC */}
+        {summary.signatureRubric && (
+          <div style={{
+            background: 'var(--bg-leather)',
+            borderLeft: '3px solid var(--accent)',
+            padding: '16px 18px',
+            borderRadius: '0 6px 6px 0',
+            marginBottom: 16,
+          }}>
+            <div style={{ fontSize: 22, marginBottom: 6, opacity: 0.9 }}>
+              {getSignatureEmojiFromRubric(summary.signatureRubric)}
+            </div>
+            <div style={{ fontFamily: 'Georgia, serif', fontSize: 16, color: 'var(--text-light)', lineHeight: 1.4 }}>
+              {summary.signatureRubric}
+            </div>
+          </div>
+        )}
 
         {/* NARRATIVE */}
         <div className="card-sharp card-stagger-1" style={{ padding: '10px 14px', marginBottom: 8, borderLeft: '3px solid var(--accent)', background: 'rgba(196,122,58,0.05)' }}>

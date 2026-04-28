@@ -101,6 +101,8 @@ export interface SeasonSummary {
 
   matchOfTheSeason?: MatchHighlight
 
+  signatureRubric?: string
+
   retiredPlayers?: Array<{
     playerId: string
     name: string

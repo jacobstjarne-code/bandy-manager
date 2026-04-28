@@ -43,6 +43,7 @@ import { OpponentFormSecondary } from '../../../presentation/components/portal/s
 import { KlackenSecondary } from '../../../presentation/components/portal/secondary/KlackenSecondary'
 import { CoffeeRoomSecondary } from '../../../presentation/components/portal/secondary/CoffeeRoomSecondary'
 import { JournalistSecondary } from '../../../presentation/components/portal/secondary/JournalistSecondary'
+import { SeasonSignatureSecondary } from '../../../presentation/components/portal/secondary/SeasonSignatureSecondary'
 import { getCoffeeRoomScene } from '../coffeeRoomService'
 import { shouldShowJournalistCard } from '../journalistVisibilityService'
 
@@ -153,6 +154,16 @@ const PORTAL_CARDS: DashboardCard[] = [
     weight: 65,
     triggers: [shouldShowJournalistCard],
     Component: JournalistSecondary,
+  },
+  {
+    id: 'season_signature_card',
+    tier: 'secondary',
+    weight: 40,
+    triggers: [(game) => {
+      const sig = game.currentSeasonSignature
+      return !!sig && sig.id !== 'calm_season'
+    }],
+    Component: SeasonSignatureSecondary,
   },
 
   // ── MINIMAL TIER ──────────────────────────────────────────────

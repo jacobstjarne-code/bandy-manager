@@ -24,8 +24,18 @@ const COFFEE_ROOM_COOLDOWN_ROUNDS = 3
 export function detectSceneTrigger(game: SaveGame): SceneId | null {
   if (shouldTriggerSMFinalVictory(game)) return 'sm_final_victory'
   if (shouldTriggerSundayTraining(game)) return 'sunday_training'
+  if (shouldTriggerSeasonSignature(game)) return 'season_signature_reveal'
   if (shouldTriggerCoffeeRoom(game)) return 'coffee_room'
   return null
+}
+
+export function shouldTriggerSeasonSignature(game: SaveGame): boolean {
+  if (game.currentMatchday !== 1) return false
+  if (!game.currentSeasonSignature) return false
+  if (game.currentSeasonSignature.id === 'calm_season') return false
+  // Use dedicated field to track which season's reveal was shown
+  if ((game.shownSeasonSignatureRevealSeason ?? 0) >= game.currentSeason) return false
+  return true
 }
 
 export function shouldTriggerSundayTraining(game: SaveGame): boolean {
