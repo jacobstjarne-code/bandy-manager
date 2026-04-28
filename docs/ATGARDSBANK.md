@@ -1,6 +1,27 @@
 # BANDY MANAGER — ÅTGÄRDSBANK
 
-**Uppdaterad:** 17 april 2026 (efter Sprint 16 — KOMPLETT)  
+**Uppdaterad:** 28 april 2026
+
+---
+
+## 2026-04-28 — Filstorleks-audit (Typ A)
+
+Källa: `docs/code-review/REVIEW_2026-04-28_A.md`
+Prioritet: **medium — fixas inom 2 sprintar**
+
+Filer över 800 rader (akut-gräns per CODE_REVIEW_PROCEDURE):
+
+| Fil | Rader | Notering |
+|---|---|---|
+| `src/domain/services/matchCore.ts` | 1 737 | Känslig (kalibrering) — extrahera PHASE_CONSTANTS + profil-logik till `matchProfile.ts` |
+| `src/domain/services/events/eventResolver.ts` | 1 159 | Dela i handlers per event-kategori |
+| `src/presentation/screens/GranskaScreen.tsx` | 1 271 | Extrahera sub-komponenter |
+| `src/presentation/screens/MatchLiveScreen.tsx` | 1 162 | Extrahera sub-komponenter |
+| `src/presentation/screens/DashboardScreen.tsx` | 1 093 | Extrahera sub-komponenter |
+| `src/presentation/components/PlayerCard.tsx` | 831 | Dela i PlayerCard + PlayerCardDetails + PlayerCardStats |
+| `src/domain/services/arcService.ts` | 878 | Sammanhållen domain-logik — lägre prioritet |
+
+Strategi: börja med `eventResolver.ts` (ingen kalibrerings-risk). `matchCore.ts` diskuteras med Opus innan refactor påbörjas.
 
 ---
 
