@@ -5,6 +5,22 @@
 
 ---
 
+## AKTUELLT LÄGE (2026-04-28)
+
+**SPEC_INLEDNING_FAS_1:** ✅ Implementerad. Alla 7 komponenter + 4 datafiler + service. Pixel-audit klar (se `SPEC_PORTAL_FAS_1_PIXEL_AUDIT.md`). Citat-pooler är Opus-jobb — 3 citat/klubb levererade, mer tillkommer.
+**SPEC_SCENES_FAS_1:** ✅ Implementerad. SceneScreen, SundayTrainingScene, SMFinalVictoryScene, CoffeeRoomScene. Feature-flags borttagna. Pixel-audit klar.
+**SPEC_PORTAL_FAS_1:** ✅ Implementerad. Bag-of-cards (17 kort), PortalScreen, seasonal tone, 16 komponenter. Feature-flags borttagna. Pixel-audit klar. Token-isolering verifierad mot scene-systemet.
+**SPEC_KAFFERUMMET_FAS_1:** ✅ Implementerad. CoffeeRoomScene, CoffeeExchange, CoffeeRoomSecondary, getCoffeeRoomScene. Pixel-audit klar.
+
+**Pixel-audit-rapport:** `docs/sprints/SPEC_PORTAL_FAS_1_PIXEL_AUDIT.md`
+**Commits:** `feea364` (feature-flags), `f761545` (portal dark tokens), `e9a8024` (portal useEffect cleanup), `7173af3` (pixel-audit fixes: 4 avvikelser)
+
+**Vad som SAKNAS för playtest-verifiering:**
+- Citat-pooler (SPEC_INLEDNING_FAS_1 §clubOfferQuotes) — 3/5 citat per klubb skrivna, inte fullständiga pooler
+- Pixel-jämförelse skärmdumpar i SPRINT_AUDIT.md — gjordes som kod-verifierad audit, inte visuell
+
+---
+
 ## AKTUELLT LÄGE (2026-04-27, natt)
 
 **Sprint 25-L:** ✅ Levererad + auditerad (commit `a6e24b4`).
