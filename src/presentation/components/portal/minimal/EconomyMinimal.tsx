@@ -19,7 +19,7 @@ export function EconomyMinimal({ game }: CardRenderProps) {
       </div>
       <div style={{
         fontFamily: 'var(--font-display)',
-        color: finances < 0 ? 'var(--danger)' : 'var(--text-primary)',
+        color: finances < 0 ? 'var(--danger)' : 'var(--text-light)',
         fontSize: 13,
         fontWeight: 600,
       }}>

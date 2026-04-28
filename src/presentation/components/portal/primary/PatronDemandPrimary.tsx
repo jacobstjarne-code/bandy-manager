@@ -21,7 +21,7 @@ export function PatronDemandPrimary({ game }: CardRenderProps) {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, var(--bg-elevated) 0%, rgba(160,72,72,0.15) 100%)',
+      background: 'linear-gradient(135deg, var(--bg-portal-elevated) 0%, rgba(160,72,72,0.15) 100%)',
       border: '1px solid var(--danger)',
       borderRadius: 8,
       padding: 16,
@@ -44,14 +44,14 @@ export function PatronDemandPrimary({ game }: CardRenderProps) {
         fontSize: 22,
         fontWeight: 700,
         lineHeight: 1.2,
-        color: 'var(--text-primary)',
+        color: 'var(--text-light)',
         marginBottom: 6,
       }}>
         {patron.name}
       </div>
       <div style={{
         fontSize: 12,
-        color: 'var(--text-secondary)',
+        color: 'var(--text-light-secondary)',
         lineHeight: 1.5,
         marginBottom: 10,
         fontFamily: 'var(--font-display)',
@@ -66,7 +66,7 @@ export function PatronDemandPrimary({ game }: CardRenderProps) {
         color: 'var(--text-muted)',
         marginTop: 8,
         paddingTop: 8,
-        borderTop: '1px solid var(--border)',
+        borderTop: '1px solid var(--bg-leather)',
       }}>
         <span>
           <strong style={{ color: 'var(--danger)', fontWeight: 600 }}>{patienceLabel}</strong>

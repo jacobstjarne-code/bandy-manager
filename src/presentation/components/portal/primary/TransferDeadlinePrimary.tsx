@@ -43,7 +43,7 @@ export function TransferDeadlinePrimary({ game }: CardRenderProps) {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, var(--bg-elevated) 0%, rgba(200,146,60,0.15) 100%)',
+      background: 'linear-gradient(135deg, var(--bg-portal-elevated) 0%, rgba(200,146,60,0.15) 100%)',
       border: '1px solid var(--warning)',
       borderRadius: 8,
       padding: 16,
@@ -66,14 +66,14 @@ export function TransferDeadlinePrimary({ game }: CardRenderProps) {
         fontSize: 22,
         fontWeight: 700,
         lineHeight: 1.2,
-        color: 'var(--text-primary)',
+        color: 'var(--text-light)',
         marginBottom: 6,
       }}>
         Transferfönstret stänger
       </div>
       <div style={{
         fontSize: 12,
-        color: 'var(--text-secondary)',
+        color: 'var(--text-light-secondary)',
         lineHeight: 1.5,
         marginBottom: 10,
       }}>
@@ -89,13 +89,13 @@ export function TransferDeadlinePrimary({ game }: CardRenderProps) {
         color: 'var(--text-muted)',
         marginTop: 8,
         paddingTop: 8,
-        borderTop: '1px solid var(--border)',
+        borderTop: '1px solid var(--bg-leather)',
       }}>
         <span>
-          <strong style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Lönebudget:</strong> {wagePct}% använd
+          <strong style={{ color: 'var(--text-light-secondary)', fontWeight: 600 }}>Lönebudget:</strong> {wagePct}% använd
         </span>
         <span>
-          <strong style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Spelare:</strong> {squadPlayers.length}
+          <strong style={{ color: 'var(--text-light-secondary)', fontWeight: 600 }}>Spelare:</strong> {squadPlayers.length}
         </span>
       </div>
       <button

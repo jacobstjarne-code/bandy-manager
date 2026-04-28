@@ -56,7 +56,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, var(--bg-elevated) 0%, rgba(212,164,96,0.20) 100%)',
+      background: 'linear-gradient(135deg, var(--bg-portal-elevated) 0%, rgba(212,164,96,0.20) 100%)',
       border: '1px solid var(--match-gold)',
       borderRadius: 8,
       padding: '14px 16px',
@@ -79,14 +79,14 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
         fontSize: 22,
         fontWeight: 700,
         lineHeight: 1.2,
-        color: 'var(--text-primary)',
+        color: 'var(--text-light)',
         marginBottom: 6,
       }}>
         {arenaName}
       </div>
       <div style={{
         fontSize: 12,
-        color: 'var(--text-secondary)',
+        color: 'var(--text-light-secondary)',
         lineHeight: 1.5,
         marginBottom: 14,
       }}>
@@ -102,7 +102,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
           marginBottom: 8,
         }}>
           <div style={{ fontSize: 9, letterSpacing: '1.5px', color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase' }}>VÄDER</div>
-          <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{weatherStr}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-light-secondary)' }}>{weatherStr}</div>
         </div>
       )}
 
@@ -114,9 +114,9 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
           color: 'var(--text-muted)',
           marginTop: 8,
           paddingTop: 8,
-          borderTop: '1px solid var(--border)',
+          borderTop: '1px solid var(--bg-leather)',
         }}>
-          <span><strong style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Säsongen:</strong> {posStr}</span>
+          <span><strong style={{ color: 'var(--text-light-secondary)', fontWeight: 600 }}>Säsongen:</strong> {posStr}</span>
         </div>
       )}
 

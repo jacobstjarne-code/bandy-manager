@@ -19,7 +19,7 @@ export function SquadStatusMinimal({ game }: CardRenderProps) {
       </div>
       <div style={{
         fontFamily: 'var(--font-display)',
-        color: injuredCount > 0 ? 'var(--warning)' : 'var(--text-primary)',
+        color: injuredCount > 0 ? 'var(--warning)' : 'var(--text-light)',
         fontSize: 13,
         fontWeight: 600,
       }}>

@@ -10,7 +10,7 @@ export function FormStatusMinimal({ game }: CardRenderProps) {
   const formColor = avgForm >= 70
     ? 'var(--success)'
     : avgForm >= 50
-    ? 'var(--text-primary)'
+    ? 'var(--text-light)'
     : 'var(--danger)'
 
   return (

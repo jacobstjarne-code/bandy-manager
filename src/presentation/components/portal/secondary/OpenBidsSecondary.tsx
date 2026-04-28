@@ -20,8 +20,8 @@ export function OpenBidsSecondary({ game }: CardRenderProps) {
   return (
     <div
       style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border)',
+        background: 'var(--bg-portal-surface)',
+        border: '1px solid var(--bg-leather)',
         borderRadius: 6,
         padding: '8px 10px',
         cursor: 'pointer',
@@ -40,7 +40,7 @@ export function OpenBidsSecondary({ game }: CardRenderProps) {
       </div>
       <div style={{
         fontSize: 13,
-        color: 'var(--text-primary)',
+        color: 'var(--text-light)',
         lineHeight: 1.3,
         fontWeight: 500,
       }}>

@@ -110,6 +110,13 @@
   /* Layout */
   --bottom-nav-height: 60px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Portal seasonal tone — dark defaults, overridden by getSeasonalTone() */
+  --bg-portal:          #1a1612;
+  --bg-portal-surface:  #221d18;
+  --bg-portal-elevated: #2a241e;
+  --accent-portal:      #b8884c;
+
   --scroll-padding-bottom: 120px;
 
   /* Z-index scale */

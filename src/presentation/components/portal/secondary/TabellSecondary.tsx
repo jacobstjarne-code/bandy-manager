@@ -14,8 +14,8 @@ export function TabellSecondary({ game }: CardRenderProps) {
   return (
     <div
       style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border)',
+        background: 'var(--bg-portal-surface)',
+        border: '1px solid var(--bg-leather)',
         borderRadius: 6,
         padding: '8px 10px',
         cursor: 'pointer',
@@ -38,7 +38,7 @@ export function TabellSecondary({ game }: CardRenderProps) {
             fontFamily: 'var(--font-display)',
             fontSize: 22,
             fontWeight: 700,
-            color: 'var(--text-primary)',
+            color: 'var(--text-light)',
             lineHeight: 1.3,
           }}>
             {standing.position}:a
@@ -48,7 +48,7 @@ export function TabellSecondary({ game }: CardRenderProps) {
           </div>
         </>
       ) : (
-        <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>—</div>
+        <div style={{ fontSize: 13, color: 'var(--text-light)' }}>—</div>
       )}
     </div>
   )

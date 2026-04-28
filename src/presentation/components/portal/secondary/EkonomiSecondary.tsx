@@ -36,8 +36,8 @@ export function EkonomiSecondary({ game }: CardRenderProps) {
   return (
     <div
       style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border)',
+        background: 'var(--bg-portal-surface)',
+        border: '1px solid var(--bg-leather)',
         borderRadius: 6,
         padding: '8px 10px',
         cursor: 'pointer',
@@ -58,7 +58,7 @@ export function EkonomiSecondary({ game }: CardRenderProps) {
         fontFamily: 'var(--font-display)',
         fontSize: 22,
         fontWeight: 700,
-        color: finances < 0 ? 'var(--danger)' : 'var(--text-primary)',
+        color: finances < 0 ? 'var(--danger)' : 'var(--text-light)',
         lineHeight: 1.3,
       }}>
         {formatFinanceAbs(finances)}

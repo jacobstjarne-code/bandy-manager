@@ -19,7 +19,7 @@ export function CoffeeRoomSecondary({ game }: CardRenderProps) {
     <div
       onClick={() => triggerCoffeeRoomScene()}
       style={{
-        background: 'var(--bg-surface)',
+        background: 'var(--bg-portal-surface)',
         borderLeft: '2px solid var(--accent)',
         padding: '10px 12px',
         marginBottom: 0,
@@ -44,7 +44,7 @@ export function CoffeeRoomSecondary({ game }: CardRenderProps) {
         style={{
           fontFamily: 'var(--font-display)',
           fontSize: 12,
-          color: 'var(--text-secondary)',
+          color: 'var(--text-light-secondary)',
           fontStyle: 'italic',
           lineHeight: 1.5,
         }}
