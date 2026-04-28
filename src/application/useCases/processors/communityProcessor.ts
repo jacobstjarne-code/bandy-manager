@@ -196,7 +196,7 @@ export function processCommunity(
   }
 
   // ── Facility project completion ────────────────────────────────────────────
-  const updatedFacilityProjects = (game.facilityProjects ?? []).map(p => checkProjectCompletion(p, nextMatchday))
+  const updatedFacilityProjects = (game.facilityProjects ?? []).map(p => checkProjectCompletion(p, nextMatchday, game.currentSeason))
   const oldFacilityProjects = game.facilityProjects ?? []
   let facilityBonusTotal = 0
   for (const up of updatedFacilityProjects) {

@@ -8,10 +8,11 @@ import { EkonomiTab } from '../components/club/EkonomiTab'
 import { KlubbTab } from '../components/club/KlubbTab'
 import { AkademiTab } from '../components/club/AkademiTab'
 import { FirstVisitHint } from '../components/FirstVisitHint'
+import { ClubMemoryView } from '../components/clubmemory/ClubMemoryView'
 
 // ── Main Screen ──────────────────────────────────────────────────────────────
 
-type ClubTab = 'training' | 'ekonomi' | 'orten' | 'akademi'
+type ClubTab = 'training' | 'ekonomi' | 'orten' | 'akademi' | 'minne'
 
 export function ClubScreen() {
   const club = useManagedClub()
@@ -37,7 +38,7 @@ export function ClubScreen() {
   const dismissHint = useGameStore(s => s.dismissHint)
   const navigate = useNavigate()
   const location = useLocation()
-  const VALID_TABS: ClubTab[] = ['training', 'ekonomi', 'orten', 'akademi']
+  const VALID_TABS: ClubTab[] = ['training', 'ekonomi', 'orten', 'akademi', 'minne']
   const rawTab = (location.state as { tab?: string } | null)?.tab
   const [activeTab, setActiveTab] = useState<ClubTab>(
     rawTab && VALID_TABS.includes(rawTab as ClubTab) ? (rawTab as ClubTab) : 'training'
@@ -69,6 +70,7 @@ export function ClubScreen() {
     { key: 'ekonomi', label: 'Ekonomi' },
     { key: 'orten', label: 'Orten' },
     { key: 'akademi', label: 'Akademi' },
+    { key: 'minne', label: '📖 Minne' },
   ]
 
   const tabDescriptions: Record<string, string> = {
@@ -189,6 +191,9 @@ export function ClubScreen() {
             recallLoan={recallLoan}
           />
         )}
+
+        {/* ── Tab 5: Minne ── */}
+        {activeTab === 'minne' && <ClubMemoryView game={game} />}
 
       </div>
     </div>

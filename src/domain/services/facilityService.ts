@@ -109,11 +109,17 @@ export function startFacilityProject(
 export function checkProjectCompletion(
   project: FacilityProject,
   currentMatchday: number,
+  currentSeason?: number,
 ): FacilityProject {
   if (project.status !== 'in_progress') return project
   const elapsed = currentMatchday - (project.startedMatchday ?? 0)
   if (elapsed >= project.duration) {
-    return { ...project, status: 'completed' }
+    return {
+      ...project,
+      status: 'completed',
+      completedMatchday: currentMatchday,
+      completedSeason: currentSeason,
+    }
   }
   return project
 }

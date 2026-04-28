@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Klubbens minne — mock</title>
+<style>
+  :root {
+    --bg: #1a1612;
+    --bg-surface: #221d18;
+    --bg-elevated: #2a241e;
+    --bg-dark: #0f0c09;
+    --bg-deepdark: #08060a;
+    --bg-leather: #1f1a14;
+    --bg-dark-elevated: #14110d;
+    --border: #3a322a;
+    --border-dark: #2a241e;
+    --text-primary: #e8e0d0;
+    --text-secondary: #b8ad9a;
+    --text-muted: #7a7060;
+    --text-light: #f0e8d8;
+    --text-light-secondary: #c8bda8;
+    --accent: #b8884c;
+    --accent-dark: #8b6638;
+    --accent-deep: #6b4d28;
+    --accent-glow: #d4a060;
+    --success: #5a8c4a;
+    --danger: #a04848;
+    --gold: #d4a460;
+    --font-display: Georgia, serif;
+    --font-body: -apple-system, system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0806;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  h1.title {
+    max-width: 430px;
+    margin: 0 auto 8px;
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--text-light);
+    font-weight: 700;
+  }
+  h2.subtitle {
+    max-width: 430px;
+    margin: 0 auto 20px;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .scenario-picker {
+    max-width: 430px;
+    margin: 0 auto 20px;
+    display: flex;
+    gap: 6px;
+  }
+  .scenario-picker button {
+    flex: 1;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font-body);
+    transition: all 0.2s;
+  }
+  .scenario-picker button:hover { border-color: var(--accent); color: var(--accent); }
+  .scenario-picker button.active {
+    background: var(--accent-deep);
+    border-color: var(--accent);
+    color: var(--text-light);
+  }
+
+  .phone {
+    max-width: 430px;
+    margin: 0 auto;
+    background: var(--bg);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    min-height: 740px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Tab-rad högst upp */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 12px 14px 0;
+    border-bottom: 1px solid var(--border-dark);
+  }
+  .tab {
+    padding: 10px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    cursor: pointer;
+  }
+  .tab.active {
+    color: var(--text-light);
+    border-bottom-color: var(--accent);
+  }
+
+  .content {
+    flex: 1;
+    padding: 14px;
+    overflow-y: auto;
+  }
+
+  /* ─── EMPTY-VY ──────────────────────────── */
+  .empty {
+    text-align: center;
+    padding: 60px 30px;
+    color: var(--text-muted);
+  }
+  .empty .icon {
+    font-size: 36px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+  .empty h3 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--text-light-secondary);
+    margin-bottom: 10px;
+  }
+  .empty p {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  /* ─── SÄSONGS-SEKTION ──────────────────── */
+  .season-section {
+    margin-bottom: 20px;
+  }
+  .season-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 10px 0 6px;
+    border-bottom: 1px solid var(--border-dark);
+    margin-bottom: 8px;
+  }
+  .season-header .season-num {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--text-light);
+    font-weight: 700;
+  }
+  .season-header .ongoing-tag {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(184, 136, 76, 0.12);
+    border: 1px solid rgba(184, 136, 76, 0.3);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  .season-meta {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  /* Event-rad */
+  .event-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    line-height: 1.4;
+  }
+  .event-emoji {
+    font-size: 14px;
+    flex-shrink: 0;
+    width: 18px;
+    text-align: center;
+    margin-top: 1px;
+  }
+  .event-when {
+    font-size: 10px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    min-width: 60px;
+    margin-top: 2px;
+    font-family: var(--font-body);
+  }
+  .event-text {
+    flex: 1;
+    font-family: var(--font-display);
+    font-size: 12.5px;
+    color: var(--text-light);
+  }
+  .event-text .highlight {
+    color: var(--accent);
+  }
+  .event-text .player {
+    color: var(--text-light);
+    font-weight: 600;
+  }
+
+  /* Big events får extra accent */
+  .event-row.big {
+    background: rgba(184, 136, 76, 0.04);
+    border-left: 2px solid var(--accent);
+    padding-left: 10px;
+    margin: 6px -10px 6px -2px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    border-radius: 0 4px 4px 0;
+  }
+
+  /* ─── LEGENDER & RECORDS ────────────────── */
+  .extra-section {
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 2px solid var(--border-dark);
+  }
+  .extra-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .legend-card {
+    padding: 10px 12px;
+    background: var(--bg-leather);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border-left: 2px solid var(--accent-dark);
+  }
+  .legend-card .name-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
+  .legend-card .lname {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-light);
+    font-weight: 600;
+  }
+  .legend-card .lyears {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+  .legend-card .lstats {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .legend-card .lstory {
+    font-size: 11px;
+    color: var(--text-light-secondary);
+    font-style: italic;
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px dashed var(--border-dark);
+  }
+
+  /* Records */
+  .records-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .record-card {
+    padding: 10px 12px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-dark);
+    border-radius: 6px;
+  }
+  .record-card .rlbl {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .record-card .rval {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.3;
+  }
+  .record-card .rsub {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .vy { display: none; }
+  .vy.active { display: block; }
+</style>
+</head>
+<body>
+
+<h1 class="title">Klubbens minne — mock</h1>
+<h2 class="subtitle">
+  Aggregerar 5 senaste säsongers minnesvärda events. Pågående överst.
+  Två lägen: tom vy (säsong 1, första veckorna) och full historik.
+</h2>
+
+<div class="scenario-picker">
+  <button class="active" data-vy="full">Full historik (säsong 4)</button>
+  <button data-vy="empty">Tom vy (säsong 1)</button>
+</div>
+
+<div class="phone">
+  <div class="tabs">
+    <div class="tab">📋 Översikt</div>
+    <div class="tab">👥 Trupp</div>
+    <div class="tab">🏟️ Anläggning</div>
+    <div class="tab active">📖 Minne</div>
+  </div>
+
+  <!-- ─── FULL VY ─────────────────────────────────── -->
+  <div class="content vy active" id="full">
+
+    <!-- Pågående säsong -->
+    <div class="season-section">
+      <div class="season-header">
+        <div class="season-num">SÄSONG 2029-30</div>
+        <div class="ongoing-tag">Pågående</div>
+      </div>
+      <div class="season-meta">Eran: Etablerade åren · Omgång 12 av 22</div>
+
+      <div class="event-row big">
+        <div class="event-emoji">🔥</div>
+        <div class="event-when">Omg 11</div>
+        <div class="event-text">Derbyseger mot <span class="player">Söderfors</span> — 4–2 inför 1 247 åskådare</div>
+      </div>
+
+      <div class="event-row">
+        <div class="event-emoji">🎓</div>
+        <div class="event-when">Omg 8</div>
+        <div class="event-text">Anders Henriksson uppflyttad från P19</div>
+      </div>
+
+      <div class="event-row">
+        <div class="event-emoji">🏟️</div>
+        <div class="event-when">Omg 4</div>
+        <div class="event-text">Klacksektionen renoverad — 60 nya platser</div>
+      </div>
+    </div>
+
+    <!-- Säsong 2028-29 -->
+    <div class="season-section">
+      <div class="season-header">
+        <div class="season-num">SÄSONG 2028-29</div>
+      </div>
+      <div class="season-meta">Slutade 3:a · Eran: Etablerade åren</div>
+
+      <div class="event-row big">
+        <div class="event-emoji">🏆</div>
+        <div class="event-when">Omg 22</div>
+        <div class="event-text">Slutade <span class="highlight">3:a</span> — högsta hittills i klubbens nuvarande era</div>
+      </div>
+
+      <div class="event-row big">
+        <div class="event-emoji">👋</div>
+        <div class="event-when">Omg 22</div>
+        <div class="event-text"><span class="player">Staffan Henriksson</span>, 34 år, pensionerade. 147 matcher, 23 mål.</div>
+      </div>
+
+      <div class="event-row">
+        <div class="event-emoji">⚔️</div>
+        <div class="event-when">Omg 19</div>
+        <div class="event-text">Cup-final på Sävstaås — förlorade 2–3 mot Slottsbron</div>
+      </div>
+
+      <div class="event-row">
+        <div class="event-emoji">👤</div>
+        <div class="event-when">Omg 14</div>
+        <div class="event-text">Patron Lars Berglund avgick efter offentligt gräl</div>
+      </div>
+
+      <div class="event-row">
+        <div class="event-emoji">🏟️</div>
+        <div class="event-when">Omg 12</div>
+        <div class="event-text">Omklädningsrummet renoverat</div>
+      </div>
+    </div>
+
+    <!-- Säsong 2027-28 -->
+    <div class="season-section">
+      <div class="season-header">
+        <div class="season-num">SÄSONG 2027-28</div>
+      </div>
+      <div class="season-meta">Slutade 6:a · Eran: Grundaråren</div>
+
+      <div class="event-row">
+        <div class="event-emoji">🏒</div>
+        <div class="event-when">Omg 22</div>
+        <div class="event-text">Slutade 6:a — mittenträsket, men stabilt</div>
+      </div>
+
+      <div class="event-row">
+        <div class="event-emoji">📰</div>
+        <div class="event-when">Omg 16</div>
+        <div class="event-text">Skandal i ligan — Slottsbrons ordförande avstängd</div>
+      </div>
+
+      <div class="event-row">
+        <div class="event-emoji">🥇</div>
+        <div class="event-when">Omg 11</div>
+        <div class="event-text">Brukspatron Lars Berglund anslöt som ny mecenat</div>
+      </div>
+    </div>
+
+    <!-- Säsong 2026-27 -->
+    <div class="season-section">
+      <div class="season-header">
+        <div class="season-num">SÄSONG 2026-27</div>
+      </div>
+      <div class="season-meta">Slutade 8:a · Eran: Grundaråren</div>
+
+      <div class="event-row">
+        <div class="event-emoji">🏒</div>
+        <div class="event-when">Omg 22</div>
+        <div class="event-text">Första säsongen — slutade 8:a</div>
+      </div>
+
+      <div class="event-row">
+        <div class="event-emoji">🎓</div>
+        <div class="event-when">Omg 6</div>
+        <div class="event-text">P19-laget vann sin distriktsserie</div>
+      </div>
+    </div>
+
+    <!-- Klubbens legender -->
+    <div class="extra-section">
+      <div class="extra-label">⭐ Klubbens legender</div>
+
+      <div class="legend-card">
+        <div class="name-row">
+          <div class="lname">Staffan Henriksson</div>
+          <div class="lyears">2026 – 2029</div>
+        </div>
+        <div class="lstats">Forward · 147 matcher · 23 mål · 18 assist</div>
+        <div class="lstory">"Bandyn tog mig från pojke till man." — pensionerad efter cup-finalen 2029.</div>
+      </div>
+    </div>
+
+    <!-- All-time records -->
+    <div class="extra-section">
+      <div class="extra-label">📊 Klubbens rekord</div>
+
+      <div class="records-grid">
+        <div class="record-card">
+          <div class="rlbl">Bästa placering</div>
+          <div class="rval">3:a</div>
+          <div class="rsub">Säsongen 2028-29</div>
+        </div>
+
+        <div class="record-card">
+          <div class="rlbl">Flest mål, säsong</div>
+          <div class="rval">14 mål</div>
+          <div class="rsub">S. Henriksson, 2028-29</div>
+        </div>
+
+        <div class="record-card">
+          <div class="rlbl">Största seger</div>
+          <div class="rval">7–1</div>
+          <div class="rsub">mot Lesjöfors, 2028-29</div>
+        </div>
+
+        <div class="record-card">
+          <div class="rlbl">Cup-finaler</div>
+          <div class="rval">1</div>
+          <div class="rsub">2028-29 (förlust)</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─── EMPTY VY ────────────────────────────────── -->
+  <div class="content vy" id="empty">
+    <div class="empty">
+      <div class="icon">📖</div>
+      <h3>Klubbens historia tar form</h3>
+      <p>När säsonger spelas och milstolpar nås kommer minnen att samlas här. Spela några omgångar, så fyller boken sig själv.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  document.querySelectorAll('.scenario-picker button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.scenario-picker button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.vy').forEach(v => v.classList.remove('active'));
+      document.getElementById(btn.dataset.vy).classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

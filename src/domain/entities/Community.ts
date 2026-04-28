@@ -88,6 +88,8 @@ export interface FacilityProject {
   kommunCostShare: number
   status: 'available' | 'in_progress' | 'completed'
   startedMatchday?: number
+  completedSeason?: number
+  completedMatchday?: number
   financingMode?: FacilityFinancingMode
   mecenatCostShare?: number    // faktisk mecenat-andel (0–1) som tillämpades
 }
