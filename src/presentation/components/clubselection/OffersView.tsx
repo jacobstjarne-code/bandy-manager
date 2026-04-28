@@ -12,7 +12,7 @@ interface Props {
 
 export function OffersView({ offers, onSelect, onShowAll }: Props) {
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100%', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ background: 'var(--bg-dark)', minHeight: '100%', position: 'relative', overflow: 'hidden' }}>
       <div
         style={{
           position: 'absolute', inset: 0,

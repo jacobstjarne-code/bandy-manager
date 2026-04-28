@@ -19,8 +19,8 @@ export function OfferCard({ offer, clubName, region, extendedInfo, quote, onSele
   return (
     <div
       style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border)',
+        background: 'var(--bg-dark-surface)',
+        border: '1px solid var(--bg-leather)',
         borderRadius: 8,
         padding: '16px 18px',
         marginBottom: 12,
@@ -52,7 +52,7 @@ export function OfferCard({ offer, clubName, region, extendedInfo, quote, onSele
           fontFamily: 'var(--font-display)',
           fontStyle: 'italic',
           fontSize: 13,
-          color: 'var(--text-secondary)',
+          color: 'var(--text-light-secondary)',
           lineHeight: 1.55,
         }}
       >
@@ -62,10 +62,8 @@ export function OfferCard({ offer, clubName, region, extendedInfo, quote, onSele
         </div>
       </div>
 
-      <div style={{ borderTop: '1px solid var(--border)', paddingTop: 10 }}>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
-          {extendedInfo.arenaNote}
-        </div>
+      <div style={{ display: 'flex', gap: 14, paddingTop: 10, borderTop: '1px solid var(--bg-leather)', fontSize: 10, color: 'var(--text-muted)' }}>
+        <div>{extendedInfo.arenaNote}</div>
       </div>
     </div>
   )

@@ -23,18 +23,18 @@ export function ClubListItem({ name, isSelected, alignment, onClick }: Props) {
       <button
         onClick={onClick}
         style={{
-          background: isSelected ? 'var(--bg-elevated)' : 'rgba(34,29,24,0.85)',
+          background: isSelected ? 'var(--bg-dark-elevated)' : 'var(--bg-dark-surface)',
           backdropFilter: 'blur(4px)',
-          border: `1px solid ${isSelected ? 'var(--gold)' : 'var(--border)'}`,
+          border: `1px solid ${isSelected ? 'var(--match-gold)' : 'var(--bg-leather)'}`,
           borderRadius: 6,
           padding: '7px 14px',
           cursor: 'pointer',
           display: 'inline-flex',
           alignItems: 'center',
           fontSize: 12,
-          color: isSelected ? 'var(--text-light)' : 'var(--text-secondary)',
+          color: isSelected ? 'var(--text-light)' : 'var(--text-light-secondary)',
           fontWeight: 600,
-          boxShadow: isSelected ? '0 0 12px rgba(212,164,96,0.25)' : 'none',
+          boxShadow: isSelected ? '0 0 12px color-mix(in srgb, var(--match-gold) 25%, transparent)' : 'none',
           transition: 'all 0.15s',
           fontFamily: 'var(--font-body)',
         }}

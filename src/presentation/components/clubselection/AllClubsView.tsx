@@ -31,7 +31,7 @@ export function AllClubsView({ onSelect, onBack }: Props) {
   }
 
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100%', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ background: 'var(--bg-dark)', minHeight: '100%', position: 'relative', overflow: 'hidden' }}>
       <div
         style={{
           position: 'absolute', inset: 0,

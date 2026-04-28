@@ -28,7 +28,7 @@ export function ClubExpandedCard({
   return (
     <div
       style={{
-        background: 'var(--bg-surface)',
+        background: 'var(--bg-dark-surface)',
         border: '1px solid var(--accent)',
         borderRadius: 8,
         padding: '14px 16px',
@@ -50,18 +50,18 @@ export function ClubExpandedCard({
 
       <div style={{ display: 'flex', gap: 10, marginBottom: 6, fontSize: 11, lineHeight: 1.5 }}>
         <span style={{ color: 'var(--accent)', width: 16, flexShrink: 0 }}>🏟</span>
-        <span style={{ color: 'var(--text-secondary)' }}>
+        <span style={{ color: 'var(--text-light-secondary)' }}>
           <strong style={{ color: 'var(--text-light)', fontWeight: 600 }}>{arenaName}</strong>
           {' '}— {extendedInfo.arenaNote}
         </span>
       </div>
       <div style={{ display: 'flex', gap: 10, marginBottom: 6, fontSize: 11, lineHeight: 1.5 }}>
         <span style={{ color: 'var(--accent)', width: 16, flexShrink: 0 }}>👤</span>
-        <span style={{ color: 'var(--text-secondary)' }}>{extendedInfo.patronType}</span>
+        <span style={{ color: 'var(--text-light-secondary)' }}>{extendedInfo.patronType}</span>
       </div>
       <div style={{ display: 'flex', gap: 10, marginBottom: 6, fontSize: 11, lineHeight: 1.5 }}>
         <span style={{ color: 'var(--accent)', width: 16, flexShrink: 0 }}>📣</span>
-        <span style={{ color: 'var(--text-secondary)' }}>
+        <span style={{ color: 'var(--text-light-secondary)' }}>
           <strong style={{ color: 'var(--text-light)', fontWeight: 600 }}>{supporterGroupName}</strong>
         </span>
       </div>
@@ -74,16 +74,14 @@ export function ClubExpandedCard({
           fontFamily: 'var(--font-display)',
           fontStyle: 'italic',
           fontSize: 12,
-          color: 'var(--text-secondary)',
+          color: 'var(--text-light-secondary)',
           lineHeight: 1.5,
         }}
       >
         {displayQuote ? displayQuote.text : `"${fallbackText}"`}
-        {displayQuote && (
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4, fontStyle: 'normal', fontFamily: 'var(--font-body)' }}>
-            — {displayQuote.attribution}
-          </div>
-        )}
+        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4, fontStyle: 'normal', fontFamily: 'var(--font-body)' }}>
+          — {displayQuote ? displayQuote.attribution : 'Klubben, generisk'}
+        </div>
       </div>
 
       <button
