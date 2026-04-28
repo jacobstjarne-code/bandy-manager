@@ -21,7 +21,7 @@ Om tid-API:t inte svarar — fråga Jacob som fallback.
 
 **Vid arbete med THE_BOMB-frågor:** läs `docs/THE_BOMB.md` (vision) och `docs/THE_BOMB_STATUS_2026-04-26.md` (kod-verifierad status per subprojekt).
 
-**Vid spec-skrivande:** läs "DESIGNPRINCIPER — LÄS FÖRE SPEC" längre ner i denna fil. Tre principer som förhindrar att ny funktionalitet byggs isolerat eller dubbelt.
+**Vid spec-skrivande:** läs "DESIGNPRINCIPER — LÄS FÖRE SPEC" längre ner i denna fil. Fyra principer som förhindrar att ny funktionalitet byggs isolerat, dubbelt eller med visuell drift från målbilden.
 
 ---
 
@@ -155,7 +155,7 @@ Om en bugg uppträder 2+ gånger, eller om en ny bugg matchar ett mönster som r
 
 ## DESIGNPRINCIPER — LÄS FÖRE SPEC
 
-Dessa tre principer adresserar ett mönster vi observerat 2026-04: vi har bra dokumentation av *det som hänt*, men beslutsögonblicken (innan kod skrivs, innan spec klubbas) är otillräckligt strukturerade. Det är där missarna sker.
+Dessa fyra principer adresserar ett mönster vi observerat 2026-04: vi har bra dokumentation av *det som hänt*, men beslutsögonblicken (innan kod skrivs, innan spec klubbas) är otillräckligt strukturerade. Det är där missarna sker.
 
 ### 1. INBOX-PRINCIPEN
 
@@ -212,6 +212,41 @@ Specen ska antingen:
 - Lista de som lämnas utanför med medveten anledning ("klacken har inte cross-trigger eftersom...")
 
 **Historik:** Sprint 25h-skandaler byggdes utan att specen listade integration-vyer. Resultat: 4 vyer fick aldrig referenser. Adresserades i Sprint 26 men kostade en hel ny sprint.
+
+### 4. MOCK-DRIVEN DESIGN
+
+**När en feature är visuellt eller interaktivt komplex — mock först, kod sen. Mocken är kanon, inte ungefär.**
+
+Detta adresserar ett mönster: Opus producerar fina visuella idéer och Code implementerar dem ungefärligt. Resultatet driver från målbilden — padding blir 14px istället för 16px, gradient blir "liknande" men inte exakt, layout matchar på storleksordning men inte i detalj. Över tid ackumuleras detta till en app som känns *generisk* trots att avsikten var distinkt.
+
+Lösningen är att flytta visuella beslut till mock-stadiet, när de kan diskuteras innan de kodas.
+
+**Opus ansvar (mocks):**
+- När en feature är visuellt eller interaktivt distinkt (ny vy, omarbetad layout, ny interaktionspattern) — producera HTML-mock först i `docs/mockups/`.
+- Mocken ska vara *interaktiv* där det går (knappar som visar olika tillstånd, kryssrutor som styr what-if-renderingar). En statisk bild duger inte när interaktion ingår.
+- Mocken använder samma CSS-variabler som appen (`--accent`, `--text-primary`, etc) så värden är direkt portbara.
+- En mock per design-paradigm (en mock för Portal, en för moments, en för inledning) — inte en per komponent.
+
+**Code ansvar (implementation):**
+- Läs mocken bredvid editorn, inte i minnet.
+- Kopiera CSS-värden bokstavligen — padding, border-radius, font-storlekar, gradient-stops, opacity, gap, letter-spacing. Inte ungefärligt.
+- Innan commit av en visuell komponent: öppna mocken och appen sida vid sida i samma viewport-bredd, ta skärmdumpar, jämför pixelnivå. Bifoga båda i SPRINT_AUDIT.md.
+- Om mocken inte funkar i något avseende (t.ex. tar fel position på mobil, avvikande beteende vid edge case) — fråga Opus om mock-uppdatering. Ändra inte själv "för att det kändes bättre".
+
+**Specen ansvar (referenslänkar):**
+- Spec som har en mock måste ha sektion "INNAN DU BÖRJAR" som länkar mocken explicit.
+- Spec ska ha tabell som mappar varje komponent till sin mock-vy (t.ex. `SMFinalPrimary` → "SM-final"-knappen i `portal_bag_mockup.html`).
+- Verifieringsprotokoll i specen ska kräva pixel-jämförelse för commit, inte bara funktionell verifiering.
+
+**När mock INTE behövs:**
+- Pure data-arbete (datafiler, services som inte har UI)
+- Algoritmer eller spellogik utan visuell representation
+- Små visuella justeringar på befintliga komponenter (ändra padding på ett kort — inte mock-värt)
+- Bug-fixar
+
+**Riktmärke:** Om designen tar mer än fem minuter att beskriva i ord — mocka.
+
+**Historik:** 2026-04-27 Portal/inledning/moments. Tre HTML-mocks producerades innan specer skrevs. Mocks användes både för att få Jacobs feedback på designen *innan* kod (innehålls-iteration på vågor, Sverige-bakgrund vs karta, klubbpiller-format) och för att ge Code en konkret målbild att implementera mot. Före detta hade visuella beslut tagits i konversation och drift från målbild observerats i flera sprintar.
 
 ---
 

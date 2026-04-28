@@ -548,3 +548,24 @@ goalThreshold = clamp(
 **Känn igen:** En spec-justering av en fas-konstant ger förvånansvärt liten effekt på den targetade metriken. Innan ny iteration — spåra parametern i formeln och kontrollera vilken term den faktiskt multiplicerar. Om den sitter på en liten delta är det fel hävstång.
 
 **Historik:** Sprint 25-K, 2026-04-26. Spec föreslog `cornerTrailingMod` 1.20→1.05 (QF) och 1.05→0.93 (SF). Implementation gav −0.5pp förändring trots korrekt parameterskifte. Verifiering avslöjade att `cornerStateMod` är fel hävstång. Ny mekanism `cornerGoalMod` infördes som direktskalar `cornerBase`.
+
+---
+
+## 11. Hook-kedja — pool definierad ≠ pool nåbar
+
+**Mönster:** Sprint rapporteras klar med alla tester gröna, men en gren av logiken är dead code — pool definierad, hook skriven, ändå triggas grenen aldrig eftersom flaggan som styr den sätts ingenstans.
+
+**Rotorsak:** Strängpool och triggerlogik byggs i ett pass, men flaggan som triggern beror på (`weather.matchFormat`, `fixture.isFinaldag`, etc.) genereras i en helt annan del av kodbasen som inte är klar än, eller som passerar dataobjektet inline utan att kopiera fältet. Tester gröna eftersom de hånar flaggan som satt — i produktion sätts den aldrig.
+
+**Fix:** För varje ny lore-pool eller villkorlig sträng-gren — skriv ett integrationstest som *följer kedjan från flagg-källa till render*. Inte bara enhetstest av poolen. Plus: när en gren byggs som beror på data från ett annat system (väder, fixture, schedule), markera explicit i koden var datat förväntas komma ifrån:
+
+```typescript
+// Trigger för 3×30-lore. Kräver weather.matchFormat satt av weatherService.
+// Om fältet saknas faller vi tillbaka till standard-pool. INTE dead code
+// — men endast aktiv när SPEC_VADER fas 1 levererar matchFormat.
+if (weather?.matchFormat === '3x30') return FINALDAG_COMMENTARY_3X30
+```
+
+**Känn igen:** Tester gröna men en `if`-gren har aldrig triggats i live-spel. Ofta märks det först i playtest när en specialsituation uppstår och förväntad text inte syns. Indikatorer i kod-review: en villkorad pool där villkoret beror på ett fält i ett dataobjekt som byggs inline (`{ ... matchFormat: ??? }`) eller som passerar genom flera lager utan att uttryckligen vidarebefordras.
+
+**Historik:** Sprint Specialdatum V2, 2026-04-27. `FINALDAG_COMMENTARY_3X30`-poolen definierad och testad, men `matchCore.ts` byggde `sdCtx.weather` inline utan att kopiera `matchFormat`-fältet. Hook fungerade i unit-test (mockat weather), men i produktion var fältet alltid `undefined`. Upptäckt i audit, fixad i samma sprint med interim-trigger på `temperature <= -17`. Test tillagt som följer kedjan från weather-generering till commentary-pool.

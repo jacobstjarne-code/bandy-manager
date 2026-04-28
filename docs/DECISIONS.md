@@ -8,6 +8,30 @@ Syftet är inte formalism. Syftet är att om 6 månader ha ett svar på "varför
 
 ---
 
+## 2026-04-27 — Mock-driven design som fjärde designprincip
+
+**Problem:** Visuella beslut har historiskt drivit från målbild i implementation. Opus producerar fina idéer (i ord, ibland i skärmdumpar), Code implementerar dem ungefärligt — padding 14px istället för 16px, gradient "liknande" men inte exakt, layout som matchar på storleksordning men inte i detalj. Över tid ackumuleras detta till en app som känns generisk trots att avsikten var distinkt.
+
+Session 2026-04-27 (Portal/inledning/moments) använde tre HTML-mocks innan specer skrevs. Mocken användes för två distinkta syften: (1) få Jacobs feedback på designen *innan* kod skrevs (innehålls-iteration på vågor som Sverige-bakgrund vs karta, klubbpiller-format, regions-ordning), (2) ge Code en konkret målbild att implementera mot. Resultatet är att ortsfelet (Karlsborg = Värmland) fångades innan spec, snarare än efter implementation.
+
+**Beslut:** Inför princip 4 ("Mock-driven design") i CLAUDE.md DESIGNPRINCIPER. När en feature är visuellt eller interaktivt komplex — mock först, kod sen. Mocken är kanon, inte ungefär. Riktmärke: om designen tar mer än fem minuter att beskriva i ord — mocka.
+
+Principen delas i tre ansvarsområden:
+- **Opus** producerar interaktiv HTML-mock i `docs/mockups/` när feature är visuellt distinkt. Använder samma CSS-variabler som appen.
+- **Code** läser mocken bredvid editorn, kopierar CSS-värden bokstavligen, pixel-jämför appen mot mocken innan commit, frågar Opus om mock-uppdatering om mocken inte funkar (ändrar inte själv).
+- **Specen** länkar mocken explicit i "INNAN DU BÖRJAR", mappar varje komponent mot sin mock-vy, kräver pixel-verifiering i SPRINT_AUDIT.md.
+
+**Alternativ övervägt:**
+- (a) Bara sätta in mock-hänvisning i enskilda specer ad hoc. Avvisat — inkonsekvent, råkar bli förhalat när man skriver fort.
+- (b) Ny separat fil MOCK_PRINCIPLES.md. Avvisat — fler filer = mer fragmentering, samma fel som motiverade DESIGNPRINCIPER-sektionen i CLAUDE.md från start.
+- (c) Skarpare designsystem-dokument med exakta px-värden för varje element. Avvisat — designsystem fungerar för generella regler men inte för feature-specifika layouter.
+
+**Konsekvens:** Visuella beslut görs i mock, inte i kod. Pixel-verifiering blir commit-krav för visuella komponenter. Code får en tydligare målbild och mindre tolkningsutrymme.
+
+**Meta:** Principen föddes ur observation att 2026-04-27-sessionen producerade lite drift mellan mock och spec, vilket i tidigare workflows hade hamnat hos Code att tolka. Genom att mocka tidigt kom missarna fram tidigt (Jacob såg "din korv ser ut som Finland" i mocken — inte i appen efter sprint-leverans).
+
+---
+
 ## 2026-04-26 (kväll) — Pre-spec cross-check räddade Sprint 27 fas C
 
 **Problem:** Sprint 27-specen innehöll fas C "State of the Club-implementation" som planerade ny komponent + ny `seasonStartSnapshot`-lösning + ny PreSeasonScreen-rendering. Estimat 2-3h Code + ~30 min Opus-text.

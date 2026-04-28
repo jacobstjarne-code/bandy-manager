@@ -5,15 +5,18 @@
 
 ---
 
-## AKTUELLT LÄGE (2026-04-27, kväll)
+## AKTUELLT LÄGE (2026-04-27, natt)
 
 **Sprint 25-L:** ✅ Levererad + auditerad (commit `a6e24b4`).
 **Sprint 25-E:** ✅ Levererad + auditerad (commit `4362ebf`).
+**Sprint 25f/g — domare + matchskador:** ✅ Levererad (commit `dabc68a`). Ej playtestad.
 **Sprint 26 — cross-system skandalreferenser:** ✅ Levererad + kod-verifierad audit (commits `11802e1` + `6bbf8ca`).
 **Sprint 27 — narrativ djup-paket:** ✅ Levererad. Fas D (legend-roller + kafferum-pooler) commit `be33b3b`, text-pass commit `a814314`, fas E (karriärs-tidslinje) ingår i `be33b3b`.
-**Sprint 28 — narrativ djup-paket 2:** 🟡 Pågående. Fas A (pension-impact morale + kapten-vakuum) commit `701044a` ✅, fas B (legend match-commentary + aktiv legend-flagga) commit `abee31c` ✅. **Fas C (skärmdump-audit, Opus-only) återstår.**
+**Sprint 28 — narrativ djup-paket 2:** 🟡 Pågående. Fas A+B klara. **Fas C (skärmdump-audit, Opus-only) återstår.**
+**SPEC_MATCHDAGAR Fas 1–3:** ✅ Levererad. Fas 4 blockeras på Eriks SMHI-skript.
+**Specialdatum V2:** ✅ Levererad (commits `da686d9`, `8dfac75`). Arena-konstanter, lore-pooler, specialDateService.
 
-**Motor-kalibrering kvarstår:** `awayWinPct` 43.9% vs 38.3% (−5.6pp), `playoff_final` mål/match 9.17 vs 7.00 (+2.17), `cornerGoalPct` 26.2% vs 22.2%. Ingen aktiv sprint mot dessa.
+**Motor v1.1.4:** awayWinPct ✅, cornerGoalPct ✅, playoff_final ✅, homeWinPct ✅, minutfördelning ✅. **drawPct 16.9% vs 11.6% — accepterad strukturell begränsning (Poisson-symmetri).** comeback −1 halvlek 20.1% vs 24.5% — under tolerans, ej adresserat.
 
 **THE_BOMB-status:** verifierad mot kod 2026-04-26. Faktisk siffra 65-75% klar (inte 40-50% som strukturanalysen 2026-04-25 antydde). Se `docs/THE_BOMB_STATUS_2026-04-26.md` för detaljerad genomgång per subprojekt. **Uppdatering 2026-04-26 efter Sprint 27 audit:** 3.1 State of the Club bevisat klar, 2.2 Årets match bevisat klar (med dead code att städa).
 
@@ -23,13 +26,7 @@
 
 ## TEKNISK SKULD
 
-**`pickSeasonHighlight()` i seasonSummaryService.ts — dead code (upptäckt 2026-04-26).**
-Funktionen är exporterad men aldrig importerad. `selectMatchOfTheSeason()` (matchHighlightService.ts) är den som används av seasonEndProcessor och SeasonSummaryScreen. Lika typsystem `SeasonHighlight` (egen typ, används bara i döda funktionen).
-
-- **Städ-jobb:** Ta bort `pickSeasonHighlight` + `SeasonHighlight`-typen.
-- **Insats:** ~5 min Code.
-- **Akut?** Nej. Inget UI-problem. Kan ligga till nästa passande sprint.
-- **Refferens:** SPRINT_27_AUDIT.md § Fas A.
+**`pickSeasonHighlight()` — LÖST (2026-04-27).** Borttagen i commit `85170f7`.
 
 ---
 
@@ -56,7 +53,28 @@ Nästa: skicka URL till Erik. Finding 005 (utvisningar, S011) är nästa naturli
 
 ---
 
-## KLART IDAG (2026-04-27)
+## KLART IDAG (2026-04-27, session 3 — natt)
+
+| Leverans | Commits | Detalj |
+|---------|---------|--------|
+| Specialdatum V2 | `da686d9` | specialDateService.ts, arena-konstanter, lore-pooler, arenaName/venueCity på Fixture |
+| 3×30 dead code + test | `8dfac75` | matchFormat satt i sdCtx.weather, regressiontest |
+| Motor v1.1.2 playoff_final | `99a1dcd` | isFinal-flag, +28 defensive weight. 8.45→6.86 mål/match |
+| Motor v1.1.3 homeWinPct | `abd9c38` | baseAdv 0.14→0.19. homeWinPct 44.5→47.8% |
+| Motor v1.1.4 minutfördelning | `d402754` | GOAL_TIMING_BY_PERIOD[0] ↑, [6] ↓. 0-10: 7.0→9.4%, 60-70: 13.4→11.1% |
+| Revert chasing-mode | `c91e3d0` | drawPct-fix hade noll effekt, skadade comeback-rate |
+
+## KLART IDAG (2026-04-27, session 2 — kväll)
+
+| Leverans | Commits | Detalj |
+|---------|---------|--------|
+| SPEC_MATCHDAGAR Fas 1 — RNG-schema | `9b47927` | ROUND_WINDOWS, pickRoundDate(), buildSeasonCalendar(), MatchdaySlot med weekday/tipoffHour/specialflaggor. Aldrig mån/tors. |
+| SPEC_MATCHDAGAR Fas 2 — cup försäsong | `fa543d9` | Cup matchday 1–4 (aug–okt), liga matchday 5–26. getCupRoundDate(). CUP_MATCHDAYS={1:1,2:2,3:3,4:4}. 6 tester uppdaterade. |
+| SPEC_MATCHDAGAR Fas 3 — specialdatum-events | `85170f7` `755502f` | isFinaldag på Fixture, isAnnandagen-bug fixad, daily briefing + dag-före inbox + match-commentary för annandagen/nyårsbandy/finaldag/cup-finalhelgen. Opus-strängar via specialDateStrings.ts. |
+| Sprint 25f/g — domare + matchskador | `dabc68a` | refereeService (8 domare), matchInjuryService (6 arketyper), GranskaScreen domare-möte, MatchLiveScreen domarnamn. |
+| Teknisk skuld — pickSeasonHighlight | `85170f7` | Dead code borttaget (exports: 0 imports). |
+
+## KLART IDAG (2026-04-27, session 1 — förmiddag)
 
 | Leverans | Commits | Detalj |
 |---------|---------|--------|
@@ -633,22 +651,22 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 | `DECISIONS.md` | 2026-04-21 | Aktuell |
 | `DESIGN_SYSTEM.md` | 2026-04-14 | OK |
 | `STATUS.md` | 2026-04-27 | Uppdaterad med Sprint 27 + 28-A/B |
-| `KVAR.md` | 2026-04-27 | Denna fil |
-| `HANDOVER_2026-04-27.md` | 2026-04-27 | Senaste handover |
-| `HANDOVER_2026-04-26.md` | 2026-04-26 | Föregående |
-| `HANDOVER_2026-04-25.md` | 2026-04-25 | Arkiv |
+| `KVAR.md` | 2026-04-27 (sen kväll) | Denna fil |
+| `HANDOVER_2026-04-27b.md` | 2026-04-27 | Senaste handover (session 2) |
+| `HANDOVER_2026-04-27.md` | 2026-04-27 | Session 1 handover |
+| `HANDOVER_2026-04-26.md` | 2026-04-26 | Arkiv |
+| `SPEC_MATCHDAGAR.md` | 2026-04-27 | Fas 1–3 levererade, Fas 4 blockeras på SMHI |
+| `STRINGS_SPECIALDATUM.md` | 2026-04-27 | Implementerad i specialDateStrings.ts |
 | `SCORELINE_REFERENCE.md` | 2026-04-21 | Referens för 25b/c/d |
-| `SPRINT_25B_1_PENALTY_SEPARATION.md` | 2026-04-21 | Aktiv spec |
-| `TEXT_REVIEW_formations_2026-04-20.md` | 2026-04-20 (kväll) | GODKÄND |
 
 ---
 
 ## NÄSTA SESSION — FÖRESLAGEN ORDNING
 
-1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-04-27.md`.
-2. **Sprint 28-C** — skärmdump-vänlighet-audit (Opus-only, ~1h). Output: `docs/SCREENSHOT_AUDIT_2026-04-26.md`. Stäng Sprint 28 med `SPRINT_28_AUDIT.md`.
-3. **Kvarstående motor-gap:** Välj nästa motorsprint:
-   - `awayWinPct` 43.9% vs 38.3% (−5.6pp) — källa oklar, kan kräva strukturell ändring
-   - `cornerGoalPct` 26.2% vs 22.2% — eskalerar i slutspel, separat sprint
-   - `playoff_final mål/match` 9.17 vs 7.00 (+2.17) — fas-konstant i Sprint 25d
-4. **Playtest-runda 4:** Skandaler (kafferum, klack, press, motståndarcoach), riskySponsorContract, WageOverrunWarning. Inget av Sprint 25h/26 är verifierat i live-spel. Nu även Sprint 27+28: legend-roller i kafferummet, morale-hit vid pension, legend commentary i matchen.
+1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-04-27b.md`.
+2. **Playtest-runda 4** — prioritet 1. Verifiera i live-spel: annandagen/nyårsbandy-briefing + inbox, domare-möte i GranskaScreen, matchskador, legend-commentary, skandaler (kafferum/klack/press/motståndarcoach). Inget av Sprint 25f/g, 25h, 26, 27, 28, Fas1–3 är verifierat i live-spel.
+3. **Sprint 28-C** — Opus-only skärmdump-vänlighets-audit (~1h). Kräver ingen Code. Output: `SPRINT_28_AUDIT.md`.
+4. **Motor-gap** (välj ett):
+   - `awayWinPct` 43.9% vs 38.3% (−5.6pp)
+   - `cornerGoalPct` 26.2% vs 22.2%
+   - `playoff_final mål/match` 9.17 vs 7.00 (+2.17)
