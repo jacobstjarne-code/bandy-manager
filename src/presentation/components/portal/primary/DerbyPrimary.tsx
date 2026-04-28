@@ -76,7 +76,7 @@ export function DerbyPrimary({ game }: CardRenderProps) {
         fontSize: 22,
         fontWeight: 700,
         lineHeight: 1.2,
-        color: 'var(--text-light)',
+        color: 'var(--text-primary)',
         marginBottom: 6,
       }}>
         {opponent.name} · {isHome ? 'Hemma' : 'Borta'}

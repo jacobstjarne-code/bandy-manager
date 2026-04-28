@@ -49,7 +49,7 @@ export function EventPrimary({ game }: CardRenderProps) {
         fontSize: 20,
         fontWeight: 700,
         lineHeight: 1.2,
-        color: 'var(--text-light)',
+        color: 'var(--text-primary)',
         marginBottom: 8,
       }}>
         {title}

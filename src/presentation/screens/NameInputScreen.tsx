@@ -89,7 +89,7 @@ export function NameInputScreen() {
           }}
         />
         {nameError && (
-          <p style={{ color: 'var(--error, #e05c5c)', fontSize: 12, marginTop: 8, textAlign: 'center', maxWidth: 300 }}>
+          <p style={{ color: 'var(--danger)', fontSize: 12, marginTop: 8, textAlign: 'center', maxWidth: 300 }}>
             {nameError}
           </p>
         )}

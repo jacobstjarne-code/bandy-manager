@@ -57,7 +57,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
   return (
     <div style={{
       background: 'linear-gradient(135deg, var(--bg-elevated) 0%, rgba(212,164,96,0.20) 100%)',
-      border: '1px solid var(--gold)',
+      border: '1px solid var(--match-gold)',
       borderRadius: 8,
       padding: '14px 16px',
       marginBottom: 14,
@@ -70,7 +70,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
         textTransform: 'uppercase',
         fontWeight: 700,
         marginBottom: 8,
-        color: 'var(--gold)',
+        color: 'var(--match-gold)',
       }}>
         🏆 SM-FINAL · IMORGON
       </div>
@@ -79,7 +79,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
         fontSize: 22,
         fontWeight: 700,
         lineHeight: 1.2,
-        color: 'var(--text-light)',
+        color: 'var(--text-primary)',
         marginBottom: 6,
       }}>
         {arenaName}
@@ -96,7 +96,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
 
       {weatherStr && (
         <div style={{
-          background: 'rgba(0,0,0,0.25)',
+          background: 'rgba(0,0,0,0.06)',
           padding: '10px 12px',
           borderRadius: 6,
           marginBottom: 8,
@@ -137,7 +137,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
           fontFamily: 'var(--font-body)',
         }}
       >
-        Se din trupp →
+        Sätt lineup för finalen →
       </button>
     </div>
   )

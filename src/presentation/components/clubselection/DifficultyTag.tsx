@@ -10,7 +10,7 @@ const LABEL: Record<Props['difficulty'], string> = {
 
 const COLOR: Record<Props['difficulty'], string> = {
   easy: 'var(--success)',
-  medium: 'var(--gold)',
+  medium: 'var(--match-gold)',
   hard: 'var(--danger)',
 }
 
