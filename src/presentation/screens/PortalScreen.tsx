@@ -31,6 +31,12 @@ export function PortalScreen() {
     document.documentElement.style.setProperty('--bg-portal-surface', tone.bgSurface)
     document.documentElement.style.setProperty('--bg-portal-elevated', tone.bgElevated)
     document.documentElement.style.setProperty('--accent-portal', tone.accentTone)
+    return () => {
+      document.documentElement.style.removeProperty('--bg-portal')
+      document.documentElement.style.removeProperty('--bg-portal-surface')
+      document.documentElement.style.removeProperty('--bg-portal-elevated')
+      document.documentElement.style.removeProperty('--accent-portal')
+    }
   }, [game.currentDate])
 
   const Primary = layout.primary.Component
