@@ -16,6 +16,7 @@ import { IntroSequence } from '../screens/IntroSequence'
 import { GameShell, GameGuard } from './GameShell'
 import { DashboardScreen } from '../screens/DashboardScreen'
 import { PortalScreen } from '../screens/PortalScreen'
+import { SceneScreen } from '../screens/scenes/SceneScreen'
 import { SquadScreen } from '../screens/SquadScreen'
 import { MatchScreen } from '../screens/MatchScreen'
 import { MatchLiveScreen } from '../screens/MatchLiveScreen'
@@ -49,6 +50,7 @@ function BoardMeetingGuard() {
 
 function DashboardOrPortal() {
   const game = useGameStore(s => s.game)
+  if (game?.scenesEnabled && game?.pendingScene) return <SceneScreen />
   if (game?.portalEnabled) return <PortalScreen />
   return <DashboardScreen />
 }

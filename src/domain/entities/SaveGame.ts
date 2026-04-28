@@ -20,6 +20,7 @@ import type { TalentSearchRequest, TalentSuggestion, TalentSearchResult } from '
 import type { RoundSummaryData } from './RoundSummary'
 import type { Moment, MomentSource } from './Moment'
 import type { AssistantCoach } from './AssistantCoach'
+import type { PendingScene, SceneId } from './Scene'
 
 import type { Mecenat, MecenatType, MecenatPersonality, MecenatDemand, SocialEvent } from './Mecenat'
 import type { Referee, RefereeRelation } from './Referee'
@@ -59,6 +60,13 @@ export interface SaveGame {
   currentSeason: number
   currentMatchday?: number   // Aktuell matchdag (för portal-seed)
   portalEnabled?: boolean    // Feature flag — sätts till true när Portal är verifierad
+
+  // Scene-system (SPEC_SCENES_FAS_1 + SPEC_KAFFERUMMET_FAS_1)
+  scenesEnabled?: boolean              // Feature flag för scene-systemet
+  pendingScene?: PendingScene          // Sätts av sceneTriggerService
+  shownScenes?: SceneId[]              // Permanent historik (gäller ej recurring coffee_room)
+  sceneChoices?: Record<string, string> // Spelarens val per sceneId
+  lastCoffeeSceneRound?: number        // Round när senaste coffee_room visades
 
   clubs: Club[]
   players: Player[]

@@ -23,6 +23,7 @@ import type { AdvanceResult } from './advanceTypes'
 import { derivePreRoundContext } from './processors/preRoundContextProcessor'
 import { applyPostRoundFlags } from './processors/postRoundFlagsProcessor'
 import { applyRoundTraining } from './processors/trainingProcessor'
+import { detectSceneTrigger } from '../../domain/services/sceneTriggerService'
 import { applyPlayerStateUpdates } from './processors/playerStateProcessor'
 import { updatePlayerMatchStats } from './processors/statsProcessor'
 import { applyRoundDevelopment } from '../../domain/services/playerDevelopmentService'
@@ -1196,6 +1197,21 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     nextMatchday,
   })
   updatedGame = flagsResult.updatedGame
+
+  // Scene-trigger (SPEC_SCENES_FAS_1) — sätter pendingScene som AppRouter plockar upp
+  if (updatedGame.scenesEnabled && !updatedGame.pendingScene) {
+    const sceneId = detectSceneTrigger(updatedGame)
+    if (sceneId) {
+      const isRecurring = sceneId === 'coffee_room'
+      const alreadyShown = (updatedGame.shownScenes ?? []).includes(sceneId)
+      if (isRecurring || !alreadyShown) {
+        updatedGame = {
+          ...updatedGame,
+          pendingScene: { sceneId, triggeredAt: updatedGame.currentDate },
+        }
+      }
+    }
+  }
 
   return { game: updatedGame, roundPlayed: nextMatchday, seasonEnded: false, pendingEvents: allNewEvents, hasManagedCupMatch: hasManagedCupPending }
 }

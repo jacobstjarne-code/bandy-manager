@@ -15,6 +15,8 @@ interface GetState {
   advance: (suppressMatchNavigation?: boolean) => AdvanceResult | null
   resolveWeeklyDecision: (choice: 'A' | 'B') => void
   resolveAwayTrip: (decision: 'stay_home' | 'book_nice' | 'ask_foundation') => void
+  completeScene: (sceneId: import('../../../domain/entities/Scene').SceneId, choiceId?: string) => void
+  triggerCoffeeRoomScene: () => void
 }
 
 type Get = () => GetState
@@ -362,6 +364,38 @@ export function gameFlowActions(get: Get, set: Set) {
         )
       }
       return advance(true) // suppress navigation — caller handles it
+    },
+
+    completeScene: (sceneId: import('../../../domain/entities/Scene').SceneId, choiceId?: string) => {
+      const { game } = get()
+      if (!game) return
+      const updatedGame: SaveGame = { ...game }
+      updatedGame.pendingScene = undefined
+      if (sceneId === 'coffee_room') {
+        updatedGame.lastCoffeeSceneRound = updatedGame.currentMatchday ?? 0
+      } else {
+        updatedGame.shownScenes = [...(updatedGame.shownScenes ?? []), sceneId]
+      }
+      if (choiceId) {
+        updatedGame.sceneChoices = {
+          ...(updatedGame.sceneChoices ?? {}),
+          [sceneId]: choiceId,
+        }
+      }
+      set({ game: updatedGame })
+      void persistAutosave(updatedGame, 'completeScene')
+    },
+
+    triggerCoffeeRoomScene: () => {
+      const { game } = get()
+      if (!game) return
+      if (game.pendingScene) return
+      const updatedGame: SaveGame = {
+        ...game,
+        pendingScene: { sceneId: 'coffee_room', triggeredAt: game.currentDate },
+      }
+      set({ game: updatedGame })
+      void persistAutosave(updatedGame, 'triggerCoffeeRoomScene')
     },
   }
 }

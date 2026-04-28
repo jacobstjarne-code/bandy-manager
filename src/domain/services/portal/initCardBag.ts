@@ -41,6 +41,8 @@ import { InjuryStatusSecondary } from '../../../presentation/components/portal/s
 import { OpenBidsSecondary } from '../../../presentation/components/portal/secondary/OpenBidsSecondary'
 import { OpponentFormSecondary } from '../../../presentation/components/portal/secondary/OpponentFormSecondary'
 import { KlackenSecondary } from '../../../presentation/components/portal/secondary/KlackenSecondary'
+import { CoffeeRoomSecondary } from '../../../presentation/components/portal/secondary/CoffeeRoomSecondary'
+import { getCoffeeRoomScene } from '../coffeeRoomService'
 
 // Minimal components
 import { SquadStatusMinimal } from '../../../presentation/components/portal/minimal/SquadStatusMinimal'
@@ -135,6 +137,13 @@ const PORTAL_CARDS: DashboardCard[] = [
     weight: 25,
     triggers: [alwaysTrue],
     Component: EkonomiSecondary,
+  },
+  {
+    id: 'coffee_room_card',
+    tier: 'secondary',
+    weight: 60,
+    triggers: [(game) => getCoffeeRoomScene(game) !== null],
+    Component: CoffeeRoomSecondary,
   },
 
   // ── MINIMAL TIER ──────────────────────────────────────────────
