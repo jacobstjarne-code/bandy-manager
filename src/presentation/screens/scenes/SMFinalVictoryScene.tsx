@@ -30,7 +30,7 @@ export function SMFinalVictoryScene({ game, onComplete }: Props) {
   return (
     <div
       style={{
-        background: '#08060a',
+        background: 'var(--bg-scene-deep)',
         minHeight: 720,
         position: 'relative',
         overflow: 'hidden',

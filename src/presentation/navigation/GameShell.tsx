@@ -38,16 +38,18 @@ export function GameShell() {
 
   if (!game) return <Navigate to="/" replace />
 
+  const sceneActive = !!game.pendingScene
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <GameHeader />
       <PhaseIndicatorAuto />
-      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', paddingBottom: `calc(var(--bottom-nav-height) + var(--safe-bottom))` }}>
+      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', paddingBottom: sceneActive ? 0 : `calc(var(--bottom-nav-height) + var(--safe-bottom))` }}>
         <div key={location.pathname} className="screen-enter" style={{ minHeight: '100%' }}>
           <Outlet />
         </div>
       </div>
-      <BottomNav />
+      {!sceneActive && <BottomNav />}
       <DoctorFAB />
       <EventOverlay />
     </div>

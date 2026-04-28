@@ -117,6 +117,10 @@
   --bg-portal-elevated: #2a241e;
   --accent-portal:      #b8884c;
 
+  /* Scene backgrounds — statiska, påverkas inte av portal-tonalitet */
+  --bg-scene:       #1a1612;
+  --bg-scene-deep:  #08060a;
+
   --scroll-padding-bottom: 120px;
 
   /* Z-index scale */

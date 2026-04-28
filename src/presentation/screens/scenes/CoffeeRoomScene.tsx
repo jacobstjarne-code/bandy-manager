@@ -31,7 +31,7 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
   return (
     <div
       style={{
-        background: '#1a1612',
+        background: 'var(--bg-scene)',
         minHeight: '100vh',
         position: 'relative',
         overflow: 'hidden',
