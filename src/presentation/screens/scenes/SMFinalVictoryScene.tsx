@@ -103,7 +103,7 @@ export function SMFinalVictoryScene({ game, onComplete }: Props) {
             fontWeight: 400,
             marginBottom: 28,
             padding: '0 12px',
-            textAlign: 'left',
+            textAlign: 'center',
           }}
           dangerouslySetInnerHTML={{
             __html: data.bodyText.replace(

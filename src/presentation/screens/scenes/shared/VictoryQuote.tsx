@@ -19,7 +19,7 @@ export function VictoryQuote({ quote, attribution }: Props) {
         maxWidth: 320,
         fontFamily: 'Georgia, serif',
         fontSize: 13,
-        color: 'var(--text-secondary)',
+        color: 'var(--text-light-secondary)',
         fontStyle: 'italic',
         lineHeight: 1.5,
       }}

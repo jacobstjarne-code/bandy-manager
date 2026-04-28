@@ -28,8 +28,8 @@ export function SundayTrainingPlayerList({ players }: Props) {
               width: 28,
               height: 28,
               borderRadius: '50%',
-              background: 'var(--bg-elevated)',
-              border: '1px solid var(--border)',
+              background: 'var(--bg-dark-elevated)',
+              border: '1px solid var(--bg-leather)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -47,7 +47,7 @@ export function SundayTrainingPlayerList({ players }: Props) {
             style={{
               flex: 1,
               fontSize: 13,
-              color: 'var(--text-secondary)',
+              color: 'var(--text-light-secondary)',
               lineHeight: 1.5,
               fontFamily: 'Georgia, serif',
             }}

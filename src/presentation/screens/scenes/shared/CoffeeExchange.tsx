@@ -35,14 +35,14 @@ function SpeakerRow({ initial, speakerName, text, align }: SpeakerRowProps) {
           width: 32,
           height: 32,
           borderRadius: '50%',
-          background: 'var(--bg-elevated)',
-          border: '1px solid var(--border)',
+          background: 'var(--bg-dark-elevated)',
+          border: '1px solid var(--bg-leather)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontFamily: 'Georgia, serif',
           fontSize: 13,
-          color: 'var(--text-secondary)',
+          color: 'var(--text-light-secondary)',
           flexShrink: 0,
           marginTop: 2,
         }}
@@ -72,7 +72,7 @@ function SpeakerRow({ initial, speakerName, text, align }: SpeakerRowProps) {
           style={{
             fontFamily: 'Georgia, serif',
             fontSize: 13,
-            color: 'var(--text-secondary)',
+            color: 'var(--text-light-secondary)',
             lineHeight: 1.5,
             fontStyle: 'italic',
           }}

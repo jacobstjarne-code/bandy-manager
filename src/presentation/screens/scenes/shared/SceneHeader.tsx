@@ -11,9 +11,10 @@ interface Props {
   title: string
   subtitle?: string
   emoji?: string
+  subtitleMarginBottom?: number
 }
 
-export function SceneHeader({ genre, title, subtitle, emoji }: Props) {
+export function SceneHeader({ genre, title, subtitle, emoji, subtitleMarginBottom = 36 }: Props) {
   return (
     <div>
       <div
@@ -64,7 +65,7 @@ export function SceneHeader({ genre, title, subtitle, emoji }: Props) {
             fontStyle: 'italic',
             color: 'var(--text-muted)',
             textAlign: 'center',
-            marginBottom: 36,
+            marginBottom: subtitleMarginBottom,
             letterSpacing: 0.5,
           }}
         >

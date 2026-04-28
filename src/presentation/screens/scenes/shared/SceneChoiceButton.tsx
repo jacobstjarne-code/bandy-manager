@@ -28,8 +28,8 @@ export function SceneChoiceButton({ choice, onClick }: Props) {
       onClick={() => onClick(choice.id)}
       style={{
         background: hover ? 'rgba(184,136,76,0.10)' : 'rgba(34,29,24,0.7)',
-        border: `1px solid ${hover ? 'var(--accent)' : 'var(--border)'}`,
-        color: hover ? 'var(--text-light)' : 'var(--text-primary)',
+        border: `1px solid ${hover ? 'var(--accent)' : 'var(--bg-leather)'}`,
+        color: hover ? 'var(--text-light)' : 'var(--text-light-secondary)',
         padding: '12px 14px',
         borderRadius: 6,
         textAlign: 'left',

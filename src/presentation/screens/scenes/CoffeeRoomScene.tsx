@@ -30,9 +30,8 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
 
   return (
     <div
-      className="coffee-room-bg"
       style={{
-        background: 'var(--bg)',
+        background: '#1a1612',
         minHeight: '100vh',
         position: 'relative',
         overflow: 'hidden',
@@ -40,12 +39,15 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
         flexDirection: 'column',
       }}
     >
-      <SceneHeader
-        genre="I DETTA ÖGONBLICK"
-        title={scene.meta.title}
-        subtitle={scene.meta.subtitle}
-        emoji="☕"
-      />
+      <div style={{ padding: '18px 24px 0' }}>
+        <SceneHeader
+          genre="I DETTA ÖGONBLICK"
+          title={scene.meta.title}
+          subtitle={scene.meta.subtitle}
+          emoji="☕"
+          subtitleMarginBottom={20}
+        />
+      </div>
 
       <div
         style={{

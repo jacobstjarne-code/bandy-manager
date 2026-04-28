@@ -39,7 +39,7 @@ export function VictoryScore({
         style={{
           fontFamily: 'Georgia, serif',
           fontSize: 14,
-          color: 'var(--text-secondary)',
+          color: 'var(--text-light-secondary)',
           marginBottom: 4,
         }}
       >

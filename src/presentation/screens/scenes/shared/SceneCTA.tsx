@@ -36,7 +36,7 @@ export function SceneCTA({ label, onClick, variant = 'default' }: Props) {
             ? '0 6px 30px rgba(212,164,96,0.45)'
             : '0 4px 24px rgba(212,164,96,0.30)',
           cursor: 'pointer',
-          fontFamily: 'Georgia, serif',
+          fontFamily: 'var(--font-body)',
           transition: 'box-shadow 0.2s ease, transform 0.15s ease',
           transform: hover ? 'translateY(-1px)' : 'none',
         }}
@@ -54,14 +54,14 @@ export function SceneCTA({ label, onClick, variant = 'default' }: Props) {
       style={{
         width: '100%',
         padding: 14,
-        background: hover ? 'var(--accent-deep)' : 'var(--bg-elevated)',
+        background: hover ? 'var(--accent-deep)' : 'var(--bg-dark-elevated)',
         color: 'var(--text-light)',
-        border: `1px solid ${hover ? 'var(--accent)' : 'var(--border)'}`,
+        border: `1px solid ${hover ? 'var(--accent)' : 'var(--bg-leather)'}`,
         borderRadius: 8,
         fontSize: 13,
         fontWeight: 600,
         cursor: 'pointer',
-        fontFamily: 'Georgia, serif',
+        fontFamily: 'var(--font-body)',
         transition: 'background 0.15s ease, border-color 0.15s ease',
       }}
     >
