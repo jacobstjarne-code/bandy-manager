@@ -17,7 +17,7 @@ export function PhaseOverlay({ phase, onContinue }: PhaseOverlayProps) {
           <h2 style={{ fontSize: 28, fontWeight: 900, color: 'var(--accent)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
             FÖRLÄNGNING
           </h2>
-          <p style={{ fontSize: 15, color: 'var(--text-light-secondary)' }}>Oavgjort efter 90 minuter.</p>
+          <p style={{ fontSize: 15, color: 'var(--text-light-secondary)' }}>Oavgjort efter 60 minuter.</p>
           <p style={{ fontSize: 14, color: 'rgba(245,241,235,0.45)', marginTop: 4 }}>Ytterligare 2 × 15 minuter spelas.</p>
           <button onClick={onContinue} style={{
             marginTop: 28, padding: '13px 36px',

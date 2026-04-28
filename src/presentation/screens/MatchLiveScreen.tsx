@@ -344,31 +344,54 @@ export function MatchLiveScreen() {
       // Second half already generated — fall through and continue stepping
     }
 
-    // Interactive corner — pause and show UI (skip in commentary mode)
-    if (step.cornerInteractionData && !isFastForward && !activeCorner && !isCommentaryMode) {
-      setActiveCorner(step.cornerInteractionData)
-      setCornerOutcome(null)
+    // Interactive corner — pause and show UI; auto-resolve in fast-forward/commentary mode
+    if (step.cornerInteractionData && !activeCorner) {
+      if (!isFastForward && !isCommentaryMode) {
+        setActiveCorner(step.cornerInteractionData)
+        setCornerOutcome(null)
+        return
+      }
+      // Auto-resolve: pick a random zone/delivery so the score updates correctly
+      const zones: CornerZone[] = ['near', 'center', 'far']
+      const deliveries: CornerDelivery[] = ['hard', 'low', 'short']
+      handleCornerChoice(zones[Math.floor(Math.random() * 3)], deliveries[Math.floor(Math.random() * 3)], step.cornerInteractionData)
       return
     }
 
-    // Interactive penalty — pause and show UI (skip in commentary mode)
-    if (step.penaltyInteractionData && !isFastForward && !activePenalty && !isCommentaryMode) {
-      setActivePenalty(step.penaltyInteractionData)
-      setPenaltyOutcome(null)
+    // Interactive penalty — pause and show UI; auto-resolve in fast-forward/commentary mode
+    if (step.penaltyInteractionData && !activePenalty) {
+      if (!isFastForward && !isCommentaryMode) {
+        setActivePenalty(step.penaltyInteractionData)
+        setPenaltyOutcome(null)
+        return
+      }
+      const dirs: PenaltyDirection[] = ['left', 'center', 'right']
+      const heights: PenaltyHeight[] = ['low', 'high']
+      handlePenaltyChoice(dirs[Math.floor(Math.random() * 3)], heights[Math.floor(Math.random() * 2)], step.penaltyInteractionData)
       return
     }
 
-    // Counter-attack interaction — pause and show UI (skip in commentary mode)
-    if (step.counterInteractionData && !isFastForward && !activeCounter && !isCommentaryMode) {
-      setActiveCounter(step.counterInteractionData)
-      setCounterOutcome(null)
+    // Counter-attack interaction — pause and show UI; auto-resolve in fast-forward/commentary mode
+    if (step.counterInteractionData && !activeCounter) {
+      if (!isFastForward && !isCommentaryMode) {
+        setActiveCounter(step.counterInteractionData)
+        setCounterOutcome(null)
+        return
+      }
+      const choices: CounterChoice[] = ['sprint', 'build', 'earlyBall']
+      handleCounterChoice(choices[Math.floor(Math.random() * 3)], step.counterInteractionData)
       return
     }
 
-    // Free kick interaction — pause and show UI (skip in commentary mode)
-    if (step.freeKickInteractionData && !isFastForward && !activeFreeKick && !isCommentaryMode) {
-      setActiveFreeKick(step.freeKickInteractionData)
-      setFreeKickOutcome(null)
+    // Free kick interaction — pause and show UI; auto-resolve in fast-forward/commentary mode
+    if (step.freeKickInteractionData && !activeFreeKick) {
+      if (!isFastForward && !isCommentaryMode) {
+        setActiveFreeKick(step.freeKickInteractionData)
+        setFreeKickOutcome(null)
+        return
+      }
+      const fkChoices: FreeKickChoice[] = ['shoot', 'chipPass', 'layOff']
+      handleFreeKickChoice(fkChoices[Math.floor(Math.random() * 3)], step.freeKickInteractionData)
       return
     }
 
@@ -473,8 +496,9 @@ export function MatchLiveScreen() {
     return newRemainder
   }
 
-  function handleCornerChoice(zone: CornerZone, delivery: CornerDelivery) {
-    if (!activeCorner || !game || !fixture) return
+  function handleCornerChoice(zone: CornerZone, delivery: CornerDelivery, inlineData?: import('../../domain/services/cornerInteractionService').CornerInteractionData) {
+    const cornerData = inlineData ?? activeCorner
+    if (!cornerData || !game || !fixture) return
 
     const managedIsHome = fixture.homeClubId === game.managedClubId
     const allPlayers = game.players
@@ -485,8 +509,8 @@ export function MatchLiveScreen() {
       ? allPlayers.filter(p => p.clubId === fixture.awayClubId)
       : allPlayers.filter(p => p.clubId === fixture.homeClubId)
 
-    const cornerTaker = attackers.find(p => p.id === activeCorner.cornerTakerId) ?? attackers[0]
-    const rushers = activeCorner.rusherIds.map(id => attackers.find(p => p.id === id)).filter(Boolean) as typeof attackers
+    const cornerTaker = attackers.find(p => p.id === cornerData.cornerTakerId) ?? attackers[0]
+    const rushers = cornerData.rusherIds.map(id => attackers.find(p => p.id === id)).filter(Boolean) as typeof attackers
     const gk = defenders.find(p => p.position === PlayerPosition.Goalkeeper)
     const defOutfield = defenders.filter(p => p.position !== PlayerPosition.Goalkeeper)
 
@@ -498,8 +522,8 @@ export function MatchLiveScreen() {
       rushers,
       defOutfield,
       gk,
-      activeCorner.opponentPenaltyKill,
-      activeCorner.isHome,
+      cornerData.opponentPenaltyKill,
+      cornerData.isHome,
       sgMood,
       rand,
     )
@@ -507,7 +531,7 @@ export function MatchLiveScreen() {
     setCornerOutcome(outcome)
 
     const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
-    const minute = activeCorner.minute
+    const minute = cornerData.minute
 
     setSteps(prev => {
       const updatedCurrent = prev.map((s, idx) => {
@@ -542,29 +566,29 @@ export function MatchLiveScreen() {
       }
     }
 
-    // After 1.5s, clear corner state and advance step
     setTimeout(() => {
       setActiveCorner(null)
       setCornerOutcome(null)
       setCurrentStep(prev => prev + 1)
-    }, 1500)
+    }, isFastForward || isCommentaryMode ? 50 : 1500)
   }
 
-  function handlePenaltyChoice(dir: PenaltyDirection, height: PenaltyHeight) {
-    if (!activePenalty || !fixture || !game) return
+  function handlePenaltyChoice(dir: PenaltyDirection, height: PenaltyHeight, inlineData?: import('../../domain/services/penaltyInteractionService').PenaltyInteractionData) {
+    const penData = inlineData ?? activePenalty
+    if (!penData || !fixture || !game) return
 
     const managedIsHome = fixture.homeClubId === game.managedClubId
     const rand = mulberry32(Date.now())
     const keeperDive = resolveAIPenaltyKeeperDive('offensive', rand)
-    const outcome = resolvePenalty(activePenalty, dir, height, keeperDive, rand)
+    const outcome = resolvePenalty(penData, dir, height, keeperDive, rand)
     setPenaltyOutcome(outcome)
 
     const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
     const oppClubId = managedIsHome ? fixture.awayClubId : fixture.homeClubId
-    const shooterId = activePenalty.shooterId
-    const shooterLast = activePenalty.shooterName.split(' ').slice(-1)[0]
-    const keeperLast = activePenalty.keeperName.split(' ').slice(-1)[0]
-    const minute = activePenalty.minute
+    const shooterId = penData.shooterId
+    const shooterLast = penData.shooterName.split(' ').slice(-1)[0]
+    const keeperLast = penData.keeperName.split(' ').slice(-1)[0]
+    const minute = penData.minute
 
     setSteps(prev => {
       const updatedCurrent = prev.map((s, idx) => {
@@ -606,11 +630,12 @@ export function MatchLiveScreen() {
       setActivePenalty(null)
       setPenaltyOutcome(null)
       setCurrentStep(prev => prev + 1)
-    }, 1500)
+    }, isFastForward || isCommentaryMode ? 50 : 1500)
   }
 
-  function handleCounterChoice(choice: CounterChoice) {
-    if (!activeCounter || !fixture || !game) return
+  function handleCounterChoice(choice: CounterChoice, inlineData?: import('../../domain/services/counterAttackInteractionService').CounterInteractionData) {
+    const counterData = inlineData ?? activeCounter
+    if (!counterData || !fixture || !game) return
     const managedIsHome = fixture.homeClubId === game.managedClubId
     const allPlayers = game.players
     const attackers = managedIsHome
@@ -620,8 +645,8 @@ export function MatchLiveScreen() {
       ? allPlayers.filter(p => p.clubId === fixture.awayClubId)
       : allPlayers.filter(p => p.clubId === fixture.homeClubId)
 
-    const runner = attackers.find(p => p.id === activeCounter.runnerId) ?? attackers[0]
-    const support = attackers.find(p => p.id === activeCounter.supportId) ?? attackers[1]
+    const runner = attackers.find(p => p.id === counterData.runnerId) ?? attackers[0]
+    const support = attackers.find(p => p.id === counterData.supportId) ?? attackers[1]
     const gk = defenders.find(p => p.position === PlayerPosition.Goalkeeper)
 
     const rand = mulberry32(Date.now())
@@ -629,7 +654,7 @@ export function MatchLiveScreen() {
     setCounterOutcome(outcome)
 
     const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
-    const minute = activeCounter.minute
+    const minute = counterData.minute
 
     setSteps(prev => {
       const updatedCurrent = prev.map((s, idx) => {
@@ -663,11 +688,12 @@ export function MatchLiveScreen() {
       setActiveCounter(null)
       setCounterOutcome(null)
       setCurrentStep(prev => prev + 1)
-    }, 1500)
+    }, isFastForward || isCommentaryMode ? 50 : 1500)
   }
 
-  function handleFreeKickChoice(choice: FreeKickChoice) {
-    if (!activeFreeKick || !fixture || !game) return
+  function handleFreeKickChoice(choice: FreeKickChoice, inlineData?: import('../../domain/services/freeKickInteractionService').FreeKickInteractionData) {
+    const fkData = inlineData ?? activeFreeKick
+    if (!fkData || !fixture || !game) return
     const managedIsHome = fixture.homeClubId === game.managedClubId
     const allPlayers = game.players
     const defenders = managedIsHome
@@ -677,21 +703,21 @@ export function MatchLiveScreen() {
       ? allPlayers.filter(p => p.clubId === fixture.homeClubId)
       : allPlayers.filter(p => p.clubId === fixture.awayClubId)
 
-    const kicker = attackers.find(p => p.id === activeFreeKick.kickerId) ?? attackers[0]
+    const kicker = attackers.find(p => p.id === fkData.kickerId) ?? attackers[0]
     const gk = defenders.find(p => p.position === PlayerPosition.Goalkeeper)
 
     const rand = mulberry32(Date.now())
-    const outcome = resolveFreeKick(choice, kicker, gk, activeFreeKick, rand)
+    const outcome = resolveFreeKick(choice, kicker, gk, fkData, rand)
     setFreeKickOutcome(outcome)
 
     const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
-    const minute = activeFreeKick.minute
+    const minute = fkData.minute
 
     setSteps(prev => {
       const updatedCurrent = prev.map((s, idx) => {
         if (idx !== currentStep) return s
         const event = outcome.type === 'goal'
-          ? { type: MatchEventType.Goal, minute, clubId: managedClubId, playerId: activeFreeKick.kickerId,
+          ? { type: MatchEventType.Goal, minute, clubId: managedClubId, playerId: fkData.kickerId,
               description: outcome.description }
           : { type: MatchEventType.Save, minute, clubId: managedClubId,
               description: outcome.description }
@@ -719,7 +745,7 @@ export function MatchLiveScreen() {
       setActiveFreeKick(null)
       setFreeKickOutcome(null)
       setCurrentStep(prev => prev + 1)
-    }, 1500)
+    }, isFastForward || isCommentaryMode ? 50 : 1500)
   }
 
   function handleLastMinutePressChoice(_choice: PressChoice) {

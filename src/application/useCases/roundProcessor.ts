@@ -482,9 +482,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const calendarSlot = calendar.find(s => s.matchday === nextMatchday)
   const newDate = calendarSlot?.date ?? getRoundDate(game.currentSeason, nextMatchday)
 
+  // Only consider fixtures that were SCHEDULED at start of this advance — pre-existing completed
+  // fixtures (e.g. a live cup match already saved before advance()) must not override
+  // lastCompletedFixtureId, which saveLiveMatchResult already set correctly.
+  const scheduledManagedAtStart = new Set(
+    roundFixtures
+      .filter(f => f.status === FixtureStatus.Scheduled &&
+                   (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+      .map(f => f.id)
+  )
   const justCompletedManagedFixture = simulatedFixtures.find(
     f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
-         f.status === FixtureStatus.Completed
+         f.status === FixtureStatus.Completed &&
+         scheduledManagedAtStart.has(f.id)
   )
 
   // DREAM-003: derby win ripple — big margin win in a derby gives cross-system boosts

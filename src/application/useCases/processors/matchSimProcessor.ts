@@ -159,6 +159,14 @@ export function simulateRound(
   const seasonCalendar = buildSeasonCalendar(game.currentSeason)
   const currentCalendarSlot = seasonCalendar.find(s => s.matchday === nextMatchday)
 
+  // True when the managed club has a scheduled cup fixture on this matchday.
+  // Used to prevent the liga fixture from being simulated while the cup match is still pending.
+  const hasManagedCupScheduledOnMatchday = roundFixtures.some(
+    f => f.isCup &&
+         f.status === FixtureStatus.Scheduled &&
+         (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+  )
+
   for (let i = 0; i < roundFixtures.length; i++) {
     const fixture = roundFixtures[i]
 
@@ -173,12 +181,13 @@ export function simulateRound(
       continue
     }
 
-    // Skip scheduled LEAGUE fixtures for the managed club unless they have a saved lineup
+    // Skip scheduled LEAGUE fixtures for the managed club when no lineup is set,
+    // OR when a managed cup match is also pending on this matchday (avoid double-simulation).
     if (
       !fixture.isCup &&
       fixture.status === FixtureStatus.Scheduled &&
       (fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId) &&
-      game.managedClubPendingLineup === undefined
+      (game.managedClubPendingLineup === undefined || hasManagedCupScheduledOnMatchday)
     ) {
       hasManagedCupPending = true
       continue
