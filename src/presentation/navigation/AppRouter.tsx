@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { setGlobalNavigate } from './globalNavigate'
 
@@ -40,6 +40,7 @@ import { QFSummaryScreen } from '../screens/QFSummaryScreen'
 import { RoundSummaryScreen } from '../screens/RoundSummaryScreen'
 import { SimSummaryScreen } from '../screens/SimSummaryScreen'
 import { useGameStore } from '../store/gameStore'
+import { PendingScreen } from '../../domain/enums'
 
 function BoardMeetingGuard() {
   const game = useGameStore(s => s.game)
@@ -47,8 +48,29 @@ function BoardMeetingGuard() {
   return <BoardMeetingScreen />
 }
 
+const PENDING_SCREEN_ROUTES: Record<PendingScreen, string> = {
+  [PendingScreen.BoardMeeting]:    '/game/board-meeting',
+  [PendingScreen.PreSeason]:       '/game/pre-season',
+  [PendingScreen.HalfTimeSummary]: '/game/half-time-summary',
+  [PendingScreen.PlayoffIntro]:    '/game/playoff-intro',
+  [PendingScreen.QFSummary]:       '/game/qf-summary',
+  [PendingScreen.SeasonSummary]:   '/game/season-summary',
+}
+
 function DashboardOrPortal() {
   const game = useGameStore(s => s.game)
+  const navigate = useNavigate()
+  const redirected = useRef(false)
+
+  useEffect(() => {
+    if (!game || redirected.current) return
+    if (game.pendingScreen) {
+      const route = PENDING_SCREEN_ROUTES[game.pendingScreen]
+      if (route) { redirected.current = true; navigate(route, { replace: true }) }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game?.pendingScreen])
+
   if (game?.pendingScene) return <SceneScreen />
   return <PortalScreen />
 }

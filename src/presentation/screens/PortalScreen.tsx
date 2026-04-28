@@ -44,7 +44,7 @@ export function PortalScreen() {
   return (
     <div
       className="screen-enter texture-wood card-stack"
-      style={{ background: 'var(--bg-portal)', padding: '14px' }}
+      style={{ background: 'var(--bg-portal)', padding: '14px', minHeight: '100%' }}
     >
       <Primary game={game} />
       <PortalSecondarySection cards={layout.secondary} game={game} />

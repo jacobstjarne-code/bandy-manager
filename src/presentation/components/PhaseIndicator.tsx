@@ -77,7 +77,7 @@ function getCurrentPhase(pathname: string): 'prepare' | 'play' | 'review' {
   return 'prepare'
 }
 
-const HIDE_PHASE_INDICATOR = ['/champion', '/pre-season', '/season-summary', '/board-meeting', '/game-over']
+const HIDE_PHASE_INDICATOR = ['/champion', '/pre-season', '/season-summary', '/board-meeting', '/game-over', '/dashboard']
 
 export function PhaseIndicatorAuto() {
   const location = useLocation()

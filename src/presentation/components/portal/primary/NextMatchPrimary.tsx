@@ -1,3 +1,4 @@
+import type React from 'react'
 import type { CardRenderProps } from '../portalTypes'
 import { NextMatchCard } from '../../dashboard/NextMatchCard'
 
@@ -58,22 +59,32 @@ export function NextMatchPrimary({ game }: CardRenderProps) {
   const dynamicHomeWins = playoffSeries ? (managedIsSeriesHome ? playoffSeries.homeWins : playoffSeries.awayWins) : 0
   const dynamicAwayWins = playoffSeries ? (managedIsSeriesHome ? playoffSeries.awayWins : playoffSeries.homeWins) : 0
 
-  const hasPendingLineup = !!(game.managedClubPendingLineup)
+  const hasPreviousMatch = game.fixtures.some(
+    f => f.status === 'completed' && (f.homeClubId === managedId || f.awayClubId === managedId)
+  )
+  const hasPendingLineup = !!(game.managedClubPendingLineup) && hasPreviousMatch
 
+  // Override light-theme surface tokens — NextMatchCard was built for Dashboard (--bg-surface = #FAF8F4).
+  // Portal uses a dark background; without this wrapper the card renders white against --bg-portal.
   return (
-    <NextMatchCard
-      nextFixture={nextFixture}
-      opponent={opponent}
-      isHome={isHome}
-      club={club}
-      game={game}
-      isPlayoffFixture={isPlayoffFixture}
-      playoffSeries={playoffSeries}
-      dynamicHomeWins={dynamicHomeWins}
-      dynamicAwayWins={dynamicAwayWins}
-      matchWeather={matchWeather}
-      hasPendingLineup={hasPendingLineup}
-      lineupConfirmedThisRound={game.lineupConfirmedThisRound}
-    />
+    <div style={{
+      '--bg-surface': 'var(--bg-portal-surface)',
+      '--border':     'var(--border-dark)',
+    } as React.CSSProperties}>
+      <NextMatchCard
+        nextFixture={nextFixture}
+        opponent={opponent}
+        isHome={isHome}
+        club={club}
+        game={game}
+        isPlayoffFixture={isPlayoffFixture}
+        playoffSeries={playoffSeries}
+        dynamicHomeWins={dynamicHomeWins}
+        dynamicAwayWins={dynamicAwayWins}
+        matchWeather={matchWeather}
+        hasPendingLineup={hasPendingLineup}
+        lineupConfirmedThisRound={game.lineupConfirmedThisRound}
+      />
+    </div>
   )
 }
