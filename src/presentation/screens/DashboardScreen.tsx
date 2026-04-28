@@ -121,7 +121,7 @@ export function DashboardScreen() {
       if (eliminated && f.matchday > 26 && !f.isCup) return false
       return true
     })
-    .sort((a, b) => a.matchday - b.matchday)[0] ?? null
+    .sort((a, b) => a.matchday - b.matchday || (b.isCup ? 1 : 0) - (a.isCup ? 1 : 0))[0] ?? null
 
   const matchWeather = nextFixture ? (game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id) : undefined
   const opponent = nextFixture ? game.clubs.find(c => c.id === (nextFixture.homeClubId === game.managedClubId ? nextFixture.awayClubId : nextFixture.homeClubId)) ?? null : null
@@ -175,7 +175,7 @@ export function DashboardScreen() {
   const playedRounds = game.fixtures.filter(f => f.status === 'completed' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) && !f.isCup).length
   const nextManagedScheduled = game.fixtures
     .filter(f => f.status === 'scheduled' && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
-    .sort((a, b) => a.matchday - b.matchday)[0]
+    .sort((a, b) => a.matchday - b.matchday || (b.isCup ? 1 : 0) - (a.isCup ? 1 : 0))[0]
   // Hide simulate button if next managed fixture is a cup match — user should play it themselves
   const canSimulateRemaining = hasScheduledFixtures && playedRounds >= 12 && !game.playoffBracket && !nextManagedScheduled?.isCup && game.pendingScreen !== PendingScreen.HalfTimeSummary
 

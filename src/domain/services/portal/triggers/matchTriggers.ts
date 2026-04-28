@@ -27,7 +27,7 @@ function getNextManagedFixture(game: SaveGame): Fixture | null {
       if (eliminated && f.matchday > 26 && !f.isCup) return false
       return true
     })
-    .sort((a, b) => a.matchday - b.matchday)[0] ?? null
+    .sort((a, b) => a.matchday - b.matchday || (b.isCup ? 1 : 0) - (a.isCup ? 1 : 0))[0] ?? null
 }
 
 /** Returnerar motståndarens klubb-id för given fixture. */

@@ -750,7 +750,7 @@ export const useNextFixture = () => {
       (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
       f.status === 'scheduled'
     )
-    .sort((a, b) => a.matchday - b.matchday)[0] ?? null
+    .sort((a, b) => a.matchday - b.matchday || (b.isCup ? 1 : 0) - (a.isCup ? 1 : 0))[0] ?? null
 }
 
 // Returns true if the managed club has a valid pending lineup (11 starters, no injured)
