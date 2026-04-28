@@ -36,6 +36,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     managedIsHome,
     storylines,
     fixtureMonth,
+    underdogBoost,
   } = input
 
   // ── Run first half (fast mode) ───────────────────────────────────────────
@@ -57,6 +58,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     managedIsHome,
     storylines,
     fixtureMonth,
+    underdogBoost,
     mode: 'fast' as const,
   }
 

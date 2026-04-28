@@ -303,6 +303,7 @@ export function simulateRound(
       fixtureMonth: new Date(game.currentDate).getMonth() + 1,
       refStyle: referee.style,
       refereeName: getRefereeDisplayName(referee),
+      underdogBoost: game.currentSeasonSignature?.modifiers.underdogBoost,
     })
 
     // Post-match: referee meeting check (managed fixture only)

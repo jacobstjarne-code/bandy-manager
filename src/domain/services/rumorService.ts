@@ -40,8 +40,9 @@ export function generateTransferRumor(game: SaveGame, rand: () => number): Rumor
   // Only generate between matchday 5-18
   if (matchday < 5 || matchday > 18) return null
 
-  // ~30% chance per round
-  if (rand() > 0.30) return null
+  // ~30% chance per round (hot_transfer_market signature can raise this)
+  const rumorMult = game.currentSeasonSignature?.modifiers.rumorFrequencyMultiplier ?? 1.0
+  if (rand() > 0.30 * rumorMult) return null
 
   // 50/50: real player rumor vs atmosphere
   if (rand() < 0.5) {

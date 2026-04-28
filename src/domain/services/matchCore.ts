@@ -324,6 +324,13 @@ function* simulateMatchCore(
 
   let awayAttack = (awayEval.offenseScore * awayMods.offenseModifier) / 100
   const awayDefense = (awayEval.defenseScore * awayMods.defenseModifier) / 100
+
+  // dream_round signature: boost the weaker team's attack
+  const underdogBoost = (input as import('./matchUtils').StepByStepInput).underdogBoost
+  if (underdogBoost && underdogBoost > 0) {
+    if (homeEval.offenseScore < awayEval.offenseScore) homeAttack *= (1 + underdogBoost)
+    else if (awayEval.offenseScore < homeEval.offenseScore) awayAttack *= (1 + underdogBoost)
+  }
   const awayCorner  = (awayEval.cornerScore  * awayMods.cornerModifier)  / 100
   const awayGK      = awayEval.goalkeeperScore / 100
   const awayDisciplineRisk = (awayEval.disciplineRisk * awayMods.disciplineModifier) / 100

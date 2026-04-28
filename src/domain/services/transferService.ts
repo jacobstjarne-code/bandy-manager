@@ -58,8 +58,9 @@ export function generateIncomingBids(
   )
   if (hasActiveBid) return []
 
-  // 15% chance per round
-  if (rand() > 0.15) return []
+  // 15% chance per round (hot_transfer_market signature can raise this)
+  const bidMult = game.currentSeasonSignature?.modifiers.incomingBidMultiplier ?? 1.0
+  if (rand() > 0.15 * bidMult) return []
 
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
   if (!managedClub) return []

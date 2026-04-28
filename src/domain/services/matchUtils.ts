@@ -84,6 +84,7 @@ export interface SimulateMatchInput {
   fixtureMonth?: number  // 1-12, for seasonal ice hardness (DREAM-004)
   refStyle?: 'strict' | 'lenient' | 'inconsistent'
   refereeName?: string  // for opening commentary display
+  underdogBoost?: number  // dream_round signature: boosts weaker team's attack
 }
 
 export function computeWeatherEffects(w: Weather) {
@@ -310,6 +311,7 @@ export interface StepByStepInput {
   refStyle?: 'strict' | 'lenient' | 'inconsistent'
   refereeName?: string  // for opening commentary display
   arenaName?: string
+  underdogBoost?: number  // dream_round signature: boosts weaker team's attack
   isAnnandagen?: boolean
   isNyarsbandy?: boolean
   isCupFinalhelgen?: boolean
