@@ -569,3 +569,22 @@ if (weather?.matchFormat === '3x30') return FINALDAG_COMMENTARY_3X30
 **Känn igen:** Tester gröna men en `if`-gren har aldrig triggats i live-spel. Ofta märks det först i playtest när en specialsituation uppstår och förväntad text inte syns. Indikatorer i kod-review: en villkorad pool där villkoret beror på ett fält i ett dataobjekt som byggs inline (`{ ... matchFormat: ??? }`) eller som passerar genom flera lager utan att uttryckligen vidarebefordras.
 
 **Historik:** Sprint Specialdatum V2, 2026-04-27. `FINALDAG_COMMENTARY_3X30`-poolen definierad och testad, men `matchCore.ts` byggde `sdCtx.weather` inline utan att kopiera `matchFormat`-fältet. Hook fungerade i unit-test (mockat weather), men i produktion var fältet alltid `undefined`. Upptäckt i audit, fixad i samma sprint med interim-trigger på `temperature <= -17`. Test tillagt som följer kedjan från weather-generering till commentary-pool.
+
+---
+
+## 19. Pixel-jämförelse i isolation vs integrations-vy
+
+**Mönster:** Pixel-audit rapporterar "inga avvikelser" för en ny komponent, men komponenten ser fel ut i live-app — fel bakgrund, tokens som krockar med omgivningen, eller layout-gap som bara syns när hela skärmen renderas.
+
+**Rotorsak:** Komponent-audit verifierar komponenten mot dess egen mock, men inte mot *integrationsvyn* — den faktiska skärm där komponenten renderas tillsammans med befintliga wrappade komponenter. Klassexempel: `NextMatchCard` är byggd för DashboardScreen (ljust tema). `NextMatchPrimary` wrappar `NextMatchCard` utan token-anpassning. Pixel-audit av `NextMatchPrimary.tsx` i isolation visar inget fel — felet syns bara när Portal (mörk bakgrund) renderar kortet.
+
+**Fix:** Lägg till en integrationsvy-check i auditen för varje ny komponent som renderas inuti ett befintligt system (Portal, GameShell, MatchLiveScreen, etc.): "I vilket sammanhang renderas denna komponent, och har jag verifierat den i *det* sammanhanget — inte bara i isolation?"
+
+Konkret checklista:
+- Ny Portal-primary/secondary: verifiera i `/game/dashboard` med faktisk game-state omgång 1.
+- Ny scene-komponent: verifiera i `SceneScreen` med pendingScene satt.
+- Ny dashboard-komponent: verifiera i DashboardScreen (om den fortfarande används) OCH i Portal.
+
+**Känn igen:** Audit-rapport visar korrekt komponent-rendering, men Jacob hittar tokenkrock i playtest. Signal: ny komponent wrappas runt en *äldre* komponent som byggdes för ett annat tema.
+
+**Historik:** Playtest 2026-04-28. `NextMatchPrimary` wrappade `NextMatchCard` (DashboardScreen-komponent, ljus tema). Pixel-audit av `NextMatchPrimary` och `SeasonSignatureSecondary` gjordes i isolation mot mock. `NextMatchCard`'s `card-sharp` + `var(--bg-surface)` renderade vit mot Portals `--bg-portal` mörka bakgrund. Fixat i commit `a41fff3` med CSS-var-override i wrapper.

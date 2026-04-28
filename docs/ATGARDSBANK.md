@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-04-28 — Playtest-fynd prio 3
+
+Källa: `docs/playtest/PLAYTEST_2026-04-28_kvall.md`
+Prioritet: **låg — design-iteration, inte bugg**
+
+- **Klacken-citat utan kontext (Fel #7):** "Jag sitter på samma plats sedan 1997" visas omgång 1 säsong 1 — citatet förutsätter en relation som spelaren inte har än. Åtgärd: kontextualisera klack-citat med säsongs/omgångsguard, eller välj mer neutrala citat tidigt. Tas i Klacken-Fas-2.
+- **MoreInfoFold-knapp är placeholder (Fel #8):** `+ Akademi · Cup · Klacken · Andra matcher`-knappen har `onClick={() => {/* TODO */}}` och gör ingenting. Antingen implementera fold-logiken eller ta bort knappen. Tas när Portal-Fas-2 specas.
+
+---
+
 ## 2026-04-28 — Filstorleks-audit (Typ A)
 
 Källa: `docs/code-review/REVIEW_2026-04-28_A.md`
