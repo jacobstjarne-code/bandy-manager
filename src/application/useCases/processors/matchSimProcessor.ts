@@ -370,7 +370,7 @@ export function simulateRound(
       const isDerby = !!rivalry
       const injuryEvent = checkForMatchInjury({
         player,
-        minute: Math.floor(injuryRand() * 90),
+        minute: Math.floor(injuryRand() * 60),
         isGoalkeeperInjury: false,
         weather: matchWeather.weather,
         isDerby,

@@ -32,12 +32,12 @@ export interface MatchInjuryEvent {
 // ── Base rates and durations ─────────────────────────────────────────────────
 
 const INJURY_BASE_RATES: Record<MatchInjuryType, number> = {
-  skenan:                1 / 500,
-  fall_pa_is:            1 / 40,
-  larkaka:               1 / 8,
-  boll_i_ansiktet:       1 / 15,
-  muskel_overbelastning: 1 / 25,
-  hjarnskakning:         1 / 100,
+  skenan:                1 / 5000,
+  fall_pa_is:            1 / 400,
+  larkaka:               1 / 80,
+  boll_i_ansiktet:       1 / 150,
+  muskel_overbelastning: 1 / 250,
+  hjarnskakning:         1 / 1000,
 }
 
 const INJURY_WEEKS: Record<MatchInjuryType, [number, number]> = {
