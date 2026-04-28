@@ -67,7 +67,7 @@ export function NewGameScreen() {
   const [isStarting, setIsStarting] = useState(false)
 
   function capitalizeName(name: string): string {
-    return name.split(' ').map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ')
+    return name.split(' ').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ')
   }
 
   const tryAdvanceFromName = () => {

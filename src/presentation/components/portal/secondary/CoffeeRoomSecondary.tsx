@@ -25,7 +25,6 @@ export function CoffeeRoomSecondary({ game }: CardRenderProps) {
         marginBottom: 0,
         borderRadius: '0 6px 6px 0',
         cursor: 'pointer',
-        gridColumn: 'span 2',
       }}
     >
       <div

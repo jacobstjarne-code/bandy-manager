@@ -31,7 +31,6 @@ export function KlackenSecondary({ game }: CardRenderProps) {
         marginBottom: 0,
         borderRadius: '0 6px 6px 0',
         cursor: 'pointer',
-        gridColumn: 'span 2',
       }}
       onClick={() => navigate('/game/club', { state: { tab: 'orten' } })}
     >

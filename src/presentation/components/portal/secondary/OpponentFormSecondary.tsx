@@ -17,6 +17,8 @@ export function OpponentFormSecondary({ game }: CardRenderProps) {
 
   const standing = game.standings.find(s => s.clubId === opponentId)
   const recentForm = getFormResults(opponentId, game.fixtures, game.clubs)
+  if (recentForm.length === 0) return null
+
   const formStr = recentForm.slice(-5).map(r => r.result).join(' ')
 
   return (

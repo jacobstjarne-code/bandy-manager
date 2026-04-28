@@ -52,23 +52,6 @@ export function PortalScreen() {
       <Primary game={game} />
       <PortalSecondarySection cards={layout.secondary} game={game} />
       <PortalMinimalBar cards={layout.minimal} game={game} />
-      <div
-        style={{
-          display: 'block',
-          textAlign: 'center',
-          background: 'transparent',
-          border: '1px dashed var(--border)',
-          color: 'var(--text-muted)',
-          padding: 8,
-          borderRadius: 6,
-          marginBottom: 14,
-          fontSize: 10,
-          cursor: 'pointer',
-        }}
-        onClick={() => {/* TODO: expandera MoreInfoFold */}}
-      >
-        + Akademi · Cup · Klacken · Andra matcher
-      </div>
     </div>
   )
 }
