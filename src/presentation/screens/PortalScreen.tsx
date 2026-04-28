@@ -31,11 +31,14 @@ export function PortalScreen() {
     document.documentElement.style.setProperty('--bg-portal-surface', tone.bgSurface)
     document.documentElement.style.setProperty('--bg-portal-elevated', tone.bgElevated)
     document.documentElement.style.setProperty('--accent-portal', tone.accentTone)
+    // Body bg shines through scroll-container paddingBottom without this override.
+    document.body.style.background = tone.bgPrimary
     return () => {
       document.documentElement.style.removeProperty('--bg-portal')
       document.documentElement.style.removeProperty('--bg-portal-surface')
       document.documentElement.style.removeProperty('--bg-portal-elevated')
       document.documentElement.style.removeProperty('--accent-portal')
+      document.body.style.background = ''
     }
   }, [game.currentDate])
 

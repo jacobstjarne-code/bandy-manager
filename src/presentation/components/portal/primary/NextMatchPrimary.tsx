@@ -64,12 +64,18 @@ export function NextMatchPrimary({ game }: CardRenderProps) {
   )
   const hasPendingLineup = !!(game.managedClubPendingLineup) && hasPreviousMatch
 
-  // Override light-theme surface tokens — NextMatchCard was built for Dashboard (--bg-surface = #FAF8F4).
-  // Portal uses a dark background; without this wrapper the card renders white against --bg-portal.
+  // Override light-theme tokens — NextMatchCard was built for Dashboard (light bg, dark text).
+  // Portal uses a dark background; without these overrides the card renders with white background
+  // and near-black text (#1A1A18) that is invisible against --bg-portal-surface (#221d18).
   return (
     <div style={{
-      '--bg-surface': 'var(--bg-portal-surface)',
-      '--border':     'var(--border-dark)',
+      '--bg-surface':    'var(--bg-portal-surface)',
+      '--bg-leather':    'var(--bg-portal-elevated)',
+      '--border':        'var(--border-dark)',
+      '--text-primary':  'var(--text-light)',
+      '--text-secondary':'var(--text-light-secondary)',
+      '--text-muted':    'rgba(196,186,168,0.55)',
+      '--match-home-bg': 'var(--bg-portal-elevated)',
     } as React.CSSProperties}>
       <NextMatchCard
         nextFixture={nextFixture}

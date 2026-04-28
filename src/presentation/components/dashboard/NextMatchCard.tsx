@@ -406,7 +406,7 @@ export function NextMatchCard({
             ? { text: 'Redo ✓', cls: 'tag tag-green', pulse: false }
             : { text: 'Förra uppst.', cls: 'tag tag-outline', pulse: false }
           return (
-            <div style={{ marginTop: 8, paddingTop: 6, borderTop: '1px solid var(--border)', display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div style={{ marginTop: 8, paddingTop: 6, display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
               <span
                 className={lineupTag.cls}
                 style={{ gap: 3, fontSize: 8, animation: lineupTag.pulse ? 'pulseRing 2s ease-in-out infinite' : undefined }}
