@@ -669,3 +669,15 @@ a {
   font-size: 12px;
   color: var(--text-secondary);
 }
+
+/* Scene-system — kafferummets subtila bakgrundstextur */
+.coffee-room-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(184,136,76,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(184,136,76,0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}

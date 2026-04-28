@@ -8,6 +8,14 @@ interface CoffeeQuote {
   text: string
 }
 
+export interface CoffeeScene {
+  exchanges: Array<[string, string, string, string]>
+  meta: {
+    title: string
+    subtitle?: string
+  }
+}
+
 const GENERIC_EXCHANGES: Array<[string, string, string, string]> = [
   ['Kioskvakten', 'Ingen kommer betala 25 kr för en korv i den här kylan.', 'Kassören', 'Det sa du förra året. Vi sålde slut.'],
   ['Materialaren', 'Tre klubbor gick sönder igår.', 'Vaktmästaren', 'Beställ fem. Det blir kallt i veckan.'],
@@ -356,4 +364,84 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
   }
 
   return { speaker: speakerName, text }
+}
+
+/**
+ * getCoffeeRoomScene — returnerar 1-3 exchanges för Kafferummet-scenen.
+ * Returnerar null om ingen omgång spelats (säsongsstart) eller data saknas.
+ *
+ * Exchange-format: [speakerA, textA, speakerB, textB] — samma format
+ * som GENERIC_EXCHANGES internt. Texten levereras *utan* citationstecken;
+ * komponenten lägger på dem vid render.
+ */
+export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
+  const round = game.fixtures
+    .filter(f => f.status === 'completed' && !f.isCup)
+    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+  if (round === 0) return null
+
+  const matchday = game.currentMatchday ?? 0
+  if (matchday === 0) return null
+
+  // Pool: GENERIC + ev. STREAK om streak finns
+  const pool: Array<[string, string, string, string]> = []
+  // Filtrera bort placeholder-rader med oresolverade tokens
+  for (const ex of GENERIC_EXCHANGES) {
+    if (ex[1].includes('{youthName}')) {
+      const youthName = (game.youthTeam?.players ?? [])[0]?.lastName
+      if (!youthName) continue
+      pool.push([ex[0], ex[1].replace('{youthName}', youthName), ex[2], ex[3]])
+    } else {
+      pool.push(ex)
+    }
+  }
+
+  // Streak-exchanges som tilläggspool när streak finns
+  const recentManaged = game.fixtures
+    .filter(
+      f =>
+        f.status === 'completed' &&
+        !f.isCup &&
+        (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId),
+    )
+    .sort((a, b) => b.matchday - a.matchday)
+    .slice(0, 3)
+  if (recentManaged.length >= 3) {
+    const results = recentManaged.map(f => {
+      const isHome = f.homeClubId === game.managedClubId
+      const my = isHome ? f.homeScore : f.awayScore
+      const their = isHome ? f.awayScore : f.homeScore
+      return my > their ? 'win' : my < their ? 'loss' : 'draw'
+    })
+    if (results.every(r => r === 'win')) pool.push(...STREAK_EXCHANGES.winning)
+    else if (results.every(r => r === 'loss')) pool.push(...STREAK_EXCHANGES.losing)
+  }
+
+  if (pool.length === 0) return null
+
+  // Deterministiskt antal 1-3 baserat på matchday
+  const count = Math.min(pool.length, (matchday % 3) + 1)
+  const seed = round * 11 + game.currentSeason * 31
+
+  // Plocka `count` distinkta index
+  const used = new Set<number>()
+  const exchanges: Array<[string, string, string, string]> = []
+  for (let i = 0; i < count; i++) {
+    let idx = Math.abs(seed * (i + 7)) % pool.length
+    let guard = 0
+    while (used.has(idx) && guard < pool.length) {
+      idx = (idx + 1) % pool.length
+      guard++
+    }
+    used.add(idx)
+    exchanges.push(pool[idx])
+  }
+
+  return {
+    exchanges,
+    meta: {
+      title: 'Kafferummet',
+      subtitle: 'Tisdag förmiddag · några stannade kvar efter mötet',
+    },
+  }
 }
