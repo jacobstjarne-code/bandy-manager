@@ -41,6 +41,7 @@ export interface Journalist {
   pressRefusals: number       // times manager refused press conference
   favoritePlayerId?: string   // player they write about most
   lastInteractionMatchday?: number
+  lastTriggeredRelationship?: number  // snapshot used by detectRelationshipEvent
 }
 
 export type ArcPhase =

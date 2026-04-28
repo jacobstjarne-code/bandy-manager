@@ -45,6 +45,7 @@ import { processYouth } from './processors/youthProcessor'
 import { detectArcTriggers, progressArcs } from '../../domain/services/arcService'
 import { generateAwayTrip } from '../../domain/services/awayTripService'
 import { processNarrative, processUpcomingDerbyNotification } from './processors/narrativeProcessor'
+import { detectRelationshipEvent } from '../../domain/services/journalistVisibilityService'
 import { processMedia } from './processors/mediaProcessor'
 import { processGameEvents, applyMecenatSpawn, processScandals } from './processors/eventProcessor'
 import { applyCaptainMoraleCascade } from './processors/playerStateProcessor'
@@ -1210,6 +1211,37 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           pendingScene: { sceneId, triggeredAt: updatedGame.currentDate },
         }
       }
+    }
+  }
+
+  // Journalist relationship event inbox (SPEC_JOURNALIST_KAPITEL_A)
+  const relEvent = detectRelationshipEvent(updatedGame)
+  if (relEvent === 'broken_under_20' && updatedGame.journalist) {
+    updatedGame = {
+      ...updatedGame,
+      inbox: [...updatedGame.inbox, {
+        id: `journalist_broken_${updatedGame.currentSeason}_${updatedGame.currentMatchday ?? 0}`,
+        date: updatedGame.currentDate,
+        type: InboxItemType.MediaEvent,
+        title: `${updatedGame.journalist.name} · ${updatedGame.journalist.outlet}`,
+        body: 'Jag har försökt nå er i två veckor. Min chefredaktör börjar undra. Det går rykten i orten — och jag är den som ska skriva om dem. Hör av er innan veckan är slut.',
+        isRead: false,
+      }],
+      journalist: { ...updatedGame.journalist, lastTriggeredRelationship: updatedGame.journalist.relationship },
+    }
+  }
+  if (relEvent === 'recovered_above_75' && updatedGame.journalist) {
+    updatedGame = {
+      ...updatedGame,
+      inbox: [...updatedGame.inbox, {
+        id: `journalist_recovered_${updatedGame.currentSeason}_${updatedGame.currentMatchday ?? 0}`,
+        date: updatedGame.currentDate,
+        type: InboxItemType.MediaEvent,
+        title: `${updatedGame.journalist.name} · ${updatedGame.journalist.outlet}`,
+        body: 'Tack för intervjun igår. Det märktes att ni var ärliga. Jag tänkte ringa om ett uppslag — kan vi prata?',
+        isRead: false,
+      }],
+      journalist: { ...updatedGame.journalist, lastTriggeredRelationship: updatedGame.journalist.relationship },
     }
   }
 

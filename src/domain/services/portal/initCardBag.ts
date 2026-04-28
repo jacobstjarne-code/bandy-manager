@@ -42,7 +42,9 @@ import { OpenBidsSecondary } from '../../../presentation/components/portal/secon
 import { OpponentFormSecondary } from '../../../presentation/components/portal/secondary/OpponentFormSecondary'
 import { KlackenSecondary } from '../../../presentation/components/portal/secondary/KlackenSecondary'
 import { CoffeeRoomSecondary } from '../../../presentation/components/portal/secondary/CoffeeRoomSecondary'
+import { JournalistSecondary } from '../../../presentation/components/portal/secondary/JournalistSecondary'
 import { getCoffeeRoomScene } from '../coffeeRoomService'
+import { shouldShowJournalistCard } from '../journalistVisibilityService'
 
 // Minimal components
 import { SquadStatusMinimal } from '../../../presentation/components/portal/minimal/SquadStatusMinimal'
@@ -144,6 +146,13 @@ const PORTAL_CARDS: DashboardCard[] = [
     weight: 60,
     triggers: [(game) => getCoffeeRoomScene(game) !== null],
     Component: CoffeeRoomSecondary,
+  },
+  {
+    id: 'journalist_card',
+    tier: 'secondary',
+    weight: 65,
+    triggers: [shouldShowJournalistCard],
+    Component: JournalistSecondary,
   },
 
   // ── MINIMAL TIER ──────────────────────────────────────────────

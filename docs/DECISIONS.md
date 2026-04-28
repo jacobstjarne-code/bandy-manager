@@ -8,6 +8,31 @@ Syftet är inte formalism. Syftet är att om 6 månader ha ett svar på "varför
 
 ---
 
+## 2026-04-27 (kväll) — Pixel-jämförelse som commit-blocker, en komponent åt gången
+
+**Problem:** Scene-systemet levererades 2026-04-27 med felaktiga CSS-tokens på mörka bakgrunder. Code använde ljusa tokens (`--bg-elevated` = vitt, `--text-secondary` = mörk text, `--border` = ljust) på svarta scen-bakgrunder. Komponenter blev oläsbara. Pixel-jämförelse hade fångat felet men gjordes inte trots att CLAUDE.md princip 4 (Mock-driven design) föreskrev det. Jacob fick fixa i efterhand med Opus-granskning.
+
+Rotorsaken är att "pixel-jämför mot mock" i CLAUDE.md var formulerat som *best practice*, inte *commit-blocker*. Code tolkade det som något som kan skippas när build passerar och tester grönas. Pixel-fel slipper alla automatiska kontroller — endast manuell jämförelse fångar dem.
+
+**Beslut:** Förstärk princip 4 i CLAUDE.md med tre konkreta krav:
+
+1. **En komponent åt gången.** Code skriver komponent N → pixel-jämför mot mock → bifogar skärmdump i commit → skriver komponent N+1. Inte hela komponentträdet och sedan verifiering i slutet.
+
+2. **CSS-token-disciplin på mörka komponenter.** Mörka scen-bakgrunder (`--bg-deepdark`, `--bg-dark`) får INTE använda ljusa tokens som default. Dark-varianter ska användas. Detta är en explicit regel för att förebygga det specifika fel som uppstod.
+
+3. **Pixel-jämförelse är commit-blocker.** Sprint är inte klar förrän SPRINT_AUDIT.md innehåller skärmdumpar för varje visuell komponent. "Verifierat i UI" som textcheckbox utan bifogad skärmdump räknas inte.
+
+**Alternativ övervägt:**
+- (a) CSS-lint-regel som mekaniskt blockerar ljusa tokens på mörka bakgrunder. Avvisat för nu — svårt att implementera korrekt utan att blockera legitima undantag (t.ex. vit text på mörk bakgrund är rätt). Kan implementeras senare om problemet kvarstår.
+- (b) Visual regression testing (Percy/Chromatic-typ verktyg). Avvisat — överkurs för ett en-utvecklare-spel, hög setup-kostnad. Manuell pixel-jämförelse räcker.
+- (c) Låta Opus granska varje komponent i playtest istället för att kräva det av Code. Avvisat — flyttar bara bördan, löser inte rotorsaken (Code lyder skickliga formuleringar mer än vaga bör:s).
+
+**Konsekvens:** Code-sprintar med visuell komponent blir långsammare per komponent men levererar mer pixel-troget resultat. Risk för Code att tappa fart under en sprint men gain i kvalitet är värd det. Förstärkningarna gäller alla framtida specer — SPEC_PORTAL_FAS_1 och SPEC_KAFFERUMMET_FAS_1 uppdateras med samma krav i sina verifieringsprotokoll.
+
+**Meta:** Detta är ett klassiskt fall av "instruktion utan tvingande mekanik". CLAUDE.md innehöll regeln men det fanns ingen mekanism som faktiskt stoppade en sprint som inte uppfyllde den. Förstärkningen är att göra det till commit-blocker — utan skärmdump i commit, ingen leverans. Även om det är oss själva som granskar skärmdumparna är kravet att de *finns* tillräckligt för att tvinga Code att faktiskt öppna mocken bredvid.
+
+---
+
 ## 2026-04-27 — Mock-driven design som fjärde designprincip
 
 **Problem:** Visuella beslut har historiskt drivit från målbild i implementation. Opus producerar fina idéer (i ord, ibland i skärmdumpar), Code implementerar dem ungefärligt — padding 14px istället för 16px, gradient "liknande" men inte exakt, layout som matchar på storleksordning men inte i detalj. Över tid ackumuleras detta till en app som känns generisk trots att avsikten var distinkt.

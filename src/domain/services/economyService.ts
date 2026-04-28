@@ -112,6 +112,7 @@ export interface CalcRoundIncomeParams {
   communityStanding?: number     // 0-100, used for kommunBidrag calculation
   isFirstRound?: boolean         // true only at matchday 1 — triggers kommunBidrag payout
   legendSalaryCost?: number      // 500 kr × antal aktiva legendroller (youth_coach | scout)
+  journalistAttendanceModifier?: number  // from journalistVisibilityService (0.95 / 1.0 / 1.10)
 }
 
 /**
@@ -129,7 +130,7 @@ export interface CalcRoundIncomeParams {
 export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreakdown {
   const { club, players, sponsors, communityActivities, volunteers, fanMood, isHomeMatch,
     matchIsKnockout, matchIsCup, matchHasRivalry, standing, rand,
-    communityStanding, isFirstRound, legendSalaryCost } = params
+    communityStanding, isFirstRound, legendSalaryCost, journalistAttendanceModifier } = params
 
   // ── Wages ─────────────────────────────────────────────────────────────────
   const totalSalary = players.reduce((sum, p) => sum + p.salary, 0)
@@ -153,7 +154,7 @@ export function calcRoundIncome(params: CalcRoundIncomeParams): RoundIncomeBreak
     const position = standing?.position ?? 8
     const attendanceRate = Math.min(0.90, 0.35 + (fanMood / 100) * 0.40 + (position <= 3 ? 0.08 : 0))
     const ticketPrice = 50 + Math.round((club.reputation ?? 50) * 0.3)
-    const baseRevenue = Math.round(capacity * attendanceRate * ticketPrice)
+    const baseRevenue = Math.round(capacity * attendanceRate * ticketPrice * (journalistAttendanceModifier ?? 1.0))
 
     const formBonus = position <= 3 ? 1.15 : position <= 6 ? 1.05 : position >= 10 ? 0.88 : 1.0
     const eventBonus = matchIsKnockout ? 1.40 : matchIsCup ? 1.20 : 1.0
@@ -256,8 +257,9 @@ export function calcAttendance(params: {
   isSemiFinal?: boolean
   isAnnandagen?: boolean
   fixtureMonth?: number  // DREAM-004: december bonus
+  journalistAttendanceModifier?: number  // from journalistVisibilityService
 }): number {
-  const { club, fanMood, position, isKnockout, isCup, isDerby, isFinal, isSemiFinal, isAnnandagen, fixtureMonth } = params
+  const { club, fanMood, position, isKnockout, isCup, isDerby, isFinal, isSemiFinal, isAnnandagen, fixtureMonth, journalistAttendanceModifier } = params
   const baseCapacity = club.arenaCapacity ?? Math.round(club.reputation * 7 + 150)
 
   // Finals get expanded capacity (temporary stands, like Studenternas)
@@ -275,7 +277,7 @@ export function calcAttendance(params: {
   const annandagenBonus = isAnnandagen ? 1.80 : 1.0
   // DREAM-004: december julturneringen — hela familjen på läktaren
   const christmasBonus = (fixtureMonth === 12) ? 1.15 : 1.0
-  const base = Math.round(expandedCapacity * attendanceRate * eventBonus * derbyBonus * annandagenBonus * christmasBonus)
+  const base = Math.round(expandedCapacity * attendanceRate * eventBonus * derbyBonus * annandagenBonus * christmasBonus * (journalistAttendanceModifier ?? 1.0))
   return Math.min(expandedCapacity, Math.max(50, base))
 }
 

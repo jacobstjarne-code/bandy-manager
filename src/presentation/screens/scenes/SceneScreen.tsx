@@ -11,6 +11,7 @@ import { useGameStore } from '../../store/gameStore'
 import { SundayTrainingScene } from './SundayTrainingScene'
 import { SMFinalVictoryScene } from './SMFinalVictoryScene'
 import { CoffeeRoomScene } from './CoffeeRoomScene'
+import { JournalistRelationshipScene } from './JournalistRelationshipScene'
 
 export function SceneScreen() {
   const game = useGameStore(s => s.game)
@@ -31,6 +32,8 @@ export function SceneScreen() {
       return <SMFinalVictoryScene game={game} onComplete={() => handleComplete()} />
     case 'coffee_room':
       return <CoffeeRoomScene game={game} onComplete={() => handleComplete()} />
+    case 'journalist_relationship':
+      return <JournalistRelationshipScene game={game} onComplete={() => handleComplete()} />
     default:
       return <Navigate to="/game/dashboard" replace />
   }

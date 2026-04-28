@@ -8,6 +8,7 @@ import {
   calcRoundIncome,
   applyFinanceChange,
 } from '../../../domain/services/economyService'
+import { getJournalistAttendanceModifier } from '../../../domain/services/journalistVisibilityService'
 import type { FinanceEntry } from '../../../domain/services/economyService'
 import { getRivalry } from '../../../domain/data/rivalries'
 
@@ -70,6 +71,7 @@ export function processEconomy(
     communityStanding: game.communityStanding,
     isFirstRound: nextMatchday === 1,
     legendSalaryCost,
+    journalistAttendanceModifier: getJournalistAttendanceModifier(game),
   })
 
   if (managedIncome.weeklyBase !== 0) {

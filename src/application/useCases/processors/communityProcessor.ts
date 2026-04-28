@@ -3,6 +3,7 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import { InboxItemType } from '../../../domain/enums'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { checkProjectCompletion } from '../../../domain/services/facilityService'
+import { getJournalistCommunityModifier } from '../../../domain/services/journalistVisibilityService'
 
 export interface CommunityProcessorResult {
   csBoost: number
@@ -70,6 +71,9 @@ export function processCommunity(
   const csPos = standings.find(s => s.clubId === game.managedClubId)?.position ?? 6
   if (csPos <= 3) csBoost += 0.2
   else if (csPos >= 10) csBoost -= 0.15
+
+  // Journalist community modifier (SPEC_JOURNALIST_KAPITEL_A)
+  csBoost += getJournalistCommunityModifier(game)
 
   // ── Politiker inbox-notiser ────────────────────────────────────────────────
   const pol = game.localPolitician

@@ -8,6 +8,7 @@ export type SceneId =
   | 'sunday_training'
   | 'sm_final_victory'
   | 'coffee_room'
+  | 'journalist_relationship'
 
 export type SceneTrigger =
   | { kind: 'first_round_of_season' }

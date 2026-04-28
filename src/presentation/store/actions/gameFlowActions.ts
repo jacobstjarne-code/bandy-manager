@@ -17,6 +17,7 @@ interface GetState {
   resolveAwayTrip: (decision: 'stay_home' | 'book_nice' | 'ask_foundation') => void
   completeScene: (sceneId: import('../../../domain/entities/Scene').SceneId, choiceId?: string) => void
   triggerCoffeeRoomScene: () => void
+  triggerJournalistScene: () => void
 }
 
 type Get = () => GetState
@@ -396,6 +397,18 @@ export function gameFlowActions(get: Get, set: Set) {
       }
       set({ game: updatedGame })
       void persistAutosave(updatedGame, 'triggerCoffeeRoomScene')
+    },
+
+    triggerJournalistScene: () => {
+      const { game } = get()
+      if (!game) return
+      if (game.pendingScene) return
+      const updatedGame: SaveGame = {
+        ...game,
+        pendingScene: { sceneId: 'journalist_relationship', triggeredAt: game.currentDate },
+      }
+      set({ game: updatedGame })
+      void persistAutosave(updatedGame, 'triggerJournalistScene')
     },
   }
 }

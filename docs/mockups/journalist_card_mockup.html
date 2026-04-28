@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Journalist-mock — Bandy Manager</title>
+<style>
+  :root {
+    --bg: #1a1612;
+    --bg-surface: #221d18;
+    --bg-elevated: #2a241e;
+    --bg-dark: #0f0c09;
+    --bg-deepdark: #08060a;
+    --bg-leather: #1f1a14;
+    --bg-dark-elevated: #14110d;
+    --border: #3a322a;
+    --border-dark: #2a241e;
+    --text-primary: #e8e0d0;
+    --text-secondary: #b8ad9a;
+    --text-muted: #7a7060;
+    --text-light: #f0e8d8;
+    --text-light-secondary: #c8bda8;
+    --accent: #b8884c;
+    --accent-dark: #8b6638;
+    --accent-deep: #6b4d28;
+    --accent-glow: #d4a060;
+    --success: #5a8c4a;
+    --warm: #8c6e3a;
+    --danger: #a04848;
+    --cold: #4a6680;
+    --ice: #6a8aa0;
+    --gold: #d4a460;
+    --match-gold: #c8a058;
+    --font-display: Georgia, serif;
+    --font-body: -apple-system, system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0806;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  h1.title {
+    max-width: 430px;
+    margin: 0 auto 8px;
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--text-light);
+    font-weight: 700;
+  }
+  h2.subtitle {
+    max-width: 430px;
+    margin: 0 auto 20px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  .scenario-picker {
+    max-width: 430px;
+    margin: 0 auto 20px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .scenario-picker button {
+    flex: 1;
+    min-width: 0;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font-body);
+    transition: all 0.2s;
+  }
+  .scenario-picker button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .scenario-picker button.active {
+    background: var(--accent-deep);
+    border-color: var(--accent);
+    color: var(--text-light);
+  }
+
+  /* Phone frame */
+  .phone {
+    max-width: 430px;
+    margin: 0 auto;
+    background: var(--bg);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    position: relative;
+    min-height: 740px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── PORTAL-CARD-VY ──────────────────────────────────── */
+
+  .portal-frame {
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .portal-context-label {
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  /* Imitera primary card för kontext (mindre detaljerat) */
+  .portal-primary-stub {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: 0.55;
+  }
+  .portal-primary-stub .stub-title {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-light);
+    font-weight: 600;
+  }
+  .portal-primary-stub .stub-subtitle {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .portal-primary-stub .stub-cta {
+    font-size: 11px;
+    color: var(--accent);
+  }
+
+  /* SECONDARY GRID — där journalist-kortet bor */
+  .portal-secondary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  /* JOURNALIST SECONDARY CARD — kylig variant */
+  .journalist-secondary {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .journalist-secondary:hover {
+    border-color: var(--accent);
+  }
+  .journalist-secondary.cold {
+    border-left: 2px solid var(--cold);
+  }
+  .journalist-secondary.warm {
+    border-left: 2px solid var(--warm);
+  }
+
+  .js-row-1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+  }
+  .js-name {
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 600;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+  .js-emoji {
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .js-tag {
+    align-self: flex-start;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  .js-tag.cold {
+    background: rgba(74, 102, 128, 0.15);
+    color: #7095b8;
+    border: 1px solid rgba(74, 102, 128, 0.3);
+  }
+  .js-tag.warm {
+    background: rgba(140, 110, 58, 0.15);
+    color: #c8a058;
+    border: 1px solid rgba(140, 110, 58, 0.35);
+  }
+
+  .js-recent {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  .js-relation-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .js-relation-track {
+    flex: 1;
+    height: 3px;
+    background: var(--bg-dark);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .js-relation-fill {
+    height: 100%;
+    transition: width 0.3s;
+    border-radius: 2px;
+  }
+  .js-relation-fill.cold { background: var(--cold); }
+  .js-relation-fill.warm { background: var(--warm); }
+  .js-relation-num {
+    font-size: 9px;
+    color: var(--text-muted);
+    font-family: var(--font-display);
+    min-width: 18px;
+    text-align: right;
+  }
+
+  /* Andra secondary-kort (för kontext) */
+  .other-secondary {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 12px;
+    opacity: 0.45;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .other-secondary .os-label {
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .other-secondary .os-value {
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--text-light);
+  }
+
+  /* ─── SCENE-VY ──────────────────────────────────── */
+
+  .scene-frame {
+    background: var(--bg-deepdark);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-light);
+  }
+
+  .genre-tag {
+    text-align: center;
+    padding: 18px 0 8px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--accent);
+    opacity: 0.7;
+    text-transform: uppercase;
+  }
+
+  .scene-header {
+    text-align: center;
+    padding: 6px 24px 18px;
+  }
+  .scene-header h1 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    color: var(--text-light);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .scene-header .outlet {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-light-secondary);
+    font-style: italic;
+    margin-top: 4px;
+  }
+
+  /* Relations-stapel — stor version i scenen */
+  .scene-relation {
+    padding: 0 24px 20px;
+  }
+  .scene-relation-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .scene-relation-label .lbl {
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .scene-relation-label .val {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--text-light);
+    font-weight: 700;
+  }
+  .scene-relation-label .val .max {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+  .scene-relation-track {
+    height: 6px;
+    background: var(--bg-dark);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  .scene-relation-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease-out;
+  }
+  .scene-relation-fill.cold {
+    background: linear-gradient(90deg, #4a6680 0%, #6080a0 100%);
+  }
+  .scene-relation-fill.warm {
+    background: linear-gradient(90deg, #8c6e3a 0%, #c8a058 100%);
+  }
+  .scene-relation-status {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--text-light-secondary);
+    font-style: italic;
+  }
+
+  /* Memory-lista */
+  .scene-memory {
+    flex: 1;
+    padding: 8px 24px 16px;
+  }
+  .scene-memory-label {
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .memory-entry {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-dark);
+  }
+  .memory-entry:last-child {
+    border-bottom: none;
+  }
+  .memory-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+  .memory-dot.positive { background: var(--success); }
+  .memory-dot.neutral  { background: var(--text-muted); }
+  .memory-dot.negative { background: var(--danger); }
+  .memory-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .memory-summary {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.4;
+  }
+  .memory-when {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  /* Outlook */
+  .scene-outlook {
+    padding: 14px 24px 18px;
+    border-top: 1px solid var(--border-dark);
+    background: var(--bg-leather);
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-light);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .scene-outlook::before {
+    content: '⟶ ';
+    color: var(--accent);
+    font-style: normal;
+  }
+
+  /* CTA */
+  .scene-cta {
+    padding: 14px 20px 24px;
+  }
+  .scene-cta button {
+    width: 100%;
+    padding: 14px;
+    background: var(--bg-dark-elevated);
+    color: var(--text-light);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-body);
+  }
+  .scene-cta button:hover {
+    background: var(--accent-deep);
+    border-color: var(--accent);
+  }
+
+  /* Helper: hide/show */
+  .vy { display: none; }
+  .vy.active { display: flex; flex-direction: column; flex: 1; }
+</style>
+</head>
+<body>
+
+<h1 class="title">Journalist — kort + scen-mock</h1>
+<h2 class="subtitle">
+  Synliggör befintlig journalist-relation. Portal-kort vid extremvärden (≤30 eller ≥70).
+  Klick på kortet öppnar full scen med relations-stapel, memory-lista och outlook.
+</h2>
+
+<div class="scenario-picker">
+  <button class="active" data-vy="portal-cold">Portal · kylig relation</button>
+  <button data-vy="portal-warm">Portal · varm relation</button>
+  <button data-vy="scene-cold">Scen · kylig (28)</button>
+  <button data-vy="scene-warm">Scen · varm (78)</button>
+</div>
+
+<div class="phone" id="phone">
+
+  <!-- ─── VY: Portal med kylig journalist-card ─── -->
+  <div class="vy active" id="portal-cold">
+    <div class="portal-frame">
+      <div class="portal-context-label">⬩ PORTAL · OMGÅNG 8 ⬩</div>
+
+      <div class="portal-primary-stub">
+        <div>
+          <div class="stub-title">Forsbacka — Söderfors</div>
+          <div class="stub-subtitle">Hemma · lördag 16:00</div>
+        </div>
+        <div class="stub-cta">→</div>
+      </div>
+
+      <div class="portal-secondary-grid">
+        <div class="journalist-secondary cold">
+          <div class="js-row-1">
+            <div class="js-name">Karin Bergström</div>
+            <div class="js-emoji">📰</div>
+          </div>
+          <div class="js-tag cold">Kylig</div>
+          <div class="js-recent">Senast: ni vägrade derby-kommentar</div>
+          <div class="js-relation-bar">
+            <div class="js-relation-track">
+              <div class="js-relation-fill cold" style="width: 28%"></div>
+            </div>
+            <div class="js-relation-num">28</div>
+          </div>
+        </div>
+
+        <div class="other-secondary">
+          <div class="os-label">📊 Tabell</div>
+          <div class="os-value">5:a · 11p</div>
+        </div>
+        <div class="other-secondary">
+          <div class="os-label">💰 Kassa</div>
+          <div class="os-value">340 tkr</div>
+        </div>
+        <div class="other-secondary">
+          <div class="os-label">🩹 Skador</div>
+          <div class="os-value">2 ute</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VY: Portal med varm journalist-card ─── -->
+  <div class="vy" id="portal-warm">
+    <div class="portal-frame">
+      <div class="portal-context-label">⬩ PORTAL · OMGÅNG 14 ⬩</div>
+
+      <div class="portal-primary-stub">
+        <div>
+          <div class="stub-title">Forsbacka — Skutskär</div>
+          <div class="stub-subtitle">Borta · söndag 14:00</div>
+        </div>
+        <div class="stub-cta">→</div>
+      </div>
+
+      <div class="portal-secondary-grid">
+        <div class="journalist-secondary warm">
+          <div class="js-row-1">
+            <div class="js-name">Karin Bergström</div>
+            <div class="js-emoji">📰</div>
+          </div>
+          <div class="js-tag warm">Varm</div>
+          <div class="js-recent">Senast: lång intervju efter storseger</div>
+          <div class="js-relation-bar">
+            <div class="js-relation-track">
+              <div class="js-relation-fill warm" style="width: 78%"></div>
+            </div>
+            <div class="js-relation-num">78</div>
+          </div>
+        </div>
+
+        <div class="other-secondary">
+          <div class="os-label">📊 Tabell</div>
+          <div class="os-value">2:a · 22p</div>
+        </div>
+        <div class="other-secondary">
+          <div class="os-label">📈 Form</div>
+          <div class="os-value">VVOVV</div>
+        </div>
+        <div class="other-secondary">
+          <div class="os-label">🏠 Orten</div>
+          <div class="os-value">73</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VY: Full scene · kylig ─── -->
+  <div class="vy" id="scene-cold">
+    <div class="scene-frame">
+      <div class="genre-tag">⬩ I DETTA ÖGONBLICK ⬩</div>
+      <div class="scene-header">
+        <h1>Karin Bergström</h1>
+        <div class="outlet">Lokaltidningen</div>
+      </div>
+
+      <div class="scene-relation">
+        <div class="scene-relation-label">
+          <span class="lbl">Relation</span>
+          <span class="val">28<span class="max"> / 100</span></span>
+        </div>
+        <div class="scene-relation-track">
+          <div class="scene-relation-fill cold" style="width: 28%"></div>
+        </div>
+        <div class="scene-relation-status">Kylig. Hon ringer mer sällan nu.</div>
+      </div>
+
+      <div class="scene-memory">
+        <div class="scene-memory-label">Senast hörda</div>
+
+        <div class="memory-entry">
+          <div class="memory-dot negative"></div>
+          <div class="memory-text">
+            <div class="memory-summary">Vägrade kommentera derbyt</div>
+            <div class="memory-when">Omgång 7 · denna säsong</div>
+          </div>
+        </div>
+
+        <div class="memory-entry">
+          <div class="memory-dot negative"></div>
+          <div class="memory-text">
+            <div class="memory-summary">Avbokade presskonferensen</div>
+            <div class="memory-when">Omgång 5 · denna säsong</div>
+          </div>
+        </div>
+
+        <div class="memory-entry">
+          <div class="memory-dot neutral"></div>
+          <div class="memory-text">
+            <div class="memory-summary">Kort intervju efter förlust</div>
+            <div class="memory-when">Omgång 4 · denna säsong</div>
+          </div>
+        </div>
+
+        <div class="memory-entry">
+          <div class="memory-dot negative"></div>
+          <div class="memory-text">
+            <div class="memory-summary">Vägrade kommentera transferrykte</div>
+            <div class="memory-when">Omgång 2 · denna säsong</div>
+          </div>
+        </div>
+
+        <div class="memory-entry">
+          <div class="memory-dot positive"></div>
+          <div class="memory-text">
+            <div class="memory-summary">Lång intervju vid säsongsstart</div>
+            <div class="memory-when">Omgång 1 · denna säsong</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scene-outlook">
+        Tre presskonferenser till med ärligt svar — då vänder det.
+      </div>
+
+      <div class="scene-cta">
+        <button>Tillbaka till klubben</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VY: Full scene · varm ─── -->
+  <div class="vy" id="scene-warm">
+    <div class="scene-frame">
+      <div class="genre-tag">⬩ I DETTA ÖGONBLICK ⬩</div>
+      <div class="scene-header">
+        <h1>Karin Bergström</h1>
+        <div class="outlet">Lokaltidningen</div>
+      </div>
+
+      <div class="scene-relation">
+        <div class="scene-relation-label">
+          <span class="lbl">Relation</span>
+          <span class="val">78<span class="max"> / 100</span></span>
+        </div>
+        <div class="scene-relation-track">
+          <div class="scene-relation-fill warm" style="width: 78%"></div>
+        </div>
+        <div class="scene-relation-status">Varm. Hon skriver om er nästan varje vecka.</div>
+      </div>
+
+      <div class="scene-memory">
+        <div class="scene-memory-label">Senast hörda</div>
+
+        <div class="memory-entry">
+          <div class="memory-dot positive"></div>
+          <div class="memory-text">
+            <div class="memory-summary">Lång intervju efter storseger mot Söderfors</div>
+            <div class="memory-when">Omgång 13 · denna säsong</div>
+          </div>
+        </div>
+
+        <div class="memory-entry">
+          <div class="memory-dot positive"></div>
+          <div class="memory-text">
+            <div class="memory-summary">Reportage om akademispelaren Henriksson</div>
+            <div class="memory-when">Omgång 10 · denna säsong</div>
+          </div>
+        </div>
+
+        <div class="memory-entry">
+          <div class="memory-dot neutral"></div>
+          <div class="memory-text">
+            <div class="memory-summary">Pratade om derbyplanering</div>
+            <div class="memory-when">Omgång 8 · denna säsong</div>
+          </div>
+        </div>
+
+        <div class="memory-entry">
+          <div class="memory-dot positive"></div>
+          <div class="memory-text">
+            <div class="memory-summary">Ärligt svar om förlusten</div>
+            <div class="memory-when">Omgång 5 · denna säsong</div>
+          </div>
+        </div>
+
+        <div class="memory-entry">
+          <div class="memory-dot positive"></div>
+          <div class="memory-text">
+            <div class="memory-summary">Intervju vid säsongsstart</div>
+            <div class="memory-when">Omgång 1 · denna säsong</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scene-outlook">
+        Stark relation. Lokaltidningens rubriker har dragit upp orten — fortsätt prata med henne.
+      </div>
+
+      <div class="scene-cta">
+        <button>Tillbaka till klubben</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  document.querySelectorAll('.scenario-picker button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.scenario-picker button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      document.querySelectorAll('.vy').forEach(v => v.classList.remove('active'));
+      document.getElementById(btn.dataset.vy).classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

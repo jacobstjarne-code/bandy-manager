@@ -121,6 +121,10 @@
   --bg-scene:       #1a1612;
   --bg-scene-deep:  #08060a;
 
+  /* Journalist relation severity */
+  --cold:  #4a6680;
+  --warm:  #8c6e3a;
+
   --scroll-padding-bottom: 120px;
 
   /* Z-index scale */

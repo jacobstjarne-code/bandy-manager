@@ -153,6 +153,23 @@ Om en bugg uppträder 2+ gånger, eller om en ny bugg matchar ett mönster som r
 
 ---
 
+## INGA FEATURE FLAGS
+
+Detta är ett en-utvecklare-spel. Jacob är beta-testare, dev-team och release-manager i samma person. Feature flags från större team-workflows har ingen bäring här — de skapar bara friktion.
+
+**Regel:** När en feature levereras ska den vara **påslagen som default**. Inga `xEnabled: false`-flaggor som spelaren ska sätta via dev-console.
+
+**Det betyder:**
+- Ny feature levereras → `createNewGame.ts` har den på direkt
+- Existerande saves migreras till påslaget tillstånd vid laddning, om det är en feature som påverkar core game state
+- Om en feature kraschar eller känns trasig → fixa den, eller ta bort den. Inte gömma bakom flagga.
+
+**Undantag:** Om en feature är genuint experimentell och Jacob explicit ber om att kunna toggla den (t.ex. för A/B-jämförelse av två designvarianter), då kan en flagga finnas tillfälligt. Men det är opt-in från Jacobs sida, inte default-beteende från Code.
+
+**Historik:** 2026-04-27 levererade Code Scene-systemet med `scenesEnabled: false` som default. Jacob fick instruktion att redigera localStorage via dev-console för att slå på det. Detta var onödig friktion — Jacob *är* spelaren, inte en testare som ska skyddas från instabila features.
+
+---
+
 ## DESIGNPRINCIPER — LÄS FÖRE SPEC
 
 Dessa fyra principer adresserar ett mönster vi observerat 2026-04: vi har bra dokumentation av *det som hänt*, men beslutsögonblicken (innan kod skrivs, innan spec klubbas) är otillräckligt strukturerade. Det är där missarna sker.
@@ -230,8 +247,15 @@ Lösningen är att flytta visuella beslut till mock-stadiet, när de kan diskute
 **Code ansvar (implementation):**
 - Läs mocken bredvid editorn, inte i minnet.
 - Kopiera CSS-värden bokstavligen — padding, border-radius, font-storlekar, gradient-stops, opacity, gap, letter-spacing. Inte ungefärligt.
+- **EN KOMPONENT ÅT GÅNGEN.** Skriv komponent N → pixel-jämför mot mocken → bifoga skärmdump i commit-meddelandet → skriv komponent N+1. Inte hela komponentträdet, sen verifiering. Inte heller "jag granskar alla efter att jag skrev dem". Pixel-jämförelse av komponent N **innan** komponent N+1 påbörjas.
+- **CSS-token-disciplin på mörka komponenter.** Mörka scen-bakgrunder (`--bg-deepdark`, `--bg-dark`) får INTE använda ljusa tokens (`--bg-elevated`, `--text-secondary`, `--border` utan dark-prefix) som default. Det är dark-varianter som ska användas. Ljusa tokens på mörk bakgrund är ett återkommande Code-fel.
 - Innan commit av en visuell komponent: öppna mocken och appen sida vid sida i samma viewport-bredd, ta skärmdumpar, jämför pixelnivå. Bifoga båda i SPRINT_AUDIT.md.
 - Om mocken inte funkar i något avseende (t.ex. tar fel position på mobil, avvikande beteende vid edge case) — fråga Opus om mock-uppdatering. Ändra inte själv "för att det kändes bättre".
+
+**Pixel-jämförelse är commit-blocker, inte best practice.**
+- Sprint är inte klar förrän SPRINT_AUDIT.md innehåller skärmdumpar av varje visuell komponent jämfört mot mocken.
+- "Verifierat i UI" som checkbox utan bifogad skärmdump räknas inte.
+- Om Code commitar en visuell komponent utan pixel-jämförelse i commit-meddelandet — det är en regression som måste fixas innan nästa sprint påbörjas.
 
 **Specen ansvar (referenslänkar):**
 - Spec som har en mock måste ha sektion "INNAN DU BÖRJAR" som länkar mocken explicit.
@@ -246,7 +270,9 @@ Lösningen är att flytta visuella beslut till mock-stadiet, när de kan diskute
 
 **Riktmärke:** Om designen tar mer än fem minuter att beskriva i ord — mocka.
 
-**Historik:** 2026-04-27 Portal/inledning/moments. Tre HTML-mocks producerades innan specer skrevs. Mocks användes både för att få Jacobs feedback på designen *innan* kod (innehålls-iteration på vågor, Sverige-bakgrund vs karta, klubbpiller-format) och för att ge Code en konkret målbild att implementera mot. Före detta hade visuella beslut tagits i konversation och drift från målbild observerats i flera sprintar.
+**Historik:** 
+- 2026-04-27 Portal/inledning/moments. Tre HTML-mocks producerades innan specer skrevs. Mocks användes både för att få Jacobs feedback på designen *innan* kod (innehålls-iteration på vågor, Sverige-bakgrund vs karta, klubbpiller-format) och för att ge Code en konkret målbild att implementera mot. Före detta hade visuella beslut tagits i konversation och drift från målbild observerats i flera sprintar.
+- 2026-04-27 Scene-leverans. Code levererade scen-systemet med felaktiga CSS-tokens på mörka bakgrunder (ljusa tokens som `--bg-elevated`, `--text-secondary` användes på svart bakgrund — komponenter blev oläsbara). Pixel-jämförelse hade fångat felet men gjordes inte. Fixades i efterhand av Jacob med Opus-granskning. Detta motiverar de förstärkta reglerna ovan: en komponent åt gången, dark-token-disciplin, pixel-jämförelse som commit-blocker.
 
 ---
 
