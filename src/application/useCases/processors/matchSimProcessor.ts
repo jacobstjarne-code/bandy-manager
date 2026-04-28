@@ -361,11 +361,13 @@ export function simulateRound(
       )
     }
 
-    // Post-match injury checks for all starters
+    // Post-match injury checks for all starters — max 2 per club per match
     const allFixturePlayers = [...homePlayers, ...awayPlayers]
+    const injuriesPerClub: Record<string, number> = {}
     for (const playerId of [...homeLineup.startingPlayerIds, ...awayLineup.startingPlayerIds]) {
       const player = allFixturePlayers.find(p => p.id === playerId)
       if (!player || player.isInjured) continue
+      if ((injuriesPerClub[player.clubId] ?? 0) >= 2) continue
       const injuryRand = mulberry32(baseSeed + i + (playerId.charCodeAt(0) || 0))
       const isDerby = !!rivalry
       const injuryEvent = checkForMatchInjury({
@@ -379,6 +381,7 @@ export function simulateRound(
       }, injuryRand)
       if (injuryEvent) {
         injuredPlayers.push({ player, event: injuryEvent })
+        injuriesPerClub[player.clubId] = (injuriesPerClub[player.clubId] ?? 0) + 1
       }
     }
 

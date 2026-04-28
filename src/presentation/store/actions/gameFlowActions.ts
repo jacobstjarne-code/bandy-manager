@@ -42,7 +42,25 @@ export function gameFlowActions(get: Get, set: Set) {
       const communityStandingBefore = game.communityStanding ?? 50
       const inboxCountBefore = game.inbox.length
 
-      const result = advanceToNextEvent(game)
+      let result = advanceToNextEvent(game)
+
+      // Auto-advance through matchdays where managed club has no fixture (e.g. cup rounds
+      // for other teams after elimination). Without this, every cup round requires a
+      // separate advance-click and "omgång 1" re-appears confusingly each time.
+      let autoLoops = 0
+      while (!result.hasManagedCupMatch && !result.seasonEnded && !result.game.managerFired && autoLoops < 10) {
+        const g = result.game
+        const scheduledAll = g.fixtures.filter(f => f.status === 'scheduled')
+        if (scheduledAll.length === 0) break
+        const nextMd = Math.min(...scheduledAll.map(f => f.matchday))
+        const managedAtNextMd = scheduledAll.some(
+          f => f.matchday === nextMd &&
+               (f.homeClubId === g.managedClubId || f.awayClubId === g.managedClubId)
+        )
+        if (managedAtNextMd) break
+        result = advanceToNextEvent(g)
+        autoLoops++
+      }
 
       const resultGame = result.game
       const managedClubAfter = resultGame.clubs.find(c => c.id === resultGame.managedClubId)
