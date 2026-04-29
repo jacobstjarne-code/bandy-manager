@@ -6,6 +6,7 @@ import { getSeasonalTone } from '../../domain/services/portal/seasonalTone'
 import { initCardBag } from '../../domain/services/portal/initCardBag'
 import { PortalSecondarySection } from '../components/portal/PortalSecondarySection'
 import { PortalMinimalBar } from '../components/portal/PortalMinimalBar'
+import { SituationCard } from '../components/portal/SituationCard'
 import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
 import { playSound } from '../audio/soundEffects'
 
@@ -144,6 +145,7 @@ export function PortalScreen() {
           paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + 72px)',
         }}
       >
+        <SituationCard game={game} />
         <Primary game={game} />
         <PortalSecondarySection cards={layout.secondary} game={game} />
         <PortalMinimalBar cards={layout.minimal} game={game} />
