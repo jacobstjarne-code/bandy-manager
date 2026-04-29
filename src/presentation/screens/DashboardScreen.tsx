@@ -379,7 +379,75 @@ export function DashboardScreen() {
   const primaryCard = getPrimaryCard()
   const collapseGrid = primaryCard !== 'default'
 
-  // ── Trainer arc ────────────────────────────────────────────────
+  // ── Situationskort ─────────────────────────────────────────────
+  const contextCard = (() => {
+    // Cup match väntar
+    if (nextFixture?.isCup) {
+      const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextFixture!.id)
+      const cupRound = cupMatch?.round ?? 1
+      const roundLabel = cupRound === 1 ? 'förstarunden' : cupRound === 2 ? 'kvartsfinal' : cupRound === 3 ? 'semifinal' : 'final'
+      const isFirstGame = lastPlayedRound === 0
+      return {
+        emoji: '🏆',
+        title: isFirstGame ? 'Säsongen startar med cupspel' : `Cupspel — ${roundLabel}`,
+        body: `${club.name} möter ${opponent?.name ?? 'motståndaren'} i ${roundLabel}.${isFirstGame ? ' Serien startar senare i höst.' : ''}`,
+      }
+    }
+    // Playoff
+    if (isPlayoffFixture && playoffSeries) {
+      const label = playoffSeries.round === PlayoffRound.QuarterFinal ? 'Kvartsfinal' : playoffSeries.round === PlayoffRound.SemiFinal ? 'Semifinal' : 'SM-Final'
+      return {
+        emoji: '⚔️',
+        title: label,
+        body: `${club.name} möter ${opponent?.name ?? 'motståndaren'}. Serien står ${dynamicHomeWins}–${dynamicAwayWins} — bäst av fem avgör.`,
+      }
+    }
+    // Första omgången i serien
+    if (lastPlayedRound === 0) {
+      return {
+        emoji: '🏒',
+        title: `Seriepremiären väntar`,
+        body: `Säsong ${game.currentSeason} — 22 omgångar, topp 8 går till slutspel. Sätt startelvan och kör.`,
+      }
+    }
+    // Tre raka segrar
+    if (recentForm.length >= 3 && recentForm.slice(0, 3).every(r => r.result === 'V') && standing) {
+      return {
+        emoji: '🔥',
+        title: 'Tre raka segrar',
+        body: `${club.name} är i starkt slag — ${standing.position}:a i tabellen med ${standing.points} poäng.`,
+      }
+    }
+    // Tre raka förluster
+    if (recentForm.length >= 3 && recentForm.slice(0, 3).every(r => r.result === 'F') && standing) {
+      return {
+        emoji: '📉',
+        title: 'Tre raka förluster',
+        body: `Tufft läge. ${standing.position}:a med ${standing.points}p — något måste ändras.`,
+      }
+    }
+    // Slutspurt (omgång 15+, nära topp 8-gränsen)
+    if (standing && standing.played >= 14) {
+      const top8Points = game.standings.find(s => s.position === 8)?.points ?? 0
+      const diff = top8Points - standing.points
+      if (standing.position > 8 && diff <= 4) {
+        return { emoji: '⚡', title: 'Slutspurten', body: `${diff} poäng till slutspelszonen. Varje match räknas.` }
+      }
+      if (standing.position <= 8 && diff >= -3) {
+        return { emoji: '🎯', title: 'Håll platsen', body: `${standing.position}:a — men tätt bakom. Det krävs fokus hela vägen in.` }
+      }
+    }
+    // Mid-season — visa position
+    if (standing && standing.played > 0) {
+      const statusText = standing.position <= 8 ? 'i slutspelszonen' : standing.position <= 10 ? 'precis utanför slutspelszonen' : 'i nedflyttningszonen'
+      return {
+        emoji: '📊',
+        title: `Omgång ${standing.played} av 22`,
+        body: `${club.name} på ${standing.position}:e plats — ${statusText}.`,
+      }
+    }
+    return null
+  })()
 
   // ── Render ─────────────────────────────────────────────────────
 
@@ -388,43 +456,27 @@ export function DashboardScreen() {
     <div className="screen-enter" style={{ position: 'relative', minHeight: '100%', background: getSeasonalBackground(currentDateObj) }}>
 
 
-      <div className="texture-wood card-stack" style={{ paddingTop: 8, paddingBottom: 8 }}>
+      <div className="texture-wood card-stack" style={{ paddingTop: 8, paddingBottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + 72px)' }}>
 
-        {/* ① VÄLKOMSTKORT (omgång 1) eller AGENDA (övriga omgångar) */}
-        {isFirstRound ? (
+        {/* ① SITUATIONSKORT — alltid relevant, aldrig hårdkodat */}
+        {contextCard && (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
-            {/* TODO(FAS 1): byt mot piktogram · sport · se ICON-BRIEF.md */}
-            <SectionLabel style={{ marginBottom: 8 }}>🏒 SÄSONGSSTART {game.currentSeason}</SectionLabel>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 10, fontFamily: 'var(--font-body)' }}>
-              Säsongen börjar. Sätt din startelva för {club.name} och kör.
+            <SectionLabel style={{ marginBottom: 6 }}>{contextCard.emoji} {contextCard.title.toUpperCase()}</SectionLabel>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0, fontFamily: 'var(--font-body)' }}>
+              {contextCard.body}
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {nudges.map((n, i) => (
-                <div
-                  key={i}
-                  onClick={() => !n.done && navigate(`/game/${n.screen}`, n.state ? { state: n.state } : undefined)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    padding: '7px 10px', borderRadius: 8,
-                    background: 'var(--bg-surface)', border: '0.5px solid var(--border)',
-                    cursor: n.done ? 'default' : 'pointer',
-                    fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-body)',
-                    opacity: n.done ? 0.5 : 1,
-                  }}
-                >
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: n.done ? 'var(--success)' : 'var(--danger)' }} />
-                  <span style={{ flex: 1, textDecoration: n.done ? 'line-through' : 'none' }}>{n.text}</span>
-                  <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--accent)' }}>→</span>
-                </div>
-              ))}
-            </div>
           </div>
-        ) : nudges.length > 0 ? (
+        )}
+
+        {/* ① AGENDA — actionabla uppgifter när sådana finns */}
+        {nudges.length > 0 && (
           <div style={{ margin: '0 0 6px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2px', marginBottom: 4 }}>
-              <SectionLabel>Att göra</SectionLabel>
-              <span style={{ fontSize: 8, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{doneCount} av {nudges.length} klart</span>
-            </div>
+            {nudges.length > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2px', marginBottom: 4 }}>
+                <SectionLabel>Att göra</SectionLabel>
+                <span style={{ fontSize: 8, color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>{doneCount} av {nudges.length} klart</span>
+              </div>
+            )}
             {nudges.map((n, i) => (
               <div
                 key={i}
@@ -444,7 +496,7 @@ export function DashboardScreen() {
               </div>
             ))}
           </div>
-        ) : null}
+        )}
 
         {/* Transferdödline-indikator (omgång 13-15) */}
         {(() => {
@@ -1121,26 +1173,35 @@ export function DashboardScreen() {
             )
           })()}
 
-          {canSimulateRemaining && (
-            <button onClick={handleSimulateRemaining} className="btn btn-ghost" style={{ width: '100%', marginBottom: 8, justifyContent: 'center' }}>
-              ⏩ Simulera resterande säsong
-            </button>
-          )}
-
-          <button
-            data-coach-id="cta-button"
-            onClick={handleAdvance}
-            disabled={!canClickAdvance}
-            className={`btn btn-primary btn-cta${canClickAdvance ? ' btn-pulse' : ''}`}
-          >
-            {advanceButtonText}
-          </button>
         </div>
 
         <p style={{ textAlign: 'center', fontSize: 9, color: 'var(--text-secondary)', marginTop: 6 }}>
           build {(typeof __GIT_HASH__ !== 'undefined' ? __GIT_HASH__ : '?')} · {(typeof __BUILD_DATE__ !== 'undefined' ? __BUILD_DATE__ : '')}
         </p>
       </div>
+    </div>
+
+    {/* STICKY CTA — alltid synlig ovanför BottomNav */}
+    <div style={{
+      position: 'fixed',
+      bottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + 8px)',
+      left: 12,
+      right: 12,
+      zIndex: 200,
+    }}>
+      {canSimulateRemaining && (
+        <button onClick={handleSimulateRemaining} className="btn btn-ghost" style={{ width: '100%', marginBottom: 6, justifyContent: 'center' }}>
+          ⏩ Simulera resterande säsong
+        </button>
+      )}
+      <button
+        data-coach-id="cta-button"
+        onClick={handleAdvance}
+        disabled={!canClickAdvance}
+        className={`btn btn-primary btn-cta${canClickAdvance ? ' btn-pulse' : ''}`}
+      >
+        {advanceButtonText}
+      </button>
     </div>
     {/* CoachMarks disabled until re-enabled for new players */}
     {/* {!game.coachMarksSeen && <CoachMarks onDone={markCoachMarksSeen} />} */}
