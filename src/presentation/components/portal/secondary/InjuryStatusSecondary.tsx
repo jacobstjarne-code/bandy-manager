@@ -1,20 +1,21 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
 
-/** Secondary-kort: skadade spelare + beräknad återkomst. */
+/** Secondary-kort: skadeläge med namn + veckor kvar per spelare. */
 export function InjuryStatusSecondary({ game }: CardRenderProps) {
   const navigate = useNavigate()
-  const managedId = game.managedClubId
-  const squadPlayers = game.players.filter(p => p.clubId === managedId)
-  const injured = squadPlayers.filter(p => p.isInjured)
+  const injured = game.players
+    .filter(p => p.clubId === game.managedClubId && p.isInjured)
+    .sort((a, b) => b.injuryDaysRemaining - a.injuryDaysRemaining)
 
   if (injured.length === 0) return null
 
-  const names = injured
-    .slice(0, 2)
-    .map(p => p.lastName)
-    .join(', ')
-  const extra = injured.length > 2 ? ` +${injured.length - 2}` : ''
+  const weeksLeft = (days: number) => {
+    const w = Math.ceil(days / 7)
+    return w <= 0 ? 'snart tillbaka' : `${w}v kvar`
+  }
+
+  const top = injured.slice(0, 3)
 
   return (
     <div
@@ -31,22 +32,28 @@ export function InjuryStatusSecondary({ game }: CardRenderProps) {
         fontSize: 8,
         letterSpacing: '1.5px',
         textTransform: 'uppercase',
-        color: 'var(--text-muted)',
+        color: 'var(--danger)',
         fontWeight: 600,
-        marginBottom: 4,
+        marginBottom: 5,
       }}>
-        🩹 SKADELÄGE
+        🩹 {injured.length === 1 ? 'SKADAD' : `${injured.length} SKADADE`}
       </div>
-      <div style={{
-        fontSize: 13,
-        color: 'var(--text-light)',
-        lineHeight: 1.3,
-        fontWeight: 500,
-      }}>
-        {injured.length} borta
-      </div>
-      <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>
-        {names}{extra}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {top.map(p => (
+          <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <span style={{ fontSize: 11, color: 'var(--text-light)', fontWeight: 500 }}>
+              {p.lastName}
+            </span>
+            <span style={{ fontSize: 9, color: 'var(--text-muted)', marginLeft: 6 }}>
+              {weeksLeft(p.injuryDaysRemaining)}
+            </span>
+          </div>
+        ))}
+        {injured.length > 3 && (
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 1 }}>
+            +{injured.length - 3} till →
+          </div>
+        )}
       </div>
     </div>
   )

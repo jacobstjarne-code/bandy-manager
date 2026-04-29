@@ -134,8 +134,8 @@ export function PortalScreen() {
       <div style={{
         position: 'fixed',
         bottom: 'calc(var(--bottom-nav-height) + var(--safe-bottom) + 8px)',
-        left: 12,
-        right: 12,
+        left: 14,
+        right: 14,
         zIndex: 200,
       }}>
         <button

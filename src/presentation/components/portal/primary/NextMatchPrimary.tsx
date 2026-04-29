@@ -71,7 +71,8 @@ export function NextMatchPrimary({ game }: CardRenderProps) {
     <div style={{
       '--bg-surface':    'var(--bg-portal-surface)',
       '--bg-leather':    'var(--bg-portal-elevated)',
-      '--border':        'var(--border-dark)',
+      '--border':        'var(--bg-portal-elevated)',
+      '--border-dark':   'var(--bg-portal-elevated)',
       '--text-primary':  '#F5F1EB',
       '--text-secondary':'#C4BAA8',
       '--text-muted':    'rgba(196,186,168,0.55)',
