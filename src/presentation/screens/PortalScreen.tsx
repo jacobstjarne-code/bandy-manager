@@ -17,6 +17,25 @@ export function PortalScreen() {
   const canAdvance = useCanAdvance()
   const navigate = useNavigate()
 
+  // Auto-skip rounds where managed team has no fixture (e.g. cup R1 for bye-teams,
+  // or cup rounds after elimination). The advance() auto-loop handles chaining,
+  // so a single call processes all non-managed rounds in sequence.
+  useEffect(() => {
+    if (!game) return
+    if (game.pendingScreen) return
+    const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
+    if (scheduled.length === 0) return
+    const nextMd = Math.min(...scheduled.map(f => f.matchday))
+    const hasManagedAtNextMd = scheduled.some(
+      f => f.matchday === nextMd &&
+           (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+    )
+    if (!hasManagedAtNextMd) {
+      advance()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Run once on mount — advance() navigates away, re-mount after return handles any remaining rounds
+
   if (!game) return (
     <div style={{ padding: 20 }}>
       <div className="shimmer" style={{ height: 160, borderRadius: 3, marginBottom: 10 }} />
