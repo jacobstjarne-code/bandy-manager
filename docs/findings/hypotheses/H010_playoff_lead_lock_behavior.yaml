@@ -1,0 +1,31 @@
+fact_id: H010
+category: hypothesis
+domain: bandy
+claim: "Halvtidsledningar håller bättre i slutspelet (85.3% vs 78.1%) för att ledande lag aktivt väljer att låsa matchen defensivt snarare än att fortsätta pressa"
+competing_hypotheses:
+  - "Halvtidsledningar håller bättre i slutspelet på grund av generellt högre defensiv organisation bland de kvarvarande lagen, inte ett beteendeskifte"
+predicted_value: "Ledande lags xG och skottfrekvens bör minska relativt mer i slutspelet än grundserien"
+test_method: |
+  Analysera pressfrekvens och offensiv intensitet för ledande lag i slutspelet
+  kontra grundserien; jämföra xG-differenser efter 45 minuter.
+
+  Operationellt:
+  (a) Extrahera halvtidsledning + slutresultat per fas ur bandygrytan_detailed.json
+  (b) Om xG/skott-data saknas: proxy via målproduktion i 2:a halvlek för ledande lag
+  (c) Jämföra målfrekvens för ledande lag i H2: grundserie vs slutspel
+  (d) Om ledande lag scorer färre mål i H2 i slutspelet — indikerar defensiv låsning
+
+  Utan xG-data är testet begränsat till målstatistik som proxy.
+spawned_by: "finding:006"
+source:
+  type: observation
+  name: "finding:006 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+related_facts: [S003]
+notes: |
+  Genererad från finding 006. Halvtidsledningens prediktiva kraft ökar i
+  slutspelet (85.3% vs 78.1% i grundserien). Två mekanismer kan förklara
+  det: beteendeskifte (H010) eller selektionseffekt (competing_hypothesis).
+  Datan kan inte särskilja utan xG eller pressfrekvens-data.

@@ -1,0 +1,31 @@
+fact_id: H012
+category: hypothesis
+domain: bandy
+claim: "Större lagstyrke-spridning i damserien förklarar varför halvtidsledningar håller bättre (89.1% vs 78.1%)"
+competing_hypotheses:
+  - "Andra faktorer — spelares mentala motståndskraft, taktisk disciplin, eller regelskillnader — förklarar skillnaden"
+predicted_value: "Damserien har högre standardavvikelse i slutresultat och målskillnad mellan bästa och sämsta lag"
+test_method: |
+  Jämföra lagstyrke-spridning (via Elo-liknande rating eller målskillnadsvarians)
+  och korrelera med halvtidsledninghållning.
+
+  Operationellt:
+  (a) Beräkna målskillnadsvarians i herr vs dam ur bandygrytan_detailed.json
+  (b) Beräkna halvtidsledning → vinstprocent per serie
+  (c) Kontrollera om skillnaden kvarstår vid matchning av jämnare motståndare
+  (d) Om skillnaden försvinner vid kontroll för lagstyrka — stöder selektionshypotesen
+
+  Utan explicit Elo-data kan slutresultatspridning fungera som proxy.
+spawned_by: "finding:007"
+source:
+  type: observation
+  name: "finding:007 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+related_facts: [S003]
+notes: |
+  Genererad från finding 007. Damseriens halvtidsledning håller i 89.1% av
+  fallen mot herrseriens 78.1%. Den mest parsimoniska förklaringen är
+  lagstyrke-spridning — starka lag leder vid halvtid och vinner.
+  Mentala/taktiska faktorer är svårare att mäta utan videoannotering.

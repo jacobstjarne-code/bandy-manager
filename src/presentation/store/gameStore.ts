@@ -85,6 +85,7 @@ interface GameState {
   simulateRemainingStep: () => AdvanceResult | null
   clearRoundSummary: () => void
   markScreenVisited: (screen: string) => void
+  dismissBeat: (beatKey: string) => void
   resolveWeeklyDecision: (choice: 'A' | 'B') => void
   resolveAwayTrip: (decision: 'stay_home' | 'book_nice' | 'ask_foundation') => void
   completeScene: (sceneId: import('../../domain/entities/Scene').SceneId, choiceId?: string) => void

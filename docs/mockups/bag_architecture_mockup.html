@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Bag-of-cards arkitektur — Bandy Manager</title>
+<style>
+  :root {
+    --bg: #1a1612;
+    --bg-surface: #221d18;
+    --bg-elevated: #2a241e;
+    --bg-dark: #0f0c09;
+    --border: #3a322a;
+    --border-dark: #2a241e;
+    --text-primary: #e8e0d0;
+    --text-secondary: #b8ad9a;
+    --text-muted: #7a7060;
+    --text-light: #f0e8d8;
+    --accent: #b8884c;
+    --accent-dark: #8b6638;
+    --accent-deep: #6b4d28;
+    --success: #5a8c4a;
+    --danger: #a04848;
+    --warning: #c8923c;
+    --gold: #d4a460;
+    --font-display: Georgia, serif;
+    --font-body: -apple-system, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0806;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    padding: 20px;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 980px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--text-light);
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 24px;
+    max-width: 720px;
+  }
+
+  .section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--text-light);
+    margin-bottom: 8px;
+  }
+  .section-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  /* The bag visualization */
+  .bag {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .card-pill {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 11px;
+    transition: all 0.4s ease;
+    min-width: 130px;
+  }
+  .card-pill.eligible {
+    border-color: var(--accent);
+    background: rgba(184,136,76,0.12);
+  }
+  .card-pill.eligible.primary {
+    border-color: var(--gold);
+    background: rgba(212,164,96,0.18);
+    box-shadow: 0 0 12px rgba(212,164,96,0.20);
+  }
+  .card-pill.dimmed {
+    opacity: 0.30;
+  }
+  .card-name {
+    font-weight: 700;
+    color: var(--text-light);
+    font-size: 11px;
+    margin-bottom: 3px;
+  }
+  .card-tier {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+  }
+  .card-pill.eligible .card-tier { color: var(--accent); }
+  .card-pill.eligible.primary .card-tier { color: var(--gold); }
+  .card-trigger {
+    font-size: 9px;
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.4;
+  }
+  .card-weight {
+    font-size: 8px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* State controls */
+  .state-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: var(--bg-dark);
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+  }
+  .state-controls label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: var(--bg-elevated);
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid var(--border);
+  }
+  .state-controls label:hover { border-color: var(--accent); }
+  .state-controls input[type="checkbox"] { cursor: pointer; }
+  .state-label {
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    width: 100%;
+  }
+
+  /* Output dashboard preview */
+  .output-area {
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px;
+    min-height: 200px;
+  }
+  .output-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .output-card.primary {
+    background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(184,136,76,0.12) 100%);
+    border-color: var(--accent);
+    padding: 14px 16px;
+  }
+  .output-card.primary.derby {
+    background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(160,72,72,0.18) 100%);
+    border-color: var(--danger);
+  }
+  .output-card.primary.deadline {
+    background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(200,146,60,0.18) 100%);
+    border-color: var(--warning);
+  }
+  .output-card.primary.smfinal {
+    background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(212,164,96,0.20) 100%);
+    border-color: var(--gold);
+  }
+  .output-tier {
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .output-card.primary .output-tier { color: var(--accent); }
+  .output-card.primary.derby .output-tier { color: var(--danger); }
+  .output-card.primary.deadline .output-tier { color: var(--warning); }
+  .output-card.primary.smfinal .output-tier { color: var(--gold); }
+  .output-name {
+    font-size: 13px;
+    color: var(--text-light);
+    font-weight: 600;
+  }
+  .output-card.primary .output-name {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .output-detail {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 40px 20px;
+    font-size: 12px;
+  }
+
+  /* Type definition */
+  .code-block {
+    background: #08060a;
+    border: 1px solid var(--border-dark);
+    border-radius: 6px;
+    padding: 14px;
+    font-family: 'Menlo', 'Monaco', monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    overflow-x: auto;
+    margin-bottom: 8px;
+  }
+  .code-block .kw { color: #c8923c; }
+  .code-block .str { color: #5a8c4a; }
+  .code-block .ty { color: #b8884c; }
+  .code-block .comm { color: var(--text-muted); font-style: italic; }
+  .code-block .key { color: var(--text-light); }
+
+  /* Two-col layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 12px;
+  }
+  .col h4 {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 6px;
+  }
+  .col p {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  @media (max-width: 700px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+  }
+  .legend-swatch.primary { border-color: var(--gold); background: rgba(212,164,96,0.18); }
+  .legend-swatch.eligible { border-color: var(--accent); background: rgba(184,136,76,0.12); }
+  .legend-swatch.dim { opacity: 0.30; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>Bag-of-cards arkitektur — visualiserad</h1>
+<p class="subtitle">
+Detta är hur Portal-mocken faktiskt fungerar under huven. Klicka i kryssrutorna nedan för att simulera olika game state. Se vilka kort som blir <em>eligible</em> och vilket som vinner som <em>primary</em>. Längst ner visas hur dashboarden faktiskt skulle rendera.
+</p>
+
+<!-- Sektion 1: Datatypen -->
+<div class="section">
+  <div class="section-label">DATATYP</div>
+  <div class="section-title">DashboardCard</div>
+  <div class="section-desc">
+    Varje kort i bagen har en typ. <strong>tier</strong> är vilken zon i Portal det kan dyka upp i (primary / secondary / minimal). <strong>weight</strong> är prioritet inom tier — högre vinner. <strong>triggers</strong> är predikat mot game state — alla måste vara sanna för att kortet ska vara <em>eligible</em>.
+  </div>
+  <div class="code-block"><span class="kw">interface</span> <span class="ty">DashboardCard</span> {
+  <span class="key">id</span>: <span class="ty">string</span>                            <span class="comm">// stabil identifierare, t.ex. 'next_match_derby'</span>
+  <span class="key">tier</span>: <span class="str">'primary'</span> | <span class="str">'secondary'</span> | <span class="str">'minimal'</span>  <span class="comm">// zon i Portal</span>
+  <span class="key">weight</span>: <span class="ty">number</span>                        <span class="comm">// 0-100, högre vinner inom tier</span>
+  <span class="key">triggers</span>: <span class="ty">TriggerFn</span>[]                  <span class="comm">// alla måste returnera true</span>
+  <span class="key">render</span>: (game: <span class="ty">SaveGame</span>) =&gt; <span class="ty">CardContent</span>  <span class="comm">// hur kortet ser ut när det visas</span>
+}
+
+<span class="kw">type</span> <span class="ty">TriggerFn</span> = (game: <span class="ty">SaveGame</span>) =&gt; <span class="ty">boolean</span></div>
+</div>
+
+<!-- Sektion 2: Bagen -->
+<div class="section">
+  <div class="section-label">BAGEN — INTERAKTIV</div>
+  <div class="section-title">Klicka i kryssrutorna och se vilka kort som triggar</div>
+  <div class="section-desc">
+    Detta är en delmängd av Portal-bagen. I produktion blir det ~15-25 kort totalt. Varje kort har sina egna <em>triggers</em> som matchas mot nuvarande state.
+  </div>
+
+  <div class="state-controls" id="state-controls">
+    <span class="state-label">SIMULERA GAME STATE:</span>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch primary"></div>Vinner som primary</div>
+    <div class="legend-item"><div class="legend-swatch eligible"></div>Eligible (men inte primary)</div>
+    <div class="legend-item"><div class="legend-swatch dim"></div>Triggar inte just nu</div>
+  </div>
+
+  <div class="bag" id="bag"></div>
+</div>
+
+<!-- Sektion 3: Output -->
+<div class="section">
+  <div class="section-label">RESULTAT</div>
+  <div class="section-title">Hur Portal renderas just nu</div>
+  <div class="section-desc">
+    Detta är vad spelaren faktiskt ser baserat på de kort som triggade ovan. <strong>1 primary</strong> (det viktigaste idag) + <strong>0-3 secondary</strong> (kontextuella signaler) + <strong>3-4 minimal</strong> (status-rad). Allt annat foldas under "Mer info"-knappen.
+  </div>
+
+  <div class="output-area" id="output">
+    <div class="empty-state">Markera några trigger-checkboxes ovan för att se resultatet.</div>
+  </div>
+</div>
+
+<!-- Sektion 4: Algoritmen -->
+<div class="section">
+  <div class="section-label">ALGORITM</div>
+  <div class="section-title">buildPortal(game): hur Portal byggs vid varje render</div>
+  <div class="section-desc">
+    Tre steg. Inget magic — deterministiskt och testbart. Samma game state ger alltid samma Portal.
+  </div>
+  <div class="code-block"><span class="kw">function</span> <span class="ty">buildPortal</span>(game: <span class="ty">SaveGame</span>): <span class="ty">PortalLayout</span> {
+  <span class="comm">// Steg 1: Filtrera bagen — bara kort vars triggers alla returnerar true</span>
+  <span class="kw">const</span> eligible = CARD_BAG.<span class="key">filter</span>(card =&gt;
+    card.<span class="key">triggers</span>.<span class="key">every</span>(trigger =&gt; trigger(game))
+  )
+
+  <span class="comm">// Steg 2: Gruppera per tier, sortera per weight (högst först)</span>
+  <span class="kw">const</span> primary = eligible.<span class="key">filter</span>(c =&gt; c.<span class="key">tier</span> === <span class="str">'primary'</span>).<span class="key">sort</span>(byWeight)
+  <span class="kw">const</span> secondary = eligible.<span class="key">filter</span>(c =&gt; c.<span class="key">tier</span> === <span class="str">'secondary'</span>).<span class="key">sort</span>(byWeight)
+  <span class="kw">const</span> minimal = eligible.<span class="key">filter</span>(c =&gt; c.<span class="key">tier</span> === <span class="str">'minimal'</span>).<span class="key">sort</span>(byWeight)
+
+  <span class="comm">// Steg 3: Plocka ut topp N från varje tier</span>
+  <span class="kw">return</span> {
+    <span class="key">primary</span>: primary[<span class="str">0</span>] ?? FALLBACK_PRIMARY,  <span class="comm">// alltid exakt 1</span>
+    <span class="key">secondary</span>: secondary.<span class="key">slice</span>(<span class="str">0</span>, <span class="str">3</span>),         <span class="comm">// 0-3</span>
+    <span class="key">minimal</span>: minimal.<span class="key">slice</span>(<span class="str">0</span>, <span class="str">4</span>),             <span class="comm">// 0-4</span>
+  }
+}</div>
+</div>
+
+<!-- Sektion 5: Designval -->
+<div class="section">
+  <div class="section-label">DESIGNVAL ATT TA</div>
+  <div class="section-title">Frågor som återstår</div>
+
+  <div class="two-col">
+    <div class="col">
+      <h4>Q1: Var lever bagen?</h4>
+      <p><strong>Alt A:</strong> Statisk array i <code>dashboardCardBag.ts</code>. Enklast. Men kort kan inte komma från andra services dynamiskt.</p>
+      <p><strong>Alt B:</strong> Varje service exporterar sina egna kort, samlas i en aggregator. Mer modulärt men mer setup.</p>
+      <p style="color: var(--accent);"><strong>Rek:</strong> Alt A för fas 1. Migrera till B senare om bagen växer förbi ~30 kort.</p>
+    </div>
+    <div class="col">
+      <h4>Q2: Vad händer vid tie i weight?</h4>
+      <p><strong>Alt A:</strong> Deterministisk fallback på id (alfabetiskt). Tråkigt men testbart.</p>
+      <p><strong>Alt B:</strong> Slumpa med season+matchday som seed. Variation utan att vara icke-deterministiskt.</p>
+      <p style="color: var(--accent);"><strong>Rek:</strong> Alt B — samma seed-mönster vi använde i specialDateService.</p>
+    </div>
+    <div class="col">
+      <h4>Q3: Måste det alltid finnas en primary?</h4>
+      <p><strong>Alt A:</strong> Ja — fallback är "Nästa match" som alltid triggar. Aldrig tom skärm.</p>
+      <p><strong>Alt B:</strong> Nej — om inget triggar, hoppa primary-zonen helt.</p>
+      <p style="color: var(--accent);"><strong>Rek:</strong> Alt A. Enklare för spelaren, alltid en CTA.</p>
+    </div>
+    <div class="col">
+      <h4>Q4: Vad triggas mellan matcher vs på matchday?</h4>
+      <p>Vissa kort är bara relevanta vissa dagar. Lineup-set bara dag före match. Träning bara mellan matcher.</p>
+      <p style="color: var(--accent);"><strong>Rek:</strong> Triggers tar hand om det själva. <code>(game) => daysUntilNextMatch(game) === 1</code>. Inte en separat mekanism.</p>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ============== BAG DEFINITION ==============
+
+const CARD_BAG = [
+  // PRIMARY tier — det viktigaste idag
+  {
+    id: 'next_match_smfinal',
+    tier: 'primary',
+    weight: 100,
+    triggers: ['nextMatchIsSMFinal'],
+    name: 'SM-final imorgon',
+    triggerDesc: 'Nästa match är SM-finalen',
+    color: 'smfinal',
+    primary: { tag: '🏆 SM-FINAL', name: 'Studenternas IP', detail: 'Söderfors · Lördag 14 mars · 13:15' },
+  },
+  {
+    id: 'transfer_deadline_close',
+    tier: 'primary',
+    weight: 90,
+    triggers: ['transferDeadlineWithin3Rounds'],
+    name: 'Transferdeadline nära',
+    triggerDesc: 'Deadline om ≤3 omgångar',
+    color: 'deadline',
+    primary: { tag: '⏱ DEADLINE · 2 OMGÅNGAR KVAR', name: 'Transferfönstret stänger 22 jan', detail: 'Tre öppna bud · ett inkommande på Lindberg' },
+  },
+  {
+    id: 'next_match_derby',
+    tier: 'primary',
+    weight: 80,
+    triggers: ['nextMatchIsDerby'],
+    name: 'Derby imorgon',
+    triggerDesc: 'Nästa match är derby (rivalry finns)',
+    color: 'derby',
+    primary: { tag: '🔥 BRUKSDERBYT · IMORGON', name: 'Söderfors · Hemma', detail: 'Lördag 6 dec · 13:15 · Stålvallen' },
+  },
+  {
+    id: 'patron_demand_unmet',
+    tier: 'primary',
+    weight: 70,
+    triggers: ['patronDemandUnmetOver3Rounds'],
+    name: 'Patron-konflikt',
+    triggerDesc: 'Patrons krav ouppfyllt 3+ omgångar',
+    color: 'derby',
+    primary: { tag: '👤 PATRON KRÄVER', name: 'Lars Berglund vill ha besked', detail: '"Jag har bett om en stjärnvärvning sedan oktober."' },
+  },
+  {
+    id: 'next_match_routine',
+    tier: 'primary',
+    weight: 10,
+    triggers: ['default'],
+    name: 'Nästa match (default)',
+    triggerDesc: 'Fallback — alltid eligible',
+    color: 'routine',
+    primary: { tag: '🏒 NÄSTA MATCH', name: 'Hälleforsnäs · Borta', detail: 'Onsdag 28 oktober · 19:00' },
+  },
+
+  // SECONDARY tier — kontextuella signaler
+  {
+    id: 'opponent_form',
+    tier: 'secondary',
+    weight: 60,
+    triggers: ['nextMatchIsBigGame'],
+    name: 'Motståndarens form',
+    triggerDesc: 'Stor match (derby/topp/cup)',
+    secondary: { label: '🆚 SÖDERFORS FORM', value: 'V V O F V', detail: '3:a i tabellen' },
+  },
+  {
+    id: 'injury_status',
+    tier: 'secondary',
+    weight: 70,
+    triggers: ['hasInjuredStarters'],
+    name: 'Skadeläge',
+    triggerDesc: 'Skadade i startelvan',
+    secondary: { label: '🩹 SKADELÄGE', value: '2 borta', detail: 'Lindberg ute · Andersson 50/50' },
+  },
+  {
+    id: 'open_bids',
+    tier: 'secondary',
+    weight: 80,
+    triggers: ['hasOpenBids'],
+    name: 'Öppna bud',
+    triggerDesc: 'Bud kräver svar',
+    secondary: { label: '💼 BUD: HENRIKSSON', value: '240 tkr', detail: 'från Västanfors · svar krävs' },
+  },
+  {
+    id: 'tabell',
+    tier: 'secondary',
+    weight: 30,
+    triggers: ['default'],
+    name: 'Tabell',
+    triggerDesc: 'Fallback — alltid',
+    secondary: { label: '📊 TABELL', value: '5:a', detail: '8 p · 1 från topp 4' },
+  },
+  {
+    id: 'kassa',
+    tier: 'secondary',
+    weight: 25,
+    triggers: ['default'],
+    name: 'Ekonomi',
+    triggerDesc: 'Fallback — alltid',
+    secondary: { label: '💰 KASSA', value: '412 tkr', detail: '+18 senaste omg' },
+  },
+
+  // MINIMAL tier — status-rad
+  {
+    id: 'squad_status',
+    tier: 'minimal',
+    weight: 50,
+    triggers: ['default'],
+    name: 'Trupp-status',
+    triggerDesc: 'Alltid',
+    minimal: { label: 'Trupp', value: '17/19' },
+  },
+  {
+    id: 'form_status',
+    tier: 'minimal',
+    weight: 40,
+    triggers: ['default'],
+    name: 'Form-status',
+    triggerDesc: 'Alltid',
+    minimal: { label: 'Form', value: '71' },
+  },
+  {
+    id: 'klacken_status',
+    tier: 'minimal',
+    weight: 60,
+    triggers: ['nextMatchIsDerby'],
+    name: 'Klacken (derby)',
+    triggerDesc: 'Bara på derby-dag',
+    minimal: { label: 'Klacken', value: 'peppad' },
+  },
+]
+
+// ============== STATE ==============
+
+const STATE_FLAGS = {
+  nextMatchIsSMFinal: { label: '🏆 SM-final imorgon', default: false },
+  nextMatchIsDerby: { label: '🔥 Derby imorgon', default: false },
+  transferDeadlineWithin3Rounds: { label: '⏱ Deadline om 2 omg', default: false },
+  patronDemandUnmetOver3Rounds: { label: '👤 Patron-konflikt', default: false },
+  nextMatchIsBigGame: { label: '🆚 Stor match (derby/topp)', default: false },
+  hasInjuredStarters: { label: '🩹 Skadade i startelvan', default: false },
+  hasOpenBids: { label: '💼 Öppna bud', default: false },
+}
+
+const state = {}
+Object.keys(STATE_FLAGS).forEach(k => state[k] = STATE_FLAGS[k].default)
+
+// ============== TRIGGER EVALUATION ==============
+
+function evalTrigger(triggerName) {
+  if (triggerName === 'default') return true
+  return state[triggerName] === true
+}
+
+function isCardEligible(card) {
+  return card.triggers.every(evalTrigger)
+}
+
+// ============== RENDERING ==============
+
+function renderControls() {
+  const container = document.getElementById('state-controls')
+  Object.entries(STATE_FLAGS).forEach(([key, info]) => {
+    const label = document.createElement('label')
+    const cb = document.createElement('input')
+    cb.type = 'checkbox'
+    cb.checked = state[key]
+    cb.onchange = () => {
+      state[key] = cb.checked
+      // Auto-koppla derby till bigGame också för realism
+      if (key === 'nextMatchIsDerby' && cb.checked) {
+        state.nextMatchIsBigGame = true
+        document.querySelector('[data-flag="nextMatchIsBigGame"]').checked = true
+      }
+      render()
+    }
+    cb.dataset.flag = key
+    label.appendChild(cb)
+    label.appendChild(document.createTextNode(info.label))
+    container.appendChild(label)
+  })
+}
+
+function render() {
+  // Compute eligible cards
+  const eligible = CARD_BAG.filter(isCardEligible)
+
+  // Group by tier and sort
+  const primary = eligible.filter(c => c.tier === 'primary').sort((a, b) => b.weight - a.weight)
+  const secondary = eligible.filter(c => c.tier === 'secondary').sort((a, b) => b.weight - a.weight)
+  const minimal = eligible.filter(c => c.tier === 'minimal').sort((a, b) => b.weight - a.weight)
+
+  const winningPrimary = primary[0]
+  const visibleSecondary = secondary.slice(0, 3)
+  const visibleMinimal = minimal.slice(0, 4)
+
+  // Render bag
+  const bag = document.getElementById('bag')
+  bag.innerHTML = ''
+  CARD_BAG.forEach(card => {
+    const isElig = isCardEligible(card)
+    const isWinner = card === winningPrimary
+    const isVisible =
+      isWinner ||
+      visibleSecondary.includes(card) ||
+      visibleMinimal.includes(card)
+
+    const div = document.createElement('div')
+    div.className = 'card-pill'
+    if (isElig && isVisible) {
+      div.classList.add('eligible')
+      if (isWinner) div.classList.add('primary')
+    } else {
+      div.classList.add('dimmed')
+    }
+
+    div.innerHTML = `
+      <div class="card-tier">${card.tier} · w${card.weight}</div>
+      <div class="card-name">${card.name}</div>
+      <div class="card-trigger">${card.triggerDesc}</div>
+    `
+    bag.appendChild(div)
+  })
+
+  // Render output
+  const output = document.getElementById('output')
+  if (!winningPrimary) {
+    output.innerHTML = '<div class="empty-state">Ingen primary triggar — fallback "Nästa match" skulle visas i produktion.</div>'
+    return
+  }
+
+  output.innerHTML = ''
+
+  // Primary
+  const p = document.createElement('div')
+  p.className = `output-card primary ${winningPrimary.color}`
+  p.innerHTML = `
+    <div class="output-tier">${winningPrimary.primary.tag}</div>
+    <div class="output-name">${winningPrimary.primary.name}</div>
+    <div class="output-detail">${winningPrimary.primary.detail}</div>
+  `
+  output.appendChild(p)
+
+  // Secondary (i grid)
+  if (visibleSecondary.length > 0) {
+    const grid = document.createElement('div')
+    grid.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px;'
+    visibleSecondary.forEach(card => {
+      const c = document.createElement('div')
+      c.className = 'output-card'
+      c.innerHTML = `
+        <div class="output-tier">${card.secondary.label}</div>
+        <div class="output-name" style="font-size:14px">${card.secondary.value}</div>
+        <div class="output-detail">${card.secondary.detail}</div>
+      `
+      grid.appendChild(c)
+    })
+    output.appendChild(grid)
+  }
+
+  // Minimal status bar
+  if (visibleMinimal.length > 0) {
+    const bar = document.createElement('div')
+    bar.style.cssText = 'display: flex; gap: 16px; margin-top: 10px; padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; justify-content: space-around;'
+    visibleMinimal.forEach(card => {
+      const c = document.createElement('div')
+      c.style.cssText = 'text-align: center;'
+      c.innerHTML = `
+        <div style="font-size: 8px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 2px;">${card.minimal.label}</div>
+        <div style="font-family: var(--font-display); color: var(--text-primary); font-size: 13px; font-weight: 600;">${card.minimal.value}</div>
+      `
+      bar.appendChild(c)
+    })
+    output.appendChild(bar)
+  }
+}
+
+renderControls()
+render()
+</script>
+
+</body>
+</html>

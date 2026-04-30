@@ -7,6 +7,7 @@ import { initCardBag } from '../../domain/services/portal/initCardBag'
 import { PortalSecondarySection } from '../components/portal/PortalSecondarySection'
 import { PortalMinimalBar } from '../components/portal/PortalMinimalBar'
 import { SituationCard } from '../components/portal/SituationCard'
+import { PortalBeat } from '../components/portal/PortalBeat'
 import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
 import { playSound } from '../audio/soundEffects'
 
@@ -146,6 +147,7 @@ export function PortalScreen() {
         }}
       >
         <SituationCard game={game} />
+        <PortalBeat game={game} />
         <Primary game={game} />
         <PortalSecondarySection cards={layout.secondary} game={game} />
         <PortalMinimalBar cards={layout.minimal} game={game} />

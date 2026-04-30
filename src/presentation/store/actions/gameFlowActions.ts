@@ -359,6 +359,15 @@ export function gameFlowActions(get: Get, set: Set) {
       }
     },
 
+    dismissBeat: (beatKey: string) => {
+      const { game } = get()
+      if (!game) return
+      const shown = game.shownBeats ?? []
+      if (!shown.includes(beatKey)) {
+        set({ game: { ...game, shownBeats: [...shown, beatKey] } })
+      }
+    },
+
     simulateRemainingStep: (): AdvanceResult | null => {
       const state = get()
       const { game, resolveEvent, setPlayerLineup, advance } = state

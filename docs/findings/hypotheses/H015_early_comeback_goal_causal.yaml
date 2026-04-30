@@ -1,0 +1,32 @@
+fact_id: H015
+category: hypothesis
+domain: bandy
+claim: "Tidiga reduceringsmål i minut 91-100 är kausallt kopplade till comeback-sannolikhet — de ger laget tid att spela om matchen och sänker motståndarens momentum"
+competing_hypotheses:
+  - "Lag som gör tidiga 2H-mål är generellt starkare eller har bättre tempo — målet är en markör för lagstyrka, inte orsaken till comeback"
+predicted_value: "27% comeback-sannolikhet vid mål i 91-100; lägre för mål i 106-120"
+test_method: |
+  Kontrollera för lagstyrka via ELO-rating; jämföra comeback-frekvens mellan
+  starka och svaga lag vid samma tidsintervall.
+
+  Operationellt:
+  (a) Extrahera alla matcher med 2H-reducering ur bandygrytan_detailed.json
+  (b) Splitta comeback-frekvens per minutintervall för reduceringsmålet (91-100, 101-110, 111-120)
+  (c) Kontrollera för lagstyrka (proxy: säsongsplacering eller historisk vinstprocent)
+  (d) Om comeback-frekvensen sjunker per intervall oberoende av lagstyrka — stöder kausal hypotes
+
+  Räknescript-skelett:
+    const h2Reducers = matches.filter(m => htTrailing(m) && hasReducer(m, 91, 100))
+    const comeback = h2Reducers.filter(m => finallyWon(m)).length / h2Reducers.length
+spawned_by: "finding:017"
+source:
+  type: observation
+  name: "finding:017 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+notes: |
+  Genererad från finding 017. Reduceringmåls tidpunkt påverkar comeback-
+  sannolikheten. Hypotesen är kausal (tid och momentum) men en stark
+  competing_hypothesis är selektionseffekt (starka lag reducerar tidigt).
+  Kontroll för lagstyrka är nödvändig för att särskilja.

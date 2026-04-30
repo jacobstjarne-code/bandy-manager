@@ -1,0 +1,33 @@
+fact_id: H008
+category: hypothesis
+domain: bandy
+claim: "Klustret av mål i minut 40–50 orsakas av att båda lagen pressar hårdare inför halvtiden — anfallslaget vill gå in med ledning, försvarslaget är ännu inte i defensivt läge"
+competing_hypotheses:
+  - "Klustret orsakas av trötthet som öppnar rum för kontringar snarare än press"
+predicted_value: "11.8% av alla mål i intervallet 40-50 minuter"
+test_method: |
+  Testa om målfrekvensen korrelerar med vilket lag som ligger före/under inför
+  halvtid; undersök pressstatistik.
+
+  Operationellt:
+  (a) Extrahera målfördelning per minutintervall ur bandygrytan_detailed.json
+  (b) Splitta mål i 40-50 på matchläge (ledande vs jagande lag scorer)
+  (c) Om jagande lag scorer proportionellt mer i 40-50 — stöder press-hypotesen
+  (d) Om fördelningen är jämn — stöder trötthetshypotesen
+
+  Räknescript-skelett:
+    const interval = goals.filter(g => g.minute >= 40 && g.minute <= 50)
+    const byMatchState = interval.reduce((acc, g) => { ... }, {leading: 0, trailing: 0, tied: 0})
+spawned_by: "finding:005"
+source:
+  type: observation
+  name: "finding:005 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+related_facts: [S001]
+notes: |
+  Genererad från finding 005. Minut 40-50 har observerat högre målfrekvens
+  (11.8% av alla mål). Hypotesen är press-relaterad men trötthet är ett
+  trovärdigt alternativ. Datan behöver splittning på matchläge för att
+  särskilja.

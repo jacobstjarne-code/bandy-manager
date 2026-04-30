@@ -1,0 +1,33 @@
+fact_id: H006
+category: hypothesis
+domain: bandy
+claim: "Bandyplanens större yta dämpar hemlagets press-fördel, vilket förklarar den lägre hemmavinstprocenten i bandy jämfört med fotboll"
+competing_hypotheses:
+  - "Flygande byten minskar hemmalagsfördelen via konditionsmässig utjämning"
+  - "Lägre genomsnittligt publiktryck i bandy är den primära faktorn"
+predicted_value: "Hemmasegerprocent i bandy < 50.2% om planstorlek är dominant faktor; fotbolls ~60% som referens"
+test_method: |
+  Jämföra hemmalagsvinstfrekvens mellan bandy och fotboll; korrelera planstorlek
+  med hemmasegerandel; kontrollera för publik.
+
+  Operationellt:
+  (a) Hämta hemmasegerprocent ur bandygrytan_detailed.json per säsong
+  (b) Jämföra med motsvarande fotbollsstatistik (kontrollera för matchantal)
+  (c) Testa om arenakapacitet (publik) korrelerar med hemmafördel i bandydata
+  (d) Om publiktrycks-correlation är starkare än formel-antaganden — stöder competing_hypothesis
+
+  Om planstorlek är dominant bör hemmafördelen vara lägre i bandy än fotboll
+  och korrelera svagt med publiknärvaro.
+spawned_by: "finding:003"
+source:
+  type: observation
+  name: "finding:003 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+related_facts: [S009]
+notes: |
+  Genererad från finding 003. Hemmasegerprocenten i bandy är ~50.2% mot
+  fotbolls ~60%. Tre konkurrerande mekanismer — planstorlek, flygande byten,
+  publiktryck — kan förklara skillnaden. Datan kan inte särskilja dem utan
+  ytterligare analys.

@@ -1,0 +1,32 @@
+fact_id: H018
+category: hypothesis
+domain: bandy
+claim: "Halvtidsledningens lägre prediktiva kraft i semifinal (53% vs 71% i kvartsfinal) förklaras av att de åtta kvarvarande lagen är jämnare matchade"
+competing_hypotheses:
+  - "Minskningen förklaras av andra faktorer — taktiska anpassningar, utmattning, eller ökad psykologisk press i semifinal"
+predicted_value: "Halvtidsledning konverteras i ~71% av kvartsfinaler och ~53% av semifinaler"
+test_method: |
+  Analysera lagstyrkefördelning bland motståndare i kvarts- vs semifinal;
+  kontrollera för andra variabler.
+
+  Operationellt:
+  (a) Extrahera halvtidsledning → slutresultat per fas ur bandygrytan_detailed.json
+  (b) Beräkna konverteringsgrad per fas (kvartsfinal, semifinal, final)
+  (c) Beräkna jämnhetsmått (målskillnadsvarians) per fas
+  (d) Regressionsanalys: konvertering ~ fas + jämnhetsmått + säsong
+  (e) Om jämnhetsmåttet förklarar fas-skillnaden — stöder H018
+
+  Lagstyrkeproxy: säsongsplacering i grundserien.
+spawned_by: "finding:025"
+source:
+  type: observation
+  name: "finding:025 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+related_facts: [S003]
+notes: |
+  Genererad från finding 025. Halvtidsledningens prediktiva kraft sjunker
+  markant från kvartsfinal (71%) till semifinal (53%). Den mest parsimoniska
+  förklaringen är jämnare motstånd i semifinal. Psykologiska och taktiska
+  faktorer är svåra att mäta utan videomaterial.

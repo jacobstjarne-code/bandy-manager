@@ -17,6 +17,15 @@ export function InjuryStatusSecondary({ game }: CardRenderProps) {
 
   const top = injured.slice(0, 3)
 
+  // Stjärnspelaren bland skadade (högst form + ability)
+  const topPlayer = injured[0]
+  const isKeyPlayer = topPlayer && ((topPlayer.form ?? 50) + (topPlayer.currentAbility ?? 50)) > 130
+  const contextLine = isKeyPlayer
+    ? `${topPlayer.lastName} är en av era bästa — det märks.`
+    : injured.length >= 4
+    ? `${injured.length} borta är för många.`
+    : null
+
   return (
     <div
       style={{
@@ -55,6 +64,11 @@ export function InjuryStatusSecondary({ game }: CardRenderProps) {
           </div>
         )}
       </div>
+      {contextLine && (
+        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 6, fontStyle: 'italic', lineHeight: 1.4 }}>
+          {contextLine}
+        </div>
+      )}
     </div>
   )
 }

@@ -1,0 +1,31 @@
+fact_id: H007
+category: hypothesis
+domain: bandy
+claim: "Bandys höga målfrekvens (9.12 mål/match) gör att enskilda mål väger statistiskt lättare, vilket håller halvtidsledningseffekten lägre än vad vi annars förväntar oss"
+competing_hypotheses:
+  - "Halvtidsledningseffekten påverkas inte av målfrekvensen — 78% förklaras av andra faktorer som lagstyrka och hemmafördel"
+predicted_value: "Halvtidsledning ger ~78% vinstprocent i bandy vs ~80% i fotboll"
+test_method: |
+  Jämföra vinstprocent efter halvtidsledning mellan bandy och fotboll med
+  kontroll för målfrekvens.
+
+  Operationellt:
+  (a) Beräkna halvtidsledningens prediktiva kraft i bandygrytan (1-mål vs 2-mål vs 3+-mål)
+  (b) Jämföra med fotbollsdata för samma ledningsmarginaler
+  (c) Testa om en simulering med lägre målfrekvens höjer halvtidsledningens prediktionsgrad
+
+  Om halvtidsledning vid 1-måls marginal predikterar sämre i bandy än fotboll
+  (kontrollerat för absolut ledning) — stöder H007.
+spawned_by: "finding:004"
+source:
+  type: observation
+  name: "finding:004 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+related_facts: [S003, S001]
+notes: |
+  Genererad från finding 004. Halvtidsledning predikterar ~78% vinstchans i
+  bandygrytan-data. Hypotesen är att den höga målfrekvensen dämpar effekten
+  av enskilda mål vilket håller prediktionskraften lägre än i fotboll.
+  Jämförelsedata från fotboll behövs för att testa.

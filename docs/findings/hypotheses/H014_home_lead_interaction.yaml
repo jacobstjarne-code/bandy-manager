@@ -1,0 +1,32 @@
+fact_id: H014
+category: hypothesis
+domain: bandy
+claim: "Hemmafördel och halvtidsledning interagerar positivt: bortalag som leder vid halvtid möter hårdare motreaktion i andra halvlek än hemmalag som leder"
+competing_hypotheses:
+  - "Skillnaden i konverteringsfrekvens (hemma 84% vs borta 79%) beror på systematiska kvalitetsskillnader i motspelarna, inte på interaktionseffekten"
+predicted_value: "Hemmalag med halvtidsledning vinner i ~84% av fallen; bortalag med halvtidsledning i ~79%"
+test_method: |
+  Kontrollera för motståndets genomsnittliga styrka; regressionsanalys med
+  hemma/borta som kontrollvariabel.
+
+  Operationellt:
+  (a) Splitta halvtidsledning → vinstprocent på hemma vs borta ur bandygrytan_detailed.json
+  (b) Kontrollera om hemmalagen som leder vid halvtid möter svagare motstånd i genomsnitt
+  (c) Logistisk regression: slutresultat ~ halvtidsledning + hemma/borta + lagstyrka
+  (d) Om hemma/borta-koefficienten kvarstår vid kontroll för lagstyrka — stöder H014
+
+  Utan explicit lagstyrka-rating kan historisk prestation (vinstprocent säsongen)
+  fungera som proxy.
+spawned_by: "finding:016"
+source:
+  type: observation
+  name: "finding:016 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+related_facts: [S003, S009]
+notes: |
+  Genererad från finding 016. Hemmalag konverterar halvtidsledningar till vinst
+  i ~84% av fallen mot bortalagets ~79%. Interaktionseffekten är rimlig —
+  hemmalag som leder kan spela mer passivt och ändå hålla emot motståndarens
+  press. Lagstyrka-kontroll krävs för att bekräfta.

@@ -1,0 +1,29 @@
+fact_id: H004
+category: hypothesis
+domain: bandy
+claim: "Bandys fria substitution och hörnornas offensiva vikt gynnar chasande lag mer än i fotboll, vilket håller comeback-frekvensen lägre än vad reglerna annars skulle antycka"
+competing_hypotheses:
+  - "Fria substitution och hörnornas offensiva vikt gynnar inte chasande lag i tillräcklig grad för att höja comeback-frekvensen jämfört med fotboll"
+predicted_value: "Comeback-frekvens i bandy > 22% om hypotesen stämmer (observerat: ~22%)"
+test_method: |
+  Jämföra comeback-frekvens i matcher med många hörnor/substitutioner mot matcher
+  med få; jämföra med fotbollsdata.
+
+  Operationellt:
+  (a) Extrahera comeback-frekvens per kvartil av hörnfrekvens per match
+  (b) Jämför comeback-frekvens bandy vs fotboll (kontrollera för målfrekvens)
+  (c) Om chasande lag utnyttjar hörnor signifikant mer än ledande lag — stöder H004
+
+  Om comeback-frekvensen inte korrelerar med hörnfrekvens — stöder competing_hypothesis.
+spawned_by: "finding:001"
+source:
+  type: observation
+  name: "finding:001 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+notes: |
+  Genererad från finding 001. Comeback-frekvensen i bandy är ~22% vilket är lägre
+  än vad de offensiva reglerna (fria byten, hörnvikt) intuitivt antyder.
+  Hypotesen är att reglerna faktiskt gynnar chasande lag men att detta bara
+  kompenserar för den höga målfrekvensen som i sig gör comebacks svårare.

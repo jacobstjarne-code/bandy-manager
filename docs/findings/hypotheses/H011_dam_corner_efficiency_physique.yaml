@@ -1,0 +1,31 @@
+fact_id: H011
+category: hypothesis
+domain: bandy
+claim: "Lägre hörnkonvertering i damserien (15.4% vs 22.2%) beror på fysiska förutsättningar — lägre kroppsstyrka och hopphöjd minskar effekten av luftdueller och nick-situationer"
+competing_hypotheses:
+  - "Lägre hörnkonvertering i damserien beror på att lag försvarar hörnor mer konsekvent med zon eller tätt personförsvar snarare än fysiska skillnader"
+predicted_value: "Hörnmål utgör ~15% av totala mål i damserien mot ~22% i herrserien"
+test_method: |
+  Videoannotering av hörnförsvarsformation och måltyp (luftduel vs rörelsemål)
+  i båda serierna.
+
+  Operationellt:
+  (a) Extrahera hörnmålsandel ur bandygrytan_detailed.json för herr vs dam
+  (b) Om videomaterial finns: klassificera mål som luftduel/nick eller rörelsemål
+  (c) Jämföra andelen luftduellsmål herr vs dam
+  (d) Om andelen luftduellsmål är lägre i dam — stöder fysik-hypotesen
+  (e) Om försvarsformation är mer zon-baserad i dam — stöder competing_hypothesis
+
+  Utan videoannotering kan bara andelen verifieras, inte mekanismen.
+spawned_by: "finding:007"
+source:
+  type: observation
+  name: "finding:007 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+related_facts: [S008]
+notes: |
+  Genererad från finding 007. Damseriens hörnmålsandel (15.4%) är signifikant
+  lägre än herrseries (22.2%). Fysik och taktik är de primära kandidaterna.
+  Fullständigt test kräver videoannotering som är resurskrävande.

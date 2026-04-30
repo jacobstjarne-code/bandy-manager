@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Moments-mock — Bandy Manager</title>
+<style>
+  :root {
+    --bg: #1a1612;
+    --bg-surface: #221d18;
+    --bg-elevated: #2a241e;
+    --bg-dark: #0f0c09;
+    --bg-deepdark: #08060a;
+    --border: #3a322a;
+    --border-dark: #2a241e;
+    --text-primary: #e8e0d0;
+    --text-secondary: #b8ad9a;
+    --text-muted: #7a7060;
+    --text-light: #f0e8d8;
+    --accent: #b8884c;
+    --accent-dark: #8b6638;
+    --accent-deep: #6b4d28;
+    --accent-glow: #d4a060;
+    --success: #5a8c4a;
+    --danger: #a04848;
+    --ice: #6a8aa0;
+    --gold: #d4a460;
+    --font-display: Georgia, serif;
+    --font-body: -apple-system, system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0806;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  h1.title {
+    max-width: 430px;
+    margin: 0 auto 8px;
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--text-light);
+    font-weight: 700;
+  }
+  h2.subtitle {
+    max-width: 430px;
+    margin: 0 auto 20px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  .scenario-picker {
+    max-width: 430px;
+    margin: 0 auto 20px;
+    display: flex;
+    gap: 6px;
+  }
+  .scenario-picker button {
+    flex: 1;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font-body);
+    transition: all 0.2s;
+  }
+  .scenario-picker button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .scenario-picker button.active {
+    background: var(--accent);
+    color: var(--bg-dark);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .scenario-context {
+    max-width: 430px;
+    margin: 0 auto 12px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .phone {
+    max-width: 430px;
+    margin: 0 auto;
+    border-radius: 16px;
+    overflow: hidden;
+    min-height: 720px;
+    position: relative;
+  }
+
+  .scenario { display: none; }
+  .scenario.active { display: block; }
+
+  /* ============== M2: SÖNDAGSTRÄNING ============== */
+  .moment-training {
+    background: var(--bg);
+    min-height: 720px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Ljus uppifrån, illustrativ */
+  .training-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 30% at 50% 0%, rgba(184,136,76,0.10) 0%, transparent 70%),
+      linear-gradient(180deg, #1a1410 0%, #15110d 60%, #0f0c09 100%);
+  }
+
+  /* Snöpartiklar */
+  .snow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .snow span {
+    position: absolute;
+    background: rgba(245,241,235,0.35);
+    border-radius: 50%;
+    animation: snowfall linear infinite;
+  }
+  @keyframes snowfall {
+    from { transform: translateY(-10px); }
+    to { transform: translateY(800px); }
+  }
+
+  .moment-content {
+    position: relative;
+    padding: 30px 24px 24px;
+    z-index: 2;
+  }
+
+  .moment-meta {
+    font-size: 9px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+    text-align: center;
+    opacity: 0.7;
+  }
+
+  .moment-titlecard {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-light);
+    text-align: center;
+    line-height: 1.1;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+
+  .moment-datecard {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-style: italic;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 36px;
+    letter-spacing: 0.5px;
+  }
+
+  .moment-headline {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-light);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .moment-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+
+  /* Spelarlista — etzlivet-stil */
+  .player-list {
+    margin: 24px 0 28px;
+  }
+  .player-row {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(58,50,42,0.5);
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .player-row:last-child { border-bottom: none; }
+
+  .player-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .player-text {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    font-family: var(--font-display);
+  }
+  .player-text strong {
+    color: var(--text-light);
+    font-weight: 700;
+  }
+  .player-text em {
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  /* Choices */
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 30px;
+  }
+  .choice {
+    background: rgba(34,29,24,0.7);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 12px 14px;
+    border-radius: 6px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: var(--font-display);
+    transition: all 0.2s;
+    line-height: 1.4;
+    backdrop-filter: blur(6px);
+  }
+  .choice:hover {
+    background: rgba(184,136,76,0.10);
+    border-color: var(--accent);
+    color: var(--text-light);
+  }
+  .choice .arrow {
+    color: var(--accent);
+    margin-right: 8px;
+  }
+  .choice .effect {
+    display: block;
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    font-family: var(--font-body);
+    font-style: italic;
+  }
+
+  /* ============== VICTORINA: SM-GULD ============== */
+  .moment-victory {
+    background: #08060a;
+    min-height: 720px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Mörk himmel + svagt ljus från arenans strålkastare */
+  .victory-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 40% at 50% 100%, rgba(212,164,96,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 20% 30%, rgba(184,136,76,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 80% 30%, rgba(184,136,76,0.08) 0%, transparent 70%),
+      linear-gradient(180deg, #08060a 0%, #0f0a08 100%);
+  }
+
+  /* Konfetti-partiklar (sparsamt) */
+  .confetti {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .confetti span {
+    position: absolute;
+    width: 4px;
+    height: 8px;
+    animation: fall linear infinite;
+  }
+  @keyframes fall {
+    from { transform: translateY(-20px) rotate(0deg); }
+    to { transform: translateY(800px) rotate(720deg); }
+  }
+
+  .victory-content {
+    position: relative;
+    z-index: 2;
+    padding: 50px 24px 28px;
+    text-align: center;
+  }
+
+  .victory-meta {
+    font-size: 9px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    opacity: 0.7;
+    margin-bottom: 16px;
+  }
+
+  .victory-trophy {
+    font-size: 72px;
+    margin-bottom: 16px;
+    line-height: 1;
+    filter: drop-shadow(0 4px 24px rgba(212,164,96,0.55)) drop-shadow(0 0 40px rgba(212,164,96,0.30));
+    animation: trophyglow 3s ease-in-out infinite;
+  }
+  @keyframes trophyglow {
+    0%, 100% { filter: drop-shadow(0 4px 24px rgba(212,164,96,0.55)) drop-shadow(0 0 40px rgba(212,164,96,0.30)); }
+    50% { filter: drop-shadow(0 4px 28px rgba(212,164,96,0.75)) drop-shadow(0 0 50px rgba(212,164,96,0.45)); }
+  }
+
+  .victory-date {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-display);
+    font-style: italic;
+    margin-bottom: 36px;
+  }
+
+  /* Score */
+  .victory-score {
+    font-family: var(--font-display);
+    font-size: 64px;
+    font-weight: 800;
+    color: var(--gold);
+    line-height: 1;
+    letter-spacing: -2px;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 30px rgba(212,164,96,0.30);
+  }
+
+  .victory-teams {
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+
+  .victory-teams strong {
+    color: var(--text-light);
+    font-weight: 700;
+  }
+
+  .victory-arena {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 50px;
+  }
+
+  /* Centrala texten */
+  .victory-text {
+    font-family: var(--font-display);
+    font-size: 17px;
+    color: var(--text-light);
+    line-height: 1.5;
+    font-weight: 400;
+    margin-bottom: 28px;
+    padding: 0 12px;
+  }
+  .victory-text em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  /* Citat från Birger */
+  .victory-quote {
+    border-left: 2px solid var(--gold);
+    padding: 8px 0 8px 14px;
+    margin: 0 auto 36px;
+    text-align: left;
+    max-width: 320px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .victory-quote .attrib {
+    display: block;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-style: normal;
+  }
+
+  /* CTA */
+  .victory-cta {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--accent) 100%);
+    color: var(--bg-dark);
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: var(--font-body);
+    box-shadow: 0 4px 24px rgba(212,164,96,0.30);
+    transition: transform 0.15s;
+  }
+  .victory-cta:hover {
+    transform: translateY(-1px);
+  }
+
+  /* Notes */
+  .design-note {
+    max-width: 430px;
+    margin: 16px auto 0;
+    padding: 12px 16px;
+    background: rgba(34,29,24,0.6);
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .design-note strong { color: var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<h1 class="title">Moments-mock — vardag och victorina</h1>
+<h2 class="subtitle">Två exempel av "moment-paradigmet": fullskärm, en uppgift, ingen BottomNav. M2 är ett tidigt vardagsmoment som etablerar bygd och spelare. Victorina är payoff efter SM-guld.</h2>
+
+<div class="scenario-picker">
+  <button onclick="show('training', this)" class="active">🌅 Söndagsträning (omg 1)</button>
+  <button onclick="show('victory', this)">🏆 SM-guld</button>
+</div>
+
+<div class="scenario-context" id="ctx">
+  Söndag morgon, andra omgången av din nya säsong. Du är ny tränare i Forsbacka och har inte mött truppen i sammanhang än. Sex spelare dök upp på frivilliga söndagsträningen.
+</div>
+
+<!-- ============== TRAINING ============== -->
+<div class="phone scenario active" id="training">
+  <div class="moment-training">
+    <div class="training-bg"></div>
+    <div class="snow" id="snow"></div>
+
+    <div class="moment-content">
+      <div class="moment-meta">⬩ &nbsp;I DETTA ÖGONBLICK&nbsp; ⬩</div>
+      <div class="moment-titlecard">Söndagsträningen</div>
+      <div class="moment-datecard">4 oktober · −2°C · Stålvallen</div>
+
+      <h1 class="moment-headline">Sex spelare på isen.</h1>
+      <p class="moment-sub">Ingen tvingad. Frivillig morgonpass.</p>
+
+      <div class="player-list">
+        <div class="player-row">
+          <div class="player-icon">H</div>
+          <div class="player-text">
+            <strong>Henriksson</strong> skrinnar varv. <em>"Han kommer alltid först,"</em> säger Vaktmästaren. <em>"Han började åtta i morse."</em>
+          </div>
+        </div>
+
+        <div class="player-row">
+          <div class="player-icon">L</div>
+          <div class="player-text">
+            <strong>Lindberg</strong> står på läktaren och pratar i telefonen. <em>Han har inte ens skridskorna på.</em>
+          </div>
+        </div>
+
+        <div class="player-row">
+          <div class="player-icon">A</div>
+          <div class="player-text">
+            <strong>Andersson, Eriksson, Karlsson</strong> skjuter på mål utan målvakt. <em>De skrattar varje gång någon träffar stolpen.</em>
+          </div>
+        </div>
+
+        <div class="player-row">
+          <div class="player-icon">B</div>
+          <div class="player-text">
+            <strong>Bergström</strong> sitter på avbytarbänken. Fryser. <em>Mössan ner över ögonen.</em>
+          </div>
+        </div>
+      </div>
+
+      <div class="choices">
+        <button class="choice">
+          <span class="arrow">→</span>Gå ut och säg hej till Henriksson
+          <span class="effect">Bygger relation till en lojal spelare</span>
+        </button>
+        <button class="choice">
+          <span class="arrow">→</span>Stör Lindberg
+          <span class="effect">Sätter ton — men på vilket sätt?</span>
+        </button>
+        <button class="choice">
+          <span class="arrow">→</span>Fråga Bergström varför han sitter där
+          <span class="effect">Lyssna in</span>
+        </button>
+        <button class="choice">
+          <span class="arrow">→</span>Lämna dem i fred. Kaffe i klubbhuset.
+          <span class="effect">Ingen tar ton första dagen</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============== VICTORY ============== -->
+<div class="phone scenario" id="victory">
+  <div class="moment-victory">
+    <div class="victory-bg"></div>
+    <div class="confetti" id="confetti"></div>
+
+    <div class="victory-content">
+      <div class="victory-meta">⬩ &nbsp;I DETTA ÖGONBLICK&nbsp; ⬩</div>
+      <div class="victory-trophy">🏆</div>
+      <div style="font-family: var(--font-display); font-size: 18px; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; font-weight: 700;">Svensk Mästare 2031</div>
+      <div class="victory-date">Tredje lördagen i mars · Studenternas IP</div>
+
+      <div class="victory-score">3–2</div>
+      <div class="victory-teams"><strong>Forsbacka IF</strong> – Söderfors</div>
+      <div class="victory-arena">25 412 ÅSKÅDARE</div>
+
+      <p class="victory-text">
+        Henriksson satte avgörande målet i 87:e. Samme Henriksson som kom upp från P19 säsongen 2027. Som du gick ut till på söndagsträningen den där höstmorgonen <em>fem år sedan</em>.
+      </p>
+
+      <div class="victory-quote">
+        "Jag sa det till Birgitta i pausen, jag sa: det här är vår final. Den minns vi när vi är gamla. Och då hade vi inte ens kvitterat än."
+        <span class="attrib">— Birger Karlsson, klackledare</span>
+      </div>
+
+      <button class="victory-cta">Fortsätt till ceremonin →</button>
+    </div>
+  </div>
+</div>
+
+<div class="design-note">
+  <strong>Notera:</strong> Båda mockerna är <em>fullscreen moments</em> — ingen BottomNav, ingen header, ingen flykt. Spelet håller dig kvar tills du tagit beslut eller tryckt CTA. Vardagsmomentet använder etzlivet-tonen (lo-fi vektor-ikoner istället för portraitbilder, brutna meningar, observation snarare än drama). Victorina använder Georgia-typografi i stort format, gyllene tonalitet, snabb visuell hierarki: meta → score → text → citat → CTA. Notera kallback till söndagsträningen — det är vad som gör segern emotionell, inte siffran 3-2. Det är kapitel B (klubbminnet) i praktiken.
+</div>
+
+<script>
+const ctxs = {
+  training: 'Söndag morgon, andra omgången av din nya säsong. Du är ny tränare i Forsbacka och har inte mött truppen i sammanhang än. Sex spelare dök upp på frivilliga söndagsträningen.',
+  victory: 'Säsong 5. Du har byggt klubben från 8:e plats till SM-guld. Henriksson som du värvade från P19 i säsong 2 satte avgörande målet. Spelet vet det. Texten vet det.',
+}
+
+function show(id, btn) {
+  document.querySelectorAll('.scenario').forEach(s => s.classList.remove('active'))
+  document.getElementById(id).classList.add('active')
+  document.querySelectorAll('.scenario-picker button').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  document.getElementById('ctx').innerText = ctxs[id]
+}
+
+// Snö
+const snow = document.getElementById('snow')
+for (let i = 0; i < 18; i++) {
+  const s = document.createElement('span')
+  const size = 2 + Math.random() * 3
+  s.style.left = (Math.random() * 100) + '%'
+  s.style.width = size + 'px'
+  s.style.height = size + 'px'
+  s.style.animationDuration = (5 + Math.random() * 5) + 's'
+  s.style.animationDelay = (-Math.random() * 5) + 's'
+  s.style.opacity = 0.3 + Math.random() * 0.4
+  snow.appendChild(s)
+}
+
+// Konfetti — gyllene och vita
+const confetti = document.getElementById('confetti')
+const colors = ['#d4a460', '#b8884c', '#f0e8d8', '#d4a460', '#b8884c']
+for (let i = 0; i < 30; i++) {
+  const s = document.createElement('span')
+  s.style.left = (Math.random() * 100) + '%'
+  s.style.background = colors[Math.floor(Math.random() * colors.length)]
+  s.style.animationDuration = (4 + Math.random() * 4) + 's'
+  s.style.animationDelay = (-Math.random() * 4) + 's'
+  s.style.opacity = 0.6 + Math.random() * 0.4
+  confetti.appendChild(s)
+}
+</script>
+
+</body>
+</html>

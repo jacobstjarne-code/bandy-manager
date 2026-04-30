@@ -1,6 +1,48 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
+import type { SaveGame } from '../../../../domain/entities/SaveGame'
 import { getFormResults } from '../../../utils/formUtils'
+
+function getContextLine(game: SaveGame): string | null {
+  const managedId = game.managedClubId
+  const standing = game.standings.find(s => s.clubId === managedId)
+  if (!standing) return null
+
+  const completedLeague = game.fixtures.filter(
+    f => f.status === 'completed' && !f.isCup &&
+      (f.homeClubId === managedId || f.awayClubId === managedId)
+  ).length
+
+  if (completedLeague === 0) return 'Säsongen börjar nu. Alla lag på noll.'
+
+  const sorted = [...game.standings].sort((a, b) => b.points - a.points)
+  const pos = standing.position
+  const pts = standing.points
+  const eighth = sorted[7]
+
+  if (eighth) {
+    const gap = pts - eighth.points
+    if (pos <= 8 && gap <= 2) {
+      const ninthClub = game.clubs.find(c => c.id === sorted[8]?.clubId)
+      const ninthName = ninthClub?.shortName ?? ninthClub?.name.split(' ')[0] ?? ''
+      return `${gap === 0 ? 'Precis på strecket' : `${gap}p över strecket`}${ninthName ? ` mot ${ninthName}` : ''}.`
+    }
+    if (pos > 8 && eighth.points - pts <= 4) {
+      const eighthClub = game.clubs.find(c => c.id === eighth.clubId)
+      const eighthName = eighthClub?.shortName ?? eighthClub?.name.split(' ')[0] ?? 'åttan'
+      return `${eighth.points - pts}p upp till ${eighthName} på strecket.`
+    }
+  }
+
+  if (pos === 1 && sorted[1]) {
+    const gap = pts - sorted[1].points
+    const secondClub = game.clubs.find(c => c.id === sorted[1].clubId)
+    const secondName = secondClub?.shortName ?? secondClub?.name.split(' ')[0] ?? 'tvåan'
+    return gap >= 3 ? `${gap}p ner till ${secondName}.` : `Tätt om toppen mot ${secondName}.`
+  }
+
+  return null
+}
 
 /** Secondary-kort: tabellposition + formdottar + poängkontext. */
 export function TabellSecondary({ game }: CardRenderProps) {
@@ -8,6 +50,7 @@ export function TabellSecondary({ game }: CardRenderProps) {
   const managedId = game.managedClubId
   const standing = game.standings.find(s => s.clubId === managedId)
   const recentForm = getFormResults(managedId, game.fixtures, game.clubs).slice(-5)
+  const contextLine = getContextLine(game)
 
   const dotColor = (r: 'V' | 'O' | 'F') =>
     r === 'V' ? 'var(--success)' : r === 'F' ? 'var(--danger)' : 'var(--accent)'
@@ -87,11 +130,15 @@ export function TabellSecondary({ game }: CardRenderProps) {
               })}
             </div>
           )}
-          {ptsDiff && (
+          {contextLine ? (
+            <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 5, fontStyle: 'italic', lineHeight: 1.4 }}>
+              {contextLine}
+            </div>
+          ) : ptsDiff ? (
             <div style={{ fontSize: 9, color: inPlayoffZone ? 'var(--success)' : 'var(--warning)', marginTop: 4 }}>
               {ptsDiff}
             </div>
-          )}
+          ) : null}
         </>
       ) : (
         <div style={{ fontSize: 13, color: 'var(--text-light)' }}>—</div>

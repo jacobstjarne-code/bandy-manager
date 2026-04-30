@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Inledning-mock — Bandy Manager</title>
+<style>
+  :root {
+    --bg: #1a1612;
+    --bg-surface: #221d18;
+    --bg-elevated: #2a241e;
+    --bg-dark: #0f0c09;
+    --bg-deepdark: #08060a;
+    --border: #3a322a;
+    --border-dark: #2a241e;
+    --text-primary: #e8e0d0;
+    --text-secondary: #b8ad9a;
+    --text-muted: #7a7060;
+    --text-light: #f0e8d8;
+    --accent: #b8884c;
+    --accent-dark: #8b6638;
+    --accent-deep: #6b4d28;
+    --accent-glow: #d4a060;
+    --success: #5a8c4a;
+    --danger: #a04848;
+    --gold: #d4a460;
+    --font-display: Georgia, serif;
+    --font-body: -apple-system, system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0806;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  h1.title {
+    max-width: 430px;
+    margin: 0 auto 8px;
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--text-light);
+    font-weight: 700;
+  }
+  h2.subtitle {
+    max-width: 430px;
+    margin: 0 auto 20px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  .scenario-picker {
+    max-width: 430px;
+    margin: 0 auto 20px;
+    display: flex;
+    gap: 6px;
+  }
+  .scenario-picker button {
+    flex: 1;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font-body);
+    transition: all 0.2s;
+  }
+  .scenario-picker button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .scenario-picker button.active {
+    background: var(--accent);
+    color: var(--bg-dark);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .scenario-context {
+    max-width: 430px;
+    margin: 0 auto 12px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .phone {
+    max-width: 430px;
+    margin: 0 auto;
+    border-radius: 16px;
+    overflow: hidden;
+    min-height: 720px;
+    position: relative;
+    background: var(--bg);
+  }
+
+  .scenario { display: none; }
+  .scenario.active { display: block; }
+
+  /* ============== TRE ERBJUDANDEN ============== */
+  .offers-screen {
+    background: var(--bg);
+    min-height: 720px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .offers-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(184,136,76,0.08) 0%, transparent 70%),
+      linear-gradient(180deg, #1a1410 0%, #15110d 100%);
+  }
+
+  .offers-content {
+    position: relative;
+    z-index: 2;
+    padding: 28px 22px 22px;
+  }
+
+  .offers-meta {
+    font-size: 9px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+    text-align: center;
+    opacity: 0.7;
+  }
+
+  .offers-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-light);
+    text-align: center;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .offers-sub {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-style: italic;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 28px;
+    line-height: 1.5;
+    padding: 0 12px;
+  }
+
+  /* Erbjudande-kort */
+  .offer {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .offer:hover {
+    border-color: var(--accent);
+    background: var(--bg-elevated);
+  }
+
+  .offer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+
+  .offer-club {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-light);
+    line-height: 1.2;
+  }
+
+  .offer-region {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .offer-difficulty {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    border-radius: 3px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-left: 10px;
+  }
+  .offer-difficulty.easy {
+    background: rgba(90,140,74,0.15);
+    color: var(--success);
+    border: 1px solid var(--success);
+  }
+  .offer-difficulty.medium {
+    background: rgba(200,146,60,0.15);
+    color: var(--gold);
+    border: 1px solid var(--gold);
+  }
+  .offer-difficulty.hard {
+    background: rgba(160,72,72,0.15);
+    color: var(--danger);
+    border: 1px solid var(--danger);
+  }
+
+  .offer-quote {
+    border-left: 2px solid var(--accent);
+    padding: 8px 0 8px 12px;
+    margin: 12px 0 10px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+
+  .offer-attrib {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-style: normal;
+    font-family: var(--font-body);
+  }
+
+  .offer-facts {
+    display: flex;
+    gap: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+  .offer-fact strong {
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  .offers-fallback {
+    display: block;
+    text-align: center;
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--text-muted);
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+  }
+  .offers-fallback:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ============== LISTA MED SVERIGE-BAKGRUND ============== */
+  .map-screen {
+    background: var(--bg);
+    min-height: 720px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .map-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 30%, rgba(184,136,76,0.06) 0%, transparent 60%),
+      linear-gradient(180deg, #15110d 0%, #0f0c09 100%);
+  }
+
+  /* Sverige-silhuett som bakgrundsdekor */
+  .sweden-backdrop {
+    position: absolute;
+    top: 60px;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 240px;
+    opacity: 0.08;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .sweden-backdrop svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .map-content {
+    position: relative;
+    z-index: 2;
+    padding: 22px 18px 18px;
+  }
+
+  .map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .map-back {
+    font-size: 11px;
+    color: var(--text-muted);
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: var(--font-body);
+  }
+  .map-back:hover { color: var(--accent); }
+
+  .map-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-light);
+    text-align: center;
+    flex: 1;
+  }
+
+  .map-instructions {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+
+  /* Region-grupp i listan */
+  .region-group {
+    margin-bottom: 14px;
+  }
+
+  .region-header {
+    font-family: var(--font-display);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    opacity: 0.6;
+    margin-bottom: 6px;
+    padding: 0 4px;
+  }
+
+  /* Klubbrad — offset vänster/mitten/höger */
+  .club-row {
+    display: flex;
+    margin-bottom: 4px;
+  }
+  .club-row.left { justify-content: flex-start; }
+  .club-row.center { justify-content: center; }
+  .club-row.right { justify-content: flex-end; }
+
+  .club-pill {
+    background: rgba(34,29,24,0.85);
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+  .club-pill:hover {
+    border-color: var(--accent);
+    background: var(--bg-elevated);
+    color: var(--text-light);
+  }
+  .club-pill.selected {
+    border-color: var(--gold);
+    background: var(--bg-elevated);
+    color: var(--text-light);
+    box-shadow: 0 0 12px rgba(212,164,96,0.25);
+  }
+
+  .club-pill-name {
+    font-weight: 600;
+    flex: 1;
+  }
+
+  .club-pill-pos {
+    font-family: var(--font-display);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* Vald klubb expanderad */
+  .selected-club {
+    background: var(--bg-surface);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 16px;
+    position: relative;
+    z-index: 3;
+  }
+  .selected-club-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .selected-club-name {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-light);
+  }
+  .selected-club-region {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-top: 2px;
+  }
+  .selected-club-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .selected-club-row .icon {
+    color: var(--accent);
+    width: 16px;
+    flex-shrink: 0;
+  }
+  .selected-club-row .text { color: var(--text-secondary); }
+  .selected-club-row .text strong { color: var(--text-light); font-weight: 600; }
+
+  .selected-club-quote {
+    border-left: 2px solid var(--accent);
+    padding: 6px 0 6px 10px;
+    margin: 10px 0;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .selected-club-attrib {
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-style: normal;
+    font-family: var(--font-body);
+  }
+
+  .selected-club-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    margin: 10px 0;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-label {
+    font-size: 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+  }
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .take-club {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-deep) 100%);
+    color: var(--text-light);
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    margin-top: 8px;
+    font-family: var(--font-body);
+  }
+
+  .design-note {
+    max-width: 430px;
+    margin: 16px auto 0;
+    padding: 12px 16px;
+    background: rgba(34,29,24,0.6);
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .design-note strong { color: var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<h1 class="title">Inledning-mock — Klubben hittar dig</h1>
+<h2 class="subtitle">Två lägen: tre erbjudanden som default, lista över alla klubbar (norr → söder, offset vänster/mitten/höger) som fallback. Sverige-silhuett ligger som svag bakgrund för plats-känsla utan att försöka vara karta.</h2>
+
+<div class="scenario-picker">
+  <button onclick="show('offers', this)" class="active">📞 Tre erbjudanden</button>
+  <button onclick="show('map', this)">📋 Alla klubbar</button>
+</div>
+
+<div class="scenario-context" id="ctx">
+  Default-vägen. Tre klubbar — en svår, en medel, en lätt — har hört talas om dig. Var och en presenteras som en kort scen där en specifik person ringer.
+</div>
+
+<!-- ============== TRE ERBJUDANDEN ============== -->
+<div class="phone scenario active" id="offers">
+  <div class="offers-screen">
+    <div class="offers-bg"></div>
+    <div class="offers-content">
+      <div class="offers-meta">⬩ &nbsp;TRE SAMTAL&nbsp; ⬩</div>
+      <h1 class="offers-title">Tre klubbar har ringt</h1>
+      <p class="offers-sub">De har hört att du letar tränarjobb. Bandysverige är ett litet rum.</p>
+
+      <div class="offer">
+        <div class="offer-header">
+          <div>
+            <div class="offer-club">Forsbacka IF</div>
+            <div class="offer-region">Bergslagen · Sverige</div>
+          </div>
+          <div class="offer-difficulty hard">SVÅR</div>
+        </div>
+        <div class="offer-quote">
+          "Vi har inte vunnit ett derby på fyra år. Klacken börjar prata om att flytta till Söderfors. Det är inte ett alternativ. Du kan rädda oss från det."
+          <div class="offer-attrib">— Lars Berglund, brukspatron sedan 1998</div>
+        </div>
+        <div class="offer-facts">
+          <div class="offer-fact"><strong>Kassa</strong> 280 tkr</div>
+          <div class="offer-fact"><strong>Trupp</strong> 17/19</div>
+          <div class="offer-fact"><strong>Förra:</strong> 9:a</div>
+        </div>
+      </div>
+
+      <div class="offer">
+        <div class="offer-header">
+          <div>
+            <div class="offer-club">Söderfors BK</div>
+            <div class="offer-region">Uppland · Sverige</div>
+          </div>
+          <div class="offer-difficulty medium">MEDEL</div>
+        </div>
+        <div class="offer-quote">
+          "Vi behöver ingen revolution. Bara någon som inte sabbar det vi redan har. Förra tränaren fick gå för att han gillade att höras."
+          <div class="offer-attrib">— Birger Nilsson, klackledare i 22 år</div>
+        </div>
+        <div class="offer-facts">
+          <div class="offer-fact"><strong>Kassa</strong> 480 tkr</div>
+          <div class="offer-fact"><strong>Trupp</strong> 19/19</div>
+          <div class="offer-fact"><strong>Förra:</strong> 4:a</div>
+        </div>
+      </div>
+
+      <div class="offer">
+        <div class="offer-header">
+          <div>
+            <div class="offer-club">Karlsborg IK</div>
+            <div class="offer-region">Värmland · Sverige</div>
+          </div>
+          <div class="offer-difficulty easy">LÄTT</div>
+        </div>
+        <div class="offer-quote">
+          "Jag har dragit i den här klubben i 18 år. Vi behöver inte vinna allt — vi behöver att laget fortsätter finnas om tio år. Tror du på det också?"
+          <div class="offer-attrib">— Margareta Jonsson, ordförande</div>
+        </div>
+        <div class="offer-facts">
+          <div class="offer-fact"><strong>Kassa</strong> 620 tkr</div>
+          <div class="offer-fact"><strong>Trupp</strong> 18/19</div>
+          <div class="offer-fact"><strong>Förra:</strong> 6:a</div>
+        </div>
+      </div>
+
+      <button class="offers-fallback" onclick="show('map', null)">
+        📋 Visa alla 12 klubbar i bandysverige
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============== LISTA MED SVERIGE-BACKDROP ============== -->
+<div class="phone scenario" id="map">
+  <div class="map-screen">
+    <div class="map-bg"></div>
+
+    <!-- Sverige-silhuett som svag bakgrund -->
+    <div class="sweden-backdrop">
+      <svg viewBox="0 0 220 460" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <path d="M 95 8
+                 C 100 4, 110 5, 116 12
+                 L 130 30
+                 C 138 42, 144 56, 148 72
+                 L 154 100
+                 C 160 130, 164 158, 158 184
+                 L 152 210
+                 C 148 228, 146 246, 152 264
+                 L 162 290
+                 C 168 312, 168 332, 158 354
+                 L 142 380
+                 C 130 400, 116 416, 100 426
+                 L 84 432
+                 C 70 434, 58 428, 52 416
+                 L 46 396
+                 C 44 380, 48 364, 56 350
+                 L 66 326
+                 C 72 308, 70 290, 62 276
+                 L 52 254
+                 C 46 234, 46 212, 54 194
+                 L 64 170
+                 C 70 150, 70 130, 64 112
+                 L 56 90
+                 C 54 72, 60 56, 70 44
+                 L 80 26
+                 C 86 16, 90 10, 95 8 Z"
+              fill="rgba(184,136,76,0.4)"
+              stroke="rgba(184,136,76,0.6)"
+              stroke-width="1"/>
+      </svg>
+    </div>
+
+    <div class="map-content">
+      <div class="map-header">
+        <button class="map-back" onclick="show('offers', null)">← Tillbaka</button>
+        <div class="map-title">Välj din klubb</div>
+        <div style="width: 60px"></div>
+      </div>
+      <div class="map-instructions">Norr till söder. Tryck för mer.</div>
+
+      <!-- Norrbotten -->
+      <div class="region-group">
+        <div class="region-header">Norrbotten</div>
+        <div class="club-row center">
+          <div class="club-pill" onclick="selectClub('karlsborg', this)">
+            <span class="club-pill-name">Karlsborg IK</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dalarna -->
+      <div class="region-group">
+        <div class="region-header">Dalarna</div>
+        <div class="club-row left">
+          <div class="club-pill" onclick="selectClub('gagnef', this)">
+            <span class="club-pill-name">Gagnef IF</span>
+          </div>
+        </div>
+        <div class="club-row right">
+          <div class="club-pill" onclick="selectClub('heros', this)">
+            <span class="club-pill-name">IF Heros</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gävleborg -->
+      <div class="region-group">
+        <div class="region-header">Gävleborg</div>
+        <div class="club-row center">
+          <div class="club-pill" onclick="selectClub('forsbacka', this)">
+            <span class="club-pill-name">Forsbacka IF</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Västmanland -->
+      <div class="region-group">
+        <div class="region-header">Västmanland</div>
+        <div class="club-row right">
+          <div class="club-pill" onclick="selectClub('vastanfors', this)">
+            <span class="club-pill-name">Västanfors IF</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Värmland -->
+      <div class="region-group">
+        <div class="region-header">Värmland</div>
+        <div class="club-row left">
+          <div class="club-pill" onclick="selectClub('lesjofors', this)">
+            <span class="club-pill-name">Lesjöfors IF</span>
+          </div>
+        </div>
+        <div class="club-row left">
+          <div class="club-pill" onclick="selectClub('slottsbron', this)">
+            <span class="club-pill-name">Slottsbrons IF</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Uppland -->
+      <div class="region-group">
+        <div class="region-header">Uppland</div>
+        <div class="club-row right">
+          <div class="club-pill" onclick="selectClub('soderfors', this)">
+            <span class="club-pill-name">Söderfors BK</span>
+          </div>
+        </div>
+        <div class="club-row right">
+          <div class="club-pill" onclick="selectClub('skutskar', this)">
+            <span class="club-pill-name">Skutskärs IF</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Södermanland -->
+      <div class="region-group">
+        <div class="region-header">Södermanland</div>
+        <div class="club-row center">
+          <div class="club-pill" onclick="selectClub('halleforsnas', this)">
+            <span class="club-pill-name">Hälleforsnäs IK</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Småland -->
+      <div class="region-group">
+        <div class="region-header">Småland</div>
+        <div class="club-row center">
+          <div class="club-pill" onclick="selectClub('malilla', this)">
+            <span class="club-pill-name">Målilla GoIF</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skåne -->
+      <div class="region-group">
+        <div class="region-header">Skåne</div>
+        <div class="club-row left">
+          <div class="club-pill" onclick="selectClub('rogle', this)">
+            <span class="club-pill-name">Rögle BK</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="selected-club-area"></div>
+    </div>
+  </div>
+</div>
+
+<div class="design-note">
+  <strong>Notera:</strong> Sverige-silhuetten ligger som mycket svag bakgrund (8% opacitet) bakom listan. Den är en stiliserad form, inte exakt geografi. Listan är ärligt en lista, men följer N→S-axeln så att ögat naturligt rör sig nedåt genom landet. Offset vänster/mitten/höger ger varierad rytm utan att låtsas vara koordinater. Region-rubrikerna i kapitäler binder ihop klubbarna kulturellt.
+</div>
+
+<script>
+const ctxs = {
+  offers: 'Default-vägen. Tre klubbar — en svår, en medel, en lätt — har hört talas om dig. Var och en presenteras som en kort scen där en specifik person ringer.',
+  map: 'Fallback för spelare som vill se alla 12 klubbar. Listan följer norr → söder, klubbarna är offset vänster/mitten/höger. Sverige-silhuetten ligger som svag bakgrund.',
+}
+
+function show(id, btn) {
+  document.querySelectorAll('.scenario').forEach(s => s.classList.remove('active'))
+  document.getElementById(id).classList.add('active')
+  if (btn) {
+    document.querySelectorAll('.scenario-picker button').forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
+  } else {
+    document.querySelectorAll('.scenario-picker button').forEach((b, i) => {
+      b.classList.toggle('active', (i === 0 && id === 'offers') || (i === 1 && id === 'map'))
+    })
+  }
+  document.getElementById('ctx').innerText = ctxs[id]
+  document.getElementById('selected-club-area').innerHTML = ''
+  document.querySelectorAll('.club-pill').forEach(p => p.classList.remove('selected'))
+}
+
+const CLUB_DATA = {
+  forsbacka: {
+    name: 'Forsbacka IF', region: 'Bergslagen', founded: 1928,
+    arena: 'Stålvallen', arenaNote: 'Konstis sedan 1971',
+    patron: 'Lars Berglund, brukspatron',
+    klack: 'Bruksgrabbarna',
+    quote: '"Vi har inte vunnit ett derby på fyra år. Det börjar bli skämt om oss på Söderfors."',
+    attrib: 'Birger Karlsson, klackledare',
+    pos: '9:a', kassa: '280 tkr', akademi: 'Medel',
+  },
+  halleforsnas: {
+    name: 'Hälleforsnäs IK', region: 'Bergslagen', founded: 1925,
+    arena: 'Skogsängens IP', arenaNote: 'Naturis, beroende av kyla',
+    patron: 'Inga (kommunalt stöd)',
+    klack: 'Brukets Blå',
+    quote: '"Vi har inte mycket pengar. Vi har den här isen och varandra. Räcker det?"',
+    attrib: 'Stig Andersson, ordförande',
+    pos: '11:a', kassa: '180 tkr', akademi: 'Svag',
+  },
+  lesjofors: {
+    name: 'Lesjöfors IF', region: 'Bergslagen', founded: 1919,
+    arena: 'Bruksvallen', arenaNote: 'Trä-läktare från 1960',
+    patron: 'Tomas Lindqvist, mecenat',
+    klack: 'Bruksklacken',
+    quote: '"Vi är bandybaroner. Eldsjälar. Byalag. Allt på samma gång."',
+    attrib: 'Eivor Nilsson, kioskvakt',
+    pos: '7:a', kassa: '320 tkr', akademi: 'Bra',
+  },
+  gagnef: {
+    name: 'Gagnef IF', region: 'Dalarna', founded: 1907,
+    arena: 'Gagnefsvallen', arenaNote: 'Bandyns äldsta klubb i Dalarna',
+    patron: 'Mikael Sandberg, IT-entreprenör',
+    klack: 'Masarna',
+    quote: '"Envisa masar med stor historia. Vi minns 1962. Du minns kanske inte."',
+    attrib: 'Rune Eriksson, traditionalist',
+    pos: '5:a', kassa: '410 tkr', akademi: 'Bra',
+  },
+  vastanfors: {
+    name: 'Västanfors IF', region: 'Dalarna', founded: 1919,
+    arena: 'Iceberg Arena', arenaNote: 'Inomhushall sedan 2014',
+    patron: 'Berit Sandström, riskkapitalist',
+    klack: 'Västanfors-stödet',
+    quote: '"Där alla andas bandy. Det är inte en metafor."',
+    attrib: 'Lokaltidningen, 2025',
+    pos: '3:a', kassa: '720 tkr', akademi: 'Topp',
+  },
+  karlsborg: {
+    name: 'Karlsborg IK', region: 'Värmland', founded: 1936,
+    arena: 'Hamnvallen', arenaNote: 'Vid Vänern',
+    patron: 'Margareta Jonsson, ordförande',
+    klack: 'Hamn-pojkarna',
+    quote: '"Vi behöver inte vinna allt — vi behöver att laget fortsätter finnas."',
+    attrib: 'Margareta Jonsson',
+    pos: '6:a', kassa: '620 tkr', akademi: 'Medel',
+  },
+  slottsbron: {
+    name: 'Slottsbrons IF', region: 'Värmland', founded: 1919,
+    arena: 'Sandbäckstjärnet', arenaNote: 'Spelade SM-final 1934',
+    patron: 'Gunnar Wahlberg, sågverksägare',
+    klack: 'Blåtomtarna',
+    quote: '"Blåtomtarna från Värmland. Vi sjunger om sillen och Karlstad."',
+    attrib: 'Klacksången, traditionell',
+    pos: '8:a', kassa: '350 tkr', akademi: 'Medel',
+  },
+  soderfors: {
+    name: 'Söderfors BK', region: 'Uppland', founded: 1918,
+    arena: 'Brukshallen', arenaNote: 'Renoverad 2018',
+    patron: 'Helena Lindqvist, advokat',
+    klack: 'Söderfors-supporterna',
+    quote: '"Vi behöver ingen revolution. Bara någon som inte sabbar det vi har."',
+    attrib: 'Birger Nilsson, klackledare',
+    pos: '4:a', kassa: '480 tkr', akademi: 'Topp',
+  },
+  skutskar: {
+    name: 'Skutskärs IF', region: 'Uppland', founded: 1907,
+    arena: 'Bruksvallen', arenaNote: 'SM-guld 1959',
+    patron: 'Inga (medlemsstyrt)',
+    klack: 'Bruksgänget',
+    quote: '"Upplands stolthet. Vi förlorade SM-finalen mot VSK 1959. Vi är inte över det."',
+    attrib: 'Lennart Holm, 71 år, supporter sedan 1962',
+    pos: '10:a', kassa: '230 tkr', akademi: 'Svag',
+  },
+  rogle: {
+    name: 'Rögle BK', region: 'Sörmland', founded: 1932,
+    arena: 'Rögle IP', arenaNote: 'Liten men varm',
+    patron: 'Kurt Bengtsson, byggherre',
+    klack: 'Rögle-rocken',
+    quote: '"Bandyklubb med udda bakgrund. Vi vet att vi inte borde finnas. Vi finns ändå."',
+    attrib: 'Sven Forsberg, materialare',
+    pos: '12:a', kassa: '140 tkr', akademi: 'Medel',
+  },
+  heros: {
+    name: 'IF Heros', region: 'Sörmland', founded: 1919,
+    arena: 'Hjulstavallen', arenaNote: 'Arbetarbandyns tempel',
+    patron: 'Inga (kooperativ)',
+    klack: 'Arbetarklacken',
+    quote: '"Arbetarbandyns urmoder. Vi har spelat i alla tre divisioner under 100 år."',
+    attrib: 'Klubbens stadga, 1919',
+    pos: '2:a', kassa: '550 tkr', akademi: 'Bra',
+  },
+  malilla: {
+    name: 'Målilla GoIF', region: 'Småland', founded: 1924,
+    arena: 'Hagvallen', arenaNote: 'Naturis när det kallnar',
+    patron: 'Roger Engström, lokalpolitiker',
+    klack: 'Hagvallens vänner',
+    quote: '"Nykomlingen med allt att bevisa. Vi tog oss upp 2024 och vi tänker stanna."',
+    attrib: 'Klubbordföranden, vid uppflyttningen',
+    pos: '1:a', kassa: '890 tkr', akademi: 'Topp',
+  },
+}
+
+function selectClub(id, el) {
+  document.querySelectorAll('.club-pill').forEach(p => p.classList.remove('selected'))
+  el.classList.add('selected')
+
+  const c = CLUB_DATA[id]
+  const area = document.getElementById('selected-club-area')
+  area.innerHTML = `
+    <div class="selected-club">
+      <div class="selected-club-header">
+        <div>
+          <div class="selected-club-name">${c.name}</div>
+          <div class="selected-club-region">${c.region} · grundad ${c.founded}</div>
+        </div>
+      </div>
+
+      <div class="selected-club-row">
+        <span class="icon">🏟</span>
+        <span class="text"><strong>${c.arena}</strong> — ${c.arenaNote}</span>
+      </div>
+      <div class="selected-club-row">
+        <span class="icon">👤</span>
+        <span class="text">${c.patron}</span>
+      </div>
+      <div class="selected-club-row">
+        <span class="icon">📣</span>
+        <span class="text"><strong>${c.klack}</strong></span>
+      </div>
+
+      <div class="selected-club-quote">
+        ${c.quote}
+        <div class="selected-club-attrib">— ${c.attrib}</div>
+      </div>
+
+      <div class="selected-club-stats">
+        <div class="stat">
+          <div class="stat-label">Förra året</div>
+          <div class="stat-value">${c.pos}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Kassa</div>
+          <div class="stat-value">${c.kassa}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Akademi</div>
+          <div class="stat-value">${c.akademi}</div>
+        </div>
+      </div>
+
+      <button class="take-club">Ta över ${c.name} →</button>
+    </div>
+  `
+
+  // Scrolla ner till expanded card
+  setTimeout(() => area.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100)
+}
+</script>
+
+</body>
+</html>

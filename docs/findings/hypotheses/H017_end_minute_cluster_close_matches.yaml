@@ -1,0 +1,35 @@
+fact_id: H017
+category: hypothesis
+domain: bandy
+claim: "Slutminutstoppet (13.6% mål i 80-89) drivs av täta matchresultat som trigger offensivt risktagande snarare än av serienivå"
+competing_hypotheses:
+  - "Slutminutstoppet förklaras av serietillhörighet — lägre divisioner har mindre disciplinerade defensiver sent i matcher"
+predicted_value: "Slutminutstopp korrelerar med matchmarginal oavsett division"
+test_method: |
+  Klassificera mål efter dåvarande matchmarginal OCH serietillhörighet;
+  testa vilken variabel som förklarar mer.
+
+  Operationellt:
+  (a) Extrahera alla mål i minut 80-89 ur bandygrytan_detailed.json
+  (b) Splitta på matchmarginal vid måltillfället (0, 1, 2, 3+ mål)
+  (c) Splitta på serienivå (om data finns)
+  (d) Regressionsanalys: slutminuts-goal ~ marginal + serienivå
+  (e) Om marginalkoefficienten dominerar — stöder H017 (tätt matchläge)
+  (f) Om serienivåkoefficienten dominerar — stöder competing_hypothesis
+
+  Räknescript-skelett:
+    const lateGoals = goals.filter(g => g.minute >= 80 && g.minute <= 89)
+    const byMargin = lateGoals.reduce((acc, g) => { margin = Math.abs(scoreAtMinute(g)) ... })
+spawned_by: "finding:031"
+source:
+  type: observation
+  name: "finding:031 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+related_facts: [S001]
+notes: |
+  Genererad från finding 031. Minut 80-89 har 13.6% av alla mål vilket är
+  ett observerat kluster. Täta matchresultat driver offensivt risktagande
+  som skapar öppningar — men serienivå är en rimlig alternativ förklaring.
+  Regressionsanalys med bägge variabler kan särskilja.

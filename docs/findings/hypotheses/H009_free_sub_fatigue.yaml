@@ -1,0 +1,31 @@
+fact_id: H009
+category: hypothesis
+domain: bandy
+claim: "Bandys fria substitution motverkar trötthetsdipp effektivt — frånvaron av en markant nedgång i minut 25-35 är en direkt effekt av bytessystemet"
+competing_hypotheses:
+  - "Frånvaron av trötthetsdipp beror på att bandy inte skapar samma fysiologiska utmattning vid dessa tidpunkter som fotboll och ishockey"
+predicted_value: "Ingen signifikant sänkning i målfrekvens i minut 25-35 jämfört med övriga matchminutor"
+test_method: |
+  Jämföra trötthetsindikatorer mellan lag med olika substitutionsmönster;
+  jämföra med sporter med begränsade byten.
+
+  Operationellt:
+  (a) Extrahera målfrekvens per 5-minutersintervall ur bandygrytan_detailed.json
+  (b) Identifiera om det finns ett trötthetsdipp i minut 25-35
+  (c) Jämföra med fotbollsdata och ishockeydata för samma intervall
+  (d) Om bandy saknar dipp medan fotboll har det — stöder bytessystem-hypotesen
+  (e) Om båda saknar dipp — stöder den fysiologiska competing_hypothesis
+
+  En robust test kräver extern data om ishockey och fotboll.
+spawned_by: "finding:005"
+source:
+  type: observation
+  name: "finding:005 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+notes: |
+  Genererad från finding 005. Minut 25-35 visar inte markant nedgång i
+  bandydata, vilket avviker från fotbollsmönster. Hypotesen att fria byten
+  kompenserar för fysiologisk trötthet är rimlig men kräver jämförelsedata
+  för att bekräftas.

@@ -1,0 +1,36 @@
+fact_id: H013
+category: hypothesis
+domain: bandy
+claim: "Hemmalagsfördelen i hörnor är kvantitativ (hemmalag får fler hörnor via bollinnehav och offensivt tryck) snarare än kvalitativ (bättre konverteringsgrad)"
+competing_hypotheses:
+  - "Hemmalagsfördelen är delvis kvalitativ — hemmalaget konverterar sina hörnor i högre takt på grund av bättre inövade rutiner eller psykologisk fördel"
+predicted_value: "Konverteringsgrad hemma vs borta skiljer sig < 0.5 procentenheter; hemmalag får märkbart fler hörnor"
+test_method: |
+  Statistisk signifikanstestning av konverteringsgraddifferensen; separat analys
+  av hörnantal per match.
+
+  Operationellt:
+  (a) Extrahera hörnor hem/borta och hörnmål hem/borta ur bandygrytan_detailed.json
+  (b) Beräkna konverteringsgrad (hörnmål/hörnor) för hemma vs borta
+  (c) Signifikanstest (chi-squared eller z-test) på konverteringsgraddifferensen
+  (d) Beräkna genomsnittligt hörnantal hemma vs borta
+  (e) Om hörnantal skiljer men konvertering ej — stöder kvantitativ hypotes (H013)
+
+  Räknescript-skelett:
+    const home = { corners: sum(cornersHome), goals: cornerGoalsHome }
+    const away = { corners: sum(cornersAway), goals: cornerGoalsAway }
+    console.log('home conversion:', (home.goals/home.corners*100).toFixed(1)+'%')
+    console.log('away conversion:', (away.goals/away.corners*100).toFixed(1)+'%')
+spawned_by: "finding:014"
+source:
+  type: observation
+  name: "finding:014 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+related_facts: [S008, S009]
+notes: |
+  Genererad från finding 014. Hemmalag förväntas ha fler hörnor via offensivt
+  tryck. Hypotesen är att fördelen är kvantitativ (fler situationer) snarare
+  än kvalitativ (bättre exekvering). Datan från bandygrytan_detailed.json
+  bör innehålla tillräcklig granularitet för att testa.

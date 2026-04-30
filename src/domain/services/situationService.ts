@@ -1,42 +1,51 @@
 import type { SaveGame } from '../entities/SaveGame'
 import { PlayoffRound } from '../enums'
+import {
+  getOpponentStandingFragment,
+  getLastMeetingFragment,
+  getRivalryFragment,
+  getPlayoffContextFragment,
+  getCupStakeFragment,
+  getInjuryImpactFragment,
+  getSeasonPhaseFragment,
+} from './situationFragments'
 
 export interface Situation {
   label: string
   body: string
 }
 
-function pick<T>(arr: T[], idx: number): T {
-  return arr[Math.abs(idx) % arr.length]
+// Slå ihop 1-3 fragment till en body-text.
+function joinFragments(fragments: (string | null)[], max = 3): string {
+  const parts = fragments.filter((f): f is string => !!f).slice(0, max)
+  return parts.join(' ')
 }
 
 export function getSituation(game: SaveGame): Situation {
   const managedId = game.managedClubId
 
-  // ── Form ──────────────────────────────────────────────────────────
-  const completedLeague = game.fixtures
-    .filter(f => f.status === 'completed' && !f.isCup &&
-      (f.homeClubId === managedId || f.awayClubId === managedId))
-    .sort((a, b) => b.matchday - a.matchday)
+  // ── Hjälpdata ─────────────────────────────────────────────────────
+  const completedLeague = game.fixtures.filter(
+    f => f.status === 'completed' && !f.isCup &&
+      (f.homeClubId === managedId || f.awayClubId === managedId)
+  ).sort((a, b) => b.matchday - a.matchday)
 
   const form = completedLeague.slice(0, 5).map(f => {
     const isHome = f.homeClubId === managedId
-    const scored = isHome ? f.homeScore : f.awayScore
-    const conceded = isHome ? f.awayScore : f.homeScore
-    return scored > conceded ? 'V' : scored < conceded ? 'F' : 'O'
+    return (isHome ? f.homeScore : f.awayScore) > (isHome ? f.awayScore : f.homeScore)
+      ? 'V' : (isHome ? f.homeScore : f.awayScore) < (isHome ? f.awayScore : f.homeScore)
+      ? 'F' : 'O'
   })
 
   const lastResult = form[0]
   const streakIdx = form.findIndex(r => r !== lastResult)
   const streak = streakIdx === -1 ? form.length : streakIdx
+  const leagueRoundsPlayed = completedLeague.length
 
-  // ── Standing ──────────────────────────────────────────────────────
   const standing = game.standings.find(s => s.clubId === managedId)
   const position = standing?.position ?? 12
   const points = standing?.points ?? 0
-  const leagueRoundsPlayed = completedLeague.length
 
-  // ── Next fixture ──────────────────────────────────────────────────
   const bracket = game.playoffBracket
   const eliminated = bracket
     ? [...(bracket.quarterFinals ?? []), ...(bracket.semiFinals ?? []), ...(bracket.final ? [bracket.final] : [])]
@@ -74,7 +83,8 @@ export function getSituation(game: SaveGame): Situation {
     const activeSeries = allSeries.find(s =>
       s.fixtures.some(id => {
         const f = game.fixtures.find(fix => fix.id === id)
-        return f?.status === 'scheduled' && (f.homeClubId === managedId || f.awayClubId === managedId)
+        return f?.status === 'scheduled' &&
+          (f.homeClubId === managedId || f.awayClubId === managedId)
       })
     )
     if (activeSeries) {
@@ -86,173 +96,150 @@ export function getSituation(game: SaveGame): Situation {
       const theirWins = managedIsHome ? activeSeries.awayWins : activeSeries.homeWins
       const score = `${ourWins}–${theirWins}`
 
-      if (ourWins > theirWins) {
-        return { label: roundLabel, body: pick([
-          `Ni leder serien ${score}. Håll trycket — slutspelet är inte gjort förrän det är gjort.`,
-          `${score} i serien. Ni är i förarsätet. En match till så är ni vidare.`,
-        ], ourWins) }
-      } else if (ourWins < theirWins) {
-        return { label: roundLabel, body: pick([
-          `Ni ligger under ${score}. Det är dags att svara.`,
-          `${score} i serien. Väggen är nära — ni behöver vinna nu och göra det igen.`,
-        ], theirWins) }
-      } else {
-        return { label: roundLabel, body: pick([
-          `Serien är helt öppen, ${score}. Det kan gå hur som helst härifrån.`,
-          `Lika i serien, ${score}. Nästa match avgör momentum.`,
-        ], ourWins) }
-      }
+      const seriesBody = ourWins > theirWins
+        ? `Ni leder serien ${score}. Håll trycket — slutspelet är inte gjort förrän det är gjort.`
+        : ourWins < theirWins
+        ? `Ni ligger under ${score}. Det är dags att svara.`
+        : `Serien är öppen, ${score}. Det kan gå hur som helst härifrån.`
+
+      // Lägg rivalry/motstånd som andra mening om möjligt
+      const rivalryFrag = getRivalryFragment(game)
+      const body = rivalryFrag ? `${seriesBody} ${rivalryFrag}` : seriesBody
+      return { label: roundLabel, body }
     }
   }
 
-  // ── Cup kommande ──────────────────────────────────────────────────
+  // ── Cup kommande — bygg från tre fragment ─────────────────────────
   if (nextFixture?.isCup) {
     const cupMatch = game.cupBracket?.matches.find(m => m.fixtureId === nextFixture.id)
     const round = cupMatch?.round ?? 1
     const roundStr =
-      round === 1 ? 'en förstarundamatch' :
-      round === 2 ? 'en kvartsfinal' :
-      round === 3 ? 'en semifinal' : 'cupenfinalen'
-    return {
-      label: 'CUPEN',
-      body: pick([
-        `Ni spelar ${roundStr} i cupen. Utslagsspel — det finns ingen returmatch och inga poäng att hämta hem. Antingen vinner ni, eller så är det klart.`,
-        `${roundStr.charAt(0).toUpperCase() + roundStr.slice(1)} i cupen väntar. Ett misstag och allt avgörs på en gång.`,
-      ], round),
-    }
+      round === 1 ? 'Förstarundamatch i cupen' :
+      round === 2 ? 'Kvartsfinal i cupen' :
+      round === 3 ? 'Semifinal i cupen' : 'Cupfinalen'
+
+    const body = joinFragments([
+      `${roundStr}.`,
+      getCupStakeFragment(game),
+      getRivalryFragment(game) ?? getLastMeetingFragment(game),
+    ])
+    return { label: 'CUPEN', body: body || `${roundStr}. Utslagsspel — inget mer.` }
   }
 
   // ── Vinstsvit 4+ ─────────────────────────────────────────────────
   if (lastResult === 'V' && streak >= 4) {
-    return {
-      label: `${streak} RAKA SEGRAR`,
-      body: pick([
-        `${streak} raka segrar. Det är sällan man ser den typen av svit. Laget har hittat något — behåll det.`,
-        `Fyra eller fler matcher utan förlust. Tabellen märker det. Håll huvudet kallt.`,
-      ], streak),
-    }
+    const body = joinFragments([
+      `${streak} raka segrar.`,
+      getPlayoffContextFragment(game),
+      getOpponentStandingFragment(game),
+    ])
+    return { label: `${streak} RAKA SEGRAR`, body }
   }
 
   // ── Förlustsvit 4+ ───────────────────────────────────────────────
   if (lastResult === 'F' && streak >= 4) {
-    return {
-      label: 'TUNG PERIOD',
-      body: pick([
-        `${streak} raka förluster. Det är allvarligt men inte hopplöst. Det börjar alltid med att vinna en match.`,
-        `Laget har inte tagit poäng på länge. Det lämnar avtryck i omklädningsrummet. Fokus på nästa match, inget annat.`,
-      ], streak),
-    }
+    const body = joinFragments([
+      `${streak} raka förluster.`,
+      getPlayoffContextFragment(game),
+      'Det börjar alltid med att vinna en match.',
+    ])
+    return { label: 'TUNG PERIOD', body }
   }
 
   // ── Vinstsvit 3 ──────────────────────────────────────────────────
   if (lastResult === 'V' && streak === 3) {
-    return {
-      label: 'TRE RAKA SEGRAR',
-      body: pick([
-        `Tre raka segrar. Ni har momentum och det är tabellen värt. Håll gnistan.`,
-        `Tre matcher utan förlust. Det börjar synas i tabellen och motståndet har noterat det.`,
-      ], leagueRoundsPlayed),
-    }
+    const body = joinFragments([
+      'Tre raka segrar.',
+      getPlayoffContextFragment(game) ?? getOpponentStandingFragment(game),
+    ])
+    return { label: 'TRE RAKA SEGRAR', body: body || 'Tre raka segrar. Ni har momentum.' }
   }
 
   // ── Förlustsvit 3 ────────────────────────────────────────────────
   if (lastResult === 'F' && streak === 3) {
-    return {
-      label: 'TRE RAKA FÖRLUSTER',
-      body: `Tre matcher utan poäng. Det ger avtryck, både i tabellen och i truppen. Nästa match är viktig att vinna, inte för att rädda serien utan för att stoppa trenden.`,
-    }
+    const body = joinFragments([
+      'Tre matcher utan poäng.',
+      getPlayoffContextFragment(game),
+      getInjuryImpactFragment(game),
+    ])
+    return { label: 'TRE RAKA FÖRLUSTER', body: body || 'Tre matcher utan poäng. Det lämnar avtryck.' }
   }
 
   // ── Seriepremiär ─────────────────────────────────────────────────
   if (leagueRoundsPlayed === 0) {
-    return {
-      label: 'SERIEPREMIÄR',
-      body: pick([
-        `Säsongen börjar nu. 22 omgångar i serien, en cup bakom oss och slutspelet framför. Alla lag börjar på noll — det ni gör härifrån avgör.`,
-        `Det är seriepremiär. Det som skiljer ett lag i mars från ett lag i oktober är det ni gör de närmaste veckorna. Börja med truppen.`,
-      ], game.currentSeason),
-    }
+    const body = joinFragments([
+      getSeasonPhaseFragment(game),
+      getOpponentStandingFragment(game),
+    ])
+    return { label: 'SERIEPREMIÄR', body: body || '22 omgångar, en cup och ett slutspel framför er.' }
   }
 
-  // ── Slutspurt sista 3 omgångarna ──────────────────────────────────
+  // ── Slutspurt (sista 3 omg) ───────────────────────────────────────
   const roundsLeft = 22 - leagueRoundsPlayed
   if (leagueRoundsPlayed >= 19 && roundsLeft >= 1 && roundsLeft <= 3) {
-    const roundsLeftStr = roundsLeft === 1 ? 'en omgång' : `${roundsLeft} omgångar`
-    const eightPoints = game.standings.find(s => s.position === 8)?.points ?? 0
-    const ptsDiff = points - eightPoints
-    if (position <= 8) {
-      return {
-        label: 'AVGÖRANDE SLUTSPURT',
-        body: `${roundsLeftStr} kvar av grundserien. Ni är inne i slutspelet, position ${position}. Håll positionen och gå in i slutspelet med momentum.`,
-      }
-    }
-    if (ptsDiff >= -(roundsLeft * 2)) {
-      return {
-        label: 'AVGÖRANDE SLUTSPURT',
-        body: `${roundsLeftStr} kvar och ${Math.abs(ptsDiff)} poäng upp till slutspelsplatsen. Det är fortfarande möjligt. Men varje poäng räknas.`,
-      }
-    }
-    return {
-      label: 'SLUTSPURT',
-      body: `${roundsLeftStr} kvar. Slutspelet är inte nåbart det här året. Det handlar nu om att avsluta serien med värdighet och ta med sig lärdomar.`,
-    }
+    const phaseFrag = getSeasonPhaseFragment(game)
+    const playoffFrag = getPlayoffContextFragment(game)
+    const oppFrag = getOpponentStandingFragment(game)
+    const body = joinFragments([phaseFrag, playoffFrag, oppFrag])
+    return { label: 'AVGÖRANDE SLUTSPURT', body: body || `${roundsLeft} omgångar kvar.` }
   }
 
-  // ── Halvtid i serien ─────────────────────────────────────────────
+  // ── Halvtid ──────────────────────────────────────────────────────
   if (leagueRoundsPlayed >= 11 && leagueRoundsPlayed <= 13) {
-    return {
-      label: 'HALVTID I SERIEN',
-      body: pick([
-        `Halva grundserien spelad. Ni är på ${position}:e plats med ${points} poäng. Den andra halvan avgör om det var en säsong att minnas.`,
-        `${leagueRoundsPlayed} av 22 matcher spelade, ${points} poäng och position ${position}. Det är fortfarande öppet — halvtid är halvtid.`,
-      ], position),
-    }
+    const body = joinFragments([
+      getSeasonPhaseFragment(game),
+      getPlayoffContextFragment(game),
+      getOpponentStandingFragment(game),
+    ])
+    return { label: 'HALVTID I SERIEN', body: body || `Halvtid. Ni är på ${position}:e plats med ${points} poäng.` }
   }
 
   // ── Serieledande ─────────────────────────────────────────────────
   if (position === 1 && leagueRoundsPlayed >= 4) {
-    return {
-      label: 'SERIELEDANDE',
-      body: pick([
-        `Ni leder serien. Det är ett privilegium och ett ansvar. Alla lag jagar er nu.`,
-        `Serieledande med ${points} poäng. Det tar ett helt säsong att hålla täten, men det börjar med att vinna nästa match.`,
-      ], leagueRoundsPlayed),
-    }
+    const body = joinFragments([
+      getPlayoffContextFragment(game),
+      getOpponentStandingFragment(game),
+      lastResult === 'V' ? 'Ni vinner och leder — håll den känslan.' : null,
+    ])
+    return { label: 'SERIELEDANDE', body: body || `Serieledande med ${points} poäng.` }
   }
 
   // ── Playoff-gräns ────────────────────────────────────────────────
   if (leagueRoundsPlayed >= 5 && position >= 6 && position <= 10) {
     const eightPoints = game.standings.find(s => s.position === 8)?.points ?? 0
-    const ptsDiff = points - eightPoints
-    if (Math.abs(ptsDiff) <= 3) {
-      if (ptsDiff >= 0) {
-        return {
-          label: 'PÅ STRECKET',
-          body: `Ni är på ${position}:e plats, ${ptsDiff === 0 ? 'precis på' : `${ptsDiff} poäng över`} strecket till slutspelet. En dålig period och ni är ute. Varje match räknas.`,
-        }
-      }
+    if (Math.abs(points - eightPoints) <= 3) {
+      const body = joinFragments([
+        getPlayoffContextFragment(game),
+        getOpponentStandingFragment(game),
+        getLastMeetingFragment(game),
+      ])
       return {
-        label: 'STRAX UNDER STRECKET',
-        body: `Ni är ${Math.abs(ptsDiff)} poäng under slutspelsplatsen. Det är fullt möjligt att ta sig in, men det kräver att ni levererar nu.`,
+        label: points >= eightPoints ? 'PÅ STRECKET' : 'STRAX UNDER STRECKET',
+        body: body || 'Det är jämnt om playoff-platsen.',
       }
     }
   }
 
   // ── Bottenlag ────────────────────────────────────────────────────
   if (position >= 10 && leagueRoundsPlayed >= 5) {
-    return {
-      label: 'TUFFT LÄGE',
-      body: `Position ${position} av 12. Det är inte bra, men det är inte avgjort. Poäng som ser dyra ut nu är fortfarande värda att kämpa för.`,
-    }
+    const body = joinFragments([
+      `Position ${position} av 12.`,
+      getPlayoffContextFragment(game),
+      getOpponentStandingFragment(game),
+    ])
+    return { label: 'TUFFT LÄGE', body: body || `Position ${position} av 12. Det är inte avgjort.` }
   }
 
-  // ── Default ───────────────────────────────────────────────────────
+  // ── Standard: byggt från fragment ────────────────────────────────
   const nextRound = nextFixture?.roundNumber ?? leagueRoundsPlayed + 1
+  const body = joinFragments([
+    getOpponentStandingFragment(game),
+    getLastMeetingFragment(game) ?? getRivalryFragment(game),
+    getPlayoffContextFragment(game),
+  ])
+
   return {
-    label: 'SERIEN PÅGÅR',
-    body: pick([
-      `Omgång ${nextRound} av 22. Position ${position} med ${points} poäng. Det är säsong.`,
-      `Ni är på ${position}:e plats med ${points} poäng. Serien fortsätter och det finns fortfarande allt att spela för.`,
-    ], nextRound),
+    label: `OMGÅNG ${nextRound}`,
+    body: body || `Omgång ${nextRound} av 22. Position ${position} med ${points} poäng.`,
   }
 }

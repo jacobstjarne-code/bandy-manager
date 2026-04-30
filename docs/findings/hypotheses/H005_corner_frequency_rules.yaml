@@ -1,0 +1,31 @@
+fact_id: H005
+category: hypothesis
+domain: bandy
+claim: "Regelskillnader mellan bandy och fotboll (ingen försvararbegränsning vid hörna, variabel slagteknik) förklarar bandys fem gånger högre hörnmålsfrekvens"
+competing_hypotheses:
+  - "Skillnaden beror på spelarnas fysiska förutsättningar, målvakternas position eller andra faktorer snarare än regelskillnaderna per se"
+predicted_value: "Hörnor i bandy producerar ~22% av målen; i fotboll ~5%"
+test_method: |
+  Isolera effekten av respektive regelskillnad via statistisk analys;
+  jämföra målstatistik hem/borta med kontroll för spelarstyrka.
+
+  Operationellt:
+  (a) Dokumentera regelskillnaderna systematiskt (position, begränsningar, teknik)
+  (b) Kontrollera om hörnmålsfrekvens korrelerar med spelarpositioner/fysik
+  (c) Jämföra konverteringsgrad för olika typer av hörnvarianter
+
+  Om regelskillnaderna är de primära förklaringsfaktorerna bör kontroll för
+  fysiska parametrar inte eliminera skillnaden.
+spawned_by: "finding:002"
+source:
+  type: observation
+  name: "finding:002 + bandygrytan_detailed.json"
+verified_at: 2026-04-26
+verified_by: code
+status: active
+related_facts: [S008]
+notes: |
+  Genererad från finding 002. Bandys hörnmålsandel (~22%) är fem gånger högre
+  än fotbolls (~5%). Hypotesen pekar på regelskillnader som primär orsak.
+  Alternativa förklaringar inkluderar målvaktens startposition och planytans
+  storlek som påverkar rum vid hörnor.

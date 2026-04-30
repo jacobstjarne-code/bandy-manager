@@ -66,6 +66,9 @@ export interface SaveGame {
   sceneChoices?: Record<string, string> // Spelarens val per sceneId
   lastCoffeeSceneRound?: number        // Round när senaste coffee_room visades
 
+  // Portal-beats (lättviktiga engångsmoment)
+  shownBeats?: string[]                // Beat-nycklar som visats (format: beatId eller beatId_season)
+
   clubs: Club[]
   players: Player[]
   league: League

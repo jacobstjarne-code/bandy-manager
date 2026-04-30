@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Portal-mock — Bandy Manager</title>
+<style>
+  :root {
+    --bg: #1a1612;
+    --bg-surface: #221d18;
+    --bg-elevated: #2a241e;
+    --bg-dark: #0f0c09;
+    --border: #3a322a;
+    --border-dark: #2a241e;
+    --text-primary: #e8e0d0;
+    --text-secondary: #b8ad9a;
+    --text-muted: #7a7060;
+    --text-light: #f0e8d8;
+    --accent: #b8884c;
+    --accent-dark: #8b6638;
+    --accent-deep: #6b4d28;
+    --success: #5a8c4a;
+    --danger: #a04848;
+    --ice: #6a8aa0;
+    --warning: #c8923c;
+    --font-display: Georgia, serif;
+    --font-body: -apple-system, system-ui, sans-serif;
+  }
+
+  /* Vinter-tonalitet (jan-feb) */
+  body.winter {
+    --accent: #9a7244;
+    --bg: #15110d;
+    --bg-surface: #1d1813;
+  }
+
+  /* Slutspels-tonalitet */
+  body.playoff {
+    --accent: #c89048;
+    --bg: #1a1410;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    padding: 20px;
+    min-height: 100vh;
+    transition: background 0.6s, color 0.6s;
+  }
+
+  .scenario-picker {
+    max-width: 430px;
+    margin: 0 auto 20px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .scenario-picker button {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font-body);
+    transition: all 0.2s;
+  }
+  .scenario-picker button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .scenario-picker button.active {
+    background: var(--accent);
+    color: var(--bg-dark);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .scenario-label {
+    max-width: 430px;
+    margin: 0 auto 12px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .phone {
+    max-width: 430px;
+    margin: 0 auto;
+    background: var(--bg);
+    border: 1px solid var(--border-dark);
+    border-radius: 16px;
+    overflow: hidden;
+    min-height: 700px;
+  }
+
+  .header {
+    background: var(--bg-dark);
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-club {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bg-dark);
+    font-weight: 800;
+    font-size: 14px;
+    font-family: var(--font-display);
+  }
+  .header-info p:first-child {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-light);
+  }
+  .header-info p:last-child {
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+  .header-icons {
+    display: flex;
+    gap: 14px;
+    color: var(--text-muted);
+    font-size: 16px;
+  }
+
+  .phase-bar {
+    background: var(--bg-dark);
+    padding: 6px 14px 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .phase {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-muted);
+  }
+  .phase.active {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .phase.done {
+    color: var(--text-secondary);
+  }
+  .phase-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .phase.active .phase-dot {
+    width: 6px;
+    height: 6px;
+    box-shadow: 0 0 6px var(--accent);
+  }
+  .phase-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    margin: 0 8px;
+  }
+
+  .content {
+    padding: 14px;
+  }
+
+  /* PRIMARY CARD — det viktigaste */
+  .primary-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .primary-card.derby {
+    background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(160,72,72,0.15) 100%);
+    border-color: var(--danger);
+  }
+  .primary-card.deadline {
+    background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(200,146,60,0.15) 100%);
+    border-color: var(--warning);
+  }
+  .primary-card.smfinal {
+    background: linear-gradient(135deg, var(--bg-elevated) 0%, rgba(184,136,76,0.20) 100%);
+    border-color: var(--accent);
+  }
+
+  .stake-tag {
+    display: inline-block;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .stake-tag.derby { color: var(--danger); }
+  .stake-tag.deadline { color: var(--warning); }
+  .stake-tag.smfinal { color: var(--accent); }
+  .stake-tag.routine { color: var(--text-muted); }
+
+  .primary-headline {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-light);
+    margin-bottom: 6px;
+  }
+  .primary-subline {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .primary-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .primary-meta strong {
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  /* SECONDARY CARDS */
+  .secondary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .secondary-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+  .secondary-label {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .secondary-value {
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.3;
+    font-weight: 500;
+  }
+  .secondary-value.big {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .secondary-detail {
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* QUOTE — klacken/kafferummet etc */
+  .quote-card {
+    background: var(--bg-surface);
+    border-left: 2px solid var(--accent);
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    border-radius: 0 6px 6px 0;
+  }
+  .quote-source {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .quote-text {
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .quote-attrib {
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* MINIMAL STATUS — fold:bar längst ner */
+  .status-bar {
+    display: flex;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 14px;
+    padding: 8px 10px;
+    justify-content: space-around;
+    font-size: 10px;
+  }
+  .status-cell {
+    text-align: center;
+  }
+  .status-cell-label {
+    color: var(--text-muted);
+    font-size: 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .status-cell-value {
+    font-family: var(--font-display);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* MORE-LINK */
+  .more-link {
+    display: block;
+    text-align: center;
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--text-muted);
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .more-link:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* CTA */
+  .cta {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-deep) 100%);
+    color: var(--text-light);
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: transform 0.15s;
+    font-family: var(--font-body);
+  }
+  .cta:hover { transform: translateY(-1px); }
+
+  .date-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    padding: 0 2px;
+  }
+
+  /* Tonalitets-info */
+  .tonality-note {
+    max-width: 430px;
+    margin: 16px auto 0;
+    padding: 10px 14px;
+    background: var(--bg-surface);
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .tonality-note strong { color: var(--text-secondary); }
+
+  /* Hidden by default — shown by JS */
+  .scenario { display: none; }
+  .scenario.active { display: block; }
+
+  h1.title {
+    max-width: 430px;
+    margin: 0 auto 8px;
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--text-light);
+    font-weight: 700;
+  }
+  h2.subtitle {
+    max-width: 430px;
+    margin: 0 auto 20px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="title">Portal-mock — fyra olika tillstånd</h1>
+<h2 class="subtitle">Klicka på knapparna nedan. Samma dashboard, fyra olika dagar i samma säsong. Innehållet bestäms av "veckans bag" — vad som faktiskt händer i världen.</h2>
+
+<div class="scenario-picker">
+  <button onclick="show('routine', this)" class="active">📅 Vanlig vecka</button>
+  <button onclick="show('derby', this)">🔥 Derby imorgon</button>
+  <button onclick="show('deadline', this)">⏱ Transferdeadline</button>
+  <button onclick="show('smfinal', this)">🏆 SM-final</button>
+</div>
+
+<div class="scenario-label" id="scenario-label">
+  Omgång 7 — Forsbacka möter Hälleforsnäs på bortaplan på onsdag. Inget speciellt på agendan.
+</div>
+
+<!-- ========== ROUTINE ========== -->
+<div class="phone scenario active" id="routine">
+  <div class="header">
+    <div class="header-club">
+      <div class="header-badge">F</div>
+      <div class="header-info">
+        <p>Forsbacka IF</p>
+        <p>SÄSONG 2026/27 · OMG 7</p>
+      </div>
+    </div>
+    <div class="header-icons">📬 ⚙</div>
+  </div>
+  <div class="phase-bar">
+    <div class="phase active"><div class="phase-dot"></div>FÖRBERED</div>
+    <div class="phase-line"></div>
+    <div class="phase"><div class="phase-dot"></div>SPELA</div>
+    <div class="phase-line"></div>
+    <div class="phase"><div class="phase-dot"></div>GRANSKA</div>
+  </div>
+  <div class="content">
+
+    <!-- PRIMARY: nästa match (routine) -->
+    <div class="primary-card">
+      <div class="stake-tag routine">🏒 NÄSTA MATCH</div>
+      <div class="primary-headline">Hälleforsnäs · Borta</div>
+      <div class="primary-subline">Onsdag 28 oktober · 19:00 · Schaktvallen</div>
+      <div class="primary-meta">
+        <span><strong>Senast:</strong> 2-2 (h, omg 3)</span>
+        <span><strong>Tabell:</strong> 7:a</span>
+      </div>
+    </div>
+
+    <!-- SECONDARY: tabell + ekonomi (rutin-grid) -->
+    <div class="secondary-grid">
+      <div class="secondary-card">
+        <div class="secondary-label">📊 TABELL</div>
+        <div class="secondary-value big">5:a</div>
+        <div class="secondary-detail">8 p · 1 från topp 4</div>
+      </div>
+      <div class="secondary-card">
+        <div class="secondary-label">💰 KASSA</div>
+        <div class="secondary-value big">412</div>
+        <div class="secondary-detail">+18 senaste omg</div>
+      </div>
+    </div>
+
+    <!-- QUOTE: kafferummet (rutin) -->
+    <div class="quote-card">
+      <div class="quote-source">☕ KAFFERUMMET</div>
+      <div class="quote-text">"Henriksson satt kvar i omklädningsrummet en timme efter förra matchen. Sa inget. Bara satt."</div>
+      <div class="quote-attrib">— Vaktmästaren</div>
+    </div>
+
+    <!-- STATUS: trupp -->
+    <div class="status-bar">
+      <div class="status-cell">
+        <div class="status-cell-label">Trupp</div>
+        <div class="status-cell-value">17/19</div>
+      </div>
+      <div class="status-cell">
+        <div class="status-cell-label">Form</div>
+        <div class="status-cell-value">71</div>
+      </div>
+      <div class="status-cell">
+        <div class="status-cell-label">Kondition</div>
+        <div class="status-cell-value">82</div>
+      </div>
+    </div>
+
+    <button class="more-link">+ Akademi · Cup · Klacken · Andra matcher</button>
+
+    <div class="date-row">
+      <span>28 oktober · onsdag</span>
+      <span>Avslag 19:00</span>
+    </div>
+    <button class="cta">Spela omgång 7 →</button>
+  </div>
+</div>
+
+<!-- ========== DERBY ========== -->
+<div class="phone scenario" id="derby">
+  <div class="header">
+    <div class="header-club">
+      <div class="header-badge">F</div>
+      <div class="header-info">
+        <p>Forsbacka IF</p>
+        <p>SÄSONG 2026/27 · OMG 14</p>
+      </div>
+    </div>
+    <div class="header-icons">📬 ⚙</div>
+  </div>
+  <div class="phase-bar">
+    <div class="phase active"><div class="phase-dot"></div>FÖRBERED</div>
+    <div class="phase-line"></div>
+    <div class="phase"><div class="phase-dot"></div>SPELA</div>
+    <div class="phase-line"></div>
+    <div class="phase"><div class="phase-dot"></div>GRANSKA</div>
+  </div>
+  <div class="content">
+
+    <!-- PRIMARY: derby -->
+    <div class="primary-card derby">
+      <div class="stake-tag derby">🔥 BRUKSDERBYT · IMORGON</div>
+      <div class="primary-headline">Söderfors · Hemma</div>
+      <div class="primary-subline">Lördag 6 dec · 13:15 · Stålvallen. Folk har bokat parkering sedan oktober.</div>
+      <div class="primary-meta">
+        <span><strong>Historik:</strong> V4 O3 F5</span>
+        <span><strong>Förra mötet:</strong> 1-3 (b)</span>
+      </div>
+    </div>
+
+    <!-- QUOTE: kafferummet (derby-version) -->
+    <div class="quote-card">
+      <div class="quote-source">☕ KAFFERUMMET</div>
+      <div class="quote-text">"Birger frågade om vi ska boka extra parkering. Mer folk än vanligt brukar dyka upp till derbyt."</div>
+      <div class="quote-attrib">— Vaktmästaren · klickbart val ↓</div>
+    </div>
+
+    <!-- SECONDARY: Söderfors form + skadeläge -->
+    <div class="secondary-grid">
+      <div class="secondary-card">
+        <div class="secondary-label">🆚 SÖDERFORS FORM</div>
+        <div class="secondary-value">V V O F V</div>
+        <div class="secondary-detail">3:a i tabellen, 2 p framför oss</div>
+      </div>
+      <div class="secondary-card">
+        <div class="secondary-label">🩹 SKADELÄGE</div>
+        <div class="secondary-value">2 borta</div>
+        <div class="secondary-detail">Lindberg ute · Andersson 50/50</div>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="status-bar">
+      <div class="status-cell">
+        <div class="status-cell-label">Tabell</div>
+        <div class="status-cell-value">5:a</div>
+      </div>
+      <div class="status-cell">
+        <div class="status-cell-label">Form</div>
+        <div class="status-cell-value">76</div>
+      </div>
+      <div class="status-cell">
+        <div class="status-cell-label">Klacken</div>
+        <div class="status-cell-value">peppad</div>
+      </div>
+    </div>
+
+    <button class="more-link">+ Ekonomi · Cup · Akademi · Andra matcher</button>
+
+    <div class="date-row">
+      <span>5 december · fredag</span>
+      <span>Match imorgon 13:15</span>
+    </div>
+    <button class="cta">Sätt lineup för derbyt →</button>
+  </div>
+</div>
+
+<!-- ========== TRANSFER DEADLINE ========== -->
+<div class="phone scenario" id="deadline">
+  <div class="header">
+    <div class="header-club">
+      <div class="header-badge">F</div>
+      <div class="header-info">
+        <p>Forsbacka IF</p>
+        <p>SÄSONG 2026/27 · OMG 13</p>
+      </div>
+    </div>
+    <div class="header-icons">📬 ⚙</div>
+  </div>
+  <div class="phase-bar">
+    <div class="phase active"><div class="phase-dot"></div>FÖRBERED</div>
+    <div class="phase-line"></div>
+    <div class="phase"><div class="phase-dot"></div>SPELA</div>
+    <div class="phase-line"></div>
+    <div class="phase"><div class="phase-dot"></div>GRANSKA</div>
+  </div>
+  <div class="content">
+
+    <!-- PRIMARY: deadline -->
+    <div class="primary-card deadline">
+      <div class="stake-tag deadline">⏱ DEADLINE · 2 OMGÅNGAR KVAR</div>
+      <div class="primary-headline">Transferfönstret stänger 22 jan</div>
+      <div class="primary-subline">Tre öppna bud · ett inkommande på Lindberg från Slottsbron · 280 tkr</div>
+      <div class="primary-meta">
+        <span><strong>Lönebudget:</strong> 78% använd</span>
+        <span><strong>Lediga platser:</strong> 2 i truppen</span>
+      </div>
+    </div>
+
+    <!-- QUOTE: kafferummet om deadline -->
+    <div class="quote-card">
+      <div class="quote-source">☕ KAFFERUMMET</div>
+      <div class="quote-text">"Telefonen ringer hela tiden." "Svara inte."</div>
+      <div class="quote-attrib">— Kassören & Ordföranden</div>
+    </div>
+
+    <!-- SECONDARY -->
+    <div class="secondary-grid">
+      <div class="secondary-card">
+        <div class="secondary-label">💼 BUD: HENRIKSSON</div>
+        <div class="secondary-value">240 tkr</div>
+        <div class="secondary-detail">från Västanfors · svar krävs</div>
+      </div>
+      <div class="secondary-card">
+        <div class="secondary-label">🏒 NÄSTA MATCH</div>
+        <div class="secondary-value">Skutskär (h)</div>
+        <div class="secondary-detail">tisdag 18 jan</div>
+      </div>
+    </div>
+
+    <!-- Status (minimal under deadline) -->
+    <div class="status-bar">
+      <div class="status-cell">
+        <div class="status-cell-label">Tabell</div>
+        <div class="status-cell-value">4:a</div>
+      </div>
+      <div class="status-cell">
+        <div class="status-cell-label">Kassa</div>
+        <div class="status-cell-value">412k</div>
+      </div>
+      <div class="status-cell">
+        <div class="status-cell-label">Bud öppna</div>
+        <div class="status-cell-value">3</div>
+      </div>
+    </div>
+
+    <button class="more-link">+ Trupp · Akademi · Tabell · Klacken</button>
+
+    <div class="date-row">
+      <span>18 januari · tisdag</span>
+      <span>Deadline 22 jan</span>
+    </div>
+    <button class="cta">Hantera bud →</button>
+  </div>
+</div>
+
+<!-- ========== SM-FINAL ========== -->
+<div class="phone scenario" id="smfinal">
+  <div class="header">
+    <div class="header-club">
+      <div class="header-badge">F</div>
+      <div class="header-info">
+        <p>Forsbacka IF</p>
+        <p>SÄSONG 2026/27 · SM-FINAL</p>
+      </div>
+    </div>
+    <div class="header-icons">📬 ⚙</div>
+  </div>
+  <div class="phase-bar">
+    <div class="phase done"><div class="phase-dot"></div>FÖRBERED</div>
+    <div class="phase-line"></div>
+    <div class="phase active"><div class="phase-dot"></div>SPELA</div>
+    <div class="phase-line"></div>
+    <div class="phase"><div class="phase-dot"></div>GRANSKA</div>
+  </div>
+  <div class="content">
+
+    <!-- PRIMARY: SM-final dominant -->
+    <div class="primary-card smfinal">
+      <div class="stake-tag smfinal">🏆 SM-FINAL · IMORGON</div>
+      <div class="primary-headline">Studenternas IP</div>
+      <div class="primary-subline" style="margin-bottom:14px">Söderfors · Lördag 14 mars · 13:15. Tredje lördagen i mars. Som det varit i 23 finaler tidigare.</div>
+      <div style="background:rgba(0,0,0,0.25); padding:10px 12px; border-radius:6px; margin-bottom:8px;">
+        <div style="font-size:9px; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase;">VÄDER</div>
+        <div style="font-size:11px; color:var(--text-secondary);">−4°C · klart · vindstilla. Bra is.</div>
+      </div>
+      <div class="primary-meta">
+        <span><strong>Säsongen:</strong> 3:a · 28 p</span>
+        <span><strong>Cup:</strong> Semifinal</span>
+      </div>
+    </div>
+
+    <!-- QUOTE: kafferummet, sista gången -->
+    <div class="quote-card">
+      <div class="quote-source">☕ KAFFERUMMET</div>
+      <div class="quote-text">"De gick ut på isen klockan sex i morse. Bara för att skrinna lite. Henriksson, Lindberg, kaptenen. Sa inget. Bara skrinnade."</div>
+      <div class="quote-attrib">— Vaktmästaren</div>
+    </div>
+
+    <!-- Inget secondary alls — bara final -->
+
+    <div class="status-bar">
+      <div class="status-cell">
+        <div class="status-cell-label">Trupp</div>
+        <div class="status-cell-value">19/19</div>
+      </div>
+      <div class="status-cell">
+        <div class="status-cell-label">Klacken</div>
+        <div class="status-cell-value">3 bussar</div>
+      </div>
+      <div class="status-cell">
+        <div class="status-cell-label">Bygden</div>
+        <div class="status-cell-value">på plats</div>
+      </div>
+    </div>
+
+    <button class="more-link">+ Allt annat (det spelar ingen roll i dag)</button>
+
+    <div class="date-row">
+      <span>13 mars · fredag</span>
+      <span>Final imorgon</span>
+    </div>
+    <button class="cta">Sätt lineup för finalen →</button>
+  </div>
+</div>
+
+<div class="tonality-note">
+  <strong>Notera:</strong> Mocken visar bara "veckans bag"-principen — vad som händer på dashboarden olika dagar. Den visar inte tonal årssignatur (UX-2 i specen) eftersom det är subtila CSS-skift som blir tydligast i animation över säsong, inte i statisk mock. Tänk dig dock att SM-final-vyn har lite vassare accent-färg än vanlig vecka — vinterns sista dag.
+</div>
+
+<script>
+const labels = {
+  routine: 'Omgång 7 — Forsbacka möter Hälleforsnäs på bortaplan på onsdag. Inget speciellt på agendan. Portalen är minimalt: nästa match, tabellen, en observation från kafferummet.',
+  derby: 'Omgång 14 — Bruksderbyt imorgon. Hela portalen handlar om derbyt. Tabellen är minimal status. Söderfors form är secondary. Kafferummet ställer en faktisk fråga som spelaren kan svara på.',
+  deadline: 'Omgång 13 — Transferfönstret stänger om 2 omgångar. Deadline tar over som primary. Nästa match degraderas till secondary. CTA är "Hantera bud" istället för "Spela omgång".',
+  smfinal: 'SM-finaldagen. Inget annat finns på dashboarden. Studenternas IP. Vädret. En sista replik från kafferummet. Allt annat folded ner.',
+}
+function show(id, btn) {
+  document.querySelectorAll('.scenario').forEach(s => s.classList.remove('active'))
+  document.getElementById(id).classList.add('active')
+  document.querySelectorAll('.scenario-picker button').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  document.getElementById('scenario-label').innerText = labels[id]
+
+  document.body.classList.remove('winter', 'playoff')
+  if (id === 'derby' || id === 'deadline') document.body.classList.add('winter')
+  if (id === 'smfinal') document.body.classList.add('playoff')
+}
+</script>
+
+</body>
+</html>

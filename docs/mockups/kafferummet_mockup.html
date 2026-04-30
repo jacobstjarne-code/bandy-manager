@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Kafferummet-mock — Bandy Manager</title>
+<style>
+  :root {
+    --bg: #1a1612;
+    --bg-surface: #221d18;
+    --bg-elevated: #2a241e;
+    --bg-dark: #0f0c09;
+    --bg-deepdark: #08060a;
+    --border: #3a322a;
+    --border-dark: #2a241e;
+    --text-primary: #e8e0d0;
+    --text-secondary: #b8ad9a;
+    --text-muted: #7a7060;
+    --text-light: #f0e8d8;
+    --accent: #b8884c;
+    --accent-dark: #8b6638;
+    --accent-deep: #6b4d28;
+    --accent-glow: #d4a060;
+    --success: #5a8c4a;
+    --danger: #a04848;
+    --ice: #6a8aa0;
+    --gold: #d4a460;
+    --font-display: Georgia, serif;
+    --font-body: -apple-system, system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0806;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  h1.title {
+    max-width: 430px;
+    margin: 0 auto 8px;
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--text-light);
+    font-weight: 700;
+  }
+  h2.subtitle {
+    max-width: 430px;
+    margin: 0 auto 20px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  .scenario-picker {
+    max-width: 430px;
+    margin: 0 auto 20px;
+    display: flex;
+    gap: 6px;
+  }
+  .scenario-picker button {
+    flex: 1;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font-body);
+    transition: all 0.2s;
+  }
+  .scenario-picker button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .scenario-picker button.active {
+    background: var(--accent-deep);
+    border-color: var(--accent);
+    color: var(--text-light);
+  }
+
+  /* Phone frame */
+  .phone {
+    max-width: 430px;
+    margin: 0 auto;
+    background: var(--bg);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    position: relative;
+    min-height: 740px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Subtle background texture — slitet bord */
+  .phone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(184,136,76,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(184,136,76,0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Genre tag */
+  .genre-tag {
+    text-align: center;
+    padding: 18px 0 8px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--accent);
+    opacity: 0.7;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Scene header */
+  .scene-header {
+    text-align: center;
+    padding: 8px 24px 20px;
+    position: relative;
+    z-index: 1;
+  }
+  .scene-header h1 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    color: var(--text-light);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .scene-header .subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 6px;
+  }
+  .scene-header .coffee-emoji {
+    font-size: 22px;
+    margin-bottom: 8px;
+    opacity: 0.85;
+  }
+
+  /* Exchanges */
+  .exchanges {
+    flex: 1;
+    padding: 8px 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .exchange {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    animation: fadeInExchange 0.6s ease-out forwards;
+  }
+  .exchange.delay-0 { animation-delay: 0.2s; }
+  .exchange.delay-1 { animation-delay: 1.0s; }
+  .exchange.delay-2 { animation-delay: 1.8s; }
+
+  @keyframes fadeInExchange {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .speaker-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .speaker-row.right {
+    flex-direction: row-reverse;
+    text-align: right;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .speech {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .speaker-name {
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+  }
+
+  .speech-text {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  .speech-text::before { content: '"'; opacity: 0.6; }
+  .speech-text::after  { content: '"'; opacity: 0.6; }
+
+  /* Subjektet (frånvarande tredje part) — markeras med en subtil understrykning */
+  .speech-text .subject {
+    font-style: normal;
+    color: var(--text-light);
+    border-bottom: 1px dotted var(--text-muted);
+  }
+
+  /* Separator mellan utbyten */
+  .exchange-separator {
+    align-self: center;
+    width: 30%;
+    border-bottom: 1px solid var(--border-dark);
+    opacity: 0.5;
+  }
+
+  /* CTA */
+  .scene-cta {
+    padding: 16px 20px 24px;
+    position: relative;
+    z-index: 1;
+  }
+  .scene-cta button {
+    width: 100%;
+    padding: 14px;
+    background: var(--bg-elevated);
+    color: var(--text-light);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-body);
+  }
+  .scene-cta button:hover {
+    background: var(--accent-deep);
+    border-color: var(--accent);
+  }
+
+  /* Skvaller-funktion-tag (för designreferens, dold i prod-läge) */
+  .function-tag {
+    display: none;
+    font-size: 8px;
+    color: var(--accent);
+    opacity: 0.5;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  body.show-function-tags .function-tag { display: block; }
+
+  /* Toggle */
+  .design-toggle {
+    max-width: 430px;
+    margin: 12px auto 0;
+    text-align: center;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+  .design-toggle label {
+    cursor: pointer;
+    user-select: none;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="title">Kafferummet — scen-mock</h1>
+<h2 class="subtitle">
+  Två funktionärer pratar om någon som inte är där. Spelaren tjuvlyssnar.
+  Skvaller-funktioner: information, underhållning, intimitet, inflytande.
+  1-3 utbyten per scen.
+</h2>
+
+<div class="scenario-picker">
+  <button class="active" data-scenario="single">1 utbyte (lugnt)</button>
+  <button data-scenario="double">2 utbyten (default)</button>
+  <button data-scenario="triple">3 utbyten (matchhelg)</button>
+</div>
+
+<div class="phone" id="phone">
+  <div class="genre-tag">⬩ I DETTA ÖGONBLICK ⬩</div>
+  <div class="scene-header">
+    <div class="coffee-emoji">☕</div>
+    <h1>Kafferummet</h1>
+    <div class="subtitle" id="header-subtitle">tisdag eftermiddag, hösten 2026</div>
+  </div>
+
+  <div class="exchanges" id="exchanges">
+    <!-- fylls av JS baserat på scenario -->
+  </div>
+
+  <div class="scene-cta">
+    <button>Tillbaka till klubben</button>
+  </div>
+</div>
+
+<div class="design-toggle">
+  <label>
+    <input type="checkbox" id="toggle-tags"> Visa skvaller-funktion-taggar (designref)
+  </label>
+</div>
+
+<script>
+  // Tre scenarios — varje exchange är ett triadiskt utbyte
+  // (talare 1 + talare 2 + frånvarande tredje part)
+  const SCENARIOS = {
+    single: {
+      subtitle: 'tisdag eftermiddag, hösten 2026',
+      exchanges: [
+        {
+          speakerA: { name: 'Vaktmästaren', initial: 'V' },
+          textA: 'Tre klubbor gick sönder igår.',
+          speakerB: { name: 'Materialaren', initial: 'M' },
+          textB: 'Beställ fem. Det blir kallt i veckan.',
+          subject: null,
+          func: 'underhållning + information',
+        },
+      ],
+    },
+    double: {
+      subtitle: 'omgång 8 · måndag, novembermörker',
+      exchanges: [
+        {
+          speakerA: { name: 'Kioskvakten', initial: 'K' },
+          textA: 'Hörde att <span class="subject">Lesjöfors</span> fick stryk i fullmäktige.',
+          speakerB: { name: 'Vaktmästaren', initial: 'V' },
+          textB: 'Av vem?',
+          subject: 'Lesjöfors',
+          func: 'information',
+          followUp: { speaker: 'Kioskvakten', text: 'Alla.' },
+        },
+        {
+          speakerA: { name: 'Materialaren', initial: 'M' },
+          textA: '<span class="subject">Henriksson</span> i P19 börjar likna något.',
+          speakerB: { name: 'Vaktmästaren', initial: 'V' },
+          textB: 'Ge honom inte för stora tröjor.',
+          subject: 'Henriksson',
+          func: 'inflytande + intimitet',
+        },
+      ],
+    },
+    triple: {
+      subtitle: 'lördag morgon · matchdag mot Forsbacka',
+      exchanges: [
+        {
+          speakerA: { name: 'Kioskvakten', initial: 'K' },
+          textA: 'Hade slut på kaffe vid halvtid sist. Det har aldrig hänt.',
+          speakerB: { name: 'Vaktmästaren', initial: 'V' },
+          textB: 'Inte förvånande just nu.',
+          subject: null,
+          func: 'underhållning',
+        },
+        {
+          speakerA: { name: 'Kassören', initial: 'K' },
+          textA: 'Telefonen ringer hela tiden.',
+          speakerB: { name: 'Ordföranden', initial: 'O' },
+          textB: 'Svara inte.',
+          subject: null,
+          func: 'inflytande',
+        },
+        {
+          speakerA: { name: 'Vaktmästaren', initial: 'V' },
+          textA: '<span class="subject">Lindberg</span> sa hej till alla i korridoren på väg ut.',
+          speakerB: { name: 'Materialaren', initial: 'M' },
+          textB: 'Det är det man minns.',
+          subject: 'Lindberg',
+          func: 'intimitet',
+        },
+      ],
+    },
+  };
+
+  function renderExchanges(scenarioKey) {
+    const scenario = SCENARIOS[scenarioKey];
+    const container = document.getElementById('exchanges');
+    const subtitleEl = document.getElementById('header-subtitle');
+    subtitleEl.textContent = scenario.subtitle;
+    container.innerHTML = '';
+
+    scenario.exchanges.forEach((ex, i) => {
+      const exDiv = document.createElement('div');
+      exDiv.className = `exchange delay-${i}`;
+
+      // Talare A (vänster)
+      const rowA = document.createElement('div');
+      rowA.className = 'speaker-row';
+      rowA.innerHTML = `
+        <div class="avatar">${ex.speakerA.initial}</div>
+        <div class="speech">
+          <div class="speaker-name">${ex.speakerA.name}</div>
+          <div class="speech-text">${ex.textA}</div>
+        </div>
+      `;
+      exDiv.appendChild(rowA);
+
+      // Talare B (höger)
+      const rowB = document.createElement('div');
+      rowB.className = 'speaker-row right';
+      rowB.innerHTML = `
+        <div class="avatar">${ex.speakerB.initial}</div>
+        <div class="speech">
+          <div class="speaker-name">${ex.speakerB.name}</div>
+          <div class="speech-text">${ex.textB}</div>
+        </div>
+      `;
+      exDiv.appendChild(rowB);
+
+      // Eventuell follow-up
+      if (ex.followUp) {
+        const rowC = document.createElement('div');
+        rowC.className = 'speaker-row';
+        rowC.innerHTML = `
+          <div class="avatar">${ex.speakerA.initial}</div>
+          <div class="speech">
+            <div class="speaker-name">${ex.followUp.speaker}</div>
+            <div class="speech-text">${ex.followUp.text}</div>
+          </div>
+        `;
+        exDiv.appendChild(rowC);
+      }
+
+      // Funktion-tag (designreferens)
+      const tag = document.createElement('div');
+      tag.className = 'function-tag';
+      tag.textContent = `funktion: ${ex.func}`;
+      exDiv.appendChild(tag);
+
+      container.appendChild(exDiv);
+
+      // Separator mellan utbyten (inte efter sista)
+      if (i < scenario.exchanges.length - 1) {
+        const sep = document.createElement('div');
+        sep.className = 'exchange-separator';
+        container.appendChild(sep);
+      }
+    });
+  }
+
+  // Init
+  renderExchanges('single');
+
+  // Scenario-byte
+  document.querySelectorAll('.scenario-picker button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.scenario-picker button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderExchanges(btn.dataset.scenario);
+    });
+  });
+
+  // Toggle funktion-tags
+  document.getElementById('toggle-tags').addEventListener('change', e => {
+    document.body.classList.toggle('show-function-tags', e.target.checked);
+  });
+</script>
+
+</body>
+</html>
