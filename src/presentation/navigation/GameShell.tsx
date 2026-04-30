@@ -6,13 +6,17 @@ import { EventOverlay } from '../components/EventOverlay'
 import { PhaseIndicatorAuto } from '../components/PhaseIndicator'
 import { useGameStore } from '../store/gameStore'
 import { getCurrentAttention } from '../../domain/services/attentionRouter'
+import { getEventPriority } from '../../domain/entities/GameEvent'
 
 // Lightweight guard for full-screen routes that don't use BottomNav
 export function GameGuard() {
   const game = useGameStore(s => s.game)
   if (!game) return <Navigate to="/" replace />
   const attention = getCurrentAttention(game)
-  const shouldShowEventOverlay = attention.kind === 'event'
+  // Bara overlay för kritiska events — medium/atmospheric visas av PortalEventSlot
+  const shouldShowEventOverlay =
+    attention.kind === 'event' &&
+    (attention.event.priority ?? getEventPriority(attention.event.type)) === 'critical'
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <GameHeader />
@@ -46,11 +50,19 @@ export function GameShell() {
 
   // EventOverlay visas INTE när en scen väntar — scenen har prioritet
   // EventOverlay visas INTE under live-match, match-setup, resultat eller granskning
+  // EventOverlay visas BARA för kritiska events — medium/atmospheric visas av PortalEventSlot
   const isMatchRoute = location.pathname.includes('/match/live') ||
     location.pathname === '/game/match' ||
     location.pathname === '/game/match-result' ||
     location.pathname === '/game/review'
-  const shouldShowEventOverlay = attention.kind === 'event' && !isMatchRoute
+  const isReviewRoute = location.pathname === '/game/review'
+  const isPressConferenceRoute = location.pathname.includes('/press-conference')
+  const shouldShowEventOverlay =
+    attention.kind === 'event' &&
+    (attention.event.priority ?? getEventPriority(attention.event.type)) === 'critical' &&
+    !isMatchRoute &&
+    !isReviewRoute &&
+    !isPressConferenceRoute
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
