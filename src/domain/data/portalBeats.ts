@@ -43,7 +43,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
   {
     id: 'season_opener',
     emoji: '🏒',
-    text: 'Ispremiär. Laget samlades på morgonen — någon hade köpt wienerbröd. Det är säsong nu.',
+    text: 'Ispremiär. Wienerbröd på morgonen, isen är stenhård. Det är säsong nu.',
     trigger: (g) => completedLeagueCount(g) === 0,
     oncePerSeason: true,
   },
@@ -51,12 +51,12 @@ export const PORTAL_BEATS: PortalBeat[] = [
   // ── Första segern ───────────────────────────────────────────────
   {
     id: 'first_win',
-    emoji: '🎯',
-    text: 'Första segern på boken. Omklädningsrummet lät annorlunda efter matchen.',
+    emoji: '✓',
+    text: 'Första segern. Omklädningsrummet lät inte likadant efteråt.',
     trigger: (g) => {
       const id = g.managedClubId
       const wins = g.standings.find(s => s.clubId === id)?.wins ?? 0
-      return wins === 1 && completedLeagueCount(g) <= 5
+      return wins === 1
     },
     oncePerSeason: true,
   },
@@ -64,13 +64,21 @@ export const PORTAL_BEATS: PortalBeat[] = [
   // ── Första derbyt ───────────────────────────────────────────────
   {
     id: 'first_derby',
-    emoji: '⚡',
-    text: 'Ert första derby den här säsongen. Matcherna man pratar om i mars.',
+    emoji: '🔥',
+    text: 'Första derbyt. Det här är matcher som lever längre än säsongen.',
     trigger: (g) => {
       const next = nextManagedLeagueFixture(g)
       if (!next) return false
       const oppId = next.homeClubId === g.managedClubId ? next.awayClubId : next.homeClubId
-      return getRivalry(g.managedClubId, oppId) !== null
+      if (!getRivalry(g.managedClubId, oppId)) return false
+      // Kolla att inget derby spelats den här säsongen
+      const completedDerbies = g.fixtures.filter(f =>
+        f.status === 'completed' && !f.isCup &&
+        f.season === g.currentSeason &&
+        (f.homeClubId === g.managedClubId || f.awayClubId === g.managedClubId) &&
+        getRivalry(g.managedClubId, f.homeClubId === g.managedClubId ? f.awayClubId : f.homeClubId) !== null
+      )
+      return completedDerbies.length === 0
     },
     oncePerSeason: true,
   },
@@ -78,8 +86,8 @@ export const PORTAL_BEATS: PortalBeat[] = [
   // ── Halvtid ─────────────────────────────────────────────────────
   {
     id: 'halftime',
-    emoji: '📍',
-    text: 'Halva grundserien spelad. Det ni gjort hittills är gjort — resten är fortfarande öppet.',
+    emoji: '◐',
+    text: 'Halvtid. Det ni gjort står — det som kommer ligger framför er.',
     trigger: (g) => completedLeagueCount(g) === 11,
     oncePerSeason: true,
   },
@@ -88,7 +96,7 @@ export const PORTAL_BEATS: PortalBeat[] = [
   {
     id: 'transfer_window_open',
     emoji: '📞',
-    text: 'Fönstret är öppet. Det är nu agenter ringer och spelarfrågor avgörs.',
+    text: 'Fönstret öppet. Telefonen har redan börjat ringa hos någon — bara inte hos er än.',
     trigger: (g) => {
       const played = completedLeagueCount(g)
       return played >= 5 && played <= 7
@@ -99,8 +107,8 @@ export const PORTAL_BEATS: PortalBeat[] = [
   // ── Sista omgången ───────────────────────────────────────────────
   {
     id: 'last_league_round',
-    emoji: '🏁',
-    text: 'Sista omgången av grundserien. Vad än som händer idag — det är sista gången den här säsongen.',
+    emoji: '◯',
+    text: 'Sista omgången. Vad som än händer idag — det är allt det blir av grundserien.',
     trigger: (g) => completedLeagueCount(g) === 21,
     oncePerSeason: true,
   },

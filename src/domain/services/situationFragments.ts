@@ -59,11 +59,12 @@ export function getOpponentStandingFragment(game: SaveGame): string | null {
   const myPos = game.standings.find(s => s.clubId === game.managedClubId)?.position ?? 12
   const name = oppClub.shortName ?? oppClub.name.split(' ')[0]
 
-  if (oppPos <= 3) return `${name} ligger ${ordinalSv(oppPos)} — ett av seriens starkaste lag.`
-  if (oppPos >= 10) return `${name} är ${ordinalSv(oppPos)} — ett lag ni förväntas slå.`
-  if (Math.abs(oppPos - myPos) <= 1) return `${name} är på ${ordinalSv(oppPos)} plats — i princip tabellgrannar.`
-  if (oppPos < myPos) return `${name} är ${oppPos - myPos > 0 ? '' : ''}${ordinalSv(oppPos)} — ovanför er i tabellen.`
-  return `${name} är ${ordinalSv(oppPos)} — under er i tabellen.`
+  if (oppPos <= 3) return `${name} står ${ordinalSv(oppPos)}. Tre lag kommer ifrån topplaceringar i år — det är ett av dem.`
+  if (oppPos >= 10) return `${name} är ${ordinalSv(oppPos)}. Sånt är inte gratis.`
+  if (Math.abs(oppPos - myPos) <= 1) return `${name} är ${ordinalSv(oppPos)} — ni delar tabellgrannar.`
+  const posDiff = Math.abs(myPos - oppPos)
+  if (oppPos < myPos) return posDiff <= 2 ? `${name} står ${ordinalSv(oppPos)} — strax ovanför er.` : null
+  return `${name} är ${ordinalSv(oppPos)} — under er.`
 }
 
 // ── Fragment: senaste mötet ──────────────────────────────────────────────────
@@ -89,9 +90,9 @@ export function getLastMeetingFragment(game: SaveGame): string | null {
   const scored = isHome ? lastMeeting.homeScore : lastMeeting.awayScore
   const conceded = isHome ? lastMeeting.awayScore : lastMeeting.homeScore
 
-  if (scored > conceded) return `Senast möttes ni vann ni ${scored}–${conceded}.`
-  if (scored < conceded) return `Senast möttes ni förlorade ni ${conceded}–${scored}.`
-  return `Senaste mötet slutade ${scored}–${conceded}.`
+  if (scored > conceded) return `Senast ni möttes vann ni ${scored}–${conceded}. Det glömmer de inte.`
+  if (scored < conceded) return `Senast: ${conceded}–${scored} till dem. Revanschchans.`
+  return `Senaste mötet ${scored}–${scored}. Aldrig avgjort, alltid jämnt.`
 }
 
 // ── Fragment: rivalry ────────────────────────────────────────────────────────
@@ -105,8 +106,8 @@ export function getRivalryFragment(game: SaveGame): string | null {
   const rivalry = getRivalry(game.managedClubId, oppId)
   if (!rivalry) return null
 
-  if (rivalry.intensity >= 3) return `Det är ${rivalry.name}. Resultatet lever kvar länge i byn.`
-  if (rivalry.intensity === 2) return `${rivalry.name} — alltid en match som betyder lite mer.`
+  if (rivalry.intensity >= 3) return `${rivalry.name}. Den lever länge i byn oavsett vad som händer.`
+  if (rivalry.intensity === 2) return `${rivalry.name}. Inte vilken match som helst.`
   return `${rivalry.name}.`
 }
 
@@ -133,22 +134,23 @@ export function getPlayoffContextFragment(game: SaveGame): string | null {
 
   if (myPos === 1) {
     const gap = myPts - sorted[1].points
-    if (gap >= 4) return `Ni leder med ${gap} poäng ner till tvåan.`
-    return `Ni leder, men ${sorted[1] ? (game.clubs.find(c => c.id === sorted[1].clubId)?.shortName ?? '') : ''} är nära.`
+    if (gap >= 4) return `${gap} poäng ner till tvåan. Komfortabelt — men säsongen är inte slut.`
+    return `Ledande, men knappt. Nummer två andas i nacken.`
   }
 
   if (myPos <= 8) {
     const gap = myPts - eighth.points
-    if (gap <= 2) return `${gap === 0 ? 'Precis på strecket' : `${gap}p över strecket`} — det är nära.`
-    return null  // komfortabelt inne, inget att säga
+    if (gap === 0) return `Precis på strecket. En match är allt.`
+    if (gap <= 2) return `${gap}p över strecket. Inget marginal.`
+    return null
   }
 
   // Utanför playoff
   const ptsBehind = eighth.points - myPts
   const oppClub = game.clubs.find(c => c.id === eighth.clubId)
   const eighthName = oppClub?.shortName ?? oppClub?.name.split(' ')[0] ?? 'åttan'
-  if (ptsBehind <= 4) return `${ptsBehind}p upp till ${eighthName} på strecket.`
-  return `${ptsBehind}p upp till playoff — det är långt.`
+  if (ptsBehind <= 4) return `${ptsBehind}p upp till ${eighthName} — kan tas igen.`
+  return `${ptsBehind}p upp till playoff. Långt — men inte omöjligt.`
 }
 
 // ── Fragment: cup-stake (vad vinst innebär) ──────────────────────────────────
@@ -164,10 +166,10 @@ export function getCupStakeFragment(game: SaveGame): string | null {
   if (!cupMatch) return null
 
   const round = cupMatch.round
-  if (round === 1) return `Vinner ni möter ni ett av fyra lag i kvartsfinal.`
-  if (round === 2) return `Vinner ni är ni i semifinal.`
-  if (round === 3) return `Vinner ni spelar ni SM-final.`
-  if (round === 4) return `Det är cupen. Det finns inget mer att vinna.`
+  if (round === 1) return `Vinst ger kvartsfinal — fyra lag kvar.`
+  if (round === 2) return `Vinst ger semi.`
+  if (round === 3) return `Vinst ger final.`
+  if (round === 4) return `Det här är finalen. Det finns inget mer.`
   return null
 }
 
@@ -189,10 +191,12 @@ export function getInjuryImpactFragment(game: SaveGame): string | null {
   const name = topInjured.lastName
 
   if (injured.length === 1) {
-    if (weeksLeft === 0) return `${name} är på gränsen — kan spela, kan inte.`
-    return `${name} är borta ${weeksLeft > 1 ? `${weeksLeft} veckor till` : 'ytterligare en vecka'}.`
+    if (weeksLeft === 0) return `${name} på gränsen. Spelar eller spelar inte.`
+    if (weeksLeft === 1) return `${name} borta en vecka till.`
+    return `${name} borta i ${weeksLeft} veckor.`
   }
-  return `${injured.length} spelare borta, däribland ${name}.`
+  if (injured.length === 2) return `Två spelare borta. ${name} är en av dem.`
+  return `${injured.length} spelare borta. ${name} också.`
 }
 
 // ── Fragment: säsongskontext (premiär, halvtid, slutspurt) ───────────────────
@@ -204,9 +208,10 @@ export function getSeasonPhaseFragment(game: SaveGame): string | null {
       (f.homeClubId === managedId || f.awayClubId === managedId)
   ).length
 
-  if (completedLeague === 0) return `22 ligaomgångar, en cup och ett slutspel framför er.`
-  if (completedLeague === 11) return `Halvtid. Resten av säsongen är er att forma.`
+  if (completedLeague === 0) return `Säsongen börjar nu. 22 omgångar, en cup, ett slutspel.`
+  if (completedLeague === 11) return `Halvtid. Det ni gjort står — det som kommer ligger framför er.`
   const roundsLeft = 22 - completedLeague
-  if (roundsLeft <= 3 && roundsLeft >= 1) return `${roundsLeft === 1 ? 'Sista omgången' : `${roundsLeft} omgångar kvar`} av grundserien.`
+  if (roundsLeft === 1) return `Sista omgången. Allt eller ingenting.`
+  if (roundsLeft <= 3 && roundsLeft >= 2) return `${roundsLeft} omgångar kvar. Mätningens tid.`
   return null
 }

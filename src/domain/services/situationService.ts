@@ -69,7 +69,7 @@ export function getSituation(game: SaveGame): Situation {
   if (isFinal || nextFixture?.isFinaldag) {
     return {
       label: 'SM-FINAL',
-      body: 'Det finns inget bortom det här. Allt ni gjort under säsongen har lett hit. En match avgör allt.',
+      body: 'Allt ni gjort har lett hit. En match. Det finns inget bortom.',
     }
   }
 
@@ -97,10 +97,10 @@ export function getSituation(game: SaveGame): Situation {
       const score = `${ourWins}–${theirWins}`
 
       const seriesBody = ourWins > theirWins
-        ? `Ni leder serien ${score}. Håll trycket — slutspelet är inte gjort förrän det är gjort.`
+        ? `Ni leder ${score}. Slutspelet är inte gjort förrän det är gjort.`
         : ourWins < theirWins
-        ? `Ni ligger under ${score}. Det är dags att svara.`
-        : `Serien är öppen, ${score}. Det kan gå hur som helst härifrån.`
+        ? `${score}. Det är dags att svara.`
+        : `${score}. Allt kan hända härifrån.`
 
       // Lägg rivalry/motstånd som andra mening om möjligt
       const rivalryFrag = getRivalryFragment(game)
@@ -141,7 +141,7 @@ export function getSituation(game: SaveGame): Situation {
     const body = joinFragments([
       `${streak} raka förluster.`,
       getPlayoffContextFragment(game),
-      'Det börjar alltid med att vinna en match.',
+      'Det börjar med att vinna en match. Det är allt som krävs.',
     ])
     return { label: 'TUNG PERIOD', body }
   }
@@ -162,7 +162,7 @@ export function getSituation(game: SaveGame): Situation {
       getPlayoffContextFragment(game),
       getInjuryImpactFragment(game),
     ])
-    return { label: 'TRE RAKA FÖRLUSTER', body: body || 'Tre matcher utan poäng. Det lämnar avtryck.' }
+    return { label: 'TRE RAKA FÖRLUSTER', body: body || 'Tre matcher utan poäng. Det syns på folk.' }
   }
 
   // ── Seriepremiär ─────────────────────────────────────────────────
