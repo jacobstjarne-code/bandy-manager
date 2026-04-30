@@ -59,12 +59,12 @@ export function getOpponentStandingFragment(game: SaveGame): string | null {
   const myPos = game.standings.find(s => s.clubId === game.managedClubId)?.position ?? 12
   const name = oppClub.shortName ?? oppClub.name.split(' ')[0]
 
-  if (oppPos <= 3) return `${name} står ${ordinalSv(oppPos)}. Tre lag kommer ifrån topplaceringar i år — det är ett av dem.`
-  if (oppPos >= 10) return `${name} är ${ordinalSv(oppPos)}. Sånt är inte gratis.`
-  if (Math.abs(oppPos - myPos) <= 1) return `${name} är ${ordinalSv(oppPos)} — ni delar tabellgrannar.`
+  if (oppPos <= 3) return `${name} ligger ${ordinalSv(oppPos)}. Ett av seriens bättre lag.`
+  if (oppPos >= 10) return `${name} ligger ${ordinalSv(oppPos)}. Sånt är inte gratis.`
+  if (Math.abs(oppPos - myPos) <= 1) return `${name} och ni delar tabellgrannar — ${ordinalSv(oppPos)} mot ${ordinalSv(myPos)}.`
   const posDiff = Math.abs(myPos - oppPos)
-  if (oppPos < myPos) return posDiff <= 2 ? `${name} står ${ordinalSv(oppPos)} — strax ovanför er.` : null
-  return `${name} är ${ordinalSv(oppPos)} — under er.`
+  if (oppPos < myPos) return posDiff <= 2 ? `${name} ligger ${ordinalSv(oppPos)} — över er.` : null
+  return `${name} ligger ${ordinalSv(oppPos)} — under er.`
 }
 
 // ── Fragment: senaste mötet ──────────────────────────────────────────────────
@@ -135,7 +135,7 @@ export function getPlayoffContextFragment(game: SaveGame): string | null {
   if (myPos === 1) {
     const gap = myPts - sorted[1].points
     if (gap >= 4) return `${gap} poäng ner till tvåan. Komfortabelt — men säsongen är inte slut.`
-    return `Ledande, men knappt. Nummer två andas i nacken.`
+    return `Knapp ledning. Tvåan andas i nacken.`
   }
 
   if (myPos <= 8) {
