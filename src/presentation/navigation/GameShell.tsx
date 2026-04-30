@@ -5,11 +5,14 @@ import { GameHeader } from '../components/GameHeader'
 import { EventOverlay } from '../components/EventOverlay'
 import { PhaseIndicatorAuto } from '../components/PhaseIndicator'
 import { useGameStore } from '../store/gameStore'
+import { getCurrentAttention } from '../../domain/services/attentionRouter'
 
 // Lightweight guard for full-screen routes that don't use BottomNav
 export function GameGuard() {
   const game = useGameStore(s => s.game)
   if (!game) return <Navigate to="/" replace />
+  const attention = getCurrentAttention(game)
+  const shouldShowEventOverlay = attention.kind === 'event'
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <GameHeader />
@@ -17,7 +20,7 @@ export function GameGuard() {
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
         <Outlet />
       </div>
-      <EventOverlay />
+      {shouldShowEventOverlay && <EventOverlay />}
     </div>
   )
 }
@@ -38,7 +41,16 @@ export function GameShell() {
 
   if (!game) return <Navigate to="/" replace />
 
-  const sceneActive = !!game.pendingScene
+  const attention = getCurrentAttention(game)
+  const sceneActive = attention.kind === 'scene'
+
+  // EventOverlay visas INTE när en scen väntar — scenen har prioritet
+  // EventOverlay visas INTE under live-match, match-setup, resultat eller granskning
+  const isMatchRoute = location.pathname.includes('/match/live') ||
+    location.pathname === '/game/match' ||
+    location.pathname === '/game/match-result' ||
+    location.pathname === '/game/review'
+  const shouldShowEventOverlay = attention.kind === 'event' && !isMatchRoute
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -51,7 +63,7 @@ export function GameShell() {
       </div>
       {!sceneActive && <BottomNav />}
       <DoctorFAB />
-      <EventOverlay />
+      {shouldShowEventOverlay && <EventOverlay />}
     </div>
   )
 }

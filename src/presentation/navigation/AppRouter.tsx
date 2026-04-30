@@ -41,6 +41,7 @@ import { RoundSummaryScreen } from '../screens/RoundSummaryScreen'
 import { SimSummaryScreen } from '../screens/SimSummaryScreen'
 import { useGameStore } from '../store/gameStore'
 import { PendingScreen } from '../../domain/enums'
+import { getCurrentAttention } from '../../domain/services/attentionRouter'
 
 function BoardMeetingGuard() {
   const game = useGameStore(s => s.game)
@@ -62,16 +63,20 @@ function DashboardOrPortal() {
   const navigate = useNavigate()
   const redirected = useRef(false)
 
+  const attention = game ? getCurrentAttention(game) : { kind: 'idle' as const }
+
   useEffect(() => {
     if (!game || redirected.current) return
-    if (game.pendingScreen) {
-      const route = PENDING_SCREEN_ROUTES[game.pendingScreen]
+    if (attention.kind === 'screen') {
+      const route = PENDING_SCREEN_ROUTES[attention.screen]
       if (route) { redirected.current = true; navigate(route, { replace: true }) }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game?.pendingScreen])
+  }, [attention.kind === 'screen' ? (attention as { kind: 'screen'; screen: string }).screen : null])
 
-  if (game?.pendingScene) return <SceneScreen />
+  if (!game) return <PortalScreen />
+
+  if (attention.kind === 'scene') return <SceneScreen />
   return <PortalScreen />
 }
 
