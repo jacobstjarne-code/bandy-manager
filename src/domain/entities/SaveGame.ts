@@ -59,7 +59,7 @@ export interface SaveGame {
 
   currentDate: string    // ISO date
   currentSeason: number
-  currentMatchday?: number   // Aktuell matchdag (för portal-seed)
+  currentMatchday: number   // Aktuell matchdag (för portal-seed) — alltid satt sedan A1-fix
   // Scene-system (SPEC_SCENES_FAS_1 + SPEC_KAFFERUMMET_FAS_1)
   pendingScene?: PendingScene          // Sätts av sceneTriggerService
   shownScenes?: SceneId[]              // Permanent historik (gäller ej recurring coffee_room)

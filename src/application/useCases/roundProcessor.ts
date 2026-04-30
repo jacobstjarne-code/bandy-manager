@@ -1158,12 +1158,65 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       if (arc.phase !== 'resolving') return true
       return nextMatchday <= arc.expiresMatchday + 2
     })
+    // B4 (arc): arc-events med low-prio går genom samma cap — slå inte igenom capet
+    const MAX_LOW_IN_QUEUE = 5
+    const existingLowCount = (updatedGame.pendingEvents ?? []).filter(
+      e => !e.resolved && (e.priority ?? getEventPriority(e.type)) === 'low'
+    ).length
+    const arcLowEvents = arcResult.newEvents.filter(e => (e.priority ?? getEventPriority(e.type)) === 'low')
+    const arcOtherEvents = arcResult.newEvents.filter(e => (e.priority ?? getEventPriority(e.type)) !== 'low')
+    const arcLowAllowed = arcLowEvents.slice(0, Math.max(0, MAX_LOW_IN_QUEUE - existingLowCount))
+    const arcLowDropped = arcLowEvents.slice(Math.max(0, MAX_LOW_IN_QUEUE - existingLowCount))
+    const arcDroppedInbox: InboxItem[] = arcLowDropped.map(e => ({
+      id: `inbox_arc_drop_${e.id}`,
+      date: updatedGame.currentDate,
+      type: InboxItemType.BoardFeedback,
+      title: e.title,
+      body: e.body,
+      isRead: false,
+    }))
+
     updatedGame = {
       ...updatedGame,
       activeArcs: cleanedArcs,
-      pendingEvents: [...(updatedGame.pendingEvents ?? []), ...arcResult.newEvents],
+      pendingEvents: [...(updatedGame.pendingEvents ?? []), ...arcOtherEvents, ...arcLowAllowed],
       storylines: [...(updatedGame.storylines ?? []), ...arcResult.newStorylines],
-      inbox: [...updatedGame.inbox, ...arcInbox],
+      inbox: [...updatedGame.inbox, ...arcInbox, ...arcDroppedInbox],
+    }
+  }
+
+  // ── B4: Globalt cap — low-prio events i kön (inte bara nya per omgång) ──
+  {
+    const MAX_LOW_IN_QUEUE = 5
+    const allPending = updatedGame.pendingEvents ?? []
+    const lowEvents = allPending.filter(e => !e.resolved && (e.priority ?? getEventPriority(e.type)) === 'low')
+    if (lowEvents.length > MAX_LOW_IN_QUEUE) {
+      const toSpill = lowEvents.slice(MAX_LOW_IN_QUEUE)
+      const spillInbox: InboxItem[] = toSpill.map(e => ({
+        id: `inbox_spill_${e.id}`,
+        date: updatedGame.currentDate,
+        type: InboxItemType.BoardFeedback,
+        title: e.title,
+        body: e.body,
+        isRead: false,
+      }))
+      const toSpillIds = new Set(toSpill.map(e => e.id))
+      updatedGame = {
+        ...updatedGame,
+        pendingEvents: allPending.filter(e => !toSpillIds.has(e.id)),
+        inbox: [...updatedGame.inbox, ...spillInbox]
+          .sort((a, b) => b.date.localeCompare(a.date))
+          .slice(0, MAX_INBOX),
+      }
+    }
+  }
+
+  // ── B5: Rensa resolved events från state (sparar localStorage-utrymme) ──
+  {
+    const beforeClean = updatedGame.pendingEvents ?? []
+    const cleaned = beforeClean.filter(e => !e.resolved)
+    if (cleaned.length < beforeClean.length) {
+      updatedGame = { ...updatedGame, pendingEvents: cleaned }
     }
   }
 
@@ -1265,7 +1318,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     updatedGame = {
       ...updatedGame,
       inbox: [...updatedGame.inbox, {
-        id: `journalist_broken_${updatedGame.currentSeason}_${updatedGame.currentMatchday ?? 0}`,
+        id: `journalist_broken_${updatedGame.currentSeason}_${updatedGame.currentMatchday}`,
         date: updatedGame.currentDate,
         type: InboxItemType.MediaEvent,
         title: `${updatedGame.journalist.name} · ${updatedGame.journalist.outlet}`,
@@ -1279,7 +1332,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     updatedGame = {
       ...updatedGame,
       inbox: [...updatedGame.inbox, {
-        id: `journalist_recovered_${updatedGame.currentSeason}_${updatedGame.currentMatchday ?? 0}`,
+        id: `journalist_recovered_${updatedGame.currentSeason}_${updatedGame.currentMatchday}`,
         date: updatedGame.currentDate,
         type: InboxItemType.MediaEvent,
         title: `${updatedGame.journalist.name} · ${updatedGame.journalist.outlet}`,

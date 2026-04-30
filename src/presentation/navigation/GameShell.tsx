@@ -24,7 +24,7 @@ export function GameGuard() {
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
         <Outlet />
       </div>
-      {shouldShowEventOverlay && <EventOverlay />}
+      {shouldShowEventOverlay && <EventOverlay event={attention.event} />}
     </div>
   )
 }
@@ -75,7 +75,7 @@ export function GameShell() {
       </div>
       {!sceneActive && <BottomNav />}
       <DoctorFAB />
-      {shouldShowEventOverlay && <EventOverlay />}
+      {shouldShowEventOverlay && <EventOverlay event={attention.event} />}
     </div>
   )
 }

@@ -400,7 +400,7 @@ export function gameFlowActions(get: Get, set: Set) {
       const updatedGame: SaveGame = { ...game }
       updatedGame.pendingScene = undefined
       if (sceneId === 'coffee_room') {
-        updatedGame.lastCoffeeSceneRound = updatedGame.currentMatchday ?? 0
+        updatedGame.lastCoffeeSceneRound = updatedGame.currentMatchday
       } else if (sceneId === 'season_signature_reveal') {
         // Track per-season with dedicated field (not SceneId[] — needs season number)
         updatedGame.shownSeasonSignatureRevealSeason = updatedGame.currentSeason

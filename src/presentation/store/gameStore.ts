@@ -166,6 +166,16 @@ export const useGameStore = create<GameState>()(
           })
         }
 
+        // Migrate currentMatchday — saves before A1-fix saknar fältet
+        if (loaded.currentMatchday === undefined || loaded.currentMatchday === null) {
+          const completedMatchdays = loaded.fixtures
+            .filter((f: any) => f.status === 'completed')
+            .map((f: any) => f.matchday ?? 0)
+          loaded.currentMatchday = completedMatchdays.length > 0
+            ? Math.max(...completedMatchdays)
+            : 0
+        }
+
         const migrated = {
           ...loaded,
           clubs: loaded.clubs.map((c: any) => {

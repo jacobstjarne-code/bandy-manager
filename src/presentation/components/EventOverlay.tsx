@@ -4,7 +4,8 @@ import { useGameStore } from '../store/gameStore'
 import { playSound } from '../audio/soundEffects'
 import { PressConferenceScene } from './PressConferenceScene'
 import { MecenatDinnerEvent } from './events/MecenatDinnerEvent'
-import { getEventPriority } from '../../domain/entities/GameEvent'
+import type { GameEvent } from '../../domain/entities/GameEvent'
+import { getNextEvent } from '../../domain/services/eventQueueService'
 
 function choiceStyle(_choiceId: string): React.CSSProperties {
   return {
@@ -14,25 +15,24 @@ function choiceStyle(_choiceId: string): React.CSSProperties {
   }
 }
 
-export function EventOverlay() {
+interface EventOverlayProps {
+  // Optionellt: om GameShell/GameGuard redan har räknat ut nästa event via attentionRouter
+  // används det direkt. Annars faller EventOverlay tillbaka på getNextEvent(game).
+  event?: GameEvent
+}
+
+export function EventOverlay({ event: eventProp }: EventOverlayProps = {}) {
   const game = useGameStore(s => s.game)
   const resolveEvent = useGameStore(s => s.resolveEvent)
   const location = useLocation()
 
   // Block events during live match, match setup, match result, and review — review handles events inline
   const isMatchScreen = location.pathname.includes('/match/live') || location.pathname === '/game/match' || location.pathname === '/game/match-result' || location.pathname === '/game/review'
-  const events = game?.pendingEvents ?? []
 
-  const priorityOrder = { critical: 0, high: 1, normal: 2, low: 3 }
-  const event = (game && events.length > 0 && !isMatchScreen)
-    ? ([...events]
-        .sort((a, b) => {
-          const pa = a.priority ?? getEventPriority(a.type)
-          const pb = b.priority ?? getEventPriority(b.type)
-          return priorityOrder[pa] - priorityOrder[pb]
-        })
-        .find(e => !e.resolved) ?? events[0])
-    : null
+  // B1: använd prop från GameShell (via attentionRouter) om tillgänglig, annars eget fallback
+  const event = isMatchScreen
+    ? null
+    : (eventProp ?? (game ? getNextEvent(game) : null))
 
   // Auto-resolve pressConference events if journalist data is missing — avoids blocking the event queue
   useEffect(() => {
@@ -43,7 +43,7 @@ export function EventOverlay() {
     }
   }, [event?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!game || events.length === 0 || isMatchScreen || !event) return null
+  if (!game || isMatchScreen || !event) return null
 
   const relatedPlayer = event.relatedPlayerId
     ? game.players.find(p => p.id === event.relatedPlayerId)
@@ -59,7 +59,7 @@ export function EventOverlay() {
     resolveEvent(activeEvent.id, choiceId)
   }
 
-  const total = events.length
+  const total = game.pendingEvents?.filter(e => !e.resolved).length ?? 1
 
   // Presskonferens: dedikerad visuell scen istf generisk overlay
   if (event.type === 'pressConference') {

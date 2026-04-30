@@ -64,15 +64,20 @@ function DashboardOrPortal() {
   const redirected = useRef(false)
 
   const attention = game ? getCurrentAttention(game) : { kind: 'idle' as const }
+  const pendingScreen = attention.kind === 'screen' ? attention.screen : null
+
+  // B6: rensa redirected.current när pendingScreen försvinner, så nästa pendingScreen triggar useEffect
+  useEffect(() => {
+    if (attention.kind !== 'screen') {
+      redirected.current = false
+    }
+  }, [attention.kind])
 
   useEffect(() => {
-    if (!game || redirected.current) return
-    if (attention.kind === 'screen') {
-      const route = PENDING_SCREEN_ROUTES[attention.screen]
-      if (route) { redirected.current = true; navigate(route, { replace: true }) }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attention.kind === 'screen' ? (attention as { kind: 'screen'; screen: string }).screen : null])
+    if (!game || redirected.current || !pendingScreen) return
+    const route = PENDING_SCREEN_ROUTES[pendingScreen]
+    if (route) { redirected.current = true; navigate(route, { replace: true }) }
+  }, [game, pendingScreen, navigate])
 
   if (!game) return <PortalScreen />
 

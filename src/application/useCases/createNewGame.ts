@@ -300,6 +300,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     managedClubId: input.clubId,
     currentDate: `${season}-10-01`,
     currentSeason: season,
+    currentMatchday: 0,
     clubs: clubsFixed,
     players,
     league,
