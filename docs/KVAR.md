@@ -5,15 +5,30 @@
 
 ---
 
-## AKTUELLT LÄGE (2026-04-30)
+## AKTUELLT LÄGE (2026-04-30 kväll)
 
-**SPEC_PORTAL_FAS_2_DRAMATURGI steg 1–3:** ✅ Levererad (commits `b7e5a0d` + `03db307`). SituationCard, PortalBeat, rikare secondary-kort. Slutliga Opus-texter inbakade. Tre logikfixar (first_derby, first_win, dead ternary).
+**SPEC_BESLUTSEKONOMI Steg 1 (diagnos):** ✅ `docs/diagnos/2026-04-30_beslutsekonomi.md`. Tre fynd: `currentMatchday` sätts aldrig, EventOverlay blockerar SceneScreen, ingen total kö-cap (30–80 events/säsong).
+
+**SPEC_BESLUTSEKONOMI Steg 2:** ✅ Levererad (commits `b4e04bd` + `516f89a`).
+- A1: `currentMatchday: nextMatchday` lagt till i roundProcessor-spread + migration
+- A2/A3: `attentionRouter.ts` med `getCurrentAttention()` koordinerar pendingScreen → pendingScene → pendingEvents → idle
+- B1/B2: `eventQueueService.ts` med `getNextEvent()` och `getQueueStats()`
+- B3/B4: `MAX_ATMOSPHERIC_PER_ROUND = 2`. Överskjutande `low`-prio events går till inbox (inte kasseras)
+- 3228 tester gröna. Build ren.
+
+**SPEC_BESLUTSEKONOMI Steg 3:** ✅ Levererad (commits `2daed82` + `1029feb`). `eventActions.ts`, `EventCardInline.tsx`, `PortalEventSlot.tsx`. Overlay bara för `critical`, allt annat inline i Portal. Placeholder-texter — Opus skriver EventCardInline-strängar nästa session.
+
+**Steg 4 (fas-scenes) + Steg 5 (kritiska scenes):** ⏸ Spec-skissad i `SPEC_BESLUTSEKONOMI.md`. Skrivs när Steg 3 är playtestat.
+
+**Kodgenomgång 2026-04-30:** ✅ Alla 6 fynd fixade (`e480f38`). B1 dubbel sortering, B2 currentMatchday required, B3 spec-dokumentation, B4 globalt kö-cap, B5 resolved events rensas, B6 useEffect-dependency.
+
+**Namnrymds-inkonsekvens:** Spec använder `medium`/`atmospheric` (3 nivåer). Kod använder `critical|high|normal|low` (4 nivåer). Mappning dokumenterad i Steg 2- och Steg 3-specerna. Framtida specer ska använda kodens 4-nivå-typning.
+
+**SPEC_PORTAL_FAS_2_DRAMATURGI steg 1–3:** ✅ Levererad (commits `b7e5a0d` + `03db307`). SituationCard, PortalBeat, rikare secondary-kort. Slutliga Opus-texter inbakade. Tre logikfixar (first_derby, first_win, dead ternary). Plus tidigare uppföljning: verb-fix (`står` → `ligger`), gräsmatta → parkering, season_opener cup-fix (`29b7947`).
 
 **Portal-buggfixar:** ✅ CTA nu i PortalScreen (DashboardScreen renderades aldrig). Auto-skip för bye-lag. Horisontellt streck fixat. Secondary-kort rikare.
 
 **Pixel-audit SituationCard/PortalBeat:** ⚠️ Ingen HTML-mock gjordes inför dessa. Formellt brott mot princip 4. Kräver browser-playtest av Jacob för att godkännas.
-
-**Steg 4 (inbox-prioritering):** ⏸ Väntar på Jacobs playtest-godkännande av steg 1–3.
 
 **Kapitel C — saknar fortfarande:**
 - `rumorFrequencyMultiplier` + `incomingBidMultiplier` ej i rumorService/transferService
@@ -687,10 +702,10 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 | `DECISIONS.md` | 2026-04-21 | Aktuell |
 | `DESIGN_SYSTEM.md` | 2026-04-14 | OK |
 | `STATUS.md` | 2026-04-27 | Uppdaterad med Sprint 27 + 28-A/B |
-| `KVAR.md` | 2026-04-30 | Denna fil |
-| `HANDOVER_2026-04-30.md` | 2026-04-30 | Senaste handover |
-| `HANDOVER_2026-04-28b.md` | 2026-04-28 | Föregående handover |
-| `HANDOVER_2026-04-27b.md` | 2026-04-27 | Arkiv |
+| `KVAR.md` | 2026-04-30 (kväll) | Denna fil |
+| `HANDOVER_2026-04-30b.md` | 2026-04-30 | Senaste handover (kväll) |
+| `HANDOVER_2026-04-30.md` | 2026-04-30 | Handover förmiddag |
+| `HANDOVER_2026-04-28b.md` | 2026-04-28 | Arkiv |
 | `SPEC_MATCHDAGAR.md` | 2026-04-27 | Fas 1–3 levererade, Fas 4 blockeras på SMHI |
 | `STRINGS_SPECIALDATUM.md` | 2026-04-27 | Implementerad i specialDateStrings.ts |
 | `SCORELINE_REFERENCE.md` | 2026-04-21 | Referens för 25b/c/d |
@@ -699,11 +714,12 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 
 ## NÄSTA SESSION — FÖRESLAGEN ORDNING
 
-1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-04-30.md`.
-2. **Playtest** — öppna webbläsaren, ny manager, spela 3 omgångar. Skärmdumpa SituationCard i minst 3 states. Skriv 2–3 meningar om det känns kontextuellt. Det är pixel-auditen för Fas 2 steg 1–3 (ingen mock existerade — browser är enda källan).
-3. **Steg 4 (inbox-prioritering)** om playtest godkänns.
-4. **Sprint 28-C** — Opus-only skärmdump-vänlighets-audit (~1h). Kräver ingen Code. Output: `SPRINT_28_AUDIT.md`.
-5. **Motor-gap** (välj ett):
-   - `awayWinPct` 43.9% vs 38.3% (−5.6pp)
-   - `cornerGoalPct` 26.2% vs 22.2%
-   - `playoff_final mål/match` 9.17 vs 7.00 (+2.17)
+1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-04-30b.md`.
+2. **Playtest** — ny manager, spela 3 omgångar. Verifiera:
+   - Söndagsträning-scenen triggar (currentMatchday-fix)
+   - Atmosfäriska events visas inline i Portal, inte som overlay-spam
+   - Kritiska events (presskonferens) är fortfarande overlay
+   - SituationCard varierar kontextuellt
+3. **Opus skriver EventCardInline-texter** (communityEvent, supporterEvent, starPerformance, playerPraise, bandyLetter, captainSpeech) — placeholder nu.
+4. **Steg 4 (fas-scenes)** om playtest godkänner Steg 3.
+5. **Sprint 28-C** — Opus-only skärmdump-audit.
