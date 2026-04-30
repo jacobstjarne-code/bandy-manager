@@ -1,4 +1,5 @@
 import type { SaveGame, InboxItem } from '../../domain/entities/SaveGame'
+import { getEventPriority } from '../../domain/entities/GameEvent'
 import type { Moment } from '../../domain/entities/Moment'
 import type { Player } from '../../domain/entities/Player'
 import type { Fixture } from '../../domain/entities/Fixture'
@@ -790,7 +791,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // Trim accumulated data to prevent localStorage bloat
   const MAX_INBOX = 50
-  const trimmedInbox = [...game.inbox, ...newInboxItems]
+  let trimmedInbox = [...game.inbox, ...newInboxItems]
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, MAX_INBOX)
 
@@ -971,6 +972,38 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     return undefined
   })()
 
+  // ── B3/B4: Cap low-priority (atmospheric) events per round ───────────────
+  // Maksimalt MAX_ATMOSPHERIC_PER_ROUND låg-prio events per omgång visas i kön.
+  // Överskjutande events sparas i inboxen (inte kasseras).
+  // Kritiska och medium events cappas aldrig.
+  {
+    const MAX_ATMOSPHERIC_PER_ROUND = 2
+    const atmosphericNew = allNewEvents.filter(e => (e.priority ?? getEventPriority(e.type)) === 'low')
+    const otherNew = allNewEvents.filter(e => (e.priority ?? getEventPriority(e.type)) !== 'low')
+
+    const keptAtmospheric = atmosphericNew.slice(0, MAX_ATMOSPHERIC_PER_ROUND)
+    const droppedAtmospheric = atmosphericNew.slice(MAX_ATMOSPHERIC_PER_ROUND)
+
+    // Rebuild allNewEvents with cap applied
+    allNewEvents.length = 0
+    allNewEvents.push(...otherNew, ...keptAtmospheric)
+
+    // Dropped events go to inbox as notiser so they're not lost
+    if (droppedAtmospheric.length > 0) {
+      const droppedInboxItems: InboxItem[] = droppedAtmospheric.map(e => ({
+        id: `inbox_evt_${e.id}`,
+        date: newDate,
+        type: InboxItemType.Community,
+        title: e.title,
+        body: e.body,
+        isRead: false,
+      }))
+      trimmedInbox = [...trimmedInbox, ...droppedInboxItems]
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .slice(0, MAX_INBOX)
+    }
+  }
+
   // M15: merge ripple-derived field changes via centralized function
   const rippleMerged = mergeRippleDeltas(game, gameAfterRipples, {
     fanMoodBase: newFanMood,
@@ -989,6 +1022,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     standings,
     inbox: trimmedInbox,
     currentDate: newDate,
+    currentMatchday: nextMatchday,
     managedClubPendingLineup: undefined,
     lineupConfirmedThisRound: false,
     visitedScreensThisRound: [],

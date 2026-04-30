@@ -188,6 +188,16 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     data.chemistryStats = {}
   }
 
+  // ── SPEC_BESLUTSEKONOMI_STEG_2 — currentMatchday ─────────────────────────
+  // currentMatchday was never set by roundProcessor before this fix.
+  // Derive from completed fixtures if possible, otherwise default to 1.
+  if (data.currentMatchday === undefined) {
+    const fixtures = data.fixtures as Array<Record<string, unknown>> | undefined
+    const completed = (fixtures ?? []).filter(f => f.status === 'completed')
+    const matchdays = completed.map(f => typeof f.matchday === 'number' ? f.matchday : 0)
+    data.currentMatchday = matchdays.length > 0 ? Math.max(...matchdays) : 1
+  }
+
   // ── version stamp ────────────────────────────────────────────────────────
   data.version = CURRENT_SAVE_VERSION
 
