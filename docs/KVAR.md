@@ -1,7 +1,23 @@
 # BANDY MANAGER — KVAR
 
-**Datum:** 2026-04-27
+**Datum:** 2026-04-30
 **Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DECISIONS.md/DESIGN_SYSTEM.md är lästa.
+
+---
+
+## AKTUELLT LÄGE (2026-04-30)
+
+**SPEC_PORTAL_FAS_2_DRAMATURGI steg 1–3:** ✅ Levererad (commits `b7e5a0d` + `03db307`). SituationCard, PortalBeat, rikare secondary-kort. Slutliga Opus-texter inbakade. Tre logikfixar (first_derby, first_win, dead ternary).
+
+**Portal-buggfixar:** ✅ CTA nu i PortalScreen (DashboardScreen renderades aldrig). Auto-skip för bye-lag. Horisontellt streck fixat. Secondary-kort rikare.
+
+**Pixel-audit SituationCard/PortalBeat:** ⚠️ Ingen HTML-mock gjordes inför dessa. Formellt brott mot princip 4. Kräver browser-playtest av Jacob för att godkännas.
+
+**Steg 4 (inbox-prioritering):** ⏸ Väntar på Jacobs playtest-godkännande av steg 1–3.
+
+**Kapitel C — saknar fortfarande:**
+- `rumorFrequencyMultiplier` + `incomingBidMultiplier` ej i rumorService/transferService
+- `underdogBoost` (dream_round) ej i matchEngine
 
 ---
 
@@ -671,10 +687,10 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 | `DECISIONS.md` | 2026-04-21 | Aktuell |
 | `DESIGN_SYSTEM.md` | 2026-04-14 | OK |
 | `STATUS.md` | 2026-04-27 | Uppdaterad med Sprint 27 + 28-A/B |
-| `KVAR.md` | 2026-04-27 (sen kväll) | Denna fil |
-| `HANDOVER_2026-04-27b.md` | 2026-04-27 | Senaste handover (session 2) |
-| `HANDOVER_2026-04-27.md` | 2026-04-27 | Session 1 handover |
-| `HANDOVER_2026-04-26.md` | 2026-04-26 | Arkiv |
+| `KVAR.md` | 2026-04-30 | Denna fil |
+| `HANDOVER_2026-04-30.md` | 2026-04-30 | Senaste handover |
+| `HANDOVER_2026-04-28b.md` | 2026-04-28 | Föregående handover |
+| `HANDOVER_2026-04-27b.md` | 2026-04-27 | Arkiv |
 | `SPEC_MATCHDAGAR.md` | 2026-04-27 | Fas 1–3 levererade, Fas 4 blockeras på SMHI |
 | `STRINGS_SPECIALDATUM.md` | 2026-04-27 | Implementerad i specialDateStrings.ts |
 | `SCORELINE_REFERENCE.md` | 2026-04-21 | Referens för 25b/c/d |
@@ -683,10 +699,11 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 
 ## NÄSTA SESSION — FÖRESLAGEN ORDNING
 
-1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-04-27b.md`.
-2. **Playtest-runda 4** — prioritet 1. Verifiera i live-spel: annandagen/nyårsbandy-briefing + inbox, domare-möte i GranskaScreen, matchskador, legend-commentary, skandaler (kafferum/klack/press/motståndarcoach). Inget av Sprint 25f/g, 25h, 26, 27, 28, Fas1–3 är verifierat i live-spel.
-3. **Sprint 28-C** — Opus-only skärmdump-vänlighets-audit (~1h). Kräver ingen Code. Output: `SPRINT_28_AUDIT.md`.
-4. **Motor-gap** (välj ett):
+1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-04-30.md`.
+2. **Playtest** — öppna webbläsaren, ny manager, spela 3 omgångar. Skärmdumpa SituationCard i minst 3 states. Skriv 2–3 meningar om det känns kontextuellt. Det är pixel-auditen för Fas 2 steg 1–3 (ingen mock existerade — browser är enda källan).
+3. **Steg 4 (inbox-prioritering)** om playtest godkänns.
+4. **Sprint 28-C** — Opus-only skärmdump-vänlighets-audit (~1h). Kräver ingen Code. Output: `SPRINT_28_AUDIT.md`.
+5. **Motor-gap** (välj ett):
    - `awayWinPct` 43.9% vs 38.3% (−5.6pp)
    - `cornerGoalPct` 26.2% vs 22.2%
    - `playoff_final mål/match` 9.17 vs 7.00 (+2.17)
