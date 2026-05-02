@@ -71,8 +71,9 @@ export function recordSignatureFact(game: SaveGame, fact: string): SaveGame {
 
 /**
  * Genererar säsongsslutets rubricerande mening.
+ * Returnerar null för calm_season — inget läggs till i SeasonSummary.
  */
-export function summarizeSignature(signature: SeasonSignature): string {
+export function summarizeSignature(signature: SeasonSignature): string | null {
   const season = signature.startedSeason
   const facts = signature.observedFacts
 
@@ -89,7 +90,7 @@ export function summarizeSignature(signature: SeasonSignature): string {
       return `Drömrundan ${season} — ${facts[0] || 'underdog-energin gav ligan ett nytt ansikte'}`
     case 'calm_season':
     default:
-      return `En lugn säsong ${season} utan dramatiska avvikelser.`
+      return null
   }
 }
 
