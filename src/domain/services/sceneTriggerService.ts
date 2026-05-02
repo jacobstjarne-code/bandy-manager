@@ -9,6 +9,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { SceneId } from '../entities/Scene'
 import { FixtureStatus } from '../enums'
 import { getCoffeeRoomScene } from './coffeeRoomService'
+import { shouldTriggerBoardMeeting } from '../data/scenes/boardMeetingScene'
 
 const COFFEE_ROOM_COOLDOWN_ROUNDS = 3
 
@@ -23,6 +24,7 @@ const COFFEE_ROOM_COOLDOWN_ROUNDS = 3
  */
 export function detectSceneTrigger(game: SaveGame): SceneId | null {
   if (shouldTriggerSMFinalVictory(game)) return 'sm_final_victory'
+  if (shouldTriggerBoardMeeting(game)) return 'board_meeting'
   if (shouldTriggerSundayTraining(game)) return 'sunday_training'
   if (shouldTriggerSeasonSignature(game)) return 'season_signature_reveal'
   if (shouldTriggerCoffeeRoom(game)) return 'coffee_room'

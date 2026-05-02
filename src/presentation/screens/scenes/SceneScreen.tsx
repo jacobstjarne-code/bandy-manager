@@ -13,6 +13,7 @@ import { SMFinalVictoryScene } from './SMFinalVictoryScene'
 import { CoffeeRoomScene } from './CoffeeRoomScene'
 import { JournalistRelationshipScene } from './JournalistRelationshipScene'
 import { SeasonSignatureRevealScene } from './SeasonSignatureRevealScene'
+import { BoardMeetingScene } from './BoardMeetingScene'
 
 export function SceneScreen() {
   const game = useGameStore(s => s.game)
@@ -37,6 +38,8 @@ export function SceneScreen() {
       return <JournalistRelationshipScene game={game} onComplete={() => handleComplete()} />
     case 'season_signature_reveal':
       return <SeasonSignatureRevealScene game={game} onComplete={() => handleComplete()} />
+    case 'board_meeting':
+      return <BoardMeetingScene game={game} onComplete={() => handleComplete()} />
     default:
       return <Navigate to="/game/dashboard" replace />
   }

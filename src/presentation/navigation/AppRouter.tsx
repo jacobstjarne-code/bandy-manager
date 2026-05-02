@@ -27,13 +27,11 @@ import { SeasonSummaryScreen } from '../screens/SeasonSummaryScreen'
 import { InboxScreen } from '../screens/InboxScreen'
 
 import { MatchResultScreen } from '../screens/MatchResultScreen'
-import { BoardMeetingScreen } from '../screens/BoardMeetingScreen'
 import { GameOverScreen } from '../screens/GameOverScreen'
 import { GranskaScreen } from '../screens/GranskaScreen'
 import { TaktikScreen } from '../screens/TaktikScreen'
 
 import { HistoryScreen } from '../screens/HistoryScreen'
-import { PreSeasonScreen } from '../screens/PreSeasonScreen'
 import { HalfTimeSummaryScreen } from '../screens/HalfTimeSummaryScreen'
 import { PlayoffIntroScreen } from '../screens/PlayoffIntroScreen'
 import { QFSummaryScreen } from '../screens/QFSummaryScreen'
@@ -43,15 +41,7 @@ import { useGameStore } from '../store/gameStore'
 import { PendingScreen } from '../../domain/enums'
 import { getCurrentAttention } from '../../domain/services/attentionRouter'
 
-function BoardMeetingGuard() {
-  const game = useGameStore(s => s.game)
-  if (!game) return <Navigate to="/" replace />
-  return <BoardMeetingScreen />
-}
-
-const PENDING_SCREEN_ROUTES: Record<PendingScreen, string> = {
-  [PendingScreen.BoardMeeting]:    '/game/board-meeting',
-  [PendingScreen.PreSeason]:       '/game/pre-season',
+const PENDING_SCREEN_ROUTES: Partial<Record<PendingScreen, string>> = {
   [PendingScreen.HalfTimeSummary]: '/game/half-time-summary',
   [PendingScreen.PlayoffIntro]:    '/game/playoff-intro',
   [PendingScreen.QFSummary]:       '/game/qf-summary',
@@ -109,7 +99,6 @@ export function AppRouter() {
           <Route path="inbox" element={<InboxScreen />} />
 
           <Route path="history" element={<HistoryScreen />} />
-          <Route path="pre-season" element={<PreSeasonScreen />} />
           <Route path="half-time-summary" element={<HalfTimeSummaryScreen />} />
           <Route path="playoff-intro" element={<PlayoffIntroScreen />} />
           <Route path="qf-summary" element={<QFSummaryScreen />} />
@@ -122,7 +111,6 @@ export function AppRouter() {
           <Route path="/game/match-result" element={<MatchResultScreen />} />
           <Route path="/game/game-over" element={<GameOverScreen />} />
         </Route>
-        <Route path="/game/board-meeting" element={<BoardMeetingGuard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

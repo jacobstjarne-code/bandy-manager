@@ -852,8 +852,6 @@ export const usePlayoffInfo = () => {
 
 const NAV_LOCK_REASONS: Record<string, string> = {
   'season-summary':    'Slutför säsongssammanfattning',
-  'board-meeting':     'Slutför styrelsemöte',
-  'pre-season':        'Slutför försäsong',
   'half-time-summary': 'Slutför halvtidssammanfattning',
   'playoff-intro':     'Starta slutspelet',
   'qf-summary':        'Slutför kvartsfinalssammanfattning',

@@ -59,8 +59,6 @@ export function BottomNav() {
   // Hide nav entirely on ceremonial transition screens — full-screen flows
   // där nav inte har någon funktion och bara skapar förvirring.
   const HIDDEN_PATHS = [
-    '/game/board-meeting',
-    '/game/pre-season',
     '/game/season-summary',
     '/game/playoff-intro',
     '/game/qf-summary',

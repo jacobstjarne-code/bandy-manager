@@ -1,4 +1,4 @@
-import type { Club, Tactic } from '../entities/Club'
+import type { Club, Tactic, ClubBoard } from '../entities/Club'
 import { generateOpponentManager } from './opponentManagerService'
 import type { Player, PlayerAttributes, PlayerSeasonStats, PlayerCareerStats, PlayerDayJob, SuspensionProfile } from '../entities/Player'
 import {
@@ -123,6 +123,8 @@ interface ClubTemplate {
   preferredStyle: ClubStyle
   arenaName: string
   supporterGroupName: string
+  board: ClubBoard
+  clubhouse: string
 }
 
 export const CLUB_TEMPLATES: ClubTemplate[] = [
@@ -144,6 +146,12 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     preferredStyle: ClubStyle.Technical,
     arenaName: 'Slagghögen',
     supporterGroupName: 'Järnklacken',
+    board: {
+      chairman: { firstName: 'Lars', lastName: 'Berglund', age: 58, gender: 'm' },
+      treasurer: { firstName: 'Lennart', lastName: 'Dahlgren', age: 64, gender: 'm' },
+      member: { firstName: 'Mikael', lastName: 'Sandberg', age: 47, gender: 'm' },
+    },
+    clubhouse: 'klubbhuset vid Slagghögen',
   },
   {
     id: 'club_soderfors',
@@ -163,6 +171,12 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     preferredStyle: ClubStyle.Balanced,
     arenaName: 'Ässjan',
     supporterGroupName: 'Hammarsmederna',
+    board: {
+      chairman: { firstName: 'Britta', lastName: 'Lindqvist', age: 54, gender: 'f' },
+      treasurer: { firstName: 'Bengt', lastName: 'Nordin', age: 61, gender: 'm' },
+      member: { firstName: 'Sven-Erik', lastName: 'Wallin', age: 66, gender: 'm' },
+    },
+    clubhouse: 'bruksbaracken bakom Ässjan',
   },
   {
     id: 'club_vastanfors',
@@ -182,6 +196,12 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     preferredStyle: ClubStyle.Attacking,
     arenaName: 'Schaktvallen',
     supporterGroupName: 'Bergskurvan',
+    board: {
+      chairman: { firstName: 'Hans', lastName: 'Hedman', age: 52, gender: 'm' },
+      treasurer: { firstName: 'Marianne', lastName: 'Selin', age: 49, gender: 'f' },
+      member: { firstName: 'Kjell', lastName: 'Boström', age: 60, gender: 'm' },
+    },
+    clubhouse: 'föreningslokalen vid Schaktvallen',
   },
   {
     id: 'club_karlsborg',
@@ -201,6 +221,12 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     preferredStyle: ClubStyle.Balanced,
     arenaName: 'Bastionen',
     supporterGroupName: 'Norrskensklacken',
+    board: {
+      chairman: { firstName: 'Anna-Lena', lastName: 'Mäki', age: 51, gender: 'f' },
+      treasurer: { firstName: 'Stig', lastName: 'Niemi', age: 58, gender: 'm' },
+      member: { firstName: 'Lennart', lastName: 'Karppinen', age: 62, gender: 'm' },
+    },
+    clubhouse: 'klubbstugan ovanför Bastionen',
   },
   {
     id: 'club_malilla',
@@ -220,6 +246,12 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     preferredStyle: ClubStyle.Technical,
     arenaName: 'Hyttvallen',
     supporterGroupName: 'Glasblåsarna',
+    board: {
+      chairman: { firstName: 'Karin', lastName: 'Petersson', age: 55, gender: 'f' },
+      treasurer: { firstName: 'Bertil', lastName: 'Gustavsson', age: 63, gender: 'm' },
+      member: { firstName: 'Sven', lastName: 'Almquist', age: 59, gender: 'm' },
+    },
+    clubhouse: 'gamla cafeterian på Hyttvallen',
   },
   {
     id: 'club_gagnef',
@@ -239,6 +271,12 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     preferredStyle: ClubStyle.Physical,
     arenaName: 'Älvvallen',
     supporterGroupName: 'Dalkurvan',
+    board: {
+      chairman: { firstName: 'Olle', lastName: 'Persson', age: 57, gender: 'm' },
+      treasurer: { firstName: 'Maj-Britt', lastName: 'Holm', age: 54, gender: 'f' },
+      member: { firstName: 'Rune', lastName: 'Forsberg', age: 65, gender: 'm' },
+    },
+    clubhouse: 'bystugan vid Älvvallen',
   },
   {
     id: 'club_halleforsnas',
@@ -258,6 +296,12 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     preferredStyle: ClubStyle.Balanced,
     arenaName: 'Gjutarvallen',
     supporterGroupName: 'Härdarna',
+    board: {
+      chairman: { firstName: 'Göran', lastName: 'Celsing', age: 60, gender: 'm' },
+      treasurer: { firstName: 'Kerstin', lastName: 'Ahlin', age: 53, gender: 'f' },
+      member: { firstName: 'Birger', lastName: 'Lundgren', age: 67, gender: 'm' },
+    },
+    clubhouse: 'brukets gamla expedition',
   },
   {
     id: 'club_lesjofors',
@@ -277,6 +321,12 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     preferredStyle: ClubStyle.Defensive,
     arenaName: 'Kolbottnen',
     supporterGroupName: 'Skogsklacken',
+    board: {
+      chairman: { firstName: 'Krister', lastName: 'Bergvall', age: 49, gender: 'm' },
+      treasurer: { firstName: 'Ulla', lastName: 'Nilsson', age: 56, gender: 'f' },
+      member: { firstName: 'Tage', lastName: 'Andersson', age: 62, gender: 'm' },
+    },
+    clubhouse: 'träbyggnaden vid Kolbottnen',
   },
   {
     id: 'club_rogle',
@@ -296,6 +346,12 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     preferredStyle: ClubStyle.Defensive,
     arenaName: 'Planlunden',
     supporterGroupName: 'Sydkurvan',
+    board: {
+      chairman: { firstName: 'Per-Olof', lastName: 'Hansson', age: 54, gender: 'm' },
+      treasurer: { firstName: 'Inger', lastName: 'Mårtensson', age: 51, gender: 'f' },
+      member: { firstName: 'Sten', lastName: 'Rosengren', age: 59, gender: 'm' },
+    },
+    clubhouse: 'föreningshuset bredvid Planlunden',
   },
   {
     id: 'club_slottsbron',
@@ -315,6 +371,12 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     preferredStyle: ClubStyle.Balanced,
     arenaName: 'Forsvallen',
     supporterGroupName: 'Bropelarna',
+    board: {
+      chairman: { firstName: 'Tor', lastName: 'Magnusson', age: 62, gender: 'm' },
+      treasurer: { firstName: 'Inga', lastName: 'Sundvall', age: 57, gender: 'f' },
+      member: { firstName: 'Jan-Erik', lastName: 'Wiklund', age: 61, gender: 'm' },
+    },
+    clubhouse: 'klubbhuset vid Forsvallen',
   },
   {
     id: 'club_skutskar',
@@ -334,6 +396,12 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     preferredStyle: ClubStyle.Physical,
     arenaName: 'Sulfatvallen',
     supporterGroupName: 'Fabrikskurvan',
+    board: {
+      chairman: { firstName: 'Kjell-Åke', lastName: 'Westman', age: 59, gender: 'm' },
+      treasurer: { firstName: 'Birgit', lastName: 'Lundkvist', age: 56, gender: 'f' },
+      member: { firstName: 'Lennart', lastName: 'Höglund', age: 65, gender: 'm' },
+    },
+    clubhouse: 'mötesrummet under läktaren på Sulfatvallen',
   },
   {
     id: 'club_heros',
@@ -353,6 +421,12 @@ export const CLUB_TEMPLATES: ClubTemplate[] = [
     preferredStyle: ClubStyle.Defensive,
     arenaName: 'Hedvallen',
     supporterGroupName: 'Hjältarna',
+    board: {
+      chairman: { firstName: 'Margareta', lastName: 'Ek', age: 56, gender: 'f' },
+      treasurer: { firstName: 'Roland', lastName: 'Lindfors', age: 50, gender: 'm' },
+      member: { firstName: 'Erland', lastName: 'Söderström', age: 61, gender: 'm' },
+    },
+    clubhouse: 'klubblokalen vid Hedvallen',
   },
 ]
 
@@ -733,6 +807,8 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     arenaCapacity: Math.round((t.reputation * 7 + 150) / 50) * 50,
     arenaName: t.arenaName,
     opponentManager: generateOpponentManager(rng.next),
+    board: t.board,
+    clubhouse: t.clubhouse,
   }))
 
   const allPlayers: Player[] = []
