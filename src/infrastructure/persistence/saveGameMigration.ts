@@ -1,6 +1,7 @@
 import type { SaveGame } from '../../domain/entities/SaveGame'
 import { PendingScreen } from '../../domain/enums'
 import { generateAssistantCoach } from '../../domain/services/assistantCoachService'
+import { CLUB_TEMPLATES } from '../../domain/services/worldGenerator'
 
 export const CURRENT_SAVE_VERSION = '0.2.0'
 
@@ -196,6 +197,27 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     const completed = (fixtures ?? []).filter(f => f.status === 'completed')
     const matchdays = completed.map(f => typeof f.matchday === 'number' ? f.matchday : 0)
     data.currentMatchday = matchdays.length > 0 ? Math.max(...matchdays) : 1
+  }
+
+  // ── SPEC_INLEDNING_FAS_2 — migrate old BoardMeeting/PreSeason pendingScreen ─
+  // BoardMeetingScreen och PreSeasonScreen är borttagna. Om en save har
+  // pendingScreen = 'board_meeting' eller 'pre_season', rensa det.
+  if (data.pendingScreen === PendingScreen.BoardMeeting || data.pendingScreen === PendingScreen.PreSeason) {
+    data.pendingScreen = null
+  }
+
+  // ── SPEC_INLEDNING_FAS_2 — board + clubhouse på varje klubb ─────────────
+  if (Array.isArray(data.clubs)) {
+    data.clubs = (data.clubs as Record<string, unknown>[]).map(c => {
+      if (c.board === undefined || c.clubhouse === undefined) {
+        const template = CLUB_TEMPLATES.find(t => t.id === c.id)
+        if (template) {
+          if (c.board === undefined) c.board = template.board
+          if (c.clubhouse === undefined) c.clubhouse = template.clubhouse
+        }
+      }
+      return c
+    })
   }
 
   // ── version stamp ────────────────────────────────────────────────────────

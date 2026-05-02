@@ -1,6 +1,19 @@
 import type { ClubExpectation, ClubStyle, TacticMentality, TacticTempo, TacticPress, TacticPassingRisk, TacticWidth, TacticAttackingFocus, CornerStrategy, PenaltyKillStyle } from '../enums'
 import type { FormationType } from './Formation'
 
+export interface BoardMember {
+  firstName: string
+  lastName: string
+  age: number          // ålder vid spelstart (säsong 1)
+  gender: 'm' | 'f'    // för pronomen i beats
+}
+
+export interface ClubBoard {
+  chairman: BoardMember   // ordförande
+  treasurer: BoardMember  // kassör
+  member: BoardMember     // ledamot
+}
+
 export interface Tactic {
   mentality: TacticMentality
   tempo: TacticTempo
@@ -45,4 +58,6 @@ export interface Club {
     persona: 'confident' | 'defensive' | 'cryptic' | 'professorial'
     yearsAtClub: number
   }
+  board?: ClubBoard
+  clubhouse?: string
 }

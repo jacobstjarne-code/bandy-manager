@@ -73,10 +73,8 @@ export function DashboardScreen() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
 
-  const SCREEN_ROUTES: Record<PendingScreen, string> = {
+  const SCREEN_ROUTES: Partial<Record<PendingScreen, string>> = {
     [PendingScreen.SeasonSummary]: '/game/season-summary',
-    [PendingScreen.BoardMeeting]: '/game/board-meeting',
-    [PendingScreen.PreSeason]: '/game/pre-season',
     [PendingScreen.HalfTimeSummary]: '/game/half-time-summary',
     [PendingScreen.PlayoffIntro]: '/game/playoff-intro',
     [PendingScreen.QFSummary]: '/game/qf-summary',

@@ -2,7 +2,7 @@ import type { SaveGame, Patron, LocalPolitician, BoardMember, CommunityActivitie
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { League } from '../../domain/entities/League'
 import type { Player } from '../../domain/entities/Player'
-import { FixtureStatus, PendingScreen, TrainingType, TrainingIntensity, PlayerPosition, ClubStyle } from '../../domain/enums'
+import { FixtureStatus, TrainingType, TrainingIntensity, PlayerPosition, ClubStyle } from '../../domain/enums'
 import { generateWorld, CLUB_TEMPLATES } from '../../domain/services/worldGenerator'
 import { generateYouthTeam } from '../../domain/services/academyService'
 import { generateSchedule, buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
@@ -319,7 +319,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     playoffBracket: null,
     cupBracket,
     seasonSummaries: [],
-    pendingScreen: PendingScreen.BoardMeeting,
+    pendingScreen: null,
     coachMarksSeen: false,
     seasonStartFinances: managedClub.finances,
     financeLog: [],
