@@ -155,9 +155,9 @@ describe('summarizeSignature', () => {
     expect(summarizeSignature(sig)).toContain('Drömrundan 2031')
   })
 
-  it('returns calm season text for calm_season', () => {
+  it('returns null for calm_season — no rubric added to SeasonSummary', () => {
     const sig: SeasonSignature = { id: 'calm_season', modifiers: {}, startedSeason: 2032, observedFacts: [] }
-    expect(summarizeSignature(sig)).toContain('lugn säsong')
+    expect(summarizeSignature(sig)).toBeNull()
   })
 
   it('uses observedFacts[0] in summary when available', () => {

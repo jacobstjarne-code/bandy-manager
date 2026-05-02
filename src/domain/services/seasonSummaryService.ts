@@ -597,7 +597,7 @@ export function generateSeasonSummary(game: SaveGame, communityStandingEnd?: num
     communityStandingEnd: communityStandingEnd ?? game.communityStanding ?? 50,
     communityHighlights: [],
     signatureRubric: game.currentSeasonSignature
-      ? summarizeSignature(game.currentSeasonSignature)
+      ? (summarizeSignature(game.currentSeasonSignature) ?? undefined)
       : undefined,
   }
 }
