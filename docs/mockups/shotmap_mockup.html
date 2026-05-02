@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Shotmap — bandygeometri-mock</title>
+<style>
+  :root {
+    --bg: #EDE8DF;
+    --bg-surface: #FAF8F4;
+    --border: #DDD7CC;
+    --text-muted: #8A857A;
+    --accent: #C47A3A;
+    --success: #5A9A4A;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body: system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #2a2520; font-family: var(--font-body); padding: 24px; }
+  .header { color: #ddd; margin: 0 auto 24px; max-width: 420px; }
+  .header h1 { font-family: var(--font-display); font-size: 20px; margin-bottom: 8px; }
+  .header p { font-size: 13px; opacity: 0.7; line-height: 1.6; }
+  .phone { background: var(--bg); border-radius: 18px; padding: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); max-width: 380px; margin: 0 auto; }
+  .card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+  .section-label { font-size: 8px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+  svg { width: 100%; max-width: 320px; display: block; margin: 0 auto; }
+  .legend { margin-top: 8px; }
+  .legend-row { display: flex; align-items: center; gap: 7px; justify-content: center; margin-bottom: 3px; }
+  .legend-row .team { font-size: 9px; font-weight: 700; color: var(--text-muted); min-width: 56px; text-align: right; letter-spacing: 0.3px; }
+  .legend-item { display: flex; align-items: center; gap: 3px; }
+  .legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .legend-text { font-size: 10px; color: var(--text-muted); }
+  .notes { color: #aaa; font-size: 12px; margin: 24px auto 0; max-width: 420px; padding-top: 16px; border-top: 1px solid #444; line-height: 1.7; }
+  .notes strong { color: #fff; }
+  .notes ul { padding-left: 20px; margin: 8px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Shotmap — bandygeometri-mock</h1>
+  <p>Söderfors 6 – 5 Heros (samma data som playtest 2026-05-02). Halvcirkel-geometri enligt bandyregler, riktningspilar i mittstrecket.</p>
+</div>
+
+<div class="phone">
+  <div class="card">
+    <p class="section-label">Skottbild</p>
+
+    <svg viewBox="0 0 280 230" xmlns="http://www.w3.org/2000/svg">
+      <!-- TOPZON: vi anfaller motståndarens mål (mål vid y=4) -->
+      <rect x="0" y="0" width="280" height="100" fill="#fff" stroke="rgba(0,0,0,0.1)" stroke-width="0.5" rx="3"/>
+
+      <!-- Net + crossbar + posts -->
+      <rect x="121" y="0" width="38" height="4" fill="rgba(0,0,0,0.05)"/>
+      <line x1="120" y1="4" x2="160" y2="4" stroke="rgba(0,0,0,0.65)" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="120" y1="0" x2="120" y2="4" stroke="rgba(0,0,0,0.55)" stroke-width="1.5"/>
+      <line x1="160" y1="0" x2="160" y2="4" stroke="rgba(0,0,0,0.55)" stroke-width="1.5"/>
+
+      <!-- Målgård: halvcirkel 5m radie ≈ 22px -->
+      <path d="M 118 4 A 22 22 0 0 1 162 4" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1"/>
+
+      <!-- Straffområde: halvcirkel 17m radie ≈ 75px -->
+      <path d="M 65 4 A 75 75 0 0 1 215 4" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="1"/>
+
+      <!-- Straffpunkt: 12m från mål ≈ 53px ner i zonen -->
+      <circle cx="140" cy="57" r="1.5" fill="rgba(0,0,0,0.3)"/>
+
+      <!-- 6 mål (Söderfors gröna) -->
+      <circle cx="135" cy="23" r="6" fill="rgba(90,154,74,0.85)" stroke="rgba(90,154,74,1)" stroke-width="1"/>
+      <text x="148" y="25" font-size="7" fill="rgba(0,0,0,0.55)">Lundqvist</text>
+      <circle cx="148" cy="30" r="6" fill="rgba(90,154,74,0.85)" stroke="rgba(90,154,74,1)" stroke-width="1"/>
+      <text x="161" y="32" font-size="7" fill="rgba(0,0,0,0.55)">Ros</text>
+      <circle cx="125" cy="46" r="6" fill="rgba(90,154,74,0.85)" stroke="rgba(90,154,74,1)" stroke-width="1"/>
+      <text x="105" y="48" font-size="7" fill="rgba(0,0,0,0.55)">Stål</text>
+      <circle cx="135" cy="53" r="6" fill="rgba(90,154,74,0.85)" stroke="rgba(90,154,74,1)" stroke-width="1"/>
+      <text x="118" y="64" font-size="7" fill="rgba(0,0,0,0.55)">Almqvist</text>
+      <circle cx="148" cy="50" r="6" fill="rgba(90,154,74,0.85)" stroke="rgba(90,154,74,1)" stroke-width="1"/>
+      <text x="161" y="52" font-size="7" fill="rgba(0,0,0,0.55)">Stål</text>
+      <circle cx="118" cy="36" r="6" fill="rgba(90,154,74,0.85)" stroke="rgba(90,154,74,1)" stroke-width="1"/>
+      <text x="80" y="38" font-size="7" fill="rgba(0,0,0,0.55)">Almqvist</text>
+
+      <!-- 2 räddade -->
+      <circle cx="105" cy="26" r="3" fill="rgba(196,122,58,0.7)" stroke="rgba(196,122,58,1)" stroke-width="1"/>
+      <circle cx="170" cy="43" r="3" fill="rgba(196,122,58,0.7)" stroke="rgba(196,122,58,1)" stroke-width="1"/>
+
+      <!-- SEPARATOR med riktningspilar -->
+      <rect x="0" y="100" width="280" height="30" fill="rgba(0,0,0,0.07)"/>
+      <text x="14" y="119" font-size="8" fill="rgba(0,0,0,0.65)" font-weight="700" letter-spacing="0.8">↑ VI ANFALLER</text>
+      <text x="266" y="119" font-size="8" fill="rgba(0,0,0,0.65)" text-anchor="end" font-weight="700" letter-spacing="0.8">DE ANFALLER ↓</text>
+
+      <!-- BOTTENZON: motståndaren anfaller vårt mål (mål vid y=226) -->
+      <rect x="0" y="130" width="280" height="100" fill="#fff" stroke="rgba(0,0,0,0.1)" stroke-width="0.5" rx="3"/>
+
+      <!-- Net + crossbar + posts -->
+      <rect x="121" y="226" width="38" height="4" fill="rgba(0,0,0,0.05)"/>
+      <line x1="120" y1="226" x2="160" y2="226" stroke="rgba(0,0,0,0.65)" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="120" y1="226" x2="120" y2="230" stroke="rgba(0,0,0,0.55)" stroke-width="1.5"/>
+      <line x1="160" y1="226" x2="160" y2="230" stroke="rgba(0,0,0,0.55)" stroke-width="1.5"/>
+
+      <!-- Målgård halvcirkel -->
+      <path d="M 118 226 A 22 22 0 0 0 162 226" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="1"/>
+
+      <!-- Straffområde halvcirkel -->
+      <path d="M 65 226 A 75 75 0 0 0 215 226" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="1"/>
+
+      <!-- Straffpunkt -->
+      <circle cx="140" cy="173" r="1.5" fill="rgba(0,0,0,0.3)"/>
+
+      <!-- 5 mål (Heros röda) -->
+      <circle cx="135" cy="207" r="5" fill="rgba(176,80,64,0.6)" stroke="rgba(176,80,64,0.9)" stroke-width="1" opacity="0.85"/>
+      <circle cx="150" cy="200" r="5" fill="rgba(176,80,64,0.6)" stroke="rgba(176,80,64,0.9)" stroke-width="1" opacity="0.85"/>
+      <circle cx="125" cy="192" r="5" fill="rgba(176,80,64,0.6)" stroke="rgba(176,80,64,0.9)" stroke-width="1" opacity="0.85"/>
+      <circle cx="142" cy="187" r="5" fill="rgba(176,80,64,0.6)" stroke="rgba(176,80,64,0.9)" stroke-width="1" opacity="0.85"/>
+      <circle cx="118" cy="180" r="5" fill="rgba(176,80,64,0.6)" stroke="rgba(176,80,64,0.9)" stroke-width="1" opacity="0.85"/>
+
+      <!-- 1 räddad -->
+      <circle cx="160" cy="184" r="2.5" fill="rgba(196,122,58,0.4)" stroke="rgba(0,0,0,0.25)" stroke-width="1" opacity="0.75"/>
+
+      <!-- 4 miss (utspridda) -->
+      <circle cx="80" cy="167" r="2" fill="rgba(0,0,0,0.1)" stroke="rgba(0,0,0,0.25)" stroke-width="1"/>
+      <circle cx="220" cy="172" r="2" fill="rgba(0,0,0,0.1)" stroke="rgba(0,0,0,0.25)" stroke-width="1"/>
+      <circle cx="195" cy="157" r="2" fill="rgba(0,0,0,0.1)" stroke="rgba(0,0,0,0.25)" stroke-width="1"/>
+      <circle cx="60" cy="182" r="2" fill="rgba(0,0,0,0.1)" stroke="rgba(0,0,0,0.25)" stroke-width="1"/>
+    </svg>
+
+    <div class="legend">
+      <div class="legend-row">
+        <span class="team">SÖDERFORS</span>
+        <div class="legend-item"><div class="legend-dot" style="background: var(--success)"></div><span class="legend-text">6 mål</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background: var(--accent)"></div><span class="legend-text">2 räddade</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background: rgba(0,0,0,0.28)"></div><span class="legend-text">0 miss</span></div>
+      </div>
+      <div class="legend-row">
+        <span class="team">HEROS</span>
+        <div class="legend-item"><div class="legend-dot" style="background: rgba(176,80,64,0.8)"></div><span class="legend-text">5 mål</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background: var(--accent)"></div><span class="legend-text">1 räddad</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background: rgba(0,0,0,0.28)"></div><span class="legend-text">4 miss</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="notes">
+  <strong>Geometri:</strong>
+  <ul>
+    <li>viewBox 280×230 (var 280×210 — utökat 20px för att rymma geometrin).</li>
+    <li>Mål 38px brett (oförändrat).</li>
+    <li>Målgård halvcirkel, radie 22px (5m).</li>
+    <li>Straffområde halvcirkel, radie 75px (17m). Klipps av zonens kanter.</li>
+    <li>Straffpunkt 53px från mållinjen (12m).</li>
+    <li>Inga rektangulära boxar.</li>
+  </ul>
+  <strong>Etiketter i mittstrecket:</strong> "↑ VI ANFALLER" till vänster, "DE ANFALLER ↓" till höger.
+</div>
+
+</body>
+</html>
