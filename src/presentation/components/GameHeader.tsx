@@ -161,7 +161,7 @@ export function GameHeader() {
           onClick={() => setShowHelp(true)}
           style={{
             width: 22, height: 22, borderRadius: '50%',
-            border: '1.5px solid var(--border)',
+            border: 'none',
             background: 'transparent', color: 'var(--text-muted)',
             fontSize: 11, fontWeight: 700, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
