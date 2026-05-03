@@ -39,6 +39,9 @@ export type GameEventType =
   | 'refereeMeeting'
   | 'riskySponsorOffer'
   | 'mecenatWithdrawal'
+  | 'mediaReaction'
+  | 'fanLetter'
+  | 'opponentQuote'
 
 export interface EventChoice {
   id: string
@@ -138,6 +141,9 @@ export function getEventPriority(type: GameEventType): EventPriority {
       return 'normal'
     case 'bandyLetter':
     case 'schoolAssignment':
+    case 'mediaReaction':
+    case 'fanLetter':
+    case 'opponentQuote':
       return 'low'
     default:
       return 'low'
