@@ -1,7 +1,37 @@
 # BANDY MANAGER — KVAR
 
-**Datum:** 2026-04-30
+**Datum:** 2026-05-02
 **Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DECISIONS.md/DESIGN_SYSTEM.md är lästa.
+
+---
+
+## AKTUELLT LÄGE (2026-05-02)
+
+**SPEC_INLEDNING_FAS_2 — Styrelsemötet som dialog-scen:** ✅ Levererad (merge `053c526`).
+- BoardMember/ClubBoard-interfaces på Club. Alla 12 CLUB_TEMPLATES patchade (36 namn, gender, clubhouse). Migration för befintliga saves. BoardMeetingScene med 4 beats. BoardMeetingScreen.tsx + PreSeasonScreen.tsx raderade. 15 tester.
+- ⚠️ Awaiting browser-playtest: beat-progression, mörk bakgrund, autoAdvance-timing.
+
+**SPEC_SHOTMAP_OMARBETNING:** ✅ Levererad.
+- Halvcirkel-geometri (målgård 22px, straffområde 75px) ersätter rektangulära boxar.
+- "↑ VI ANFALLER" / "DE ANFALLER ↓" i separator-strecket.
+- Label-klamring fixad. viewBox 210→230.
+- ⚠️ Awaiting browser-playtest (pixel-jämförelse mot mock obligatorisk).
+
+**SPEC_GRANSKA_OMARBETNING:** ✅ Levererad.
+- generateInsandare + generatePostMatchOpponentQuote migrerade till pendingEvents via postMatchEventService.ts. generateSilentMatchReport orört.
+- granskaEventClassifier.ts: classifyEventNature, CRITICAL/PLAYER/REACTION_TYPES.
+- ReaktionerKort (auto-resolved vid render), max 3 kritiska i Översikt, "KRING SPELARNA"-sektion i Spelare-flik.
+- CTA blockeras bara av kritiska events (+ presskonferens + domarmöte).
+- Kvarstående: media-rubriken läses fortfarande från inbox (inte pendingEvents) — behöver C-runda.
+- ⚠️ Awaiting browser-playtest (alla 5 flikar, 1 liga + 1 cup).
+
+**SPEC_GRANSKA_SPLIT:** ✅ Levererad. GranskaScreen.tsx (1800+ rader) splittad i 7 filer under `src/presentation/screens/granska/`.
+
+**DESIGN_SYSTEM § 4:** ✅ Uppdaterad av Opus — gamla DashboardScreen-beskrivningen ersatt med Portal-arkitekturen. Bag-of-cards-principen, seasonal tone, alla 9 secondary-cards.
+
+**EventCardInline-texter:** ⏸ Opus ska skriva texter för 6 vanligaste atmosfäriska event-typer (communityEvent, supporterEvent, starPerformance, playerPraise, bandyLetter, captainSpeech). Placeholder-texter nu.
+
+**SPEC_BESLUTSEKONOMI Steg 4 (fas-scenes) + Steg 5 (kritiska scenes):** ⏸ Väntar på playtest av Steg 3.
 
 ---
 
