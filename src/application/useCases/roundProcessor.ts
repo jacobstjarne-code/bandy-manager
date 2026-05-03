@@ -59,6 +59,7 @@ import {
   cupFinalInboxPlaying,
   type SpecialDateContext,
 } from '../../domain/data/specialDateStrings'
+import { generatePostMatchEvents } from '../../domain/services/postMatchEventService'
 
 export type { AdvanceResult }
 
@@ -787,6 +788,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         reputation: Math.max(0, Math.min(100, (academyUpdatedClubs[managedIdx].reputation ?? 50) + mediaResult.reputationDelta)),
       }
     }
+  }
+
+  // ── Post-match events: insändare, opponent quote (atmosfäriska, auto-resolved i Granska) ─
+  if (justCompletedManagedFixture && !isSecondPassForManagedMatch) {
+    const postMatchEvents = generatePostMatchEvents(game, justCompletedManagedFixture)
+    allNewEvents.push(...postMatchEvents)
   }
 
   // Trim accumulated data to prevent localStorage bloat

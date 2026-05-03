@@ -17,6 +17,14 @@ export function resolveEvent(
     ?? (game.pendingRefereeMeeting?.id === eventId ? game.pendingRefereeMeeting : undefined)
   if (!event) return game
 
+  // Events with no choices (e.g. atmospheric auto-resolved events) — just remove from queue
+  if (event.choices.length === 0) {
+    return {
+      ...game,
+      pendingEvents: (game.pendingEvents ?? []).filter(e => e.id !== eventId),
+    }
+  }
+
   const choice = event.choices.find(c => c.id === choiceId)
   if (!choice) return game
 
