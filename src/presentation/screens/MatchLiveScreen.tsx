@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { simulateMatchStepByStep, simulateSecondHalf, simulateFromMidMatch, type MatchStep } from '../../domain/services/matchSimulator'
+import { MATCH_GOAL_DIFFERENCE_CAP, MATCH_TOTAL_GOAL_CAP } from '../../domain/services/matchCore'
 import type { MatchPhaseContext } from '../../domain/services/matchUtils'
 import type { Tactic } from '../../domain/entities/Club'
 import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
@@ -496,6 +497,13 @@ export function MatchLiveScreen() {
     return newRemainder
   }
 
+  // Skyddar interaktiva mål mot MATCH_GOAL_DIFFERENCE_CAP + MATCH_TOTAL_GOAL_CAP (P1.A)
+  function interactiveCanScore(homeScore: number, awayScore: number, managedIsHome: boolean): boolean {
+    if (homeScore + awayScore >= MATCH_TOTAL_GOAL_CAP) return false
+    const newDiff = managedIsHome ? homeScore + 1 - awayScore : awayScore + 1 - homeScore
+    return Math.abs(newDiff) <= MATCH_GOAL_DIFFERENCE_CAP
+  }
+
   function handleCornerChoice(zone: CornerZone, delivery: CornerDelivery, inlineData?: import('../../domain/services/cornerInteractionService').CornerInteractionData) {
     const cornerData = inlineData ?? activeCorner
     if (!cornerData || !game || !fixture) return
@@ -541,11 +549,12 @@ export function MatchLiveScreen() {
               description: outcome.description, isCorner: true }
           : { type: MatchEventType.Save, minute, clubId: managedClubId,
               description: outcome.description }
-        const newHomeScore = outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
-        const newAwayScore = outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
+        const capAllows = outcome.type !== 'goal' || interactiveCanScore(s.homeScore, s.awayScore, managedIsHome)
+        const newHomeScore = capAllows && outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
+        const newAwayScore = capAllows && outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
         return { ...s, homeScore: newHomeScore, awayScore: newAwayScore,
           events: [...s.events, event as MatchStep['events'][0]],
-          commentary: outcome.description, commentaryType: (outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
+          commentary: outcome.description, commentaryType: (capAllows && outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
       })
       if (outcome.type !== 'goal') return updatedCurrent
       const cur = updatedCurrent[currentStep]
@@ -601,11 +610,12 @@ export function MatchLiveScreen() {
               description: `Straffräddning! ${keeperLast} läser skottet.` }
           : { type: MatchEventType.Save, minute, clubId: managedClubId,
               description: `Straffen utanför! ${shooterLast} missade målet.` }
-        const newHomeScore = outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
-        const newAwayScore = outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
+        const capAllows = outcome.type !== 'goal' || interactiveCanScore(s.homeScore, s.awayScore, managedIsHome)
+        const newHomeScore = capAllows && outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
+        const newAwayScore = capAllows && outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
         return { ...s, homeScore: newHomeScore, awayScore: newAwayScore,
           events: [...s.events, event as MatchStep['events'][0]],
-          commentary: event.description, commentaryType: (outcome.type === 'goal' ? 'goal' : 'critical') as MatchStep['commentaryType'] }
+          commentary: event.description, commentaryType: (capAllows && outcome.type === 'goal' ? 'goal' : 'critical') as MatchStep['commentaryType'] }
       })
       if (outcome.type !== 'goal') return updatedCurrent
       const cur = updatedCurrent[currentStep]
@@ -664,11 +674,12 @@ export function MatchLiveScreen() {
               description: outcome.description }
           : { type: MatchEventType.Save, minute, clubId: managedClubId,
               description: outcome.description }
-        const newHomeScore = outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
-        const newAwayScore = outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
+        const capAllows = outcome.type !== 'goal' || interactiveCanScore(s.homeScore, s.awayScore, managedIsHome)
+        const newHomeScore = capAllows && outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
+        const newAwayScore = capAllows && outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
         return { ...s, homeScore: newHomeScore, awayScore: newAwayScore,
           events: [...s.events, event as MatchStep['events'][0]],
-          commentary: outcome.description, commentaryType: (outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
+          commentary: outcome.description, commentaryType: (capAllows && outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
       })
       if (outcome.type !== 'goal') return updatedCurrent
       const cur = updatedCurrent[currentStep]
@@ -721,11 +732,12 @@ export function MatchLiveScreen() {
               description: outcome.description }
           : { type: MatchEventType.Save, minute, clubId: managedClubId,
               description: outcome.description }
-        const newHomeScore = outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
-        const newAwayScore = outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
+        const capAllows = outcome.type !== 'goal' || interactiveCanScore(s.homeScore, s.awayScore, managedIsHome)
+        const newHomeScore = capAllows && outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
+        const newAwayScore = capAllows && outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
         return { ...s, homeScore: newHomeScore, awayScore: newAwayScore,
           events: [...s.events, event as MatchStep['events'][0]],
-          commentary: outcome.description, commentaryType: (outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
+          commentary: outcome.description, commentaryType: (capAllows && outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
       })
       if (outcome.type !== 'goal') return updatedCurrent
       const cur = updatedCurrent[currentStep]

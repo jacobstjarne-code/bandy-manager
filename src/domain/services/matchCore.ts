@@ -18,8 +18,8 @@ const GOAL_RATE_MOD = 0.936
 // matcher med målskillnad > 6, vilket bedöms försämra spelupplevelse i
 // Bandy Manager. Verkliga Elitseriematcher har >6 i marginal i 11,9 %
 // av fallen — detta är ett medvetet avkall. Bör testas via playtest.
-const MATCH_TOTAL_GOAL_CAP    = 17  // empirisk 99:e percentil Elitserien (finding:049)
-const MATCH_GOAL_DIFFERENCE_CAP = 6  // designval, se kommentar ovan
+export const MATCH_TOTAL_GOAL_CAP    = 17  // empirisk 99:e percentil Elitserien (finding:049)
+export const MATCH_GOAL_DIFFERENCE_CAP = 6  // designval, se kommentar ovan
 
 // Bumpa vid varje förändring som påverkar simuleringsutfall.
 // Schema-kompatibla ändringar (utan utfallspåverkan) bumpar patch.
