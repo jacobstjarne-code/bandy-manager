@@ -28,7 +28,7 @@ import { InboxScreen } from '../screens/InboxScreen'
 
 import { MatchResultScreen } from '../screens/MatchResultScreen'
 import { GameOverScreen } from '../screens/GameOverScreen'
-import { GranskaScreen } from '../screens/GranskaScreen'
+import { GranskaScreen } from '../screens/granska/GranskaScreen'
 import { TaktikScreen } from '../screens/TaktikScreen'
 
 import { HistoryScreen } from '../screens/HistoryScreen'
