@@ -565,6 +565,7 @@ function* simulateMatchCore(
     curAwayScore: number,
   ): {
     goalScored: boolean
+    onTarget: boolean
     scorerPlayerId: string | undefined
     penaltyInteractionData: PenaltyInteractionData | undefined
     penaltyCauseText: string
@@ -575,7 +576,7 @@ function* simulateMatchCore(
     const shooter = getGoalScorer(attackingStarters)
     const gk      = getGK(defendingStarters)
     if (!shooter || !gk) {
-      return { goalScored: false, scorerPlayerId: undefined, penaltyInteractionData: undefined, penaltyCauseText: '', events }
+      return { goalScored: false, onTarget: false, scorerPlayerId: undefined, penaltyInteractionData: undefined, penaltyCauseText: '', events }
     }
     const penEvent: MatchEvent = { minute, type: MatchEventType.Penalty, clubId: attackingClubId, description: 'Straff' }
     events.push(penEvent)
@@ -585,6 +586,7 @@ function* simulateMatchCore(
       const causeText = PENALTY_CAUSE_COMMENTARY[causeIdx](`${shooter.firstName} ${shooter.lastName}`)
       return {
         goalScored: false,
+        onTarget: false,
         scorerPlayerId: undefined,
         penaltyInteractionData: {
           minute,
@@ -621,9 +623,10 @@ function* simulateMatchCore(
         isPenaltyGoal: true,
       }
       events.push(ge)
-      return { goalScored: true, scorerPlayerId: shooter.id, penaltyInteractionData: undefined, penaltyCauseText: '', events }
+      return { goalScored: true, onTarget: true, scorerPlayerId: shooter.id, penaltyInteractionData: undefined, penaltyCauseText: '', events }
     }
-    return { goalScored: false, scorerPlayerId: undefined, penaltyInteractionData: undefined, penaltyCauseText: '', events }
+    // onTarget true for save (penalty on target unless miss)
+    return { goalScored: false, onTarget: outcome.type === 'save', scorerPlayerId: undefined, penaltyInteractionData: undefined, penaltyCauseText: '', events }
   }
 
   // ── Main loop ───────────────────────────────────────────────────────────────
@@ -805,6 +808,10 @@ function* simulateMatchCore(
             scorerPlayerId = result.scorerPlayerId
             goalScored = true
           }
+          // Straff räknas som skott och skott på mål vid mål eller räddning (P2)
+          if (result.onTarget) {
+            if (isHomeAttacking) { shotsHome++; onTargetHome++ } else { shotsAway++; onTargetAway++ }
+          }
           if (result.penaltyInteractionData) penaltyInteractionData = result.penaltyInteractionData
           if (result.penaltyCauseText) penaltyCauseText = result.penaltyCauseText
           penaltyFiredThisStep = true
@@ -973,6 +980,8 @@ function* simulateMatchCore(
             goalScored        = true
             cornerGoalScored  = true
             cornerOccurred    = true
+            // Hörnmål räknas som skott och skott på mål (P2)
+            if (isHomeAttacking) { shotsHome++; onTargetHome++ } else { shotsAway++; onTargetAway++ }
             const ce: MatchEvent = { minute, type: MatchEventType.Corner, clubId: attackingClubId, description: 'Hörnmål' }
             stepEvents.push(ce); allEvents.push(ce)
             trackGoal(scorer.id)
