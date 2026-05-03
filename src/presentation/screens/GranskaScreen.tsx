@@ -11,11 +11,15 @@ import type { EventChoice } from '../../domain/entities/GameEvent'
 import type { Fixture } from '../../domain/entities/Fixture'
 import type { Player } from '../../domain/entities/Player'
 import { SectionLabel } from '../components/SectionLabel'
-import { generateInsandare } from '../../domain/services/insandareService'
-import { generatePostMatchOpponentQuote } from '../../domain/services/opponentManagerService'
 import { generateSilentMatchReport } from '../../domain/services/silentMatchReportService'
 import { getPortraitSvg } from '../../domain/services/portraitService'
 import { generateCoachQuote } from '../../domain/services/assistantCoachService'
+import {
+  getCriticalEventsForGranska,
+  getPlayerEventsForGranska,
+  getReactionEventsForGranska,
+} from '../../domain/services/granskaEventClassifier'
+import type { GameEvent } from '../../domain/entities/GameEvent'
 
 function choiceStyle(_choiceId: string): React.CSSProperties {
   return { background: 'var(--bg-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)' }
@@ -145,6 +149,19 @@ export function GranskaScreen() {
     if (roundSummary.youthMatchResult?.includes('vann')) setTimeout(() => playSound('youthGoal'), 600)
   }, [roundSummary, soundsPlayed])
 
+  // Auto-resolve reaction events (fanLetter, opponentQuote) — no player decision needed
+  const reactionEventIds = (game?.pendingEvents ?? [])
+    .filter(e => !e.resolved && (e.type === 'fanLetter' || e.type === 'opponentQuote' || e.type === 'mediaReaction'))
+    .map(e => e.id)
+  const reactionEventIdsKey = reactionEventIds.join(',')
+  useEffect(() => {
+    if (reactionEventIds.length === 0) return
+    for (const id of reactionEventIds) {
+      resolveEvent(id, 'auto')
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reactionEventIdsKey])
+
   if (!game) return null
   const g = game  // narrowed SaveGame — used by nested render functions
 
@@ -224,6 +241,38 @@ export function GranskaScreen() {
     transform: visible ? 'translateY(0)' : 'translateY(12px)',
     transition: `all 0.35s ease ${80 + i * 60}ms`,
   })
+
+  // ── Event classification ───────────────────────────────────────────────────
+  const criticalEvents = getCriticalEventsForGranska(pendingEvents).slice(0, 3)
+  const playerEvents = getPlayerEventsForGranska(pendingEvents)
+  const reactionEvents = getReactionEventsForGranska(pendingEvents)
+
+  // ── Reaction data: labels from event type + body as quote ─────────────────
+  type ReactionRow = { label: string; quote: string; attribution?: string; eventId: string }
+
+  function buildReactionRows(): ReactionRow[] {
+    const game = g
+    const rows: ReactionRow[] = []
+    // Media from inbox (journalist headline) — not a pendingEvent, collected separately
+    if (fixture) {
+      const headlineItem = game.inbox
+        .filter(i => i.type === InboxItemType.MediaEvent)
+        .sort((a, b) => b.date.localeCompare(a.date))[0]
+      if (headlineItem) {
+        const journalist = game.journalist
+        const attribution = journalist ? `${journalist.name}, ${journalist.outlet}` : undefined
+        rows.push({ label: '🎙 LOKALTIDNINGEN', quote: headlineItem.body, attribution, eventId: `media_inbox_${headlineItem.id}` })
+      }
+    }
+    for (const evt of reactionEvents.slice(0, 3)) {
+      if (evt.type === 'fanLetter') {
+        rows.push({ label: '📬 INSÄNDARE', quote: evt.body, eventId: evt.id })
+      } else if (evt.type === 'opponentQuote') {
+        rows.push({ label: evt.title, quote: evt.body, eventId: evt.id })
+      }
+    }
+    return rows.slice(0, 4)
+  }
 
   // ── STEP: ÖVERSIKT ────────────────────────────────────────────────────────
   function renderOversikt() {
@@ -326,14 +375,55 @@ export function GranskaScreen() {
           </div>
         )}
 
-        {/* Events — tidskritiska, kräver val innan nästa omgång */}
-        {pendingEvents.map((event, ei) => {
+        {/* Reaktioner-kort (auto-resolved via useEffect) */}
+        {(() => {
+          const rows = buildReactionRows()
+          if (rows.length === 0) return null
+          return (
+            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(2) }}>
+              <SectionLabel style={{ marginBottom: 8 }}>📰 REAKTIONER</SectionLabel>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {rows.map((r, i) => (
+                  <div key={r.eventId} style={{
+                    paddingTop: i > 0 ? 8 : 0,
+                    borderTop: i > 0 ? '1px solid var(--border)' : 'none',
+                  }}>
+                    <p style={{
+                      fontSize: 9, fontWeight: 700, letterSpacing: '1.5px',
+                      color: 'var(--text-muted)', textTransform: 'uppercase',
+                      marginBottom: 4,
+                    }}>
+                      {r.label}
+                    </p>
+                    <p style={{
+                      fontSize: 12, fontStyle: 'italic',
+                      color: 'var(--text-secondary)', lineHeight: 1.5,
+                    }}>
+                      {r.quote}
+                    </p>
+                    {r.attribution && (
+                      <p style={{
+                        fontSize: 10, color: 'var(--text-muted)',
+                        marginTop: 2, textAlign: 'right',
+                      }}>
+                        — {r.attribution}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* Kritiska events — max 3, kräver val */}
+        {criticalEvents.map((event: GameEvent, ei: number) => {
           const resolved = resolvedEventIds.has(event.id)
           const chosenLabel = chosenLabels[event.id]
           const relatedPlayer = event.relatedPlayerId ? game.players.find(p => p.id === event.relatedPlayerId) : null
           const relatedClub = event.relatedClubId ? game.clubs.find(c => c.id === event.relatedClubId) : null
           return (
-            <div key={event.id} className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(2 + ei) }}>
+            <div key={event.id} className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(3 + ei) }}>
               <div style={{ padding: '10px 12px' }}>
                 <SectionLabel style={{ marginBottom: resolved ? 4 : 6 }}>{event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}</SectionLabel>
                 {resolved ? (
@@ -365,6 +455,13 @@ export function GranskaScreen() {
             </div>
           )
         })}
+
+        {/* Hänvisning till Spelare-flik om player-events finns */}
+        {playerEvents.length > 0 && (
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', padding: '8px 0' }}>
+            {playerEvents.length} händelse{playerEvents.length > 1 ? 'r' : ''} kring spelarna — se Spelare-fliken
+          </p>
+        )}
 
         {/* Presskonferens — tidskritisk, direkt efter events */}
         {(() => {
@@ -434,46 +531,6 @@ export function GranskaScreen() {
           )
         })()}
 
-        {/* Media */}
-        {(() => {
-          const headlineItem = game.inbox
-            .filter(i => i.type === InboxItemType.MediaEvent)
-            .sort((a, b) => b.date.localeCompare(a.date))[0]
-          if (!headlineItem) return null
-          const journalist = game.journalist
-          const personaLabel = journalist?.persona === 'critical' ? 'Kritisk'
-            : journalist?.persona === 'supportive' ? 'Stödjande'
-            : journalist?.persona === 'sensationalist' ? 'Sensationalistisk'
-            : journalist?.persona === 'analytical' ? 'Analytisk' : null
-          return (
-            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(5) }}>
-              <SectionLabel style={{ marginBottom: 6 }}>📰 MEDIA</SectionLabel>
-              {journalist && (
-                <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>
-                  {journalist.name} · {journalist.outlet}{personaLabel ? ` · ${personaLabel}` : ''}
-                </p>
-              )}
-              <p style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.4, fontStyle: 'italic' }}>
-                {headlineItem.body}
-              </p>
-            </div>
-          )
-        })()}
-
-        {/* Insändare */}
-        {(() => {
-          if (!fixture) return null
-          const insandare = generateInsandare(game, fixture)
-          if (!insandare) return null
-          return (
-            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
-              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: 6 }}>✉️ INSÄNDARE</p>
-              <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-display)', fontStyle: 'italic', lineHeight: 1.5 }}>"{insandare.text}"</p>
-              <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>— {insandare.signature}</p>
-            </div>
-          )
-        })()}
-
         {/* Nyckelmoment */}
         {keyMoments.length > 0 && (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(6) }}>
@@ -497,28 +554,6 @@ export function GranskaScreen() {
             </div>
           </div>
         )}
-
-        {/* Motståndartränare */}
-        {(() => {
-          const margin = myScore - theirScore
-          if (Math.abs(margin) < 3) return null
-          const opponentClub = isHome ? awayClub : homeClub
-          if (!opponentClub) return null
-          const theyWon = margin < 0
-          const opponentScandal = (game.scandalHistory ?? []).some(s =>
-            s.affectedClubId === opponentClub.id &&
-            s.season === game.currentSeason &&
-            s.type !== 'small_absurdity'
-          )
-          const quote = generatePostMatchOpponentQuote(opponentClub, theyWon, opponentScandal)
-          if (!quote) return null
-          return (
-            <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
-              <SectionLabel style={{ marginBottom: 6 }}>🎙 MOTSTÅNDET SÄGER</SectionLabel>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5 }}>{quote}</p>
-            </div>
-          )
-        })()}
       </>
     )
   }
@@ -615,6 +650,53 @@ export function GranskaScreen() {
                     dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
                   <span style={{ flex: 1, fontSize: 11, color: 'var(--text-secondary)' }}>{p.firstName[0]}. {p.lastName}</span>
                   <span style={{ fontSize: 12, fontFamily: 'var(--font-display)', color: 'var(--text-muted)' }}>{r > 0 ? r.toFixed(1) : '–'}</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* KRING SPELARNA — player events from pendingEvents */}
+        {playerEvents.length > 0 && (
+          <div className="card-sharp" style={{ margin: '0 0 6px', overflow: 'hidden' }}>
+            <div style={{ padding: '10px 12px 6px', borderBottom: '1px solid var(--border)' }}>
+              <SectionLabel>📰 KRING SPELARNA</SectionLabel>
+            </div>
+            {playerEvents.map((event: GameEvent, i: number) => {
+              const resolved = resolvedEventIds.has(event.id)
+              const chosenLabel = chosenLabels[event.id]
+              const relatedPlayer = event.relatedPlayerId ? game.players.find(p => p.id === event.relatedPlayerId) : null
+              return (
+                <div key={event.id} style={{
+                  padding: '10px 12px',
+                  borderBottom: i < playerEvents.length - 1 ? '1px solid var(--border)' : 'none',
+                }}>
+                  {resolved ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
+                      <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{chosenLabel}</span>
+                    </div>
+                  ) : (
+                    <>
+                      {relatedPlayer && (
+                        <span style={{ fontSize: 10, background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.3)', borderRadius: 20, padding: '2px 8px', color: 'var(--accent)', fontWeight: 600, display: 'inline-block', marginBottom: 5 }}>
+                          {relatedPlayer.firstName} {relatedPlayer.lastName}
+                        </span>
+                      )}
+                      <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4, lineHeight: 1.3 }}>{event.title}</p>
+                      <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: event.choices.length > 0 ? 8 : 0, whiteSpace: 'pre-line' }}>{event.body}</p>
+                      {event.choices.length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                          {event.choices.map((choice: EventChoice) => (
+                            <button key={choice.id} onClick={() => handleChoice(event.id, choice.id, choice.label)}
+                              style={{ position: 'relative', zIndex: 1, width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
+                              {choice.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               )
             })}
@@ -1194,7 +1276,12 @@ export function GranskaScreen() {
     )
   }
 
-  const unresolved = pendingEvents.filter(e => !resolvedEventIds.has(e.id)).length
+  // CTA blockeras bara av kritiska events — player/atmosfäriska påverkar inte
+  const criticalUnresolved = criticalEvents.filter(e => !resolvedEventIds.has(e.id)).length
+  // Also check pressConference and refereeMeeting
+  const pcUnresolved = game.pendingPressConference && !resolvedEventIds.has(game.pendingPressConference.id) ? 1 : 0
+  const rmUnresolved = game.pendingRefereeMeeting && !resolvedEventIds.has(game.pendingRefereeMeeting.id) ? 1 : 0
+  const ctaBlocked = criticalUnresolved + pcUnresolved + rmUnresolved
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
@@ -1256,13 +1343,18 @@ export function GranskaScreen() {
 
         {/* CTA */}
         <div style={{ padding: '0 20px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {unresolved > 0 && (
+          {ctaBlocked > 0 && (
             <p style={{ fontSize: 10, color: 'var(--warning)', textAlign: 'center', margin: 0 }}>
-              {unresolved} ohanterad{unresolved > 1 ? 'e' : ''} händelse{unresolved > 1 ? 'r' : ''} — du kan hantera dem i Översikt
+              {ctaBlocked} att hantera först
             </p>
           )}
-          <button onClick={handleContinue} className="btn btn-primary btn-cta">
-            KLAR — NÄSTA OMGÅNG →
+          <button
+            onClick={ctaBlocked > 0 ? undefined : handleContinue}
+            disabled={ctaBlocked > 0}
+            className="btn btn-primary btn-cta"
+            style={ctaBlocked > 0 ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+          >
+            {ctaBlocked > 0 ? `${ctaBlocked} att hantera först` : 'KLAR — NÄSTA OMGÅNG →'}
           </button>
         </div>
       </div>
