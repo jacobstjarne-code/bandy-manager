@@ -7,6 +7,7 @@ import type { TrainingFocus } from '../../domain/entities/Training'
 import type { MatchEvent, TeamSelection, MatchReport } from '../../domain/entities/Fixture'
 import { FixtureStatus, PlayoffStatus, InboxItemType, PlayerPosition } from '../../domain/enums'
 import { createNewGame } from '../../application/useCases/createNewGame'
+import { detectSceneTrigger } from '../../domain/services/sceneTriggerService'
 import { buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
 import { resolveEvent as resolveEventFn } from '../../domain/services/eventService'
 import { type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
@@ -135,7 +136,14 @@ export const useGameStore = create<GameState>()(
           const keys = Object.keys(localStorage).filter(k => k.startsWith('bandy_save_'))
           keys.forEach(k => localStorage.removeItem(k))
         } catch {}
-        const game = createNewGame({ managerName, clubId })
+        let game = createNewGame({ managerName, clubId })
+        // Trigga inledande scen (board_meeting) vid säsong 1 / matchday 0.
+        // advanceToNextEvent kör samma logik vid varje runda men vid newGame
+        // har den aldrig körts än — explicit trigger här.
+        const sceneId = detectSceneTrigger(game)
+        if (sceneId) {
+          game = { ...game, pendingScene: { sceneId, triggeredAt: game.currentDate } }
+        }
         set({ game, lastAdvanceResult: null })
       },
 

@@ -41,10 +41,11 @@ export function shouldTriggerSeasonSignature(game: SaveGame): boolean {
 }
 
 export function shouldTriggerSundayTraining(game: SaveGame): boolean {
-  if (game.currentSeason !== 1) return false
-  const matchday = game.currentMatchday ?? 0
-  if (matchday > 2) return false
+  // One-shot vid spelets början, efter board_meeting men före första matchen.
+  // shownScenes garanterar att den bara visas en gång totalt.
   if ((game.shownScenes ?? []).includes('sunday_training')) return false
+  const anyMatchPlayed = game.fixtures.some(f => f.status === 'completed')
+  if (anyMatchPlayed) return false
   return true
 }
 

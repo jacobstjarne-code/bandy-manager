@@ -85,9 +85,11 @@ ${chairman.firstName} nickar. Mötet är slut.`,
 }
 
 export function shouldTriggerBoardMeeting(game: SaveGame): boolean {
-  if (game.currentSeason !== 1) return false
-  const matchday = game.currentMatchday ?? 0
-  if (matchday > 0) return false
+  // Triggar vid spelets allra första render — inga matcher spelade än, ingen scen visad.
+  // currentSeason är ett kalenderår (2026, 2027...), inte ett säsongsnummer.
+  // Använd shownScenes som primär gate — det räcker för att garantera one-shot.
   if ((game.shownScenes ?? []).includes('board_meeting')) return false
+  const anyMatchPlayed = game.fixtures.some(f => f.status === 'completed')
+  if (anyMatchPlayed) return false
   return true
 }
