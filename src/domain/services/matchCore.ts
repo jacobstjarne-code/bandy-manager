@@ -452,7 +452,14 @@ function* simulateMatchCore(
       }
       return w
     })
-    return pickWeightedPlayer(rand, nonGK, weights)
+    // Per-player goal ceiling — variant C (hard cap 5, soft brake ×0.7 from 2nd goal)
+    const adjustedWeights = nonGK.map((p, i) => {
+      const goalsThisMatch = playerGoals[p.id] ?? 0
+      if (goalsThisMatch >= 5) return 0  // hard cap
+      if (goalsThisMatch >= 2) return weights[i] * Math.pow(0.7, goalsThisMatch - 1)
+      return weights[i]
+    })
+    return pickWeightedPlayer(rand, nonGK, adjustedWeights)
   }
 
   function getAssistProvider(starters: Player[], excludeId?: string): Player | undefined {
