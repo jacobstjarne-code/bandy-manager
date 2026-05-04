@@ -55,7 +55,7 @@
 
 **DESIGN_SYSTEM § 4:** ✅ Uppdaterad av Opus — gamla DashboardScreen-beskrivningen ersatt med Portal-arkitekturen. Bag-of-cards-principen, seasonal tone, alla 9 secondary-cards.
 
-**EventCardInline-texter:** ✅ Pooler skrivna 2026-05-03 (TEXT_REVIEW_eventcardinline_2026-05-03.md). Awaiting Code-integration för 3 typer (starPerformance, playerPraise, captainSpeech).
+**EventCardInline-texter:** ✅ Integrerad commit `a075d8e` — pooler aktiva för starPerformance, playerPraise, captainSpeech.
 
 **SPEC_BESLUTSEKONOMI Steg 4 (fas-scenes) + Steg 5 (kritiska scenes):** ⏸ Väntar på playtest av Steg 3.
 
