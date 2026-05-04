@@ -551,7 +551,7 @@ goalThreshold = clamp(
 
 ---
 
-## 11. Hook-kedja — pool definierad ≠ pool nåbar
+## 24. Hook-kedja — pool definierad ≠ pool nåbar
 
 **Mönster:** Sprint rapporteras klar med alla tester gröna, men en gren av logiken är dead code — pool definierad, hook skriven, ändå triggas grenen aldrig eftersom flaggan som styr den sätts ingenstans.
 
@@ -572,7 +572,7 @@ if (weather?.matchFormat === '3x30') return FINALDAG_COMMENTARY_3X30
 
 ---
 
-## 19. Pixel-jämförelse i isolation vs integrations-vy
+## 25. Pixel-jämförelse i isolation vs integrations-vy
 
 **Mönster:** Pixel-audit rapporterar "inga avvikelser" för en ny komponent, men komponenten ser fel ut i live-app — fel bakgrund, tokens som krockar med omgivningen, eller layout-gap som bara syns när hela skärmen renderas.
 
@@ -588,3 +588,41 @@ Konkret checklista:
 **Känn igen:** Audit-rapport visar korrekt komponent-rendering, men Jacob hittar tokenkrock i playtest. Signal: ny komponent wrappas runt en *äldre* komponent som byggdes för ett annat tema.
 
 **Historik:** Playtest 2026-04-28. `NextMatchPrimary` wrappade `NextMatchCard` (DashboardScreen-komponent, ljus tema). Pixel-audit av `NextMatchPrimary` och `SeasonSignatureSecondary` gjordes i isolation mot mock. `NextMatchCard`'s `card-sharp` + `var(--bg-surface)` renderade vit mot Portals `--bg-portal` mörka bakgrund. Fixat i commit `a41fff3` med CSS-var-override i wrapper.
+
+---
+
+## 26. Multiplikativa modifiers + cap-hål = explosionsrisk
+
+**Mönster:** En spelmagnitud (mål, hörnor, ställningsdiff) blir orimligt hög trots att en cap finns dokumenterad. Resultatet kan förklaras matematiskt men matchar inte någon verklighet — 17–1 i halvtid, 10 mål av en spelare på 30 simulerade steg.
+
+**Rotorsak — två mekanismer som triggar samma symptom:**
+
+1. **Multiplikativa modifiers staplas.** `profileMod × secondHalfMod × powerplayMod × trailingBoost` blir explosivt vid edge case (stort CA-gap + chaotic-profil + powerplay + underläge-boost). Var modifier för sig kalibrerad mot snitt; tillsammans bryter de mot det.
+2. **Cap-checks finns i vissa goal-paths men inte alla.** `MATCH_GOAL_DIFFERENCE_CAP = 6` testas i attack-path men inte i counter-attack-/penalty-/corner-paths. Capen är då kosmetisk — den begränsar bara när boll-i-spel följer den "normala" vägen.
+
+Båda är symptom av samma underliggande sak: magnitud-bygge utan **invariant-vakt på emit-tid**. Capen är logisk regel, inte mekaniskt skydd.
+
+**Fix:**
+1. Verifiera att samma cap-check anropas i ALLA paths som ökar magnituden — inte antas ärvt från attack-path. Lista samtliga `homeScore++` / `awayScore++` och bekräfta `canScore`-anrop ovanför varje.
+2. Sänk multiplikatorer individuellt vid edge-case-explosion (chaotic 1.55→1.35) snarare än att försöka klippa toppen i efterhand. Stora multiplikatorer + hård cap = onaturliga resultatkurvor.
+3. Lägg per-entitet-ceiling utöver total-cap: per-spelare-mål-cap är en separat invariant från total-diff-cap. Förstnämnda fixar "en spelare gör 10", den andra fixar "laget gör 17".
+4. Stress-test 200+ matcher med varierad lagstyrka och assertions: per match `goals ≤ onTarget`, `onTarget ≤ shots`, `goalDiff ≤ cap`, `playerGoals[anyId] ≤ perPlayerCap`. Krasch-vid-violation, inte tyst rapport.
+
+**Känn igen:** Spel-output som matematiskt går att förklara men "känns fel" — fysiskt omöjliga statistiksiffror, eller resultat som verklig bandy aldrig sett. Eller: en cap-konstant som existerar i koden men spelare-rapporterad violation som överstiger den.
+
+**Historik:** 2026-05-03 playtest. Skutskär 17–1 Rögle vid halvtid, Kronqvist 10 mål på en halvlek. Roten: `chaotic` (1.55) × `largeCaDiff` (`wOpen+15`) × `powerplay` (1.20) × trailing-boost (1.16–1.48) staplade till absurd nivå. `MATCH_GOAL_DIFFERENCE_CAP = 6` kontrollerades inte i alla goal-paths — cap-hålet plus stapling gav 17–1. Fixades genom (a) cap-check infogad i counter-/penalty-/corner-paths, (b) `chaotic` 1.55→1.35 + `wOpen+15`→`+10`, (c) per-spelare-cap variant C (hård cap 5 + soft brake ×0.7 från 2:a målet).
+
+---
+
+## 27. Portal-event dubbelrendering — trigger utan priority-filter
+
+**Mönster:** Portal visar samma event i två format — ett inline via `PortalEventSlot` och ett som primary-kort med "HÄNDELSE KRÄVER SVAR"-CTA. Spelaren ser dubbla knappar för samma beslut.
+
+**Rotorsak:** `hasCriticalEvent()` och `EventPrimary` filtrerade på `e.type !== 'pressConference'` utan att kolla `priority === 'critical'`. Alla olösta events (inkl. priority=`normal` och `low`) aktiverade `EventPrimary` som primary-kort. `PortalEventSlot` visade samma event inline (korrekt beteende för normal-events). Två mekanismer, inget filter mellan dem.
+
+**Fix:** Lägg till `(e.priority ?? getEventPriority(e.type)) === 'critical'`-check i BÅDE `hasCriticalEvent()` (eventTriggers.ts) och `EventPrimary.tsx`. Medium/normal/low-events renderas av PortalEventSlot. EventPrimary renderar bara faktiskt kritiska events.
+
+**Känn igen:** Portal visar samma händelse med två olika UI-mönster — ett ljust inline-kort och ett mörkt primary-kort. Eller: `EventPrimary` visas för events som egentligen ska hanteras inline (transferbud, kontraktsönskemål, akademi-event).
+
+**Historik:** 2026-05-03 playtest. `transferBidReceived` (priority=`normal`) dök upp i PortalEventSlot (korrekt) OCH som primary-kort via `EventPrimary` (bugg). `hasCriticalEvent` returnerade true för alla olösta events. Fixat i commits efter P4-diagnosen.
+

@@ -5,6 +5,22 @@
 
 ---
 
+## AKTUELLT LÄGE (2026-05-03)
+
+**SPEC_PLAYTEST_FIXES_2026-05-03:** ✅ Alla 5 åtgärder levererade.
+- P5: Frågetecken-border borttagen från GameHeader.tsx.
+- P2: shotsHome/Away + onTargetHome/Away inkluderas nu vid hörn- och straffmål.
+- P3: seenLabels-Set mot staplade spelar-labels. oppDotScale+oppDotOpacity skalning vid >30 prickar.
+- P1.A: MATCH_GOAL_DIFFERENCE_CAP kringgick i alla 4 interaktiva live-match paths. Fix: interactiveCanScore() i MatchLiveScreen.
+- P1.C: PROFILE_GOAL_MODS.chaotic 1.55→1.35, wOpen+=10 (var 15). Mål/match ~8.97.
+- P1.B: Per-spelare ceiling variant C — hard cap 5 + soft brake ×0.7 via adjustedWeights i getGoalScorer.
+- P4: hasCriticalEvent + EventPrimary saknade priority='critical'-filter. transferBidReceived (prio=normal) renderades dubbelt av PortalEventSlot + EventPrimary.
+- ⚠️ Awaiting browser-playtest: alla 5 fixes.
+
+**Portal omg 1 säsong 1 är gles** — ingen bygd-, spelare- eller patron-data hunnit ackumuleras. Specifikt välkomstkort eller sänkt tröskel för secondary-cards behövs. Inte akut.
+
+---
+
 ## AKTUELLT LÄGE (2026-05-02)
 
 **SPEC_INLEDNING_FAS_2 — Styrelsemötet som dialog-scen:** ✅ Levererad (merge `053c526`).
@@ -105,7 +121,61 @@
 
 ---
 
-## TEKNISK SKULD
+## TEKNISK SKULD — DOKUMENTERAD (från genomgång 2026-05-02)
+
+Se `docs/SPEC_TEKNISK_SKULD.md` för fullständig spec per åtgärd.
+
+### TS-4: Dead code verifiering
+
+**Filer:**
+- `src/presentation/screens/DashboardScreen.tsx` (64 KB) — bekräftat dead, ej i AppRouter
+- `src/presentation/screens/NewGameScreen.tsx` (12 KB) — misstänkt dead, bara `/new-game-legacy`-route
+- `src/presentation/screens/MatchResultScreen.tsx` (13 KB) — verifiera om någon navigerar dit
+- `src/presentation/screens/RoundSummaryScreen.tsx` (23 KB) — verifiera om någon navigerar dit
+
+**Prioritet:** Hög (snabb vinst, 80-150 KB borttagning). **Estimat:** 4-6h.
+
+---
+
+### TS-5: services/ är flat folder med 108 filer
+
+**Problem:** Navigerings-friktion. Sub-mappar finns bara för `events/` och `portal/`.
+
+**Prioritet:** Låg (rent estetiskt). **Estimat:** 4-6h.
+
+---
+
+### TS-6: seasonEndProcessor.ts är 57 KB monolit
+
+**Problem:** roundProcessor är split via 17 sub-processors. seasonEndProcessor är inte.
+
+**Prioritet:** Medel. **Trigger:** Bug eller feature-tillägg som rör säsongsslut. **Estimat:** 1-2 dagar.
+
+---
+
+### TS-7: Misstänkta service-överlapp
+
+**Kluster:** press (5 filer, 77 KB), training (3), narrative (3), opponent (2), mecenat (2), supporter (2), scout (2).
+
+**Prioritet:** Låg (opportunistiskt per kluster). **Estimat:** 1-2h analys + 2-4h refactor per kluster.
+
+---
+
+### TS-8: SaveGame-typen växer okontrollerat
+
+**Problem:** 14 KB, växer för varje sprint. Migration-logik mer komplex.
+
+**Prioritet:** Låg. **Trigger:** SaveGame korsar 20 KB eller migration-buggar. **Estimat:** 2 dagar.
+
+---
+
+### TS-9: MatchLiveScreen 51 KB + matchCore 89 KB
+
+**Status:** Inte akut. **Trigger:** Om GranskaScreen-splitten visar sig framgångsrik, kan samma mönster appliceras.
+
+---
+
+### TS-1 till TS-3: (Äldre skulder)
 
 **`pickSeasonHighlight()` — LÖST (2026-04-27).** Borttagen i commit `85170f7`.
 
