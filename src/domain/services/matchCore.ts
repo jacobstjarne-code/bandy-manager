@@ -426,12 +426,12 @@ function* simulateMatchCore(
   const awaySuspensionTimers: number[] = []
 
   // Counters
-  let shotsHome   = input.initialShotsHome   ?? 0
-  let shotsAway   = input.initialShotsAway   ?? 0
-  let onTargetHome = 0
-  let onTargetAway = 0
-  let cornersHome = input.initialCornersHome ?? 0
-  let cornersAway = input.initialCornersAway ?? 0
+  let shotsHome    = input.initialShotsHome    ?? 0
+  let shotsAway    = input.initialShotsAway    ?? 0
+  let onTargetHome = input.initialOnTargetHome ?? 0
+  let onTargetAway = input.initialOnTargetAway ?? 0
+  let cornersHome  = input.initialCornersHome  ?? 0
+  let cornersAway  = input.initialCornersAway  ?? 0
   let interactiveCornersUsed  = 0
   let interactiveCountersUsed = 0
   let interactiveFreeKicksUsed = 0

@@ -321,6 +321,8 @@ export interface StepByStepInput {
   initialAwayScore?: number
   initialShotsHome?: number
   initialShotsAway?: number
+  initialOnTargetHome?: number
+  initialOnTargetAway?: number
   initialCornersHome?: number
   initialCornersAway?: number
   initialHomeSuspensions?: number
@@ -334,6 +336,8 @@ export interface SecondHalfInput extends StepByStepInput {
   initialAwayScore: number
   initialShotsHome: number
   initialShotsAway: number
+  initialOnTargetHome: number
+  initialOnTargetAway: number
   initialCornersHome: number
   initialCornersAway: number
   initialHomeSuspensions: number

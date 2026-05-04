@@ -78,6 +78,8 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
     initialAwayScore:       fhs?.awayScore        ?? 0,
     initialShotsHome:       fhs?.shotsHome        ?? 0,
     initialShotsAway:       fhs?.shotsAway        ?? 0,
+    initialOnTargetHome:    fhs?.onTargetHome     ?? 0,
+    initialOnTargetAway:    fhs?.onTargetAway     ?? 0,
     initialCornersHome:     fhs?.cornersHome      ?? 0,
     initialCornersAway:     fhs?.cornersAway      ?? 0,
     initialHomeSuspensions: fhs?.activeSuspensions.homeCount ?? 0,
