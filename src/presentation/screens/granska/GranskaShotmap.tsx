@@ -207,7 +207,7 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
           <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Den här matchen</span>
           <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
-            {totalShots} skott · {onTargetCount} på mål · {onTargetCount > 0 ? Math.round(scoredCount / onTargetCount * 100) : 0}% konv.
+            {totalShots} skott · {onTargetCount} på mål · {onTargetCount > 0 ? Math.round(scoredCount / onTargetCount * 100) : 0}% träffsäkerhet
           </span>
         </div>
         {(() => {
