@@ -48,7 +48,6 @@ import { TacticChangeModal } from '../../components/match/TacticChangeModal'
 import { mulberry32 } from '../../../domain/utils/random'
 import { FirstVisitHint } from '../../components/FirstVisitHint'
 import { simulateMatchStepByStep } from '../../../domain/services/matchSimulator'
-import { useRecoveryGuard } from './recovery'
 import { matchReducer, initialMatchState } from './matchReducer'
 
 interface LocationState {
@@ -296,12 +295,6 @@ export function MatchLiveScreen() {
       feedRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
     })
   }, [currentStep, matchDone])
-
-  // Recovery-vakt (TEMPORÄR — tas bort i steg 7)
-  useRecoveryGuard(
-    currentStep, steps.length, matchDone,
-    isSmFinal, !!isCupFinal, setMatchDone, setCeremonySlide,
-  )
 
   // Halvtids-guard — explicit trigger för halvtidsmodal (steg 5)
   // Säkerställer att modalen visas även om timer-effekten av någon orsak hoppar förbi step 30

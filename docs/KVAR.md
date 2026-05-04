@@ -181,13 +181,13 @@ Se `docs/SPEC_TEKNISK_SKULD.md` för fullständig spec per åtgärd.
 
 ### TS-9: MatchLiveScreen 51 KB + matchCore 89 KB
 
-**Status:** Inte akut. **Trigger:** Om GranskaScreen-splitten visar sig framgångsrik, kan samma mönster appliceras.
+**Status:** Delvis ✅ (2026-05-04). MatchLiveScreen splittad i `match/`-katalog med handler-filer och hooks. matchCore 89 KB kvarstår (TS-9b). **Trigger för TS-9b:** Om matchCore börjar växa ytterligare.
 
 ---
 
-### TS-10 — Live-match steg-progression
+### TS-10 — Live-match steg-progression ✅ LÖST 2026-05-04
 
-**TS-10 — Live-match steg-progression:** Två separata `setCurrentStep`-källor (timer-effekt + 4 handler-timeouts) skapar race condition i FF/commentary-läge. Refactor B beskriven i `docs/diagnos/2026-05-04_scoreboard_desync.md`. Recovery-effekten i MatchLiveScreen är temporär patch — när B implementeras, ta bort recovery efter 30-match-verifiering utan warnings.
+**Löst:** handler-timeouts borttagna (Refactor B), matchReducer som EN sanning för score/playerGoals, recovery-vakt borttagen. Se `docs/diagnos/2026-05-04_player_goal_cap_bypass.md`.
 
 ---
 

@@ -626,3 +626,17 @@ Båda är symptom av samma underliggande sak: magnitud-bygge utan **invariant-va
 
 **Historik:** 2026-05-03 playtest. `transferBidReceived` (priority=`normal`) dök upp i PortalEventSlot (korrekt) OCH som primary-kort via `EventPrimary` (bugg). `hasCriticalEvent` returnerade true för alla olösta events. Fixat i commits efter P4-diagnosen.
 
+---
+
+## 19. Two-source-of-truth state: generator-closure vs React state
+
+**Mönster:** En spelare gör fler mål än lagets total (t.ex. 12 mål av 7 lagmål). Cap-kontrollen verkar ignoreras. Scoreboard desynkar med events i feeden.
+
+**Rotorsak:** `simulateMatchCore`-generatorn håller sin egna closure (`playerGoals`, `homeScore`, etc). React-sidan håller `steps: MatchStep[]`. När interaktiva handlers anropar `regenerateRemainderWithUpdatedScore` skapas en **ny generator** med `playerGoals = {}` — nollställt. Cap-kontrollen i generatorn kollar bara mot sin lokala closure, inte det globala match-state. Varje regenerate ger spelaren en ny chans att samla mål från noll.
+
+**Fix:** Lyft match-state till en enda källa. `useReducer(matchReducer, initialMatchState)` i MatchLiveScreen — reducer håller `playerGoals` globalt. Handlers dispatchar `INTERACTIVE_GOAL` som kollar mot global state. Generator-closuren spelar ingen roll längre för cap-kontroll.
+
+**Känn igen:** Spelare med ovanligt höga målsiffror. Recovery-warnings i konsolen (`[MatchLive] Recovery: currentStep passed steps.length`). Score i scoreboard skiljer sig från events i commentary-feed.
+
+**Historik:** P1.B-bugg rapporterad 2026-05-04 playtest (David Eklund, 12 mål). Grundorsaken var känd sedan TS-10 (2026-04-xx) men plåstrades med recovery-vakt. Livematch-refactorn (refactor/livematch-split) löste grundorsaken med matchReducer. Se `docs/diagnos/2026-05-04_player_goal_cap_bypass.md` för fullständig analys.
+
