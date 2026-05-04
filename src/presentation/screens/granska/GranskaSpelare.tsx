@@ -1,19 +1,25 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
+import type { GameEvent, EventChoice } from '../../../domain/entities/GameEvent'
 import { MatchEventType } from '../../../domain/enums'
 import { SectionLabel } from '../../components/SectionLabel'
 import { getPortraitSvg } from '../../../domain/services/portraitService'
-import { ratingColor } from './helpers'
+import { ratingColor, choiceStyle } from './helpers'
+import { classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 
 interface GranskaSpelareProps {
   game: SaveGame
   fixture: Fixture | undefined
   isHome: boolean
   potmId: string | null | undefined
+  pendingEvents: GameEvent[]
+  resolvedEventIds: Set<string>
+  chosenLabels: Record<string, string>
+  onChoice: (eventId: string, choiceId: string, choiceLabel: string) => void
 }
 
-export function GranskaSpelare({ game, fixture, isHome, potmId }: GranskaSpelareProps) {
+export function GranskaSpelare({ game, fixture, isHome, potmId, pendingEvents, resolvedEventIds, chosenLabels, onChoice }: GranskaSpelareProps) {
   if (!fixture || !fixture.report) return (
     <div className="card-sharp" style={{ margin: '0 0 6px', padding: '20px 14px', textAlign: 'center' }}>
       <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Spelarbetyg saknas</p>
@@ -36,8 +42,52 @@ export function GranskaSpelare({ game, fixture, isHome, potmId }: GranskaSpelare
     .map(id => game.players.find(p => p.id === id))
     .filter(Boolean) as Player[]
 
+  const playerEvents = pendingEvents.filter(e => !e.resolved && classifyEventNature(e) === 'player')
+
   return (
     <>
+      {playerEvents.length > 0 && (
+        <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
+          <SectionLabel style={{ marginBottom: 8 }}>👥 KRING SPELARNA</SectionLabel>
+          {playerEvents.map(event => {
+            const resolved = resolvedEventIds.has(event.id)
+            const chosenLabel = chosenLabels[event.id]
+            const relatedPlayer = event.relatedPlayerId ? game.players.find(p => p.id === event.relatedPlayerId) : null
+            return (
+              <div key={event.id} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
+                {event.sender && (
+                  <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.5px', color: 'var(--text-muted)', marginBottom: 3 }}>
+                    {event.sender.name} · {event.sender.role}
+                  </p>
+                )}
+                {relatedPlayer && (
+                  <span style={{ display: 'inline-block', fontSize: 11, background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.3)', borderRadius: 20, padding: '2px 8px', color: 'var(--accent)', fontWeight: 600, marginBottom: 4 }}>
+                    {relatedPlayer.firstName} {relatedPlayer.lastName}
+                  </span>
+                )}
+                <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4, lineHeight: 1.3 }}>{event.title}</p>
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: resolved || !event.choices?.length ? 0 : 8 }}>{event.body}</p>
+                {resolved ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{chosenLabel}</span>
+                  </div>
+                ) : event.choices?.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    {event.choices.map((choice: EventChoice) => (
+                      <button key={choice.id} onClick={() => onChoice(event.id, choice.id, choice.label)}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
+                        {choice.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+
       <div className="card-sharp" style={{ margin: '0 0 6px', overflow: 'hidden' }}>
         <div style={{ padding: '10px 12px 6px', borderBottom: '1px solid var(--border)' }}>
           <SectionLabel>STARTELVA — BETYG</SectionLabel>

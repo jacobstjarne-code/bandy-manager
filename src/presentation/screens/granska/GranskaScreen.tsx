@@ -189,6 +189,10 @@ export function GranskaScreen() {
             fixture={fixture}
             isHome={isHome}
             potmId={potmId}
+            pendingEvents={pendingEvents}
+            resolvedEventIds={resolvedEventIds}
+            chosenLabels={chosenLabels}
+            onChoice={handleChoice}
           />
         )}
         {step === 'shotmap' && (
