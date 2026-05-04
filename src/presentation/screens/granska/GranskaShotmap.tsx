@@ -28,12 +28,12 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
   // Two isolated penalty zones — top: our attack, bottom: opponent attack
   // No center line or full-pitch illusion — shows only what matters
   const W = 280
-  const H = 210
+  const H = 230
   const GX = 140
   const GT = 4    // top goal crossbar y
-  const GB = 206  // bottom goal crossbar y
+  const GB = 226  // bottom goal crossbar y
   const TOP_MAX = 100  // bottom edge of our-attack zone
-  const BOT_MIN = 110  // top edge of opponent-attack zone
+  const BOT_MIN = 130  // top edge of opponent-attack zone
 
   type ShotDot = { x: number; y: number; kind: 'goal' | 'save' | 'miss'; label?: string }
   const dots: ShotDot[] = []
@@ -106,19 +106,17 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
           <line x1={120} y1={GT} x2={160} y2={GT} stroke="rgba(0,0,0,0.65)" strokeWidth="2.5" strokeLinecap="round" />
           <line x1={120} y1={0} x2={120} y2={GT} stroke="rgba(0,0,0,0.55)" strokeWidth="1.5" strokeLinecap="round" />
           <line x1={160} y1={0} x2={160} y2={GT} stroke="rgba(0,0,0,0.55)" strokeWidth="1.5" strokeLinecap="round" />
-          {/* Goal area */}
-          <rect x={105} y={GT} width={70} height={20} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
-          {/* Penalty area */}
-          <rect x={80} y={GT} width={120} height={46} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
-          {/* Penalty spot */}
-          <circle cx={GX} cy={34} r={1.5} fill="rgba(0,0,0,0.3)" />
-          {/* Penalty D — arc from penalty spot (140,34) r=25, intersects PA bottom (y=50)
-              at x≈121 and x≈159; sweep=1 (clockwise) curves away from goal */}
-          <path d="M 121 50 A 25 25 0 0 1 159 50" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
-          <text x={GX} y={95} fontSize="7" fill="rgba(0,0,0,0.28)" textAnchor="middle" fontWeight="600" letterSpacing="1.5">MOTSTÅNDARMÅL</text>
+          {/* Målgård halvcirkel radie 22px */}
+          <path d="M 118 4 A 22 22 0 0 1 162 4" fill="none" stroke="rgba(0,0,0,0.28)" strokeWidth="1" />
+          {/* Straffområde halvcirkel radie 75px */}
+          <path d="M 65 4 A 75 75 0 0 1 215 4" fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
+          {/* Straffpunkt 53px från mål */}
+          <circle cx={GX} cy={57} r={1.5} fill="rgba(0,0,0,0.3)" />
 
           {/* ── SEPARATOR ── */}
-          <rect x="0" y={TOP_MAX} width={W} height={BOT_MIN - TOP_MAX} fill="rgba(0,0,0,0.07)" />
+          <rect x="0" y="100" width="280" height="30" fill="rgba(0,0,0,0.07)" />
+          <text x="14" y="119" fontSize="8" fill="rgba(0,0,0,0.65)" fontWeight="700" letterSpacing="0.8">↑ VI ANFALLER</text>
+          <text x="266" y="119" fontSize="8" fill="rgba(0,0,0,0.65)" textAnchor="end" fontWeight="700" letterSpacing="0.8">DE ANFALLER ↓</text>
 
           {/* ── BOTTOM ZONE: motståndarens skott → vårt mål (botten) ── */}
           <rect x="0" y={BOT_MIN} width={W} height={H - BOT_MIN} fill="#fff" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" rx="3" />
@@ -127,16 +125,12 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
           <line x1={120} y1={GB} x2={160} y2={GB} stroke="rgba(0,0,0,0.65)" strokeWidth="2.5" strokeLinecap="round" />
           <line x1={120} y1={GB} x2={120} y2={H} stroke="rgba(0,0,0,0.55)" strokeWidth="1.5" strokeLinecap="round" />
           <line x1={160} y1={GB} x2={160} y2={H} stroke="rgba(0,0,0,0.55)" strokeWidth="1.5" strokeLinecap="round" />
-          {/* Goal area */}
-          <rect x={105} y={186} width={70} height={20} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
-          {/* Penalty area */}
-          <rect x={80} y={160} width={120} height={46} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
-          {/* Penalty spot */}
-          <circle cx={GX} cy={176} r={1.5} fill="rgba(0,0,0,0.3)" />
-          {/* Penalty D — arc from penalty spot (140,176) r=25, intersects PA top (y=160)
-              at x≈121 and x≈159; sweep=0 (counter-clockwise) curves away from goal */}
-          <path d="M 121 160 A 25 25 0 0 0 159 160" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="1" />
-          <text x={GX} y={115} fontSize="7" fill="rgba(0,0,0,0.28)" textAnchor="middle" fontWeight="600" letterSpacing="1.5">VÅRT MÅL</text>
+          {/* Målgård halvcirkel radie 22px */}
+          <path d="M 118 226 A 22 22 0 0 0 162 226" fill="none" stroke="rgba(0,0,0,0.28)" strokeWidth="1" />
+          {/* Straffområde halvcirkel radie 75px */}
+          <path d="M 65 226 A 75 75 0 0 0 215 226" fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
+          {/* Straffpunkt 53px från mål */}
+          <circle cx={GX} cy={173} r={1.5} fill="rgba(0,0,0,0.3)" />
 
           {/* Our shot dots (top zone) */}
           {(() => {
@@ -235,10 +229,9 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
           if (completedFixtures.length === 0) return null
           return (
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Säsongen ({completedFixtures.length} matcher)</span>
+              <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Hittills ({completedFixtures.length} matcher)</span>
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
-                {seasonShots} skott · {seasonConversion}%
-                {seasonConversion > (totalShots > 0 ? Math.round(scoredCount / totalShots * 100) : 0) ? ' ▼' : ' ▲'}
+                {seasonShots} skott · {seasonConversion}% konv.
               </span>
             </div>
           )
@@ -263,7 +256,7 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                     <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Skott / på mål</span>
                     <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
-                      {oppShots} / {oppOnTargetDisplay} · {oppConversion}% konv.
+                      {oppShots} / {oppOnTargetDisplay} · {oppConversion}% träffsäkerhet
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
