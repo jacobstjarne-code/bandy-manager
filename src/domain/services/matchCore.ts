@@ -21,6 +21,37 @@ const GOAL_RATE_MOD = 0.936
 export const MATCH_TOTAL_GOAL_CAP    = 17  // empirisk 99:e percentil Elitserien (finding:049)
 export const MATCH_GOAL_DIFFERENCE_CAP = 6  // designval, se kommentar ovan
 
+/**
+ * canScoreGate — exporterad version av den interna canScore-funktionen.
+ * Används av matchReducer.ts för cap-kontroll på interaktiva mål (P1.A + P1.B).
+ * Dubbelpublicering eliminerad: intern canScore i simulateMatchCore anropar nu denna.
+ */
+export function canScoreGate(
+  homeScore: number,
+  awayScore: number,
+  attackingHome: boolean,
+  totalCap = MATCH_TOTAL_GOAL_CAP,
+  diffCap = MATCH_GOAL_DIFFERENCE_CAP,
+): boolean {
+  if (homeScore + awayScore >= totalCap) return false
+  const newDiff = attackingHome ? homeScore + 1 - awayScore : awayScore + 1 - homeScore
+  return Math.abs(newDiff) <= diffCap
+}
+
+/**
+ * getGoalScorerWeight — exporterad per-spelare-broms (P1.B).
+ * Hard cap 5 mål, soft brake ×0.7 från andra målet.
+ * Används av matchReducer.ts INTERACTIVE_GOAL-hanteraren.
+ */
+export function getGoalScorerWeight(
+  currentGoals: number,
+  baseWeight: number,
+): number {
+  if (currentGoals >= 5) return 0
+  if (currentGoals >= 2) return baseWeight * Math.pow(0.7, currentGoals - 1)
+  return baseWeight
+}
+
 // Bumpa vid varje förändring som påverkar simuleringsutfall.
 // Schema-kompatibla ändringar (utan utfallspåverkan) bumpar patch.
 // Mekaniska förändringar bumpar minor. Kalibreringsförändringar bumpar major.
@@ -380,11 +411,9 @@ function* simulateMatchCore(
     openingWeatherNote = `${tempStr} i ${weather.region}. ${getConditionLabel(weather.condition)}. ${getIceQualityLabel(weather.iceQuality)}.`
   }
 
-  const canScore = (attackingHome: boolean, hs: number, as_: number): boolean => {
-    if (hs + as_ >= MATCH_TOTAL_GOAL_CAP) return false
-    const newDiff = attackingHome ? hs + 1 - as_ : as_ + 1 - hs
-    return Math.abs(newDiff) <= MATCH_GOAL_DIFFERENCE_CAP
-  }
+  // Wrapper — delegerar till den exporterade canScoreGate (mekanisk lyft, ingen logikändring)
+  const canScore = (attackingHome: boolean, hs: number, as_: number): boolean =>
+    canScoreGate(hs, as_, attackingHome, MATCH_TOTAL_GOAL_CAP, MATCH_GOAL_DIFFERENCE_CAP)
 
   // Match state — seeded from SecondHalfInput if provided
   let homeScore = input.initialHomeScore ?? 0
@@ -452,12 +481,10 @@ function* simulateMatchCore(
       }
       return w
     })
-    // Per-player goal ceiling — variant C (hard cap 5, soft brake ×0.7 from 2nd goal)
+    // Per-player goal ceiling — delegerar till exporterade getGoalScorerWeight (mekanisk lyft)
     const adjustedWeights = nonGK.map((p, i) => {
       const goalsThisMatch = playerGoals[p.id] ?? 0
-      if (goalsThisMatch >= 5) return 0  // hard cap
-      if (goalsThisMatch >= 2) return weights[i] * Math.pow(0.7, goalsThisMatch - 1)
-      return weights[i]
+      return getGoalScorerWeight(goalsThisMatch, weights[i])
     })
     return pickWeightedPlayer(rand, nonGK, adjustedWeights)
   }
