@@ -628,7 +628,7 @@ Båda är symptom av samma underliggande sak: magnitud-bygge utan **invariant-va
 
 ---
 
-## 19. Two-source-of-truth state: generator-closure vs React state
+## 28. Two-source-of-truth state: generator-closure vs React state
 
 **Mönster:** En spelare gör fler mål än lagets total (t.ex. 12 mål av 7 lagmål). Cap-kontrollen verkar ignoreras. Scoreboard desynkar med events i feeden.
 
@@ -639,4 +639,25 @@ Båda är symptom av samma underliggande sak: magnitud-bygge utan **invariant-va
 **Känn igen:** Spelare med ovanligt höga målsiffror. Recovery-warnings i konsolen (`[MatchLive] Recovery: currentStep passed steps.length`). Score i scoreboard skiljer sig från events i commentary-feed.
 
 **Historik:** P1.B-bugg rapporterad 2026-05-04 playtest (David Eklund, 12 mål). Grundorsaken var känd sedan TS-10 (2026-04-xx) men plåstrades med recovery-vakt. Livematch-refactorn (refactor/livematch-split) löste grundorsaken med matchReducer. Se `docs/diagnos/2026-05-04_player_goal_cap_bypass.md` för fullständig analys.
+
+---
+
+## 29. "Levererad spec" ≠ "fungerar i playtest". Symptomfix utan mock-check kan göra det värre.
+
+**Mönster:** En spec markeras ✅ LEVERERAD i KVAR.md, men playtest avslöjar att UI:t inte matchar specens beskrivning. Någon (Opus eller Code) gör en symptomfix på det som syns fel — utan att gå tillbaka till mocken eller specen först. Fixen får symptomet att se bättre ut just i ögonblicket men rör implementationen *bort* från vad mocken säger. Nästa playtest hittar ännu en avvikelse — nu värre, eftersom fixen lade in ett tredje stilelement.
+
+**Rotorsak:** Två sammanvävda problem.
+
+1. **"Levererad" är en process-status, inte en sannings-status.** En spec kan markeras levererad när Code rapporterar färdigt, men det betyder inte att alla delar når upp till specens mål — bara att Code anser sig färdig med sin uppgift. KVAR.md har även explicit `⚠️ Awaiting browser-playtest`-noteringar på senast levererade specerna, men fördröjd playtest gör att avvikelser ackumuleras.
+
+2. **Princip 4 (mock-driven design) gäller även Opus.** När Opus har `workspace:edit_file` och en bug rapporteras under playtest är friktionen för att fixa direkt lägre än friktionen för att först öppna mocken och verifiera. Det är en fallgrop: en "snabb fix" utan mock-check kan göra det värre genom att blanda in en *tredje* stil som varken matchar nuvarande implementation eller mocken.
+
+**Fix:**
+1. Innan ANY edit på en komponent som har en mock i `docs/mockups/`: öppna mocken först. Ta sedan ställning till om buggen är (a) implementation som avviker från mock → återimplementera enligt mock, eller (b) faktisk mock-spec-bug → uppdatera mock först, sedan implementation. Aldrig: "justera implementationen på måfå utan att kolla mocken".
+2. "Levererad"-status verifieras genom playtest, inte genom Code-rapport. När en spec markeras levererad i KVAR utan playtest-verifiering: lägg `⚠️ Awaiting browser-playtest` på raden. Vid nästa playtest: kräv att spec-implementationen jämförs explicit mot specen och mocken — inte bara mot "ser det ut att fungera?".
+3. När playtest avslöjar avvikelse från levererad spec: skriv inte ny spec. Skriv en *verifierings-spec* som börjar med diagnos: vad finns i koden, vad säger mocken, var är gapet? Först därefter fix.
+
+**Känn igen:** Känslan av att samma yta fixas om och om igen utan att bli bra. Eller: skärmdumpsjämförelser som visar tre olika versioner av samma vy över tre playtest-omgångar, utan att någon matchar mocken.
+
+**Historik:** Skottbild 2026-05-04. SPEC_SHOTMAP_OMARBETNING markerades ✅ LEVERERAD i KVAR.md ("halvcirkel-geometri ersätter rektangulära boxar", "↑ VI ANFALLER / DE ANFALLER ↓ i separator-strecket"). Playtest skärmdump 17:22 visade fortfarande rektangulära boxar och "MOTSTÅNDARMÅL"/"VÅRT MÅL"-text. Opus gjorde en symptomfix samma session: streckad mittlinje + flyttade etiketter till respektive mål. **Fixen flyttade implementationen *bort* från mocken** — mocken har grå separator + riktningspilar, inte streckad linje med etiketter. Jacob flaggade detta: "den borde ju implementeras som den är mockad". Fixen ska revertas och shotmap implementeras enligt `docs/mockups/shotmap_mockup.html` bokstavligen. Dokumenterat i SPEC_GRANSKA_VERIFIERING_2026-05-04 Fix E.
 
