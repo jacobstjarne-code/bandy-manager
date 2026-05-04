@@ -119,11 +119,12 @@ export function EventCardInline({ event, remainingCount }: Props) {
             key={action.choiceId}
             onClick={() => handleAction(action.choiceId)}
             style={{
-              padding: '8px 14px',
+              padding: '8px 16px',
+              borderRadius: 999,
               fontSize: 13,
               fontWeight: 600,
               background: action.isPrimary ? 'var(--accent)' : 'var(--bg-elevated)',
-              color: action.isPrimary ? 'var(--bg-dark)' : 'var(--text-primary)',
+              color: action.isPrimary ? '#fff' : 'var(--text-primary)',
               border: action.isPrimary ? 'none' : '1px solid var(--border)',
               cursor: 'pointer',
             }}
@@ -145,7 +146,7 @@ export function EventCardInline({ event, remainingCount }: Props) {
             textDecoration: 'underline',
           }}
         >
-          {remainingCount} {remainingCount === 1 ? 'sak' : 'saker'} till att kolla
+          {remainingCount} notiser i inboxen
         </p>
       )}
     </div>
