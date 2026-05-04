@@ -1,9 +1,9 @@
 /**
  * MatchLiveScreen.tsx — top-level orkestrering för live-match
  *
- * Steg 4 i refactor/livematch-split (SPEC_LIVEMATCH_REFACTOR.md).
- * State via matchReducer — EN sanning för homeScore/awayScore/playerGoals.
- * Steps-arrayen är render-källa för commentary. Reducer är statsmaskin.
+ * Steg 5 (Refactor B) i refactor/livematch-split (SPEC_LIVEMATCH_REFACTOR.md).
+ * EN källa för steg-progression — handler-timeouts borttagna.
+ * Timer-effekten pausar automatiskt vid aktiv interaktion och fortsätter när cleared.
  */
 
 import { useState, useEffect, useReducer, useRef } from 'react'
@@ -111,6 +111,7 @@ export function MatchLiveScreen() {
   const [isPaused, setIsPaused] = useState(false)
   const [isFastForward, setIsFastForward] = useState(false)
   const [showHalftime, setShowHalftime] = useState(false)
+  const [halftimeModalShown, setHalftimeModalShown] = useState(false)
   const [matchDone, setMatchDone] = useState(false)
   const [showOvertimeOverlay, setShowOvertimeOverlay] = useState(false)
   const [showPenaltiesOverlay, setShowPenaltiesOverlay] = useState(false)
@@ -301,6 +302,17 @@ export function MatchLiveScreen() {
     currentStep, steps.length, matchDone,
     isSmFinal, !!isCupFinal, setMatchDone, setCeremonySlide,
   )
+
+  // Halvtids-guard — explicit trigger för halvtidsmodal (steg 5)
+  // Säkerställer att modalen visas även om timer-effekten av någon orsak hoppar förbi step 30
+  const inSecondHalf = steps.length > 31
+  useEffect(() => {
+    if (currentStep >= 30 && !inSecondHalf && !halftimeModalShown) {
+      setHalftimeModalShown(true)
+      setShowHalftime(true)
+      setIsPaused(true)
+    }
+  }, [currentStep, inSecondHalf, halftimeModalShown]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (currentStep < 0 || currentStep >= steps.length) return
@@ -615,11 +627,10 @@ export function MatchLiveScreen() {
       }
     }
 
-    setTimeout(() => {
-      setActiveCorner(null)
-      setCornerOutcome(null)
-      setCurrentStep(prev => prev + 1)
-    }, isFastForward || isCommentaryMode ? 50 : 1500)
+    // Steg 5: inga handler-timeouts — clear active state, timer-effekten driver steget framåt
+    setActiveCorner(null)
+    setCornerOutcome(null)
+    setCurrentStep(prev => prev + 1)
   }
 
   function handlePenaltyChoice(dir: PenaltyDirection, height: PenaltyHeight, inlineData?: import('../../../domain/services/penaltyInteractionService').PenaltyInteractionData) {
@@ -688,11 +699,10 @@ export function MatchLiveScreen() {
       }
     }
 
-    setTimeout(() => {
-      setActivePenalty(null)
-      setPenaltyOutcome(null)
-      setCurrentStep(prev => prev + 1)
-    }, isFastForward || isCommentaryMode ? 50 : 1500)
+    // Steg 5: inga handler-timeouts
+    setActivePenalty(null)
+    setPenaltyOutcome(null)
+    setCurrentStep(prev => prev + 1)
   }
 
   function handleCounterChoice(choice: CounterChoice, inlineData?: import('../../../domain/services/counterAttackInteractionService').CounterInteractionData) {
@@ -758,11 +768,10 @@ export function MatchLiveScreen() {
       else { setAwayScoreFlash(true); setTimeout(() => setAwayScoreFlash(false), 2000) }
     }
 
-    setTimeout(() => {
-      setActiveCounter(null)
-      setCounterOutcome(null)
-      setCurrentStep(prev => prev + 1)
-    }, isFastForward || isCommentaryMode ? 50 : 1500)
+    // Steg 5: inga handler-timeouts
+    setActiveCounter(null)
+    setCounterOutcome(null)
+    setCurrentStep(prev => prev + 1)
   }
 
   function handleFreeKickChoice(choice: FreeKickChoice, inlineData?: import('../../../domain/services/freeKickInteractionService').FreeKickInteractionData) {
@@ -827,11 +836,10 @@ export function MatchLiveScreen() {
       else { setAwayScoreFlash(true); setTimeout(() => setAwayScoreFlash(false), 2000) }
     }
 
-    setTimeout(() => {
-      setActiveFreeKick(null)
-      setFreeKickOutcome(null)
-      setCurrentStep(prev => prev + 1)
-    }, isFastForward || isCommentaryMode ? 50 : 1500)
+    // Steg 5: inga handler-timeouts
+    setActiveFreeKick(null)
+    setFreeKickOutcome(null)
+    setCurrentStep(prev => prev + 1)
   }
 
   function handleLastMinutePressChoice(_choice: PressChoice) {
