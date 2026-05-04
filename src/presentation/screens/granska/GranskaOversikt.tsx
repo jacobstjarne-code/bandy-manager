@@ -7,10 +7,10 @@ import type { EventChoice } from '../../../domain/entities/GameEvent'
 import { MatchEventType, InboxItemType } from '../../../domain/enums'
 import { formatArenaName } from '../../../domain/utils/arenaName'
 import { SectionLabel } from '../../components/SectionLabel'
-import { generateInsandare } from '../../../domain/services/insandareService'
-import { generatePostMatchOpponentQuote } from '../../../domain/services/opponentManagerService'
 import { generateSilentMatchReport } from '../../../domain/services/silentMatchReportService'
 import { generateQuickSummary, choiceStyle } from './helpers'
+import { getCriticalEventsForGranska, getPlayerEventsForGranska, classifyEventNature } from '../../../domain/services/granskaEventClassifier'
+import { ReaktionerKort } from '../../components/granska/ReaktionerKort'
 
 interface GranskaOversiktProps {
   game: SaveGame
@@ -18,8 +18,6 @@ interface GranskaOversiktProps {
   homeClub: Club | undefined
   awayClub: Club | undefined
   isHome: boolean
-  myScore: number
-  theirScore: number
   won: boolean
   lost: boolean
   resultColor: string
@@ -33,12 +31,13 @@ interface GranskaOversiktProps {
   chosenLabels: Record<string, string>
   fadeIn: (i: number) => React.CSSProperties
   onChoice: (eventId: string, choiceId: string, choiceLabel: string) => void
+  onResolve: (ids: string[]) => void
 }
 
 export function GranskaOversikt({
-  game, fixture, homeClub, awayClub, isHome, myScore, theirScore,
+  game, fixture, homeClub, awayClub, isHome,
   won, lost, resultColor, resultLabel, potm, potmRating, penResult,
-  keyMoments, pendingEvents, resolvedEventIds, chosenLabels, fadeIn, onChoice,
+  keyMoments, pendingEvents, resolvedEventIds, chosenLabels, fadeIn, onChoice, onResolve,
 }: GranskaOversiktProps) {
   return (
     <>
@@ -138,45 +137,64 @@ export function GranskaOversikt({
         </div>
       )}
 
-      {/* Events — tidskritiska, kräver val innan nästa omgång */}
-      {pendingEvents.map((event, ei) => {
-        const resolved = resolvedEventIds.has(event.id)
-        const chosenLabel = chosenLabels[event.id]
-        const relatedPlayer = event.relatedPlayerId ? game.players.find(p => p.id === event.relatedPlayerId) : null
-        const relatedClub = event.relatedClubId ? game.clubs.find(c => c.id === event.relatedClubId) : null
+      {/* Critical events — max 3, kräver val */}
+      {(() => {
+        const criticalEvents = getCriticalEventsForGranska(pendingEvents).slice(0, 3)
+        const playerEvents = getPlayerEventsForGranska(pendingEvents)
+        const inboxOnlyCount = pendingEvents.filter(e => !e.resolved && classifyEventNature(e) === 'inbox-only').length
         return (
-          <div key={event.id} className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(2 + ei) }}>
-            <div style={{ padding: '10px 12px' }}>
-              <SectionLabel style={{ marginBottom: resolved ? 4 : 6 }}>{event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}</SectionLabel>
-              {resolved ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{chosenLabel}</span>
-                </div>
-              ) : (
-                <>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 5, lineHeight: 1.3 }}>{event.title}</p>
-                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: 8, whiteSpace: 'pre-line' }}>{event.body}</p>
-                  {(relatedPlayer || relatedClub) && (
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-                      {relatedPlayer && <span style={{ fontSize: 11, background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.3)', borderRadius: 20, padding: '3px 8px', color: 'var(--accent)', fontWeight: 600 }}>{relatedPlayer.firstName} {relatedPlayer.lastName} · Styrka {Math.round(relatedPlayer.currentAbility)}</span>}
-                      {relatedClub && <span style={{ fontSize: 11, background: 'rgba(126,179,212,0.10)', border: '1px solid rgba(126,179,212,0.25)', borderRadius: 20, padding: '3px 8px', color: 'var(--ice)', fontWeight: 600 }}>{relatedClub.name}</span>}
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                    {event.choices.map((choice: EventChoice) => (
-                      <button key={choice.id} onClick={() => onChoice(event.id, choice.id, choice.label)}
-                        style={{ position: 'relative', zIndex: 1, width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
-                        {choice.label}
-                      </button>
-                    ))}
+          <>
+            {criticalEvents.map((event, ei) => {
+              const resolved = resolvedEventIds.has(event.id)
+              const chosenLabel = chosenLabels[event.id]
+              const relatedPlayer = event.relatedPlayerId ? game.players.find(p => p.id === event.relatedPlayerId) : null
+              const relatedClub = event.relatedClubId ? game.clubs.find(c => c.id === event.relatedClubId) : null
+              return (
+                <div key={event.id} className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(2 + ei) }}>
+                  <div style={{ padding: '10px 12px' }}>
+                    <SectionLabel style={{ marginBottom: resolved ? 4 : 6 }}>{event.sender ? `${event.sender.name}, ${event.sender.role}` : 'Händelse'}</SectionLabel>
+                    {resolved ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
+                        <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{chosenLabel}</span>
+                      </div>
+                    ) : (
+                      <>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 5, lineHeight: 1.3 }}>{event.title}</p>
+                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: 8, whiteSpace: 'pre-line' }}>{event.body}</p>
+                        {(relatedPlayer || relatedClub) && (
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                            {relatedPlayer && <span style={{ fontSize: 11, background: 'rgba(196,122,58,0.1)', border: '1px solid rgba(196,122,58,0.3)', borderRadius: 20, padding: '3px 8px', color: 'var(--accent)', fontWeight: 600 }}>{relatedPlayer.firstName} {relatedPlayer.lastName} · Styrka {Math.round(relatedPlayer.currentAbility)}</span>}
+                            {relatedClub && <span style={{ fontSize: 11, background: 'rgba(126,179,212,0.10)', border: '1px solid rgba(126,179,212,0.25)', borderRadius: 20, padding: '3px 8px', color: 'var(--ice)', fontWeight: 600 }}>{relatedClub.name}</span>}
+                          </div>
+                        )}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                          {event.choices.map((choice: EventChoice) => (
+                            <button key={choice.id} onClick={() => onChoice(event.id, choice.id, choice.label)}
+                              style={{ position: 'relative', zIndex: 1, width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
+                              {choice.label}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
-                </>
-              )}
-            </div>
-          </div>
+                </div>
+              )
+            })}
+            {playerEvents.length > 0 && (
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', padding: '4px 12px 6px' }}>
+                {playerEvents.length} spelar{playerEvents.length > 1 ? 'händelser' : 'händelse'} i Spelare-fliken
+              </p>
+            )}
+            {inboxOnlyCount > 0 && (
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', padding: '4px 12px 6px' }}>
+                {inboxOnlyCount} notiser i inboxen
+              </p>
+            )}
+          </>
         )
-      })}
+      })()}
 
       {/* Presskonferens — tidskritisk, direkt efter events */}
       {(() => {
@@ -246,6 +264,8 @@ export function GranskaOversikt({
         )
       })()}
 
+      <ReaktionerKort pendingEvents={pendingEvents} onResolve={onResolve} />
+
       {/* Media */}
       {(() => {
         const headlineItem = game.inbox
@@ -268,20 +288,6 @@ export function GranskaOversikt({
             <p style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.4, fontStyle: 'italic' }}>
               {headlineItem.body}
             </p>
-          </div>
-        )
-      })()}
-
-      {/* Insändare */}
-      {(() => {
-        if (!fixture) return null
-        const insandare = generateInsandare(game, fixture)
-        if (!insandare) return null
-        return (
-          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
-            <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: 'var(--text-muted)', marginBottom: 6 }}>✉️ INSÄNDARE</p>
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontFamily: 'var(--font-display)', fontStyle: 'italic', lineHeight: 1.5 }}>"{insandare.text}"</p>
-            <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>— {insandare.signature}</p>
           </div>
         )
       })()}
@@ -310,27 +316,6 @@ export function GranskaOversikt({
         </div>
       )}
 
-      {/* Motståndartränare */}
-      {(() => {
-        const margin = myScore - theirScore
-        if (Math.abs(margin) < 3) return null
-        const opponentClub = isHome ? awayClub : homeClub
-        if (!opponentClub) return null
-        const theyWon = margin < 0
-        const opponentScandal = (game.scandalHistory ?? []).some(s =>
-          s.affectedClubId === opponentClub.id &&
-          s.season === game.currentSeason &&
-          s.type !== 'small_absurdity'
-        )
-        const quote = generatePostMatchOpponentQuote(opponentClub, theyWon, opponentScandal)
-        if (!quote) return null
-        return (
-          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px' }}>
-            <SectionLabel style={{ marginBottom: 6 }}>🎙 MOTSTÅNDET SÄGER</SectionLabel>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5 }}>{quote}</p>
-          </div>
-        )
-      })()}
     </>
   )
 }

@@ -4,6 +4,7 @@ import { useGameStore } from '../../store/gameStore'
 import { playSound } from '../../audio/soundEffects'
 import { MatchEventType } from '../../../domain/enums'
 import { FixtureStatus } from '../../../domain/enums'
+import { getCriticalEventsForGranska } from '../../../domain/services/granskaEventClassifier'
 import { GranskaOversikt } from './GranskaOversikt'
 import { GranskaSpelare } from './GranskaSpelare'
 import { GranskaShotmap } from './GranskaShotmap'
@@ -129,6 +130,11 @@ export function GranskaScreen() {
     setTimeout(() => resolveEvent(eventId, choiceId), 600)
   }
 
+  function handleResolveReactions(ids: string[]) {
+    setResolvedEventIds(prev => new Set([...prev, ...ids]))
+    ids.forEach(id => resolveEvent(id, 'auto'))
+  }
+
   function handleContinue() {
     clearRoundSummary()
     navigate('/game/dashboard', { replace: true })
@@ -145,7 +151,10 @@ export function GranskaScreen() {
     transition: `all 0.35s ease ${80 + i * 60}ms`,
   })
 
-  const unresolved = pendingEvents.filter(e => !resolvedEventIds.has(e.id)).length
+  const unresolvedCritical = getCriticalEventsForGranska(pendingEvents).filter(e => !resolvedEventIds.has(e.id)).length
+  const unresolvedPC = game.pendingPressConference && !resolvedEventIds.has(game.pendingPressConference.id) ? 1 : 0
+  const unresolvedRM = game.pendingRefereeMeeting && !resolvedEventIds.has(game.pendingRefereeMeeting.id) ? 1 : 0
+  const unresolved = unresolvedCritical + unresolvedPC + unresolvedRM
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
@@ -158,8 +167,6 @@ export function GranskaScreen() {
             homeClub={homeClub}
             awayClub={awayClub}
             isHome={isHome}
-            myScore={myScore}
-            theirScore={theirScore}
             won={won}
             lost={lost}
             resultColor={resultColor}
@@ -173,6 +180,7 @@ export function GranskaScreen() {
             chosenLabels={chosenLabels}
             fadeIn={fadeIn}
             onChoice={handleChoice}
+            onResolve={handleResolveReactions}
           />
         )}
         {step === 'spelare' && (
