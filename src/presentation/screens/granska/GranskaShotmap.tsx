@@ -20,8 +20,9 @@ export function GranskaShotmap({ game, fixture, isHome }: GranskaShotmapProps) {
   const scoredCount  = goals.length
   // savedCount = opponent GK saves of our shots; use report.savesAway (away GK) if we're home, savesHome if we're away
   const savedCount   = isHome ? (fixture.report.savesAway ?? 0) : (fixture.report.savesHome ?? 0)
-  // onTargetHome/Away in matchCore only counts non-corner shots on target — corner goals are excluded,
-  // which causes conversion% > 100% in corner-heavy matches. Use scoredCount+savedCount instead.
+  // scoredCount + savedCount = shots on target for this team this match.
+  // Equivalent to report.onTargetHome/Away but robust against interactive corner goals,
+  // which go via matchReducer INTERACTIVE_GOAL and bypass the onTarget counter.
   const onTargetCount = scoredCount + savedCount
   const missCount    = Math.max(0, totalShots - onTargetCount)
 
