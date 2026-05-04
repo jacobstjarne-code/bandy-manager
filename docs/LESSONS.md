@@ -661,3 +661,31 @@ Båda är symptom av samma underliggande sak: magnitud-bygge utan **invariant-va
 
 **Historik:** Skottbild 2026-05-04. SPEC_SHOTMAP_OMARBETNING markerades ✅ LEVERERAD i KVAR.md ("halvcirkel-geometri ersätter rektangulära boxar", "↑ VI ANFALLER / DE ANFALLER ↓ i separator-strecket"). Playtest skärmdump 17:22 visade fortfarande rektangulära boxar och "MOTSTÅNDARMÅL"/"VÅRT MÅL"-text. Opus gjorde en symptomfix samma session: streckad mittlinje + flyttade etiketter till respektive mål. **Fixen flyttade implementationen *bort* från mocken** — mocken har grå separator + riktningspilar, inte streckad linje med etiketter. Jacob flaggade detta: "den borde ju implementeras som den är mockad". Fixen ska revertas och shotmap implementeras enligt `docs/mockups/shotmap_mockup.html` bokstavligen. Dokumenterat i SPEC_GRANSKA_VERIFIERING_2026-05-04 Fix E.
 
+
+---
+
+## 30. Asymmetrisk state-övergång mellan halvlekar — vissa fält förs över, andra initialiseras till noll. Workaround i UI maskerar bug i datamodellen.
+
+**Mönster:** En tracking-metrik visar systematiskt lägre värden än förväntat — inte tydligt fel, bara "ungefär rätt". Stresstest visar t.ex. 7,85/match där förväntat är 15-18. Ingen krasch. Inga warnings. Bara skev rapportering. Kan leva odetekterat länge eftersom UI ofta har workarounder eller alternativa beräkningsvägar som maskerar problemet.
+
+**Rotorsak:** Generator-funktion eller process som körs i två separata anrop (första halvlek + andra halvlek) initialiserar tracking-state vid varje anrop. Vissa fält förs över via input-objektet (t.ex. `secondHalfInput.shotsHome`), andra glöms bort och initialiseras till `0` i andra anropet. Asymmetri i state-management — halva pendangerna i koden, resten förglömda.
+
+**Fix:** Vid händelse-tracking i process som körs flera gånger, verifiera att ALLA tracking-fält har en motsvarande överförings-rad. Konkret för matchEngine-stället:
+
+```typescript
+// Före (bug)
+let onTargetHome = 0  // ← nollställs mellan halvlekar
+let shotsHome    = fhs?.shotsHome ?? 0  // ← förs över korrekt
+
+// Efter (fix)
+let onTargetHome = fhs?.onTargetHome ?? 0  // ← även detta förs över
+let shotsHome    = fhs?.shotsHome    ?? 0
+```
+
+**Känn igen:** Stats visar "ungefär rätt" siffror som ligger systematiskt under förväntade. Inte krasch, inte tydligt fel. Plus: kommentar i koden som förklarar bort en avvikelse ("corner goals are excluded which causes conversion% > 100%") — om kommentaren är teoretisk istf empiriskt verifierad kan den dölja en bugg av denna typ.
+
+**Sökbart pattern:** I varje generator/process med first-half + second-half-anrop, löp igenom alla `let X = 0`-rader i second-half-init och verifiera att motsvarande first-half-värde förs över via input-objektet.
+
+**Sekundär insikt — Workarounder i UI maskerar datamodell-buggar:** `GranskaShotmap.tsx` räknade `onTargetCount = scoredCount + savedCount` istf att läsa `report.onTargetHome` direkt, p.g.a. en (felaktig) kommentar om corner-exkludering. Visualiseringen blev korrekt, men buggen i datamodellen förblev osynlig för alla andra delar av appen som läser fältet direkt. Workarounden kvar med korrekt förklaring (robust mot interaktiva hörn-mål som inte inkrementerar onTarget i matchReducer — det är en separat, legitim anledning).
+
+**Historik:** Shot data audit 2026-05-04. `onTargetHome/Away` initialiserades till `0` i `simulateMatchCore` istf `fhs?.onTargetHome ?? 0`. `report.onTargetHome` reflekterade bara andra halvlekens värde. Stresstest: 7,85/match mot bandygrytan ~15.8. Fixat i samma session: lade till `initialOnTargetHome/Away` i `StepByStepInput`, `SecondHalfInput`, matchCore-räknare och matchEngine `secondHalfInput`. Stresstest efter fix: 15.4/match.
