@@ -87,7 +87,7 @@ export const PROFILE_GOAL_MODS: Record<MatchProfile, number> = {
   defensive_battle: 0.60,
   standard:         1.00,
   open_game:        1.25,  // was 1.40 — matchCore runs more steps/tick than matchEngine
-  chaotic:          1.55,  // was 1.80
+  chaotic:          1.35,  // was 1.55 → sänkt P1.C: dämpning mot explosionsrisk vid largeCaDiff+powerplay
 }
 
 // Empirisk boost: verklig Elitserie-data visar 54.3% av mål i 2:a halvlek.
@@ -120,7 +120,7 @@ export function pickMatchProfileFromSeed(
   if (opts.isPlayoff)      { wDefensive += 15; wStandard -= 5;  wOpen -= 10 }
   // isFinal staplas ovanpå isPlayoff — SM-finaler ska vara markant mer defensiva (target 7.00 vs 9.28 reguljär)
   if (opts.isFinal)        { wDefensive += 28; wStandard -= 18; wOpen -= 9; wChaotic -= 1 }
-  if (opts.largeCaDiff)    { wOpen += 15;     wDefensive -= 10 }
+  if (opts.largeCaDiff)    { wOpen += 10;     wDefensive -= 10 }  // was 15 → sänkt P1.C
 
   wDefensive = Math.max(1, wDefensive)
   wStandard  = Math.max(1, wStandard)
