@@ -2,7 +2,6 @@ import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent, TransferBid } from '../../entities/GameEvent'
 import type { Fixture } from '../../entities/Fixture'
 import { pickStarPerformanceText } from '../../data/eventCardInlineStrings'
-import { generatePressConference } from '../pressConferenceService'
 import { generateSponsorOffer } from '../sponsorService'
 import {
   bidReceivedEvent,
@@ -38,14 +37,6 @@ export function generatePostAdvanceEvents(
     ...(game.pendingEvents ?? []).map(e => e.id),
     ...(game.resolvedEventIds ?? []),
   ])
-
-  // 0. Press conference after managed match
-  if (justCompletedFixture) {
-    const pressEvent = generatePressConference(justCompletedFixture, game, rand)
-    if (pressEvent && !alreadyQueued.has(pressEvent.id)) {
-      events.push(pressEvent)
-    }
-  }
 
   // 1. Incoming transfer bids → events
   for (const bid of newBids) {
