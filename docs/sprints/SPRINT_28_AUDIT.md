@@ -2,7 +2,7 @@
 
 **Datum:** 2026-04-27  
 **Commits:** `701044a` (fas A), `abee31c` (fas B)  
-**Verifieringsform:** Kod-verifierad simulation (fas A+B), Opus-audit (fas C — återstår)
+**Verifieringsform:** Kod-verifierad simulation (fas A+B), Opus-audit (fas C — levererad 2026-05-03)
 
 ---
 
@@ -16,7 +16,7 @@
 - [x] **28-B: Legend commentary — assist** — `legend_assist`-poolen (4 strängar), 70% check på `assisterPlayerId` om scorer-legend inte triggar
 - [x] **28-B: Legend commentary — MV-räddning** — `legend_gk_save`-poolen (3 strängar), 70% override i `saveOccurred && gkPlayerId`-grenen
 - [x] **28-B: Legend commentary — sen avgörande** — `legend_late`-poolen (3 strängar), väljs när `minute >= 80 && currentMargin <= 1` istf `legend_goal`
-- [ ] **28-C: Skärmdump-vänlighet-audit** — ÅTERSTÅR (Opus-jobb, output: `docs/SCREENSHOT_AUDIT_2026-04-26.md`)
+- [x] **28-C: Skärmdump-vänlighet-audit** — Levererad 2026-05-03 i `docs/SCREENSHOT_AUDIT_2026-05-03.md`. 10 vyer granskade strukturellt. Fix-prioritering: ~3h 15 min Code + 4 mocks (vid ev. Sprint 29). Live-verifiering med faktiska skärmdumpar markerad som TODO per vy.
 
 ---
 

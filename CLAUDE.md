@@ -572,25 +572,56 @@ dubblering är ett misslyckande.
 
 ## ARBETSFÖRDELNING: OPUS vs CODE
 
-Opus (claude-opus-4-6) drar mer kvot per meddelande.
-Code (claude-sonnet-4-6 via Claude Code) drar mindre.
-Fördela arbetet medvetet:
+Opus (Claude 4 Opus, denna chat) drar mer kvot per turn än
+Code (Sonnet via Claude Code). Specielt vid iteration —
+stress-test, build/test-loops, pixel-jämförelse mot mock —
+skalar Code-kostnaden bättre. Fördela arbete utifrån två frågor:
 
-**Opus fixar direkt** (via workspace:edit_file):
-- Kirurgiska fixar (< ~50 rader, 1-3 filer)
-- Textändringar, CSS-justeringar, prop-fixar
-- Saker som tar längre att beskriva än att göra
+1. **Är det Opus-rollens jobb?** (mocks, specer, svensk text, diagnos)
+2. **Kräver fixen iteration?** (stress-test, build/test-loop, pixel-jämför)
 
-**Opus skriver spec för Code:**
-- Nya features (ny komponent, ny service)
-- Refactors som berör > 5 filer
-- Arkitekturella ändringar (nytt mönster, ny klass)
-- Allt som kräver npm run build && npm test-iteration
+### Opus gör direkt
+- Mocks i `docs/mockups/` — alltid Opus (princip 4)
+- Spec-skrivning — alltid Opus
+- Svensk text med specifik ton — alltid Opus (se OPUS_SAMARBETSREGLER #5)
+- Kirurgiska kod-fixar som INTE kräver iteration:
+  - 1 rad CSS, en konstantändring, en prop-fix där värdet är känt
+  - Textändring i en sträng-konstant
+  - Tillägg av saknad import
+- Diagnos-filer som kräver kod-läsning + analys (ingen kodändring)
+- Process-fil-tillägg som kommer FÖRE sprint:
+  - LESSONS-lärdom Code behöver känna till
+  - DECISIONS-post som motiverar specen
+  - KVAR-sektion som dokumenterar parkerat scope
 
-**Defaultregel:** Om Opus har workspace-åtkomst och
-ändringen är < 50 rader — gör den direkt.
-Om Opus skriver en spec — säg VARFÖR den inte
-fixades direkt ("berör 8 filer", "kräver test-iteration").
+### Code gör (även om diffen är liten)
+- Allt som kräver build + test-loop för korrekthetsverifiering
+- Allt som kräver stress-test (200+ matcher headless)
+- Allt som kräver pixel-jämförelse mot mock i levande app
+- Refactors > 5 filer, ny service/entity/större komponent
+- Process-fil-uppdateringar EFTER sprint-leverans:
+  - `docs/sprints/SPRINT_XX_AUDIT.md` — Code har sett implementationen
+  - `docs/HANDOVER_YYYY-MM-DD.md` — Code vet vad som faktiskt levererades
+  - `KVAR.md` ✅-markeringar för det Code precis avslutade
+  - `LESSONS.md` historik-tillägg när Code stötte på ett mönster
+
+### Kvot-perspektivet — vad det betyder konkret
+En "liten" fix som kräver fyra stress-test-iterationer = stort
+Opus-jobb (varje iteration är en Opus-turn) men billigt Code-jobb
+(varje iteration är en Sonnet-turn). **Default = Code för iteration-
+tunga fixar även om diff är 5 rader.**
+
+### Defaultregel
+Innan Opus börjar editera, ställ två frågor:
+1. *Är det iteration-fritt?* (jag kan veta att fixen är rätt utan att köra appen/testerna mer än en gång)
+2. *Är det Opus-rollens jobb?* (mock, spec, text, diagnos, kirurgisk konstantändring)
+
+Båda ja → Opus direkt.
+Iteration-tungt → Code, även för små diffar.
+Annars → spec.
+
+Om Opus skriver en spec — säg VARFÖR den inte fixades direkt
+("berör 8 filer", "kräver stress-test-loop", "kräver pixel-jämför").
 
 ---
 

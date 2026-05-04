@@ -8,6 +8,26 @@ Syftet är inte formalism. Syftet är att om 6 månader ha ett svar på "varför
 
 ---
 
+## 2026-05-03 — Kvot-avvägning Opus/Code förtydligad i ARBETSFÖRDELNING
+
+**Problem:** Tidigare regel sa att Opus fixar direkt om diff < 50 rader. Det är otillräckligt när en fix kräver iteration. En 5-raders konstantändring som behöver fyra stress-test-rundor för att verifieras blir fyra Opus-turns (hög kvot) i stället för fyra Sonnet-turns (låg kvot). Sessionen 2026-05-03 stod inför exakt det valet med P1–P5 i playtest-fix-paketet och ramverket gav inte vettig vägledning.
+
+**Beslut:** ARBETSFÖRDELNING-sektionen i CLAUDE.md skriven om till två-frågor-modell:
+1. Är det Opus-rollens jobb? (mock, spec, text, diagnos)
+2. Kräver fixen iteration? (stress-test, build/test-loop, pixel-jämför)
+
+Båda ja → Opus direkt. Iteration-tungt → Code, även för små diffar. Annars → spec.
+
+Processfil-uppdateringar EFTER sprint-leverans (SPRINT_AUDIT, HANDOVER, KVAR-checks, LESSONS-historik) flyttade från Opus till Code — Code har sett implementationen, vet vad som faktiskt hände, och drar mindre kvot per iteration.
+
+**Alternativ övervägt:**
+- Behålla 50-raders-tumregel och bara komplettera med text om iteration. Avvisat — det är just smådiff-fall som sväller via iteration som är problemet, och tumregeln pekar fel där.
+- Låta Opus alltid skriva specs för alla kodändringar och bara fixa text/mocks. Avvisat — underutnyttjar Opus när kirurgisk fix är iteration-fri (1 rad CSS), spec blir tyngre än problemet.
+
+**Konsekvens:** Sessionen 2026-05-03 implementerade beslutet samma dag: P5 (1 rad CSS) görs av Opus direkt; P1–P4 (alla iteration-tunga) delegeras till Code via patchad v1-spec. KVAR/HANDOVER/SPRINT_AUDIT skrivs av Code efter leverans. Mocks i docs/mockups/ skrivs av Opus innan Code börjar (princip 4).
+
+---
+
 ## 2026-04-27 (kväll) — Pixel-jämförelse som commit-blocker, en komponent åt gången
 
 **Problem:** Scene-systemet levererades 2026-04-27 med felaktiga CSS-tokens på mörka bakgrunder. Code använde ljusa tokens (`--bg-elevated` = vitt, `--text-secondary` = mörk text, `--border` = ljust) på svarta scen-bakgrunder. Komponenter blev oläsbara. Pixel-jämförelse hade fångat felet men gjordes inte trots att CLAUDE.md princip 4 (Mock-driven design) föreskrev det. Jacob fick fixa i efterhand med Opus-granskning.

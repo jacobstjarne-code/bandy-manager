@@ -178,70 +178,47 @@ Se mockup: `docs/mockups/round_cycle_mockup.html`
 
 ---
 
-## 4. DASHBOARD — Förbered-fasen
+## 4. PORTAL — Förbered-fasen
+
+**Uppdaterad:** 2026-04-30 (efter SPEC_PORTAL_FAS_1 + Fas_2 + BESLUTSEKONOMI Steg 2-3)
+
+Dashboard från tidigare designsystem är ersatt av Portal — en bag-of-cards som plockar relevanta kort baserat på speltillstånd, inte en fast 2×2-grid.
 
 ### Layout (uppifrån och ner)
-1. **Välkomstkort** (omgång 1) ELLER **Nudge-agenda** (övriga)
-2. **NextMatchCard** (befintlig)
-3. **DailyBriefing** (dynamiskt enradskort)
-4. **2×2 grid** (Tabell | Senast | Orten | Ekonomi)
-5. **Enraders-kort** (Trupp, Cup/Playoff, Akademi)
-6. **CupCard/PlayoffCard** (expanded, om relevant)
-7. **CTA-sektion** (datum, DiamondDivider, trainer arc, knapp)
 
-### Välkomstkort (omgång 1)
-`card-sharp` (INTE card-round). Sektionslabel "🏒 SÄSONGSSTART". Kort text + nudges med prickar och →.
+Portal renderar i denna ordning (se `PortalScreen.tsx`):
 
-### Nudge-agenda (omgång 2+)
-Rubrik: "ATT GÖRA" + "N av M klart"
+1. **SituationCard** — kontextuell rubrik om vad som väntar (cup, derby, slutspur). Bygger meningar av 1-3 fragment baserat på state. Always renderas.
+2. **PortalBeat** — engångs-narrativa nedslag (säsongspremiär, första derby, halvtid, fönster öppnar). En åt gången, dismissable. Visas bara när trigger matchar.
+3. **PortalEventSlot** — visar nästa event från kön (medium/atmospheric). Kritiska events går via EventOverlay i GameShell, inte här. Tom när kön är tom.
+4. **Primary card** — den viktigaste single-purpose-vyn för rundan. Plockas av `buildPortal` från card-bag. NextMatchPrimary, DerbyPrimary, CupPrimary, etc.
+5. **Secondary section** — 2-kolumns grid med 0-3 kontextuella kort. Plockas av buildPortal från en pool av 9: TabellSecondary, EkonomiSecondary, KlackenSecondary, OpponentFormSecondary, InjuryStatusSecondary, OpenBidsSecondary, JournalistSecondary, CoffeeRoomSecondary, SeasonSignatureSecondary. Kort med `gridColumn: span 2` (ex SeasonSignatureSecondary) tar full bredd.
+6. **Minimal bar** — kompakt rad med trupp/form/kassa-snapshot.
+7. **Sticky CTA** — fixerad ovanför BottomNav, alltid synlig ("Spela omgång N →").
 
-Nudgar trackar `visitedScreensThisRound`. Done = opacity 0.5, line-through, grön ✓.
-Max 3 nudgar. Om inga: visa INTE sektionen.
+### Bag-of-cards-principen
 
-```tsx
-<div style={{
-  display: 'flex', alignItems: 'center', gap: 8,
-  padding: '7px 10px', borderRadius: 8,
-  background: 'var(--bg-surface)', border: '0.5px solid var(--border)',
-  cursor: 'pointer', fontSize: 12, color: 'var(--text-secondary)',
-}}>
-  <span style={{ width: 6, height: 6, borderRadius: '50%', background: color }} />
-  {text}
-  <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--accent)' }}>→</span>
-</div>
-```
+Primary och secondary plockas dynamiskt av `buildPortal(game, seed)`:
+- Varje kort har en trigger (pure function `(game) => boolean`)
+- Kort som triggar är kandidater
+- Bland kandidater väljs det med högst prioritet för primary
+- 0-3 secondary plockas baserat på vilka som triggar
+- Inget visas som inte är relevant just denna runda
 
-### DailyBriefing (dagboken)
-`card-round`, fontSize 11, EN rad. Visar det mest intressanta per omgång:
-1. Derby? → "🔥 Derby. {rivalryName}. V{w} O{d} F{l}."
-2. Spelare i form? → "📈 {namn} — {N} mål senaste {M}."
-3. Patron krav? → "👤 {namn}: \"{demand}\""
-4. Akademiprospekt? → "🎓 {namn} (P19) visar A-lagsklass."
-5. Transferfönster? → "💼 Fönstret {öppnar/stänger} om {N} omg."
-6. Tidningsrubrik? → "📰 {localPaperName}: {headline}"
+Det är *motsatsen* till gamla 2×2-griden där samma fyra kort (Tabell, Senast, Orten, Ekonomi) alltid visades. Nu är Portal *kontextuell* — tabellen visas när tabellen säger något, inte alltid.
 
-### 2×2 grid
-```tsx
-<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, margin: '0 0 6px' }}>
-```
-Varje cell: `card-sharp`, padding `8px 10px`, klickbar.
+### Seasonal tone
 
-**Tabell:** Position (stor Georgia) + poäng + ms + form-prickar + avstånd grannar.
-**Senast:** Score + pill (V/F/O) + motståndare + POTM.
-**Orten:** Puls-siffra (Georgia) + bar + citat.
-**Ekonomi:** Kassa (Georgia) + netto/omg.
+`getSeasonalTone(date)` sätter CSS-vars (`--bg-portal`, `--bg-portal-elevated`, `--accent-portal`) som glider över säsongen:
+- Tidigt (september-oktober): mörkblå med kopparton
+- Sent vintern (januari-februari): isigt med blåare accent
+- Vår (mars-april): lite varmare igen
 
-Omgång 1: Tabell visar "12 lag · 22 omg". Senast visar styrelsens mål.
+Alla Portal-kort använder dessa variabler. Ingen hårdkodning.
 
-### Enraders-kort
-`card-sharp`, padding `7px 10px`, margin-bottom `4px`. EN rad.
-```
-EMOJI LABEL     info-text     ›
-```
+### Nudge-stöd (Fas 2)
 
-### CTA
-Datum + Omgång → DiamondDivider → Trainer arc mood (11px italic) → CTA-knapp.
-CTA-text: "Redo — spela omgång {N} →".
+`PortalBeat` och secondary-cards kan inkludera nudge-uppmaningar ("Sätt lineup för derbyt →"). Inte separata kort som tidigare. Inga separata "agenda-listor".
 
 ---
 

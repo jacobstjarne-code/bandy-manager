@@ -2,11 +2,35 @@
 
 **Datum:** 2026-05-03
 **Författare:** Opus
-**Status:** Spec-klar för Code
+**Status:** ✅ LEVERERAD 2026-05-03 (alla 5 åtgärder, awaiting browser-playtest)
 **Estimat:** 1-2 dagar
 **Beroende:** Inga akuta. Granska-omarbetning ligger redan i origin/main.
 
 ---
+
+## LEVERANS—SAMMANFATTNING
+
+| Åtgärd | Vem | Resultat |
+|---|---|---|
+| P5 (?-knapp border) | Opus direkt | `border: 'none'` på frågetecken-knappen i `GameHeader.tsx`. |
+| P2 (skott vs skott på mål) | Code | `shotsHome/Away` + `onTargetHome/Away` inkrementeras nu vid hörn- och straffmål. Stress-test: `onTarget ≤ shots` håller. |
+| P3 (shotmap dense) | Code | `seenLabels`-Set mot staplade spelar-labels. `oppDotScale` (1.0→0.6) + `oppDotOpacity` (0.75→0.5) skalning vid >30 prickar. |
+| P1.A (cap kringgicks) | Code | `interactiveCanScore()` i MatchLiveScreen — cap-check i alla 4 interaktiva live-match paths (corner-zon, penalty-trigger, free-stroke, breakaway). Lessons #26. |
+| P1.C (profile-explosion) | Code | `PROFILE_GOAL_MODS.chaotic` 1.55→1.35. `wOpen += 15` → `wOpen += 10` vid largeCaDiff. Mål/match ~8.97 (target 9.12). |
+| P1.B (per-spelare-cap) | Code | Variant C: hård cap 5 + soft brake ×0.7 från 2:a målet via `adjustedWeights` i `getGoalScorer`. `goalsByPlayer` lyft som closure-variabel. |
+| P4 (Portal-dubblering) | Code | `hasCriticalEvent` + `EventPrimary` filtrerar nu på `(e.priority ?? getEventPriority(e.type)) === 'critical'`. Lessons #27. |
+
+Alla fixar awaiting browser-playtest. Se `HANDOVER_2026-05-03.md` för playtest-checklista.
+
+---
+
+## EFTERÅT—ARBETSSÄTTS-NOTERING
+
+Denna spec skrevs i v1-form utan att följa CLAUDE.md princip 4 (mock-driven design) för P3 och P4. En föreslågen v2 med mocks och pre-spec cross-check planerades men levererades aldrig. V1 kördes igenom Code och fungerade — men det fungerade *trots* arbetssättsbristen, inte tack vare den. För framtida visuell omarbetning gäller princip 4 strikt enligt DECISIONS 2026-04-27.
+
+---
+
+## URSPRUNGLIG SPEC (BEHÅLLEN FÖR SPÅRBARHET)
 
 ## VARFÖR
 

@@ -16,6 +16,16 @@
 - P1.B: Per-spelare ceiling variant C — hard cap 5 + soft brake ×0.7 via adjustedWeights i getGoalScorer.
 - P4: hasCriticalEvent + EventPrimary saknade priority='critical'-filter. transferBidReceived (prio=normal) renderades dubbelt av PortalEventSlot + EventPrimary.
 - ⚠️ Awaiting browser-playtest: alla 5 fixes.
+- Spec markerad som ✅ LEVERERAD i `SPEC_PLAYTEST_FIXES_2026-05-03.md`. HANDOVER skriven: `HANDOVER_2026-05-03.md`. Lessons #26 + #27 skrivna. DECISIONS 2026-05-03-post om kvot-avvägning. CLAUDE.md ARBETSFÖRDELNING omskriven.
+
+**EventCardInline-texter:** ✅ Pooler levererade i `docs/textgranskning/TEXT_REVIEW_eventcardinline_2026-05-03.md`.
+- 3 av 6 typer var faktiskt placeholder: `starPerformance`, `playerPraise`, `captainSpeech`. Pooler skrivna med 5-6 varianter per typ + code-integrations-instruktion.
+- 3 redan kurerade och inte rörda: `bandyLetter` (`bandyLetterService.ts`), `supporterEvent` (`supporterEvents.ts`), `communityEvent` (`eventFactories.ts`).
+- ⚠️ Awaiting Code-integration i resp. factory-funktion.
+
+**Sprint 28 fas C — skärmdump-audit:** ✅ Levererad i `docs/SCREENSHOT_AUDIT_2026-05-03.md`.
+- 10 vyer granskade strukturellt. Fix-prioritering ger ~3h 15 min Code + 4 mocks (vid Sprint 29).
+- ⚠️ Live-verifiering med faktiska skärmdumpar markerad som TODO per vy. Tas vid nästa playtest innan Sprint 29 bestäms.
 
 **Portal omg 1 säsong 1 är gles** — ingen bygd-, spelare- eller patron-data hunnit ackumuleras. Specifikt välkomstkort eller sänkt tröskel för secondary-cards behövs. Inte akut.
 
@@ -45,7 +55,7 @@
 
 **DESIGN_SYSTEM § 4:** ✅ Uppdaterad av Opus — gamla DashboardScreen-beskrivningen ersatt med Portal-arkitekturen. Bag-of-cards-principen, seasonal tone, alla 9 secondary-cards.
 
-**EventCardInline-texter:** ⏸ Opus ska skriva texter för 6 vanligaste atmosfäriska event-typer (communityEvent, supporterEvent, starPerformance, playerPraise, bandyLetter, captainSpeech). Placeholder-texter nu.
+**EventCardInline-texter:** ✅ Pooler skrivna 2026-05-03 (TEXT_REVIEW_eventcardinline_2026-05-03.md). Awaiting Code-integration för 3 typer (starPerformance, playerPraise, captainSpeech).
 
 **SPEC_BESLUTSEKONOMI Steg 4 (fas-scenes) + Steg 5 (kritiska scenes):** ⏸ Väntar på playtest av Steg 3.
 
@@ -109,7 +119,7 @@
 **Sprint 25f/g — domare + matchskador:** ✅ Levererad (commit `dabc68a`). Ej playtestad.
 **Sprint 26 — cross-system skandalreferenser:** ✅ Levererad + kod-verifierad audit (commits `11802e1` + `6bbf8ca`).
 **Sprint 27 — narrativ djup-paket:** ✅ Levererad. Fas D (legend-roller + kafferum-pooler) commit `be33b3b`, text-pass commit `a814314`, fas E (karriärs-tidslinje) ingår i `be33b3b`.
-**Sprint 28 — narrativ djup-paket 2:** 🟡 Pågående. Fas A+B klara. **Fas C (skärmdump-audit, Opus-only) återstår.**
+**Sprint 28 — narrativ djup-paket 2:** ✅ Levererad. Fas A+B kod-verifierade (commits `701044a`, `abee31c`). Fas C (skärmdump-audit) levererad 2026-05-03 i `SCREENSHOT_AUDIT_2026-05-03.md` — 10 vyer granskade, fix-lista för ev. Sprint 29.
 **SPEC_MATCHDAGAR Fas 1–3:** ✅ Levererad. Fas 4 blockeras på Eriks SMHI-skript.
 **Specialdatum V2:** ✅ Levererad (commits `da686d9`, `8dfac75`). Arena-konstanter, lore-pooler, specialDateService.
 
