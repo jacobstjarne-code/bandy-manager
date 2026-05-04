@@ -2,6 +2,7 @@ import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent, EventChoice, TransferBid } from '../../entities/GameEvent'
 import type { Player } from '../../entities/Player'
 import type { Mecenat } from '../../entities/Mecenat'
+import { pickPlayerPraiseText, pickCaptainSpeechText } from '../../data/eventCardInlineStrings'
 
 export function formatValue(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
@@ -272,7 +273,7 @@ export function generatePlayerPraiseEvent(
     id: `event_praise_${praiser.id}_${praised.id}`,
     type: 'playerPraise',
     title: `📰 ${name1} om ${name2}: "Bästa jag spelat med"`,
-    body: `${name1} berättade för Bandypuls om sitt samarbete med ${name2}.\n\n"Vi har en förståelse på planen som inte kräver ord. ${name2} vet alltid var jag vill ha bollen."`,
+    body: pickPlayerPraiseText(praiser, praised),
     choices: [
       {
         id: 'great',
@@ -290,13 +291,12 @@ export function generatePlayerPraiseEvent(
 
 // ── Captain speech — captain rallies the team after losing streak ─────────
 export function generateCaptainSpeechEvent(captain: Player, _clubName: string, season: number): GameEvent {
-  const captainName = `${captain.firstName} ${captain.lastName}`
   const isHighForm = captain.morale >= 70
   return {
     id: `event_captain_speech_s${season}`,
     type: 'captainSpeech',
     title: `📣 Kaptenen vill ta ton`,
-    body: `${captainName} knackar på dörren till ditt kontor.\n\n"Jag tänkte tala till laget idag. Det är dags att vi tar tag i det här. Okej med dig?"\n\nKaptenen ser sammanbiten ut. Laget har förlorat tre raka.`,
+    body: pickCaptainSpeechText(captain, season),
     choices: [
       {
         id: 'support',

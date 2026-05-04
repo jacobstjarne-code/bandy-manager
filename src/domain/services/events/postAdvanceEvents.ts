@@ -1,6 +1,7 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { GameEvent, TransferBid } from '../../entities/GameEvent'
 import type { Fixture } from '../../entities/Fixture'
+import { pickStarPerformanceText } from '../../data/eventCardInlineStrings'
 import { generatePressConference } from '../pressConferenceService'
 import { generateSponsorOffer } from '../sponsorService'
 import {
@@ -174,7 +175,7 @@ export function generatePostAdvanceEvents(
         id: eid,
         type: 'starPerformance',
         title: `⭐ Stjärnprestation — ${player.firstName} ${player.lastName}`,
-        body: `${player.firstName} ${player.lastName} fick betyget ${rating.toFixed(1)} senaste matchen. Laget hyllar insatsen.`,
+        body: pickStarPerformanceText(player, rating, roundPlayed),
         choices: [
           {
             id: 'ok',
