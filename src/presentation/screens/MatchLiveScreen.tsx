@@ -283,6 +283,17 @@ export function MatchLiveScreen() {
     })
   }, [currentStep, matchDone])
 
+  // Recovery: race condition i commentary/FF-läge mellan timer-effekt och
+  // handler-timeouts kan driva currentStep förbi steps.length. Säkerställer
+  // att matchDone sätts även om steg-pekaren passerar slutet.
+  useEffect(() => {
+    if (currentStep >= steps.length && steps.length > 0 && !matchDone) {
+      console.warn('[MatchLive] Recovery: currentStep passed steps.length, forcing matchDone')
+      setMatchDone(true)
+      if (isSmFinal || isCupFinal) setCeremonySlide(1)
+    }
+  }, [currentStep, steps.length, matchDone])
+
   useEffect(() => {
     if (currentStep < 0 || currentStep >= steps.length) return
     const step = steps[currentStep]

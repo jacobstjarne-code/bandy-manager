@@ -185,6 +185,12 @@ Se `docs/SPEC_TEKNISK_SKULD.md` för fullständig spec per åtgärd.
 
 ---
 
+### TS-10 — Live-match steg-progression
+
+**TS-10 — Live-match steg-progression:** Två separata `setCurrentStep`-källor (timer-effekt + 4 handler-timeouts) skapar race condition i FF/commentary-läge. Refactor B beskriven i `docs/diagnos/2026-05-04_scoreboard_desync.md`. Recovery-effekten i MatchLiveScreen är temporär patch — när B implementeras, ta bort recovery efter 30-match-verifiering utan warnings.
+
+---
+
 ### TS-1 till TS-3: (Äldre skulder)
 
 **`pickSeasonHighlight()` — LÖST (2026-04-27).** Borttagen i commit `85170f7`.
