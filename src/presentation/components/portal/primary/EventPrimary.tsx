@@ -1,15 +1,19 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
+import { getEventPriority } from '../../../../domain/entities/GameEvent'
 
 /**
  * Primary-kort för kritiska events som kräver svar.
  * Ingen mock-referens — card-sharp med danger-border.
+ * Visar BARA events med priority='critical' — medium/low visas av PortalEventSlot.
  */
 export function EventPrimary({ game }: CardRenderProps) {
   const navigate = useNavigate()
 
   const criticalEvent = (game.pendingEvents ?? []).find(
-    e => !e.resolved && e.type !== 'pressConference'
+    e => !e.resolved &&
+         e.type !== 'pressConference' &&
+         (e.priority ?? getEventPriority(e.type)) === 'critical'
   )
 
   if (!criticalEvent) return null
