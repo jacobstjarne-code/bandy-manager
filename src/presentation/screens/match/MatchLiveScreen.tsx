@@ -1,12 +1,12 @@
 /**
  * MatchLiveScreen.tsx — top-level orkestrering för live-match
  *
- * Steg 3 i refactor/livematch-split (SPEC_LIVEMATCH_REFACTOR.md).
- * Mekanisk split av original MatchLiveScreen.tsx — ingen logikändring.
- * Handler-logik i handlers/, generator i useMatchGenerator, timer i useMatchTimer.
+ * Steg 4 i refactor/livematch-split (SPEC_LIVEMATCH_REFACTOR.md).
+ * State via matchReducer — EN sanning för homeScore/awayScore/playerGoals.
+ * Steps-arrayen är render-källa för commentary. Reducer är statsmaskin.
  */
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useReducer, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameStore } from '../../store/gameStore'
 import { simulateSecondHalf, simulateFromMidMatch } from '../../../domain/services/matchSimulator'
@@ -49,6 +49,7 @@ import { mulberry32 } from '../../../domain/utils/random'
 import { FirstVisitHint } from '../../components/FirstVisitHint'
 import { simulateMatchStepByStep } from '../../../domain/services/matchSimulator'
 import { useRecoveryGuard } from './recovery'
+import { matchReducer, initialMatchState } from './matchReducer'
 
 interface LocationState {
   fixture: Fixture
@@ -101,6 +102,9 @@ export function MatchLiveScreen() {
   })()
 
   const isBigMatch = isSmFinal || isCupFinal
+
+  // Reducer — EN sanning för score + per-spelare-räknare (steg 4)
+  const [matchState, dispatch] = useReducer(matchReducer, initialMatchState)
 
   const [steps, setSteps] = useState<MatchStep[]>([])
   const [currentStep, setCurrentStep] = useState(-1)
@@ -454,6 +458,25 @@ export function MatchLiveScreen() {
         setMatchDone(true)
         if (isSmFinal || isCupFinal) setCeremonySlide(1)
       } else {
+        const nextStep = steps[currentStep + 1]
+        if (nextStep) {
+          // Dispatch absoluta värden från nästa steg till reducer (steg 4)
+          dispatch({
+            type: 'STEP_DELTA',
+            delta: {
+              homeScore: nextStep.homeScore,
+              awayScore: nextStep.awayScore,
+              shotsHome: nextStep.shotsHome,
+              shotsAway: nextStep.shotsAway,
+              onTargetHome: nextStep.onTargetHome,
+              onTargetAway: nextStep.onTargetAway,
+              cornersHome: nextStep.cornersHome,
+              cornersAway: nextStep.cornersAway,
+              homeActiveSuspensions: nextStep.activeSuspensions.homeCount,
+              awayActiveSuspensions: nextStep.activeSuspensions.awayCount,
+            },
+          })
+        }
         setCurrentStep(prev => prev + 1)
       }
     }, delay)
@@ -546,6 +569,18 @@ export function MatchLiveScreen() {
     const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
     const minute = cornerData.minute
 
+    // Dispatch till reducer — reducer äger score + cap-kontroll (steg 4)
+    if (outcome.type === 'goal' && outcome.scorerId) {
+      dispatch({
+        type: 'INTERACTIVE_GOAL',
+        clubId: managedClubId,
+        playerId: outcome.scorerId,
+        isPenalty: false,
+        attackingHome: managedIsHome,
+      })
+    }
+
+    // Uppdatera steps för commentary-feed (score-mutation borttagen — reducer äger score)
     setSteps(prev => {
       const updatedCurrent = prev.map((s, idx) => {
         if (idx !== currentStep) return s
@@ -603,6 +638,18 @@ export function MatchLiveScreen() {
     const shooterLast = penData.shooterName.split(' ').slice(-1)[0]
     const keeperLast = penData.keeperName.split(' ').slice(-1)[0]
     const minute = penData.minute
+
+    // Dispatch till reducer (steg 4)
+    if (outcome.type === 'goal') {
+      dispatch({
+        type: 'INTERACTIVE_GOAL',
+        clubId: managedClubId,
+        playerId: shooterId,
+        isPenalty: true,
+        attackingHome: managedIsHome,
+      })
+    }
+    // Note: INTERACTIVE_SAVE för straff utelämnat — PenaltyInteractionData saknar keeperId
 
     setSteps(prev => {
       const updatedCurrent = prev.map((s, idx) => {
@@ -671,6 +718,17 @@ export function MatchLiveScreen() {
     const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
     const minute = counterData.minute
 
+    // Dispatch till reducer (steg 4)
+    if (outcome.type === 'goal' && outcome.scorerId) {
+      dispatch({
+        type: 'INTERACTIVE_GOAL',
+        clubId: managedClubId,
+        playerId: outcome.scorerId,
+        isPenalty: false,
+        attackingHome: managedIsHome,
+      })
+    }
+
     setSteps(prev => {
       const updatedCurrent = prev.map((s, idx) => {
         if (idx !== currentStep) return s
@@ -728,6 +786,17 @@ export function MatchLiveScreen() {
 
     const managedClubId = managedIsHome ? fixture.homeClubId : fixture.awayClubId
     const minute = fkData.minute
+
+    // Dispatch till reducer (steg 4)
+    if (outcome.type === 'goal') {
+      dispatch({
+        type: 'INTERACTIVE_GOAL',
+        clubId: managedClubId,
+        playerId: fkData.kickerId,
+        isPenalty: false,
+        attackingHome: managedIsHome,
+      })
+    }
 
     setSteps(prev => {
       const updatedCurrent = prev.map((s, idx) => {
@@ -845,6 +914,20 @@ export function MatchLiveScreen() {
     const newSecondHalf: MatchStep[] = []
     for (const s of gen) newSecondHalf.push(s)
     setSteps([...firstHalf, ...newSecondHalf])
+    // Återställ reducer till halvtidsstatus (utvisningar nollställs, scores bevaras)
+    dispatch({
+      type: 'RESET_FROM_HALFTIME',
+      state: {
+        initialHomeScore: halftimeStep?.homeScore ?? 0,
+        initialAwayScore: halftimeStep?.awayScore ?? 0,
+        initialShotsHome: halftimeStep?.shotsHome ?? 0,
+        initialShotsAway: halftimeStep?.shotsAway ?? 0,
+        initialCornersHome: halftimeStep?.cornersHome ?? 0,
+        initialCornersAway: halftimeStep?.cornersAway ?? 0,
+        initialHomeSuspensions: 0,
+        initialAwaySuspensions: 0,
+      },
+    })
     setTacticChanged(true)
     setShowHalftime(false)
     setCurrentStep(31)
@@ -971,8 +1054,9 @@ export function MatchLiveScreen() {
   const currentMatchStep = currentStep >= 0 && currentStep < steps.length ? steps[currentStep] : null
   const displayedSteps = currentStep >= 0 ? steps.slice(0, currentStep + 1) : []
   const currentMinute = currentMatchStep?.minute ?? 0
-  const homeScore = currentMatchStep?.homeScore ?? 0
-  const awayScore = currentMatchStep?.awayScore ?? 0
+  // Score läses från reducer-state — EN sanning (steg 4)
+  const homeScore = matchState.homeScore
+  const awayScore = matchState.awayScore
 
   const homeClub = fixture ? game?.clubs.find(c => c.id === fixture.homeClubId) : undefined
   const awayClub = fixture ? game?.clubs.find(c => c.id === fixture.awayClubId) : undefined
