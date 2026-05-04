@@ -11,6 +11,8 @@ export type SceneId =
   | 'journalist_relationship'
   | 'season_signature_reveal'
   | 'board_meeting'
+  | 'cup_intro'
+  | 'cup_final_intro'
 
 export type SceneTrigger =
   | { kind: 'first_round_of_season' }

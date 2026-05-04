@@ -3,6 +3,7 @@ import { PendingScreen } from '../../../domain/enums'
 import { resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
+import { detectSceneTrigger } from '../../../domain/services/sceneTriggerService'
 import { navigateTo } from '../../navigation/globalNavigate'
 import { saveSaveGame } from '../../../infrastructure/persistence/saveGameStorage'
 
@@ -413,6 +414,14 @@ export function gameFlowActions(get: Get, set: Set) {
           [sceneId]: choiceId,
         }
       }
+
+      // Kedja scener: efter en scen klickats igenom, kolla om nästa ska trigga.
+      // Så board_meeting → sunday_training → cup_intro flyter naturligt utan ett mellansteg via Portal.
+      const nextSceneId = detectSceneTrigger(updatedGame)
+      if (nextSceneId) {
+        updatedGame.pendingScene = { sceneId: nextSceneId, triggeredAt: updatedGame.currentDate }
+      }
+
       set({ game: updatedGame })
       void persistAutosave(updatedGame, 'completeScene')
     },

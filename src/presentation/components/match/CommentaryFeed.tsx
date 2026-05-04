@@ -216,6 +216,17 @@ export function CommentaryFeed({
       })()}
       {cornerNode}
       {[...displayedSteps].reverse().flatMap((s, idx) => {
+        // Filtrera ut tomma steg — om varken commentary eller meningsfullt event
+        // har något att visa, hoppa över. Detta fångar buggar där matchengine
+        // genererat ett step utan innehåll.
+        const hasMeaningfulEvent = s.events.some(e =>
+          e.type === MatchEventType.Goal ||
+          e.type === MatchEventType.RedCard ||
+          e.type === MatchEventType.Substitution ||
+          e.type === MatchEventType.Corner
+        )
+        if (!s.commentary?.trim() && !hasMeaningfulEvent) return []
+
         const hasGoal = s.events.some(e => e.type === MatchEventType.Goal)
         const hasSuspension = s.events.some(e => e.type === MatchEventType.RedCard)
         const hasCorner = s.events.some(e => e.type === MatchEventType.Corner) && !hasGoal

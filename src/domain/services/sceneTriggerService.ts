@@ -10,6 +10,8 @@ import type { SceneId } from '../entities/Scene'
 import { FixtureStatus } from '../enums'
 import { getCoffeeRoomScene } from './coffeeRoomService'
 import { shouldTriggerBoardMeeting } from '../data/scenes/boardMeetingScene'
+import { shouldTriggerCupIntro } from '../data/scenes/cupIntroScene'
+import { shouldTriggerCupFinalIntro } from '../data/scenes/cupFinalIntroScene'
 
 const COFFEE_ROOM_COOLDOWN_ROUNDS = 3
 
@@ -19,13 +21,18 @@ const COFFEE_ROOM_COOLDOWN_ROUNDS = 3
  *
  * Prioritetsordning (högst först):
  *   1. SM-finalseger (one-shot, narrativt tungt)
- *   2. Söndagsträningen (one-shot, säsongsstart)
- *   3. Kafferummet (recurring, cooldown-styrt)
+ *   2. Styrelsemötet (one-shot, allra först i nytt spel)
+ *   3. Söndagsträningen (one-shot, etablerar truppen)
+ *   4. Cup-intro (en gång per säsong, innan första cupmatch)
+ *   5. Säsongssignatur-reveal (en gång per säsong)
+ *   6. Kafferummet (recurring, cooldown-styrt)
  */
 export function detectSceneTrigger(game: SaveGame): SceneId | null {
   if (shouldTriggerSMFinalVictory(game)) return 'sm_final_victory'
   if (shouldTriggerBoardMeeting(game)) return 'board_meeting'
   if (shouldTriggerSundayTraining(game)) return 'sunday_training'
+  if (shouldTriggerCupFinalIntro(game)) return 'cup_final_intro'
+  if (shouldTriggerCupIntro(game)) return 'cup_intro'
   if (shouldTriggerSeasonSignature(game)) return 'season_signature_reveal'
   if (shouldTriggerCoffeeRoom(game)) return 'coffee_room'
   return null

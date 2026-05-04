@@ -130,7 +130,7 @@ export function MatchLiveScreen() {
   const [liveSubs, setLiveSubs] = useState<{ outId: string; inId: string; minute: number }[]>([])
   const [showSubModal, setShowSubModal] = useState(false)
   const [ceremonySlide, setCeremonySlide] = useState(0)
-  const [finalIntroSlide, setFinalIntroSlide] = useState(() => isSmFinal ? 1 : isCupFinal ? 1 : 0)
+  const [finalIntroSlide, setFinalIntroSlide] = useState(() => isSmFinal ? 1 : 0)
   const [homeScoreFlash, setHomeScoreFlash] = useState(false)
   const [awayScoreFlash, setAwayScoreFlash] = useState(false)
   const prevHomeScore = useRef(0)
