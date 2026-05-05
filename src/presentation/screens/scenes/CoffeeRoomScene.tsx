@@ -78,7 +78,7 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
       </div>
 
       <div style={{ padding: '16px 20px 24px', position: 'relative', zIndex: 1 }}>
-        <SceneCTA label="Tillbaka till dashboarden" onClick={onComplete} />
+        <SceneCTA label="Tillbaka till klubben" onClick={onComplete} />
       </div>
     </div>
   )

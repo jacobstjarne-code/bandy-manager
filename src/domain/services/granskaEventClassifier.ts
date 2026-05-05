@@ -38,7 +38,15 @@ export const PLAYER_TYPES = new Set<GameEventType>([
 ])
 
 /**
- * Atmospheric post-match reactions — auto-resolved in ReaktionerKort.
+ * Post-match reaction event types. Routing depends on choices.length:
+ * - choices.length === 0 → ReaktionerKort (auto-resolved at render)
+ * - choices.length > 0   → Översikt as critical (player decision required)
+ *
+ * Auto-resolve via the 'auto' choiceId is not safe for events with choices.
+ * eventResolver silently returns the game unchanged when choiceId is unknown,
+ * so side-effects (e.g. tifoDone for supporter_tifo_*, saveBandyLetter for
+ * bandyLetter) never fire and the event re-appears next session. The classify
+ * function below routes choice-bearing reactions to 'critical' instead.
  */
 export const REACTION_TYPES = new Set<GameEventType>([
   'mediaReaction',
@@ -51,13 +59,22 @@ export const REACTION_TYPES = new Set<GameEventType>([
 
 /**
  * Pure function: classify a pending event by its nature for Granska routing.
- * General priority-override: any inbox-default type with priority='critical'
- * escalates to CRITICAL. Only 'critical', not 'high'.
+ *
+ * Routing rules:
+ * - CRITICAL_GRANSKA_TYPES → 'critical' (decision required in Översikt)
+ * - PLAYER_TYPES → 'player' (Spelare-fliken)
+ * - REACTION_TYPES with choices.length === 0 → 'reactions' (auto-resolved)
+ * - REACTION_TYPES with choices.length > 0 → 'critical' (decision required —
+ *   side-effects in eventResolver only fire on a real choiceId)
+ * - Any other type with priority='critical' escalates to 'critical'
+ * - Otherwise → 'inbox-only'
  */
 export function classifyEventNature(event: GameEvent): EventNature {
   if (CRITICAL_GRANSKA_TYPES.has(event.type)) return 'critical'
   if (PLAYER_TYPES.has(event.type)) return 'player'
-  if (REACTION_TYPES.has(event.type)) return 'reactions'
+  if (REACTION_TYPES.has(event.type)) {
+    return event.choices.length === 0 ? 'reactions' : 'critical'
+  }
   if (event.priority === 'critical') return 'critical'
   return 'inbox-only'
 }

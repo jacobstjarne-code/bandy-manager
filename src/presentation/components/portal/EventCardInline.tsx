@@ -6,7 +6,7 @@
  * - Vänster border-stripe: high/normal = accent, low = muted
  * - Emoji + event-typ-label uppe (uppercase, letterSpacing 1.5px)
  * - Body-text: Georgia 13px italic
- * - Knapprad med actions från getActionsForEvent
+ * - Knapprad med actions från getActionsForEvent — använder .btn .btn-primary / .btn .btn-outline
  * - Räknarrad om remainingCount > 0
  */
 
@@ -112,22 +112,13 @@ export function EventCardInline({ event, remainingCount }: Props) {
         {event.body}
       </p>
 
-      {/* Knapprad */}
+      {/* Knapprad — använder designsystemets .btn-klasser, inga inline-overrides */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         {actions.map(action => (
           <button
             key={action.choiceId}
             onClick={() => handleAction(action.choiceId)}
-            style={{
-              padding: '8px 16px',
-              borderRadius: 999,
-              fontSize: 13,
-              fontWeight: 600,
-              background: action.isPrimary ? 'var(--accent)' : 'var(--bg-elevated)',
-              color: action.isPrimary ? '#fff' : 'var(--text-primary)',
-              border: action.isPrimary ? 'none' : '1px solid var(--border)',
-              cursor: 'pointer',
-            }}
+            className={action.isPrimary ? 'btn btn-primary' : 'btn btn-outline'}
           >
             {action.label}
           </button>

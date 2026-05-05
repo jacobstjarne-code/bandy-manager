@@ -1,7 +1,52 @@
 # BANDY MANAGER — KVAR
 
-**Datum:** 2026-05-02
+**Datum:** 2026-05-04 (kväll)
 **Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DECISIONS.md/DESIGN_SYSTEM.md är lästa.
+
+---
+
+## STATUS-DEFINITIONER (NY 2026-05-04)
+
+Från och med 2026-05-04 används två olika status-symboler för att skilja kod-leverans från spel-leverans:
+
+- **🔄 KOD KLAR** — Code rapporterar färdig implementation, ej playtestat av Jacob
+- **✅ LEVERERAD** — Jacob har playtestat och bekräftat att specen faktiskt fungerar
+
+Fram till 2026-05-04 användes bara ✅ — vilket ledde till falsk leverans-status (se `docs/diagnos/2026-05-04_kvar_audit.md`). Tidigare ✅-rader med `⚠️ Awaiting browser-playtest` ska tolkas som 🔄 KOD KLAR tills annat bevisats.
+
+---
+
+## AKTUELLT LÄGE (2026-05-04, kväll)
+
+**SPEC_SHOTMAP_OMARBETNING:** ✅ LEVERERAD (playtestad 20:46, Jacob bekräftade visuell match mot mock).
+- Halvcirkel-paths för målgård (radie 22) + straffområde (radie 75) implementerade
+- Grå separator-rect med riktningspilar `↑ VI ANFALLER` / `DE ANFALLER ↓`
+- viewBox 0 0 280 230
+- Stats: "Hittills (X matcher)", `▼` borttaget, motståndare visar "träffsäkerhet"
+- Min symptomfix från eftermiddagen reverterad
+- Kvarstående detalj: terminologi inkonsekvent — "konv." för spelaren, "träffsäkerhet" för motståndaren. Liten Fix Z läggs i Fas 2.
+
+**SPEC_GRANSKA_OMARBETNING:** ⏸ FAS 2 PÅBÖRJAS — full implementation från noll. Ursprungs-specen var aldrig integrerad i UI (`granskaEventClassifier.ts` aldrig importerad i produktion, `ReaktionerKort` finns inte ens som fil). Se `docs/SPEC_GRANSKA_VERIFIERING_2026-05-04.md` för fasplan.
+
+**KVAR-audit:** ✅ Levererad i `docs/diagnos/2026-05-04_kvar_audit.md`.
+- Identifierat: SPEC_GRANSKA_OMARBETNING + SPEC_SHOTMAP_OMARBETNING markerade ✅ trots EJ LEVERERAD
+- Process-fixar A-D föreslagna (status-distinktion, pixel-audit per spec, ⚠️-rader genomgång vid sessionsstart, importerad-i-X-check)
+- Status-distinktion (A) införd ovan
+
+**LESSONS #28:** ✅ Skriven — "Levererad spec ≠ fungerar i playtest. Symptomfix utan mock-check kan göra det värre."
+
+**Cup-intro + cup-final-intro scener:** ✅ LEVERERAD (byggt + playtestat 2026-05-04). Implementerat i förskott av SPEC_BESLUTSEKONOMI_STEG_4 Kategori B.
+
+**SPEC_BESLUTSEKONOMI_STEG_4:** ⏸ Spec-klar. Påbörjas EFTER Fas 2 + Fas 3 är levererade och playtestade.
+
+**Bekräftade buggar väntar Fas 2:**
+- Dubbel presskonferens (Helena Wikström två gånger i Granska Översikt) — Diagnos C, fix: ta bort `generatePressConference` från `postAdvanceEvents.ts`
+- 6 events i Granska Översikt efter första seriematch — fixas via classifier-integration + cap 3
+- Knappstil i händelse-kort på Portal — Fix B i specen
+- "2 saker till att kolla"-länk går till inbox där spelaren inte kan agera — Fix C
+- Förlängning + Straffar overlay-stil (Steg 4-arbete, ej akut)
+- Cupfinalförlust egen stil (Steg 4-arbete)
+- Kafferum-CTA "Tillbaka till dashboarden" → "Tillbaka till klubben" (Steg 4-arbete)
 
 ---
 
@@ -15,6 +60,7 @@
 - P1.C: PROFILE_GOAL_MODS.chaotic 1.55→1.35, wOpen+=10 (var 15). Mål/match ~8.97.
 - P1.B: Per-spelare ceiling variant C — hard cap 5 + soft brake ×0.7 via adjustedWeights i getGoalScorer.
 - P4: hasCriticalEvent + EventPrimary saknade priority='critical'-filter. transferBidReceived (prio=normal) renderades dubbelt av PortalEventSlot + EventPrimary.
+- 🔄 KOD VERIFIERAD (2026-05-05): import-trace bekräftad mot faktisk källkod. P5 border:none rad 164 GameHeader.tsx ✓, P2 shotsHome++ kommenterat "P2" matchCore ~847/1018 ✓, P1.B getGoalScorerWeight exporterad rad 46 matchCore ✓, P1.C chaotic=1.35 rad 121 matchCore ✓, P4 EventPrimary priority-filter rad 16 ✓, P1.A interactiveCanScore rad 511 MatchLiveScreen ✓.
 - ⚠️ Awaiting browser-playtest: alla 5 fixes.
 - Spec markerad som ✅ LEVERERAD i `SPEC_PLAYTEST_FIXES_2026-05-03.md`. HANDOVER skriven: `HANDOVER_2026-05-03.md`. Lessons #26 + #27 skrivna. DECISIONS 2026-05-03-post om kvot-avvägning. CLAUDE.md ARBETSFÖRDELNING omskriven.
 
@@ -37,19 +83,9 @@
 - BoardMember/ClubBoard-interfaces på Club. Alla 12 CLUB_TEMPLATES patchade (36 namn, gender, clubhouse). Migration för befintliga saves. BoardMeetingScene med 4 beats. BoardMeetingScreen.tsx + PreSeasonScreen.tsx raderade. 15 tester.
 - ⚠️ Awaiting browser-playtest: beat-progression, mörk bakgrund, autoAdvance-timing.
 
-**SPEC_SHOTMAP_OMARBETNING:** ✅ Levererad.
-- Halvcirkel-geometri (målgård 22px, straffområde 75px) ersätter rektangulära boxar.
-- "↑ VI ANFALLER" / "DE ANFALLER ↓" i separator-strecket.
-- Label-klamring fixad. viewBox 210→230.
-- ⚠️ Awaiting browser-playtest (pixel-jämförelse mot mock obligatorisk).
+**SPEC_SHOTMAP_OMARBETNING:** ⚠️ FALSK ✅-STATUS — se kvar_audit 2026-05-04. Halvcirkel-paths levererades aldrig, original-rektangulär kod kvar. **Faktiskt levererad 2026-05-04 (kväll), se sektion ovan.**
 
-**SPEC_GRANSKA_OMARBETNING:** ✅ Levererad.
-- generateInsandare + generatePostMatchOpponentQuote migrerade till pendingEvents via postMatchEventService.ts. generateSilentMatchReport orört.
-- granskaEventClassifier.ts: classifyEventNature, CRITICAL/PLAYER/REACTION_TYPES.
-- ReaktionerKort (auto-resolved vid render), max 3 kritiska i Översikt, "KRING SPELARNA"-sektion i Spelare-flik.
-- CTA blockeras bara av kritiska events (+ presskonferens + domarmöte).
-- Kvarstående: media-rubriken läses fortfarande från inbox (inte pendingEvents) — behöver C-runda.
-- ⚠️ Awaiting browser-playtest (alla 5 flikar, 1 liga + 1 cup).
+**SPEC_GRANSKA_OMARBETNING:** ⚠️ FALSK ✅-STATUS — se kvar_audit 2026-05-04. `granskaEventClassifier.ts` finns som fil men aldrig importerad i UI. `ReaktionerKort` finns inte ens som fil. `GranskaOversikt.tsx` är opåverkad av specen. **Implementation från noll i Fas 2 (pågår).**
 
 **SPEC_GRANSKA_SPLIT:** ✅ Levererad. GranskaScreen.tsx (1800+ rader) splittad i 7 filer under `src/presentation/screens/granska/`.
 
