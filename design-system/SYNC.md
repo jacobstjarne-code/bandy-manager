@@ -34,7 +34,7 @@ Tvåvägsspegel mellan **designsystem** (detta projekt) och **codebasen** (`band
 | Dashboard | design | ✓ | ✓ | `ui_kits/bandy-manager-pwa/dashboard.jsx` | `DashboardScreen.tsx` | Mock av production |
 | Taktik | design | ✓ | ✓ | `ui_kits/bandy-manager-pwa/screens.jsx` | `MatchScreen.tsx` | ↳ |
 | Resultat | design | ✓ | ✓ | ↳ | `ResultScreen.tsx` | ↳ |
-| **Intro / Ankomsten** | design | ✓ | ⚠ | `ui_kits/intro_flode/Intro Flode v1.html` | `ArrivalScene.tsx` (ny) | Kontinuerlig scen, 4 steg |
+| **Intro / Ankomsten** | design | ✓ | ✓ | `ui_kits/intro_flode/Intro Flode v1.html` | `ArrivalScene.tsx` | Kontinuerlig scen, 4 steg |
 | Trupp | — | — | ✓ | *ej mockad* | `SquadScreen.tsx` | Lägg till vid behov |
 | Tabell | — | — | ✓ | *ej mockad* | `TableScreen.tsx` | ↳ |
 | Transfers | — | — | ✓ | *ej mockad* | `TransfersScreen.tsx` | ↳ |

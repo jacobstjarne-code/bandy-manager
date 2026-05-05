@@ -198,16 +198,8 @@ export function CommentaryFeed({
             </div>
             <button
               onClick={onNavigateToReview}
-              className="texture-leather"
-              style={{
-                width: '100%', padding: '16px', margin: '8px 0',
-                background: 'linear-gradient(135deg, var(--accent-dark), var(--accent-deep))',
-                color: 'var(--text-light)',
-                border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 600,
-                letterSpacing: '2px', textTransform: 'uppercase',
-                fontFamily: 'var(--font-body)',
-                cursor: 'pointer',
-              }}
+              className="btn btn-primary"
+              style={{ width: '100%', margin: '8px 0' }}
             >
               Se sammanfattning →
             </button>

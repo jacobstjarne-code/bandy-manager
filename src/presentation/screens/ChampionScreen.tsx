@@ -155,15 +155,12 @@ export function ChampionScreen() {
         )})()}
 
         {/* Playoff run summary */}
-        <div style={{
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border)',
-          borderRadius: 12,
+        <div className="card-sharp" style={{
           padding: '16px',
           marginBottom: 24,
           textAlign: 'left',
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 12 }}>
+          <p className="h-label" style={{ marginBottom: 12 }}>
             SLUTSPELSRESA
           </p>
           {managedSeries.length > 0 ? managedSeries.map(s => {

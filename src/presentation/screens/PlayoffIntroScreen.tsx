@@ -46,7 +46,7 @@ export function PlayoffIntroScreen() {
 
       {/* ── RUBRIK ── */}
       <div style={{ textAlign: 'center', padding: '40px 20px 20px' }}>
-        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 12 }}>
+        <p className="h-label" style={{ marginBottom: 12 }}>
           ⚔️ SLUTSPEL
         </p>
         <p style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'Georgia, serif', lineHeight: 1.3, marginBottom: 6 }}>
@@ -66,7 +66,7 @@ export function PlayoffIntroScreen() {
             <span style={{ fontSize: 42, fontWeight: 400, color: 'var(--accent)', fontFamily: 'Georgia, serif', lineHeight: 1 }}>
               {position}
             </span>
-            <p style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginTop: 2 }}>
+            <p className="h-label" style={{ margin: '2px 0 0' }}>
               PLACERING
             </p>
           </div>
@@ -99,12 +99,12 @@ export function PlayoffIntroScreen() {
 
       {/* ── TOPP 8 TABELL ── */}
       <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 6 }}>
-        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 6 }}>
+        <p className="h-label" style={{ marginBottom: 6 }}>
           📊 TOPP 8 — SLUTSPELSKLARA
         </p>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
           <thead>
-            <tr style={{ color: 'var(--text-muted)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <tr style={{ color: 'var(--text-muted)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '2px' }}>
               <th style={{ textAlign: 'left', padding: '2px 0', fontWeight: 600 }}>#</th>
               <th style={{ textAlign: 'left', padding: '2px 0', fontWeight: 600 }}>Lag</th>
               <th style={{ textAlign: 'right', padding: '2px 0', fontWeight: 600 }}>P</th>
@@ -135,7 +135,7 @@ export function PlayoffIntroScreen() {
       {/* ── KVARTSFINALPAR ── */}
       {bracket && qfMatchups.length > 0 && (
         <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 6 }}>
-          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 8 }}>
+          <p className="h-label" style={{ marginBottom: 8 }}>
             🏒 KVARTSFINALER — BÄST AV 5
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -187,15 +187,8 @@ export function PlayoffIntroScreen() {
       <div style={{ padding: '0 16px calc(24px + env(safe-area-inset-bottom, 0px))', marginTop: 'auto' }}>
         <button
           onClick={handleContinue}
-          className="texture-leather"
-          style={{
-            width: '100%', padding: '16px',
-            background: 'linear-gradient(135deg, var(--accent-dark), var(--accent-deep))',
-            color: 'var(--text-light)',
-            borderRadius: 12, fontSize: 14, fontWeight: 600, letterSpacing: '2px',
-            textTransform: 'uppercase', border: 'none', fontFamily: 'var(--font-body)',
-            cursor: 'pointer',
-          }}
+          className="btn btn-primary"
+          style={{ width: '100%', letterSpacing: '2px', textTransform: 'uppercase' }}
         >
           {qualified ? 'Starta slutspelet →' : 'Stäng säsongen →'}
         </button>

@@ -83,20 +83,8 @@ export function ClubExpandedCard({
 
       <button
         onClick={() => onSelect(clubId)}
-        style={{
-          width: '100%',
-          background: 'linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-deep) 100%)',
-          color: 'var(--text-light)',
-          border: 'none',
-          padding: 12,
-          borderRadius: 6,
-          fontSize: 12,
-          fontWeight: 700,
-          letterSpacing: '0.5px',
-          cursor: 'pointer',
-          marginTop: 8,
-          fontFamily: 'var(--font-body)',
-        }}
+        className="btn btn-primary"
+        style={{ width: '100%', marginTop: 8 }}
       >
         Ta över {clubName} →
       </button>

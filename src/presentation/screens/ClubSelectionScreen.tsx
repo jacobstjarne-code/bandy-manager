@@ -30,7 +30,7 @@ export function ClubSelectionScreen() {
     setTimeout(() => {
       try {
         newGame(managerName, clubId)
-        navigate('/game/dashboard')
+        navigate('/intro')
       } catch (e) {
         console.error('ClubSelectionScreen: newGame misslyckades', e)
         setIsStarting(false)

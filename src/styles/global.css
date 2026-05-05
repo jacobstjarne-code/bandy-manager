@@ -769,6 +769,154 @@ a {
   color: var(--text-secondary);
 }
 
+/* ═══════════════════════════════════════════════════════════
+   ARRIVAL SCENE — ArrivalScene.tsx
+   ═══════════════════════════════════════════════════════════ */
+
+/* Full-viewport dark container, no GameHeader, no BottomNav */
+.arrival-scene {
+  position: relative;
+  min-height: 100vh;
+  background: var(--bg-scene);
+  color: var(--text-light);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Copper glow from above — dims when step >= 1 (you're indoors now) */
+.arrival-scene::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 60% 40% at 50% 0%,
+    color-mix(in srgb, var(--accent) 8%, transparent) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.8s ease-out;
+}
+.arrival-scene.dim::before { opacity: 0.3; }
+
+/* Progress dots */
+.beat-progress {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+.beat-progress .dot {
+  width: 24px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--border-dark);
+  opacity: 0.3;
+}
+.beat-progress .dot.active {
+  background: var(--accent);
+  opacity: 0.8;
+}
+
+/* CoffeeRow — single speaker row */
+.coffee-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  opacity: 0;
+  animation: fade-in-soft 0.6s ease-out forwards;
+}
+.coffee-row-right {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+.coffee-row .initial-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-dark-elevated);
+  border: 1px solid var(--bg-leather);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Georgia, serif;
+  font-size: 13px;
+  color: var(--text-light-secondary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.coffee-row .speaker-name {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+.coffee-row .speaker-quote {
+  font-family: Georgia, serif;
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--text-light-secondary);
+}
+
+/* SceneCTA — arrival variant (NOT .btn-primary) */
+.scene-cta {
+  width: 100%;
+  padding: 14px;
+  background: var(--bg-dark-elevated);
+  color: var(--text-light);
+  border: 1px solid var(--bg-leather);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: background 0.15s, border-color 0.15s;
+}
+.scene-cta:hover {
+  background: var(--accent-deep);
+  border-color: var(--accent);
+}
+.scene-cta:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Exit overlay */
+.arrival-exit {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: var(--bg-scene);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: fade-in-static 0.8s ease-out forwards;
+}
+.arrival-exit span {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+/* Arrival keyframes */
+@keyframes fade-in-soft {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in-static {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.fadein {
+  opacity: 0;
+  animation: fade-in-static 0.7s ease-out forwards;
+}
+
 /* Scene-system — kafferummets subtila bakgrundstextur */
 .coffee-room-bg::before {
   content: '';

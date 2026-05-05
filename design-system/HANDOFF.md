@@ -138,7 +138,7 @@ Every item below links a design decision to the file in the codebase that must c
 
 ---
 
-## 9 · Intro-flöde — kontinuerlig scen (Ankomsten) `[ ]`
+## 9 · Intro-flöde — kontinuerlig scen (Ankomsten) `[x]`
 
 **Preview:** `ui_kits/intro_flode/Intro Flode v1.html`
 **Decision:** `DESIGN-DECISIONS.md` § "Intro-flöde — kontinuerlig scen"

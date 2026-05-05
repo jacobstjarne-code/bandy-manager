@@ -36,7 +36,6 @@ export function EventPrimary({ game }: CardRenderProps) {
     <div className="card-sharp" style={{
       padding: 16,
       marginBottom: 14,
-      borderLeft: '3px solid var(--danger)',
     }}>
       <div style={{
         fontSize: 9,
@@ -68,19 +67,8 @@ export function EventPrimary({ game }: CardRenderProps) {
       </div>
       <button
         onClick={() => navigate('/game/inbox')}
-        style={{
-          width: '100%',
-          background: 'linear-gradient(135deg, var(--accent-dark) 0%, var(--accent-deep) 100%)',
-          color: 'var(--text-light)',
-          border: 'none',
-          padding: '12px 14px',
-          borderRadius: 8,
-          fontSize: 13,
-          fontWeight: 700,
-          letterSpacing: '0.5px',
-          cursor: 'pointer',
-          fontFamily: 'var(--font-body)',
-        }}
+        className="btn btn-primary"
+        style={{ width: '100%' }}
       >
         Hantera händelse →
       </button>

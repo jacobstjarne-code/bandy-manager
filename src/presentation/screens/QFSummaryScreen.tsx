@@ -35,7 +35,7 @@ export function QFSummaryScreen() {
 
       {/* ── RUBRIK ── */}
       <div style={{ textAlign: 'center', padding: '40px 20px 16px' }}>
-        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 12 }}>
+        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 12 }}>
           ⚔️ KVARTSFINALERNA AVGJORDA
         </p>
         <p style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'Georgia, serif', lineHeight: 1.3, marginBottom: 6 }}>
@@ -140,15 +140,8 @@ export function QFSummaryScreen() {
       <div style={{ padding: '0 16px calc(24px + env(safe-area-inset-bottom, 0px))', marginTop: 'auto' }}>
         <button
           onClick={handleContinue}
-          className="texture-leather"
-          style={{
-            width: '100%', padding: '16px',
-            background: 'linear-gradient(135deg, var(--accent-dark), var(--accent-deep))',
-            color: 'var(--text-light)',
-            borderRadius: 12, fontSize: 14, fontWeight: 600, letterSpacing: '2px',
-            textTransform: 'uppercase', border: 'none', fontFamily: 'var(--font-body)',
-            cursor: 'pointer',
-          }}
+          className="btn btn-primary"
+          style={{ width: '100%', letterSpacing: '2px', textTransform: 'uppercase' }}
         >
           {managedAdvanced ? 'Starta semifinalerna →' : 'Stäng →'}
         </button>

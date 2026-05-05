@@ -3,8 +3,8 @@
  * Används av PortalEventSlot. Kritiska events hanteras av EventOverlay.
  *
  * Visuell anatomi per spec:
- * - Vänster border-stripe: high/normal = accent, low = muted
- * - Emoji + event-typ-label uppe (uppercase, letterSpacing 1.5px)
+ * - card-sharp-mönster (1 px border, 8 px radius), --bg-portal-surface bakgrund
+ * - Prio-signal i typ-label-färg: high/normal = accent, low = muted
  * - Body-text: Georgia 13px italic
  * - Knapprad med actions från getActionsForEvent — använder .btn .btn-primary / .btn .btn-outline
  * - Räknarrad om remainingCount > 0
@@ -68,8 +68,8 @@ export function EventCardInline({ event, remainingCount }: Props) {
   const actions = getActionsForEvent(event)
   const priority = event.priority ?? getEventPriority(event.type)
 
-  // Vänster border-stripe per prio
-  const stripeColor = priority === 'high' || priority === 'normal'
+  // Prio-signal i typ-label-färg (severity-systemet är reserverat för journalist + säsongssignaturer)
+  const labelColor = priority === 'high' || priority === 'normal'
     ? 'var(--accent)'
     : 'var(--text-muted)'
 
@@ -84,17 +84,18 @@ export function EventCardInline({ event, remainingCount }: Props) {
       style={{
         margin: '0 0 8px 0',
         background: 'var(--bg-portal-surface, var(--bg-elevated))',
-        borderLeft: `3px solid ${stripeColor}`,
-        padding: '12px 14px 10px 12px',
+        border: '1px solid var(--border)',
+        borderRadius: 8,
+        padding: '10px 12px',
       }}
     >
-      {/* Typ-label */}
+      {/* Typ-label — bär prio-signalen i färgen */}
       <p style={{
         fontSize: 9,
         fontWeight: 700,
         letterSpacing: '1.5px',
         textTransform: 'uppercase',
-        color: 'var(--text-muted)',
+        color: labelColor,
         marginBottom: 8,
       }}>
         {typeLabel}

@@ -44,11 +44,11 @@ export function HalfTimeSummaryScreen() {
           <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Inför vårsäsongen</p>
         </div>
 
-        {/* ── TABELLLÄGE ── */}
+        {/* ── TABELLÄGE ── */}
         <div className="card-sharp" style={{ margin: '0 0 6px', padding: '14px 16px' }}>
           <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 10 }}>
             {/* TODO(FAS 1): byt mot piktogram · statistik · se ICON-BRIEF.md */}
-            📊 TABELLLÄGE
+            📊 TABELLÄGE
           </p>
           <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
             <div style={{ textAlign: 'center' }}>
@@ -133,15 +133,8 @@ export function HalfTimeSummaryScreen() {
       }}>
         <button
           onClick={handleContinue}
-          className="texture-leather"
-          style={{
-            width: '100%', padding: '15px',
-            background: 'linear-gradient(135deg, var(--accent-dark), var(--accent-deep))',
-            color: 'var(--text-light)',
-            borderRadius: 12, fontSize: 15, fontWeight: 600, letterSpacing: '2px',
-            textTransform: 'uppercase', border: 'none', fontFamily: 'var(--font-body)',
-            cursor: 'pointer', pointerEvents: 'auto',
-          }}
+          className="btn btn-primary"
+          style={{ width: '100%', letterSpacing: '2px', textTransform: 'uppercase', pointerEvents: 'auto' }}
         >
           Fortsätt säsongen →
         </button>

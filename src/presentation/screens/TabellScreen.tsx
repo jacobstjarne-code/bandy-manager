@@ -510,7 +510,7 @@ export function TabellScreen() {
             {managedPlayed.length > 0 && (
               <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 10 }}>
                 <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
-                  DINA CUPMATCHER
+                  🏆 DINA CUPMATCHER
                 </p>
                 {managedPlayed.map(m => {
                   const home = clubName(m.homeClubId)
@@ -541,7 +541,7 @@ export function TabellScreen() {
             {nextCupFixture && (
               <div className="card-round" style={{ padding: '10px 14px', marginBottom: 10 }}>
                 <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 6 }}>
-                  NÄSTA CUPMATCH
+                  🏆 NÄSTA CUPMATCH
                 </p>
                 <p style={{ fontSize: 13, fontWeight: 600 }}>
                   {clubName(nextCupFixture.homeClubId)} vs {clubName(nextCupFixture.awayClubId)}

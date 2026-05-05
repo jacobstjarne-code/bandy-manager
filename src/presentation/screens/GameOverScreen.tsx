@@ -112,7 +112,7 @@ export function GameOverScreen() {
           marginBottom: 24,
           textAlign: 'left',
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--danger)', marginBottom: 8, letterSpacing: '1px', textTransform: 'uppercase' }}>
+          <p className="h-label" style={{ color: 'var(--danger)', marginBottom: 8 }}>
             Styrelsens uttalande
           </p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
@@ -121,14 +121,11 @@ export function GameOverScreen() {
         </div>
 
         {/* Final stats */}
-        <div style={{
-          background: 'var(--bg-elevated)',
-          border: '1px solid var(--border)',
-          borderRadius: 10,
+        <div className="card-sharp" style={{
           padding: '10px 14px',
           marginBottom: 24,
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 12, letterSpacing: '2px', textTransform: 'uppercase' }}>
+          <p className="h-label" style={{ marginBottom: 12 }}>
             Din karriär
           </p>
           <div style={{ display: 'flex', justifyContent: 'space-around' }}>

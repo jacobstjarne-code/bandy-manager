@@ -480,13 +480,8 @@ export function RoundSummaryScreen() {
         background: 'linear-gradient(to top, var(--bg) 80%, transparent)',
         zIndex: 50, opacity: visible ? 1 : 0, transition: 'opacity 0.3s ease 0.3s',
       }}>
-        <button onClick={handleContinue} className="texture-leather" style={{
-          width: '100%', padding: '15px',
-          background: 'linear-gradient(135deg, var(--accent-dark), var(--accent-deep))',
-          color: 'var(--text-light)',
-          borderRadius: 12, fontSize: 15, fontWeight: 600, letterSpacing: '2px',
-          textTransform: 'uppercase', border: 'none', fontFamily: 'var(--font-body)',
-          boxShadow: '0 4px 20px rgba(196,122,58,0.3)', cursor: 'pointer',
+        <button onClick={handleContinue} className="btn btn-primary" style={{
+          width: '100%', letterSpacing: '2px', textTransform: 'uppercase',
         }}>
           Nästa omgång →
         </button>

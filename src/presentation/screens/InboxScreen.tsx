@@ -323,7 +323,7 @@ export function InboxScreen() {
                     zIndex: 1,
                   }}>
                     <span style={{ fontSize: 10 }}>{meta.dot}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', color: meta.color, textTransform: 'uppercase' }}>
+                    <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', color: meta.color, textTransform: 'uppercase' }}>
                       {meta.label}
                     </span>
                     {unreadInCat > 0 && (

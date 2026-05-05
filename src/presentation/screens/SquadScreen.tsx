@@ -492,11 +492,9 @@ export function SquadScreen() {
               <div
                 key={label}
                 onClick={p ? () => setSelectedPlayerId(p.id) : undefined}
+                className="card-sharp"
                 style={{
                   padding: '8px 10px',
-                  background: 'var(--bg-surface)',
-                  borderRadius: 8,
-                  border: '1px solid var(--border)',
                   cursor: p ? 'pointer' : 'default',
                 }}
               >
@@ -555,8 +553,7 @@ export function SquadScreen() {
               const completedLeague = game?.fixtures.filter(f => f.status === 'completed' && !f.isCup).length ?? 0
               const roundsLeft = (deal.endRound ?? 22) - completedLeague
               return (
-                <div key={deal.playerId} style={{
-                  background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 6,
+                <div key={deal.playerId} className="card-sharp" style={{
                   padding: '10px 14px', marginBottom: 8,
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 }}>

@@ -103,7 +103,7 @@ export function MatchResultScreen() {
         {/* Round label */}
         <div style={{ marginBottom: 10, textAlign: 'center', ...fadeIn('0ms') }}>
           <span style={{
-            fontSize: 9, fontWeight: 700, letterSpacing: '1.5px',
+            fontSize: 8, fontWeight: 600, letterSpacing: '2px',
             textTransform: 'uppercase', color: 'var(--text-muted)',
           }}>
             {fixture.roundNumber <= 22
@@ -197,7 +197,7 @@ export function MatchResultScreen() {
         {/* B2: Key moments mini-timeline */}
         {keyMoments.length > 0 && (
           <div style={{ marginBottom: 12, ...fadeIn('480ms') }}>
-            <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>Nyckelmoment</p>
+            <p className="h-label" style={{ marginBottom: 8 }}>Nyckelmoment</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {keyMoments.map((e, i) => {
                 const isHome = e.clubId === fixture.homeClubId

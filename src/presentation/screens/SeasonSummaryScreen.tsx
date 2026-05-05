@@ -805,7 +805,7 @@ function AwardCard({ icon, title, name, value }: { icon: string; title: string; 
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
         <span style={{ fontSize: 12 }}>{icon}</span>
-        <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)' }}>{title}</span>
+        <span style={{ fontSize: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px', color: 'var(--text-muted)' }}>{title}</span>
       </div>
       <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 2 }}>{name}</p>
       <p style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{value}</p>
