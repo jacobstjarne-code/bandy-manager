@@ -20,8 +20,8 @@ export function JournalistRelationshipScene({ game, onComplete }: Props) {
   const isCold = data.severity === 'cold'
 
   const fillGradient = isCold
-    ? 'linear-gradient(90deg, #4a6680 0%, #6080a0 100%)'
-    : 'linear-gradient(90deg, #8c6e3a 0%, #c8a058 100%)'
+    ? 'linear-gradient(90deg, var(--cold) 0%, var(--cold-light) 100%)'
+    : 'linear-gradient(90deg, var(--warm) 0%, var(--warm-light) 100%)'
 
   const fillPct = `${Math.max(2, Math.min(100, data.relationship))}%`
 

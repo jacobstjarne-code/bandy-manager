@@ -55,7 +55,7 @@ export function WageOverrunWarning({ overrunPct, seasonSeed, onCancel, onConfirm
         style={{
           background: 'var(--bg)',
           borderRadius: 12,
-          border: `1px solid ${variant === 'severe' ? 'var(--danger)' : 'var(--warning, #c9a84c)'}`,
+          border: `1px solid ${variant === 'severe' ? 'var(--danger)' : 'var(--warning)'}`,
           padding: '20px 18px 24px',
           width: '100%',
           boxShadow: '0 8px 40px rgba(0,0,0,0.4)',

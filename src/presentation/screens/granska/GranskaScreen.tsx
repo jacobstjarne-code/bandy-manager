@@ -276,7 +276,7 @@ export function GranskaScreen() {
                 }}
               >
                 <span style={{ fontSize: 20 }}>{s.icon}</span>
-                <span style={{ fontSize: 8, color: isActive ? '#fff' : 'var(--accent)', letterSpacing: '0.5px', fontWeight: 600 }}>{s.label}</span>
+                <span style={{ fontSize: 8, color: isActive ? 'var(--text-light)' : 'var(--accent)', letterSpacing: '0.5px', fontWeight: 600 }}>{s.label}</span>
               </button>
             )
           })}

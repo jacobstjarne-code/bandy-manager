@@ -38,6 +38,7 @@
   /* Text — dark surfaces */
   --text-light:           #F5F1EB;
   --text-light-secondary: #C4BAA8;
+  --header-undertext:     #C9B89A;  /* GameHeader undertext på läderyta */
 
   /* Accent — copper/terracotta */
   --accent:       #C47A3A;
@@ -122,8 +123,10 @@
   --bg-scene-deep:  #08060a;
 
   /* Journalist relation severity */
-  --cold:  #4a6680;
-  --warm:  #8c6e3a;
+  --cold:       #4a6680;
+  --cold-light: #7095b8;  /* ljusare cold — text/tag inom severity-domän */
+  --warm:       #8c6e3a;
+  --warm-light: #c8a058;  /* ljusare warm — text/tag inom severity-domän */
 
   --scroll-padding-bottom: 120px;
 

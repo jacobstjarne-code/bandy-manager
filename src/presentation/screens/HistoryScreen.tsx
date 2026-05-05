@@ -190,7 +190,7 @@ export function HistoryScreen() {
                 padding: '6px 12px', borderRadius: 20, border: 'none', cursor: 'pointer',
                 fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
                 background: activeTab === tab ? 'var(--accent)' : 'var(--bg-elevated)',
-                color: activeTab === tab ? '#1A1410' : 'var(--text-secondary)',
+                color: activeTab === tab ? 'var(--text-primary)' : 'var(--text-secondary)',
               }}
             >
               {labels[tab]}
@@ -274,7 +274,7 @@ export function HistoryScreen() {
                       padding: '5px 10px', borderRadius: 16, border: 'none', cursor: 'pointer',
                       fontSize: 11, fontWeight: 600,
                       background: photoSeason === s ? 'var(--accent)' : 'var(--bg-elevated)',
-                      color: photoSeason === s ? '#1A1410' : 'var(--text-secondary)',
+                      color: photoSeason === s ? 'var(--text-primary)' : 'var(--text-secondary)',
                     }}
                   >
                     {s}/{s + 1}

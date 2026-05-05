@@ -129,7 +129,7 @@ function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
           flexShrink: 0,
           marginTop: 1,
         }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', fontFamily: 'var(--font-display)' }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-light)', fontFamily: 'var(--font-display)' }}>
             {item.coachInitials ?? '?'}
           </span>
         </div>

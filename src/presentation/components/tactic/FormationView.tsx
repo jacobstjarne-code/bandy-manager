@@ -139,7 +139,7 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
                 borderRadius: 4,
                 border: formation === f ? 'none' : '1px solid var(--accent)',
                 background: formation === f ? 'var(--accent)' : 'transparent',
-                color: formation === f ? '#fff' : 'var(--accent)',
+                color: formation === f ? 'var(--text-light)' : 'var(--accent)',
                 cursor: 'pointer',
                 flexShrink: 0,
                 outline: recommended === f && formation !== f ? '1px solid var(--success)' : 'none',

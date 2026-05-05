@@ -25,7 +25,7 @@ export function TabBar<T extends string>({ tabs, active, onChange }: TabBarProps
               fontSize: 10,
               fontWeight: 700,
               letterSpacing: '1.2px',
-              color: isActive ? '#fff' : 'var(--text-muted)',
+              color: isActive ? 'var(--text-light)' : 'var(--text-muted)',
               background: isActive ? 'var(--accent)' : 'transparent',
               border: isActive ? 'none' : '1px solid var(--border)',
               borderRadius: 4,

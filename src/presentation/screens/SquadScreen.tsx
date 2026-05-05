@@ -349,7 +349,7 @@ export function SquadScreen() {
             style={{
               flex: 1, padding: '7px 4px', fontSize: 11, fontWeight: 700,
               letterSpacing: '1.2px', borderRadius: 4,
-              color: screenTab === t ? '#fff' : 'var(--text-muted)',
+              color: screenTab === t ? 'var(--text-light)' : 'var(--text-muted)',
               background: screenTab === t ? 'var(--accent)' : 'transparent',
               border: screenTab === t ? 'none' : '1px solid var(--border)',
               cursor: 'pointer',
@@ -444,7 +444,7 @@ export function SquadScreen() {
                   fontWeight: 600,
                   border: lineupTab === tab.key ? 'none' : '1px solid var(--accent)',
                   background: lineupTab === tab.key ? 'var(--accent)' : 'transparent',
-                  color: lineupTab === tab.key ? '#fff' : 'var(--accent)',
+                  color: lineupTab === tab.key ? 'var(--text-light)' : 'var(--accent)',
                   cursor: 'pointer',
                 }}
               >

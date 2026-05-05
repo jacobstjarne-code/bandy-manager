@@ -73,8 +73,8 @@ export function NextMatchPrimary({ game }: CardRenderProps) {
       '--bg-leather':    'var(--bg-portal-elevated)',
       '--border':        'var(--bg-portal-elevated)',
       '--border-dark':   'var(--bg-portal-elevated)',
-      '--text-primary':  '#F5F1EB',
-      '--text-secondary':'#C4BAA8',
+      '--text-primary':  'var(--text-light)',
+      '--text-secondary':'var(--text-light-secondary)',
       '--text-muted':    'rgba(196,186,168,0.55)',
       '--match-home-bg': 'var(--bg-portal-elevated)',
     } as React.CSSProperties}>

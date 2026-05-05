@@ -32,7 +32,7 @@ export function JournalistSecondary({ game }: CardRenderProps) {
         padding: '2px 6px',
         borderRadius: 3,
         background: 'rgba(74, 102, 128, 0.15)',
-        color: '#7095b8',
+        color: 'var(--cold-light)',
         border: '1px solid rgba(74, 102, 128, 0.3)',
       }
     : {
@@ -43,7 +43,7 @@ export function JournalistSecondary({ game }: CardRenderProps) {
         padding: '2px 6px',
         borderRadius: 3,
         background: 'rgba(140, 110, 58, 0.15)',
-        color: '#c8a058',
+        color: 'var(--warm-light)',
         border: '1px solid rgba(140, 110, 58, 0.35)',
       }
 

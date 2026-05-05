@@ -107,7 +107,7 @@ export function InteractionShell({
         {coachTip && coach && phase === 'choosing' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: 'rgba(196,122,58,0.08)', borderRadius: 6, marginBottom: 8, border: '1px solid rgba(196,122,58,0.2)' }}>
             <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--accent-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ color: '#fff', fontSize: 9, fontWeight: 700 }}>{coach.initials}</span>
+              <span style={{ color: 'var(--text-light)', fontSize: 9, fontWeight: 700 }}>{coach.initials}</span>
             </div>
             <span style={{ fontFamily: 'var(--font-display)', fontSize: 11, fontStyle: 'italic', color: 'var(--text-light-secondary)', flex: 1 }}>
               {coachTip}

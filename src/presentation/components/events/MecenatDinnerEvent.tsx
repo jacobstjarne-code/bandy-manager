@@ -186,7 +186,7 @@ export function MecenatDinnerEvent({ event, onFinish }: Props) {
           {`${scene.mecenatName} verkar ${mood}. ${moodEmoji}\n\n${csText}`}
         </p>
         <button
-          style={{ ...btnStyle, background: 'var(--accent)', color: '#fff', border: 'none', fontWeight: 700 }}
+          style={{ ...btnStyle, background: 'var(--accent)', color: 'var(--text-light)', border: 'none', fontWeight: 700 }}
           onClick={handleOutroFinish}
         >
           Avsluta kvällen

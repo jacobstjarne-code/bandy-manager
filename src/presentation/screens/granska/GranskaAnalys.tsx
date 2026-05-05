@@ -40,9 +40,9 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
           <div className="card-sharp" style={{ margin: '0 0 6px', overflow: 'hidden' }}>
             <div style={{ background: 'var(--accent)', height: 22, display: 'flex', alignItems: 'center', padding: '0 12px', gap: 8 }}>
               <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--accent-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 9, fontWeight: 700, color: '#fff' }}>{coach.initials}</span>
+                <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-light)' }}>{coach.initials}</span>
               </div>
-              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', color: '#fff' }}>{coach.name.toUpperCase()} · ASSISTENTTRÄNARE</span>
+              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', color: 'var(--text-light)' }}>{coach.name.toUpperCase()} · ASSISTENTTRÄNARE</span>
             </div>
             <div style={{ padding: '12px 14px' }}>
               <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', fontStyle: 'italic', color: 'var(--text-secondary)', lineHeight: 1.65 }}>

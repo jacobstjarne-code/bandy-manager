@@ -123,7 +123,7 @@ export function GameHeader() {
         </p>
         <p style={{
           fontSize: 9,
-          color: '#C9B89A',
+          color: 'var(--header-undertext)',
           margin: 0,
           lineHeight: 1.3,
           fontFamily: 'Georgia, serif',

@@ -13,14 +13,14 @@ const TAG_STYLES: Record<NoteTag, { bg: string; color: string; label: string }> 
   'trött':     { bg: 'rgba(176,80,64,0.15)',  color: 'var(--danger)',  label: 'TRÖTT' },
   'glödande':  { bg: 'rgba(90,154,74,0.15)',  color: 'var(--success)', label: 'GLÖDANDE' },
   'missnöjd':  { bg: 'rgba(196,122,58,0.15)', color: 'var(--accent)',  label: 'MISSNÖJD' },
-  'skottform': { bg: 'rgba(126,179,212,0.2)', color: 'var(--ice, #7eb3d4)', label: 'SKOTTFORM' },
+  'skottform': { bg: 'rgba(126,179,212,0.2)', color: 'var(--ice)', label: 'SKOTTFORM' },
   'vill-mer':  { bg: 'rgba(196,122,58,0.15)', color: 'var(--accent)',  label: 'VILL MER' },
   'sviktande': { bg: 'rgba(176,80,64,0.15)',  color: 'var(--danger)',  label: 'SVIKTANDE' },
 }
 
 const POSITION_COLORS: Record<string, string> = {
   Goalkeeper: 'var(--warning)',
-  Defender:   'var(--ice, #7eb3d4)',
+  Defender:   'var(--ice)',
   Half:       'var(--success)',
   Midfielder: 'var(--accent)',
   Forward:    'var(--danger)',
@@ -58,7 +58,7 @@ export function NotesView({ coach, players, captainPlayerId }: NotesViewProps) {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
         }}>
-          <span style={{ color: '#fff', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)' }}>
+          <span style={{ color: 'var(--text-light)', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-display)' }}>
             {coach.initials}
           </span>
         </div>
@@ -92,7 +92,7 @@ export function NotesView({ coach, players, captainPlayerId }: NotesViewProps) {
                 background: posColor, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0, opacity: 0.85,
               }}>
-                <span style={{ color: '#fff', fontSize: 9, fontWeight: 700 }}>
+                <span style={{ color: 'var(--text-light)', fontSize: 9, fontWeight: 700 }}>
                   {p.position.slice(0, 2).toUpperCase()}
                 </span>
               </div>
