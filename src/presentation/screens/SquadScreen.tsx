@@ -15,6 +15,7 @@ import { getPortraitSvg } from '../../domain/services/portraitService'
 import { FirstVisitHint } from '../components/FirstVisitHint'
 import { LockerRoomCard } from '../components/club/LockerRoomCard'
 import { TacticBoardCard } from '../components/tactic/TacticBoardCard'
+import { getRecommendedFormation, FORMATION_META } from '../../domain/entities/Formation'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
 type FilterKey = 'all' | 'mv' | 'def' | 'half' | 'mid' | 'fwd'
@@ -262,7 +263,7 @@ export function SquadScreen() {
   const dismissHint = useGameStore(s => s.dismissHint)
   useEffect(() => { markScreenVisited('squad') }, [])
   const updateTactic = useGameStore(s => s.updateTactic)
-  const [screenTab, setScreenTab] = useState<'trupp' | 'taktik'>('trupp')
+  const [screenTab, setScreenTab] = useState<'nu' | 'trupp' | 'taktik'>('nu')
   const [sort, setSort] = useState<SortKey>('position')
   const [filter, setFilter] = useState<FilterKey>('all')
   const [lineupTab, setLineupTab] = useState<'startelva' | 'bank' | 'reserv'>('startelva')
@@ -342,20 +343,24 @@ export function SquadScreen() {
       )}
       {/* Screen tabs */}
       <div style={{ display: 'flex', gap: 6, padding: '8px 12px', borderBottom: '1px solid var(--border)', background: 'var(--bg-surface)', flexShrink: 0 }}>
-        {(['trupp', 'taktik'] as const).map(t => (
+        {([
+          { key: 'nu' as const, label: '⚡ NU' },
+          { key: 'trupp' as const, label: '👥 TRUPP' },
+          { key: 'taktik' as const, label: '📋 TAKTIK' },
+        ]).map(t => (
           <button
-            key={t}
-            onClick={() => setScreenTab(t)}
+            key={t.key}
+            onClick={() => setScreenTab(t.key)}
             style={{
               flex: 1, padding: '7px 4px', fontSize: 11, fontWeight: 700,
               letterSpacing: '1.2px', borderRadius: 4,
-              color: screenTab === t ? 'var(--text-light)' : 'var(--text-muted)',
-              background: screenTab === t ? 'var(--accent)' : 'transparent',
-              border: screenTab === t ? 'none' : '1px solid var(--border)',
+              color: screenTab === t.key ? 'var(--text-light)' : 'var(--text-muted)',
+              background: screenTab === t.key ? 'var(--accent)' : 'transparent',
+              border: screenTab === t.key ? 'none' : '1px solid var(--border)',
               cursor: 'pointer',
             }}
           >
-            {t === 'trupp' ? '👥 TRUPP' : '📋 TAKTIK'}
+            {t.label}
           </button>
         ))}
       </div>
@@ -371,6 +376,113 @@ export function SquadScreen() {
           />
         </div>
       )}
+      {/* Nu-vy */}
+      {screenTab === 'nu' && game && (() => {
+        const injured = players.filter(p => p.isInjured || p.suspensionGamesRemaining > 0)
+        const lowMorale = players.filter(p => p.morale < 45).sort((a, b) => a.morale - b.morale).slice(0, 3)
+        const expiringContracts = players.filter(p => p.contractUntilSeason <= game.currentSeason)
+          .sort((a, b) => a.contractUntilSeason - b.contractUntilSeason)
+        const recommended = getRecommendedFormation(players)
+        const currentFormation = club?.activeTactic?.formation ?? '3-3-4'
+        const hasIssues = injured.length > 0 || lowMorale.length > 0 || expiringContracts.length > 0
+        return (
+          <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px', paddingBottom: 'calc(var(--bottom-nav-height, 60px) + 16px)' }}>
+            {!hasIssues && recommended === currentFormation && (
+              <div className="card-sharp" style={{ padding: '16px 14px', color: 'var(--text-secondary)', fontSize: 13, textAlign: 'center', marginBottom: 10 }}>
+                Allt lugnt. Kolla taktiken.
+              </div>
+            )}
+            {injured.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <div className="h-label" style={{ marginBottom: 8 }}>🚑 SKADADE & UTVISADE</div>
+                {injured.map(p => (
+                  <div
+                    key={p.id}
+                    className="card-sharp card-tap"
+                    onClick={() => setSelectedPlayerId(p.id)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 6, cursor: 'pointer' }}
+                  >
+                    <div dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{p.firstName} {p.lastName}</div>
+                      <div style={{ fontSize: 11, color: 'var(--danger)' }}>
+                        {p.isInjured && p.injuryDaysRemaining > 0
+                          ? `${p.injuryDaysRemaining} dag${p.injuryDaysRemaining !== 1 ? 'ar' : ''} skada kvar`
+                          : `${p.suspensionGamesRemaining} match${p.suspensionGamesRemaining !== 1 ? 'er' : ''} utvisad`}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{positionShort(p.position)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {lowMorale.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <div className="h-label" style={{ marginBottom: 8 }}>😟 MORAL</div>
+                {lowMorale.map(p => (
+                  <div
+                    key={p.id}
+                    className="card-sharp card-tap"
+                    onClick={() => setSelectedPlayerId(p.id)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 6, cursor: 'pointer' }}
+                  >
+                    <div dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{p.firstName} {p.lastName}</div>
+                      <div style={{ fontSize: 11, color: 'var(--warning)' }}>
+                        {(p.lowMoraleDays ?? 0) > 3
+                          ? `Låg moral i ${p.lowMoraleDays} omgångar`
+                          : `Moral ${p.morale}/100`}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{positionShort(p.position)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {expiringContracts.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <div className="h-label" style={{ marginBottom: 8 }}>📄 KONTRAKT</div>
+                {expiringContracts.map(p => (
+                  <div
+                    key={p.id}
+                    className="card-sharp card-tap"
+                    onClick={() => setSelectedPlayerId(p.id)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 6, cursor: 'pointer' }}
+                  >
+                    <div dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{p.firstName} {p.lastName}</div>
+                      <div style={{ fontSize: 11, color: p.contractUntilSeason < game.currentSeason ? 'var(--danger)' : 'var(--warning)' }}>
+                        {p.contractUntilSeason < game.currentSeason ? 'Kontrakt löpt ut' : 'Kontrakt löper ut denna säsong'}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{positionShort(p.position)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div>
+              <div className="h-label" style={{ marginBottom: 8 }}>📋 FORMATION</div>
+              <div className="card-sharp" style={{ padding: '12px 14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Nuvarande</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{currentFormation}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: recommended !== currentFormation ? 8 : 0 }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Rekommenderad</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: recommended !== currentFormation ? 'var(--accent)' : 'var(--success)' }}>{recommended}</span>
+                </div>
+                {recommended !== currentFormation && (
+                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                    {FORMATION_META[recommended]?.coachQuote}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
       {/* Header */}
       {screenTab === 'trupp' && <div style={{ padding: '10px 16px 8px', flexShrink: 0, borderBottom: '1px solid var(--border)' }}>
         {/* Lineup hint */}
