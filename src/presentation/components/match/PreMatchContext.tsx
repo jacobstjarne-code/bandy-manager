@@ -38,8 +38,9 @@ function deriveContext(
   const opp = shortName(opponent?.name ?? 'Motståndaren')
 
   // 1. Derby
-  if (getRivalry(managedClubId, opponentId)) {
-    return { trigger: 'derby', subs: { opp } }
+  const rivalry = getRivalry(managedClubId, opponentId)
+  if (rivalry) {
+    return { trigger: 'derby', subs: { opp, rivalry: rivalry.name } }
   }
 
   // Spelarens avslutade matcher i kronologisk ordning
@@ -88,13 +89,13 @@ function deriveContext(
 
     const above = game.standings.find(s => s.position === pos - 1)
     if (above && above.points - myPoints <= 2) {
-      return { trigger: 'table_above', subs: { pos: pos - 1 } }
+      return { trigger: 'table_above', subs: { pos: pos - 1, n: above.points - myPoints } }
     }
 
     if (pos <= 8) {
       const below = game.standings.find(s => s.position === pos + 1)
       if (below && myPoints - below.points <= 1) {
-        return { trigger: 'table_below', subs: {} }
+        return { trigger: 'table_below', subs: { pos: pos + 1, n: myPoints - below.points } }
       }
     }
   }

@@ -27,55 +27,86 @@ export function streakWord(n: number): string {
 export interface PreMatchSubs {
   fixtureId: string
   opp?: string
+  rivalry?: string
   n?: number
   pos?: number
 }
 
+const POSITION_WORDS: Record<number, string> = {
+  1: 'ettan',
+  2: 'tvåan',
+  3: 'trean',
+  4: 'fyran',
+  5: 'femman',
+  6: 'sexan',
+  7: 'sjuan',
+  8: 'åttan',
+  9: 'nian',
+  10: 'tian',
+  11: 'elvan',
+  12: 'tolvan',
+}
+
+export function positionWord(pos: number): string {
+  return POSITION_WORDS[pos] ?? `${pos}:e plats`
+}
+
 const POOLS: Record<PreMatchTrigger, string[]> = {
   derby: [
+    '{rivalry}.',
+    '{rivalry} idag.',
     'Derbyt. {opp}.',
-    '{opp}. Det gamla derbyt.',
-    'Derby idag. Allt räknas.',
+    '{opp}. Halva byn vet redan vad de hoppas på.',
+    '{rivalry}. Ingen behöver förklara vad det betyder.',
   ],
   win_streak: [
-    '{n} raka vinster. Håll det.',
-    'Formen är där — {n} raka. Fortsätt.',
-    '{n} vinster i rad. Bygg vidare.',
+    '{nword} raka. Håll det.',
+    '{nword} på rad. Tro inte att det är slumpen.',
+    '{nword} raka vinster. Folk börjar tro på det.',
+    '{nword} på rad. Sture log på Konsum igår.',
+    '{nword} raka. Ingen vågar säga det högt än.',
   ],
   loss_streak: [
-    '{n} raka förluster. Något måste brytas.',
-    '{n} raka. Det vänder här.',
-    'Svacka — {n} raka förluster. Dags att vända.',
+    '{nword} raka förluster. Det måste få ett slut idag.',
+    '{nword} på rad åt fel håll.',
+    '{nword} raka. Bryt det.',
+    '{nword} matcher utan poäng. Något måste lossna.',
+    '{nword} förluster på rad. Tystnaden i kafferummet säger sitt.',
   ],
   table_above: [
-    'En poäng upp till {pos}:an.',
-    '{pos}:an är inom räckhåll — en poäng.',
-    'Klättringen fortsätter. {pos}:an är nära.',
+    '{n} poäng upp till {posword}.',
+    '{posword} är inom räckhåll.',
+    '{n} poäng från {posword} plats.',
+    '{posword} ligger {n} poäng bort.',
   ],
   table_below: [
-    'En poäng ner till nedflyttningsstrecket.',
-    'Tajt läge — en poäng ner till strecket.',
-    'Det gäller att hålla undan. En poäng ner.',
+    '{n} poäng ner till strecket.',
+    'Strecket har gnagt sig nära.',
+    'Det är inte långt ner till {posword}.',
+    '{n} poängs marginal ner till nedflyttning.',
   ],
   opp_hot: [
-    '{opp} i strålande form.',
-    '{opp} är på en bra svit.',
-    'Tuff dag — {opp} är heta.',
+    '{opp} har vunnit fyra raka.',
+    '{opp} kommer i form.',
+    '{opp} har inte tappat poäng på en månad.',
+    '{opp} är på gång. Det vet alla utom dem själva.',
   ],
   opp_home_unbeaten: [
-    '{opp} obesegrade hemma — {n} raka.',
-    '{n} matcher utan förlust hemma för {opp}.',
-    '{opp} har inte tappat hemma på {n} matcher.',
+    '{opp} har inte förlorat hemma på {n} matcher.',
+    'Hemma har {opp} inte tappat poäng den här säsongen.',
+    '{n} raka hemma utan förlust för {opp}.',
+    'Ingen har tagit poäng på deras is i år.',
   ],
   opp_cold: [
-    '{opp} på en svacka.',
-    '{opp} är i dålig form.',
-    'Bra läge — {opp} på bottenform.',
+    '{opp} har förlorat fyra av fem.',
+    '{opp} är skakade.',
+    '{opp} kommer hit slitna.',
+    '{opp} har gått sönder någonstans i höst.',
   ],
   cup_fixture: [
-    'Cupmatch.',
-    'Det är cup idag.',
-    'Cupspel. Allt eller inget.',
+    'Cupen. En match som folk minns längre än serien.',
+    'Cup-spel. Ingen mellannivå — vidare eller hem.',
+    'Cup. Bara ett resultat räknas.',
   ],
 }
 
@@ -90,8 +121,16 @@ function hashSeed(fixtureId: string): number {
 export function pickPreMatchContextText(trigger: PreMatchTrigger, subs: PreMatchSubs): string {
   const pool = POOLS[trigger]
   const idx = hashSeed(subs.fixtureId) % pool.length
-  return pool[idx]
-    .replace('{opp}', subs.opp ?? 'Motståndaren')
-    .replace('{n}', subs.n != null ? streakWord(subs.n) : '')
-    .replace('{pos}', subs.pos != null ? String(subs.pos) : '')
+  let text = pool[idx]
+  text = text.replace(/\{opp\}/g, subs.opp ?? 'Motståndaren')
+  text = text.replace(/\{rivalry\}/g, subs.rivalry ?? 'Derbyt')
+  if (subs.n != null) {
+    text = text.replace(/\{nword\}/g, streakWord(subs.n))
+    text = text.replace(/\{n\}/g, String(subs.n))
+  }
+  if (subs.pos != null) {
+    text = text.replace(/\{posword\}/g, positionWord(subs.pos))
+    text = text.replace(/\{pos\}/g, String(subs.pos))
+  }
+  return text
 }
