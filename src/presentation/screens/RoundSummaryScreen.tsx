@@ -398,9 +398,7 @@ export function RoundSummaryScreen() {
                 return (
                   <div key={f.id} style={{
                     display: 'flex', alignItems: 'center',
-                    padding: '3px 0',
-                    borderLeft: relevant ? '2px solid var(--accent)' : '2px solid transparent',
-                    paddingLeft: 6,
+                    padding: '3px 6px',
                   }}>
                     <span style={{
                       flex: 1, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',

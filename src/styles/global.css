@@ -433,6 +433,18 @@ a {
   border: 1px solid var(--border);
 }
 
+/* ── Tappable card: brightness-based hover for clickable secondary cards ── */
+.card-tap {
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+.card-tap:hover {
+  filter: brightness(1.08);
+}
+.card-tap:active {
+  filter: brightness(0.95);
+}
+
 /* ── Card stack: vertical card layout with consistent spacing ── */
 .card-stack {
   display: flex;

@@ -52,13 +52,6 @@ export function TabellScreen() {
       .sort((a, b) => a.roundNumber - b.roundNumber)[0] ?? null
   }
 
-  function getRowBorderColor(position: number): string {
-    if (position <= 3) return 'var(--accent)'
-    if (position <= 8) return 'rgba(196,122,58,0.4)'
-    if (position <= 10) return 'transparent'
-    return 'rgba(239,68,68,0.6)'
-  }
-
   const myRow = standings.find(s => s.clubId === managedClubId)
   const leaderPoints = standings[0]?.points ?? 0
   const myPoints = myRow?.points ?? 0
@@ -270,7 +263,6 @@ export function TabellScreen() {
                   padding: '6px 10px',
                   alignItems: 'center',
                   borderTop: i === 0 ? 'none' : '1px solid var(--border)',
-                  borderLeft: `3px solid ${getRowBorderColor(row.position)}`,
                   background: isManaged
                     ? 'linear-gradient(90deg, rgba(196,122,58,0.12) 0%, rgba(196,122,58,0.04) 100%)'
                     : isTop3
@@ -326,7 +318,7 @@ export function TabellScreen() {
 
                 {/* Goal diff */}
                 <span style={{
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: 600,
                   textAlign: 'center',
                   color: row.goalDifference > 0
@@ -340,8 +332,8 @@ export function TabellScreen() {
 
                 {/* Points */}
                 <span style={{
-                  fontSize: 14,
-                  fontWeight: 800,
+                  fontSize: 13,
+                  fontWeight: 700,
                   textAlign: 'right',
                   color: isManaged ? 'var(--accent)' : 'var(--text-primary)',
                 }}>

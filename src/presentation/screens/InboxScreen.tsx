@@ -110,8 +110,7 @@ function InboxItemRow({ item, onRead, index, playerName }: InboxItemRowProps) {
         gap: 8,
         padding: '7px 12px',
         borderBottom: '1px solid var(--border)',
-        borderLeft: item.isRead ? '3px solid transparent' : '3px solid var(--accent)',
-        background: item.isRead ? 'transparent' : 'rgba(196,122,58,0.04)',
+        background: item.isRead ? undefined : 'rgba(196,122,58,0.06)',
         cursor: hasBody ? 'pointer' : (item.isRead ? 'default' : 'pointer'),
         animation: `fadeInUp 200ms ease-out ${Math.min(index, 14) * 30}ms both`,
       }}

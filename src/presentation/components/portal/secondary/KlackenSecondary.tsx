@@ -24,6 +24,7 @@ export function KlackenSecondary({ game }: CardRenderProps) {
 
   return (
     <div
+      className="card-tap"
       style={{
         background: 'var(--bg-portal-surface)',
         borderLeft: '2px solid var(--accent)',

@@ -9,7 +9,7 @@ export function SituationCard({ game }: Props) {
   const { label, body } = getSituation(game)
 
   return (
-    <div style={{
+    <div className="card-tap" style={{
       marginBottom: 10,
       padding: '10px 14px 12px',
       background: 'var(--bg-portal-elevated)',

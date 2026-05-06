@@ -136,10 +136,10 @@ export function GranskaForlop({ game, fixture, isHome, rs, standing, standingBef
                 const awayWon = (f.awayScore ?? 0) > (f.homeScore ?? 0)
                 const isRivalMatch = rivalClubId && (f.homeClubId === rivalClubId || f.awayClubId === rivalClubId)
                 return (
-                  <div key={f.id} style={{ display: 'flex', alignItems: 'center', padding: '3px 0 3px 6px', borderLeft: isRivalMatch ? '2px solid var(--accent)' : '2px solid transparent' }}>
-                    <span style={{ flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: homeWon ? 700 : 400, color: homeWon ? 'var(--text-primary)' : 'var(--text-muted)' }}>{getClubShort(f.homeClubId)}</span>
+                  <div key={f.id} style={{ display: 'flex', alignItems: 'center', padding: '3px 6px' }}>
+                    <span style={{ flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: homeWon ? 700 : 400, color: homeWon ? 'var(--text-primary)' : 'var(--text-muted)' }}>{isRivalMatch && f.homeClubId === rivalClubId ? '🔥 ' : ''}{getClubShort(f.homeClubId)}</span>
                     <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', width: 40, textAlign: 'center', flexShrink: 0 }}>{f.homeScore}–{f.awayScore}</span>
-                    <span style={{ flex: 1, fontSize: 11, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: awayWon ? 700 : 400, color: awayWon ? 'var(--text-primary)' : 'var(--text-muted)' }}>{getClubShort(f.awayClubId)}</span>
+                    <span style={{ flex: 1, fontSize: 11, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: awayWon ? 700 : 400, color: awayWon ? 'var(--text-primary)' : 'var(--text-muted)' }}>{isRivalMatch && f.awayClubId === rivalClubId ? '🔥 ' : ''}{getClubShort(f.awayClubId)}</span>
                   </div>
                 )
               })}

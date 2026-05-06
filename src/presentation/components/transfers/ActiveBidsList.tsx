@@ -312,7 +312,7 @@ export function ActiveBidsList({
                   const report = player ? (game.scoutReports ?? {})[player.id] : null
                   const isAlreadyScouted = !!report
                   return (
-                    <div key={suggestion.playerId} style={{ padding: '10px 14px', borderBottom: index < latestResult.players.length - 1 ? '1px solid var(--border)' : 'none', display: 'flex', alignItems: 'flex-start', gap: 10, borderLeft: isAlreadyScouted ? '3px solid var(--accent)' : '3px solid transparent' }}>
+                    <div key={suggestion.playerId} style={{ padding: '10px 14px', borderBottom: index < latestResult.players.length - 1 ? '1px solid var(--border)' : 'none', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', marginBottom: 2 }}>
                           {player ? `${player.firstName} ${player.lastName}` : suggestion.playerId}
@@ -322,7 +322,8 @@ export function ActiveBidsList({
                         </p>
                         <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>{suggestion.scoutNotes}</p>
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0, alignItems: 'flex-end' }}>
+                        {isAlreadyScouted && <span className="tag tag-copper">Scoutad</span>}
                         {player && !isAlreadyScouted && (
                           <button
                             onClick={() => player && onScout(player)}

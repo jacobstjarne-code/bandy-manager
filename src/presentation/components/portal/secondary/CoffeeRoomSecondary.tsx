@@ -17,6 +17,7 @@ export function CoffeeRoomSecondary({ game }: CardRenderProps) {
 
   return (
     <div
+      className="card-tap"
       onClick={() => triggerCoffeeRoomScene()}
       style={{
         background: 'var(--bg-portal-surface)',

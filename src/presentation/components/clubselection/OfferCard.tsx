@@ -17,6 +17,7 @@ export function OfferCard({ offer, clubName, region, extendedInfo, quote, onSele
 
   return (
     <div
+      className="card-tap"
       style={{
         background: 'var(--bg-dark-surface)',
         border: '1px solid var(--bg-leather)',

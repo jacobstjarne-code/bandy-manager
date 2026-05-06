@@ -27,6 +27,7 @@ export function ClubExpandedCard({
 
   return (
     <div
+      className="card-tap"
       style={{
         background: 'var(--bg-dark-surface)',
         border: '1px solid var(--accent)',
