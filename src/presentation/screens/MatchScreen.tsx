@@ -24,6 +24,7 @@ import { getRivalry } from '../../domain/data/rivalries'
 import { getCupRoundLabel } from '../../domain/services/cupService'
 import { LastMatchCard } from '../components/match/LastMatchCard'
 import { MatchReportView } from '../components/match/MatchReportView'
+import { PreMatchContext } from '../components/match/PreMatchContext'
 import { LineupStep } from '../components/match/LineupStep'
 import { TacticStep } from '../components/match/TacticStep'
 import { StartStep } from '../components/match/StartStep'
@@ -494,6 +495,15 @@ export function MatchScreen() {
             </div>
           )
         })()}
+
+        {/* Kontextuell stakes-rad */}
+        {nextFixture && (
+          <PreMatchContext
+            fixture={nextFixture}
+            game={game}
+            isHome={isHome}
+          />
+        )}
 
         {/* Step indicator */}
         <div style={{ display: 'flex', alignItems: 'center', margin: '10px 0 8px', gap: 0 }}>
