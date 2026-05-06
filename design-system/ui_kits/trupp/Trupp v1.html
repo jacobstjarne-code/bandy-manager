@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<title>Trupp v1 — A-trupp</title>
+<link rel="stylesheet" href="../../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #1a1612; }
+  * { box-sizing: border-box; }
+
+  .phone {
+    width: 390px;
+    height: 780px;
+    background: var(--bg-scene, #1a1612);
+    overflow: hidden;
+    position: relative;
+    font-family: var(--font-body, system-ui, sans-serif);
+    color: var(--text-light, #F5F1EB);
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .phone-light {
+    background: var(--bg, #FAF6EE);
+    color: var(--text-primary, #1A1A18);
+  }
+
+  /* Notes-block */
+  .notes {
+    position: absolute;
+    top: 0;
+    left: calc(100% + 24px);
+    width: 320px;
+    color: #C4BAA8;
+    font-family: system-ui, sans-serif;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+  .notes h4 {
+    font-family: Georgia, serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #F5F1EB;
+    margin: 0 0 8px;
+  }
+  .notes h5 {
+    font-family: system-ui, sans-serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #C47A3A;
+    opacity: 0.85;
+    margin: 14px 0 6px;
+    font-weight: 600;
+  }
+  .notes ul { margin: 4px 0; padding-left: 16px; }
+  .notes li { margin-bottom: 3px; }
+  .notes em { color: #F5F1EB; font-style: normal; font-weight: 600; }
+  .notes p { margin: 6px 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="artboards.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+</body>
+</html>

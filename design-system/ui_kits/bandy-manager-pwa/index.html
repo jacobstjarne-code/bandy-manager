@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Bandy Manager · UI Kit</title>
+<link rel="stylesheet" href="../../colors_and_type.css"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #1A1815;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    padding: 24px 12px 40px;
+  }
+  .app-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .phone-label {
+    color: rgba(245,241,235,0.7);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .phone-label small {
+    display: block;
+    font-family: var(--font-body);
+    font-style: italic;
+    font-weight: 400;
+    color: rgba(245,241,235,0.45);
+    font-size: 11px;
+    letter-spacing: 0;
+    margin-top: 3px;
+  }
+  .phone {
+    width: 380px;
+    max-width: 100%;
+  }
+  .app-screen {
+    display: flex;
+    flex-direction: column;
+    height: 780px;
+    max-width: 430px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 32px;
+    background: var(--bg);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 10px #0B0A08, 0 0 0 11px #2A2620;
+    position: relative;
+  }
+  .nav-toolbar {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+  .nav-btn {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(245,241,235,0.7);
+    border: 1px solid rgba(245,241,235,0.15);
+    cursor: pointer;
+    font-family: var(--font-body);
+  }
+  .nav-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(196,122,58,0.4);
+  }
+  .legend {
+    text-align: center;
+    color: rgba(245,241,235,0.55);
+    font-size: 10px;
+    margin-top: 32px;
+    letter-spacing: 0.3px;
+    font-family: var(--font-body);
+  }
+  .legend code {
+    color: var(--accent);
+    font-family: var(--font-display);
+  }
+</style>
+</head>
+<body>
+
+<div style="text-align:center;margin-bottom:22px">
+  <h1 style="font-family:var(--font-display);color:#F5F1EB;font-size:22px;font-weight:700;letter-spacing:0.5px">Bandy Manager · UI Kit</h1>
+  <p style="color:rgba(245,241,235,0.55);font-size:12px;margin-top:4px;font-style:italic;font-family:var(--font-display)">
+    Forsbacka IF · Omg 14 · Hemma mot Skutskär
+  </p>
+</div>
+
+<div class="app-wrap">
+  <div class="phone">
+    <div class="phone-label">Bandy Manager PWA<small>Three key screens · click to switch</small></div>
+    <div id="app-root" class="app-screen"></div>
+    <div class="nav-toolbar" id="nav-toolbar"></div>
+  </div>
+</div>
+
+<p class="legend">
+  Copy components from <code>components.jsx</code> · screens from <code>dashboard.jsx</code>, <code>screens.jsx</code>.
+</p>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="components.jsx"></script>
+<script type="text/babel" src="dashboard.jsx"></script>
+<script type="text/babel" src="screens.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+function App() {
+  // Persist position across refresh — matches the DS rule
+  const initial = localStorage.getItem('bm_ui_screen') || 'dashboard';
+  const [screen, setScreen] = useState(initial);
+
+  const navigate = (s) => {
+    localStorage.setItem('bm_ui_screen', s);
+    setScreen(s);
+  };
+
+  const phase = screen === 'dashboard' ? 'prepare' : screen === 'match' ? 'play' : 'review';
+  const activeTab = screen === 'dashboard' ? 'hem' : 'match';
+
+  return (
+    <>
+      <GameHeader club="forsbacka" manager="J. Stjärne" round={14}/>
+      <PhaseIndicator phase={phase}/>
+
+      {screen === 'dashboard' && <DashboardScreen/>}
+      {screen === 'match'     && <MatchScreen/>}
+      {screen === 'result'    && <ResultScreen/>}
+
+      {screen === 'dashboard' && (
+        <CtaBar>
+          <CtaButton onClick={() => navigate('match')}>
+            Förbered match →
+          </CtaButton>
+        </CtaBar>
+      )}
+      {screen === 'match' && (
+        <CtaBar>
+          <CtaButton onClick={() => navigate('result')}>
+            Spela matchen →
+          </CtaButton>
+        </CtaBar>
+      )}
+      {screen === 'result' && (
+        <CtaBar>
+          <CtaButton onClick={() => navigate('dashboard')}>
+            Fortsätt till omg 15 →
+          </CtaButton>
+        </CtaBar>
+      )}
+
+      <BottomNav active={activeTab} onNav={(t) => {
+        if (t === 'hem') navigate('dashboard');
+        if (t === 'match') navigate('match');
+      }}/>
+    </>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('app-root'));
+root.render(<App/>);
+
+// Toolbar
+const screens = [
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'match',     label: 'Taktik' },
+  { id: 'result',    label: 'Resultat' },
+];
+function Toolbar() {
+  const [active, setActive] = useState(localStorage.getItem('bm_ui_screen') || 'dashboard');
+  React.useEffect(() => {
+    const t = setInterval(() => {
+      const cur = localStorage.getItem('bm_ui_screen') || 'dashboard';
+      if (cur !== active) setActive(cur);
+    }, 200);
+    return () => clearInterval(t);
+  }, [active]);
+  return (
+    <>
+      {screens.map(s => (
+        <button key={s.id} className={'nav-btn' + (active === s.id ? ' active' : '')}
+          onClick={() => {
+            localStorage.setItem('bm_ui_screen', s.id);
+            setActive(s.id);
+            // force app to re-render
+            window.dispatchEvent(new Event('storage'));
+            location.reload();
+          }}>{s.label}</button>
+      ))}
+    </>
+  );
+}
+ReactDOM.createRoot(document.getElementById('nav-toolbar')).render(<Toolbar/>);
+</script>
+</body>
+</html>

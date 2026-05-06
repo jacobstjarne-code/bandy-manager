@@ -16,6 +16,55 @@ Fram till 2026-05-04 användes bara ✅ — vilket ledde till falsk leverans-sta
 
 ---
 
+## AKTUELLT LÄGE (2026-05-05)
+
+**Designsystem flyttat in i kodprojektet:** ✅ `design-system/` på rotnivå i bandy-manager. Hela designsystem-projektet från Claude.ai laddats ner och placerats lokalt. Ingång: `design-system/CODE-OPUS-INSTRUCTION.md`. `docs/DESIGN_SYSTEM.md` är nu stub som pekar dit.
+
+**CLAUDE.md uppdaterad** (2026-05-05): LÄS VID SESSIONSTART punkt 3 pekar på `design-system/CODE-OPUS-INSTRUCTION.md`. DESIGN SYSTEM-sektionen omskriven med snabbpekare till alla relevanta filer. Active Documentation rättad.
+
+**Tre direkta Opus-fixar tidigare under sessionen:**
+- `EventCardInline.tsx` — reverterat pill-styling till `.btn .btn-primary` / `.btn .btn-outline` rakt av (Code:s commit `b2944c6` påstod sig matcha `.btn-primary` men gjorde det inte; verifierat mot global.css)
+- `CoffeeRoomScene.tsx` — CTA-text "Tillbaka till dashboarden" → "Tillbaka till klubben"
+- `granskaEventClassifier.ts` — `classifyEventNature` returnerar nu `'reactions'` endast när `event.choices.length === 0`. Rotorsak: REACTION_TYPES innehöll event-typer (supporterEvent/tifo, bandyLetter) som har choices och blev felaktigt auto-resolvade med fejk 'auto' choiceId; eventResolver returnerade game oförändrat när choiceId inte hittades, så side-effects (tifoDone-flagga, brevet-i-arkiv) triggades aldrig. ⚠️ Awaiting browser-playtest. Tester: 18/18 grönt.
+
+**Designsystem-krockar i existerande kod** — identifierade och adresserade samma session.
+
+**Beslut 2026-05-05:** Severity-systemet (`--cold`/`--warm`) är dokumenterat undantag från stripes-förbudet, formaliserat i `design-system/DESIGN-DECISIONS.md`. Mocken `colors-severity.html` visar mönstret. Andra accent-stripes är krockar och flyttas till label-färg.
+
+| # | Komponent | Krock | Status |
+|---|-----------|-------|--------|
+| K1 | `EventCardInline.tsx` | Vänster border-stripe (`borderLeft: '3px solid ${stripeColor}'`) i `--accent`/`--text-muted` per prio | ✅ Fixad samma session — stripe borttagen, prio-signal i typLabel-färg, card-sharp-mönster (1 px border + 8 px radius). ⚠️ Awaiting browser-playtest. |
+| K2 | `EventPrimary.tsx` | Vänster border-stripe (`--danger`) + inline `linear-gradient` på CTA-knapp | ✅ Fixad samma session — stripe borttagen, knapp byter till `className="btn btn-primary"`, danger-signal kvar i label-text + emoji. ⚠️ Awaiting browser-playtest. |
+| K3 | `JournalistSecondary.tsx` | Vänster border-stripe i `--cold` / `--warm` | ✅ Konformt — dokumenterat undantag enligt severity-mock. Inga ändringar. |
+
+**Synk-not till Design (Claude.ai):** Ny post i `DESIGN-DECISIONS.md` lokalt. Måste speglas tillbaka till Claude.ai-design-projektet vid tillfälle annars driver kopiorna isär. Texten är kopierbar från den lokala filen.
+
+**Code-jobb innan HANDOFF-implementation börjar** — fullständig krock-skanning kvar:
+```bash
+# 1. Övriga vänster-border-stripes i komponenter (utanför severity)
+grep -rn "borderLeft" src/presentation/ --include="*.tsx" | grep -v node_modules
+
+# 2. Övriga inline linear-gradient utanför .btn-klasser
+grep -rn "linear-gradient" src/presentation/ --include="*.tsx" | grep -v node_modules
+
+# 3. "herr Patron"-tilltal eller pergament/sigill-copy
+grep -rni "herr patron\|pergament\|sigill" src/ --include="*.tsx" --include="*.ts" | grep -v node_modules
+
+# 4. Status-tags med emoji (manuell skim av tag-användningar)
+grep -rn "tag-fill\|tag-outline\|tag-status" src/presentation/ --include="*.tsx" | grep -v node_modules
+```
+Lista alla träffar här innan HANDOFF #1 plockas. K1, K2, K3 redan adresserade.
+
+**Implementations-sekvens för HANDOFF-items** (efter krock-skanning):
+1. #1 Logotyp `.logo-invert` — first vinst, isolerad
+2. #5 Button system uppdaterat — påverkar alla knappar, måste vara baseline
+3. #3 Tags utan emoji för status — stor refactor
+4. #2 GameHeader 3-kolumns + PhaseIndicator stepper
+5. #4 CeremonialCta wrapper
+6. #9 ArrivalScene — sist, konsumerar alla primitives. Spec klar i `design-system/briefs/ARRIVAL-SCENE-SPEC.md`.
+
+---
+
 ## AKTUELLT LÄGE (2026-05-04, kväll)
 
 **SPEC_SHOTMAP_OMARBETNING:** ✅ LEVERERAD (playtestad 20:46, Jacob bekräftade visuell match mot mock).
@@ -849,10 +898,10 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 
 | Fil | Senast uppdaterad | Status |
 |-----|-------------------|--------|
-| `CLAUDE.md` | 2026-04-21 | Aktuell |
+| `CLAUDE.md` | 2026-05-05 | Aktuell — designsystem-pekare uppdaterade |
 | `LESSONS.md` | 2026-04-22 (§2 uppdaterad) | Aktuell |
 | `DECISIONS.md` | 2026-04-21 | Aktuell |
-| `DESIGN_SYSTEM.md` | 2026-04-14 | OK |
+| `docs/DESIGN_SYSTEM.md` | 2026-05-05 | **STUB** — auktoritativt i `design-system/` |
 | `STATUS.md` | 2026-04-27 | Uppdaterad med Sprint 27 + 28-A/B |
 | `KVAR.md` | 2026-04-30 (kväll) | Denna fil |
 | `HANDOVER_2026-04-30b.md` | 2026-04-30 | Senaste handover (kväll) |

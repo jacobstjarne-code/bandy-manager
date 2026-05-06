@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Pilot · färg-piktogram v4</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  body {
+    width: 1100px;
+    padding: 28px;
+    overflow: visible;
+  }
+  .hero { margin-bottom: 18px; }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: 22px; font-weight: 700;
+    letter-spacing: 0.3px; margin-bottom: 4px;
+  }
+  .hero p {
+    font-size: 12.5px; color: var(--text-muted);
+    line-height: 1.55; max-width: 860px;
+  }
+  .hero strong { color: var(--text-primary); }
+  .hero em { color: var(--accent-deep); font-style: normal; font-weight: 600; }
+
+  .pal {
+    display: flex; gap: 8px; margin: 12px 0 20px;
+    flex-wrap: wrap;
+  }
+  .pal .sw {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 10px 4px 4px;
+    background: #FBF7F0;
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    font-size: 10.5px;
+    font-family: var(--font-mono, ui-monospace, monospace);
+  }
+  .pal .sw .chip-c {
+    width: 16px; height: 16px; border-radius: 99px;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .card {
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .card-head {
+    padding: 10px 14px 9px;
+    background: #FBF7F0;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-head .grp-label {
+    font-size: 8px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+  }
+  .card-head .grp-title {
+    font-family: var(--font-display);
+    font-size: 15px; font-weight: 700;
+    color: var(--text-primary);
+  }
+  .card-head .grp-meta {
+    font-size: 10.5px; color: var(--text-muted);
+    font-style: italic; margin-top: 2px;
+  }
+
+  .card-body {
+    padding: 20px 16px;
+    display: flex; gap: 12px;
+    justify-content: center; align-items: center;
+    background:
+      linear-gradient(to right, transparent 49.5%, rgba(0,0,0,0.06) 49.5%, rgba(0,0,0,0.06) 50.5%, transparent 50.5%),
+      var(--bg-surface);
+  }
+  .card-body .slot {
+    flex: 1; text-align: center;
+  }
+  .card-body .slot-label {
+    font-size: 8px; font-weight: 700;
+    letter-spacing: 1.3px; text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+
+  /* paper and leather render areas */
+  .render {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    padding: 14px 18px;
+    border-radius: 4px;
+  }
+  .render.paper {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+  }
+  .render.leather {
+    background: #2A2620;
+    border: 1px solid #1A1A18;
+  }
+
+  .card-ctx {
+    padding: 12px 14px 14px;
+    background: #F5EFE3;
+    border-top: 1px solid var(--border);
+  }
+  .rubric {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-display);
+    font-size: 15px; font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.3px;
+  }
+  .rubric .mini-ico { flex-shrink: 0; }
+  .rubric-small {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 700;
+    color: var(--text-muted); letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .card-note {
+    padding: 10px 14px 12px;
+    border-top: 1px solid var(--border);
+    font-size: 11px; line-height: 1.5;
+    color: var(--text-secondary);
+    background: #FEFCF7;
+  }
+  .card-note strong { color: var(--text-primary); }
+  .card-note em { color: var(--accent-deep); font-style: normal; font-weight: 600; }
+
+  .ask {
+    grid-column: span 3;
+    background: #FFF7EC;
+    border: 1px dashed var(--accent);
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-size: 12.5px; color: #6B4020; line-height: 1.6;
+  }
+  .ask strong { color: var(--accent-deep); }
+  .ask ol { margin: 8px 0 0 20px; padding: 0; }
+  .ask li { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Färg-piktogram · pilot v4 (omtag)</h1>
+  <p>
+    Ny ansats efter feedbacken. Vi överger linjeikon-paradigmet och gör <strong>emoji-liknande färgformer</strong> — läsbara på 0.5 sekund, rika, "realistiska". Tre ikoner, tre kategorier, i <em>din palett</em>. Fristående (ingen ram) eftersom de ska sitta vid kort­rubriker på varierande bakgrunder. Bottom-nav är separat och orörd.
+  </p>
+  <div class="pal">
+    <span class="sw"><span class="chip-c" style="background:#C47A3A"></span>#C47A3A · koppar</span>
+    <span class="sw"><span class="chip-c" style="background:#2A2620"></span>#2A2620 · läder</span>
+    <span class="sw"><span class="chip-c" style="background:#F5EFE3"></span>#F5EFE3 · papper</span>
+    <span class="sw"><span class="chip-c" style="background:#2E5D3A"></span>#2E5D3A · grön</span>
+    <span class="sw"><span class="chip-c" style="background:#A63D2E"></span>#A63D2E · röd</span>
+    <span class="sw"><span class="chip-c" style="background:#8CA8B8"></span>#8CA8B8 · is-blå</span>
+    <span class="sw"><span class="chip-c" style="background:#E6C875"></span>#E6C875 · mässing</span>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- ═════ 1. HEM / KLUBBHUS ═════ -->
+  <div class="card">
+    <div class="card-head">
+      <div class="grp-label">01 · Sektion</div>
+      <div class="grp-title">Klubbhus</div>
+      <div class="grp-meta">ersätter 🏛️ / "Orten" / dashboard-hem</div>
+    </div>
+    <div class="card-body">
+      <div class="slot">
+        <div class="render paper">
+          <!-- 48px pilot v3 — långt falurött bandyklubbhus, lågt sadeltak, fönsterrad -->
+          <svg width="48" height="48" viewBox="0 0 48 48">
+            <ellipse cx="24" cy="43" rx="20" ry="1.8" fill="#2A2620" opacity="0.12"/>
+            <!-- taksilhuett: långt lågt -->
+            <polygon points="3,25 24,17 45,25 43,27 24,19 5,27" fill="#2A2620"/>
+            <!-- fasad: falurött -->
+            <rect x="5" y="27" width="38" height="15" fill="#A63D2E"/>
+            <!-- vit knutbräda upptill -->
+            <rect x="5" y="27" width="38" height="1.3" fill="#F5EFE3" opacity="0.85"/>
+            <!-- fönsterrad -->
+            <rect x="8" y="31" width="4" height="4.5" fill="#F5EFE3"/>
+            <rect x="14" y="31" width="4" height="4.5" fill="#F5EFE3"/>
+            <rect x="30" y="31" width="4" height="4.5" fill="#F5EFE3"/>
+            <rect x="36" y="31" width="4" height="4.5" fill="#F5EFE3"/>
+            <!-- fönsterkors -->
+            <path d="M 10 31 L 10 35.5 M 8 33.25 L 12 33.25 M 16 31 L 16 35.5 M 14 33.25 L 18 33.25 M 32 31 L 32 35.5 M 30 33.25 L 34 33.25 M 38 31 L 38 35.5 M 36 33.25 L 40 33.25" stroke="#2A2620" stroke-width="0.5"/>
+            <!-- dörr mitt -->
+            <rect x="22" y="32" width="4" height="10" fill="#F5EFE3"/>
+            <!-- klubbmärke ovan dörr -->
+            <circle cx="24" cy="30" r="1.3" fill="#C47A3A"/>
+            <!-- skorsten -->
+            <rect x="33" y="20" width="2.8" height="4" fill="#C47A3A"/>
+          </svg>
+        </div>
+        <div class="slot-label">Papper · 48px</div>
+      </div>
+      <div class="slot">
+        <div class="render leather">
+          <svg width="48" height="48" viewBox="0 0 48 48">
+            <ellipse cx="24" cy="43" rx="20" ry="1.8" fill="#000" opacity="0.4"/>
+            <polygon points="3,25 24,17 45,25 43,27 24,19 5,27" fill="#F5EFE3"/>
+            <rect x="5" y="27" width="38" height="15" fill="#A63D2E"/>
+            <rect x="5" y="27" width="38" height="1.3" fill="#F5EFE3"/>
+            <rect x="8" y="31" width="4" height="4.5" fill="#F5EFE3"/>
+            <rect x="14" y="31" width="4" height="4.5" fill="#F5EFE3"/>
+            <rect x="30" y="31" width="4" height="4.5" fill="#F5EFE3"/>
+            <rect x="36" y="31" width="4" height="4.5" fill="#F5EFE3"/>
+            <path d="M 10 31 L 10 35.5 M 8 33.25 L 12 33.25 M 16 31 L 16 35.5 M 14 33.25 L 18 33.25 M 32 31 L 32 35.5 M 30 33.25 L 34 33.25 M 38 31 L 38 35.5 M 36 33.25 L 40 33.25" stroke="#2A2620" stroke-width="0.5"/>
+            <rect x="22" y="32" width="4" height="10" fill="#2A2620"/>
+            <circle cx="24" cy="30" r="1.3" fill="#E6C875"/>
+            <rect x="33" y="20" width="2.8" height="4" fill="#C47A3A"/>
+          </svg>
+        </div>
+        <div class="slot-label">Läder · 48px</div>
+      </div>
+    </div>
+    <div class="card-ctx">
+      <div class="rubric">
+        <svg class="mini-ico" width="28" height="28" viewBox="0 0 48 48">
+          <polygon points="3,25 24,17 45,25 43,27 24,19 5,27" fill="#2A2620"/>
+          <rect x="5" y="27" width="38" height="15" fill="#A63D2E"/>
+          <rect x="5" y="27" width="38" height="1.3" fill="#F5EFE3"/>
+          <rect x="8" y="31" width="4" height="4.5" fill="#F5EFE3"/>
+          <rect x="14" y="31" width="4" height="4.5" fill="#F5EFE3"/>
+          <rect x="30" y="31" width="4" height="4.5" fill="#F5EFE3"/>
+          <rect x="36" y="31" width="4" height="4.5" fill="#F5EFE3"/>
+          <rect x="22" y="32" width="4" height="10" fill="#2A2620"/>
+          <rect x="33" y="20" width="2.8" height="4" fill="#C47A3A"/>
+        </svg>
+        Hälleforsnäs IK · Klubbhuset
+      </div>
+      <div class="rubric-small">
+        <svg width="14" height="14" viewBox="0 0 48 48">
+          <polygon points="3,25 24,17 45,25 43,27 24,19 5,27" fill="#2A2620"/>
+          <rect x="5" y="27" width="38" height="15" fill="#A63D2E"/>
+        </svg>
+        Orten · CS 50
+      </div>
+    </div>
+    <div class="card-note">
+      <strong>Hus v3:</strong> omritat efter referens — långt lågt falurött trähus med fönsterrad, inte villa. Dörr i mitten, skorsten höger. Bandyklubbhuset som faktiskt står vid isen. <em>Klubbhuset i bruksorten</em>.
+    </div>
+  </div>
+
+  <!-- ═════ 2. BANDYKLUBBA ═════ -->
+  <div class="card">
+    <div class="card-head">
+      <div class="grp-label">02 · Match/spel</div>
+      <div class="grp-title">Bandyklubba + boll</div>
+      <div class="grp-meta">ersätter 🏒 / träning / teknik / match</div>
+    </div>
+    <div class="card-body">
+      <div class="slot">
+        <div class="render paper">
+          <svg width="48" height="48" viewBox="0 0 48 48">
+            <!-- bandyklubba v3: en obruten stroke som en graciös J-kurva -->
+            <!-- skaft rakt uppåt-höger, sedan mjuk kurva åt vänster -->
+            <path d="M 41 7 Q 41.8 7.3 41.3 8.3 L 18 34 Q 14 38.5 10 40 Q 7 40.8 7 38.8 Q 7.2 37 10 36 Q 13 35 16 32 L 39.5 6.3 Q 40.3 6 41 7 Z" fill="#2A2620"/>
+            <!-- boll vid bladspets -->
+            <circle cx="14" cy="42" r="3" fill="#E87443"/>
+            <circle cx="14" cy="42" r="3" fill="none" stroke="#A63D2E" stroke-width="0.5" opacity="0.6"/>
+            <path d="M 12.5 40.5 Q 13.2 40.1 14 40.1" stroke="#FFD4B8" stroke-width="0.6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="slot-label">Papper · 48px</div>
+      </div>
+      <div class="slot">
+        <div class="render leather">
+          <svg width="48" height="48" viewBox="0 0 48 48">
+            <ellipse cx="14" cy="44" rx="7" ry="0.8" fill="#000" opacity="0.4"/>
+            <path d="M 41 7 Q 41.8 7.3 41.3 8.3 L 18 34 Q 14 38.5 10 40 Q 7 40.8 7 38.8 Q 7.2 37 10 36 Q 13 35 16 32 L 39.5 6.3 Q 40.3 6 41 7 Z" fill="#F5EFE3"/>
+            <circle cx="14" cy="42" r="3" fill="#E87443"/>
+            <circle cx="14" cy="42" r="3" fill="none" stroke="#A63D2E" stroke-width="0.5" opacity="0.8"/>
+            <path d="M 12.5 40.5 Q 13.2 40.1 14 40.1" stroke="#FFD4B8" stroke-width="0.6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="slot-label">Läder · 48px</div>
+      </div>
+    </div>
+    <div class="card-ctx">
+      <div class="rubric">
+        <svg class="mini-ico" width="28" height="28" viewBox="0 0 48 48">
+          <path d="M 41 7 Q 41.8 7.3 41.3 8.3 L 18 34 Q 14 38.5 10 40 Q 7 40.8 7 38.8 Q 7.2 37 10 36 Q 13 35 16 32 L 39.5 6.3 Q 40.3 6 41 7 Z" fill="#2A2620"/>
+          <circle cx="14" cy="42" r="3" fill="#E87443"/>
+        </svg>
+        Träning · Teknik
+      </div>
+      <div class="rubric-small">
+        <svg width="14" height="14" viewBox="0 0 48 48">
+          <path d="M 41 7 Q 41.8 7.3 41.3 8.3 L 18 34 Q 14 38.5 10 40 Q 7 40.8 7 38.8 Q 7.2 37 10 36 Q 13 35 16 32 L 39.5 6.3 Q 40.3 6 41 7 Z" fill="#2A2620"/>
+          <circle cx="14" cy="42" r="3" fill="#E87443"/>
+        </svg>
+        Match · Omgång 1
+      </div>
+    </div>
+    <div class="card-note" style="background:#F5E8D8;border-left:3px solid #C47A3A;padding-left:12px">
+      <strong>⚠️ Blockerad — kräver bildasset.</strong> SVG-iteration övergiven efter v3 (se skärmdump i chatt). Bandyklubban är en organisk silhuett som kräver riktig illustration, inte hand-kodade path-koordinater. Väntar på bildgenerering med referensbilder (se <code>briefs/ICON-BRIEF.md</code> §Produktionsregler).
+    </div>
+  </div>
+
+  <!-- ═════ 3. BANDYMÅL ═════ -->
+  <div class="card">
+    <div class="card-head">
+      <div class="grp-label">03 · Matchhändelse</div>
+      <div class="grp-title">Bandymål</div>
+      <div class="grp-meta">ersätter ⚽ / mål-händelse / shotmap-label</div>
+    </div>
+    <div class="card-body">
+      <div class="slot">
+        <div class="render paper">
+          <svg width="48" height="48" viewBox="0 0 48 48">
+            <!-- skugga -->
+            <ellipse cx="24" cy="41" rx="19" ry="1.2" fill="#2A2620" opacity="0.15"/>
+            <!-- is/mark-stänk under målet -->
+            <path d="M 6 40 L 42 40" stroke="#8CA8B8" stroke-width="0.8" opacity="0.5"/>
+            <!-- nät, stor bakre yta (papper) -->
+            <path d="M 10 18 L 38 18 L 36 38 L 12 38 Z" fill="#F5EFE3" stroke="#2A2620" stroke-width="0.3"/>
+            <!-- nät-mesh, glest -->
+            <g stroke="#8CA8B8" stroke-width="0.5" opacity="0.7">
+              <path d="M 16 18 L 16 38"/>
+              <path d="M 22 18 L 22 38"/>
+              <path d="M 28 18 L 28 38"/>
+              <path d="M 34 18 L 34 38"/>
+              <path d="M 11 23 L 37 23"/>
+              <path d="M 11 28 L 37 28"/>
+              <path d="M 11 33 L 37 33"/>
+            </g>
+            <!-- bakre djupstolpar (tunna, mässing) -->
+            <path d="M 6 14 L 10 18" stroke="#C47A3A" stroke-width="1" opacity="0.6"/>
+            <path d="M 42 14 L 38 18" stroke="#C47A3A" stroke-width="1" opacity="0.6"/>
+            <!-- fram-ram: tjocka röda stolpar + tvärribba -->
+            <rect x="5" y="13" width="2.5" height="27" fill="#A63D2E"/>
+            <rect x="40.5" y="13" width="2.5" height="27" fill="#A63D2E"/>
+            <rect x="5" y="13" width="38" height="2.5" fill="#A63D2E"/>
+            <!-- skuggfall på stolparna (ger volym) -->
+            <rect x="7" y="13" width="0.5" height="27" fill="#000" opacity="0.2"/>
+            <rect x="40.5" y="13" width="0.5" height="27" fill="#000" opacity="0.2"/>
+            <!-- bollen i nätet (den har precis gått in) -->
+            <circle cx="27" cy="29" r="3" fill="#E87443"/>
+            <circle cx="27" cy="29" r="3" fill="none" stroke="#A63D2E" stroke-width="0.4" opacity="0.6"/>
+            <g fill="#A63D2E" opacity="0.45">
+              <circle cx="25.5" cy="28" r="0.4"/>
+              <circle cx="28.5" cy="28" r="0.4"/>
+              <circle cx="27" cy="30" r="0.4"/>
+            </g>
+            <path d="M 25.3 27.2 Q 26 26.8 27 26.8" stroke="#FFD4B8" stroke-width="0.6" fill="none" stroke-linecap="round"/>
+            <!-- rörelselinje bakom bollen (bollen kommer från vänster) -->
+            <path d="M 17 26 L 23 27.5" stroke="#E87443" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+            <path d="M 14 25 L 19 26" stroke="#E87443" stroke-width="0.8" stroke-linecap="round" opacity="0.3"/>
+          </svg>
+        </div>
+        <div class="slot-label">Papper · 48px</div>
+      </div>
+      <div class="slot">
+        <div class="render leather">
+          <svg width="48" height="48" viewBox="0 0 48 48">
+            <ellipse cx="24" cy="41" rx="19" ry="1.2" fill="#000" opacity="0.4"/>
+            <path d="M 6 40 L 42 40" stroke="#8CA8B8" stroke-width="0.8" opacity="0.3"/>
+            <!-- nätet blir halvtonad läder för kontrast -->
+            <path d="M 10 18 L 38 18 L 36 38 L 12 38 Z" fill="#3A332C" stroke="#F5EFE3" stroke-width="0.3"/>
+            <g stroke="#8CA8B8" stroke-width="0.5" opacity="0.4">
+              <path d="M 16 18 L 16 38"/>
+              <path d="M 22 18 L 22 38"/>
+              <path d="M 28 18 L 28 38"/>
+              <path d="M 34 18 L 34 38"/>
+              <path d="M 11 23 L 37 23"/>
+              <path d="M 11 28 L 37 28"/>
+              <path d="M 11 33 L 37 33"/>
+            </g>
+            <path d="M 6 14 L 10 18" stroke="#C47A3A" stroke-width="1" opacity="0.7"/>
+            <path d="M 42 14 L 38 18" stroke="#C47A3A" stroke-width="1" opacity="0.7"/>
+            <rect x="5" y="13" width="2.5" height="27" fill="#C94838"/>
+            <rect x="40.5" y="13" width="2.5" height="27" fill="#C94838"/>
+            <rect x="5" y="13" width="38" height="2.5" fill="#C94838"/>
+            <rect x="7" y="13" width="0.5" height="27" fill="#000" opacity="0.3"/>
+            <rect x="40.5" y="13" width="0.5" height="27" fill="#000" opacity="0.3"/>
+            <circle cx="27" cy="29" r="3" fill="#E87443"/>
+            <circle cx="27" cy="29" r="3" fill="none" stroke="#A63D2E" stroke-width="0.4" opacity="0.8"/>
+            <g fill="#A63D2E" opacity="0.6">
+              <circle cx="25.5" cy="28" r="0.4"/>
+              <circle cx="28.5" cy="28" r="0.4"/>
+              <circle cx="27" cy="30" r="0.4"/>
+            </g>
+            <path d="M 25.3 27.2 Q 26 26.8 27 26.8" stroke="#FFD4B8" stroke-width="0.6" fill="none" stroke-linecap="round"/>
+            <path d="M 17 26 L 23 27.5" stroke="#E87443" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
+            <path d="M 14 25 L 19 26" stroke="#E87443" stroke-width="0.8" stroke-linecap="round" opacity="0.4"/>
+          </svg>
+        </div>
+        <div class="slot-label">Läder · 48px</div>
+      </div>
+    </div>
+    <div class="card-ctx">
+      <div class="rubric">
+        <svg class="mini-ico" width="28" height="28" viewBox="0 0 48 48">
+          <path d="M 10 18 L 38 18 L 36 38 L 12 38 Z" fill="#F5EFE3"/>
+          <rect x="5" y="13" width="2.5" height="27" fill="#A63D2E"/>
+          <rect x="40.5" y="13" width="2.5" height="27" fill="#A63D2E"/>
+          <rect x="5" y="13" width="38" height="2.5" fill="#A63D2E"/>
+          <circle cx="27" cy="29" r="3" fill="#E87443"/>
+        </svg>
+        Matchrapport · Mål gjorda
+      </div>
+      <div class="rubric-small">
+        <svg width="14" height="14" viewBox="0 0 48 48">
+          <path d="M 10 18 L 38 18 L 36 38 L 12 38 Z" fill="#F5EFE3"/>
+          <rect x="5" y="13" width="2.5" height="27" fill="#A63D2E"/>
+          <rect x="40.5" y="13" width="2.5" height="27" fill="#A63D2E"/>
+          <rect x="5" y="13" width="38" height="2.5" fill="#A63D2E"/>
+          <circle cx="27" cy="29" r="3" fill="#E87443"/>
+        </svg>
+        Mål · Minut 58
+      </div>
+    </div>
+    <div class="card-note">
+      <strong>Fem färger per ikon:</strong> röd (ram) · papper (nät) · is-blå (nät­mesh + marklinje) · koppar (djupstolpar) · orange-röd (boll). En stark idé = <em>bollen är i mål och har precis rusat in från vänster</em>. Rörelselinjerna gör att "mål-ögonblicket" läses, inte bara objektet.
+    </div>
+  </div>
+
+  <!-- Feedback-ask -->
+  <div class="ask">
+    <strong>Tre piloter i ny stil. Det här vill jag ha din dom på:</strong>
+    <ol>
+      <li><strong>Känslan</strong> — läser de här som "vår app" eller är de bara emoji light? Är nivå på detalj OK, eller för mycket/för lite?</li>
+      <li><strong>Paletten</strong> — ska jag köra med dessa 7 färger, eller vill du lägga till/ta bort? <em>Mässing (#E6C875)</em> är ny — den ger vimpeln värme men kan slopas.</li>
+      <li><strong>Skala</strong> — skalar de ned till 14px i mini-rubrikerna? Titta på "Orten · CS 50"-raden och säg om mini-ikonen fortfarande bär.</li>
+      <li><strong>Dom</strong> — håller riktningen? Om ja ritar jag de 3 nästa (sol, brev/matchnotis, pengar/ekonomi) i samma språk. Om nej — vad tippar över?</li>
+    </ol>
+  </div>
+
+</div>
+
+</body>
+</html>

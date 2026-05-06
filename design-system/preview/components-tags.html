@@ -1,0 +1,52 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css"></head>
+<body style="width:700px;min-height:320px;padding:22px 20px">
+
+<p class="label8" style="margin-bottom:4px">TAGS · pill · 9 px · 600 · +0.4 px ls · UPPERCASE</p>
+<p style="font-size:11px;color:var(--text-secondary);line-height:1.45;margin-bottom:16px">Pill (99 px radius). Aldrig stack:a — en status per rad. Färg ska bära betydelsen; emoji är valfritt ornament.</p>
+
+<!-- REKOMMENDERAD: utan emoji -->
+<div style="padding:14px 14px 12px;background:#FFFFFF;border:1.5px solid var(--accent);border-radius:8px;margin-bottom:14px;position:relative">
+  <div style="position:absolute;top:-8px;left:12px;background:var(--accent);color:#fff;font-size:8px;font-weight:700;letter-spacing:1.5px;padding:2px 8px;border-radius:3px">✓ REKOMMENDERAD</div>
+  <p style="font-size:10px;color:var(--text-secondary);margin:4px 0 10px;font-family:Georgia,serif;font-style:italic">Ren textpill — färg + typografi gör jobbet. Konsekvent visuell rytm, inga glidande emoji-baselines.</p>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+    <span class="tag tag-fill">Hemma</span>
+    <span class="tag tag-copper">Förra uppst.</span>
+    <span class="tag tag-outline">Bänken</span>
+    <span class="tag tag-green">Redo</span>
+    <span class="tag tag-red">Skadad</span>
+    <span class="tag tag-ice">−4 °C</span>
+    <span class="tag tag-ghost">Okänd</span>
+    <span class="tag tag-dark" style="background:#3D3A32;padding:3px 9px">Derby</span>
+  </div>
+</div>
+
+<!-- TILLÅTET UNDANTAG: kategori-märkning -->
+<div style="padding:14px 14px 12px;background:#FFFFFF;border:1px solid var(--border);border-radius:8px;margin-bottom:14px">
+  <p style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-secondary);margin-bottom:4px">↯ Tillåtet undantag</p>
+  <p style="font-size:10px;color:var(--text-secondary);margin:0 0 10px;font-family:Georgia,serif;font-style:italic">Endast i feed/timeline där taggen fungerar som <em>kategori­markör</em> och inte som status. Max en emoji per tag, aldrig två.</p>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+    <span class="tag tag-fill">🏒 Match</span>
+    <span class="tag tag-copper">💼 Transfer</span>
+    <span class="tag tag-dark" style="background:#3D3A32;padding:3px 9px">🔥 Derby</span>
+    <span class="tag tag-outline">🩹 Skada</span>
+  </div>
+</div>
+
+<!-- UNDVIK -->
+<div style="padding:14px 14px 12px;background:#FFFFFF;border:1px solid rgba(200,70,70,0.3);border-radius:8px;opacity:0.95">
+  <p style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#C84646;margin-bottom:4px">✗ Undvik</p>
+  <p style="font-size:10px;color:var(--text-secondary);margin:0 0 10px;font-family:Georgia,serif;font-style:italic">Emoji på status-tags dubblar informationen (färgen säger redan "Redo"), och i kombination med checkmark / temperatur blir raden rörig.</p>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;opacity:0.7">
+    <span class="tag tag-green">✓ Redo ✓</span>
+    <span class="tag tag-red">🩹 Skadad</span>
+    <span class="tag tag-ice">❄️ -4 °C</span>
+    <span class="tag tag-copper">⭐ Förra uppst. ⭐</span>
+  </div>
+</div>
+
+<!-- regel -->
+<div style="margin-top:14px;padding:10px 12px;background:var(--bg-surface);border-left:3px solid var(--accent);border-radius:0 6px 6px 0">
+  <p style="font-size:11px;color:var(--text-primary);line-height:1.55;margin:0"><strong>Regel:</strong> status-tags (Redo / Skadad / Bänken / temperatur) är <u>alltid utan emoji</u> — färg + text räcker. Kategori-tags i feed/timeline <u>får</u> ha en prefix-emoji om den kommer från <code>EMOJI_MAP</code>. Aldrig två emoji i samma tag, aldrig emoji efter texten.</p>
+</div>
+
+</body></html>

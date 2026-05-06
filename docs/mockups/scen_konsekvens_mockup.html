@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=430, initial-scale=1.0">
+<title>Bandy Manager — Scen-konsekvens-mockup</title>
+<style>
+  /* Design tokens — synkade med global.css */
+  :root {
+    --bg: #f5f1eb;
+    --bg-surface: #fafaf6;
+    --bg-elevated: #f0ece4;
+    --bg-dark: #1a1815;
+    --bg-scene: #1a1815;            /* används för alla fullskärm-scener */
+    --bg-scene-deeper: #14120f;      /* subtle gradient-end */
+
+    --text-primary: #2a2622;
+    --text-secondary: #4a4540;
+    --text-muted: #8a8278;
+    --text-light: #f5f1eb;
+    --text-light-secondary: #c9c2b6;
+
+    --border: #d8d0c2;
+    --border-dark: #3d3833;
+
+    --accent: #8b7332;
+    --accent-dark: #6e5a26;
+    --accent-deep: #4d3d18;
+
+    --success: #5a9a4a;
+    --danger: #b05040;
+
+    --font-display: Georgia, serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: #2a2622;
+    color: var(--text-primary);
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: var(--text-light);
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .intro {
+    color: var(--text-light-secondary);
+    text-align: center;
+    margin-bottom: 32px;
+    font-size: 13px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5;
+  }
+
+  .gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .phone-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-align: center;
+  }
+
+  .phone-sublabel {
+    font-size: 11px;
+    color: var(--text-light-secondary);
+    text-align: center;
+    max-width: 320px;
+    line-height: 1.4;
+  }
+
+  .phone {
+    width: 380px;
+    height: 780px;
+    border-radius: 36px;
+    background: var(--bg-scene);
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── SCEN-MALL (delade element) ─── */
+
+  .scene-genre-tag {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--accent);
+    opacity: 0.7;
+    text-transform: uppercase;
+    text-align: center;
+    margin-top: 50px;
+    margin-bottom: 14px;
+  }
+
+  .scene-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-light);
+    line-height: 1.2;
+    margin-bottom: 4px;
+    text-align: center;
+    padding: 0 24px;
+  }
+
+  .scene-subtitle {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-style: italic;
+    color: var(--text-light-secondary);
+    line-height: 1.4;
+    text-align: center;
+    padding: 0 24px;
+    margin-bottom: 20px;
+  }
+
+  .scene-progress-dots {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    margin-top: 8px;
+    margin-bottom: 32px;
+  }
+
+  .scene-progress-dots > div {
+    width: 24px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--border-dark);
+    opacity: 0.3;
+  }
+
+  .scene-progress-dots > div.active {
+    background: var(--accent);
+    opacity: 0.8;
+  }
+
+  .scene-body {
+    flex: 1;
+    padding: 0 24px;
+    color: var(--text-light);
+    font-family: var(--font-display);
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  .scene-body p {
+    margin-bottom: 14px;
+  }
+
+  .scene-body em {
+    font-style: italic;
+    color: var(--text-light-secondary);
+  }
+
+  .scene-cta-wrap {
+    padding: 16px 24px 32px;
+  }
+
+  .scene-cta {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: var(--bg-dark);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .scene-cta:hover {
+    background: var(--accent-dark);
+  }
+
+  /* ─── KATEGORI A — fas-intro säsong ─── */
+
+  /* Använder bas-mall som-den-är */
+
+  /* ─── KATEGORI B — fas-intro match ─── */
+
+  .scene-body-short {
+    font-size: 15px;
+  }
+
+  /* ─── KATEGORI C — konsekvens ─── */
+
+  .consequence-emoji {
+    font-size: 56px;
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    opacity: 0.85;
+  }
+
+  .scene-genre-tag-cat-c {
+    margin-top: 0;
+  }
+
+  .scene-title-cat-c {
+    font-size: 20px;
+    margin-bottom: 14px;
+  }
+
+  /* Ingen "Ni kom ändå långt"-platityd. Kort konstaterande. */
+
+  /* ─── KATEGORI D — reflektion ─── */
+
+  .reflection-icon {
+    font-size: 32px;
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    opacity: 0.6;
+  }
+
+  .speaker-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 0 8px;
+  }
+
+  .speaker-row.right {
+    flex-direction: row-reverse;
+    text-align: right;
+  }
+
+  .speaker-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-dark);
+    color: var(--text-light);
+    font-family: var(--font-display);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .speaker-content {
+    flex: 1;
+  }
+
+  .speaker-name {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .speaker-quote {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-style: italic;
+    color: var(--text-light-secondary);
+    line-height: 1.5;
+  }
+
+  .exchange-separator {
+    width: 30%;
+    height: 1px;
+    background: var(--border-dark);
+    margin: 4px auto 16px;
+    opacity: 0.5;
+  }
+
+  /* Annotations utanför ramen */
+  .anno-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 12px;
+    width: 320px;
+  }
+
+  .anno-item {
+    font-size: 10px;
+    color: var(--text-light-secondary);
+    line-height: 1.4;
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .anno-item::before {
+    content: "·";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .anno-item code {
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 9px;
+    background: rgba(139,115,50,0.15);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+
+  .section {
+    margin-top: 40px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .section-header {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-light);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .section-subtitle {
+    text-align: center;
+    color: var(--text-light-secondary);
+    font-size: 12px;
+    margin-bottom: 24px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5;
+  }
+
+  /* CTA-tabell */
+  .cta-table {
+    max-width: 700px;
+    margin: 32px auto 0;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .cta-table h3 {
+    color: var(--text-light);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .cta-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 100px;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-size: 12px;
+  }
+
+  .cta-row:first-of-type {
+    border-top: none;
+  }
+
+  .cta-row .cat {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .cta-row .text {
+    color: var(--text-light);
+    font-family: var(--font-display);
+    font-style: italic;
+  }
+
+  .cta-row .pill {
+    font-size: 9px;
+    color: var(--text-light-secondary);
+    text-align: right;
+    padding-top: 2px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Bandy Manager — Scen-konsekvens</h1>
+<p class="intro">
+  Mock för SPEC_BESLUTSEKONOMI_STEG_4. Visar bas-mallen och fyra kategori-varianter (A, B, C, D).
+  Pixel-värden ska kopieras bokstavligen vid implementation.
+</p>
+
+<!-- Rad 1: A + B + C + D -->
+<div class="gallery">
+
+  <!-- Kategori A — Fas-intro säsong -->
+  <div class="phone-wrap">
+    <div class="phone-label">Kategori A — Fas-intro säsong</div>
+    <div class="phone-sublabel">Etablerar att fas börjar. Ingen drama. CTA: <em>"Då kör vi"</em></div>
+    <div class="phone">
+      <div class="scene-genre-tag">⬩ I DETTA ÖGONBLICK ⬩</div>
+      <div class="scene-title">Ispremiär</div>
+      <div class="scene-subtitle">Tisdag morgon · Hyttvallen</div>
+      <div class="scene-progress-dots">
+        <div class="active"></div>
+        <div></div>
+        <div></div>
+      </div>
+      <div class="scene-body">
+        <p>Wienerbröd på morgonen. Isen är stenhård.</p>
+        <p>Tjugotvå omgångar framåt. En cup. Ett slutspel om det vill sig.</p>
+        <p><em>Det är säsong nu.</em></p>
+      </div>
+      <div class="scene-cta-wrap">
+        <button class="scene-cta">Då kör vi →</button>
+      </div>
+    </div>
+    <div class="anno-list">
+      <div class="anno-item">Genre-tag: <code>⬩ I DETTA ÖGONBLICK ⬩</code> standard</div>
+      <div class="anno-item">Rubrik: Georgia 22px 700</div>
+      <div class="anno-item">Subtitle: Georgia 14px italic, datum + plats</div>
+      <div class="anno-item">Progress-dots om scen har flera beats</div>
+      <div class="anno-item">CTA: <code>"Då kör vi →"</code></div>
+    </div>
+  </div>
+
+  <!-- Kategori B — Fas-intro match -->
+  <div class="phone-wrap">
+    <div class="phone-label">Kategori B — Fas-intro match</div>
+    <div class="phone-sublabel">Match-fas. Action-CTA. Ersätter dagens halv-overlay.</div>
+    <div class="phone">
+      <div class="scene-genre-tag">⬩ FÖRLÄNGNING ⬩</div>
+      <div class="scene-title">Oavgjort efter ordinarie tid</div>
+      <div class="scene-subtitle">2 × 15 minuter spelas</div>
+      <div class="scene-progress-dots">
+        <div class="active"></div>
+      </div>
+      <div class="scene-body scene-body-short">
+        <p>Klacken sjunger fortfarande. Det är inte över.</p>
+        <p><em>Spelarna byter sida. Vatten i knäna.</em></p>
+      </div>
+      <div class="scene-cta-wrap">
+        <button class="scene-cta">Spela förlängningen →</button>
+      </div>
+    </div>
+    <div class="anno-list">
+      <div class="anno-item">Genre-tag = scen-namn (FÖRLÄNGNING / STRAFFLÄGGNING)</div>
+      <div class="anno-item">Body kortare (15px), max 2-3 stycken</div>
+      <div class="anno-item">CTA action-fokuserad: <code>"Spela förlängningen"</code>, <code>"Påbörja straffar"</code>, <code>"Spela cupfinalen"</code></div>
+      <div class="anno-item">Match-flödet pausat — fortsätter direkt efter klick, ingen Portal-paus</div>
+      <div class="anno-item">Ersätter dagens <code>PhaseOverlay</code></div>
+    </div>
+  </div>
+
+  <!-- Kategori C — Konsekvens -->
+  <div class="phone-wrap">
+    <div class="phone-label">Kategori C — Konsekvens</div>
+    <div class="phone-sublabel">Resultat-fokus. Kort konstaterande, ingen platityd. Ersätter <code>CeremonyCupFinal</code></div>
+    <div class="phone">
+      <div class="consequence-emoji">🥈</div>
+      <div class="scene-genre-tag scene-genre-tag-cat-c">⬩ CUPFINAL ⬩</div>
+      <div class="scene-title scene-title-cat-c">Förlorade på straffar</div>
+      <div class="scene-body">
+        <p>Västanfors tog hem cupen. 6–5 efter straffar.</p>
+        <p>Det stod 3–3 i ordinarie tid. Kvitteringen kom i 84:e.</p>
+        <p><em>Bussen hem är tyst. Det är så det är.</em></p>
+      </div>
+      <div class="scene-cta-wrap">
+        <button class="scene-cta">Fortsätt →</button>
+      </div>
+    </div>
+    <div class="anno-list">
+      <div class="anno-item">Diskret emoji ovanför rubrik (🥈 silver, 🏆 guld)</div>
+      <div class="anno-item">Rubrik konstaterande: <em>"Förlorade på straffar"</em>, INTE <em>"CUPFINALFÖRLUST"</em></div>
+      <div class="anno-item">Body: vem vann + en konkret detalj. Ingen platityd.</div>
+      <div class="anno-item">CTA: <code>"Fortsätt →"</code></div>
+      <div class="anno-item">Cooldown aktiveras: <code>lastConsequenceSceneRound</code> sätts</div>
+      <div class="anno-item">Ingen Kat D-trigger samma omgång (kafferum blockerat)</div>
+    </div>
+  </div>
+
+  <!-- Kategori D — Reflektion -->
+  <div class="phone-wrap">
+    <div class="phone-label">Kategori D — Reflektion</div>
+    <div class="phone-sublabel">Befintligt kafferum. CTA-fix från <em>"Tillbaka till dashboarden"</em> till <em>"Tillbaka till klubben"</em>.</div>
+    <div class="phone">
+      <div class="reflection-icon">☕</div>
+      <div class="scene-genre-tag" style="margin-top: 0;">⬩ I DETTA ÖGONBLICK ⬩</div>
+      <div class="scene-title">Kafferummet</div>
+      <div class="scene-subtitle">Tisdag förmiddag · några stannade kvar efter mötet</div>
+      <div class="scene-body" style="padding-top: 16px;">
+
+        <div class="speaker-row">
+          <div class="speaker-avatar">K</div>
+          <div class="speaker-content">
+            <div class="speaker-name">Kioskvakten</div>
+            <div class="speaker-quote">"Ingen kommer betala 25 kr för en korv i den här kylan."</div>
+          </div>
+        </div>
+
+        <div class="speaker-row right">
+          <div class="speaker-avatar">K</div>
+          <div class="speaker-content">
+            <div class="speaker-name">Kassören</div>
+            <div class="speaker-quote">"Det sa du förra året. Vi sålde slut."</div>
+          </div>
+        </div>
+
+        <div class="exchange-separator"></div>
+
+        <div class="speaker-row">
+          <div class="speaker-avatar">U</div>
+          <div class="speaker-content">
+            <div class="speaker-name">Ungdomstränaren</div>
+            <div class="speaker-quote">"Dahlberg i P19 börjar likna något."</div>
+          </div>
+        </div>
+
+        <div class="speaker-row right">
+          <div class="speaker-avatar">M</div>
+          <div class="speaker-content">
+            <div class="speaker-name">Materialaren</div>
+            <div class="speaker-quote">"Ge honom inte för stora tröjor."</div>
+          </div>
+        </div>
+
+      </div>
+      <div class="scene-cta-wrap">
+        <button class="scene-cta">Tillbaka till klubben →</button>
+      </div>
+    </div>
+    <div class="anno-list">
+      <div class="anno-item">CTA-fix: <code>"Tillbaka till klubben"</code> enligt SPEC_KAFFERUMMET_FAS_1</div>
+      <div class="anno-item">Inga andra ändringar — befintlig stil</div>
+      <div class="anno-item">Ny regel: triggern blockeras om <code>currentRound === lastConsequenceSceneRound</code></div>
+      <div class="anno-item">Stil-mallen är auktoritativ för alla nya Kat D-scener</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- CTA-tabell -->
+<div class="section">
+  <div class="section-header">CTA-konsekvens</div>
+  <div class="section-subtitle">
+    Endast dessa CTA-texter får användas. Pil-konvention: alla CTAs i kategori A, B, C, D får <code style="color:var(--accent);">→</code> i samma sträng.
+  </div>
+
+  <div class="cta-table">
+    <div class="cta-row">
+      <div class="cat">A — Fas-intro säsong</div>
+      <div class="text">"Då kör vi"</div>
+      <div class="pill">btn-primary</div>
+    </div>
+    <div class="cta-row">
+      <div class="cat">B — Fas-intro match</div>
+      <div class="text">"Spela [scenen]" — "Spela förlängningen", "Påbörja straffar"</div>
+      <div class="pill">btn-primary</div>
+    </div>
+    <div class="cta-row">
+      <div class="cat">C — Konsekvens</div>
+      <div class="text">"Fortsätt"</div>
+      <div class="pill">btn-primary</div>
+    </div>
+    <div class="cta-row">
+      <div class="cat">D — Reflektion</div>
+      <div class="text">"Tillbaka till klubben"</div>
+      <div class="pill">btn-primary</div>
+    </div>
+    <div class="cta-row">
+      <div class="cat">E — Konfrontation</div>
+      <div class="text">per val</div>
+      <div class="pill">btn-ghost</div>
+    </div>
+    <div class="cta-row" style="margin-top:12px; border-top: 1px solid rgba(255,255,255,0.15);">
+      <div class="cat" style="color: var(--danger);">FÖRBJUDET</div>
+      <div class="text" style="color: var(--text-light-secondary); font-style: normal;">"Då börjar vi", "Tillbaka till dashboarden", "OK", "Stäng", "Klar"</div>
+      <div class="pill"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Bas-anatomi -->
+<div class="section">
+  <div class="section-header">Bas-anatomi (alla kategorier)</div>
+  <div class="section-subtitle">
+    Strukturen är samma. Variationen ligger i kategori-specifika justeringar dokumenterade i specen.
+  </div>
+
+  <div style="max-width: 700px; margin: 0 auto; padding: 24px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
+    <pre style="color: var(--text-light); font-family: 'SF Mono', monospace; font-size: 11px; line-height: 1.7; white-space: pre-wrap;">
+SceneContainer (background: var(--bg-scene), min-height: 100vh, flex-column)
+  │
+  ├── (Kat C) consequence-emoji   ← 56px, opacity 0.85, marginTop 30px
+  │
+  ├── SceneHeader
+  │     ├── genre-tag             ← 9px, letter-spacing 4px, var(--accent), opacity 0.7
+  │     ├── title                 ← Georgia 22px 700, var(--text-light)
+  │     ├── subtitle (optional)   ← Georgia 14px italic, var(--text-light-secondary)
+  │     └── progress-dots         ← 24px × 2px, accent vid active
+  │
+  ├── SceneBody (flex: 1)
+  │     ├── padding 0 24px
+  │     ├── Georgia 16px (Kat A/C/D), 15px (Kat B)
+  │     ├── color var(--text-light)
+  │     └── em → italic, var(--text-light-secondary)
+  │
+  └── SceneCTA-wrap
+        ├── padding 16px 24px 32px
+        └── button.scene-cta      ← fullbredd, accent-bg, radius 10px, 14px 16px padding</pre>
+  </div>
+</div>
+
+</body>
+</html>

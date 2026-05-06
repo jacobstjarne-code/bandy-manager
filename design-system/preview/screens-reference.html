@@ -1,0 +1,1876 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Bandy Manager — UI-mockups för Claude Design (2026-04-22)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg:               #EDE8DF;
+    --bg-surface:       #FAF8F4;
+    --bg-elevated:      #FFFFFF;
+    --bg-dark:          #0E0D0B;
+    --bg-dark-surface:  #1E1D19;
+    --bg-dark-elevated: #2C2A24;
+    --bg-leather:       #3D3A32;
+    --border:           #DDD7CC;
+    --border-dark:      #C4BAA8;
+    --text-primary:     #1A1A18;
+    --text-secondary:   #6B6760;
+    --text-muted:       #8A857A;
+    --text-light:           #F5F1EB;
+    --text-light-secondary: #C4BAA8;
+    --accent:       #C47A3A;
+    --accent-dark:  #A25828;
+    --accent-deep:  #8B4820;
+    --success:   #5A9A4A;
+    --warning:   #C47A3A;
+    --danger:    #B05040;
+    --ice:       #7EB3D4;
+    --led-bg:          #0A0A0A;
+    --led-border:      #1A1A1A;
+    --led-score:       #FF1A1A;
+    --led-score-flash: #FF9900;
+    --led-time:        #CCFF00;
+    --led-warn:        #FF6644;
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body:    system-ui, -apple-system, sans-serif;
+    --radius-sm:  3px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-family: var(--font-body); color: var(--text-primary); }
+  body {
+    background: #2a2824;
+    padding: 24px 16px 80px;
+    min-height: 100vh;
+  }
+  .page-header {
+    max-width: 900px; margin: 0 auto 24px;
+    color: var(--text-light);
+  }
+  .page-header h1 { font-family: var(--font-display); font-size: 22px; margin-bottom: 6px; }
+  .page-header p { font-size: 12px; color: var(--text-light-secondary); line-height: 1.5; }
+
+  .mock-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(375px, 1fr));
+    gap: 24px;
+    max-width: 1600px; margin: 0 auto;
+    align-items: start;
+  }
+
+  .mock-section {
+    background: var(--bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    max-width: 375px;
+    width: 100%;
+    justify-self: center;
+  }
+  .mock-label {
+    background: #1f1d19;
+    color: var(--text-light);
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--accent-deep);
+  }
+  .mock-label .sub {
+    display: block;
+    margin-top: 2px;
+    font-size: 9px;
+    color: var(--text-light-secondary);
+    letter-spacing: 1px;
+    font-weight: 400;
+    text-transform: none;
+    font-style: italic;
+  }
+  .mock-body { padding: 0; }
+
+  /* ─── Card system ─── */
+  .card-sharp {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+  .section-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--text-muted);
+  }
+
+  /* ─── Match header bar ─── */
+  .match-bg {
+    background: #3D3520;
+    padding: 8px 12px;
+  }
+
+  /* ─── Scoreboard ─── */
+  .scoreboard {
+    background: var(--led-bg);
+    border-radius: 8px;
+    border: 3px solid var(--led-border);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3);
+    padding: 12px 16px;
+    margin: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .scoreboard-row {
+    display: flex; align-items: center; gap: 8px;
+    justify-content: center; width: 100%;
+  }
+  .scoreboard-team { flex: 1; text-align: center; }
+  .scoreboard-team-label {
+    font-family: 'Courier New', monospace;
+    font-weight: 700; font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 1.5px;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+  }
+  .scoreboard-team-label .hg {
+    color: var(--led-time); font-size: 12px;
+  }
+  .scoreboard-score {
+    display: block;
+    font-family: 'Courier New', monospace;
+    font-weight: 900; font-size: 56px;
+    color: var(--led-score);
+    text-shadow: 0 0 10px rgba(255,26,26,0.6), 0 0 20px rgba(255,26,26,0.3);
+    line-height: 1; letter-spacing: 4px;
+  }
+  .scoreboard-score.flash {
+    color: var(--led-score-flash);
+    text-shadow: 0 0 20px rgba(255,153,0,0.8), 0 0 40px rgba(255,153,0,0.4);
+  }
+  .scoreboard-dash {
+    color: var(--led-score); font-size: 28px; font-weight: 900; opacity: 0.7;
+    font-family: 'Courier New', monospace; line-height: 1;
+  }
+  .scoreboard-time {
+    font-family: 'Courier New', monospace;
+    font-weight: 700; font-size: 22px;
+    color: var(--led-time);
+    text-shadow: 0 0 8px rgba(204,255,0,0.5);
+    line-height: 1;
+  }
+  .scoreboard-timezone {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .rivalry-pill {
+    display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
+    border-radius: 99px;
+    background: rgba(220,50,30,0.2);
+    border: 1px solid rgba(220,100,30,0.4);
+    font-size: 10px; font-weight: 700;
+    color: var(--led-warn);
+    font-family: 'Courier New', monospace;
+  }
+  .weather-line {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    font-family: 'Courier New', monospace;
+  }
+  .arena-line {
+    font-size: 10px;
+    color: #A89878;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 4px rgba(168,152,120,0.3);
+  }
+  .susp-row {
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; padding: 4px 0 0;
+    font-size: 11px; font-weight: 700;
+    font-family: 'Courier New', monospace;
+    color: var(--led-warn);
+  }
+  .susp-row > div { flex: 1; text-align: center; }
+  .susp-row .gap { width: 60px; flex: none; }
+
+  /* ─── Commentary feed ─── */
+  .commentary {
+    background: rgba(196,122,58,0.03);
+    padding: 8px 0;
+  }
+  .commentary-row {
+    display: flex; align-items: flex-start;
+    padding: 8px 16px;
+    gap: 8px;
+  }
+  .commentary-row.away { flex-direction: row-reverse; text-align: right; border-right-style: solid; }
+  .commentary-min {
+    font-size: 12px; color: var(--text-muted);
+    min-width: 28px; padding-top: 1px; flex-shrink: 0;
+  }
+  .commentary-icon { font-size: 14px; flex-shrink: 0; }
+  .commentary-text { font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
+
+  .commentary-row.goal {
+    background: rgba(196,122,58,0.12);
+    border-left: 3px solid var(--accent);
+    padding-left: 12px;
+  }
+  .commentary-row.goal .commentary-text {
+    font-size: 14px; font-weight: 600; color: var(--accent);
+  }
+  .commentary-row.goal.away { border-left: none; border-right: 3px solid var(--accent); padding-left: 16px; padding-right: 12px; }
+
+  .commentary-row.susp {
+    border-left: 3px solid var(--danger);
+  }
+  .commentary-row.susp .commentary-text { color: var(--danger); font-weight: 500; }
+
+  .commentary-row.corner {
+    border-left: 3px solid rgba(196,122,58,0.4);
+  }
+  .commentary-row.corner .commentary-text { color: var(--text-primary); font-weight: 500; }
+
+  .commentary-row.derby { border-left: 3px solid rgba(220,80,30,0.7); padding-left: 8px; }
+
+  .commentary-row.atmosphere {
+    border-left: 1px dashed rgba(140,190,220,0.5);
+  }
+  .commentary-row.atmosphere .commentary-text {
+    color: var(--text-muted); font-style: italic;
+  }
+  .commentary-row.atmosphere .commentary-min { visibility: hidden; }
+
+  .commentary-row.tactical {
+    border-left: 2px solid rgba(140,190,220,0.6);
+  }
+  .commentary-row.tactical .commentary-text { color: var(--text-secondary); }
+
+  .commentary-row.sub {
+    border-left: 3px solid rgba(196,122,58,0.35);
+    padding: 6px 16px;
+  }
+  .commentary-row.sub .commentary-text { color: var(--accent); font-size: 13px; }
+
+  /* ─── Match done card ─── */
+  .match-done-card {
+    padding: 14px 16px; text-align: center; margin: 8px 12px;
+  }
+  .match-done-card p:first-child {
+    font-size: 13px; font-weight: 700; color: var(--text-primary);
+  }
+  .match-done-card p:last-child {
+    font-size: 11px; color: var(--text-muted); margin-top: 6px;
+  }
+  .btn-primary-cta {
+    width: calc(100% - 24px); margin: 8px 12px; padding: 16px;
+    background: linear-gradient(135deg, var(--accent-dark), var(--accent-deep));
+    color: var(--text-light);
+    border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    font-family: var(--font-body);
+    cursor: pointer;
+  }
+
+  /* ─── Interaction shell ─── */
+  .interact-shell {
+    margin: 8px 12px;
+    background: var(--bg-dark);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1.5px solid rgba(196,122,58,0.3);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .interact-title-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }
+  .interact-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .interact-timer {
+    font-size: 12px; font-weight: 700;
+    color: var(--accent); font-family: var(--font-display);
+  }
+  .timer-bar {
+    height: 3px; background: var(--border); border-radius: 2px;
+    margin-bottom: 10px; overflow: hidden;
+  }
+  .timer-bar-fill {
+    height: 100%; width: 70%;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .interact-stats {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px;
+    background: var(--bg-dark-surface);
+    border-radius: 4px; margin-bottom: 10px;
+  }
+  .interact-stats .name { font-size: 12px; font-weight: 700; color: var(--text-light); }
+  .interact-stats .sub { font-size: 10px; color: var(--text-light-secondary); margin-left: auto; }
+
+  .interact-pitch { border-radius: 6px; overflow: hidden; margin-bottom: 8px; display: block; width: 100%; }
+
+  .coach-tip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px;
+    background: rgba(196,122,58,0.08);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(196,122,58,0.2);
+  }
+  .coach-avatar {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent-dark);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .coach-avatar span { color: #fff; font-size: 9px; font-weight: 700; }
+  .coach-quote {
+    font-family: var(--font-display); font-size: 11px; font-style: italic;
+    color: var(--text-light-secondary); flex: 1;
+  }
+
+  .interact-choices { display: flex; gap: 5px; margin-bottom: 6px; }
+  .interact-choice {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 8px 4px; border-radius: 8px;
+    border: 1.5px solid rgba(196,122,58,0.25);
+    background: var(--bg-dark-surface);
+    cursor: pointer;
+  }
+  .interact-choice.active {
+    border-color: var(--accent);
+    background: var(--bg-dark-elevated);
+  }
+  .interact-choice .emo { font-size: 16px; }
+  .interact-choice .lbl { color: var(--text-light); font-size: 11px; font-weight: 600; }
+  .interact-choice .rate { color: var(--text-light-secondary); font-size: 10px; font-weight: 700; }
+  .interact-choice.active .rate { color: var(--accent); }
+
+  .btn-big {
+    width: 100%; padding: 10px; margin-top: 6px;
+    background: linear-gradient(135deg, var(--accent-dark), var(--accent-deep));
+    color: var(--text-light);
+    border: none; border-radius: 8px;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    cursor: pointer;
+  }
+  .btn-big.danger {
+    background: var(--danger);
+  }
+
+  /* Last-minute rows */
+  .lmp-head {
+    font-size: 13px; font-weight: 700; color: var(--text-light); margin-bottom: 2px;
+  }
+  .lmp-sub {
+    font-size: 10px; color: var(--text-light-secondary); margin-bottom: 8px;
+  }
+  .lmp-choice {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 8px; margin-bottom: 6px;
+    border: 1.5px solid rgba(176,80,64,0.25);
+    background: var(--bg-dark-surface);
+    cursor: pointer;
+  }
+  .lmp-choice.active {
+    border-color: var(--danger);
+    background: rgba(176,80,64,0.15);
+  }
+  .lmp-choice .emo { font-size: 20px; flex-shrink: 0; }
+  .lmp-choice .lbl {
+    flex: 1; color: var(--text-light); font-size: 12px; font-weight: 700;
+  }
+  .lmp-choice .rate {
+    font-size: 11px; font-weight: 700; color: var(--text-light-secondary);
+  }
+  .lmp-choice.active .rate { color: var(--danger); }
+
+  /* ─── Taktik ─── */
+  .back-header {
+    padding: 10px 12px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 0.5px solid var(--border);
+    background: var(--bg-surface);
+  }
+  .back-btn {
+    background: none; border: none;
+    color: var(--accent);
+    font-size: 12px; font-weight: 600; cursor: pointer; padding: 2px 0;
+  }
+  .back-header-label {
+    font-size: 9px; font-weight: 600; letter-spacing: 2.5px;
+    color: var(--text-muted); margin-left: auto;
+  }
+
+  .tactic-card {
+    margin: 8px 12px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .tactic-header {
+    padding: 10px 12px 0;
+  }
+  .tactic-header p {
+    font-size: 9px; font-weight: 600; letter-spacing: 2.5px;
+    color: var(--text-muted);
+  }
+  .tab-bar {
+    display: flex; margin-top: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    flex: 1; text-align: center; padding: 9px 0;
+    font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+    color: var(--text-muted);
+    background: transparent;
+    border: none; border-bottom: 2px solid transparent;
+    cursor: pointer;
+  }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tab-desc {
+    padding: 6px 12px;
+    background: var(--bg-surface);
+    border-bottom: 0.5px solid var(--border);
+  }
+  .tab-desc p {
+    font-size: 10px; color: var(--text-muted); font-style: italic;
+  }
+  .tactic-content { padding: 12px; }
+
+  .tactic-overview {
+    display: flex; align-items: center; gap: 4px;
+    padding: 6px 8px; border-radius: 4px;
+    background: var(--bg-elevated);
+    border: 0.5px solid var(--border);
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    font-size: 9px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .tactic-overview .sep { color: var(--border); font-weight: 400; }
+  .tactic-overview a {
+    margin-left: auto; font-size: 9px; color: var(--accent);
+    text-decoration: none;
+  }
+
+  .formation-row {
+    display: flex; gap: 4px; margin-bottom: 10px; overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .formation-chip {
+    padding: 4px 8px; border-radius: 4px; flex-shrink: 0;
+    font-size: 10px; font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .formation-chip.active {
+    border-color: var(--accent);
+    background: rgba(196,122,58,0.12);
+    color: var(--accent);
+  }
+
+  .formation-meta {
+    font-size: 10px; color: var(--text-muted); font-style: italic;
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    background: rgba(196,122,58,0.06);
+    border-left: 2px solid rgba(196,122,58,0.3);
+    border-radius: 2px;
+  }
+
+  .pitch-svg { display: block; border-radius: 8px; width: 100%; }
+
+  .bench-row {
+    display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 2px;
+    margin-top: 8px;
+  }
+  .bench-player {
+    flex-shrink: 0; width: 54px; text-align: center;
+    padding: 6px 4px; border-radius: 6px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .bench-player .name { font-size: 9px; color: var(--text-primary); font-weight: 600; }
+  .bench-player .pos { font-size: 8px; color: var(--text-muted); letter-spacing: 1px; }
+
+  /* ─── Training ─── */
+  .training-card {
+    margin: 8px 12px; padding: 10px 12px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+  .training-current {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px; padding: 6px 10px;
+    border-radius: 3px;
+    background: rgba(196,122,58,0.08);
+    border: 1px solid rgba(196,122,58,0.2);
+  }
+  .training-current .name {
+    font-size: 13px; font-weight: 700; color: var(--accent);
+  }
+  .training-current .int {
+    font-size: 11px; color: var(--text-muted); margin-left: 6px;
+  }
+  .training-current .tip {
+    font-size: 10px; font-weight: 600; margin-left: auto;
+    color: var(--success);
+  }
+  .training-label {
+    font-size: 9px; font-weight: 600; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .training-types {
+    display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px;
+  }
+  .training-type-btn {
+    display: flex; align-items: center; gap: 4px;
+    padding: 5px 8px; border-radius: 6px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .training-type-btn.active {
+    background: rgba(196,122,58,0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .training-intensity {
+    display: flex; gap: 3px; padding: 3px;
+    background: var(--bg);
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  .int-btn {
+    flex: 1; padding: 7px 4px; border-radius: 6px;
+    background: transparent; border: 1px solid transparent;
+    color: var(--text-muted);
+    font-size: 11px; cursor: pointer;
+  }
+  .int-btn.active.light {
+    background: rgba(90,154,74,0.13);
+    color: var(--success);
+    border-color: var(--success);
+    font-weight: 700;
+  }
+  .int-btn.active.normal {
+    background: rgba(26,26,24,0.06);
+    color: var(--text-primary);
+    border-color: var(--text-primary);
+    font-weight: 700;
+  }
+  .int-btn.active.hard {
+    background: rgba(196,122,58,0.13);
+    color: var(--warning);
+    border-color: var(--warning);
+    font-weight: 700;
+  }
+  .int-btn.active.extreme {
+    background: rgba(176,80,64,0.13);
+    color: var(--danger);
+    border-color: var(--danger);
+    font-weight: 700;
+  }
+  .training-effects {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 8px 14px;
+    margin-bottom: 8px;
+  }
+  .training-effects p { font-size: 12px; margin-bottom: 4px; }
+  .training-effects .muted { color: var(--text-muted); }
+  .training-effects .pos { color: var(--success); }
+  .training-effects .neg { color: var(--danger); }
+  .training-jobs {
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: 3px; padding: 8px 14px; margin-bottom: 8px;
+    font-size: 11px; color: var(--text-secondary);
+  }
+  .training-recent {
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: 3px; padding: 8px 14px;
+    font-size: 11px; color: var(--text-secondary);
+  }
+  .training-recent p.head {
+    color: var(--text-muted); font-weight: 600; margin-bottom: 4px;
+  }
+  .training-injuries {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 6px 14px; margin-top: 6px;
+    font-size: 11px; display: flex;
+    justify-content: space-between; align-items: center;
+  }
+
+  /* ─── Shotmap ─── */
+  .shotmap-card {
+    margin: 8px 12px; padding: 10px 12px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+  .shotmap-svg {
+    width: 100%; max-width: 320px;
+    display: block; margin: 0 auto 8px;
+  }
+  .shotmap-legend {
+    display: flex; gap: 12px; justify-content: center; margin-bottom: 8px;
+  }
+  .shotmap-legend .item {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 10px; color: var(--text-muted);
+  }
+  .shotmap-legend .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .shotmap-stat-card {
+    margin-top: 8px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 10px 12px;
+  }
+  .shotmap-stat-card .head {
+    font-size: 9px; font-weight: 600; letter-spacing: 2px;
+    color: var(--text-muted); margin-bottom: 8px;
+  }
+  .shotmap-stat-card .row {
+    display: flex; justify-content: space-between; margin-bottom: 4px;
+  }
+  .shotmap-stat-card .row:last-child { margin-bottom: 0; }
+  .shotmap-stat-card .row .lbl { font-size: 11px; color: var(--text-secondary); }
+  .shotmap-stat-card .row .val { font-size: 11px; font-weight: 700; color: var(--text-primary); }
+  .shotmap-insight {
+    margin-top: 6px; padding: 8px 10px;
+    background: rgba(196,122,58,0.08);
+    border: 1px solid rgba(196,122,58,0.2);
+    border-radius: 6px;
+  }
+  .shotmap-insight .head {
+    font-size: 9px; font-weight: 600; letter-spacing: 1.5px;
+    color: var(--accent); margin-bottom: 4px;
+  }
+  .shotmap-insight p {
+    font-size: 11px; color: var(--text-secondary); line-height: 1.5;
+  }
+
+  /* ─── GranskaScreen fliknav (för Shotmap-kontext) ─── */
+  .granska-nav {
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 8px 20px 12px;
+  }
+  .granska-nav .head {
+    font-size: 9px; font-weight: 700; letter-spacing: 2px;
+    text-align: center; color: var(--text-muted);
+    margin-bottom: 2px;
+  }
+  .granska-icons {
+    display: flex; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .granska-icon {
+    width: 56px; height: 56px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    cursor: pointer;
+  }
+  .granska-icon.active {
+    border: none;
+    background: var(--accent);
+    box-shadow: 0 2px 6px rgba(196,122,58,0.35);
+  }
+  .granska-icon .emo { font-size: 20px; }
+  .granska-icon .lbl {
+    font-size: 8px; color: var(--accent);
+    letter-spacing: 0.5px; font-weight: 600;
+  }
+  .granska-icon.active .lbl { color: #fff; }
+
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Bandy Manager — UI-mockups</h1>
+  <p>Statiska, trogna representationer av skärmar som Claude Design inte ser i löpande beta-session. Mobila (375px) kort. Data, färger, typografi och SVG kopierade direkt ur produktionskod (src/presentation/). Daterat 2026-04-22.</p>
+</div>
+
+<div class="mock-grid">
+
+  <!-- ════════════════════════════════════════════════════════
+       1. MATCHKORT — Scoreboard + Commentary feed
+       ════════════════════════════════════════════════════════ -->
+  <div class="mock-section">
+    <div class="mock-label">
+      Matchkortet · live
+      <span class="sub">Resultattavla (LED-stil) + commentary feed med färgade event-borders</span>
+    </div>
+    <div class="mock-body">
+      <div class="match-bg">
+        <!-- Scoreboard -->
+        <div class="scoreboard">
+          <div class="scoreboard-row">
+            <div class="scoreboard-team">
+              <p class="scoreboard-team-label">FOR <span class="hg">H</span></p>
+              <span class="scoreboard-score">3</span>
+            </div>
+            <div class="scoreboard-timezone">
+              <span class="scoreboard-dash">–</span>
+              <span class="scoreboard-time">74'</span>
+            </div>
+            <div class="scoreboard-team">
+              <p class="scoreboard-team-label"><span class="hg">G</span> VÄS</p>
+              <span class="scoreboard-score flash">2</span>
+            </div>
+          </div>
+          <div class="rivalry-pill">🔥 Bruksorternas strid</div>
+          <p class="weather-line">❄️ -7° · <span>Bra is</span></p>
+          <p class="arena-line">STÅLVALLEN</p>
+          <div class="susp-row">
+            <div>⚠ #14 (4′)</div>
+            <div class="gap"></div>
+            <div>#7 (2′) ⚠</div>
+          </div>
+        </div>
+
+        <!-- Commentary feed -->
+        <div class="commentary" style="background: rgba(196,122,58,0.04); margin: 0 12px; border-radius: 6px;">
+
+          <!-- Goal row (home, just inträffade — därför syns flash i scoreboard) -->
+          <div class="commentary-row goal">
+            <span class="commentary-min">74'</span>
+            <span class="commentary-icon">🏒</span>
+            <span class="commentary-text">MÅL! Kronberg snurrar runt backen och sätter 3–2! Publiken kokar!</span>
+          </div>
+
+          <!-- Atmosphere -->
+          <div class="commentary-row atmosphere">
+            <span class="commentary-min">74'</span>
+            <span class="commentary-text">📣 Birgers trumma ekar över isen. 340 röster i klacken.</span>
+          </div>
+
+          <!-- Save -->
+          <div class="commentary-row">
+            <span class="commentary-min">72'</span>
+            <span class="commentary-icon">🧤</span>
+            <span class="commentary-text">Räddning av Andersson! Tajt skott från halvdistans.</span>
+          </div>
+
+          <!-- Suspension (away) -->
+          <div class="commentary-row susp away">
+            <span class="commentary-min">70'</span>
+            <span class="commentary-icon">🟥</span>
+            <span class="commentary-text">Utvisning! #7 Nilsson — slashing, 10 minuter.</span>
+          </div>
+
+          <!-- Corner -->
+          <div class="commentary-row corner">
+            <span class="commentary-min">68'</span>
+            <span class="commentary-icon">📐</span>
+            <span class="commentary-text">Hörna till Forsbacka. Kronberg bakom flaggan.</span>
+          </div>
+
+          <!-- Tactical -->
+          <div class="commentary-row tactical">
+            <span class="commentary-min">66'</span>
+            <span class="commentary-text">Västanfors sänker tempot. De nöjer sig med oavgjort just nu.</span>
+          </div>
+
+          <!-- Sub -->
+          <div class="commentary-row sub">
+            <span class="commentary-min">64'</span>
+            <span class="commentary-icon">🔄</span>
+            <span class="commentary-text">Lindberg IN för Persson</span>
+          </div>
+
+          <!-- Derby atmosphere -->
+          <div class="commentary-row derby">
+            <span class="commentary-min">62'</span>
+            <span class="commentary-text">Derbyt är spänt. Domaren håller varningsfinger uppe.</span>
+          </div>
+
+          <!-- Normal -->
+          <div class="commentary-row">
+            <span class="commentary-min">60'</span>
+            <span class="commentary-text">Forsbacka har övertaget i innehavet andra halvlek.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       1B. MATCHKORT — matchslut-state
+       ════════════════════════════════════════════════════════ -->
+  <div class="mock-section">
+    <div class="mock-label">
+      Matchkortet · slutsignal
+      <span class="sub">Samma feed efter matchDone — inline-kort + "Se sammanfattning"-CTA, ingen overlay</span>
+    </div>
+    <div class="mock-body">
+      <div class="match-bg">
+        <div class="scoreboard">
+          <div class="scoreboard-row">
+            <div class="scoreboard-team">
+              <p class="scoreboard-team-label">FOR <span class="hg">H</span></p>
+              <span class="scoreboard-score">4</span>
+            </div>
+            <div class="scoreboard-timezone">
+              <span class="scoreboard-dash">–</span>
+              <span class="scoreboard-time">FT</span>
+            </div>
+            <div class="scoreboard-team">
+              <p class="scoreboard-team-label"><span class="hg">G</span> VÄS</p>
+              <span class="scoreboard-score">2</span>
+            </div>
+          </div>
+          <p class="arena-line">STÅLVALLEN</p>
+        </div>
+
+        <div class="match-done-card card-sharp" style="background: var(--bg-surface);">
+          <p>🏒 Domaren blåser av! Forsbacka vinner derbyt.</p>
+          <p>Kontrollerad seger, 4–2. Kronberg svarade för två mål. Klacken sjöng hela andra halvlek.</p>
+        </div>
+        <button class="btn-primary-cta">Se sammanfattning →</button>
+
+        <div class="commentary" style="background: rgba(196,122,58,0.04); margin: 0 12px 12px; border-radius: 6px;">
+          <div class="commentary-row goal">
+            <span class="commentary-min">87'</span>
+            <span class="commentary-icon">🏒</span>
+            <span class="commentary-text">MÅL! Kronberg säkrar segern på kontring! 4–2!</span>
+          </div>
+          <div class="commentary-row atmosphere">
+            <span class="commentary-min">86'</span>
+            <span class="commentary-text">📣 Klacken skanderar kaptenens namn.</span>
+          </div>
+          <div class="commentary-row">
+            <span class="commentary-min">80'</span>
+            <span class="commentary-text">Spelet bryts gång på gång. Tät slutfas.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       2. HÖRNA
+       ════════════════════════════════════════════════════════ -->
+  <div class="mock-section">
+    <div class="mock-label">
+      Matchhändelse · HÖRNA
+      <span class="sub">Corner-side slumpas (vänster/höger). 3 zoner × 3 delivery-val. 5s timer.</span>
+    </div>
+    <div class="mock-body">
+      <div class="match-bg">
+        <div class="interact-shell">
+          <div class="interact-title-row">
+            <span class="interact-title">📐 HÖRNA — 68. min</span>
+            <span class="interact-timer">3s</span>
+          </div>
+          <div class="timer-bar"><div class="timer-bar-fill" style="width: 60%; background: var(--accent);"></div></div>
+
+          <div class="interact-stats">
+            <span class="name">Kronberg</span>
+            <span class="sub">Lindberg rusar</span>
+          </div>
+
+          <svg viewBox="0 0 220 110" class="interact-pitch" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="iceC" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#EDE8DF"/>
+                <stop offset="100%" stop-color="#DDD7CC"/>
+              </linearGradient>
+              <marker id="arrowC" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="#C47A3A"/>
+              </marker>
+            </defs>
+            <rect width="220" height="110" fill="url(#iceC)" rx="4"/>
+            <path d="M70,0 A70,55 0 0,1 70,110" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="0.8"/>
+            <rect x="0" y="37" width="5" height="36" fill="none" stroke="#999" stroke-width="1.5" rx="1"/>
+            <circle cx="14" cy="55" r="5" fill="#3D3A32" opacity="0.7"/>
+            <text x="14" y="57" text-anchor="middle" font-size="5" fill="white" font-weight="700">MV</text>
+            <circle cx="6" cy="38" r="3" fill="#B05040" opacity="0.5"/>
+            <circle cx="6" cy="48" r="3" fill="#B05040" opacity="0.5"/>
+            <circle cx="6" cy="58" r="3" fill="#B05040" opacity="0.5"/>
+            <circle cx="6" cy="68" r="3" fill="#B05040" opacity="0.5"/>
+
+            <!-- NÄRA (top) -->
+            <rect x="22" y="8" width="52" height="24" rx="4" fill="rgba(196,122,58,0.08)" stroke="rgba(196,122,58,0.4)" stroke-width="0.8"/>
+            <text x="48" y="20" font-size="7" fill="#C4BAA8" text-anchor="middle" font-weight="500">NÄRA</text>
+            <text x="48" y="29" font-size="6" fill="#C4BAA8" text-anchor="middle" opacity="0.8">25%</text>
+
+            <!-- MITT (vald) -->
+            <rect x="22" y="40" width="52" height="24" rx="4" fill="rgba(196,122,58,0.35)" stroke="#C47A3A" stroke-width="1.5"/>
+            <text x="48" y="52" font-size="7" fill="#C47A3A" text-anchor="middle" font-weight="700">MITT</text>
+            <text x="48" y="61" font-size="6" fill="#C47A3A" text-anchor="middle" opacity="0.8">35%</text>
+
+            <!-- BORTRE (bottom) -->
+            <rect x="22" y="72" width="52" height="24" rx="4" fill="rgba(196,122,58,0.08)" stroke="rgba(196,122,58,0.4)" stroke-width="0.8"/>
+            <text x="48" y="84" font-size="7" fill="#C4BAA8" text-anchor="middle" font-weight="500">BORTRE</text>
+            <text x="48" y="93" font-size="6" fill="#C4BAA8" text-anchor="middle" opacity="0.8">20%</text>
+
+            <!-- Corner flag (höger → upp i spelaren-perspektiv) -->
+            <line x1="5" y1="5" x2="5" y2="-3" stroke="#C47A3A" stroke-width="1.2"/>
+            <polygon points="5,-3 11,0 5,3" fill="#C47A3A"/>
+
+            <!-- Arrow from corner to chosen zone -->
+            <path d="M5,5 Q13.5,8.7 22,52" fill="none" stroke="#C47A3A" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowC)"/>
+
+            <!-- Rush lines -->
+            <line x1="140" y1="20" x2="74" y2="20" stroke="#C47A3A" stroke-width="0.8" stroke-dasharray="3,2"/>
+            <line x1="150" y1="55" x2="74" y2="52" stroke="#C47A3A" stroke-width="0.8" stroke-dasharray="3,2"/>
+            <line x1="140" y1="84" x2="74" y2="84" stroke="#C47A3A" stroke-width="0.8" stroke-dasharray="3,2"/>
+            <circle cx="140" cy="20" r="4" fill="#C47A3A" opacity="0.7"/>
+            <circle cx="150" cy="55" r="4" fill="#C47A3A" opacity="0.7"/>
+            <circle cx="140" cy="84" r="4" fill="#C47A3A" opacity="0.7"/>
+
+            <text x="15" y="14" font-size="6" fill="#C47A3A" font-weight="600" text-anchor="start">HÖGER</text>
+          </svg>
+
+          <!-- Delivery -->
+          <div class="interact-choices">
+            <button class="interact-choice active">
+              <span class="emo">💨</span>
+              <span class="lbl">Hårt</span>
+            </button>
+            <button class="interact-choice">
+              <span class="emo">🎯</span>
+              <span class="lbl">Lågt</span>
+            </button>
+            <button class="interact-choice">
+              <span class="emo">🤫</span>
+              <span class="lbl">Kort</span>
+            </button>
+          </div>
+
+          <div class="coach-tip">
+            <div class="coach-avatar"><span>PL</span></div>
+            <span class="coach-quote">"Hörnflaggan är stor idag. Testa mitten, de är korta där."</span>
+          </div>
+
+          <button class="btn-big">SLÅ HÖRNAN →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       3. STRAFF
+       ════════════════════════════════════════════════════════ -->
+  <div class="mock-section">
+    <div class="mock-label">
+      Matchhändelse · STRAFF
+      <span class="sub">3 riktningar (V/M/H) × 2 höjder (Lågt/Högt). Bollbana visas som Bezier.</span>
+    </div>
+    <div class="mock-body">
+      <div class="match-bg">
+        <div class="interact-shell">
+          <div class="interact-title-row">
+            <span class="interact-title">🎯 STRAFF — 42. min</span>
+            <span class="interact-timer" style="color: var(--warning);">2s</span>
+          </div>
+          <div class="timer-bar"><div class="timer-bar-fill" style="width: 40%; background: var(--warning);"></div></div>
+
+          <div class="interact-stats">
+            <span class="sub" style="margin-left:0;">Skytt:</span>
+            <span class="name">Kronberg</span>
+            <span class="sub">vs Andersson</span>
+          </div>
+
+          <svg viewBox="0 0 260 110" class="interact-pitch" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="iceP" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#DDD7CC"/>
+                <stop offset="100%" stop-color="#C4BAA8"/>
+              </linearGradient>
+              <marker id="arrowP" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="#B05040"/>
+              </marker>
+            </defs>
+            <rect width="260" height="110" fill="url(#iceP)" rx="4"/>
+            <line x1="20" y1="10" x2="20" y2="90" stroke="#666" stroke-width="3"/>
+            <line x1="240" y1="10" x2="240" y2="90" stroke="#666" stroke-width="3"/>
+            <line x1="20" y1="10" x2="240" y2="10" stroke="#666" stroke-width="3"/>
+            <line x1="20" y1="90" x2="240" y2="90" stroke="#999" stroke-width="1" stroke-dasharray="4,2"/>
+            <rect x="22" y="12" width="216" height="76" fill="rgba(255,255,255,0.3)"/>
+            <line x1="93" y1="10" x2="93" y2="90" stroke="rgba(0,0,0,0.08)" stroke-width="1"/>
+            <line x1="167" y1="10" x2="167" y2="90" stroke="rgba(0,0,0,0.08)" stroke-width="1"/>
+            <rect x="121" y="38" width="18" height="32" rx="4" fill="none" stroke="#3D3A32" stroke-width="1.5" opacity="0.7"/>
+            <circle cx="130" cy="32" r="7" fill="none" stroke="#3D3A32" stroke-width="1.5" opacity="0.7"/>
+            <text x="130" y="80" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.5)" font-weight="600">MÅLVAKT</text>
+
+            <!-- Vänster (vald) -->
+            <rect x="22" y="12" width="70" height="76" rx="2" fill="rgba(176,80,64,0.3)" stroke="#B05040" stroke-width="2"/>
+            <text x="57" y="50" text-anchor="middle" font-size="10" fill="white" font-weight="700">V</text>
+            <text x="57" y="62" text-anchor="middle" font-size="6" fill="rgba(255,255,255,0.9)">50%</text>
+
+            <!-- Mitt -->
+            <rect x="94" y="12" width="72" height="76" rx="2" fill="rgba(176,80,64,0.04)" stroke="rgba(176,80,64,0.25)" stroke-width="1"/>
+            <text x="130" y="50" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.5)" font-weight="700">M</text>
+            <text x="130" y="62" text-anchor="middle" font-size="6" fill="rgba(255,255,255,0.4)">35%</text>
+
+            <!-- Höger -->
+            <rect x="168" y="12" width="70" height="76" rx="2" fill="rgba(176,80,64,0.08)" stroke="rgba(176,80,64,0.3)" stroke-width="1"/>
+            <text x="203" y="50" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.6)" font-weight="700">H</text>
+            <text x="203" y="62" text-anchor="middle" font-size="6" fill="rgba(255,255,255,0.5)">50%</text>
+
+            <!-- Ball trajectory (lågt vänster) -->
+            <path d="M 130,100 Q 93,90 57,72" fill="none" stroke="#B05040" stroke-width="1.5" stroke-dasharray="2,1.5" opacity="0.75" marker-end="url(#arrowP)"/>
+            <circle cx="130" cy="102" r="4" fill="#B05040" stroke="#fff" stroke-width="1.5"/>
+          </svg>
+
+          <div class="interact-choices">
+            <button class="interact-choice active" style="flex: 1;">
+              <span class="emo">🧊</span>
+              <span class="lbl">Lågt</span>
+            </button>
+            <button class="interact-choice" style="flex: 1;">
+              <span class="emo">⬆️</span>
+              <span class="lbl">Högt</span>
+            </button>
+          </div>
+
+          <div class="coach-tip">
+            <div class="coach-avatar"><span>PL</span></div>
+            <span class="coach-quote">"Han väntar att du siktar på hans mage. Låg, till hörnan, nu."</span>
+          </div>
+
+          <button class="btn-big danger">SKJUT STRAFFEN →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       4. KONTRING (BREAKAWAY)
+       ════════════════════════════════════════════════════════ -->
+  <div class="mock-section">
+    <div class="mock-label">
+      Matchhändelse · KONTRING
+      <span class="sub">Numeriskt övertag (1v1, 2v1, 3v2). 3 val (slå igenom / spela av / bygga).</span>
+    </div>
+    <div class="mock-body">
+      <div class="match-bg">
+        <div class="interact-shell">
+          <div class="interact-title-row">
+            <span class="interact-title">⚡ KONTRING — 53. min</span>
+            <span class="interact-timer">4s</span>
+          </div>
+          <div class="timer-bar"><div class="timer-bar-fill" style="width: 80%;"></div></div>
+
+          <div class="interact-stats">
+            <span class="name">Lindberg slår igenom!</span>
+            <span class="sub">2 mot 1</span>
+          </div>
+
+          <svg viewBox="0 0 260 120" class="interact-pitch" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="igCb" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#EDE8DF"/>
+                <stop offset="100%" stop-color="#DDD7CC"/>
+              </linearGradient>
+              <marker id="arCb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                <path d="M0 0L10 5L0 10z" fill="#C47A3A"/>
+              </marker>
+            </defs>
+            <rect width="260" height="120" fill="url(#igCb)" rx="4"/>
+            <rect x="100" y="2" width="60" height="14" fill="none" stroke="#999" stroke-width="1.5" rx="2"/>
+            <circle cx="130" cy="12" r="5" fill="#3D3A32" opacity="0.7"/>
+            <text x="130" y="15" text-anchor="middle" font-size="5" fill="white" font-weight="700">MV</text>
+            <circle cx="112" cy="34" r="6" fill="#B05040" opacity="0.6"/>
+            <text x="112" y="37" text-anchor="middle" font-size="5" fill="white">X</text>
+            <circle cx="148" cy="30" r="6" fill="#B05040" opacity="0.6"/>
+            <text x="148" y="33" text-anchor="middle" font-size="5" fill="white">X</text>
+            <circle cx="100" cy="70" r="8" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+            <text x="100" y="86" text-anchor="middle" font-size="6" fill="#C47A3A" font-weight="600">Lindberg</text>
+            <circle cx="158" cy="80" r="6" fill="#C47A3A" opacity="0.6" stroke="#fff" stroke-width="1.5"/>
+            <text x="158" y="94" text-anchor="middle" font-size="6" fill="#C4BAA8">Persson</text>
+            <line x1="100" y1="62" x2="115" y2="42" stroke="#C47A3A" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arCb)"/>
+          </svg>
+
+          <div class="interact-choices">
+            <button class="interact-choice">
+              <span class="emo">⚡</span>
+              <span class="lbl" style="font-size:10px;">Slå igenom</span>
+              <span class="rate">40%</span>
+            </button>
+            <button class="interact-choice active">
+              <span class="emo">🎯</span>
+              <span class="lbl" style="font-size:10px;">Spela av</span>
+              <span class="rate">50%</span>
+            </button>
+            <button class="interact-choice">
+              <span class="emo">🧠</span>
+              <span class="lbl" style="font-size:10px;">Bygga upp</span>
+              <span class="rate">25%</span>
+            </button>
+          </div>
+
+          <div class="coach-tip">
+            <div class="coach-avatar"><span>PL</span></div>
+            <span class="coach-quote">"Persson är fri till höger. Passningen är färdigbakad."</span>
+          </div>
+
+          <button class="btn-big">KÖR KONTRINGEN →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       5. FRISLAG
+       ════════════════════════════════════════════════════════ -->
+  <div class="mock-section">
+    <div class="mock-label">
+      Matchhändelse · FRISLAG
+      <span class="sub">Avstånd + mur-storlek påverkar rates. 3 val (Skjut / Chip / Kort).</span>
+    </div>
+    <div class="mock-body">
+      <div class="match-bg">
+        <div class="interact-shell">
+          <div class="interact-title-row">
+            <span class="interact-title">🏒 FRISLAG — 31. min</span>
+            <span class="interact-timer">5s</span>
+          </div>
+          <div class="timer-bar"><div class="timer-bar-fill" style="width: 100%;"></div></div>
+
+          <div class="interact-stats">
+            <span class="name">Stefan Kronberg</span>
+            <span class="sub">18m · mur 3 man</span>
+          </div>
+
+          <svg viewBox="0 0 260 150" class="interact-pitch" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="igFm" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#EDE8DF"/>
+                <stop offset="100%" stop-color="#DDD7CC"/>
+              </linearGradient>
+            </defs>
+            <rect width="260" height="150" fill="url(#igFm)" rx="4"/>
+            <rect x="75" y="4" width="110" height="20" fill="none" stroke="#888" stroke-width="2" rx="2"/>
+            <rect x="77" y="6" width="106" height="16" fill="rgba(0,0,0,0.04)"/>
+            <circle cx="130" cy="16" r="6" fill="#3D3A32" opacity="0.7"/>
+            <text x="130" y="19" text-anchor="middle" font-size="5" fill="white" font-weight="700">MV</text>
+            <rect x="112" y="48" width="27" height="12" rx="3" fill="#B05040" opacity="0.75"/>
+            <text x="130" y="72" text-anchor="middle" font-size="6" fill="#888">MUR · 3 man</text>
+            <line x1="130" y1="82" x2="130" y2="118" stroke="#C4BAA8" stroke-width="0.8" stroke-dasharray="3,2"/>
+            <text x="145" y="102" font-size="6" fill="#999">18m</text>
+            <circle cx="130" cy="125" r="5" fill="#C47A3A" stroke="#fff" stroke-width="1.5"/>
+            <text x="130" y="140" text-anchor="middle" font-size="6" fill="#C47A3A" font-weight="600">Kronberg</text>
+          </svg>
+
+          <div class="interact-choices">
+            <button class="interact-choice active">
+              <span class="emo">💥</span>
+              <span class="lbl">Skjut</span>
+              <span class="rate">25%</span>
+            </button>
+            <button class="interact-choice">
+              <span class="emo">⤴️</span>
+              <span class="lbl">Chip</span>
+              <span class="rate">20%</span>
+            </button>
+            <button class="interact-choice">
+              <span class="emo">↩️</span>
+              <span class="lbl">Kort</span>
+              <span class="rate">15%</span>
+            </button>
+          </div>
+
+          <button class="btn-big">SLÅ FRISLAGET →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       6. SLUTMINUTERNA (LAST-MINUTE PRESS)
+       ════════════════════════════════════════════════════════ -->
+  <div class="mock-section">
+    <div class="mock-label">
+      Matchhändelse · SLUTMINUTERNA
+      <span class="sub">Strategiskt val sista perioden. 8s timer. Inget SVG-pitch, bara val.</span>
+    </div>
+    <div class="mock-body">
+      <div class="match-bg">
+        <div class="interact-shell">
+          <div class="interact-title-row">
+            <span class="interact-title">⏰ SLUTMINUTERNA — 82. min</span>
+            <span class="interact-timer">7s</span>
+          </div>
+          <div class="timer-bar"><div class="timer-bar-fill" style="width: 88%;"></div></div>
+
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <p class="lmp-head">Ni ligger under. Dags att bestämma.</p>
+            <p class="lmp-sub">Trötthet: medel · 12 min kvar</p>
+
+            <button class="lmp-choice">
+              <span class="emo">🔥</span>
+              <span class="lbl">Allt fram!</span>
+              <span class="rate">40%</span>
+            </button>
+            <button class="lmp-choice active">
+              <span class="emo">💪</span>
+              <span class="lbl">Tryck på</span>
+              <span class="rate">30%</span>
+            </button>
+            <button class="lmp-choice">
+              <span class="emo">🧘</span>
+              <span class="lbl">Acceptera</span>
+              <span class="rate">10%</span>
+            </button>
+          </div>
+
+          <div class="coach-tip" style="margin-top: 10px;">
+            <div class="coach-avatar"><span>PL</span></div>
+            <span class="coach-quote">"Tryck på, men släpp inte backlinjen. En kontring nu och vi är borta."</span>
+          </div>
+
+          <button class="btn-big danger">BESTÄM →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       7. TAKTIK — under spelare-vyn (eller från match)
+       ════════════════════════════════════════════════════════ -->
+  <div class="mock-section">
+    <div class="mock-label">
+      Taktiktavlan · FORMATION-flik
+      <span class="sub">3 flikar (Formation/Kemi/Anteckningar). Pitch med dragbara spelarprickar. Mentality/tempo/press läses från aktiv taktik.</span>
+    </div>
+    <div class="mock-body">
+      <div class="back-header">
+        <button class="back-btn">← Tillbaka</button>
+        <span class="back-header-label">TAKTIKTAVLAN</span>
+      </div>
+
+      <div class="tactic-card">
+        <div class="tactic-header">
+          <p>📋 TAKTIKTAVLAN</p>
+        </div>
+        <div class="tab-bar">
+          <button class="tab active">FORMATION</button>
+          <button class="tab">KEMI</button>
+          <button class="tab">ANTECKNINGAR</button>
+        </div>
+        <div class="tab-desc">
+          <p>Välj formation och flytta spelare.</p>
+        </div>
+
+        <div class="tactic-content">
+          <div class="tactic-overview">
+            <span>Balanserad</span>
+            <span class="sep">·</span>
+            <span>Tempo: Normal</span>
+            <span class="sep">·</span>
+            <span>Press: Medel</span>
+            <a href="#">Ändra →</a>
+          </div>
+
+          <div class="formation-row">
+            <button class="formation-chip">5-3-2</button>
+            <button class="formation-chip active">3-3-4</button>
+            <button class="formation-chip">4-3-3</button>
+            <button class="formation-chip">3-4-3</button>
+            <button class="formation-chip">2-3-2-3</button>
+            <button class="formation-chip">4-2-4</button>
+          </div>
+
+          <p class="formation-meta">3-3-4 — "Hörnorna avgör. Vi håller planen bred och skjuter in bollen högt."</p>
+
+          <!-- Pitch with 11 players (GK at top, 3 def, 3 half, 4 fwd) -->
+          <svg viewBox="0 0 280 400" class="pitch-svg" xmlns="http://www.w3.org/2000/svg" style="background: rgba(196,122,58,0.04); border: 1px solid var(--border); max-height: 480px;">
+            <rect width="280" height="400" fill="rgba(196,122,58,0.04)"/>
+            <line x1="0" y1="200" x2="280" y2="200" stroke="#C4BAA8" stroke-width="0.5" stroke-dasharray="3,3"/>
+            <circle cx="140" cy="200" r="35" fill="none" stroke="#C4BAA8" stroke-width="0.5" stroke-dasharray="3,3"/>
+            <rect x="90" y="0" width="100" height="28" fill="none" stroke="#C4BAA8" stroke-width="0.5"/>
+            <rect x="90" y="372" width="100" height="28" fill="none" stroke="#C4BAA8" stroke-width="0.5"/>
+
+            <!-- GK (egen mål top) -->
+            <g>
+              <circle cx="140" cy="20" r="14" fill="#5A9A4A" stroke="#fff" stroke-width="2"/>
+              <text x="140" y="24" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">MV</text>
+              <text x="140" y="42" text-anchor="middle" font-size="8" fill="#1A1A18">Andersson</text>
+            </g>
+            <!-- 3 backar -->
+            <g>
+              <circle cx="70" cy="85" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+              <text x="70" y="88" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">B</text>
+              <text x="70" y="105" text-anchor="middle" font-size="7" fill="#1A1A18">Svensson</text>
+            </g>
+            <g>
+              <circle cx="140" cy="85" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+              <text x="140" y="88" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">B</text>
+              <text x="140" y="105" text-anchor="middle" font-size="7" fill="#1A1A18">Berg</text>
+            </g>
+            <g>
+              <circle cx="210" cy="85" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+              <text x="210" y="88" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">B</text>
+              <text x="210" y="105" text-anchor="middle" font-size="7" fill="#1A1A18">Lund</text>
+            </g>
+            <!-- 3 halvbackar -->
+            <g>
+              <circle cx="70" cy="180" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+              <text x="70" y="183" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">HB</text>
+              <text x="70" y="200" text-anchor="middle" font-size="7" fill="#1A1A18">Nyberg</text>
+            </g>
+            <g>
+              <circle cx="140" cy="180" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2" stroke-dasharray="2,2"/>
+              <text x="140" y="183" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">HB</text>
+              <text x="140" y="200" text-anchor="middle" font-size="7" fill="#C47A3A" font-weight="700">Kronberg ⭐</text>
+            </g>
+            <g>
+              <circle cx="210" cy="180" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+              <text x="210" y="183" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">HB</text>
+              <text x="210" y="200" text-anchor="middle" font-size="7" fill="#1A1A18">Persson</text>
+            </g>
+            <!-- 4 forwards -->
+            <g>
+              <circle cx="50" cy="300" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+              <text x="50" y="303" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">A</text>
+              <text x="50" y="320" text-anchor="middle" font-size="7" fill="#1A1A18">Lindberg</text>
+            </g>
+            <g>
+              <circle cx="110" cy="320" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+              <text x="110" y="323" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">A</text>
+              <text x="110" y="340" text-anchor="middle" font-size="7" fill="#1A1A18">Holm</text>
+            </g>
+            <g>
+              <circle cx="170" cy="320" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+              <text x="170" y="323" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">A</text>
+              <text x="170" y="340" text-anchor="middle" font-size="7" fill="#1A1A18">Ek</text>
+            </g>
+            <g>
+              <circle cx="230" cy="300" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+              <text x="230" y="303" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">A</text>
+              <text x="230" y="320" text-anchor="middle" font-size="7" fill="#1A1A18">Dahl</text>
+            </g>
+          </svg>
+
+          <div class="bench-row">
+            <div class="bench-player">
+              <div class="name">Östlund</div>
+              <div class="pos">HB · 82%</div>
+            </div>
+            <div class="bench-player">
+              <div class="name">Sjögren</div>
+              <div class="pos">B · 78%</div>
+            </div>
+            <div class="bench-player">
+              <div class="name">Fors</div>
+              <div class="pos">A · 71%</div>
+            </div>
+            <div class="bench-player">
+              <div class="name">Järv</div>
+              <div class="pos">MV · 65%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       7B. TAKTIK-FLIK: KEMI
+       ════════════════════════════════════════════════════════ -->
+  <div class="mock-section">
+    <div class="mock-label">
+      Taktiktavlan · KEMI-flik
+      <span class="sub">Samma pitch men med kemi-linjer mellan par. Grön = bra, röd streckad = svag.</span>
+    </div>
+    <div class="mock-body">
+      <div class="back-header">
+        <button class="back-btn">← Tillbaka</button>
+        <span class="back-header-label">TAKTIKTAVLAN</span>
+      </div>
+
+      <div class="tactic-card">
+        <div class="tactic-header">
+          <p>📋 TAKTIKTAVLAN</p>
+        </div>
+        <div class="tab-bar">
+          <button class="tab">FORMATION</button>
+          <button class="tab active">KEMI</button>
+          <button class="tab">ANTECKNINGAR</button>
+        </div>
+        <div class="tab-desc">
+          <p>Grön linje = bra kemi. Röd streckad = svag.</p>
+        </div>
+
+        <div class="tactic-content">
+          <svg viewBox="0 0 280 400" class="pitch-svg" xmlns="http://www.w3.org/2000/svg" style="background: rgba(196,122,58,0.04); border: 1px solid var(--border); max-height: 480px;">
+            <rect width="280" height="400" fill="rgba(196,122,58,0.04)"/>
+            <line x1="0" y1="200" x2="280" y2="200" stroke="#C4BAA8" stroke-width="0.5" stroke-dasharray="3,3"/>
+
+            <!-- Chemistry lines -->
+            <line x1="70" y1="85" x2="140" y2="85" stroke="#5A9A4A" stroke-width="2" opacity="0.7"/>
+            <line x1="140" y1="85" x2="210" y2="85" stroke="#5A9A4A" stroke-width="2" opacity="0.7"/>
+            <line x1="70" y1="180" x2="50" y2="300" stroke="#5A9A4A" stroke-width="2.5" opacity="0.8"/>
+            <line x1="140" y1="180" x2="110" y2="320" stroke="#5A9A4A" stroke-width="3" opacity="0.9"/>
+            <line x1="140" y1="180" x2="170" y2="320" stroke="#5A9A4A" stroke-width="3" opacity="0.9"/>
+            <line x1="210" y1="180" x2="230" y2="300" stroke="#B05040" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>
+            <line x1="70" y1="85" x2="70" y2="180" stroke="#5A9A4A" stroke-width="1.5" opacity="0.5"/>
+            <line x1="210" y1="85" x2="210" y2="180" stroke="#B05040" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
+
+            <!-- Players (same as before) -->
+            <circle cx="140" cy="20" r="12" fill="#5A9A4A" stroke="#fff" stroke-width="2"/>
+            <circle cx="70" cy="85" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+            <circle cx="140" cy="85" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+            <circle cx="210" cy="85" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+            <circle cx="70" cy="180" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+            <circle cx="140" cy="180" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+            <circle cx="210" cy="180" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+            <circle cx="50" cy="300" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+            <circle cx="110" cy="320" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+            <circle cx="170" cy="320" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+            <circle cx="230" cy="300" r="12" fill="#C47A3A" stroke="#fff" stroke-width="2"/>
+          </svg>
+
+          <div style="margin-top: 10px; padding: 8px 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 3px;">
+            <p style="font-size: 9px; font-weight: 600; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 6px;">KEMI-NYCKLAR</p>
+            <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">Kronberg–Holm: <span style="color: var(--success); font-weight: 700;">★★★★ 87</span> (43 matcher ihop).</p>
+            <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">Lund–Dahl: <span style="color: var(--danger); font-weight: 700;">★ 34</span> (nya ihop, svår sida).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       8. TRÄNINGSVY
+       ════════════════════════════════════════════════════════ -->
+  <div class="mock-section">
+    <div class="mock-label">
+      Träningsvyn
+      <span class="sub">TrainingSection i KlubbTab. Område-chips + 4-stegs intensitet (färgkodad). Effekter + jobb-impact + skadestatistik.</span>
+    </div>
+    <div class="mock-body">
+      <div class="back-header">
+        <button class="back-btn">← Tillbaka</button>
+        <span class="back-header-label">KLUBBEN · TRÄNING</span>
+      </div>
+
+      <div class="training-card">
+        <p class="training-label" style="margin-bottom: 8px;">🏋️ DAGLIG TRÄNING</p>
+
+        <div class="training-current">
+          <span style="font-size: 18px;">⚡</span>
+          <div style="flex: 1;">
+            <span class="name">Kondition</span>
+            <span class="int">· Hård</span>
+          </div>
+          <span class="tip" style="color: var(--warning);">Snabb utveckling, hög skaderisk</span>
+        </div>
+
+        <p class="training-label">TRÄNINGSOMRÅDE</p>
+        <div class="training-types">
+          <button class="training-type-btn"><span>🏒</span> Teknik</button>
+          <button class="training-type-btn active"><span>⚡</span> Kondition</button>
+          <button class="training-type-btn"><span>🛡️</span> Försvar</button>
+          <button class="training-type-btn"><span>🎯</span> Anfall</button>
+          <button class="training-type-btn"><span>🧠</span> Taktik</button>
+          <button class="training-type-btn"><span>💪</span> Styrka</button>
+        </div>
+
+        <p class="training-label">INTENSITET</p>
+        <div class="training-intensity">
+          <button class="int-btn">Lätt</button>
+          <button class="int-btn">Normal</button>
+          <button class="int-btn active hard">Hård</button>
+          <button class="int-btn">Extrem</button>
+        </div>
+
+        <div class="training-effects">
+          <p><span class="muted">Tränar: </span>Uthållighet +0.18, Snabbhet +0.10</p>
+          <p>
+            <span class="muted">Kondition: </span><span class="pos">+8</span>
+            <span class="muted"> Skaderisk: </span><span style="color: var(--warning);">Hög</span>
+            <span class="muted"> Moral: </span><span class="neg">-1</span>
+          </p>
+        </div>
+
+        <div class="training-jobs">
+          <span style="color: var(--text-muted); font-weight: 600;">👷 </span>
+          <span style="color: var(--accent); font-weight: 600;">4</span> heltid · <span style="font-weight: 600;">12</span> deltid
+          <span style="color: var(--text-muted);"> (flex 72%)</span>
+        </div>
+
+        <div class="training-recent">
+          <p class="head">Senaste</p>
+          <p>Omg 11: Kondition (Hård) <span style="color: var(--text-muted);">— ok</span></p>
+          <p>Omg 10: Teknik (Normal) <span style="color: var(--text-muted);">— ok</span></p>
+          <p>Omg 9: Kondition (Extrem) <span style="color: var(--warning);">— ⚠️ 1 skada</span></p>
+        </div>
+
+        <div class="training-injuries">
+          <span style="color: var(--text-muted);">Träningsskador denna säsong</span>
+          <span style="font-weight: 600; color: var(--danger);">2 st</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       9. SHOTMAP
+       ════════════════════════════════════════════════════════ -->
+  <div class="mock-section">
+    <div class="mock-label">
+      Shotmap (Granska-fas)
+      <span class="sub">En av 5 flikar i GranskaScreen. Vit bakgrund, egna skott uppåt (mål upp), motståndaren nedåt. Stora insikts-ruta under.</span>
+    </div>
+    <div class="mock-body">
+      <div style="background: var(--bg); padding: 12px 0;">
+
+        <div class="shotmap-card">
+          <p class="section-label" style="margin-bottom: 8px;">SKOTTBILD</p>
+          <svg viewBox="0 0 280 190" class="shotmap-svg" xmlns="http://www.w3.org/2000/svg">
+            <!-- White pitch background -->
+            <rect x="0" y="0" width="280" height="190" fill="#FFFFFF" stroke="rgba(0,0,0,0.12)" stroke-width="0.5" rx="4"/>
+            <!-- Opponent goal (top) -->
+            <rect x="120" y="0" width="40" height="8" fill="rgba(0,0,0,0.25)"/>
+            <rect x="120" y="0" width="1" height="12" fill="rgba(0,0,0,0.25)"/>
+            <rect x="159" y="0" width="1" height="12" fill="rgba(0,0,0,0.25)"/>
+            <!-- Goal area top -->
+            <rect x="100" y="8" width="80" height="30" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
+            <!-- Penalty arc top -->
+            <path d="M 115 38 A 25 25 0 0 1 165 38" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="1"/>
+            <!-- Goal area bottom -->
+            <rect x="100" y="160" width="80" height="30" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
+            <path d="M 115 160 A 25 25 0 0 0 165 160" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="1"/>
+            <!-- Own goal (bottom) -->
+            <rect x="120" y="182" width="40" height="8" fill="rgba(0,0,0,0.25)"/>
+            <rect x="120" y="178" width="1" height="12" fill="rgba(0,0,0,0.25)"/>
+            <rect x="159" y="178" width="1" height="12" fill="rgba(0,0,0,0.25)"/>
+            <!-- Center arc -->
+            <ellipse cx="140" cy="190" rx="80" ry="50" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="1"/>
+            <!-- Center line -->
+            <line x1="0" y1="95" x2="280" y2="95" stroke="rgba(0,0,0,0.2)" stroke-width="1" stroke-dasharray="3,3"/>
+            <!-- Side labels -->
+            <text x="276" y="22" font-size="8" fill="rgba(0,0,0,0.45)" text-anchor="end" font-weight="600" letter-spacing="1">MOTSTÅNDARMÅL</text>
+            <text x="276" y="168" font-size="8" fill="rgba(0,0,0,0.45)" text-anchor="end" font-weight="600" letter-spacing="1">VÅRT MÅL</text>
+
+            <!-- Our shots (top half) -->
+            <!-- Goals (green) with labels -->
+            <circle cx="145" cy="28" r="6" fill="rgba(90,154,74,0.85)" stroke="rgba(90,154,74,1)" stroke-width="1"/>
+            <text x="157" y="32" font-size="7" fill="rgba(0,0,0,0.55)">Kronberg</text>
+            <circle cx="130" cy="40" r="6" fill="rgba(90,154,74,0.85)" stroke="rgba(90,154,74,1)" stroke-width="1"/>
+            <text x="142" y="44" font-size="7" fill="rgba(0,0,0,0.55)">Holm</text>
+            <circle cx="155" cy="35" r="6" fill="rgba(90,154,74,0.85)" stroke="rgba(90,154,74,1)" stroke-width="1"/>
+            <text x="167" y="39" font-size="7" fill="rgba(0,0,0,0.55)">Kronberg</text>
+            <!-- Saves (orange) -->
+            <circle cx="110" cy="48" r="4" fill="rgba(196,122,58,0.7)" stroke="rgba(196,122,58,1)" stroke-width="1"/>
+            <circle cx="175" cy="42" r="4" fill="rgba(196,122,58,0.7)" stroke="rgba(196,122,58,1)" stroke-width="1"/>
+            <circle cx="140" cy="55" r="4" fill="rgba(196,122,58,0.7)" stroke="rgba(196,122,58,1)" stroke-width="1"/>
+            <circle cx="165" cy="58" r="4" fill="rgba(196,122,58,0.7)" stroke="rgba(196,122,58,1)" stroke-width="1"/>
+            <circle cx="125" cy="60" r="4" fill="rgba(196,122,58,0.7)" stroke="rgba(196,122,58,1)" stroke-width="1"/>
+            <!-- Misses (gray) -->
+            <circle cx="50" cy="68" r="4" fill="rgba(0,0,0,0.15)" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>
+            <circle cx="225" cy="52" r="4" fill="rgba(0,0,0,0.15)" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>
+            <circle cx="90" cy="72" r="4" fill="rgba(0,0,0,0.15)" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>
+            <circle cx="200" cy="78" r="4" fill="rgba(0,0,0,0.15)" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>
+            <circle cx="70" cy="85" r="4" fill="rgba(0,0,0,0.15)" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>
+            <circle cx="210" cy="88" r="4" fill="rgba(0,0,0,0.15)" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>
+
+            <!-- Opponent shots (bottom half) -->
+            <circle cx="135" cy="165" r="5" fill="rgba(176,80,64,0.6)" stroke="rgba(176,80,64,0.9)" stroke-width="1" opacity="0.7"/>
+            <circle cx="150" cy="155" r="5" fill="rgba(176,80,64,0.6)" stroke="rgba(176,80,64,0.9)" stroke-width="1" opacity="0.7"/>
+            <circle cx="120" cy="150" r="3" fill="rgba(196,122,58,0.4)" stroke="rgba(0,0,0,0.25)" stroke-width="1" opacity="0.7"/>
+            <circle cx="160" cy="148" r="3" fill="rgba(196,122,58,0.4)" stroke="rgba(0,0,0,0.25)" stroke-width="1" opacity="0.7"/>
+            <circle cx="145" cy="140" r="3" fill="rgba(196,122,58,0.4)" stroke="rgba(0,0,0,0.25)" stroke-width="1" opacity="0.7"/>
+            <circle cx="85" cy="135" r="3" fill="rgba(0,0,0,0.1)" stroke="rgba(0,0,0,0.25)" stroke-width="1" opacity="0.7"/>
+            <circle cx="190" cy="130" r="3" fill="rgba(0,0,0,0.1)" stroke="rgba(0,0,0,0.25)" stroke-width="1" opacity="0.7"/>
+            <circle cx="100" cy="115" r="3" fill="rgba(0,0,0,0.1)" stroke="rgba(0,0,0,0.25)" stroke-width="1" opacity="0.7"/>
+          </svg>
+
+          <div class="shotmap-legend">
+            <div class="item"><div class="dot" style="background: var(--success);"></div>Mål (3)</div>
+            <div class="item"><div class="dot" style="background: var(--accent);"></div>Räddad (5)</div>
+            <div class="item"><div class="dot" style="background: rgba(0,0,0,0.3);"></div>Miss (6)</div>
+          </div>
+
+          <div class="shotmap-stat-card">
+            <p class="head">🎯 DITT SKOTTMÖNSTER</p>
+            <div class="row">
+              <span class="lbl">Den här matchen</span>
+              <span class="val">14 skott · 8 på mål · 38% konv.</span>
+            </div>
+            <div class="row">
+              <span class="lbl">Säsongen (11 matcher)</span>
+              <span class="val">162 skott · 31% ▲</span>
+            </div>
+          </div>
+
+          <div class="shotmap-stat-card">
+            <p class="head">🛡 VÄSTANFORS IF</p>
+            <div class="row">
+              <span class="lbl">Skott / på mål</span>
+              <span class="val">12 / 7 · 17% konv.</span>
+            </div>
+            <div class="row">
+              <span class="lbl">Vår MV</span>
+              <span class="val" style="color: var(--success);">5 räddningar · 71% räddningsprocent</span>
+            </div>
+          </div>
+
+          <div class="shotmap-insight">
+            <p class="head">💡 INSIKT</p>
+            <p>Ni dominerade skottstatistiken (14 mot 12) och konverteringen avgör. Fortsätt pressa på.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Granska-nav at bottom -->
+      <div class="granska-nav">
+        <p class="head">FÖRDJUPA</p>
+        <div class="granska-icons">
+          <button class="granska-icon">
+            <span class="emo">🎯</span>
+            <span class="lbl">Översikt</span>
+          </button>
+          <button class="granska-icon">
+            <span class="emo">👥</span>
+            <span class="lbl">Spelare</span>
+          </button>
+          <button class="granska-icon active">
+            <span class="emo">📈</span>
+            <span class="lbl">Shotmap</span>
+          </button>
+          <button class="granska-icon">
+            <span class="emo">⚡</span>
+            <span class="lbl">Förlopp</span>
+          </button>
+          <button class="granska-icon">
+            <span class="emo">🎓</span>
+            <span class="lbl">Analys</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="max-width: 900px; margin: 40px auto 0; color: var(--text-light-secondary); font-size: 11px; line-height: 1.6;">
+  <p><strong style="color: var(--text-light);">Designtokens:</strong> <code>--accent</code> #C47A3A (koppar), <code>--bg</code> #EDE8DF (papper), <code>--bg-dark</code> #0E0D0B (matchshell), <code>--danger</code> #B05040, <code>--success</code> #5A9A4A, <code>--led-score</code> #FF1A1A (scoreboard), <code>--led-time</code> #CCFF00. <code>--font-display: Georgia, serif</code> (siffror, rubriker). <code>--font-body: system-ui</code> (allt annat).</p>
+  <p style="margin-top: 8px;"><strong style="color: var(--text-light);">Mått:</strong> card padding 10–12px. Sektionslabels fontSize 9px, letterSpacing 2px, uppercase. Match-interactions i mörkt shell (#0E0D0B), alla andra kort på ljusbakgrund (#FAF8F4).</p>
+  <p style="margin-top: 8px;"><strong style="color: var(--text-light);">Källor:</strong> src/presentation/components/match/{Scoreboard,CommentaryFeed,CornerInteraction,PenaltyInteraction,CounterInteraction,FreeKickInteraction,LastMinutePress,InteractionShell}.tsx, src/presentation/components/tactic/{TacticBoardCard,FormationView}.tsx, src/presentation/components/club/TrainingSection.tsx, src/presentation/screens/GranskaScreen.tsx (renderShotmap).</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     FÖRÄNDRINGSNOTISER — injiceras av designsystemet
+     Varje .mock-section får en overlay som pekar på vilken FAS som
+     kommer att redesigna skärmen och vilka kända placeholders som finns.
+     Läs `briefs/` för fullständig spec.
+     ═══════════════════════════════════════════════════════════════════ -->
+<style>
+  .ds-notice {
+    background: #FFF7EC;
+    border-top: 2px solid #C47A3A;
+    padding: 12px 16px 14px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 11px;
+    color: #6B4020;
+    line-height: 1.5;
+  }
+  .ds-notice .ds-phase {
+    display: inline-block;
+    background: #C47A3A; color: #fff;
+    padding: 2px 7px; border-radius: 3px;
+    font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+    margin-right: 6px; vertical-align: middle;
+  }
+  .ds-notice strong { color: #8B4820; font-weight: 700; letter-spacing: 0.3px; }
+  .ds-notice ul { margin: 6px 0 0; padding-left: 16px; }
+  .ds-notice li { margin-bottom: 3px; }
+  .ds-notice li code {
+    background: rgba(196,122,58,0.12);
+    padding: 1px 5px; border-radius: 3px;
+    font-size: 10px; color: #8B4820;
+  }
+  .ds-status {
+    display: inline-block; font-size: 8px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 1px 6px; border-radius: 3px;
+    background: #6B6760; color: #fff; margin-left: 6px;
+    vertical-align: middle;
+  }
+</style>
+<script>
+  // Pair mock-label text (sub eller huvudtext) → FAS + åtgärdsspec.
+  // Ordning = samma som sektioner i filen.
+  const NOTICES = [
+    {
+      match: /Matchkortet.*live-state/i,
+      phase: 'FAS 2',
+      title: 'Scoreboard + matchestetik',
+      items: [
+        'Redesigna scoreboarden: Westerstrand-inspirerad ram, egen tillverkaretikett ("Forsbacka IP · 1974"), Georgia-klubbnamn ovanpå LED:en (förstärkning)',
+        '<strong>⚠ Placeholder:</strong> emoji i commentary-feeden (🏒 🧤 🟥 📐 🔄 📣) — byts mot matchhändelse-ikoner från FAS 1 <code>ICON-BRIEF</code>',
+        'Plan-SVG i matchhändelser → arkitektritning med måttsiffror (ta bort gradient, sepia-ton)'
+      ]
+    },
+    {
+      match: /Matchkortet.*slutsignal/i,
+      phase: 'FAS 2',
+      title: 'Matchslut-state',
+      items: [
+        '"Se sammanfattning →"-CTA lever i samma estetik som scoreboarden — behöver inte redesignas strukturellt, bara få FAS 1-ikoner',
+        'Förändra "Domaren blåser av!"-kort från rundad till sharp (protokoll-estetik)'
+      ]
+    },
+    {
+      match: /HÖRNA/i,
+      phase: 'FAS 2',
+      title: 'Matchhändelse · hörna',
+      items: [
+        '<strong>⚠ Placeholder:</strong> coach-avatar "PL" → riktig tränar-illustration från FAS 5 <code>CHARACTER-BRIEF</code>',
+        '<strong>⚠ Placeholder:</strong> delivery-emoji (💨 🎯 🤫) → piktogram från FAS 1',
+        'Plan-SVG: tunnare linjer, måttangivelser, sepia-papper istället för ljusgrå gradient'
+      ]
+    },
+    {
+      match: /STRAFF/i,
+      phase: 'FAS 2',
+      title: 'Matchhändelse · straff',
+      items: [
+        '<strong>⚠ Placeholder:</strong> coach-avatar + height-emoji (🧊 ⬆️)',
+        'Målvakts-SVG → stiliserad linjefigur i samma stil som FAS 5 karaktärssystem (platt, tjock kontur)',
+        'V/M/H-chiprektanglar kan bli mer "målanelsanvisning" än röda rutor — tänk 70-tals instruktionsdiagram'
+      ]
+    },
+    {
+      match: /KONTRING/i,
+      phase: 'FAS 2',
+      title: 'Matchhändelse · kontring',
+      items: [
+        '<strong>⚠ Placeholder:</strong> spelarprickar (orange med vit kontur) → numrerade symboler i 70-tals skolplansh-stil (FAS 3)',
+        '<strong>⚠ Placeholder:</strong> choice-emoji (⚡ 🎯 🧠)',
+        'Det här är det mest cinematiska momentet i spelet — värt extra designomsorg i FAS 2'
+      ]
+    },
+    {
+      match: /FRISLAG|frislag/i,
+      phase: 'FAS 2',
+      title: 'Matchhändelse · frislag',
+      items: [
+        'Samma designprinciper som övriga match-shells',
+        '<strong>⚠ Placeholder:</strong> coach-avatar + choice-ikoner'
+      ]
+    },
+    {
+      match: /LAST.?MINUTE|Slutminuter|PUSH|press/i,
+      phase: 'FAS 2',
+      title: 'Slutminuters-press',
+      items: [
+        '<strong>⚠ Placeholder:</strong> choice-emoji på dramaturgiskt viktigaste skärmen',
+        'Potentiellt den skärm där Georgia-italic-quotes kan bära mest — "Domaren tittar på klockan."-typ'
+      ]
+    },
+    {
+      match: /TAKTIK|Formation|Kemi/i,
+      phase: 'FAS 3',
+      title: 'Taktik + formation + kemi',
+      items: [
+        '<strong>⚠ Placeholder:</strong> spelarprickar på plan → 70-tals symbolspråk (cirkel + nummer + kort + kaptensbindel)',
+        'Kemi-linjer (grön/röd): tunnare, mer diagram-tavla än sport-graf',
+        'Formation-chips (3-5-2 osv) kan få stämpel-estetik'
+      ]
+    },
+    {
+      match: /TRÄNING|Träning/i,
+      phase: 'FAS 3',
+      title: 'Träning',
+      items: [
+        '<strong>⚠ Placeholder:</strong> område-emoji (🏋️ 🎯 🛡️ 🧠 💪 📐) → 6 piktogram från FAS 1',
+        'Intensitets-slider: byt mot stämpel-chips ("LÄTT · MEDEL · HÅRT · INTENSIV")'
+      ]
+    },
+    {
+      match: /GRANSKA|Shotmap/i,
+      phase: 'FAS 2',
+      title: 'Granska · shotmap',
+      items: [
+        'Nästan perfekt — behöver bara typografi-lyft (Georgia-rubriker istf sans i samman­fattningen)',
+        '<strong>⚠ Placeholder:</strong> granska-nav-emoji (📊 👥 📈 ⚡ 🎓) → 5 piktogram från FAS 1'
+      ]
+    }
+  ];
+
+  document.querySelectorAll('.mock-section').forEach((sec) => {
+    const label = sec.querySelector('.mock-label');
+    if (!label) return;
+    const text = label.textContent || '';
+    const notice = NOTICES.find(n => n.match.test(text));
+    if (!notice) return;
+
+    // Status-badge bredvid label
+    const status = document.createElement('span');
+    status.className = 'ds-status';
+    status.textContent = 'I drift · kommer redesignas';
+    const sub = label.querySelector('.sub');
+    if (sub) sub.insertAdjacentElement('beforebegin', status);
+    else label.appendChild(status);
+
+    // Notis längst ner
+    const n = document.createElement('div');
+    n.className = 'ds-notice';
+    n.innerHTML = `
+      <div style="margin-bottom:6px;">
+        <span class="ds-phase">${notice.phase}</span>
+        <strong>${notice.title}</strong>
+      </div>
+      <ul>${notice.items.map(i => `<li>${i}</li>`).join('')}</ul>
+    `;
+    sec.appendChild(n);
+  });
+
+  // Header-rubrik överst — ersätt om den finns, annars lägg till
+  const first = document.body.querySelector('.mock-grid, .mock-section');
+  if (first && !document.querySelector('.ds-intro')) {
+    const intro = document.createElement('div');
+    intro.className = 'ds-intro';
+    intro.style.cssText = 'max-width:1100px;margin:0 auto 28px;color:#F5F1EB;font-family:system-ui,sans-serif;';
+    intro.innerHTML = `
+      <div style="font-family:Georgia,serif;font-size:22px;margin-bottom:8px;letter-spacing:0.3px;">Skärmar i drift</div>
+      <p style="font-size:12px;color:#C4BAA8;line-height:1.6;max-width:720px;">
+        Detta är <strong style="color:#C47A3A;">sanningen om hur Bandy Manager ser ut idag</strong> — producerad 2026-04-22, innehåller 9 nyckelskärmar. Design­systemet behandlar dessa som <em>referens, inte förslag</em>. Varje skärm har en notis som pekar på vilken FAS som kommer att redesigna den och vilka kända placeholders som finns (emoji-ikoner, coach-avatarer, generiska spelarprickar).
+      </p>
+      <p style="font-size:12px;color:#C4BAA8;line-height:1.6;max-width:720px;margin-top:10px;">
+        Alla placeholder-markeringar (⚠) pekar mot briefer i <code style="background:rgba(196,122,58,0.15);padding:1px 5px;border-radius:3px;color:#E8A66A;">briefs/</code> — ICON-BRIEF, CHARACTER-BRIEF, CLUB-BRIEF.
+      </p>
+    `;
+    first.parentElement.insertBefore(intro, first);
+  }
+</script>
+
+</body>
+</html>

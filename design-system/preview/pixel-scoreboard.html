@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Pixel scoreboard — Westerstrand v1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg:            #EDE8DF;
+    --bg-dark:       #0E0D0B;
+    --bg-panel:      #0A0A0A;
+    --bg-panel-rim:  #1a1814;
+    --bezel:         #2a2824;
+    --bezel-light:   #3a3632;
+    --bezel-dark:    #0f0e0c;
+    --text-light:    #F5F1EB;
+    --text-light-secondary: #C4BAA8;
+    --text-light-muted:     #8A857A;
+    --accent:       #C47A3A;
+    --accent-dark:  #A25828;
+
+    /* LED-färger */
+    --led-red:       #FF2218;
+    --led-red-dim:   rgba(255,34,24,0.18);
+    --led-amber:     #FF9900;
+    --led-amber-dim: rgba(255,153,0,0.18);
+    --led-yellow:    #FFCC22;
+    --led-yellow-dim:rgba(255,204,34,0.15);
+    --led-green:     #99FF44;
+    --led-green-dim: rgba(153,255,68,0.15);
+
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-mono:    'Courier New', ui-monospace, monospace;
+    --font-body:    system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-family: var(--font-body); color: #1A1A18; }
+  body {
+    background: #2a2824;
+    padding: 28px 16px 80px;
+    min-height: 100vh;
+  }
+  .page-head {
+    max-width: 900px; margin: 0 auto 24px;
+    color: var(--text-light);
+  }
+  .page-head h1 { font-family: var(--font-display); font-size: 22px; margin-bottom: 6px; }
+  .page-head p {
+    font-size: 12px; color: var(--text-light-secondary); line-height: 1.6;
+    max-width: 640px;
+  }
+  .page-head p + p { margin-top: 6px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(375px, 1fr));
+    gap: 28px;
+    max-width: 1200px; margin: 0 auto;
+    align-items: start;
+  }
+  .col {
+    background: var(--bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    max-width: 380px;
+    width: 100%;
+    justify-self: center;
+  }
+  .col-head {
+    background: #1f1d19;
+    color: var(--text-light);
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--accent-dark);
+  }
+  .col-head .sub {
+    display: block; margin-top: 4px;
+    font-size: 10px; color: var(--text-light-secondary);
+    font-weight: 400; text-transform: none; font-style: italic;
+    letter-spacing: 0.5px; line-height: 1.4;
+  }
+
+  /* ════════════════════════════════════════════
+     SCOREBOARD — Westerstrand / pixel-matrix
+     ════════════════════════════════════════════ */
+  .match-bg {
+    background: #3D3520;
+    padding: 12px;
+  }
+
+  /* Ytterhöljet — svart plastkåpa med en subtil bezel-känsla */
+  .pixboard {
+    background: linear-gradient(180deg, var(--bezel-light) 0%, var(--bezel) 50%, var(--bezel-dark) 100%);
+    border-radius: 6px;
+    padding: 8px;
+    position: relative;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.08),
+      inset 0 -1px 0 rgba(0,0,0,0.6),
+      0 2px 4px rgba(0,0,0,0.4);
+  }
+
+  /* Små skruvar i hörnen */
+  .pixboard .screw {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #5a5449, #1a1814);
+    box-shadow: inset 0 0 1px rgba(0,0,0,0.6);
+  }
+  .pixboard .screw.tl { top: 6px; left: 6px; }
+  .pixboard .screw.tr { top: 6px; right: 6px; }
+  .pixboard .screw.bl { bottom: 6px; left: 6px; }
+  .pixboard .screw.br { bottom: 6px; right: 6px; }
+
+  /* Inre panel — själva LED-ytan */
+  .pix-panel {
+    background: var(--bg-panel);
+    border-radius: 3px;
+    padding: 12px 10px 10px;
+    position: relative;
+    box-shadow:
+      inset 0 1px 3px rgba(0,0,0,0.9),
+      inset 0 0 0 1px rgba(0,0,0,0.5);
+    /* Subtil vertikal textur för att simulera skuggmask */
+    background-image:
+      repeating-linear-gradient(90deg,
+        rgba(255,255,255,0.015) 0px,
+        rgba(255,255,255,0.015) 1px,
+        transparent 1px,
+        transparent 3px);
+  }
+
+  /* Tillverkaretikett */
+  .pix-maker {
+    position: absolute;
+    top: -3px; right: 14px;
+    background: #1a1814;
+    color: #7a7265;
+    font-family: var(--font-mono);
+    font-size: 7px;
+    letter-spacing: 2px;
+    padding: 1px 6px;
+    border-radius: 0 0 2px 2px;
+    font-weight: 700;
+  }
+  .pix-arena-badge {
+    position: absolute;
+    bottom: -3px; left: 14px;
+    background: #1a1814;
+    color: #7a7265;
+    font-family: var(--font-mono);
+    font-size: 7px;
+    letter-spacing: 2px;
+    padding: 1px 6px;
+    border-radius: 2px 2px 0 0;
+    font-weight: 700;
+  }
+
+  /* ── Topp-raden: score + skiljetecken + score ── */
+  .pix-top {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .pix-sep {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px;
+  }
+  .pix-dash-row { display: flex; }
+  .pix-dash {
+    width: 4px; height: 4px;
+    margin: 0 1px;
+    background: var(--led-red);
+    border-radius: 50%;
+    box-shadow: 0 0 3px var(--led-red);
+  }
+
+  /* ── Klubbindikator: H / G med diagonal stripa (från bild 2) ── */
+  .pix-team {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px;
+  }
+  .pix-team-indicator {
+    display: flex; align-items: center; gap: 4px;
+    width: 100%; padding: 0 4px;
+  }
+  .pix-team-letter {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-light);
+    letter-spacing: 1px;
+  }
+  .pix-team-stripe {
+    flex: 1; height: 2px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      var(--led-red) 20%,
+      var(--led-red) 80%,
+      transparent 100%);
+    opacity: 0.5;
+    position: relative;
+  }
+  .pix-team-stripe::after {
+    content: ""; position: absolute;
+    top: -1px; bottom: -1px;
+    left: 20%; right: 20%;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255,34,24,0.3) 50%,
+      transparent 100%);
+  }
+  /* Diagonal "stripad" effekt likt en sport-striffel */
+  .pix-team.right .pix-team-stripe {
+    background: linear-gradient(90deg,
+      transparent 0%,
+      var(--led-red) 20%,
+      var(--led-red) 80%,
+      transparent 100%);
+  }
+
+  /* ── Mitten: stor minutsiffra ── */
+  .pix-mid {
+    display: flex; justify-content: center; align-items: center;
+    padding: 4px 0 6px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    margin-bottom: 8px;
+  }
+  .pix-mid-sub {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: rgba(153,255,68,0.5);
+    letter-spacing: 2px;
+    margin-right: 8px;
+    font-weight: 700;
+  }
+
+  /* ── Bottom: period indicators + utvisningar ── */
+  .pix-bottom {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: start;
+    gap: 12px;
+    padding-top: 4px;
+  }
+  .pix-susp {
+    display: flex; flex-direction: column; gap: 4px;
+    min-height: 28px;
+  }
+  .pix-susp.right { align-items: flex-end; }
+  .pix-susp-head {
+    font-family: var(--font-mono);
+    font-size: 7px;
+    color: var(--led-amber);
+    letter-spacing: 1.5px;
+    opacity: 0.7;
+    font-weight: 700;
+  }
+  .pix-susp-row {
+    display: flex; align-items: center; gap: 3px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--led-amber);
+    text-shadow: 0 0 4px rgba(255,153,0,0.4);
+    letter-spacing: 0.5px;
+    font-weight: 700;
+  }
+  .pix-susp.right .pix-susp-row { flex-direction: row-reverse; }
+  .pix-susp-dot {
+    width: 5px; height: 5px;
+    background: var(--led-amber);
+    border-radius: 50%;
+    box-shadow: 0 0 4px var(--led-amber);
+    animation: susppulse 1.6s ease-in-out infinite;
+  }
+  @keyframes susppulse {
+    0%, 100% { opacity: 0.5; }
+    50%      { opacity: 1; }
+  }
+
+  .pix-period {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .pix-period-label {
+    font-family: var(--font-mono);
+    font-size: 7px;
+    color: rgba(153,255,68,0.5);
+    letter-spacing: 2px;
+    font-weight: 700;
+  }
+  .pix-period-dots {
+    display: flex; gap: 3px;
+  }
+  .pix-period-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: rgba(153,255,68,0.15);
+    border: 1px solid rgba(153,255,68,0.3);
+  }
+  .pix-period-dot.active {
+    background: var(--led-green);
+    border-color: var(--led-green);
+    box-shadow: 0 0 4px var(--led-green);
+  }
+
+  /* ════════════════════════════════════════════
+     PIXEL DIGIT — SVG-baserad dot-matrix
+     Varje siffra är 5 kolumner × 7 rader av dots
+     ════════════════════════════════════════════ */
+  .pd {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .pd-row { display: flex; gap: 0; }
+  .pd-digits {
+    display: flex;
+    gap: 3px;
+  }
+  .pd-digit {
+    display: grid;
+    grid-template-columns: repeat(5, var(--dot, 6px));
+    grid-template-rows: repeat(7, var(--dot, 6px));
+    gap: calc(var(--dot, 6px) * 0.15);
+  }
+  .pd-dot {
+    width: var(--dot, 6px);
+    height: var(--dot, 6px);
+    border-radius: 50%;
+    background: var(--dot-off, rgba(255,34,24,0.08));
+  }
+  .pd-dot.on {
+    background: var(--dot-on, var(--led-red));
+    box-shadow: 0 0 calc(var(--dot, 6px) * 0.6) var(--dot-on, var(--led-red));
+  }
+
+  /* Färg-varianter */
+  .pd.red    { --dot-on: var(--led-red);    --dot-off: rgba(255,34,24,0.07); }
+  .pd.amber  { --dot-on: var(--led-amber);  --dot-off: rgba(255,153,0,0.07); }
+  .pd.yellow { --dot-on: var(--led-yellow); --dot-off: rgba(255,204,34,0.07); }
+  .pd.green  { --dot-on: var(--led-green);  --dot-off: rgba(153,255,68,0.07); }
+
+  /* Storlekar */
+  .pd.xl  { --dot: 8px; }
+  .pd.lg  { --dot: 6px; }
+  .pd.md  { --dot: 5px; }
+  .pd.sm  { --dot: 3.5px; }
+
+  /* Flash-animation */
+  .pd.flash .pd-dot.on {
+    animation: pdflash 1.4s ease-in-out infinite;
+  }
+  @keyframes pdflash {
+    0%, 100% { opacity: 1; box-shadow: 0 0 calc(var(--dot) * 0.9) var(--dot-on); }
+    50%      { opacity: 0.5; box-shadow: 0 0 calc(var(--dot) * 0.3) var(--dot-on); }
+  }
+
+  /* ════════════════════════════════════════════
+     Demo layout
+     ════════════════════════════════════════════ */
+  .legend {
+    max-width: 1200px; margin: 40px auto 0;
+    padding: 20px;
+    background: rgba(196,122,58,0.08);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    color: var(--text-light-secondary);
+    font-size: 12px; line-height: 1.7;
+  }
+  .legend h3 {
+    font-family: var(--font-display);
+    color: var(--accent);
+    font-size: 15px;
+    margin-bottom: 10px;
+  }
+  .legend p + p { margin-top: 6px; }
+  .legend code {
+    background: rgba(0,0,0,0.3);
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-light);
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Pixel scoreboard · v1</h1>
+  <p>Westerstrand-inspirerad bandytavla. LED-dot-matrix-siffror byggda i HTML (5×7 dots per glyph, inget webbfont-beroende). Röda siffror = tid, gul = utvisningar, grön = period/kontext. Två states att jämföra: live (74', poängen pulsar efter mål) och FT.</p>
+  <p>Utvisnings-sektionen visas under huvudraden med liten "UTV"-header + nummer + återstående tid. Pulserar långsamt så den läses som "aktiv" information.</p>
+</div>
+
+<div class="grid">
+
+  <!-- ═══ Kolumn 1 — LIVE (mål precis hände, poängen pulsar) ═══ -->
+  <div class="col">
+    <div class="col-head">
+      Live · 74′
+      <span class="sub">Hemmalaget gjorde just 3–2. Siffran pulsar. En utvisning per lag aktiv.</span>
+    </div>
+    <div class="match-bg">
+      <div class="pixboard">
+        <span class="screw tl"></span><span class="screw tr"></span>
+        <span class="screw bl"></span><span class="screw br"></span>
+        <div class="pix-panel">
+          <span class="pix-maker">WESTERSTRAND · 1974</span>
+
+          <!-- Topp: poäng + skiljetecken + poäng -->
+          <div class="pix-top">
+            <div class="pix-team left">
+              <div id="home-score"></div>
+              <div class="pix-team-indicator">
+                <span class="pix-team-letter">H</span>
+                <span class="pix-team-stripe"></span>
+              </div>
+            </div>
+            <div class="pix-sep">
+              <div class="pix-dash-row">
+                <span class="pix-dash"></span><span class="pix-dash"></span>
+              </div>
+            </div>
+            <div class="pix-team right">
+              <div id="away-score"></div>
+              <div class="pix-team-indicator">
+                <span class="pix-team-stripe"></span>
+                <span class="pix-team-letter">G</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mitten: minut -->
+          <div class="pix-mid">
+            <span class="pix-mid-sub">MIN</span>
+            <div id="live-time"></div>
+          </div>
+
+          <!-- Bottom: susp left | period | susp right -->
+          <div class="pix-bottom">
+            <div class="pix-susp left">
+              <span class="pix-susp-head">UTV</span>
+              <div class="pix-susp-row">
+                <span class="pix-susp-dot"></span>
+                <span>#14</span>
+                <span style="opacity:0.6">4:12</span>
+              </div>
+            </div>
+            <div class="pix-period">
+              <span class="pix-period-label">HL</span>
+              <div class="pix-period-dots">
+                <span class="pix-period-dot"></span>
+                <span class="pix-period-dot active"></span>
+              </div>
+            </div>
+            <div class="pix-susp right">
+              <span class="pix-susp-head">UTV</span>
+              <div class="pix-susp-row">
+                <span>2:45</span>
+                <span>#7</span>
+                <span class="pix-susp-dot"></span>
+              </div>
+            </div>
+          </div>
+          <span class="pix-arena-badge">STÅLVALLEN · FORSBACKA</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Kolumn 2 — FT (slut-state) ═══ -->
+  <div class="col">
+    <div class="col-head">
+      Full time · FT
+      <span class="sub">Slutsignal har gått. Inga pulsar. Tidsfältet visar "SLUT" istället för minuter. Period-prick båda tända.</span>
+    </div>
+    <div class="match-bg">
+      <div class="pixboard">
+        <span class="screw tl"></span><span class="screw tr"></span>
+        <span class="screw bl"></span><span class="screw br"></span>
+        <div class="pix-panel">
+          <span class="pix-maker">WESTERSTRAND · 1974</span>
+
+          <div class="pix-top">
+            <div class="pix-team left">
+              <div id="ft-home"></div>
+              <div class="pix-team-indicator">
+                <span class="pix-team-letter">H</span>
+                <span class="pix-team-stripe"></span>
+              </div>
+            </div>
+            <div class="pix-sep">
+              <div class="pix-dash-row">
+                <span class="pix-dash"></span><span class="pix-dash"></span>
+              </div>
+            </div>
+            <div class="pix-team right">
+              <div id="ft-away"></div>
+              <div class="pix-team-indicator">
+                <span class="pix-team-stripe"></span>
+                <span class="pix-team-letter">G</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pix-mid">
+            <span class="pix-mid-sub">&nbsp;</span>
+            <div id="ft-time"></div>
+          </div>
+
+          <div class="pix-bottom">
+            <div class="pix-susp left">
+              <span class="pix-susp-head" style="opacity:0.3">—</span>
+            </div>
+            <div class="pix-period">
+              <span class="pix-period-label">HL</span>
+              <div class="pix-period-dots">
+                <span class="pix-period-dot active"></span>
+                <span class="pix-period-dot active"></span>
+              </div>
+            </div>
+            <div class="pix-susp right">
+              <span class="pix-susp-head" style="opacity:0.3">—</span>
+            </div>
+          </div>
+          <span class="pix-arena-badge">STÅLVALLEN · FORSBACKA</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Kolumn 3 — Storformat demo för att se pixlarna tydligt ═══ -->
+  <div class="col" style="max-width: 560px;">
+    <div class="col-head">
+      Glyfer · XL
+      <span class="sub">Alla siffror 0–9 + kolon i röd, gul och grön i stort format. Kontrollera läsbarhet och konsekvens.</span>
+    </div>
+    <div class="match-bg" style="padding: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 16px; align-items: center;">
+        <div id="demo-red" style="display: flex; gap: 6px;"></div>
+        <div id="demo-amber" style="display: flex; gap: 6px;"></div>
+        <div id="demo-green" style="display: flex; gap: 6px;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="legend">
+  <h3>Så fungerar pixel-glyferna</h3>
+  <p>Varje siffra är ett 5×7 rutnät av <code>.pd-dot</code> span-element. Varje dot får klassen <code>.on</code> om den hör till glyphens "ritade" pixlar. CSS-variabeln <code>--dot</code> styr pixel-storleken; <code>--dot-on</code>/<code>--dot-off</code> styr färgen per instans. Storleks-presets: <code>.xl</code> 8px, <code>.lg</code> 6px, <code>.md</code> 5px, <code>.sm</code> 3.5px.</p>
+  <p>Färger: <code>.red</code> (tid), <code>.amber</code> (varningar, utvisningar), <code>.yellow</code> (poäng alt.), <code>.green</code> (period, kontextuell info). <code>.flash</code> + färg = pulserande nyss-skett-event.</p>
+  <p>Glyfmatriserna är definierade i JS (<code>GLYPHS</code>-objektet) och renderas av <code>pixDigits(text, color, size)</code>. Enkelt att lägga till nya tecken — exempelvis "SLUT", "HT", "OT" om vi behöver fler states.</p>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// PIXEL DIGIT SYSTEM
+// ═══════════════════════════════════════════════════════════
+// Varje glyph är en 5-kolumn × 7-rad matris (från topp-vänster).
+// 1 = pixel på, 0 = pixel av.
+// ═══════════════════════════════════════════════════════════
+
+const GLYPHS = {
+  '0': [
+    [0,1,1,1,0],
+    [1,1,0,1,1],
+    [1,1,0,1,1],
+    [1,1,0,1,1],
+    [1,1,0,1,1],
+    [1,1,0,1,1],
+    [0,1,1,1,0],
+  ],
+  '1': [
+    [0,0,1,1,0],
+    [0,1,1,1,0],
+    [1,1,1,1,0],
+    [0,0,1,1,0],
+    [0,0,1,1,0],
+    [0,0,1,1,0],
+    [1,1,1,1,1],
+  ],
+  '2': [
+    [0,1,1,1,0],
+    [1,1,0,1,1],
+    [0,0,0,1,1],
+    [0,0,1,1,0],
+    [0,1,1,0,0],
+    [1,1,0,0,0],
+    [1,1,1,1,1],
+  ],
+  '3': [
+    [1,1,1,1,0],
+    [0,0,0,1,1],
+    [0,0,0,1,1],
+    [0,1,1,1,0],
+    [0,0,0,1,1],
+    [0,0,0,1,1],
+    [1,1,1,1,0],
+  ],
+  '4': [
+    [0,0,0,1,1],
+    [0,0,1,1,1],
+    [0,1,1,1,1],
+    [1,1,0,1,1],
+    [1,1,1,1,1],
+    [0,0,0,1,1],
+    [0,0,0,1,1],
+  ],
+  '5': [
+    [1,1,1,1,1],
+    [1,1,0,0,0],
+    [1,1,1,1,0],
+    [0,0,0,1,1],
+    [0,0,0,1,1],
+    [1,1,0,1,1],
+    [0,1,1,1,0],
+  ],
+  '6': [
+    [0,1,1,1,1],
+    [1,1,0,0,0],
+    [1,1,0,0,0],
+    [1,1,1,1,0],
+    [1,1,0,1,1],
+    [1,1,0,1,1],
+    [0,1,1,1,0],
+  ],
+  '7': [
+    [1,1,1,1,1],
+    [0,0,0,1,1],
+    [0,0,0,1,1],
+    [0,0,1,1,0],
+    [0,1,1,0,0],
+    [0,1,1,0,0],
+    [0,1,1,0,0],
+  ],
+  '8': [
+    [0,1,1,1,0],
+    [1,1,0,1,1],
+    [1,1,0,1,1],
+    [0,1,1,1,0],
+    [1,1,0,1,1],
+    [1,1,0,1,1],
+    [0,1,1,1,0],
+  ],
+  '9': [
+    [0,1,1,1,0],
+    [1,1,0,1,1],
+    [1,1,0,1,1],
+    [0,1,1,1,1],
+    [0,0,0,1,1],
+    [0,0,0,1,1],
+    [1,1,1,1,0],
+  ],
+  ':': [
+    [0,0,0,0,0],
+    [0,0,0,0,0],
+    [0,1,1,0,0],
+    [0,1,1,0,0],
+    [0,0,0,0,0],
+    [0,1,1,0,0],
+    [0,1,1,0,0],
+  ],
+  '-': [
+    [0,0,0,0,0],
+    [0,0,0,0,0],
+    [0,0,0,0,0],
+    [1,1,1,1,1],
+    [0,0,0,0,0],
+    [0,0,0,0,0],
+    [0,0,0,0,0],
+  ],
+  'S': [
+    [0,1,1,1,1],
+    [1,1,0,0,0],
+    [1,1,0,0,0],
+    [0,1,1,1,0],
+    [0,0,0,1,1],
+    [0,0,0,1,1],
+    [1,1,1,1,0],
+  ],
+  'L': [
+    [1,1,0,0,0],
+    [1,1,0,0,0],
+    [1,1,0,0,0],
+    [1,1,0,0,0],
+    [1,1,0,0,0],
+    [1,1,0,0,0],
+    [1,1,1,1,1],
+  ],
+  'U': [
+    [1,1,0,1,1],
+    [1,1,0,1,1],
+    [1,1,0,1,1],
+    [1,1,0,1,1],
+    [1,1,0,1,1],
+    [1,1,0,1,1],
+    [0,1,1,1,0],
+  ],
+  'T': [
+    [1,1,1,1,1],
+    [0,0,1,1,0],
+    [0,0,1,1,0],
+    [0,0,1,1,0],
+    [0,0,1,1,0],
+    [0,0,1,1,0],
+    [0,0,1,1,0],
+  ],
+  'F': [
+    [1,1,1,1,1],
+    [1,1,0,0,0],
+    [1,1,0,0,0],
+    [1,1,1,1,0],
+    [1,1,0,0,0],
+    [1,1,0,0,0],
+    [1,1,0,0,0],
+  ],
+  ' ': [
+    [0,0,0,0,0],
+    [0,0,0,0,0],
+    [0,0,0,0,0],
+    [0,0,0,0,0],
+    [0,0,0,0,0],
+    [0,0,0,0,0],
+    [0,0,0,0,0],
+  ],
+};
+
+function renderDigit(char) {
+  const matrix = GLYPHS[char] || GLYPHS[' '];
+  const el = document.createElement('div');
+  el.className = 'pd-digit';
+  for (let r = 0; r < 7; r++) {
+    for (let c = 0; c < 5; c++) {
+      const dot = document.createElement('span');
+      dot.className = matrix[r][c] ? 'pd-dot on' : 'pd-dot';
+      el.appendChild(dot);
+    }
+  }
+  return el;
+}
+
+function pixDigits({ text, color = 'red', size = 'lg', flash = false } = {}) {
+  const wrap = document.createElement('div');
+  wrap.className = `pd ${color} ${size}${flash ? ' flash' : ''}`;
+  const row = document.createElement('div');
+  row.className = 'pd-digits';
+  for (const ch of text) {
+    row.appendChild(renderDigit(ch));
+  }
+  wrap.appendChild(row);
+  return wrap;
+}
+
+// ── Fyll scoreboards ──
+document.getElementById('home-score').appendChild(
+  pixDigits({ text: '3', color: 'amber', size: 'xl', flash: true })
+);
+document.getElementById('away-score').appendChild(
+  pixDigits({ text: '2', color: 'red', size: 'xl' })
+);
+document.getElementById('live-time').appendChild(
+  pixDigits({ text: '74:22', color: 'red', size: 'md' })
+);
+
+document.getElementById('ft-home').appendChild(
+  pixDigits({ text: '4', color: 'red', size: 'xl' })
+);
+document.getElementById('ft-away').appendChild(
+  pixDigits({ text: '2', color: 'red', size: 'xl' })
+);
+document.getElementById('ft-time').appendChild(
+  pixDigits({ text: 'SLUT', color: 'green', size: 'md' })
+);
+
+// ── Glyf-demo ──
+const demoRed = document.getElementById('demo-red');
+const demoAmber = document.getElementById('demo-amber');
+const demoGreen = document.getElementById('demo-green');
+
+for (let i = 0; i <= 9; i++) {
+  demoRed.appendChild(pixDigits({ text: String(i), color: 'red', size: 'lg' }));
+  demoAmber.appendChild(pixDigits({ text: String(i), color: 'amber', size: 'lg' }));
+  demoGreen.appendChild(pixDigits({ text: String(i), color: 'green', size: 'lg' }));
+}
+demoRed.appendChild(pixDigits({ text: ':', color: 'red', size: 'lg' }));
+demoAmber.appendChild(pixDigits({ text: '-', color: 'amber', size: 'lg' }));
+demoGreen.appendChild(pixDigits({ text: 'SLUT', color: 'green', size: 'lg' }));
+</script>
+
+</body>
+</html>

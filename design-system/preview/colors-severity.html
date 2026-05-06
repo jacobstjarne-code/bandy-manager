@@ -1,0 +1,38 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css"></head>
+<body style="width:700px;min-height:200px;background:var(--bg)">
+<p class="label8" style="margin-bottom:8px">SEVERITY · KALL / VARM</p>
+<div class="row">
+  <div class="swatch dark" style="background:var(--cold)">
+    <div><p class="name">Cold</p><p class="var">--cold</p></div>
+    <p class="hex">#4a6680</p>
+  </div>
+  <div class="swatch dark" style="background:var(--warm)">
+    <div><p class="name">Warm</p><p class="var">--warm</p></div>
+    <p class="hex">#8c6e3a</p>
+  </div>
+</div>
+
+<p class="label8" style="margin:18px 0 8px 0">ANVÄNDNING — JOURNALIST-KORT</p>
+<div class="row" style="gap:10px">
+  <div style="flex:1;background:var(--bg-portal-surface);border-left:2px solid var(--cold);border-radius:8px;padding:10px 12px;color:var(--text-light)">
+    <p style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--cold);margin-bottom:4px">KALL · NEG</p>
+    <p style="font-family:var(--font-display);font-size:13px;font-weight:700">Holmberg vill ha svar</p>
+    <div style="margin-top:8px;height:3px;background:var(--bg-dark);border-radius:2px;overflow:hidden">
+      <div style="width:35%;height:100%;background:var(--cold)"></div>
+    </div>
+    <p style="font-family:var(--font-display);font-size:9px;color:var(--text-light-secondary);margin-top:3px">35</p>
+  </div>
+  <div style="flex:1;background:var(--bg-portal-surface);border-left:2px solid var(--warm);border-radius:8px;padding:10px 12px;color:var(--text-light)">
+    <p style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--warm);margin-bottom:4px">VARM · POS</p>
+    <p style="font-family:var(--font-display);font-size:13px;font-weight:700">Andersson skriver hyllning</p>
+    <div style="margin-top:8px;height:3px;background:var(--bg-dark);border-radius:2px;overflow:hidden">
+      <div style="width:78%;height:100%;background:var(--warm)"></div>
+    </div>
+    <p style="font-family:var(--font-display);font-size:9px;color:var(--text-light-secondary);margin-top:3px">78</p>
+  </div>
+</div>
+
+<p style="margin-top:12px;font-size:10px;color:var(--text-muted);letter-spacing:0.3px;line-height:1.5">
+  Severity-paret driver <strong>journalist-relation</strong> (severity per kort) och <strong>säsongssignaturer</strong> (cold_winter → <code style="font-size:10px">--cold</code>, injury_curve → <code style="font-size:10px">--warm</code>). Vänsterstipe 2 px, relationsbar fyll. Reserverat — får inte återanvändas för annan UI-state.
+</p>
+</body></html>

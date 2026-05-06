@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Commentary feed — redesign (v1)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg:               #EDE8DF;
+    --bg-surface:       #FAF8F4;
+    --bg-dark:          #0E0D0B;
+    --bg-dark-surface:  #1E1D19;
+    --bg-dark-elevated: #2C2A24;
+    --bg-leather:       #3D3A32;
+    --border-dark:      #C4BAA8;
+    --text-primary:     #1A1A18;
+    --text-secondary:   #6B6760;
+    --text-muted:       #8A857A;
+    --text-light:           #F5F1EB;
+    --text-light-secondary: #C4BAA8;
+    --text-light-muted:     #8A857A;
+    --accent:       #C47A3A;
+    --accent-dark:  #A25828;
+    --success:   #5A9A4A;
+    --danger:    #B05040;
+    --led-bg:          #0A0A0A;
+    --led-score:       #FF1A1A;
+    --led-score-flash: #FF9900;
+    --led-time:        #CCFF00;
+    --home:  #C47A3A;   /* Forsbacka — brons */
+    --away:  #6B7F8E;   /* Västanfors — stål */
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-mono:    'Courier New', ui-monospace, monospace;
+    --font-body:    system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-family: var(--font-body); color: var(--text-primary); }
+  body {
+    background: #2a2824;
+    padding: 28px 16px 80px;
+    min-height: 100vh;
+  }
+  .page-head {
+    max-width: 1400px; margin: 0 auto 28px;
+    color: var(--text-light);
+  }
+  .page-head h1 {
+    font-family: var(--font-display); font-size: 24px; margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+  .page-head p {
+    font-size: 12px; color: var(--text-light-secondary); line-height: 1.6;
+    max-width: 720px;
+  }
+  .page-head p + p { margin-top: 6px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(375px, 1fr));
+    gap: 28px;
+    max-width: 1400px; margin: 0 auto;
+    align-items: start;
+  }
+
+  .col {
+    background: var(--bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    max-width: 380px;
+    width: 100%;
+    justify-self: center;
+  }
+  .col-head {
+    background: #1f1d19;
+    color: var(--text-light);
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--accent-dark);
+  }
+  .col-head .tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #1f1d19;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-size: 9px;
+    margin-right: 6px;
+    letter-spacing: 1.5px;
+  }
+  .col-head .sub {
+    display: block;
+    margin-top: 4px;
+    font-size: 10px;
+    color: var(--text-light-secondary);
+    letter-spacing: 0.5px;
+    font-weight: 400;
+    text-transform: none;
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  /* ════════════════════════════════════════════
+     Shared — scoreboard (kopierad 1:1 från screens-reference)
+     ════════════════════════════════════════════ */
+  .match-bg {
+    background: #3D3520;
+    padding: 8px 0 12px;
+  }
+  .scoreboard {
+    background: var(--led-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-dark);
+    padding: 10px 16px 14px;
+    margin: 0 12px 8px;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px;
+  }
+  .scoreboard-row {
+    display: flex; align-items: center; gap: 8px;
+    justify-content: center; width: 100%;
+  }
+  .scoreboard-team { flex: 1; text-align: center; }
+  .sb-team-label {
+    font-family: var(--font-mono);
+    font-weight: 700; font-size: 13px;
+    color: var(--led-score);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .sb-team-label .hg { color: var(--led-time); font-size: 12px; }
+  .sb-score {
+    display: block;
+    font-family: var(--font-mono);
+    font-weight: 900; font-size: 52px;
+    color: var(--led-score);
+    line-height: 1; letter-spacing: 4px;
+  }
+  .sb-score.flash {
+    color: var(--led-score-flash);
+    text-shadow: 0 0 20px rgba(255,153,0,0.8), 0 0 40px rgba(255,153,0,0.4);
+    animation: flash 1.4s ease-in-out infinite;
+  }
+  @keyframes flash {
+    0%, 100% { color: var(--led-score-flash); text-shadow: 0 0 20px rgba(255,153,0,0.9), 0 0 40px rgba(255,153,0,0.5); }
+    50%      { color: #FFCC66; text-shadow: 0 0 8px rgba(255,153,0,0.4); }
+  }
+  .sb-dash {
+    color: var(--led-score); font-size: 28px; font-weight: 900; opacity: 0.7;
+    font-family: var(--font-mono); line-height: 1;
+  }
+  .sb-time {
+    font-family: var(--font-mono);
+    font-weight: 700; font-size: 22px;
+    color: var(--led-time);
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+  .sb-zone {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .sb-sub {
+    font-family: var(--font-mono);
+    font-size: 9px; color: var(--led-time); opacity: 0.6;
+    letter-spacing: 1.5px;
+  }
+  .sb-arena {
+    font-family: var(--font-mono); font-size: 10px;
+    color: var(--led-time); opacity: 0.45;
+    letter-spacing: 2.5px;
+  }
+
+  /* ════════════════════════════════════════════
+     VARIANT A — PROTOKOLLET
+     Matchrapport-rader. Typografin bär rytmen. Mål-rader = stämplar.
+     ════════════════════════════════════════════ */
+  .v-a .feed {
+    background: var(--bg-dark-surface);
+    margin: 8px 12px 0;
+    border-radius: 4px;
+    padding: 4px 0;
+    border: 1px solid rgba(196,122,58,0.18);
+  }
+  .v-a .row {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    align-items: baseline;
+    padding: 6px 12px;
+    gap: 10px;
+    position: relative;
+  }
+  .v-a .row + .row {
+    border-top: 1px dashed rgba(196,122,58,0.1);
+  }
+  .v-a .min {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-light-secondary);
+    letter-spacing: 0.5px;
+    text-align: right;
+    font-weight: 600;
+  }
+  .v-a .txt {
+    font-size: 13px;
+    color: var(--text-light-secondary);
+    line-height: 1.45;
+  }
+  .v-a .row.now .min {
+    color: var(--led-time);
+    font-weight: 700;
+  }
+  .v-a .row.now::before {
+    content: ""; position: absolute;
+    left: 0; top: 6px; bottom: 6px;
+    width: 3px; background: var(--led-time);
+    box-shadow: 0 0 8px rgba(204,255,0,0.6);
+  }
+
+  /* Mål-raden = protokoll-stämpel */
+  .v-a .row.goal {
+    padding: 14px 12px 12px;
+    background: linear-gradient(180deg, rgba(196,122,58,0.18) 0%, rgba(196,122,58,0.08) 100%);
+    border-top: 1px solid rgba(196,122,58,0.5) !important;
+    border-bottom: 1px solid rgba(196,122,58,0.3);
+  }
+  .v-a .row.goal .min {
+    font-size: 13px;
+    color: var(--led-score-flash);
+    font-weight: 700;
+  }
+  .v-a .goal-wrap {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .v-a .goal-stamp {
+    display: inline-flex; align-items: center; gap: 6px;
+    align-self: flex-start;
+  }
+  .v-a .goal-label {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: var(--led-score-flash);
+    text-shadow: 0 0 12px rgba(255,153,0,0.4);
+  }
+  .v-a .goal-score {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--led-time);
+    background: rgba(0,0,0,0.4);
+    padding: 1px 6px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+  }
+  .v-a .goal-text {
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.45;
+    font-weight: 500;
+  }
+  .v-a .goal-scorer {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--led-score-flash);
+    font-weight: 700;
+  }
+
+  /* Team-sida: home = vänster stripe, away = höger stripe */
+  .v-a .row.team-home::after,
+  .v-a .row.team-away::after {
+    content: ""; position: absolute;
+    top: 4px; bottom: 4px;
+    width: 2px;
+  }
+  .v-a .row.team-home::after { left: 0; background: var(--home); }
+  .v-a .row.team-away::after { right: 0; background: var(--away); }
+  .v-a .row.team-away { grid-template-columns: 1fr 44px; text-align: right; }
+  .v-a .row.team-away .min { order: 2; text-align: left; }
+
+  /* Susp */
+  .v-a .row.susp .txt {
+    color: #E89585;
+  }
+  .v-a .row.susp .susp-tag {
+    display: inline-block;
+    background: var(--danger); color: #fff;
+    font-family: var(--font-mono);
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 1px 4px;
+    border-radius: 1px;
+    margin-right: 6px;
+    vertical-align: 1px;
+  }
+
+  /* Hörna */
+  .v-a .row.corner .corner-tag {
+    font-family: var(--font-mono);
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0 3px;
+    margin-right: 6px;
+    vertical-align: 1px;
+    border-radius: 1px;
+  }
+  .v-a .row.corner .txt { color: var(--text-light); }
+
+  /* Räddning */
+  .v-a .row.save .save-tag {
+    font-family: var(--font-mono);
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--led-time);
+    margin-right: 6px;
+    vertical-align: 1px;
+  }
+  .v-a .row.save .txt { color: var(--text-light); }
+
+  /* Sub */
+  .v-a .row.sub .sub-arrow {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px; font-weight: 700;
+    color: var(--accent);
+    margin-right: 6px;
+  }
+
+  /* Atmosphere — viska */
+  .v-a .row.atmos {
+    padding: 3px 12px 3px 56px;
+  }
+  .v-a .row.atmos .min { display: none; }
+  .v-a .row.atmos::before {
+    content: "♪";
+    position: absolute;
+    left: 32px; top: 3px;
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: #7EB3D4;
+    opacity: 0.5;
+  }
+  .v-a .row.atmos .txt {
+    grid-column: 1 / -1;
+    font-style: italic;
+    color: #8FA8B8;
+    font-size: 12px;
+    opacity: 0.82;
+  }
+
+  /* Tactical */
+  .v-a .row.tactical {
+    padding: 4px 12px 4px 56px;
+  }
+  .v-a .row.tactical::before {
+    content: "◇";
+    position: absolute;
+    left: 34px; top: 4px;
+    font-size: 10px;
+    color: #8FA8B8;
+    opacity: 0.6;
+  }
+  .v-a .row.tactical .txt {
+    color: #A8B8C4;
+    font-size: 12px;
+  }
+
+  /* ════════════════════════════════════════════
+     VARIANT B — RYTMEN
+     Höjd + intensitet per event. Pulsmätare.
+     ════════════════════════════════════════════ */
+  .v-b .feed {
+    background: var(--bg-dark);
+    margin: 8px 12px 0;
+    padding: 0;
+    position: relative;
+  }
+  .v-b .feed::before {
+    content: ""; position: absolute;
+    left: 56px; top: 0; bottom: 0;
+    width: 1px;
+    background: repeating-linear-gradient(180deg,
+      rgba(196,122,58,0.25) 0px,
+      rgba(196,122,58,0.25) 3px,
+      transparent 3px,
+      transparent 6px);
+  }
+  .v-b .row {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    padding: 5px 12px 5px 0;
+    align-items: flex-start;
+    position: relative;
+  }
+  .v-b .min {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-light-muted);
+    text-align: right;
+    padding-right: 10px;
+    padding-top: 2px;
+    font-weight: 500;
+    position: relative;
+  }
+  .v-b .min::after {
+    content: ""; position: absolute;
+    right: -5px; top: 8px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--text-light-muted);
+    border: 2px solid var(--bg-dark);
+  }
+  .v-b .txt {
+    font-size: 13px;
+    color: var(--text-light-secondary);
+    line-height: 1.45;
+    padding-left: 12px;
+  }
+
+  .v-b .row.now .min { color: var(--led-time); font-weight: 700; font-size: 12px; }
+  .v-b .row.now .min::after {
+    background: var(--led-time); width: 9px; height: 9px; right: -6px;
+    box-shadow: 0 0 6px rgba(204,255,0,0.6);
+  }
+
+  /* Mål — stor stämpel med puls */
+  .v-b .row.goal {
+    padding: 14px 12px 14px 0;
+  }
+  .v-b .row.goal .min {
+    color: var(--led-score-flash);
+    font-weight: 700;
+    font-size: 14px;
+    padding-top: 10px;
+  }
+  .v-b .row.goal .min::after {
+    background: var(--led-score-flash);
+    width: 13px; height: 13px;
+    right: -8px; top: 12px;
+    box-shadow: 0 0 16px rgba(255,153,0,0.6);
+    border-width: 3px;
+  }
+  .v-b .goal-card {
+    margin-left: 12px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, rgba(196,122,58,0.22), rgba(196,122,58,0.08));
+    border-left: 3px solid var(--led-score-flash);
+    border-radius: 2px;
+  }
+  .v-b .row.team-away .goal-card {
+    border-left: none;
+    border-right: 3px solid var(--led-score-flash);
+    background: linear-gradient(225deg, rgba(107,127,142,0.25), rgba(107,127,142,0.08));
+  }
+  .v-b .goal-head {
+    display: flex; align-items: baseline; gap: 8px;
+    margin-bottom: 4px;
+  }
+  .v-b .goal-label {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 17px;
+    letter-spacing: 3px;
+    color: var(--led-score-flash);
+    text-shadow: 0 0 10px rgba(255,153,0,0.3);
+  }
+  .v-b .goal-score {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--led-time);
+    background: rgba(0,0,0,0.5);
+    padding: 2px 7px;
+    border-radius: 2px;
+    letter-spacing: 1.5px;
+  }
+  .v-b .goal-text {
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.45;
+  }
+  .v-b .goal-scorer {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--led-score-flash);
+    font-weight: 700;
+  }
+
+  /* Susp — röd puls */
+  .v-b .row.susp .min::after { background: var(--danger); width: 10px; height: 10px; right: -6.5px; }
+  .v-b .row.susp .txt {
+    padding: 4px 12px 4px 24px;
+    background: rgba(176,80,64,0.12);
+    border-left: 2px solid var(--danger);
+    border-radius: 2px;
+    margin-left: 12px;
+    color: #E8B5AB;
+    padding-left: 10px;
+  }
+  .v-b .row.susp .susp-tag {
+    display: inline-block;
+    background: var(--danger); color: #fff;
+    font-family: var(--font-mono);
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 1px 5px;
+    border-radius: 1px;
+    margin-right: 6px;
+  }
+
+  /* Hörna */
+  .v-b .row.corner .min::after { background: var(--accent); }
+  .v-b .row.corner .corner-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 1px 4px;
+    margin-right: 6px;
+    border-radius: 1px;
+    vertical-align: 1px;
+  }
+  .v-b .row.corner .txt { color: var(--text-light); }
+
+  /* Räddning */
+  .v-b .row.save .min::after { background: var(--success); }
+  .v-b .row.save .save-tag {
+    font-family: var(--font-mono);
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--success);
+    margin-right: 6px;
+  }
+  .v-b .row.save .txt { color: var(--text-light); }
+
+  /* Sub */
+  .v-b .row.sub .min::after {
+    background: none;
+    border-color: var(--accent);
+    width: 8px; height: 8px; right: -5.5px;
+  }
+  .v-b .row.sub .sub-arrow {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    margin-right: 6px;
+    font-weight: 700;
+  }
+
+  /* Atmosphere — puls bara, text lätt */
+  .v-b .row.atmos {
+    padding: 2px 12px 2px 0;
+  }
+  .v-b .row.atmos .min {
+    font-size: 0;
+  }
+  .v-b .row.atmos .min::after {
+    width: 4px; height: 4px; right: -3px; top: 6px;
+    background: rgba(126,179,212,0.5); border-width: 1px;
+  }
+  .v-b .row.atmos .txt {
+    font-style: italic;
+    color: #8FA8B8;
+    font-size: 11px;
+    opacity: 0.75;
+  }
+
+  /* Tactical */
+  .v-b .row.tactical {
+    padding: 3px 12px 3px 0;
+  }
+  .v-b .row.tactical .min {
+    font-size: 0;
+  }
+  .v-b .row.tactical .min::after {
+    width: 6px; height: 6px; right: -4px; top: 5px;
+    background: #6B7F8E;
+    border-width: 2px;
+  }
+  .v-b .row.tactical .txt {
+    color: #A8B8C4;
+    font-size: 12px;
+    font-style: italic;
+  }
+
+  /* Normal */
+  .v-b .row.normal .txt { color: var(--text-light-secondary); }
+
+  /* ════════════════════════════════════════════
+     VARIANT C — TIDSLINJEN
+     Vertikal timeline med stämplade pärlor. Mest radikal.
+     ════════════════════════════════════════════ */
+  .v-c .feed {
+    background: radial-gradient(ellipse at top, #1a1814 0%, var(--bg-dark) 70%);
+    margin: 8px 12px 0;
+    padding: 8px 0;
+    position: relative;
+    border-radius: 2px;
+  }
+  .v-c .feed::before {
+    content: ""; position: absolute;
+    left: 50%; top: 12px; bottom: 12px;
+    width: 2px;
+    background: linear-gradient(180deg,
+      rgba(196,122,58,0.4) 0%,
+      rgba(196,122,58,0.15) 100%);
+    transform: translateX(-1px);
+  }
+  .v-c .row {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    padding: 8px 12px;
+    align-items: center;
+    position: relative;
+  }
+  .v-c .bead {
+    grid-column: 2;
+    justify-self: center;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--bg-dark-surface);
+    border: 2px solid var(--border-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-light-secondary);
+    z-index: 1;
+    letter-spacing: -0.5px;
+    position: relative;
+  }
+
+  .v-c .side {
+    font-size: 12px;
+    color: var(--text-light-secondary);
+    line-height: 1.4;
+  }
+  .v-c .side.home { grid-column: 1; text-align: right; padding-right: 8px; }
+  .v-c .side.away { grid-column: 3; text-align: left; padding-left: 8px; }
+  .v-c .row .side:not(.home):not(.away) { display: none; }
+
+  .v-c .row.center .side.center {
+    display: block;
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #8FA8B8;
+    font-size: 11px;
+    font-style: italic;
+    padding: 0 40px;
+    position: relative;
+    z-index: 0;
+  }
+  .v-c .row.center .bead { display: none; }
+  .v-c .row.center {
+    padding: 3px 12px;
+    background: rgba(0,0,0,0.3);
+  }
+
+  /* Mål - stor pärla */
+  .v-c .row.goal .bead {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, var(--led-score-flash) 0%, var(--accent-dark) 100%);
+    border-color: var(--led-score-flash);
+    box-shadow: 0 0 20px rgba(255,153,0,0.5), inset 0 1px 3px rgba(255,255,255,0.3);
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 900;
+    color: #1f1d19;
+    letter-spacing: 1px;
+  }
+  .v-c .row.goal { padding: 14px 12px; }
+  .v-c .row.goal .side.home,
+  .v-c .row.goal .side.away {
+    font-size: 13px;
+    color: var(--text-light);
+  }
+  .v-c .goal-score {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--led-time);
+    background: rgba(0,0,0,0.6);
+    padding: 2px 7px;
+    border-radius: 2px;
+    letter-spacing: 1.5px;
+    margin: 0 0 4px;
+  }
+  .v-c .goal-scorer {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--led-score-flash);
+    font-weight: 700;
+    font-size: 14px;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .v-c .row.now .bead {
+    animation: beadpulse 1.4s ease-in-out infinite;
+  }
+  @keyframes beadpulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(255,153,0,0.5), inset 0 1px 3px rgba(255,255,255,0.3); }
+    50%      { box-shadow: 0 0 32px rgba(255,153,0,0.9), inset 0 1px 3px rgba(255,255,255,0.3); }
+  }
+
+  /* Home-sidan har brons-accent på mål, away har stål-accent */
+  .v-c .row.goal.team-home .bead {
+    border-color: var(--home);
+  }
+  .v-c .row.goal.team-away .bead {
+    border-color: var(--away);
+    background: linear-gradient(135deg, var(--led-score-flash) 0%, var(--away) 100%);
+  }
+
+  /* Susp - röd pärla */
+  .v-c .row.susp .bead {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+  }
+  .v-c .row.susp .side.home,
+  .v-c .row.susp .side.away { color: #E8B5AB; }
+  .v-c .row.susp .side b { color: #fff; }
+
+  /* Hörna */
+  .v-c .row.corner .bead {
+    background: transparent;
+    border-color: var(--accent);
+    border-style: dashed;
+    color: var(--accent);
+  }
+  .v-c .row.corner .side { color: var(--text-light); }
+
+  /* Räddning */
+  .v-c .row.save .bead {
+    background: var(--bg-dark-surface);
+    border-color: var(--success);
+    color: var(--success);
+  }
+  .v-c .row.save .side { color: var(--text-light); }
+
+  /* Sub */
+  .v-c .row.sub .bead {
+    background: var(--bg-dark);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .v-c .row.sub .side { color: var(--accent); font-size: 11px; }
+
+  /* Lag-kolonn-markering — tunna home/away kanter */
+  .v-c .col-marker-home,
+  .v-c .col-marker-away {
+    position: absolute; top: 0; bottom: 0;
+    width: 3px;
+  }
+  .v-c .col-marker-home { left: 0; background: var(--home); opacity: 0.5; }
+  .v-c .col-marker-away { right: 0; background: var(--away); opacity: 0.5; }
+
+  /* ════════════════════════════════════════════
+     Slut-state (FT) — variant-gemensamt
+     ════════════════════════════════════════════ */
+  .ft-divider {
+    margin: 12px 12px 8px;
+    padding: 8px 14px;
+    background: var(--bg-dark-elevated);
+    border-left: 3px solid var(--accent);
+    position: relative;
+  }
+  .ft-divider .ft-label {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .ft-divider .ft-text {
+    font-size: 12px;
+    color: var(--text-light);
+    line-height: 1.5;
+  }
+  .ft-divider .ft-sub {
+    font-size: 11px;
+    color: var(--text-light-secondary);
+    font-style: italic;
+    margin-top: 4px;
+  }
+  .ft-cta {
+    margin: 4px 12px 12px;
+    padding: 12px;
+    background: var(--accent);
+    color: #1f1d19;
+    border: none;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    width: calc(100% - 24px);
+    border-radius: 2px;
+    display: block;
+    transition: background 0.15s;
+  }
+  .ft-cta:hover { background: var(--accent-dark); color: var(--text-light); }
+
+  /* På FT ska feeden kännas mer arkiverad — mindre liv */
+  .ft-mode .row.now::before { display: none; }
+  .ft-mode .row.now .min { color: var(--text-light-secondary); font-weight: 600; }
+  .ft-mode .sb-score.flash { animation: none; color: var(--led-score-flash); text-shadow: 0 0 8px rgba(255,153,0,0.3); }
+  .ft-mode .v-b .row.goal .min::after { animation: none; }
+  .ft-mode .v-c .row.goal .bead { animation: none; }
+
+  /* Label strip above each mockup */
+  .state-label {
+    padding: 6px 12px;
+    background: #1f1d19;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-align: center;
+    border-top: 1px dashed rgba(196,122,58,0.3);
+  }
+  .state-label.live { color: var(--led-time); }
+
+  /* Notes area */
+  .notes {
+    max-width: 1400px; margin: 40px auto 0;
+    color: var(--text-light-secondary);
+    font-size: 12px; line-height: 1.7;
+    padding: 20px;
+    background: rgba(196,122,58,0.08);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+  }
+  .notes h3 {
+    font-family: var(--font-display);
+    color: var(--accent);
+    font-size: 15px;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+  .notes p + p { margin-top: 8px; }
+  .notes ul { margin: 8px 0 8px 20px; }
+  .notes li { margin-bottom: 4px; }
+  .notes code {
+    background: rgba(0,0,0,0.3);
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-light);
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Commentary feed · redesign</h1>
+  <p>Tre riktningar att jämföra, alla med samma event-data (mål, räddning, utvisning, hörna, taktisk, atmosphere, sub, derby). Scoreboarden ovanför är kopierad 1:1 från <code>screens-reference.html</code>. Varje kolumn visar både <strong>live-state</strong> (74', flash i scoreboard) och <strong>slut-state</strong> (FT, lugn arkiverings-känsla).</p>
+  <p>Emoji är delvis borttagna — ersatta med <em>typografiska</em> markörer (stämplar, färgpärlor, marginal-symboler) som håller samma informationsriktning men passar läder/pappers-estetiken bättre. Endast där det funkar och ersätter något levande, annars står emoji kvar.</p>
+</div>
+
+<div class="grid">
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       A · PROTOKOLLET
+       ══════════════════════════════════════════════════════════════════ -->
+  <div class="col v-a">
+    <div class="col-head">
+      <span class="tag">A</span> Protokollet
+      <span class="sub">Matchrapport-estetik. Minute = högerställd mono-stämpel. Mål-raden är en egen typografisk stämpel med serif-header. Home/away = 2 px färgstripe i ytterkant.</span>
+    </div>
+
+    <div class="state-label live">● LIVE · 74′</div>
+    <div class="match-bg">
+      <!-- Scoreboard - live -->
+      <div class="scoreboard">
+        <div class="scoreboard-row">
+          <div class="scoreboard-team">
+            <p class="sb-team-label">FOR <span class="hg">H</span></p>
+            <span class="sb-score">3</span>
+          </div>
+          <div class="sb-zone">
+            <span class="sb-dash">–</span>
+            <span class="sb-time">74'</span>
+            <span class="sb-sub">2:a HL</span>
+          </div>
+          <div class="scoreboard-team">
+            <p class="sb-team-label"><span class="hg">G</span> VÄS</p>
+            <span class="sb-score flash">2</span>
+          </div>
+        </div>
+        <span class="sb-arena">STÅLVALLEN · -7°</span>
+      </div>
+
+      <div class="feed">
+        <!-- Mål (home, nyss) -->
+        <div class="row goal team-home now">
+          <span class="min">74′</span>
+          <div class="goal-wrap">
+            <div class="goal-stamp">
+              <span class="goal-label">MÅL</span>
+              <span class="goal-score">FOR 3–2 VÄS</span>
+            </div>
+            <p class="goal-text"><span class="goal-scorer">Kronberg</span> snurrar runt backen och sätter 3–2! Publiken kokar!</p>
+          </div>
+        </div>
+
+        <!-- Atmosphere -->
+        <div class="row atmos">
+          <p class="txt">Birgers trumma ekar över isen. 340 röster i klacken.</p>
+        </div>
+
+        <!-- Räddning -->
+        <div class="row save">
+          <span class="min">72′</span>
+          <p class="txt"><span class="save-tag">RÄDDN.</span>Andersson fångar tajt skott från halvdistans.</p>
+        </div>
+
+        <!-- Susp (away) -->
+        <div class="row susp team-away">
+          <span class="min">70′</span>
+          <p class="txt"><span class="susp-tag">UTV 10′</span>#7 Nilsson — slashing mot Holm.</p>
+        </div>
+
+        <!-- Hörna -->
+        <div class="row corner team-home">
+          <span class="min">68′</span>
+          <p class="txt"><span class="corner-tag">HÖRNA</span>Till Forsbacka. Kronberg bakom flaggan.</p>
+        </div>
+
+        <!-- Tactical -->
+        <div class="row tactical">
+          <p class="txt">Västanfors sänker tempot. De nöjer sig med oavgjort just nu.</p>
+        </div>
+
+        <!-- Sub -->
+        <div class="row sub team-home">
+          <span class="min">64′</span>
+          <p class="txt"><span class="sub-arrow">▲▼</span>Lindberg <strong>IN</strong> för Persson.</p>
+        </div>
+
+        <!-- Atmosphere -->
+        <div class="row atmos">
+          <p class="txt">Derbyt är spänt. Domaren håller varningsfinger uppe.</p>
+        </div>
+
+        <!-- Normal -->
+        <div class="row">
+          <span class="min">60′</span>
+          <p class="txt">Forsbacka har övertaget i innehavet andra halvlek.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="state-label">■ FT · MATCHEN AVSLUTAD</div>
+    <div class="match-bg ft-mode">
+      <div class="scoreboard">
+        <div class="scoreboard-row">
+          <div class="scoreboard-team">
+            <p class="sb-team-label">FOR <span class="hg">H</span></p>
+            <span class="sb-score">4</span>
+          </div>
+          <div class="sb-zone">
+            <span class="sb-dash">–</span>
+            <span class="sb-time">FT</span>
+            <span class="sb-sub">slut</span>
+          </div>
+          <div class="scoreboard-team">
+            <p class="sb-team-label"><span class="hg">G</span> VÄS</p>
+            <span class="sb-score">2</span>
+          </div>
+        </div>
+        <span class="sb-arena">STÅLVALLEN</span>
+      </div>
+
+      <div class="ft-divider">
+        <p class="ft-label">DOMAREN BLÅSER AV</p>
+        <p class="ft-text">Forsbacka vinner derbyt. Kontrollerad seger 4–2.</p>
+        <p class="ft-sub">Kronberg svarade för två mål. Klacken sjöng hela andra halvlek.</p>
+      </div>
+      <button class="ft-cta">Se sammanfattning →</button>
+
+      <div class="feed">
+        <div class="row goal team-home">
+          <span class="min">87′</span>
+          <div class="goal-wrap">
+            <div class="goal-stamp">
+              <span class="goal-label">MÅL</span>
+              <span class="goal-score">FOR 4–2 VÄS</span>
+            </div>
+            <p class="goal-text"><span class="goal-scorer">Kronberg</span> säkrar segern på kontring! 4–2!</p>
+          </div>
+        </div>
+        <div class="row atmos">
+          <p class="txt">Klacken skanderar kaptenens namn.</p>
+        </div>
+        <div class="row">
+          <span class="min">80′</span>
+          <p class="txt">Spelet bryts gång på gång. Tät slutfas.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       B · RYTMEN
+       ══════════════════════════════════════════════════════════════════ -->
+  <div class="col v-b">
+    <div class="col-head">
+      <span class="tag">B</span> Rytmen
+      <span class="sub">Pulsmätare. Händelserna har egen höjd efter vikt — mål är stora kort med puls, atmosphere är bara en tunn prick i marginalen. Tidslinjens perforering till vänster är en streckad linje genom minutkolumnen.</span>
+    </div>
+
+    <div class="state-label live">● LIVE · 74′</div>
+    <div class="match-bg">
+      <div class="scoreboard">
+        <div class="scoreboard-row">
+          <div class="scoreboard-team">
+            <p class="sb-team-label">FOR <span class="hg">H</span></p>
+            <span class="sb-score">3</span>
+          </div>
+          <div class="sb-zone">
+            <span class="sb-dash">–</span>
+            <span class="sb-time">74'</span>
+            <span class="sb-sub">2:a HL</span>
+          </div>
+          <div class="scoreboard-team">
+            <p class="sb-team-label"><span class="hg">G</span> VÄS</p>
+            <span class="sb-score flash">2</span>
+          </div>
+        </div>
+        <span class="sb-arena">STÅLVALLEN · -7°</span>
+      </div>
+
+      <div class="feed">
+        <!-- Mål -->
+        <div class="row goal team-home now">
+          <span class="min">74′</span>
+          <div class="goal-card">
+            <div class="goal-head">
+              <span class="goal-label">MÅL</span>
+              <span class="goal-score">FOR 3–2 VÄS</span>
+            </div>
+            <p class="goal-text"><span class="goal-scorer">Kronberg</span> snurrar runt backen och sätter 3–2! Publiken kokar!</p>
+          </div>
+        </div>
+
+        <div class="row atmos">
+          <span class="min">74′</span>
+          <p class="txt">📣 Birgers trumma ekar över isen. 340 röster i klacken.</p>
+        </div>
+
+        <div class="row save">
+          <span class="min">72′</span>
+          <p class="txt"><span class="save-tag">RÄDDN.</span>Andersson fångar tajt skott från halvdistans.</p>
+        </div>
+
+        <div class="row susp">
+          <span class="min">70′</span>
+          <p class="txt"><span class="susp-tag">UTV 10′</span>#7 Nilsson (Väs) — slashing mot Holm.</p>
+        </div>
+
+        <div class="row corner">
+          <span class="min">68′</span>
+          <p class="txt"><span class="corner-tag">HÖRNA</span>Till Forsbacka. Kronberg bakom flaggan.</p>
+        </div>
+
+        <div class="row tactical">
+          <span class="min">66′</span>
+          <p class="txt">Västanfors sänker tempot. De nöjer sig med oavgjort just nu.</p>
+        </div>
+
+        <div class="row sub">
+          <span class="min">64′</span>
+          <p class="txt"><span class="sub-arrow">▲▼</span>Lindberg <strong>IN</strong> för Persson.</p>
+        </div>
+
+        <div class="row atmos">
+          <span class="min">62′</span>
+          <p class="txt">📣 Derbyt är spänt. Domaren håller varningsfinger uppe.</p>
+        </div>
+
+        <div class="row normal">
+          <span class="min">60′</span>
+          <p class="txt">Forsbacka har övertaget i innehavet andra halvlek.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="state-label">■ FT · MATCHEN AVSLUTAD</div>
+    <div class="match-bg ft-mode">
+      <div class="scoreboard">
+        <div class="scoreboard-row">
+          <div class="scoreboard-team">
+            <p class="sb-team-label">FOR <span class="hg">H</span></p>
+            <span class="sb-score">4</span>
+          </div>
+          <div class="sb-zone">
+            <span class="sb-dash">–</span>
+            <span class="sb-time">FT</span>
+            <span class="sb-sub">slut</span>
+          </div>
+          <div class="scoreboard-team">
+            <p class="sb-team-label"><span class="hg">G</span> VÄS</p>
+            <span class="sb-score">2</span>
+          </div>
+        </div>
+        <span class="sb-arena">STÅLVALLEN</span>
+      </div>
+
+      <div class="ft-divider">
+        <p class="ft-label">DOMAREN BLÅSER AV</p>
+        <p class="ft-text">Forsbacka vinner derbyt. Kontrollerad seger 4–2.</p>
+        <p class="ft-sub">Kronberg svarade för två mål. Klacken sjöng hela andra halvlek.</p>
+      </div>
+      <button class="ft-cta">Se sammanfattning →</button>
+
+      <div class="feed">
+        <div class="row goal team-home">
+          <span class="min">87′</span>
+          <div class="goal-card">
+            <div class="goal-head">
+              <span class="goal-label">MÅL</span>
+              <span class="goal-score">FOR 4–2 VÄS</span>
+            </div>
+            <p class="goal-text"><span class="goal-scorer">Kronberg</span> säkrar segern på kontring! 4–2!</p>
+          </div>
+        </div>
+        <div class="row atmos">
+          <span class="min">86′</span>
+          <p class="txt">📣 Klacken skanderar kaptenens namn.</p>
+        </div>
+        <div class="row normal">
+          <span class="min">80′</span>
+          <p class="txt">Spelet bryts gång på gång. Tät slutfas.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       C · TIDSLINJEN
+       ══════════════════════════════════════════════════════════════════ -->
+  <div class="col v-c">
+    <div class="col-head">
+      <span class="tag">C</span> Tidslinjen
+      <span class="sub">Vertikal tidslinje med stämplade pärlor i mitten. Home-händelser stannar till vänster, away till höger. Taktik/atmosfär går hela vägen över. Mest diagram-lik, kräver mest vertikal plats.</span>
+    </div>
+
+    <div class="state-label live">● LIVE · 74′</div>
+    <div class="match-bg">
+      <div class="scoreboard">
+        <div class="scoreboard-row">
+          <div class="scoreboard-team">
+            <p class="sb-team-label">FOR <span class="hg">H</span></p>
+            <span class="sb-score">3</span>
+          </div>
+          <div class="sb-zone">
+            <span class="sb-dash">–</span>
+            <span class="sb-time">74'</span>
+            <span class="sb-sub">2:a HL</span>
+          </div>
+          <div class="scoreboard-team">
+            <p class="sb-team-label"><span class="hg">G</span> VÄS</p>
+            <span class="sb-score flash">2</span>
+          </div>
+        </div>
+        <span class="sb-arena">STÅLVALLEN · -7°</span>
+      </div>
+
+      <div class="feed">
+        <div class="col-marker-home"></div>
+        <div class="col-marker-away"></div>
+
+        <!-- Mål home (nu) -->
+        <div class="row goal team-home now">
+          <div class="side home">
+            <span class="goal-score">FOR 3–2 VÄS</span>
+            <span class="goal-scorer">Kronberg</span>
+            snurrar runt backen. Publiken kokar!
+          </div>
+          <div class="bead">74′</div>
+        </div>
+
+        <!-- Atmosphere center -->
+        <div class="row center">
+          <p class="side center">Birgers trumma ekar över isen. 340 röster i klacken.</p>
+        </div>
+
+        <!-- Räddning home -->
+        <div class="row save team-home">
+          <div class="side home">Andersson fångar tajt skott.</div>
+          <div class="bead">72′</div>
+        </div>
+
+        <!-- Susp away -->
+        <div class="row susp team-away">
+          <div class="bead">70′</div>
+          <div class="side away"><b>UTV 10′</b> — #7 Nilsson, slashing mot Holm.</div>
+        </div>
+
+        <!-- Hörna home -->
+        <div class="row corner team-home">
+          <div class="side home">Hörna till Forsbacka. Kronberg bakom flaggan.</div>
+          <div class="bead">68′</div>
+        </div>
+
+        <!-- Tactical center -->
+        <div class="row center">
+          <p class="side center">Västanfors sänker tempot — nöjer sig med oavgjort.</p>
+        </div>
+
+        <!-- Sub home -->
+        <div class="row sub team-home">
+          <div class="side home">Lindberg <strong>IN</strong> för Persson</div>
+          <div class="bead">▲▼</div>
+        </div>
+
+        <!-- Atmosphere -->
+        <div class="row center">
+          <p class="side center">Derbyt är spänt. Domaren håller varningsfinger uppe.</p>
+        </div>
+
+        <!-- Normal home -->
+        <div class="row team-home">
+          <div class="side home">Forsbacka har övertaget i innehavet.</div>
+          <div class="bead" style="border-color: rgba(196,122,58,0.3); color: var(--text-light-muted);">60′</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="state-label">■ FT · MATCHEN AVSLUTAD</div>
+    <div class="match-bg ft-mode">
+      <div class="scoreboard">
+        <div class="scoreboard-row">
+          <div class="scoreboard-team">
+            <p class="sb-team-label">FOR <span class="hg">H</span></p>
+            <span class="sb-score">4</span>
+          </div>
+          <div class="sb-zone">
+            <span class="sb-dash">–</span>
+            <span class="sb-time">FT</span>
+            <span class="sb-sub">slut</span>
+          </div>
+          <div class="scoreboard-team">
+            <p class="sb-team-label"><span class="hg">G</span> VÄS</p>
+            <span class="sb-score">2</span>
+          </div>
+        </div>
+        <span class="sb-arena">STÅLVALLEN</span>
+      </div>
+
+      <div class="ft-divider">
+        <p class="ft-label">DOMAREN BLÅSER AV</p>
+        <p class="ft-text">Forsbacka vinner derbyt. Kontrollerad seger 4–2.</p>
+        <p class="ft-sub">Kronberg svarade för två mål. Klacken sjöng hela andra halvlek.</p>
+      </div>
+      <button class="ft-cta">Se sammanfattning →</button>
+
+      <div class="feed">
+        <div class="col-marker-home"></div>
+        <div class="col-marker-away"></div>
+        <div class="row goal team-home">
+          <div class="side home">
+            <span class="goal-score">FOR 4–2 VÄS</span>
+            <span class="goal-scorer">Kronberg</span>
+            säkrar segern på kontring!
+          </div>
+          <div class="bead">87′</div>
+        </div>
+        <div class="row center">
+          <p class="side center">Klacken skanderar kaptenens namn.</p>
+        </div>
+        <div class="row team-home">
+          <div class="side home">Spelet bryts gång på gång. Tät slutfas.</div>
+          <div class="bead" style="border-color: rgba(196,122,58,0.3); color: var(--text-light-muted);">80′</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Vad jag faktiskt ändrade — och varför</h3>
+  <p><strong>Emoji-salladen:</strong> kvar i <em>atmosphere</em>-rader (📣) eftersom de är diegesiska — det är klackens röst, inte systemikoner. Också kvar som default i B. I A och C har de bytts mot typografiska markörer (♪ ◇) som viskar samma sak. Event-emoji (🏒 🧤 🟥) är ersatta av <strong>kodade stämplar</strong> (MÅL-header, RÄDDN., UTV 10′, HÖRNA) — samma signalvärde, bättre läder-stil.</p>
+  <p><strong>"Nu"-minuten:</strong> i alla tre varianter är 74′ (eller vilken minut som är live) tydligt markerad. A = LED-grön vertikal bar till vänster. B = pulserande orange pärla i tidslinjen. C = animerad pulsande stor orange pärla. Flashen i scoreboard hänger ihop visuellt.</p>
+  <p><strong>Home/away:</strong></p>
+  <ul>
+    <li>A — 2 px färgstripe i ytterkant (brons = hemma vänster, stål = borta höger). Mål-rader får spegel-vänd layout för borta.</li>
+    <li>B — home/away syns i gradient-kortet för mål (vänster-border brons, höger-border stål). Övriga rader ärver via kontext.</li>
+    <li>C — hela layouten är uppdelad i två kolumner med vertikala färgkanter. Ingen tvekan vilket lag som gör vad.</li>
+  </ul>
+  <p><strong>Mål-dunk:</strong></p>
+  <ul>
+    <li>A — serif "MÅL" + score-stämpel + scorer-kursiv = protokoll-typografi, text-shadow i flash-orange</li>
+    <li>B — hel gradient-kort med puls-pärla i tidslinjen, stor stämplad header</li>
+    <li>C — fet cirkulär pärla (42 px vs 28 px för övriga), animerad puls, scorer som serif-italic</li>
+  </ul>
+  <p><strong>FT-state:</strong> scoreboard slutar flasha, puls-animationer stannar. FT-divider är en egen stämplad komponent ("DOMAREN BLÅSER AV" i serif) som bryter feeden. CTA är stor kopparknapp i serif, inte smal länk. Feedens äldsta rader ser samma ut — men "nu"-markören försvinner eftersom det inte finns något nu.</p>
+  <p><strong>Vad jag inte ändrat:</strong> data, texter, event-typer, ordning. Allt ur <code>screens-reference.html</code> 1:1. Scoreboard är kopierad exakt (samma CSS-variabler, samma mått). Matchshellens mörka bakgrund består.</p>
+</div>
+
+</body>
+</html>

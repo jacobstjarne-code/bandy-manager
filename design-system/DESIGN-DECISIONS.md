@@ -60,6 +60,45 @@ Hur Code arbetar mot detta: se `HANDOFF.md` § "Enda designsystemet är detta pr
 
 ---
 
+### Stripes och klammer — genomgående visuellt språk
+**Var:** `docs/mockups/2026-05-05_stripes_alternativ.html` (mock 1) · `docs/mockups/2026-05-06_stripes_alternativ_2.html` (mock 2)
+**Beslut:** Vänster-border-stripes och full-border-klammer är del av Bandy Managers visuella språk. De används genomgående för att markera relation, state, hierarki, innehållstyp och säsongs-temperament. Mock 1 + 2 utforskade alternativ utan stripes — Jacob valde 2026-05-06 att behålla dem genomgående.
+
+**Användningsmönster:**
+
+| Syfte | Var | Token | Mock |
+|---|---|---|---|
+| Severity-relation (kall/varm) | JournalistSecondary, SeasonSignatureSecondary cold/injury | `--cold` / `--warm` 2 px + relationsbar-fyll | `colors-severity.html` |
+| Säsongssignatur (övriga) | SeasonSignatureSecondary calm/scandal/transfer/dream | `--accent` / `--danger` / `--gold` / `--accent-glow` 2 px | mock 2 D |
+| Klickbarhet (secondary cards utan chevron) | KlackenSecondary, CoffeeRoomSecondary, OfferCard, SituationCard, ClubExpandedCard | `--accent` 2 px + `.card-tap`-hover | mock 1 C |
+| Innehållstyp — danger/skada | PlayerCard skadeblock, RoundSummary skade-alert | `--danger` 3 px | mock 1 D |
+| Innehållstyp — atmosfäriskt block | SeasonSummary signatur-rubric, narrativ summary, VictoryQuote (om återinförd) | `--accent` 3 px | mock 2 E/F |
+| State — oläst/scoutad/relevant/derby | InboxScreen, TabellScreen, RoundSummary relevant rad, GranskaForlop derbyrad, TransferPlayerCard, ActiveBidsList | `--accent` / `--danger` / zonbaserad | mock 1 A/B + mock 2 övrigt |
+| Match-interaktion utfall | Counter/FreeKickInteraction outcome-box | `--accent` 3 px (mål) / `--bg-dark-elevated` 3 px (miss) | mock 2 A |
+| Hierarki — stor händelse | ClubMemoryEventRow isBig | `--accent` 2 px | mock 2 B |
+| Atmosfärisk inramning | ClubMemoryLegendsBlock, klubblegender | `--accent-dark` 2 px | mock 2 C |
+
+**Klickbarhets-mönster (`.card-tap`):**
+```css
+.card-tap { cursor: pointer; transition: filter 0.15s; }
+.card-tap:hover { filter: brightness(1.08); }
+.card-tap:active { filter: brightness(0.95); }
+```
+Appliceras på alla kort med klickbarhets-stripe där ingen chevron finns. Brightness-baserat hover funkar oavsett kortets bakgrundsfärg — matchar HANDOFF #5 buttons.
+
+**Tinter, dividers och taggar adderas — ersätter inte:**
+Mockernas alternativ-förslag (bakgrunds-tint på oläst, zone-dividers i tabellen, `tag-copper "Scoutad"`-taggar) används som **kompletterande** signaler ovanpå stripes — inte som ersättning. Resultat: rikare visuellt språk.
+
+**Specialfall som fortfarande väntar:**
+- `MatchHeader.tsx:61` — `atmo.borderAccent` dynamiskt värde, kräver kontextläsning av matchatmosfär-beräkningen
+- `CommentaryFeed.tsx` — väntar på Stålvallen B-redesign
+
+**Konsekvens:** DIAGNOS B i `docs/diagnos/2026-05-05_design_krockar.md` lista är till stor del inaktuell — de listade stripes-användningarna är inte krockar. Inventeringen markeras med not.
+
+**Status:** ✅ Beslutat 2026-05-06. Steg 3 (B2-implementation) revideras med revert-instruktion.
+
+---
+
 ### Severity-systemet — vänsterstipe är dokumenterat undantag
 **Var:** `preview/colors-severity.html` · `colors_and_type.css` (--cold, --warm)
 **Beslut:** Severity-paret `--cold` (#4a6680) och `--warm` (#8c6e3a) signalerar relationell tonalitet på journalist-relationskortet (relation 0–100) och säsongssignaturer (cold_winter / injury_curve etc.). Mocken `colors-severity.html` visar mönstret som **2 px vänsterstipe + matchande relationsbar-fyll + uppercase-label i samma färg**.
@@ -206,7 +245,7 @@ Hur Code arbetar mot detta: se `HANDOFF.md` § "Enda designsystemet är detta pr
 - **"Välkommen, herr Patron"-copy** — pastisch.
 - **Fejkad Westerstrand-tillverkare-etikett** ("Westerstrand · 1974" på scoreboarden) — museum, inte produkt.
 - **Skruvar och fysiska detaljer på scoreboard** — översättning, inte rendering.
-- **AI-slop-tropes** — gradient-bakgrunder, vänster-border-accent-cards, generic emoji.
+- **AI-slop-tropes** — gradient-bakgrunder på stora ytor, generic emoji.
 - **"Polerad" Stålvallen v2** — för UI-mässig, tappade LED-känslan. Den pixliga varianten är vald.
 
 ---
@@ -220,4 +259,4 @@ Hur Code arbetar mot detta: se `HANDOFF.md` § "Enda designsystemet är detta pr
 
 ---
 
-*Senast uppdaterad: 2026-05-05 — severity-systemet förtydligat som dokumenterat undantag från stripes-förbudet*
+*Senast uppdaterad: 2026-05-06 — stripes och klammer omdefinierade som genomgående visuellt språk (Mock 1+2-besluten konsoliderade)*

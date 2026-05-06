@@ -14,7 +14,7 @@ Om tid-API:t inte svarar — fråga Jacob som fallback.
 
 1. **`docs/LESSONS.md`** — återkommande buggmönster. Känn igen innan du fixar. Om en ny bugg matchar ett mönster där, använd lärdomen först.
 2. **`docs/DECISIONS.md`** — arkitekturbeslut. Öppna den vid varje session — nya designprinciper introduceras där före de räknas som etablerade.
-3. **`docs/DESIGN_SYSTEM.md`** — visuell grund.
+3. **`design-system/CODE-OPUS-INSTRUCTION.md`** — auktoritativt designsystem. Läs den först innan UI-arbete. `docs/DESIGN_SYSTEM.md` är arkiverad — använd inte.
 4. **`docs/KVAR.md`** — aktuell karta över aktiva jobb, parkerat och nästa steg.
 5. **Senaste `docs/HANDOVER_YYYY-MM-DD.md`** — dagsläge från föregående session.
 6. **Aktuell sprintfil** i `docs/sprints/`.
@@ -143,13 +143,30 @@ Om en bugg uppträder 2+ gånger, eller om en ny bugg matchar ett mönster som r
 
 ## DESIGN SYSTEM — LÄS FÖRST
 
-**`docs/DESIGN_SYSTEM.md`** — Komplett designsystem. LÄS DENNA INNAN du gör NÅGON visuell ändring. Reglerna är:
-- Tight layout (padding 10px 14px, margin 8px, gap 6-8px)
-- `card-sharp` för alla kort — INTE inline borderRadius
-- Emojis på alla sektionslabels (💰 EKONOMI, 🏒 MATCHEN, etc.)
+**`design-system/CODE-OPUS-INSTRUCTION.md`** är auktoritativ källa för all UI-design. Läs den + `design-system/README.md` + `design-system/DESIGN-DECISIONS.md` INNAN du gör NÅGON visuell ändring.
+
+**`docs/DESIGN_SYSTEM.md` är arkiverad.** Vid konflikt vinner alltid `design-system/`. Använd inte den gamla.
+
+Snabbpekare i `design-system/`:
+- `colors_and_type.css` — alla tokens (färg, type, spacing, radii, shadows, säsongsbakgrunder, scoreboard-LED)
+- `preview/components-*.html` — komponentkanon (buttons, tags, cards, header, cta, bottomnav, nextmatch)
+- `preview/brand-*.html` — logo, ikoner, badges
+- `ui_kits/*/` — färdiga skärm-mockar (bandy-manager-pwa, intro_flode, trupp)
+- `briefs/*-SPEC.md` — implementations-specs (ARRIVAL-SCENE, CHARACTER, CLUB, ICON)
+- `HANDOFF.md` — outstanding to-do per godkänd designändring
+- `SYNC.md` — design ↔ code synk-status
+
+Kärnregler (hela listan i `design-system/README.md`):
+- CSS-variabler ENBART — inga hårdkodade färger i `.tsx`
+- `.card-sharp` (8px) för data, `.card-round` (14px) för narrativ — inga inline borderRadius
+- Sektionslabels: 8px / 600 / +2px letter-spacing / UPPERCASE / emoji-prefix (`💰 EKONOMI`)
+- En `.btn-primary` per skärm, max
+- Inga vänster-border-accent-cards, inga gradient-bakgrunder, inga SaaS-skuggor
+- Inga emoji på status-tags (men ja på sektionslabels och kategori-tags)
+- 🏒 (inte ⚽), "plan" (inte rink), 2 pts/seger, MV/B/YH/MF/A
+- Mobile-first 375–430px, ingen desktoplayout
 - Inga rubriker på BottomNav-skärmar
-- CSS-variabler ENBART — inga hårdkodade färger
-- Events som overlay (zIndex 300) — INTE egna routes
+- Events som overlay (zIndex 300) — inte egna routes
 
 ---
 
@@ -735,7 +752,7 @@ Must return 0 results.
 - `CLAUDE.md` — denna fil, kodregler och arbetsfördelning
 - `docs/LESSONS.md` — 18 återkommande buggmönster
 - `docs/DECISIONS.md` — arkitekturbeslut kronologiskt
-- `docs/DESIGN_SYSTEM.md` — visuellt designsystem (20 sektioner)
+- `design-system/` — auktoritativt designsystem. Ingång: `CODE-OPUS-INSTRUCTION.md`, sedan `README.md` + `DESIGN-DECISIONS.md`. `docs/DESIGN_SYSTEM.md` är arkiverad.
 - `docs/KVAR.md` — aktuell karta
 - `docs/STATUS.md` — enda sanning om vad som är byggt
 - Senaste `docs/HANDOVER_YYYY-MM-DD.md`

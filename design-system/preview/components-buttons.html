@@ -1,0 +1,68 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_base.css"></head>
+<body style="width:700px;min-height:560px;padding:22px 20px;background:#F5F1EB">
+
+<p class="label8" style="margin-bottom:4px">BUTTON SYSTEM · hierarchy · states · specialized</p>
+<p style="font-size:11px;color:var(--text-secondary);line-height:1.45;margin-bottom:18px;max-width:560px">Max 1 <code>.btn-primary</code> per skärm. 8 px radius, 7×14 padding, 12 px · 600. Copper CTA använder 35% vit sheen över <code>#DD9555 → #8B4820</code>.</p>
+
+<!-- === Hierarchy row === -->
+<div style="background:#FFFFFF;border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+  <p class="label8" style="margin-bottom:10px">HIERARKI · primary → secondary → outline → ghost → danger</p>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <button class="btn btn-primary">Bekräfta val</button>
+    <button class="btn btn-secondary">Välj</button>
+    <button class="btn btn-outline">Se mer</button>
+    <button class="btn btn-ghost">Avbryt</button>
+    <button class="btn" style="background:linear-gradient(135deg,var(--danger),var(--danger-dark));color:#fff;box-shadow:0 3px 10px rgba(176,80,64,0.40)">Radera</button>
+  </div>
+</div>
+
+<!-- === States === -->
+<div style="background:#FFFFFF;border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+  <p class="label8" style="margin-bottom:10px">STATES · default · hover · pressed · disabled · loading</p>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <button class="btn btn-primary">Default</button>
+    <button class="btn btn-primary" style="transform:translateY(-1px);box-shadow:0 5px 14px rgba(162,88,40,0.45);filter:brightness(1.05)">Hover</button>
+    <button class="btn btn-primary" style="transform:translateY(1px);box-shadow:0 1px 3px rgba(162,88,40,0.20);filter:brightness(0.95)">Pressed</button>
+    <button class="btn btn-primary" disabled style="background:var(--border);color:var(--text-muted);box-shadow:none;cursor:not-allowed">Disabled</button>
+    <button class="btn btn-primary" style="display:inline-flex;align-items:center;gap:8px">
+      <span style="width:10px;height:10px;border:1.5px solid #fff;border-top-color:transparent;border-radius:50%;display:inline-block;animation:spin 0.8s linear infinite"></span>
+      Sparar…
+    </button>
+  </div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+</div>
+
+<!-- === Specialized === -->
+<div style="background:#FFFFFF;border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+  <p class="label8" style="margin-bottom:10px">SPECIALIZED · icon-only · icon+text · toggle · destructive ghost</p>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <button class="btn btn-outline" style="padding:7px;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center" title="Redigera">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M9 2 L12 5 L5 12 L2 12 L2 9 Z"/></svg>
+    </button>
+    <button class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:6px">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 V10 M2 6 H10"/></svg>
+      Lägg till
+    </button>
+    <span style="display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <button class="btn btn-ghost" style="border-radius:0;border:0;background:var(--accent);color:#fff;padding:7px 12px">Lista</button>
+      <button class="btn btn-ghost" style="border-radius:0;border:0;padding:7px 12px;color:var(--text-secondary)">Kort</button>
+    </span>
+    <button class="btn btn-ghost" style="color:var(--danger)">Radera permanent</button>
+  </div>
+</div>
+
+<!-- === UX rekommendationer === -->
+<div style="background:#FFFFFF;border:1px dashed var(--border-dark);border-radius:8px;padding:14px">
+  <p class="label8" style="margin-bottom:8px">📋 UX-NOTES FRÅN REVIEW</p>
+  <ul style="margin:0;padding-left:16px;font-size:11px;color:var(--text-secondary);line-height:1.7">
+    <li><strong style="color:var(--text-primary)">Hover-state saknades</strong> — lagt till <em>−1 px translateY + brightness 1.05 + djupare skugga</em>. På mobilen (primär target) syns den knappt, men visar respekt för desktop och PWA-läge.</li>
+    <li><strong style="color:var(--text-primary)">Loading-state bör vara en egen variant</strong>, inte ad-hoc. Mindre spinner (10 px) + kursiv verb-form ("Sparar…", "Skickar…") matchar seriens språk.</li>
+    <li><strong style="color:var(--text-primary)">Danger-knappen har ingen ghost-motsvarighet</strong> — destruktiva handlingar ska ofta börja som ghost (låg vikt) och eskalera till fylld röd i modalens bekräftelse. Lagt till exempel.</li>
+    <li><strong style="color:var(--text-primary)">Hit-target på icon-only är 34 px</strong> — under iOS-minimum 44 px. På BottomNav, FAB eller primära knappytor bör det vara 44 px; 34 px OK endast i table-rader eller sekundära kort.</li>
+    <li><strong style="color:var(--text-primary)">Segmented toggle</strong> (Lista/Kort) är ofta önskad i Trupp/Tabell men fanns inte i systemet — lagt till mönster.</li>
+    <li><strong style="color:var(--text-primary)">Fokus-ring saknas helt</strong> — keyboard-användare behöver <code>outline: 2px solid var(--accent); outline-offset: 2px</code>. Viktigt för PWA:n desktop-läge och för tillgänglighet.</li>
+    <li><strong style="color:var(--text-primary)">Disabled copper</strong> går idag till grå borderfärg — bryter med paletten. Föreslag: <em>bleka copper</em> (<code>#C47A3A</code> → <code>#B8A48C</code> med 0.5 opacity) så disabled-CTA känns som del av systemet, inte en UI-bugg.</li>
+  </ul>
+</div>
+
+</body></html>

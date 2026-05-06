@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Stripes-alternativ — Mock 2: Specialfall</title>
+<link rel="stylesheet" href="../../design-system/preview/_base.css">
+<style>
+  body { width: 920px; padding: 24px; min-height: 0; overflow: auto; }
+  h1 { font-family: Georgia, serif; font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  h2 { font-family: var(--font-body); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin: 24px 0 10px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+  .intro { color: var(--text-secondary); font-size: 12px; line-height: 1.5; margin-bottom: 4px; max-width: 760px; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+  .compare > div { display: flex; flex-direction: column; gap: 6px; }
+  .compare-label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+  .compare-label.before { color: var(--danger-text); }
+  .compare-label.after { color: var(--success-light); }
+  .annotation { font-size: 10px; color: var(--text-muted); font-style: italic; margin-top: 4px; }
+
+  /* Match-interaktion outcome */
+  .interaction-bg {
+    background: var(--bg-dark);
+    padding: 12px;
+    border-radius: 8px;
+  }
+  .outcome-before-goal {
+    background: rgba(196,122,58,0.15);
+    border-left: 3px solid var(--accent);
+    padding: 6px 8px;
+    border-radius: 4px;
+  }
+  .outcome-before-miss {
+    background: var(--bg-dark-surface);
+    border-left: 3px solid var(--bg-dark-elevated);
+    padding: 6px 8px;
+    border-radius: 4px;
+  }
+  .outcome-after-goal {
+    background: rgba(196,122,58,0.15);
+    padding: 6px 8px;
+    border-radius: 4px;
+  }
+  .outcome-after-miss {
+    background: var(--bg-dark-surface);
+    padding: 6px 8px;
+    border-radius: 4px;
+  }
+  .outcome-text-goal { font-size: 12px; font-weight: 700; color: var(--accent); margin: 0; }
+  .outcome-text-miss { font-size: 12px; font-weight: 400; color: var(--text-light-secondary); margin: 0; }
+
+  /* Klubbminne event-rad */
+  .memory-bg {
+    background: var(--bg-leather);
+    padding: 14px 12px;
+    border-radius: 8px;
+  }
+  .memory-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0;
+    line-height: 1.4;
+  }
+  .memory-row-emoji { font-size: 14px; width: 18px; text-align: center; margin-top: 1px; flex-shrink: 0; }
+  .memory-row-omg { font-size: 10px; color: var(--text-muted); min-width: 60px; margin-top: 2px; flex-shrink: 0; }
+  .memory-row-text { flex: 1; font-family: Georgia, serif; font-size: 12.5px; color: var(--text-light); }
+  .memory-big-before {
+    background: rgba(184,136,76,0.04);
+    border-left: 2px solid var(--accent);
+    padding-left: 10px; padding-top: 8px; padding-bottom: 8px;
+    margin: 6px -10px 6px -2px;
+    border-radius: 0 4px 4px 0;
+  }
+  .memory-big-after {
+    background: rgba(184,136,76,0.08);
+    padding: 8px 10px;
+    margin: 6px -2px 6px -2px;
+    border-radius: 4px;
+  }
+
+  /* Klubbminne legend */
+  .legend-card {
+    padding: 10px 12px;
+    background: var(--bg-leather);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    color: var(--text-light);
+  }
+  .legend-before { border-left: 2px solid var(--accent-dark); }
+  .legend-name { font-family: Georgia, serif; font-size: 13px; font-weight: 600; }
+  .legend-meta { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .legend-stats { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+  .legend-story {
+    font-size: 11px; font-style: italic; color: var(--text-light-secondary);
+    margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--border-dark);
+  }
+
+  /* Signature-secondary varianter */
+  .sig-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .sig-card {
+    background: var(--bg-portal-surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 12px;
+    color: var(--text-light);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .sig-card.cold      { border-left: 2px solid var(--cold); }
+  .sig-card.warm      { border-left: 2px solid var(--warm); }
+  .sig-card.calm      { border-left: 2px solid var(--accent); }
+  .sig-card.scandal   { border-left: 2px solid var(--danger); }
+  .sig-card.gold      { border-left: 2px solid var(--gold, #d4a460); }
+  .sig-card.dream     { border-left: 2px solid var(--accent-glow, #e0a878); }
+  .sig-card.alt-cold-text-cold .sig-name { color: var(--cold-light); }
+  .sig-card.alt-warm-text-warm .sig-name { color: var(--warm-light); }
+  .sig-card.alt-scandal-text   .sig-name { color: var(--danger-text); }
+  .sig-name {
+    font-family: Georgia, serif; font-size: 12px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+  }
+  .sig-fact { font-size: 10.5px; font-style: italic; color: var(--text-light-secondary); line-height: 1.4; }
+
+  /* SeasonSummary signatur-rubric (atmosfäriskt block) */
+  .summary-rubric-before {
+    background: var(--bg-leather);
+    border-left: 3px solid var(--accent);
+    padding: 16px 18px;
+    border-radius: 0 6px 6px 0;
+    color: var(--text-light);
+  }
+  .summary-rubric-after-keep { /* identisk med before, ingen ändring */
+    background: var(--bg-leather);
+    border-left: 3px solid var(--accent);
+    padding: 16px 18px;
+    border-radius: 0 6px 6px 0;
+    color: var(--text-light);
+  }
+  .summary-rubric-emoji { font-size: 22px; margin-bottom: 6px; opacity: 0.9; }
+  .summary-rubric-text { font-family: Georgia, serif; font-size: 16px; line-height: 1.4; }
+
+  /* SeasonSummary narrative */
+  .summary-narrative-before {
+    background: rgba(196,122,58,0.05);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .summary-narrative-after {
+    background: rgba(196,122,58,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .summary-narrative-text {
+    font-family: Georgia, serif;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Decision summary */
+  .decision-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; margin-top: 8px;
+  }
+  .decision-table th, .decision-table td {
+    padding: 8px 12px; text-align: left;
+    font-size: 11px; line-height: 1.4;
+    border-bottom: 1px solid var(--border);
+  }
+  .decision-table th {
+    background: var(--bg-elevated);
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--text-muted);
+  }
+  .decision-table tr:last-child td { border-bottom: none; }
+  .decision-table .my-pref { color: var(--success-light); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<h1>Stripes-alternativ — Mock 2 (specialfall)</h1>
+<p class="intro">
+  Sex specialfall som inte täcktes av Mock 1. Varje fall står i en av två kategorier:
+  <strong>interaktions-signal</strong> (stripe markerar att något hände — kandidat för borttagning)
+  eller <strong>innehållstyp-signal</strong> (stripe markerar vad kortet ÄR — likt danger-block i Mock 1, kandidat för bevarande).
+  Mocken visar båda alternativen per fall så du kan se konsekvensen direkt.
+</p>
+
+<!-- ═══ A — MATCH-INTERAKTION UTFALL ═══ -->
+<h2>A — Match-interaktion utfall (CounterInteraction, FreeKickInteraction)</h2>
+<p class="intro">
+  Utfallsbox visar resultat av spelarens val: mål eller miss. Mål-bakgrund är redan accent-tint, mål-text är bold accent, prefix 🏒 MÅL!. Stripe är fjärde signal.
+  <strong>Kategori: interaktions-signal.</strong>
+</p>
+
+<div class="compare">
+  <div>
+    <p class="compare-label before">FÖRE</p>
+    <div class="interaction-bg">
+      <div class="outcome-before-goal">
+        <p class="outcome-text-goal">🏒 MÅL! Holmqvist sätter den högt i krysset.</p>
+      </div>
+      <div style="height: 8px"></div>
+      <div class="outcome-before-miss">
+        <p class="outcome-text-miss">Skottet går tjänande över ribban.</p>
+      </div>
+    </div>
+    <p class="annotation">Bakgrund + bold + emoji + stripe = fyra signaler för mål, två för miss.</p>
+  </div>
+  <div>
+    <p class="compare-label after">EFTER — stripe bort</p>
+    <div class="interaction-bg">
+      <div class="outcome-after-goal">
+        <p class="outcome-text-goal">🏒 MÅL! Holmqvist sätter den högt i krysset.</p>
+      </div>
+      <div style="height: 8px"></div>
+      <div class="outcome-after-miss">
+        <p class="outcome-text-miss">Skottet går tjänande över ribban.</p>
+      </div>
+    </div>
+    <p class="annotation">Bakgrund-tint är fortfarande tydlig signal. Stripe redundant.</p>
+  </div>
+</div>
+
+<!-- ═══ B — KLUBBMINNE EVENT-RAD ═══ -->
+<h2>B — Klubbminne event-rad (ClubMemoryEventRow, isBig)</h2>
+<p class="intro">
+  Stora händelser (significance ≥ 70) markeras med stripe + bakgrund + indrag + asymmetrisk radius. Vanliga rader är platta.
+  <strong>Kategori: hierarki-signal.</strong>
+</p>
+
+<div class="compare">
+  <div>
+    <p class="compare-label before">FÖRE</p>
+    <div class="memory-bg">
+      <div class="memory-row">
+        <span class="memory-row-emoji">🏒</span>
+        <span class="memory-row-omg">Omg 4</span>
+        <span class="memory-row-text">Borta mot Edsbyn — 2-1, första segern.</span>
+      </div>
+      <div class="memory-row memory-big-before">
+        <span class="memory-row-emoji">🔥</span>
+        <span class="memory-row-omg">Omg 11</span>
+        <span class="memory-row-text">Derbyt mot Slottsbron. 4-3 efter förlängning. Klacken sjöng kvar 20 minuter efter slutsignal.</span>
+      </div>
+      <div class="memory-row">
+        <span class="memory-row-emoji">⚡</span>
+        <span class="memory-row-omg">Omg 14</span>
+        <span class="memory-row-text">Halftime-pep från Pelle vände matchen.</span>
+      </div>
+    </div>
+    <p class="annotation">Stripe + bakgrund + indrag + radius = fyra hierarki-signaler.</p>
+  </div>
+  <div>
+    <p class="compare-label after">EFTER — bakgrund + symmetrisk radius</p>
+    <div class="memory-bg">
+      <div class="memory-row">
+        <span class="memory-row-emoji">🏒</span>
+        <span class="memory-row-omg">Omg 4</span>
+        <span class="memory-row-text">Borta mot Edsbyn — 2-1, första segern.</span>
+      </div>
+      <div class="memory-row memory-big-after">
+        <span class="memory-row-emoji">🔥</span>
+        <span class="memory-row-omg">Omg 11</span>
+        <span class="memory-row-text">Derbyt mot Slottsbron. 4-3 efter förlängning. Klacken sjöng kvar 20 minuter efter slutsignal.</span>
+      </div>
+      <div class="memory-row">
+        <span class="memory-row-emoji">⚡</span>
+        <span class="memory-row-omg">Omg 14</span>
+        <span class="memory-row-text">Halftime-pep från Pelle vände matchen.</span>
+      </div>
+    </div>
+    <p class="annotation">Stripe bort. Bakgrund-tint (lite starkare än före) signalerar hierarki. Padding 8×10 ger kort-känsla.</p>
+  </div>
+</div>
+
+<!-- ═══ C — KLUBBMINNE LEGENDS ═══ -->
+<h2>C — Klubbminne legends (ClubMemoryLegendsBlock)</h2>
+<p class="intro">
+  Varje pensionerad legend renderas som dark-card med stripe i <code>--accent-dark</code>. Inte ett klickbart kort, inte en hierarki-signal — visuell ramning av en namngiven minneslegend.
+  <strong>Kategori: gränsfall — innehållstyp eller atmosfär?</strong>
+</p>
+
+<div class="compare">
+  <div>
+    <p class="compare-label before">FÖRE — stripe</p>
+    <div class="legend-card legend-before">
+      <div class="legend-name">Henriksson</div>
+      <div class="legend-meta">Forward · 12 säsonger · Pensionerad 2025</div>
+      <div class="legend-stats">147 mål · 89 assist · SM-guld 2018</div>
+      <div class="legend-story">Den som visste vart bollen skulle gå innan han hade tagit emot den.</div>
+    </div>
+    <p class="annotation">Stripe markerar legend som inramad enhet på dark bakgrund.</p>
+  </div>
+  <div>
+    <p class="compare-label after">EFTER — stripe bort, behåll dark-card</p>
+    <div class="legend-card">
+      <div class="legend-name">Henriksson</div>
+      <div class="legend-meta">Forward · 12 säsonger · Pensionerad 2025</div>
+      <div class="legend-stats">147 mål · 89 assist · SM-guld 2018</div>
+      <div class="legend-story">Den som visste vart bollen skulle gå innan han hade tagit emot den.</div>
+    </div>
+    <p class="annotation">Bara dark läderbakgrund. Det är fortfarande tydligt en distinkt enhet via padding + bakgrund + radius.</p>
+  </div>
+</div>
+
+<!-- ═══ D — SÄSONGSSIGNATUR SECONDARY ═══ -->
+<h2>D — Säsongssignatur secondary (SeasonSignatureSecondary)</h2>
+<p class="intro">
+  Sex signaturtyper har varsin färgkodad stripe: <code>cold_winter → --cold</code>, <code>injury_curve → --warm</code>,
+  <code>calm_season → --accent</code>, <code>scandal_season → --danger</code>, <code>hot_transfer_market → --gold</code>, <code>dream_round → --accent-glow</code>.
+  Bara två av sex är severity-tokens. Färgen <strong>mappar mot signaturtyp</strong> — inte ett gränsfall som kan ersättas av tint.
+  <strong>Kategori: dokumenterad färgkod (signaling-system).</strong>
+</p>
+
+<p class="annotation" style="margin-top: 0; margin-bottom: 12px;">
+  Mocken visar bara stripe-varianten — alternativen "ta bort stripe, signal med text-färg på namn" och "lägg till fler severity-tokens" diskuteras nedan.
+</p>
+
+<div class="sig-grid">
+  <div class="sig-card cold">
+    <div class="sig-name">🌨 KÖLDVINTERN</div>
+    <div class="sig-fact">Tre matcher i &minus;15° eller kallare. Truppen kämpar med kölden.</div>
+  </div>
+  <div class="sig-card warm">
+    <div class="sig-name">🩹 SKADEKURVAN</div>
+    <div class="sig-fact">Fem skador på sex omgångar. Mellansäsongen blev tuff.</div>
+  </div>
+  <div class="sig-card calm">
+    <div class="sig-name">🌿 LUGN SÄSONG</div>
+    <div class="sig-fact">Inget drama. Bara bandy.</div>
+  </div>
+  <div class="sig-card scandal">
+    <div class="sig-name">📰 SKANDALSÄSONGEN</div>
+    <div class="sig-fact">Tre rubriker som inte handlade om bandy. Två krishanteringar.</div>
+  </div>
+  <div class="sig-card gold">
+    <div class="sig-name">💼 TRANSFERSOMMAREN</div>
+    <div class="sig-fact">Marknaden är het. Tre bud på en månad.</div>
+  </div>
+  <div class="sig-card dream">
+    <div class="sig-name">✨ DRÖMRUNDAN</div>
+    <div class="sig-fact">Underdog-laget som spelar över förmågan.</div>
+  </div>
+</div>
+
+<p class="annotation" style="margin-top: 12px;">
+  Förslag: <strong>fjärde dokumenterade undantag</strong> — "säsongssignatur-färgkod". Stripen är inte interaktions-signal eller hierarki, den är <em>vilken signatur</em>. Att ta bort den tappar information som inte kan flyttas till bakgrundstint (sex distinkta typer, inte tre).
+</p>
+
+<!-- ═══ E — SEASONSUMMARY SIGNATUR-RUBRIC ═══ -->
+<h2>E — SeasonSummary signatur-rubric (atmosfäriskt block)</h2>
+<p class="intro">
+  Stort signaturblock i Årsboken: läder-bakgrund, accent-stripe, emoji + Georgia-text. Atmosfäriskt avslutsblock för säsongen.
+  <strong>Kategori: innehållstyp-signal (likt danger-block i Mock 1).</strong>
+</p>
+
+<div class="compare">
+  <div>
+    <p class="compare-label before">FÖRE — stripe (oförändrad)</p>
+    <div class="summary-rubric-before">
+      <div class="summary-rubric-emoji">🌨</div>
+      <div class="summary-rubric-text">Köldvintern. Tre matcher som inte borde spelats. Truppen lärde sig att handskar gör skillnad.</div>
+    </div>
+    <p class="annotation">Klammer på läderyta — atmosfäriskt avslutsblock i Årsboken.</p>
+  </div>
+  <div>
+    <p class="compare-label after">ALTERNATIV — stripe bort</p>
+    <div style="background: var(--bg-leather); padding: 16px 18px; border-radius: 6px; color: var(--text-light);">
+      <div class="summary-rubric-emoji">🌨</div>
+      <div class="summary-rubric-text">Köldvintern. Tre matcher som inte borde spelats. Truppen lärde sig att handskar gör skillnad.</div>
+    </div>
+    <p class="annotation">Bara läderyta + emoji. Text + emoji bär hela uttrycket.</p>
+  </div>
+</div>
+
+<!-- ═══ F — SEASONSUMMARY NARRATIVE ═══ -->
+<h2>F — SeasonSummary narrative (citatblock)</h2>
+<p class="intro">
+  Italic Georgia-citat med subtil accent-bakgrund och accent-stripe. En sammanfattande mening om säsongen.
+  <strong>Kategori: typografisk emfas räcker?</strong>
+</p>
+
+<div class="compare">
+  <div>
+    <p class="compare-label before">FÖRE</p>
+    <div class="summary-narrative-before">
+      <p class="summary-narrative-text">"En säsong som inte glömdes. Inte för poängen, för stunderna mellan."</p>
+    </div>
+    <p class="annotation">Stripe + bakgrund + italic Georgia = tre signaler.</p>
+  </div>
+  <div>
+    <p class="compare-label after">EFTER — stripe bort</p>
+    <div class="summary-narrative-after">
+      <p class="summary-narrative-text">"En säsong som inte glömdes. Inte för poängen, för stunderna mellan."</p>
+    </div>
+    <p class="annotation">Italic Georgia + bakgrund-tint signalerar fortfarande "citat-block".</p>
+  </div>
+</div>
+
+<!-- ═══ BESLUTSMATRIS ═══ -->
+<h2>Beslutsmatris</h2>
+
+<table class="decision-table">
+  <thead>
+    <tr>
+      <th>Fall</th>
+      <th>Filer</th>
+      <th>Kategori</th>
+      <th>Min rekommendation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>A — Match-interaktion utfall</td>
+      <td>CounterInteraction.tsx:134, FreeKickInteraction.tsx:129</td>
+      <td>Interaktions-signal</td>
+      <td class="my-pref">STRIPE BORT — bakgrund räcker</td>
+    </tr>
+    <tr>
+      <td>B — Klubbminne event-rad</td>
+      <td>ClubMemoryEventRow.tsx:18</td>
+      <td>Hierarki-signal</td>
+      <td class="my-pref">STRIPE BORT — bakgrund + symmetrisk radius räcker</td>
+    </tr>
+    <tr>
+      <td>C — Klubbminne legends</td>
+      <td>ClubMemoryLegendsBlock.tsx:35</td>
+      <td>Innehållstyp / atmosfär</td>
+      <td class="my-pref">STRIPE BORT — dark läder räcker som ramning</td>
+    </tr>
+    <tr>
+      <td>D — Säsongssignatur secondary</td>
+      <td>SeasonSignatureSecondary.tsx:38</td>
+      <td>Färgkod (signaling-system)</td>
+      <td class="my-pref">STRIPE KVAR — fjärde dokumenterat undantag</td>
+    </tr>
+    <tr>
+      <td>E — SeasonSummary signatur-rubric</td>
+      <td>SeasonSummaryScreen.tsx:251</td>
+      <td>Innehållstyp / atmosfär</td>
+      <td>Du väljer — likt danger-block-mönstret</td>
+    </tr>
+    <tr>
+      <td>F — SeasonSummary narrative</td>
+      <td>SeasonSummaryScreen.tsx:266</td>
+      <td>Typografisk emfas</td>
+      <td class="my-pref">STRIPE BORT — italic Georgia + bakgrund räcker</td>
+    </tr>
+  </tbody>
+</table>
+
+<p class="intro" style="margin-top: 16px;">
+  <strong>Övriga ute-scope-flaggade specialfall:</strong>
+  <code>VictoryQuote.tsx</code> hittades inte i kodbasen (inventeringen kan vara felaktig — verifieras separat).
+  <code>MatchHeader.tsx:61</code> har <code>atmo.borderAccent</code> som dynamiskt värde — kräver kontextläsning av matchatmosfär-beräkningen innan beslut.
+  <code>PlayoffIntroScreen.tsx:73</code> är 1px layout-separator i två-kolumnslayout (inte accent-stripe) — räknas inte som krock, bevaras.
+  <code>CommentaryFeed.tsx</code> väntar på Stålvallen-redesign.
+</p>
+
+<p style="margin-top: 16px; font-size: 10px; color: var(--text-muted);">
+  Implementation efter beslut: dokumentera i <code>design-system/DESIGN-DECISIONS.md</code> (eventuellt fjärde stripes-undantag för D) + Code-instruktion per fall.
+</p>
+
+</body>
+</html>

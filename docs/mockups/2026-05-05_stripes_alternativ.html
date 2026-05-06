@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Stripes-alternativ — Mock 1: Listrad-stater + Klickbara cards</title>
+<link rel="stylesheet" href="../../design-system/preview/_base.css">
+<style>
+  body { width: 880px; padding: 24px; min-height: 0; overflow: auto; }
+  h1 { font-family: Georgia, serif; font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  h2 { font-family: var(--font-body); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin: 24px 0 10px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+  .intro { color: var(--text-secondary); font-size: 12px; line-height: 1.5; margin-bottom: 4px; max-width: 720px; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+  .compare > div { display: flex; flex-direction: column; gap: 6px; }
+  .compare-label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+  .compare-label.before { color: var(--danger-text); }
+  .compare-label.after { color: var(--success-light); }
+  .annotation { font-size: 10px; color: var(--text-muted); font-style: italic; margin-top: 4px; }
+  .row-wrapper { display: flex; flex-direction: column; gap: 4px; }
+
+  /* InboxScreen mock */
+  .inbox-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 8px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+  }
+  .inbox-row.before-unread {
+    border-left: 3px solid var(--accent);
+  }
+  .inbox-row.after-unread {
+    background: rgba(196,122,58,0.06);
+  }
+  .inbox-icon {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent); color: var(--text-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .inbox-body { flex: 1; min-width: 0; }
+  .inbox-sender { font-size: 12px; color: var(--text-primary); margin-bottom: 1px; }
+  .inbox-row.unread .inbox-sender { font-weight: 700; }
+  .inbox-row.read .inbox-sender { font-weight: 400; color: var(--text-secondary); }
+  .inbox-preview { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .inbox-time { font-size: 10px; color: var(--text-muted); flex-shrink: 0; }
+  .unread-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+  /* TabellScreen mock */
+  .tabell { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .tabell-row {
+    display: grid; grid-template-columns: 24px 1fr 32px 28px;
+    gap: 4px; padding: 6px 10px; align-items: center;
+    border-top: 1px solid var(--border);
+  }
+  .tabell-row:first-child { border-top: none; }
+  .tabell-row.before-top3 {
+    border-left: 3px solid var(--accent);
+    background: rgba(196,122,58,0.05);
+  }
+  .tabell-row.before-mid {
+    border-left: 3px solid rgba(196,122,58,0.4);
+  }
+  .tabell-row.before-relegation {
+    border-left: 3px solid rgba(239,68,68,0.6);
+    background: rgba(239,68,68,0.04);
+  }
+  .tabell-row.after-top3 { background: rgba(196,122,58,0.05); }
+  .tabell-row.after-mid { /* no signal — neutral */ }
+  .tabell-row.after-relegation { background: rgba(239,68,68,0.04); }
+  .tabell-row.after-managed { background: linear-gradient(90deg, rgba(196,122,58,0.12) 0%, rgba(196,122,58,0.04) 100%); }
+  .tabell-pos { font-size: 13px; font-weight: 700; }
+  .tabell-pos.top3 { color: var(--accent); }
+  .tabell-pos.muted { color: var(--text-muted); }
+  .tabell-name { font-size: 13px; }
+  .tabell-name.managed { font-weight: 700; color: var(--accent); }
+  .tabell-md { font-size: 12px; font-weight: 600; text-align: center; color: var(--success-light); }
+  .tabell-md.neg { color: var(--danger-text); }
+  .tabell-pts { font-size: 14px; font-weight: 800; text-align: right; }
+  .zone-divider {
+    padding: 5px 10px; font-size: 9px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+    border-top: 1px solid rgba(196,122,58,0.4);
+    color: rgba(196,122,58,0.6); background: rgba(196,122,58,0.03);
+  }
+  .zone-divider.relegation {
+    border-top-color: rgba(239,68,68,0.5);
+    color: rgba(239,68,68,0.6);
+    background: rgba(239,68,68,0.03);
+  }
+
+  /* TransferPlayer mock */
+  .player-card {
+    display: flex; gap: 10px; align-items: center;
+    padding: 10px 12px; border-radius: 8px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+  }
+  .player-card.before-scouted { border-left: 3px solid var(--accent); }
+  .player-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--bg-elevated); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: var(--text-muted);
+  }
+  .player-info { flex: 1; min-width: 0; }
+  .player-name { font-size: 13px; font-weight: 600; margin-bottom: 1px; }
+  .player-meta { font-size: 11px; color: var(--text-muted); }
+  .player-price {
+    font-family: Georgia, serif; font-size: 14px; font-weight: 700;
+    color: var(--text-primary);
+  }
+  .player-tag-area { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+
+  /* Portal-secondary mock */
+  .portal-card {
+    padding: 12px 14px; border-radius: 8px;
+    background: var(--bg-portal-elevated); border: 1px solid var(--border-dark);
+    color: var(--text-light); cursor: pointer;
+  }
+  .portal-card.before { border-left: 2px solid var(--accent); }
+  .portal-card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .portal-card-label {
+    font-size: 8px; font-weight: 600; letter-spacing: 2px;
+    text-transform: uppercase; color: rgba(245,241,235,0.6);
+  }
+  .portal-card-body { font-size: 12px; line-height: 1.4; color: var(--text-light-secondary); }
+  .portal-card-chev {
+    width: 16px; height: 16px; border-radius: 4px;
+    border: 1px solid rgba(245,241,235,0.2);
+    color: rgba(245,241,235,0.6);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; line-height: 1;
+  }
+
+  /* Skade/danger mock */
+  .danger-card {
+    padding: 10px 12px; border-radius: 8px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+  }
+  .danger-card.before { border-left: 3px solid var(--danger); }
+  .danger-card.after { border: 1px solid rgba(176,80,64,0.25); }
+  .danger-head {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 700; color: var(--danger-text);
+    margin-bottom: 4px;
+  }
+  .danger-body { font-size: 11px; color: var(--text-muted); }
+
+  /* Decision summary */
+  .decision-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; margin-top: 8px;
+  }
+  .decision-table th, .decision-table td {
+    padding: 8px 12px; text-align: left;
+    font-size: 11px; line-height: 1.4;
+    border-bottom: 1px solid var(--border);
+  }
+  .decision-table th {
+    background: var(--bg-elevated);
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--text-muted);
+  }
+  .decision-table tr:last-child td { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<h1>Stripes-alternativ — Mock 1</h1>
+<p class="intro">
+  DIAGNOS B2 — vänster-border-stripes på listrader, klickbara kort, scoutad-indikator och danger-block.
+  Severity-systemet (<code>--cold</code> / <code>--warm</code>) är dokumenterat undantag och adresseras inte här.
+  CommentaryFeed (15 stripes) väntar på Stålvallen-redesign och ingår inte.
+  Mocken visar 4 kategorier: <strong>A</strong> listrad-state · <strong>B</strong> tabellrader · <strong>C</strong> klickbara cards · <strong>D</strong> danger-block.
+</p>
+
+<!-- ─────────────────────────────────────────── -->
+<h2>A — Listrad-state (oläst, scoutad)</h2>
+<p class="intro">
+  Stripe på listrad används för att signalera ett state (oläst, scoutad). Förslag: typografisk emfas + bakgrunds-tint för oläst, badge-tag för scoutad. Stripe + befintlig emfas är redundant.
+</p>
+
+<div class="compare">
+  <div>
+    <p class="compare-label before">FÖRE — InboxScreen</p>
+    <div class="row-wrapper">
+      <div class="inbox-row before-unread unread">
+        <div class="inbox-icon">JK</div>
+        <div class="inbox-body">
+          <div class="inbox-sender">Jonas Kjellberg</div>
+          <div class="inbox-preview">Bud på Holmqvist — 180 tkr</div>
+        </div>
+        <span class="inbox-time">14:32</span>
+      </div>
+      <div class="inbox-row read">
+        <div class="inbox-icon" style="background:var(--text-muted)">RK</div>
+        <div class="inbox-body">
+          <div class="inbox-sender">Rune Karlström</div>
+          <div class="inbox-preview">Träningsuppdatering O14</div>
+        </div>
+        <span class="inbox-time">12:05</span>
+      </div>
+    </div>
+    <p class="annotation">3px stripe + 7px-prick + bold = trippel-signal för oläst.</p>
+  </div>
+  <div>
+    <p class="compare-label after">EFTER — bakgrunds-tint + bold</p>
+    <div class="row-wrapper">
+      <div class="inbox-row after-unread unread">
+        <div class="inbox-icon">JK</div>
+        <div class="inbox-body">
+          <div class="inbox-sender">Jonas Kjellberg</div>
+          <div class="inbox-preview">Bud på Holmqvist — 180 tkr</div>
+        </div>
+        <span class="unread-dot"></span>
+        <span class="inbox-time">14:32</span>
+      </div>
+      <div class="inbox-row read">
+        <div class="inbox-icon" style="background:var(--text-muted)">RK</div>
+        <div class="inbox-body">
+          <div class="inbox-sender">Rune Karlström</div>
+          <div class="inbox-preview">Träningsuppdatering O14</div>
+        </div>
+        <span class="inbox-time">12:05</span>
+      </div>
+    </div>
+    <p class="annotation">Tint <code>rgba(196,122,58,0.06)</code> + bold sender + befintlig prick. Stripe bort.</p>
+  </div>
+</div>
+
+<div class="compare">
+  <div>
+    <p class="compare-label before">FÖRE — TransferPlayerCard scoutad</p>
+    <div class="row-wrapper">
+      <div class="player-card before-scouted">
+        <div class="player-avatar">N</div>
+        <div class="player-info">
+          <div class="player-name">N. Andersson</div>
+          <div class="player-meta">F · 24 år · Edsbyn</div>
+        </div>
+        <span class="player-price">180 tkr</span>
+      </div>
+    </div>
+    <p class="annotation">Stripe är enda signalen. Spelaren ser inte VAD som är scoutat.</p>
+  </div>
+  <div>
+    <p class="compare-label after">EFTER — explicit "Scoutad"-tag</p>
+    <div class="row-wrapper">
+      <div class="player-card">
+        <div class="player-avatar">N</div>
+        <div class="player-info">
+          <div class="player-name">N. Andersson</div>
+          <div class="player-meta">F · 24 år · Edsbyn</div>
+        </div>
+        <div class="player-tag-area">
+          <span class="player-price">180 tkr</span>
+          <span class="tag tag-copper">Scoutad</span>
+        </div>
+      </div>
+    </div>
+    <p class="annotation">Tag berättar exakt vad signalen betyder. Skalbart för fler states (Bud lagt, Avvisad).</p>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────── -->
+<h2>B — Tabellrader (TabellScreen positions-stripes)</h2>
+<p class="intro">
+  Nuvarande lösning: olika stripes per zon (top-3 accent, top-8 svag accent, transparent, nedflyttning danger) på <em>varje</em> rad. Plus zone-divider-rader som redan signalerar zonen. Dubbel-signal — stripes är redundanta.
+</p>
+
+<div class="compare">
+  <div>
+    <p class="compare-label before">FÖRE</p>
+    <div class="tabell">
+      <div class="tabell-row before-top3">
+        <span class="tabell-pos top3">1</span>
+        <span class="tabell-name">Edsbyn</span>
+        <span class="tabell-md">+18</span>
+        <span class="tabell-pts">28</span>
+      </div>
+      <div class="tabell-row before-top3">
+        <span class="tabell-pos top3">2</span>
+        <span class="tabell-name managed">★ Forsbacka</span>
+        <span class="tabell-md">+11</span>
+        <span class="tabell-pts">24</span>
+      </div>
+      <div class="tabell-row before-mid">
+        <span class="tabell-pos">5</span>
+        <span class="tabell-name">Slottsbron</span>
+        <span class="tabell-md">+3</span>
+        <span class="tabell-pts">17</span>
+      </div>
+      <div class="zone-divider">━━ Slutspelsstrecket ━━</div>
+      <div class="tabell-row">
+        <span class="tabell-pos muted">9</span>
+        <span class="tabell-name">Lesjöfors</span>
+        <span class="tabell-md neg">-2</span>
+        <span class="tabell-pts">11</span>
+      </div>
+      <div class="zone-divider relegation">━━ Nedflyttning ━━</div>
+      <div class="tabell-row before-relegation">
+        <span class="tabell-pos muted">11</span>
+        <span class="tabell-name">Gagnef</span>
+        <span class="tabell-md neg">-9</span>
+        <span class="tabell-pts">5</span>
+      </div>
+    </div>
+    <p class="annotation">3 olika stripe-färger + 2 zone-dividers + bakgrundstinter = för många signaler.</p>
+  </div>
+  <div>
+    <p class="compare-label after">EFTER — bakgrunds-tint + zone-dividers</p>
+    <div class="tabell">
+      <div class="tabell-row after-top3">
+        <span class="tabell-pos top3">1</span>
+        <span class="tabell-name">Edsbyn</span>
+        <span class="tabell-md">+18</span>
+        <span class="tabell-pts">28</span>
+      </div>
+      <div class="tabell-row after-managed">
+        <span class="tabell-pos top3">2</span>
+        <span class="tabell-name managed">★ Forsbacka</span>
+        <span class="tabell-md">+11</span>
+        <span class="tabell-pts">24</span>
+      </div>
+      <div class="tabell-row">
+        <span class="tabell-pos">5</span>
+        <span class="tabell-name">Slottsbron</span>
+        <span class="tabell-md">+3</span>
+        <span class="tabell-pts">17</span>
+      </div>
+      <div class="zone-divider">━━ Slutspelsstrecket ━━</div>
+      <div class="tabell-row">
+        <span class="tabell-pos muted">9</span>
+        <span class="tabell-name">Lesjöfors</span>
+        <span class="tabell-md neg">-2</span>
+        <span class="tabell-pts">11</span>
+      </div>
+      <div class="zone-divider relegation">━━ Nedflyttning ━━</div>
+      <div class="tabell-row after-relegation">
+        <span class="tabell-pos muted">11</span>
+        <span class="tabell-name">Gagnef</span>
+        <span class="tabell-md neg">-9</span>
+        <span class="tabell-pts">5</span>
+      </div>
+    </div>
+    <p class="annotation">Stripes bort. Zone-dividers + subtila bakgrunds-tinter (top-3, managed, nedflyttning) räcker.</p>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────── -->
+<h2>C — Klickbara cards (Portal-secondary, OfferCard, SituationCard, KlackenSecondary, CoffeeRoomSecondary, ClubExpandedCard)</h2>
+<p class="intro">
+  Sex komponenter har <em>identisk</em> 2px accent-stripe — alla bara för att signalera "klickbart". Stripe är inte rätt verktyg för det. ›-chevron i högerkant + hover-state är redan etablerat klickbarhets-mönster (se DESIGN_SYSTEM § 2 ›-knapp).
+</p>
+
+<div class="compare">
+  <div>
+    <p class="compare-label before">FÖRE — Portal-secondary</p>
+    <div class="portal-card before">
+      <div class="portal-card-head">
+        <span class="portal-card-label">📣 KLACKEN</span>
+        <span class="portal-card-chev">›</span>
+      </div>
+      <p class="portal-card-body">"Birgers trumma värmer. 41 medlemmar — alla på plats."</p>
+    </div>
+    <p class="annotation">Stripe + chevron — chevron räcker.</p>
+  </div>
+  <div>
+    <p class="compare-label after">EFTER — chevron + hover</p>
+    <div class="portal-card">
+      <div class="portal-card-head">
+        <span class="portal-card-label">📣 KLACKEN</span>
+        <span class="portal-card-chev">›</span>
+      </div>
+      <p class="portal-card-body">"Birgers trumma värmer. 41 medlemmar — alla på plats."</p>
+    </div>
+    <p class="annotation">Standard card-sharp. Chevron + cursor:pointer + hover signalerar klickbarhet.</p>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────── -->
+<h2>D — Danger-block (PlayerCard skadeblock, RoundSummary skade-alert)</h2>
+<p class="intro">
+  Skadekort har 3px röd vänsterstipe. Förslag: behåll danger-signal men flytta till hela kortets ram (1px + danger-tint border), inte stripe. Gör att den ser ut som ett "danger-card", inte ett vanligt kort med kantmarkering.
+</p>
+
+<div class="compare">
+  <div>
+    <p class="compare-label before">FÖRE</p>
+    <div class="danger-card before">
+      <div class="danger-head">🩹 2 nya skador</div>
+      <div class="danger-body">Holmqvist (vad), Eriksson (axel)</div>
+    </div>
+    <p class="annotation">Stripe + danger-color text — dubbel signal, men stripe gör det till en "extern markering".</p>
+  </div>
+  <div>
+    <p class="compare-label after">EFTER — full danger-border</p>
+    <div class="danger-card after">
+      <div class="danger-head">🩹 2 nya skador</div>
+      <div class="danger-body">Holmqvist (vad), Eriksson (axel)</div>
+    </div>
+    <p class="annotation">Hela ramen i <code>rgba(176,80,64,0.25)</code>. Kortet är danger, inte ett vanligt kort med flagga.</p>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────── -->
+<h2>Beslutsmatris</h2>
+
+<table class="decision-table">
+  <thead>
+    <tr>
+      <th>Kontext</th>
+      <th>Filer</th>
+      <th>Föreslagen lösning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Inkorad oläst</td>
+      <td>InboxScreen.tsx:113</td>
+      <td>Bakgrunds-tint <code>rgba(196,122,58,0.06)</code> + bold sender. Stripe bort.</td>
+    </tr>
+    <tr>
+      <td>Tabellrader (alla zoner)</td>
+      <td>TabellScreen.tsx:273</td>
+      <td>Stripe bort. Zone-dividers + bakgrunds-tinter räcker.</td>
+    </tr>
+    <tr>
+      <td>Scoutad transferspelare</td>
+      <td>TransferPlayerCard.tsx:46, ActiveBidsList.tsx:315</td>
+      <td>Tag-copper "Scoutad" i hörnan. Skalbart för fler states.</td>
+    </tr>
+    <tr>
+      <td>Klickbara secondary cards</td>
+      <td>KlackenSecondary, CoffeeRoomSecondary, OfferCard, SituationCard, ClubExpandedCard</td>
+      <td>Stripe bort. Chevron + hover signalerar klickbarhet.</td>
+    </tr>
+    <tr>
+      <td>Skade-/danger-block</td>
+      <td>PlayerCard.tsx:446, RoundSummaryScreen.tsx:364</td>
+      <td>Hel danger-border <code>rgba(176,80,64,0.25)</code> istället för stripe.</td>
+    </tr>
+    <tr>
+      <td>Relevant matchrad (RoundSummary)</td>
+      <td>RoundSummaryScreen.tsx:402</td>
+      <td>Bold + accent-text räcker. Stripe bort.</td>
+    </tr>
+    <tr>
+      <td>Derbyrad (GranskaForlop)</td>
+      <td>GranskaForlop.tsx:139</td>
+      <td>🔥-emoji prefix + accent-text. Stripe bort.</td>
+    </tr>
+    <tr style="background:rgba(255,255,255,0.02)">
+      <td colspan="3" style="font-style:italic;color:var(--text-muted)">Specialfall — adresseras i Mock 2:</td>
+    </tr>
+    <tr>
+      <td>Citatblock (säsongssignatur, narrativt sammanfattning, VictoryQuote)</td>
+      <td>SeasonSummaryScreen, VictoryQuote</td>
+      <td>card-round + Georgia italic — typografisk signal räcker, stripe bort.</td>
+    </tr>
+    <tr>
+      <td>Klubbminne event-rad / legend-rad</td>
+      <td>ClubMemoryEventRow, ClubMemoryLegendsBlock</td>
+      <td>Typografisk emfas (storlek, färg). Beslut i Mock 2.</td>
+    </tr>
+    <tr>
+      <td>Match-interaktioner utfall</td>
+      <td>CounterInteraction, FreeKickInteraction</td>
+      <td>Bakgrunds-tint på hela kortet (mål = accent-tint, ej mål = neutral). Beslut i Mock 2.</td>
+    </tr>
+    <tr>
+      <td>SeasonSignatureSecondary calm/scandal</td>
+      <td>SeasonSignatureSecondary.tsx:38</td>
+      <td>Behov av eget signaling-system. Beslut i Mock 2 — eventuellt egna severity-tokens för signature-kategorier.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="margin-top:24px;font-size:10px;color:var(--text-muted);">
+  Implementation efter beslut: dokumentera i <code>design-system/DESIGN-DECISIONS.md</code> + Code-instruktion per fil.
+</p>
+
+</body>
+</html>

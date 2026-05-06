@@ -10,3 +10,4 @@ scripts/pipeline/feedback_cache.json
 data-warehouse/matches.db
 data-warehouse/matches.db-shm
 data-warehouse/matches.db-wal
+design-system/uploads/
