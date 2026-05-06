@@ -50,6 +50,10 @@ export function processMedia(
       const theirScore = isHome ? prevManagedFixture.awayScore : prevManagedFixture.homeScore
       return (myScore ?? 0) < (theirScore ?? 0)
     })()
+    const oppClubId = justCompletedManagedFixture.homeClubId === game.managedClubId
+      ? justCompletedManagedFixture.awayClubId
+      : justCompletedManagedFixture.homeClubId
+    const oppClub = game.clubs.find(c => c.id === oppClubId)
     const headlineItem = generatePostMatchHeadline(
       game.journalist,
       justCompletedManagedFixture,
@@ -57,6 +61,7 @@ export function processMedia(
       newDate,
       game.currentSeason,
       prevLoss,
+      oppClub?.shortName,
     )
     if (headlineItem) inboxItems.push(headlineItem)
   }

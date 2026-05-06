@@ -1,6 +1,7 @@
 import type { Journalist, JournalistPersona, JournalistMemory, InboxItem } from '../entities/SaveGame'
 import type { Fixture } from '../entities/Fixture'
 import { InboxItemType } from '../enums'
+import { pickHeadline } from '../data/journalistHeadlineStrings'
 
 // ── Swedish journalist first + last names ─────────────────────────────────
 
@@ -139,6 +140,7 @@ export function generatePostMatchHeadline(
   currentDate: string,
   season: number,
   prevLoss: boolean,
+  oppName?: string,
 ): InboxItem | null {
   const isHome = fixture.homeClubId === managedClubId
   const myScore = isHome ? fixture.homeScore : fixture.awayScore
@@ -151,42 +153,19 @@ export function generatePostMatchHeadline(
 
   const { persona } = journalist
 
-  let headline: string | null = null
+  const scoreline = `${myScore}–${theirScore}`
 
-  if (bigWin) {
-    switch (persona) {
-      case 'sensationalist': headline = `Krossade motståndaren ${myScore}–${theirScore} — i särklass bäst i omgången`; break
-      case 'supportive':     headline = `Tydlig seger med ${margin} måls marginal`; break
-      case 'analytical':     headline = `Effektivt — dominerade klart i ${myScore}–${theirScore}`; break
-      case 'critical':       headline = `Äntligen en övertygande seger — men frågetecknen kvarstår`; break
-    }
-  } else if (bigLoss) {
-    switch (persona) {
-      case 'sensationalist': headline = prevLoss ? `Ny förlust ${myScore}–${theirScore} — hur länge håller tränaren?` : `Tungt ${myScore}–${theirScore} — hur länge håller tränaren?`; break
-      case 'critical':       headline = `Släppte in ${Math.abs(margin)} mål i andra halvlek — defensiven fungerar inte`; break
-      case 'analytical':     headline = `Analysen: Strukturella problem bakom storförlusten`; break
-      case 'supportive':     headline = `Tung dag — men det finns mer i det här laget än resultatet visar`; break
-    }
-  } else if (win) {
-    switch (persona) {
-      case 'supportive':     headline = `Välförtjänt seger — laget höll skärpan hela vägen`; break
-      case 'sensationalist': headline = `Seger. Klättrar i tabellen`; break
-      case 'analytical':     headline = `Knapert men effektivt — tog hem de tre poängen`; break
-      case 'critical':       headline = `Vann trots ojämn insats — mer krävs framöver`; break
-    }
-  } else if (loss) {
-    switch (persona) {
-      case 'supportive':     headline = `Hårfint — formen är bättre än resultatet visar`; break
-      case 'sensationalist': headline = prevLoss ? `Tredje nederlaget på fem matcher` : `Förlust — borttappade poäng i jämn match`; break
-      case 'analytical':     headline = prevLoss ? `Förlorade igen — defensiven hade klara brister` : `Förlorade — defensiven hade klara brister`; break
-      case 'critical':       headline = prevLoss ? `Återigen utan poäng — tränaren har svaret att leva upp till` : `Utan poäng — tränaren har svaret att leva upp till`; break
-    }
-  } else {
-    // Draw — only sensationalist and supportive bother headlining
-    if (persona === 'sensationalist') headline = `Kvitterade i sista minuten — en poäng på hemmaplan`
-    else if (persona === 'supportive') headline = `En poäng — laget kämpade sig tillbaka`
-  }
+  let bucket: 'big_win' | 'win' | 'draw' | 'loss' | 'big_loss'
+  if (bigWin) bucket = 'big_win'
+  else if (bigLoss) bucket = 'big_loss'
+  else if (win) bucket = 'win'
+  else if (loss) bucket = 'loss'
+  else bucket = 'draw'
 
+  // draw: only sensationalist and supportive publish headlines
+  if (bucket === 'draw' && persona !== 'sensationalist' && persona !== 'supportive') return null
+
+  const headline = pickHeadline(bucket, persona, fixture.id, prevLoss, oppName, scoreline)
   if (!headline) return null
 
   return {

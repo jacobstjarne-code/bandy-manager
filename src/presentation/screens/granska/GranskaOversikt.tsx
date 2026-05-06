@@ -269,7 +269,8 @@ export function GranskaOversikt({
       {/* Media */}
       {(() => {
         const headlineItem = game.inbox
-          .filter(i => i.type === InboxItemType.MediaEvent)
+          .filter(i => i.type === InboxItemType.MediaEvent &&
+            (!fixture || i.id === `inbox_headline_md${fixture.matchday}_${game.currentSeason}`))
           .sort((a, b) => b.date.localeCompare(a.date))[0]
         if (!headlineItem) return null
         const journalist = game.journalist
