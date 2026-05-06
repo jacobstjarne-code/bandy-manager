@@ -43,6 +43,7 @@ export function TransferPlayerCard({
       padding: '10px 14px',
       borderBottom: isLast ? 'none' : '1px solid var(--border)',
       gap: 10,
+      borderLeft: isScouted ? '3px solid var(--accent)' : '3px solid transparent',
     }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-display)' }}>

@@ -312,7 +312,7 @@ export function ActiveBidsList({
                   const report = player ? (game.scoutReports ?? {})[player.id] : null
                   const isAlreadyScouted = !!report
                   return (
-                    <div key={suggestion.playerId} style={{ padding: '10px 14px', borderBottom: index < latestResult.players.length - 1 ? '1px solid var(--border)' : 'none', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <div key={suggestion.playerId} style={{ padding: '10px 14px', borderBottom: index < latestResult.players.length - 1 ? '1px solid var(--border)' : 'none', display: 'flex', alignItems: 'flex-start', gap: 10, borderLeft: isAlreadyScouted ? '3px solid var(--accent)' : '3px solid transparent' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', marginBottom: 2 }}>
                           {player ? `${player.firstName} ${player.lastName}` : suggestion.playerId}
