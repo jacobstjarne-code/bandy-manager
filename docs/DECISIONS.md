@@ -8,6 +8,38 @@ Syftet är inte formalism. Syftet är att om 6 månader ha ett svar på "varför
 
 ---
 
+## 2026-05-06 — Stripes och klammer som genomgående visuellt språk
+
+**Problem:** SPRINT_B2_STRIPES_AUDIT implementerade Mock 1 (ta bort 6 stripes, ersätt med tint/tag/🔥). Beslutet reverterades samma dag: stripes-borttagning skapade inkonsekvent visuellt språk och Mock 2 visade att stripes + kompletterande signaler fungerar bättre än antingen-eller.
+
+**Beslut:** `borderLeft`-stripes är genomgående visuellt språk i appen — de tas INTE bort. De dubbla signalerna (stripe + tint på InboxScreen, stripe + tag-copper på Transfer/ActiveBids, stripe + 🔥 i GranskaForlop) behålls som kompletterande lager, inte ersättning. Formaliserat i `design-system/DESIGN-DECISIONS.md § "Stripes och klammer"`.
+
+**Alternativ övervägt:** Mock 1-ansatsen (enbart tint/tag/emoji, inga stripes) — avvisat efter att Mock 2 visade att det tappade kopplingen till en konsekvent spatial vokabulär. Stripe + signal ger rikare information utan mer visuellt brus.
+
+**Konsekvens:** Inga `borderLeft`-stripes tas bort utan explicit beslut per komponent. `.card-tap` (brightness hover/active) används på klickbara secondary cards. Danger-block-stripes (`--danger`) och severity-stripes (`--cold`/`--warm`) var aldrig i fara — de är dokumenterade undantag sedan tidigare. Mock 2-listan (`SeasonSummaryScreen`, `VictoryQuote`, `ClubMemory`, `CounterInteraction`, `FreeKickInteraction`, `SeasonSignatureSecondary`, `MatchHeader`, `CommentaryFeed`) adresseras i separata pass när kontexten är klar.
+
+---
+
+## 2026-05-06 — `arrivalDialogue.ts` som datakälla för Sture-repliker
+
+**Problem:** `ArrivalScene.tsx` hade inline `STURE_VARIANTS`-array med 4 generiska placeholder-repliker. Texten var märkt `// TODO(Opus)` men låg hårdkodat i komponentfilen — ett Opus-jobb som aldrig skulle hittas utan att öppna tsx-filen.
+
+**Beslut:** Extrahera till `src/domain/data/arrivalDialogue.ts` med `getStureLine(clubId: string): string`. Komponentfilen importerar `getStureLine`, props-gränssnittet får `clubId: string`. Datafilen är rätt ställe för bandysvensk text — inte komponentfilen.
+
+**Konsekvens:** Opus kan skriva per-klubb Sture-repliker direkt i `arrivalDialogue.ts` utan att röra komponentkoden. Samma mönster som `matchCommentary.ts`, `rivalries.ts`, `specialDateStrings.ts`.
+
+---
+
+## 2026-05-06 — design-system/ på rotnivå, docs/DESIGN_SYSTEM.md arkiverad
+
+**Problem:** Designsystemet levde i ett separat Claude.ai-projekt. Claude Code hade ingen direkt tillgång, varje session krävde att Opus citerade relevanta delar manuellt. Drift uppstod när lokala CSS-tokens ändrades utan att designsystemet uppdaterades.
+
+**Beslut:** Hela designsystemet kopierat till `design-system/` på rotnivå. Ingångspunkt: `CODE-OPUS-INSTRUCTION.md`. `docs/DESIGN_SYSTEM.md` är nu stub som pekar dit. CLAUDE.md uppdaterat att peka på `design-system/CODE-OPUS-INSTRUCTION.md` istf `docs/DESIGN_SYSTEM.md`.
+
+**Konsekvens:** Code kan läsa designsystemet direkt. Opus kan referera till specifika mockar i `design-system/preview/` och `ui_kits/` per komponent. Synk-risk kvarstår om `design-system/` och `src/styles/global.css` driftar isär — mitigeras av att `design-system/SYNC.md` uppdateras per HANDOFF-implementation.
+
+---
+
 ## 2026-05-03 — Kvot-avvägning Opus/Code förtydligad i ARBETSFÖRDELNING
 
 **Problem:** Tidigare regel sa att Opus fixar direkt om diff < 50 rader. Det är otillräckligt när en fix kräver iteration. En 5-raders konstantändring som behöver fyra stress-test-rundor för att verifieras blir fyra Opus-turns (hög kvot) i stället för fyra Sonnet-turns (låg kvot). Sessionen 2026-05-03 stod inför exakt det valet med P1–P5 i playtest-fix-paketet och ramverket gav inte vettig vägledning.

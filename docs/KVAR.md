@@ -16,6 +16,37 @@ Fram till 2026-05-04 användes bara ✅ — vilket ledde till falsk leverans-sta
 
 ---
 
+## AKTUELLT LÄGE (2026-05-06)
+
+**Design-rensning B2 (Steg 2B/C/D + HANDOFF #9):** 🔄 KOD KLAR — awaiting browser-playtest.
+
+| Sprint | Innehåll | Status |
+|--------|----------|--------|
+| Steg 2B CTA-byten | 11 filer: inline gradient → `.btn.btn-primary`. Ceremonial-knappar (RoundSummary/HalfTime/QFSummary/PlayoffIntro) behåller `letterSpacing/uppercase` inline. | 🔄 KOD KLAR |
+| Steg 2C kort-byten | 4 Kategori 1-kort → `.card-sharp`: SquadScreen:498+559, GameOverScreen:127, ChampionScreen:161. Övriga kategorier bevarade. | 🔄 KOD KLAR |
+| Steg 2D label-normalisering | 12 ändringar i 7 filer → `.h-label` (8px/600/2px). Skärm-rubriker med dramatisk effekt bevarade. | 🔄 KOD KLAR |
+| HANDOFF #9 ArrivalScene | Ny `ArrivalScene.tsx` — kontinuerlig intro (steg 0→4), inget route-byte. `.scene-cta` separat CSS. ClubSelection → `/intro`. `arrivalDialogue.ts` för Sture-text. | 🔄 KOD KLAR |
+| Steg 3 B2 + revert | Mock 1 (stripes bort) implementerades och reverterades samma dag — beslutet: stripes och klammer är genomgående visuellt språk. `.card-tap`-hover-klass + dual-signal (stripe + tint/tag/🔥) är slutgiltigt mönster. | 🔄 KOD KLAR |
+
+**Kvarstående från B2-audits:**
+- `QFSummaryScreen.tsx:38` — `letterSpacing: '3px'` → `'2px'` (ej i spec, nästa pass)
+- DIAGNOS F2: emoji-prefix saknas på vissa labels — väntar Opus text-design-pass
+- `HalfTimeSummaryScreen` + `RoundSummaryScreen` labels — oklassificerade, ej i Steg 2D scope
+- `GameOverScreen:158` (`STARTA NYTT SPEL`) + `ChampionScreen:209` (`Nästa säsong →`) — knappar utan `.btn`-klass, väntar btn-audit
+- Sture per-klubb-repliker i `arrivalDialogue.ts` — `TODO(Opus)`, Opus-jobb
+
+**Mock 2-pass (stripes kvarstår — adresseras separat):**
+- `SeasonSummaryScreen.tsx` säsongssignatur-citatblock
+- `VictoryQuote.tsx`, `ClubMemoryEventRow.tsx`, `ClubMemoryLegendsBlock.tsx`
+- `CounterInteraction.tsx`, `FreeKickInteraction.tsx` match-interaktion outcome-box
+- `SeasonSignatureSecondary.tsx` calm/scandal-stripe
+- `MatchHeader.tsx:61` `atmo.borderAccent` — kräver kontextläsning
+- `CommentaryFeed.tsx` 15 stripes — väntar Stålvallen B-redesign
+
+**Scoreboard.tsx:145 `#A89878`** — hårdkodat hex kvarstår (noterat i SPRINT_HEX_TOKENS_AUDIT.md), ej löst.
+
+---
+
 ## AKTUELLT LÄGE (2026-05-05)
 
 **Designsystem flyttat in i kodprojektet:** ✅ `design-system/` på rotnivå i bandy-manager. Hela designsystem-projektet från Claude.ai laddats ner och placerats lokalt. Ingång: `design-system/CODE-OPUS-INSTRUCTION.md`. `docs/DESIGN_SYSTEM.md` är nu stub som pekar dit.
@@ -898,13 +929,15 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 
 | Fil | Senast uppdaterad | Status |
 |-----|-------------------|--------|
-| `CLAUDE.md` | 2026-05-05 | Aktuell — designsystem-pekare uppdaterade |
+| `CLAUDE.md` | 2026-05-06 | Aktuell — design-system-sektionen omskriven med INGA_FEATURE_FLAGS, DESIGNPRINCIPER utökade |
 | `LESSONS.md` | 2026-04-22 (§2 uppdaterad) | Aktuell |
-| `DECISIONS.md` | 2026-04-21 | Aktuell |
+| `DECISIONS.md` | 2026-05-06 | Aktuell — 3 nya poster (stripes, arrivalDialogue, design-system-flytt) |
+| `design-system/DESIGN-DECISIONS.md` | 2026-05-06 | Aktuell — stripes-beslut + AI-slop def reviderad |
 | `docs/DESIGN_SYSTEM.md` | 2026-05-05 | **STUB** — auktoritativt i `design-system/` |
 | `STATUS.md` | 2026-04-27 | Uppdaterad med Sprint 27 + 28-A/B |
-| `KVAR.md` | 2026-04-30 (kväll) | Denna fil |
-| `HANDOVER_2026-04-30b.md` | 2026-04-30 | Senaste handover (kväll) |
+| `KVAR.md` | 2026-05-06 | Denna fil |
+| `HANDOVER_2026-05-06.md` | 2026-05-06 | Senaste handover |
+| `HANDOVER_2026-05-04_KVÄLL.md` | 2026-05-04 | Föregående handover (kväll) |
 | `HANDOVER_2026-04-30.md` | 2026-04-30 | Handover förmiddag |
 | `HANDOVER_2026-04-28b.md` | 2026-04-28 | Arkiv |
 | `SPEC_MATCHDAGAR.md` | 2026-04-27 | Fas 1–3 levererade, Fas 4 blockeras på SMHI |
@@ -915,12 +948,15 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 
 ## NÄSTA SESSION — FÖRESLAGEN ORDNING
 
-1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-04-30b.md`.
-2. **Playtest** — ny manager, spela 3 omgångar. Verifiera:
-   - Söndagsträning-scenen triggar (currentMatchday-fix)
-   - Atmosfäriska events visas inline i Portal, inte som overlay-spam
-   - Kritiska events (presskonferens) är fortfarande overlay
-   - SituationCard varierar kontextuellt
-3. **Opus skriver EventCardInline-texter** (communityEvent, supporterEvent, starPerformance, playerPraise, bandyLetter, captainSpeech) — placeholder nu.
-4. **Steg 4 (fas-scenes)** om playtest godkänner Steg 3.
-5. **Sprint 28-C** — Opus-only skärmdump-audit.
+1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-05-06.md`.
+2. **Playtest** — ny manager, klicka igenom hela intro-flödet (ArrivalScene steg 0→4), spela 2–3 omgångar. Verifiera specifikt:
+   - ArrivalScene: steg 0→4 klickbart, CTA döljs tills 3.4s gått, exit-overlay funkar
+   - Tabell: vänstra zon-stripes synliga per position
+   - Inbox: oläst = stripe + tint (dubbel-signal)
+   - Transfer: Scoutad-spelare har stripe + tag-copper
+   - GranskaForlop: rival-rader har stripe + 🔥
+   - `.card-tap` hover/active på secondary cards (KlackenSecondary, CoffeeRoomSecondary etc.)
+3. **Opus: Sture per-klubb-repliker** i `src/domain/data/arrivalDialogue.ts` — 3–4 varianter per klubb, bandysvensk ton.
+4. **QFSummaryScreen:38** `letterSpacing: '3px'` → `'2px'` — liten fix.
+5. **DIAGNOS F2** (emoji-prefix på saknade labels) — Opus text-design-pass.
+6. **Steg 4 (fas-scenes)** eller **handling-balans** — beslut beroende på playtest. Se flödesanalys i `HANDOVER_2026-05-04_KVÄLL.md § 6` för varför handling > fler scener.
