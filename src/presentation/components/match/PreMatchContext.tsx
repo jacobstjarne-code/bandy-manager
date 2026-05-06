@@ -2,6 +2,11 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { FixtureStatus } from '../../../domain/enums'
+import {
+  pickPreMatchContextText,
+  type PreMatchTrigger,
+  type PreMatchSubs,
+} from '../../../domain/data/preMatchContextStrings'
 
 interface PreMatchContextProps {
   fixture: Fixture
@@ -9,38 +14,35 @@ interface PreMatchContextProps {
   isHome: boolean
 }
 
-const NUMBER_WORDS: Record<number, string> = {
-  3: 'Tre',
-  4: 'Fyra',
-  5: 'Fem',
-  6: 'Sex',
-  7: 'Sju',
-  8: 'Åtta',
-  9: 'Nio',
-  10: 'Tio',
+const SUFFIX_PATTERN = /\s+(AIK|IBK|BK)$/
+
+function shortName(name: string): string {
+  if (name.length <= 12) return name
+  return name.replace(SUFFIX_PATTERN, '')
 }
 
-function streakWord(n: number): string {
-  return NUMBER_WORDS[n] ?? `${n}`
+interface ContextResult {
+  trigger: PreMatchTrigger
+  subs: Omit<PreMatchSubs, 'fixtureId'>
 }
 
-function deriveContextText(
+function deriveContext(
   fixture: Fixture,
   game: SaveGame,
-): string | null {
+  isHome: boolean,
+): ContextResult | null {
   const managedClubId = game.managedClubId
   const opponentId =
     fixture.homeClubId === managedClubId ? fixture.awayClubId : fixture.homeClubId
   const opponent = game.clubs.find(c => c.id === opponentId)
-  const opponentShortName = opponent?.name ?? 'Motståndaren'
+  const opp = shortName(opponent?.name ?? 'Motståndaren')
 
   // 1. Derby
-  const rivalry = getRivalry(managedClubId, opponentId)
-  if (rivalry) {
-    return `Derbyt. ${opponentShortName}.`
+  if (getRivalry(managedClubId, opponentId)) {
+    return { trigger: 'derby', subs: { opp } }
   }
 
-  // Hämta spelarens avslutade matcher i kronologisk ordning (nyast sist)
+  // Spelarens avslutade matcher i kronologisk ordning
   const completedOwn = game.fixtures
     .filter(
       f =>
@@ -54,9 +56,9 @@ function deriveContextText(
   let lossStreak = 0
   for (let i = completedOwn.length - 1; i >= 0; i--) {
     const f = completedOwn[i]
-    const isHome = f.homeClubId === managedClubId
-    const myScore = isHome ? f.homeScore : f.awayScore
-    const theirScore = isHome ? f.awayScore : f.homeScore
+    const isManagedHome = f.homeClubId === managedClubId
+    const myScore = isManagedHome ? f.homeScore : f.awayScore
+    const theirScore = isManagedHome ? f.awayScore : f.homeScore
     if (myScore > theirScore) {
       if (lossStreak > 0) break
       winStreak++
@@ -70,12 +72,12 @@ function deriveContextText(
 
   // 2. Vinst-streak ≥3
   if (winStreak >= 3) {
-    return `${streakWord(winStreak)} raka vinster. Håll det.`
+    return { trigger: 'win_streak', subs: { n: winStreak } }
   }
 
   // 3. Förlust-streak ≥3
   if (lossStreak >= 3) {
-    return `${streakWord(lossStreak)} raka förluster. Något måste brytas.`
+    return { trigger: 'loss_streak', subs: { n: lossStreak } }
   }
 
   // 4. Tabellkontext
@@ -84,17 +86,15 @@ function deriveContextText(
     const pos = myStanding.position
     const myPoints = myStanding.points
 
-    // Kolla uppåt — position ovanför
     const above = game.standings.find(s => s.position === pos - 1)
     if (above && above.points - myPoints <= 2) {
-      return `En poäng upp till ${pos - 1}:an.`
+      return { trigger: 'table_above', subs: { pos: pos - 1 } }
     }
 
-    // Kolla nedåt — nedflyttningsstreck är position > 8 (slutspelsgräns)
     if (pos <= 8) {
       const below = game.standings.find(s => s.position === pos + 1)
       if (below && myPoints - below.points <= 1) {
-        return `En poäng ner till nedflyttningsstrecket.`
+        return { trigger: 'table_below', subs: {} }
       }
     }
   }
@@ -120,20 +120,56 @@ function deriveContextText(
       else if (oppScore < othScore) opponentLosses++
     }
     if (opponentWins >= 4) {
-      return `${opponentShortName} i strålande form.`
+      return { trigger: 'opp_hot', subs: { opp } }
     }
+
+    // 6. Motståndares hemmaobesegradhet (ny trigger, prio efter opp_hot)
+    if (!isHome) {
+      const opponentHomeCompleted = game.fixtures
+        .filter(
+          f =>
+            f.status === FixtureStatus.Completed &&
+            f.homeClubId === opponentId,
+        )
+        .sort((a, b) => a.matchday - b.matchday)
+
+      let homeUnbeaten = 0
+      for (let i = opponentHomeCompleted.length - 1; i >= 0; i--) {
+        const f = opponentHomeCompleted[i]
+        const oppScore = f.homeScore
+        const othScore = f.awayScore
+        if (oppScore >= othScore) {
+          homeUnbeaten++
+        } else {
+          break
+        }
+      }
+      if (homeUnbeaten >= 5) {
+        return { trigger: 'opp_home_unbeaten', subs: { opp, n: homeUnbeaten } }
+      }
+    }
+
     if (opponentLosses >= 4) {
-      return `${opponentShortName} på en svacka.`
+      return { trigger: 'opp_cold', subs: { opp } }
     }
   }
 
-  // 6. Fallback — ingen trigger
+  // 7. Cup-match (lägst prio)
+  if (fixture.isCup) {
+    return { trigger: 'cup_fixture', subs: {} }
+  }
+
   return null
 }
 
-export function PreMatchContext({ fixture, game }: PreMatchContextProps) {
-  const text = deriveContextText(fixture, game)
-  if (!text) return null
+export function PreMatchContext({ fixture, game, isHome }: PreMatchContextProps) {
+  const result = deriveContext(fixture, game, isHome)
+  if (!result) return null
+
+  const text = pickPreMatchContextText(result.trigger, {
+    ...result.subs,
+    fixtureId: fixture.id,
+  })
 
   return (
     <div
