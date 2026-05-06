@@ -56,23 +56,25 @@ function effectivePlayerModifier(player: Player, tactic: Tactic): number {
 function offensePlayerScore(player: Player): number {
   const a = player.attributes
   return (
-    a.passing * 0.20 +
-    a.shooting * 0.25 +
-    a.dribbling * 0.15 +
-    a.vision * 0.20 +
-    a.decisions * 0.10 +
-    a.skating * 0.10
+    a.passing * 0.18 +
+    a.shooting * 0.22 +
+    a.dribbling * 0.13 +
+    a.vision * 0.18 +
+    a.decisions * 0.09 +
+    a.skating * 0.10 +
+    a.acceleration * 0.10
   )
 }
 
 function defensePlayerScore(player: Player): number {
   const a = player.attributes
   return (
-    a.defending * 0.30 +
-    a.positioning * 0.25 +
-    a.workRate * 0.20 +
-    a.skating * 0.15 +
-    a.stamina * 0.10
+    a.defending * 0.28 +
+    a.positioning * 0.24 +
+    a.workRate * 0.18 +
+    a.skating * 0.13 +
+    a.stamina * 0.15 +
+    a.acceleration * 0.02
   )
 }
 
