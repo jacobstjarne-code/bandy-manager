@@ -190,16 +190,25 @@ export function academyActions(get: Get, set: Set) {
         const low = Math.round(ca * 0.4)
         const mid = Math.round(ca * 0.8)
 
+        // Petré 2022 — position-specifik stamina via VO₂max
+        // Forwards 60 mL/kg/min, midfielders 57, halvor ~54, defenders 53
+        const staminaForward = Math.round(ca * 0.95)
+        const staminaMid     = Math.round(ca * 0.85)
+        const staminaHalf    = Math.round(ca * 0.78)
+        const staminaDef     = Math.round(ca * 0.75)
+
         if (position === PlayerPosition.Goalkeeper) {
           return { skating: mid, acceleration: base, stamina: mid, ballControl: low, passing: low, shooting: low, dribbling: low, vision: mid, decisions: mid, workRate: mid, positioning: mid, defending: mid, cornerSkill: low, goalkeeping: high, cornerRecovery: mid }
         } else if (position === PlayerPosition.Defender) {
-          return { skating: mid, acceleration: mid, stamina: mid, ballControl: base, passing: base, shooting: low, dribbling: low, vision: base, decisions: mid, workRate: high, positioning: high, defending: high, cornerSkill: base, goalkeeping: low, cornerRecovery: high }
+          return { skating: mid, acceleration: mid, stamina: staminaDef, ballControl: base, passing: base, shooting: low, dribbling: low, vision: base, decisions: mid, workRate: high, positioning: high, defending: high, cornerSkill: base, goalkeeping: low, cornerRecovery: high }
         } else if (position === PlayerPosition.Half) {
-          return { skating: mid, acceleration: mid, stamina: high, ballControl: mid, passing: mid, shooting: base, dribbling: base, vision: mid, decisions: mid, workRate: high, positioning: mid, defending: mid, cornerSkill: base, goalkeeping: low, cornerRecovery: mid }
+          return { skating: mid, acceleration: mid, stamina: staminaHalf, ballControl: mid, passing: mid, shooting: base, dribbling: base, vision: mid, decisions: mid, workRate: high, positioning: mid, defending: mid, cornerSkill: base, goalkeeping: low, cornerRecovery: mid }
         } else if (position === PlayerPosition.Midfielder) {
-          return { skating: mid, acceleration: mid, stamina: mid, ballControl: mid, passing: high, shooting: base, dribbling: mid, vision: high, decisions: high, workRate: mid, positioning: mid, defending: base, cornerSkill: base, goalkeeping: low, cornerRecovery: mid }
+          return { skating: mid, acceleration: mid, stamina: staminaMid, ballControl: mid, passing: high, shooting: base, dribbling: mid, vision: high, decisions: high, workRate: mid, positioning: mid, defending: base, cornerSkill: base, goalkeeping: low, cornerRecovery: mid }
         } else {
-          return { skating: high, acceleration: high, stamina: mid, ballControl: mid, passing: base, shooting: high, dribbling: high, vision: mid, decisions: mid, workRate: mid, positioning: high, defending: low, cornerSkill: base, goalkeeping: low, cornerRecovery: base }
+          // Forward — INGEN skating/acceleration-bonus (van den Tillaar + Petré: ingen signifikant position-skillnad)
+          // MEN högst stamina (Petré: forwards VO₂max högst)
+          return { skating: mid, acceleration: mid, stamina: staminaForward, ballControl: mid, passing: base, shooting: high, dribbling: high, vision: mid, decisions: mid, workRate: mid, positioning: high, defending: low, cornerSkill: base, goalkeeping: low, cornerRecovery: base }
         }
       }
 
