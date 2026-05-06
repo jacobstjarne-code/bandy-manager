@@ -192,21 +192,10 @@ export function IntroSequence() {
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22 }}>
           <button
             onClick={() => navigate('/new-game')}
+            className="btn btn-primary"
             style={{
               width: '100%',
               maxWidth: 300,
-              padding: '16px 24px',
-              background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%)',
-              border: 'none',
-              borderRadius: 10,
-              color: 'var(--text-light)',
-              fontSize: 13,
-              fontWeight: 700,
-              letterSpacing: '3px',
-              textTransform: 'uppercase',
-              fontFamily: 'system-ui, sans-serif',
-              cursor: 'pointer',
-              boxShadow: '0 4px 24px rgba(196,122,58,0.40)',
               animation: s1 ? 'pulseCTA 2.5s ease-in-out infinite' : 'none',
               opacity: s1 ? 1 : 0,
               transition: 'opacity 700ms ease',

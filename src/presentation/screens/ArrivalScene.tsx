@@ -14,6 +14,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { ClubExpectation } from '../../domain/enums'
+import { getStureLine } from '../../domain/data/arrivalDialogue'
 
 /* ─── formatKr ─── */
 
@@ -45,25 +46,6 @@ function expectedRankRange(expectation: string): { low: number; high: number } {
   }
 }
 
-/* ─── stureVariants ─── */
-
-// TODO(Opus): fill in per-club Sture variants (bruksanda, tomma helger, ungdom, stuga vid sjön)
-const STURE_VARIANTS = [
-  'För många här är det här säsongens enda samling. Glöm inte det.',
-  'Det är inte ett jobb — det är ett förtroendeuppdrag. Ortens folk vet vem som bär tröjan.',
-  'Folk har jobbat sina hela liv i det här bruket. Laget är det enda som binder dem samman nu.',
-  'Missa inte vad det betyder att spela här. Det är inte bara bandy.',
-]
-
-function stureText(clubId: string): string {
-  // Deterministic variant per club so it's stable across re-renders
-  // but different between clubs
-  const idx = Math.abs(
-    clubId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
-  ) % STURE_VARIANTS.length
-  return STURE_VARIANTS[idx]
-}
-
 /* ─── CoffeeRow ─── */
 
 interface CoffeeRowProps {
@@ -88,6 +70,7 @@ function CoffeeRow({ initial, name, text, align }: CoffeeRowProps) {
 /* ─── ArrivalScene ─── */
 
 interface ArrivalSceneProps {
+  clubId: string
   clubName: string
   chairman: string
   treasurer: string
@@ -103,6 +86,7 @@ interface ArrivalSceneProps {
 }
 
 function ArrivalSceneInner({
+  clubId,
   clubName,
   chairman,
   treasurer,
@@ -322,7 +306,7 @@ function ArrivalSceneInner({
           <CoffeeRow
             initial="S"
             name="STURE · LEDAMOT"
-            text={member + '. ' + stureText(clubName)}
+            text={getStureLine(clubId)}
             align="left"
           />
         )}
@@ -408,6 +392,7 @@ export function ArrivalScene() {
 
   return (
     <ArrivalSceneInner
+      clubId={managedClub.id}
       clubName={managedClub.name}
       chairman={chairman}
       treasurer={treasurer}
