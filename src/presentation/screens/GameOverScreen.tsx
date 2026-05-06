@@ -146,20 +146,12 @@ export function GameOverScreen() {
 
         {/* New game button */}
         <button
+          className="btn btn-primary"
           onClick={handleNewGame}
           style={{
             width: '100%',
-            padding: '17px',
-            background: 'var(--accent)',
-            color: 'var(--text-light)',
-            borderRadius: 12,
-            fontSize: 15,
-            fontWeight: 800,
             letterSpacing: '1.5px',
             textTransform: 'uppercase',
-            border: 'none',
-            cursor: 'pointer',
-            boxShadow: '0 4px 20px rgba(196,122,58,0.3)',
           }}
         >
           STARTA NYTT SPEL

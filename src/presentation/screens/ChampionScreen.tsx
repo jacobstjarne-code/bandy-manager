@@ -196,20 +196,13 @@ export function ChampionScreen() {
         </div>
 
         <button
+          className="btn btn-outline"
           onClick={handleNextSeason}
           disabled={advancing}
           style={{
             width: '100%',
-            padding: '17px',
-            background: 'var(--accent)',
-            color: 'var(--text-light)',
-            borderRadius: 12,
-            fontSize: 16,
-            fontWeight: 800,
             letterSpacing: '1.5px',
             textTransform: 'uppercase',
-            border: 'none',
-            cursor: advancing ? 'not-allowed' : 'pointer',
             opacity: advancing ? 0.7 : 1,
           }}
         >
