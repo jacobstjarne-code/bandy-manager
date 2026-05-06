@@ -1,0 +1,412 @@
+{
+  "_meta": {
+    "title": "Bandy research calibration targets — consolidated",
+    "version": "0.2",
+    "created": "2026-05-06",
+    "updated": "2026-05-06",
+    "purpose": "Vetenskapliga benchmarks för matchmotor-kalibrering. Komplement till bandygrytan_calibration_targets.json (motor-output) — denna fil ger biomekaniska och spelanalys-targets från forskning.",
+    "v0_2_changes": "Fulltext läst för van den Tillaar (herr+dam), Petré 2022, Johansson 2021. Persson 2023 (junior) tillagd. Alla physical_targets uppgraderade från low till high/medium confidence.",
+    "confidence_levels": {
+      "high": "Direkt läst, n>50, statistiskt säkerställt",
+      "medium": "Direkt läst, n<50 eller ej statistiskt säkerställt",
+      "low": "Endast abstract läst, full text kräver djupläsning",
+      "speculative": "Härledd eller extrapolerad — verifiera innan användning"
+    }
+  },
+
+  "sources": {
+    "sirius_uppsats_2023": {
+      "citation": "Nilsson, V. (2023). Sporten bandy beskriven genom sportanalys hos IK Sirius Bandy. UPTEC STS 23004, Uppsala universitet.",
+      "n_matches": 18,
+      "n_teams": 1,
+      "season": "2022-23 hösten",
+      "data_collection": "Manuell TV-baserad inmatning",
+      "level": "Elitserien Herr",
+      "confidence": "high (för beskrivande statistik), medium (för korrelationer p.g.a. n)",
+      "github": "Länkad i abstract, ej extraherad"
+    },
+    "petre_2022": {
+      "citation": "Petré, H. et al. (2022). Physical Characteristics of Elite Male Bandy Players. International Journal of Environmental Research and Public Health, 19(19), 12337.",
+      "doi": "10.3390/ijerph191912337",
+      "n_players": 25,
+      "level": "Elitserien Herr",
+      "design": "Cross-sectional, pre-season",
+      "confidence": "high",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9564452/",
+      "details_pm": "2026-05-06_petre_pm.md"
+    },
+    "johansson_2021": {
+      "citation": "Johansson, M., Ervasti, P-E., Blomqvist, S. (2021). An Analysis of Acceleration, Deceleration and High-Intensity Skating during Elite Bandy Match-Play. Sports, 9(11), 152.",
+      "doi": "10.3390/sports9110152",
+      "n_players": 10,
+      "n_matches": 13,
+      "level": "Elitserien Herr",
+      "design": "Case study, GPS-tracking, within-subject",
+      "confidence": "high (för match-mönster), medium (för generalisering eftersom n=1 lag, 11W-1D-1L)",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8619326/",
+      "details_pm": "2026-05-06_johansson_pm.md"
+    },
+    "tillaar_2023_male": {
+      "citation": "van den Tillaar, R., Pojskic, H., Andersson, H. (2023). Sprint skating profile of competitive male bandy players. Frontiers in Physiology, 14, 1055863.",
+      "doi": "10.3389/fphys.2023.1055863",
+      "n_players": 111,
+      "level": "Junior + senior national-level",
+      "confidence": "high",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10250590/",
+      "details_pm": "2026-05-06_van_den_tillaar_pm.md"
+    },
+    "tillaar_2023_female": {
+      "citation": "van den Tillaar et al. (2023). Sprint skating profile of competitive female bandy players. Frontiers in Physiology, 14, 1094170.",
+      "doi": "10.3389/fphys.2023.1094170",
+      "n_players": 74,
+      "confidence": "high (men låg n=3 elite forwards)",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9906948/",
+      "details_pm": "2026-05-06_van_den_tillaar_pm.md"
+    },
+    "persson_2023_junior": {
+      "citation": "Persson, F. (2023). Elitjuniorer i bandy — En tvärsnittsstudie för att undersöka de fysiska karaktärsdragen hos unga bandyspelare. Självständigt arbete 85:2022, GIH.",
+      "n_players": 16,
+      "age": "16.8 ± 0.8 år",
+      "level": "Nationell U19 / NIU-program",
+      "design": "Cross-sectional",
+      "confidence": "medium (C-uppsats, ej peer-reviewed, men handledd av Petré och samma testprotokoll som Petré 2022)",
+      "details_pm": "2026-05-06_persson_junior_pm.md",
+      "supervisor": "Henrik Petré (samma som Petré 2022)"
+    }
+  },
+
+  "match_analytics_targets": {
+    "_source": "sirius_uppsats_2023",
+    "_caveats": "n=18 matcher, ett lag i formsvacka. Använd som riktning, inte absolut sanning.",
+
+    "shotTypeGoalRates": {
+      "_description": "Målprocent per skotttyp (snitt Sirius + motståndare)",
+      "freeRunning":     { "value": 0.471, "n": 34,  "confidence": "medium", "siriusOnly": 0.375, "opponentsOnly": 0.556 },
+      "rebound":         { "value": 0.250, "n": 52,  "confidence": "medium", "siriusOnly": 0.240, "opponentsOnly": 0.259 },
+      "cross":           { "value": 0.282, "n": 71,  "confidence": "medium", "siriusOnly": 0.179, "opponentsOnly": 0.406 },
+      "centralAttack":   { "value": 0.227, "n": 132, "confidence": "high",   "siriusOnly": 0.179, "opponentsOnly": 0.263 },
+      "dribble":         { "value": 0.181, "n": 39,  "confidence": "medium", "siriusOnly": 0.200, "opponentsOnly": 0.172 },
+      "fixedSituation":  { "value": 0.131, "n": 268, "confidence": "high",   "siriusOnly": 0.092, "opponentsOnly": 0.161, "note": "Mest hörnskott, inkluderar straff och frislagsskott" },
+      "longShot":        { "value": 0.059, "n": 370, "confidence": "high",   "siriusOnly": 0.060, "opponentsOnly": 0.058, "note": "43% av alla skott — vanligaste typen, lägsta utdelning" }
+    },
+
+    "shotTypeFrequency": {
+      "_description": "Andel av totala skott per typ (snitt Sirius + motståndare)",
+      "longShot":       { "share": 0.383, "note": "Klart vanligast" },
+      "fixedSituation": { "share": 0.277 },
+      "centralAttack":  { "share": 0.137 },
+      "rebound":        { "share": 0.054 },
+      "cross":          { "share": 0.073 },
+      "dribble":        { "share": 0.040 },
+      "freeRunning":    { "share": 0.035, "note": "Sällsynt men farligast" }
+    },
+
+    "predictors": {
+      "shotsOnTargetWinPct": {
+        "value": 0.90,
+        "note": "Lag med flest skott på mål vinner halvleken 90% av tiden. Starkaste enskilda prediktor.",
+        "correlation_with_goals_diff": 0.602,
+        "p_value": "<0.001"
+      },
+      "corsiWinPct": {
+        "value": 0.76,
+        "note": "Lag med flest skottförsök totalt vinner 76%. Svagare än skott-på-mål.",
+        "correlation_with_goals_diff": 0.485,
+        "p_value": "<0.001"
+      },
+      "duelOvertag55": {
+        "value": 0.69,
+        "note": "Bara vid >55% duellseger börjar det korrelera med vinst",
+        "correlation_with_goals_diff": 0.458,
+        "p_value": 0.004
+      },
+      "possessionResultCorrelation": {
+        "value": 0.020,
+        "note": "BOLLINNEHAV HAR INGEN PREDIKTIV KRAFT. Verifierat över 36 halvlekar.",
+        "p_value": 0.903,
+        "design_implication": "Modellera ej bollinnehav som resultatpåverkande input"
+      }
+    },
+
+    "cornerStatistics": {
+      "leftSideGoalRate":  { "value": 0.168, "n": 149, "confidence": "medium" },
+      "rightSideGoalRate": { "value": 0.090, "n": 134, "confidence": "medium" },
+      "totalGoalRate":     { "value": 0.134, "n": 283, "confidence": "high" },
+      "z_test_left_vs_right": {
+        "z_sirius": 1.56,
+        "z_opponents": 1.40,
+        "z_required_for_95pct": 1.96,
+        "result": "Skillnaden ej statistiskt säkerställd, men trend konsekvent över båda lagen"
+      },
+      "cornersPerMatch": { "value": 15.7, "siriusEstimate": "uppsatsen anger 15-22 per match" }
+    },
+
+    "goalsBySituation": {
+      "openPlay":        { "share": 0.720, "n": 103 },
+      "corner":          { "share": 0.266, "n": 38 },
+      "penalty":         { "share": 0.014, "n": 2 },
+      "freeKick":        { "share": 0.000, "n": 0, "note": "0 frislagsmål på 143 matcher — frislag är symboliska, inte resultatpåverkande" }
+    },
+
+    "outdoorVsIndoor": {
+      "longPassesPerMatchIndoor":         14.2,
+      "longPassesPerMatchOutdoorGoodIce": 28.0,
+      "longPassesPerMatchOutdoorBadIce":  38.0,
+      "duelsPerMatchIndoor":              82,
+      "duelsPerMatchOutdoorGoodIce":      109,
+      "duelsPerMatchOutdoorBadIce":       156,
+      "duelZoneDistributionIndoor":   { "corners": 0.22, "midfield": 0.48, "penaltyAreas": 0.30 },
+      "duelZoneDistributionOutdoor": { "corners": 0.25, "midfield": 0.47, "penaltyAreas": 0.28 },
+      "duelZoneDistributionBadIce":  { "corners": 0.19, "midfield": 0.50, "penaltyAreas": 0.31 }
+    }
+  },
+
+  "physical_targets": {
+    "_source": "petre_2022 + johansson_2021 + tillaar_2023 + persson_2023",
+    "_caveats": "Alla värden från fulltext. Confidence varierar — se per-fält noteringar.",
+    "_pm_references": ["2026-05-06_petre_pm.md", "2026-05-06_johansson_pm.md", "2026-05-06_van_den_tillaar_pm.md", "2026-05-06_persson_junior_pm.md"],
+
+    "anthropometry_male": {
+      "junior_16y": {
+        "_source": "persson_2023_junior",
+        "n": 16,
+        "age_yr": 16.8,
+        "height_cm": 180.0,
+        "weight_kg": 73.1,
+        "weight_sd": 6.2,
+        "confidence": "medium"
+      },
+      "junior_elit_18_20y": {
+        "_source": "tillaar_2023_male",
+        "n": 64,
+        "weight_def_kg": 74.5,
+        "weight_mid_kg": 73.0,
+        "weight_fwd_kg": 70.4,
+        "height_cm": 1.80,
+        "confidence": "high"
+      },
+      "senior_elit_27y": {
+        "_source": "petre_2022",
+        "n": 25,
+        "age_yr": 26.7,
+        "height_cm": 182.4,
+        "weight_kg": 83.8,
+        "weight_def_kg": 86.5,
+        "weight_mid_kg": 80.9,
+        "weight_fwd_kg": 83.1,
+        "confidence": "high"
+      }
+    },
+
+    "anthropometry_female": {
+      "_source": "tillaar_2023_female",
+      "_note": "Sparas för framtida dam-spelmode i Bandy Manager",
+      "junior_elit": {
+        "n": 48,
+        "age_yr": 16.0,
+        "height_cm": 1.66,
+        "weight_kg": 61.2,
+        "confidence": "high"
+      },
+      "senior_elit": {
+        "n": 26,
+        "age_yr": 23.5,
+        "height_cm": 1.69,
+        "weight_kg": 66.0,
+        "confidence": "high"
+      }
+    },
+
+    "skating_male": {
+      "_source": "tillaar_2023_male + petre_2022 + persson_2023",
+
+      "junior_16y": {
+        "sprint_15m_s": 2.66,
+        "sprint_30m_s": 4.47,
+        "sprint_15m_flying_s": 1.81,
+        "_source": "persson_2023_junior",
+        "confidence": "medium"
+      },
+      "junior_elit_18_20y": {
+        "peak_velocity_m_s": 10.24,
+        "peak_velocity_kmh": 36.9,
+        "acceleration_first_10m_m_s2": 2.81,
+        "sprint_30m_s_def": 4.39,
+        "sprint_30m_s_mid": 4.41,
+        "sprint_30m_s_fwd": 4.37,
+        "_source": "tillaar_2023_male",
+        "n": 64,
+        "confidence": "high"
+      },
+      "senior_elit_27y": {
+        "peak_velocity_m_s": 10.83,
+        "peak_velocity_kmh": 39.0,
+        "peak_velocity_sd": 0.37,
+        "acceleration_first_10m_m_s2": 2.96,
+        "acceleration_sd": 0.22,
+        "sprint_15m_s": 2.50,
+        "sprint_30m_s": 4.23,
+        "sprint_15m_flying_s": 1.72,
+        "_sources": ["tillaar_2023_male", "petre_2022"],
+        "confidence": "high",
+        "_triangulation_note": "Petré 30m on-ice 4.23s ≈ van den Tillaar 30m herr senior elit 4.23s — två oberoende studier, samma värde"
+      },
+      "position_differences": {
+        "_finding": "Inga signifikanta position-skillnader i sprint för herr (van den Tillaar). Petré bekräftar ingen skillnad i 15m, 30m, 15m flying.",
+        "_implication_for_engine": "skating + acceleration ska genereras position-neutralt"
+      }
+    },
+
+    "skating_female": {
+      "_source": "tillaar_2023_female",
+      "_note": "Sparas för framtida dam-spelmode",
+      "junior_elit": {
+        "peak_velocity_m_s": 8.84,
+        "peak_velocity_kmh": 31.8,
+        "n": 48,
+        "confidence": "high"
+      },
+      "senior_elit": {
+        "peak_velocity_m_s": 9.52,
+        "peak_velocity_kmh": 34.3,
+        "peak_velocity_sd": 0.37,
+        "n": 26,
+        "confidence": "high"
+      },
+      "sex_difference_senior_elit": {
+        "peak_velocity_pct_of_male": 0.88,
+        "weight_pct_of_male": 0.78,
+        "height_pct_of_male": 0.93,
+        "_note": "12% sex-skillnad något över Sandbakk-2018 baseline 8-10%"
+      },
+      "position_differences": {
+        "_finding": "Defenders signifikant tyngre än forwards (p=0.035). Elite forwards snabbare första 10m än midfielders (p=0.041). Övriga avstånd: nära-signifikant.",
+        "_implication_for_engine": "Liten forwards-fördel i acceleration kan modelleras som +2 till +5 rating om alls"
+      }
+    },
+
+    "physiology_male": {
+      "_source": "petre_2022 + persson_2023",
+
+      "vo2max_relative_mL_kg_min": {
+        "junior_16y":     { "value": 59.0, "sd": 3.6, "_source": "persson_2023_junior" },
+        "senior_elit_27y": { "value": 56.0, "sd": 5.1, "_source": "petre_2022" },
+        "_finding": "Junior har HÖGRE relativ VO2max än senior — förklaras av 11 kg lägre vikt"
+      },
+      "vo2max_absolute_L_min": {
+        "junior_16y":     { "value": 4.3, "sd": 0.5, "_source": "persson_2023_junior" },
+        "senior_elit_27y": { "value": 4.7, "sd": 0.5, "_source": "petre_2022" }
+      },
+      "vo2max_position_senior": {
+        "_source": "petre_2022",
+        "_finding": "ENDA signifikant position-skillnad (p=0.012, 12.9% diff)",
+        "forwards_mL_kg_min": 59.8,
+        "midfielders_mL_kg_min": 56.6,
+        "defenders_mL_kg_min": 53.0,
+        "_implication_for_engine": "stamina-attribut ska differentieras position-baserat HOS SENIORER. Junior-spelare position-neutrala (Persson visar ingen skillnad)."
+      },
+      "heart_rate_pct_of_max": {
+        "value_range": [0.70, 0.90],
+        "_source": "blomqvist_via_petre_2022",
+        "confidence": "high"
+      },
+      "time_above_lactate_threshold_pct": {
+        "value": 0.27,
+        "_source": "blomqvist_via_petre_2022",
+        "_note": "27% av matchtiden över laktattröskeln, varierar position",
+        "confidence": "high"
+      }
+    },
+
+    "strength_jump_male": {
+      "_source": "petre_2022 + persson_2023",
+
+      "imtp_kg_senior": { "value": 195.2, "sd": 34.5, "_source": "petre_2022", "n": 25 },
+      "cmj_cm_junior_16y": { "value": 48.0, "sd": 5.9, "_source": "persson_2023_junior" },
+      "cmj_cm_senior_27y": { "value": 47.5, "sd": 4.5, "_source": "petre_2022" },
+      "sj_cm_junior_16y": { "value": 34.4, "sd": 4.8, "_source": "persson_2023_junior" },
+      "sj_cm_senior_27y": { "value": 36.3, "sd": 2.7, "_source": "petre_2022" },
+      "long_jump_bilateral_cm_senior": { "value": 248.3, "sd": 14.8, "_source": "petre_2022" },
+
+      "_findings": [
+        "CMJ skiljer INTE mellan junior och senior (junior något högre)",
+        "SJ skiljer (senior något högre — tolkas som ren styrka utvecklas senare)",
+        "Bandy-spelare har lägre long jump än ishockey (248 vs 265 cm)",
+        "Inga signifikanta position-skillnader i någon styrke- eller hopp-mätning"
+      ],
+      "_implication_for_engine": "Bandy Manager har inte separat strength-attribut, så detta är referensvärden för mappning till acceleration-ratings"
+    },
+
+    "match_load_male": {
+      "_source": "johansson_2021",
+      "_critical_finding_for_engine": "TRÖTTHET PÅVERKAR EVENT-FREKVENS, INTE EVENT-KVALITET",
+
+      "match_totals_per_player": {
+        "total_distance_m": 21367,
+        "very_fast_skating_25_30_kmh_m": 2499,
+        "sprint_skating_30plus_kmh_m": 572,
+        "low_int_acceleration_m": 676,
+        "high_int_acceleration_m": 167,
+        "very_high_int_acceleration_m": 98,
+        "low_int_deceleration_m": 438,
+        "high_int_deceleration_m": 99,
+        "very_high_int_deceleration_m": 102,
+        "_n_players": 10,
+        "_n_matches": 13
+      },
+
+      "h1_vs_h2_changes": {
+        "total_distance_pct": -4.5,
+        "very_fast_skating_pct": -13,
+        "sprint_skating_pct": -9,
+        "low_int_acceleration_pct": -3.5,
+        "high_int_acceleration_pct": -0.7,
+        "very_high_int_acceleration_pct": 3,
+        "all_deceleration_pct": "0 (ej signifikant)",
+        "_significant_changes": [
+          "Total distance, very fast skating, sprint skating, low-int acceleration"
+        ],
+        "_NOT_significant_changes": [
+          "High-int acceleration, very-high-int acceleration, all deceleration"
+        ],
+        "_interpretation": "Sprint-frekvens sjunker, sprint-kvalitet bevaras"
+      },
+
+      "fatigue_model_for_engine": {
+        "wrong_model": "chanceQuality *= (1 - fatigueFactor)",
+        "correct_model_johansson_compliant": "sprintEventProbability *= (1 - fatigueFactor); chanceQuality unchanged",
+        "calibration_targets": {
+          "h1_to_h2_total_skating_reduction": -0.045,
+          "h1_to_h2_very_fast_skating_reduction": -0.13,
+          "h1_to_h2_sprint_skating_reduction": -0.09,
+          "h1_to_h2_high_int_acc_reduction": 0.0,
+          "h1_to_h2_very_high_int_acc_reduction": 0.0,
+          "h1_to_h2_deceleration_reduction": 0.0
+        }
+      },
+
+      "comparison_with_soccer": {
+        "soccer_h1_h2_acceleration_reduction_pct": "-7 till -21",
+        "bandy_h1_h2_high_int_acc_reduction_pct": "0",
+        "_explanation": "Glide-fas + obegränsade byten gör bandy mindre trötande än soccer"
+      },
+
+      "interval_15min_findings": {
+        "_note": "Sprint-distans börjar dippa redan i I2 (15-30 min), inte sista intervallen — gradvis nedgång från första kvarten",
+        "I1_total_m": 3796,
+        "I6_total_m": 3349,
+        "I1_very_fast_m": 513,
+        "I6_very_fast_m": 365
+      }
+    }
+  },
+
+  "noise_floor_caveats": {
+    "siriusOnlyOneTeam": "Allt i match_analytics_targets är från ett lag i formsvacka (5V-1O-12F). Replicering med fler lag skulle ändra absolut-värden.",
+    "petreSinglePoint": "Petré är cross-sectional pre-season — peak-precondition, inte mid-season. Tester 1x per spelare.",
+    "johanssonOneTeam": "Johansson är ett vinnande lag (11W-1D-1L), 13 hemmamatcher. Kan biasa stamina-data uppåt. Förlorande lag kan visa annat mönster.",
+    "tillaarBestOf2": "van den Tillaar använder best-of-2-attempts vilket kan ge svag uppåt-bias enligt Stenroth 2020.",
+    "perssonCUppsats": "Persson 2023 är C-uppsats, ej peer-reviewed. Kompenseras av samma testprotokoll som Petré 2022 (handledare).",
+    "samplingIsDifferent": "Bandygrytan = säsongssnitt 1124 matcher. Sirius = en säsong, ett lag. Forskningspappren = pre-season eller match-snapshot. Skillnader är förväntade och inte nödvändigtvis fel hos någon källa."
+  }
+}

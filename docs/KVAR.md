@@ -1,7 +1,32 @@
 # BANDY MANAGER — KVAR
 
-**Datum:** 2026-05-04 (kväll)
+**Datum:** 2026-05-06 (kväll)
 **Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DECISIONS.md/DESIGN_SYSTEM.md är lästa.
+
+---
+
+## AKTUELLT LÄGE (2026-05-06, kväll)
+
+**Sprint TECH-1 (Del 1-4) — allt levererat:** 🔄 KOD KLAR — awaiting browser-playtest.
+
+| Del | Innehåll | Commits | Status |
+|-----|----------|---------|--------|
+| Del 1 | SmåFixar + pool-integration + granska-verifiering | `ccd1bcf` | 🔄 KOD KLAR |
+| Del 2 | PreMatchContext — kontextuell stakes-rad ovanför lineup | `79322e8` + `6ce6bfe` + `ca8bcb5` | 🔄 KOD KLAR |
+| Del 3 | Squad ⚡ NU-vy — akut-dashboard som default-tab | `1cde1a9` | 🔄 KOD KLAR |
+| Del 4 | Halvtidsval (3 val m. mekanisk konsekvens) + transfer-kafferum + NU-pool | `8e1869b` | 🔄 KOD KLAR |
+
+**Också levererat i samma session:**
+- Petré-kalibrering av `generateAttributes()` — forward skating/acceleration ned till mid, position-specifik stamina (`a217dc0`)
+- `squadEvaluator.ts` vikter — +acceleration i båda score-funktioner, +stamina försvar (`ec3b408`)
+- Per-klubb Sture-repliker (12 st) + snabbare ArrivalScene-animationer (`706498e`)
+
+**Kvarstående (ej del av TECH-1, väntar nästa session):**
+- `QFSummaryScreen.tsx:38` — `letterSpacing: '3px'` → `'2px'`
+- DIAGNOS F2: emoji-prefix saknas på vissa labels
+- `GameOverScreen:158` + `ChampionScreen:209` — knappar utan `.btn`-klass
+- Mock 2-pass: 6 specialfall (SeasonSummaryScreen, VictoryQuote, CounterInteraction etc.)
+- `Scoreboard.tsx:145 #A89878` — hårdkodat hex
 
 ---
 
