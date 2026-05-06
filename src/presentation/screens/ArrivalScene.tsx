@@ -103,9 +103,9 @@ function ArrivalSceneInner({
   const [step, setStep] = useState<0 | 1 | 2 | 3 | 4>(0)
   const [arrivalDone, setArrivalDone] = useState(false)
 
-  // CTA "Gå in →" fades in after 3.4 s
+  // CTA "Gå in →" fades in after 1.7 s
   useEffect(() => {
-    const t = setTimeout(() => setArrivalDone(true), 3400)
+    const t = setTimeout(() => setArrivalDone(true), 1700)
     return () => clearTimeout(t)
   }, [])
 
@@ -197,7 +197,7 @@ function ArrivalSceneInner({
         <div
           className="fadein"
           style={{
-            animationDelay: '600ms',
+            animationDelay: '300ms',
             fontSize: arrivalDim ? 18 : 26,
             fontFamily: 'Georgia, serif',
             fontWeight: 400,
@@ -213,12 +213,12 @@ function ArrivalSceneInner({
         <div
           className="fadein"
           style={{
-            animationDelay: '1400ms',
+            animationDelay: '700ms',
             fontSize: arrivalDim ? 12 : 16,
             fontFamily: 'Georgia, serif',
             fontStyle: 'italic',
-            color: 'var(--text-light-secondary)',
-            opacity: arrivalDim ? 1 : 0.42,
+            color: arrivalDim ? 'var(--text-light-secondary)' : 'var(--text-light)',
+            opacity: 1,
             marginBottom: arrivalDim ? 4 : 12,
             transition: 'font-size 0.6s ease-out',
           }}
@@ -230,12 +230,12 @@ function ArrivalSceneInner({
         <div
           className="fadein"
           style={{
-            animationDelay: '2400ms',
+            animationDelay: '1200ms',
             fontSize: arrivalDim ? 12 : 16,
             fontFamily: 'Georgia, serif',
             fontStyle: 'italic',
-            color: 'var(--text-light-secondary)',
-            opacity: arrivalDim ? 1 : 0.42,
+            color: arrivalDim ? 'var(--text-light-secondary)' : 'var(--text-light)',
+            opacity: 1,
             transition: 'font-size 0.6s ease-out',
           }}
         >
@@ -321,7 +321,7 @@ function ArrivalSceneInner({
             padding: '12px 20px 28px',
             opacity: step === 0 && !arrivalDone ? 0 : 1,
             animation: step === 0 ? 'fade-in-static 0.6s ease-out forwards' : 'none',
-            animationDelay: step === 0 ? '3400ms' : '0ms',
+            animationDelay: step === 0 ? '1700ms' : '0ms',
             transition: step > 0 ? 'opacity 0.3s' : 'none',
             pointerEvents: ctaDisabled ? 'none' : 'auto',
           }}
