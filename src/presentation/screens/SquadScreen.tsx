@@ -16,6 +16,7 @@ import { FirstVisitHint } from '../components/FirstVisitHint'
 import { LockerRoomCard } from '../components/club/LockerRoomCard'
 import { TacticBoardCard } from '../components/tactic/TacticBoardCard'
 import { getRecommendedFormation, FORMATION_META } from '../../domain/entities/Formation'
+import { getInjuryText, getSuspensionText, getMoraleText, getContractText } from '../../domain/data/squadNuStrings'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
 type FilterKey = 'all' | 'mv' | 'def' | 'half' | 'mid' | 'fwd'
@@ -407,8 +408,8 @@ export function SquadScreen() {
                       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{p.firstName} {p.lastName}</div>
                       <div style={{ fontSize: 11, color: 'var(--danger)' }}>
                         {p.isInjured && p.injuryDaysRemaining > 0
-                          ? `${p.injuryDaysRemaining} dag${p.injuryDaysRemaining !== 1 ? 'ar' : ''} skada kvar`
-                          : `${p.suspensionGamesRemaining} match${p.suspensionGamesRemaining !== 1 ? 'er' : ''} utvisad`}
+                          ? getInjuryText(p.injuryDaysRemaining, p.id)
+                          : getSuspensionText(p.suspensionGamesRemaining, p.id)}
                       </div>
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{positionShort(p.position)}</div>
@@ -430,9 +431,7 @@ export function SquadScreen() {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{p.firstName} {p.lastName}</div>
                       <div style={{ fontSize: 11, color: 'var(--warning)' }}>
-                        {(p.lowMoraleDays ?? 0) > 3
-                          ? `Låg moral i ${p.lowMoraleDays} omgångar`
-                          : `Moral ${p.morale}/100`}
+                        {getMoraleText(p.morale, p.lowMoraleDays, p.id)}
                       </div>
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{positionShort(p.position)}</div>
@@ -454,7 +453,7 @@ export function SquadScreen() {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{p.firstName} {p.lastName}</div>
                       <div style={{ fontSize: 11, color: p.contractUntilSeason < game.currentSeason ? 'var(--danger)' : 'var(--warning)' }}>
-                        {p.contractUntilSeason < game.currentSeason ? 'Kontrakt löpt ut' : 'Kontrakt löper ut denna säsong'}
+                        {getContractText(p.contractUntilSeason, game.currentSeason, p.id)}
                       </div>
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{positionShort(p.position)}</div>

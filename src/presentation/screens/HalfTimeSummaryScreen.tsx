@@ -1,16 +1,32 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { generateHalfTimeSummary } from '../../domain/services/halfTimeSummaryService'
 
+type HalftimeChoice = 'lugna' | 'pressa' | 'prata'
+
+const CHOICES: { key: HalftimeChoice; label: string; effect: string }[] = [
+  { key: 'lugna', label: 'Lugna ner tempot', effect: '+5 kondition, +3 moral för hela truppen' },
+  { key: 'pressa', label: 'Pressa hårdare', effect: '+10 form, men ökad skaderisk' },
+  { key: 'prata', label: 'Låt spelarna prata', effect: '+12 moral för hela truppen' },
+]
+
 export function HalfTimeSummaryScreen() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
-  const clearHalfTimeSummary = useGameStore(s => s.clearHalfTimeSummary)
+  const applyHalftimeDecision = useGameStore(s => s.applyHalftimeDecision)
+  const [chosen, setChosen] = useState<HalftimeChoice | null>(null)
 
   if (!game) { navigate('/game', { replace: true }); return null }
 
+  function handleChoice(choice: HalftimeChoice) {
+    setChosen(choice)
+  }
+
   function handleContinue() {
-    clearHalfTimeSummary()
+    if (chosen) {
+      applyHalftimeDecision(chosen)
+    }
     navigate('/game/dashboard', { replace: true })
   }
 
@@ -123,18 +139,35 @@ export function HalfTimeSummaryScreen() {
 
       </div>
 
-      {/* ── CTA ── */}
+      {/* ── VAL INFÖR VÅREN ── */}
       <div style={{
         position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 430, padding: '12px 20px',
         paddingBottom: 'calc(12px + var(--bottom-nav-height) + var(--safe-bottom, 0px))',
-        background: 'linear-gradient(to top, var(--bg) 80%, transparent)',
-        zIndex: 110, pointerEvents: 'none',
+        background: 'linear-gradient(to top, var(--bg) 70%, transparent)',
+        zIndex: 110,
       }}>
+        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8, textAlign: 'center' }}>
+          🎯 INRIKTNING VÅRSÄSONGEN
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
+          {CHOICES.map(c => (
+            <button
+              key={c.key}
+              onClick={() => handleChoice(c.key)}
+              className={`btn ${chosen === c.key ? 'btn-copper' : 'btn-ghost'}`}
+              style={{ textAlign: 'left', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 2 }}
+            >
+              <span style={{ fontSize: 13, fontWeight: 600 }}>{c.label}</span>
+              <span style={{ fontSize: 11, opacity: 0.7 }}>{c.effect}</span>
+            </button>
+          ))}
+        </div>
         <button
           onClick={handleContinue}
           className="btn btn-primary"
-          style={{ width: '100%', letterSpacing: '2px', textTransform: 'uppercase', pointerEvents: 'auto' }}
+          disabled={!chosen}
+          style={{ width: '100%', letterSpacing: '2px', textTransform: 'uppercase', opacity: chosen ? 1 : 0.4 }}
         >
           Fortsätt säsongen →
         </button>

@@ -48,6 +48,14 @@ const TRANSFER_DEADLINE_EXCHANGES: Array<[string, string, string, string]> = [
   ['Vaktmästaren', 'Sista dagarna nu. Ryktena flyger.', 'Kassören', 'Lita på tränaren. Han vet vad han gör.'],
 ]
 
+// Kafferums-snack när vi har ett aktivt väntande bud på en spelare (vi köper)
+const TRANSFER_PENDING_BID_EXCHANGES: Array<[string, string, string, string]> = [
+  ['Kioskvakten', 'Hörde att vi lägger på för någon utifrån.', 'Vaktmästaren', 'Bekräftat?" Kioskvakten: "Inte än. Men ryktena stämmer oftast.'],
+  ['Materialaren', 'Det pratas om en ny kille. Inget klart.', 'Kassören', 'Vänta tills det är skrivet.'],
+  ['Kassören', 'Bud lagt. Nu är det bara att vänta.', 'Ordföranden', 'Det tar alltid längre tid än man tror.'],
+  ['Vaktmästaren', 'Ingen vet vem det är. Alla gissar.', 'Kioskvakten', 'Det är det roligaste med transferfönstret.'],
+]
+
 const STREAK_EXCHANGES: Record<'winning' | 'losing', Array<[string, string, string, string]>> = {
   winning: [
     ['Kioskvakten', 'Hade slut på kaffe vid halvtid igår. Det har aldrig hänt.', 'Vaktmästaren', 'Inte förvånande just nu.'],
@@ -225,6 +233,16 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
   if (boughtItem && seed % 3 === 1) {
     const idx = Math.abs(seed * 11) % TRANSFER_BUY_EXCHANGES.length
     const ex = TRANSFER_BUY_EXCHANGES[idx]
+    return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
+  }
+
+  // Aktiva väntande bud (vi har lagt bud, väntar på svar) — 33% chans
+  const hasPendingBid = (game.transferBids ?? []).some(
+    b => b.direction === 'outgoing' && b.status === 'pending'
+  )
+  if (hasPendingBid && seed % 3 === 2) {
+    const idx = Math.abs(seed * 13) % TRANSFER_PENDING_BID_EXCHANGES.length
+    const ex = TRANSFER_PENDING_BID_EXCHANGES[idx]
     return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
   }
 

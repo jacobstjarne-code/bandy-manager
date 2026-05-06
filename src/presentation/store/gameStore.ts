@@ -63,6 +63,7 @@ interface GameState {
   useLeadershipAction: (playerId: string, action: import('../../domain/services/leadershipService').LeadershipAction, currentRound: number) => { feedback: string } | null
   clearPreSeason: () => void
   clearHalfTimeSummary: () => void
+  applyHalftimeDecision: (decision: 'lugna' | 'pressa' | 'prata') => void
   clearPlayoffIntro: () => void
   clearQFSummary: () => void
   setBudgetPriority: (priority: 'squad' | 'balanced' | 'youth') => void

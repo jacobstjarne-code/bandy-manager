@@ -1,5 +1,6 @@
 import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
 import { PendingScreen } from '../../../domain/enums'
+import { clamp } from '../../../domain/utils/clamp'
 import { resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
@@ -210,6 +211,29 @@ export function gameFlowActions(get: Get, set: Set) {
       const { game } = get()
       if (!game) return
       set({ game: { ...game, pendingScreen: null } })
+    },
+
+    applyHalftimeDecision: (decision: 'lugna' | 'pressa' | 'prata') => {
+      const { game } = get()
+      if (!game) return
+      const updatedPlayers = game.players.map(p => {
+        if (decision === 'lugna') {
+          return { ...p, fitness: clamp(p.fitness + 5), morale: clamp(p.morale + 3) }
+        }
+        if (decision === 'pressa') {
+          // 15% chance of minor injury setback for field players
+          const injuryHit = p.position !== 'goalkeeper' && Math.random() < 0.15
+          return {
+            ...p,
+            form: clamp(p.form + 10),
+            injuryDaysRemaining: injuryHit ? p.injuryDaysRemaining + 3 : p.injuryDaysRemaining,
+            isInjured: injuryHit ? true : p.isInjured,
+          }
+        }
+        // 'prata'
+        return { ...p, morale: clamp(p.morale + 12) }
+      })
+      set({ game: { ...game, players: updatedPlayers, pendingScreen: null } })
     },
 
     clearPlayoffIntro: () => {
