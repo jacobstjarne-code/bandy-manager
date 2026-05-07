@@ -10,7 +10,7 @@
  * CSS: src/styles/global.css (.arrival-scene, .scene-cta, .coffee-row, .beat-progress)
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { ClubExpectation } from '../../domain/enums'
@@ -102,12 +102,21 @@ function ArrivalSceneInner({
 }: ArrivalSceneProps) {
   const [step, setStep] = useState<0 | 1 | 2 | 3 | 4>(0)
   const [arrivalDone, setArrivalDone] = useState(false)
+  const onCompleteRef = useRef(onComplete)
+  useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
 
   // CTA "Gå in →" fades in after 1.7 s
   useEffect(() => {
     const t = setTimeout(() => setArrivalDone(true), 1700)
     return () => clearTimeout(t)
   }, [])
+
+  // Navigate after exit-fade — cleanup prevents ghost-trigger on fast unmount
+  useEffect(() => {
+    if (step !== 4) return
+    const t = setTimeout(() => onCompleteRef.current(), 800)
+    return () => clearTimeout(t)
+  }, [step])
 
   // Dim the arrival block when dialogue starts
   const arrivalDim = step >= 1
@@ -124,12 +133,7 @@ function ArrivalSceneInner({
 
   function handleCTA() {
     if (step === 4) return
-    if (step === 3) {
-      setStep(4)
-      setTimeout(() => onComplete(), 800)
-    } else {
-      setStep(s => (s + 1) as 0 | 1 | 2 | 3 | 4)
-    }
+    setStep(s => (s + 1) as 0 | 1 | 2 | 3 | 4)
   }
 
   // Repliker
