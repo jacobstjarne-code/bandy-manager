@@ -5,6 +5,7 @@ import { MatchEventType, InboxItemType } from '../../../domain/enums'
 import { csColor, formatFinance } from '../../utils/formatters'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { SectionLabel } from '../../components/SectionLabel'
+import { getCurrentLeaguePosition } from '../../../domain/services/standingsService'
 
 interface GranskaForlopProps {
   game: SaveGame
@@ -21,6 +22,7 @@ interface GranskaForlopProps {
 
 export function GranskaForlop({ game, fixture, isHome, rs, standing, standingBefore, financesDelta, csDelta, cs, otherResults }: GranskaForlopProps) {
   const navigate = useNavigate()
+  const leaguePosition = getCurrentLeaguePosition(game.managedClubId, game)
 
   const allEvents = fixture?.events
     .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard || e.type === MatchEventType.Corner || e.type === MatchEventType.Penalty)
@@ -39,9 +41,10 @@ export function GranskaForlop({ game, fixture, isHome, rs, standing, standingBef
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => navigate('/game/tabell')}>
                 <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>📊 Tabellplacering</span>
                 <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
-                  {standingBefore && standingBefore !== standing.position
-                    ? `${standingBefore} → ${standing.position} ${standingBefore > standing.position ? '↑' : '↓'}`
-                    : `${standing.position}:a`}
+                  {leaguePosition === null ? '—'
+                    : standingBefore && standingBefore !== leaguePosition
+                    ? `${standingBefore} → ${leaguePosition} ${standingBefore > leaguePosition ? '↑' : '↓'}`
+                    : `${leaguePosition}:a`}
                 </span>
               </div>
             )}

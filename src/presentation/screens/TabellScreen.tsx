@@ -29,6 +29,7 @@ export function TabellScreen() {
 
   // Calculate previous round standings for position movement arrows
   const completedLeague = (game.fixtures ?? []).filter(f => f.status === 'completed' && !f.isCup)
+  const hasLeagueStarted = completedLeague.length > 0
   const latestRound = completedLeague.reduce((max, f) => Math.max(max, f.roundNumber), 0)
   const prevRoundFixtures = completedLeague.filter(f => f.roundNumber < latestRound)
   const prevStandings = latestRound > 1
@@ -162,22 +163,21 @@ export function TabellScreen() {
           marginBottom: 10,
         }}>
           <div style={{ fontSize: 12, color: 'var(--accent)', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <span style={{ fontWeight: 700 }}>{myPos}. plats</span>
-            <span style={{ color: 'var(--text-muted)' }}>·</span>
-            {(() => {
-              const hasPlayed = standings.some(s => s.played > 0)
-              if (!hasPlayed) return <span style={{ color: 'var(--text-muted)' }}>Säsongen har inte börjat</span>
-              if (myPos <= 8) return <span>I slutspelszonen</span>
-              if (myPos <= 10) return <span>Utanför slutspel</span>
-              return <span style={{ color: 'var(--danger)' }}>I nedflyttningszonen</span>
-            })()}
-            <span style={{ color: 'var(--text-muted)' }}>·</span>
-            {(() => {
-              const hasPlayed = standings.some(s => s.played > 0)
-              if (!hasPlayed) return null
-              if (myPos === 1 && ptToLeader === 0) return <span style={{ color: 'var(--success)' }}>Serieledare</span>
-              return <span>{ptToLeader}p till ledaren</span>
-            })()}
+            {hasLeagueStarted ? (
+              <>
+                <span style={{ fontWeight: 700 }}>{myPos}. plats</span>
+                <span style={{ color: 'var(--text-muted)' }}>·</span>
+                {myPos <= 8 ? <span>I slutspelszonen</span>
+                  : myPos <= 10 ? <span>Utanför slutspel</span>
+                  : <span style={{ color: 'var(--danger)' }}>I nedflyttningszonen</span>}
+                <span style={{ color: 'var(--text-muted)' }}>·</span>
+                {myPos === 1 && ptToLeader === 0
+                  ? <span style={{ color: 'var(--success)' }}>Serieledare</span>
+                  : <span>{ptToLeader}p till ledaren</span>}
+              </>
+            ) : (
+              <span style={{ color: 'var(--text-muted)' }}>Säsongen börjar omg 1</span>
+            )}
           </div>
           <p style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Aktuell tabell med form och målskillnad.</p>
         </div>
@@ -212,18 +212,18 @@ export function TabellScreen() {
       }}>
         {standings.map((row, i) => {
           const isManaged = row.clubId === managedClubId
-          const isTop3 = row.position <= 3
-          const goalDiff = row.goalDifference >= 0
-            ? `+${row.goalDifference}`
+          const isTop3 = hasLeagueStarted && row.position <= 3
+          const goalDiff = !hasLeagueStarted ? '—'
+            : row.goalDifference >= 0 ? `+${row.goalDifference}`
             : String(row.goalDifference)
           const lastPos = prevStandings.find(s => s.clubId === row.clubId)?.position
-          const posDiff = lastPos != null ? lastPos - row.position : null
+          const posDiff = hasLeagueStarted && lastPos != null ? lastPos - row.position : null
           const form = getFormResults(row.clubId, game.fixtures, game.clubs)
 
           return (
             <div key={row.clubId}>
               {/* Zone divider: after position 8 (top 8 to playoffs) */}
-              {row.position === 9 && (
+              {hasLeagueStarted && row.position === 9 && (
                 <div style={{
                   padding: '5px 10px',
                   borderTop: '1px solid rgba(196,122,58,0.4)',
@@ -242,7 +242,7 @@ export function TabellScreen() {
               )}
 
               {/* Zone divider: after position 10 */}
-              {row.position === 11 && (
+              {hasLeagueStarted && row.position === 11 && (
                 <div style={{
                   padding: '5px 10px',
                   borderTop: '1px solid rgba(239,68,68,0.5)',
@@ -270,12 +270,12 @@ export function TabellScreen() {
                   padding: '6px 10px',
                   alignItems: 'center',
                   borderTop: i === 0 ? 'none' : '1px solid var(--border)',
-                  borderLeft: `3px solid ${getRowBorderColor(row.position)}`,
+                  borderLeft: `3px solid ${hasLeagueStarted ? getRowBorderColor(row.position) : 'transparent'}`,
                   background: isManaged
                     ? 'linear-gradient(90deg, rgba(196,122,58,0.12) 0%, rgba(196,122,58,0.04) 100%)'
                     : isTop3
                     ? 'rgba(196,122,58,0.05)'
-                    : row.position >= 11
+                    : hasLeagueStarted && row.position >= 11
                     ? 'rgba(239,68,68,0.04)'
                     : 'transparent',
                   cursor: 'pointer',
@@ -288,7 +288,7 @@ export function TabellScreen() {
                     fontWeight: 700,
                     color: isTop3 ? 'var(--accent)' : 'var(--text-muted)',
                   }}>
-                    {row.position}
+                    {hasLeagueStarted ? row.position : '—'}
                   </span>
                   {posDiff !== null && posDiff !== 0 && (
                     <span style={{
@@ -345,7 +345,7 @@ export function TabellScreen() {
                   textAlign: 'right',
                   color: isManaged ? 'var(--accent)' : 'var(--text-primary)',
                 }}>
-                  {row.points}
+                  {hasLeagueStarted ? row.points : '—'}
                 </span>
               </div>
 

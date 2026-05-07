@@ -7,6 +7,7 @@ import { FormSquares } from '../components/FormDots'
 import { getFormResults } from '../utils/formUtils'
 import { FixtureStatus, InboxItemType } from '../../domain/enums'
 import { getRivalry } from '../../domain/data/rivalries'
+import { getCurrentLeaguePosition } from '../../domain/services/standingsService'
 
 export function RoundSummaryScreen() {
   const navigate = useNavigate()
@@ -71,6 +72,7 @@ export function RoundSummaryScreen() {
 
   // Standing
   const standing = game.standings.find(s => s.clubId === game.managedClubId)
+  const leaguePosition = getCurrentLeaguePosition(game.managedClubId, game)
 
   // Recent form (last 5)
   const recentForm = getFormResults(game.managedClubId, game.fixtures, game.clubs)
@@ -247,13 +249,15 @@ export function RoundSummaryScreen() {
               </p>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                 <span style={{ fontSize: 24, fontWeight: 400, color: 'var(--accent-dark)', fontFamily: 'var(--font-display)' }}>
-                  {standing.position}
+                  {leaguePosition ?? '—'}
                 </span>
-                <div>
-                  <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: 0 }}>
-                    {standing.points}p · {standing.goalDifference >= 0 ? '+' : ''}{standing.goalDifference}
-                  </p>
-                </div>
+                {leaguePosition !== null && (
+                  <div>
+                    <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: 0 }}>
+                      {standing.points}p · {standing.goalDifference >= 0 ? '+' : ''}{standing.goalDifference}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
             <div className="card-sharp" style={{ flex: 1, padding: '10px 14px' }}>

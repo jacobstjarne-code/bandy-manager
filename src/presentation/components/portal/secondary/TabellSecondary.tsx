@@ -48,6 +48,12 @@ function getContextLine(game: SaveGame): string | null {
 export function TabellSecondary({ game }: CardRenderProps) {
   const navigate = useNavigate()
   const managedId = game.managedClubId
+
+  const hasLeagueStarted = game.fixtures.some(
+    f => f.status === 'completed' && !f.isCup
+  )
+  if (!hasLeagueStarted) return null
+
   const standing = game.standings.find(s => s.clubId === managedId)
   const recentForm = getFormResults(managedId, game.fixtures, game.clubs).slice(-5)
   const contextLine = getContextLine(game)

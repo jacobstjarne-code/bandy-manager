@@ -1,5 +1,6 @@
 import type { CardRenderProps } from '../portalTypes'
 import { getFormResults } from '../../../utils/formUtils'
+import { getCurrentLeaguePosition } from '../../../../domain/services/standingsService'
 
 /** Secondary-kort: motståndarens senaste 5 matcher. */
 export function OpponentFormSecondary({ game }: CardRenderProps) {
@@ -15,7 +16,7 @@ export function OpponentFormSecondary({ game }: CardRenderProps) {
   const opponent = game.clubs.find(c => c.id === opponentId)
   if (!opponent) return null
 
-  const standing = game.standings.find(s => s.clubId === opponentId)
+  const opponentLeaguePosition = getCurrentLeaguePosition(opponentId, game)
   const recentForm = getFormResults(opponentId, game.fixtures, game.clubs)
   if (recentForm.length === 0) return null
 
@@ -46,9 +47,9 @@ export function OpponentFormSecondary({ game }: CardRenderProps) {
       }}>
         {formStr || '—'}
       </div>
-      {standing && (
+      {opponentLeaguePosition !== null && (
         <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>
-          {standing.position}:a · {standing.points}p
+          {opponentLeaguePosition}:a · {game.standings.find(s => s.clubId === opponentId)?.points ?? 0}p
         </div>
       )}
     </div>

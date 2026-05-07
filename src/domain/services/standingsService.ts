@@ -1,6 +1,19 @@
 import type { Fixture } from '../entities/Fixture'
-import type { StandingRow } from '../entities/SaveGame'
+import type { SaveGame, StandingRow } from '../entities/SaveGame'
 import { FixtureStatus } from '../enums'
+
+/**
+ * Returns the current league position for a club, or null if no league
+ * matches have been played yet (e.g. during the pre-season cup phase).
+ * All callers should render "-" when null rather than showing arbitrary 0-poäng positions.
+ */
+export function getCurrentLeaguePosition(clubId: string, game: SaveGame): number | null {
+  const hasLeague = game.fixtures.some(
+    f => f.status === FixtureStatus.Completed && !f.isCup && !f.isKnockout
+  )
+  if (!hasLeague) return null
+  return game.standings.find(s => s.clubId === clubId)?.position ?? null
+}
 
 export function calculateStandings(teamIds: string[], fixtures: Fixture[], pointDeductions?: Record<string, number>): StandingRow[] {
   const rowMap = new Map<string, StandingRow>()

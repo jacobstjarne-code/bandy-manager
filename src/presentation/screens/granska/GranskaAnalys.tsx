@@ -4,6 +4,7 @@ import type { Player } from '../../../domain/entities/Player'
 import { csColor, formatFinance } from '../../utils/formatters'
 import { SectionLabel } from '../../components/SectionLabel'
 import { generateCoachQuote } from '../../../domain/services/assistantCoachService'
+import { getCurrentLeaguePosition } from '../../../domain/services/standingsService'
 
 interface GranskaAnalysProps {
   game: SaveGame
@@ -22,6 +23,7 @@ interface GranskaAnalysProps {
 }
 
 export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, theirScore, potm, standing, standingBefore, financesDelta, csDelta, cs }: GranskaAnalysProps) {
+  const leaguePosition = getCurrentLeaguePosition(game.managedClubId, game)
   const coach = game.assistantCoach
   const coachItem = game.inbox
     .filter(i => i.tone === 'coach')
@@ -60,9 +62,10 @@ export function GranskaAnalys({ game, fixture, isHome, won, lost, myScore, their
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
             <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Tabellplacering</span>
             <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
-              {standingBefore && standingBefore !== standing.position
-                ? `${standingBefore} → ${standing.position}`
-                : `${standing.position}:a`}
+              {leaguePosition === null ? '—'
+                : standingBefore && standingBefore !== leaguePosition
+                ? `${standingBefore} → ${leaguePosition}`
+                : `${leaguePosition}:a`}
             </span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
