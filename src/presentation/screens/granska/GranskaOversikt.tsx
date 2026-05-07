@@ -202,9 +202,16 @@ export function GranskaOversikt({
         if (!pc) return null
         const pcResolved = resolvedEventIds.has(pc.id)
         const pcChosenLabel = chosenLabels[pc.id]
+        const pcTitle = pc.title.replace(/^🎤\s*Presskonferens\s*[—–-]\s*/i, '').trim()
         return (
-          <div className="card-sharp" style={{ margin: '0 0 6px', ...fadeIn(4) }}>
+          <div className="card-sharp" style={{
+            margin: '0 0 6px',
+            borderLeft: '3px solid var(--warm)',
+            borderRadius: '0 8px 8px 0',
+            ...fadeIn(4),
+          }}>
             <div style={{ padding: '10px 12px' }}>
+              <SectionLabel style={{ marginBottom: pcResolved ? 4 : 6 }}>🎤 PRESSKONFERENSEN</SectionLabel>
               {pcResolved ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
@@ -212,7 +219,7 @@ export function GranskaOversikt({
                 </div>
               ) : (
                 <>
-                  <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{pc.title}</p>
+                  {pcTitle && <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{pcTitle}</p>}
                   <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, fontStyle: 'italic' }}>{pc.body}</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                     {pc.choices.map((choice: EventChoice) => (
@@ -279,14 +286,19 @@ export function GranskaOversikt({
           : journalist?.persona === 'sensationalist' ? 'Sensationalistisk'
           : journalist?.persona === 'analytical' ? 'Analytisk' : null
         return (
-          <div className="card-sharp" style={{ margin: '0 0 6px', padding: '10px 12px', ...fadeIn(5) }}>
+          <div className="card-sharp" style={{
+            margin: '0 0 6px', padding: '10px 12px',
+            borderLeft: '2px solid var(--accent)',
+            borderRadius: '0 8px 8px 0',
+            ...fadeIn(5),
+          }}>
             <SectionLabel style={{ marginBottom: 6 }}>📰 MEDIA</SectionLabel>
             {journalist && (
               <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>
                 {journalist.name} · {journalist.outlet}{personaLabel ? ` · ${personaLabel}` : ''}
               </p>
             )}
-            <p style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.4, fontStyle: 'italic' }}>
+            <p style={{ fontSize: 13, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.4 }}>
               {headlineItem.body}
             </p>
           </div>
