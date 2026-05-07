@@ -44,6 +44,7 @@ import { KlackenSecondary } from '../../../presentation/components/portal/second
 import { CoffeeRoomSecondary } from '../../../presentation/components/portal/secondary/CoffeeRoomSecondary'
 import { JournalistSecondary } from '../../../presentation/components/portal/secondary/JournalistSecondary'
 import { SeasonSignatureSecondary } from '../../../presentation/components/portal/secondary/SeasonSignatureSecondary'
+import { WeeklyDecisionSecondary } from '../../../presentation/components/portal/secondary/WeeklyDecisionSecondary'
 import { getCoffeeRoomScene } from '../coffeeRoomService'
 import { shouldShowJournalistCard } from '../journalistVisibilityService'
 
@@ -99,6 +100,13 @@ const PORTAL_CARDS: DashboardCard[] = [
   },
 
   // ── SECONDARY TIER ────────────────────────────────────────────
+  {
+    id: 'weekly_decision',
+    tier: 'secondary',
+    weight: 85,
+    triggers: [(game) => !!game.pendingWeeklyDecision],
+    Component: WeeklyDecisionSecondary,
+  },
   {
     id: 'open_bids',
     tier: 'secondary',
