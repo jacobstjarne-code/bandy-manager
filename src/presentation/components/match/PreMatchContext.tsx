@@ -155,10 +155,8 @@ function deriveContext(
     }
   }
 
-  // 7. Cup-match (lägst prio)
-  if (fixture.isCup) {
-    return { trigger: 'cup_fixture', subs: {} }
-  }
+  // Cup-matcher ägs av cup-bannern — ingen PreMatchContext
+  if (fixture.isCup) return null
 
   return null
 }

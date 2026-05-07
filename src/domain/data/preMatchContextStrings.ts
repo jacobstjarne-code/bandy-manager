@@ -7,7 +7,6 @@ export type PreMatchTrigger =
   | 'opp_hot'
   | 'opp_home_unbeaten'
   | 'opp_cold'
-  | 'cup_fixture'
 
 export const NUMBER_WORDS: Record<number, string> = {
   3: 'Tre',
@@ -102,11 +101,6 @@ const POOLS: Record<PreMatchTrigger, string[]> = {
     '{opp} är skakade.',
     '{opp} kommer hit slitna.',
     '{opp} har gått sönder någonstans i höst.',
-  ],
-  cup_fixture: [
-    'Cupen. En match som folk minns längre än serien.',
-    'Cup-spel. Ingen mellannivå — vidare eller hem.',
-    'Cup. Bara ett resultat räknas.',
   ],
 }
 
