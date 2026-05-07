@@ -4,8 +4,8 @@
  * EN skärm hela scenen. Setting persisterar och dimmas. Repliker
  * läggs till allteftersom — aktuell replik full opacity, föregående dimmade.
  *
- * CSS: src/styles/global.css (.arrival-scene, .as-setting, .as-replica,
- *      .as-speaker, .as-quote, .scene-cta, .beat-progress)
+ * CSS: src/styles/global.css (.arrival-scene, .h-scene-setting, .h-scene-replica,
+ *      .h-scene-speaker, .h-scene-quote, .btn-scene-cta, .beat-progress, .scene-dimmed)
  */
 
 import { useState, useEffect, useRef } from 'react'
@@ -165,7 +165,7 @@ function ArrivalSceneInner({
         }}
       >
         {/* Setting — persisterar hela scenen, dimmas när dialog börjar */}
-        <div className={`as-setting${currentStage > 0 ? ' dimmed' : ''}`}>
+        <div className={`h-scene-setting${currentStage > 0 ? ' scene-dimmed' : ''}`}>
           <strong>{clubName}.</strong>
           {`${cap(weekday)} kväll. Lampan vid klubbhuset lyser. De väntar dig där inne. ${chairman}. ${treasurer}. ${member}. Tre kaffekoppar redan på bordet.`}
         </div>
@@ -175,9 +175,9 @@ function ArrivalSceneInner({
           const stageIndex = i + 1
           const isCurrent = stageIndex === currentStage
           return (
-            <div key={stageIndex} className={`as-replica${isCurrent ? '' : ' dimmed'}`}>
-              <div className="as-speaker">{replica.speaker}</div>
-              <div className="as-quote">"{replica.body}"</div>
+            <div key={stageIndex} className={`h-scene-replica${isCurrent ? '' : ' scene-dimmed'}`}>
+              <div className="h-scene-speaker">{replica.speaker}</div>
+              <div className="h-scene-quote">"{replica.body}"</div>
             </div>
           )
         })}
@@ -195,7 +195,7 @@ function ArrivalSceneInner({
             pointerEvents: ctaReady ? 'auto' : 'none',
           }}
         >
-          <button className="scene-cta" onClick={() => setCurrentStage(s => (s + 1) as 0 | 1 | 2 | 3 | 4)}>
+          <button className="btn-scene-cta" onClick={() => setCurrentStage(s => (s + 1) as 0 | 1 | 2 | 3 | 4)}>
             {stageCta}
           </button>
         </div>

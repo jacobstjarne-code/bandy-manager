@@ -175,3 +175,129 @@
   letter-spacing: 1.5px;
   text-transform: uppercase;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   SCENE TYPOGRAPHY — dark-bg context (--bg-scene / --bg-portal)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Genre label — "⬩ ANKOMSTEN ⬩" / "⬩ I DETTA ÖGONBLICK ⬩" */
+.h-scene-genre {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  color: var(--accent);
+  opacity: 0.7;
+  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* Scene title — Georgia 28px, center, tight */
+.h-scene-title {
+  font-family: Georgia, serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-light);
+  text-align: center;
+  line-height: 1.1;
+  letter-spacing: -0.3px;
+  margin-bottom: 6px;
+}
+
+/* Helper / subtitle — Georgia italic, muted */
+.h-scene-helper {
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+/* Setting prolog — Georgia italic, centered */
+.h-scene-setting {
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--text-light-secondary);
+  line-height: 1.6;
+  text-align: center;
+  max-width: 280px;
+  margin: 0 auto;
+  transition: opacity 0.5s ease;
+}
+.h-scene-setting strong {
+  font-style: normal;
+  color: var(--text-light);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+/* Speaker label — "MARGARETA · KASSÖR" */
+.h-scene-speaker {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* Dialog quote — Georgia, full light */
+.h-scene-quote {
+  font-family: Georgia, serif;
+  font-size: 14px;
+  color: var(--text-light);
+  line-height: 1.55;
+}
+
+/* Replica wrapper */
+.h-scene-replica {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-left: 2px;
+  transition: opacity 0.5s ease;
+}
+
+/* Dimmed state modifier — setting/replicas that have been passed */
+.scene-dimmed { opacity: 0.4; transition: opacity 0.5s ease; }
+
+/* Scene CTA — dark-bg outline button */
+.btn-scene-cta {
+  width: 100%;
+  padding: 14px;
+  background: var(--bg-dark-elevated);
+  color: var(--text-light);
+  border: 1px solid var(--bg-leather);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.btn-scene-cta:hover {
+  background: var(--accent-deep);
+  border-color: var(--accent);
+}
+.btn-scene-cta:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Scene ghost — back/link button on dark bg */
+.btn-scene-ghost {
+  background: none;
+  border: none;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: var(--font-body);
+  padding: 4px 0;
+}
+.btn-scene-ghost:hover { color: var(--text-light); }

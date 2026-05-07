@@ -41,10 +41,7 @@ export function AllClubsView({ onSelect, onBack }: Props) {
 
       <div style={{ position: 'relative', zIndex: 2, padding: '22px 18px 18px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <button
-            onClick={onBack}
-            style={{ fontSize: 11, color: 'var(--text-muted)', cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'var(--font-body)' }}
-          >
+          <button onClick={onBack} className="btn-scene-ghost">
             ← Tillbaka
           </button>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: 'var(--text-light)', textAlign: 'center', flex: 1 }}>

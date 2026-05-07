@@ -22,8 +22,7 @@ export function SceneCTA({ label, onClick, variant = 'default' }: Props) {
         onMouseLeave={() => setHover(false)}
         onClick={onClick}
         style={{
-          background:
-            'linear-gradient(135deg, var(--match-gold) 0%, var(--accent) 100%)',
+          background: 'linear-gradient(135deg, var(--match-gold) 0%, var(--accent) 100%)',
           color: 'var(--bg-dark)',
           border: 'none',
           padding: '14px 28px',
@@ -47,24 +46,7 @@ export function SceneCTA({ label, onClick, variant = 'default' }: Props) {
   }
 
   return (
-    <button
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      onClick={onClick}
-      style={{
-        width: '100%',
-        padding: 14,
-        background: hover ? 'var(--accent-deep)' : 'var(--bg-dark-elevated)',
-        color: 'var(--text-light)',
-        border: `1px solid ${hover ? 'var(--accent)' : 'var(--bg-leather)'}`,
-        borderRadius: 8,
-        fontSize: 13,
-        fontWeight: 600,
-        cursor: 'pointer',
-        fontFamily: 'var(--font-body)',
-        transition: 'background 0.15s ease, border-color 0.15s ease',
-      }}
-    >
+    <button className="btn-scene-cta" onClick={onClick}>
       {label}
     </button>
   )
