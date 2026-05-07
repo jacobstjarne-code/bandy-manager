@@ -2,6 +2,7 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { getRivalry } from '../../../domain/data/rivalries'
 import { FixtureStatus } from '../../../domain/enums'
+import { getCurrentLeaguePosition } from '../../../domain/services/standingsService'
 import {
   pickPreMatchContextText,
   type PreMatchTrigger,
@@ -81,8 +82,10 @@ function deriveContext(
     return { trigger: 'loss_streak', subs: { n: lossStreak } }
   }
 
-  // 4. Tabellkontext
-  const myStanding = game.standings.find(s => s.clubId === managedClubId)
+  // 4. Tabellkontext — bara när serien har börjat (annars 0-poäng-meningslös text)
+  const myStanding = getCurrentLeaguePosition(managedClubId, game) !== null
+    ? game.standings.find(s => s.clubId === managedClubId)
+    : null
   if (myStanding) {
     const pos = myStanding.position
     const myPoints = myStanding.points

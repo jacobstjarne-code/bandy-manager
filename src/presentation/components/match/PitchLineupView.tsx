@@ -301,13 +301,19 @@ export function PitchLineupView({
         </span>
         <button
           onClick={onAutoFill}
-          className="btn btn-ghost"
           style={{
-            padding: '8px 16px', fontSize: 13, fontWeight: 600,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            padding: '5px 10px',
+            background: 'transparent',
+            border: '1.5px solid var(--accent)',
+            color: 'var(--accent-dark)',
+            fontSize: 11, fontWeight: 600,
+            borderRadius: 8,
+            cursor: 'pointer',
           }}
         >
-          ✨ Generera bästa elvan
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" stroke="currentColor"><path d="M6 1.5 L7 4 L9.5 5 L7 6 L6 8.5 L5 6 L2.5 5 L5 4 Z"/><path d="M9.5 8.5 L10 9.5 L11 10 L10 10.5 L9.5 11.5 L9 10.5 L8 10 L9 9.5 Z"/></svg>
+          Auto-fyll
         </button>
       </div>
 

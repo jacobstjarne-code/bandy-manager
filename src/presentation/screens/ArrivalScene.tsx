@@ -102,7 +102,7 @@ function ArrivalSceneInner({
   const replicas = [
     {
       speaker: 'MARGARETA · KASSÖR',
-      body: `Truppen är ${squadSize}. ${expiringContracts} kontrakt går ut i vår. Kassa ${formatKr(cashKr)}, transferbudget ${formatKr(transferBudgetKr)}. Mer har vi inte.`,
+      body: `Det här är en gammal klubb. Vi förväntar oss inte mirakel — men vi förväntar oss att det syns att du bryr dig. ${expiringContracts > 0 ? `${expiringContracts} kontrakt löper ut. Snacka med dom tidigt.` : 'Truppen är samlad.'}`,
       cta: 'Förstått',
     },
     {

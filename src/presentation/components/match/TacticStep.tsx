@@ -147,7 +147,7 @@ export function TacticStep({ tacticState, startingIds, game, opponent, nextFixtu
               const feedback = getFeedback(key)
               return (
                 <div key={key as string} style={{ marginBottom: ri < rows.length - 1 ? 9 : 0 }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '56px 1fr', alignItems: 'center', gap: 8 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '84px 1fr', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600 }}>{label}</span>
                     <div className="tactic-segmented">
                       {options.map((opt, oi) => {

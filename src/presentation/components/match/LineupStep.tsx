@@ -9,6 +9,7 @@ import { generateBasicAnalysis } from '../../../domain/services/opponentAnalysis
 import { getConditionLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
 import { LineupFormationView } from './LineupFormationView'
 import { PitchLineupView } from './PitchLineupView'
+import { OpponentAnalysisCard } from './OpponentAnalysisCard'
 
 interface GroupedPlayers {
   position: string
@@ -76,7 +77,7 @@ export function LineupStep({
   onAssignPlayer,
   onRemovePlayer,
   onSwapPlayers,
-  onError: _onError,
+  onError,
   onNext,
 }: LineupStepProps) {
   const [viewMode, setViewMode] = useState<'list' | 'pitch'>('list')
@@ -137,6 +138,16 @@ export function LineupStep({
             </div>
           )}
         </div>
+      )}
+
+      {/* Opponent analysis card */}
+      {opponent && nextFixture && (
+        <OpponentAnalysisCard
+          fixture={nextFixture}
+          opponent={opponent}
+          game={game}
+          onError={onError}
+        />
       )}
 
       {/* Pitch area */}

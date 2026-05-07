@@ -441,9 +441,9 @@ a {
   transition: background 0.1s;
 }
 .tactic-btn:last-child { border-right: 0; }
-.tactic-btn.intensity-1 { font-weight: 400; }
-.tactic-btn.intensity-2 { font-weight: 500; }
-.tactic-btn.intensity-3 { font-weight: 700; }
+.tactic-btn.intensity-1 { font-weight: 400; font-size: 11px; color: var(--text-muted); }
+.tactic-btn.intensity-2 { font-weight: 400; font-size: 12px; color: var(--text-secondary); }
+.tactic-btn.intensity-3 { font-weight: 600; font-size: 13px; color: var(--text-primary); }
 .tactic-btn.active { background: var(--accent); color: #fff; }
 .tactic-btn.recommended::after {
   content: "";
