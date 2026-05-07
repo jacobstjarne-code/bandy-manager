@@ -82,7 +82,8 @@ Och håll bygden med oss. Tomma läktare är dåligt för bandyn och dåligt fö
 }
 
 export function shouldTriggerBoardMeeting(game: SaveGame): boolean {
-  // Triggar vid spelets allra första render — matchday 0, inga matcher spelade, inte visad.
+  // Triggar vid säsongsstart från och med säsong 2. Säsong 1 hanteras av ArrivalScene.
+  if (game.currentSeason === 1) return false
   if ((game.shownScenes ?? []).includes('board_meeting')) return false
   if (game.currentMatchday !== 0) return false
   const anyMatchPlayed = game.fixtures.some(f => f.status === 'completed')

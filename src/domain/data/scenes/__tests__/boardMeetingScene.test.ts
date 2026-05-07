@@ -185,16 +185,20 @@ describe('BoardMeetingScene — getBoardMeetingBeats', () => {
 // ─── shouldTriggerBoardMeeting ────────────────────────────────────────────
 
 describe('shouldTriggerBoardMeeting — trigger-villkor', () => {
-  it('triggar säsong 1, matchday 0, inte visad', () => {
-    expect(shouldTriggerBoardMeeting(makeGame({ season: 1, matchday: 0 }))).toBe(true)
+  it('triggar inte säsong 1 (ArrivalScene täcker det)', () => {
+    expect(shouldTriggerBoardMeeting(makeGame({ season: 1, matchday: 0 }))).toBe(false)
+  })
+
+  it('triggar säsong 2, matchday 0, inte visad', () => {
+    expect(shouldTriggerBoardMeeting(makeGame({ season: 2, matchday: 0 }))).toBe(true)
   })
 
   it('triggar inte om redan visad', () => {
-    expect(shouldTriggerBoardMeeting(makeGame({ season: 1, matchday: 0, shownScenes: ['board_meeting'] }))).toBe(false)
+    expect(shouldTriggerBoardMeeting(makeGame({ season: 2, matchday: 0, shownScenes: ['board_meeting'] }))).toBe(false)
   })
 
   it('triggar inte matchday 1+', () => {
-    expect(shouldTriggerBoardMeeting(makeGame({ season: 1, matchday: 1 }))).toBe(false)
+    expect(shouldTriggerBoardMeeting(makeGame({ season: 2, matchday: 1 }))).toBe(false)
   })
 })
 

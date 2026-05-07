@@ -76,7 +76,7 @@ function ArrivalSceneInner({
   currentDate,
   onComplete,
 }: ArrivalSceneProps) {
-  const [currentStage, setCurrentStage] = useState<0 | 1 | 2 | 3 | 4>(0)
+  const [currentStage, setCurrentStage] = useState<0 | 1 | 2 | 3 | 4 | 5>(0)
   const [ctaReady, setCtaReady] = useState(false)
   const onCompleteRef = useRef(onComplete)
   useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
@@ -91,7 +91,7 @@ function ArrivalSceneInner({
 
   // Navigate after exit-fade — cleanup prevents ghost-trigger on fast unmount
   useEffect(() => {
-    if (currentStage < 4) return
+    if (currentStage < 5) return
     const t = setTimeout(() => onCompleteRef.current(), 800)
     return () => clearTimeout(t)
   }, [currentStage])
@@ -113,7 +113,12 @@ function ArrivalSceneInner({
     {
       speaker: 'STURE · LEDAMOT',
       body: getStureLine(clubId),
-      cta: 'Då börjar vi',
+      cta: 'Hörde',
+    },
+    {
+      speaker: 'KERSTIN AHLIN · LEDAMOT',
+      body: `Truppen är ${squadSize}. Kassa ${formatKr(cashKr)}, transferbudget ${formatKr(transferBudgetKr)}. Mer har vi inte.`,
+      cta: 'Då kör vi.',
     },
   ]
 
@@ -141,7 +146,7 @@ function ArrivalSceneInner({
           ⬩ &nbsp;Ankomsten&nbsp; ⬩
         </div>
         <div className="beat-progress" style={{ marginTop: 14 }}>
-          {[0, 1, 2, 3].map(i => (
+          {[0, 1, 2, 3, 4].map(i => (
             <span
               key={i}
               className={`dot${i <= currentStage ? ' active' : ''}`}
@@ -184,7 +189,7 @@ function ArrivalSceneInner({
       </div>
 
       {/* CTA */}
-      {currentStage < 4 && stageCta && (
+      {currentStage < 5 && stageCta && (
         <div
           style={{
             position: 'relative',
@@ -195,14 +200,14 @@ function ArrivalSceneInner({
             pointerEvents: ctaReady ? 'auto' : 'none',
           }}
         >
-          <button className="btn-scene-cta" onClick={() => setCurrentStage(s => (s + 1) as 0 | 1 | 2 | 3 | 4)}>
+          <button className="btn-scene-cta" onClick={() => setCurrentStage(s => (s + 1) as 0 | 1 | 2 | 3 | 4 | 5)}>
             {stageCta}
           </button>
         </div>
       )}
 
       {/* Exit overlay */}
-      {currentStage >= 4 && (
+      {currentStage >= 5 && (
         <div className="arrival-exit">
           <span>→ Dashboard</span>
         </div>

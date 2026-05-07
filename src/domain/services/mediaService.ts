@@ -4,9 +4,14 @@ import { FixtureStatus, InboxItemType } from '../enums'
 import { getHeadlinePrefix } from './journalistService'
 import { SMALL_ABSURDITIES } from '../data/smallAbsurditiesData'
 
-function mediaItem(title: string, date: string, id: string, game?: SaveGame): InboxItem {
-  // Prefix with journalist name if available
-  const prefix = game?.journalist ? getHeadlinePrefix(game.journalist, !title.includes('KOLLAPS') && !title.includes('Kris')) : ''
+function mediaItem(title: string, date: string, id: string, game?: SaveGame, suppressJournalistName?: boolean): InboxItem {
+  let prefix = ''
+  if (game?.journalist && !suppressJournalistName) {
+    prefix = getHeadlinePrefix(game.journalist, !title.includes('KOLLAPS') && !title.includes('Kris'))
+  } else if (game?.journalist && suppressJournalistName) {
+    // Press conference already shows this journalist — use outlet-only byline
+    prefix = `${game.journalist.outlet}: `
+  }
   return {
     id,
     date,
@@ -43,6 +48,7 @@ export function generateMediaHeadlines(
   simulatedFixtures: Fixture[],
   round: number,
   rand: () => number,
+  suppressJournalistName?: boolean,
 ): InboxItem[] {
   const managedFixture = simulatedFixtures.find(
     f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
@@ -65,28 +71,28 @@ export function generateMediaHeadlines(
   if (myScore >= theirScore + 4) {
     return [mediaItem(
       `MÅLKALAS! ${myClub?.name} krossade ${opponentClub?.name} med ${myScore}–${theirScore}`,
-      game.currentDate, id, game
+      game.currentDate, id, game, suppressJournalistName
     )]
   }
 
   if (theirScore >= myScore + 4) {
     return [mediaItem(
       `KOLLAPSEN: ${myClub?.name} förnedrade av ${opponentClub?.name} — ${myScore}–${theirScore}`,
-      game.currentDate, id, game
+      game.currentDate, id, game, suppressJournalistName
     )]
   }
 
   if (myScore > theirScore && wins >= 4) {
     return [mediaItem(
       `${myClub?.name} i strålande form — ${wins} raka segrar`,
-      game.currentDate, id, game
+      game.currentDate, id, game, suppressJournalistName
     )]
   }
 
   if (theirScore > myScore && losses >= 3) {
     return [mediaItem(
       `Kris i ${myClub?.name}? Tredje raka förlusten`,
-      game.currentDate, id, game
+      game.currentDate, id, game, suppressJournalistName
     )]
   }
 
@@ -98,7 +104,7 @@ export function generateMediaHeadlines(
     if (potm && rating && rating >= 8.0) {
       return [mediaItem(
         `"Otrolig insats" — ${potm.firstName} ${potm.lastName} hyllas efter ${rating.toFixed(1)}-betyg`,
-        game.currentDate, id
+        game.currentDate, id, game, suppressJournalistName
       )]
     }
   }

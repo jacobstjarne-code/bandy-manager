@@ -23,16 +23,17 @@ export function processMedia(
   currentLeagueRound: number | null,
   newDate: string,
   localRand: () => number,
-  options?: { skipSideEffects?: boolean },
+  options?: { skipSideEffects?: boolean; hasPressConference?: boolean },
 ): MediaResult {
   const isSecondPassForManagedMatch = options?.skipSideEffects ?? false
+  const suppressJournalistName = options?.hasPressConference ?? false
   const inboxItems: InboxItem[] = []
   const scoutReportUpdates: Record<string, ScoutReport> = {}
   let resolvedEventIds = [...(game.resolvedEventIds ?? [])]
   let reputationDelta = 0
 
   // Media headlines (all fixtures this round)
-  const mediaHeadlines = generateMediaHeadlines(game, simulatedFixtures, nextMatchday, localRand)
+  const mediaHeadlines = generateMediaHeadlines(game, simulatedFixtures, nextMatchday, localRand, suppressJournalistName)
   inboxItems.push(...mediaHeadlines)
 
   // Journalist post-match headline

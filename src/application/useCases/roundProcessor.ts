@@ -774,7 +774,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     currentLeagueRound,
     newDate,
     localRand,
-    { skipSideEffects: isSecondPassForManagedMatch },
+    { skipSideEffects: isSecondPassForManagedMatch, hasPressConference: simResult.pressEvent !== null },
   )
   newInboxItems.push(...mediaResult.inboxItems)
   const rumorScoutReports = { ...game.scoutReports, ...mediaResult.scoutReportUpdates }
