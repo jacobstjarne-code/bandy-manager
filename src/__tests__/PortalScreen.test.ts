@@ -167,7 +167,8 @@ describe('PortalScreen integration — primärkort per game-state', () => {
       pendingEvents: [
         {
           id: 'evt_1',
-          type: 'board_crisis',
+          type: 'economicStress',
+          priority: 'critical',
           resolved: false,
         } as never,
       ],

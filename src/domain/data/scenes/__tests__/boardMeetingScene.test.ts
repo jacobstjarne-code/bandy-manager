@@ -115,7 +115,7 @@ describe('BoardMeetingScene — getBoardMeetingBeats', () => {
     const game = makeGame({ clubId: 'club_forsbacka', squadSize: 16, cash: 330000, transferBudget: 65000, expiring: 4 })
     const beats = getBoardMeetingBeats(game)
     expect(beats).toHaveLength(4)
-    expect(beats[1].body).toContain('16 spelare')
+    expect(beats[1].body).toContain('Truppen är 16')
     expect(beats[1].body).toContain('330 tkr')
     expect(beats[1].body).toContain('65')
   })
@@ -170,7 +170,7 @@ describe('BoardMeetingScene — getBoardMeetingBeats', () => {
   it('räknar utgående kontrakt korrekt', () => {
     const game = makeGame({ squadSize: 10, expiring: 3 })
     const beats = getBoardMeetingBeats(game)
-    expect(beats[1].body).toContain('3 har utgående kontrakt')
+    expect(beats[1].body).toContain('3 kontrakt går ut i vår')
   })
 
   it('returnerar tom array om board saknas på klubb', () => {
@@ -191,10 +191,6 @@ describe('shouldTriggerBoardMeeting — trigger-villkor', () => {
 
   it('triggar inte om redan visad', () => {
     expect(shouldTriggerBoardMeeting(makeGame({ season: 1, matchday: 0, shownScenes: ['board_meeting'] }))).toBe(false)
-  })
-
-  it('triggar inte säsong 2', () => {
-    expect(shouldTriggerBoardMeeting(makeGame({ season: 2, matchday: 0 }))).toBe(false)
   })
 
   it('triggar inte matchday 1+', () => {

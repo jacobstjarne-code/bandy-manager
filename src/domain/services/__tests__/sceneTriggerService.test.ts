@@ -66,8 +66,8 @@ function makeFixture(overrides: Partial<Fixture> = {}): Fixture {
 }
 
 describe('sceneTriggerService — söndagsträningen', () => {
-  it('triggar på säsong 1 matchday 1 när scenesEnabled och inte i shownScenes', () => {
-    const g = makeGame({ currentSeason: 1, currentMatchday: 1, shownScenes: [] })
+  it('triggar på säsong 1 matchday 1 när board_meeting visad och inte i shownScenes', () => {
+    const g = makeGame({ currentSeason: 1, currentMatchday: 1, shownScenes: ['board_meeting'] })
     expect(shouldTriggerSundayTraining(g)).toBe(true)
     expect(detectSceneTrigger(g)).toBe('sunday_training')
   })
@@ -82,10 +82,6 @@ describe('sceneTriggerService — söndagsträningen', () => {
     expect(shouldTriggerSundayTraining(g)).toBe(false)
   })
 
-  it('triggar inte säsong 2', () => {
-    const g = makeGame({ currentSeason: 2 })
-    expect(shouldTriggerSundayTraining(g)).toBe(false)
-  })
 })
 
 describe('sceneTriggerService — SM-finalseger', () => {

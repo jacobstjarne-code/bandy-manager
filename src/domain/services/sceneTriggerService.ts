@@ -48,9 +48,9 @@ export function shouldTriggerSeasonSignature(game: SaveGame): boolean {
 }
 
 export function shouldTriggerSundayTraining(game: SaveGame): boolean {
-  // One-shot vid spelets början, efter board_meeting men före första matchen.
-  // shownScenes garanterar att den bara visas en gång totalt.
+  // One-shot vid spelets allra början (matchday 1), efter board_meeting men före första matchen.
   if ((game.shownScenes ?? []).includes('sunday_training')) return false
+  if (game.currentMatchday !== 1) return false
   const anyMatchPlayed = game.fixtures.some(f => f.status === 'completed')
   if (anyMatchPlayed) return false
   return true
