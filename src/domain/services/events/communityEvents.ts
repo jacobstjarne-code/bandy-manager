@@ -6,6 +6,7 @@ import { generatePatronEvents } from './patronEvents'
 import { generatePoliticianEvents } from './politicianEvents'
 import { generateSponsorEvents } from './sponsorEvents'
 import { generateSupporterEvents } from './supporterEvents'
+import { generateHallDebateEvent } from './hallDebateService'
 // ── generateEvents ─────────────────────────────────────────────────────────
 export function generateEvents(
   game: SaveGame,
@@ -17,6 +18,8 @@ export function generateEvents(
     ...(game.resolvedEventIds ?? []),
   ])
 
+  const hallEvent = generateHallDebateEvent(game, currentRound, alreadyQueued)
+
   return [
     ...generateCommunityActivitiesEvents(game, currentRound, alreadyQueued, rand),
     ...generatePatronEvents(game, currentRound, alreadyQueued, rand),
@@ -24,5 +27,6 @@ export function generateEvents(
     ...generateSponsorEvents(game, currentRound, alreadyQueued, rand),
     ...generateCharacterPlayerEvents(game.players ?? [], currentRound, alreadyQueued, rand, game.captainPlayerId),
     ...generateSupporterEvents(game, currentRound, alreadyQueued, rand),
+    ...(hallEvent ? [hallEvent] : []),
   ]
 }

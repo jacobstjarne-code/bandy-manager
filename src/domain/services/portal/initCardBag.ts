@@ -45,6 +45,8 @@ import { CoffeeRoomSecondary } from '../../../presentation/components/portal/sec
 import { JournalistSecondary } from '../../../presentation/components/portal/secondary/JournalistSecondary'
 import { SeasonSignatureSecondary } from '../../../presentation/components/portal/secondary/SeasonSignatureSecondary'
 import { WeeklyDecisionSecondary } from '../../../presentation/components/portal/secondary/WeeklyDecisionSecondary'
+import { ActiveArcsSecondary } from '../../../presentation/components/portal/secondary/ActiveArcsSecondary'
+import { BoardObjectivesSecondary } from '../../../presentation/components/portal/secondary/BoardObjectivesSecondary'
 import { getCoffeeRoomScene } from '../coffeeRoomService'
 import { shouldShowJournalistCard } from '../journalistVisibilityService'
 
@@ -101,11 +103,25 @@ const PORTAL_CARDS: DashboardCard[] = [
 
   // ── SECONDARY TIER ────────────────────────────────────────────
   {
+    id: 'board_objectives',
+    tier: 'secondary',
+    weight: 87,
+    triggers: [(game) => (game.boardObjectives ?? []).filter(o => o.status !== 'met').length > 0],
+    Component: BoardObjectivesSecondary,
+  },
+  {
     id: 'weekly_decision',
     tier: 'secondary',
     weight: 85,
     triggers: [(game) => !!game.pendingWeeklyDecision],
     Component: WeeklyDecisionSecondary,
+  },
+  {
+    id: 'active_arcs',
+    tier: 'secondary',
+    weight: 80,
+    triggers: [(game) => (game.activeArcs ?? []).filter(a => a.type !== 'derby_echo' && a.phase !== 'resolving').length > 0],
+    Component: ActiveArcsSecondary,
   },
   {
     id: 'open_bids',

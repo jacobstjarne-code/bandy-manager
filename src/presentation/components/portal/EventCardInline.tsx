@@ -101,6 +101,13 @@ export function EventCardInline({ event, remainingCount }: Props) {
         {typeLabel}
       </p>
 
+      {/* Titel — visas för hallDebate-events */}
+      {event.type === 'hallDebate' && event.title && (
+        <div style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, fontWeight: 600, color: 'var(--text-light)', lineHeight: 1.35, marginBottom: 8 }}>
+          {event.title}
+        </div>
+      )}
+
       {/* Body-text */}
       <p style={{
         fontFamily: 'Georgia, serif',
