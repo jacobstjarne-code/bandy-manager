@@ -379,87 +379,63 @@ export function SquadScreen() {
       )}
       {/* Nu-vy */}
       {screenTab === 'nu' && game && (() => {
-        const injured = players.filter(p => p.isInjured || p.suspensionGamesRemaining > 0)
+        const injured = players.filter(p => p.isInjured)
+        const suspended = players.filter(p => p.suspensionGamesRemaining > 0)
         const lowMorale = players.filter(p => p.morale < 45).sort((a, b) => a.morale - b.morale).slice(0, 3)
         const expiringContracts = players.filter(p => p.contractUntilSeason <= game.currentSeason)
           .sort((a, b) => a.contractUntilSeason - b.contractUntilSeason)
         const recommended = getRecommendedFormation(players)
         const currentFormation = club?.activeTactic?.formation ?? '3-3-4'
-        const hasIssues = injured.length > 0 || lowMorale.length > 0 || expiringContracts.length > 0
+        const allEmpty = injured.length === 0 && suspended.length === 0 && lowMorale.length === 0 && expiringContracts.length === 0
+        const nuEmpty = { fontFamily: 'Georgia, serif', fontStyle: 'italic' as const, fontSize: 12, color: 'var(--text-muted)', padding: '8px 0', textAlign: 'center' as const }
+        const playerRow = (p: typeof players[0], statusColor: string, statusText: string) => (
+          <div
+            key={p.id}
+            className="card-sharp card-tap"
+            onClick={() => setSelectedPlayerId(p.id)}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 6, cursor: 'pointer' }}
+          >
+            <div dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{p.firstName} {p.lastName}</div>
+              <div style={{ fontSize: 11, color: statusColor }}>{statusText}</div>
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{positionShort(p.position)}</div>
+          </div>
+        )
         return (
           <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px', paddingBottom: 'calc(var(--bottom-nav-height, 60px) + 16px)' }}>
-            {!hasIssues && recommended === currentFormation && (
-              <div className="card-sharp" style={{ padding: '16px 14px', color: 'var(--text-secondary)', fontSize: 13, textAlign: 'center', marginBottom: 10 }}>
-                Allt lugnt. Kolla taktiken.
+            {allEmpty ? (
+              <div className="card-sharp" style={{ padding: '16px 14px', fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--text-secondary)', textAlign: 'center', marginBottom: 12 }}>
+                Allt är lugnt — truppen är hel och stadig.
               </div>
-            )}
-            {injured.length > 0 && (
-              <div style={{ marginBottom: 12 }}>
-                <div className="h-label" style={{ marginBottom: 8 }}>🚑 SKADADE & UTVISADE</div>
-                {injured.map(p => (
-                  <div
-                    key={p.id}
-                    className="card-sharp card-tap"
-                    onClick={() => setSelectedPlayerId(p.id)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 6, cursor: 'pointer' }}
-                  >
-                    <div dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{p.firstName} {p.lastName}</div>
-                      <div style={{ fontSize: 11, color: 'var(--danger)' }}>
-                        {p.isInjured && p.injuryDaysRemaining > 0
-                          ? getInjuryText(p.injuryDaysRemaining, p.id)
-                          : getSuspensionText(p.suspensionGamesRemaining, p.id)}
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{positionShort(p.position)}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {lowMorale.length > 0 && (
-              <div style={{ marginBottom: 12 }}>
-                <div className="h-label" style={{ marginBottom: 8 }}>😟 MORAL</div>
-                {lowMorale.map(p => (
-                  <div
-                    key={p.id}
-                    className="card-sharp card-tap"
-                    onClick={() => setSelectedPlayerId(p.id)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 6, cursor: 'pointer' }}
-                  >
-                    <div dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{p.firstName} {p.lastName}</div>
-                      <div style={{ fontSize: 11, color: 'var(--warning)' }}>
-                        {getMoraleText(p.morale, p.lowMoraleDays, p.id)}
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{positionShort(p.position)}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {expiringContracts.length > 0 && (
-              <div style={{ marginBottom: 12 }}>
-                <div className="h-label" style={{ marginBottom: 8 }}>📄 KONTRAKT</div>
-                {expiringContracts.map(p => (
-                  <div
-                    key={p.id}
-                    className="card-sharp card-tap"
-                    onClick={() => setSelectedPlayerId(p.id)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 6, cursor: 'pointer' }}
-                  >
-                    <div dangerouslySetInnerHTML={{ __html: getPortraitSvg(p.id, p.age, p.position) }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{p.firstName} {p.lastName}</div>
-                      <div style={{ fontSize: 11, color: p.contractUntilSeason < game.currentSeason ? 'var(--danger)' : 'var(--warning)' }}>
-                        {getContractText(p.contractUntilSeason, game.currentSeason, p.id)}
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{positionShort(p.position)}</div>
-                  </div>
-                ))}
-              </div>
+            ) : (
+              <>
+                <div style={{ marginBottom: 12 }}>
+                  <div className="h-label" style={{ marginBottom: 8 }}>🚑 SKADADE</div>
+                  {injured.length === 0
+                    ? <div style={nuEmpty}>Inga skadade just nu.</div>
+                    : injured.map(p => playerRow(p, 'var(--danger)', getInjuryText(p.injuryDaysRemaining, p.id)))}
+                </div>
+                <div style={{ marginBottom: 12 }}>
+                  <div className="h-label" style={{ marginBottom: 8 }}>🟥 AVSTÄNGDA</div>
+                  {suspended.length === 0
+                    ? <div style={nuEmpty}>Ingen avstängd.</div>
+                    : suspended.map(p => playerRow(p, 'var(--danger)', getSuspensionText(p.suspensionGamesRemaining, p.id)))}
+                </div>
+                <div style={{ marginBottom: 12 }}>
+                  <div className="h-label" style={{ marginBottom: 8 }}>😟 LÅG MORAL</div>
+                  {lowMorale.length === 0
+                    ? <div style={nuEmpty}>Truppen är på topp.</div>
+                    : lowMorale.map(p => playerRow(p, 'var(--warning)', getMoraleText(p.morale, p.lowMoraleDays, p.id)))}
+                </div>
+                <div style={{ marginBottom: 12 }}>
+                  <div className="h-label" style={{ marginBottom: 8 }}>📄 KONTRAKT UTGÅR</div>
+                  {expiringContracts.length === 0
+                    ? <div style={nuEmpty}>Inga kontrakt löper ut den här säsongen.</div>
+                    : expiringContracts.map(p => playerRow(p, p.contractUntilSeason < game.currentSeason ? 'var(--danger)' : 'var(--warning)', getContractText(p.contractUntilSeason, game.currentSeason, p.id)))}
+                </div>
+              </>
             )}
             <div>
               <div className="h-label" style={{ marginBottom: 8 }}>📋 FORMATION</div>
