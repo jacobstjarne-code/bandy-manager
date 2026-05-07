@@ -41,7 +41,7 @@ export function ClubSelectionScreen() {
   if (isStarting) {
     return (
       <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
-        <span style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: 2 }}>STARTAR...</span>
+        <span className="h-label">STARTAR...</span>
       </div>
     )
   }

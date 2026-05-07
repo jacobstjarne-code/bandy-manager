@@ -40,10 +40,10 @@ export function ClubExpandedCard({
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
         <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--text-light)' }}>
+          <div className="h-card" style={{ color: 'var(--text-light)' }}>
             {clubName}
           </div>
-          <div style={{ fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', marginTop: 2 }}>
+          <div className="h-label" style={{ color: 'var(--accent)', marginTop: 2 }}>
             {region}
           </div>
         </div>

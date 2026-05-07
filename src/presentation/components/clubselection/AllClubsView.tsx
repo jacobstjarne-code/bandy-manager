@@ -60,16 +60,8 @@ export function AllClubsView({ onSelect, onBack }: Props) {
         {Array.from(grouped.entries()).map(([region, clubs]) => (
           <div key={region} style={{ marginBottom: 14 }}>
             <div
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 10,
-                letterSpacing: 3,
-                textTransform: 'uppercase',
-                color: 'var(--accent)',
-                opacity: 0.6,
-                marginBottom: 6,
-                textAlign: 'center',
-              }}
+              className="h-label"
+              style={{ color: 'var(--accent)', opacity: 0.6, marginBottom: 6, textAlign: 'center' }}
             >
               {region}
             </div>

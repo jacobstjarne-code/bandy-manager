@@ -34,10 +34,10 @@ export function OfferCard({ offer, clubName, region, extendedInfo, quote, onSele
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
         <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 700, color: 'var(--text-light)', lineHeight: 1.2 }}>
+          <div className="h-card" style={{ color: 'var(--text-light)' }}>
             {clubName}
           </div>
-          <div style={{ fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: 2 }}>
+          <div className="h-label" style={{ marginTop: 2 }}>
             {region}
           </div>
         </div>

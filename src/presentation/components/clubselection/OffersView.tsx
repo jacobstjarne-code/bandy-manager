@@ -24,6 +24,7 @@ export function OffersView({ offers, onSelect, onShowAll }: Props) {
         <div
           style={{
             fontSize: 9,
+            fontWeight: 600,
             letterSpacing: 4,
             textTransform: 'uppercase',
             color: 'var(--accent)',
