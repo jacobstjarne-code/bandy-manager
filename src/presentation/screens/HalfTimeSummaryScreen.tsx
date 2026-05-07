@@ -38,7 +38,7 @@ export function HalfTimeSummaryScreen() {
     return (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '0 20px' }}>
         <p style={{ fontSize: 14, color: 'var(--text-secondary)', textAlign: 'center' }}>Halvtidssammanfattningen kunde inte visas.</p>
-        <button className="btn btn-copper" onClick={handleContinue}>Fortsätt säsongen →</button>
+        <button className="btn btn-primary" onClick={handleContinue}>Fortsätt säsongen →</button>
       </div>
     )
   }
@@ -62,10 +62,7 @@ export function HalfTimeSummaryScreen() {
 
         {/* ── TABELLÄGE ── */}
         <div className="card-sharp" style={{ margin: '0 0 6px', padding: '14px 16px' }}>
-          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 10 }}>
-            {/* TODO(FAS 1): byt mot piktogram · statistik · se ICON-BRIEF.md */}
-            📊 TABELLÄGE
-          </p>
+          <p className="h-label" style={{ marginBottom: 10 }}>📊 TABELLÄGE</p>
           <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
             <div style={{ textAlign: 'center' }}>
               <p style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-display)', color: summary.position <= 8 ? 'var(--success)' : 'var(--text-primary)', lineHeight: 1 }}>
@@ -96,10 +93,7 @@ export function HalfTimeSummaryScreen() {
         {/* ── HÖSTENS STUNDER ── */}
         {summary.moments.length > 0 && (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '14px 16px' }}>
-            <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 10 }}>
-              {/* TODO(FAS 1): byt mot piktogram · highlight · se ICON-BRIEF.md */}
-              ⚡ HÖSTENS STUNDER
-            </p>
+            <p className="h-label" style={{ marginBottom: 10 }}>⚡ HÖSTENS STUNDER</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {summary.moments.map((m, i) => (
                 <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
@@ -117,10 +111,7 @@ export function HalfTimeSummaryScreen() {
         {/* ── ARC-UPPDATERING ── */}
         {summary.arcText && (
           <div className="card-sharp" style={{ margin: '0 0 6px', padding: '14px 16px' }}>
-            <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 8 }}>
-              {/* TODO(FAS 1): byt mot piktogram · spelartrupp · se ICON-BRIEF.md */}
-              🔔 SPELARSITUATION
-            </p>
+            <p className="h-label" style={{ marginBottom: 8 }}>🔔 SPELARSITUATION</p>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               {summary.arcText}
             </p>
@@ -129,9 +120,7 @@ export function HalfTimeSummaryScreen() {
 
         {/* ── TRÄNARTIPS ── */}
         <div className="card-sharp" style={{ margin: '0 0 6px', padding: '14px 16px' }}>
-          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', marginBottom: 8 }}>
-            💡 INFÖR VÅREN
-          </p>
+          <p className="h-label" style={{ marginBottom: 8 }}>💡 INFÖR VÅREN</p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
             {summary.coachTip}
           </p>
@@ -147,16 +136,22 @@ export function HalfTimeSummaryScreen() {
         background: 'linear-gradient(to top, var(--bg) 70%, transparent)',
         zIndex: 110,
       }}>
-        <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8, textAlign: 'center' }}>
-          🎯 INRIKTNING VÅRSÄSONGEN
-        </p>
+        <p className="h-label" style={{ marginBottom: 8, textAlign: 'center' }}>🎯 INRIKTNING VÅRSÄSONGEN</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
           {CHOICES.map(c => (
             <button
               key={c.key}
               onClick={() => handleChoice(c.key)}
-              className={`btn ${chosen === c.key ? 'btn-copper' : 'btn-ghost'}`}
-              style={{ textAlign: 'left', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 2 }}
+              className={`btn ${chosen === c.key ? '' : 'btn-ghost'}`}
+              style={{
+                textAlign: 'left', padding: '10px 14px',
+                display: 'flex', flexDirection: 'column', gap: 2,
+                ...(chosen === c.key ? {
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  borderColor: 'var(--accent-dark)',
+                } : {}),
+              }}
             >
               <span style={{ fontSize: 13, fontWeight: 600 }}>{c.label}</span>
               <span style={{ fontSize: 11, opacity: 0.7 }}>{c.effect}</span>
@@ -165,9 +160,9 @@ export function HalfTimeSummaryScreen() {
         </div>
         <button
           onClick={handleContinue}
-          className="btn btn-primary"
+          className="btn btn-cta btn-primary"
           disabled={!chosen}
-          style={{ width: '100%', letterSpacing: '2px', textTransform: 'uppercase', opacity: chosen ? 1 : 0.4 }}
+          style={{ width: '100%', opacity: chosen ? 1 : 0.4 }}
         >
           Fortsätt säsongen →
         </button>

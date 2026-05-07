@@ -820,6 +820,17 @@ a {
   color: var(--text-muted);
 }
 
+/* Section label — 8px / 600 / +2px letter-spacing / UPPERCASE / emoji-prefix */
+.h-label {
+  font-family: var(--font-body);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 4px 0;
+}
+
 /* Italic för citat */
 .text-quote {
   font-family: var(--font-display);
