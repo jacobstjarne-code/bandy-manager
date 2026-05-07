@@ -79,7 +79,7 @@ function generateNudges(game: SaveGame, navigate: NavigateFunction): Nudge[] {
       nudges.push({
         color: atRisk ? 'red' : 'green',
         text: `Styrelseuppdrag: ${obj.label} — ${obj.status === 'at_risk' ? 'i riskzonen' : 'på gång'}`,
-        onClick: () => navigate('/game/club', { state: { tab: 'ekonomi' } }),
+        onClick: () => navigate('/game/club', { state: { tab: 'orten' } }),
       })
     }
   }
