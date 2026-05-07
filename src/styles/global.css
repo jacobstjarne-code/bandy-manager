@@ -926,46 +926,51 @@ a {
 }
 
 /* CoffeeRow — single speaker row */
-.coffee-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  opacity: 0;
-  animation: fade-in-soft 0.6s ease-out forwards;
-}
-.coffee-row-right {
-  flex-direction: row-reverse;
-  text-align: right;
-}
-.coffee-row .initial-circle {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--bg-dark-elevated);
-  border: 1px solid var(--bg-leather);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* ArrivalScene — stegvis-ackumulativ (as-*) */
+.as-setting {
   font-family: Georgia, serif;
-  font-size: 13px;
-  color: var(--text-light-secondary);
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-.coffee-row .speaker-name {
-  font-size: 9px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin-bottom: 2px;
-}
-.coffee-row .speaker-quote {
-  font-family: Georgia, serif;
-  font-size: 13px;
   font-style: italic;
-  line-height: 1.5;
+  font-size: 13px;
   color: var(--text-light-secondary);
+  line-height: 1.6;
+  text-align: center;
+  max-width: 280px;
+  margin: 0 auto;
+  transition: opacity 0.5s ease;
+}
+.as-setting strong {
+  font-style: normal;
+  color: var(--text-light);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+.as-setting.dimmed { opacity: 0.4; }
+
+.as-replica {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-left: 2px;
+  transition: opacity 0.5s ease;
+}
+.as-replica.dimmed { opacity: 0.4; }
+
+.as-speaker {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.as-quote {
+  font-family: Georgia, serif;
+  font-size: 14px;
+  color: var(--text-light);
+  line-height: 1.55;
 }
 
 /* SceneCTA — arrival variant (NOT .btn-primary) */

@@ -1,10 +1,11 @@
 /**
- * ArrivalScene — kontinuerlig intro-scen efter klubbval.
+ * ArrivalScene — stegvis-ackumulativ intro-scen efter klubbval.
  *
- * Beat-modell (4 beats): setting-prolog + 3 dialog-beats (Margareta, Pelle, Sture).
- * EN replik i taget, föregående beat försvinner — board-meeting-mönstret.
+ * EN skärm hela scenen. Setting persisterar och dimmas. Repliker
+ * läggs till allteftersom — aktuell replik full opacity, föregående dimmade.
  *
- * CSS: src/styles/global.css (.arrival-scene, .scene-cta, .beat-progress)
+ * CSS: src/styles/global.css (.arrival-scene, .as-setting, .as-replica,
+ *      .as-speaker, .as-quote, .scene-cta, .beat-progress)
  */
 
 import { useState, useEffect, useRef } from 'react'
@@ -60,10 +61,6 @@ interface ArrivalSceneProps {
   onComplete: () => void
 }
 
-type Beat =
-  | { type: 'setting'; lines: string[]; cta: string }
-  | { type: 'dialog'; speaker: string; body: string; cta: string }
-
 function ArrivalSceneInner({
   clubId,
   clubName,
@@ -79,65 +76,55 @@ function ArrivalSceneInner({
   currentDate,
   onComplete,
 }: ArrivalSceneProps) {
-  const [currentBeat, setCurrentBeat] = useState(0)
+  const [currentStage, setCurrentStage] = useState<0 | 1 | 2 | 3 | 4>(0)
   const [ctaReady, setCtaReady] = useState(false)
   const onCompleteRef = useRef(onComplete)
   useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
 
-  // CTA delay: longer on beat 0 (setting), short on dialog beats
+  // CTA delay: longer on stage 0 (setting prolog), short on dialog stages
   useEffect(() => {
     setCtaReady(false)
-    const delay = currentBeat === 0 ? 1700 : 250
+    const delay = currentStage === 0 ? 1700 : 250
     const t = setTimeout(() => setCtaReady(true), delay)
     return () => clearTimeout(t)
-  }, [currentBeat])
+  }, [currentStage])
 
   // Navigate after exit-fade — cleanup prevents ghost-trigger on fast unmount
   useEffect(() => {
-    if (currentBeat < 4) return
+    if (currentStage < 4) return
     const t = setTimeout(() => onCompleteRef.current(), 800)
     return () => clearTimeout(t)
-  }, [currentBeat])
+  }, [currentStage])
 
   const weekday = weekdayLabel(currentDate)
   const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-  const beats: Beat[] = [
+  const replicas = [
     {
-      type: 'setting',
-      lines: [
-        `${clubName}.`,
-        `${cap(weekday)} kväll. Lampan vid klubbhuset lyser. De väntar dig där inne.`,
-        `${chairman}. ${treasurer}. ${member}. Tre kaffekoppar redan på bordet.`,
-      ],
-      cta: 'Sätt dig vid bordet',
-    },
-    {
-      type: 'dialog',
       speaker: 'MARGARETA · KASSÖR',
       body: `Truppen är ${squadSize}. ${expiringContracts} kontrakt går ut i vår. Kassa ${formatKr(cashKr)}, transferbudget ${formatKr(transferBudgetKr)}. Mer har vi inte.`,
       cta: 'Förstått',
     },
     {
-      type: 'dialog',
       speaker: 'PELLE · ORDFÖRANDE',
       body: `Plats ${expectedRankLow} till ${expectedRankHigh}. Inget kvalspel. Och håll bygden med oss — tomma läktare är dåligt för bandyn och dåligt för budgeten.`,
       cta: 'Det går bra',
     },
     {
-      type: 'dialog',
       speaker: 'STURE · LEDAMOT',
       body: getStureLine(clubId),
       cta: 'Då börjar vi',
     },
   ]
 
-  const beat = currentBeat < beats.length ? beats[currentBeat] : null
+  const stageCta = currentStage === 0
+    ? 'Sätt dig vid bordet'
+    : replicas[currentStage - 1]?.cta ?? null
 
   return (
     <div className="arrival-scene">
 
-      {/* Persistent header — genre-label + beat-progress */}
+      {/* Persistent header — genre-label + progress */}
       <div style={{ position: 'relative', zIndex: 1, padding: '32px 24px 0', textAlign: 'center' }}>
         <div
           className="fadein"
@@ -157,74 +144,47 @@ function ArrivalSceneInner({
           {[0, 1, 2, 3].map(i => (
             <span
               key={i}
-              className={`dot${i <= currentBeat ? ' active' : ''}`}
-              style={{ opacity: i <= currentBeat ? 0.8 : 0.3 }}
+              className={`dot${i <= currentStage ? ' active' : ''}`}
+              style={{ opacity: i <= currentStage ? 0.8 : 0.3 }}
             />
           ))}
         </div>
       </div>
 
-      {/* Beat content — key triggers re-animation on each beat */}
-      {beat && (
-        <div
-          key={currentBeat}
-          style={{
-            flex: 1,
-            position: 'relative',
-            zIndex: 1,
-            padding: '40px 32px 16px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            animation: 'fade-in-static 0.35s ease-out forwards',
-          }}
-        >
-          {beat.type === 'setting' ? (
-            <div style={{ textAlign: 'center' }}>
-              {beat.lines.map((line, i) => (
-                <p
-                  key={i}
-                  style={{
-                    fontFamily: 'Georgia, serif',
-                    fontSize: 14,
-                    fontStyle: 'italic',
-                    color: 'var(--text-light)',
-                    lineHeight: 1.8,
-                    marginBottom: i === 0 ? 10 : 6,
-                  }}
-                >
-                  {line}
-                </p>
-              ))}
-            </div>
-          ) : (
-            <div style={{ padding: '0 4px' }}>
-              <p style={{
-                fontSize: 10,
-                fontWeight: 600,
-                letterSpacing: 2.5,
-                color: 'var(--accent)',
-                textTransform: 'uppercase' as const,
-                marginBottom: 16,
-              }}>
-                {beat.speaker}
-              </p>
-              <p style={{
-                fontSize: 16,
-                fontFamily: 'Georgia, serif',
-                color: 'var(--text-light)',
-                fontStyle: 'italic',
-                lineHeight: 1.55,
-              }}>
-                "{beat.body}"
-              </p>
-            </div>
-          )}
+      {/* Ackumulativ content-stack */}
+      <div
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          position: 'relative',
+          zIndex: 1,
+          padding: '20px 24px 16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 16,
+        }}
+      >
+        {/* Setting — persisterar hela scenen, dimmas när dialog börjar */}
+        <div className={`as-setting${currentStage > 0 ? ' dimmed' : ''}`}>
+          <strong>{clubName}.</strong>
+          {`${cap(weekday)} kväll. Lampan vid klubbhuset lyser. De väntar dig där inne. ${chairman}. ${treasurer}. ${member}. Tre kaffekoppar redan på bordet.`}
         </div>
-      )}
+
+        {/* Repliker — visas i ordning, aktuell full opacity, föregående dimmade */}
+        {replicas.slice(0, currentStage).map((replica, i) => {
+          const stageIndex = i + 1
+          const isCurrent = stageIndex === currentStage
+          return (
+            <div key={stageIndex} className={`as-replica${isCurrent ? '' : ' dimmed'}`}>
+              <div className="as-speaker">{replica.speaker}</div>
+              <div className="as-quote">"{replica.body}"</div>
+            </div>
+          )
+        })}
+      </div>
 
       {/* CTA */}
-      {beat && (
+      {currentStage < 4 && stageCta && (
         <div
           style={{
             position: 'relative',
@@ -235,14 +195,14 @@ function ArrivalSceneInner({
             pointerEvents: ctaReady ? 'auto' : 'none',
           }}
         >
-          <button className="scene-cta" onClick={() => setCurrentBeat(b => b + 1)}>
-            {beat.cta}
+          <button className="scene-cta" onClick={() => setCurrentStage(s => (s + 1) as 0 | 1 | 2 | 3 | 4)}>
+            {stageCta}
           </button>
         </div>
       )}
 
       {/* Exit overlay */}
-      {currentBeat >= 4 && (
+      {currentStage >= 4 && (
         <div className="arrival-exit">
           <span>→ Dashboard</span>
         </div>
