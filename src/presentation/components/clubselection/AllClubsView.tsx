@@ -50,7 +50,7 @@ export function AllClubsView({ onSelect, onBack }: Props) {
           <div style={{ width: 60 }} />
         </div>
 
-        <div style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 20, fontStyle: 'italic' }}>
+        <div className="h-scene-helper" style={{ textAlign: 'center', marginBottom: 20 }}>
           Norr till söder. Tryck för mer.
         </div>
 

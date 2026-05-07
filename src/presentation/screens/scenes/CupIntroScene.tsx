@@ -72,19 +72,7 @@ export function CupIntroScene({ game, onComplete }: Props) {
       }}
     >
       <div style={{ padding: '30px 24px 0', textAlign: 'center' }}>
-        <div
-          style={{
-            fontSize: 9,
-            fontWeight: 600,
-            letterSpacing: 4,
-            color: 'var(--accent)',
-            opacity: 0.7,
-            textTransform: 'uppercase',
-            marginBottom: 10,
-          }}
-        >
-          CUPEN
-        </div>
+        <div className="h-scene-genre">CUPEN</div>
         <div
           style={{
             fontFamily: 'Georgia, serif',

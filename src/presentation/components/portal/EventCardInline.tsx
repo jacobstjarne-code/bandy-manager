@@ -145,7 +145,7 @@ export function EventCardInline({ event, remainingCount }: Props) {
             textDecoration: 'underline',
           }}
         >
-          {remainingCount} notiser i inboxen
+          {remainingCount} notis{remainingCount === 1 ? '' : 'er'} i inboxen
         </p>
       )}
     </div>

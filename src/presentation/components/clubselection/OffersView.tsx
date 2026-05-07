@@ -88,18 +88,13 @@ export function OffersView({ offers, onSelect, onShowAll }: Props) {
 
         <button
           onClick={onShowAll}
+          className="btn-scene-ghost"
           style={{
             display: 'block',
+            width: '100%',
             textAlign: 'center',
-            background: 'none',
-            border: 'none',
-            color: 'var(--text-muted)',
             padding: '12px 0',
             marginTop: 4,
-            fontSize: 11,
-            cursor: 'pointer',
-            width: '100%',
-            fontFamily: 'var(--font-body)',
             textDecoration: 'underline',
             textDecorationColor: 'var(--border)',
             textUnderlineOffset: 3,

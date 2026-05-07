@@ -74,14 +74,7 @@ export function SundayTrainingScene({ game, onComplete }: Props) {
         >
           {SUNDAY_TRAINING_META.headline}
         </div>
-        <div
-          style={{
-            fontSize: 12,
-            color: 'var(--text-muted)',
-            marginBottom: 20,
-            fontStyle: 'italic',
-          }}
-        >
+        <div className="h-scene-helper" style={{ marginBottom: 20 }}>
           {SUNDAY_TRAINING_META.subtitle}
         </div>
 

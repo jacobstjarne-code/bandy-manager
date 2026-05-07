@@ -189,7 +189,7 @@ export function GranskaOversikt({
             )}
             {inboxOnlyCount > 0 && (
               <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', padding: '4px 12px 6px' }}>
-                {inboxOnlyCount} notiser i inboxen
+                {inboxOnlyCount} notis{inboxOnlyCount === 1 ? '' : 'er'} i inboxen
               </p>
             )}
           </>

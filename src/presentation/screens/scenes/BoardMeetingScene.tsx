@@ -82,19 +82,7 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
           textAlign: 'center',
         }}
       >
-        <div
-          style={{
-            fontSize: 9,
-            fontWeight: 600,
-            letterSpacing: 4,
-            color: 'var(--accent)',
-            opacity: 0.7,
-            textTransform: 'uppercase',
-            marginBottom: 10,
-          }}
-        >
-          STYRELSEMÖTET
-        </div>
+        <div className="h-scene-genre">STYRELSEMÖTET</div>
         <div
           style={{
             fontFamily: 'Georgia, serif',
@@ -144,17 +132,7 @@ export function BoardMeetingScene({ game, onComplete }: Props) {
         }}
       >
         {currentBeat.speaker && (
-          <div
-            style={{
-              fontSize: 10,
-              fontWeight: 600,
-              letterSpacing: 2,
-              color: 'var(--accent)',
-              textTransform: 'uppercase',
-              marginBottom: 8,
-              opacity: 0.7,
-            }}
-          >
+          <div className="h-scene-speaker" style={{ marginBottom: 8 }}>
             {currentBeat.speaker.firstName} {currentBeat.speaker.lastName}
           </div>
         )}
