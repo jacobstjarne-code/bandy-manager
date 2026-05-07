@@ -60,7 +60,5 @@ export default defineConfig({
     environmentOptions: {
       jsdom: { url: 'http://localhost' },
     },
-    exclude: ['**/node_modules/**', '**/dist/**', '**/.claude/**'],
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'scripts/**/*.test.ts'],
   },
 })
