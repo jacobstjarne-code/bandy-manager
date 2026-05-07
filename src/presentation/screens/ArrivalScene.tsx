@@ -1,13 +1,10 @@
 /**
  * ArrivalScene — kontinuerlig intro-scen efter klubbval.
  *
- * EN sammanhängande scen, inga route-byten, ingen klippning till svart.
- * Bakgrunden består. Genre-etiketten "Ankomsten" består.
- * Fyra step-tillstånd (0→3) + steg 4 = exit-fade till /game/dashboard.
+ * Beat-modell (4 beats): setting-prolog + 3 dialog-beats (Margareta, Pelle, Sture).
+ * EN replik i taget, föregående beat försvinner — board-meeting-mönstret.
  *
- * Spec: design-system/briefs/ARRIVAL-SCENE-SPEC.md
- * Källkod: design-system/ui_kits/intro_flode/artboards.jsx
- * CSS: src/styles/global.css (.arrival-scene, .scene-cta, .coffee-row, .beat-progress)
+ * CSS: src/styles/global.css (.arrival-scene, .scene-cta, .beat-progress)
  */
 
 import { useState, useEffect, useRef } from 'react'
@@ -21,7 +18,6 @@ import { getStureLine } from '../../domain/data/arrivalDialogue'
 function formatKr(kr: number): string {
   if (kr >= 1_000_000) {
     const m = kr / 1_000_000
-    // One decimal if not whole number
     return (Number.isInteger(m) ? m.toString() : m.toFixed(1)) + ' mkr'
   }
   return Math.round(kr / 1000) + ' tkr'
@@ -46,28 +42,7 @@ function expectedRankRange(expectation: string): { low: number; high: number } {
   }
 }
 
-/* ─── CoffeeRow ─── */
-
-interface CoffeeRowProps {
-  initial: string
-  name: string
-  text: string
-  align: 'left' | 'right'
-}
-
-function CoffeeRow({ initial, name, text, align }: CoffeeRowProps) {
-  return (
-    <div className={`coffee-row coffee-row-${align}`}>
-      <div className="initial-circle">{initial}</div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div className="speaker-name">{name}</div>
-        <div className="speaker-quote">{`"${text}"`}</div>
-      </div>
-    </div>
-  )
-}
-
-/* ─── ArrivalScene ─── */
+/* ─── ArrivalSceneInner ─── */
 
 interface ArrivalSceneProps {
   clubId: string
@@ -85,6 +60,10 @@ interface ArrivalSceneProps {
   onComplete: () => void
 }
 
+type Beat =
+  | { type: 'setting'; lines: string[]; cta: string }
+  | { type: 'dialog'; speaker: string; body: string; cta: string }
+
 function ArrivalSceneInner({
   clubId,
   clubName,
@@ -100,58 +79,65 @@ function ArrivalSceneInner({
   currentDate,
   onComplete,
 }: ArrivalSceneProps) {
-  const [step, setStep] = useState<0 | 1 | 2 | 3 | 4>(0)
-  const [arrivalDone, setArrivalDone] = useState(false)
+  const [currentBeat, setCurrentBeat] = useState(0)
+  const [ctaReady, setCtaReady] = useState(false)
   const onCompleteRef = useRef(onComplete)
   useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
 
-  // CTA "Gå in →" fades in after 1.7 s
+  // CTA delay: longer on beat 0 (setting), short on dialog beats
   useEffect(() => {
-    const t = setTimeout(() => setArrivalDone(true), 1700)
+    setCtaReady(false)
+    const delay = currentBeat === 0 ? 1700 : 250
+    const t = setTimeout(() => setCtaReady(true), delay)
     return () => clearTimeout(t)
-  }, [])
+  }, [currentBeat])
 
   // Navigate after exit-fade — cleanup prevents ghost-trigger on fast unmount
   useEffect(() => {
-    if (step !== 4) return
+    if (currentBeat < 4) return
     const t = setTimeout(() => onCompleteRef.current(), 800)
     return () => clearTimeout(t)
-  }, [step])
+  }, [currentBeat])
 
-  // Dim the arrival block when dialogue starts
-  const arrivalDim = step >= 1
-
-  // CTA label per step
-  const ctaLabel =
-    step === 0 ? 'Gå in →' :
-    step === 1 ? 'Förstått' :
-    step === 2 ? 'Det går bra' :
-    step === 3 ? 'Då börjar vi' :
-    null
-
-  const ctaDisabled = step === 0 && !arrivalDone
-
-  function handleCTA() {
-    if (step === 4) return
-    setStep(s => (s + 1) as 0 | 1 | 2 | 3 | 4)
-  }
-
-  // Repliker
   const weekday = weekdayLabel(currentDate)
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-  const margaretaText =
-    `Truppen är ${squadSize}. ${expiringContracts} kontrakt går ut i vår. ` +
-    `Kassa ${formatKr(cashKr)}, transferbudget ${formatKr(transferBudgetKr)}. ` +
-    `Mer har vi inte.`
+  const beats: Beat[] = [
+    {
+      type: 'setting',
+      lines: [
+        `${clubName}.`,
+        `${cap(weekday)} kväll. Lampan vid klubbhuset lyser. De väntar dig där inne.`,
+        `${chairman}. ${treasurer}. ${member}. Tre kaffekoppar redan på bordet.`,
+      ],
+      cta: 'Sätt dig vid bordet',
+    },
+    {
+      type: 'dialog',
+      speaker: 'MARGARETA · KASSÖR',
+      body: `Truppen är ${squadSize}. ${expiringContracts} kontrakt går ut i vår. Kassa ${formatKr(cashKr)}, transferbudget ${formatKr(transferBudgetKr)}. Mer har vi inte.`,
+      cta: 'Förstått',
+    },
+    {
+      type: 'dialog',
+      speaker: 'PELLE · ORDFÖRANDE',
+      body: `Plats ${expectedRankLow} till ${expectedRankHigh}. Inget kvalspel. Och håll bygden med oss — tomma läktare är dåligt för bandyn och dåligt för budgeten.`,
+      cta: 'Det går bra',
+    },
+    {
+      type: 'dialog',
+      speaker: 'STURE · LEDAMOT',
+      body: getStureLine(clubId),
+      cta: 'Då börjar vi',
+    },
+  ]
 
-  const pelleText =
-    `Plats ${expectedRankLow} till ${expectedRankHigh}. Inget kvalspel. ` +
-    `Och håll bygden med oss — tomma läktare är dåligt för bandyn och dåligt för budgeten.`
+  const beat = currentBeat < beats.length ? beats[currentBeat] : null
 
   return (
-    <div className={`arrival-scene${arrivalDim ? ' dim' : ''}`}>
+    <div className="arrival-scene">
 
-      {/* Header — genre-etikett, byts aldrig */}
+      {/* Persistent header — genre-label + beat-progress */}
       <div style={{ position: 'relative', zIndex: 1, padding: '32px 24px 0', textAlign: 'center' }}>
         <div
           className="fadein"
@@ -167,181 +153,96 @@ function ArrivalSceneInner({
         >
           ⬩ &nbsp;Ankomsten&nbsp; ⬩
         </div>
-
-        {/* Progress — visas bara när dialog påbörjats */}
-        {step >= 1 && (
-          <div
-            className="beat-progress"
-            style={{
-              marginTop: 14,
-              opacity: 0,
-              animation: 'fade-in-static 0.5s ease-out forwards',
-              animationDelay: '300ms',
-            }}
-          >
-            {[0, 1, 2, 3].map(i => (
-              <span key={i} className={`dot${i < step ? ' active' : ''}`} />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Inramningsblock — dimmas men försvinner aldrig */}
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          padding: `${arrivalDim ? 18 : 32}px 36px ${arrivalDim ? 4 : 12}px`,
-          textAlign: 'center',
-          opacity: arrivalDim ? 0.42 : 1,
-          transition: 'opacity 0.9s ease-out, padding-top 0.5s ease-out, padding-bottom 0.5s ease-out',
-        }}
-      >
-        {/* Klubbnamn */}
-        <div
-          className="fadein"
-          style={{
-            animationDelay: '300ms',
-            fontSize: arrivalDim ? 18 : 26,
-            fontFamily: 'Georgia, serif',
-            fontWeight: 400,
-            color: 'var(--text-light)',
-            marginBottom: arrivalDim ? 6 : 16,
-            transition: 'font-size 0.6s ease-out, margin-bottom 0.6s ease-out',
-          }}
-        >
-          {clubName}.
-        </div>
-
-        {/* Tid + plats */}
-        <div
-          className="fadein"
-          style={{
-            animationDelay: '700ms',
-            fontSize: arrivalDim ? 12 : 16,
-            fontFamily: 'Georgia, serif',
-            fontStyle: 'italic',
-            color: arrivalDim ? 'var(--text-light-secondary)' : 'var(--text-light)',
-            opacity: 1,
-            marginBottom: arrivalDim ? 4 : 12,
-            transition: 'font-size 0.6s ease-out',
-          }}
-        >
-          {weekday.charAt(0).toUpperCase() + weekday.slice(1)} kväll. Lampan vid klubbhuset lyser. De väntar dig där inne.
-        </div>
-
-        {/* Styrelse-rad */}
-        <div
-          className="fadein"
-          style={{
-            animationDelay: '1200ms',
-            fontSize: arrivalDim ? 12 : 16,
-            fontFamily: 'Georgia, serif',
-            fontStyle: 'italic',
-            color: arrivalDim ? 'var(--text-light-secondary)' : 'var(--text-light)',
-            opacity: 1,
-            transition: 'font-size 0.6s ease-out',
-          }}
-        >
-          {chairman}. {treasurer}. {member}.
-          {!arrivalDim && (
-            <>
-              <br />Tre kaffekoppar redan på bordet.
-            </>
-          )}
+        <div className="beat-progress" style={{ marginTop: 14 }}>
+          {[0, 1, 2, 3].map(i => (
+            <span
+              key={i}
+              className={`dot${i <= currentBeat ? ' active' : ''}`}
+              style={{ opacity: i <= currentBeat ? 0.8 : 0.3 }}
+            />
+          ))}
         </div>
       </div>
 
-      {/* Tunn divider — visas när dialog startat */}
-      {step >= 1 && (
+      {/* Beat content — key triggers re-animation on each beat */}
+      {beat && (
         <div
+          key={currentBeat}
           style={{
-            padding: '0 32px',
-            opacity: 0,
-            animation: 'fade-in-static 0.6s ease-out forwards',
-            animationDelay: '200ms',
+            flex: 1,
             position: 'relative',
             zIndex: 1,
+            padding: '40px 32px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            animation: 'fade-in-static 0.35s ease-out forwards',
           }}
         >
-          <div
-            style={{
-              height: 1,
-              background: 'var(--bg-leather)',
-              opacity: 0.5,
-              margin: '4px 0',
-            }}
-          />
+          {beat.type === 'setting' ? (
+            <div style={{ textAlign: 'center' }}>
+              {beat.lines.map((line, i) => (
+                <p
+                  key={i}
+                  style={{
+                    fontFamily: 'Georgia, serif',
+                    fontSize: 14,
+                    fontStyle: 'italic',
+                    color: 'var(--text-light)',
+                    lineHeight: 1.8,
+                    marginBottom: i === 0 ? 10 : 6,
+                  }}
+                >
+                  {line}
+                </p>
+              ))}
+            </div>
+          ) : (
+            <div style={{ padding: '0 4px' }}>
+              <p style={{
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: 2.5,
+                color: 'var(--accent)',
+                textTransform: 'uppercase' as const,
+                marginBottom: 16,
+              }}>
+                {beat.speaker}
+              </p>
+              <p style={{
+                fontSize: 16,
+                fontFamily: 'Georgia, serif',
+                color: 'var(--text-light)',
+                fontStyle: 'italic',
+                lineHeight: 1.55,
+              }}>
+                "{beat.body}"
+              </p>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Dialogblock — byggs upp kumulativt */}
-      <div
-        style={{
-          flex: 1,
-          position: 'relative',
-          zIndex: 1,
-          padding: '14px 20px 12px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 16,
-          overflowY: 'auto',
-        }}
-      >
-        {step >= 1 && (
-          <CoffeeRow
-            initial="M"
-            name="MARGARETA · KASSÖR"
-            text={margaretaText}
-            align="left"
-          />
-        )}
-
-        {step >= 2 && (
-          <CoffeeRow
-            initial="P"
-            name="PELLE · ORDFÖRANDE"
-            text={pelleText}
-            align="right"
-          />
-        )}
-
-        {step >= 3 && (
-          <CoffeeRow
-            initial="S"
-            name="STURE · LEDAMOT"
-            text={getStureLine(clubId)}
-            align="left"
-          />
-        )}
-      </div>
-
-      {/* CTA — byts per steg */}
-      {ctaLabel !== null && (
+      {/* CTA */}
+      {beat && (
         <div
           style={{
             position: 'relative',
             zIndex: 1,
             padding: '12px 20px 28px',
-            opacity: step === 0 && !arrivalDone ? 0 : 1,
-            animation: step === 0 ? 'fade-in-static 0.6s ease-out forwards' : 'none',
-            animationDelay: step === 0 ? '1700ms' : '0ms',
-            transition: step > 0 ? 'opacity 0.3s' : 'none',
-            pointerEvents: ctaDisabled ? 'none' : 'auto',
+            opacity: ctaReady ? 1 : 0,
+            transition: 'opacity 0.4s ease-out',
+            pointerEvents: ctaReady ? 'auto' : 'none',
           }}
         >
-          <button
-            className="scene-cta"
-            disabled={ctaDisabled}
-            onClick={handleCTA}
-          >
-            {ctaLabel}
+          <button className="scene-cta" onClick={() => setCurrentBeat(b => b + 1)}>
+            {beat.cta}
           </button>
         </div>
       )}
 
-      {/* Steg 4 — exit overlay */}
-      {step === 4 && (
+      {/* Exit overlay */}
+      {currentBeat >= 4 && (
         <div className="arrival-exit">
           <span>→ Dashboard</span>
         </div>
@@ -356,7 +257,6 @@ export function ArrivalScene() {
   const navigate = useNavigate()
   const game = useGameStore(s => s.game)
 
-  // If no game exists, redirect to start
   if (!game) {
     navigate('/', { replace: true })
     return null
