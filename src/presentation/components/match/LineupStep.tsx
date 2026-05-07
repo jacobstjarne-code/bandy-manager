@@ -5,10 +5,10 @@ import type { Player } from '../../../domain/entities/Player'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { PlayerPosition } from '../../../domain/enums'
 import { positionShort } from '../../utils/formatters'
-import { OpponentAnalysisCard } from './OpponentAnalysisCard'
+import { generateBasicAnalysis } from '../../../domain/services/opponentAnalysisService'
+import { getConditionLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
 import { LineupFormationView } from './LineupFormationView'
 import { PitchLineupView } from './PitchLineupView'
-import { MatchDayProgram } from './MatchDayProgram'
 
 interface GroupedPlayers {
   position: string
@@ -41,12 +41,19 @@ interface LineupStepProps {
 }
 
 const GROUP_LABELS: Partial<Record<string, string>> = {
-  [PlayerPosition.Goalkeeper]: '🧤 Målvakter',
-  [PlayerPosition.Defender]: '🛡 Backar',
-  [PlayerPosition.Half]: '🏒 Ytterhalvar',
-  [PlayerPosition.Midfielder]: '⚙️ Mittfältare',
-  [PlayerPosition.Forward]: '⚔️ Anfallare',
+  [PlayerPosition.Goalkeeper]: 'Målvakter',
+  [PlayerPosition.Defender]: 'Backar',
+  [PlayerPosition.Half]: 'Ytterhalvar',
+  [PlayerPosition.Midfielder]: 'Mittfältare',
+  [PlayerPosition.Forward]: 'Anfallare',
 }
+
+const SPARKLE_SVG = (
+  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" stroke="currentColor">
+    <path d="M6 1.5 L7 4 L9.5 5 L7 6 L6 8.5 L5 6 L2.5 5 L5 4 Z"/>
+    <path d="M9.5 8.5 L10 9.5 L11 10 L10 10.5 L9.5 11.5 L9 10.5 L8 10 L9 9.5 Z"/>
+  </svg>
+)
 
 export function LineupStep({
   opponent,
@@ -69,10 +76,31 @@ export function LineupStep({
   onAssignPlayer,
   onRemovePlayer,
   onSwapPlayers,
-  onError,
+  onError: _onError,
   onNext,
 }: LineupStepProps) {
   const [viewMode, setViewMode] = useState<'list' | 'pitch'>('list')
+
+  // Context-combined data
+  const weather = nextFixture ? game.matchWeathers?.find(mw => mw.fixtureId === nextFixture.id)?.weather : null
+  const weatherText = weather
+    ? `${getWeatherEmoji(weather.condition)} ${getConditionLabel(weather.condition)} · ${weather.temperature}°C`
+    : 'Okänt väder'
+
+  const oppAnalysis = (opponent && nextFixture)
+    ? generateBasicAnalysis(
+        opponent,
+        game.players.filter(p => opponent.squadPlayerIds.includes(p.id)),
+        game.standings,
+        game.fixtures,
+        nextFixture.id,
+      )
+    : null
+
+  const oppFormation = opponent?.activeTactic?.formation ?? '—'
+  const oppFormText = oppAnalysis
+    ? `${oppAnalysis.recentForm} · ${oppFormation}`
+    : oppFormation
 
   function handlePlayerClick(player: Player) {
     if (player.isInjured || player.suspensionGamesRemaining > 0) return
@@ -85,56 +113,57 @@ export function LineupStep({
 
   return (
     <>
-      {/* Matchdagsprogram — expandable pre-match briefing */}
-      {nextFixture && opponent && (() => {
-        const managedClub = game.clubs.find(c => c.id === game.managedClubId)
-        if (!managedClub) return null
-        return (
-          <MatchDayProgram
-            fixture={nextFixture}
-            opponent={opponent}
-            managedClub={managedClub}
-            game={game}
-            myPlayers={squadPlayers}
-          />
-        )
-      })()}
-
-      {/* Opponent info — single combined card */}
-      {nextFixture && opponent && (
-        <OpponentAnalysisCard fixture={nextFixture} opponent={opponent} game={game} onError={onError} />
+      {/* Context — two-column strip */}
+      {nextFixture && (
+        <div style={{
+          margin: '8px 14px',
+          padding: '8px 12px',
+          background: 'var(--bg-surface)',
+          borderLeft: '2px solid var(--accent)',
+          borderRadius: '0 8px 8px 0',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '4px 12px',
+          fontSize: 11,
+        }}>
+          <div>
+            <div style={{ fontSize: 8, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>Matchdag</div>
+            <div style={{ color: 'var(--text-primary)', fontSize: 11.5, marginTop: 2 }}>{weatherText}</div>
+          </div>
+          {opponent && (
+            <div>
+              <div style={{ fontSize: 8, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600 }}>{opponent.shortName ?? opponent.name}</div>
+              <div style={{ color: 'var(--text-primary)', fontSize: 11.5, marginTop: 2 }}>{oppFormText}</div>
+            </div>
+          )}
+        </div>
       )}
 
-      {/* Tab bar */}
-      <div style={{
-        display: 'flex',
-        margin: '0 0 12px',
-      }}>
-        {(['list', 'pitch'] as const).map(mode => (
+      {/* Pitch area */}
+      <div style={{ padding: '0 14px', marginBottom: 6 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, gap: 8 }}>
+          <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
+            {startingIds.length} av 11 placerade
+          </span>
           <button
-            key={mode}
-            onClick={() => setViewMode(mode)}
+            onClick={onAutoFill}
             style={{
-              flex: 1,
-              padding: '10px 4px',
-              background: 'none',
-              border: 'none',
-              borderBottom: viewMode === mode ? '2px solid var(--accent)' : '2px solid transparent',
-              color: viewMode === mode ? 'var(--accent)' : 'var(--text-muted)',
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: '0.8px',
-              textTransform: 'uppercase',
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              padding: '5px 10px',
+              background: 'transparent',
+              border: '1.5px solid var(--accent)',
+              color: 'var(--accent-dark)',
+              fontSize: 11, fontWeight: 600,
+              borderRadius: 8,
               cursor: 'pointer',
             }}
           >
-            {mode === 'list' ? '📋 Lista' : '🏒 Plan'}
+            {SPARKLE_SVG}
+            Auto-fyll
           </button>
-        ))}
-      </div>
+        </div>
 
-      {viewMode === 'list' ? (
-        <>
+        {viewMode === 'list' ? (
           <LineupFormationView
             tacticState={tacticState}
             startingIds={startingIds}
@@ -143,77 +172,27 @@ export function LineupStep({
             onSlotClick={onSlotClick}
             onFormationChange={onFormationChange}
           />
+        ) : null}
+      </div>
 
-          {/* Auto-fill — direkt efter plangrafiken */}
-          <div style={{ padding: '0 12px 6px', display: 'flex', justifyContent: 'flex-end' }}>
-            <button onClick={onAutoFill} className="btn btn-ghost" style={{
-              padding: '8px 16px', fontSize: 13, fontWeight: 600,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-            }}>
-              ✨ Generera bästa elvan
+      {/* Segmented toggle */}
+      <div style={{ padding: '0 14px', marginBottom: 8 }}>
+        <div className="btn-segmented" style={{ display: 'flex', width: '100%' }}>
+          {(['list', 'pitch'] as const).map(mode => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              className={`btn${viewMode === mode ? ' active' : ''}`}
+              style={{ flex: 1, padding: '8px 4px', fontSize: 11, fontWeight: 600, letterSpacing: '0.5px' }}
+            >
+              {mode === 'list' ? 'Lista' : 'Plan'}
             </button>
-          </div>
+          ))}
+        </div>
+      </div>
 
-          {/* Player list */}
-          <div style={{ padding: '0 12px 8px' }}>
-            {groupedPlayers.map(group => (
-              <div key={group.position} style={{ marginBottom: 6 }}>
-                <p style={{
-                  fontSize: 8, fontWeight: 600, letterSpacing: '2px',
-                  textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 2,
-                }}>
-                  {GROUP_LABELS[group.position] ?? group.position}
-                </p>
-                {group.players.map(player => {
-                  const isStarting = startingIds.includes(player.id)
-                  const isUnavailable = player.isInjured || player.suspensionGamesRemaining > 0
-                  return (
-                    <div
-                      key={player.id}
-                      onClick={() => handlePlayerClick(player)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 6,
-                        padding: '4px 8px',
-                        background: isStarting ? 'rgba(90,154,74,0.06)' : 'transparent',
-                        borderBottom: '1px solid var(--border)',
-                        cursor: isUnavailable ? 'default' : 'pointer',
-                        opacity: isUnavailable ? 0.4 : 1,
-                      }}
-                    >
-                      <div style={{
-                        width: 22, height: 22, borderRadius: '50%',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 9, fontWeight: 700,
-                        border: isStarting ? '2px solid var(--success)' : '1.5px solid var(--border)',
-                        color: isStarting ? 'var(--success)' : 'var(--text-muted)',
-                        flexShrink: 0,
-                      }}>
-                        {player.shirtNumber ?? '?'}
-                      </div>
-                      <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 20, flexShrink: 0 }}>
-                        {positionShort(player.position)}
-                      </span>
-                      <span style={{ flex: 1, fontSize: 12, fontWeight: isStarting ? 700 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {player.lastName}
-                      </span>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', flexShrink: 0 }}>
-                        {Math.round(player.currentAbility)}
-                      </span>
-                      <span style={{
-                        fontSize: 9, fontWeight: 600, width: 28, textAlign: 'right', flexShrink: 0,
-                        color: isUnavailable ? 'var(--danger)' : isStarting ? 'var(--success)' : 'var(--text-muted)',
-                      }}>
-                        {isUnavailable ? (player.isInjured ? '🩹' : '🚫') : isStarting ? 'START' : ''}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-            ))}
-          </div>
-
-        </>
-      ) : (
+      {/* Pitch mode */}
+      {viewMode === 'pitch' && (
         <PitchLineupView
           tacticState={tacticState}
           startingIds={startingIds}
@@ -226,27 +205,105 @@ export function LineupStep({
         />
       )}
 
-      {/* Validation + next — always visible */}
-      <div style={{ padding: '8px 12px 24px' }}>
-        {!canPlay && (
-          <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', fontSize: 12, color: 'var(--danger)', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {startingIds.length !== 11 && <span>Välj exakt 11 startspelare (du har {startingIds.length})</span>}
-            {injuredInStarting.map(p => (
-              <span key={p.id}>⚠️ {p.firstName} {p.lastName} {p.isInjured ? 'är skadad' : `är avstängd (${p.suspensionGamesRemaining} matcher kvar)`}</span>
-            ))}
-          </div>
-        )}
-        {canPlay && !startingIds.some(id => squadPlayers.find(p => p.id === id)?.position === PlayerPosition.Goalkeeper) && (
-          <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', fontSize: 12, color: 'var(--warning)', marginBottom: 10 }}>
-            ⚠️ Ingen målvakt i startelvan — en utespelare får gå i mål.
-          </div>
-        )}
-        <button onClick={onNext} disabled={!canPlay} className={`btn ${canPlay ? 'btn-copper' : 'btn-ghost'}`} style={{
-          width: '100%', padding: '15px', fontSize: 16, fontWeight: 600,
-          cursor: canPlay ? 'pointer' : 'not-allowed',
-          opacity: canPlay ? 1 : 0.5,
-        }}>
-          Välj taktik →
+      {/* Player list (list mode only) */}
+      {viewMode === 'list' && (
+        <div style={{ padding: '0 14px 8px' }}>
+          {groupedPlayers.map(group => (
+            <div key={group.position} style={{ marginBottom: 6 }}>
+              <p style={{
+                fontSize: 8, fontWeight: 600, letterSpacing: '2px',
+                textTransform: 'uppercase', color: 'var(--text-muted)',
+                marginBottom: 2, paddingLeft: 4,
+              }}>
+                {GROUP_LABELS[group.position] ?? group.position}
+              </p>
+              {group.players.map(player => {
+                const isStarting = startingIds.includes(player.id)
+                const isInjured = player.isInjured
+                const isSuspended = player.suspensionGamesRemaining > 0
+                const isUnavailable = isInjured || isSuspended
+
+                const rowBorderLeft = isInjured
+                  ? '3px solid var(--danger)'
+                  : isSuspended
+                  ? '2px solid var(--warm-light)'
+                  : '2px solid transparent'
+
+                return (
+                  <div
+                    key={player.id}
+                    onClick={() => handlePlayerClick(player)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '6px 10px',
+                      background: 'var(--bg-surface)',
+                      borderLeft: rowBorderLeft,
+                      borderRadius: '0 8px 8px 0',
+                      marginBottom: 2,
+                      fontSize: 12.5,
+                      cursor: isUnavailable ? 'default' : 'pointer',
+                      opacity: isUnavailable ? 0.75 : 1,
+                    }}
+                  >
+                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, width: 22, color: 'var(--text-secondary)', fontSize: 12 }}>
+                      {player.shirtNumber ?? '?'}
+                    </span>
+                    <span style={{ fontSize: 9, letterSpacing: '1px', color: 'var(--text-muted)', width: 22 }}>
+                      {positionShort(player.position)}
+                    </span>
+                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {player.lastName}
+                    </span>
+                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--text-primary)', width: 26, textAlign: 'right', fontSize: 12 }}>
+                      {Math.round(player.currentAbility)}
+                    </span>
+                    {isInjured && (
+                      <span className="tag tag-red" style={{ fontSize: 9, padding: '2px 5px' }}>
+                        {player.injuryDaysRemaining > 0 ? `${player.injuryDaysRemaining} dgr` : 'Skadad'}
+                      </span>
+                    )}
+                    {isSuspended && (
+                      <span className="tag tag-copper" style={{ fontSize: 9, padding: '2px 5px' }}>
+                        Avstängd
+                      </span>
+                    )}
+                    {isStarting && !isUnavailable && (
+                      <span className="tag tag-green" style={{ fontSize: 9, padding: '2px 5px' }}>
+                        Start
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Validation warnings */}
+      {!canPlay && (
+        <div style={{ margin: '0 14px 8px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 8, padding: '10px 12px', fontSize: 12, color: 'var(--danger)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {startingIds.length !== 11 && <span>Välj exakt 11 startspelare (du har {startingIds.length})</span>}
+          {injuredInStarting.map(p => (
+            <span key={p.id}>⚠️ {p.firstName} {p.lastName} {p.isInjured ? 'är skadad' : `är avstängd (${p.suspensionGamesRemaining} matcher kvar)`}</span>
+          ))}
+        </div>
+      )}
+      {canPlay && !startingIds.some(id => squadPlayers.find(p => p.id === id)?.position === PlayerPosition.Goalkeeper) && (
+        <div style={{ margin: '0 14px 8px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, padding: '10px 12px', fontSize: 12, color: 'var(--warning)' }}>
+          ⚠️ Ingen målvakt i startelvan — en utespelare får gå i mål.
+        </div>
+      )}
+
+      {/* Footer CTA */}
+      <div style={{ padding: '4px 14px 24px', borderTop: '0.5px solid var(--border)', marginTop: 4 }}>
+        <button
+          onClick={onNext}
+          disabled={!canPlay}
+          className="btn btn-cta btn-primary"
+          style={{ width: '100%', cursor: canPlay ? 'pointer' : 'not-allowed', opacity: canPlay ? 1 : 0.5 }}
+        >
+          Nästa: Taktik →
         </button>
       </div>
     </>

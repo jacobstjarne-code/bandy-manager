@@ -419,6 +419,53 @@ a {
   color: var(--text-light);
 }
 
+/* ── Tactic segmented (3-col intensity grid) ── */
+.tactic-segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.tactic-btn {
+  padding: 6px 4px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 0;
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  position: relative;
+  letter-spacing: 0.2px;
+  transition: background 0.1s;
+}
+.tactic-btn:last-child { border-right: 0; }
+.tactic-btn.intensity-1 { font-weight: 400; }
+.tactic-btn.intensity-2 { font-weight: 500; }
+.tactic-btn.intensity-3 { font-weight: 700; }
+.tactic-btn.active { background: var(--accent); color: #fff; }
+.tactic-btn.recommended::after {
+  content: "";
+  position: absolute;
+  bottom: 3px; left: 50%;
+  transform: translateX(-50%);
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--warm);
+}
+.tactic-btn.active.recommended::after { background: rgba(255,255,255,0.9); }
+.tactic-feedback {
+  margin-top: 5px;
+  margin-left: 64px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 11px;
+  line-height: 1.35;
+}
+.tactic-feedback.confirm { color: var(--accent-dark); }
+.tactic-feedback.warn    { color: var(--warm); }
+
 /* ── Sharp cards: factual data display ── */
 .card-sharp {
   border-radius: 8px;

@@ -1,11 +1,12 @@
 interface BandyPitchProps {
   width?: number | string
+  height?: number | string
   children?: React.ReactNode
 }
 
 // viewBox: 220 × 170 — taller aspect ratio gives room for player labels
 // Coordinate system: (0,0) = top-left, own goal at top, opponent goal at bottom
-export function BandyPitch({ width = '100%', children }: BandyPitchProps) {
+export function BandyPitch({ width = '100%', height, children }: BandyPitchProps) {
   const W = 220
   const H = 170
   const goalW = 7    // 3.5m * 2
@@ -21,6 +22,7 @@ export function BandyPitch({ width = '100%', children }: BandyPitchProps) {
     <svg
       viewBox={`0 0 ${W} ${H}`}
       width={width}
+      height={height}
       style={{ display: 'block', borderRadius: 8 }}
       xmlns="http://www.w3.org/2000/svg"
     >

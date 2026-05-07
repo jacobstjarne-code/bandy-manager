@@ -1,17 +1,13 @@
 import type { Club, Tactic } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import type { MatchWeather } from '../../../domain/entities/Weather'
 import { PlayerArchetype } from '../../../domain/enums'
-import { generateBasicAnalysis } from '../../../domain/services/opponentAnalysisService'
-import { SegmentedControl } from '../SegmentedControl'
-import { tacticRows, tacticExplanations } from '../../utils/tacticData'
-import { getDetailedWeatherAdvice } from '../../utils/weatherAdvice'
-import { TacticPreview } from './TacticPreview'
+import { generateDetailedAnalysis } from '../../../domain/services/opponentAnalysisService'
+import { tacticRows } from '../../utils/tacticData'
 
 interface TacticStepProps {
   tacticState: Tactic
-  matchWeatherData: MatchWeather | undefined
+  matchWeatherData?: unknown
   startingIds: string[]
   game: SaveGame
   opponent?: Club | null
@@ -21,171 +17,170 @@ interface TacticStepProps {
   onNext: () => void
 }
 
-export function TacticStep({ tacticState, matchWeatherData, startingIds, game, opponent, nextFixture, onChange, onBack, onNext }: TacticStepProps) {
-  const adviceItems = getDetailedWeatherAdvice(matchWeatherData, tacticState)
+// Maps tactic value index (0=conservative, 1=balanced, 2=aggressive) to intensity class
+function intensityClass(idx: number): string {
+  return idx === 0 ? 'intensity-1' : idx === 1 ? 'intensity-2' : 'intensity-3'
+}
 
-  const tacticHints = (() => {
-    if (!opponent || !nextFixture) return []
-    const opponentPlayers = game.players.filter(p => opponent.squadPlayerIds.includes(p.id))
-    const analysis = generateBasicAnalysis(opponent, opponentPlayers, game.standings, game.fixtures, nextFixture.id)
-    const hints: { text: string; icon: string }[] = []
-    if (analysis.recentForm === 'Stark form') {
-      hints.push({ icon: '🛡', text: 'Motståndaren är i stark form — prioritera ett kompakt försvar.' })
-    } else if (analysis.recentForm === 'Svag form') {
-      hints.push({ icon: '⚔️', text: 'Motståndaren är i svag form — offensiv spelplan kan löna sig.' })
-    }
-    const tablePos = analysis.tablePosition
-    if (tablePos != null) {
-      if (tablePos <= 3) hints.push({ icon: '⚠️', text: `Topplag (${tablePos}:a) — defensiv stabilitet viktigare än normalt.` })
-      else if (tablePos >= 9) hints.push({ icon: '💡', text: `Bottenlag (${tablePos}:e) — högt tempo och press bör fungera.` })
-    }
-    return hints
-  })()
+export function TacticStep({ tacticState, startingIds, game, opponent, nextFixture, onChange, onBack, onNext }: TacticStepProps) {
+  const opponentPlayers = opponent ? game.players.filter(p => opponent.squadPlayerIds.includes(p.id)) : []
+  const analysis = (opponent && nextFixture)
+    ? generateDetailedAnalysis(opponent, opponentPlayers, game.standings, game.fixtures, nextFixture.id)
+    : null
 
   const managedPlayers = game.players.filter(p => p.clubId === game.managedClubId)
   const cornerSpec = managedPlayers.find(
     p => p.archetype === PlayerArchetype.CornerSpecialist && startingIds.includes(p.id)
   )
 
+  // Compute per-key recommended value
+  const recommendations: Partial<Record<keyof Tactic, string>> = {}
+  if (analysis) {
+    if (analysis.recentForm === 'Svag form' || (analysis.tablePosition != null && analysis.tablePosition >= 9)) {
+      recommendations.mentality = 'offensive'
+      recommendations.press = 'high'
+    } else if (analysis.recentForm === 'Stark form' || (analysis.tablePosition != null && analysis.tablePosition <= 3)) {
+      recommendations.mentality = 'defensive'
+      recommendations.press = 'low'
+    }
+  }
+  recommendations.cornerStrategy = cornerSpec ? 'aggressive' : 'safe'
+
+  // Per-key confirm/warn feedback
+  function getFeedback(key: keyof Tactic): { type: 'confirm' | 'warn'; text: string } | null {
+    const current = tacticState[key] as string
+    const rec = recommendations[key]
+    if (key === 'cornerStrategy') {
+      if (current === 'aggressive' && !cornerSpec) {
+        return { type: 'warn', text: 'Vi saknar hörnspecialist — aggressiva hörnor är riskfyllda.' }
+      }
+      if (current === 'aggressive' && cornerSpec) {
+        return { type: 'confirm', text: `${cornerSpec.firstName} ${cornerSpec.lastName} är hörnspecialist — bra val.` }
+      }
+    }
+    if (rec && current === rec && analysis) {
+      if (key === 'press' && rec === 'high') return { type: 'confirm', text: 'Matchar förslaget. Motståndaren tappar struktur i högt press.' }
+      if (key === 'press' && rec === 'low') return { type: 'confirm', text: 'Matchar förslaget. Defensivt läge mot stark motståndare.' }
+      if (key === 'mentality' && rec === 'offensive') return { type: 'confirm', text: 'Matchar förslaget. Offensivt läge utnyttjar svag motståndare.' }
+      if (key === 'mentality' && rec === 'defensive') return { type: 'confirm', text: 'Matchar förslaget. Stabilt mot topplag.' }
+    }
+    return null
+  }
+
+  const oppName = opponent?.shortName ?? opponent?.name ?? 'Motståndaren'
+
+  // Opp-insight line
+  const insightParts: string[] = []
+  if (analysis?.formation) insightParts.push(analysis.formation)
+  if (analysis?.strengths.length) insightParts.push(`stark: ${analysis.strengths[0].toLowerCase()}`)
+  if (analysis?.weaknesses.length) insightParts.push(`svag: ${analysis.weaknesses[0].toLowerCase()}`)
+  const insightText = insightParts.join(' · ') || (analysis?.recentForm ?? '—')
+
+  const groups = [
+    { label: 'Spelplan', keys: ['mentality', 'tempo', 'press'] as const },
+    { label: 'Bollspel', keys: ['passingRisk', 'width', 'attackingFocus'] as const },
+    { label: 'Fasta situationer', keys: ['cornerStrategy', 'penaltyKillStyle'] as const },
+  ]
+
   return (
-    <div style={{ padding: '0 12px 24px' }}>
-      {adviceItems.length > 0 && (
-        <div style={{ marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {adviceItems.map((item, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'flex-start', gap: 8, padding: '8px 12px',
-              background: item.severity === 'danger' ? 'rgba(239,68,68,0.08)'
-                : item.severity === 'warning' ? 'rgba(245,158,11,0.08)'
-                : item.severity === 'positive' ? 'rgba(34,197,94,0.06)'
-                : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${item.severity === 'danger' ? 'rgba(239,68,68,0.25)'
-                : item.severity === 'warning' ? 'rgba(245,158,11,0.25)'
-                : item.severity === 'positive' ? 'rgba(34,197,94,0.2)'
-                : 'var(--border)'}`,
-              borderRadius: 8, fontSize: 12,
-              color: item.severity === 'danger' ? 'var(--danger)'
-                : item.severity === 'warning' ? 'var(--warning)'
-                : item.severity === 'positive' ? 'var(--success)'
-                : 'var(--text-secondary)',
-            }}>
-              <span style={{ flexShrink: 0 }}>{item.icon}</span>
-              <span style={{ lineHeight: 1.4 }}>{item.text}</span>
-            </div>
-          ))}
+    <div style={{ paddingBottom: 24 }}>
+
+      {/* Opp insight */}
+      {opponent && (
+        <div style={{
+          margin: '8px 14px 0', padding: '7px 12px',
+          background: 'var(--bg-surface)',
+          borderLeft: '2px solid var(--accent)',
+          borderRadius: '0 8px 8px 0',
+          display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <span style={{ fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>
+            {oppName}
+          </span>
+          <span style={{ flex: 1, fontSize: 12, color: 'var(--text-primary)' }}>
+            {insightText}
+          </span>
         </div>
       )}
 
-      {tacticHints.length > 0 && (
-        <div className="card-sharp" style={{ marginBottom: 10, padding: '10px 12px' }}>
-          <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
-            🎯 TAKTIKRÅD
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {tacticHints.map((hint, i) => (
-              <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 12, color: 'var(--text-secondary)' }}>
-                <span style={{ flexShrink: 0 }}>{hint.icon}</span>
-                <span style={{ lineHeight: 1.4 }}>{hint.text}</span>
-              </div>
-            ))}
+      {/* Recommendation warm-stripe */}
+      {analysis?.recommendation && (
+        <div style={{
+          margin: '5px 14px 0', padding: '7px 12px',
+          background: 'var(--bg-surface)',
+          borderLeft: '2px solid var(--warm)',
+          borderRadius: '0 8px 8px 0',
+        }}>
+          <div style={{ fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--warm)', fontWeight: 600, marginBottom: 2 }}>
+            Förslag mot {oppName}
+          </div>
+          <div style={{ fontSize: 11.5, color: 'var(--text-primary)', lineHeight: 1.4 }}>
+            {analysis.recommendation}
           </div>
         </div>
       )}
 
-      {/* Mini-pitch preview — sticky så prickarna syns medan man scrollar */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg)', paddingBottom: 4 }}>
-        <TacticPreview tacticState={tacticState} />
-      </div>
+      {/* Nudge legend */}
+      {Object.keys(recommendations).length > 0 && (
+        <div style={{ margin: '6px 14px 0', fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: 5, paddingLeft: 4 }}>
+          <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--warm)', display: 'inline-block', flexShrink: 0 }} />
+          = rekommenderat val
+        </div>
+      )}
 
-      {/* Taktik-grupper i kort */}
-      {(() => {
-        const groups = [
-          { label: '⚔️ Spelplan', keys: ['mentality', 'tempo', 'press'] },
-          { label: '🏒 Bollspel', keys: ['passingRisk', 'width', 'attackingFocus'] },
-          { label: '📐 Fasta situationer', keys: ['cornerStrategy', 'penaltyKillStyle'] },
-        ]
-
-        const consequenceTags: Record<string, Record<string, { t: string; c: 'pos' | 'neg' }[]>> = {
-          mentality: {
-            defensive: [{ t: '+10% försvar', c: 'pos' }, { t: '-15% skottchanser', c: 'neg' }, { t: '-Energi', c: 'pos' }],
-            balanced: [],
-            offensive: [{ t: '+15% skottchanser', c: 'pos' }, { t: '-10% försvar', c: 'neg' }, { t: '+Energi', c: 'neg' }],
-          },
-          press: {
-            low: [{ t: '-Energi', c: 'pos' }, { t: '-Bollvinster', c: 'neg' }],
-            medium: [],
-            high: [{ t: '+Bollvinster', c: 'pos' }, { t: '+Energi', c: 'neg' }, { t: '+Kort', c: 'neg' }],
-          },
-        }
-
-        return groups.map((group, gi) => {
-          const rows = tacticRows.filter(r => group.keys.includes(r.key as string))
-          if (rows.length === 0) return null
-          return (
-            <div key={gi} className="card-sharp" style={{ marginBottom: 8, padding: '10px 12px' }}>
-              <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
-                {group.label}
-              </p>
-              {rows.map(({ label, key, options }, ri) => {
-                const tags = consequenceTags[key as string]?.[tacticState[key] as string] ?? []
-                return (
-                  <div key={key as string} style={{ marginBottom: ri < rows.length - 1 ? 8 : 0 }}>
-                    <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4, fontWeight: 500 }}>{label}</p>
-                    <SegmentedControl
-                      options={options}
-                      value={tacticState[key] as string}
-                      onChange={v => onChange(key, v as Tactic[typeof key])}
-                      explanation={tacticExplanations[key as string]?.[tacticState[key] as string]}
-                    />
-                    {tags.length > 0 && (
-                      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 4 }}>
-                        {tags.map((tag, ti) => (
-                          <span key={ti} style={{
-                            fontSize: 8, padding: '2px 6px', borderRadius: 99, fontWeight: 600,
-                            background: tag.c === 'pos' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
-                            color: tag.c === 'pos' ? 'var(--success)' : 'var(--danger)',
-                          }}>
-                            {tag.t}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+      {/* Tactic sections */}
+      {groups.map(group => {
+        const rows = tacticRows.filter(r => group.keys.includes(r.key as never))
+        if (!rows.length) return null
+        return (
+          <div key={group.label} style={{
+            margin: '6px 14px 0', padding: '8px 12px 10px',
+            background: 'var(--bg-surface)',
+            borderLeft: '2px solid var(--accent)',
+            borderRadius: '0 8px 8px 0',
+          }}>
+            <p style={{ fontSize: 8, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600, marginBottom: 8 }}>
+              {group.label}
+            </p>
+            {rows.map(({ label, key, options }, ri) => {
+              const rec = recommendations[key]
+              const feedback = getFeedback(key)
+              return (
+                <div key={key as string} style={{ marginBottom: ri < rows.length - 1 ? 9 : 0 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '56px 1fr', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600 }}>{label}</span>
+                    <div className="tactic-segmented">
+                      {options.map((opt, oi) => {
+                        const isActive = tacticState[key] === opt.value
+                        const isRec = rec === opt.value
+                        return (
+                          <button
+                            key={opt.value}
+                            className={`tactic-btn ${intensityClass(oi)}${isActive ? ' active' : ''}${isRec ? ' recommended' : ''}`}
+                            onClick={() => onChange(key, opt.value as Tactic[typeof key])}
+                          >
+                            {opt.label}
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
-                )
-              })}
-            </div>
-          )
-        })
-      })()}
+                  {feedback && (
+                    <p className={`tactic-feedback ${feedback.type}`}>
+                      {feedback.text}
+                    </p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )
+      })}
 
-      {cornerSpec ? (
-        <div style={{
-          background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.2)',
-          borderRadius: 8, padding: '8px 12px', fontSize: 12, color: 'var(--accent)',
-          marginTop: 4, marginBottom: 12,
-        }}>
-          📐 {cornerSpec.firstName} {cornerSpec.lastName} är hörnspecialist (hörnfärdighet {Math.round(cornerSpec.attributes.cornerSkill)}) — aggressiv hörnstrategi rekommenderas!
-        </div>
-      ) : tacticState.cornerStrategy === 'aggressive' ? (
-        <div style={{
-          background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)',
-          borderRadius: 8, padding: '8px 12px', fontSize: 12, color: 'var(--warning)',
-          marginTop: 4, marginBottom: 12,
-        }}>
-          ⚠️ Ingen hörnspecialist i startelvan — aggressiva hörnor mindre effektiva
-        </div>
-      ) : null}
-
-      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-        <button onClick={onBack} className="btn btn-outline" style={{
-          flex: 1, padding: '13px', fontSize: 13,
-        }}>
-          ← Uppställning
-        </button>
-        <button onClick={onNext} className="btn btn-copper" style={{
-          flex: 2, padding: '13px', fontSize: 14, fontWeight: 700,
-        }}>
-          Nästa →
-        </button>
+      {/* Footer */}
+      <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: 10, padding: '14px 14px 0', borderTop: '0.5px solid var(--border)', marginTop: 12 }}>
+        <button onClick={onBack} className="btn btn-outline">← Trupp</button>
+        <button onClick={onNext} className="btn btn-cta btn-primary">Nästa: Starta →</button>
       </div>
     </div>
   )

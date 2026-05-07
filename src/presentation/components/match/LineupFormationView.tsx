@@ -71,7 +71,7 @@ export function LineupFormationView({
 
       {/* Pitch with HTML slot overlay — SAME technique as PitchLineupView */}
       <div style={{ position: 'relative' }}>
-        <BandyPitch width="100%" />
+        <BandyPitch width="100%" height={170} />
 
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
           {template.slots.map(slot => {
