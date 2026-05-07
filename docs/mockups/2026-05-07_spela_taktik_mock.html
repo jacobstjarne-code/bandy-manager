@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Spela steg 2 — Taktik redesign v4</title>
+  <link rel="stylesheet" href="../../design-system/preview/_base.css">
+  <style>
+    body { width: 380px; padding: 0; margin: 0 auto; min-height: auto; overflow: visible; }
+
+    .cup-strip { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--bg-surface); border-left: 3px solid var(--accent); font-size: 12px; }
+    .cup-strip-meta { color: var(--text-secondary); margin-left: auto; }
+
+    .stepper { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 10px 14px 6px; gap: 8px; border-bottom: 0.5px solid var(--border); }
+    .step { text-align: center; }
+    .step-num { width: 22px; height: 22px; margin: 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 11px; background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border); }
+    .step.active .step-num { background: var(--accent); color: white; border: none; }
+    .step.done .step-num { background: var(--bg-surface); color: var(--accent-dark); border: 1px solid var(--accent); }
+    .step.done .step-num::before { content: "✓"; }
+    .step-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 4px; color: var(--text-muted); }
+    .step.active .step-label { color: var(--accent-dark); font-weight: 600; }
+
+    .opp-insight {
+      margin: 8px 14px 0; padding: 7px 12px;
+      background: var(--bg-surface);
+      border-left: 2px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      display: flex; align-items: center; gap: 10px; cursor: pointer;
+    }
+    .opp-insight-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+    .opp-insight-text { flex: 1; font-size: 12px; color: var(--text-primary); }
+    .opp-insight-text em { color: var(--accent-dark); font-style: normal; font-weight: 600; }
+    .opp-insight-chevron { color: var(--text-muted); }
+
+    .recommendation {
+      margin: 5px 14px 0; padding: 7px 12px;
+      background: var(--bg-surface);
+      border-left: 2px solid var(--warm);
+      border-radius: 0 8px 8px 0;
+    }
+    .recommendation-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--warm); font-weight: 600; margin-bottom: 2px; }
+    .recommendation-text { font-size: 11.5px; color: var(--text-primary); line-height: 1.4; }
+    .recommendation-text strong { color: var(--warm); }
+
+    .nudge-legend {
+      margin: 6px 14px 0;
+      font-size: 9px; color: var(--text-muted); letter-spacing: 0.5px;
+      display: flex; align-items: center; gap: 5px;
+      padding-left: 4px;
+    }
+    .nudge-legend-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--warm); }
+
+    .tactic-section {
+      margin: 6px 14px 0; padding: 8px 12px 10px;
+      background: var(--bg-surface);
+      border-left: 2px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+    }
+    .section-label { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 8px; }
+
+    .tactic-row { margin-bottom: 9px; }
+    .tactic-row:last-child { margin-bottom: 0; }
+    .tactic-row-grid { display: grid; grid-template-columns: 56px 1fr; align-items: center; gap: 8px; }
+    .tactic-row-label { font-size: 10px; color: var(--text-secondary); font-weight: 600; }
+
+    /* ── Tactic-knapparna i designsystemets segmented-stil ── */
+    .tactic-segmented {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .tactic-btn {
+      padding: 6px 4px;
+      font-family: var(--font-body); font-size: 11px;
+      background: transparent;
+      color: var(--text-secondary);
+      border: 0;
+      border-right: 1px solid var(--border);
+      cursor: pointer;
+      position: relative;
+      letter-spacing: 0.2px;
+    }
+    .tactic-btn:last-child { border-right: 0; }
+
+    /* Typografisk progression: konservativt → balanserat → aggressivt */
+    .tactic-btn.intensity-1 { font-weight: 400; }
+    .tactic-btn.intensity-2 { font-weight: 500; }
+    .tactic-btn.intensity-3 { font-weight: 700; }
+
+    .tactic-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* Nudge-prick under rekommenderat val */
+    .tactic-btn.recommended::after {
+      content: "";
+      position: absolute;
+      bottom: 3px; left: 50%;
+      transform: translateX(-50%);
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--warm);
+    }
+    .tactic-btn.active.recommended::after { background: rgba(255,255,255,0.9); }
+
+    /* Feedback per val */
+    .tactic-feedback {
+      margin-top: 6px;
+      margin-left: 64px;
+      font-family: var(--font-display); font-style: italic;
+      font-size: 11px; line-height: 1.35;
+    }
+    .tactic-feedback.confirm { color: var(--accent-dark); }
+    .tactic-feedback.warn    { color: var(--warm); }
+
+    /* Footer: outline back + cta forward */
+    .footer-cta {
+      display: grid; grid-template-columns: 100px 1fr;
+      gap: 10px;
+      padding: 14px 14px;
+      border-top: 0.5px solid var(--border);
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cup-strip">
+    <span>SVENSKA CUPEN — FÖRSTARUNDA</span>
+    <span class="cup-strip-meta">vs Heros · Borta · +2°C</span>
+  </div>
+
+  <div class="stepper">
+    <div class="step done"><div class="step-num"></div><div class="step-label">Trupp</div></div>
+    <div class="step active"><div class="step-num">2</div><div class="step-label">Taktik</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-label">Starta</div></div>
+  </div>
+
+  <div class="opp-insight">
+    <span class="opp-insight-label">Heros</span>
+    <span class="opp-insight-text">Defensiv 5-3-2 · <em>stark på hörnor</em> · känslig för press</span>
+    <span class="opp-insight-chevron">›</span>
+  </div>
+
+  <div class="recommendation">
+    <div class="recommendation-label">Förslag mot Heros</div>
+    <div class="recommendation-text">
+      Pressa <strong>hög</strong> för att bryta deras 5-3-2. <strong>Säker hörnstrategi</strong> defensivt — de gör hälften av sina mål på hörnor.
+    </div>
+  </div>
+
+  <div class="nudge-legend">
+    <span class="nudge-legend-dot"></span>
+    <span>= rekommenderat val</span>
+  </div>
+
+  <!-- SPELPLAN — typografisk progression: konservativ→balanserad→aggressiv -->
+  <div class="tactic-section">
+    <div class="section-label">Spelplan</div>
+
+    <div class="tactic-row">
+      <div class="tactic-row-grid">
+        <div class="tactic-row-label">Mentalitet</div>
+        <div class="tactic-segmented">
+          <button class="tactic-btn intensity-1">Defensiv</button>
+          <button class="tactic-btn intensity-2 active">Balanserad</button>
+          <button class="tactic-btn intensity-3">Offensiv</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tactic-row">
+      <div class="tactic-row-grid">
+        <div class="tactic-row-label">Tempo</div>
+        <div class="tactic-segmented">
+          <button class="tactic-btn intensity-1">Lågt</button>
+          <button class="tactic-btn intensity-2 active">Normalt</button>
+          <button class="tactic-btn intensity-3">Högt</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tactic-row">
+      <div class="tactic-row-grid">
+        <div class="tactic-row-label">Press</div>
+        <div class="tactic-segmented">
+          <button class="tactic-btn intensity-1">Låg</button>
+          <button class="tactic-btn intensity-2">Medium</button>
+          <button class="tactic-btn intensity-3 active recommended">Hög</button>
+        </div>
+      </div>
+      <div class="tactic-feedback confirm">
+        Matchar förslaget. Heros tappar struktur i högt press.
+      </div>
+    </div>
+  </div>
+
+  <!-- BOLLSPEL -->
+  <div class="tactic-section">
+    <div class="section-label">Bollspel</div>
+
+    <div class="tactic-row">
+      <div class="tactic-row-grid">
+        <div class="tactic-row-label">Passning</div>
+        <div class="tactic-segmented">
+          <button class="tactic-btn intensity-1">Säker</button>
+          <button class="tactic-btn intensity-2 active">Blandat</button>
+          <button class="tactic-btn intensity-3">Direkt</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tactic-row">
+      <div class="tactic-row-grid">
+        <div class="tactic-row-label">Bredd</div>
+        <div class="tactic-segmented">
+          <button class="tactic-btn intensity-1">Smal</button>
+          <button class="tactic-btn intensity-2 active">Normal</button>
+          <button class="tactic-btn intensity-3">Bred</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tactic-row">
+      <div class="tactic-row-grid">
+        <div class="tactic-row-label">Anfall</div>
+        <div class="tactic-segmented">
+          <button class="tactic-btn intensity-1">Centralt</button>
+          <button class="tactic-btn intensity-2">Kanter</button>
+          <button class="tactic-btn intensity-3 active">Blandat</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FASTA SITUATIONER -->
+  <div class="tactic-section">
+    <div class="section-label">Fasta situationer</div>
+
+    <div class="tactic-row">
+      <div class="tactic-row-grid">
+        <div class="tactic-row-label">Hörnor</div>
+        <div class="tactic-segmented">
+          <button class="tactic-btn intensity-1 recommended">Säker</button>
+          <button class="tactic-btn intensity-2">Standard</button>
+          <button class="tactic-btn intensity-3 active">Aggressiv</button>
+        </div>
+      </div>
+      <div class="tactic-feedback warn">
+        Vi saknar hörnspecialist — Lundqvist har 38 i hörnor. Risk för returer.
+      </div>
+    </div>
+
+    <div class="tactic-row">
+      <div class="tactic-row-grid">
+        <div class="tactic-row-label">Utvisning</div>
+        <div class="tactic-segmented">
+          <button class="tactic-btn intensity-1">Passiv</button>
+          <button class="tactic-btn intensity-2 active">Aktiv</button>
+          <button class="tactic-btn intensity-3">Aggressiv</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-cta">
+    <button class="btn btn-outline">← Trupp</button>
+    <button class="btn btn-cta btn-primary">Nästa: Starta →</button>
+  </div>
+
+</body>
+</html>

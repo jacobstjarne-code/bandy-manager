@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Weekly Decision — vald variant (v2 med Veckans-prefix)</title>
+  <link rel="stylesheet" href="../../design-system/preview/_base.css">
+  <style>
+    body { width: 380px; padding: 0; margin: 0 auto; min-height: auto; overflow: visible; background: var(--bg-portal); }
+
+    .mock-frame { padding: 16px 0; }
+
+    .mock-meta {
+      font-size: 9px;
+      color: var(--text-light-secondary);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin: 0 14px 12px;
+      text-align: center;
+      opacity: 0.6;
+    }
+
+    .variant-header {
+      margin: 24px 14px 6px;
+      padding-top: 16px;
+      border-top: 1px dashed rgba(196, 122, 58, 0.3);
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .variant-note {
+      font-size: 10px;
+      color: var(--text-light-secondary);
+      letter-spacing: 0.3px;
+      margin: 0 14px 12px;
+      line-height: 1.5;
+      opacity: 0.7;
+      font-family: var(--font-display);
+      font-style: italic;
+    }
+
+    .wd-card {
+      margin: 0 14px 10px;
+      padding: 12px 14px 13px;
+      background: var(--bg-portal-surface);
+      border-left: 2px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      box-shadow: var(--shadow-card);
+    }
+
+    .wd-label {
+      font-size: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .wd-label-icon {
+      font-size: 13px;
+      line-height: 1;
+      filter: saturate(0.85);
+    }
+
+    .wd-question {
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-light);
+      line-height: 1.4;
+      margin-bottom: 14px;
+    }
+
+    .wd-options {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+
+    .wd-option {
+      display: flex; flex-direction: column; gap: 4px;
+      padding: 13px 12px;
+      background: var(--bg-portal-elevated);
+      border: 1.5px solid var(--accent);
+      border-radius: 8px;
+      cursor: pointer; text-align: center;
+      box-shadow: var(--shadow-btn);
+      transition: filter 0.15s;
+    }
+    .wd-option:hover { filter: brightness(1.1); }
+    .wd-option:active { filter: brightness(0.95); }
+
+    .wd-option-label {
+      font-family: var(--font-body); font-size: 14px; font-weight: 700;
+      color: var(--text-light);
+      letter-spacing: 0.4px;
+    }
+    .wd-option-effect {
+      font-family: var(--font-display); font-style: italic; font-size: 11px;
+      line-height: 1.3;
+    }
+    .wd-option-effect.success { color: #A0C890; }
+    .wd-option-effect.danger  { color: #E8A090; }
+    .wd-option-effect.muted   { color: var(--text-light-secondary); opacity: 0.75; }
+
+    /* Resolved state */
+    .wd-resolved {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 8px 4px 0;
+    }
+    .wd-resolved-check {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: rgba(160, 200, 144, 0.2);
+      color: #A0C890;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .wd-resolved-text {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 12px;
+      color: var(--text-light-secondary);
+      line-height: 1.4;
+    }
+    .wd-resolved-text strong {
+      font-style: normal;
+      color: var(--text-light);
+      font-weight: 600;
+      font-family: var(--font-body);
+    }
+  </style>
+</head>
+<body>
+
+<div class="mock-frame">
+
+  <div class="mock-meta">Portal · Secondary card · Weekly Decision · vald variant</div>
+
+  <div class="variant-header">Vald: v2 + "Veckans"-prefix</div>
+  <div class="variant-note">
+    Temporal förankring + kategori. "Veckans X" som konsekvent benämning oavsett typ.
+    Kategori-emoji ger skanbarhet i Portal-stack. Förstärkta knappar äger visuell tyngd.
+  </div>
+
+  <!-- VARIANT 1: Spelarfråga -->
+  <div class="wd-card">
+    <div class="wd-label">
+      <span class="wd-label-icon">🏒</span>
+      <span>Veckans spelarfråga</span>
+    </div>
+    <div class="wd-question">
+      S. Sundström vill öva hörnskott efter träningen. Extra pass?
+    </div>
+    <div class="wd-options">
+      <button class="wd-option">
+        <span class="wd-option-label">Tillåt</span>
+        <span class="wd-option-effect success">+3 hörnskicklighet</span>
+      </button>
+      <button class="wd-option">
+        <span class="wd-option-label">Neka</span>
+        <span class="wd-option-effect muted">Ingen effekt</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- VARIANT 2: Supporterfråga -->
+  <div class="wd-card">
+    <div class="wd-label">
+      <span class="wd-label-icon">📣</span>
+      <span>Veckans supporterfråga</span>
+    </div>
+    <div class="wd-question">
+      Anders har hyrt en buss till Heros. Bidra med 3 000 kr?
+    </div>
+    <div class="wd-options">
+      <button class="wd-option">
+        <span class="wd-option-label">Bidra</span>
+        <span class="wd-option-effect success">−3 tkr · +bortasupport</span>
+      </button>
+      <button class="wd-option">
+        <span class="wd-option-label">Låt dem ordna</span>
+        <span class="wd-option-effect danger">−5 Klacken-stämning</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- VARIANT 3: Kommunfråga -->
+  <div class="wd-card">
+    <div class="wd-label">
+      <span class="wd-label-icon">🏛️</span>
+      <span>Veckans kommunfråga</span>
+    </div>
+    <div class="wd-question">
+      Kommunen erbjuder en begagnad ismaskin till rabatterat pris (15 000 kr).
+    </div>
+    <div class="wd-options">
+      <button class="wd-option">
+        <span class="wd-option-label">Köp den</span>
+        <span class="wd-option-effect success">−15 tkr · +iskvalitet</span>
+      </button>
+      <button class="wd-option">
+        <span class="wd-option-label">Tacka nej</span>
+        <span class="wd-option-effect muted">Ingen effekt</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- VARIANT 4: Träningsbeslut -->
+  <div class="wd-card">
+    <div class="wd-label">
+      <span class="wd-label-icon">📋</span>
+      <span>Veckans träningsbeslut</span>
+    </div>
+    <div class="wd-question">
+      Bara tid för ett: extra hörnträning eller matchförberedelse?
+    </div>
+    <div class="wd-options">
+      <button class="wd-option">
+        <span class="wd-option-label">Hörnor</span>
+        <span class="wd-option-effect success">+hörnskicklighet</span>
+      </button>
+      <button class="wd-option">
+        <span class="wd-option-label">Matchprep</span>
+        <span class="wd-option-effect success">+positionering</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- VARIANT 5: Era-gated survival -->
+  <div class="wd-card">
+    <div class="wd-label">
+      <span class="wd-label-icon">🏒</span>
+      <span>Veckans spelarfråga</span>
+    </div>
+    <div class="wd-question">
+      Kassören föreslår lönestopp — inga nya kontrakt under månaden för att täcka underskott.
+    </div>
+    <div class="wd-options">
+      <button class="wd-option">
+        <span class="wd-option-label">Godkänn</span>
+        <span class="wd-option-effect danger">+budget · −spelarförtroende</span>
+      </button>
+      <button class="wd-option">
+        <span class="wd-option-label">Neka</span>
+        <span class="wd-option-effect muted">−boardpatience · spelarna trygga</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- RESOLVED STATE -->
+  <div class="variant-header">Resolved-state (1 render-tick efter klick)</div>
+
+  <div class="wd-card">
+    <div class="wd-label">
+      <span class="wd-label-icon">📣</span>
+      <span>Veckans supporterfråga</span>
+    </div>
+    <div class="wd-question" style="opacity: 0.5; margin-bottom: 0;">
+      Anders har hyrt en buss till Heros…
+    </div>
+    <div class="wd-resolved">
+      <div class="wd-resolved-check">✓</div>
+      <div class="wd-resolved-text">
+        <strong>Bidrog.</strong> Klubbkassan: −3 000 kr · Klacken: +8 stämning
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

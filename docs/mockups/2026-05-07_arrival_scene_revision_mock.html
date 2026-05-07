@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>ArrivalScene — stegvis-ackumulativ (rätt modell)</title>
+  <link rel="stylesheet" href="../../design-system/preview/_base.css">
+  <style>
+    body {
+      width: 380px;
+      padding: 0;
+      margin: 0 auto;
+      min-height: auto;
+      overflow: visible;
+      background: var(--bg);
+    }
+
+    .mock-frame { padding: 16px 0; }
+
+    .mock-meta {
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin: 0 14px 12px;
+      text-align: center;
+      opacity: 0.6;
+    }
+
+    .stage-label {
+      margin: 16px 14px 6px;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 600;
+      opacity: 0.7;
+    }
+
+    /* Scen-bas — EN skärm hela tiden */
+    .as-scene {
+      background: var(--bg-portal);
+      min-height: 540px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      margin: 0 14px;
+      border-radius: 8px;
+      box-shadow: var(--shadow-card);
+    }
+
+    /* Persistent header */
+    .as-header {
+      padding: 22px 24px 0;
+      text-align: center;
+    }
+    .as-genre {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 4px;
+      color: var(--accent);
+      opacity: 0.7;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    /* Beat-progress */
+    .as-progress {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      margin-bottom: 22px;
+    }
+    .as-progress-bar {
+      width: 24px;
+      height: 2px;
+      border-radius: 1px;
+      background: var(--border-dark);
+      opacity: 0.3;
+    }
+    .as-progress-bar.active {
+      background: var(--accent);
+      opacity: 0.8;
+    }
+
+    /* Body — ackumulativ stack */
+    .as-body {
+      flex: 1;
+      padding: 0 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Setting-prolog */
+    .as-setting {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 13px;
+      color: var(--text-light-secondary);
+      line-height: 1.6;
+      text-align: center;
+      max-width: 280px;
+      margin: 0 auto;
+      transition: opacity 0.5s ease;
+    }
+    .as-setting strong {
+      font-style: normal;
+      color: var(--text-light);
+      font-weight: 600;
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+    .as-setting.dimmed { opacity: 0.4; }
+
+    /* Repliker — ackumulativ stack */
+    .as-replica {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding-left: 2px;
+      transition: opacity 0.5s ease;
+    }
+    .as-replica.dimmed { opacity: 0.4; }
+
+    .as-speaker {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: var(--accent);
+      text-transform: uppercase;
+      opacity: 0.85;
+    }
+
+    .as-quote {
+      font-family: Georgia, serif;
+      font-size: 14px;
+      color: var(--text-light);
+      line-height: 1.55;
+    }
+
+    /* CTA */
+    .as-cta-wrap {
+      padding: 14px 24px 24px;
+    }
+    .as-cta {
+      width: 100%;
+      padding: 12px 16px;
+      background: transparent;
+      border: 1.5px solid var(--accent);
+      color: var(--text-light);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: var(--shadow-btn);
+    }
+    .as-cta:hover { filter: brightness(1.1); }
+
+    .tonal-note {
+      margin: 24px 14px 12px;
+      padding: 12px 14px;
+      background: rgba(196,122,58,0.05);
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      font-family: Georgia, serif;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<div class="mock-frame">
+
+  <div class="mock-meta">ArrivalScene · stegvis-ackumulativ · EN skärm</div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!-- STAGE 1: Setting (innan dialog) -->
+  <!-- ════════════════════════════════════════════════════ -->
+
+  <div class="stage-label">Stage 1/4 · Setting · "Sätt dig vid bordet"</div>
+
+  <div class="as-scene">
+    <div class="as-header">
+      <div class="as-genre">⬩ Ankomsten ⬩</div>
+      <div class="as-progress">
+        <div class="as-progress-bar active"></div>
+        <div class="as-progress-bar"></div>
+        <div class="as-progress-bar"></div>
+        <div class="as-progress-bar"></div>
+      </div>
+    </div>
+    <div class="as-body">
+      <div class="as-setting">
+        <strong>Forsbacka.</strong>
+        Onsdag kväll. Lampan vid bordet. Tre kaffekoppar redan på plats.
+      </div>
+    </div>
+    <div class="as-cta-wrap">
+      <button class="as-cta">Sätt dig vid bordet</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!-- STAGE 2: + Margareta (setting dimmas) -->
+  <!-- ════════════════════════════════════════════════════ -->
+
+  <div class="stage-label">Stage 2/4 · + Margareta · "Förstått"</div>
+
+  <div class="as-scene">
+    <div class="as-header">
+      <div class="as-genre">⬩ Ankomsten ⬩</div>
+      <div class="as-progress">
+        <div class="as-progress-bar active"></div>
+        <div class="as-progress-bar active"></div>
+        <div class="as-progress-bar"></div>
+        <div class="as-progress-bar"></div>
+      </div>
+    </div>
+    <div class="as-body">
+      <div class="as-setting dimmed">
+        <strong>Forsbacka.</strong>
+        Onsdag kväll. Lampan vid bordet. Tre kaffekoppar redan på plats.
+      </div>
+      <div class="as-replica">
+        <div class="as-speaker">Margareta</div>
+        <div class="as-quote">"Vi har väntat på dig. Tre månader utan tränare — klacken börjar bli orolig."</div>
+      </div>
+    </div>
+    <div class="as-cta-wrap">
+      <button class="as-cta">Förstått</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!-- STAGE 3: + Pelle (setting + Margareta dimmas) -->
+  <!-- ════════════════════════════════════════════════════ -->
+
+  <div class="stage-label">Stage 3/4 · + Pelle · "Det går bra"</div>
+
+  <div class="as-scene">
+    <div class="as-header">
+      <div class="as-genre">⬩ Ankomsten ⬩</div>
+      <div class="as-progress">
+        <div class="as-progress-bar active"></div>
+        <div class="as-progress-bar active"></div>
+        <div class="as-progress-bar active"></div>
+        <div class="as-progress-bar"></div>
+      </div>
+    </div>
+    <div class="as-body">
+      <div class="as-setting dimmed">
+        <strong>Forsbacka.</strong>
+        Onsdag kväll. Lampan vid bordet. Tre kaffekoppar redan på plats.
+      </div>
+      <div class="as-replica dimmed">
+        <div class="as-speaker">Margareta</div>
+        <div class="as-quote">"Vi har väntat på dig. Tre månader utan tränare — klacken börjar bli orolig."</div>
+      </div>
+      <div class="as-replica">
+        <div class="as-speaker">Pelle</div>
+        <div class="as-quote">"Truppen är bra. Men kassan är vad den är. Vi får jobba med det vi har."</div>
+      </div>
+    </div>
+    <div class="as-cta-wrap">
+      <button class="as-cta">Det går bra</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!-- STAGE 4: + Sture (allt föregående dimmas) -->
+  <!-- ════════════════════════════════════════════════════ -->
+
+  <div class="stage-label">Stage 4/4 · + Sture · "Då börjar vi"</div>
+
+  <div class="as-scene">
+    <div class="as-header">
+      <div class="as-genre">⬩ Ankomsten ⬩</div>
+      <div class="as-progress">
+        <div class="as-progress-bar active"></div>
+        <div class="as-progress-bar active"></div>
+        <div class="as-progress-bar active"></div>
+        <div class="as-progress-bar active"></div>
+      </div>
+    </div>
+    <div class="as-body">
+      <div class="as-setting dimmed">
+        <strong>Forsbacka.</strong>
+        Onsdag kväll. Lampan vid bordet. Tre kaffekoppar redan på plats.
+      </div>
+      <div class="as-replica dimmed">
+        <div class="as-speaker">Margareta</div>
+        <div class="as-quote">"Vi har väntat på dig. Tre månader utan tränare — klacken börjar bli orolig."</div>
+      </div>
+      <div class="as-replica dimmed">
+        <div class="as-speaker">Pelle</div>
+        <div class="as-quote">"Truppen är bra. Men kassan är vad den är. Vi får jobba med det vi har."</div>
+      </div>
+      <div class="as-replica">
+        <div class="as-speaker">Sture</div>
+        <div class="as-quote">"Inte förrän nyårsafton ska klubben ha sin plats i tabellen. Du har tid… men inte mycket."</div>
+      </div>
+    </div>
+    <div class="as-cta-wrap">
+      <button class="as-cta">Då börjar vi</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!-- TONAL ANTECKNING -->
+  <!-- ════════════════════════════════════════════════════ -->
+
+  <div class="tonal-note">
+    EN skärm. Föregående repliker försvinner inte — de dimmas till opacity 0.4 så de
+    blir "scenens minne". Spelaren ser samtalet bygga upp i realtid: setting → Margareta
+    → Pelle → Sture, alla synliga vid sista stage. Bakgrund består hela vägen.
+    Genre-label "⬩ Ankomsten ⬩" + 4-streck-progress är persistenta.
+    Vid sista CTA fadar hela skärmen ut och navigerar till /game/dashboard.
+  </div>
+
+</div>
+
+</body>
+</html>

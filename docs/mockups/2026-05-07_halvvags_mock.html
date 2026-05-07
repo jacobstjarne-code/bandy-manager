@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Halvvägs — säsongspaus-skärm (retroaktiv mock)</title>
+  <link rel="stylesheet" href="../../design-system/preview/_base.css">
+  <style>
+    body { width: 380px; padding: 0; margin: 0 auto; min-height: auto; overflow: visible; background: var(--bg); }
+
+    .frame {
+      min-height: 700px;
+      position: relative;
+      padding-bottom: 240px;  /* utrymme för fixed footer */
+    }
+
+    /* Header */
+    .ht-header {
+      text-align: center;
+      padding: 24px 20px 16px;
+    }
+    .ht-clubname {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      margin-bottom: 8px;
+    }
+    .ht-title {
+      font-size: 32px;
+      font-weight: 800;
+      font-family: Georgia, serif;
+      color: var(--accent);
+      margin-bottom: 4px;
+      line-height: 1.1;
+    }
+    .ht-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Section card — använder .card-sharp från designsystem */
+    .ht-section {
+      margin: 0 0 6px;
+      padding: 14px 16px;
+    }
+    .ht-section .h-label {
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      margin-bottom: 10px;
+    }
+
+    /* Tabelläge — large numbers row */
+    .ht-stats {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .ht-stat {
+      text-align: center;
+    }
+    .ht-stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      font-family: var(--font-display);
+      line-height: 1;
+    }
+    .ht-stat-value.success { color: var(--success); }
+    .ht-stat-value.primary { color: var(--text-primary); }
+    .ht-stat-value.warn { color: var(--warning); }
+    .ht-stat-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .ht-body-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Moments */
+    .ht-moments {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .ht-moment {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .ht-moment-emoji {
+      font-size: 18px;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .ht-moment-headline {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    .ht-moment-body {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Footer (fixed at bottom in real screen) */
+    .ht-footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 16px 16px;
+      background: linear-gradient(to top, var(--bg) 70%, transparent);
+    }
+    .ht-footer-label {
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    /* Choice buttons — designsystemets .btn-ghost för inaktiva, anpassad selected-state */
+    .ht-choices {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .ht-choice {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-dark);
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: var(--shadow-btn);
+      transition: all 0.15s;
+    }
+    .ht-choice:hover {
+      filter: brightness(0.98);
+    }
+    .ht-choice.selected {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent-dark);
+    }
+    .ht-choice-label {
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .ht-choice-effect {
+      font-size: 11px;
+      opacity: 0.8;
+    }
+    .ht-choice.selected .ht-choice-effect {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+
+<div class="frame">
+
+  <!-- HEADER -->
+  <div class="ht-header">
+    <p class="ht-clubname">Strömsbergs IF</p>
+    <h1 class="ht-title">HALVVÄGS</h1>
+    <p class="ht-subtitle">Inför vårsäsongen</p>
+  </div>
+
+  <!-- TABELLÄGE -->
+  <div class="card-sharp ht-section">
+    <p class="h-label">📊 Tabelläge</p>
+    <div class="ht-stats">
+      <div class="ht-stat">
+        <p class="ht-stat-value success">6</p>
+        <p class="ht-stat-label">plats</p>
+      </div>
+      <div class="ht-stat">
+        <p class="ht-stat-value primary">22</p>
+        <p class="ht-stat-label">poäng</p>
+      </div>
+      <div class="ht-stat">
+        <p class="ht-stat-value warn">3</p>
+        <p class="ht-stat-label">till topp 8</p>
+      </div>
+    </div>
+    <p class="ht-body-text">
+      En godkänd höst. Sjätte placering ger lugn inför vårdelen, men tre poäng från slutspelsplats betyder att marginalen är liten.
+    </p>
+  </div>
+
+  <!-- HÖSTENS STUNDER -->
+  <div class="card-sharp ht-section">
+    <p class="h-label">⚡ Höstens stunder</p>
+    <div class="ht-moments">
+      <div class="ht-moment">
+        <span class="ht-moment-emoji">🔥</span>
+        <div>
+          <p class="ht-moment-headline">Derbysegern mot Söderfors</p>
+          <p class="ht-moment-body">O7 — 4-2 hemma, mest sedda matchen på Bandyplay den veckan</p>
+        </div>
+      </div>
+      <div class="ht-moment">
+        <span class="ht-moment-emoji">💪</span>
+        <div>
+          <p class="ht-moment-headline">Comeback från 0-3 mot Heros</p>
+          <p class="ht-moment-body">O11 — 3-3 i sista minuten, Sundström målskytt</p>
+        </div>
+      </div>
+      <div class="ht-moment">
+        <span class="ht-moment-emoji">😶</span>
+        <div>
+          <p class="ht-moment-headline">Tystade derbyt mot Skutskär</p>
+          <p class="ht-moment-body">O9 — 1-4 borta, lägsta publiksiffran på säsongen</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARC-UPPDATERING -->
+  <div class="card-sharp ht-section">
+    <p class="h-label">🔔 Spelarsituation</p>
+    <p class="ht-body-text">
+      Olle Sundström har inte gjort mål på fyra matcher men varit central i fyra assist. Pressen från lokaltidningen ökar — kanske dags att ge honom en fri roll i våren.
+    </p>
+  </div>
+
+  <!-- TRÄNARTIPS -->
+  <div class="card-sharp ht-section">
+    <p class="h-label">💡 Inför våren</p>
+    <p class="ht-body-text">
+      Truppen har spelat 22 matcher på fem månader. Kondition är ner i mediumzonen, två spelare har småskador som hängt med sedan december. Avvägningen våren handlar om att vinna tillbaka topp 8 utan att slita sönder truppen.
+    </p>
+  </div>
+
+  <!-- FOOTER: VAL INFÖR VÅREN -->
+  <div class="ht-footer">
+    <p class="ht-footer-label">🎯 Inriktning vårsäsongen</p>
+    <div class="ht-choices">
+      <button class="ht-choice">
+        <span class="ht-choice-label">Lugna ner tempot</span>
+        <span class="ht-choice-effect">+5 kondition, +3 moral för hela truppen</span>
+      </button>
+      <button class="ht-choice selected">
+        <span class="ht-choice-label">Pressa hårdare</span>
+        <span class="ht-choice-effect">+10 form, men ökad skaderisk</span>
+      </button>
+      <button class="ht-choice">
+        <span class="ht-choice-label">Låt spelarna prata</span>
+        <span class="ht-choice-effect">+12 moral för hela truppen</span>
+      </button>
+    </div>
+    <button class="btn btn-cta btn-primary" style="width: 100%;">
+      Fortsätt säsongen →
+    </button>
+  </div>
+
+</div>
+
+</body>
+</html>

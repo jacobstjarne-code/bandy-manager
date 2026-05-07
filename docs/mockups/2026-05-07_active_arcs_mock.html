@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Active Arcs — Portal Secondary Card</title>
+  <link rel="stylesheet" href="../../design-system/preview/_base.css">
+  <style>
+    body { width: 380px; padding: 0; margin: 0 auto; min-height: auto; overflow: visible; background: var(--bg-portal); }
+
+    .mock-frame { padding: 16px 0; }
+    .mock-meta {
+      font-size: 9px; color: var(--text-light-secondary);
+      letter-spacing: 1.5px; text-transform: uppercase;
+      margin: 0 14px 12px; text-align: center; opacity: 0.6;
+    }
+
+    .variant-header {
+      margin: 24px 14px 6px; padding-top: 16px;
+      border-top: 1px dashed rgba(196, 122, 58, 0.3);
+      font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--accent); font-weight: 700;
+    }
+
+    .variant-note {
+      font-size: 10px; color: var(--text-light-secondary);
+      letter-spacing: 0.3px; margin: 0 14px 12px;
+      line-height: 1.5; opacity: 0.7;
+      font-family: var(--font-display); font-style: italic;
+    }
+
+    /* ── Card ── */
+    .arc-card {
+      margin: 0 14px 10px;
+      padding: 12px 14px;
+      background: var(--bg-portal-surface);
+      border-left: 2px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      box-shadow: var(--shadow-card);
+    }
+
+    .arc-label {
+      font-size: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-light-secondary);
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .arc-label-icon { font-size: 12px; line-height: 1; }
+
+    /* ── Arc row ── */
+    .arc-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 4px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .arc-row + .arc-row {
+      border-top: 0.5px solid rgba(196, 122, 58, 0.15);
+      padding-top: 10px;
+    }
+    .arc-row:hover { background: rgba(196, 122, 58, 0.04); }
+
+    .arc-icon {
+      font-size: 18px;
+      line-height: 1;
+      filter: saturate(0.85);
+    }
+
+    .arc-content {
+      min-width: 0;
+    }
+    .arc-headline {
+      font-family: var(--font-body);
+      font-size: 12.5px;
+      color: var(--text-light);
+      font-weight: 600;
+      line-height: 1.35;
+    }
+    .arc-meta {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 10.5px;
+      color: var(--text-light-secondary);
+      margin-top: 2px;
+    }
+    .arc-meta.urgent { color: #c8a058; }  /* warm-light */
+
+    /* Phase indicator: tre prickar */
+    .arc-phase {
+      display: flex;
+      gap: 3px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .arc-phase-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      border: 1px solid var(--accent);
+      background: transparent;
+    }
+    .arc-phase-dot.filled {
+      background: var(--accent);
+    }
+
+    .arc-chev {
+      font-size: 11px;
+      color: var(--text-light-secondary);
+      opacity: 0.5;
+      flex-shrink: 0;
+      padding-left: 2px;
+    }
+    .arc-row:hover .arc-chev { opacity: 1; color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div class="mock-frame">
+
+  <div class="mock-meta">Portal · Secondary card · Active Arcs</div>
+
+  <!-- VARIANT 1: En aktiv arc — building phase -->
+  <div class="variant-header">v1 · En aktiv arc, building-fas</div>
+  <div class="variant-note">
+    Tidigt skede. Bågen byggs upp. Tidsline-info, en prick fylld.
+  </div>
+
+  <div class="arc-card">
+    <div class="arc-label">
+      <span class="arc-label-icon">📖</span>
+      <span>Pågående berättelser</span>
+    </div>
+
+    <div class="arc-row">
+      <span class="arc-icon">🎯</span>
+      <div class="arc-content">
+        <div class="arc-headline">O. Sundström — 4 matcher utan mål</div>
+        <div class="arc-meta">2 omgångar kvar</div>
+      </div>
+      <div class="arc-phase">
+        <span class="arc-phase-dot filled"></span>
+        <span class="arc-phase-dot"></span>
+        <span class="arc-phase-dot"></span>
+      </div>
+      <span class="arc-chev">›</span>
+    </div>
+  </div>
+
+  <!-- VARIANT 2: Två aktiva arcs — building + climaxing -->
+  <div class="variant-header">v2 · Två arcs, climaxing överst</div>
+  <div class="variant-note">
+    Veteranen är i klimaxfas (sista matcherna), den unge i tidigare skede.
+    Climaxing överst i ordning.
+  </div>
+
+  <div class="arc-card">
+    <div class="arc-label">
+      <span class="arc-label-icon">📖</span>
+      <span>Pågående berättelser</span>
+    </div>
+
+    <div class="arc-row">
+      <span class="arc-icon">⭐</span>
+      <div class="arc-content">
+        <div class="arc-headline">L. Berg — sista säsongen</div>
+        <div class="arc-meta urgent">3 omgångar kvar i karriären</div>
+      </div>
+      <div class="arc-phase">
+        <span class="arc-phase-dot filled"></span>
+        <span class="arc-phase-dot filled"></span>
+        <span class="arc-phase-dot"></span>
+      </div>
+      <span class="arc-chev">›</span>
+    </div>
+
+    <div class="arc-row">
+      <span class="arc-icon">🎯</span>
+      <div class="arc-content">
+        <div class="arc-headline">O. Sundström — 4 matcher utan mål</div>
+        <div class="arc-meta">2 omgångar kvar</div>
+      </div>
+      <div class="arc-phase">
+        <span class="arc-phase-dot filled"></span>
+        <span class="arc-phase-dot"></span>
+        <span class="arc-phase-dot"></span>
+      </div>
+      <span class="arc-chev">›</span>
+    </div>
+  </div>
+
+  <!-- VARIANT 3: Joker redemption -->
+  <div class="variant-header">v3 · Joker redemption efter utvisning</div>
+  <div class="variant-note">
+    Den utvisade jokern. Building-fas. Klick → spelarkort.
+  </div>
+
+  <div class="arc-card">
+    <div class="arc-label">
+      <span class="arc-label-icon">📖</span>
+      <span>Pågående berättelser</span>
+    </div>
+
+    <div class="arc-row">
+      <span class="arc-icon">🃏</span>
+      <div class="arc-content">
+        <div class="arc-headline">M. Eriksson — efter utvisningen</div>
+        <div class="arc-meta">3 omgångar kvar</div>
+      </div>
+      <div class="arc-phase">
+        <span class="arc-phase-dot filled"></span>
+        <span class="arc-phase-dot"></span>
+        <span class="arc-phase-dot"></span>
+      </div>
+      <span class="arc-chev">›</span>
+    </div>
+  </div>
+
+  <!-- Tonal note -->
+  <div class="variant-note" style="margin-top: 30px; padding: 10px 14px; background: rgba(196,122,58,0.05); border-radius: 4px;">
+    Tonal disciplin: stillsamma headlines ("sista säsongen", "matcher utan mål"), inte dramatiska
+    ("ÖDESMÄTT FINAL!", "MÅLDESPERAT!"). Brukets själ, inte kostym.
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Board Objectives — Portal Secondary Card</title>
+  <link rel="stylesheet" href="../../design-system/preview/_base.css">
+  <style>
+    body { width: 380px; padding: 0; margin: 0 auto; min-height: auto; overflow: visible; background: var(--bg-portal); }
+
+    .mock-frame { padding: 16px 0; }
+    .mock-meta {
+      font-size: 9px; color: var(--text-light-secondary);
+      letter-spacing: 1.5px; text-transform: uppercase;
+      margin: 0 14px 12px; text-align: center; opacity: 0.6;
+    }
+
+    .variant-header {
+      margin: 24px 14px 6px; padding-top: 16px;
+      border-top: 1px dashed rgba(196, 122, 58, 0.3);
+      font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--accent); font-weight: 700;
+    }
+
+    .variant-note {
+      font-size: 10px; color: var(--text-light-secondary);
+      letter-spacing: 0.3px; margin: 0 14px 12px;
+      line-height: 1.5; opacity: 0.7;
+      font-family: var(--font-display); font-style: italic;
+    }
+
+    /* ── Card ── */
+    .obj-card {
+      margin: 0 14px 10px;
+      padding: 12px 14px;
+      background: var(--bg-portal-surface);
+      border-left: 2px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      box-shadow: var(--shadow-card);
+    }
+
+    .obj-label {
+      font-size: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-light-secondary);
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .obj-label-icon { font-size: 12px; line-height: 1; }
+
+    /* ── Objective row ── */
+    .obj-row {
+      padding: 9px 6px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .obj-row + .obj-row {
+      border-top: 0.5px solid rgba(196, 122, 58, 0.15);
+      padding-top: 11px;
+    }
+    .obj-row:hover { background: rgba(196, 122, 58, 0.04); }
+
+    .obj-header {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .obj-status-icon {
+      font-size: 14px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .obj-title {
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-light);
+      line-height: 1.3;
+      min-width: 0;
+    }
+    .obj-status-text {
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .obj-status-text.met { color: #A0C890; }
+    .obj-status-text.at-risk { color: #E8A090; }
+    .obj-status-text.failed { color: #E8A090; }
+    .obj-status-text.active { color: var(--text-light-secondary); }
+
+    .obj-chev {
+      font-size: 11px;
+      color: var(--text-light-secondary);
+      opacity: 0.5;
+      flex-shrink: 0;
+      padding-left: 4px;
+    }
+    .obj-row:hover .obj-chev { opacity: 1; color: var(--accent); }
+
+    .obj-owner {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 11px;
+      color: var(--text-light-secondary);
+      margin-top: 3px;
+      margin-left: 22px;
+    }
+
+    /* ── Progress ── */
+    .obj-progress-wrap {
+      margin-top: 8px;
+      margin-left: 22px;
+    }
+    .obj-progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-light-secondary);
+      margin-bottom: 3px;
+      letter-spacing: 0.3px;
+    }
+    .obj-progress-meta-value {
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--text-light);
+    }
+    .obj-progress-bar {
+      height: 4px;
+      background: rgba(196, 122, 58, 0.15);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .obj-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+    .obj-progress-fill.at-risk { background: #E8A090; }
+    .obj-progress-fill.met { background: #A0C890; }
+
+    /* Money display för balanceBudget-typ */
+    .obj-money {
+      margin-top: 6px;
+      margin-left: 22px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .obj-money.positive { color: #A0C890; }
+    .obj-money.negative { color: #E8A090; }
+  </style>
+</head>
+<body>
+
+<div class="mock-frame">
+
+  <div class="mock-meta">Portal · Secondary card · Board Objectives</div>
+
+  <!-- VARIANT 1: Single active objective med progress -->
+  <div class="variant-header">v1 · Aktivt objektiv med progress</div>
+  <div class="variant-note">
+    Mitt-i-säsong. Mål är aktivt, fortskrider men inte klart. Progress-bar visar 78% mot mål.
+  </div>
+
+  <div class="obj-card">
+    <div class="obj-label">
+      <span class="obj-label-icon">🎯</span>
+      <span>Styrelsens krav</span>
+    </div>
+
+    <div class="obj-row">
+      <div class="obj-header">
+        <span class="obj-status-icon">📌</span>
+        <span class="obj-title">Fan mood ska nå 70</span>
+        <span class="obj-status-text active">Aktivt</span>
+        <span class="obj-chev">›</span>
+      </div>
+      <div class="obj-owner">S. Eriksson</div>
+      <div class="obj-progress-wrap">
+        <div class="obj-progress-meta">
+          <span>Fan mood</span>
+          <span class="obj-progress-meta-value">55 / 70</span>
+        </div>
+        <div class="obj-progress-bar">
+          <div class="obj-progress-fill" style="width: 79%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VARIANT 2: At-risk objektiv -->
+  <div class="variant-header">v2 · I fara — kritisk attention</div>
+  <div class="variant-note">
+    Trenden går åt fel håll. Status warning. Fortfarande progress synlig — men färg signalerar oro.
+  </div>
+
+  <div class="obj-card">
+    <div class="obj-label">
+      <span class="obj-label-icon">🎯</span>
+      <span>Styrelsens krav</span>
+    </div>
+
+    <div class="obj-row">
+      <div class="obj-header">
+        <span class="obj-status-icon">⚠️</span>
+        <span class="obj-title">Minst 3 egenfostrade i startelvan</span>
+        <span class="obj-status-text at-risk">I fara</span>
+        <span class="obj-chev">›</span>
+      </div>
+      <div class="obj-owner">G. Lundqvist</div>
+      <div class="obj-progress-wrap">
+        <div class="obj-progress-meta">
+          <span>Egenfostrade i startelvan</span>
+          <span class="obj-progress-meta-value">1 / 3</span>
+        </div>
+        <div class="obj-progress-bar">
+          <div class="obj-progress-fill at-risk" style="width: 33%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VARIANT 3: Två objektiv samtidigt — failed sorterat överst -->
+  <div class="variant-header">v3 · Två mål — failed överst, at_risk under</div>
+  <div class="variant-note">
+    Maxgräns 2 mål synliga i Portal. Failed först (chock), at_risk sedan. Ekonomi-mål visar pengabelopp,
+    inte progress-bar.
+  </div>
+
+  <div class="obj-card">
+    <div class="obj-label">
+      <span class="obj-label-icon">🎯</span>
+      <span>Styrelsens krav</span>
+    </div>
+
+    <div class="obj-row">
+      <div class="obj-header">
+        <span class="obj-status-icon">❌</span>
+        <span class="obj-title">Håll ekonomin i balans</span>
+        <span class="obj-status-text failed">Missat</span>
+        <span class="obj-chev">›</span>
+      </div>
+      <div class="obj-owner">A. Lindberg</div>
+      <div class="obj-money negative">−12 400 kr underskott</div>
+    </div>
+
+    <div class="obj-row">
+      <div class="obj-header">
+        <span class="obj-status-icon">⚠️</span>
+        <span class="obj-title">Gå långt i cupen</span>
+        <span class="obj-status-text at-risk">I fara</span>
+        <span class="obj-chev">›</span>
+      </div>
+      <div class="obj-owner">B. Holmgren</div>
+      <div class="obj-progress-wrap">
+        <div class="obj-progress-meta">
+          <span>Cup-rundor</span>
+          <span class="obj-progress-meta-value">2 / 3</span>
+        </div>
+        <div class="obj-progress-bar">
+          <div class="obj-progress-fill at-risk" style="width: 67%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VARIANT 4: Met objektiv (visas inte normalt — bara för referens) -->
+  <div class="variant-header">v4 · Met (referens — visas INTE i Portal)</div>
+  <div class="variant-note">
+    Visar hur met-objektiv skulle se ut om vi någonsin renderade dem. Filter:n bort dem normalt
+    eftersom klart är klart. Behålls här som visuell referens.
+  </div>
+
+  <div class="obj-card">
+    <div class="obj-label">
+      <span class="obj-label-icon">🎯</span>
+      <span>Styrelsens krav</span>
+    </div>
+
+    <div class="obj-row">
+      <div class="obj-header">
+        <span class="obj-status-icon">✅</span>
+        <span class="obj-title">Öka klubbkassan med 100 tkr</span>
+        <span class="obj-status-text met">Uppfyllt</span>
+      </div>
+      <div class="obj-owner">A. Lindberg</div>
+      <div class="obj-money positive">+143 200 kr ökning</div>
+    </div>
+  </div>
+
+  <!-- Tonal note -->
+  <div class="variant-note" style="margin-top: 30px; padding: 10px 14px; background: rgba(196,122,58,0.05); border-radius: 4px;">
+    Klick på rad → navigerar till Klubb-tab → scrollar till "📋 Styrelsens uppdrag"-block.
+    Portal-card är snabblick, Klubb-tab är full kontext (ägar-citat, reward/consequence-text).
+  </div>
+
+</div>
+
+</body>
+</html>

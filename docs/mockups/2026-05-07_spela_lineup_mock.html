@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Spela steg 1 — Lineup redesign v4</title>
+  <link rel="stylesheet" href="../../design-system/preview/_base.css">
+  <style>
+    /* ── Override för mobil-mock (default _base body är 700px) ── */
+    body { width: 380px; padding: 0; margin: 0 auto; min-height: auto; overflow: visible; }
+
+    /* ── Cup-banner ── */
+    .cup-strip { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--bg-surface); border-left: 3px solid var(--accent); font-size: 12px; }
+    .cup-strip-meta { color: var(--text-secondary); margin-left: auto; }
+
+    /* ── Stepper ── */
+    .stepper { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 10px 14px 6px; gap: 8px; border-bottom: 0.5px solid var(--border); }
+    .step { text-align: center; }
+    .step-num { width: 22px; height: 22px; margin: 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 11px; background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border); }
+    .step.active .step-num { background: var(--accent); color: white; border: none; }
+    .step-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 4px; color: var(--text-muted); }
+    .step.active .step-label { color: var(--accent-dark); font-weight: 600; }
+    .step-progress { font-size: 9px; color: var(--accent-dark); margin-top: 1px; }
+
+    /* ── Context — kombinerad rad istället för två separata ── */
+    .context-combined {
+      margin: 8px 14px;
+      padding: 8px 12px;
+      background: var(--bg-surface);
+      border-left: 2px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .context-cell-label { font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+    .context-cell-value { color: var(--text-primary); font-size: 11.5px; }
+
+    /* ── Pitch-area med Generera-action inline ── */
+    .pitch-area { padding: 10px 14px; background: var(--bg-surface); margin: 6px 14px; border-radius: 8px; }
+    .pitch-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
+    .formation-select { font-family: var(--font-body); font-size: 12px; background: var(--bg); color: var(--text-primary); border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; flex: 0 0 auto; }
+    .pitch-progress { font-size: 9px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; flex: 1; }
+
+    /* "Generera bästa elvan" — outline btn med sparkle-ikon, integrerad i pitch-meta */
+    .auto-fill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 10px;
+      background: transparent;
+      border: 1.5px solid var(--accent);
+      color: var(--accent-dark);
+      font-size: 11px; font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: var(--shadow-btn);
+    }
+    .auto-fill:hover { filter: brightness(1.05); }
+    .auto-fill svg { stroke: var(--accent-dark); }
+
+    .pitch { width: 100%; height: 170px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; display: flex; flex-direction: column; justify-content: space-around; padding: 10px 8px; }
+    .pitch-row { display: flex; justify-content: space-around; }
+    .player-pill { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-surface); border: 1.5px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: var(--text-primary); font-family: var(--font-display); }
+    .player-pill.empty { background: transparent; border: 1.5px dashed var(--accent-dark); color: var(--text-muted); }
+    .player-pill.warning { border-color: var(--warm-light); }
+    .player-pill.danger { border-color: var(--danger); }
+
+    /* ── Segmented toggle (designsystemets mönster) ── */
+    .segmented {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 8px 14px 0;
+    }
+    .segmented-btn {
+      border-radius: 0; border: 0;
+      padding: 8px 18px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+      font-family: var(--font-body);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .segmented-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* ── Spelarlista ── */
+    .player-list-section { padding: 6px 14px; }
+    .section-label { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; padding: 6px 0 3px 4px; }
+    .player-row { display: flex; align-items: center; gap: 10px; padding: 6px 10px; background: var(--bg-surface); border-radius: 0 8px 8px 0; margin-bottom: 2px; font-size: 12.5px; }
+    .player-row.skada { border-left: 3px solid var(--danger); }
+    .player-row.avstangd { border-left: 2px solid var(--warm-light); }
+    .player-row.normal { border-left: 2px solid transparent; padding-left: 12px; }
+    .player-num { font-family: var(--font-display); font-weight: 700; width: 22px; color: var(--text-secondary); font-size: 12px; }
+    .player-pos { font-size: 9px; letter-spacing: 1px; color: var(--text-muted); width: 22px; }
+    .player-name { flex: 1; }
+    .player-rating { font-family: var(--font-display); font-weight: 700; color: var(--text-primary); width: 26px; text-align: right; font-size: 12px; }
+
+    /* ── PLAN-läge ── */
+    .plan-area { padding: 8px 14px; }
+    .plan-prompt { font-family: var(--font-display); font-style: italic; font-size: 12px; color: var(--text-secondary); text-align: center; padding: 4px 0 8px; }
+    .plan-prompt strong { color: var(--accent-dark); font-style: normal; }
+    .plan-pills { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+    .plan-pill { display: flex; align-items: center; gap: 6px; padding: 5px 9px; background: var(--bg-surface); border-radius: 8px; cursor: pointer; font-size: 11.5px; }
+    .plan-pill.skada { border-left: 3px solid var(--danger); }
+    .plan-pill.placed { opacity: 0.4; background: rgba(196, 122, 58, 0.06); }
+    .plan-pill-num { width: 20px; height: 20px; border-radius: 50%; background: var(--bg); border: 1.5px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 700; font-family: var(--font-display); }
+    .plan-pill-name { flex: 1; }
+    .plan-pill-pos { font-size: 9px; letter-spacing: 1px; color: var(--text-muted); }
+
+    /* ── Footer-CTA: btn-cta från designsystemet ── */
+    .footer-cta {
+      display: grid; grid-template-columns: 1fr;
+      padding: 14px 14px;
+      border-top: 0.5px solid var(--border);
+      margin-top: 12px;
+    }
+
+    .mock-divider { margin: 24px 14px 12px; padding-top: 12px; border-top: 1px dashed var(--border); text-align: center; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <div class="cup-strip">
+    <span>SVENSKA CUPEN — KVARTSFINAL</span>
+    <span class="cup-strip-meta">vs Söderfors · Hemma · +2°C</span>
+  </div>
+
+  <div class="stepper">
+    <div class="step active">
+      <div class="step-num">1</div>
+      <div class="step-label">Trupp</div>
+      <div class="step-progress">9 av 11</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-label">Taktik</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-label">Starta</div>
+    </div>
+  </div>
+
+  <!-- Combinerad context — sparar vertikal yta -->
+  <div class="context-combined">
+    <div>
+      <div class="context-cell-label">Matchdag</div>
+      <div class="context-cell-value">Mulet · 2°C · Truppen hel</div>
+    </div>
+    <div>
+      <div class="context-cell-label">Söderfors</div>
+      <div class="context-cell-value">Svag form · 5-3-2</div>
+    </div>
+  </div>
+
+  <!-- Pitch med Generera-action inline -->
+  <div class="pitch-area">
+    <div class="pitch-meta">
+      <select class="formation-select">
+        <option>5-3-2 (Klassisk)</option>
+      </select>
+      <span class="pitch-progress">9 av 11 placerade</span>
+      <button class="auto-fill" title="Auto-fyll resterande positioner">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 1.5 L7 4 L9.5 5 L7 6 L6 8.5 L5 6 L2.5 5 L5 4 Z"/>
+          <path d="M9.5 8.5 L10 9.5 L11 10 L10 10.5 L9.5 11.5 L9 10.5 L8 10 L9 9.5 Z"/>
+        </svg>
+        Auto-fyll
+      </button>
+    </div>
+    <div class="pitch">
+      <div class="pitch-row"><div class="player-pill">6</div><div class="player-pill">4</div></div>
+      <div class="pitch-row"><div class="player-pill">3</div><div class="player-pill">11</div><div class="player-pill">7</div></div>
+      <div class="pitch-row"><div class="player-pill">12</div><div class="player-pill warning">2</div><div class="player-pill">16</div></div>
+      <div class="pitch-row"><div class="player-pill">9</div><div class="player-pill empty">?</div><div class="player-pill danger">13</div></div>
+      <div class="pitch-row" style="justify-content: center;"><div class="player-pill">14</div></div>
+    </div>
+  </div>
+
+  <!-- Segmented toggle från designsystem -->
+  <div class="segmented">
+    <button class="segmented-btn active">Lista</button>
+    <button class="segmented-btn">Plan</button>
+  </div>
+
+  <div class="player-list-section">
+    <div class="section-label">Målvakter</div>
+    <div class="player-row normal"><span class="player-num">1</span><span class="player-pos">MV</span><span class="player-name">Grafström</span><span class="player-rating">64</span></div>
+    <div class="player-row normal"><span class="player-num">14</span><span class="player-pos">MV</span><span class="player-name">Lundqvist</span><span class="player-rating">71</span><span class="tag tag-green">Start</span></div>
+
+    <div class="section-label">Backar</div>
+    <div class="player-row normal"><span class="player-num">8</span><span class="player-pos">B</span><span class="player-name">Lindberg</span><span class="player-rating">38</span></div>
+    <div class="player-row normal"><span class="player-num">9</span><span class="player-pos">B</span><span class="player-name">Berg</span><span class="player-rating">67</span><span class="tag tag-green">Start</span></div>
+    <div class="player-row skada"><span class="player-num">10</span><span class="player-pos">B</span><span class="player-name">Fagerberg</span><span class="player-rating">41</span><span class="tag tag-red">3 dgr</span></div>
+    <div class="player-row avstangd"><span class="player-num">15</span><span class="player-pos">B</span><span class="player-name">Pettersson</span><span class="player-rating">52</span><span class="tag tag-copper">Avstängd</span></div>
+  </div>
+
+  <div class="footer-cta">
+    <button class="btn btn-cta btn-primary">Nästa: Taktik →</button>
+  </div>
+
+  <!-- Variant: PLAN-läge -->
+  <div class="mock-divider">— Variant: PLAN-läge (drag/tryck) —</div>
+
+  <div class="segmented">
+    <button class="segmented-btn">Lista</button>
+    <button class="segmented-btn active">Plan</button>
+  </div>
+
+  <div class="plan-area">
+    <div class="plan-prompt">
+      <strong>0 av 11 saknas:</strong> tryck spelare för att placera
+    </div>
+    <div class="plan-pills">
+      <div class="plan-pill placed"><div class="plan-pill-num">1</div><div class="plan-pill-name">Saarinen</div><div class="plan-pill-pos">MV</div></div>
+      <div class="plan-pill"><div class="plan-pill-num">12</div><div class="plan-pill-name">Holmgren</div><div class="plan-pill-pos">MV</div></div>
+      <div class="plan-pill placed"><div class="plan-pill-num">6</div><div class="plan-pill-name">Laitinen</div><div class="plan-pill-pos">B</div></div>
+      <div class="plan-pill"><div class="plan-pill-num">7</div><div class="plan-pill-name">Grahn</div><div class="plan-pill-pos">B</div></div>
+      <div class="plan-pill placed"><div class="plan-pill-num">9</div><div class="plan-pill-name">Larsson</div><div class="plan-pill-pos">B</div></div>
+      <div class="plan-pill skada"><div class="plan-pill-num">10</div><div class="plan-pill-name">Engdahl</div><div class="plan-pill-pos">B</div></div>
+    </div>
+  </div>
+
+</body>
+</html>
