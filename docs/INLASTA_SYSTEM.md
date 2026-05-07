@@ -1,7 +1,7 @@
 # Inlåsta system — synliggörande-tracker
 
 **Skapad:** 2026-05-06
-**Senast uppdaterad:** 2026-05-06
+**Senast uppdaterad:** 2026-05-07
 
 ## Rot-problem
 
@@ -22,33 +22,35 @@ Sessioner ska alltid avancera trackerns sammanlagda status. Mock + spec räknas 
 
 ## Status-tabell
 
-| # | System | Status | Senast | Spec/Mock | Anteckning |
+| # | System | Status | Senast | Rendering | Anteckning |
 |---|---|---|---|---|---|
-| 1 | `boardObjectiveService` | 🟡 | 2026-05-06 | spec + mock i mockups/ | Opus levererat, Code inventerar API härnäst |
-| 2 | `opponentAnalysisService` | 🔴 | — | Planerad | Pre-match-yta, bygger på PreMatchContext |
-| 3 | `weeklyDecisionService` | 🔴 | — | Planerad | Loop-fråga: vad gör spelaren mellan matcher |
-| 4 | `leadershipService` + `useLeadershipAction()` | 🔴 | — | — | Ledarskapshandlingar på spelare, oklar UI-yta idag |
-| 5 | `rumorService` | 🔴 | — | — | Triggas av roundProcessor men oklart synlighet |
-| 6 | `playerVoiceService` | 🔴 | — | — | "Prata med spelaren", oklart unikt innehåll |
-| 7 | `mecenatDinnerService` | 🔴 | — | — | Entiteter finns, oklart om når spelaren |
-| 8 | `hallDebateData` | 🔴 | — | — | Kommunfullmäktige-debatter, data finns |
-| 9 | `smallAbsurditiesData` | 🔴 | — | — | Slumpmässiga humorhändelser |
-| 10 | `arcService` + storylines | 🔴 | — | — | Visas i SeasonSummary, inte under säsong |
+| 1 | `boardObjectiveService` | 🟠 | 2026-05-07 | `KlubbTab.tsx:618` — Klubb → Orten-flik → botten av Förväntan-sektionen | Implementation verifierad i kod. Nudge-bug: `DashboardNudges` navigerar till fel tab (`ekonomi` istf `orten`). Gamla saves får aldrig mål (migration saknar `boardPersonalities`). Väntar playtest. |
+| 2 | `opponentAnalysisService` | 🟠 | 2026-05-07 | `LineupStep.tsx:context-strip` + `TacticStep.tsx:opp-insight` | Basic i context-strip (form+formation). Detailed i TacticStep (styrka/svaghet/rekommendation+nudge). Synliggjort i Spela-redesign 2026-05-07. Väntar playtest. |
+| 3 | `weeklyDecisionService` | 🔴 | — | Ingen | Lagras som `pendingWeeklyDecision` i state men ingen UI-komponent renderar det. Inlåst utan render-yta. |
+| 4 | `leadershipService` + `useLeadershipAction()` | 🟠 | 2026-05-07 | `PlayerCard.tsx:~676` + `SquadScreen.tsx:~286` | Knapp + feedback-toast per ledarskapsaction. Nås via SquadScreen → Nu-flik → öppna spelarkort. Väntar playtest. |
+| 5 | `rumorService` | 🟠 | 2026-05-07 | `RoundSummaryScreen.tsx:460–472` | Output som inbox-items under "TRANSFERRYKTEN" i RoundSummaryScreen. Triggas av `generateTransferRumor` i mediaProcessor. Väntar playtest. |
+| 6 | `playerVoiceService` | 🟠 | 2026-05-07 | `PlayerCard.tsx:676` | Italic quote under spelarkort (20% chans + form/moral-villkor). Samma yta som leadershipService. Väntar playtest. |
+| 7 | `mecenatDinnerService` | 🟠 | 2026-05-07 | `MecenatDinnerEvent.tsx:16–85` via `EventOverlay.tsx:79` | Modal popup vid `event.type === 'mecenatDinner'`. Nås via Portal/Dashboard event-trigger. Väntar playtest. |
+| 8 | `hallDebateData` | 🟡 | 2026-05-07 | `EventCardInline.tsx:48` — bara typ-label "🏛️ KOMMUNEN" | Data finns men renderas inte — EventCardInline visar knapp men debattinnehållet exponeras inte. Kräver spec för full rendering. |
+| 9 | `smallAbsurditiesData` | 🟠 | 2026-05-07 | `InboxScreen` + `RoundSummaryScreen` | Injiceras som inbox-items via `mediaService.ts:203–227`. Nås passivt — spelaren ser det i inbox om det triggas. Väntar playtest. |
+| 10 | `arcService` + storylines | 🟠 | 2026-05-07 | `SeasonSummaryScreen.tsx:386–416` | Renderas endast vid säsongsslut. Syns aldrig under pågående säsong — det är kärnan av "inlåst"-problemet. Kräver Opus-spec för in-säsong-yta. |
 
-**Sammanlagd status:** 1/30 status-steg klockade.
+**Sammanlagd status:** 17/30 status-steg klockade (8 system på 🟠, 1 på 🟡, 1 på 🔴).
 
 ## Prio-ordning för Opus-leveranser
 
-1. ✅ `boardObjectiveService` (klar 2026-05-06)
-2. `opponentAnalysisService` — bygger på PreMatchContext, gameplay-impact pre-match
-3. `weeklyDecisionService` — adresserar loop-fråga
-4. `leadershipService` — kräver ny UI-yta i spelarvy
-5. `mecenatDinnerService` — narrativrik social mekanism
-6. `arcService` — synliggör arcs under säsong, inte bara vid slut
-7. `rumorService` — passiv synlighet i kafferum/journalist
-8. `playerVoiceService` — spelar-dialog som beslutspunkt
-9. `hallDebateData` — politisk yta, kräver design-arbete
-10. `smallAbsurditiesData` — humor-events, lägst gameplay-impact
+Nästa steg mot 🟢 per system (prioriterad):
+
+1. 🟠→🟢 `boardObjectiveService` — fixa nudge-bug (`DashboardNudges` tab `ekonomi`→`orten`), fix migration `boardPersonalities`, playtest
+2. 🟠→🟢 `opponentAnalysisService` — playtest Spela-flödet, bekräfta att opp-insight + recommendation syns
+3. 🔴→🟡 `weeklyDecisionService` — kräver ny UI-yta. Opus-spec behövs.
+4. 🟠→🟢 `leadershipService` — playtest SquadScreen Nu-vy → spelarkort
+5. 🟡→🟠 `hallDebateData` — kräver spec för event-modal-rendering av debattinnehåll
+6. 🟠→🟢 `arcService` — Opus-spec för in-säsong-yta (dashboard-kort eller kafferum-referens)
+7. 🟠→🟢 `rumorService` — playtest, kontrollera att transferrykten dyker upp i RoundSummary
+8. 🟠→🟢 `playerVoiceService` — playtest, triggkontroll (20% chans)
+9. 🟠→🟢 `mecenatDinnerService` — playtest, kontrollera att event-modal triggas
+10. 🟠→🟢 `smallAbsurditiesData` — playtest, kontrollera att humor-items når inbox
 
 ## Avhakningsregler
 
