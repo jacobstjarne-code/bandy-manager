@@ -10,13 +10,6 @@ const STATUS_ICON: Record<BoardObjective['status'], string> = {
   met:     '✅',
 }
 
-const STATUS_LABEL: Record<BoardObjective['status'], string> = {
-  active:  'Aktivt',
-  at_risk: 'I fara',
-  failed:  'Misslyckat',
-  met:     'Uppfyllt',
-}
-
 const STATUS_COLOR: Record<BoardObjective['status'], string> = {
   active:  'var(--text-light-secondary)',
   at_risk: '#E8A090',
@@ -61,55 +54,46 @@ function ObjRow({ obj, onNavigate }: ObjRowProps) {
       }}
     >
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'auto 1fr auto auto',
-        gap: 8,
+        display: 'flex',
+        justifyContent: 'space-between',
         alignItems: 'center',
+        gap: 8,
       }}>
-        <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>{STATUS_ICON[obj.status]}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+          <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>{STATUS_ICON[obj.status]}</span>
+          <span style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: 13, fontWeight: 600,
+            color: 'var(--text-light)', lineHeight: 1.3,
+            minWidth: 0,
+          }}>
+            {obj.label}
+          </span>
+        </div>
         <span style={{
-          fontFamily: 'var(--font-body)',
-          fontSize: 13, fontWeight: 600,
-          color: 'var(--text-light)', lineHeight: 1.3,
-          minWidth: 0,
-        }}>
-          {obj.label}
-        </span>
-        <span style={{
-          fontSize: 10, letterSpacing: '0.5px', textTransform: 'uppercase' as const,
-          fontWeight: 600, flexShrink: 0,
+          fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase',
+          flexShrink: 0,
           color: STATUS_COLOR[obj.status],
         }}>
-          {STATUS_LABEL[obj.status]}
+          {formatOwnerInitial(obj.ownerId)}
         </span>
-        <span style={{
-          fontSize: 11, flexShrink: 0, paddingLeft: 4,
-          color: hovered ? 'var(--accent)' : 'var(--text-light-secondary)',
-          opacity: hovered ? 1 : 0.5,
-          transition: 'opacity 0.15s, color 0.15s',
-        }}>
-          ›
-        </span>
-      </div>
-
-      <div style={{
-        fontFamily: 'var(--font-display)', fontStyle: 'italic',
-        fontSize: 11, color: 'var(--text-light-secondary)',
-        marginTop: 3, marginLeft: 22,
-      }}>
-        {formatOwnerInitial(obj.ownerId)}
       </div>
 
       {isBalance ? (
         <div style={{
-          marginTop: 6, marginLeft: 22,
-          fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 14,
+          marginTop: 6,
+          fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 12,
           color: obj.currentValue >= 0 ? '#A0C890' : '#E8A090',
         }}>
           {obj.currentValue >= 0 ? '+' : '−'}{formatMoney(Math.abs(obj.currentValue))}
+          {obj.targetValue !== 0 && (
+            <span style={{ color: 'var(--text-muted)' }}>
+              {' '}av mål {obj.targetValue >= 0 ? '+' : '−'}{formatMoney(Math.abs(obj.targetValue))}
+            </span>
+          )}
         </div>
       ) : obj.targetValue > 0 ? (
-        <div style={{ marginTop: 8, marginLeft: 22 }}>
+        <div style={{ marginTop: 8 }}>
           <div style={{
             display: 'flex', justifyContent: 'space-between',
             fontSize: 10, color: 'var(--text-light-secondary)',
@@ -121,7 +105,7 @@ function ObjRow({ obj, onNavigate }: ObjRowProps) {
             </span>
           </div>
           <div style={{
-            height: 4, background: 'rgba(196,122,58,0.15)', borderRadius: 2, overflow: 'hidden',
+            height: 3, background: 'rgba(196,122,58,0.15)', borderRadius: 2, overflow: 'hidden',
           }}>
             <div style={{
               height: '100%', borderRadius: 2,
@@ -157,8 +141,9 @@ export function BoardObjectivesSecondary({ game }: CardRenderProps) {
       padding: '12px 14px',
     }}>
       <div style={{
-        fontSize: 8, letterSpacing: '2px', textTransform: 'uppercase',
+        fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase',
         color: 'var(--text-light-secondary)', fontWeight: 600,
+        opacity: 0.85,
         marginBottom: 10,
         display: 'flex', alignItems: 'center', gap: 6,
       }}>
