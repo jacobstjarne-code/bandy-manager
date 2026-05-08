@@ -69,6 +69,9 @@ export interface SaveGame {
   // Portal-beats (lättviktiga engångsmoment)
   shownBeats?: string[]                // Beat-nycklar som visats (format: beatId eller beatId_season)
 
+  // Fas-anslag (säsongskapitel-overlay)
+  seenAnslag?: import('../data/anslag/cupAnslag').AnslagKey[]
+
   clubs: Club[]
   players: Player[]
   league: League

@@ -127,6 +127,7 @@
   --cold-light: #7095b8;  /* ljusare cold — text/tag inom severity-domän */
   --warm:       #8c6e3a;
   --warm-light: #c8a058;  /* ljusare warm — text/tag inom severity-domän */
+  --gold:       #E8B95C;  /* cup-vinnare / specialanslag */
 
   --scroll-padding-bottom: 120px;
 
@@ -1126,6 +1127,100 @@ a {
 .btn-scene-cta::after { content: ' →'; color: var(--accent); }
 .btn-scene-cta:hover { background: rgba(196, 122, 58, 0.12); }
 .btn-scene-cta:active { transform: translateY(1px); }
+
+/* ── Anslag overlay (fas-anslag, cup + framtida) ──────────────────── */
+.anslag-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 13, 11, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 28px;
+  z-index: 300;
+  cursor: pointer;
+}
+
+.anslag-card {
+  max-width: 320px;
+  width: 100%;
+  background: var(--bg-portal-surface);
+  border: 1px solid rgba(196, 122, 58, 0.25);
+  border-radius: var(--radius-md);
+  padding: 28px 24px 24px;
+  text-align: left;
+  position: relative;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.anslag-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  background: var(--accent);
+}
+
+.anslag-chapter {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.anslag-text {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-light);
+  margin-bottom: 28px;
+}
+
+.anslag-cta {
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  color: var(--text-light-secondary);
+  text-transform: uppercase;
+  text-align: right;
+  animation: gentle-pulse 3s ease-in-out infinite;
+}
+.anslag-cta::after {
+  content: ' →';
+  color: var(--accent);
+}
+
+/* Winner variant */
+.anslag-card.winner {
+  border-color: rgba(232, 185, 92, 0.35);
+  background: linear-gradient(180deg, rgba(232, 185, 92, 0.04) 0%, var(--bg-portal-surface) 30%);
+  box-shadow: 0 8px 32px rgba(232, 185, 92, 0.08), 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.anslag-card.winner::before {
+  background: var(--gold);
+  width: 3px;
+}
+.anslag-card.winner .anslag-chapter {
+  color: var(--gold);
+  font-size: 11px;
+  letter-spacing: 5px;
+  margin-bottom: 28px;
+}
+.anslag-card.winner .anslag-text {
+  font-size: 15px;
+}
+.anslag-card.winner .anslag-cta::after {
+  content: ' 🏆';
+}
+
+@keyframes gentle-pulse {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1; }
+}
 
 /* Scene ghost — back/link button on dark bg */
 .btn-scene-ghost {

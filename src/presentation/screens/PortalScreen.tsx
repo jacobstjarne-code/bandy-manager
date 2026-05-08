@@ -9,6 +9,8 @@ import { PortalMinimalBar } from '../components/portal/PortalMinimalBar'
 import { SituationCard } from '../components/portal/SituationCard'
 import { PortalBeat } from '../components/portal/PortalBeat'
 import { PortalEventSlot } from '../components/portal/PortalEventSlot'
+import { AnslagOverlay } from '../components/anslag/AnslagOverlay'
+import { computeNextAnslag } from '../../domain/services/anslagService'
 import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
 import { playSound } from '../audio/soundEffects'
 
@@ -16,7 +18,7 @@ import { playSound } from '../audio/soundEffects'
 initCardBag()
 
 export function PortalScreen() {
-  const { game, advance } = useGameStore()
+  const { game, advance, markAnslagSeen } = useGameStore()
   const canAdvance = useCanAdvance()
   const navigate = useNavigate()
 
@@ -50,6 +52,8 @@ export function PortalScreen() {
   const seed = makeSeed(game)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const layout = useMemo(() => buildPortal(game, seed), [game, seed])
+
+  const nextAnslag = computeNextAnslag(game)
 
   // Sätt CSS-vars för seasonal tone
   useEffect(() => {
@@ -138,6 +142,13 @@ export function PortalScreen() {
 
   return (
     <>
+      {nextAnslag && (
+        <AnslagOverlay
+          game={game}
+          anslagKey={nextAnslag}
+          onDismiss={() => markAnslagSeen(nextAnslag)}
+        />
+      )}
       <div
         className="screen-enter texture-wood card-stack"
         style={{

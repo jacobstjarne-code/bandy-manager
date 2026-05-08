@@ -1246,6 +1246,8 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       ...(game.currentSeasonSignature ? [game.currentSeasonSignature] : []),
     ].slice(-10),
     shownSeasonSignatureRevealSeason: game.shownSeasonSignatureRevealSeason,
+    // Reset per-season anslag (fas-overlay)
+    seenAnslag: [],
     // Reset per-season scandal trackers
     activeScandals: [],
     scandalHistory: [...(game.scandalHistory ?? []), ...(game.activeScandals ?? [])],

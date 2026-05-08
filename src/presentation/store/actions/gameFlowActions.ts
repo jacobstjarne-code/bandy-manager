@@ -1,4 +1,5 @@
 import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
+import type { AnslagKey } from '../../../domain/data/anslag/cupAnslag'
 import { PendingScreen } from '../../../domain/enums'
 import { clamp } from '../../../domain/utils/clamp'
 import { resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
@@ -390,6 +391,15 @@ export function gameFlowActions(get: Get, set: Set) {
       const shown = game.shownBeats ?? []
       if (!shown.includes(beatKey)) {
         set({ game: { ...game, shownBeats: [...shown, beatKey] } })
+      }
+    },
+
+    markAnslagSeen: (key: AnslagKey) => {
+      const { game } = get()
+      if (!game) return
+      const seen = game.seenAnslag ?? []
+      if (!seen.includes(key)) {
+        set({ game: { ...game, seenAnslag: [...seen, key] } })
       }
     },
 
