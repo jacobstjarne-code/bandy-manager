@@ -1,7 +1,25 @@
 import type { SaveGame } from '../../domain/entities/SaveGame'
+import type { BoardMember, BoardPersonality, BoardRole } from '../../domain/entities/Community'
 import { PendingScreen } from '../../domain/enums'
 import { generateAssistantCoach } from '../../domain/services/assistantCoachService'
 import { CLUB_TEMPLATES } from '../../domain/services/worldGenerator'
+
+function strHash(s: string): number {
+  let h = 0
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) >>> 0
+  return h
+}
+
+function defaultBoardPersonalities(clubId: string): BoardMember[] {
+  const personalities: BoardPersonality[] = ['supporter', 'ekonom', 'traditionalist', 'modernist']
+  const roles: [BoardRole, string][] = [['ordförande', 'Ordföranden'], ['kassör', 'Kassören'], ['ledamot', 'Ledamoten']]
+  const seed = strHash(clubId)
+  return roles.map(([role, name], i) => ({
+    name,
+    role,
+    personality: personalities[(seed + i * 7) % personalities.length],
+  }))
+}
 
 export const CURRENT_SAVE_VERSION = '0.2.0'
 
@@ -66,6 +84,7 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.facilityProjects === undefined) data.facilityProjects = []
   if (data.boardObjectives === undefined) data.boardObjectives = []
   if (data.boardObjectiveHistory === undefined) data.boardObjectiveHistory = []
+  if (data.boardPersonalities === undefined) data.boardPersonalities = defaultBoardPersonalities(data.managedClubId as string ?? '')
   if (data.trainerArc === undefined) data.trainerArc = { current: 'established', history: [], seasonCount: 1, bestFinish: 6, titlesWon: 0, consecutiveLosses: 0, consecutiveWins: 0, boardWarningGiven: false }
   // V1.0 — Journalist character (created on-demand if missing)
   if (data.journalist === undefined) data.journalist = null
