@@ -61,16 +61,31 @@ export const commentary = {
     "1–0! Dagens första mål görs av {player} för {team}!",
     "Nollan är bruten! {player} sätter dit det första målet! {score}!",
     "LEDNING! {player} levererar första målet med ett vasst avslut! {score}!",
+    "DAGENS FÖRSTA! {player} bryter dödläget! {score}!",
+    "Och så är det igång på riktigt! {player} öppnar målskyttet! {score}!",
+    "{player} för {team} — nollan är borta! {score}!",
+    "1–0! Det första målet är alltid speciellt — {player} signerade det!",
+    "MÅÅÅL! {player} bryter mark! Dagens första! {score}!",
   ],
   goalLead: [
     "LEDNING! {player} slår till! Vilket avslut! {score}!",
     "Nu leder {team}! {player} hittar nätet! {score}!",
     "{player} ger {team} ledningen! Publiken jublar! {score}!",
+    "MÅÅÅL! {player} tar ledningen tillbaka för {team}! {score}!",
+    "Tillbaka i ledning! {player} med ett iskallt avslut! {score}!",
+    "{player} skickar in ledningsmålet! {score}!",
+    "Tillbaka i förarsätet! {team} leder igen! {score}!",
+    "{player} vrider om matchen! {team} åter i ledning! {score}!",
   ],
   goalEqualizer: [
     "KVITTERING! {player}! Helt galet! {score}!",
     "Och där kommer kvitteringen! {player} jämnar ut! {score}!",
     "Allt i balans igen! {player} kvitterar för {team}! {score}!",
+    "{player} KVITTERAR! {team} är tillbaka i matchen! {score}!",
+    "DÄR KOM DEN! {player} jämnar ut för {team}! {score}!",
+    "Lika igen! {player} med en kvittering ur ingenstans! {score}!",
+    "{player} suger åt sig dödläget och slår tillbaka! {score}!",
+    "Återgick till ruta ett! {player} kvitterar! {score}!",
   ],
   goalReducing: [
     "{player} dundrar in reducering! Plötsligt liv i matchen! {score}!",
@@ -91,6 +106,11 @@ export const commentary = {
     "{player} utökar ledningen! {score}, nu känns det under kontroll!",
     "MÅÅÅL! {player} skapar andrum för {team}! {score}!",
     "{team} drar ifrån! {player} med {score}!",
+    "{player} hammar in spiken! {team} drar ifrån! {score}!",
+    "MÅÅÅL! {player} sätter dit ett lugnande mål! {score}!",
+    "{player} ger {team} marginal! {score}!",
+    "Andrum! {player} sätter dit ett betydelsefullt mål! {score}!",
+    "Klart utskott! {player} tar avstånd! {score}!",
   ],
 
   cornerGoal: [
@@ -796,11 +816,33 @@ export function getTraitCommentary(
     joker: [
       `${name} gör det igen. Briljant ena sekunden, utvisad nästa.`,
       `10 minuter utanför. ${name}s temperament kostar laget.`,
+      `${name} med en tackling ingen förstår. Domaren blåser. Solklart.`,
+      `Karaktäristiskt ${name}. Genialitet och utvisning samma kvart.`,
+      `${name} ut. Han skrattar. Det är värre.`,
+      `Tio minuter för ${name}. Han kommer tillbaka och göra något galet ändå.`,
     ],
     hungrig: [
       `Frustrationen kokar över. ${name} åker ut efter en onödig tackling.`,
       `${name} tappar kontrollen. Hungern att vinna blir hans fiende.`,
       `10 minuter. ${name} ville för mycket — det är sällan bra i bandy.`,
+      `${name} kastar sig in i en duell han inte kunde vinna. Tio minuter att fundera på det.`,
+      `Det syntes komma. ${name} har gått på överväxel hela halvleken. Domaren hade fått nog.`,
+      `${name} står upp i bänken med handskarna i sargen. För hård vilja, fel ögonblick.`,
+    ],
+    veteran: [
+      `${name} borde veta bättre. Erfarenheten räckte inte den här gången.`,
+      `Oväntat av en veteran. ${name} åker ut — laget spelar i numerärt underläge.`,
+      `${name} med en tackling man inte trodde var hans. Tio minuter på bänken.`,
+    ],
+    lokal: [
+      `Hemmapubliken tystnar. ${name} åker ut och laget spelar numerärt underlägset.`,
+      `${name} låter känslorna ta överhanden. Tokalt onödigt.`,
+      `Det var inte så lokalhjälten ville skriva in sig i kväll. ${name} ut.`,
+    ],
+    ledare: [
+      `Kaptenen åker ut. Inte läge för det här nu.`,
+      `${name} tappar disciplinen — precis det laget behöver minst just nu.`,
+      `Laget tittar efter ${name} som går mot bänken. Ledarskapet sätts på prov.`,
     ],
   }
 

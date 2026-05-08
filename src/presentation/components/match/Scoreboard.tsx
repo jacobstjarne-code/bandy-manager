@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
@@ -43,6 +44,11 @@ export function Scoreboard({
   fixture,
   game,
 }: ScoreboardProps) {
+  const playerById = useMemo(
+    () => new Map((game?.players ?? []).map(p => [p.id, p])),
+    [game?.players],
+  )
+
   return (
     <div style={{
       background: 'var(--led-bg)',
@@ -142,11 +148,11 @@ export function Scoreboard({
         return homeClub?.arenaName ? (
           <p style={{
             fontSize: 10,
-            color: '#A89878',
+            color: 'var(--match-copper)',
             margin: 0,
             fontFamily: 'Courier New, monospace',
             letterSpacing: '1.5px',
-            textShadow: '0 0 4px rgba(168,152,120,0.3)',
+            opacity: 0.6,
           }}>
             {formatArenaName(homeClub.arenaName).toUpperCase()}
           </p>
@@ -162,14 +168,14 @@ export function Scoreboard({
         const homeSusp = allEventsSoFar
           .filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.homeClubId && currentMin - e.minute < 10)
           .map(e => {
-            const p = e.playerId ? (game?.players ?? []).find(pl => pl.id === e.playerId) : null
+            const p = e.playerId ? playerById.get(e.playerId) : null
             const remaining = 10 - (currentMin - e.minute)
             return p?.shirtNumber != null ? `#${p.shirtNumber} (${remaining}\u2032)` : '?'
           })
         const awaySusp = allEventsSoFar
           .filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.awayClubId && currentMin - e.minute < 10)
           .map(e => {
-            const p = e.playerId ? (game?.players ?? []).find(pl => pl.id === e.playerId) : null
+            const p = e.playerId ? playerById.get(e.playerId) : null
             const remaining = 10 - (currentMin - e.minute)
             return p?.shirtNumber != null ? `#${p.shirtNumber} (${remaining}\u2032)` : '?'
           })
