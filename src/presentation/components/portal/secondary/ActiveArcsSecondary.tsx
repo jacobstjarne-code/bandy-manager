@@ -20,9 +20,10 @@ interface ArcRowProps {
   arc: ActiveArc
   currentMatchday: number
   onClick?: () => void
+  isLast: boolean
 }
 
-function ArcRow({ arc, currentMatchday, onClick }: ArcRowProps) {
+function ArcRow({ arc, currentMatchday, onClick, isLast }: ArcRowProps) {
   const [hovered, setHovered] = useState(false)
   const roundsLeft = arc.expiresMatchday - currentMatchday
   const isUrgent = roundsLeft <= 1
@@ -34,48 +35,50 @@ function ArcRow({ arc, currentMatchday, onClick }: ArcRowProps) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: 'grid',
-        gridTemplateColumns: 'auto 1fr auto auto',
+        display: 'flex',
         gap: 10,
         alignItems: 'center',
         padding: '8px 4px',
         cursor: onClick ? 'pointer' : 'default',
         borderRadius: 4,
         background: hovered && onClick ? 'rgba(196,122,58,0.04)' : 'transparent',
+        borderBottom: isLast ? undefined : '0.5px solid rgba(196,122,58,0.15)',
       }}
     >
-      <span style={{ fontSize: 18, lineHeight: 1, filter: 'saturate(0.85)' }}>
+      <span style={{ fontSize: 18, lineHeight: 1, filter: 'saturate(0.85)', flexShrink: 0 }}>
         {ARC_ICON[arc.type]}
       </span>
 
-      <div style={{ minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontFamily: 'var(--font-body)', fontSize: 12.5,
+          fontFamily: 'var(--font-body)', fontSize: 12,
           color: 'var(--text-light)', fontWeight: 600, lineHeight: 1.35,
         }}>
           {getArcHeadline(arc, undefined)}
         </div>
-        <div style={{
-          fontFamily: 'var(--font-display)', fontStyle: 'italic',
-          fontSize: 10.5,
-          color: isUrgent ? '#c8a058' : 'var(--text-light-secondary)',
-          marginTop: 2,
-        }}>
-          {isUrgent ? 'Avgörande snart' : `${roundsLeft} omgångar kvar`}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
+          <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+            {[1, 2, 3].map(dot => (
+              <div
+                key={dot}
+                style={{
+                  width: 5, height: 5, borderRadius: '50%',
+                  background: dot < filledDots
+                    ? 'var(--accent-deep)'
+                    : dot === filledDots
+                    ? 'var(--accent)'
+                    : 'rgba(196,122,58,0.3)',
+                }}
+              />
+            ))}
+          </div>
+          <span style={{
+            fontSize: 10,
+            color: isUrgent ? 'var(--warm-light)' : 'var(--text-muted)',
+          }}>
+            {isUrgent ? 'Avgörande snart' : `${roundsLeft} omg kvar`}
+          </span>
         </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: 3, alignItems: 'center', flexShrink: 0 }}>
-        {[1, 2, 3].map(dot => (
-          <div
-            key={dot}
-            style={{
-              width: 5, height: 5, borderRadius: '50%',
-              border: '1px solid var(--accent)',
-              background: dot <= filledDots ? 'var(--accent)' : 'transparent',
-            }}
-          />
-        ))}
       </div>
 
       {onClick ? (
@@ -116,8 +119,9 @@ export function ActiveArcsSecondary({ game }: CardRenderProps) {
       padding: '12px 14px',
     }}>
       <div style={{
-        fontSize: 8, letterSpacing: '2px', textTransform: 'uppercase',
-        color: 'var(--text-light-secondary)', fontWeight: 600,
+        fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase',
+        color: 'var(--accent)', fontWeight: 700,
+        opacity: 0.85,
         marginBottom: 10,
         display: 'flex', alignItems: 'center', gap: 6,
       }}>
@@ -126,18 +130,15 @@ export function ActiveArcsSecondary({ game }: CardRenderProps) {
       </div>
 
       {arcs.map((arc, index) => (
-        <div
+        <ArcRow
           key={arc.id}
-          style={index > 0 ? { borderTop: '0.5px solid rgba(196,122,58,0.15)' } : undefined}
-        >
-          <ArcRow
-            arc={arc}
-            currentMatchday={currentMatchday}
-            onClick={arc.playerId
-              ? () => navigate('/game/squad', { state: { highlightPlayer: arc.playerId } })
-              : undefined}
-          />
-        </div>
+          arc={arc}
+          currentMatchday={currentMatchday}
+          isLast={index === arcs.length - 1}
+          onClick={arc.playerId
+            ? () => navigate('/game/squad', { state: { highlightPlayer: arc.playerId } })
+            : undefined}
+        />
       ))}
     </div>
   )
