@@ -13,6 +13,7 @@ const CATEGORY_META: Record<WeeklyDecisionCategory, { icon: string; label: strin
 export function WeeklyDecisionSecondary({ game }: CardRenderProps) {
   const resolveWeeklyDecision = useGameStore(s => s.resolveWeeklyDecision)
   const [resolvedInfo, setResolvedInfo] = useState<{ label: string; effect: string } | null>(null)
+  const [hoveredBtn, setHoveredBtn] = useState<'A' | 'B' | null>(null)
   const capturedDecision = useRef<WeeklyDecision | null>(game.pendingWeeklyDecision ?? null)
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export function WeeklyDecisionSecondary({ game }: CardRenderProps) {
   if (!game.pendingWeeklyDecision && !resolvedInfo) return null
 
   const meta = CATEGORY_META[decision.category]
+  const isSupporter = decision.category === 'supporter'
 
   function handleChoice(choice: 'A' | 'B') {
     if (resolvedInfo) return
@@ -42,13 +44,14 @@ export function WeeklyDecisionSecondary({ game }: CardRenderProps) {
     <div style={{
       gridColumn: '1 / -1',
       background: 'var(--bg-portal-surface)',
-      borderLeft: '2px solid var(--accent)',
+      borderLeft: `${isSupporter ? 3 : 2}px solid ${isSupporter ? 'var(--warm)' : 'var(--accent)'}`,
       borderRadius: '0 8px 8px 0',
       padding: '12px 14px 13px',
     }}>
       <div style={{
-        fontSize: 8, letterSpacing: '2px', textTransform: 'uppercase',
+        fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase',
         color: 'var(--accent)', fontWeight: 700,
+        opacity: 0.85,
         marginBottom: 10,
         display: 'flex', alignItems: 'center', gap: 6,
       }}>
@@ -57,8 +60,9 @@ export function WeeklyDecisionSecondary({ game }: CardRenderProps) {
       </div>
 
       <div style={{
-        fontFamily: 'var(--font-body)', fontSize: 13.5, fontWeight: 600,
-        color: 'var(--text-light)', lineHeight: 1.4,
+        fontFamily: 'var(--font-display)', fontStyle: 'italic',
+        fontSize: 14, fontWeight: 400, lineHeight: 1.5,
+        color: 'var(--text-light)',
         marginBottom: isResolved ? 0 : 14,
         opacity: isResolved ? 0.5 : 1,
         transition: 'opacity 0.2s',
@@ -95,18 +99,21 @@ export function WeeklyDecisionSecondary({ game }: CardRenderProps) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           {(['A', 'B'] as const).map(choice => {
             const opt = choice === 'A' ? decision.optionA : decision.optionB
+            const isHovered = hoveredBtn === choice
             return (
               <button
                 key={choice}
                 onClick={() => handleChoice(choice)}
+                onMouseEnter={() => setHoveredBtn(choice)}
+                onMouseLeave={() => setHoveredBtn(null)}
                 style={{
                   display: 'flex', flexDirection: 'column', gap: 4,
                   padding: '13px 12px',
-                  background: 'var(--bg-portal-elevated)',
-                  border: '1.5px solid var(--accent)',
+                  background: isHovered ? 'rgba(196,122,58,0.1)' : 'transparent',
+                  border: `1px solid ${isHovered ? 'var(--accent)' : 'rgba(196,122,58,0.4)'}`,
                   borderRadius: 8,
                   cursor: 'pointer', textAlign: 'center',
-                  transition: 'filter 0.15s',
+                  transition: 'background 0.15s, border-color 0.15s',
                 }}
               >
                 <span style={{
