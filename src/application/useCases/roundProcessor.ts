@@ -60,6 +60,7 @@ import {
   type SpecialDateContext,
 } from '../../domain/data/specialDateStrings'
 import { generatePostMatchEvents } from '../../domain/services/postMatchEventService'
+import { canAddDecision } from '../../domain/services/decisionBudgetService'
 
 export type { AdvanceResult }
 
@@ -1092,10 +1093,21 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       return { previousAverageAttendance: prev, averageAttendance: newAvg }
     })(),
     ...(() => {
-      const newDecision = generateWeeklyDecision(
-        { ...game, resolvedWeeklyDecisions: game.resolvedWeeklyDecisions ?? [] },
-        nextMatchday,
-      )
+      // Beslutsekonomi: only generate a weekly decision if budget allows.
+      // Note: canAddDecision uses game state BEFORE this round's events are merged,
+      // so allNewEvents count is not yet reflected — this is intentional (conservative).
+      const gameWithNewEvents: SaveGame = {
+        ...game,
+        pendingEvents: [
+          ...(game.pendingEvents ?? []).filter(e => !e.resolved),
+          ...allNewEvents,
+        ],
+        resolvedWeeklyDecisions: game.resolvedWeeklyDecisions ?? [],
+      }
+      const budgetOk = canAddDecision(gameWithNewEvents, nextMatchday)
+      const newDecision = budgetOk
+        ? generateWeeklyDecision(gameWithNewEvents, nextMatchday)
+        : null
       return {
         pendingWeeklyDecision: newDecision ?? undefined,
         weeklyDecisionLastRound: newDecision ? nextMatchday : game.weeklyDecisionLastRound,
@@ -1138,6 +1150,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     wageBudgetWarningSent: eventResult.wageBudgetWarningSent,
     riskySponsorOfferSentThisSeason: eventResult.riskySponsorOfferSentThisSeason,
     patronWithdrawnSeason: eventResult.patronWithdrawnSeason,
+    // Beslutsekonomi cooldown tracking
+    lastEventQueueRound: eventResult.lastEventQueueRound,
+    lastRumorRound: mediaResult.lastRumorRound,
   }
 
   // Append market value change notifications to inbox

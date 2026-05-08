@@ -4,6 +4,7 @@ import type { ScoutReport } from '../../../domain/entities/Scouting'
 import { generateMediaHeadlines, generateTrendArticles, generateAbsurdityArticles } from '../../../domain/services/mediaService'
 import { generatePostMatchHeadline } from '../../../domain/services/journalistService'
 import { generateTransferRumor } from '../../../domain/services/rumorService'
+import { canAddDecision } from '../../../domain/services/decisionBudgetService'
 import { checkMidSeasonEvents } from '../../../domain/services/midSeasonEventService'
 import { checkReputationMilestones, milestonesToInbox } from '../../../domain/services/reputationMilestoneService'
 import { generateDeadlineBids, generateDiscountOffer, deadlineBidToInbox, deadlineOfferToInbox } from '../../../domain/services/transferDeadlineService'
@@ -13,6 +14,7 @@ export interface MediaResult {
   scoutReportUpdates: Record<string, ScoutReport>
   resolvedEventIds: string[]
   reputationDelta: number
+  lastRumorRound: number | undefined
 }
 
 export function processMedia(
@@ -75,12 +77,19 @@ export function processMedia(
   const absurdityArticles = generateAbsurdityArticles(game, nextMatchday)
   inboxItems.push(...absurdityArticles)
 
-  // Transfer rumors (matchday 5-18)
-  const rumorResult = generateTransferRumor(game, localRand)
-  if (rumorResult) {
-    inboxItems.push(rumorResult.inboxItem)
-    if (rumorResult.scoutHint) {
-      scoutReportUpdates[rumorResult.scoutHint.playerId] = rumorResult.scoutHint
+  // Transfer rumors (matchday 5-18) — 3-round cooldown + budget gate
+  const RUMOR_COOLDOWN = 3
+  const lastRumorRoundPrev = game.lastRumorRound ?? 0
+  const rumorCooledDown = nextMatchday - lastRumorRoundPrev >= RUMOR_COOLDOWN
+  let lastRumorRound: number | undefined = game.lastRumorRound ?? undefined
+  if (rumorCooledDown && canAddDecision(game, nextMatchday)) {
+    const rumorResult = generateTransferRumor(game, localRand)
+    if (rumorResult) {
+      inboxItems.push(rumorResult.inboxItem)
+      if (rumorResult.scoutHint) {
+        scoutReportUpdates[rumorResult.scoutHint.playerId] = rumorResult.scoutHint
+      }
+      lastRumorRound = nextMatchday
     }
   }
 
@@ -116,5 +125,5 @@ export function processMedia(
     }
   }
 
-  return { inboxItems, scoutReportUpdates, resolvedEventIds, reputationDelta }
+  return { inboxItems, scoutReportUpdates, resolvedEventIds, reputationDelta, lastRumorRound }
 }

@@ -39,6 +39,10 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.boardPatience === undefined) data.boardPatience = 70
   if (data.consecutiveFailures === undefined) data.consecutiveFailures = 0
   if (data.pendingEvents === undefined) data.pendingEvents = []
+  if (data.pendingDecisions === undefined) data.pendingDecisions = []
+  if (data.deferredDecisions === undefined) data.deferredDecisions = []
+  if (data.lastRumorRound === undefined) data.lastRumorRound = 0
+  if (data.lastEventQueueRound === undefined) data.lastEventQueueRound = 0
   if (data.resolvedEventIds === undefined) data.resolvedEventIds = []
   if (data.transferBids === undefined) data.transferBids = []
   if (data.seasonSummaries === undefined) data.seasonSummaries = []

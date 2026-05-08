@@ -4,6 +4,7 @@ import type { Club } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import { InboxItemType } from '../../../domain/enums'
 import { generatePostAdvanceEvents, generateEvents } from '../../../domain/services/eventService'
+import { canAddDecision } from '../../../domain/services/decisionBudgetService'
 import { createEconomicStressEvent } from '../../../domain/services/events/eventFactories'
 import { generateSocialEvent, generateSilentShoutEvent, generateMecenat, generateMecenatIntroEvent } from '../../../domain/services/mecenatService'
 import { generateBandyLetterEvent } from '../../../domain/services/bandyLetterService'
@@ -23,6 +24,8 @@ export interface EventProcessorResult {
   wageBudgetWarningSent: boolean
   riskySponsorOfferSentThisSeason: number | undefined
   patronWithdrawnSeason: number | undefined
+  // Beslutsekonomi
+  lastEventQueueRound: number | undefined
 }
 
 // ── Lager 2 text ───────────────────────────────────────────────────────────
@@ -140,7 +143,18 @@ export function processGameEvents(
   let patronWithdrawnSeason: number | undefined = game.patronWithdrawnSeason
 
   const newEvents = generatePostAdvanceEvents(game, newBids, nextMatchday, localRand, justCompletedManagedFixture ?? undefined)
-  const communityEvents = generateEvents(game, nextMatchday, localRand)
+
+  // Beslutsekonomi: community events get a 2-round cooldown + budget gate
+  const EVENT_QUEUE_COOLDOWN = 2
+  const lastEventQueueRoundPrev = game.lastEventQueueRound ?? 0
+  const eventQueueCooledDown = nextMatchday - lastEventQueueRoundPrev >= EVENT_QUEUE_COOLDOWN
+  const communityEvents = (eventQueueCooledDown && canAddDecision(game, nextMatchday))
+    ? generateEvents(game, nextMatchday, localRand)
+    : []
+  const lastEventQueueRound: number | undefined = (communityEvents.length > 0)
+    ? nextMatchday
+    : (game.lastEventQueueRound ?? undefined)
+
   const gameEvents: GameEvent[] = [...newEvents, ...communityEvents]
 
   const managedClub = game.clubs.find(c => c.id === game.managedClubId)
@@ -177,8 +191,8 @@ export function processGameEvents(
   const schoolEvent = generateSchoolAssignmentEvent(game, nextMatchday)
   if (schoolEvent) gameEvents.push(schoolEvent)
 
-  // DREAM-017: Mecenatens middag (omgång 20)
-  if (nextMatchday === 20) {
+  // DREAM-017: Mecenatens middag (omgång 20) — budget gate
+  if (nextMatchday === 20 && canAddDecision(game, nextMatchday)) {
     const dinnerEvent = generateDinnerEvent(game, nextMatchday)
     if (dinnerEvent) gameEvents.push(dinnerEvent)
   }
@@ -380,6 +394,7 @@ export function processGameEvents(
     wageBudgetWarningSent,
     riskySponsorOfferSentThisSeason,
     patronWithdrawnSeason,
+    lastEventQueueRound,
   }
 }
 

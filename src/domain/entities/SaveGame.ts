@@ -219,6 +219,12 @@ export interface SaveGame {
   resolvedWeeklyDecisions?: string[]  // `${id}_${season}` — prevents re-picking same decision
   weeklyDecisionLastRound?: number    // round when last decision was generated — enforces cooldown
 
+  // Beslutsekonomi — throttling (decisionBudgetService)
+  pendingDecisions?: unknown[]       // reserved for future use (deferred display)
+  deferredDecisions?: unknown[]      // reserved for future use (deferred display)
+  lastRumorRound?: number            // round when last transfer rumor was generated (cooldown: 3)
+  lastEventQueueRound?: number       // round when last community event was generated (cooldown: 2)
+
   // Sprint 4 — Visuell progression
   aiCoaches?: Record<string, import('../services/aiCoachService').AICoach>
   averageAttendance?: number      // rolling average across completed home matches
