@@ -799,6 +799,8 @@ export function getTraitCommentary(
     ],
     hungrig: [
       `Frustrationen kokar över. ${name} åker ut efter en onödig tackling.`,
+      `${name} tappar kontrollen. Hungern att vinna blir hans fiende.`,
+      `10 minuter. ${name} ville för mycket — det är sällan bra i bandy.`,
     ],
   }
 

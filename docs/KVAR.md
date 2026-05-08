@@ -1,7 +1,29 @@
 # BANDY MANAGER — KVAR
 
-**Datum:** 2026-05-06 (kväll)
+**Datum:** 2026-05-08
 **Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DECISIONS.md/DESIGN_SYSTEM.md är lästa.
+
+---
+
+## AKTUELLT LÄGE (2026-05-08)
+
+**Playtest-fixes 2026-05-08 — allt levererat:** ✅ LEVERERAD (playtestades och fixades samma session)
+
+Tre batchar (A–G) efter playtest-session 2026-05-08:
+
+| Fix | Beskrivning | Status |
+|-----|-------------|--------|
+| A1/G1 | CoffeeRoomScene + JournalistRelationshipScene CTA ej klickbar — `flex:1` på content-div pushade CTA under viewport | ✅ |
+| A2 | EventCardInline val-knappar ojämna (`btn-primary` vs transparent) → `btn-outline` vid fler än ett val | ✅ |
+| A3 | HalftimeModal CTA → `btn-cta btn-primary` | ✅ |
+| B1/F3 | NextMatchCard visade "7:E" under cupfas — `anyMatchPlayed` → `anyLeagueMatchPlayed` | ✅ |
+| G2 | Journalist-rubrik dedup — matchday i hash-seed | ✅ |
+| G3 | Kafferum-preview visade samma text som full scen — `meta.subtitle` som preview | ✅ |
+| F1 | Beslutsekonomi throttling — max 2 aktiva decisions, säs 1 omg 1 max 1 | ✅ |
+| E3 | Strings-pool-inventering → `docs/STRINGS_POOL_INVENTORY.md` | ✅ |
+| Bug | `traitSuspensions.hungrig` 1-variant → 3 varianter | ✅ |
+
+**`FINALDAG_BRIEFING_SPECTATOR` 1-variant** — avsiktligt per Jacob's direktiv i koden. Ingen åtgärd.
 
 ---
 
@@ -960,8 +982,9 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 | `design-system/DESIGN-DECISIONS.md` | 2026-05-06 | Aktuell — stripes-beslut + AI-slop def reviderad |
 | `docs/DESIGN_SYSTEM.md` | 2026-05-05 | **STUB** — auktoritativt i `design-system/` |
 | `STATUS.md` | 2026-04-27 | Uppdaterad med Sprint 27 + 28-A/B |
-| `KVAR.md` | 2026-05-06 | Denna fil |
-| `HANDOVER_2026-05-06.md` | 2026-05-06 | Senaste handover |
+| `KVAR.md` | 2026-05-08 | Denna fil |
+| `HANDOVER_2026-05-08.md` | 2026-05-08 | Senaste handover |
+| `HANDOVER_2026-05-06.md` | 2026-05-06 | Föregående handover |
 | `HANDOVER_2026-05-04_KVÄLL.md` | 2026-05-04 | Föregående handover (kväll) |
 | `HANDOVER_2026-04-30.md` | 2026-04-30 | Handover förmiddag |
 | `HANDOVER_2026-04-28b.md` | 2026-04-28 | Arkiv |
