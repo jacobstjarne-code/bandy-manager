@@ -208,10 +208,10 @@ export function NextMatchCard({
     )
   })() : null
 
-  // Standing tags — only show after at least one match has been played
-  const anyMatchPlayed = game.fixtures.some(f => f.status === 'completed')
-  const myStanding = anyMatchPlayed ? game.standings?.find(s => s.clubId === game.managedClubId) : undefined
-  const oppStanding = anyMatchPlayed ? game.standings?.find(s => s.clubId === opponent.id) : undefined
+  // Standing tags — only show after at least one league match has been played
+  const anyLeagueMatchPlayed = game.fixtures.some(f => f.status === 'completed' && !f.isCup && !f.isKnockout)
+  const myStanding = anyLeagueMatchPlayed ? game.standings?.find(s => s.clubId === game.managedClubId) : undefined
+  const oppStanding = anyLeagueMatchPlayed ? game.standings?.find(s => s.clubId === opponent.id) : undefined
 
   // Sub-info tags below crests
   const mySubTag = myStanding

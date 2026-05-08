@@ -92,7 +92,7 @@ export function JournalistRelationshipScene({ game, onComplete }: Props) {
       </div>
 
       {/* 3. Minneslista */}
-      <div style={{ flex: 1, padding: '8px 24px 16px' }}>
+      <div style={{ padding: '8px 24px 16px' }}>
         <div style={{
           fontSize: 9,
           color: 'var(--text-muted)',

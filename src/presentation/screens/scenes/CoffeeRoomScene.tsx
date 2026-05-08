@@ -51,7 +51,6 @@ export function CoffeeRoomScene({ game, onComplete }: Props) {
 
       <div
         style={{
-          flex: 1,
           padding: '8px 20px 16px',
           display: 'flex',
           flexDirection: 'column',

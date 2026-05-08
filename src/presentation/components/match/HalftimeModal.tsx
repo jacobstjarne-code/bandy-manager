@@ -483,7 +483,7 @@ export function HalftimeModal({
         <div style={{ padding: '4px 20px 16px', flexShrink: 0 }}>
           <button
             onClick={htSubs.length > 0 || htMentality || htTempo || htPress ? onApplyTactic : onContinue}
-            className="btn btn-primary"
+            className="btn btn-cta btn-primary"
             style={{ width: '100%' }}
           >
             {tacticChanged || htSubs.length > 0 ? '🔄 ' : ''}{isSmFinal || isCupFinal ? 'ANDRA HALVLEK →' : 'Andra halvlek →'}

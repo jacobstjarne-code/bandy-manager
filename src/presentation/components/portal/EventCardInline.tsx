@@ -120,13 +120,13 @@ export function EventCardInline({ event, remainingCount }: Props) {
         {event.body}
       </p>
 
-      {/* Knapprad — använder designsystemets .btn-klasser, inga inline-overrides */}
+      {/* Knapprad — likvärdiga val = btn-outline, ensam CTA = btn-primary */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         {actions.map(action => (
           <button
             key={action.choiceId}
             onClick={() => handleAction(action.choiceId)}
-            className={action.isPrimary ? 'btn btn-primary' : 'btn btn-outline'}
+            className={actions.length > 1 ? 'btn btn-outline' : 'btn btn-primary'}
           >
             {action.label}
           </button>

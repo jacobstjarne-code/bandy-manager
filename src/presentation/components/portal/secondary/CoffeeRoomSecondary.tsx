@@ -12,7 +12,8 @@ export function CoffeeRoomSecondary({ game }: CardRenderProps) {
   const scene = getCoffeeRoomScene(game)
   if (!scene || scene.exchanges.length === 0) return null
 
-  const previewText = scene.exchanges[0][1]
+  // Use meta.subtitle as teaser — first exchange text appears verbatim in the full scene
+  const previewText = scene.meta.subtitle ?? scene.exchanges.at(-1)?.[1] ?? scene.exchanges[0][1]
   const truncated = previewText.length > 90 ? previewText.slice(0, 88) + '…' : previewText
 
   return (

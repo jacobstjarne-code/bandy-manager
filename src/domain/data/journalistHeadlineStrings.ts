@@ -229,6 +229,7 @@ export function pickHeadline(
   prevLoss = false,
   oppName?: string,
   scoreline?: string,
+  matchday = 0,
 ): string {
   const cell = HEADLINES[bucket][persona]
 
@@ -239,7 +240,8 @@ export function pickHeadline(
     pool = cell
   }
 
-  const idx = hashSeed(`${fixtureId}_${bucket}_${persona}`) % pool.length
+  // Include matchday in seed so consecutive rounds never repeat even if fixtureId hashes collide
+  const idx = hashSeed(`${fixtureId}_${bucket}_${persona}_md${matchday}`) % pool.length
   let text = pool[idx]
 
   if (oppName) text = text.replace(/\{opp\}/g, oppName)
