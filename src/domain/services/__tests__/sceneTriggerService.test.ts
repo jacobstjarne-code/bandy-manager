@@ -169,4 +169,42 @@ describe('sceneTriggerService — SM-finalseger', () => {
     })
     expect(detectSceneTrigger(g)).toBe('sm_final_victory')
   })
+
+  it('triggas vid cup-final-vinst (isCup=true, roundNumber=4, utan isFinaldag)', () => {
+    const g = makeGame({
+      managedClubId: 'managed',
+      fixtures: [
+        makeFixture({
+          isCup: true,
+          roundNumber: 4,
+          matchday: 4,
+          homeClubId: 'managed',
+          awayClubId: 'sandviken',
+          homeScore: 4,
+          awayScore: 3,
+        }),
+      ],
+      shownScenes: [],
+    })
+    expect(shouldTriggerSMFinalVictory(g)).toBe(true)
+  })
+
+  it('triggas INTE vid cup-final-förlust', () => {
+    const g = makeGame({
+      managedClubId: 'managed',
+      fixtures: [
+        makeFixture({
+          isCup: true,
+          roundNumber: 4,
+          matchday: 4,
+          homeClubId: 'managed',
+          awayClubId: 'sandviken',
+          homeScore: 2,
+          awayScore: 3,
+        }),
+      ],
+      shownScenes: [],
+    })
+    expect(shouldTriggerSMFinalVictory(g)).toBe(false)
+  })
 })

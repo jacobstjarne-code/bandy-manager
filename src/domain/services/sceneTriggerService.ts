@@ -56,6 +56,10 @@ export function shouldTriggerSundayTraining(game: SaveGame): boolean {
   return true
 }
 
+/**
+ * Triggas vid managed clubs vinst i ANY final — både cup-final och SM-final.
+ * Funktionsnamnet är felnamngivet av historiska skäl.
+ */
 export function shouldTriggerSMFinalVictory(game: SaveGame): boolean {
   if ((game.shownScenes ?? []).includes('sm_final_victory')) return false
 

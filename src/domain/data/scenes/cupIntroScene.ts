@@ -38,10 +38,10 @@ export function getCupIntroBeats(game: SaveGame): CupIntroBeat[] {
     {
       id: 'inramning',
       autoAdvance: true,
-      durationMs: 3500,
-      body: `Förstarunda i cupen. Innan serien drar igång.
+      durationMs: 2500,
+      body: `*"Lottningen kunde varit värre."*
 
-*"Lottningen kunde varit värre."*`,
+Replik från klubbhuset. Ingen vet vem som sa det först.`,
     },
     {
       id: 'motstandare',
