@@ -88,7 +88,7 @@ interface GameState {
   clearRoundSummary: () => void
   markScreenVisited: (screen: string) => void
   dismissBeat: (beatKey: string) => void
-  markAnslagSeen: (key: import('../../domain/data/anslag/cupAnslag').AnslagKey) => void
+  markAnslagSeen: (key: import('../../domain/services/anslagService').AnslagKey) => void
   resolveWeeklyDecision: (choice: 'A' | 'B') => void
   resolveAwayTrip: (decision: 'stay_home' | 'book_nice' | 'ask_foundation') => void
   completeScene: (sceneId: import('../../domain/entities/Scene').SceneId, choiceId?: string) => void

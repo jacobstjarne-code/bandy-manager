@@ -1,7 +1,6 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
-import type { AnslagKey } from '../../../domain/data/anslag/cupAnslag'
-import { CUP_ANSLAG } from '../../../domain/data/anslag/cupAnslag'
-import { isClubDirektkvalad } from '../../../domain/services/anslagService'
+import type { AnslagKey } from '../../../domain/services/anslagService'
+import { pickAnslagVariant, getAnslagData, isClubDirektkvalad } from '../../../domain/services/anslagService'
 
 interface AnslagOverlayProps {
   game: SaveGame
@@ -10,15 +9,20 @@ interface AnslagOverlayProps {
 }
 
 export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps) {
-  const anslag = CUP_ANSLAG[anslagKey]
+  const anslag = getAnslagData(anslagKey)
   const bracket = game.cupBracket
   const club = game.clubs.find(c => c.id === game.managedClubId)
 
-  const isDirektkvalad = bracket && club ? isClubDirektkvalad(bracket, club.id) : false
-  const direktkvalSuffix = isDirektkvalad && anslag.bodyDirektkval && club
-    ? anslag.bodyDirektkval.replace('{clubName}', club.name)
-    : ''
-  const fullBody = anslag.body + direktkvalSuffix
+  const variantBody = pickAnslagVariant(anslag, game.currentSeason, anslagKey, game.managedClubId)
+
+  const isDirektkvalad = anslagKey === 'cup_start' && bracket && club
+    ? isClubDirektkvalad(bracket, club.id)
+    : false
+  const finalBody = variantBody + (
+    isDirektkvalad && anslag.bodyDirektkval && club
+      ? anslag.bodyDirektkval.replace('{clubName}', club.name)
+      : ''
+  )
 
   const isWinner = anslagKey === 'cup_done_winner'
 
@@ -28,7 +32,7 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
         <div className="anslag-chapter">{anslag.chapter}</div>
         <div
           className="anslag-text"
-          dangerouslySetInnerHTML={{ __html: fullBody }}
+          dangerouslySetInnerHTML={{ __html: finalBody }}
         />
         <div className="anslag-cta" onClick={onDismiss}>Tryck för att fortsätta</div>
       </div>

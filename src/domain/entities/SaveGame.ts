@@ -70,7 +70,7 @@ export interface SaveGame {
   shownBeats?: string[]                // Beat-nycklar som visats (format: beatId eller beatId_season)
 
   // Fas-anslag (säsongskapitel-overlay)
-  seenAnslag?: import('../data/anslag/cupAnslag').AnslagKey[]
+  seenAnslag?: import('../services/anslagService').AnslagKey[]
 
   clubs: Club[]
   players: Player[]

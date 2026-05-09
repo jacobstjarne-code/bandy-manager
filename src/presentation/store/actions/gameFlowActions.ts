@@ -1,5 +1,5 @@
 import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
-import type { AnslagKey } from '../../../domain/data/anslag/cupAnslag'
+import type { AnslagKey } from '../../../domain/services/anslagService'
 import { PendingScreen } from '../../../domain/enums'
 import { clamp } from '../../../domain/utils/clamp'
 import { resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
