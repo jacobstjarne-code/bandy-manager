@@ -31,7 +31,7 @@ export const CUP_ANSLAG: Record<CupAnslagKey, AnslagText> = {
         body: `Det blåser snålt över bandyplanerna i östra Sverige den här veckan. Tre lag har redan åkt ur.<br><br>Ingen pratar om cupen som om den vore avgörande, men ingen ser ut att ta lätt på den heller. Det är så cupen brukar vara.<br><br>Man säger en sak och spelar en annan.`,
       },
       {
-        body: `Oktober. Mörkret kommer för tidigt nu, frosten ligger på på mornarna, och spelet är inte där det ska vara än.<br><br>Tre lag har åkt ur. Ingen sörjer dem särskilt mycket — men ingen vill vara nästa.<br><br>Cupen är cupen. Inget mer, inget mindre.`,
+        body: `Oktober. Mörkret kommer för tidigt nu, frosten ligger om mornarna, och spelet är inte där det ska vara än.<br><br>Tre lag har åkt ur. Ingen sörjer dem särskilt mycket — men ingen vill vara nästa.<br><br>Cupen är cupen. Inget mer, inget mindre.`,
       },
       {
         body: `Mellan rundorna. Utvärderingar i klubbhus över hela landet. Vad gick bra. Vad gick mindre bra.<br><br>Tre lag är borta. För dem är cupen redan något att lägga bakom sig och inte tänka på. För resten är den fortfarande där, och det är fortfarande inte klart vad den ska bli.<br><br>Bandyhösten är ung.`,
