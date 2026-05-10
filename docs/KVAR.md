@@ -5,6 +5,37 @@
 
 ---
 
+## AKTUELLT LÄGE (2026-05-09) — KOMMANDE BATCH A
+
+**Grafisk uppdatering av match-flödet** — BATCH A startar nästa session.
+
+Referensdokument i `docs/match-live-bundle/`:
+- `CODE_INSTRUCTION_MATCH_LIVE_BUNDLE_2026-05-08.md` — övergripande instruktion
+- `IMPLEMENTATION-SPEC.md` + `IMPLEMENTATION_PLAN.md` — detaljerade specs
+- Mocks: `match-live-stalvallen.html`, `scoreboard-stalvallen.html`, `match-events-stalvallen.html`, `match-report-stalvallen.html`, `commentary-redesign-v2.html`
+
+**Låsta kontrakt:** befintliga match-services (cornerInteractionService, freeKickInteractionService, penaltyInteractionService, counterAttackInteractionService, lastMinutePressService) — datakontrakten rörs INTE i BATCH A.
+
+---
+
+## LEVERERAT 2026-05-09
+
+**Anslag-system (variants + liga-anslag):** ✅ LEVERERAD
+
+| Leverans | Commits | Status |
+|----------|---------|--------|
+| Anslag-types.ts + cupAnslag.ts migration (15 texter → variants) | `b9a256d` | ✅ |
+| leagueAnslag.ts — 6 liga-keys × 3 varianter = 18 texter | `b9a256d` | ✅ |
+| computeNextAnslag — liga-triggering + 7 hjälpfunktioner | `b9a256d` | ✅ |
+| AnslagOverlay.tsx — pickAnslagVariant + getAnslagData | `b9a256d` | ✅ |
+| 5 obligatoriska testfiler (determinism, triggering, tracks, reset, kalender) | `b9a256d` | ✅ |
+| Cup-scen-justeringar (beat 1 kortad, 2 verifierings-tester, JSDoc) | `e4c5951` | ✅ |
+| ArrivalScene-reboot | `41af54d` | ✅ |
+
+Teststatus: 725 tester gröna. Build ren.
+
+---
+
 ## AKTUELLT LÄGE (2026-05-08)
 
 **Playtest-fixes 2026-05-08 — allt levererat:** ✅ LEVERERAD (playtestades och fixades samma session)
