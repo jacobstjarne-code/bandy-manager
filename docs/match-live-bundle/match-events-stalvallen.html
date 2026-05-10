@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Match-modul · Stålvallen-vokabulär</title>
+<link rel="stylesheet" href="_base.css">
+<style>
+  html, body { height: auto; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  body { background: #1A1A18; color: #F5F1EB; padding: 24px 24px 80px; font-family: var(--font-sans); min-height: 100%; }
+  .page-head { max-width: 720px; margin: 0 auto 20px; }
+  h1 { font-family: var(--font-display); font-size: 22px; font-weight: 600; }
+  .lede { color: #A89880; font-size: 13px; margin-top: 6px; line-height: 1.55; }
+  .lede strong { color: #D4A574; font-weight: 600; }
+
+  /* ─── Mobile-frame ─── */
+  .frame {
+    max-width: 380px; margin: 0 auto;
+    background: #2C2A24; border: 1px solid rgba(196,122,58,0.2);
+    border-radius: 12px; overflow: hidden;
+  }
+
+  /* ─── Pixel-glyph LED-tag ─── */
+  .led-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: 'Courier New', monospace; font-weight: 700;
+    font-size: 9px; letter-spacing: 1.5px;
+    padding: 3px 6px; border-radius: 2px;
+    background: #0A0A0A; color: #FF3B0F;
+    box-shadow: inset 0 0 4px rgba(255,59,15,0.3);
+    text-shadow: 0 0 3px rgba(255,59,15,0.6);
+  }
+  .led-tag.amber { color: #FFAA00; text-shadow: 0 0 3px rgba(255,170,0,0.6); box-shadow: inset 0 0 4px rgba(255,170,0,0.3); }
+  .led-tag.green { color: #66FF33; text-shadow: 0 0 3px rgba(102,255,51,0.6); box-shadow: inset 0 0 4px rgba(102,255,51,0.3); }
+  .led-tag.muted { color: #888; text-shadow: none; box-shadow: inset 0 0 4px rgba(120,120,120,0.2); }
+
+  /* ─── Section divider ─── */
+  .sec {
+    padding: 8px 14px; background: #0A0A0A;
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 2px; color: #66FF33;
+    text-transform: uppercase;
+    text-shadow: 0 0 3px rgba(102,255,51,0.5);
+    border-top: 1px solid rgba(196,122,58,0.2);
+    border-bottom: 1px solid rgba(196,122,58,0.2);
+  }
+
+  /* ─── Event-panel — "tavlan fälls upp" ─── */
+  .event-panel {
+    background: linear-gradient(180deg, #3D3520 0%, #2C2A24 100%);
+    border-top: 2px solid #C47A3A;
+    border-bottom: 2px solid #1A1A18;
+    padding: 14px;
+    position: relative;
+  }
+  .event-panel::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0;
+    height: 1px; background: rgba(255,180,80,0.4);
+  }
+  .event-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .event-title-row { display: flex; align-items: center; gap: 8px; }
+  .event-title { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: #F5F1EB; }
+  .event-meta { font-family: 'Courier New', monospace; font-size: 10px; color: #A89880; letter-spacing: 1px; margin-top: 2px; }
+  .event-timer {
+    font-family: 'Courier New', monospace; font-weight: 700;
+    font-size: 14px; padding: 4px 8px; border-radius: 2px;
+    background: #0A0A0A; color: #FF3B0F;
+    text-shadow: 0 0 4px rgba(255,59,15,0.7);
+    box-shadow: inset 0 0 6px rgba(255,59,15,0.3);
+  }
+  .event-timer.warn { color: #FFAA00; text-shadow: 0 0 4px rgba(255,170,0,0.7); }
+
+  /* ─── Schematic pitch (the game-state) ─── */
+  /* Sits on its own dark panel — like a tactical display embedded in the leather. */
+  .pitch-panel {
+    background: #0A0A0A;
+    border: 1px solid rgba(196,122,58,0.25);
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 10px;
+    position: relative;
+    box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
+  }
+  .pitch-panel::before {
+    /* CRT-scanline texture, very subtle, unifies with LED feel */
+    content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: 4px;
+    background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0 1px, transparent 1px 3px);
+  }
+  .pitch-panel svg { display: block; width: 100%; height: auto; position: relative; z-index: 1; }
+
+  /* tactic-board palette — uses LED hues so it feels like the same scoreboard family */
+  :root {
+    --ice: #1A2628;        /* dark teal-grey ice */
+    --ice-2: #0E1518;
+    --line: rgba(180,200,210,0.35);
+    --line-soft: rgba(180,200,210,0.15);
+    --home: #FF3B0F;       /* red LED */
+    --away: #FFAA00;       /* amber LED */
+    --pick: #66FF33;       /* green LED — the chosen zone glows */
+    --pick-soft: rgba(102,255,51,0.18);
+    --gk: #6FB6E8;         /* cool keeper */
+  }
+
+  /* Choice readout — pill row under the pitch */
+  .pitch-readout {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; margin-top: -4px; margin-bottom: 10px;
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(196,122,58,0.2);
+    border-radius: 3px;
+    font-family: 'Courier New', monospace; font-size: 10px;
+    letter-spacing: 1.5px; color: #A89880;
+  }
+  .pitch-readout .lbl { color: #6B5F4D; }
+  .pitch-readout .val { color: #66FF33; text-shadow: 0 0 3px rgba(102,255,51,0.5); font-weight: 700; }
+  .pitch-readout .sep { color: #3D3520; }
+  .pitch-readout .pct { margin-left: auto; color: #FFAA00; text-shadow: 0 0 3px rgba(255,170,0,0.5); font-weight: 700; }
+
+  /* Sub-choice tabs (delivery / height) — wooden-feel toggles, monospace label */
+  .pitch-sub {
+    display: flex; gap: 4px; margin-bottom: 10px;
+  }
+  .pitch-sub button {
+    flex: 1;
+    background: rgba(245,241,235,0.04);
+    border: 1px solid rgba(196,122,58,0.25);
+    border-radius: 3px;
+    padding: 8px 4px;
+    color: #A89880;
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 1.5px; font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  .pitch-sub button.on {
+    background: rgba(102,255,51,0.10);
+    border-color: #66FF33;
+    color: #66FF33;
+    text-shadow: 0 0 3px rgba(102,255,51,0.5);
+    box-shadow: inset 0 0 6px rgba(102,255,51,0.15);
+  }
+
+  /* Coach line */
+  .coach {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px; margin-bottom: 12px;
+    background: rgba(0,0,0,0.25); border-radius: 4px;
+    border-left: 2px solid #C47A3A;
+  }
+  .coach .av {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #C47A3A; color: #1A1A18;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .coach .quote { font-size: 12px; color: #E6DDD0; font-style: italic; line-height: 1.4; }
+
+  .cta {
+    display: block; width: 100%;
+    background: #C47A3A; color: #1A1A18;
+    border: none; border-radius: 3px;
+    padding: 14px;
+    font-family: var(--font-sans); font-weight: 700;
+    font-size: 13px; letter-spacing: 1px; text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 2px 0 #8B5523;
+  }
+  .cta.danger { background: #DC503C; box-shadow: 0 2px 0 #8B2A1A; color: #F5F1EB; }
+
+  /* Pitch text default — pixel-y monospace, lowercase forbidden */
+  .pitch-panel text { font-family: 'Courier New', monospace; font-weight: 700; letter-spacing: 0.5px; }
+
+  /* Pulse for the "now"/active marker on pitches */
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+  .pulse { animation: pulseDot 1.4s ease-in-out infinite; }
+
+  /* feed (kept lean, unchanged) */
+  .feed { background: #1A1A18; padding: 8px 0; }
+  .row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border-bottom: 1px solid rgba(196,122,58,0.08); }
+  .row .min { font-family: 'Courier New', monospace; font-size: 11px; color: #FFAA00; min-width: 32px; padding-top: 2px; text-shadow: 0 0 2px rgba(255,170,0,0.4); }
+  .row .body { flex: 1; }
+  .row .body .top { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+  .row .text { font-size: 13px; color: #E6DDD0; line-height: 1.4; }
+  .row .meta { font-size: 11px; color: #6B5F4D; margin-top: 2px; }
+  .row.goal { background: rgba(196,122,58,0.10); }
+  .row.goal .text { font-weight: 600; color: #D4A574; }
+
+  .note {
+    max-width: 720px; margin: 28px auto 0;
+    padding: 14px; border: 1px solid rgba(196,122,58,0.3);
+    border-radius: 6px; background: rgba(196,122,58,0.06);
+    font-size: 12px; color: #C9B89A; line-height: 1.5;
+  }
+  .note strong { color: #D4A574; }
+  .note ul { margin: 8px 0 0 18px; padding: 0; }
+  .note li { margin-bottom: 4px; }
+
+  .stack { display: flex; flex-direction: column; gap: 24px; align-items: center; }
+  .label-strip {
+    max-width: 380px; width: 100%;
+    font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 2px;
+    color: #66FF33; text-shadow: 0 0 3px rgba(102,255,51,0.4);
+    padding: 6px 4px 0;
+  }
+  .label-strip .num { color: #6B5F4D; margin-right: 8px; }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Match-händelser · Stålvallen-vokabulär</h1>
+  <p class="lede">Fyra interaktiva spelmoment — <strong>hörna, frislag, straff, kontring</strong> — översatta till tavlans språk. Ramverket (LED-tag, läder-panel, koppar-kant, monospace-timer) sitter; den nya delen är att <strong>själva spelsituationen</strong> visas schematiskt på en taktiktavla i panelen, så att man läser av läget, inte bara väljer mellan tre etiketter. Färgerna (röd / amber / grön) återanvänder LED-paletten — taktiktavlan är samma familj som matchuret.</p>
+</div>
+
+<div class="stack">
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       1 · HÖRNA — vänster sida
+       Schematic: kortsida + målbur, MV, försvarare, tre zoner (NÄRA/MITT/BORTRE),
+       hörnflagga + kurvad pass-pil, framåtanfallarnas rusningar.
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div>
+    <div class="label-strip"><span class="num">01</span>HÖRNA · vänster · 68:14</div>
+    <div class="frame">
+      <div class="sec">● LIVE · HL2 · 68:14</div>
+
+      <div class="event-panel">
+        <div class="event-head">
+          <div>
+            <div class="event-title-row">
+              <span class="led-tag">HORNA</span>
+              <span class="event-title">Holm slår</span>
+            </div>
+            <div class="event-meta">VÄNSTER · LINDBERG &amp; KARLSSON RUSAR</div>
+          </div>
+          <span class="event-timer warn">3s</span>
+        </div>
+
+        <!-- Pitch: corner from bottom-left, attacking goal on left -->
+        <div class="pitch-panel">
+          <svg viewBox="0 0 220 130">
+            <defs>
+              <linearGradient id="iceCG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#1A2628"/>
+                <stop offset="100%" stop-color="#0E1518"/>
+              </linearGradient>
+              <marker id="arrCG" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="#66FF33"/>
+              </marker>
+            </defs>
+
+            <!-- ice -->
+            <rect width="220" height="130" fill="url(#iceCG)" rx="3"/>
+            <!-- straffområde båge -->
+            <path d="M70,0 A70,65 0 0,1 70,130" fill="none" stroke="rgba(180,200,210,0.18)" stroke-width="0.7"/>
+            <!-- mål -->
+            <rect x="0" y="46" width="5" height="38" fill="none" stroke="rgba(180,200,210,0.55)" stroke-width="1.5"/>
+            <!-- målvakt -->
+            <circle cx="14" cy="65" r="5" fill="#0A0A0A" stroke="#6FB6E8" stroke-width="1.4"/>
+            <text x="14" y="67.5" text-anchor="middle" font-size="5" fill="#6FB6E8">MV</text>
+            <!-- 4 försvarare i båset, röda LED-prickar -->
+            <g>
+              <circle cx="16" cy="48" r="3" fill="#FF3B0F" opacity="0.85"/>
+              <circle cx="22" cy="58" r="3" fill="#FF3B0F" opacity="0.85"/>
+              <circle cx="22" cy="72" r="3" fill="#FF3B0F" opacity="0.85"/>
+              <circle cx="16" cy="82" r="3" fill="#FF3B0F" opacity="0.85"/>
+            </g>
+
+            <!-- 3 zoner (val) — NÄRA / MITT / BORTRE -->
+            <!-- NÄRA (top — eftersom hörnan är från top-left=NÄRA stolpen) -->
+            <rect x="30" y="14" width="40" height="28" rx="2"
+                  fill="rgba(180,200,210,0.04)"
+                  stroke="rgba(180,200,210,0.25)" stroke-width="0.8" stroke-dasharray="3,2"/>
+            <text x="50" y="26" text-anchor="middle" font-size="6" fill="rgba(180,200,210,0.45)" letter-spacing="1">NÄRA</text>
+            <text x="50" y="35" text-anchor="middle" font-size="5.5" fill="rgba(180,200,210,0.4)">35%</text>
+
+            <!-- MITT — selected (green glow) -->
+            <rect x="30" y="48" width="40" height="34" rx="2"
+                  fill="rgba(102,255,51,0.12)"
+                  stroke="#66FF33" stroke-width="1.5"/>
+            <text x="50" y="62" text-anchor="middle" font-size="7" fill="#66FF33" letter-spacing="1.5">MITT</text>
+            <text x="50" y="73" text-anchor="middle" font-size="6" fill="#66FF33">41%</text>
+
+            <!-- BORTRE -->
+            <rect x="30" y="88" width="40" height="28" rx="2"
+                  fill="rgba(180,200,210,0.04)"
+                  stroke="rgba(180,200,210,0.25)" stroke-width="0.8" stroke-dasharray="3,2"/>
+            <text x="50" y="100" text-anchor="middle" font-size="6" fill="rgba(180,200,210,0.45)" letter-spacing="1">BORTRE</text>
+            <text x="50" y="109" text-anchor="middle" font-size="5.5" fill="rgba(180,200,210,0.4)">28%</text>
+
+            <!-- hörnflagga (top-left = höger hörna ur försvar=anfallets vänster) -->
+            <line x1="5" y1="5" x2="5" y2="13" stroke="#FFAA00" stroke-width="1.2"/>
+            <polygon points="5,13 11,10 5,7" fill="#FFAA00"/>
+
+            <!-- kurvig pass-pil till MITT (vald) -->
+            <path d="M5,5 Q22,42 30,62" fill="none" stroke="#66FF33"
+                  stroke-width="1.4" stroke-dasharray="3,2.5" marker-end="url(#arrCG)"/>
+
+            <!-- framåtanfallarnas rusningar (amber, från höger -> bås) -->
+            <g stroke="#FFAA00" stroke-width="0.9" stroke-dasharray="3,2" fill="none">
+              <line x1="160" y1="28" x2="74" y2="28"/>
+              <line x1="170" y1="65" x2="74" y2="62"/>
+              <line x1="160" y1="100" x2="74" y2="100"/>
+            </g>
+            <circle cx="160" cy="28" r="4" fill="#FFAA00" opacity="0.85"/>
+            <text x="160" y="30" text-anchor="middle" font-size="4.5" fill="#1A1A18">7</text>
+            <circle cx="170" cy="65" r="4" fill="#FFAA00" opacity="0.85"/>
+            <text x="170" y="67" text-anchor="middle" font-size="4.5" fill="#1A1A18">9</text>
+            <circle cx="160" cy="100" r="4" fill="#FFAA00" opacity="0.85"/>
+            <text x="160" y="102" text-anchor="middle" font-size="4.5" fill="#1A1A18">11</text>
+
+            <!-- VÄNSTER-etikett -->
+            <text x="200" y="14" text-anchor="end" font-size="6" fill="rgba(180,200,210,0.5)" letter-spacing="1.5">VÄNSTER</text>
+          </svg>
+        </div>
+
+        <!-- Sub-choice: leverans -->
+        <div class="pitch-sub">
+          <button>HÅRT</button>
+          <button class="on">LÅGT</button>
+          <button>KORT</button>
+        </div>
+
+        <div class="pitch-readout">
+          <span class="lbl">VAL:</span>
+          <span class="val">MITT · LÅGT</span>
+          <span class="pct">41%</span>
+        </div>
+
+        <div class="coach">
+          <div class="av">PL</div>
+          <span class="quote">"MV går alltid mot kortstolpen. Slå lågt mot mitt — Karlsson är där."</span>
+        </div>
+
+        <button class="cta">Slå hörnan →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       2 · FRISLAG — 18m, mur 3 man
+       Schematic: målbur uppe, MV, mur (röda blocks), bollen längst ned, avstånd
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div>
+    <div class="label-strip"><span class="num">02</span>FRISLAG · 18m · mur 3 man</div>
+    <div class="frame">
+      <div class="sec">● LIVE · HL1 · 22:47</div>
+
+      <div class="event-panel">
+        <div class="event-head">
+          <div>
+            <div class="event-title-row">
+              <span class="led-tag">FRISLAG</span>
+              <span class="event-title">Lindberg slår</span>
+            </div>
+            <div class="event-meta">18m · MUR 3 man · LÅTSIDAN</div>
+          </div>
+          <span class="event-timer warn">4s</span>
+        </div>
+
+        <div class="pitch-panel">
+          <svg viewBox="0 0 220 160">
+            <defs>
+              <linearGradient id="iceFG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0E1518"/>
+                <stop offset="100%" stop-color="#1A2628"/>
+              </linearGradient>
+            </defs>
+            <rect width="220" height="160" fill="url(#iceFG)" rx="3"/>
+
+            <!-- mål uppe -->
+            <rect x="65" y="6" width="90" height="16" fill="none" stroke="rgba(180,200,210,0.55)" stroke-width="1.5" rx="1"/>
+            <rect x="67" y="8" width="86" height="12" fill="rgba(180,200,210,0.05)"/>
+            <!-- nät-mönster -->
+            <g stroke="rgba(180,200,210,0.18)" stroke-width="0.4">
+              <line x1="79" y1="8" x2="79" y2="20"/>
+              <line x1="93" y1="8" x2="93" y2="20"/>
+              <line x1="107" y1="8" x2="107" y2="20"/>
+              <line x1="121" y1="8" x2="121" y2="20"/>
+              <line x1="135" y1="8" x2="135" y2="20"/>
+              <line x1="67" y1="14" x2="153" y2="14"/>
+            </g>
+
+            <!-- straffområde-linje -->
+            <path d="M40,30 L180,30" stroke="rgba(180,200,210,0.18)" stroke-width="0.6" stroke-dasharray="3,3"/>
+
+            <!-- MV -->
+            <circle cx="110" cy="22" r="6" fill="#0A0A0A" stroke="#6FB6E8" stroke-width="1.4"/>
+            <text x="110" y="25" text-anchor="middle" font-size="5.5" fill="#6FB6E8">MV</text>
+
+            <!-- mur (3 röda block) -->
+            <g>
+              <rect x="92" y="48" width="11" height="14" rx="1" fill="#FF3B0F" opacity="0.8"/>
+              <rect x="105" y="48" width="11" height="14" rx="1" fill="#FF3B0F" opacity="0.8"/>
+              <rect x="118" y="48" width="11" height="14" rx="1" fill="#FF3B0F" opacity="0.8"/>
+            </g>
+            <text x="110" y="72" text-anchor="middle" font-size="6" fill="rgba(180,200,210,0.45)" letter-spacing="1">MUR · 3 MAN</text>
+
+            <!-- avstånd -->
+            <line x1="110" y1="80" x2="110" y2="130" stroke="rgba(180,200,210,0.25)" stroke-width="0.6" stroke-dasharray="3,3"/>
+            <text x="120" y="108" font-size="6" fill="rgba(180,200,210,0.5)">18m</text>
+
+            <!-- 3 banor: skjut (genom mur), chip (över), kort (lateral) -->
+            <!-- skjut — vald (grön) -->
+            <path d="M110,130 L110,22" fill="none" stroke="#66FF33" stroke-width="1.4" stroke-dasharray="3,2"/>
+            <!-- chip — amber dimmad -->
+            <path d="M110,130 Q140,40 110,22" fill="none" stroke="#FFAA00" stroke-width="0.8" stroke-dasharray="2,2.5" opacity="0.5"/>
+            <!-- kort — dimmad -->
+            <line x1="110" y1="130" x2="155" y2="115" stroke="rgba(180,200,210,0.35)" stroke-width="0.8" stroke-dasharray="2,2.5"/>
+
+            <!-- bollen -->
+            <circle cx="110" cy="130" r="5" fill="#FFAA00" stroke="#0A0A0A" stroke-width="1"/>
+            <circle cx="110" cy="130" r="5" fill="none" stroke="#66FF33" stroke-width="1" class="pulse"/>
+
+            <!-- skytt -->
+            <circle cx="110" cy="146" r="5" fill="#0A0A0A" stroke="#FFAA00" stroke-width="1.4"/>
+            <text x="110" y="148.5" text-anchor="middle" font-size="5" fill="#FFAA00">10</text>
+
+            <!-- supportspelare -->
+            <circle cx="160" cy="115" r="4" fill="#0A0A0A" stroke="#FFAA00" stroke-width="1" opacity="0.6"/>
+            <text x="160" y="117" text-anchor="middle" font-size="4.5" fill="#FFAA00" opacity="0.7">14</text>
+
+            <!-- riktnings-etiketter på banorna -->
+            <text x="86" y="106" font-size="5.5" fill="#66FF33" letter-spacing="0.5">SKJUT</text>
+            <text x="138" y="60" font-size="5.5" fill="#FFAA00" opacity="0.6" letter-spacing="0.5">CHIP</text>
+            <text x="142" y="128" font-size="5.5" fill="rgba(180,200,210,0.45)" letter-spacing="0.5">KORT</text>
+          </svg>
+        </div>
+
+        <div class="pitch-sub">
+          <button class="on">SKJUT</button>
+          <button>CHIP</button>
+          <button>KORT</button>
+        </div>
+
+        <div class="pitch-readout">
+          <span class="lbl">VAL:</span>
+          <span class="val">SKJUT · GENOM MUR</span>
+          <span class="pct">28%</span>
+        </div>
+
+        <div class="coach">
+          <div class="av">PL</div>
+          <span class="quote">"Tre man i mur, men deras MV står djupt. Hård genom mitten — han ser den för sent."</span>
+        </div>
+
+        <button class="cta">Slå frislaget →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       3 · STRAFF — V/M/H × Lågt/Högt
+       Schematic: ren målbild ovanifrån-mot-mål, 6 zoner, MV, boll på prick.
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div>
+    <div class="label-strip"><span class="num">03</span>STRAFF · Holm</div>
+    <div class="frame">
+      <div class="sec">● LIVE · HL2 · 42:11</div>
+
+      <div class="event-panel">
+        <div class="event-head">
+          <div>
+            <div class="event-title-row">
+              <span class="led-tag">STRAFF</span>
+              <span class="event-title">Holm slår</span>
+            </div>
+            <div class="event-meta">SKYTT #9 · vs MV LARSSON</div>
+          </div>
+          <span class="event-timer warn">2s</span>
+        </div>
+
+        <div class="pitch-panel">
+          <!-- Målbild rakt framifrån, 6 zoner i ribbestrukturen -->
+          <svg viewBox="0 0 220 140">
+            <defs>
+              <linearGradient id="iceSG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#1A2628"/>
+                <stop offset="100%" stop-color="#0E1518"/>
+              </linearGradient>
+              <marker id="arrSG" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="#66FF33"/>
+              </marker>
+            </defs>
+            <rect width="220" height="140" fill="url(#iceSG)" rx="3"/>
+
+            <!-- målram -->
+            <rect x="20" y="14" width="180" height="76" fill="none" stroke="rgba(180,200,210,0.55)" stroke-width="2" rx="1"/>
+            <!-- ribba -->
+            <line x1="20" y1="14" x2="200" y2="14" stroke="rgba(180,200,210,0.7)" stroke-width="2.5"/>
+            <!-- mark-linje -->
+            <line x1="20" y1="90" x2="200" y2="90" stroke="rgba(180,200,210,0.3)" stroke-width="0.8" stroke-dasharray="3,2"/>
+
+            <!-- 6 zoner — V/M/H × Hogt/Lagt -->
+            <!-- HOGT V -->
+            <rect x="22" y="16" width="58" height="36" fill="rgba(180,200,210,0.04)"
+                  stroke="rgba(180,200,210,0.2)" stroke-width="0.7" stroke-dasharray="2,2"/>
+            <text x="51" y="34" text-anchor="middle" font-size="9" fill="rgba(180,200,210,0.4)" letter-spacing="2">V</text>
+            <text x="51" y="44" text-anchor="middle" font-size="6" fill="rgba(180,200,210,0.35)">42%</text>
+            <!-- HOGT M -->
+            <rect x="80" y="16" width="60" height="36" fill="rgba(180,200,210,0.02)"
+                  stroke="rgba(180,200,210,0.15)" stroke-width="0.7" stroke-dasharray="2,2"/>
+            <text x="110" y="34" text-anchor="middle" font-size="9" fill="rgba(180,200,210,0.3)" letter-spacing="2">M</text>
+            <text x="110" y="44" text-anchor="middle" font-size="6" fill="rgba(180,200,210,0.3)">30%</text>
+            <!-- HOGT H -->
+            <rect x="140" y="16" width="58" height="36" fill="rgba(180,200,210,0.04)"
+                  stroke="rgba(180,200,210,0.2)" stroke-width="0.7" stroke-dasharray="2,2"/>
+            <text x="169" y="34" text-anchor="middle" font-size="9" fill="rgba(180,200,210,0.4)" letter-spacing="2">H</text>
+            <text x="169" y="44" text-anchor="middle" font-size="6" fill="rgba(180,200,210,0.35)">42%</text>
+
+            <!-- LAGT V — VALD (grön glow) -->
+            <rect x="22" y="52" width="58" height="36" fill="rgba(102,255,51,0.14)"
+                  stroke="#66FF33" stroke-width="1.6"/>
+            <text x="51" y="70" text-anchor="middle" font-size="9" fill="#66FF33" letter-spacing="2">V</text>
+            <text x="51" y="82" text-anchor="middle" font-size="6" fill="#66FF33">50%</text>
+            <!-- LAGT M -->
+            <rect x="80" y="52" width="60" height="36" fill="rgba(180,200,210,0.02)"
+                  stroke="rgba(180,200,210,0.15)" stroke-width="0.7" stroke-dasharray="2,2"/>
+            <text x="110" y="70" text-anchor="middle" font-size="9" fill="rgba(180,200,210,0.3)" letter-spacing="2">M</text>
+            <text x="110" y="82" text-anchor="middle" font-size="6" fill="rgba(180,200,210,0.3)">35%</text>
+            <!-- LAGT H -->
+            <rect x="140" y="52" width="58" height="36" fill="rgba(180,200,210,0.04)"
+                  stroke="rgba(180,200,210,0.2)" stroke-width="0.7" stroke-dasharray="2,2"/>
+            <text x="169" y="70" text-anchor="middle" font-size="9" fill="rgba(180,200,210,0.4)" letter-spacing="2">H</text>
+            <text x="169" y="82" text-anchor="middle" font-size="6" fill="rgba(180,200,210,0.35)">50%</text>
+
+            <!-- Höjd-band-etiketter i kanten -->
+            <text x="12" y="36" text-anchor="middle" font-size="6" fill="rgba(180,200,210,0.45)" letter-spacing="1.5" transform="rotate(-90 12 36)">HÖGT</text>
+            <text x="12" y="74" text-anchor="middle" font-size="6" fill="#66FF33" letter-spacing="1.5" transform="rotate(-90 12 74)">LÅGT</text>
+
+            <!-- MV — uppe i mitten av målet, blockerar M -->
+            <g transform="translate(110, 60)">
+              <rect x="-9" y="-12" width="18" height="22" rx="3" fill="#0A0A0A" stroke="#6FB6E8" stroke-width="1.5"/>
+              <circle cx="0" cy="-16" r="6" fill="#0A0A0A" stroke="#6FB6E8" stroke-width="1.5"/>
+              <text x="0" y="-14" text-anchor="middle" font-size="5" fill="#6FB6E8">MV</text>
+            </g>
+
+            <!-- straffprick + boll -->
+            <circle cx="110" cy="120" r="2.5" fill="rgba(180,200,210,0.5)"/>
+            <circle cx="110" cy="120" r="5" fill="#FFAA00" stroke="#0A0A0A" stroke-width="1"/>
+
+            <!-- skottbana mot vald zon -->
+            <path d="M110,120 Q80,100 51,75" fill="none" stroke="#66FF33"
+                  stroke-width="1.6" stroke-dasharray="3,2" marker-end="url(#arrSG)"/>
+
+            <!-- skytt-etikett -->
+            <text x="110" y="135" text-anchor="middle" font-size="6" fill="#FFAA00" letter-spacing="1.5">HOLM #9</text>
+          </svg>
+        </div>
+
+        <div class="pitch-sub">
+          <button class="on">LÅGT</button>
+          <button>HÖGT</button>
+        </div>
+
+        <div class="pitch-readout">
+          <span class="lbl">VAL:</span>
+          <span class="val">VÄNSTER · LÅGT</span>
+          <span class="pct">50%</span>
+        </div>
+
+        <div class="coach">
+          <div class="av">PL</div>
+          <span class="quote">"Han väntar att du siktar på hans mage. Lågt, till hörnan, nu."</span>
+        </div>
+
+        <button class="cta danger">Skjut straffen →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       4 · KONTRING — 2 mot 1
+       Schematic: planhalvan, mål uppe, 2 försvarare, springande #11, support #14
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div>
+    <div class="label-strip"><span class="num">04</span>KONTRING · 2 mot 1</div>
+    <div class="frame">
+      <div class="sec">● LIVE · HL2 · 56:33</div>
+
+      <div class="event-panel">
+        <div class="event-head">
+          <div>
+            <div class="event-title-row">
+              <span class="led-tag">KONTRING</span>
+              <span class="event-title">Karlsson löper</span>
+            </div>
+            <div class="event-meta">2 MOT 1 · STÖD #14 BAKOM</div>
+          </div>
+          <span class="event-timer warn">3s</span>
+        </div>
+
+        <div class="pitch-panel">
+          <svg viewBox="0 0 220 150">
+            <defs>
+              <linearGradient id="iceKG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0E1518"/>
+                <stop offset="100%" stop-color="#1A2628"/>
+              </linearGradient>
+              <marker id="arrKG" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="#66FF33"/>
+              </marker>
+              <marker id="arrKGdim" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="#FFAA00" fill-opacity="0.5"/>
+              </marker>
+            </defs>
+            <rect width="220" height="150" fill="url(#iceKG)" rx="3"/>
+
+            <!-- mittlinje (nedanför planhalvan) -->
+            <line x1="0" y1="142" x2="220" y2="142" stroke="rgba(180,200,210,0.3)" stroke-width="0.7" stroke-dasharray="4,3"/>
+            <text x="6" y="139" font-size="5" fill="rgba(180,200,210,0.4)" letter-spacing="1.5">MITTLINJE</text>
+
+            <!-- mål uppe -->
+            <rect x="80" y="4" width="60" height="14" fill="none" stroke="rgba(180,200,210,0.55)" stroke-width="1.5" rx="1"/>
+            <!-- straffområdes-båge -->
+            <path d="M55,18 A50,32 0 0,1 165,18" fill="none" stroke="rgba(180,200,210,0.18)" stroke-width="0.7"/>
+
+            <!-- MV -->
+            <circle cx="110" cy="14" r="5" fill="#0A0A0A" stroke="#6FB6E8" stroke-width="1.4"/>
+            <text x="110" y="16.5" text-anchor="middle" font-size="5" fill="#6FB6E8">MV</text>
+
+            <!-- 1 försvarare som backar (röd LED) -->
+            <circle cx="105" cy="48" r="6" fill="#FF3B0F" opacity="0.85"/>
+            <text x="105" y="50.5" text-anchor="middle" font-size="5.5" fill="#0A0A0A" font-weight="700">4</text>
+            <!-- backningspil -->
+            <line x1="100" y1="58" x2="92" y2="80" stroke="#FF3B0F" stroke-width="0.7" stroke-dasharray="2,2" opacity="0.6"/>
+
+            <!-- löpare #11 (huvudaktör, amber, glow) -->
+            <circle cx="80" cy="92" r="8" fill="#FFAA00" stroke="#0A0A0A" stroke-width="1.5"/>
+            <circle cx="80" cy="92" r="11" fill="none" stroke="#FFAA00" stroke-width="0.8" opacity="0.5" class="pulse"/>
+            <text x="80" y="95" text-anchor="middle" font-size="6.5" fill="#0A0A0A" font-weight="700">11</text>
+            <text x="80" y="113" text-anchor="middle" font-size="6" fill="#FFAA00" letter-spacing="1">KARLSSON</text>
+
+            <!-- support #14 till höger bakom -->
+            <circle cx="148" cy="108" r="6" fill="#0A0A0A" stroke="#FFAA00" stroke-width="1.4" opacity="0.85"/>
+            <text x="148" y="110.5" text-anchor="middle" font-size="5.5" fill="#FFAA00">14</text>
+
+            <!-- 3 val-banor från löparen -->
+            <!-- BRYT — vald (grön) -->
+            <path d="M80,84 Q88,60 102,28" fill="none" stroke="#66FF33"
+                  stroke-width="1.6" stroke-dasharray="3,2" marker-end="url(#arrKG)"/>
+            <text x="62" y="58" font-size="6" fill="#66FF33" letter-spacing="1">BRYT</text>
+
+            <!-- SPELA AV — till support, dimmad amber -->
+            <path d="M88,92 L142,108" fill="none" stroke="#FFAA00"
+                  stroke-width="1" stroke-dasharray="2,2" opacity="0.55" marker-end="url(#arrKGdim)"/>
+            <text x="110" y="98" font-size="5.5" fill="#FFAA00" opacity="0.65" letter-spacing="0.5">SPELA AV</text>
+
+            <!-- BYGG UPP — bakåt, dimmad -->
+            <path d="M75,100 Q60,128 70,140" fill="none" stroke="rgba(180,200,210,0.4)"
+                  stroke-width="0.9" stroke-dasharray="2,2" opacity="0.7"/>
+            <text x="36" y="128" font-size="5.5" fill="rgba(180,200,210,0.5)" letter-spacing="0.5">BYGG UPP</text>
+
+            <!-- "2v1"-stämpel uppe i hörnet -->
+            <rect x="172" y="6" width="40" height="14" rx="1" fill="rgba(255,170,0,0.12)" stroke="#FFAA00" stroke-width="0.7"/>
+            <text x="192" y="16" text-anchor="middle" font-size="7" fill="#FFAA00" letter-spacing="2" font-weight="700">2 v 1</text>
+          </svg>
+        </div>
+
+        <div class="pitch-sub">
+          <button class="on">BRYT</button>
+          <button>SPELA AV</button>
+          <button>BYGG</button>
+        </div>
+
+        <div class="pitch-readout">
+          <span class="lbl">VAL:</span>
+          <span class="val">BRYT IGENOM</span>
+          <span class="pct">38%</span>
+        </div>
+
+        <div class="coach">
+          <div class="av">PL</div>
+          <span class="quote">"Bara en man kvar — du har farten. Spring förbi och avgör själv."</span>
+        </div>
+
+        <button class="cta">Kör kontringen →</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  <strong>Vad som är nytt:</strong>
+  <ul>
+    <li><strong>Schematisk taktiktavla</strong> i varje event-panel — målbur, MV, försvarare, mur, zoner, anfallarnas rusningar — ritad som en mörk LED-display, inte som en grön plan. Tre färger: röd LED = motståndare, amber LED = egna spelare, grön LED = valda zoner/banor.</li>
+    <li><strong>Hörna</strong>: kortsida + bås, 3 zoner (NÄRA / MITT / BORTRE) med träffprocent, kurvad pass-pil från flaggan, framåtanfallarnas rusningar markerade med nummer.</li>
+    <li><strong>Frislag</strong>: målbur uppe, mur som röda block, distans-linje, tre färdiga banor (skjut / chip / kort) med vald grön och övriga dimmade.</li>
+    <li><strong>Straff</strong>: målbur framifrån, 6 zoner (V / M / H × HÖGT / LÅGT) med procent, MV blockerar mitten visuellt, skottbana till vald zon.</li>
+    <li><strong>Kontring</strong>: planhalva, försvarare som backar, löparen pulserar, tre val-banor (bryt / spela av / bygg upp) ritade som riktiga linjer på planen.</li>
+    <li>Sub-val (leverans / höjd / val) behåller samma monospace LED-knappar som tidigare — grön = aktiv, dämpad amber = inaktiv.</li>
+  </ul>
+</div>
+
+</body>
+</html>

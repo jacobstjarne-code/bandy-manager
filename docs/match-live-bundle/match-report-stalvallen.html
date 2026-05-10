@@ -1,0 +1,1465 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Match-rapport · Stålvallen-vokabulär</title>
+<!--
+  ═══════════════════════════════════════════════════════════════════════
+  MATCH-REPORT-STALVALLEN — moodboard / resonemang
+  ═══════════════════════════════════════════════════════════════════════
+
+  KONTEXT
+  Live-bundeln (scoreboard-stalvallen + commentary-redesign + fem
+  event-paneler) täcker en match som SPELAS. Quicksim landar däremot
+  direkt i en MatchReportView — ingen tickande klocka, ingen feed,
+  bara "det här hände". Mekaniskt är vyn läst, inte upplevd.
+
+  Det här är en RAPPORT, inte en sändning. Skillnaden ska synas i
+  materialvalet: live = mörk panel, varma LEDs, läder. Rapport =
+  tidningspapper, eftertanke, serif. Men kontinuiteten måste finnas
+  så det är samma SPEL.
+
+  STRUKTUR — TVÅ LAGER
+  ─────────────────────────────────────────────────────────────────────
+
+  1.  TAVLAN (top)
+      Återanvänder scoreboard-stalvallen i FT-tillstånd UTAN ändring av
+      vokabulär. Period-mark = FT. NU-pricken är borta — det finns inget
+      nu. Textremsan ligger still på sammanfattning. Tidslinjen är full.
+
+      Läsaren ser tavlan och vet direkt: matchen är slut. Det är samma
+      tavla som under live, bara stillad. Den signalen är hela poängen
+      med att återanvända modulen — mekanisk kontinuitet.
+
+  2.  PAPPRET (under)
+      Här bryter vi materialet. Bakgrund = --paper-warm. Story-prosan
+      är Georgia serif, 14px, line-height 1.65. Events-listan är på
+      papper men taggarna är LED-mono — som om reportern noterat
+      tavlans språk i sitt block.
+
+  KOMPONENT-VOKABULÄR PÅ PAPPRET
+  ─────────────────────────────────────────────────────────────────────
+
+  • Arena-rad: monoletter, ink-mute, centrerad, ovanför story.
+    "SLAGGHÖGEN · FORSBACKA · 18 NOV 18:30 · 3 247 ÅSKÅDARE"
+
+  • Story-block: rubrik "MATCHENS BERÄTTELSE" i copper-mono, body i
+    Georgia serif. Generös line-height. INGA LED-imitationer i prosan
+    — det är efterläsning. Läs som artikel, inte som tavla.
+
+  • Events-rad: minut (mono) | tag (LED-stämpel) | spelare (serif italic).
+    Taggvokabulär samma som live: MÅL, HÖRNMÅL, STRAFF, UTV.
+    Hörnmål får copper-accent. Utvisningar stål-grå. Ingen emoji.
+
+  • Hörnstats-pärla: koppar-band under events när managed-klubben gjort
+    hörnmål. "1 hörnmål · 11–4 hörnor totalt" — bara om det finns något
+    att skylta med, annars dolt.
+
+  • Spelarbetyg-strip: tabell-rader, en per spelare, sorterade fallande.
+    Färgkodning på betyg-bar (röd <6, amber 6–7, grön ≥7).
+    Position-tag + lag-prick (koppar för Forsbacka, stål för motståndare).
+    POTM-raden får copper-bakgrund + ★-mark.
+
+  STATES OCH VARIATIONER
+  ─────────────────────────────────────────────────────────────────────
+
+  01  Vinst hemma 4–2 (Forsbacka vs Västanfors, derby)
+      — Hörnstats syns (1 hörnmål, 11 vs 4 hörnor).
+      — Story berömmer Kronbergs 2 mål.
+      — POTM = Kronberg 8.4.
+
+  02  Förlust borta 1–3 (Söderfors–Forsbacka)
+      — Visar utvisning för managed-klubben (44' Lindqvist).
+      — Story konstaterar förlusten utan ursäkt.
+      — Hörnstats göms (inget hörnmål för managed).
+      — Lägre snittbetyg, ingen som tar 8+.
+
+  03  SM-FINAL vinst (Forsbacka vs Karlsborg, efter förlängning)
+      — Playoff-runde-label "SM-FINAL" i pannband ovanför scoreboard.
+      — Hög attendance (8 520, neutral arena Studenternas IP).
+      — Score-modul får ett "FINAL"-mark istället för omgångs-nummer.
+      — Story: "Seger efter vändning". Två mål av Engberg först,
+        Lindqvist avgör i 95:e minuten i förlängning.
+
+  04  Mållös 0–0 (Forsbacka–Skutskär)
+      — Stresstestar att layouten håller utan events.
+      — Tom events-list får en ärlig rad: "INGA MÅL · INGA UTVISNINGAR".
+      — Story handlar om defensiven istället för spelarna.
+      — Tidslinjen visar BARA halvtidstreck och tickar — inga mål-mast.
+      — Spelarbetyg ändå värdefulla — målvakter och backar lyser.
+
+  KROCKAR
+  ─────────────────────────────────────────────────────────────────────
+
+  • Mekaniken rörs ej. Datakontraktet { fixture, game, onClose } är
+    fast. Allt nedan är RESTYLING av MatchReportView.tsx.
+  • Inga nya färgtokens. Allt från _base.css + scoreboard-stalvallens
+    egna LED-tokens. Stålvallen är universellt designsystem, inte
+    klubbspecifikt — koppar är "managed", stål är "andra".
+  • 380px bred. Spelarbetyg radstaplar vertikalt — inget horisontellt
+    scroll. Tidslinjen krymper proportionellt.
+-->
+<style>
+  :root {
+    /* Brand — samma som scoreboard-stalvallen */
+    --bg-leather:    #2a2824;
+    --bg-leather-dk: #1d1b18;
+    --paper:         #EDE8DF;
+    --paper-warm:    #F5F1EB;
+    --paper-edge:    #DCD3C3;
+    --copper:        #C47A3A;
+    --copper-deep:   #A25828;
+    --steel:         #6B7F8E;
+    --steel-deep:    #4A5965;
+    --ink:           #1A1A18;
+    --ink-soft:      #6B6760;
+    --ink-mute:      #8A857A;
+    --ink-faint:     #B8B0A2;
+
+    /* Tavla — fysisk del (FT) */
+    --bezel-top:    #3a3632;
+    --bezel-mid:    #2a2622;
+    --bezel-bot:    #15130f;
+    --panel:        #0A0908;
+    --panel-edge:   #050402;
+    --led-red:      #FF2A18;
+    --led-red-dim:  rgba(255, 42, 24, 0.07);
+    --led-red-glow: rgba(255, 42, 24, 0.55);
+    --led-amber:    #FFAA00;
+
+    /* Tidslinje */
+    --line-bg:      rgba(255, 255, 255, 0.04);
+    --line-stroke:  rgba(255, 255, 255, 0.12);
+    --line-tick:    rgba(255, 255, 255, 0.18);
+    --line-text:    rgba(245, 241, 235, 0.55);
+    --home-mark:    #C47A3A;
+    --away-mark:    #6B7F8E;
+
+    /* Betyg */
+    --rate-bad:     #B33A2E;
+    --rate-mid:     #C9881F;
+    --rate-good:    #4F8C3A;
+
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-mono:    ui-monospace, 'Courier New', monospace;
+    --font-body:    -apple-system, system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-family: var(--font-body); color: var(--ink); }
+  body {
+    background: var(--bg-leather);
+    padding: 32px 16px 80px;
+    min-height: 100vh;
+  }
+
+  .page-head {
+    max-width: 1280px; margin: 0 auto 32px;
+    color: var(--paper-warm);
+  }
+  .page-head h1 {
+    font-family: var(--font-display); font-size: 26px; margin-bottom: 8px;
+    letter-spacing: 0.2px;
+  }
+  .page-head p {
+    font-size: 13px; color: rgba(245, 241, 235, 0.7); line-height: 1.65;
+    max-width: 760px;
+  }
+  .page-head p + p { margin-top: 8px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 32px;
+    max-width: 1680px; margin: 0 auto;
+    align-items: start;
+  }
+
+  .col {
+    background: var(--paper-warm);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    width: 100%;
+    max-width: 420px;
+    justify-self: center;
+  }
+  .col-head {
+    padding: 14px 18px;
+    background: var(--bg-leather-dk);
+    color: var(--paper-warm);
+    font-family: var(--font-display);
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .col-head .num {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--copper);
+    background: rgba(196,122,58,0.1);
+    padding: 2px 6px;
+    border-radius: 2px;
+    margin-right: 8px;
+    vertical-align: 2px;
+  }
+  .col-head .sub {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: rgba(245,241,235,0.6);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  /* ═══════════════════════════════════════════════
+     LAGER 1: TAVLAN (FT-state)
+     ═══════════════════════════════════════════════ */
+
+  .stage {
+    background: var(--bg-leather-dk);
+    padding: 16px 16px 18px;
+  }
+
+  /* Final-band — bara för cup-final */
+  .final-band {
+    background: linear-gradient(90deg, transparent, rgba(196,122,58,0.18) 30%, rgba(196,122,58,0.18) 70%, transparent);
+    color: var(--copper);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-align: center;
+    padding: 10px 0 12px;
+    border-bottom: 1px dashed rgba(196,122,58,0.25);
+  }
+  .final-band .final-tier {
+    color: rgba(245,241,235,0.55);
+    letter-spacing: 2px;
+    font-size: 9px;
+    display: block;
+    margin-top: 3px;
+  }
+
+  .board-system {
+    background: linear-gradient(180deg, var(--bezel-top), var(--bezel-mid) 60%, var(--bezel-bot));
+    border-radius: 4px;
+    padding: 1px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.06) inset,
+      0 -1px 0 rgba(0,0,0,0.6) inset,
+      0 4px 12px rgba(0,0,0,0.5);
+  }
+
+  /* MODUL 1: huvudtavlan */
+  .module-main {
+    background: var(--panel);
+    padding: 14px 16px 16px;
+    position: relative;
+    box-shadow: inset 0 0 0 1px var(--panel-edge);
+  }
+  .module-main::before {
+    content: '';
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,0.018) 0 1px,
+      transparent 1px 3px
+    );
+  }
+
+  .main-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+  }
+  .team-col { text-align: center; }
+  .team-col.home { text-align: right; }
+  .team-col.away { text-align: left; }
+  .team-code {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: rgba(255, 200, 180, 0.45);
+    margin-bottom: 6px;
+    text-shadow: 0 0 4px rgba(255, 80, 60, 0.2);
+  }
+  .team-score-mount { display: inline-flex; }
+  .sep-col { display: flex; align-items: center; justify-content: center; }
+  .sep-dot {
+    width: 6px; height: 6px;
+    background: var(--led-red); border-radius: 50%;
+    box-shadow: 0 0 6px var(--led-red-glow);
+    opacity: 0.55;
+  }
+
+  .time-row {
+    display: flex; justify-content: center; align-items: baseline;
+    gap: 10px;
+    margin-top: 12px; padding-top: 10px;
+    border-top: 1px solid rgba(255, 42, 24, 0.08);
+    position: relative;
+  }
+  .time-mount { display: inline-flex; }
+  .period-mark {
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 2.5px;
+    color: rgba(255, 200, 180, 0.5);
+    text-shadow: 0 0 4px rgba(255, 80, 60, 0.2);
+  }
+
+  /* MODUL 2: textremsa — står still på sammanfattning */
+  .module-text {
+    background: #07060a;
+    height: 18px;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+      inset 0 1px 2px rgba(0,0,0,0.8),
+      inset 0 -1px 0 rgba(255,255,255,0.03);
+  }
+  .module-text::before {
+    content: '';
+    position: absolute; inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 3px 3px;
+  }
+  .module-text-track {
+    display: flex; align-items: center; height: 100%;
+    white-space: nowrap; padding-left: 16px;
+  }
+  .module-text-track > span {
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--led-red);
+    text-shadow: 0 0 5px var(--led-red-glow);
+    padding-right: 32px;
+  }
+  .module-text-track > span.dim {
+    color: rgba(255, 100, 80, 0.55);
+    text-shadow: none;
+  }
+
+  /* MODUL 3: tidslinjen */
+  .module-line {
+    background: linear-gradient(180deg, #14120f, #0c0a08);
+    padding: 14px 16px 12px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+  .line-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .line-title {
+    font-family: var(--font-mono); font-size: 9px;
+    letter-spacing: 2.5px;
+    color: rgba(245,241,235,0.45);
+  }
+  .line-end {
+    font-family: var(--font-display); font-size: 11px;
+    color: rgba(245,241,235,0.45);
+  }
+
+  .timeline {
+    position: relative;
+    height: 38px;
+    background: var(--line-bg);
+    border-radius: 2px;
+  }
+  .tl-half {
+    position: absolute;
+    left: 50%; top: 0; bottom: 0;
+    width: 1px;
+    background: rgba(255,255,255,0.12);
+  }
+  .tl-tick {
+    position: absolute;
+    bottom: 0;
+    width: 1px; height: 5px;
+    background: var(--line-tick);
+  }
+  .tl-tick-label {
+    position: absolute;
+    bottom: -14px;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--line-text);
+  }
+  .tl-goal {
+    position: absolute;
+    top: 4px; bottom: 4px;
+    width: 2px;
+    border-radius: 1px;
+  }
+  .tl-goal.home { background: var(--home-mark); box-shadow: 0 0 4px var(--home-mark); }
+  .tl-goal.away { background: var(--away-mark); box-shadow: 0 0 4px var(--away-mark); }
+  .tl-goal-cap {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    width: 6px; height: 2px;
+    border-radius: 1px;
+  }
+  .tl-goal-cap.home { background: var(--home-mark); }
+  .tl-goal-cap.away { background: var(--away-mark); }
+  .tl-pen {
+    position: absolute;
+    top: 8px; bottom: 8px;
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(255,255,255,0.08) 0 3px,
+      rgba(255,255,255,0.02) 3px 6px
+    );
+    border-left: 1px solid rgba(255,255,255,0.15);
+    border-right: 1px solid rgba(255,255,255,0.15);
+  }
+  .line-feet {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 18px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+  }
+  .line-feet .home-pill { color: var(--home-mark); }
+  .line-feet .away-pill { color: var(--away-mark); }
+  .line-feet .home-pill::before,
+  .line-feet .away-pill::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: 1px;
+  }
+  .line-feet .home-pill::before { background: var(--home-mark); }
+  .line-feet .away-pill::before { background: var(--away-mark); }
+  .line-feet .meta {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 11px;
+    color: rgba(245,241,235,0.45);
+    letter-spacing: 0;
+  }
+
+  /* 7-segment-glyfer (kopierat 1:1) */
+  .seg {
+    --w: 18px; --h: 30px; --t: 4px; --gap: 1px;
+    --on: var(--led-red);
+    --on-glow: var(--led-red-glow);
+    --off: var(--led-red-dim);
+    display: inline-block; position: relative;
+    width: var(--w); height: var(--h); margin: 0 1px;
+  }
+  .seg.lg { --w: 27px; --h: 45px; --t: 5.4px; }
+  .seg.md { --w: 14px; --h: 24px; --t: 3.2px; }
+  .seg.sm { --w: 10px; --h: 17px; --t: 2.4px; }
+  .seg .s {
+    position: absolute;
+    background: var(--off);
+    transition: background 0.4s, box-shadow 0.4s;
+  }
+  .seg .s.on {
+    background: var(--on);
+    box-shadow: 0 0 calc(var(--t) * 1.5) var(--on-glow);
+  }
+  .seg .s.a, .seg .s.g, .seg .s.d {
+    height: var(--t); left: var(--gap); right: var(--gap);
+    clip-path: polygon(var(--t) 0, calc(100% - var(--t)) 0, 100% 50%, calc(100% - var(--t)) 100%, var(--t) 100%, 0 50%);
+  }
+  .seg .s.a { top: 0; }
+  .seg .s.g { top: calc(50% - var(--t) / 2); }
+  .seg .s.d { bottom: 0; }
+  .seg .s.b, .seg .s.c, .seg .s.e, .seg .s.f {
+    width: var(--t); top: var(--gap); bottom: var(--gap);
+    clip-path: polygon(0 var(--t), 50% 0, 100% var(--t), 100% calc(100% - var(--t)), 50% 100%, 0 calc(100% - var(--t)));
+  }
+  .seg .s.b { right: 0; bottom: 50%; top: var(--gap); }
+  .seg .s.c { right: 0; top: 50%; bottom: var(--gap); }
+  .seg .s.e { left: 0; top: 50%; bottom: var(--gap); }
+  .seg .s.f { left: 0; bottom: 50%; top: var(--gap); }
+  .seg.colon { --w: 8px; background: transparent; }
+  .seg.colon::before, .seg.colon::after {
+    content: ''; position: absolute;
+    left: 50%; transform: translateX(-50%);
+    width: var(--t); height: var(--t);
+    background: var(--on);
+    border-radius: 50%;
+    box-shadow: 0 0 calc(var(--t) * 1.5) var(--on-glow);
+  }
+  .seg.colon::before { top: 30%; }
+  .seg.colon::after  { bottom: 30%; }
+
+  /* ═══════════════════════════════════════════════
+     LAGER 2: PAPPRET
+     ═══════════════════════════════════════════════ */
+
+  .paper {
+    background: var(--paper-warm);
+    padding: 18px 18px 20px;
+    color: var(--ink);
+  }
+
+  /* Arena-rad — mono, centrerad, ovanför story */
+  .arena-line {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    padding: 0 0 4px;
+    border-bottom: 1px solid var(--paper-edge);
+    margin-bottom: 16px;
+  }
+  .arena-line .dot {
+    display: inline-block;
+    width: 3px; height: 3px;
+    background: var(--ink-faint);
+    border-radius: 50%;
+    margin: 0 7px;
+    vertical-align: 3px;
+  }
+  .arena-line .att {
+    color: var(--copper);
+  }
+
+  /* Story — serif, generös läsning */
+  .story-head {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--copper-deep);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .story-head::before {
+    content: '';
+    width: 14px; height: 1px;
+    background: var(--copper);
+  }
+  .story-head::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--paper-edge);
+  }
+  .story-body {
+    font-family: var(--font-display);
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--ink);
+    margin-bottom: 22px;
+    text-wrap: pretty;
+  }
+  .story-body em {
+    color: var(--copper-deep);
+    font-style: italic;
+  }
+  .story-body.muted {
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  /* Events */
+  .section-head {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-head::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--paper-edge);
+  }
+  .section-head .count {
+    color: var(--ink-faint);
+    letter-spacing: 1.5px;
+  }
+
+  .events {
+    margin-bottom: 22px;
+  }
+  .ev {
+    display: grid;
+    grid-template-columns: 32px 56px 1fr;
+    gap: 10px;
+    align-items: baseline;
+    padding: 7px 0;
+    border-top: 1px dashed var(--paper-edge);
+  }
+  .ev:first-child { border-top: none; }
+  .ev .min {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: right;
+  }
+
+  /* LED-stämpel — taggvokabulär från live, översatt till papper */
+  .ev .tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-align: center;
+    padding: 3px 4px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    align-self: center;
+  }
+  .ev .tag.mal      { background: var(--ink); color: var(--paper-warm); }
+  .ev .tag.hornmal  { background: var(--copper); color: var(--paper-warm); }
+  .ev .tag.straff   { background: var(--copper-deep); color: var(--paper-warm); }
+  .ev .tag.utv      { background: var(--steel-deep); color: var(--paper-warm); }
+
+  .ev .who {
+    font-family: var(--font-display);
+    font-size: 14px;
+    line-height: 1.35;
+    color: var(--ink);
+  }
+  .ev .who .scorer { font-weight: 600; }
+  .ev .who .assist {
+    color: var(--ink-soft);
+    font-style: italic;
+    font-size: 12.5px;
+  }
+  .ev .who .club {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--ink-mute);
+    margin-left: 4px;
+    vertical-align: 1px;
+  }
+  .ev .who .pen-time {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--steel-deep);
+    margin-left: 4px;
+  }
+  .ev.utv-row .who .scorer { color: var(--steel-deep); }
+
+  /* Tom events — för 0–0 */
+  .events-empty {
+    padding: 16px 12px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--ink-mute);
+    background: rgba(0,0,0,0.025);
+    border-radius: 2px;
+    border: 1px dashed var(--paper-edge);
+  }
+  .events-empty .sub {
+    display: block;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 12px;
+    letter-spacing: 0;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    text-transform: none;
+  }
+
+  /* Hörnstats-pärla */
+  .corner-band {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: linear-gradient(90deg, rgba(196,122,58,0.12), rgba(196,122,58,0.04));
+    border-left: 2px solid var(--copper);
+    border-radius: 0 2px 2px 0;
+    margin-bottom: 22px;
+  }
+  .corner-band .num {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--copper-deep);
+    line-height: 1;
+  }
+  .corner-band .lbl {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--ink);
+    line-height: 1.4;
+    flex: 1;
+  }
+  .corner-band .lbl strong {
+    font-weight: 600;
+  }
+  .corner-band .lbl small {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--ink-mute);
+    margin-top: 2px;
+    text-transform: uppercase;
+  }
+
+  /* Spelarbetyg-strip */
+  .ratings {
+    margin-bottom: 8px;
+  }
+  .rate-row {
+    display: grid;
+    grid-template-columns: 18px 28px 1fr 14px 38px 28px;
+    gap: 7px;
+    align-items: center;
+    padding: 5px 0;
+    border-top: 1px solid var(--paper-edge);
+  }
+  .rate-row:first-child { border-top: none; }
+  .rate-row.potm {
+    grid-template-columns: 18px 28px 1fr 14px 38px 28px;
+    background: linear-gradient(90deg, rgba(196,122,58,0.18), rgba(196,122,58,0.04));
+    padding: 9px 10px;
+    margin: 0 -10px 6px;
+    border-radius: 2px;
+    border-top: none;
+    position: relative;
+  }
+  .rate-row.potm::before {
+    content: '★';
+    color: var(--copper);
+    font-size: 11px;
+  }
+  .rate-row .star { display: none; }
+  .rate-row.potm .star {
+    display: block;
+    font-size: 11px;
+    color: var(--copper);
+  }
+  .rate-row .num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+    text-align: right;
+  }
+  .rate-row.potm .num { color: var(--copper-deep); font-weight: 700; }
+  .rate-row .pos {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--ink-mute);
+    text-align: center;
+    padding: 2px 0;
+    background: rgba(0,0,0,0.04);
+    border-radius: 2px;
+  }
+  .rate-row .name {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rate-row.potm .name { font-weight: 700; color: var(--copper-deep); }
+  .rate-row .name .first {
+    color: var(--ink-mute);
+    font-size: 11px;
+    margin-right: 3px;
+  }
+  .rate-row.potm .name .first { color: var(--copper); }
+
+  .rate-row .club-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    justify-self: center;
+  }
+  .rate-row .club-dot.home { background: var(--copper); }
+  .rate-row .club-dot.away { background: var(--steel); }
+
+  .rate-row .bar-wrap {
+    height: 5px;
+    background: var(--paper-edge);
+    border-radius: 1px;
+    overflow: hidden;
+    position: relative;
+  }
+  .rate-row .bar {
+    height: 100%;
+    border-radius: 1px;
+  }
+  .rate-row .bar.bad  { background: var(--rate-bad); }
+  .rate-row .bar.mid  { background: var(--rate-mid); }
+  .rate-row .bar.good { background: var(--rate-good); }
+  .rate-row .rate-num {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: right;
+  }
+  .rate-row .rate-num.bad  { color: var(--rate-bad); }
+  .rate-row .rate-num.mid  { color: var(--rate-mid); }
+  .rate-row .rate-num.good { color: var(--rate-good); }
+
+  .ratings-foot {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--paper-edge);
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+  }
+  .ratings-foot .legend {
+    display: flex;
+    gap: 10px;
+  }
+  .ratings-foot .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .ratings-foot .legend i {
+    width: 8px; height: 3px;
+    display: inline-block;
+    border-radius: 1px;
+  }
+
+  /* CTA — designsystemets .btn .btn-primary .btn-cta (copper-gradient) */
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 100%;
+    margin-top: 18px;
+    padding: 14px 16px;
+    background:
+      linear-gradient(to bottom, rgba(255,255,255,0.35) 0%, transparent 50%),
+      linear-gradient(to bottom, #DD9555, #8B4820);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(162,88,40,0.35);
+    transition: box-shadow 0.15s ease, transform 0.1s ease, filter 0.15s ease;
+  }
+  .cta:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(162,88,40,0.45); filter: brightness(1.05); }
+  .cta:active { transform: translateY(1px); box-shadow: 0 1px 3px rgba(162,88,40,0.20); filter: brightness(0.95); }
+
+  /* ═══════════════════════════════════════════════
+     NOTES
+     ═══════════════════════════════════════════════ */
+
+  .notes {
+    max-width: 1280px; margin: 40px auto 0;
+    padding: 24px;
+    background: rgba(245,241,235,0.04);
+    border-radius: 8px;
+    color: rgba(245,241,235,0.85);
+    line-height: 1.65;
+    font-size: 13px;
+  }
+  .notes h3 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: var(--paper-warm);
+  }
+  .notes p { margin-bottom: 10px; }
+  .notes p strong { color: var(--copper); font-weight: 600; }
+
+  /* Mobil: under 420px ska 380px-mocken funka */
+  @media (max-width: 460px) {
+    body { padding: 16px 8px 60px; }
+    .col { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Match-rapport — quicksim landar här</h1>
+  <p>Samma vokabulär som live, men matt. Tavlan ovanför är scoreboard-stalvallen i FT-tillstånd: NU-pricken borta, textremsan stannad, klockan på 90:00. Pappret nedanför är efterhandsläsning — Georgia serif, generös line-height. Mål-events får LED-stämplar (samma taggvokabulär som live: <strong>MÅL</strong>, <strong>HÖRNMÅL</strong>, <strong>STRAFF</strong>, <strong>UTV</strong>) som om reportern noterat tavlans språk.</p>
+  <p>Fyra tillstånd: <em>vinst hemma</em>, <em>förlust borta med utvisning</em>, <em>SM-final i förlängning</em>, <em>0–0 där inget hände</em>. Det sista är stresstestet: håller layouten utan event-mast?</p>
+</div>
+
+<div class="grid">
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       01 — VINST HEMMA 4–2 (Forsbacka vs Västanfors)
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="col" data-screen-label="01 Vinst hemma 4-2">
+    <div class="col-head">
+      <span class="num">01</span>VINST HEMMA · 4–2
+      <span class="sub">Forsbacka–Västanfors, derby. Managed-klubben dominerade hörnor (11–4) och fick ett hörnmål. Story berömmer Kronbergs två mål.</span>
+    </div>
+
+    <!-- Tavlan -->
+    <div class="stage">
+      <div class="board-system">
+        <div class="module-main">
+          <div class="main-row">
+            <div class="team-col home">
+              <span class="team-code">FOR</span>
+              <span class="team-score-mount" data-score="4"></span>
+            </div>
+            <div class="sep-col"><span class="sep-dot"></span></div>
+            <div class="team-col away">
+              <span class="team-code">VÄS</span>
+              <span class="team-score-mount" data-score="2"></span>
+            </div>
+          </div>
+          <div class="time-row">
+            <span class="period-mark">FT</span>
+            <span class="time-mount" data-time="90:00"></span>
+          </div>
+        </div>
+        <div class="module-text">
+          <div class="module-text-track">
+            <span>SLUT 4—2</span>
+            <span class="dim">FOR VINNER DERBYT · KRONBERG 2 MÅL</span>
+          </div>
+        </div>
+        <div class="module-line">
+          <div class="line-head">
+            <span class="line-title">SLUTRESULTAT</span>
+            <span class="line-end">90:00</span>
+          </div>
+          <div class="timeline">
+            <span class="tl-half"></span>
+            <span class="tl-tick" style="left: 16.67%"></span><span class="tl-tick-label" style="left: 16.67%">15</span>
+            <span class="tl-tick" style="left: 33.33%"></span><span class="tl-tick-label" style="left: 33.33%">30</span>
+            <span class="tl-tick" style="left: 66.67%"></span><span class="tl-tick-label" style="left: 66.67%">60</span>
+            <span class="tl-tick" style="left: 83.33%"></span><span class="tl-tick-label" style="left: 83.33%">75</span>
+            <!-- Utvisning #7 Nilsson VÄS, 70-80 -->
+            <span class="tl-pen" style="left: 77.78%; width: 11.11%"></span>
+            <!-- Mål: 12' FOR, 23' FOR, 41' VÄS, 58' VÄS, 67' FOR, 84' FOR -->
+            <span class="tl-goal home" style="left: 13.33%"></span><span class="tl-goal-cap home" style="left: 13.33%"></span>
+            <span class="tl-goal home" style="left: 25.56%"></span><span class="tl-goal-cap home" style="left: 25.56%"></span>
+            <span class="tl-goal away" style="left: 45.56%"></span><span class="tl-goal-cap away" style="left: 45.56%"></span>
+            <span class="tl-goal away" style="left: 64.44%"></span><span class="tl-goal-cap away" style="left: 64.44%"></span>
+            <span class="tl-goal home" style="left: 74.44%"></span><span class="tl-goal-cap home" style="left: 74.44%"></span>
+            <span class="tl-goal home" style="left: 93.33%"></span><span class="tl-goal-cap home" style="left: 93.33%"></span>
+          </div>
+          <div class="line-feet">
+            <span class="home-pill">FORSBACKA · 4</span>
+            <span class="meta">slutsiffror</span>
+            <span class="away-pill">VÄSTANFORS · 2</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pappret -->
+    <div class="paper">
+      <div class="arena-line">
+        SLAGGHÖGEN <span class="dot"></span> 18 NOV 18:30
+        <span class="dot"></span> <span class="att">3 247 ÅSKÅDARE</span>
+      </div>
+
+      <div class="story-head">Matchens berättelse</div>
+      <p class="story-body">
+        <em>Övertygande seger</em> mot Västanfors i derbyt. Kronberg stod för 2 mål
+        och var bästa man på plan. Ett hörnmål bidrog till resultatet — fasta
+        situationer höll. 3 247 på Slagghögen.
+      </p>
+
+      <div class="section-head">Händelser <span class="count">· 6 mål · 1 utv</span></div>
+      <div class="events">
+        <div class="ev"><span class="min">12'</span><span class="tag mal">MÅL</span><span class="who"><span class="scorer">Kronberg</span> <span class="assist">(ass. Lindqvist)</span><span class="club">FOR</span></span></div>
+        <div class="ev"><span class="min">23'</span><span class="tag hornmal">HÖRNA</span><span class="who"><span class="scorer">Lindqvist</span> <span class="assist">(ass. Holm)</span><span class="club">FOR</span></span></div>
+        <div class="ev"><span class="min">41'</span><span class="tag mal">MÅL</span><span class="who"><span class="scorer">Eriksson</span><span class="club">VÄS</span></span></div>
+        <div class="ev"><span class="min">58'</span><span class="tag mal">MÅL</span><span class="who"><span class="scorer">Pettersson</span> <span class="assist">(ass. Norén)</span><span class="club">VÄS</span></span></div>
+        <div class="ev"><span class="min">67'</span><span class="tag mal">MÅL</span><span class="who"><span class="scorer">Kronberg</span> <span class="assist">(ass. Holm)</span><span class="club">FOR</span></span></div>
+        <div class="ev utv-row"><span class="min">70'</span><span class="tag utv">UTV</span><span class="who"><span class="scorer">#7 Nilsson</span><span class="club">VÄS</span><span class="pen-time">10 min</span></span></div>
+        <div class="ev"><span class="min">84'</span><span class="tag straff">STRAFF</span><span class="who"><span class="scorer">Holm</span><span class="club">FOR</span></span></div>
+      </div>
+
+      <div class="corner-band">
+        <span class="num">1</span>
+        <span class="lbl">
+          <strong>hörnmål av elva hörnor</strong>
+          <small>Forsbacka 11 — Västanfors 4</small>
+        </span>
+      </div>
+
+      <div class="section-head">Spelarbetyg <span class="count">· 22 spelare</span></div>
+      <div class="ratings">
+        <div class="rate-row potm">
+          <span class="star">★</span>
+          <span class="pos">CTR</span>
+          <span class="name"><span class="first">M.</span>Kronberg</span>
+          <span class="club-dot home"></span>
+          <span class="bar-wrap"><span class="bar good" style="width: 73%"></span></span>
+          <span class="rate-num good">8.4</span>
+        </div>
+        <div class="rate-row"><span class="num">#11</span><span class="pos">FW</span><span class="name"><span class="first">A.</span>Lindqvist</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar good" style="width: 65%"></span></span><span class="rate-num good">7.9</span></div>
+        <div class="rate-row"><span class="num">#9</span><span class="pos">FW</span><span class="name"><span class="first">E.</span>Holm</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar good" style="width: 63%"></span></span><span class="rate-num good">7.8</span></div>
+        <div class="rate-row"><span class="num">#5</span><span class="pos">DEF</span><span class="name"><span class="first">P.</span>Sjögren</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar good" style="width: 53%"></span></span><span class="rate-num good">7.2</span></div>
+        <div class="rate-row"><span class="num">#1</span><span class="pos">GK</span><span class="name"><span class="first">J.</span>Forslund</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar good" style="width: 50%"></span></span><span class="rate-num good">7.0</span></div>
+        <div class="rate-row"><span class="num">#3</span><span class="pos">DEF</span><span class="name"><span class="first">N.</span>Berg</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar mid" style="width: 47%"></span></span><span class="rate-num mid">6.8</span></div>
+        <div class="rate-row"><span class="num">#10</span><span class="pos">CTR</span><span class="name"><span class="first">D.</span>Andersson</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar mid" style="width: 43%"></span></span><span class="rate-num mid">6.6</span></div>
+        <div class="rate-row"><span class="num">#14</span><span class="pos">CTR</span><span class="name"><span class="first">L.</span>Ström</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar mid" style="width: 42%"></span></span><span class="rate-num mid">6.5</span></div>
+        <div class="rate-row"><span class="num">#21</span><span class="pos">FW</span><span class="name"><span class="first">M.</span>Eriksson</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar mid" style="width: 40%"></span></span><span class="rate-num mid">6.4</span></div>
+        <div class="rate-row"><span class="num">#6</span><span class="pos">DEF</span><span class="name"><span class="first">T.</span>Pettersson</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar mid" style="width: 38%"></span></span><span class="rate-num mid">6.3</span></div>
+        <div class="rate-row"><span class="num">#8</span><span class="pos">CTR</span><span class="name"><span class="first">K.</span>Norén</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar mid" style="width: 35%"></span></span><span class="rate-num mid">6.1</span></div>
+        <div class="rate-row"><span class="num">#2</span><span class="pos">DEF</span><span class="name"><span class="first">F.</span>Wallin</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar bad" style="width: 28%"></span></span><span class="rate-num bad">5.7</span></div>
+        <div class="rate-row"><span class="num">#7</span><span class="pos">DEF</span><span class="name"><span class="first">R.</span>Nilsson</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar bad" style="width: 22%"></span></span><span class="rate-num bad">5.3</span></div>
+      </div>
+
+      <div class="ratings-foot">
+        <span>SORT · BETYG ↓</span>
+        <div class="legend">
+          <span><i style="background: var(--rate-good)"></i>≥7</span>
+          <span><i style="background: var(--rate-mid)"></i>6–7</span>
+          <span><i style="background: var(--rate-bad)"></i>&lt;6</span>
+        </div>
+      </div>
+
+      <button class="cta">Fortsätt →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       02 — FÖRLUST BORTA 1–3 (Söderfors vs Forsbacka, utv för managed)
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="col" data-screen-label="02 Förlust borta 1-3">
+    <div class="col-head">
+      <span class="num">02</span>FÖRLUST BORTA · 1–3
+      <span class="sub">Söderfors–Forsbacka. Lindqvist (FOR) sitter ute 10 min för slashing i 44'. Hörnstats göms — inget hörnmål för managed.</span>
+    </div>
+
+    <div class="stage">
+      <div class="board-system">
+        <div class="module-main">
+          <div class="main-row">
+            <div class="team-col home">
+              <span class="team-code">SÖD</span>
+              <span class="team-score-mount" data-score="3"></span>
+            </div>
+            <div class="sep-col"><span class="sep-dot"></span></div>
+            <div class="team-col away">
+              <span class="team-code">FOR</span>
+              <span class="team-score-mount" data-score="1"></span>
+            </div>
+          </div>
+          <div class="time-row">
+            <span class="period-mark">FT</span>
+            <span class="time-mount" data-time="90:00"></span>
+          </div>
+        </div>
+        <div class="module-text">
+          <div class="module-text-track">
+            <span>SLUT 3—1</span>
+            <span class="dim">SÖD VINNER · BERGLUND 2 MÅL</span>
+          </div>
+        </div>
+        <div class="module-line">
+          <div class="line-head">
+            <span class="line-title">SLUTRESULTAT</span>
+            <span class="line-end">90:00</span>
+          </div>
+          <div class="timeline">
+            <span class="tl-half"></span>
+            <span class="tl-tick" style="left: 16.67%"></span><span class="tl-tick-label" style="left: 16.67%">15</span>
+            <span class="tl-tick" style="left: 33.33%"></span><span class="tl-tick-label" style="left: 33.33%">30</span>
+            <span class="tl-tick" style="left: 66.67%"></span><span class="tl-tick-label" style="left: 66.67%">60</span>
+            <span class="tl-tick" style="left: 83.33%"></span><span class="tl-tick-label" style="left: 83.33%">75</span>
+            <!-- Utvisning Lindqvist FOR (away på tavlan) 44-54 -->
+            <span class="tl-pen" style="left: 48.89%; width: 11.11%"></span>
+            <!-- Mål: 8' SÖD, 19' SÖD, 56' FOR, 78' SÖD -->
+            <span class="tl-goal home" style="left: 8.89%"></span><span class="tl-goal-cap home" style="left: 8.89%"></span>
+            <span class="tl-goal home" style="left: 21.11%"></span><span class="tl-goal-cap home" style="left: 21.11%"></span>
+            <span class="tl-goal away" style="left: 62.22%"></span><span class="tl-goal-cap away" style="left: 62.22%"></span>
+            <span class="tl-goal home" style="left: 86.67%"></span><span class="tl-goal-cap home" style="left: 86.67%"></span>
+          </div>
+          <div class="line-feet">
+            <span class="home-pill">SÖDERFORS · 3</span>
+            <span class="meta">slutsiffror</span>
+            <span class="away-pill">FORSBACKA · 1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="paper">
+      <div class="arena-line">
+        ÄSSJAN <span class="dot"></span> 25 NOV 15:00
+        <span class="dot"></span> <span class="att">2 104 ÅSKÅDARE</span>
+      </div>
+
+      <div class="story-head">Matchens berättelse</div>
+      <p class="story-body">
+        Förlust mot Söderfors — 1–3. Berglund stod för 2 mål och Söderfors hade
+        kontroll redan från kvarten. Kronberg svarade i andra halvlek men det
+        räckte inte. Med Lindqvist på utvisningsbänken i tio minuter mitt i
+        matchen tappade ni rytmen.
+      </p>
+
+      <div class="section-head">Händelser <span class="count">· 4 mål · 1 utv</span></div>
+      <div class="events">
+        <div class="ev"><span class="min">8'</span><span class="tag mal">MÅL</span><span class="who"><span class="scorer">Berglund</span> <span class="assist">(ass. Westin)</span><span class="club">SÖD</span></span></div>
+        <div class="ev"><span class="min">19'</span><span class="tag mal">MÅL</span><span class="who"><span class="scorer">Karlsson</span><span class="club">SÖD</span></span></div>
+        <div class="ev utv-row"><span class="min">44'</span><span class="tag utv">UTV</span><span class="who"><span class="scorer">#11 Lindqvist</span><span class="club">FOR</span><span class="pen-time">10 min</span></span></div>
+        <div class="ev"><span class="min">56'</span><span class="tag mal">MÅL</span><span class="who"><span class="scorer">Kronberg</span> <span class="assist">(ass. Sjögren)</span><span class="club">FOR</span></span></div>
+        <div class="ev"><span class="min">78'</span><span class="tag hornmal">HÖRNA</span><span class="who"><span class="scorer">Berglund</span><span class="club">SÖD</span></span></div>
+      </div>
+
+      <div class="section-head">Spelarbetyg <span class="count">· 22 spelare</span></div>
+      <div class="ratings">
+        <div class="rate-row potm">
+          <span class="star">★</span>
+          <span class="pos">FW</span>
+          <span class="name"><span class="first">O.</span>Berglund</span>
+          <span class="club-dot away"></span>
+          <span class="bar-wrap"><span class="bar good" style="width: 70%"></span></span>
+          <span class="rate-num good">8.2</span>
+        </div>
+        <div class="rate-row"><span class="num">#4</span><span class="pos">DEF</span><span class="name"><span class="first">G.</span>Westin</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar good" style="width: 55%"></span></span><span class="rate-num good">7.3</span></div>
+        <div class="rate-row"><span class="num">#1</span><span class="pos">GK</span><span class="name"><span class="first">S.</span>Hallberg</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar good" style="width: 53%"></span></span><span class="rate-num good">7.2</span></div>
+        <div class="rate-row"><span class="num">#9</span><span class="pos">CTR</span><span class="name"><span class="first">V.</span>Karlsson</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar good" style="width: 50%"></span></span><span class="rate-num good">7.0</span></div>
+        <div class="rate-row"><span class="num">#7</span><span class="pos">CTR</span><span class="name"><span class="first">M.</span>Kronberg</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar mid" style="width: 45%"></span></span><span class="rate-num mid">6.7</span></div>
+        <div class="rate-row"><span class="num">#5</span><span class="pos">DEF</span><span class="name"><span class="first">P.</span>Sjögren</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar mid" style="width: 38%"></span></span><span class="rate-num mid">6.3</span></div>
+        <div class="rate-row"><span class="num">#3</span><span class="pos">DEF</span><span class="name"><span class="first">A.</span>Linder</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar mid" style="width: 37%"></span></span><span class="rate-num mid">6.2</span></div>
+        <div class="rate-row"><span class="num">#9</span><span class="pos">FW</span><span class="name"><span class="first">E.</span>Holm</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar mid" style="width: 33%"></span></span><span class="rate-num mid">6.0</span></div>
+        <div class="rate-row"><span class="num">#1</span><span class="pos">GK</span><span class="name"><span class="first">J.</span>Forslund</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar bad" style="width: 30%"></span></span><span class="rate-num bad">5.8</span></div>
+        <div class="rate-row"><span class="num">#3</span><span class="pos">DEF</span><span class="name"><span class="first">N.</span>Berg</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar bad" style="width: 25%"></span></span><span class="rate-num bad">5.5</span></div>
+        <div class="rate-row"><span class="num">#10</span><span class="pos">CTR</span><span class="name"><span class="first">D.</span>Andersson</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar bad" style="width: 22%"></span></span><span class="rate-num bad">5.3</span></div>
+        <div class="rate-row"><span class="num">#11</span><span class="pos">FW</span><span class="name"><span class="first">A.</span>Lindqvist</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar bad" style="width: 13%"></span></span><span class="rate-num bad">4.8</span></div>
+      </div>
+
+      <div class="ratings-foot">
+        <span>SORT · BETYG ↓</span>
+        <div class="legend">
+          <span><i style="background: var(--rate-good)"></i>≥7</span>
+          <span><i style="background: var(--rate-mid)"></i>6–7</span>
+          <span><i style="background: var(--rate-bad)"></i>&lt;6</span>
+        </div>
+      </div>
+
+      <button class="cta">Fortsätt →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       03 — SM-FINAL VINST (Forsbacka vs Karlsborg, efter förlängning)
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="col" data-screen-label="03 SM-final vinst">
+    <div class="col-head">
+      <span class="num">03</span>SM-FINAL · 3–2 EFTER FÖRLÄNGNING
+      <span class="sub">Forsbacka–Karlsborg. Playoff-runde-label "SM-FINAL" i pannband ovanför scoreboard. 8 520 på neutrala Studenternas IP. Vändning från 1–2 till 3–2 i 95'.</span>
+    </div>
+
+    <div class="stage">
+      <div class="board-system">
+        <!-- Final-pannband — bara för cup-final -->
+        <div class="final-band">
+          SM-FINAL
+          <span class="final-tier">SLUTSPEL · OMG. 25</span>
+        </div>
+        <div class="module-main">
+          <div class="main-row">
+            <div class="team-col home">
+              <span class="team-code">FOR</span>
+              <span class="team-score-mount" data-score="3"></span>
+            </div>
+            <div class="sep-col"><span class="sep-dot"></span></div>
+            <div class="team-col away">
+              <span class="team-code">KAR</span>
+              <span class="team-score-mount" data-score="2"></span>
+            </div>
+          </div>
+          <div class="time-row">
+            <span class="period-mark">FT · ETT</span>
+            <span class="time-mount" data-time="105:00"></span>
+          </div>
+        </div>
+        <div class="module-text">
+          <div class="module-text-track">
+            <span>FORSBACKA SM-MÄSTARE</span>
+            <span class="dim">LINDQVIST AVGÖR 95' · SEGER EFTER VÄNDNING</span>
+          </div>
+        </div>
+        <div class="module-line">
+          <div class="line-head">
+            <span class="line-title">SLUTRESULTAT · ETT</span>
+            <span class="line-end">105:00</span>
+          </div>
+          <div class="timeline">
+            <span class="tl-half"></span>
+            <span class="tl-tick" style="left: 14.29%"></span><span class="tl-tick-label" style="left: 14.29%">15</span>
+            <span class="tl-tick" style="left: 28.57%"></span><span class="tl-tick-label" style="left: 28.57%">30</span>
+            <span class="tl-tick" style="left: 57.14%"></span><span class="tl-tick-label" style="left: 57.14%">60</span>
+            <span class="tl-tick" style="left: 71.43%"></span><span class="tl-tick-label" style="left: 71.43%">75</span>
+            <span class="tl-tick" style="left: 85.71%"></span><span class="tl-tick-label" style="left: 85.71%">FÖR</span>
+            <!-- Mål: 12' FOR, 34' KAR, 67' KAR, 78' FOR (HÖRN), 95' FOR (ETT) -->
+            <span class="tl-goal home" style="left: 11.43%"></span><span class="tl-goal-cap home" style="left: 11.43%"></span>
+            <span class="tl-goal away" style="left: 32.38%"></span><span class="tl-goal-cap away" style="left: 32.38%"></span>
+            <span class="tl-goal away" style="left: 63.81%"></span><span class="tl-goal-cap away" style="left: 63.81%"></span>
+            <span class="tl-goal home" style="left: 74.29%"></span><span class="tl-goal-cap home" style="left: 74.29%"></span>
+            <span class="tl-goal home" style="left: 90.48%"></span><span class="tl-goal-cap home" style="left: 90.48%"></span>
+          </div>
+          <div class="line-feet">
+            <span class="home-pill">FORSBACKA · 3</span>
+            <span class="meta">SM-mästare</span>
+            <span class="away-pill">KARLSBORG · 2</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="paper">
+      <div class="arena-line">
+        STUDENTERNAS IP <span class="dot"></span> 22 MAR 13:15
+        <span class="dot"></span> <span class="att">8 520 ÅSKÅDARE</span>
+      </div>
+
+      <div class="story-head">Matchens berättelse</div>
+      <p class="story-body">
+        <em>Seger efter vändning</em> — ni låg under 1–2 i andra halvlek men
+        tog SM-guldet till slut. Lindqvist hörnmål i 78' fixade kvitteringen,
+        och i 95:e minuten av förlängningen avgjorde han igen. Engberg hade
+        gjort båda Karlsborgs mål och var farlig hela kvällen — men 8 520 på
+        Studenternas såg Forsbacka lyfta bucklan.
+      </p>
+
+      <div class="section-head">Händelser <span class="count">· 5 mål · 0 utv</span></div>
+      <div class="events">
+        <div class="ev"><span class="min">12'</span><span class="tag mal">MÅL</span><span class="who"><span class="scorer">Kronberg</span> <span class="assist">(ass. Holm)</span><span class="club">FOR</span></span></div>
+        <div class="ev"><span class="min">34'</span><span class="tag mal">MÅL</span><span class="who"><span class="scorer">Engberg</span><span class="club">KAR</span></span></div>
+        <div class="ev"><span class="min">67'</span><span class="tag mal">MÅL</span><span class="who"><span class="scorer">Engberg</span> <span class="assist">(ass. Olofsson)</span><span class="club">KAR</span></span></div>
+        <div class="ev"><span class="min">78'</span><span class="tag hornmal">HÖRNA</span><span class="who"><span class="scorer">Lindqvist</span> <span class="assist">(ass. Holm)</span><span class="club">FOR</span></span></div>
+        <div class="ev"><span class="min">95'</span><span class="tag mal">MÅL</span><span class="who"><span class="scorer">Lindqvist</span> <span class="assist">förlängning · ass. Kronberg</span><span class="club">FOR</span></span></div>
+      </div>
+
+      <div class="corner-band">
+        <span class="num">1</span>
+        <span class="lbl">
+          <strong>hörnmål av nio hörnor</strong>
+          <small>Forsbacka 9 — Karlsborg 6</small>
+        </span>
+      </div>
+
+      <div class="section-head">Spelarbetyg <span class="count">· 22 spelare</span></div>
+      <div class="ratings">
+        <div class="rate-row potm">
+          <span class="star">★</span>
+          <span class="pos">FW</span>
+          <span class="name"><span class="first">A.</span>Lindqvist</span>
+          <span class="club-dot home"></span>
+          <span class="bar-wrap"><span class="bar good" style="width: 80%"></span></span>
+          <span class="rate-num good">8.7</span>
+        </div>
+        <div class="rate-row"><span class="num">#7</span><span class="pos">CTR</span><span class="name"><span class="first">M.</span>Kronberg</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar good" style="width: 70%"></span></span><span class="rate-num good">8.2</span></div>
+        <div class="rate-row"><span class="num">#9</span><span class="pos">FW</span><span class="name"><span class="first">E.</span>Holm</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar good" style="width: 67%"></span></span><span class="rate-num good">8.0</span></div>
+        <div class="rate-row"><span class="num">#10</span><span class="pos">FW</span><span class="name"><span class="first">B.</span>Engberg</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar good" style="width: 65%"></span></span><span class="rate-num good">7.9</span></div>
+        <div class="rate-row"><span class="num">#1</span><span class="pos">GK</span><span class="name"><span class="first">J.</span>Forslund</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar good" style="width: 60%"></span></span><span class="rate-num good">7.6</span></div>
+        <div class="rate-row"><span class="num">#5</span><span class="pos">DEF</span><span class="name"><span class="first">P.</span>Sjögren</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar good" style="width: 55%"></span></span><span class="rate-num good">7.3</span></div>
+        <div class="rate-row"><span class="num">#3</span><span class="pos">DEF</span><span class="name"><span class="first">N.</span>Berg</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar good" style="width: 50%"></span></span><span class="rate-num good">7.0</span></div>
+        <div class="rate-row"><span class="num">#8</span><span class="pos">CTR</span><span class="name"><span class="first">R.</span>Olofsson</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar mid" style="width: 47%"></span></span><span class="rate-num mid">6.8</span></div>
+        <div class="rate-row"><span class="num">#1</span><span class="pos">GK</span><span class="name"><span class="first">T.</span>Lindgren</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar mid" style="width: 42%"></span></span><span class="rate-num mid">6.5</span></div>
+        <div class="rate-row"><span class="num">#4</span><span class="pos">DEF</span><span class="name"><span class="first">S.</span>Mårtensson</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar mid" style="width: 37%"></span></span><span class="rate-num mid">6.2</span></div>
+        <div class="rate-row"><span class="num">#2</span><span class="pos">DEF</span><span class="name"><span class="first">F.</span>Wallin</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar mid" style="width: 33%"></span></span><span class="rate-num mid">6.0</span></div>
+        <div class="rate-row"><span class="num">#15</span><span class="pos">CTR</span><span class="name"><span class="first">U.</span>Bergman</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar bad" style="width: 27%"></span></span><span class="rate-num bad">5.6</span></div>
+      </div>
+
+      <div class="ratings-foot">
+        <span>SORT · BETYG ↓</span>
+        <div class="legend">
+          <span><i style="background: var(--rate-good)"></i>≥7</span>
+          <span><i style="background: var(--rate-mid)"></i>6–7</span>
+          <span><i style="background: var(--rate-bad)"></i>&lt;6</span>
+        </div>
+      </div>
+
+      <button class="cta">Fortsätt →</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       04 — MÅLLÖS 0–0 (Forsbacka–Skutskär, defensiv profilmatch)
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="col" data-screen-label="04 Mållös 0-0">
+    <div class="col-head">
+      <span class="num">04</span>MÅLLÖS · 0–0
+      <span class="sub">Forsbacka–Skutskär. Stresstest: layouten utan event-mast. Tom events-list, ärlig rad. Story handlar om defensiven, inte spelarna.</span>
+    </div>
+
+    <div class="stage">
+      <div class="board-system">
+        <div class="module-main">
+          <div class="main-row">
+            <div class="team-col home">
+              <span class="team-code">FOR</span>
+              <span class="team-score-mount" data-score="0"></span>
+            </div>
+            <div class="sep-col"><span class="sep-dot"></span></div>
+            <div class="team-col away">
+              <span class="team-code">SKU</span>
+              <span class="team-score-mount" data-score="0"></span>
+            </div>
+          </div>
+          <div class="time-row">
+            <span class="period-mark">FT</span>
+            <span class="time-mount" data-time="90:00"></span>
+          </div>
+        </div>
+        <div class="module-text">
+          <div class="module-text-track">
+            <span>SLUT 0—0</span>
+            <span class="dim">FORSBACKA DELAR · INGA MÅL · INGA UTVISNINGAR</span>
+          </div>
+        </div>
+        <div class="module-line">
+          <div class="line-head">
+            <span class="line-title">SLUTRESULTAT</span>
+            <span class="line-end">90:00</span>
+          </div>
+          <div class="timeline">
+            <span class="tl-half"></span>
+            <span class="tl-tick" style="left: 16.67%"></span><span class="tl-tick-label" style="left: 16.67%">15</span>
+            <span class="tl-tick" style="left: 33.33%"></span><span class="tl-tick-label" style="left: 33.33%">30</span>
+            <span class="tl-tick" style="left: 66.67%"></span><span class="tl-tick-label" style="left: 66.67%">60</span>
+            <span class="tl-tick" style="left: 83.33%"></span><span class="tl-tick-label" style="left: 83.33%">75</span>
+            <!-- Inga mål, inga utv. Bara ren tidslinje. -->
+          </div>
+          <div class="line-feet">
+            <span class="home-pill">FORSBACKA · 0</span>
+            <span class="meta">delade poängen</span>
+            <span class="away-pill">SKUTSKÄR · 0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="paper">
+      <div class="arena-line">
+        SLAGGHÖGEN <span class="dot"></span> 02 DEC 18:30
+        <span class="dot"></span> <span class="att">1 890 ÅSKÅDARE</span>
+      </div>
+
+      <div class="story-head">Matchens berättelse</div>
+      <p class="story-body muted">
+        Oavgjort — ni delade poängen med Skutskär. Defensivkamp där båda
+        målvakterna stod för stora räddningar. Ingen tog lite mer initiativ än
+        den andra; ett poäng är ett poäng. Forslund höll nollan i den 87:e med
+        en mardrömsräddning på Sundberg.
+      </p>
+
+      <div class="section-head">Händelser</div>
+      <div class="events-empty">
+        INGA MÅL · INGA UTVISNINGAR
+        <span class="sub">Det blev en tightt och taktisk match som fick avgöras vid eftermöterna i sin helhet.</span>
+      </div>
+
+      <div class="section-head" style="margin-top: 22px;">Spelarbetyg <span class="count">· 22 spelare</span></div>
+      <div class="ratings">
+        <div class="rate-row potm">
+          <span class="star">★</span>
+          <span class="pos">GK</span>
+          <span class="name"><span class="first">J.</span>Forslund</span>
+          <span class="club-dot home"></span>
+          <span class="bar-wrap"><span class="bar good" style="width: 73%"></span></span>
+          <span class="rate-num good">8.4</span>
+        </div>
+        <div class="rate-row"><span class="num">#1</span><span class="pos">GK</span><span class="name"><span class="first">H.</span>Vikström</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar good" style="width: 70%"></span></span><span class="rate-num good">8.2</span></div>
+        <div class="rate-row"><span class="num">#5</span><span class="pos">DEF</span><span class="name"><span class="first">P.</span>Sjögren</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar good" style="width: 60%"></span></span><span class="rate-num good">7.6</span></div>
+        <div class="rate-row"><span class="num">#3</span><span class="pos">DEF</span><span class="name"><span class="first">N.</span>Berg</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar good" style="width: 55%"></span></span><span class="rate-num good">7.3</span></div>
+        <div class="rate-row"><span class="num">#4</span><span class="pos">DEF</span><span class="name"><span class="first">M.</span>Edlund</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar good" style="width: 53%"></span></span><span class="rate-num good">7.2</span></div>
+        <div class="rate-row"><span class="num">#6</span><span class="pos">DEF</span><span class="name"><span class="first">A.</span>Frisk</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar good" style="width: 50%"></span></span><span class="rate-num good">7.0</span></div>
+        <div class="rate-row"><span class="num">#7</span><span class="pos">CTR</span><span class="name"><span class="first">M.</span>Kronberg</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar mid" style="width: 43%"></span></span><span class="rate-num mid">6.6</span></div>
+        <div class="rate-row"><span class="num">#9</span><span class="pos">FW</span><span class="name"><span class="first">E.</span>Holm</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar mid" style="width: 40%"></span></span><span class="rate-num mid">6.4</span></div>
+        <div class="rate-row"><span class="num">#10</span><span class="pos">FW</span><span class="name"><span class="first">L.</span>Sundberg</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar mid" style="width: 38%"></span></span><span class="rate-num mid">6.3</span></div>
+        <div class="rate-row"><span class="num">#11</span><span class="pos">FW</span><span class="name"><span class="first">A.</span>Lindqvist</span><span class="club-dot home"></span><span class="bar-wrap"><span class="bar mid" style="width: 35%"></span></span><span class="rate-num mid">6.1</span></div>
+        <div class="rate-row"><span class="num">#8</span><span class="pos">CTR</span><span class="name"><span class="first">G.</span>Hedberg</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar mid" style="width: 33%"></span></span><span class="rate-num mid">6.0</span></div>
+        <div class="rate-row"><span class="num">#14</span><span class="pos">FW</span><span class="name"><span class="first">B.</span>Norling</span><span class="club-dot away"></span><span class="bar-wrap"><span class="bar bad" style="width: 25%"></span></span><span class="rate-num bad">5.5</span></div>
+      </div>
+
+      <div class="ratings-foot">
+        <span>SORT · BETYG ↓</span>
+        <div class="legend">
+          <span><i style="background: var(--rate-good)"></i>≥7</span>
+          <span><i style="background: var(--rate-mid)"></i>6–7</span>
+          <span><i style="background: var(--rate-bad)"></i>&lt;6</span>
+        </div>
+      </div>
+
+      <button class="cta">Fortsätt →</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Vad jag översatte — och varför</h3>
+  <p><strong>Två lager, samma vokabulär.</strong> Tavlan ovanför pappret är scoreboard-stalvallens FT-state utan ändring — period-mark = FT, NU-pricken borta, textremsan still, tidslinjen full. Pappret nedanför bryter materialet (paper-warm, Georgia serif, generös line-height) men ärver taggvokabulären: <strong>MÅL</strong>, <strong>HÖRNA</strong>, <strong>STRAFF</strong>, <strong>UTV</strong> — samma fyra stämplar som live-textremsan ropar. Reportern noterar vad operatören skrev.</p>
+  <p><strong>Story i serif, inte LED.</strong> Inga LED-imitationer i prosan. Det här är efterhandsläsning — Georgia 14.5px med line-height 1.65, läses som artikel, inte som tavla. Bara rubriken "MATCHENS BERÄTTELSE" är mono-copper för att binda ihop med tavlan ovanför.</p>
+  <p><strong>Hörnstats göms när det inte finns något att skylta med.</strong> Cup-final och derbyvinst får copper-bandet med "1 hörnmål av nio/elva". Förlust och 0–0 får inget — det vore patetiskt att fira sin enda hörnmål-statistik i en match man förlorade.</p>
+  <p><strong>Spelarbetyg-strip — vertikalt, inte scroll.</strong> 22 rader, sorterade fallande på betyg. Färgkodade bars (röd <6, amber 6–7, grön ≥7), POTM-raden får copper-bakgrund + ★. Lag-prick (koppar = managed Forsbacka, stål = motståndare) gör det mätbart vem som spelade var utan att skrika om det. På 380px står namnen kvar — bara fars-initialen krymper till en bokstav.</p>
+  <p><strong>0–0 är stresstestet.</strong> När event-listan är tom ärver layouten en ärlig rad — "INGA MÅL · INGA UTVISNINGAR" i samma mono-stil som textremsan. Story-prosan blir muted (italic, ink-soft) och flyttar fokus till defensiven. Tidslinjen blir bara halvtidstreck och tickar — visuellt lugn matchar att inget hände.</p>
+  <p><strong>SM-finalens pannband.</strong> Cup-finaler får ett "FINAL"-band ovanför scoreboard-modulen (samma bezel-yta, copper-mono "SM-FINAL" + slutspels-tier). Klockan visar 105:00 + period-mark "FT · ETT" istället för bara FT. Inga nya färger, ingen ny modul — bara ytterligare ett band som tar koppar-färgen som finns där redan.</p>
+</div>
+
+<script>
+/* 7-segment-renderare — kopierad från scoreboard-stalvallen */
+const SEG_MAP = {
+  '0': 'abcdef', '1': 'bc', '2': 'abged', '3': 'abgcd', '4': 'fgbc',
+  '5': 'afgcd', '6': 'afgcde', '7': 'abc', '8': 'abcdefg', '9': 'abcdfg',
+};
+function renderDigit(char, sizeClass = '') {
+  if (char === ':') {
+    const c = document.createElement('span');
+    c.className = `seg colon ${sizeClass}`.trim();
+    return c;
+  }
+  const segs = SEG_MAP[char] || '';
+  const wrap = document.createElement('span');
+  wrap.className = `seg ${sizeClass}`.trim();
+  for (const id of 'abcdefg') {
+    const s = document.createElement('span');
+    s.className = `s ${id}` + (segs.includes(id) ? ' on' : '');
+    wrap.appendChild(s);
+  }
+  return wrap;
+}
+function renderText(text, sizeClass = '') {
+  const frag = document.createDocumentFragment();
+  for (const ch of String(text)) frag.appendChild(renderDigit(ch, sizeClass));
+  return frag;
+}
+
+/* Mounta varje [data-score] (lg) och [data-time] (md) */
+document.querySelectorAll('[data-score]').forEach(el => {
+  el.appendChild(renderText(el.dataset.score, 'lg'));
+});
+document.querySelectorAll('[data-time]').forEach(el => {
+  el.appendChild(renderText(el.dataset.time, 'md'));
+});
+</script>
+
+</body>
+</html>
