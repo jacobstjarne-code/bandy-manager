@@ -169,10 +169,10 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
   }
 
   return (
-    <div style={{ overflowY: 'auto', height: '100%', animation: 'fadeInUp 300ms ease-out both', background: 'var(--bg-leather-dk)' }}>
+    <div className="report-root">
 
       {/* ── Stage — leather-dk, scoreboard in FT state ── */}
-      <div className="stage" style={{ background: 'var(--bg-leather-dk)', flexShrink: 0 }}>
+      <div className="report-stage stage">
         <ScoreboardStalvallen
           homeCode={homeCode}
           awayCode={awayCode}
@@ -192,44 +192,28 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
       </div>
 
       {/* ── Paper — warm background, match details ── */}
-      <div className="paper" style={{
-        background: 'var(--paper-warm)',
-        padding: '16px 14px 32px',
-        minHeight: 400,
-      }}>
+      <div className="report-paper paper">
 
         {/* Arena line */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap',
-          marginBottom: 14,
-          fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 600,
-          letterSpacing: '0.5px', color: 'var(--ink-mute)',
-          textTransform: 'uppercase',
-        }}>
+        <div className="report-arena-line">
           <span>{formatArenaName(homeClub?.arenaName ?? `${homeClub?.shortName ?? '?'}s IP`)}</span>
           {fixture.attendance && (
             <>
-              <span style={{ color: 'var(--ink-faint)' }}>·</span>
-              <span style={{ color: 'var(--copper)' }}>{fixture.attendance} ÅSKÅDARE</span>
+              <span className="report-arena-sep">·</span>
+              <span className="report-arena-attendance">{fixture.attendance} ÅSKÅDARE</span>
             </>
           )}
           {fixture.roundNumber <= 22 && (
             <>
-              <span style={{ color: 'var(--ink-faint)' }}>·</span>
+              <span className="report-arena-sep">·</span>
               <span>OMG. {fixture.roundNumber}</span>
             </>
           )}
         </div>
 
         {/* Story block */}
-        <div style={{ marginBottom: 18 }}>
-          <div style={{
-            fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700,
-            letterSpacing: '2px', textTransform: 'uppercase',
-            color: 'var(--copper)', opacity: 0.85, marginBottom: 6,
-          }}>
-            Matchens berättelse
-          </div>
+        <div className="report-story-block">
+          <div className="report-section-label report-story-label">Matchens berättelse</div>
           <p style={{
             fontFamily: 'var(--font-display)',
             fontSize: 13, lineHeight: 1.6,
@@ -243,7 +227,7 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
 
         {/* Events */}
         {visibleEvents.length > 0 ? (
-          <div style={{ marginBottom: 16 }}>
+          <div className="report-events-list">
             {visibleEvents.map((event, index) => {
               const isHomeEvent = event.clubId === fixture.homeClubId
               const clubShort = isHomeEvent ? (homeClub?.shortName ?? 'H') : (awayClub?.shortName ?? 'B')
@@ -255,29 +239,13 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
               return (
                 <div
                   key={index}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    padding: '7px 0',
-                    borderBottom: index < visibleEvents.length - 1 ? `1px solid var(--paper-edge)` : 'none',
-                  }}
+                  className="report-event-row"
+                  style={{ borderBottom: index < visibleEvents.length - 1 ? `1px solid var(--paper-edge)` : 'none' }}
                 >
-                  <span style={{
-                    fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700,
-                    color: 'var(--ink-soft)', minWidth: 28, flexShrink: 0,
-                  }}>{event.minute}&apos;</span>
-
-                  <span style={{
-                    fontFamily: 'var(--font-mono)', fontSize: 7, fontWeight: 700,
-                    letterSpacing: '1px', padding: '2px 5px', borderRadius: 2,
-                    background: tagBg, color: tagColor,
-                    textTransform: 'uppercase', flexShrink: 0,
-                  }}>{tagLabel}</span>
-
-                  <span style={{ fontSize: 9, color: 'var(--ink-mute)', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
-                    {clubShort}
-                  </span>
-
-                  <span style={{ fontSize: 12, flex: 1, color: 'var(--ink-soft)' }}>
+                  <span className="report-event-minute">{event.minute}&apos;</span>
+                  <span className="report-event-tag" style={{ background: tagBg, color: tagColor }}>{tagLabel}</span>
+                  <span className="report-event-club">{clubShort}</span>
+                  <span className="report-event-player">
                     {event.playerId
                       ? <PlayerLink playerId={event.playerId} name={getPlayerName(event.playerId)} style={{ color: 'var(--ink)' }} />
                       : event.description
@@ -289,39 +257,17 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
             })}
           </div>
         ) : (
-          <div style={{
-            padding: '10px 0', marginBottom: 14,
-            borderBottom: `1px solid var(--paper-edge)`,
-          }}>
-            <span style={{
-              fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700,
-              letterSpacing: '1.5px', color: 'var(--ink-mute)',
-            }}>
-              INGA MÅL · INGA UTVISNINGAR
-            </span>
-            <span style={{
-              display: 'block', fontSize: 11, color: 'var(--ink-mute)',
-              fontFamily: 'var(--font-display)', fontStyle: 'italic', marginTop: 3,
-            }}>
-              Det blev en tight och taktisk match.
-            </span>
+          <div className="report-no-events" style={{ borderBottom: `1px solid var(--paper-edge)` }}>
+            <span className="report-no-events-label">INGA MÅL · INGA UTVISNINGAR</span>
+            <span className="report-no-events-sub">Det blev en tight och taktisk match.</span>
           </div>
         )}
 
         {/* Corner-band pearl */}
         {managedCornerGoals > 0 && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '10px 12px', marginBottom: 16,
-            background: 'rgba(196,122,58,0.08)',
-            border: '1px solid rgba(196,122,58,0.2)',
-            borderRadius: 6,
-          }}>
-            <span style={{
-              fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700,
-              color: 'var(--copper)', lineHeight: 1,
-            }}>{managedCornerGoals}</span>
-            <div style={{ flex: 1 }}>
+          <div className="report-corner-pearl">
+            <span className="report-corner-count">{managedCornerGoals}</span>
+            <div className="report-corner-body">
               <strong style={{ fontSize: 12, color: 'var(--ink)' }}>
                 hörnmål av {managedCorners} hörnor
               </strong>
@@ -334,14 +280,8 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
 
         {/* Player ratings */}
         {ratedPlayers.length > 0 && (
-          <div style={{ marginBottom: 16 }}>
-            <div style={{
-              fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700,
-              letterSpacing: '2px', textTransform: 'uppercase',
-              color: 'var(--copper)', opacity: 0.85, marginBottom: 8,
-            }}>
-              Spelarbetyg
-            </div>
+          <div className="report-ratings-list">
+            <div className="report-section-label report-ratings-label">Spelarbetyg</div>
             {ratedPlayers.slice(0, 8).map(({ player, rating }, i) => {
               const isPotm = i === 0
               const barWidth = Math.max(0, Math.min(100, ((rating - 4) / 6) * 100))
@@ -350,27 +290,10 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
                 <div
                   key={player.id}
                   className={isPotm ? 'rate-row potm' : 'rate-row'}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 7,
-                    padding: isPotm ? '8px 10px' : '5px 4px',
-                    borderRadius: isPotm ? 5 : 0,
-                    background: isPotm ? 'rgba(196,122,58,0.1)' : 'transparent',
-                    borderBottom: !isPotm ? `1px solid var(--paper-edge)` : 'none',
-                    marginBottom: isPotm ? 6 : 0,
-                  }}
+                  style={{ borderBottom: !isPotm ? `1px solid var(--paper-edge)` : 'none' }}
                 >
-                  {/* POTM star */}
-                  {isPotm && (
-                    <span style={{ fontSize: 12, color: 'var(--copper)', flexShrink: 0 }}>★</span>
-                  )}
-                  {/* Position */}
-                  <span style={{
-                    fontFamily: 'var(--font-mono)', fontSize: 8,
-                    color: 'var(--ink-mute)', flexShrink: 0, minWidth: 22,
-                  }}>
-                    {positionShort(player.position)}
-                  </span>
-                  {/* Name */}
+                  {isPotm && <span className="rate-row-star">★</span>}
+                  <span className="rate-row-pos">{positionShort(player.position)}</span>
                   <span style={{
                     fontSize: isPotm ? 13 : 12, fontWeight: isPotm ? 700 : 500,
                     color: isPotm ? 'var(--copper)' : 'var(--ink)', flex: 1,
@@ -378,19 +301,13 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
                   }}>
                     {player.lastName}
                   </span>
-                  {/* Club dot */}
-                  <span style={{
-                    width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
-                    background: player.clubId === fixture.homeClubId ? 'var(--copper)' : 'var(--steel)',
-                  }} />
-                  {/* Rating bar */}
-                  <div style={{
-                    width: 36, height: 3, borderRadius: 2,
-                    background: 'rgba(0,0,0,0.1)', flexShrink: 0, overflow: 'hidden',
-                  }}>
-                    <div style={{ width: `${barWidth}%`, height: '100%', background: ratingCol, borderRadius: 2 }} />
+                  <span
+                    className="rate-row-club-dot"
+                    style={{ background: player.clubId === fixture.homeClubId ? 'var(--copper)' : 'var(--steel)' }}
+                  />
+                  <div className="rate-bar-bg">
+                    <div className="rate-bar-fill" style={{ width: `${barWidth}%`, background: ratingCol }} />
                   </div>
-                  {/* Rating num */}
                   <span style={{
                     fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 700,
                     color: ratingCol, minWidth: 26, textAlign: 'right', flexShrink: 0,
@@ -405,53 +322,23 @@ export function MatchReportView({ fixture, game, onClose }: MatchReportViewProps
 
         {/* Stats (kept compact) */}
         {fixture.report && (
-          <div style={{ marginBottom: 20 }}>
-            <div style={{
-              fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700,
-              letterSpacing: '2px', textTransform: 'uppercase',
-              color: 'var(--copper)', opacity: 0.85, marginBottom: 6,
-            }}>
-              Statistik
-            </div>
+          <div className="report-stats-block">
+            <div className="report-section-label report-stats-label">Statistik</div>
             {[
               { label: 'Skott', home: String(fixture.report.shotsHome), away: String(fixture.report.shotsAway) },
               { label: 'Hörnor', home: String(fixture.report.cornersHome), away: String(fixture.report.cornersAway) },
             ].map(({ label, home, away }) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0' }}>
-                <span style={{
-                  fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 600,
-                  color: 'var(--ink)', minWidth: 22, textAlign: 'right',
-                }}>{home}</span>
-                <span style={{
-                  flex: 1, textAlign: 'center', fontSize: 10,
-                  fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', letterSpacing: '0.5px',
-                }}>{label}</span>
-                <span style={{
-                  fontFamily: 'var(--font-display)', fontSize: 13, fontWeight: 600,
-                  color: 'var(--ink)', minWidth: 22, textAlign: 'left',
-                }}>{away}</span>
+              <div key={label} className="report-stat-row">
+                <span className="report-stat-home">{home}</span>
+                <span className="report-stat-label">{label}</span>
+                <span className="report-stat-away">{away}</span>
               </div>
             ))}
           </div>
         )}
 
         {/* CTA */}
-        <button
-          onClick={onClose}
-          style={{
-            width: '100%', padding: '14px',
-            background: 'var(--copper)',
-            border: 'none', borderRadius: 6,
-            color: 'var(--bg-leather-dk)',
-            fontFamily: 'var(--font-mono)',
-            fontSize: 13, fontWeight: 700,
-            letterSpacing: '1px', textTransform: 'uppercase',
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(196,122,58,0.3)',
-          }}
-        >
-          Fortsätt →
-        </button>
+        <button onClick={onClose} className="report-cta">Fortsätt →</button>
       </div>
     </div>
   )

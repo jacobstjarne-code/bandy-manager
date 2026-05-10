@@ -129,28 +129,15 @@ export function CounterInteraction({ data, outcome, onChoose, coach }: CounterIn
   const choiceLabels: Record<CounterChoice, string> = { sprint: 'BRYT', earlyBall: 'SPELA AV', build: 'BYGG' }
 
   const subChoicesNode = (
-    <div style={{ display: 'flex', gap: 6 }}>
+    <div className="interaction-sub-choices-row">
       {CHOICES.map(({ choice: c, label }) => {
         const isSelected = choice === c
         return (
           <button
             key={c}
             onClick={() => phase === 'choosing' && setChoice(c)}
-            style={{
-              flex: 1,
-              padding: '8px 4px',
-              background: isSelected ? 'rgba(102,255,51,0.12)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${isSelected ? 'var(--led-green)' : 'rgba(255,255,255,0.12)'}`,
-              borderRadius: 4,
-              color: isSelected ? 'var(--led-green)' : 'rgba(245,241,235,0.5)',
-              fontFamily: 'var(--font-mono)',
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: '0.8px',
-              cursor: phase === 'choosing' ? 'pointer' : 'default',
-              boxShadow: isSelected ? '0 0 6px rgba(102,255,51,0.3)' : 'none',
-              textAlign: 'center',
-            }}
+            className={`interaction-sub-btn ${isSelected ? 'interaction-sub-btn-selected' : 'interaction-sub-btn-unselected'}`}
+            style={{ cursor: phase === 'choosing' ? 'pointer' : 'default' }}
           >
             {label}
           </button>

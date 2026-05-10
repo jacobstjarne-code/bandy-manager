@@ -66,46 +66,29 @@ function ArcRow({ arc, glyph, currentMatchday, onClick, isLast }: ArcRowProps) {
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      className={`arc-row ${isLast ? '' : 'arc-row-bordered'}`}
       style={{
-        display: 'flex', alignItems: 'flex-start', gap: 12,
-        padding: '10px 0',
-        borderBottom: isLast ? 'none' : '0.5px solid rgba(196,122,58,0.15)',
         cursor: onClick ? 'pointer' : 'default',
         background: hovered && onClick ? 'rgba(196,122,58,0.04)' : 'transparent',
-        transition: 'background 0.12s',
       }}
     >
       {/* Typographic glyph */}
-      <span style={{
-        flexShrink: 0,
-        width: 22, height: 22,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700,
-        color: glyphColor,
-        border: `1px solid ${glyphBorderColor}`,
-        borderRadius: '50%',
-        background: glyphBg,
-        marginTop: 1,
-      }}>
+      <span
+        className="arc-glyph"
+        style={{ color: glyphColor, border: `1px solid ${glyphBorderColor}`, background: glyphBg }}
+      >
         {glyph}
       </span>
 
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600,
-          color: 'var(--text-light)', marginBottom: 4, lineHeight: 1.35,
-        }}>
-          {getArcHeadline(arc, undefined)}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 10, color: 'var(--text-muted)' }}>
-          {/* Phase dots */}
-          <span style={{ display: 'inline-flex', gap: 3 }}>
+      <div className="arc-body">
+        <div className="arc-headline">{getArcHeadline(arc, undefined)}</div>
+        <div className="arc-meta">
+          <span className="arc-phase-dots">
             {[1, 2, 3].map(dot => (
               <span
                 key={dot}
+                className="arc-phase-dot"
                 style={{
-                  display: 'block',
-                  width: 5, height: 5, borderRadius: '50%',
                   background: dot < filledDots
                     ? 'var(--accent-deep)'
                     : dot === filledDots
@@ -120,13 +103,10 @@ function ArcRow({ arc, glyph, currentMatchday, onClick, isLast }: ArcRowProps) {
       </div>
 
       {onClick && (
-        <span style={{
-          fontSize: 11, flexShrink: 0,
-          color: hovered ? 'var(--accent)' : 'var(--text-muted)',
-          opacity: hovered ? 1 : 0.5,
-          transition: 'opacity 0.15s, color 0.15s',
-          alignSelf: 'center',
-        }}>›</span>
+        <span
+          className="arc-chevron"
+          style={{ color: hovered ? 'var(--accent)' : 'var(--text-muted)', opacity: hovered ? 1 : 0.5 }}
+        >›</span>
       )}
     </div>
   )
@@ -148,42 +128,10 @@ export function ActiveArcsSecondary({ game }: CardRenderProps) {
   const currentMatchday = getCurrentMatchday(game)
 
   return (
-    <div style={{
-      position: 'relative',
-      background: 'var(--bg-portal-surface)',
-      border: '1px solid rgba(196,122,58,0.15)',
-      borderRadius: 8,
-      padding: '14px 16px 14px 18px',
-      overflow: 'hidden',
-      cursor: 'pointer',
-      transition: 'background 0.15s, border-color 0.15s',
-    }}>
-      {/* Left stripe — 2px copper */}
-      <div style={{
-        position: 'absolute', left: 0, top: 0, bottom: 0,
-        width: 2,
-        background: 'var(--copper)',
-        borderRadius: '8px 0 0 8px',
-      }} />
-
-      {/* Chevron affordance */}
-      <span style={{
-        position: 'absolute', right: 14, top: 14,
-        color: 'var(--text-muted)', fontSize: 14, opacity: 0.5,
-        lineHeight: 1,
-      }}>›</span>
-
-      {/* Eyebrow label */}
-      <div style={{
-        fontFamily: 'var(--font-mono)',
-        fontSize: 9, fontWeight: 600,
-        letterSpacing: '2px', textTransform: 'uppercase',
-        color: 'var(--copper)', opacity: 0.85,
-        marginBottom: 10,
-      }}>
-        Arcs
-      </div>
-
+    <div className="portal-secondary-card">
+      <div className="portal-card-stripe portal-card-stripe-copper" />
+      <span className="portal-card-chevron">›</span>
+      <div className="portal-card-eyebrow">Arcs</div>
       {arcs.map((arc, index) => (
         <ArcRow
           key={arc.id}

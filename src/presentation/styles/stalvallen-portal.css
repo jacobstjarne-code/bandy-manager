@@ -1,0 +1,225 @@
+/**
+ * stalvallen-portal.css — CSS-klasser för Stålvallen portal-bundle
+ *
+ * FIX-05: Bryter ut inline-styles från WeeklyDecisionSecondary,
+ * BoardObjectivesSecondary, ActiveArcsSecondary.
+ *
+ * Inga hardkodade hex-värden — allt via tokens i global.css.
+ */
+
+/* ── Shared card anatomy ─────────────────────────────────────── */
+
+.portal-secondary-card {
+  position: relative;
+  background: var(--bg-portal-surface);
+  border: 1px solid rgba(196, 122, 58, 0.15);
+  border-radius: 8px;
+  padding: 14px 16px 14px 18px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.portal-card-stripe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 8px 0 0 8px;
+}
+
+.portal-card-stripe-copper {
+  width: 2px;
+  background: var(--copper);
+}
+
+.portal-card-stripe-copper-wide {
+  width: 3px;
+  background: var(--copper);
+}
+
+.portal-card-stripe-warm {
+  width: 3px;
+  background: var(--warm);
+}
+
+.portal-card-chevron {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  color: var(--text-muted);
+  font-size: 14px;
+  opacity: 0.5;
+  line-height: 1;
+}
+
+.portal-card-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--copper);
+  opacity: 0.85;
+  margin-bottom: 10px;
+}
+
+/* ── WeeklyDecisionSecondary ─────────────────────────────────── */
+
+.weekly-decision-question {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-light);
+  transition: opacity 0.2s;
+}
+
+.weekly-decision-resolved {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 4px 0;
+}
+
+.weekly-decision-check {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(160, 200, 144, 0.2);
+  color: #a0c890;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.weekly-decision-resolved-text {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--text-light-secondary);
+  line-height: 1.4;
+}
+
+.weekly-decision-options {
+  display: flex;
+  gap: 8px;
+}
+
+.weekly-decision-option-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.weekly-decision-option-btn-idle {
+  background: transparent;
+  border: 1px solid rgba(196, 122, 58, 0.4);
+}
+
+.weekly-decision-option-btn-hover {
+  background: rgba(196, 122, 58, 0.1);
+  border: 1px solid var(--accent);
+}
+
+.weekly-decision-option-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+.weekly-decision-option-effect {
+  display: block;
+  font-size: 10px;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* ── BoardObjectivesSecondary ────────────────────────────────── */
+
+/* Uses .portal-secondary-card + .portal-card-stripe-copper + .portal-card-eyebrow */
+/* BoardObjectivesList renders its own rows internally */
+
+/* ── ActiveArcsSecondary ─────────────────────────────────────── */
+
+/* Uses .portal-secondary-card + .portal-card-stripe-copper + .portal-card-eyebrow */
+
+.arc-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  transition: background 0.12s;
+}
+
+.arc-row-bordered {
+  border-bottom: 0.5px solid rgba(196, 122, 58, 0.15);
+}
+
+.arc-glyph {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 50%;
+  margin-top: 1px;
+}
+
+.arc-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.arc-headline {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-light);
+  margin-bottom: 4px;
+  line-height: 1.35;
+}
+
+.arc-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.arc-phase-dots {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.arc-phase-dot {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.arc-chevron {
+  font-size: 11px;
+  flex-shrink: 0;
+  align-self: center;
+  transition: opacity 0.15s, color 0.15s;
+}

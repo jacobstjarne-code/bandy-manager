@@ -134,62 +134,23 @@ export function InteractionShell({
     : 'var(--led-red)'
 
   return (
-    <div style={{
-      position: 'relative',
-      margin: '0',
-    }}>
+    <div className="interaction-root">
       {/* Fold-hint */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-        padding: '6px 12px 4px',
-        background: 'var(--bg-leather-dk)',
-      }}>
-        <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>▲</span>
-        <span style={{
-          fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700,
-          letterSpacing: '2px', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase',
-        }}>
-          HÄNDELSE KRÄVER SVAR
-        </span>
+      <div className="interaction-fold-hint">
+        <span className="interaction-fold-hint-arrow">▲</span>
+        <span className="interaction-fold-hint-label">HÄNDELSE KRÄVER SVAR</span>
       </div>
 
-      <div style={{
-        background: 'var(--bg-leather-dk)',
-        borderTop: '1px solid rgba(196,122,58,0.25)',
-        padding: '0 12px 12px',
-      }}>
+      <div className="interaction-panel">
         {/* Event head */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          padding: '8px 0 8px',
-        }}>
+        <div className="interaction-head">
           {/* LED tag */}
-          <div style={{
-            background: 'rgba(255,42,24,0.12)',
-            border: '1px solid rgba(255,42,24,0.3)',
-            borderRadius: 3,
-            padding: '3px 7px',
-            fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700,
-            letterSpacing: '1.5px', color: 'var(--led-red)', textTransform: 'uppercase',
-            flexShrink: 0,
-          }}>
-            {icon}
-          </div>
+          <div className="interaction-led-tag">{icon}</div>
 
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700,
-                color: 'var(--paper-warm)', letterSpacing: '1px',
-              }}>
-                {title}
-              </span>
-              <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: 9,
-                color: 'rgba(245,241,235,0.4)',
-              }}>
-                {minute}&apos;
-              </span>
+          <div className="interaction-title-row">
+            <div className="interaction-title-inner">
+              <span className="interaction-title">{title}</span>
+              <span className="interaction-minute">{minute}&apos;</span>
             </div>
           </div>
 
@@ -214,99 +175,49 @@ export function InteractionShell({
 
         {/* Stats strip (legacy) */}
         {stats && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '5px 8px',
-            background: 'rgba(255,255,255,0.04)',
-            borderRadius: 4, marginBottom: 8,
-          }}>
-            {stats}
-          </div>
+          <div className="interaction-stats-strip">{stats}</div>
         )}
 
         {/* Pitch panel */}
-        <div style={{
-          background: 'linear-gradient(180deg, #1A2628 0%, #0E1518 100%)',
-          borderRadius: 6,
-          overflow: 'hidden',
-          marginBottom: 8,
-          opacity: phase === 'locked' ? 0.7 : 1,
-          transition: 'opacity 0.3s',
-        }}>
+        <div className={`interaction-pitch-panel${phase === 'locked' ? ' locked' : ''}`}>
           {pitch}
         </div>
 
         {/* Sub-choices (new API — monospace buttons) */}
         {subChoices && phase === 'choosing' && (
-          <div style={{ marginBottom: 8 }}>
-            {subChoices}
-          </div>
+          <div className="interaction-sub-choices">{subChoices}</div>
         )}
 
         {/* Legacy actions */}
         {actions && phase === 'choosing' && (
-          <div style={{ marginBottom: 8 }}>
-            {actions}
-          </div>
+          <div className="interaction-actions">{actions}</div>
         )}
 
         {/* Readout */}
         {readout && (
-          <div style={{
-            fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(245,241,235,0.55)',
-            padding: '4px 0', marginBottom: 6,
-          }}>
-            <span style={{ color: 'rgba(245,241,235,0.35)' }}>VAL: </span>
-            <span style={{ color: 'var(--led-green)' }}>{readout.label}</span>
-            <span style={{ color: 'rgba(245,241,235,0.35)', marginLeft: 8 }}>
-              {readout.pct}%
-            </span>
+          <div className="interaction-readout">
+            <span className="interaction-readout-label">VAL: </span>
+            <span className="interaction-readout-value">{readout.label}</span>
+            <span className="interaction-readout-pct">{readout.pct}%</span>
           </div>
         )}
 
         {/* Risk row (last-minute only) */}
         {riskRow && riskRow.length > 0 && (
-          <div style={{
-            display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8,
-          }}>
+          <div className="interaction-risk-row">
             {riskRow.map((r, i) => (
-              <span key={i} style={{
-                fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700,
-                color: 'rgba(255,42,24,0.8)',
-                background: 'rgba(255,42,24,0.08)',
-                border: '1px solid rgba(255,42,24,0.2)',
-                borderRadius: 3, padding: '2px 6px',
-              }}>{r}</span>
+              <span key={i} className="interaction-risk-tag">{r}</span>
             ))}
           </div>
         )}
 
         {/* Coach tip */}
         {coachTip && coach && phase === 'choosing' && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '7px 10px',
-            background: 'rgba(196,122,58,0.08)',
-            borderRadius: 5, marginBottom: 8,
-            border: '1px solid rgba(196,122,58,0.2)',
-          }}>
-            <div style={{
-              width: 22, height: 22, borderRadius: '50%',
-              background: 'var(--copper-deep)',
-              border: '1px solid rgba(196,122,58,0.4)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
-              <span style={{
-                color: 'var(--paper-warm)', fontSize: 8, fontWeight: 700,
-                fontFamily: 'var(--font-mono)',
-              }}>{coach.initials}</span>
+          <div className="interaction-coach-tip">
+            <div className="interaction-coach-avatar">
+              <span className="interaction-coach-initials">{coach.initials}</span>
             </div>
-            <span style={{
-              fontFamily: 'var(--font-display)', fontSize: 11,
-              fontStyle: 'italic', color: 'rgba(245,241,235,0.65)', flex: 1,
-            }}>
-              {coachTip}
-            </span>
+            <span className="interaction-coach-text">{coachTip}</span>
           </div>
         )}
 
@@ -314,22 +225,7 @@ export function InteractionShell({
         {cta && phase === 'choosing' && (
           <button
             onClick={cta.onClick}
-            style={{
-              width: '100%',
-              padding: '12px',
-              background: cta.variant === 'danger' ? 'var(--led-red)' : 'var(--copper)',
-              border: 'none',
-              borderRadius: 6,
-              color: cta.variant === 'danger' ? '#fff' : 'var(--bg-leather-dk)',
-              fontFamily: 'var(--font-mono)',
-              fontSize: 12, fontWeight: 700,
-              letterSpacing: '1px',
-              cursor: 'pointer',
-              textTransform: 'uppercase',
-              boxShadow: cta.variant === 'danger'
-                ? '0 2px 12px rgba(255,42,24,0.4)'
-                : '0 2px 8px rgba(196,122,58,0.3)',
-            }}
+            className={cta.variant === 'danger' ? 'interaction-cta-danger' : 'interaction-cta-copper'}
           >
             {cta.label}
           </button>
@@ -337,24 +233,14 @@ export function InteractionShell({
 
         {/* Locked state */}
         {phase === 'locked' && (
-          <div style={{ padding: '8px 0', textAlign: 'center' }}>
-            <span style={{
-              fontSize: 11,
-              color: 'var(--copper)',
-              letterSpacing: '1px',
-              fontFamily: 'var(--font-mono)',
-            }}>· · ·</span>
+          <div className="interaction-locked-state">
+            <span className="interaction-locked-dots">· · ·</span>
           </div>
         )}
 
         {/* Outcome */}
         {phase === 'revealed' && outcome && (
-          <div style={{
-            padding: '8px 10px', borderRadius: 5, marginTop: 8,
-            background: 'rgba(255,255,255,0.04)',
-          }}>
-            {outcome}
-          </div>
+          <div className="interaction-outcome">{outcome}</div>
         )}
       </div>
     </div>

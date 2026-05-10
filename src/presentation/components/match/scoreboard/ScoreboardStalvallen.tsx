@@ -46,32 +46,16 @@ function pad2(n: number): string {
 
 function PenSlot({ entry }: { entry: PenaltyEntry | null }) {
   if (!entry) {
-    return (
-      <div className="pen-slot empty" style={{
-        flex: 1, padding: '4px 8px', borderRadius: 4,
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px dashed rgba(255,255,255,0.08)',
-        minHeight: 28,
-      }} />
-    )
+    return <div className="pen-slot empty" />
   }
   const mm = Math.floor(entry.secondsLeft / 60)
   const ss = entry.secondsLeft % 60
   return (
-    <div className="pen-slot" style={{
-      flex: 1, padding: '4px 8px', borderRadius: 4,
-      background: 'rgba(255,170,0,0.08)',
-      border: '1px solid rgba(255,170,0,0.25)',
-      display: 'flex', alignItems: 'center', gap: 6,
-    }}>
-      <span style={{ color: 'var(--led-amber)', fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700 }}>▲</span>
-      <span style={{ color: 'var(--led-amber)', fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700 }}>#{entry.num}</span>
-      <span style={{ color: 'rgba(245,241,235,0.7)', fontSize: 10, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {entry.name}
-      </span>
-      <span style={{ color: 'var(--led-amber)', fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, flexShrink: 0 }}>
-        {pad2(mm)}:{pad2(ss)}
-      </span>
+    <div className="pen-slot">
+      <span className="pen-slot-arrow">▲</span>
+      <span className="pen-slot-num">#{entry.num}</span>
+      <span className="pen-slot-name">{entry.name}</span>
+      <span className="pen-slot-timer">{pad2(mm)}:{pad2(ss)}</span>
     </div>
   )
 }
@@ -144,63 +128,25 @@ export function ScoreboardStalvallen({
   const tickerFull = ticker.join('  ·  ')
 
   return (
-    <div
-      style={{
-        background: 'var(--bg-leather-dk)',
-        borderBottom: '2px solid rgba(196,122,58,0.3)',
-        flexShrink: 0,
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
-        overflow: 'hidden',
-      }}
-    >
+    <div className="scoreboard-root">
       {/* Scanline texture */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none',
-        background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.018) 3px, rgba(255,255,255,0.018) 4px)',
-      }} />
+      <div className="scoreboard-scanlines" />
 
       {/* SM-FINAL band */}
       {isPlayoffFinal && (
-        <div style={{
-          background: 'rgba(196,122,58,0.15)',
-          borderBottom: '1px solid rgba(196,122,58,0.2)',
-          padding: '4px 12px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-        }}>
-          <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700,
-            letterSpacing: '3px', color: 'var(--copper)',
-            textTransform: 'uppercase',
-          }}>SM-FINAL</span>
+        <div className="scoreboard-final-band">
+          <span className="scoreboard-final-band-label">SM-FINAL</span>
           {finalTier && (
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'rgba(196,122,58,0.6)', letterSpacing: '1px' }}>
-              {finalTier}
-            </span>
+            <span className="scoreboard-final-band-tier">{finalTier}</span>
           )}
         </div>
       )}
 
       {/* Main score module */}
-      <div
-        className={`module-main${flashSide ? ` score-flash-${flashSide}` : ''}`}
-        style={{
-          background: '#0A0908',
-          margin: '8px 10px 0',
-          borderRadius: 6,
-          padding: '8px 12px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: 8,
-        }}
-      >
+      <div className={`module-main${flashSide ? ` score-flash-${flashSide}` : ''}`}>
         {/* Home */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-          <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700,
-            letterSpacing: '2px', color: homeColor, textTransform: 'uppercase',
-            opacity: 0.85,
-          }}>{homeCode}</span>
+        <div className="scoreboard-team-home">
+          <span className="scoreboard-team-code" style={{ color: homeColor }}>{homeCode}</span>
           <div className={flashSide === 'home' ? 'score-flash-active' : ''}>
             <SevenSegText
               text={String(homeScore)}
@@ -212,32 +158,23 @@ export function ScoreboardStalvallen({
         </div>
 
         {/* Center — period + time */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <span style={{ color: 'var(--led-red)', fontSize: 14, fontWeight: 900, lineHeight: 1 }}>·</span>
+        <div className="scoreboard-center">
+          <div>
+            <span className="scoreboard-period-dot">·</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <div className="scoreboard-clock-row">
             <SevenSegText text={pad2(minute)} size="md" color="var(--led-amber)" />
             <SevenSegColon size="md" color="var(--led-amber)" />
             <SevenSegText text={pad2(second)} size="md" color="var(--led-amber)" />
           </div>
-          <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: 8, fontWeight: 700,
-            letterSpacing: '2px',
-            background: isFT ? 'rgba(196,122,58,0.2)' : 'rgba(255,170,0,0.12)',
-            color: isFT ? 'var(--copper)' : 'var(--led-amber)',
-            padding: '2px 6px', borderRadius: 3,
-            border: `1px solid ${isFT ? 'rgba(196,122,58,0.3)' : 'rgba(255,170,0,0.2)'}`,
-          }}>{period}</span>
+          <span className={`scoreboard-period-tag ${isFT ? 'scoreboard-period-tag-ft' : 'scoreboard-period-tag-live'}`}>
+            {period}
+          </span>
         </div>
 
         {/* Away */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
-          <span style={{
-            fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 700,
-            letterSpacing: '2px', color: awayColor, textTransform: 'uppercase',
-            opacity: 0.85,
-          }}>{awayCode}</span>
+        <div className="scoreboard-team-away">
+          <span className="scoreboard-team-code" style={{ color: awayColor }}>{awayCode}</span>
           <div className={flashSide === 'away' ? 'score-flash-active' : ''}>
             <SevenSegText
               text={String(awayScore)}
@@ -251,34 +188,24 @@ export function ScoreboardStalvallen({
 
       {/* Penalty strip */}
       {hasPenalties && (
-        <div style={{
-          margin: '4px 10px 0',
-          display: 'flex', gap: 6,
-        }}>
+        <div className="pen-strip">
           <PenSlot entry={homePens[0] ?? null} />
           <PenSlot entry={awayPens[0] ?? null} />
         </div>
       )}
 
       {/* Ticker text */}
-      <div style={{
-        margin: '4px 0 0',
-        padding: '3px 0',
-        background: 'rgba(255,255,255,0.02)',
-        borderTop: '1px solid rgba(255,255,255,0.04)',
-        overflow: 'hidden',
-        height: 20,
-      }}>
-        <div style={{
-          display: 'flex', gap: 32, whiteSpace: 'nowrap',
-          transform: isFT ? 'none' : `translateX(${tickerOffset % (tickerFull.length * 7.5)}px)`,
-          transition: isFT ? 'none' : 'none',
-          padding: '0 12px',
-        }}>
+      <div className="scoreboard-ticker-wrap">
+        <div
+          className="scoreboard-ticker-inner"
+          style={{
+            transform: isFT ? 'none' : `translateX(${tickerOffset % (tickerFull.length * 7.5)}px)`,
+          }}
+        >
           {[tickerFull, tickerFull].map((t, ri) => (
-            <span key={ri} style={{ fontFamily: 'var(--font-mono)', fontSize: 9, lineHeight: '14px' }}>
+            <span key={ri} className="scoreboard-ticker-text">
               {t.split('·').map((seg, i) => (
-                <span key={i} style={{ color: i % 2 === 0 ? 'rgba(245,241,235,0.75)' : 'rgba(245,241,235,0.35)' }}>
+                <span key={i} className={i % 2 === 0 ? 'scoreboard-ticker-seg-primary' : 'scoreboard-ticker-seg-secondary'}>
                   {seg.trim()}{i < t.split('·').length - 1 ? ' · ' : ''}
                 </span>
               ))}
@@ -288,38 +215,21 @@ export function ScoreboardStalvallen({
       </div>
 
       {/* Timeline */}
-      <div style={{
-        margin: '4px 10px 8px',
-        height: 22,
-        background: 'var(--line-bg)',
-        borderRadius: 3,
-        border: '1px solid var(--line-stroke)',
-        position: 'relative',
-        overflow: 'visible',
-      }}>
+      <div className="scoreboard-timeline">
         {/* Tick marks */}
         {[15, 30, 60, 75].map(tick => {
           const pct = (tick / maxMinutes) * 100
           return (
-            <div key={tick} style={{
-              position: 'absolute', left: `${pct}%`, top: 0, bottom: 0,
-              width: 1, background: 'var(--line-tick)',
-              display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-            }}>
-              <span style={{ fontSize: 6, fontFamily: 'var(--font-mono)', color: 'var(--line-text)', position: 'absolute', bottom: -9 }}>
-                {tick}
-              </span>
+            <div key={tick} className="scoreboard-tick" style={{ left: `${pct}%` }}>
+              <span className="scoreboard-tick-label">{tick}</span>
             </div>
           )
         })}
 
         {/* Halftime line */}
-        <div style={{
-          position: 'absolute', left: '50%', top: 0, bottom: 0,
-          width: 1, background: 'rgba(255,255,255,0.2)',
-        }} />
+        <div className="scoreboard-halftime-line" />
 
-        {/* Penalty bands */}
+        {/* Penalty bands — dynamic positioning stays inline */}
         {penalties.map((p, i) => {
           const startPct = (Math.max(0, minute - p.secondsLeft / 60) / maxMinutes) * 100
           const endPct = (minute / maxMinutes) * 100
@@ -335,7 +245,7 @@ export function ScoreboardStalvallen({
           )
         })}
 
-        {/* Goal marks */}
+        {/* Goal marks — dynamic positioning stays inline */}
         {events.map((ev, i) => {
           const pct = (ev.minute / maxMinutes) * 100
           const isHome = ev.team === 'home'
@@ -364,7 +274,7 @@ export function ScoreboardStalvallen({
           )
         })}
 
-        {/* Now marker */}
+        {/* Now marker — dynamic positioning stays inline */}
         {showNowMarker && !isFT && (() => {
           const pct = (minute / maxMinutes) * 100
           return (

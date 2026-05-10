@@ -49,19 +49,10 @@ const TAG_STYLES: Record<TagType, TagStyle> = {
 function Tag({ type }: { type: TagType }) {
   const s = TAG_STYLES[type]
   return (
-    <span style={{
-      display: 'inline-block',
-      fontFamily: 'var(--font-mono)',
-      fontSize: 8,
-      fontWeight: 700,
-      letterSpacing: '1px',
-      padding: '2px 5px',
-      borderRadius: 2,
-      background: s.bg,
-      color: s.color,
-      textTransform: 'uppercase',
-      flexShrink: 0,
-    }}>
+    <span
+      className="commentary-tag"
+      style={{ background: s.bg, color: s.color }}
+    >
       {s.label}
     </span>
   )
@@ -80,80 +71,39 @@ export function CommentaryFeedStalvallen({ rows, autoScroll = true }: Commentary
   }, [rows.length, autoScroll])
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        flex: 1,
-        overflowY: 'auto',
-        background: 'linear-gradient(180deg, var(--bg-leather-dk) 0%, #211e1a 100%)',
-        minHeight: 0,
-      }}
-    >
+    <div ref={containerRef} className="commentary-feed">
       {rows.map((row, i) => {
         if (row.kind === 'atmosphere') {
           return (
-            <div key={i} style={{
-              padding: '6px 16px',
-              borderBottom: '1px solid rgba(196,122,58,0.04)',
-              animation: 'fadeInUp 250ms ease-out both',
-            }}>
-              <span style={{
-                fontStyle: 'italic',
-                fontSize: 11,
-                color: 'rgba(245,241,235,0.35)',
-                lineHeight: 1.4,
-                fontFamily: 'var(--font-display)',
-              }}>
-                {row.text}
-              </span>
+            <div key={i} className="commentary-row-atmosphere">
+              <span className="commentary-row-atmosphere-text">{row.text}</span>
             </div>
           )
         }
 
         const tagStyle = TAG_STYLES[row.tag]
+        const isGoalRow = row.tag === 'goal' || row.tag === 'penalty'
         return (
-          <div key={i} style={{
-            padding: '8px 12px',
-            borderBottom: '1px solid rgba(196,122,58,0.06)',
-            background: tagStyle.rowBg ?? 'transparent',
-            animation: 'fadeInUp 250ms ease-out both',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {/* Minute column — fixed 32px */}
-              <span style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 10,
-                fontWeight: 700,
-                color: 'var(--led-amber)',
-                minWidth: 32,
-                flexShrink: 0,
-              }}>
-                {row.minute}&apos;
-              </span>
-
+          <div
+            key={i}
+            className="commentary-row-event"
+            style={{ background: tagStyle.rowBg ?? 'transparent' }}
+          >
+            <div className="commentary-event-header">
+              <span className="commentary-event-minute">{row.minute}&apos;</span>
               <Tag type={row.tag} />
-
               {row.meta && (
-                <span style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 9,
-                  color: 'rgba(245,241,235,0.45)',
-                  flexShrink: 0,
-                }}>
-                  {row.meta}
-                </span>
+                <span className="commentary-event-meta">{row.meta}</span>
               )}
             </div>
-
-            <div style={{ marginTop: 3, paddingLeft: 40 }}>
-              <span style={{
-                fontSize: 12,
-                lineHeight: 1.4,
-                color: row.tag === 'goal' || row.tag === 'penalty'
-                  ? 'rgba(245,241,235,0.9)'
-                  : 'rgba(245,241,235,0.65)',
-                fontWeight: row.tag === 'goal' ? 500 : 400,
-              }}>
+            <div className="commentary-event-body">
+              <span
+                className="commentary-event-text"
+                style={{
+                  color: isGoalRow ? 'rgba(245,241,235,0.9)' : 'rgba(245,241,235,0.65)',
+                  fontWeight: row.tag === 'goal' ? 500 : 400,
+                }}
+              >
                 {row.text}
               </span>
             </div>
