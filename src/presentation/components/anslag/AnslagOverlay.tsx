@@ -1,6 +1,6 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { AnslagKey } from '../../../domain/services/anslagService'
-import { pickAnslagVariant, getAnslagData, isClubDirektkvalad } from '../../../domain/services/anslagService'
+import { pickAnslagVariant, getAnslagData, isClubDirektkvalad, buildBoardReportText } from '../../../domain/services/anslagService'
 
 interface AnslagOverlayProps {
   game: SaveGame
@@ -15,7 +15,7 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
 
   let variantBody = pickAnslagVariant(anslag, game.currentSeason, anslagKey, game.managedClubId)
 
-  // Template-variable resolution for cup_final_pre
+  // Template-variable resolution for cup anslag with {vsLabel} and {motståndare}
   if (anslagKey === 'cup_final_pre') {
     const finalFixture = game.fixtures.find(f =>
       f.isCup && f.roundNumber >= 4 &&
@@ -31,6 +31,41 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
       variantBody = variantBody
         .replace('{vsLabel}', vsLabel)
         .replace('{motståndare}', motståndare)
+    }
+  }
+
+  if (anslagKey === 'cup_first_match') {
+    const round1Fixture = game.fixtures.find(f =>
+      f.isCup && f.roundNumber === 1 &&
+      f.season === game.currentSeason &&
+      (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+    )
+    if (round1Fixture) {
+      const isHome = round1Fixture.homeClubId === game.managedClubId
+      const opponentId = isHome ? round1Fixture.awayClubId : round1Fixture.homeClubId
+      const opponent = game.clubs.find(c => c.id === opponentId)
+      const vsLabel = isHome ? 'Hemma mot' : 'Borta mot'
+      const motståndare = opponent?.shortName ?? opponent?.name ?? 'okänd'
+      variantBody = variantBody
+        .replace('{vsLabel}', vsLabel)
+        .replace('{motståndare}', motståndare)
+    }
+  }
+
+  // Template-variable resolution for season_kickoff (board anslag)
+  if (anslagKey === 'season_kickoff' && club) {
+    const board = club.board
+    if (board) {
+      const reportText = buildBoardReportText(game)
+      variantBody = variantBody
+        .replace(/{clubhouse}/g, club.clubhouse ?? 'klubbhuset')
+        .replace(/{chairmanFirstName}/g, board.chairman.firstName)
+        .replace(/{chairmanLastName}/g, board.chairman.lastName)
+        .replace(/{treasurerFirstName}/g, board.treasurer.firstName)
+        .replace(/{treasurerLastName}/g, board.treasurer.lastName)
+        .replace(/{memberFirstName}/g, board.member.firstName)
+        .replace(/{memberLastName}/g, board.member.lastName)
+        .replace(/{reportText}/g, reportText)
     }
   }
 

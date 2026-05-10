@@ -9,8 +9,6 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { SceneId } from '../entities/Scene'
 import { FixtureStatus } from '../enums'
 import { getCoffeeRoomScene } from './coffeeRoomService'
-import { shouldTriggerBoardMeeting } from '../data/scenes/boardMeetingScene'
-import { shouldTriggerCupIntro } from '../data/scenes/cupIntroScene'
 import { shouldTriggerCupFinalIntro } from '../data/scenes/cupFinalIntroScene'
 
 const COFFEE_ROOM_COOLDOWN_ROUNDS = 3
@@ -29,13 +27,31 @@ const COFFEE_ROOM_COOLDOWN_ROUNDS = 3
  */
 export function detectSceneTrigger(game: SaveGame): SceneId | null {
   if (shouldTriggerSMFinalVictory(game)) return 'sm_final_victory'
-  if (shouldTriggerBoardMeeting(game)) return 'board_meeting'
+  if (shouldTriggerBoardMeeting()) return 'board_meeting'
   if (shouldTriggerSundayTraining(game)) return 'sunday_training'
   if (shouldTriggerCupFinalIntro(game)) return 'cup_final_intro'
-  if (shouldTriggerCupIntro(game)) return 'cup_intro'
+  if (shouldTriggerCupIntro()) return 'cup_intro'
   if (shouldTriggerSeasonSignature(game)) return 'season_signature_reveal'
   if (shouldTriggerCoffeeRoom(game)) return 'coffee_room'
   return null
+}
+
+/**
+ * Disabled 2026-05-10 — innehållet flyttat till season_kickoff-anslag i
+ * boardAnslag.ts som visas i modal-format. Datan i boardMeetingScene.ts
+ * är kvar för referens men scenen aktiveras inte längre.
+ */
+export function shouldTriggerBoardMeeting(): boolean {
+  return false
+}
+
+/**
+ * Disabled 2026-05-10 — innehållet flyttat till cup_first_match-anslag i
+ * cupAnslag.ts. Datan i cupIntroScene.ts är kvar för referens men scenen
+ * aktiveras inte längre.
+ */
+export function shouldTriggerCupIntro(): boolean {
+  return false
 }
 
 /**

@@ -206,3 +206,117 @@ describe('computeNextAnslag — prioritet', () => {
     expect(computeNextAnslag(game)).toBe('playoff_qualification')
   })
 })
+
+describe('computeNextAnslag — season_kickoff', () => {
+  it('triggas vid säsong 2, matchday 0, inga matcher spelade', () => {
+    const game = makeGame({
+      currentSeason: 2,
+      currentMatchday: 0,
+      fixtures: [],
+      seenAnslag: [],
+    })
+    expect(computeNextAnslag(game)).toBe('season_kickoff')
+  })
+
+  it('triggas INTE vid säsong 1', () => {
+    const game = makeGame({
+      currentSeason: 1,
+      currentMatchday: 0,
+      fixtures: [],
+      seenAnslag: [],
+    })
+    expect(computeNextAnslag(game)).not.toBe('season_kickoff')
+  })
+
+  it('triggas INTE om season_kickoff redan sett', () => {
+    const game = makeGame({
+      currentSeason: 2,
+      currentMatchday: 0,
+      fixtures: [],
+      seenAnslag: ['season_kickoff'],
+    })
+    expect(computeNextAnslag(game)).not.toBe('season_kickoff')
+  })
+
+  it('triggas INTE om matcher redan spelats', () => {
+    const game = makeGame({
+      currentSeason: 2,
+      currentMatchday: 1,
+      fixtures: [
+        makeFixture({ id: 'f1', status: FixtureStatus.Completed }),
+      ],
+      seenAnslag: [],
+    })
+    expect(computeNextAnslag(game)).not.toBe('season_kickoff')
+  })
+
+  it('triggas vid säsong 3 också', () => {
+    const game = makeGame({
+      currentSeason: 3,
+      currentMatchday: 0,
+      fixtures: [],
+      seenAnslag: [],
+    })
+    expect(computeNextAnslag(game)).toBe('season_kickoff')
+  })
+})
+
+describe('computeNextAnslag — cup_first_match', () => {
+  function makeCupFixture(overrides: Partial<Fixture> = {}): Fixture {
+    return makeFixture({
+      isCup: true,
+      roundNumber: 1,
+      season: 1,
+      status: FixtureStatus.Scheduled,
+      homeClubId: 'managed',
+      awayClubId: 'other',
+      matchday: 2,
+      ...overrides,
+    })
+  }
+
+  it('triggas när scheduled round-1-cupmatch finns och cup_start sett', () => {
+    const game = makeGame({
+      currentSeason: 1,
+      currentMatchday: 1,
+      cupBracket: makeMinimalBracket(),
+      fixtures: [makeCupFixture()],
+      seenAnslag: ['cup_start'],
+    })
+    expect(computeNextAnslag(game)).toBe('cup_first_match')
+  })
+
+  it('triggas INTE om cup_start inte setts (cup_start ska komma först)', () => {
+    const game = makeGame({
+      currentSeason: 1,
+      currentMatchday: 1,
+      cupBracket: makeMinimalBracket(),
+      fixtures: [makeCupFixture()],
+      seenAnslag: [],
+    })
+    // cup_start ska triggas istället
+    expect(computeNextAnslag(game)).toBe('cup_start')
+  })
+
+  it('triggas INTE om cup_first_match redan sett', () => {
+    const game = makeGame({
+      currentSeason: 1,
+      currentMatchday: 1,
+      cupBracket: makeMinimalBracket(),
+      fixtures: [makeCupFixture()],
+      seenAnslag: ['cup_start', 'cup_first_match'],
+    })
+    expect(computeNextAnslag(game)).not.toBe('cup_first_match')
+  })
+
+  it('triggas INTE om ingen scheduled round-1-cupmatch finns', () => {
+    const game = makeGame({
+      currentSeason: 1,
+      currentMatchday: 2,
+      cupBracket: makeMinimalBracket(),
+      fixtures: [makeCupFixture({ status: FixtureStatus.Completed })],
+      seenAnslag: ['cup_start'],
+    })
+    expect(computeNextAnslag(game)).not.toBe('cup_first_match')
+  })
+})

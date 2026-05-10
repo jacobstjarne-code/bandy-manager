@@ -2,6 +2,7 @@ import type { AnslagText } from './types'
 
 export type CupAnslagKey =
   | 'cup_start'
+  | 'cup_first_match'
   | 'cup_between'
   | 'cup_finalweekend_pre'
   | 'cup_final_pre'
@@ -23,6 +24,14 @@ export const CUP_ANSLAG: Record<CupAnslagKey, AnslagText> = {
       },
     ],
     bodyDirektkval: `<br><br><em>({clubName} väntar. Andras kamp först. Vår cup börjar i kvarten.)</em>`,
+  },
+  cup_first_match: {
+    chapter: '⬩ Cupen börjar ⬩',
+    variants: [
+      {
+        body: `<em>"Lottningen kunde varit värre."</em><br><br>Replik från klubbhuset. Ingen vet vem som sa det först.<br><br>{vsLabel} {motståndare}. Förstarundan brukar avgöras tidigt. Eller inte.<br><br>Vinst ger kvartsfinal. Förlust ger en söndag mer att träna. Ingen kommer minnas matchen — utom om ni förlorar.`,
+      },
+    ],
   },
   cup_between: {
     chapter: '⬩ Snålvinden ⬩',
