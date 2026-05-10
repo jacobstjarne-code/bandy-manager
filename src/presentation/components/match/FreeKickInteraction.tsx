@@ -1,3 +1,14 @@
+/**
+ * FreeKickInteraction.tsx — Stålvallen redesign
+ *
+ * BATCH D-02. Uses InteractionShell with:
+ * - timer.style = 'tag' (4s amber)
+ * - SVG pitch: LED palette (amber kicker, red wall, steel-blue GK)
+ * - Monospace LED sub-choice buttons (SKJUT / CHIP / KORT)
+ * - cta.variant = 'copper'
+ *
+ * Mekanik (freeKickInteractionService) ORÖRD — rates, wall/distance modifiers.
+ */
 import { useState, useEffect } from 'react'
 import type { FreeKickInteractionData, FreeKickOutcome, FreeKickChoice } from '../../../domain/services/freeKickInteractionService'
 import { InteractionShell } from './InteractionShell'
@@ -14,11 +25,104 @@ interface FreeKickInteractionProps {
 
 const BASE_RATES: Record<FreeKickChoice, number> = { shoot: 0.28, chipPass: 0.22, layOff: 0.15 }
 
-const CHOICES: { choice: FreeKickChoice; emoji: string; label: string }[] = [
-  { choice: 'shoot',    emoji: '💥', label: 'Skjut' },
-  { choice: 'chipPass', emoji: '⤴️', label: 'Chip' },
-  { choice: 'layOff',   emoji: '↩️', label: 'Kort' },
+const CHOICES: { choice: FreeKickChoice; label: string; sublabel: string }[] = [
+  { choice: 'shoot',    label: 'SKJUT',  sublabel: 'direkt' },
+  { choice: 'chipPass', label: 'CHIP',   sublabel: 'chip' },
+  { choice: 'layOff',   label: 'KORT',   sublabel: 'lay-off' },
 ]
+
+/** SVG freekick schematic — Stålvallen LED palette */
+function FreeKickPitchSVG({
+  data, choice, rates, phase, onSetChoice,
+}: {
+  data: FreeKickInteractionData
+  choice: FreeKickChoice
+  rates: Record<FreeKickChoice, number>
+  phase: InteractionPhase
+  onSetChoice: (c: FreeKickChoice) => void
+}) {
+  // Ball position (bottom-center area)
+  const ballX = 130, ballY = 125
+
+  // Lane endpoints based on choice
+  const lanes: Record<FreeKickChoice, { x2: number; y2: number; color: string }> = {
+    shoot:    { x2: 130, y2: 14, color: '#FF3B0F' },
+    chipPass: { x2: 100, y2: 50, color: '#FFAA00' },
+    layOff:   { x2: 170, y2: 90, color: '#66FF33' },
+  }
+
+  return (
+    <svg viewBox="0 0 260 150" style={{ width: '100%', display: 'block' }}>
+      <defs>
+        <linearGradient id="igF" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#1A2628" />
+          <stop offset="100%" stopColor="#0E1518" />
+        </linearGradient>
+        <marker id="arrFK" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L6,3 z" fill={lanes[choice].color} />
+        </marker>
+      </defs>
+
+      {/* Ice */}
+      <rect width="260" height="150" fill="url(#igF)" rx="3" />
+
+      {/* Goal outline */}
+      <rect x="75" y="4" width="110" height="20" fill="none" stroke="rgba(180,200,210,0.55)" strokeWidth="1.5" rx="2" />
+      <rect x="77" y="6" width="106" height="16" fill="rgba(255,255,255,0.04)" />
+
+      {/* GK */}
+      <circle cx="130" cy="16" r="6" fill="#0A0A0A" stroke="#6FB6E8" strokeWidth="1.4" />
+      <text x="130" y="18.5" textAnchor="middle" fontSize="5" fill="#6FB6E8" fontFamily="monospace" fontWeight="700">MV</text>
+
+      {/* Wall — red LED blocks */}
+      <rect
+        x={112} y="48"
+        width={Math.max(12, data.wallSize * 9)} height="12"
+        rx="3" fill="#FF3B0F" opacity="0.75"
+      />
+      <text x="130" y="75" textAnchor="middle" fontSize="6" fill="rgba(180,200,210,0.4)" fontFamily="monospace">
+        MUR · {data.wallSize} MAN
+      </text>
+
+      {/* Distance marker */}
+      <line x1="130" y1="82" x2="130" y2="118" stroke="rgba(180,200,210,0.2)" strokeWidth="0.8" strokeDasharray="3,2" />
+      <text x="145" y="103" fontSize="6" fill="rgba(180,200,210,0.4)" fontFamily="monospace">{data.distanceMeters}m</text>
+
+      {/* Shot lane to chosen target */}
+      <path
+        d={`M${ballX},${ballY} Q${(ballX + lanes[choice].x2) / 2},${(ballY + lanes[choice].y2) / 2} ${lanes[choice].x2},${lanes[choice].y2}`}
+        fill="none" stroke={lanes[choice].color} strokeWidth="1.5" strokeDasharray="3,2" opacity="0.85"
+        markerEnd="url(#arrFK)"
+      />
+
+      {/* Ball */}
+      <circle cx={ballX} cy={ballY} r="5" fill="#FFAA00" stroke="#fff" strokeWidth="1.5" />
+      {/* Kicker name */}
+      <text x={ballX} y={ballY + 14} textAnchor="middle" fontSize="6" fill="#FFAA00" fontFamily="monospace" fontWeight="700">
+        {data.kickerName.split(' ').pop()}
+      </text>
+
+      {/* Choice lanes (dim — all 3 visible, active one is bright) */}
+      {(Object.entries(lanes) as [FreeKickChoice, typeof lanes[FreeKickChoice]][]).map(([c, lane]) => {
+        const isActive = choice === c
+        const rate = rates[c]
+        return (
+          <g key={c} opacity={isActive ? 1 : 0.3}
+            onClick={() => phase === 'choosing' && onSetChoice(c)}
+            style={{ cursor: phase === 'choosing' ? 'pointer' : 'default' }}
+          >
+            <text
+              x={lane.x2 + (c === 'layOff' ? 8 : -8)} y={lane.y2}
+              textAnchor={c === 'layOff' ? 'start' : 'end'}
+              fontSize="5.5" fill={lane.color} fontFamily="monospace" fontWeight="700"
+              style={{ pointerEvents: 'none' }}
+            >{Math.round(rate * 100)}%</text>
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
 
 export function FreeKickInteraction({ data, outcome, onChoose, coach }: FreeKickInteractionProps) {
   const [choice, setChoice] = useState<FreeKickChoice>('shoot')
@@ -51,86 +155,71 @@ export function FreeKickInteraction({ data, outcome, onChoose, coach }: FreeKick
     layOff: Math.max(0.08, BASE_RATES.layOff),
   }
 
-  const pitchNode = (
-    <>
-      <svg viewBox="0 0 260 150" width="100%" style={{ display: 'block', borderRadius: 6, overflow: 'hidden', marginBottom: 8 }}>
-        <defs>
-          <linearGradient id="igF" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--bg)" />
-            <stop offset="100%" stopColor="var(--border)" />
-          </linearGradient>
-        </defs>
-        <rect width="260" height="150" fill="url(#igF)" rx="4" />
-        <rect x="75" y="4" width="110" height="20" fill="none" stroke="#888" strokeWidth="2" rx="2" />
-        <rect x="77" y="6" width="106" height="16" fill="rgba(0,0,0,0.04)" />
-        <circle cx="130" cy="16" r="6" fill="var(--bg-leather)" opacity="0.7" />
-        <text x="130" y="19" textAnchor="middle" fontSize="5" fill="white" fontWeight="700">MV</text>
-        <rect x="112" y="48" width={data.wallSize * 9} height="12" rx="3" fill="var(--danger)" opacity="0.75" />
-        <text x="130" y="72" textAnchor="middle" fontSize="6" fill="#888">MUR · {data.wallSize} man</text>
-        <line x1="130" y1="82" x2="130" y2="118" stroke="var(--border-dark)" strokeWidth="0.8" strokeDasharray="3,2" />
-        <text x="145" y="102" fontSize="6" fill="#999">{data.distanceMeters}m</text>
-        <circle cx="130" cy="125" r="5" fill="var(--accent)" stroke="#fff" strokeWidth="1.5" />
-        <text x="130" y="140" textAnchor="middle" fontSize="6" fill="var(--accent)" fontWeight="600">
-          {data.kickerName.split(' ').pop()}
-        </text>
-      </svg>
-
-      <div style={{ display: 'flex', gap: 5 }}>
-        {CHOICES.map(({ choice: c, emoji, label }) => {
-          const rate = rates[c]
-          const isSelected = choice === c
-          return (
-            <button key={c} onClick={() => phase === 'choosing' && setChoice(c)}
-              style={{
-                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-                padding: '8px 4px', borderRadius: 8,
-                border: `1.5px solid ${isSelected ? 'var(--accent)' : 'rgba(196,122,58,0.25)'}`,
-                background: isSelected ? 'var(--bg-dark-elevated)' : 'var(--bg-dark-surface)',
-                cursor: phase === 'choosing' ? 'pointer' : 'default',
-              }}>
-              <span style={{ fontSize: 16 }}>{emoji}</span>
-              <span style={{ color: 'var(--text-light)', fontSize: 10, fontWeight: 600 }}>{label}</span>
-              <span style={{ color: isSelected ? 'var(--accent)' : 'var(--text-light-secondary)', fontSize: 10, fontWeight: 700 }}>
-                {Math.round(rate * 20) * 5}%
-              </span>
-            </button>
-          )
-        })}
-      </div>
-    </>
+  const subChoicesNode = (
+    <div style={{ display: 'flex', gap: 6 }}>
+      {CHOICES.map(({ choice: c, label }) => {
+        const isSelected = choice === c
+        return (
+          <button
+            key={c}
+            onClick={() => phase === 'choosing' && setChoice(c)}
+            style={{
+              flex: 1,
+              padding: '8px 4px',
+              background: isSelected ? 'rgba(102,255,51,0.12)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${isSelected ? 'var(--led-green)' : 'rgba(255,255,255,0.12)'}`,
+              borderRadius: 4,
+              color: isSelected ? 'var(--led-green)' : 'rgba(245,241,235,0.5)',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: '0.8px',
+              cursor: phase === 'choosing' ? 'pointer' : 'default',
+              boxShadow: isSelected ? '0 0 6px rgba(102,255,51,0.3)' : 'none',
+              textAlign: 'center',
+            }}
+          >
+            {label}
+          </button>
+        )
+      })}
+    </div>
   )
+
+  const choiceLabels: Record<FreeKickChoice, string> = { shoot: 'SKJUT', chipPass: 'CHIP', layOff: 'KORT' }
 
   return (
     <InteractionShell
       icon="🏒"
       title="FRISLAG"
       minute={data.minute ?? 0}
-      timerSeconds={5}
-      stats={
-        <>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-light)' }}>
-            {data.kickerName.split(' ').slice(-2).join(' ')}
-          </span>
-          <span style={{ fontSize: 10, color: 'var(--text-light-secondary)', marginLeft: 'auto' }}>
-            {data.distanceMeters}m · mur {data.wallSize} man
-          </span>
-        </>
+      timer={{ seconds: 4, style: 'tag' }}
+      pitch={
+        <FreeKickPitchSVG
+          data={data}
+          choice={choice}
+          rates={rates}
+          phase={phase}
+          onSetChoice={setChoice}
+        />
       }
-      pitch={pitchNode}
+      subChoices={subChoicesNode}
+      readout={{ label: choiceLabels[choice], pct: Math.round(rates[choice] * 100) }}
       coachTip={coachTip}
       coach={coach}
-      actions={
-        <button onClick={() => handleConfirm()} className="btn btn-primary" style={{ width: '100%', marginTop: 6 }}>
-          SLÅ FRISLAGET →
-        </button>
-      }
+      cta={{ label: 'Slå frislaget →', variant: 'copper', onClick: () => handleConfirm() }}
       phase={phase}
       outcome={outcome ? (
-        <div style={{ background: outcome.type === 'goal' ? 'rgba(196,122,58,0.15)' : 'var(--bg-dark-surface)', borderLeft: `3px solid ${outcome.type === 'goal' ? 'var(--accent)' : 'var(--bg-dark-elevated)'}`, padding: '6px 8px', borderRadius: 4 }}>
-          <p style={{ fontSize: 12, fontWeight: outcome.type === 'goal' ? 700 : 400, color: outcome.type === 'goal' ? 'var(--accent)' : 'var(--text-light-secondary)', margin: 0 }}>
-            {outcome.type === 'goal' ? '🏒 MÅL! ' : ''}{outcome.description}
-          </p>
-        </div>
+        <p style={{
+          fontSize: 11,
+          color: outcome.type === 'goal' ? 'var(--copper)' : 'rgba(245,241,235,0.65)',
+          fontWeight: outcome.type === 'goal' ? 700 : 400,
+          fontStyle: outcome.type !== 'goal' ? 'italic' : 'normal',
+          fontFamily: outcome.type !== 'goal' ? 'var(--font-display)' : 'var(--font-mono)',
+          margin: 0,
+        }}>
+          {outcome.type === 'goal' ? '🏒 MÅL! ' : ''}{outcome.description}
+        </p>
       ) : null}
       onTimeout={() => handleConfirm('shoot')}
     />

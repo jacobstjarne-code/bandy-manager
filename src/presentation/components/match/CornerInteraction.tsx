@@ -1,3 +1,14 @@
+/**
+ * CornerInteraction.tsx — Stålvallen redesign
+ *
+ * BATCH D-01. Uses InteractionShell with:
+ * - timer.style = 'tag' (3s amber)
+ * - SVG pitch: LED palette (amber own, red defenders, steel-blue GK, green selected zone)
+ * - Monospace LED sub-choice buttons (HÅRT / LÅGT / KORT)
+ * - cta.variant = 'copper'
+ *
+ * Mekanik (cornerInteractionService) ORÖRD — zones, rates, delivery logic.
+ */
 import { useState, useEffect } from 'react'
 import type { CornerInteractionData, CornerOutcome, CornerZone, CornerDelivery } from '../../../domain/services/cornerInteractionService'
 import { cornerZoneSuccessRates, formatRate } from '../../../domain/services/cornerInteractionService'
@@ -13,11 +24,133 @@ interface CornerInteractionProps {
   coach?: AssistantCoach
 }
 
-const DELIVERY_OPTIONS: { key: CornerDelivery; emoji: string; label: string }[] = [
-  { key: 'hard',  emoji: '💨', label: 'Hårt' },
-  { key: 'low',   emoji: '🎯', label: 'Lågt' },
-  { key: 'short', emoji: '🤫', label: 'Kort' },
+const DELIVERY_OPTIONS: { key: CornerDelivery; label: string }[] = [
+  { key: 'hard',  label: 'HÅRT' },
+  { key: 'low',   label: 'LÅGT' },
+  { key: 'short', label: 'KORT' },
 ]
+
+/** SVG corner schematic — Stålvallen LED palette */
+function CornerPitchSVG({
+  zone, delivery, cornerSide, topZone, bottomZone, topLabel, bottomLabel,
+  topRate, centerRate, bottomRate, phase, onSetZone,
+}: {
+  zone: CornerZone
+  delivery: CornerDelivery
+  cornerSide: 'right' | 'left'
+  topZone: CornerZone
+  bottomZone: CornerZone
+  topLabel: string
+  bottomLabel: string
+  topRate: number
+  centerRate: number
+  bottomRate: number
+  phase: InteractionPhase
+  onSetZone: (z: CornerZone) => void
+}) {
+  const zones: { z: CornerZone; label: string; rate: number; y: number }[] = [
+    { z: topZone,    label: topLabel,    rate: topRate,    y: 14 },
+    { z: 'center',   label: 'MITT',      rate: centerRate, y: 48 },
+    { z: bottomZone, label: bottomLabel, rate: bottomRate, y: 88 },
+  ]
+
+  // Corner pin position
+  const cx = 5
+  const cy = cornerSide === 'right' ? 5 : 125
+  const dir = cornerSide === 'right' ? 1 : -1
+
+  // Selected zone y-center for arrow target
+  const zoneYMap: Record<string, number> = {
+    [topZone]:    28,
+    center:       65,
+    [bottomZone]: 102,
+  }
+  const arrowTargetY = zoneYMap[zone] ?? 65
+
+  return (
+    <svg viewBox="0 0 220 130" style={{ width: '100%', display: 'block' }}>
+      <defs>
+        <linearGradient id="iceCG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#1A2628" />
+          <stop offset="100%" stopColor="#0E1518" />
+        </linearGradient>
+        <marker id="arrCG" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L6,3 z" fill="#66FF33" />
+        </marker>
+      </defs>
+
+      {/* Ice */}
+      <rect width="220" height="130" fill="url(#iceCG)" rx="3" />
+      {/* Penalty arc */}
+      <path d="M70,0 A70,65 0 0,1 70,130" fill="none" stroke="rgba(180,200,210,0.18)" strokeWidth="0.7" />
+      {/* Goal */}
+      <rect x="0" y="46" width="5" height="38" fill="none" stroke="rgba(180,200,210,0.55)" strokeWidth="1.5" />
+      {/* GK */}
+      <circle cx="14" cy="65" r="5" fill="#0A0A0A" stroke="#6FB6E8" strokeWidth="1.4" />
+      <text x="14" y="67.5" textAnchor="middle" fontSize="5" fill="#6FB6E8" fontFamily="monospace" fontWeight="700">MV</text>
+      {/* 4 defenders — red LED */}
+      {[48, 58, 72, 82].map((y, i) => (
+        <circle key={i} cx={i < 2 ? 16 : 22} cy={y} r="3" fill="#FF3B0F" opacity="0.85" />
+      ))}
+
+      {/* 3 zones */}
+      {zones.map(({ z, label, rate, y }) => {
+        const isSelected = zone === z
+        const h = z === 'center' ? 34 : 28
+        return (
+          <g key={z} onClick={() => phase === 'choosing' && onSetZone(z)} style={{ cursor: phase === 'choosing' ? 'pointer' : 'default' }}>
+            <rect
+              x="30" y={y} width="40" height={h} rx="2"
+              fill={isSelected ? 'rgba(102,255,51,0.12)' : 'rgba(180,200,210,0.04)'}
+              stroke={isSelected ? '#66FF33' : 'rgba(180,200,210,0.25)'}
+              strokeWidth={isSelected ? 1.5 : 0.8}
+              strokeDasharray={isSelected ? undefined : '3,2'}
+            />
+            <text
+              x="50" y={y + (h / 2) - 3}
+              textAnchor="middle" fontSize="6"
+              fill={isSelected ? '#66FF33' : 'rgba(180,200,210,0.45)'}
+              fontFamily="monospace" fontWeight="700" letterSpacing="1"
+              style={{ pointerEvents: 'none' }}
+            >{label}</text>
+            <text
+              x="50" y={y + (h / 2) + 7}
+              textAnchor="middle" fontSize="5.5"
+              fill={isSelected ? '#66FF33' : 'rgba(180,200,210,0.4)'}
+              fontFamily="monospace"
+              style={{ pointerEvents: 'none' }}
+            >{formatRate(rate)}</text>
+          </g>
+        )
+      })}
+
+      {/* Corner flag */}
+      <line x1={cx} y1={cy} x2={cx} y2={cy + dir * 8} stroke="#FFAA00" strokeWidth="1.2" />
+      <polygon points={`${cx},${cy + dir * 8} ${cx + 6},${cy + dir * 5} ${cx},${cy + dir * 2}`} fill="#FFAA00" />
+
+      {/* Pass arrow from corner to selected zone */}
+      <path
+        d={`M${cx},${cy} Q${cx + (70 - cx) * 0.3},${(cy + arrowTargetY) / 2} 30,${arrowTargetY}`}
+        fill="none" stroke="#66FF33" strokeWidth="1.5" strokeDasharray="4,3"
+        markerEnd="url(#arrCG)"
+      />
+
+      {/* Rush lines — 3 amber attacker dots */}
+      {[20, 65, 102].map((y, i) => (
+        <g key={i}>
+          <line x1={140 + i * 10} y1={y} x2="74" y2={y} stroke="#FFAA00" strokeWidth="0.8" strokeDasharray="3,2" opacity="0.7" />
+          <circle cx={140 + i * 10} cy={y} r="4" fill="#FFAA00" opacity="0.85" />
+        </g>
+      ))}
+
+      {/* Delivery hint top-right */}
+      <text
+        x="215" y="12" textAnchor="end" fontSize="6"
+        fill="#FFAA00" fontFamily="monospace" fontWeight="700" opacity="0.7"
+      >{delivery === 'hard' ? 'HÅRT' : delivery === 'low' ? 'LÅGT' : 'KORT'}</text>
+    </svg>
+  )
+}
 
 export function CornerInteraction({ data, outcome, onChoose, coach }: CornerInteractionProps) {
   const [zone, setZone] = useState<CornerZone>('center')
@@ -31,9 +164,6 @@ export function CornerInteraction({ data, outcome, onChoose, coach }: CornerInte
   const bottomLabel = cornerSide === 'right' ? 'BORTRE' : 'NÄRA'
 
   const rates = cornerZoneSuccessRates(data)
-  const topRate = rates[topZone]
-  const centerRate = rates['center']
-  const bottomRate = rates[bottomZone]
 
   const coachTip = coach ? generateCoachQuote(coach, {
     type: 'corner',
@@ -53,185 +183,82 @@ export function CornerInteraction({ data, outcome, onChoose, coach }: CornerInte
     onChoose(z, d)
   }
 
-  function handleTimeout() {
-    handleConfirm('near', 'hard')
-  }
-
-  const pitchNode = (
-    <>
-      <svg viewBox="0 0 220 110" width="100%" style={{ display: 'block', borderRadius: 6, overflow: 'hidden', marginBottom: 8 }}>
-        <defs>
-          <linearGradient id="iceC" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--bg)" />
-            <stop offset="100%" stopColor="var(--border)" />
-          </linearGradient>
-          <marker id="arrowC" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-            <path d="M0,0 L0,6 L6,3 z" fill="var(--accent)" />
-          </marker>
-        </defs>
-        <rect width="220" height="110" fill="url(#iceC)" rx="4" />
-        <path d="M70,0 A70,55 0 0,1 70,110" fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth="0.8" />
-        <rect x="0" y="37" width="5" height="36" fill="none" stroke="#999" strokeWidth="1.5" rx="1" />
-        <circle cx="14" cy="55" r="5" fill="var(--bg-leather)" opacity="0.7" />
-        <text x="14" y="57" textAnchor="middle" fontSize="5" fill="white" fontWeight="700">MV</text>
-        {[38, 48, 58, 68].map((y, i) => (
-          <circle key={i} cx="6" cy={y} r="3" fill="var(--danger)" opacity="0.5" />
-        ))}
-
-        {/* Top zone */}
-        <rect x="22" y="8" width="52" height="24" rx="4"
-          fill={zone === topZone ? 'rgba(196,122,58,0.35)' : 'rgba(196,122,58,0.08)'}
-          stroke={zone === topZone ? 'var(--accent)' : 'rgba(196,122,58,0.4)'}
-          strokeWidth={zone === topZone ? '1.5' : '0.8'}
-          style={{ cursor: phase === 'choosing' ? 'pointer' : 'default' }}
-          onClick={() => phase === 'choosing' && setZone(topZone)}
-        />
-        <text x="48" y="20" fontSize="7" fill={zone === topZone ? 'var(--accent)' : 'var(--text-light-secondary)'}
-          textAnchor="middle" fontWeight={zone === topZone ? '700' : '500'} style={{ pointerEvents: 'none' }}>
-          {topLabel}
-        </text>
-        <text x="48" y="29" fontSize="6" fill={zone === topZone ? 'var(--accent)' : 'var(--text-light-secondary)'}
-          textAnchor="middle" style={{ pointerEvents: 'none' }} opacity="0.8">
-          {formatRate(topRate)}
-        </text>
-
-        {/* Center zone */}
-        <rect x="22" y="40" width="52" height="24" rx="4"
-          fill={zone === 'center' ? 'rgba(196,122,58,0.35)' : 'rgba(196,122,58,0.08)'}
-          stroke={zone === 'center' ? 'var(--accent)' : 'rgba(196,122,58,0.4)'}
-          strokeWidth={zone === 'center' ? '1.5' : '0.8'}
-          style={{ cursor: phase === 'choosing' ? 'pointer' : 'default' }}
-          onClick={() => phase === 'choosing' && setZone('center')}
-        />
-        <text x="48" y="52" fontSize="7" fill={zone === 'center' ? 'var(--accent)' : 'var(--text-light-secondary)'}
-          textAnchor="middle" fontWeight={zone === 'center' ? '700' : '500'} style={{ pointerEvents: 'none' }}>
-          MITT
-        </text>
-        <text x="48" y="61" fontSize="6" fill={zone === 'center' ? 'var(--accent)' : 'var(--text-light-secondary)'}
-          textAnchor="middle" style={{ pointerEvents: 'none' }} opacity="0.8">
-          {formatRate(centerRate)}
-        </text>
-
-        {/* Bottom zone */}
-        <rect x="22" y="72" width="52" height="24" rx="4"
-          fill={zone === bottomZone ? 'rgba(196,122,58,0.35)' : 'rgba(196,122,58,0.08)'}
-          stroke={zone === bottomZone ? 'var(--accent)' : 'rgba(196,122,58,0.4)'}
-          strokeWidth={zone === bottomZone ? '1.5' : '0.8'}
-          style={{ cursor: phase === 'choosing' ? 'pointer' : 'default' }}
-          onClick={() => phase === 'choosing' && setZone(bottomZone)}
-        />
-        <text x="48" y="84" fontSize="7" fill={zone === bottomZone ? 'var(--accent)' : 'var(--text-light-secondary)'}
-          textAnchor="middle" fontWeight={zone === bottomZone ? '700' : '500'} style={{ pointerEvents: 'none' }}>
-          {bottomLabel}
-        </text>
-        <text x="48" y="93" fontSize="6" fill={zone === bottomZone ? 'var(--accent)' : 'var(--text-light-secondary)'}
-          textAnchor="middle" style={{ pointerEvents: 'none' }} opacity="0.8">
-          {formatRate(bottomRate)}
-        </text>
-
-        {/* Corner arrow */}
-        {(() => {
-          const cx = 5
-          const cy = cornerSide === 'right' ? 5 : 105
-          const nearY = cornerSide === 'right' ? 20 : 84
-          const farY = cornerSide === 'right' ? 84 : 20
-          const zoneY = zone === 'near' ? nearY : zone === 'center' ? 52 : farY
-          const tx = 22
-          const cpx = cx + (tx - cx) * 0.5
-          const cpy = cy + (zoneY - cy) * 0.1
-          return (
-            <path d={`M${cx},${cy} Q${cpx},${cpy} ${tx},${zoneY}`}
-              fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeDasharray="4,3" markerEnd="url(#arrowC)" />
-          )
-        })()}
-
-        {/* Corner flag */}
-        {(() => {
-          const cx = 5
-          const cy = cornerSide === 'right' ? 5 : 105
-          const dir = cornerSide === 'right' ? -1 : 1
-          return (
-            <>
-              <line x1={cx} y1={cy} x2={cx} y2={cy + dir * 8} stroke="var(--accent)" strokeWidth="1.2" />
-              <polygon points={`${cx},${cy + dir * 8} ${cx + 6},${cy + dir * 5} ${cx},${cy + dir * 2}`} fill="var(--accent)" />
-            </>
-          )
-        })()}
-
-        {/* Rush lines */}
-        <line x1="140" y1="20" x2="74" y2="20" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="3,2" />
-        <line x1="150" y1="55" x2="74" y2="52" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="3,2" />
-        <line x1="140" y1="84" x2="74" y2="84" stroke="var(--accent)" strokeWidth="0.8" strokeDasharray="3,2" />
-        <circle cx="140" cy="20" r="4" fill="var(--accent)" opacity="0.7" />
-        <circle cx="150" cy="55" r="4" fill="var(--accent)" opacity="0.7" />
-        <circle cx="140" cy="84" r="4" fill="var(--accent)" opacity="0.7" />
-        <text x="15" y={cornerSide === 'right' ? 14 : 102} fontSize="6" fill="var(--accent)" fontWeight="600" textAnchor="start">
-          {cornerSide === 'right' ? 'HÖGER' : 'VÄNSTER'}
-        </text>
-      </svg>
-
-      {/* Delivery selector */}
-      <div style={{ display: 'flex', gap: 5, marginBottom: 6 }}>
-        {DELIVERY_OPTIONS.map(({ key, emoji, label }) => (
+  const subChoicesNode = (
+    <div style={{ display: 'flex', gap: 6 }}>
+      {DELIVERY_OPTIONS.map(({ key, label }) => {
+        const isSelected = delivery === key
+        return (
           <button
             key={key}
             onClick={() => phase === 'choosing' && setDelivery(key)}
             style={{
-              flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-              padding: '8px 4px', borderRadius: 8,
-              border: `1.5px solid ${delivery === key ? 'var(--accent)' : 'rgba(196,122,58,0.25)'}`,
-              background: delivery === key ? 'var(--bg-dark-elevated)' : 'var(--bg-dark-surface)',
+              flex: 1,
+              padding: '8px 4px',
+              background: isSelected ? 'rgba(102,255,51,0.12)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${isSelected ? 'var(--led-green)' : 'rgba(255,255,255,0.12)'}`,
+              borderRadius: 4,
+              color: isSelected ? 'var(--led-green)' : 'rgba(245,241,235,0.5)',
+              fontFamily: 'var(--font-mono)',
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: '0.8px',
               cursor: phase === 'choosing' ? 'pointer' : 'default',
+              boxShadow: isSelected ? '0 0 6px rgba(102,255,51,0.3)' : 'none',
+              textAlign: 'center',
             }}
           >
-            <span style={{ fontSize: 16 }}>{emoji}</span>
-            <span style={{ color: 'var(--text-light)', fontSize: 11, fontWeight: 600 }}>{label}</span>
+            {label}
           </button>
-        ))}
-      </div>
-    </>
+        )
+      })}
+    </div>
   )
 
-  const actionsNode = (
-    <button onClick={() => handleConfirm()} className="btn btn-primary" style={{ width: '100%', marginTop: 6 }}>
-      SLÅ HÖRNAN →
-    </button>
-  )
-
-  const outcomeNode = outcome ? (
-    <p style={{
-      fontSize: 12,
-      color: outcome.type === 'goal' ? 'var(--success)' : 'var(--text-secondary)',
-      fontWeight: outcome.type === 'goal' ? 700 : 400,
-      lineHeight: 1.4,
-    }}>
-      {outcome.type === 'goal' ? '🏒 MÅL! ' : ''}{outcome.description}
-    </p>
-  ) : null
+  const zoneLabel = zone === 'center' ? 'MITT' : zone === 'near' ? 'NÄRA' : 'BORTRE'
+  const zoneRate = rates[zone]
 
   return (
     <InteractionShell
       icon="📐"
       title="HÖRNA"
       minute={data.minute}
-      timerSeconds={5}
-      stats={
-        <>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-light)' }}>
-            {data.cornerTakerName.split('. ')[1] ?? data.cornerTakerName}
-          </span>
-          <span style={{ fontSize: 10, color: 'var(--text-light-secondary)', marginLeft: 'auto' }}>
-            {data.topRusherName} rusar
-          </span>
-        </>
+      timer={{ seconds: 3, style: 'tag' }}
+      pitch={
+        <CornerPitchSVG
+          zone={zone}
+          delivery={delivery}
+          cornerSide={cornerSide}
+          topZone={topZone}
+          bottomZone={bottomZone}
+          topLabel={topLabel}
+          bottomLabel={bottomLabel}
+          topRate={rates[topZone]}
+          centerRate={rates['center']}
+          bottomRate={rates[bottomZone]}
+          phase={phase}
+          onSetZone={setZone}
+        />
       }
-      pitch={pitchNode}
+      subChoices={subChoicesNode}
+      readout={{ label: zoneLabel, pct: Math.round(zoneRate * 100) }}
       coachTip={coachTip}
       coach={coach}
-      actions={actionsNode}
+      cta={{ label: 'Slå hörnan →', variant: 'copper', onClick: () => handleConfirm() }}
       phase={phase}
-      outcome={outcomeNode}
-      onTimeout={handleTimeout}
+      outcome={outcome ? (
+        <p style={{
+          fontSize: 11,
+          color: outcome.type === 'goal' ? 'var(--copper)' : 'rgba(245,241,235,0.65)',
+          fontWeight: outcome.type === 'goal' ? 700 : 400,
+          fontStyle: outcome.type !== 'goal' ? 'italic' : 'normal',
+          fontFamily: outcome.type !== 'goal' ? 'var(--font-display)' : 'var(--font-mono)',
+          margin: 0,
+          letterSpacing: outcome.type === 'goal' ? '0.5px' : undefined,
+        }}>
+          {outcome.type === 'goal' ? '🏒 MÅL! ' : ''}{outcome.description}
+        </p>
+      ) : null}
+      onTimeout={() => handleConfirm('near', 'hard')}
     />
   )
 }
