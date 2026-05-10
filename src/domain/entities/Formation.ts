@@ -24,17 +24,20 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
     label: '5-3-2 (Klassisk)',
     description: 'Traditionell. Libero, två backar, två ytterhalvor, tre halvbacks, två forwards.',
     slots: [
-      { id: 'gk',     label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 5 },
-      { id: 'def-l',  label: 'VB',  position: PlayerPosition.Defender,   x: 25, y: 18 },
-      { id: 'def-c',  label: 'LIB', position: PlayerPosition.Defender,   x: 50, y: 24 },
-      { id: 'def-r',  label: 'HB',  position: PlayerPosition.Defender,   x: 75, y: 18 },
-      { id: 'half-l', label: 'VYH', position: PlayerPosition.Half,       x: 10, y: 38 },
-      { id: 'half-r', label: 'HYH', position: PlayerPosition.Half,       x: 90, y: 38 },
-      { id: 'mid-l',  label: 'VMF', position: PlayerPosition.Midfielder, x: 30, y: 52 },
+      { id: 'gk',     label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
+      // Backlinje — fem på samma rad: VYH ytterst, VB-LIB-HB i mitten, HYH ytterst
+      { id: 'half-l', label: 'VYH', position: PlayerPosition.Half,       x: 8,  y: 22 },
+      { id: 'def-l',  label: 'VB',  position: PlayerPosition.Defender,   x: 28, y: 22 },
+      { id: 'def-c',  label: 'LIB', position: PlayerPosition.Defender,   x: 50, y: 22 },
+      { id: 'def-r',  label: 'HB',  position: PlayerPosition.Defender,   x: 72, y: 22 },
+      { id: 'half-r', label: 'HYH', position: PlayerPosition.Half,       x: 92, y: 22 },
+      // Mittfält
+      { id: 'mid-l',  label: 'VMF', position: PlayerPosition.Midfielder, x: 28, y: 50 },
       { id: 'mid-c',  label: 'CMF', position: PlayerPosition.Midfielder, x: 50, y: 50 },
-      { id: 'mid-r',  label: 'HMF', position: PlayerPosition.Midfielder, x: 70, y: 52 },
-      { id: 'fwd-l',  label: 'VF',  position: PlayerPosition.Forward,    x: 35, y: 77 },
-      { id: 'fwd-r',  label: 'HF',  position: PlayerPosition.Forward,    x: 65, y: 77 },
+      { id: 'mid-r',  label: 'HMF', position: PlayerPosition.Midfielder, x: 72, y: 50 },
+      // Forwards
+      { id: 'fwd-l',  label: 'VF',  position: PlayerPosition.Forward,    x: 38, y: 72 },
+      { id: 'fwd-r',  label: 'HF',  position: PlayerPosition.Forward,    x: 62, y: 72 },
     ],
   },
   '3-3-4': {
@@ -42,17 +45,20 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
     label: '3-3-4 (Offensiv)',
     description: 'Traditionell bandyformation. Tre backar, tre halvar, fyra forwards.',
     slots: [
-      { id: 'gk',     label: 'MV', position: PlayerPosition.Goalkeeper, x: 50, y: 5 },
-      { id: 'def-l',  label: 'VB', position: PlayerPosition.Defender,   x: 20, y: 20 },
-      { id: 'def-c',  label: 'CB', position: PlayerPosition.Defender,   x: 50, y: 18 },
-      { id: 'def-r',  label: 'HB', position: PlayerPosition.Defender,   x: 80, y: 20 },
-      { id: 'half-l', label: 'VH', position: PlayerPosition.Half,       x: 20, y: 52 },
+      { id: 'gk',     label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
+      // 3 backar — samma rad
+      { id: 'def-l',  label: 'VB',  position: PlayerPosition.Defender,   x: 22, y: 22 },
+      { id: 'def-c',  label: 'CB',  position: PlayerPosition.Defender,   x: 50, y: 22 },
+      { id: 'def-r',  label: 'HB',  position: PlayerPosition.Defender,   x: 78, y: 22 },
+      // 3 halvar — samma rad
+      { id: 'half-l', label: 'VH',  position: PlayerPosition.Half,       x: 22, y: 48 },
       { id: 'half-c', label: 'CMF', position: PlayerPosition.Midfielder,  x: 50, y: 50 },
-      { id: 'half-r', label: 'HR', position: PlayerPosition.Half,       x: 80, y: 52 },
-      { id: 'fwd-il', label: 'VI', position: PlayerPosition.Forward,    x: 30, y: 72 },
-      { id: 'fwd-ir', label: 'HI', position: PlayerPosition.Forward,    x: 70, y: 72 },
-      { id: 'fwd-l',  label: 'VY', position: PlayerPosition.Forward,    x: 10, y: 80 },
-      { id: 'fwd-r',  label: 'HY', position: PlayerPosition.Forward,    x: 90, y: 80 },
+      { id: 'half-r', label: 'HR',  position: PlayerPosition.Half,       x: 78, y: 48 },
+      // 4 forwards — samma rad, yttre + inre symmetriskt
+      { id: 'fwd-l',  label: 'VY',  position: PlayerPosition.Forward,    x: 12, y: 72 },
+      { id: 'fwd-il', label: 'VI',  position: PlayerPosition.Forward,    x: 32, y: 72 },
+      { id: 'fwd-ir', label: 'HI',  position: PlayerPosition.Forward,    x: 68, y: 72 },
+      { id: 'fwd-r',  label: 'HY',  position: PlayerPosition.Forward,    x: 88, y: 72 },
     ],
   },
   '4-3-3': {
@@ -60,17 +66,20 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
     label: '4-3-3 (Defensiv)',
     description: 'Fyra backar ger stabilitet. Tre halvar, tre forwards.',
     slots: [
-      { id: 'gk',      label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 5 },
-      { id: 'def-ll',  label: 'VB',  position: PlayerPosition.Defender,   x: 15, y: 20 },
-      { id: 'def-lc',  label: 'VCB', position: PlayerPosition.Defender,   x: 38, y: 18 },
-      { id: 'def-rc',  label: 'HCB', position: PlayerPosition.Defender,   x: 62, y: 18 },
-      { id: 'def-rr',  label: 'HB',  position: PlayerPosition.Defender,   x: 85, y: 20 },
-      { id: 'half-l',  label: 'VH',  position: PlayerPosition.Half,       x: 25, y: 52 },
+      { id: 'gk',      label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
+      // 4 backar — samma rad
+      { id: 'def-ll',  label: 'VB',  position: PlayerPosition.Defender,   x: 14, y: 22 },
+      { id: 'def-lc',  label: 'VCB', position: PlayerPosition.Defender,   x: 38, y: 22 },
+      { id: 'def-rc',  label: 'HCB', position: PlayerPosition.Defender,   x: 62, y: 22 },
+      { id: 'def-rr',  label: 'HB',  position: PlayerPosition.Defender,   x: 86, y: 22 },
+      // 3 halvar — samma rad
+      { id: 'half-l',  label: 'VH',  position: PlayerPosition.Half,       x: 25, y: 50 },
       { id: 'half-c',  label: 'CMF', position: PlayerPosition.Midfielder,  x: 50, y: 50 },
-      { id: 'half-r',  label: 'HR',  position: PlayerPosition.Half,       x: 75, y: 52 },
-      { id: 'fwd-l',   label: 'VY',  position: PlayerPosition.Forward,    x: 20, y: 78 },
-      { id: 'fwd-c',   label: 'CF',  position: PlayerPosition.Forward,    x: 50, y: 76 },
-      { id: 'fwd-r',   label: 'HY',  position: PlayerPosition.Forward,    x: 80, y: 78 },
+      { id: 'half-r',  label: 'HR',  position: PlayerPosition.Half,       x: 75, y: 50 },
+      // 3 forwards — samma rad
+      { id: 'fwd-l',   label: 'VY',  position: PlayerPosition.Forward,    x: 22, y: 74 },
+      { id: 'fwd-c',   label: 'CF',  position: PlayerPosition.Forward,    x: 50, y: 72 },
+      { id: 'fwd-r',   label: 'HY',  position: PlayerPosition.Forward,    x: 78, y: 74 },
     ],
   },
   '3-4-3': {
@@ -78,17 +87,20 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
     label: '3-4-3 (Halvlinje)',
     description: 'Stark halvlinje med fyra halvar. Bra bollinnehav.',
     slots: [
-      { id: 'gk',      label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 5 },
-      { id: 'def-l',   label: 'VB',  position: PlayerPosition.Defender,   x: 20, y: 20 },
-      { id: 'def-c',   label: 'CB',  position: PlayerPosition.Defender,   x: 50, y: 18 },
-      { id: 'def-r',   label: 'HB',  position: PlayerPosition.Defender,   x: 80, y: 20 },
-      { id: 'half-ll', label: 'VH',  position: PlayerPosition.Half,       x: 15, y: 52 },
-      { id: 'half-lc', label: 'VMF', position: PlayerPosition.Midfielder,  x: 38, y: 50 },
-      { id: 'half-rc', label: 'HMF', position: PlayerPosition.Midfielder,  x: 62, y: 50 },
-      { id: 'half-rr', label: 'HR',  position: PlayerPosition.Half,       x: 85, y: 52 },
-      { id: 'fwd-l',   label: 'VY',  position: PlayerPosition.Forward,    x: 20, y: 78 },
-      { id: 'fwd-c',   label: 'CF',  position: PlayerPosition.Forward,    x: 50, y: 76 },
-      { id: 'fwd-r',   label: 'HY',  position: PlayerPosition.Forward,    x: 80, y: 78 },
+      { id: 'gk',      label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
+      // 3 backar — samma rad
+      { id: 'def-l',   label: 'VB',  position: PlayerPosition.Defender,   x: 22, y: 22 },
+      { id: 'def-c',   label: 'CB',  position: PlayerPosition.Defender,   x: 50, y: 22 },
+      { id: 'def-r',   label: 'HB',  position: PlayerPosition.Defender,   x: 78, y: 22 },
+      // 4 halvar — samma rad, yttre + inre
+      { id: 'half-ll', label: 'VH',  position: PlayerPosition.Half,       x: 12, y: 50 },
+      { id: 'half-lc', label: 'VMF', position: PlayerPosition.Midfielder,  x: 36, y: 50 },
+      { id: 'half-rc', label: 'HMF', position: PlayerPosition.Midfielder,  x: 64, y: 50 },
+      { id: 'half-rr', label: 'HR',  position: PlayerPosition.Half,       x: 88, y: 50 },
+      // 3 forwards — samma rad
+      { id: 'fwd-l',   label: 'VY',  position: PlayerPosition.Forward,    x: 22, y: 72 },
+      { id: 'fwd-c',   label: 'CF',  position: PlayerPosition.Forward,    x: 50, y: 72 },
+      { id: 'fwd-r',   label: 'HY',  position: PlayerPosition.Forward,    x: 78, y: 72 },
     ],
   },
   '2-3-2-3': {
@@ -96,17 +108,21 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
     label: '2-3-2-3 (Offensiv)',
     description: 'Bara två backar — all vikt framåt. Riskabelt men explosivt.',
     slots: [
-      { id: 'gk',     label: 'MV', position: PlayerPosition.Goalkeeper, x: 50, y: 5 },
-      { id: 'def-l',  label: 'VB', position: PlayerPosition.Defender,   x: 30, y: 18 },
-      { id: 'def-r',  label: 'HB', position: PlayerPosition.Defender,   x: 70, y: 18 },
-      { id: 'half-l', label: 'VH', position: PlayerPosition.Half,       x: 20, y: 38 },
-      { id: 'half-c', label: 'CMF', position: PlayerPosition.Midfielder,  x: 50, y: 36 },
-      { id: 'half-r', label: 'HR', position: PlayerPosition.Half,       x: 80, y: 38 },
-      { id: 'mid-l',  label: 'VM', position: PlayerPosition.Midfielder, x: 30, y: 58 },
-      { id: 'mid-r',  label: 'HM', position: PlayerPosition.Midfielder, x: 70, y: 58 },
-      { id: 'fwd-l',  label: 'VY', position: PlayerPosition.Forward,    x: 20, y: 78 },
-      { id: 'fwd-c',  label: 'CF', position: PlayerPosition.Forward,    x: 50, y: 76 },
-      { id: 'fwd-r',  label: 'HY', position: PlayerPosition.Forward,    x: 80, y: 78 },
+      { id: 'gk',     label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
+      // 2 backar — samma rad
+      { id: 'def-l',  label: 'VB',  position: PlayerPosition.Defender,   x: 32, y: 22 },
+      { id: 'def-r',  label: 'HB',  position: PlayerPosition.Defender,   x: 68, y: 22 },
+      // 3 halvar — samma rad
+      { id: 'half-l', label: 'VH',  position: PlayerPosition.Half,       x: 18, y: 40 },
+      { id: 'half-c', label: 'CMF', position: PlayerPosition.Midfielder,  x: 50, y: 40 },
+      { id: 'half-r', label: 'HR',  position: PlayerPosition.Half,       x: 82, y: 40 },
+      // 2 mids — samma rad
+      { id: 'mid-l',  label: 'VM',  position: PlayerPosition.Midfielder, x: 32, y: 58 },
+      { id: 'mid-r',  label: 'HM',  position: PlayerPosition.Midfielder, x: 68, y: 58 },
+      // 3 forwards — samma rad
+      { id: 'fwd-l',  label: 'VY',  position: PlayerPosition.Forward,    x: 18, y: 76 },
+      { id: 'fwd-c',  label: 'CF',  position: PlayerPosition.Forward,    x: 50, y: 76 },
+      { id: 'fwd-r',  label: 'HY',  position: PlayerPosition.Forward,    x: 82, y: 76 },
     ],
   },
   '4-2-4': {
@@ -114,17 +130,20 @@ export const FORMATIONS: Record<FormationType, FormationTemplate> = {
     label: '4-2-4 (Ultra-offensiv)',
     description: 'Maximal bredd med fyra forwards och fyra backar. Tunn halvbackslinje.',
     slots: [
-      { id: 'gk',      label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 5 },
-      { id: 'def-ll',  label: 'VB',  position: PlayerPosition.Defender,   x: 15, y: 20 },
-      { id: 'def-lc',  label: 'VCB', position: PlayerPosition.Defender,   x: 38, y: 18 },
-      { id: 'def-rc',  label: 'HCB', position: PlayerPosition.Defender,   x: 62, y: 18 },
-      { id: 'def-rr',  label: 'HB',  position: PlayerPosition.Defender,   x: 85, y: 20 },
+      { id: 'gk',      label: 'MV',  position: PlayerPosition.Goalkeeper, x: 50, y: 8 },
+      // 4 backar — samma rad
+      { id: 'def-ll',  label: 'VB',  position: PlayerPosition.Defender,   x: 14, y: 22 },
+      { id: 'def-lc',  label: 'VCB', position: PlayerPosition.Defender,   x: 38, y: 22 },
+      { id: 'def-rc',  label: 'HCB', position: PlayerPosition.Defender,   x: 62, y: 22 },
+      { id: 'def-rr',  label: 'HB',  position: PlayerPosition.Defender,   x: 86, y: 22 },
+      // 2 halvar — samma rad
       { id: 'half-l',  label: 'VH',  position: PlayerPosition.Half,       x: 35, y: 50 },
       { id: 'half-r',  label: 'HR',  position: PlayerPosition.Half,       x: 65, y: 50 },
-      { id: 'fwd-ll',  label: 'VY',  position: PlayerPosition.Forward,    x: 10, y: 78 },
-      { id: 'fwd-il',  label: 'VI',  position: PlayerPosition.Forward,    x: 35, y: 73 },
-      { id: 'fwd-ir',  label: 'HI',  position: PlayerPosition.Forward,    x: 65, y: 73 },
-      { id: 'fwd-rr',  label: 'HY',  position: PlayerPosition.Forward,    x: 90, y: 78 },
+      // 4 forwards — samma rad
+      { id: 'fwd-ll',  label: 'VY',  position: PlayerPosition.Forward,    x: 10, y: 72 },
+      { id: 'fwd-il',  label: 'VI',  position: PlayerPosition.Forward,    x: 35, y: 72 },
+      { id: 'fwd-ir',  label: 'HI',  position: PlayerPosition.Forward,    x: 65, y: 72 },
+      { id: 'fwd-rr',  label: 'HY',  position: PlayerPosition.Forward,    x: 90, y: 72 },
     ],
   },
 }

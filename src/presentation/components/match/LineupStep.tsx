@@ -7,6 +7,7 @@ import { PlayerPosition } from '../../../domain/enums'
 import { positionShort } from '../../utils/formatters'
 import { generateBasicAnalysis } from '../../../domain/services/opponentAnalysisService'
 import { getConditionLabel, getWeatherEmoji } from '../../../domain/services/weatherService'
+import { FORMATIONS, type FormationType } from '../../../domain/entities/Formation'
 import { LineupFormationView } from './LineupFormationView'
 import { PitchLineupView } from './PitchLineupView'
 import { OpponentAnalysisCard } from './OpponentAnalysisCard'
@@ -114,7 +115,7 @@ export function LineupStep({
 
   return (
     <>
-      {/* Context — two-column strip */}
+      {/* 1. Context — two-column strip */}
       {nextFixture && (
         <div style={{
           margin: '8px 14px',
@@ -140,7 +141,7 @@ export function LineupStep({
         </div>
       )}
 
-      {/* Opponent analysis card */}
+      {/* 2. Opponent analysis card */}
       {opponent && nextFixture && (
         <OpponentAnalysisCard
           fixture={nextFixture}
@@ -150,44 +151,8 @@ export function LineupStep({
         />
       )}
 
-      {/* Pitch area */}
-      <div style={{ padding: '0 14px', marginBottom: 6 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, gap: 8 }}>
-          <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
-            {startingIds.length} av 11 placerade
-          </span>
-          <button
-            onClick={onAutoFill}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              padding: '5px 10px',
-              background: 'transparent',
-              border: '1.5px solid var(--accent)',
-              color: 'var(--accent-dark)',
-              fontSize: 11, fontWeight: 600,
-              borderRadius: 8,
-              cursor: 'pointer',
-            }}
-          >
-            {SPARKLE_SVG}
-            Auto-fyll
-          </button>
-        </div>
-
-        {viewMode === 'list' ? (
-          <LineupFormationView
-            tacticState={tacticState}
-            startingIds={startingIds}
-            squadPlayers={squadPlayers}
-            selectedSlotId={selectedSlotId}
-            onSlotClick={onSlotClick}
-            onFormationChange={onFormationChange}
-          />
-        ) : null}
-      </div>
-
-      {/* Segmented toggle */}
-      <div style={{ padding: '0 14px', marginBottom: 8 }}>
+      {/* 3. Tabs — always at top, same position in both modes */}
+      <div style={{ padding: '0 14px', marginBottom: 10 }}>
         <div className="btn-segmented" style={{ display: 'flex', width: '100%' }}>
           {(['list', 'pitch'] as const).map(mode => (
             <button
@@ -202,8 +167,65 @@ export function LineupStep({
         </div>
       </div>
 
-      {/* Pitch mode */}
-      {viewMode === 'pitch' && (
+      {/* 4. Status + Auto-fyll — always same position */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 14px', marginBottom: 10, gap: 8 }}>
+        <span style={{ fontSize: 9, color: startingIds.length === 11 ? 'var(--success)' : 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
+          {startingIds.length} av 11 placerade
+        </span>
+        <button
+          onClick={onAutoFill}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            padding: '5px 10px',
+            background: 'transparent',
+            border: '1.5px solid var(--accent)',
+            color: 'var(--accent-dark)',
+            fontSize: 11, fontWeight: 600,
+            borderRadius: 8,
+            cursor: 'pointer',
+          }}
+        >
+          {SPARKLE_SVG}
+          Auto-fyll
+        </button>
+      </div>
+
+      {/* 5. Formation dropdown — lifted from sub-components */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', marginBottom: 10 }}>
+        <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+          ⚙ Formation
+        </span>
+        <select
+          value={tacticState.formation ?? '3-3-4'}
+          onChange={e => onFormationChange({ ...tacticState, formation: e.target.value as FormationType })}
+          style={{
+            flex: 1,
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border)',
+            color: 'var(--text-primary)',
+            fontSize: 11,
+            fontWeight: 600,
+            borderRadius: 6,
+            padding: '5px 8px',
+            cursor: 'pointer',
+          }}
+        >
+          {Object.entries(FORMATIONS).map(([type, tpl]) => (
+            <option key={type} value={type}>{tpl.label}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* 6. Pitch — viewMode determines component, same location */}
+      {viewMode === 'list' ? (
+        <LineupFormationView
+          tacticState={tacticState}
+          startingIds={startingIds}
+          squadPlayers={squadPlayers}
+          selectedSlotId={selectedSlotId}
+          onSlotClick={onSlotClick}
+        />
+      ) : (
         <PitchLineupView
           tacticState={tacticState}
           startingIds={startingIds}
@@ -211,12 +233,10 @@ export function LineupStep({
           onAssignPlayer={onAssignPlayer}
           onRemovePlayer={onRemovePlayer}
           onSwapPlayers={onSwapPlayers}
-          onFormationChange={onFormationChange}
-          onAutoFill={onAutoFill}
         />
       )}
 
-      {/* Player list (list mode only) */}
+      {/* 7. List-mode additions — player list */}
       {viewMode === 'list' && (
         <div style={{ padding: '0 14px 8px' }}>
           {groupedPlayers.map(group => (

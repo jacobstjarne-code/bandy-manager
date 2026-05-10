@@ -120,20 +120,20 @@ export function EventCardInline({ event, remainingCount }: Props) {
         fontFamily: 'Georgia, serif',
         fontSize: 13,
         fontStyle: 'italic',
-        color: 'var(--text-secondary)',
+        color: 'var(--text-light)',
         lineHeight: 1.6,
         marginBottom: 12,
       }}>
         {event.body}
       </p>
 
-      {/* Knapprad — likvärdiga val = btn-outline, ensam CTA = btn-primary */}
+      {/* Knapprad — första action primär, övriga outline */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {actions.map(action => (
+        {actions.map((action, idx) => (
           <button
             key={action.choiceId}
             onClick={() => handleAction(action.choiceId)}
-            className={actions.length > 1 ? 'btn btn-outline' : 'btn btn-primary'}
+            className={idx === 0 ? 'btn btn-primary' : 'btn btn-outline'}
           >
             {action.label}
           </button>

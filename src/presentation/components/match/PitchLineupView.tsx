@@ -21,8 +21,6 @@ interface PitchLineupViewProps {
   onAssignPlayer: (playerId: string, slotId: string) => void
   onRemovePlayer: (playerId: string) => void
   onSwapPlayers: (fromSlotId: string, toSlotId: string) => void
-  onFormationChange: (newTactic: Tactic) => void
-  onAutoFill: () => void
 }
 
 type Selection =
@@ -37,8 +35,6 @@ export function PitchLineupView({
   onAssignPlayer,
   onRemovePlayer,
   onSwapPlayers,
-  onFormationChange,
-  onAutoFill,
 }: PitchLineupViewProps) {
   const [selection, setSelection] = useState<Selection>(null)
 
@@ -114,33 +110,6 @@ export function PitchLineupView({
 
   return (
     <div style={{ userSelect: 'none' }}>
-      {/* Formation selector */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px', marginBottom: 10 }}>
-        <p style={{
-          fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase',
-          color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0, flexShrink: 0,
-        }}>
-          ⚙️ Formation
-        </p>
-        <select
-          value={formationType}
-          onChange={e => {
-            onFormationChange({ ...tacticState, formation: e.target.value as FormationType })
-            setSelection(null)
-          }}
-          style={{
-            flex: 1, padding: '7px 10px',
-            background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)',
-            fontSize: 13, fontWeight: 600,
-          }}
-        >
-          {(Object.keys(FORMATIONS) as FormationType[]).map(f => (
-            <option key={f} value={f}>{FORMATIONS[f].label}</option>
-          ))}
-        </select>
-      </div>
-
       {/* Pitch with HTML slot overlay */}
       <div style={{ padding: '0 16px', marginBottom: 16 }}>
         <div style={{ position: 'relative' }}>
@@ -269,37 +238,6 @@ export function PitchLineupView({
           })}
         </div>
       )}
-
-      {/* Auto-fill — direkt efter planen */}
-      <div style={{ padding: '6px 16px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{
-          fontSize: 12,
-          color: startingIds.length === 11 ? 'var(--success)' : 'var(--warning)',
-          fontWeight: 600,
-        }}>
-          {(() => {
-            const emptySlots = template.slots.filter(s => !slotToPlayer[s.id]).map(s => s.label)
-            if (emptySlots.length === 0) return '11/11 startande ✅'
-            return `${11 - emptySlots.length}/11 — saknas: ${emptySlots.join(', ')}`
-          })()}
-        </span>
-        <button
-          onClick={onAutoFill}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 5,
-            padding: '5px 10px',
-            background: 'transparent',
-            border: '1.5px solid var(--accent)',
-            color: 'var(--accent-dark)',
-            fontSize: 11, fontWeight: 600,
-            borderRadius: 8,
-            cursor: 'pointer',
-          }}
-        >
-          <svg width="11" height="11" viewBox="0 0 12 12" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" stroke="currentColor"><path d="M6 1.5 L7 4 L9.5 5 L7 6 L6 8.5 L5 6 L2.5 5 L5 4 Z"/><path d="M9.5 8.5 L10 9.5 L11 10 L10 10.5 L9.5 11.5 L9 10.5 L8 10 L9 9.5 Z"/></svg>
-          Auto-fyll
-        </button>
-      </div>
 
       {/* Unplaced players — tap to select */}
       <div style={{ padding: '10px 16px 4px', borderTop: '1px solid var(--border)' }}>

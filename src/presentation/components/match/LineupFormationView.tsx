@@ -1,7 +1,6 @@
 import type { Player } from '../../../domain/entities/Player'
 import type { Tactic } from '../../../domain/entities/Club'
 import { FORMATIONS, autoAssignFormation } from '../../../domain/entities/Formation'
-import type { FormationType } from '../../../domain/entities/Formation'
 import { BandyPitch } from '../BandyPitch'
 
 interface LineupFormationViewProps {
@@ -10,7 +9,6 @@ interface LineupFormationViewProps {
   squadPlayers: Player[]
   selectedSlotId: string | null
   onSlotClick: (slotId: string) => void
-  onFormationChange: (newTactic: Tactic) => void
 }
 
 const ADJACENT_POS: Record<string, string[]> = {
@@ -27,7 +25,6 @@ export function LineupFormationView({
   squadPlayers,
   selectedSlotId,
   onSlotClick,
-  onFormationChange,
 }: LineupFormationViewProps) {
   const formationType = tacticState.formation ?? '3-3-4'
   const template = FORMATIONS[formationType]
@@ -47,29 +44,7 @@ export function LineupFormationView({
 
   return (
     <div style={{ padding: '0 16px', marginBottom: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-        <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-body)', margin: 0, flexShrink: 0 }}>
-          ⚙️ Formation
-        </p>
-        <select
-          value={formationType}
-          onChange={e => {
-            onFormationChange({ ...tacticState, formation: e.target.value as FormationType })
-          }}
-          style={{
-            flex: 1, padding: '7px 10px',
-            background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)',
-            fontSize: 13, fontWeight: 600,
-          }}
-        >
-          {(Object.keys(FORMATIONS) as FormationType[]).map(f => (
-            <option key={f} value={f}>{FORMATIONS[f].label}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* Pitch with HTML slot overlay — SAME technique as PitchLineupView */}
+      {/* Pitch with HTML slot overlay */}
       <div style={{ position: 'relative' }}>
         <BandyPitch width="100%" />
 
