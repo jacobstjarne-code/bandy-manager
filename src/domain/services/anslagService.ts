@@ -167,6 +167,23 @@ export function computeNextAnslag(game: SaveGame): AnslagKey | null {
       }
     }
 
+    // Cupfinalen — managed club i final (round 4), semifinal spelad
+    const hasFinalUpcoming = game.fixtures.some(
+      f => f.isCup && f.roundNumber >= 4 &&
+        f.season === game.currentSeason &&
+        f.status === 'scheduled' &&
+        (f.homeClubId === club || f.awayClubId === club)
+    )
+    const semiCompleted = game.fixtures.some(
+      f => f.isCup && f.roundNumber === 3 &&
+        f.season === game.currentSeason &&
+        f.status === 'completed' &&
+        (f.homeClubId === club || f.awayClubId === club)
+    )
+    if (hasFinalUpcoming && semiCompleted && !seen.includes('cup_final_pre')) {
+      return 'cup_final_pre'
+    }
+
     // Pokalen — after managed club's last cup match (semi/final scenarios)
     if (managedClubLastCupMatchCompleted(bracket, club)
         && !seen.includes('cup_done') && !seen.includes('cup_done_winner')) {

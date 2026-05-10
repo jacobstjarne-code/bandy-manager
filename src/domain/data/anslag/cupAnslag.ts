@@ -4,6 +4,7 @@ export type CupAnslagKey =
   | 'cup_start'
   | 'cup_between'
   | 'cup_finalweekend_pre'
+  | 'cup_final_pre'
   | 'cup_done'
   | 'cup_done_winner'
 
@@ -44,10 +45,18 @@ export const CUP_ANSLAG: Record<CupAnslagKey, AnslagText> = {
         body: `Nu samlas det som finns kvar. Fyra lag, två dagar, en helg där bandysverige för första gången på året får se varandra på samma plats.<br><br>Det är inte ligan. Det är inte finalen. Men för dem som varit med länge är det här den helg där säsongen bestäms — inte i resultat, utan i självbild.`,
       },
       {
-        body: `Bollnäs den här helgen. Sävstaås, fyrverkerier, glögg på läktaren. Det är så cup-finalhelgen brukar vara.<br><br>Två semifinaler i lördag, finalen i söndag. Fyra lag åker dit, ett åker hem som vinnare. Resten åker hem som vanligt.<br><br>Det är inte SM. Men ingen är där och tror något annat heller.`,
+        body: `Bollnäs den här helgen. Sävstaås, fyrverkerier, glögg på läktaren. Det är så cup-finalhelgen brukar vara.<br><br>Två semifinaler på lördag, finalen på söndag. Fyra lag åker dit, ett åker hem som vinnare. Resten åker hem som vanligt.<br><br>Det är inte SM. Men ingen här tror något annat heller.`,
       },
       {
         body: `Sex omklädningsrum i Bollnäs. Fyra för spelarna, två för domarna. Allt är förberett.<br><br>Vi har rest hit för en match, och om det går bra för två. Vi vet inte än vilket. Det är poängen med slutspel.<br><br>Det är cup-finalhelg. Den brukar inte göra sig bättre än så.`,
+      },
+    ],
+  },
+  cup_final_pre: {
+    chapter: '⬩ Cupfinalen ⬩',
+    variants: [
+      {
+        body: `Cupfinal.<br><br>Två lag kvar. Ingen omspelning. {vsLabel} {motståndare}.<br><br>Det här är inget träningstillfälle. En match. Sen är det över.`,
       },
     ],
   },

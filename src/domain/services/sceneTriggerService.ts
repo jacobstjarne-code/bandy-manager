@@ -38,13 +38,13 @@ export function detectSceneTrigger(game: SaveGame): SceneId | null {
   return null
 }
 
-export function shouldTriggerSeasonSignature(game: SaveGame): boolean {
-  if (game.currentMatchday !== 1) return false
-  if (!game.currentSeasonSignature) return false
-  if (game.currentSeasonSignature.id === 'calm_season') return false
-  // Use dedicated field to track which season's reveal was shown
-  if ((game.shownSeasonSignatureRevealSeason ?? 0) >= game.currentSeason) return false
-  return true
+/**
+ * Disabled 2026-05-10 — gammal artefakt, scenen används inte längre i
+ * intro-flödet. Datan i SIGNATURE_REVEAL_DATA är kvar för eventuell
+ * framtida iteration (väder-koppling, mid-season-trigger, etc).
+ */
+export function shouldTriggerSeasonSignature(_game: SaveGame): boolean {
+  return false
 }
 
 export function shouldTriggerSundayTraining(game: SaveGame): boolean {

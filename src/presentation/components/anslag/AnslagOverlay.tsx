@@ -13,7 +13,26 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
   const bracket = game.cupBracket
   const club = game.clubs.find(c => c.id === game.managedClubId)
 
-  const variantBody = pickAnslagVariant(anslag, game.currentSeason, anslagKey, game.managedClubId)
+  let variantBody = pickAnslagVariant(anslag, game.currentSeason, anslagKey, game.managedClubId)
+
+  // Template-variable resolution for cup_final_pre
+  if (anslagKey === 'cup_final_pre') {
+    const finalFixture = game.fixtures.find(f =>
+      f.isCup && f.roundNumber >= 4 &&
+      f.season === game.currentSeason &&
+      (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+    )
+    if (finalFixture) {
+      const isHome = finalFixture.homeClubId === game.managedClubId
+      const opponentId = isHome ? finalFixture.awayClubId : finalFixture.homeClubId
+      const opponent = game.clubs.find(c => c.id === opponentId)
+      const vsLabel = isHome ? 'Hemma mot' : 'Borta mot'
+      const motståndare = opponent?.shortName ?? opponent?.name ?? 'okänd'
+      variantBody = variantBody
+        .replace('{vsLabel}', vsLabel)
+        .replace('{motståndare}', motståndare)
+    }
+  }
 
   const isDirektkvalad = anslagKey === 'cup_start' && bracket && club
     ? isClubDirektkvalad(bracket, club.id)

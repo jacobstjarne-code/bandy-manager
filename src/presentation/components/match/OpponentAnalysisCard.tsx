@@ -3,6 +3,7 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { useGameStore } from '../../store/gameStore'
 import { generateBasicAnalysis } from '../../../domain/services/opponentAnalysisService'
+import { getCupRoundLabel } from '../../../domain/services/cupService'
 // ordinal removed — no longer used in combined card
 
 interface OpponentAnalysisCardProps {
@@ -35,12 +36,19 @@ export function OpponentAnalysisCard({ fixture, opponent, game, onError }: Oppon
           </p>
           <p style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>{opponent.name}</p>
         </div>
-        {opponentStanding && (
+        {fixture.isCup ? (
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: 13, fontWeight: 800, fontFamily: 'var(--font-display)', margin: 0 }}>
+              {getCupRoundLabel(fixture.roundNumber)}
+            </p>
+            <p style={{ fontSize: 8, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>CUP</p>
+          </div>
+        ) : opponentStanding ? (
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontSize: 18, fontWeight: 800, fontFamily: 'var(--font-display)', margin: 0 }}>#{opponentStanding.position}</p>
             <p style={{ fontSize: 8, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Tabell</p>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Analysis section */}

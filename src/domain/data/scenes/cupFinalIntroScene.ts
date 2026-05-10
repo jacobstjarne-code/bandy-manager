@@ -65,25 +65,10 @@ Bygden vet om matchen. Spelarna vet om bygden.`,
   ]
 }
 
-export function shouldTriggerCupFinalIntro(game: SaveGame): boolean {
-  // One-shot per säsong via shownScenes med säsongsnyckel-mönstret.
-  // Eftersom shownScenes är SceneId[] räcker det att lägga in cup_final_intro;
-  // vid säsongsbyte rensas den från listan av roundProcessor (om det implementeras).
-  // Tills vidare: räcker en gång per save.
-  if ((game.shownScenes ?? []).includes('cup_final_intro')) return false
-
-  const final = findUpcomingCupFinal(game)
-  if (!final) return false
-
-  // Kolla att vi inte redan spelat finalen
-  const finalPlayed = game.fixtures.some(f =>
-    f.isCup &&
-    f.roundNumber >= 4 &&
-    f.season === game.currentSeason &&
-    f.status === FixtureStatus.Completed &&
-    (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
-  )
-  if (finalPlayed) return false
-
-  return true
+/**
+ * Disabled 2026-05-10 — gammalt 3-beat klick-igenom-format. Innehållet flyttat
+ * till cup_final_pre-anslag i cupAnslag.ts som visas i modal-format.
+ */
+export function shouldTriggerCupFinalIntro(_game: SaveGame): boolean {
+  return false
 }
