@@ -1,0 +1,212 @@
+[
+  {
+    "id": "quote_post_win_001",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi gjorde det vi skulle mot {motståndare}. Hemma nästa helg."
+  },
+  {
+    "id": "quote_post_win_002",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Det satt där det skulle. Tre poäng."
+  },
+  {
+    "id": "quote_post_win_003",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi spelade som vi tränat på."
+  },
+  {
+    "id": "quote_post_win_004",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Killarna var där hela vägen. Vi tar med oss det till {nextOpponent}."
+  },
+  {
+    "id": "quote_post_win_005",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Bra hörnor avgjorde, det märks att vi övat."
+  },
+  {
+    "id": "quote_post_win_006",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Tre poäng."
+  },
+  {
+    "id": "quote_post_win_007",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "{motståndare} gjorde det svårt, men vi kom igenom."
+  },
+  {
+    "id": "quote_post_win_008",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi höll positionerna och fick utdelning."
+  },
+  {
+    "id": "quote_post_win_009",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Mittfältet vann vi, resten följde."
+  },
+  {
+    "id": "quote_post_win_010",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Försvaret stod där det skulle. Vi släppte in noll."
+  },
+  {
+    "id": "quote_post_win_011",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "En match som ska sitta — och den gjorde det."
+  },
+  {
+    "id": "quote_post_win_012",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi tog vad vi skulle ta."
+  },
+  {
+    "id": "quote_post_win_013",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi gjorde det rätt."
+  },
+  {
+    "id": "quote_post_win_014",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Hemmaplan, hemmavinst. Det ska sitta så."
+  },
+  {
+    "id": "quote_post_win_015",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi var skarpa när det räknades."
+  },
+  {
+    "id": "quote_post_win_016",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Tre poäng till oss, en lugn kväll till för oss."
+  },
+  {
+    "id": "quote_post_win_017",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Andra halvlek var bättre, första räckte ändå."
+  },
+  {
+    "id": "quote_post_win_018",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Det är så det ska se ut. Vi fortsätter på det."
+  },
+  {
+    "id": "quote_post_win_019",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Bengt log lite när han kom av isen. Det räcker."
+  },
+  {
+    "id": "quote_post_win_020",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi tappade inte trådarna, det blev som vi planerat."
+  },
+  {
+    "id": "quote_post_win_021",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi gjorde inga tabbar och {motståndare} var inte tillräckligt skarpa."
+  },
+  {
+    "id": "quote_post_win_022",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Det blev som vi hoppades."
+  },
+  {
+    "id": "quote_post_win_023",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Det blir lugn stämning i kafferummet ikväll."
+  },
+  {
+    "id": "quote_post_win_024",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi gjorde det vi tränat på, det räcker oftast."
+  },
+  {
+    "id": "quote_post_win_025",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Tre poäng är tre poäng. Värre matcher kommer."
+  },
+  {
+    "id": "quote_post_win_026",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi var bättre. {motståndare} var det inte."
+  },
+  {
+    "id": "quote_post_win_027",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "En vinst som vi behövde, även om den såg lugn ut."
+  },
+  {
+    "id": "quote_post_win_028",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Killarna jobbade rätt, försvaret stod, anfallet kom till sitt."
+  },
+  {
+    "id": "quote_post_win_029",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi kunde ha vunnit större. Tre poäng räcker."
+  },
+  {
+    "id": "quote_post_win_030",
+    "type": "quote",
+    "tags": ["post_match_win"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Det var inte vår bästa, men det räckte väl mot {motståndare}."
+  }
+]

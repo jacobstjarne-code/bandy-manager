@@ -1,0 +1,212 @@
+[
+  {
+    "id": "quote_post_loss_001",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Det blev som det blev mot {motståndare} — vi gör om det mot {nextOpponent}."
+  },
+  {
+    "id": "quote_post_loss_002",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Bandy är inte rättvist, vi får träna mer."
+  },
+  {
+    "id": "quote_post_loss_003",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "{motståndare} ägde offensiven. Det räcker oftast i bandy."
+  },
+  {
+    "id": "quote_post_loss_004",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Tre poäng till dem, en träningsvecka till för oss."
+  },
+  {
+    "id": "quote_post_loss_005",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Inte tillräckligt skarpa idag."
+  },
+  {
+    "id": "quote_post_loss_006",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi var inte med ikväll. Bussresan hem blir lång."
+  },
+  {
+    "id": "quote_post_loss_007",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Bollen stannade på mittfältet, vi kom aldrig framåt."
+  },
+  {
+    "id": "quote_post_loss_008",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Två mål på två misstag — inget mer än så."
+  },
+  {
+    "id": "quote_post_loss_009",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vilja fanns. Inte mer än så."
+  },
+  {
+    "id": "quote_post_loss_010",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi vann hörnor. Mål blev det inte."
+  },
+  {
+    "id": "quote_post_loss_011",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi tappade strukturen efter pausen och {motståndare} märkte det direkt."
+  },
+  {
+    "id": "quote_post_loss_012",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Andra halvlek var bättre, men då hade vi redan nollat första."
+  },
+  {
+    "id": "quote_post_loss_013",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Inte vår sorts bandy idag."
+  },
+  {
+    "id": "quote_post_loss_014",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Två misstag på fel ställe, {motståndare} drog nytta av det."
+  },
+  {
+    "id": "quote_post_loss_015",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Sex grader, vind från norr, en grötig match."
+  },
+  {
+    "id": "quote_post_loss_016",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Aldrig riktigt med, tre poäng i gåva till {motståndare}."
+  },
+  {
+    "id": "quote_post_loss_017",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Inget att gnälla över — {motståndare} var bättre."
+  },
+  {
+    "id": "quote_post_loss_018",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Bengt sa inget i bussen hem. Det säger allt."
+  },
+  {
+    "id": "quote_post_loss_019",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi fick stryk på mittfältet och resten av laget vek ner sig."
+  },
+  {
+    "id": "quote_post_loss_020",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Bra i 45, det visade {motståndare}."
+  },
+  {
+    "id": "quote_post_loss_021",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi gör om det på onsdag."
+  },
+  {
+    "id": "quote_post_loss_022",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi höll inte våra positioner, {motståndare} utnyttjade det varje gång."
+  },
+  {
+    "id": "quote_post_loss_023",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi gjorde inte det vi skulle."
+  },
+  {
+    "id": "quote_post_loss_024",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Det fanns en period i andra halvlek..."
+  },
+  {
+    "id": "quote_post_loss_025",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi tappade bollen på fel ställen."
+  },
+  {
+    "id": "quote_post_loss_026",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Tre mål mot säger sitt. Filmen i veckan."
+  },
+  {
+    "id": "quote_post_loss_027",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Det blev tungt mot {motståndare}, vi vänder hem och bygger om till {nextOpponent}."
+  },
+  {
+    "id": "quote_post_loss_028",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Förlust borta, vi har varit i värre lägen."
+  },
+  {
+    "id": "quote_post_loss_029",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi behöver inte gå igenom matchen i detalj — killarna vet vad som ska ändras."
+  },
+  {
+    "id": "quote_post_loss_030",
+    "type": "quote",
+    "tags": ["post_match_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "{motståndare} förtjänade det. Vi får titta närmare på vad som hänt i de sex föregående omgångarna."
+  }
+]
