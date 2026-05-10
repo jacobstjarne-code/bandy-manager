@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>Plan-vy mock — efter fix</title>
+<style>
+  :root {
+    --bg: #faf6ef;
+    --bg-elevated: #ffffff;
+    --border: #e5dfd2;
+    --text-primary: #1a1a18;
+    --text-secondary: #4a4640;
+    --text-muted: #8a8275;
+    --accent: #C47A3A;
+    --accent-dark: #9C5E2A;
+    --success: #6FB85C;
+    --warning: #DC9A2D;
+    --danger: #B05040;
+    --copper: #C47A3A;
+    --paper-warm: #F5F1EB;
+    --pitch-line: rgba(196,186,168,0.4);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #d4ccba;
+    font-family: -apple-system, system-ui, sans-serif;
+    padding: 20px;
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .phone {
+    width: 380px;
+    background: var(--bg);
+    border-radius: 18px;
+    padding: 16px 0;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  }
+  .phone h2 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: center;
+    margin: 0 0 14px;
+  }
+  /* Tabs */
+  .tabs {
+    display: flex;
+    margin: 0 16px 14px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .tab.active {
+    background: var(--accent);
+    color: white;
+  }
+  /* Status row */
+  .status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    margin-bottom: 12px;
+    font-size: 13px;
+  }
+  .status-row .left {
+    color: var(--success);
+    font-weight: 600;
+  }
+  .auto-fill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border: 1.5px solid var(--accent);
+    background: transparent;
+    border-radius: 8px;
+    color: var(--accent-dark);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  /* Formation selector */
+  .formation-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    margin-bottom: 12px;
+  }
+  .formation-row .label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .formation-row select {
+    flex: 1;
+    padding: 8px 12px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  /* Pitch */
+  .pitch-wrap {
+    padding: 0 16px;
+    margin-bottom: 14px;
+  }
+  .pitch {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 220 / 170;
+    background: linear-gradient(180deg, #F5F1EB 0%, #FAFAF8 50%, #F0ECE4 100%);
+    border-radius: 8px;
+    overflow: visible;
+  }
+  .pitch svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+  }
+  .slot {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(26,26,24,0.5);
+    border: 1.5px dashed rgba(26,26,24,0.3);
+    background: transparent;
+    transition: all 120ms;
+  }
+  .slot.filled {
+    background: color-mix(in srgb, var(--success) 18%, transparent);
+    border: 1.5px solid color-mix(in srgb, var(--success) 55%, transparent);
+    color: #1a1a18;
+    font-size: 13px;
+    font-weight: 800;
+  }
+  .slot.filled-warning {
+    background: color-mix(in srgb, var(--warning) 18%, transparent);
+    border: 1.5px solid color-mix(in srgb, var(--warning) 55%, transparent);
+    color: #1a1a18;
+    font-size: 13px;
+    font-weight: 800;
+  }
+  /* Legend */
+  .legend {
+    padding: 0 16px 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .legend .pos {
+    color: var(--text-muted);
+  }
+  .legend .num {
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  /* Unplaced */
+  .unplaced-section {
+    padding: 12px 16px 4px;
+    border-top: 1px solid var(--border);
+  }
+  .unplaced-section h3 {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 10px;
+  }
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .pill {
+    padding: 6px 10px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    font-size: 11px;
+    color: var(--text-primary);
+  }
+  /* Caption */
+  .caption {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<!-- AFTER state — mock of fixed pitch view -->
+<div>
+  <div class="caption">Plan-vy efter fix (drag-and-drop bevarat)</div>
+  <div class="phone">
+    <h2>Truppval</h2>
+
+    <!-- Tabs (kept) -->
+    <div class="tabs">
+      <div class="tab">Lista</div>
+      <div class="tab active">Plan</div>
+    </div>
+
+    <!-- Status row -->
+    <div class="status-row">
+      <span class="left">11/11 startande ✅</span>
+      <button class="auto-fill">✦ Auto-fyll</button>
+    </div>
+
+    <!-- Formation -->
+    <div class="formation-row">
+      <span class="label">⚙ Formation</span>
+      <select>
+        <option>5-3-2 (Klassisk)</option>
+      </select>
+    </div>
+
+    <!-- Pitch with slots -->
+    <div class="pitch-wrap">
+      <div class="pitch">
+        <!-- Pitch lines SVG -->
+        <svg viewBox="0 0 220 170" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="216" height="166" fill="none" stroke="rgba(196,186,168,0.4)" stroke-width="0.8" rx="1"/>
+          <line x1="2" y1="85" x2="218" y2="85" stroke="rgba(196,186,168,0.4)" stroke-width="0.8"/>
+          <rect x="70" y="2" width="80" height="26" fill="none" stroke="rgba(196,186,168,0.4)" stroke-width="0.8"/>
+          <rect x="70" y="142" width="80" height="26" fill="none" stroke="rgba(196,186,168,0.4)" stroke-width="0.8"/>
+          <rect x="106.5" y="-1" width="7" height="4" fill="rgba(196,186,168,0.1)" stroke="rgba(196,186,168,0.3)" stroke-width="1"/>
+          <rect x="106.5" y="168" width="7" height="3" fill="rgba(196,186,168,0.1)" stroke="rgba(196,186,168,0.3)" stroke-width="1"/>
+          <circle cx="110" cy="85" r="14" fill="none" stroke="rgba(196,186,168,0.4)" stroke-width="0.8"/>
+          <circle cx="110" cy="85" r="0.8" fill="rgba(196,186,168,0.4)"/>
+        </svg>
+
+        <!-- Slots overlay — AFTER FIX: only one label per slot, INSIDE the circle -->
+
+        <!-- Forwards (top, attacking) -->
+        <div class="slot filled" style="left: 35%; top: 18%;">9</div>
+        <div class="slot filled" style="left: 65%; top: 18%;">11</div>
+
+        <!-- Mid -->
+        <div class="slot filled" style="left: 25%; top: 38%;">7</div>
+        <div class="slot filled" style="left: 50%; top: 35%;">10</div>
+        <div class="slot filled" style="left: 75%; top: 38%;">8</div>
+
+        <!-- Halves -->
+        <div class="slot filled" style="left: 15%; top: 55%;">12</div>
+        <div class="slot filled" style="left: 85%; top: 55%;">16</div>
+
+        <!-- Backs -->
+        <div class="slot filled" style="left: 25%; top: 72%;">3</div>
+        <div class="slot filled-warning" style="left: 50%; top: 70%;">5</div>
+        <div class="slot filled" style="left: 75%; top: 72%;">2</div>
+
+        <!-- Goalkeeper -->
+        <div class="slot filled" style="left: 50%; top: 88%;">1</div>
+      </div>
+    </div>
+
+    <!-- Legend below pitch — kept as-is, source of position info -->
+    <div class="legend">
+      <span><span class="num">9</span> Almlund <span class="pos">(VF)</span></span> ·
+      <span><span class="num">11</span> Gran <span class="pos">(HF)</span></span> ·
+      <span><span class="num">7</span> Lindberg <span class="pos">(VMF)</span></span> ·
+      <span><span class="num">10</span> Karlsson <span class="pos">(CMF)</span></span> ·
+      <span><span class="num">8</span> Eriksson <span class="pos">(HMF)</span></span> ·
+      <span><span class="num">12</span> Persson <span class="pos">(VYH)</span></span> ·
+      <span><span class="num">16</span> Holm <span class="pos">(HYH)</span></span> ·
+      <span><span class="num">3</span> Ström <span class="pos">(VB)</span></span> ·
+      <span><span class="num">5</span> Berg <span class="pos">(LIB)</span></span> ·
+      <span><span class="num">2</span> Sandberg <span class="pos">(HB)</span></span> ·
+      <span><span class="num">1</span> Grafström <span class="pos">(MV)</span></span>
+    </div>
+
+    <!-- Unplaced section -->
+    <div class="unplaced-section">
+      <h3>Oplacerade — tryck för att välja</h3>
+      <div class="pills">
+        <span class="pill">14 Lundqvist</span>
+        <span class="pill">4 Nilsson</span>
+        <span class="pill">15 Andersson</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Empty state mock -->
+<div>
+  <div class="caption">Tomt läge — drag spelare hit</div>
+  <div class="phone">
+    <h2>Truppval</h2>
+
+    <div class="tabs">
+      <div class="tab">Lista</div>
+      <div class="tab active">Plan</div>
+    </div>
+
+    <div class="status-row">
+      <span class="left" style="color: var(--warning)">0/11 — saknas: alla positioner</span>
+      <button class="auto-fill">✦ Auto-fyll</button>
+    </div>
+
+    <div class="formation-row">
+      <span class="label">⚙ Formation</span>
+      <select>
+        <option>5-3-2 (Klassisk)</option>
+      </select>
+    </div>
+
+    <div class="pitch-wrap">
+      <div class="pitch">
+        <svg viewBox="0 0 220 170" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="216" height="166" fill="none" stroke="rgba(196,186,168,0.4)" stroke-width="0.8" rx="1"/>
+          <line x1="2" y1="85" x2="218" y2="85" stroke="rgba(196,186,168,0.4)" stroke-width="0.8"/>
+          <rect x="70" y="2" width="80" height="26" fill="none" stroke="rgba(196,186,168,0.4)" stroke-width="0.8"/>
+          <rect x="70" y="142" width="80" height="26" fill="none" stroke="rgba(196,186,168,0.4)" stroke-width="0.8"/>
+          <rect x="106.5" y="-1" width="7" height="4" fill="rgba(196,186,168,0.1)" stroke="rgba(196,186,168,0.3)" stroke-width="1"/>
+          <rect x="106.5" y="168" width="7" height="3" fill="rgba(196,186,168,0.1)" stroke="rgba(196,186,168,0.3)" stroke-width="1"/>
+          <circle cx="110" cy="85" r="14" fill="none" stroke="rgba(196,186,168,0.4)" stroke-width="0.8"/>
+        </svg>
+
+        <!-- Empty slots — only 2-letter codes, no labels above -->
+        <div class="slot" style="left: 35%; top: 18%;">VF</div>
+        <div class="slot" style="left: 65%; top: 18%;">HF</div>
+        <div class="slot" style="left: 25%; top: 38%;">VM</div>
+        <div class="slot" style="left: 50%; top: 35%;">CM</div>
+        <div class="slot" style="left: 75%; top: 38%;">HM</div>
+        <div class="slot" style="left: 15%; top: 55%;">VY</div>
+        <div class="slot" style="left: 85%; top: 55%;">HY</div>
+        <div class="slot" style="left: 25%; top: 72%;">VB</div>
+        <div class="slot" style="left: 50%; top: 70%;">LI</div>
+        <div class="slot" style="left: 75%; top: 72%;">HB</div>
+        <div class="slot" style="left: 50%; top: 88%;">MV</div>
+      </div>
+    </div>
+
+    <div class="unplaced-section">
+      <h3>Tryck spelare → tryck plats</h3>
+      <div class="pills">
+        <span class="pill">1 Grafström</span>
+        <span class="pill">14 Lundqvist</span>
+        <span class="pill">3 Ström</span>
+        <span class="pill">2 Sandberg</span>
+        <span class="pill">9 Almlund</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

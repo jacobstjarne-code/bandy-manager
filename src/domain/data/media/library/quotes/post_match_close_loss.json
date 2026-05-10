@@ -1,0 +1,72 @@
+[
+  {
+    "id": "quote_post_close_loss_001",
+    "type": "quote",
+    "tags": ["post_match_close_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Ett mål skiljde, vi var med hela vägen."
+  },
+  {
+    "id": "quote_post_close_loss_002",
+    "type": "quote",
+    "tags": ["post_match_close_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Så nära att det gör ont. Men bara lite."
+  },
+  {
+    "id": "quote_post_close_loss_003",
+    "type": "quote",
+    "tags": ["post_match_close_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi förlorade med en boll. Det blir så ibland."
+  },
+  {
+    "id": "quote_post_close_loss_004",
+    "type": "quote",
+    "tags": ["post_match_close_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi visade vad vi kan."
+  },
+  {
+    "id": "quote_post_close_loss_005",
+    "type": "quote",
+    "tags": ["post_match_close_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Ledningen försvann i slutet."
+  },
+  {
+    "id": "quote_post_close_loss_006",
+    "type": "quote",
+    "tags": ["post_match_close_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi sköt mer. De satte sina."
+  },
+  {
+    "id": "quote_post_close_loss_007",
+    "type": "quote",
+    "tags": ["post_match_close_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "De var där en bit längre."
+  },
+  {
+    "id": "quote_post_close_loss_008",
+    "type": "quote",
+    "tags": ["post_match_close_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "En förlust som inte kändes som förlust."
+  },
+  {
+    "id": "quote_post_close_loss_009",
+    "type": "quote",
+    "tags": ["post_match_close_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi tappade på en hörna i slutet. Det blev dyrbart."
+  },
+  {
+    "id": "quote_post_close_loss_010",
+    "type": "quote",
+    "tags": ["post_match_close_loss"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Vi gjorde det vi skulle, men inte tillräckligt mycket."
+  }
+]

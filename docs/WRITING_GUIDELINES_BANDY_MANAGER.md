@@ -287,6 +287,27 @@ Batch 1 av media-citaten skrevs utan att jag öppnat existerande anslag/stränga
 
 Memory om att tonen finns ≠ färdighet att skriva i den. Konkreta exempel ger färdigheten.
 
+### #7 — Pre-flight-checklistan blir mekanisk om generation inte är aktiv (2026-05-10)
+
+Batch 3 levererad med dubbel-mönster ("X men Y", "X fast Y") trots att Lärdom #6 + checklistan användes. Diagnos:
+
+1. **Pre-flight blev rituell.** Att bocka av "läst guidelines" garanterar inte att reglerna är aktiva under generation. De måste appliceras per citat, inte bara läsas i förväg.
+2. **Volym tar över kvalitet.** 30 citat åt gången är för mycket. Per-citat-fokus försvinner i flödet. **Ny regel: max 10 citat per generation-block.**
+3. **Tidigare batchar saknades som referens.** Pre-flight-checklistan listade kodbasens filer men inte tidigare BATCHAR i samma session. Den närmaste tonexempel-filen för batch 2 är batch 1 (`post_match_loss.json`), inte `cupAnslag.ts`.
+4. **Generation är reflexiv, granskning är aktiv.** "X men Y" är LLM:s default sätt att skapa nyans. Att bara veta att det är förbjudet stoppar inte reflexen — varje citat måste explicit testas mot anti-pattern-listan innan det accepteras.
+
+**Ny rutin (ersätter #6's punkt 2):**
+1. Generera **max 10 citat per block**.
+2. Per citat innan acceptans: kör anti-pattern-test ("X men Y"? "X fast Y"? "X dock Y"? "X däremot Y"? Klyscha? Duplikat med tidigare batch?). Skriv om innan nästa.
+3. Inkludera tidigare batchar i samma session som primär tonexempel.
+4. Varje generation-block ska kunna stå för sig självt — ingen "jag fixar det i revidering".
+
+**Anti-pattern-test (per citat):**
+- Innehåller det "X men Y" eller "X fast Y" där X och Y är kontrast-konstruerade? → skriv om
+- Innehåller det superlativ, klyschor, generic sport-fraser? → skriv om
+- Är det duplikat med tidigare citat i samma library? → skriv om
+- Skulle Sture säga det? → om tveksamt, skriv om
+
 ---
 
 ## När den här filen uppdateras
@@ -306,7 +327,22 @@ Versionera med datum-rad i Lärdomar-sektionen.
     [ ] preMatchContextStrings.ts (för korta tagline-stil text)
     [ ] squadNuStrings.ts (för spelare-status, konkretion)
     [ ] assistantCoachService.ts (för coach-citat — OBS jovial-personligheten har klyschor, undvik)
+[ ] Öppnat och läst tidigare BATCHAR i samma session (primär tonexempel)
+    [ ] post_match_loss.json (om finns)
+    [ ] post_match_win.json (om finns)
+    [ ] etc — alla tidigare committade library-filer
 [ ] Verifierat alla bandy-specifika ord mot kodbasen
-[ ] Genererat ett testitem och stresstestat mot guideline-checklistan
 [ ] Planerat rytm-fördelning före skrivning (~40% helmeningar, ~30% två korta, ~15% en ensam, ~10% tre led, ~5% experimentell)
+[ ] Begränsa till MAX 10 citat per generation-block
+```
+
+## Per-citat-test (kör innan varje citat accepteras)
+
+```
+[ ] Inga "X men Y" / "X fast Y" / "X dock Y" / "X däremot Y" där det är AI-kontrast
+[ ] Inga superlativ
+[ ] Inga klyschor från Del 3
+[ ] Inga duplikat med tidigare citat i samma library
+[ ] Korrekt bandy-vokabulär (boll inte puck, positioner inte platser)
+[ ] Sture-test: skulle någon säga detta i en svensk bandy-klubblokal?
 ```
