@@ -131,6 +131,42 @@
 
   --scroll-padding-bottom: 120px;
 
+  /* ── Stålvallen — match-bundle ───────────────────── */
+  --bg-leather-dk: #1d1b18;
+  --paper-warm:    #F5F1EB;
+  --paper-edge:    #DCD3C3;
+  --copper:        #C47A3A;
+  --copper-deep:   #A25828;
+  --steel:         #6B7F8E;
+  --steel-deep:    #4A5965;
+  --ink:           #1A1A18;
+  --ink-soft:      #6B6760;
+  --ink-mute:      #8A857A;
+  --ink-faint:     #B8B0A2;
+
+  /* LED — bara i match-bundle */
+  --led-red:      #FF2A18;
+  --led-red-dim:  rgba(255, 42, 24, 0.07);
+  --led-red-glow: rgba(255, 42, 24, 0.55);
+  --led-amber:    #FFAA00;
+  --led-green:    #66FF33;
+
+  /* Scoreboard tidslinje */
+  --line-bg:      rgba(255, 255, 255, 0.04);
+  --line-stroke:  rgba(255, 255, 255, 0.12);
+  --line-tick:    rgba(255, 255, 255, 0.18);
+  --line-text:    rgba(245, 241, 235, 0.55);
+  --home-mark:    var(--copper);
+  --away-mark:    var(--steel);
+  --now-mark:     #FFB347;
+
+  /* Match Report betyg */
+  --rate-bad:     #B33A2E;
+  --rate-mid:     #C9881F;
+  --rate-good:    #4F8C3A;
+
+  --font-mono:    ui-monospace, 'Courier New', monospace;
+
   /* Z-index scale */
   --z-dropdown:    100;
   --z-modal:       300;
