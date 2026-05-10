@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>ArrivalScene — reboot mock 2026-05-08</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!--
+  ARRIVAL-SCENE REBOOT — designprincip
+
+  Detta är inte en sekvens av text-skärmar. Det är en filmscen.
+  Spelaren läser, klickar inte. Repliker fade:as in i ordning med 2s offset.
+  Föregående dimmas men finns kvar (samtalet bygger upp).
+
+  Total tid: ~10 sekunder från setting-fade-in till slut-CTA klickbar.
+  Skip-länk i hörn för returspelare.
+
+  Atmosfäriska element:
+  - Klubbhus-lampa: subtil ljus-flicker överst (mjuk pulse, 4s cykel)
+  - Vinternatt: bg-gradient med en hint av varmare ton överst
+  - Persistent header "ANKOMSTEN" + progress-prickar (visuell rytm-anchor)
+-->
+
+<style>
+  :root {
+    --bg-portal:           #0E0D0B;
+    --bg-portal-warm-top:  #1A140C;  /* lampans varma sken överst */
+    --text-light:          #F5F1EB;
+    --text-light-secondary:#C4BAA8;
+    --text-muted:          #8A857A;
+    --accent:              #C47A3A;
+    --accent-deep:         #8B4820;
+    --warm:                #D4A574;
+
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body:    -apple-system, system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #2a2824;
+    font-family: var(--font-body);
+    color: var(--text-light);
+    padding: 24px 12px 60px;
+    min-height: 100vh;
+  }
+
+  .page-head {
+    max-width: 480px; margin: 0 auto 24px;
+    color: var(--text-light-secondary);
+    font-family: var(--font-display);
+  }
+  .page-head h1 {
+    font-size: 22px; color: var(--text-light); margin-bottom: 6px;
+  }
+  .page-head p {
+    font-size: 13px; line-height: 1.6; font-style: italic;
+  }
+  .page-head em { color: var(--accent); font-style: normal; }
+
+  /* ═══════════════════════════════════════════════
+     SCENEN — mobilformat 380×820
+     ═══════════════════════════════════════════════ */
+  .scene-frame {
+    width: 380px;
+    height: 820px;
+    margin: 32px auto 0;
+    background: var(--bg-portal);
+    border-radius: 24px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+    overflow: hidden;
+    position: relative;
+
+    /* Atmosfärisk bakgrund — varmare ton överst (klubbhus-lampans skymning) */
+    background: radial-gradient(
+      ellipse 600px 300px at 50% -100px,
+      var(--bg-portal-warm-top) 0%,
+      var(--bg-portal) 70%
+    );
+  }
+
+  /* Lampans subtila flicker — pulse på varm-tonen överst */
+  .scene-frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse 400px 200px at 50% -50px,
+      rgba(196, 122, 58, 0.08) 0%,
+      transparent 60%
+    );
+    animation: lamp-flicker 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes lamp-flicker {
+    0%, 100% { opacity: 0.85; }
+    35%      { opacity: 1; }
+    55%      { opacity: 0.7; }
+    72%      { opacity: 0.95; }
+  }
+
+  /* Header — persistent */
+  .scene-header {
+    position: relative;
+    z-index: 2;
+    padding: 32px 24px 0;
+    text-align: center;
+  }
+  .genre-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--accent);
+    opacity: 0.7;
+    text-transform: uppercase;
+  }
+  .progress-dots {
+    display: flex; justify-content: center; gap: 6px;
+    margin-top: 14px;
+  }
+  .progress-dots span {
+    width: 24px; height: 2px;
+    background: rgba(196, 122, 58, 0.3);
+    border-radius: 1px;
+    transition: background 0.6s ease;
+  }
+  .progress-dots span.lit {
+    background: var(--accent);
+  }
+
+  /* Skip-länk */
+  .scene-skip {
+    position: absolute;
+    top: 28px; right: 24px;
+    z-index: 3;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.2s;
+    background: none;
+    border: none;
+    font-family: inherit;
+  }
+  .scene-skip:hover { color: var(--accent); }
+
+  /* Content stack */
+  .scene-content {
+    position: relative;
+    z-index: 2;
+    padding: 28px 28px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  /* Setting-block */
+  .scene-setting {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text-light);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+  }
+  .scene-setting strong {
+    font-style: normal;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-light);
+  }
+  .scene-setting.in { opacity: 1; transform: translateY(0); }
+  .scene-setting.dimmed { opacity: 0.4; }
+
+  /* Replik-block */
+  .scene-replica {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 1.0s ease-out, transform 1.0s ease-out;
+  }
+  .scene-replica.in { opacity: 1; transform: translateY(0); }
+  .scene-replica.dimmed { opacity: 0.4; }
+
+  .replica-speaker {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--accent);
+    opacity: 0.85;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .replica-quote {
+    font-family: var(--font-display);
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text-light);
+  }
+
+  /* Slut-CTA */
+  .scene-cta-area {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    z-index: 2;
+    padding: 16px 24px 28px;
+    display: flex;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.8s ease-out 0.4s, transform 0.8s ease-out 0.4s;
+  }
+  .scene-cta-area.in { opacity: 1; transform: translateY(0); }
+
+  .scene-cta-btn {
+    background: transparent;
+    border: 1.5px solid var(--accent);
+    color: var(--text-light);
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    font-family: var(--font-body);
+  }
+  .scene-cta-btn:hover {
+    background: rgba(196, 122, 58, 0.12);
+  }
+  .scene-cta-btn:active {
+    transform: translateY(1px);
+  }
+  .scene-cta-btn::after {
+    content: ' →';
+    color: var(--accent);
+  }
+
+  /* ═══════════════════════════════════════════════
+     KOMMENTAR-PANEL bredvid mockt
+     ═══════════════════════════════════════════════ */
+  .notes {
+    max-width: 480px;
+    margin: 32px auto 0;
+    padding: 20px 24px;
+    background: rgba(245, 241, 235, 0.04);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    color: rgba(245, 241, 235, 0.85);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  .notes h3 {
+    font-family: var(--font-display);
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--accent);
+  }
+  .notes p { margin-bottom: 10px; }
+  .notes p:last-child { margin-bottom: 0; }
+  .notes strong { color: var(--text-light); font-weight: 600; }
+  .notes code {
+    font-family: monospace;
+    font-size: 12px;
+    background: rgba(0,0,0,0.3);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--warm);
+  }
+
+  /* Replay-kontroll under mocken */
+  .controls {
+    max-width: 480px;
+    margin: 16px auto 0;
+    text-align: center;
+  }
+  .controls button {
+    background: var(--accent);
+    color: var(--bg-portal);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0 4px;
+  }
+  .controls button:hover { background: var(--warm); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>ArrivalScene — reboot</h1>
+  <p>En filmscen, inte en interaktion. Repliker fade:as in i ordning. Spelaren <em>läser</em>, inte klickar. Total ~10 sekunder. Skip-länk för returspelare.</p>
+</div>
+
+<div class="scene-frame" id="scene">
+
+  <button class="scene-skip" onclick="skipToEnd()">Hoppa över ↘</button>
+
+  <div class="scene-header">
+    <div class="genre-label">⬩ &nbsp;Ankomsten&nbsp; ⬩</div>
+    <div class="progress-dots">
+      <span id="dot-0"></span>
+      <span id="dot-1"></span>
+      <span id="dot-2"></span>
+      <span id="dot-3"></span>
+      <span id="dot-4"></span>
+    </div>
+  </div>
+
+  <div class="scene-content">
+
+    <!-- Setting -->
+    <div class="scene-setting" id="setting">
+      <strong>Forsbacka.</strong>
+      &nbsp;Onsdag kväll. Lampan vid klubbhuset lyser. De väntar dig där inne. Margareta Lindqvist. Pelle Andersson. Sture Forsbacka. Tre kaffekoppar redan på bordet.
+    </div>
+
+    <!-- Replik 1 — Margareta -->
+    <div class="scene-replica" id="rep-1">
+      <div class="replica-speaker">Margareta · Kassör</div>
+      <div class="replica-quote">"Det här är en gammal klubb. Vi förväntar oss inte mirakel — men vi förväntar oss att det syns att du bryr dig. Tre kontrakt löper ut. Snacka med dom tidigt."</div>
+    </div>
+
+    <!-- Replik 2 — Pelle -->
+    <div class="scene-replica" id="rep-2">
+      <div class="replica-speaker">Pelle · Ordförande</div>
+      <div class="replica-quote">"Plats 5 till 8. Inget kvalspel. Och håll bygden med oss — tomma läktare är dåligt för bandyn och dåligt för budgeten."</div>
+    </div>
+
+    <!-- Replik 3 — Sture -->
+    <div class="scene-replica" id="rep-3">
+      <div class="replica-speaker">Sture · Ledamot</div>
+      <div class="replica-quote">"Inte förrän nyårsafton började vi tro att det här kunde bli något. Sen kom Edsbyn-matchen…"</div>
+    </div>
+
+    <!-- Replik 4 — Kerstin -->
+    <div class="scene-replica" id="rep-4">
+      <div class="replica-speaker">Kerstin · Ledamot</div>
+      <div class="replica-quote">"Truppen är 22. Kassa 380 tkr, transferbudget 120 tkr. Mer har vi inte."</div>
+    </div>
+
+  </div>
+
+  <!-- Slut-CTA -->
+  <div class="scene-cta-area" id="cta">
+    <button class="scene-cta-btn" onclick="onComplete()">Då börjar vi</button>
+  </div>
+
+</div>
+
+<div class="controls">
+  <button onclick="replay()">↻ Spela om</button>
+  <button onclick="skipToEnd()">Skippa till slutet</button>
+</div>
+
+<div class="notes">
+  <h3>Designnoter</h3>
+  <p><strong>Auto-progression, ingen klick mellan.</strong> Setting fade:as in på 1.2s. Sen replik 1 efter 1.6s. Replik 2 efter ytterligare 2.2s. Replik 3 efter 2.2s. Replik 4 efter 2.2s. Slut-CTA efter 1.4s. Total ~11s.</p>
+  <p><strong>Föregående dimmas, finns kvar.</strong> Rev2-instinkten är rätt — samtalet bygger upp på samma yta. Bara klick-mekaniken var fel. Aktuell replik är full opacity, alla tidigare på <code>opacity: 0.4</code>.</p>
+  <p><strong>Atmosfär: lampans flicker.</strong> Övre delen av bakgrunden har varm ton (<code>--bg-portal-warm-top</code>) som pulserar subtilt 4s-cykel. Det antyder klubbhus-lampan utan att animera den ikoniskt. Vintern är där men lågmält.</p>
+  <p><strong>Skip-länken</strong> är en mjuk affordans i hörnet. Returspelare ska aldrig sitta igenom 11s vid varje save-laddning. Första gången är magi, andra gången är friktion.</p>
+  <p><strong>Slut-CTA är ankomst-momentet.</strong> "Då börjar vi" + pil. Outline-stil för dark surface (matchar <code>.btn-scene-cta</code>-konventionen). Inget annat på skärmen vid det laget — bara ackumulerat samtal + den enda vägen ut.</p>
+  <p><strong>Progress-prickar</strong> tänds en åt gången i takt med replikerna. Visuell rytm-anchor — spelaren ser hur långt det är kvar utan att räkna.</p>
+  <p><strong>Vad mocken inte visar:</strong> klubb-specifik setting-text. Forsbacka är järnbruksklubb, Gagnef är skogsbygd, Edsbyn är kungariket. Idag är "Lampan vid klubbhuset lyser" generisk för alla. Det är värt eget pass — separat från denna reboot.</p>
+</div>
+
+<script>
+const TIMING = {
+  setting:   200,    // setting fade in
+  rep1:      1600,   // efter setting
+  rep2:      3800,
+  rep3:      6000,
+  rep4:      8200,
+  cta:       9600,
+};
+
+const elements = {
+  setting: document.getElementById('setting'),
+  rep1:    document.getElementById('rep-1'),
+  rep2:    document.getElementById('rep-2'),
+  rep3:    document.getElementById('rep-3'),
+  rep4:    document.getElementById('rep-4'),
+  cta:     document.getElementById('cta'),
+  dots:    [0,1,2,3,4].map(i => document.getElementById(`dot-${i}`)),
+};
+
+let timers = [];
+
+function clearTimers() {
+  timers.forEach(t => clearTimeout(t));
+  timers = [];
+}
+
+function reset() {
+  clearTimers();
+  ['setting', 'rep1', 'rep2', 'rep3', 'rep4', 'cta'].forEach(k => {
+    elements[k].classList.remove('in', 'dimmed');
+  });
+  elements.dots.forEach(d => d.classList.remove('lit'));
+}
+
+function startSequence() {
+  reset();
+
+  timers.push(setTimeout(() => {
+    elements.setting.classList.add('in');
+    elements.dots[0].classList.add('lit');
+  }, TIMING.setting));
+
+  timers.push(setTimeout(() => {
+    elements.setting.classList.add('dimmed');
+    elements.rep1.classList.add('in');
+    elements.dots[1].classList.add('lit');
+  }, TIMING.rep1));
+
+  timers.push(setTimeout(() => {
+    elements.rep1.classList.add('dimmed');
+    elements.rep2.classList.add('in');
+    elements.dots[2].classList.add('lit');
+  }, TIMING.rep2));
+
+  timers.push(setTimeout(() => {
+    elements.rep2.classList.add('dimmed');
+    elements.rep3.classList.add('in');
+    elements.dots[3].classList.add('lit');
+  }, TIMING.rep3));
+
+  timers.push(setTimeout(() => {
+    elements.rep3.classList.add('dimmed');
+    elements.rep4.classList.add('in');
+    elements.dots[4].classList.add('lit');
+  }, TIMING.rep4));
+
+  timers.push(setTimeout(() => {
+    elements.cta.classList.add('in');
+  }, TIMING.cta));
+}
+
+function replay() {
+  startSequence();
+}
+
+function skipToEnd() {
+  clearTimers();
+  ['setting', 'rep1', 'rep2', 'rep3'].forEach(k => {
+    elements[k].classList.add('in', 'dimmed');
+  });
+  elements.rep4.classList.add('in');
+  elements.dots.forEach(d => d.classList.add('lit'));
+  elements.cta.classList.add('in');
+}
+
+function onComplete() {
+  alert('→ Dashboard (i riktig app: navigate to /game/dashboard)');
+}
+
+// Auto-start
+startSequence();
+</script>
+
+</body>
+</html>

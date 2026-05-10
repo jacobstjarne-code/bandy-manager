@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>ArrivalScene — reboot v2 mock 2026-05-08</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!--
+  ARRIVAL-SCENE REBOOT v2 — designprincip
+
+  Iteration efter Jacobs feedback: två repliker (Margareta + Sture) + 
+  ett BoardObjectives-block med konkreta mål. Total ~9 sekunder.
+
+  Pelle och Kerstin tas bort:
+  - Pelles "plats 5-8" dubblerades i målblocket
+  - Kerstins siffror är fakta, inte dialog — de hör hemma i visualisering
+
+  Margareta = förvaltningens röst (kontrakt, förväntan)
+  Sture     = klubbens själ (klubbarketyp-känsla, oersättlig)
+  Mål-block = vad styrelsen faktiskt vill av dig
+-->
+
+<style>
+  :root {
+    --bg-portal:           #0E0D0B;
+    --bg-portal-warm-top:  #1A140C;
+    --bg-portal-surface:   #181613;
+    --bg-portal-elevated:  #211d18;
+    --text-light:          #F5F1EB;
+    --text-light-secondary:#C4BAA8;
+    --text-muted:          #8A857A;
+    --accent:              #C47A3A;
+    --accent-deep:         #8B4820;
+    --warm:                #D4A574;
+    --match-positive:      #A0C890;
+    --match-warn:          #E8A090;
+
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body:    -apple-system, system-ui, sans-serif;
+
+    --radius-md: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #2a2824;
+    font-family: var(--font-body);
+    color: var(--text-light);
+    padding: 24px 12px 60px;
+    min-height: 100vh;
+  }
+
+  .page-head {
+    max-width: 480px; margin: 0 auto 24px;
+    color: var(--text-light-secondary);
+    font-family: var(--font-display);
+  }
+  .page-head h1 {
+    font-size: 22px; color: var(--text-light); margin-bottom: 6px;
+  }
+  .page-head p {
+    font-size: 13px; line-height: 1.6; font-style: italic;
+  }
+  .page-head em { color: var(--accent); font-style: normal; }
+
+  /* Scene frame */
+  .scene-frame {
+    width: 380px;
+    height: 820px;
+    margin: 32px auto 0;
+    background: var(--bg-portal);
+    border-radius: 24px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+    overflow: hidden;
+    position: relative;
+    background: radial-gradient(
+      ellipse 600px 300px at 50% -100px,
+      var(--bg-portal-warm-top) 0%,
+      var(--bg-portal) 70%
+    );
+  }
+
+  .scene-frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse 400px 200px at 50% -50px,
+      rgba(196, 122, 58, 0.08) 0%,
+      transparent 60%
+    );
+    animation: lamp-flicker 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes lamp-flicker {
+    0%, 100% { opacity: 0.85; }
+    35%      { opacity: 1; }
+    55%      { opacity: 0.7; }
+    72%      { opacity: 0.95; }
+  }
+
+  /* Header */
+  .scene-header {
+    position: relative;
+    z-index: 2;
+    padding: 32px 24px 0;
+    text-align: center;
+  }
+  .genre-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--accent);
+    opacity: 0.7;
+    text-transform: uppercase;
+  }
+  .progress-dots {
+    display: flex; justify-content: center; gap: 6px;
+    margin-top: 14px;
+  }
+  .progress-dots span {
+    width: 28px; height: 2px;
+    background: rgba(196, 122, 58, 0.3);
+    border-radius: 1px;
+    transition: background 0.6s ease;
+  }
+  .progress-dots span.lit { background: var(--accent); }
+
+  .scene-skip {
+    position: absolute;
+    top: 28px; right: 24px;
+    z-index: 3;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+    transition: color 0.2s;
+  }
+  .scene-skip:hover { color: var(--accent); }
+
+  /* Content */
+  .scene-content {
+    position: relative;
+    z-index: 2;
+    padding: 28px 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Setting */
+  .scene-setting {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text-light);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+  }
+  .scene-setting strong {
+    font-style: normal;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-light);
+  }
+  .scene-setting.in { opacity: 1; transform: translateY(0); }
+  .scene-setting.dimmed { opacity: 0.4; }
+
+  /* Replica */
+  .scene-replica {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 1.0s ease-out, transform 1.0s ease-out;
+  }
+  .scene-replica.in { opacity: 1; transform: translateY(0); }
+  .scene-replica.dimmed { opacity: 0.4; }
+
+  .replica-speaker {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--accent);
+    opacity: 0.85;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .replica-quote {
+    font-family: var(--font-display);
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text-light);
+  }
+
+  /* BoardObjectives-block — samma mönster som Portal-secondary */
+  .board-objectives {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 1.0s ease-out, transform 1.0s ease-out;
+  }
+  .board-objectives.in { opacity: 1; transform: translateY(0); }
+
+  .board-card {
+    position: relative;
+    background: var(--bg-portal-surface);
+    border: 1px solid rgba(196, 122, 58, 0.15);
+    border-radius: var(--radius-md);
+    padding: 14px 16px 14px 18px;
+    overflow: hidden;
+  }
+  .board-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--accent);
+  }
+
+  .board-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--accent);
+    opacity: 0.85;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .obj-row {
+    padding: 8px 0;
+    border-bottom: 0.5px solid rgba(196, 122, 58, 0.15);
+  }
+  .obj-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .obj-row:first-child { padding-top: 0; }
+
+  .obj-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .obj-label-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+  .obj-icon { font-size: 14px; }
+  .obj-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-light);
+  }
+  .obj-owner {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .obj-progress {
+    height: 3px;
+    background: rgba(196, 122, 58, 0.12);
+    border-radius: 1.5px;
+    overflow: hidden;
+  }
+  .obj-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 1.5px;
+  }
+  .obj-progress-fill.danger  { background: var(--match-warn); }
+  .obj-progress-fill.success { background: var(--match-positive); }
+
+  .obj-money {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .obj-money-cur {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-light);
+  }
+  .obj-money-goal {
+    font-size: 10px;
+    font-style: italic;
+    color: var(--text-muted);
+  }
+
+  /* CTA */
+  .scene-cta-area {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    z-index: 2;
+    padding: 16px 24px 28px;
+    display: flex;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.8s ease-out 0.4s, transform 0.8s ease-out 0.4s;
+  }
+  .scene-cta-area.in { opacity: 1; transform: translateY(0); }
+
+  .scene-cta-btn {
+    background: transparent;
+    border: 1.5px solid var(--accent);
+    color: var(--text-light);
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    font-family: var(--font-body);
+  }
+  .scene-cta-btn:hover { background: rgba(196, 122, 58, 0.12); }
+  .scene-cta-btn:active { transform: translateY(1px); }
+  .scene-cta-btn::after { content: ' →'; color: var(--accent); }
+
+  /* Notes */
+  .notes {
+    max-width: 480px;
+    margin: 32px auto 0;
+    padding: 20px 24px;
+    background: rgba(245, 241, 235, 0.04);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    color: rgba(245, 241, 235, 0.85);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  .notes h3 {
+    font-family: var(--font-display);
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--accent);
+  }
+  .notes p { margin-bottom: 10px; }
+  .notes p:last-child { margin-bottom: 0; }
+  .notes strong { color: var(--text-light); font-weight: 600; }
+  .notes code {
+    font-family: monospace;
+    font-size: 12px;
+    background: rgba(0,0,0,0.3);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--warm);
+  }
+
+  .controls {
+    max-width: 480px;
+    margin: 16px auto 0;
+    text-align: center;
+  }
+  .controls button {
+    background: var(--accent);
+    color: var(--bg-portal);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0 4px;
+  }
+  .controls button:hover { background: var(--warm); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>ArrivalScene — reboot v2</h1>
+  <p>Två repliker + styrelsens krav. Margareta för förvaltning, Sture för själ, mål-block för fakta. <em>~9 sekunder, samma princip — filmscen, inte interaktion.</em></p>
+</div>
+
+<div class="scene-frame" id="scene">
+
+  <button class="scene-skip" onclick="skipToEnd()">Hoppa över ↘</button>
+
+  <div class="scene-header">
+    <div class="genre-label">⬩ &nbsp;Ankomsten&nbsp; ⬩</div>
+    <div class="progress-dots">
+      <span id="dot-0"></span>
+      <span id="dot-1"></span>
+      <span id="dot-2"></span>
+      <span id="dot-3"></span>
+    </div>
+  </div>
+
+  <div class="scene-content">
+
+    <div class="scene-setting" id="setting">
+      <strong>Forsbacka.</strong>
+      &nbsp;Onsdag kväll. Lampan vid klubbhuset lyser. De väntar dig där inne. Margareta Lindqvist. Sture Forsbacka. Två kaffekoppar redan på bordet.
+    </div>
+
+    <div class="scene-replica" id="rep-1">
+      <div class="replica-speaker">Margareta · Kassör</div>
+      <div class="replica-quote">"Det här är en gammal klubb. Vi förväntar oss inte mirakel — men vi förväntar oss att det syns att du bryr dig. Tre kontrakt löper ut. Snacka med dom tidigt."</div>
+    </div>
+
+    <div class="scene-replica" id="rep-2">
+      <div class="replica-speaker">Sture · Ledamot</div>
+      <div class="replica-quote">"Inte förrän nyårsafton började vi tro att det här kunde bli något. Sen kom Edsbyn-matchen…"</div>
+    </div>
+
+    <div class="board-objectives" id="objectives">
+      <div class="board-card">
+        <div class="board-label">🎯 Styrelsens krav</div>
+
+        <div class="obj-row">
+          <div class="obj-head">
+            <div class="obj-label-wrap">
+              <span class="obj-icon">📌</span>
+              <span class="obj-label">Plats 5–8 i serien</span>
+            </div>
+            <span class="obj-owner">P. ANDERSSON</span>
+          </div>
+          <div class="obj-progress">
+            <div class="obj-progress-fill" style="width: 8%"></div>
+          </div>
+        </div>
+
+        <div class="obj-row">
+          <div class="obj-head">
+            <div class="obj-label-wrap">
+              <span class="obj-icon">📌</span>
+              <span class="obj-label">Balansera budgeten</span>
+            </div>
+            <span class="obj-owner">K. NYBERG</span>
+          </div>
+          <div class="obj-money">
+            <span class="obj-money-cur">+0 tkr</span>
+            <span class="obj-money-goal">av mål +0 tkr</span>
+          </div>
+        </div>
+
+        <div class="obj-row">
+          <div class="obj-head">
+            <div class="obj-label-wrap">
+              <span class="obj-icon">📌</span>
+              <span class="obj-label">Stötta Forsbacka FF</span>
+            </div>
+            <span class="obj-owner">M. LINDQVIST</span>
+          </div>
+          <div class="obj-progress">
+            <div class="obj-progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="scene-cta-area" id="cta">
+    <button class="scene-cta-btn" onclick="onComplete()">Då börjar vi</button>
+  </div>
+
+</div>
+
+<div class="controls">
+  <button onclick="replay()">↻ Spela om</button>
+  <button onclick="skipToEnd()">Skippa till slutet</button>
+</div>
+
+<div class="notes">
+  <h3>Designnoter — v2</h3>
+  <p><strong>Mindre text, mer information.</strong> Två repliker (Margareta + Sture) håller röst-kvaliteten. BoardObjectives-block bär det som var tråkig redovisning hos Pelle och Kerstin (rank, ekonomi, klubbmål). Block är konkreta — varje mål en rad, ägare per rad.</p>
+  <p><strong>Återanvänder Portal-mönstret.</strong> Samma <code>BoardObjectivesSecondary</code>-anatomi: stripe 2px accent, label "🎯 STYRELSENS KRAV", icon + label + ägare + (progress eller money). Identiskt för spelaren mellan intro och Portal — de möter målen igen i sin första dashboard.</p>
+  <p><strong>Auto-progression: 4 stages istället för 5.</strong> setting (0.2s) → Margareta (1.6s) → Sture (3.8s) → mål-block (6.0s) → CTA (7.4s). Total ~9 sekunder från klubbval till klickbar CTA.</p>
+  <p><strong>Mål-blocket dimmas inte.</strong> Repliker dimmas (de är samtal, blir scenens minne). Men mål-blocket är aktuellt — det är vad spelaren ska bära med sig in i spelet. Behåller full opacity hela vägen.</p>
+  <p><strong>I produktion:</strong> data hämtas från <code>game.boardObjectives</code> + <code>formatOwnerInitial(obj.ownerId)</code>. Status-icon växlar (📌 active, ⚠️ at_risk, ❌ failed, ✅ met). Vid första render är alla 📌. Setting + Sture-replik tas från <code>STURE_PER_CLUB[clubId]</code> som redan finns. Margaretas replik kan generera variant baserat på antal kontrakt-utgångar i truppen.</p>
+</div>
+
+<script>
+const TIMING = {
+  setting:    200,
+  rep1:       1600,
+  rep2:       3800,
+  objectives: 6000,
+  cta:        7400,
+};
+
+const elements = {
+  setting:    document.getElementById('setting'),
+  rep1:       document.getElementById('rep-1'),
+  rep2:       document.getElementById('rep-2'),
+  objectives: document.getElementById('objectives'),
+  cta:        document.getElementById('cta'),
+  dots:       [0,1,2,3].map(i => document.getElementById(`dot-${i}`)),
+};
+
+let timers = [];
+
+function clearTimers() {
+  timers.forEach(t => clearTimeout(t));
+  timers = [];
+}
+
+function reset() {
+  clearTimers();
+  ['setting', 'rep1', 'rep2', 'objectives', 'cta'].forEach(k => {
+    elements[k].classList.remove('in', 'dimmed');
+  });
+  elements.dots.forEach(d => d.classList.remove('lit'));
+}
+
+function startSequence() {
+  reset();
+
+  timers.push(setTimeout(() => {
+    elements.setting.classList.add('in');
+    elements.dots[0].classList.add('lit');
+  }, TIMING.setting));
+
+  timers.push(setTimeout(() => {
+    elements.setting.classList.add('dimmed');
+    elements.rep1.classList.add('in');
+    elements.dots[1].classList.add('lit');
+  }, TIMING.rep1));
+
+  timers.push(setTimeout(() => {
+    elements.rep1.classList.add('dimmed');
+    elements.rep2.classList.add('in');
+    elements.dots[2].classList.add('lit');
+  }, TIMING.rep2));
+
+  timers.push(setTimeout(() => {
+    elements.rep2.classList.add('dimmed');
+    elements.objectives.classList.add('in');
+    elements.dots[3].classList.add('lit');
+  }, TIMING.objectives));
+
+  timers.push(setTimeout(() => {
+    elements.cta.classList.add('in');
+  }, TIMING.cta));
+}
+
+function replay() { startSequence(); }
+
+function skipToEnd() {
+  clearTimers();
+  ['setting', 'rep1', 'rep2'].forEach(k => {
+    elements[k].classList.add('in', 'dimmed');
+  });
+  elements.objectives.classList.add('in');
+  elements.dots.forEach(d => d.classList.add('lit'));
+  elements.cta.classList.add('in');
+}
+
+function onComplete() {
+  alert('→ Dashboard (i riktig app: navigate to /game/dashboard)');
+}
+
+startSequence();
+</script>
+
+</body>
+</html>

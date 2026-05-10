@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Pokalen-anslag — vinnare vs standard 2026-05-08</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!--
+  POKALEN — TVÅ VARIANTER
+
+  Standard: alla som åker ut eller spelat final och förlorat.
+  Vinnare: bara cup-mästaren. Subtil förstärkning av frame-formatet.
+
+  Toggle uppe för att jämföra.
+-->
+
+<style>
+  :root {
+    --bg-portal:           #0E0D0B;
+    --bg-portal-warm-top:  #1A140C;
+    --bg-portal-surface:   #181613;
+    --bg-portal-elevated:  #211d18;
+    --text-light:          #F5F1EB;
+    --text-light-secondary:#C4BAA8;
+    --text-muted:          #8A857A;
+    --accent:              #C47A3A;
+    --accent-deep:         #8B4820;
+    --warm:                #D4A574;
+    --gold:                #E8B95C;
+
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body:    -apple-system, system-ui, sans-serif;
+
+    --radius-md: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #2a2824;
+    font-family: var(--font-body);
+    color: var(--text-light);
+    padding: 24px 12px 60px;
+    min-height: 100vh;
+  }
+
+  .page-head {
+    max-width: 480px; margin: 0 auto 24px;
+    color: var(--text-light-secondary);
+    font-family: var(--font-display);
+  }
+  .page-head h1 { font-size: 22px; color: var(--text-light); margin-bottom: 6px; }
+  .page-head p { font-size: 13px; line-height: 1.6; font-style: italic; }
+  .page-head em { color: var(--accent); font-style: normal; }
+
+  .mode-toggle {
+    max-width: 480px;
+    margin: 0 auto 16px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  .mode-toggle button {
+    background: rgba(245, 241, 235, 0.06);
+    color: var(--text-light-secondary);
+    border: 1px solid rgba(196, 122, 58, 0.25);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .mode-toggle button.active {
+    background: var(--accent);
+    color: var(--bg-portal);
+    border-color: var(--accent);
+  }
+  .mode-toggle button.gold-active.active {
+    background: var(--gold);
+    color: var(--bg-portal);
+    border-color: var(--gold);
+  }
+
+  .scene-frame {
+    width: 380px;
+    height: 820px;
+    margin: 16px auto 0;
+    background: var(--bg-portal);
+    border-radius: 24px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Portal-glimt med JUSTERAD synlighet */
+  .portal-backdrop {
+    position: absolute;
+    inset: 0;
+    padding: 24px 20px;
+    opacity: 0.55;
+  }
+  .pb-header { text-align: center; margin-bottom: 20px; }
+  .pb-genre {
+    font-size: 9px; font-weight: 600; letter-spacing: 4px;
+    color: var(--accent); opacity: 0.7; margin-bottom: 6px;
+  }
+  .pb-club {
+    font-family: var(--font-display); font-size: 18px; color: var(--text-light);
+  }
+  .pb-date {
+    font-size: 11px; color: var(--text-muted); margin-top: 4px;
+  }
+  .pb-hero {
+    background: var(--bg-portal-surface);
+    border: 1px solid rgba(196,122,58,0.2);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    height: 130px;
+    position: relative;
+  }
+  .pb-hero::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--accent);
+  }
+  .pb-hero-label {
+    font-size: 9px; letter-spacing: 2px;
+    color: var(--accent); opacity: 0.85; margin-bottom: 8px;
+  }
+  .pb-hero-title {
+    font-family: var(--font-display); font-size: 16px;
+    color: var(--text-light); margin-bottom: 4px;
+  }
+  .pb-hero-meta { font-size: 11px; color: var(--text-muted); }
+
+  .pb-card {
+    background: var(--bg-portal-surface);
+    border: 1px solid rgba(196,122,58,0.15);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    height: 60px;
+    position: relative;
+  }
+  .pb-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--accent);
+  }
+  .pb-card-label {
+    font-size: 9px; letter-spacing: 2px;
+    color: var(--accent); opacity: 0.85; margin-bottom: 6px;
+  }
+  .pb-card-body { font-size: 11px; color: var(--text-light-secondary); }
+
+  /* OVERLAY — MER TRANSPARENT */
+  .anslag-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(14, 13, 11, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 28px;
+    z-index: 10;
+    cursor: pointer;
+  }
+
+  /* STANDARD anslags-kort */
+  .anslag-card {
+    max-width: 320px;
+    width: 100%;
+    background: var(--bg-portal-surface);
+    border: 1px solid rgba(196, 122, 58, 0.25);
+    border-radius: var(--radius-md);
+    padding: 28px 24px 24px;
+    text-align: left;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  .anslag-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--accent);
+  }
+  .anslag-chapter {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .anslag-text {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-light);
+    margin-bottom: 28px;
+  }
+  .anslag-cta {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    color: var(--text-light-secondary);
+    text-transform: uppercase;
+    text-align: right;
+    animation: gentle-pulse 3s ease-in-out infinite;
+  }
+  .anslag-cta::after {
+    content: ' →';
+    color: var(--accent);
+  }
+
+  /* VINNAR-VARIANT — subtila förstärkningar */
+  .anslag-card.winner {
+    border-color: rgba(232, 185, 92, 0.35);
+    background: linear-gradient(180deg,
+      rgba(232, 185, 92, 0.04) 0%,
+      var(--bg-portal-surface) 30%
+    );
+    box-shadow: 0 8px 32px rgba(232, 185, 92, 0.08), 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  .anslag-card.winner::before {
+    background: var(--gold);
+    width: 3px; /* lite tjockare */
+  }
+  .anslag-card.winner .anslag-chapter {
+    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: 5px;
+    margin-bottom: 28px;
+  }
+  .anslag-card.winner .anslag-text {
+    font-size: 15px;
+  }
+  .anslag-card.winner .anslag-text::first-line {
+    font-weight: 700;
+    font-style: normal;
+    color: var(--text-light);
+  }
+  .anslag-card.winner .anslag-cta::after {
+    content: ' 🏆';
+  }
+
+  @keyframes gentle-pulse {
+    0%, 100% { opacity: 0.7; }
+    50%      { opacity: 1; }
+  }
+
+  /* Notes */
+  .notes {
+    max-width: 480px;
+    margin: 32px auto 0;
+    padding: 20px 24px;
+    background: rgba(245, 241, 235, 0.04);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    color: rgba(245, 241, 235, 0.85);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  .notes h3 {
+    font-family: var(--font-display);
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--accent);
+  }
+  .notes h4 {
+    margin-top: 14px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .notes p { margin-bottom: 10px; }
+  .notes p:last-child { margin-bottom: 0; }
+  .notes strong { color: var(--text-light); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Pokalen — vinnare vs standard</h1>
+  <p>Subtil förstärkning för cupmästaren: guld-stripe, ljusare chapter, 🏆 i CTA. <em>Samma frame, mer närvaro.</em></p>
+</div>
+
+<div class="mode-toggle">
+  <button class="active" id="btn-standard" onclick="setMode('standard')">Standard</button>
+  <button class="gold-active" id="btn-winner" onclick="setMode('winner')">Vinnare 🏆</button>
+</div>
+
+<div class="scene-frame" id="scene">
+
+  <div class="portal-backdrop">
+    <div class="pb-header">
+      <div class="pb-genre">⬩ &nbsp;FORSBACKA&nbsp; ⬩</div>
+      <div class="pb-club">Forsbacka IF</div>
+      <div class="pb-date">Tisdag 2 december · Omg 9</div>
+    </div>
+
+    <div class="pb-hero">
+      <div class="pb-hero-label">📋 NÄSTA MATCH</div>
+      <div class="pb-hero-title">Forsbacka — Bollnäs</div>
+      <div class="pb-hero-meta">Söndag · liga-omg 1</div>
+    </div>
+
+    <div class="pb-card">
+      <div class="pb-card-label">🎯 STYRELSENS KRAV</div>
+      <div class="pb-card-body">3 mål · plats 5–8 i serien</div>
+    </div>
+
+    <div class="pb-card">
+      <div class="pb-card-label">📖 I BLICKFÅNGET</div>
+      <div class="pb-card-body">2 pågående · Berg sista säsongen</div>
+    </div>
+
+    <div class="pb-card" style="height: 50px;">
+      <div class="pb-card-label">📋 VECKANS BESLUT</div>
+    </div>
+  </div>
+
+  <div class="anslag-overlay" id="overlay" onclick="closeOverlay()">
+    <div class="anslag-card" id="anslag-card">
+
+      <!-- STANDARD-läge (default visas) -->
+      <div id="standard-content">
+        <div class="anslag-chapter">⬩ Pokalen ⬩</div>
+        <div class="anslag-text">
+          Cupen är spelad. Pokalen står på en byrå någonstans.
+          <br><br>
+          Nu vidtar det som är längre, jämnare, och i längden viktigare. Ligan börjar nästa helg.
+          <br><br>
+          Det är dags att gå in i den med det man har lärt sig — och med vetskapen om att cupen, hur fin den än var, ändå bara är cupen.
+        </div>
+        <div class="anslag-cta">Tryck för att fortsätta</div>
+      </div>
+
+      <!-- VINNAR-läge -->
+      <div id="winner-content" style="display:none;">
+        <div class="anslag-chapter">⬩ Pokalen ⬩</div>
+        <div class="anslag-text">
+          Pokalen är vår.
+          <br><br>
+          Den är inte den finaste pokalen i bandy. Men den är den första vi vunnit på länge — och det väger.
+          <br><br>
+          Ligan börjar nästa helg. Vi går in i den med pokalen i ena handen och en målbild i den andra.
+        </div>
+        <div class="anslag-cta">Tryck för att fortsätta</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Vinnar-förstärkningarna</h3>
+
+  <h4>Visuella ändringar</h4>
+  <p><strong>Stripe:</strong> 3 px (istf 2 px) i guld <code>--gold #E8B95C</code> istf accent. Tjockare och ljusare — markerar att detta inte är vanligt anslag.</p>
+  <p><strong>Chapter-label:</strong> 11 px (istf 9), letter-spacing 5 (istf 4), guld-färg. Större och ljusare — *"⬩ Pokalen ⬩"* står ut som en titel snarare än etikett.</p>
+  <p><strong>Bakgrund:</strong> subtil guld-tonad gradient i kortets topp (4% guld → portal-surface). Inte påträngande, men ger värmen åt övre delen.</p>
+  <p><strong>Kort-skugga:</strong> 8 % guld-glöd som extra layer ovanpå standard-skuggan. Får kortet att lyfta lite mer från bakgrunden.</p>
+  <p><strong>CTA:</strong> 🏆 istf →. Vinnar-emoji som signal.</p>
+  <p><strong>Första raden bold:</strong> "Pokalen är vår." renderas i bold non-italic — som rubrik inom texten. Resten är italic Georgia som vanligt.</p>
+
+  <h4>Vad förstärkningarna *inte* gör</h4>
+  <p>Inga animationer. Ingen fanfar. Ingen konfetti. Format är samma — frameat kort på dimmad Portal. Det är fortsatt en lugn stund, bara med medvetenhet om att något har hänt.</p>
+  <p>Det är konsekvent med klubb-tonen. Forsbacka jublar inte i media. Den noterar.</p>
+
+  <h4>Implementation</h4>
+  <p>Ny <code>AnslagKey</code>: <code>'cup_done_winner'</code>. Returneras av <code>computeNextAnslag()</code> när <code>bracket.winnerId === managedClubId</code> istället för <code>'cup_done'</code>. Komponent får extra prop <code>variant</code> som styr CSS-klassen <code>.winner</code>.</p>
+</div>
+
+<script>
+function setMode(mode) {
+  document.getElementById('btn-standard').classList.toggle('active', mode === 'standard');
+  document.getElementById('btn-winner').classList.toggle('active', mode === 'winner');
+  document.getElementById('anslag-card').classList.toggle('winner', mode === 'winner');
+  document.getElementById('standard-content').style.display = mode === 'standard' ? '' : 'none';
+  document.getElementById('winner-content').style.display = mode === 'winner' ? '' : 'none';
+}
+
+function closeOverlay() {
+  alert('→ Tillbaka till Portal');
+}
+</script>
+
+</body>
+</html>

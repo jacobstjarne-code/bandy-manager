@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Cup-anslag overlay v2 — frame-jämförelse 2026-05-08</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!--
+  CUP-ANSLAG OVERLAY v2
+
+  Två förändringar från v1:
+  1. Portal-glimten i bakgrunden är synligare (opacity 0.5 istf 0.35, mindre blur)
+  2. Toggle mellan ramlös och frameat — klicka uppe för att jämföra
+
+  Frågan är: ska anslaget vara diskret innehåll (frameat, kort-vokabulär)
+  eller atmosfär (ramlöst, text ÄR scenen)?
+-->
+
+<style>
+  :root {
+    --bg-portal:           #0E0D0B;
+    --bg-portal-warm-top:  #1A140C;
+    --bg-portal-surface:   #181613;
+    --bg-portal-elevated:  #211d18;
+    --text-light:          #F5F1EB;
+    --text-light-secondary:#C4BAA8;
+    --text-muted:          #8A857A;
+    --accent:              #C47A3A;
+    --accent-deep:         #8B4820;
+    --warm:                #D4A574;
+
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body:    -apple-system, system-ui, sans-serif;
+
+    --radius-md: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #2a2824;
+    font-family: var(--font-body);
+    color: var(--text-light);
+    padding: 24px 12px 60px;
+    min-height: 100vh;
+  }
+
+  .page-head {
+    max-width: 480px; margin: 0 auto 24px;
+    color: var(--text-light-secondary);
+    font-family: var(--font-display);
+  }
+  .page-head h1 { font-size: 22px; color: var(--text-light); margin-bottom: 6px; }
+  .page-head p { font-size: 13px; line-height: 1.6; font-style: italic; }
+  .page-head em { color: var(--accent); font-style: normal; }
+
+  /* Mode toggle */
+  .mode-toggle {
+    max-width: 480px;
+    margin: 0 auto 16px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  .mode-toggle button {
+    background: rgba(245, 241, 235, 0.06);
+    color: var(--text-light-secondary);
+    border: 1px solid rgba(196, 122, 58, 0.25);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .mode-toggle button.active {
+    background: var(--accent);
+    color: var(--bg-portal);
+    border-color: var(--accent);
+  }
+  .mode-toggle button:hover:not(.active) {
+    border-color: var(--accent);
+    color: var(--text-light);
+  }
+
+  /* Scene frame */
+  .scene-frame {
+    width: 380px;
+    height: 820px;
+    margin: 16px auto 0;
+    background: var(--bg-portal);
+    border-radius: 24px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Portal-stuff i bakgrunden — mer synligt nu */
+  .portal-backdrop {
+    position: absolute;
+    inset: 0;
+    padding: 24px 20px;
+    opacity: 0.55;
+    filter: blur(1.5px);
+  }
+  .pb-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .pb-genre {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--accent);
+    opacity: 0.7;
+    margin-bottom: 6px;
+  }
+  .pb-club {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--text-light);
+  }
+  .pb-date {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* Hero next-match-card antydan */
+  .pb-hero {
+    background: var(--bg-portal-surface);
+    border: 1px solid rgba(196,122,58,0.2);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    height: 130px;
+    position: relative;
+  }
+  .pb-hero::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--accent);
+  }
+  .pb-hero-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    opacity: 0.85;
+    margin-bottom: 8px;
+  }
+  .pb-hero-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--text-light);
+    margin-bottom: 4px;
+  }
+  .pb-hero-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* Sekundär-cards antydan */
+  .pb-card {
+    background: var(--bg-portal-surface);
+    border: 1px solid rgba(196,122,58,0.15);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    height: 60px;
+    position: relative;
+  }
+  .pb-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--accent);
+  }
+  .pb-card-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    opacity: 0.85;
+    margin-bottom: 6px;
+  }
+  .pb-card-body {
+    font-size: 11px;
+    color: var(--text-light-secondary);
+  }
+
+  /* Overlay-bg */
+  .anslag-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(14, 13, 11, 0.65);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 28px;
+    z-index: 10;
+    cursor: pointer;
+    opacity: 0;
+    animation: fade-in 0.6s ease-out 0.2s forwards;
+  }
+
+  @keyframes fade-in {
+    to { opacity: 1; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     RAMLÖS — ren text, atmosfär
+     ═══════════════════════════════════════════════════════════ */
+  .anslag-card {
+    max-width: 320px;
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     FRAMEAT — kort-vokabulär, diskret innehåll
+     ═══════════════════════════════════════════════════════════ */
+  .anslag-card.framed {
+    background: var(--bg-portal-surface);
+    border: 1px solid rgba(196, 122, 58, 0.25);
+    border-radius: var(--radius-md);
+    padding: 28px 24px 24px;
+    text-align: left;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  .anslag-card.framed::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--accent);
+  }
+  .anslag-card.framed .anslag-text {
+    text-align: left;
+    font-size: 14px;
+  }
+  .anslag-card.framed .anslag-chapter {
+    text-align: left;
+  }
+  .anslag-card.framed .anslag-cta {
+    text-align: right;
+    margin-top: 4px;
+  }
+
+  /* Top-label */
+  .anslag-chapter {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fade-up 0.8s ease-out 0.5s forwards;
+  }
+
+  /* Anslags-text */
+  .anslag-text {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text-light);
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fade-up 1.2s ease-out 0.9s forwards;
+  }
+
+  /* "Tryck för att fortsätta" */
+  .anslag-cta {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    color: var(--text-light-secondary);
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fade-up 0.8s ease-out 2.0s forwards, gentle-pulse 3s ease-in-out 2.8s infinite;
+  }
+  .anslag-cta::after {
+    content: ' →';
+    color: var(--accent);
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes gentle-pulse {
+    0%, 100% { opacity: 0.7; }
+    50%      { opacity: 1; }
+  }
+
+  /* Notes */
+  .notes {
+    max-width: 480px;
+    margin: 32px auto 0;
+    padding: 20px 24px;
+    background: rgba(245, 241, 235, 0.04);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    color: rgba(245, 241, 235, 0.85);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  .notes h3 {
+    font-family: var(--font-display);
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--accent);
+  }
+  .notes p { margin-bottom: 10px; }
+  .notes p:last-child { margin-bottom: 0; }
+  .notes strong { color: var(--text-light); font-weight: 600; }
+  .notes h4 {
+    margin-top: 12px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: var(--warm);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .controls {
+    max-width: 480px;
+    margin: 16px auto 0;
+    text-align: center;
+  }
+  .controls button {
+    background: var(--accent);
+    color: var(--bg-portal);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0 4px;
+  }
+  .controls button:hover { background: var(--warm); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Cup-anslag — frame-jämförelse</h1>
+  <p>Toggle för att jämföra ramlös (atmosfär, text ÄR scenen) mot frameat (kort-vokabulär, diskret innehåll). <em>Klicka knapparna uppe.</em></p>
+</div>
+
+<div class="mode-toggle">
+  <button class="active" id="btn-frameless" onclick="setMode('frameless')">Ramlös</button>
+  <button id="btn-framed" onclick="setMode('framed')">Frameat</button>
+</div>
+
+<div class="scene-frame" id="scene">
+
+  <!-- Portal-glimt i bakgrunden — synligare nu -->
+  <div class="portal-backdrop">
+    <div class="pb-header">
+      <div class="pb-genre">⬩ &nbsp;FORSBACKA&nbsp; ⬩</div>
+      <div class="pb-club">Forsbacka IF</div>
+      <div class="pb-date">Onsdag 8 oktober · Omg 2</div>
+    </div>
+
+    <div class="pb-hero">
+      <div class="pb-hero-label">📋 NÄSTA MATCH</div>
+      <div class="pb-hero-title">Forsbacka — Sandviken</div>
+      <div class="pb-hero-meta">Lördag · cup-första-rundan</div>
+    </div>
+
+    <div class="pb-card">
+      <div class="pb-card-label">🎯 STYRELSENS KRAV</div>
+      <div class="pb-card-body">3 mål · plats 5–8 i serien</div>
+    </div>
+
+    <div class="pb-card">
+      <div class="pb-card-label">📖 I BLICKFÅNGET</div>
+      <div class="pb-card-body">2 pågående · Berg sista säsongen</div>
+    </div>
+
+    <div class="pb-card" style="height: 50px;">
+      <div class="pb-card-label">📋 VECKANS BESLUT</div>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div class="anslag-overlay" id="overlay" onclick="closeOverlay()">
+    <div class="anslag-card" id="anslag-card">
+      <div class="anslag-chapter">⬩ Cupen börjar ⬩</div>
+      <p class="anslag-text">
+        Säsongen närmar sig, men först bandyårets första delikatess. Svenska cupen är inte den finaste pokalen, men den är den första.
+        <br><br>
+        Isen är sällan vad den ska vara, spelarna är ännu inte i form, och formationen sitter inte. Just därför är det något särskilt. Här syns vem som hängt med under sommaren och vem som kommit tillbaka för tidigt.
+        <br><br>
+        Bandyårets första riktiga avläsning.
+      </p>
+      <div class="anslag-cta">Tryck för att fortsätta</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="controls">
+  <button onclick="replay()">↻ Spela om</button>
+</div>
+
+<div class="notes">
+  <h3>Frame-frågan</h3>
+
+  <h4>Ramlös</h4>
+  <p>Texten ÄR scenen. Centrerad, ingen kant, inget objekt. Backdrop-blur ger taktil djup till Portal bakom. Anslaget känns som ett ögonblick — som att stänga ögonen och tänka på något — innan man öppnar dem och Portal är där igen.</p>
+
+  <h4>Frameat</h4>
+  <p>Anslaget blir ett kort. Stripe 2px accent som matchar Portal-secondary. Vänster-justerad text. Kort-bakgrund <code>--bg-portal-surface</code> + 1px border. Det blir ett stycke innehåll man läser, inte en stund man genomlever.</p>
+
+  <h4>Min instinkt</h4>
+  <p>Ramlös. Funktionen *finns inte* här — det är ett anslag, inte data. Framet skulle göra det till ett kort som spelaren kategoriserar tillsammans med "Veckans beslut" och "Styrelsens krav". Men anslaget är inte i samma kategori som de — det är en *paus*, ett kapitel-blad.</p>
+
+  <p>Argumentet för frameat är konsekvens med designsystemet. Det är ett bra argument. Men anslaget får också vara ett undantag — sidor i en bok är ramlösa, det är därför de fungerar som sidor.</p>
+
+  <p><strong>Du säger till.</strong> Båda är giltiga.</p>
+</div>
+
+<script>
+let currentMode = 'frameless';
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('btn-frameless').classList.toggle('active', mode === 'frameless');
+  document.getElementById('btn-framed').classList.toggle('active', mode === 'framed');
+  document.getElementById('anslag-card').classList.toggle('framed', mode === 'framed');
+}
+
+function replay() {
+  const overlay = document.getElementById('overlay');
+  overlay.style.animation = 'none';
+  overlay.style.opacity = '0';
+
+  const elements = overlay.querySelectorAll('.anslag-chapter, .anslag-text, .anslag-cta');
+  elements.forEach(el => {
+    el.style.animation = 'none';
+    el.style.opacity = '0';
+  });
+
+  setTimeout(() => {
+    overlay.style.animation = '';
+    overlay.style.opacity = '';
+    elements.forEach(el => {
+      el.style.animation = '';
+      el.style.opacity = '';
+    });
+  }, 50);
+}
+
+function closeOverlay() {
+  alert('→ Tillbaka till Portal (i riktig app: overlay fade:as ut, Portal renderas i cup-fas)');
+}
+</script>
+
+</body>
+</html>

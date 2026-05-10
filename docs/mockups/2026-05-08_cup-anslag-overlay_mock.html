@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Cup-anslag overlay — mock 2026-05-08</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!--
+  CUP-ANSLAG OVERLAY — designprincip
+
+  Triggas vid första Portal-rendering i en ny fas. Spelaren har just klickat
+  "avancera omgång" och fasen har bytts från pre-säsong till cup. Overlayn
+  visas över Portal med ett anslag — fasens röst.
+
+  Detta är inte en interaktion. Det är ett kapitel-blad i en bok. Spelaren
+  läser, klickar var som helst för att stänga och fortsätta in i Portal i
+  den nya fasen.
+
+  Senare iteration: möjligen filmscen med auto-progression. För nu är
+  overlay enklare — texten visas direkt, klick stänger.
+-->
+
+<style>
+  :root {
+    --bg-portal:           #0E0D0B;
+    --bg-portal-warm-top:  #1A140C;
+    --bg-portal-surface:   #181613;
+    --text-light:          #F5F1EB;
+    --text-light-secondary:#C4BAA8;
+    --text-muted:          #8A857A;
+    --accent:              #C47A3A;
+    --accent-deep:         #8B4820;
+    --warm:                #D4A574;
+
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body:    -apple-system, system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #2a2824;
+    font-family: var(--font-body);
+    color: var(--text-light);
+    padding: 24px 12px 60px;
+    min-height: 100vh;
+  }
+
+  .page-head {
+    max-width: 480px; margin: 0 auto 24px;
+    color: var(--text-light-secondary);
+    font-family: var(--font-display);
+  }
+  .page-head h1 { font-size: 22px; color: var(--text-light); margin-bottom: 6px; }
+  .page-head p { font-size: 13px; line-height: 1.6; font-style: italic; }
+  .page-head em { color: var(--accent); font-style: normal; }
+
+  /* Scene frame */
+  .scene-frame {
+    width: 380px;
+    height: 820px;
+    margin: 32px auto 0;
+    background: var(--bg-portal);
+    border-radius: 24px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Portal-stuff i bakgrunden — antydan, dimmad */
+  .portal-backdrop {
+    position: absolute;
+    inset: 0;
+    padding: 24px 20px;
+    opacity: 0.35;
+    filter: blur(2px);
+  }
+  .portal-backdrop .pb-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .portal-backdrop .pb-club {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--text-light);
+  }
+  .portal-backdrop .pb-date {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .portal-backdrop .pb-card {
+    background: var(--bg-portal-surface);
+    border: 1px solid rgba(196,122,58,0.15);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    height: 80px;
+  }
+
+  /* Overlay-bg, fade in */
+  .anslag-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(14, 13, 11, 0.78);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 28px;
+    z-index: 10;
+    cursor: pointer;
+    opacity: 0;
+    animation: fade-in 0.6s ease-out 0.2s forwards;
+  }
+
+  @keyframes fade-in {
+    to { opacity: 1; }
+  }
+
+  /* Anslags-kortet i mitten */
+  .anslag-card {
+    max-width: 320px;
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Top-label */
+  .anslag-chapter {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fade-up 0.8s ease-out 0.5s forwards;
+  }
+
+  /* Anslags-text */
+  .anslag-text {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text-light);
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fade-up 1.2s ease-out 0.9s forwards;
+  }
+  .anslag-text strong {
+    font-style: normal;
+    font-weight: 700;
+    color: var(--text-light);
+  }
+
+  /* "Vidare" — subtil affordance */
+  .anslag-cta {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    color: var(--text-light-secondary);
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fade-up 0.8s ease-out 2.0s forwards, gentle-pulse 3s ease-in-out 2.8s infinite;
+  }
+  .anslag-cta::after {
+    content: ' →';
+    color: var(--accent);
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes gentle-pulse {
+    0%, 100% { opacity: 0.7; }
+    50%      { opacity: 1; }
+  }
+
+  /* Notes */
+  .notes {
+    max-width: 480px;
+    margin: 32px auto 0;
+    padding: 20px 24px;
+    background: rgba(245, 241, 235, 0.04);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    color: rgba(245, 241, 235, 0.85);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  .notes h3 {
+    font-family: var(--font-display);
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--accent);
+  }
+  .notes p { margin-bottom: 10px; }
+  .notes p:last-child { margin-bottom: 0; }
+  .notes strong { color: var(--text-light); font-weight: 600; }
+  .notes code {
+    font-family: monospace;
+    font-size: 12px;
+    background: rgba(0,0,0,0.3);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--warm);
+  }
+
+  .controls {
+    max-width: 480px;
+    margin: 16px auto 0;
+    text-align: center;
+  }
+  .controls button {
+    background: var(--accent);
+    color: var(--bg-portal);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0 4px;
+  }
+  .controls button:hover { background: var(--warm); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Cup-anslag — overlay v1</h1>
+  <p>Triggas vid första Portal i ny fas. Klick var som helst → stänger. <em>Anslag, inte interaktion. Bok-blad, inte filmscen.</em></p>
+</div>
+
+<div class="scene-frame" id="scene">
+
+  <!-- Portal-glimt i bakgrunden -->
+  <div class="portal-backdrop">
+    <div class="pb-header">
+      <div class="pb-club">Forsbacka</div>
+      <div class="pb-date">Onsdag 8 oktober</div>
+    </div>
+    <div class="pb-card"></div>
+    <div class="pb-card" style="height: 60px;"></div>
+    <div class="pb-card" style="height: 70px;"></div>
+    <div class="pb-card" style="height: 50px;"></div>
+  </div>
+
+  <!-- Overlay -->
+  <div class="anslag-overlay" id="overlay" onclick="closeOverlay()">
+    <div class="anslag-card">
+      <div class="anslag-chapter">⬩ Cupen börjar ⬩</div>
+      <p class="anslag-text">
+        Säsongen närmar sig, men först bandyårets första delikatess. Svenska cupen är inte den finaste pokalen, men den är den första.
+        <br><br>
+        Isen är sällan vad den ska vara, spelarna är ännu inte i form, och formationen sitter inte. Just därför är det något särskilt. Här syns vem som hängt med under sommaren och vem som kommit tillbaka för tidigt.
+        <br><br>
+        Bandyårets första riktiga avläsning.
+      </p>
+      <div class="anslag-cta">Tryck för att fortsätta</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="controls">
+  <button onclick="replay()">↻ Spela om</button>
+</div>
+
+<div class="notes">
+  <h3>Designnoter</h3>
+  <p><strong>Overlay, inte filmscen.</strong> Portal-glimten i bakgrunden (suddig, dimmad till 0.35) visar att spelaren *kommer tillbaka* dit. Det är inte en separat skärm. Det är ett anslag innan en akt börjar.</p>
+  <p><strong>Tre stages med fade-up:</strong> kapitel-label (0.5s in), texten (0.9s in, längre fade — den ska andas), CTA-affordance (2.0s in, sen mjuk puls). Total ~3 sekunder från overlay-fade till allt synligt. Spelaren läser i sin takt sen.</p>
+  <p><strong>Klick var som helst stänger.</strong> "Tryck för att fortsätta"-affordancen är i botten men hela overlay-ytan är klickbar. Minimal friktion. Backdrop-blur ger taktil känsla av att Portal är där under.</p>
+  <p><strong>Tonen i din text:</strong> "Bandyårets första riktiga avläsning." Den landar — den är konkret men inte dramatisk. Italic Georgia är rätt typografisk register: text som vill bli läst, inte skannad.</p>
+  <p><strong>I produktion:</strong> overlayn triggas baserat på <code>game.seenPhases</code>-array (eller liknande). När <code>getSeasonPhase()</code> returnerar en fas spelaren inte sett, läggs fasen i listan och overlayn renderas vid Portal-render. Texten kommer från <code>PHASE_ANSLAG[phase]</code> — strukturerad data, lätt att iterera på.</p>
+  <p><strong>Atmosfäriska tillägg vi avstår från i v1:</strong> snöfall-partiklar, vind-ljud, animerade textvariationer per fas. Det är "utveckla över tid"-territorium. Texten själv bär stämningen.</p>
+</div>
+
+<script>
+function replay() {
+  const overlay = document.getElementById('overlay');
+  overlay.style.animation = 'none';
+  overlay.style.opacity = '0';
+
+  // Reset alla animations
+  const elements = overlay.querySelectorAll('.anslag-chapter, .anslag-text, .anslag-cta');
+  elements.forEach(el => {
+    el.style.animation = 'none';
+    el.style.opacity = '0';
+  });
+
+  // Restart efter en frame
+  setTimeout(() => {
+    overlay.style.animation = '';
+    overlay.style.opacity = '';
+    elements.forEach(el => {
+      el.style.animation = '';
+      el.style.opacity = '';
+    });
+  }, 50);
+}
+
+function closeOverlay() {
+  alert('→ Tillbaka till Portal (i riktig app: overlay fade:as ut, Portal renderas i cup-fas)');
+}
+</script>
+
+</body>
+</html>

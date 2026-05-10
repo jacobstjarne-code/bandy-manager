@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Cup-anslag bågen — fyra moments 2026-05-08</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!--
+  CUP-BÅGEN — FYRA ANSLAG
+
+  Hela cup-fasens narrativ-bågen visualiserad. Fyra anslag, samma frameat-format,
+  Portal-bakgrunden varierar i datum och match-info så tiden syns gå.
+
+  Jacob's fyra texter, ordagrant. Kapitel-labels är konkreta (inte abstrakta) —
+  "Cupen börjar", "Mellan rundorna", "Inför finalspelet", "Cupen är slut".
+-->
+
+<style>
+  :root {
+    --bg-portal:           #0E0D0B;
+    --bg-portal-warm-top:  #1A140C;
+    --bg-portal-surface:   #181613;
+    --bg-portal-elevated:  #211d18;
+    --text-light:          #F5F1EB;
+    --text-light-secondary:#C4BAA8;
+    --text-muted:          #8A857A;
+    --accent:              #C47A3A;
+    --accent-deep:         #8B4820;
+    --warm:                #D4A574;
+
+    --font-display: 'Georgia', 'Times New Roman', serif;
+    --font-body:    -apple-system, system-ui, sans-serif;
+
+    --radius-md: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #2a2824;
+    font-family: var(--font-body);
+    color: var(--text-light);
+    padding: 24px 12px 60px;
+    min-height: 100vh;
+  }
+
+  .page-head {
+    max-width: 480px; margin: 0 auto 24px;
+    color: var(--text-light-secondary);
+    font-family: var(--font-display);
+  }
+  .page-head h1 { font-size: 22px; color: var(--text-light); margin-bottom: 6px; }
+  .page-head p { font-size: 13px; line-height: 1.6; font-style: italic; }
+  .page-head em { color: var(--accent); font-style: normal; }
+
+  /* Anslag-navigator */
+  .anslag-nav {
+    max-width: 480px;
+    margin: 0 auto 16px;
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .anslag-nav button {
+    background: rgba(245, 241, 235, 0.06);
+    color: var(--text-light-secondary);
+    border: 1px solid rgba(196, 122, 58, 0.25);
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .anslag-nav button.active {
+    background: var(--accent);
+    color: var(--bg-portal);
+    border-color: var(--accent);
+  }
+  .anslag-nav button:hover:not(.active) {
+    border-color: var(--accent);
+    color: var(--text-light);
+  }
+
+  /* Scene frame */
+  .scene-frame {
+    width: 380px;
+    height: 820px;
+    margin: 16px auto 0;
+    background: var(--bg-portal);
+    border-radius: 24px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Portal-glimt */
+  .portal-backdrop {
+    position: absolute;
+    inset: 0;
+    padding: 24px 20px;
+    opacity: 0.55;
+    filter: blur(1.5px);
+    transition: opacity 0.4s ease;
+  }
+  .pb-header { text-align: center; margin-bottom: 20px; }
+  .pb-genre {
+    font-size: 9px; font-weight: 600; letter-spacing: 4px;
+    color: var(--accent); opacity: 0.7; margin-bottom: 6px;
+  }
+  .pb-club {
+    font-family: var(--font-display); font-size: 18px; color: var(--text-light);
+  }
+  .pb-date {
+    font-size: 11px; color: var(--text-muted); margin-top: 4px;
+  }
+  .pb-hero {
+    background: var(--bg-portal-surface);
+    border: 1px solid rgba(196,122,58,0.2);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    height: 130px;
+    position: relative;
+  }
+  .pb-hero::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--accent);
+  }
+  .pb-hero-label {
+    font-size: 9px; letter-spacing: 2px;
+    color: var(--accent); opacity: 0.85; margin-bottom: 8px;
+  }
+  .pb-hero-title {
+    font-family: var(--font-display); font-size: 16px;
+    color: var(--text-light); margin-bottom: 4px;
+  }
+  .pb-hero-meta { font-size: 11px; color: var(--text-muted); }
+
+  .pb-card {
+    background: var(--bg-portal-surface);
+    border: 1px solid rgba(196,122,58,0.15);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    height: 60px;
+    position: relative;
+  }
+  .pb-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--accent);
+  }
+  .pb-card-label {
+    font-size: 9px; letter-spacing: 2px;
+    color: var(--accent); opacity: 0.85; margin-bottom: 6px;
+  }
+  .pb-card-body { font-size: 11px; color: var(--text-light-secondary); }
+
+  /* Overlay */
+  .anslag-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(14, 13, 11, 0.65);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 28px;
+    z-index: 10;
+    cursor: pointer;
+  }
+
+  /* Frameat anslags-kort — vinnaren */
+  .anslag-card {
+    max-width: 320px;
+    width: 100%;
+    background: var(--bg-portal-surface);
+    border: 1px solid rgba(196, 122, 58, 0.25);
+    border-radius: var(--radius-md);
+    padding: 28px 24px 24px;
+    text-align: left;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  .anslag-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--accent);
+  }
+
+  .anslag-chapter {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .anslag-text {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-light);
+    margin-bottom: 28px;
+  }
+
+  .anslag-cta {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    color: var(--text-light-secondary);
+    text-transform: uppercase;
+    text-align: right;
+    animation: gentle-pulse 3s ease-in-out infinite;
+  }
+  .anslag-cta::after {
+    content: ' →';
+    color: var(--accent);
+  }
+
+  @keyframes gentle-pulse {
+    0%, 100% { opacity: 0.7; }
+    50%      { opacity: 1; }
+  }
+
+  /* När man byter anslag, animation */
+  .anslag-card.swapping {
+    animation: card-swap 0.5s ease-in-out;
+  }
+  @keyframes card-swap {
+    0%   { opacity: 1; transform: translateY(0); }
+    50%  { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Notes */
+  .notes {
+    max-width: 480px;
+    margin: 32px auto 0;
+    padding: 20px 24px;
+    background: rgba(245, 241, 235, 0.04);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    color: rgba(245, 241, 235, 0.85);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  .notes h3 {
+    font-family: var(--font-display);
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--accent);
+  }
+  .notes h4 {
+    margin-top: 14px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: var(--warm);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .notes p { margin-bottom: 10px; }
+  .notes p:last-child { margin-bottom: 0; }
+  .notes strong { color: var(--text-light); font-weight: 600; }
+  .notes code {
+    font-family: monospace;
+    font-size: 12px;
+    background: rgba(0,0,0,0.3);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--warm);
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Cup-anslag — bågen</h1>
+  <p>Fyra moments. Klicka knapparna för att jämföra. <em>Frameat-formatet är låst, texterna är dina ordagrant, Portal-bakgrunden förändras med tiden.</em></p>
+</div>
+
+<div class="anslag-nav">
+  <button class="active" data-id="1" onclick="setAnslag(1)">1 · Cupen börjar</button>
+  <button data-id="2" onclick="setAnslag(2)">2 · Mellan rundorna</button>
+  <button data-id="3" onclick="setAnslag(3)">3 · Inför finalspelet</button>
+  <button data-id="4" onclick="setAnslag(4)">4 · Cupen är slut</button>
+</div>
+
+<div class="scene-frame" id="scene">
+
+  <!-- Portal-glimt — ändras med anslag -->
+  <div class="portal-backdrop" id="backdrop">
+    <div class="pb-header">
+      <div class="pb-genre">⬩ &nbsp;FORSBACKA&nbsp; ⬩</div>
+      <div class="pb-club">Forsbacka IF</div>
+      <div class="pb-date" id="pb-date">Onsdag 8 oktober · Omg 2</div>
+    </div>
+
+    <div class="pb-hero">
+      <div class="pb-hero-label" id="pb-hero-label">📋 NÄSTA MATCH</div>
+      <div class="pb-hero-title" id="pb-hero-title">Forsbacka — Sandviken</div>
+      <div class="pb-hero-meta" id="pb-hero-meta">Lördag · cup-första-rundan</div>
+    </div>
+
+    <div class="pb-card">
+      <div class="pb-card-label">🎯 STYRELSENS KRAV</div>
+      <div class="pb-card-body">3 mål · plats 5–8 i serien</div>
+    </div>
+
+    <div class="pb-card">
+      <div class="pb-card-label">📖 I BLICKFÅNGET</div>
+      <div class="pb-card-body">2 pågående · Berg sista säsongen</div>
+    </div>
+
+    <div class="pb-card" style="height: 50px;">
+      <div class="pb-card-label">📋 VECKANS BESLUT</div>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div class="anslag-overlay" id="overlay" onclick="closeOverlay()">
+    <div class="anslag-card" id="anslag-card">
+      <div class="anslag-chapter" id="anslag-chapter">⬩ Cupen börjar ⬩</div>
+      <div class="anslag-text" id="anslag-text"></div>
+      <div class="anslag-cta">Tryck för att fortsätta</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Cup-bågen</h3>
+
+  <h4>1 — Cupen börjar (anslag)</h4>
+  <p>Förväntan, "delikatessen", inte den finaste pokalen men den första. Stämningen: laddning, nyfikenhet, första avläsningen efter sommaren.</p>
+  <p><strong>Triggas:</strong> första gången spelaren ser en cup-match i NÄSTA MATCH-cardet.</p>
+
+  <h4>2 — Mellan rundorna (temperatur)</h4>
+  <p>Mid-cup. "Tre lag har redan åkt ur." Inget överdramatiskt — men en konstaterande ton. Cupen pågår, det är vinter, det blåser. "Säger en sak och spelar en annan."</p>
+  <p><strong>Triggas:</strong> efter andra eller tredje cup-rundan, när det fortfarande är många lag kvar men några har åkt ur.</p>
+
+  <h4>3 — Inför finalspelet (samling)</h4>
+  <p>Slutspelet närmar sig. Sex lag, fyra dagar. "Den helg där säsongen bestäms — inte i resultat, utan i självbild." Större vikt, mer närvaro.</p>
+  <p><strong>Triggas:</strong> när spelaren har kvalificerat sig till cup-finalspelet — eller om hen är ute, kanske en parallell variant där tonen är mer reflekterande.</p>
+
+  <h4>4 — Cupen är slut (övergång)</h4>
+  <p>Efteråt. Pokalen står på en byrå. Tonen är bortvänd från cupen — vi går mot något längre, jämnare, viktigare. Ligan börjar nästa helg.</p>
+  <p><strong>Triggas:</strong> direkt efter cupens sista runda. Övergångsmoment innan ligan startar.</p>
+
+  <h3>Implementation-noteringar</h3>
+  <p><strong>Datastruktur:</strong> <code>PHASE_ANSLAG: Record&lt;PhaseKey, AnslagText&gt;</code> där <code>AnslagText</code> har <code>chapter</code> och <code>body</code>. Texterna är prosa — inga template-värden. Det är scenens röst, inte spelarens situation.</p>
+  <p><strong>Trigging:</strong> <code>game.seenAnslag: PhaseKey[]</code> i SaveGame. När <code>computeCurrentPhase(game)</code> returnerar en fas som inte är i listan, läggs den till och overlayn renderas vid nästa Portal-mount.</p>
+  <p><strong>Frameat-vokabulär:</strong> samma stripe + bg-surface + border som Portal-secondary-cards. Konsekvent med designsystemet. Skillnaden är att texten är italic Georgia istället för funktionell text.</p>
+  <p><strong>Inte i v1:</strong> ljud, bakgrundsanimation, fas-specifika visuella ackventer (typ snöfall vid övergång till liga). Texten bär stämningen själv.</p>
+</div>
+
+<script>
+const ANSLAG_DATA = {
+  1: {
+    chapter: '⬩ Cupen börjar ⬩',
+    body: `Säsongen närmar sig, men först bandyårets första delikatess. Svenska cupen är inte den finaste pokalen, men den är den första.<br><br>Isen är sällan vad den ska vara, spelarna är ännu inte i form, och formationen sitter inte. Just därför är det något särskilt. Här syns vem som hängt med under sommaren och vem som kommit tillbaka för tidigt.<br><br>Bandyårets första riktiga avläsning.`,
+    portal: {
+      date: 'Onsdag 8 oktober · Omg 2',
+      heroLabel: '📋 NÄSTA MATCH',
+      heroTitle: 'Forsbacka — Sandviken',
+      heroMeta: 'Lördag · cup-första-rundan',
+    }
+  },
+  2: {
+    chapter: '⬩ Mellan rundorna ⬩',
+    body: `Det blåser snålt över hallarna i östra Sverige den här veckan. Tre lag har redan åkt ur.<br><br>Ingen pratar om cupen som om den vore avgörande, men ingen ser ut att ta lätt på den heller. Det är så cupen brukar vara.<br><br>Man säger en sak och spelar en annan.`,
+    portal: {
+      date: 'Tisdag 28 oktober · Omg 5',
+      heroLabel: '📋 NÄSTA MATCH',
+      heroTitle: 'Forsbacka — Edsbyn',
+      heroMeta: 'Söndag · cup-tredje-rundan',
+    }
+  },
+  3: {
+    chapter: '⬩ Inför finalspelet ⬩',
+    body: `Nu samlas det som finns kvar. Sex lag, fyra dagar, en helg där bandysverige för första gången på året får se varandra på samma plats.<br><br>Det är inte ligan. Det är inte finalen. Men för dem som varit med länge är det här den helg där säsongen bestäms — inte i resultat, utan i självbild.`,
+    portal: {
+      date: 'Onsdag 26 november · Omg 8',
+      heroLabel: '🏆 CUP-FINALSPEL',
+      heroTitle: 'Studenternas, fre–sön',
+      heroMeta: 'Forsbacka klar · sex lag totalt',
+    }
+  },
+  4: {
+    chapter: '⬩ Cupen är slut ⬩',
+    body: `Cupen är spelad. Pokalen står på en byrå någonstans.<br><br>Nu vidtar det som är längre, jämnare, och i längden viktigare. Ligan börjar nästa helg.<br><br>Det är dags att gå in i den med det man har lärt sig — och med vetskapen om att cupen, hur fin den än var, ändå bara är cupen.`,
+    portal: {
+      date: 'Tisdag 2 december · Omg 9',
+      heroLabel: '📋 NÄSTA MATCH',
+      heroTitle: 'Forsbacka — Bollnäs',
+      heroMeta: 'Söndag · liga-omg 1',
+    }
+  },
+};
+
+let currentId = 1;
+
+function setAnslag(id) {
+  if (id === currentId) return;
+  currentId = id;
+
+  // Update nav
+  document.querySelectorAll('.anslag-nav button').forEach(b => {
+    b.classList.toggle('active', Number(b.dataset.id) === id);
+  });
+
+  const data = ANSLAG_DATA[id];
+  const card = document.getElementById('anslag-card');
+
+  // Swap-animation
+  card.classList.remove('swapping');
+  void card.offsetWidth;
+  card.classList.add('swapping');
+
+  setTimeout(() => {
+    document.getElementById('anslag-chapter').textContent = data.chapter;
+    document.getElementById('anslag-text').innerHTML = data.body;
+    document.getElementById('pb-date').textContent = data.portal.date;
+    document.getElementById('pb-hero-label').textContent = data.portal.heroLabel;
+    document.getElementById('pb-hero-title').textContent = data.portal.heroTitle;
+    document.getElementById('pb-hero-meta').textContent = data.portal.heroMeta;
+  }, 250);
+}
+
+function closeOverlay() {
+  alert('→ Tillbaka till Portal (i riktig app: overlay fade:as ut, Portal renderas i ny fas)');
+}
+
+// Initial render
+document.getElementById('anslag-text').innerHTML = ANSLAG_DATA[1].body;
+</script>
+
+</body>
+</html>
