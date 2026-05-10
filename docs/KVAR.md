@@ -5,34 +5,59 @@
 
 ---
 
-## AKTUELLT LÄGE (2026-05-09) — KOMMANDE BATCH A
+## AKTUELLT LÄGE (2026-05-10) — VÄNTAR PLAYTEST
 
-**Grafisk uppdatering av match-flödet** — BATCH A startar nästa session.
+**Stålvallen match-live-bundle (BATCH A–D) + samlade fixar:** 🔄 KOD KLAR — väntar browser-playtest.
 
-Referensdokument i `docs/match-live-bundle/`:
-- `CODE_INSTRUCTION_MATCH_LIVE_BUNDLE_2026-05-08.md` — övergripande instruktion
-- `IMPLEMENTATION-SPEC.md` + `IMPLEMENTATION_PLAN.md` — detaljerade specs
-- Mocks: `match-live-stalvallen.html`, `scoreboard-stalvallen.html`, `match-events-stalvallen.html`, `match-report-stalvallen.html`, `commentary-redesign-v2.html`
+760 tester gröna. Build ren. Allt pushat till origin/main.
 
-**Låsta kontrakt:** befintliga match-services (cornerInteractionService, freeKickInteractionService, penaltyInteractionService, counterAttackInteractionService, lastMinutePressService) — datakontrakten rörs INTE i BATCH A.
+| Batch/Fix | Innehåll | Commit | Status |
+|-----------|----------|--------|--------|
+| BATCH A | ScoreboardStalvallen + CommentaryFeedStalvallen + sevenSegment | `ff8fc18` | 🔄 |
+| BATCH B | InteractionShell + LastMinutePress + MatchReportView | `733d65e` | 🔄 |
+| BATCH C | Portal secondary cards (WeeklyDecision/BoardObjectives/ActiveArcs) | `5412983` | 🔄 |
+| BATCH D | CornerInteraction + FreeKickInteraction + PenaltyInteraction + CounterInteraction | `8e05458` | 🔄 |
+| FIX-05/06/07 | Inline-styles → CSS-klasser, `--panel`-token, fadeInUp | `321275a` | 🔄 |
+| FIX-01–04 | season_signature_reveal av, textkorr, cup_final_pre, TABELL→CUP-fas | `4f3f272` | 🔄 |
+| FIX-08–09 | boardMeetingScene + cupIntroScene → anslag-modal | `60221a5` | 🔄 |
+| FIX-10–11 | EventCardInline Stålvallen-anatomi, cup-stake-text | `15b9c20` | 🔄 |
+
+**Pixel-audit kvarstår.** Öppna `docs/match-live-bundle/*.html` bredvid appen — jämför per komponent. Avvikelser i CSS-värden fixar Code omgående.
+
+**Intro-flödet (säsong 1):** ArrivalScene → BoardMeetingScene → Portal (cup_start) → SundayTraining → cup_first_match → cupspel.
+**Intro-flödet (säsong 2+):** season_kickoff-anslag → Portal (cup_start) → cup_first_match → cupspel.
+
+**BATCH E (press/media-separation):** parkerad. Media-bibliotek (`src/domain/data/media/library/quotes/`) finns. Spec i `docs/PRESS_MEDIA_SPEC_2026-05-10.md`. Väntar beslut om integration-yta.
 
 ---
 
-## LEVERERAT 2026-05-09
+## ÖPPNA SMÅFIXAR (ej prioriterade)
 
-**Anslag-system (variants + liga-anslag):** ✅ LEVERERAD
+- `QFSummaryScreen.tsx:38` — `letterSpacing: '3px'` → `'2px'`
+- DIAGNOS F2: emoji-prefix saknas på vissa labels
+- `GameOverScreen:158` + `ChampionScreen:209` — knappar utan `.btn`-klass
+- `SeasonSummaryScreen.tsx` säsongssignatur-citatblock (Mock 2-pass)
+- `VictoryQuote.tsx`, `ClubMemoryEventRow.tsx`, `ClubMemoryLegendsBlock.tsx` (Mock 2-pass)
+- `SeasonSignatureSecondary.tsx` calm/scandal-stripe (Mock 2-pass)
+- `MatchHeader.tsx:61` `atmo.borderAccent` (Mock 2-pass)
+- `Scoreboard.tsx:145 #A89878` — hårdkodat hex (gammal komponent, ej Stålvallen)
 
-| Leverans | Commits | Status |
-|----------|---------|--------|
+---
+
+## LEVERERAT 2026-05-09–10
+
+**Anslag-system (variants + liga-anslag):** ✅
+
+| Leverans | Commit | Status |
+|----------|--------|--------|
 | Anslag-types.ts + cupAnslag.ts migration (15 texter → variants) | `b9a256d` | ✅ |
 | leagueAnslag.ts — 6 liga-keys × 3 varianter = 18 texter | `b9a256d` | ✅ |
 | computeNextAnslag — liga-triggering + 7 hjälpfunktioner | `b9a256d` | ✅ |
 | AnslagOverlay.tsx — pickAnslagVariant + getAnslagData | `b9a256d` | ✅ |
-| 5 obligatoriska testfiler (determinism, triggering, tracks, reset, kalender) | `b9a256d` | ✅ |
-| Cup-scen-justeringar (beat 1 kortad, 2 verifierings-tester, JSDoc) | `e4c5951` | ✅ |
+| 5 obligatoriska testfiler (760 totalt) | `b9a256d` | ✅ |
+| Cup-scen-justeringar (beat 1 kortad, 2 tester, JSDoc) | `e4c5951` | ✅ |
 | ArrivalScene-reboot | `41af54d` | ✅ |
-
-Teststatus: 725 tester gröna. Build ren.
+| cup_between Variant B "frosten ligger om mornarna" | `457343e` | ✅ |
 
 ---
 
@@ -1007,15 +1032,15 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 
 | Fil | Senast uppdaterad | Status |
 |-----|-------------------|--------|
-| `CLAUDE.md` | 2026-05-06 | Aktuell — design-system-sektionen omskriven med INGA_FEATURE_FLAGS, DESIGNPRINCIPER utökade |
-| `LESSONS.md` | 2026-04-22 (§2 uppdaterad) | Aktuell |
+| `CLAUDE.md` | 2026-05-10 | Aktuell — workspace-check-steg tillagt i sessionsstart |
+| `LESSONS.md` | 2026-05-10 | Aktuell |
 | `DECISIONS.md` | 2026-05-06 | Aktuell — 3 nya poster (stripes, arrivalDialogue, design-system-flytt) |
 | `design-system/DESIGN-DECISIONS.md` | 2026-05-06 | Aktuell — stripes-beslut + AI-slop def reviderad |
 | `docs/DESIGN_SYSTEM.md` | 2026-05-05 | **STUB** — auktoritativt i `design-system/` |
 | `STATUS.md` | 2026-04-27 | Uppdaterad med Sprint 27 + 28-A/B |
-| `KVAR.md` | 2026-05-08 | Denna fil |
-| `HANDOVER_2026-05-08.md` | 2026-05-08 | Senaste handover |
-| `HANDOVER_2026-05-06.md` | 2026-05-06 | Föregående handover |
+| `KVAR.md` | 2026-05-10 | Denna fil |
+| `HANDOVER_2026-05-09.md` | 2026-05-09 | Senaste handover (förra sessionen) |
+| `HANDOVER_2026-05-08.md` | 2026-05-08 | Föregående handover |
 | `HANDOVER_2026-05-04_KVÄLL.md` | 2026-05-04 | Föregående handover (kväll) |
 | `HANDOVER_2026-04-30.md` | 2026-04-30 | Handover förmiddag |
 | `HANDOVER_2026-04-28b.md` | 2026-04-28 | Arkiv |
@@ -1027,15 +1052,14 @@ Från `docs/THE_BOMB.md` och `docs/SPEC_KLUBBUTVECKLING.md`. Listade för att in
 
 ## NÄSTA SESSION — FÖRESLAGEN ORDNING
 
-1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-05-06.md`.
-2. **Playtest** — ny manager, klicka igenom hela intro-flödet (ArrivalScene steg 0→4), spela 2–3 omgångar. Verifiera specifikt:
-   - ArrivalScene: steg 0→4 klickbart, CTA döljs tills 3.4s gått, exit-overlay funkar
-   - Tabell: vänstra zon-stripes synliga per position
-   - Inbox: oläst = stripe + tint (dubbel-signal)
-   - Transfer: Scoutad-spelare har stripe + tag-copper
-   - GranskaForlop: rival-rader har stripe + 🔥
-   - `.card-tap` hover/active på secondary cards (KlackenSecondary, CoffeeRoomSecondary etc.)
-3. **Opus: Sture per-klubb-repliker** i `src/domain/data/arrivalDialogue.ts` — 3–4 varianter per klubb, bandysvensk ton.
-4. **QFSummaryScreen:38** `letterSpacing: '3px'` → `'2px'` — liten fix.
-5. **DIAGNOS F2** (emoji-prefix på saknade labels) — Opus text-design-pass.
-6. **Steg 4 (fas-scenes)** eller **handling-balans** — beslut beroende på playtest. Se flödesanalys i `HANDOVER_2026-05-04_KVÄLL.md § 6` för varför handling > fler scener.
+1. Läs `CLAUDE.md`, `LESSONS.md`, `DECISIONS.md`, `KVAR.md` (denna), `HANDOVER_2026-05-09.md`.
+2. **Playtest — Stålvallen pixel-audit.** Öppna mockarna i `docs/match-live-bundle/*.html` i webbläsaren. Starta dev-servern. Jämför per komponent:
+   - `scoreboard-stalvallen.html` → ScoreboardStalvallen (sticky topp, score-flash, tidslinje)
+   - `commentary-redesign-v2.html` → CommentaryFeedStalvallen (tagg-stilar, atmosphere-rader)
+   - `match-events-stalvallen.html` → alla 5 event-paneler (corner/frislag/straff/kontring/slutminuterna)
+   - `match-report-stalvallen.html` → MatchReportView (stage + paper, spelarbetyg, POTM)
+   - `portal-secondary-cards.html` → de tre secondary-korten + EventCardInline
+3. **Playtest — intro-flödet.** Ny manager: ArrivalScene → BoardMeetingScene → cup_start-anslag → cup_first_match-anslag → cup-match. Säsong 2: season_kickoff-anslag → cup_start → cup_first_match.
+4. **Avvikelser från pixel-audit** → direkt till Code som en samling fixar.
+5. **BATCH E (press/media)** — om integration-ytan är beslutad (Portal-secondary rekommenderas som minsta lift).
+6. **Småfixar** (QFSummaryScreen letterSpacing, GameOverScreen/ChampionScreen knappar) — paketera som en commit.
