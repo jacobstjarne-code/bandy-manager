@@ -1,14 +1,16 @@
 # Bandy Manager — Project Instructions for Claude Code
 
-## TIMESTAMP FÖRST — OBLIGATORISKT
+## TIMESTAMP + WORKSPACE-CHECK FÖRST — OBLIGATORISKT
 
-**Första handling i varje ny session (innan något annat):** hämta aktuell tid via web_search + web_fetch mot en tids-API som innehåller timestamp i responsen (t.ex. `timeapi.world`). Extrahera datum + klockslag + veckodag och skriv överst i sessionen: `2026-04-22, onsdag morgon (09:41 CEST)`.
+**Första handling i varje ny session (innan något annat):**
 
-Förhåll dig till den timestampen när du refererar till tid. "Idag", "igår", "förra veckan" ska räknas från den, inte från antaganden.
+1. **Tid:** `web_search "current time Stockholm"` följt av `web_fetch` på en sida i resultaten där datum/tid renderas i HTML (time.io, timeanddate.com fungerar). Försök inte gissa API-URL:er — `web_fetch` accepterar bara URL:er som dykt upp i sökresultat eller angetts av Jacob. Skriv överst: `2026-04-22, onsdag morgon (09:41 CEST)`.
 
-Kostnad: 1 sök + 1 fetch per sessionsstart. Billig. Värt det för att undvika att säga "igår" om något som hände för 20 minuter sedan.
+2. **Workspace-check:** kör `tool_search` för att se vilka filsystem-verktyg som är tillgängliga i sessionen (read/write/edit/list). Olika sessioner har olika åtkomst — verifiera, anta inte.
 
-Om tid-API:t inte svarar — fråga Jacob som fallback.
+Förhåll dig till timestampen när du refererar till tid. "Idag", "igår", "förra veckan" räknas från den, inte från antaganden.
+
+Om tids-sidan inte svarar — fråga Jacob.
 
 ## LÄS VID SESSIONSTART — OBLIGATORISKT
 

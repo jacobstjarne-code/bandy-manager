@@ -689,3 +689,39 @@ let shotsHome    = fhs?.shotsHome    ?? 0
 **Sekundär insikt — Workarounder i UI maskerar datamodell-buggar:** `GranskaShotmap.tsx` räknade `onTargetCount = scoredCount + savedCount` istf att läsa `report.onTargetHome` direkt, p.g.a. en (felaktig) kommentar om corner-exkludering. Visualiseringen blev korrekt, men buggen i datamodellen förblev osynlig för alla andra delar av appen som läser fältet direkt. Workarounden kvar med korrekt förklaring (robust mot interaktiva hörn-mål som inte inkrementerar onTarget i matchReducer — det är en separat, legitim anledning).
 
 **Historik:** Shot data audit 2026-05-04. `onTargetHome/Away` initialiserades till `0` i `simulateMatchCore` istf `fhs?.onTargetHome ?? 0`. `report.onTargetHome` reflekterade bara andra halvlekens värde. Stresstest: 7,85/match mot bandygrytan ~15.8. Fixat i samma session: lade till `initialOnTargetHome/Away` i `StepByStepInput`, `SecondHalfInput`, matchCore-räknare och matchEngine `secondHalfInput`. Stresstest efter fix: 15.4/match.
+
+---
+
+## 31. Polish-tillägg utöver spec introducerar buggar
+
+**Mönster:** Code implementerar enligt spec men lägger till "design polish" som inte finns i specen — fade-in, delays, animationer, opacity-states. Tillägget introducerar timing-buggar som blockerar kärnfunktionen. Buggen yttrar sig som att UI:t inte beter sig som specen beskriver, fast koden formellt följer specen.
+
+**Rotorsak:** Implementations-friheten töjs från "följ specen" till "förbättra utifrån vad jag tycker är snyggt". Polish-tillägg som `setTimeout(1700)` + `useEffect`-cleanup interagerar med Reacts livscykler (StrictMode dubbel-mount, parent-re-render-loops) på sätt som inte test-verifieras. Resultatet: en mekanism som spec-tester inte täcker eftersom mekanismen inte finns i specen.
+
+**Fix:**
+1. Code: följ specen bokstavligen. Om "polish" är värd att lägga till — fråga eller PR:a det separat efter spec-implementationen är verifierad.
+2. Opus: granska Code-implementation mot spec innan godkännande. Leta efter `useEffect`/`setTimeout`/`opacity`-mekanik som inte finns i specen.
+3. När en bug rapporteras på en yta som specifikt följer spec — börja med att lista *vad som finns i implementationen som inte finns i specen*. Där ligger ofta buggen.
+
+**Känn igen:** Spec säger "CTA visas". Implementation har `ctaReady`-state med 1700ms delay, opacity-fade, pointerEvents-toggle. Spec nämner inget av det. Spec-tester täcker inte mekanismen. Bug uppstår i mekanismen som inte borde finnas.
+
+**Historik:** ArrivalScene-reboot 2026-05-08. Spec sa "CTA visas direkt när stage renderas". Code la in `ctaReady`-mekanik för mjuk fade-in. StrictMode dubbel-mount + parent-re-render kombinerade till att `setTimeout` clearas innan `setCtaReady(true)` fyrar. CTA blev evigt osynlig. Fix: ta bort hela `ctaReady`-mekaniken, låt CTA renderas direkt enligt spec. Polish kan komma senare som separat insats.
+
+---
+
+## 32. Diagnostik-uppdrag — Code kör tester, inte spelaren
+
+**Mönster:** Vid bug-jakt skriver Code `console.log` i koden och ber spelaren öppna webbläsaren, navigera till bug-yta, öppna DevTools, kopiera loggar och klistra in dem. Spelaren tappar tålamod — hen ska inte behöva göra teknisk diagnostik.
+
+**Rotorsak:** Uppdragsfördelning glider. Code tror sig sakna webbläsar-access och delegerar dit. Opus förstärker felet genom att vidarebefordra Code's instruktion istället för att korrigera den. Spelaren ska enligt skrivna preferenser slippa tekniskt arbete — "hela poängen med att ha dig och Code parallellt är att jag ska slippa".
+
+**Fix:** Vid bug-rapport — Code kör `npm run dev` lokalt, öppnar bug-yta i egen webbläsare, läser DevTools-loggar själv. Spelaren rapporterar bara symptomet. Code och Opus diagnostiserar och löser.
+
+När diagnostik behöver mer info än vad spelarens skum-rapport kan ge:
+- Code: starta dev-server, repro buggen själv
+- Opus: läs relevant kod via workspace-MCP och resonera om rotorsaken
+- Spelaren: bara om något tekniskt verkligen kräver hens öppna spel-instans — och då specifikt formulerat: "vilken klubb valde du, vilken säsong är det, ser du X på skärmen?"
+
+**Känn igen:** Code-instruktion som innehåller "öppna webbläsaren", "öppna DevTools", "klistra in loggarna". Eller Opus-meddelande som vidarebefordrar sådan instruktion till spelaren. Bägge är symptom på fel uppdragsfördelning.
+
+**Historik:** ArrivalScene CTA-bug 2026-05-08. Code la in `console.log('[ArrivalScene] stage-advance:', ...)` och bad Jacob köra testrunda. Opus skickade vidare instruktionen istället för att korrigera. Jacob: "jag orkar inte hålla på med det där. det har jag sagt 1000 gånger." Korrekt approach: Code kör dev-server och läser loggar själv, eller Opus läser koden via MCP och hittar bugg via kod-analys istället för runtime-data.

@@ -181,9 +181,13 @@ export const FINALDAG_BRIEFING_PLAYING: string[] = [
   '🏆 Idag är det final. Bygden har bussat hit. Halva orten är på plats.',
 ]
 
-// Spectator: only one variant (drop the {N} variant per Jacob's directive)
+// Spectator: utökad pool 2026-05-08 — endast 1 variant gav garanterad repetition
 export const FINALDAG_BRIEFING_SPECTATOR: string[] = [
   '🏆 SM-finalen i dag: {homeClubName} mot {awayClubName}. Vi är inte där. Inte i år.',
+  '🏆 Finaldagen. {homeClubName} mot {awayClubName} på Studan. Säsongen är slut för oss — finalen påminner.',
+  '🏆 Studenternas idag. {homeClubName} mot {awayClubName}. Inte vår final, men finalen.',
+  '🏆 SM-final klockan 13:15. Vi tittar — som tre fjärdedelar av bandysverige.',
+  '🏆 Det är finaldag. Inte vår, men finaldag. Klacken kommer ändå att sjunga någonstans.',
 ]
 
 export function finaldagInboxPlaying(ctx: SpecialDateContext): { subject: string; body: string } {

@@ -1,7 +1,7 @@
 # Inlåsta system — synliggörande-tracker
 
 **Skapad:** 2026-05-06
-**Senast uppdaterad:** 2026-05-07
+**Senast uppdaterad:** 2026-05-08
 
 ## Rot-problem
 
@@ -36,6 +36,17 @@ Sessioner ska alltid avancera trackerns sammanlagda status. Mock + spec räknas 
 | 10 | `arcService` + storylines | 🟠 | 2026-05-07 | `SeasonSummaryScreen.tsx:386–416` (säsongsslut) + `ActiveArcsSecondary.tsx` (Portal in-säsong) | Implementation klar för både säsongsslut och in-säsong-yta (commit ad43cce). Portal-secondary card visar pågående arcs med phase-progress + chevron-affordans. Väntar playtest. |
 
 **Sammanlagd status:** 20/30 status-steg klockade (10 system på 🟠, 0 på 🟡, 0 på 🔴). Alla system har nått minst implementation — väntar playtest för 🟢-uppgradering.
+
+## Aktuellt parallellt arbete (2026-05-08)
+
+Utanför de 10 inlåsta systemen pågår ny narrativ-yta — anslag-systemet (Portal-overlay vid säsongs-fas-byten):
+
+- **Cup-anslag (Anslaget, Snålvinden, Helgen, Pokalen + vinnar-variant):** ✅ implementerat (commit `5921d95`), väntar playtest
+- **ArrivalScene reboot:** ✅ implementerat (auto-progression-modell), väntar playtest
+- **Anslag-variants-migration + liga-anslag (6 nya):** 🟡 specat (`docs/CODE_INSTRUCTION_ANSLAG_VARIANTS_2026-05-08.md`), väntar Code
+- **Cup-scen-justering (cup_intro beat 1):** 🟡 specat (`docs/SPEC_CUP_SCENE_ADJUSTMENTS_2026-05-08.md`), väntar Code
+
+Anslag-systemet är inte en del av denna tracker (handlar om gamla inlåsta system, inte nya features) men noteras här för kontext om vad som läggs till parallellt.
 
 ## Prio-ordning för Opus-leveranser
 
