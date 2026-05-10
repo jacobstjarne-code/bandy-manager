@@ -13,7 +13,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../../store/gameStore'
 import { getActionsForEvent } from '../../../domain/services/eventActions'
-import { getEventPriority } from '../../../domain/entities/GameEvent'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 
 interface Props {
@@ -66,13 +65,6 @@ export function EventCardInline({ event, remainingCount }: Props) {
   const resolveEvent = useGameStore(s => s.resolveEvent)
   const navigate = useNavigate()
   const actions = getActionsForEvent(event)
-  const priority = event.priority ?? getEventPriority(event.type)
-
-  // Prio-signal i typ-label-färg (severity-systemet är reserverat för journalist + säsongssignaturer)
-  const labelColor = priority === 'high' || priority === 'normal'
-    ? 'var(--accent)'
-    : 'var(--text-muted)'
-
   const typeLabel = getEventTypeLabel(event)
 
   function handleAction(choiceId: string) {
@@ -81,22 +73,37 @@ export function EventCardInline({ event, remainingCount }: Props) {
 
   return (
     <div
+      className="event-card-inline"
       style={{
+        position: 'relative',
         margin: '0 0 8px 0',
-        background: 'var(--bg-portal-surface, var(--bg-elevated))',
-        border: '1px solid var(--border)',
-        borderRadius: 8,
-        padding: '10px 12px',
+        background: 'var(--bg-portal-surface)',
+        border: '1px solid rgba(196,122,58,0.15)',
+        borderRadius: 'var(--radius-md)',
+        padding: '14px 16px 14px 18px',
       }}
     >
-      {/* Typ-label — bär prio-signalen i färgen */}
+      {/* Vänster-stripe — Stålvallen-anatomi */}
+      <div style={{
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        width: 2,
+        background: 'var(--copper)',
+        borderRadius: 'var(--radius-md) 0 0 var(--radius-md)',
+      }} />
+
+      {/* Typ-label — monospace eyebrow, konsekvent copper */}
       <p style={{
+        fontFamily: 'var(--font-mono)',
         fontSize: 9,
-        fontWeight: 700,
-        letterSpacing: '1.5px',
+        fontWeight: 600,
+        letterSpacing: '2px',
         textTransform: 'uppercase',
-        color: labelColor,
-        marginBottom: 8,
+        color: 'var(--copper)',
+        opacity: 0.85,
+        marginBottom: 10,
       }}>
         {typeLabel}
       </p>

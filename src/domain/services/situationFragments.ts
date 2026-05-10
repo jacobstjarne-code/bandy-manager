@@ -166,9 +166,9 @@ export function getCupStakeFragment(game: SaveGame): string | null {
   if (!cupMatch) return null
 
   const round = cupMatch.round
-  if (round === 1) return `Vinst ger kvartsfinal — fyra lag kvar.`
-  if (round === 2) return `Vinst ger semi.`
-  if (round === 3) return `Vinst ger final.`
+  if (round === 1) return `Avancemang till kvartsfinal vid vinst — fyra lag kvar.`
+  if (round === 2) return `Avancemang till semi vid vinst.`
+  if (round === 3) return `Avancemang till final vid vinst.`
   if (round === 4) return `Det här är finalen. Det finns inget mer.`
   return null
 }
