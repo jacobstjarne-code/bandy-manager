@@ -176,8 +176,8 @@ export function PitchLineupView({
                     left: `${leftPct}%`,
                     top: `${topPct}%`,
                     transform: 'translate(-50%, -50%)',
-                    width: 44,
-                    height: 58,
+                    width: 38,
+                    height: 38,
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -189,26 +189,10 @@ export function PitchLineupView({
                       : 'none',
                   }}
                 >
-                  {/* Position label above circle */}
-                  <span style={{
-                    position: 'absolute',
-                    top: -5,
-                    fontSize: 8,
-                    fontWeight: 700,
-                    color: isEmpty ? 'rgba(26,26,24,0.55)' : 'rgba(26,26,24,0.65)',
-                    letterSpacing: '0.3px',
-                    fontFamily: 'system-ui, sans-serif',
-                    lineHeight: 1,
-                    whiteSpace: 'nowrap',
-                    pointerEvents: 'none',
-                  }}>
-                    {slot.label.toUpperCase()}
-                  </span>
-
-                  {/* Circle */}
+                  {/* Circle — position code within, no label above */}
                   <div style={{
-                    width: 32,
-                    height: 32,
+                    width: 38,
+                    height: 38,
                     borderRadius: '50%',
                     background: isEmpty
                       ? 'transparent'
@@ -223,8 +207,8 @@ export function PitchLineupView({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: isEmpty ? 7 : 10,
-                    fontWeight: 800,
+                    fontSize: isEmpty ? 9 : 13,
+                    fontWeight: isEmpty ? 700 : 800,
                     color: isEmpty ? 'var(--text-secondary)' : 'var(--bg)',
                     transition: 'background 120ms, border-color 120ms, transform 120ms',
                     transform: isSelected ? 'scale(1.18)' : isTarget ? 'scale(1.05)' : 'scale(1)',
@@ -233,7 +217,7 @@ export function PitchLineupView({
                   }}>
                     {player
                       ? (player.shirtNumber != null ? String(player.shirtNumber) : '?')
-                      : slot.label.slice(0, 2)}
+                      : slot.label.slice(0, 2).toUpperCase()}
                   </div>
 
                   {/* Names removed — shown in legend below pitch */}

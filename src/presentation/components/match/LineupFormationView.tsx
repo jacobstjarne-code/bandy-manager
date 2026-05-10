@@ -71,7 +71,7 @@ export function LineupFormationView({
 
       {/* Pitch with HTML slot overlay — SAME technique as PitchLineupView */}
       <div style={{ position: 'relative' }}>
-        <BandyPitch width="100%" height={170} />
+        <BandyPitch width="100%" />
 
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
           {template.slots.map(slot => {
@@ -99,8 +99,8 @@ export function LineupFormationView({
                   left: `${leftPct}%`,
                   top: `${topPct}%`,
                   transform: 'translate(-50%, -50%)',
-                  width: 44,
-                  height: 58,
+                  width: 38,
+                  height: 38,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
@@ -109,26 +109,10 @@ export function LineupFormationView({
                   pointerEvents: 'auto',
                 }}
               >
-                {/* Position label above circle */}
-                <span style={{
-                  position: 'absolute',
-                  top: -5,
-                  fontSize: 8,
-                  fontWeight: 700,
-                  color: isEmpty ? 'rgba(26,26,24,0.55)' : 'rgba(26,26,24,0.65)',
-                  letterSpacing: '0.3px',
-                  fontFamily: 'system-ui, sans-serif',
-                  lineHeight: 1,
-                  whiteSpace: 'nowrap',
-                  pointerEvents: 'none',
-                }}>
-                  {slot.label.toUpperCase()}
-                </span>
-
-                {/* Circle — IDENTICAL to PitchLineupView */}
+                {/* Circle — position code within, no label above */}
                 <div style={{
-                  width: 32,
-                  height: 32,
+                  width: 38,
+                  height: 38,
                   borderRadius: '50%',
                   background: isEmpty
                     ? 'transparent'
@@ -143,8 +127,8 @@ export function LineupFormationView({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: isEmpty ? 7 : 10,
-                  fontWeight: 800,
+                  fontSize: isEmpty ? 9 : 13,
+                  fontWeight: isEmpty ? 700 : 800,
                   color: isEmpty ? 'rgba(26,26,24,0.4)' : 'var(--text-primary)',
                   transition: 'background 120ms, border-color 120ms, transform 120ms',
                   transform: isSelected ? 'scale(1.18)' : 'scale(1)',
@@ -153,7 +137,7 @@ export function LineupFormationView({
                 }}>
                   {player
                     ? (player.shirtNumber != null ? String(player.shirtNumber) : '?')
-                    : slot.label.slice(0, 2)}
+                    : slot.label.slice(0, 2).toUpperCase()}
                 </div>
 
                 {/* NO name text — shown in legend/list below */}

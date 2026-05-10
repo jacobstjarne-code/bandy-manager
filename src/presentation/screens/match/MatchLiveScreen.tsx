@@ -27,9 +27,11 @@ import { HalftimeModal } from '../../components/match/HalftimeModal'
 import { CeremonyCupFinal } from '../../components/match/CeremonyCupFinal'
 import { CeremonySmFinal } from '../../components/match/CeremonySmFinal'
 import { SubstitutionModal } from '../../components/match/SubstitutionModal'
-import { Scoreboard } from '../../components/match/Scoreboard'
+import { ScoreboardStalvallen } from '../../components/match/scoreboard/ScoreboardStalvallen'
+import type { ScoreboardEvent } from '../../components/match/scoreboard/ScoreboardStalvallen'
 import { MatchControls } from '../../components/match/MatchControls'
-import { CommentaryFeed } from '../../components/match/CommentaryFeed'
+import { CommentaryFeedStalvallen } from '../../components/match/commentary/CommentaryFeedStalvallen'
+import type { FeedRow } from '../../components/match/commentary/CommentaryFeedStalvallen'
 import { resolveCorner } from '../../../domain/services/cornerInteractionService'
 import type { CornerZone, CornerDelivery } from '../../../domain/services/cornerInteractionService'
 import { CornerInteraction } from '../../components/match/CornerInteraction'
@@ -127,12 +129,9 @@ export function MatchLiveScreen() {
   const MAX_TACTIC_CHANGES = 3
   const [htSubs, setHtSubs] = useState<{ outId: string; inId: string }[]>([])
   const [halftimeChoice, setHalftimeChoice] = useState<'calm' | 'angry' | 'tactical' | null>(null)
-  const [liveSubs, setLiveSubs] = useState<{ outId: string; inId: string; minute: number }[]>([])
   const [showSubModal, setShowSubModal] = useState(false)
   const [ceremonySlide, setCeremonySlide] = useState(0)
   const [finalIntroSlide, setFinalIntroSlide] = useState(() => isSmFinal ? 1 : 0)
-  const [homeScoreFlash, setHomeScoreFlash] = useState(false)
-  const [awayScoreFlash, setAwayScoreFlash] = useState(false)
   const prevHomeScore = useRef(0)
   const prevAwayScore = useRef(0)
 
@@ -152,7 +151,6 @@ export function MatchLiveScreen() {
 
   const lastMinutePressResolved = useRef(false)
 
-  const feedRef = useRef<HTMLDivElement>(null)
   const hasSimulated = useRef(false)
 
   useEffect(() => {
@@ -289,12 +287,7 @@ export function MatchLiveScreen() {
     advance(true)
   }, [matchDone]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    if (matchDone) return
-    requestAnimationFrame(() => {
-      feedRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-    })
-  }, [currentStep, matchDone])
+
 
   // Halvtids-guard — explicit trigger för halvtidsmodal (steg 5)
   // Säkerställer att modalen visas även om timer-effekten av någon orsak hoppar förbi step 30
@@ -317,14 +310,10 @@ export function MatchLiveScreen() {
 
     const managedIsHomeForSound = fixture?.homeClubId === game?.managedClubId
     if (step.homeScore > prevHome) {
-      setHomeScoreFlash(true)
-      setTimeout(() => setHomeScoreFlash(false), 2000)
       playSound('goal')
       if (managedIsHomeForSound) playSound('goalHit')
     }
     if (step.awayScore > prevAway) {
-      setAwayScoreFlash(true)
-      setTimeout(() => setAwayScoreFlash(false), 2000)
       playSound('goal')
       if (!managedIsHomeForSound) playSound('goalHit')
     }
@@ -611,13 +600,6 @@ export function MatchLiveScreen() {
     if (outcome.type === 'goal') {
       playSound('goal')
       playSound('goalHit')
-      if (managedIsHome) {
-        setHomeScoreFlash(true)
-        setTimeout(() => setHomeScoreFlash(false), 2000)
-      } else {
-        setAwayScoreFlash(true)
-        setTimeout(() => setAwayScoreFlash(false), 2000)
-      }
     }
 
     // Steg 5: inga handler-timeouts — clear active state, timer-effekten driver steget framåt
@@ -683,13 +665,6 @@ export function MatchLiveScreen() {
     if (outcome.type === 'goal') {
       playSound('goal')
       playSound('goalHit')
-      if (managedIsHome) {
-        setHomeScoreFlash(true)
-        setTimeout(() => setHomeScoreFlash(false), 2000)
-      } else {
-        setAwayScoreFlash(true)
-        setTimeout(() => setAwayScoreFlash(false), 2000)
-      }
     }
 
     // Steg 5: inga handler-timeouts
@@ -757,8 +732,6 @@ export function MatchLiveScreen() {
     if (outcome.type === 'goal') {
       playSound('goal')
       playSound('goalHit')
-      if (managedIsHome) { setHomeScoreFlash(true); setTimeout(() => setHomeScoreFlash(false), 2000) }
-      else { setAwayScoreFlash(true); setTimeout(() => setAwayScoreFlash(false), 2000) }
     }
 
     // Steg 5: inga handler-timeouts
@@ -825,8 +798,6 @@ export function MatchLiveScreen() {
     if (outcome.type === 'goal') {
       playSound('goal')
       playSound('goalHit')
-      if (managedIsHome) { setHomeScoreFlash(true); setTimeout(() => setHomeScoreFlash(false), 2000) }
-      else { setAwayScoreFlash(true); setTimeout(() => setAwayScoreFlash(false), 2000) }
     }
 
     // Steg 5: inga handler-timeouts
@@ -1064,8 +1035,7 @@ export function MatchLiveScreen() {
   const homeShort = (homeClub?.shortName ?? homeClubName).substring(0, 6)
   const awayShort = (awayClub?.shortName ?? awayClubName).substring(0, 6)
 
-  function handleLiveSub(outId: string, inId: string) {
-    setLiveSubs(prev => [...prev, { outId, inId, minute: currentMinute }])
+  function handleLiveSub(_outId: string, _inId: string) {
     setShowSubModal(false)
     setIsPaused(false)
   }
@@ -1078,6 +1048,81 @@ export function MatchLiveScreen() {
   const managedBenchPlayers = managedLineup
     ? (game?.players ?? []).filter(p => managedLineup.benchPlayerIds?.includes(p.id))
     : []
+
+  // ── Stålvallen scoreboard computed values ────────────────────────────────
+  const managedSide: 'home' | 'away' = fixture.homeClubId === game?.managedClubId ? 'home' : 'away'
+
+  const period = (() => {
+    if (matchDone) return 'FT' as const
+    if (currentMatchStep?.phase === 'overtime') return 'OT' as const
+    if (currentStep < 30) return 'HL1' as const
+    return 'HL2' as const
+  })()
+
+  const finalTier = (() => {
+    if (isCupFinal) return 'CUPFINAL'
+    if (matchPhase === 'final') return 'SM-FINAL'
+    if (matchPhase === 'semifinal') return 'SEMIFINAL'
+    if (matchPhase === 'quarterfinal') return 'KVARTSFINAL'
+    return undefined
+  })()
+
+  const scoreboardEvents: ScoreboardEvent[] = displayedSteps.flatMap(s =>
+    s.events
+      .filter(e => e.type === MatchEventType.Goal)
+      .map(e => ({
+        minute: e.minute ?? s.minute ?? 0,
+        type: (e.isPenaltyGoal ? 'pen' : 'goal') as 'goal' | 'pen',
+        team: (e.clubId === fixture.homeClubId ? 'home' : 'away') as 'home' | 'away',
+      }))
+  )
+
+  // ── Feed rows for CommentaryFeedStalvallen ───────────────────────────────
+  const feedRows: FeedRow[] = displayedSteps
+    .filter(s =>
+      s.commentary?.trim() ||
+      s.events.some(e =>
+        e.type === MatchEventType.Goal ||
+        e.type === MatchEventType.RedCard ||
+        e.type === MatchEventType.Save
+      )
+    )
+    .map(s => {
+      const goalEvent = s.events.find(e => e.type === MatchEventType.Goal)
+      if (goalEvent) {
+        const team = goalEvent.clubId === fixture.homeClubId ? 'home' as const : 'away' as const
+        return {
+          kind: 'event' as const,
+          tag: (goalEvent.isPenaltyGoal ? 'penalty' : 'goal') as 'penalty' | 'goal',
+          minute: s.minute,
+          team,
+          text: s.commentary ?? '',
+        }
+      }
+      const suspEvent = s.events.find(e => e.type === MatchEventType.RedCard)
+      if (suspEvent) {
+        const team = suspEvent.clubId === fixture.homeClubId ? 'home' as const : 'away' as const
+        return {
+          kind: 'event' as const,
+          tag: 'suspension' as const,
+          minute: s.minute,
+          team,
+          text: s.commentary ?? '',
+        }
+      }
+      const saveEvent = s.events.find(e => e.type === MatchEventType.Save)
+      if (saveEvent) {
+        const team = saveEvent.clubId === fixture.homeClubId ? 'home' as const : 'away' as const
+        return {
+          kind: 'event' as const,
+          tag: 'save' as const,
+          minute: s.minute,
+          team,
+          text: s.commentary ?? '',
+        }
+      }
+      return { kind: 'atmosphere' as const, text: s.commentary ?? '' }
+    })
 
   return (
     <div style={{
@@ -1093,21 +1138,21 @@ export function MatchLiveScreen() {
         />
       )}
 
-      <Scoreboard
-        homeShort={homeShort}
-        awayShort={awayShort}
+      <ScoreboardStalvallen
+        homeCode={homeShort}
+        awayCode={awayShort}
         homeScore={homeScore}
         awayScore={awayScore}
-        homeScoreFlash={homeScoreFlash}
-        awayScoreFlash={awayScoreFlash}
-        currentMinute={currentMinute}
-        matchDone={matchDone}
-        rivalry={rivalry}
-        matchWeather={matchWeather}
-        currentMatchStep={currentMatchStep}
-        displayedSteps={displayedSteps}
-        fixture={fixture}
-        game={game}
+        managedSide={managedSide}
+        period={period}
+        minute={currentMinute}
+        second={0}
+        penalties={[]}
+        ticker={[`${homeShort} ${homeScore} – ${awayScore} ${awayShort}`]}
+        events={scoreboardEvents}
+        isPlayoffFinal={matchPhase === 'final'}
+        finalTier={finalTier}
+        showNowMarker={!matchDone}
       />
 
       <MatchControls
@@ -1153,55 +1198,68 @@ export function MatchLiveScreen() {
         )
       })()}
 
-      <CommentaryFeed
-        displayedSteps={displayedSteps}
-        currentMatchStep={currentMatchStep}
-        matchWeather={matchWeather}
-        liveSubs={liveSubs}
-        fixture={fixture}
-        game={game}
-        feedRef={feedRef}
-        matchDone={matchDone && !isSmFinal && !isCupFinal}
-        managedIsHome={managedIsHomeForSubs}
-        onNavigateToReview={() => navigate('/game/review', { replace: true })}
-        cornerNode={
-          activeCorner ? (
+      {/* Active interaction panels — shown above feed when active */}
+      {(activeCorner || activePenalty || activeCounter || activeFreeKick || activeLastMinutePress) && (
+        <div style={{ padding: '0 12px 8px', flexShrink: 0 }}>
+          {activeCorner && (
             <CornerInteraction
               data={activeCorner}
               outcome={cornerOutcome}
               onChoose={handleCornerChoice}
               coach={game?.assistantCoach ?? undefined}
             />
-          ) : activePenalty ? (
+          )}
+          {!activeCorner && activePenalty && (
             <PenaltyInteraction
               data={activePenalty}
               outcome={penaltyOutcome}
               onChoose={handlePenaltyChoice}
               coach={game?.assistantCoach ?? undefined}
             />
-          ) : activeCounter ? (
+          )}
+          {!activeCorner && !activePenalty && activeCounter && (
             <CounterInteraction
               data={activeCounter}
               outcome={counterOutcome}
               onChoose={handleCounterChoice}
               coach={game?.assistantCoach ?? undefined}
             />
-          ) : activeFreeKick ? (
+          )}
+          {!activeCorner && !activePenalty && !activeCounter && activeFreeKick && (
             <FreeKickInteraction
               data={activeFreeKick}
               outcome={freeKickOutcome}
               onChoose={handleFreeKickChoice}
               coach={game?.assistantCoach ?? undefined}
             />
-          ) : activeLastMinutePress ? (
+          )}
+          {!activeCorner && !activePenalty && !activeCounter && !activeFreeKick && activeLastMinutePress && (
             <LastMinutePress
               data={activeLastMinutePress}
               onChoose={handleLastMinutePressChoice}
               coach={game?.assistantCoach ?? undefined}
             />
-          ) : undefined
-        }
+          )}
+        </div>
+      )}
+
+      <CommentaryFeedStalvallen
+        rows={feedRows}
+        autoScroll={true}
       />
+
+      {/* Match done — navigate to review */}
+      {matchDone && !isSmFinal && !isCupFinal && (
+        <div style={{ padding: '12px 12px 16px', flexShrink: 0 }}>
+          <button
+            onClick={() => navigate('/game/review', { replace: true })}
+            className="btn btn-primary"
+            style={{ width: '100%' }}
+          >
+            Se sammanfattning →
+          </button>
+        </div>
+      )}
 
       {showHalftime && !matchDone && (
         <HalftimeModal
