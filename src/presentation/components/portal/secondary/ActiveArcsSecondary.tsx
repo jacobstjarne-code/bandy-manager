@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
 import type { ActiveArc } from '../../../../domain/entities/Narrative'
-import { ARC_ICON, getArcHeadline } from '../../../../domain/data/activeArcStrings'
+import { getArcHeadline } from '../../../../domain/data/activeArcStrings'
 
 function getCurrentMatchday(game: CardRenderProps['game']): number {
   const scheduled = game.fixtures.filter(f => f.status === 'scheduled').map(f => f.matchday)
@@ -16,18 +16,50 @@ function getPhaseDots(phase: ActiveArc['phase']): number {
   return 3
 }
 
+const ARC_GLYPHS = ['A', 'B', 'C', 'D', 'E']
+
+function getGlyphVariant(arc: ActiveArc): 'warm' | 'muted' | 'default' {
+  if (arc.type === 'derby_echo') return 'warm'
+  if (arc.phase === 'building') return 'muted'
+  return 'default'
+}
+
 interface ArcRowProps {
   arc: ActiveArc
+  glyph: string
   currentMatchday: number
   onClick?: () => void
   isLast: boolean
 }
 
-function ArcRow({ arc, currentMatchday, onClick, isLast }: ArcRowProps) {
+function ArcRow({ arc, glyph, currentMatchday, onClick, isLast }: ArcRowProps) {
   const [hovered, setHovered] = useState(false)
   const roundsLeft = arc.expiresMatchday - currentMatchday
   const isUrgent = roundsLeft <= 1
   const filledDots = getPhaseDots(arc.phase)
+  const variant = getGlyphVariant(arc)
+
+  const glyphColor = variant === 'warm'
+    ? 'var(--warm)'
+    : variant === 'muted'
+    ? 'var(--text-muted)'
+    : 'var(--accent)'
+
+  const glyphBorderColor = variant === 'warm'
+    ? 'rgba(180,120,140,0.4)'
+    : variant === 'muted'
+    ? 'rgba(196,122,58,0.2)'
+    : 'rgba(196,122,58,0.4)'
+
+  const glyphBg = variant === 'warm'
+    ? 'rgba(180,120,140,0.06)'
+    : 'rgba(196,122,58,0.06)'
+
+  const phaseLabel = arc.phase === 'building'
+    ? 'Akt 1'
+    : arc.phase === 'peak'
+    ? 'Akt 2'
+    : 'Akt 3'
 
   return (
     <div
@@ -35,33 +67,44 @@ function ArcRow({ arc, currentMatchday, onClick, isLast }: ArcRowProps) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: 'flex',
-        gap: 10,
-        alignItems: 'center',
-        padding: '8px 4px',
+        display: 'flex', alignItems: 'flex-start', gap: 12,
+        padding: '10px 0',
+        borderBottom: isLast ? 'none' : '0.5px solid rgba(196,122,58,0.15)',
         cursor: onClick ? 'pointer' : 'default',
-        borderRadius: 4,
         background: hovered && onClick ? 'rgba(196,122,58,0.04)' : 'transparent',
-        borderBottom: isLast ? undefined : '0.5px solid rgba(196,122,58,0.15)',
+        transition: 'background 0.12s',
       }}
     >
-      <span style={{ fontSize: 18, lineHeight: 1, filter: 'saturate(0.85)', flexShrink: 0 }}>
-        {ARC_ICON[arc.type]}
+      {/* Typographic glyph */}
+      <span style={{
+        flexShrink: 0,
+        width: 22, height: 22,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 700,
+        color: glyphColor,
+        border: `1px solid ${glyphBorderColor}`,
+        borderRadius: '50%',
+        background: glyphBg,
+        marginTop: 1,
+      }}>
+        {glyph}
       </span>
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontFamily: 'var(--font-body)', fontSize: 12,
-          color: 'var(--text-light)', fontWeight: 600, lineHeight: 1.35,
+          fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 600,
+          color: 'var(--text-light)', marginBottom: 4, lineHeight: 1.35,
         }}>
           {getArcHeadline(arc, undefined)}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-          <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 10, color: 'var(--text-muted)' }}>
+          {/* Phase dots */}
+          <span style={{ display: 'inline-flex', gap: 3 }}>
             {[1, 2, 3].map(dot => (
-              <div
+              <span
                 key={dot}
                 style={{
+                  display: 'block',
                   width: 5, height: 5, borderRadius: '50%',
                   background: dot < filledDots
                     ? 'var(--accent-deep)'
@@ -71,26 +114,20 @@ function ArcRow({ arc, currentMatchday, onClick, isLast }: ArcRowProps) {
                 }}
               />
             ))}
-          </div>
-          <span style={{
-            fontSize: 10,
-            color: isUrgent ? 'var(--warm-light)' : 'var(--text-muted)',
-          }}>
-            {isUrgent ? 'Avgörande snart' : `${roundsLeft} omg kvar`}
           </span>
+          <span>{phaseLabel} · {isUrgent ? 'Avgörande snart' : `${roundsLeft} omg kvar`}</span>
         </div>
       </div>
 
-      {onClick ? (
+      {onClick && (
         <span style={{
-          fontSize: 11, flexShrink: 0, paddingLeft: 2,
-          color: hovered ? 'var(--accent)' : 'var(--text-light-secondary)',
+          fontSize: 11, flexShrink: 0,
+          color: hovered ? 'var(--accent)' : 'var(--text-muted)',
           opacity: hovered ? 1 : 0.5,
           transition: 'opacity 0.15s, color 0.15s',
-        }}>
-          ›
-        </span>
-      ) : <span />}
+          alignSelf: 'center',
+        }}>›</span>
+      )}
     </div>
   )
 }
@@ -112,27 +149,46 @@ export function ActiveArcsSecondary({ game }: CardRenderProps) {
 
   return (
     <div style={{
-      gridColumn: '1 / -1',
+      position: 'relative',
       background: 'var(--bg-portal-surface)',
-      borderLeft: '2px solid var(--accent)',
-      borderRadius: '0 8px 8px 0',
-      padding: '12px 14px',
+      border: '1px solid rgba(196,122,58,0.15)',
+      borderRadius: 8,
+      padding: '14px 16px 14px 18px',
+      overflow: 'hidden',
+      cursor: 'pointer',
+      transition: 'background 0.15s, border-color 0.15s',
     }}>
+      {/* Left stripe — 2px copper */}
       <div style={{
-        fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase',
-        color: 'var(--accent)', fontWeight: 700,
-        opacity: 0.85,
+        position: 'absolute', left: 0, top: 0, bottom: 0,
+        width: 2,
+        background: 'var(--copper)',
+        borderRadius: '8px 0 0 8px',
+      }} />
+
+      {/* Chevron affordance */}
+      <span style={{
+        position: 'absolute', right: 14, top: 14,
+        color: 'var(--text-muted)', fontSize: 14, opacity: 0.5,
+        lineHeight: 1,
+      }}>›</span>
+
+      {/* Eyebrow label */}
+      <div style={{
+        fontFamily: 'var(--font-mono)',
+        fontSize: 9, fontWeight: 600,
+        letterSpacing: '2px', textTransform: 'uppercase',
+        color: 'var(--copper)', opacity: 0.85,
         marginBottom: 10,
-        display: 'flex', alignItems: 'center', gap: 6,
       }}>
-        <span style={{ fontSize: 12, lineHeight: 1 }}>📖</span>
-        <span>I blickfånget</span>
+        Arcs
       </div>
 
       {arcs.map((arc, index) => (
         <ArcRow
           key={arc.id}
           arc={arc}
+          glyph={ARC_GLYPHS[index] ?? String(index + 1)}
           currentMatchday={currentMatchday}
           isLast={index === arcs.length - 1}
           onClick={arc.playerId

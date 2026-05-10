@@ -3,11 +3,11 @@ import type { CardRenderProps } from '../portalTypes'
 import { useGameStore } from '../../../store/gameStore'
 import type { WeeklyDecision, WeeklyDecisionCategory } from '../../../../domain/services/weeklyDecisionService'
 
-const CATEGORY_META: Record<WeeklyDecisionCategory, { icon: string; label: string }> = {
-  player:    { icon: '🏒', label: 'Veckans spelarfråga' },
-  supporter: { icon: '📣', label: 'Veckans supporterfråga' },
-  training:  { icon: '📋', label: 'Veckans träningsbeslut' },
-  community: { icon: '🏛️', label: 'Veckans kommunfråga' },
+const CATEGORY_META: Record<WeeklyDecisionCategory, { label: string }> = {
+  player:    { label: 'Veckans beslut' },
+  supporter: { label: 'Veckans supporterfråga' },
+  training:  { label: 'Veckans beslut' },
+  community: { label: 'Veckans beslut' },
 }
 
 export function WeeklyDecisionSecondary({ game }: CardRenderProps) {
@@ -42,28 +42,47 @@ export function WeeklyDecisionSecondary({ game }: CardRenderProps) {
 
   return (
     <div style={{
-      gridColumn: '1 / -1',
+      position: 'relative',
       background: 'var(--bg-portal-surface)',
-      borderLeft: `${isSupporter ? 3 : 2}px solid ${isSupporter ? 'var(--warm)' : 'var(--accent)'}`,
-      borderRadius: '0 8px 8px 0',
-      padding: '12px 14px 13px',
+      border: '1px solid rgba(196,122,58,0.15)',
+      borderRadius: 8,
+      padding: '14px 16px 14px 18px',
+      overflow: 'hidden',
+      cursor: 'pointer',
+      transition: 'background 0.15s, border-color 0.15s',
     }}>
+      {/* Left stripe — 3px warm for relations/supporter */}
       <div style={{
-        fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase',
-        color: 'var(--accent)', fontWeight: 700,
-        opacity: 0.85,
+        position: 'absolute', left: 0, top: 0, bottom: 0,
+        width: isSupporter ? 3 : 2,
+        background: isSupporter ? 'var(--warm)' : 'var(--copper)',
+        borderRadius: '8px 0 0 8px',
+      }} />
+
+      {/* Chevron affordance */}
+      <span style={{
+        position: 'absolute', right: 14, top: 14,
+        color: 'var(--text-muted)', fontSize: 14, opacity: 0.5,
+        lineHeight: 1,
+      }}>›</span>
+
+      {/* Eyebrow label */}
+      <div style={{
+        fontFamily: 'var(--font-mono)',
+        fontSize: 9, fontWeight: 600,
+        letterSpacing: '2px', textTransform: 'uppercase',
+        color: 'var(--copper)', opacity: 0.85,
         marginBottom: 10,
-        display: 'flex', alignItems: 'center', gap: 6,
       }}>
-        <span style={{ fontSize: 13, lineHeight: 1, filter: 'saturate(0.85)' }}>{meta.icon}</span>
-        <span>{meta.label}</span>
+        {meta.label}
       </div>
 
+      {/* Question */}
       <div style={{
         fontFamily: 'var(--font-display)', fontStyle: 'italic',
         fontSize: 14, fontWeight: 400, lineHeight: 1.5,
         color: 'var(--text-light)',
-        marginBottom: isResolved ? 0 : 14,
+        marginBottom: isResolved ? 0 : 12,
         opacity: isResolved ? 0.5 : 1,
         transition: 'opacity 0.2s',
       }}>
@@ -96,7 +115,7 @@ export function WeeklyDecisionSecondary({ game }: CardRenderProps) {
           </div>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8 }}>
           {(['A', 'B'] as const).map(choice => {
             const opt = choice === 'A' ? decision.optionA : decision.optionB
             const isHovered = hoveredBtn === choice
@@ -107,29 +126,27 @@ export function WeeklyDecisionSecondary({ game }: CardRenderProps) {
                 onMouseEnter={() => setHoveredBtn(choice)}
                 onMouseLeave={() => setHoveredBtn(null)}
                 style={{
-                  display: 'flex', flexDirection: 'column', gap: 4,
-                  padding: '13px 12px',
+                  flex: 1,
+                  display: 'flex', flexDirection: 'column',
+                  padding: '10px 12px',
                   background: isHovered ? 'rgba(196,122,58,0.1)' : 'transparent',
                   border: `1px solid ${isHovered ? 'var(--accent)' : 'rgba(196,122,58,0.4)'}`,
-                  borderRadius: 8,
-                  cursor: 'pointer', textAlign: 'center',
-                  transition: 'background 0.15s, border-color 0.15s',
+                  borderRadius: 3,
+                  cursor: 'pointer', textAlign: 'left',
+                  transition: 'background 0.12s, border-color 0.12s',
                 }}
               >
                 <span style={{
-                  fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 700,
-                  color: 'var(--text-light)', letterSpacing: '0.4px',
+                  fontFamily: 'var(--font-body)', fontSize: 12, fontWeight: 500,
+                  color: 'var(--text-light)',
                 }}>
                   {opt.label}
                 </span>
                 <span style={{
-                  fontFamily: 'var(--font-display)', fontStyle: 'italic',
-                  fontSize: 11, lineHeight: 1.3,
-                  ...(opt.effectColor === 'success'
-                    ? { color: '#A0C890' }
-                    : opt.effectColor === 'danger'
-                    ? { color: '#E8A090' }
-                    : { color: 'var(--text-light-secondary)', opacity: 0.75 }),
+                  display: 'block',
+                  fontSize: 10, fontStyle: 'italic',
+                  color: 'var(--text-muted)',
+                  marginTop: 4, lineHeight: 1.4,
                 }}>
                   {opt.effect}
                 </span>

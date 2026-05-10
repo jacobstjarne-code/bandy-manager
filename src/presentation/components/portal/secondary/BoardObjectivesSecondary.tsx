@@ -10,27 +10,46 @@ export function BoardObjectivesSecondary({ game }: CardRenderProps) {
 
   return (
     <div style={{
-      gridColumn: '1 / -1',
+      position: 'relative',
       background: 'var(--bg-portal-surface)',
-      borderLeft: '2px solid var(--accent)',
-      borderRadius: '0 8px 8px 0',
-      padding: '12px 14px',
-    }}>
+      border: '1px solid rgba(196,122,58,0.15)',
+      borderRadius: 8,
+      padding: '14px 16px 14px 18px',
+      overflow: 'hidden',
+      cursor: 'pointer',
+      transition: 'background 0.15s, border-color 0.15s',
+    }}
+      onClick={() => navigate('/game/club', { state: { tab: 'orten', scrollTo: 'board-objectives' } })}
+    >
+      {/* Left stripe — 2px copper */}
       <div style={{
-        fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase',
-        color: 'var(--text-light-secondary)', fontWeight: 600,
-        opacity: 0.85,
+        position: 'absolute', left: 0, top: 0, bottom: 0,
+        width: 2,
+        background: 'var(--copper)',
+        borderRadius: '8px 0 0 8px',
+      }} />
+
+      {/* Chevron affordance */}
+      <span style={{
+        position: 'absolute', right: 14, top: 14,
+        color: 'var(--text-muted)', fontSize: 14, opacity: 0.5,
+        lineHeight: 1,
+      }}>›</span>
+
+      {/* Eyebrow label */}
+      <div style={{
+        fontFamily: 'var(--font-mono)',
+        fontSize: 9, fontWeight: 600,
+        letterSpacing: '2px', textTransform: 'uppercase',
+        color: 'var(--copper)', opacity: 0.85,
         marginBottom: 10,
-        display: 'flex', alignItems: 'center', gap: 6,
       }}>
-        <span style={{ fontSize: 12, lineHeight: 1 }}>🎯</span>
-        <span>Styrelsens krav</span>
+        Styrelsen
       </div>
 
       <BoardObjectivesList
         objectives={objectives}
         max={2}
-        onNavigate={() => navigate('/game/club', { state: { tab: 'orten', scrollTo: 'board-objectives' } })}
       />
     </div>
   )
