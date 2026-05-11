@@ -107,22 +107,12 @@ export function MatchScreen() {
       const p = squadPlayers.find(pl => pl.id === id)
       return !p || p.isInjured || p.suspensionGamesRemaining > 0
     })
-    if (startingIds.length < 11 || hasInvalid) {
+    const lineupSlotsEmpty =
+      !tacticState.lineupSlots ||
+      Object.keys(tacticState.lineupSlots).length === 0 ||
+      Object.values(tacticState.lineupSlots).every(v => v == null)
+    if (startingIds.length < 11 || hasInvalid || lineupSlotsEmpty) {
       handleAutoFill()
-      return
-    }
-    // 11 valid starters but no slot assignments (e.g. savedLineup without lineupSlots) — auto-assign slots without changing starters
-    const hasSlots = Object.values(tacticState.lineupSlots ?? {}).some(v => v)
-    if (!hasSlots) {
-      const starters = startingIds
-        .map(id => squadPlayers.find(p => p.id === id))
-        .filter((p): p is Player => !!p)
-      const formation = tacticState.formation ?? '5-3-2'
-      const template = FORMATIONS[formation]
-      const newLineupSlots = autoAssignFormation(template, starters)
-      const newTactic = { ...tacticState, lineupSlots: newLineupSlots }
-      setTacticState(newTactic)
-      updateTactic(newTactic)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -209,6 +199,13 @@ export function MatchScreen() {
     const formation = tacticState.formation ?? '5-3-2'
     const template = FORMATIONS[formation]
     const newLineupSlots = autoAssignFormation(template, starters)
+    // DEBUG — remove after verification
+    console.log('[handleAutoFill]', {
+      formation,
+      starterCount: starters.length,
+      slotCount: Object.keys(newLineupSlots).length,
+      nonNullSlots: Object.values(newLineupSlots).filter(v => v).length,
+    })
     const newTactic = { ...tacticState, lineupSlots: newLineupSlots }
     setTacticState(newTactic)
     updateTactic(newTactic)
