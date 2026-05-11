@@ -133,6 +133,10 @@
 
   /* ── Stålvallen — match-bundle ───────────────────── */
   --panel:         #0A0908;
+  --panel-edge:    #050402;
+  --bezel-top:     #3a3632;
+  --bezel-mid:     #2a2622;
+  --bezel-bot:     #15130f;
   --bg-leather-dk: #1d1b18;
   --paper-warm:    #F5F1EB;
   --paper-edge:    #DCD3C3;

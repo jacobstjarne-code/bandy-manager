@@ -30,45 +30,59 @@ export function MatchControls({
   tacticChangesLeft,
 }: MatchControlsProps) {
   return (
-    <div style={{
-      background: 'var(--bg-surface)',
-      borderBottom: '1px solid var(--border)',
-      flexShrink: 0,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 16px' }}>
-        <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginRight: 'auto' }}>
-          🏛️ Match
+    <div className="match-controls-stalvallen">
+      <div className="match-controls-row">
+        <span className="match-controls-label">
+          🏛️ MATCH
         </span>
-        <button onClick={onTogglePause} className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: 14 }}>
+
+        <button
+          onClick={onTogglePause}
+          className={`match-control-btn${!isPaused ? ' active' : ''}`}
+          title={isPaused ? 'Spela' : 'Pausa'}
+        >
           {isPaused ? '▶' : '⏸'}
         </button>
+
         <button
           onClick={onToggleFastForward}
-          className={`btn ${isFastForward ? 'btn-copper' : 'btn-ghost'}`}
-          style={{ padding: '6px 12px', fontSize: 14 }}
+          className={`match-control-btn${isFastForward ? ' active' : ''}`}
+          title="Snabbsim"
         >
           ⏩
         </button>
+
         {!matchDone && (
-          <button onClick={onOpenSubModal} className="btn btn-ghost" style={{ padding: '6px 10px', fontSize: 14 }}>
+          <button
+            onClick={onOpenSubModal}
+            className="match-control-btn"
+            title="Byten"
+          >
             🔄
           </button>
         )}
+
         {!matchDone && onOpenTacticQuick && (tacticChangesLeft ?? 0) > 0 && (
           <button
             onClick={onOpenTacticQuick}
-            className="btn btn-ghost"
-            style={{ padding: '6px 10px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}
+            className="match-control-btn match-control-tactic"
             title="Taktikjustering"
           >
-            ⚙️ <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)' }}>{tacticChangesLeft}</span>
-            <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>TAKTIK</span>
+            ⚙️
+            <span className="match-control-tactic-count">{tacticChangesLeft}</span>
+            <span className="match-control-tactic-label">TAKTIK</span>
           </button>
         )}
-        <button onClick={onToggleMute} className="btn btn-ghost" style={{ padding: '6px 10px', fontSize: 14 }}>
+
+        <button
+          onClick={onToggleMute}
+          className={`match-control-btn${muted ? ' active' : ''}`}
+          title={muted ? 'Slå på ljud' : 'Stäng av ljud'}
+        >
           {muted ? '🔇' : '🔊'}
         </button>
       </div>
+
       {currentMatchStep && (
         <MomentumBar
           homeActions={currentMatchStep.shotsHome + currentMatchStep.cornersHome}

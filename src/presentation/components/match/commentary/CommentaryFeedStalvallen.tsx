@@ -1,9 +1,7 @@
 /**
  * CommentaryFeedStalvallen.tsx — Stålvallen commentary feed
  *
- * BATCH A-02. Operator-register on dark leather surface.
- * Atmosphere rows var 4-6 entries, no tag/minute.
- * Auto-scroll to bottom on new row (most recent = newest at bottom).
+ * FIX-19: feed-head, higher contrast, goal border-left
  */
 import { useEffect, useRef } from 'react'
 
@@ -31,19 +29,18 @@ interface TagStyle {
   label: string
   bg: string
   color: string
-  rowBg?: string
 }
 
 const TAG_STYLES: Record<TagType, TagStyle> = {
-  goal:       { label: 'MÅL',    bg: 'var(--copper)',         color: 'var(--bg-leather-dk)', rowBg: 'rgba(196,122,58,0.1)' },
-  penalty:    { label: 'STRAFF', bg: 'var(--copper)',         color: 'var(--bg-leather-dk)' },
-  suspension: { label: 'UTV',    bg: 'rgba(255,170,0,0.15)',  color: 'var(--led-amber)' },
-  freekick:   { label: 'FRISLAG',bg: 'rgba(255,170,0,0.15)',  color: 'var(--led-amber)' },
-  save:       { label: 'RÄDD',   bg: 'rgba(102,255,51,0.12)', color: 'var(--led-green)' },
-  shot:       { label: 'SKOTT',  bg: 'rgba(255,255,255,0.05)',color: 'rgba(245,241,235,0.4)' },
-  pass:       { label: 'PASS',   bg: 'rgba(255,255,255,0.05)',color: 'rgba(245,241,235,0.4)' },
-  sub:        { label: 'BYTE',   bg: 'rgba(255,255,255,0.05)',color: 'rgba(245,241,235,0.4)' },
-  break:      { label: 'SLUTET', bg: 'rgba(255,170,0,0.15)',  color: 'var(--led-amber)' },
+  goal:       { label: 'MÅL',     bg: 'var(--copper)',          color: 'var(--bg-leather-dk)' },
+  penalty:    { label: 'STRAFF',  bg: 'var(--copper)',          color: 'var(--bg-leather-dk)' },
+  suspension: { label: 'UTV',     bg: 'rgba(255,170,0,0.15)',   color: 'var(--led-amber)' },
+  freekick:   { label: 'FRISLAG', bg: 'rgba(255,170,0,0.15)',   color: 'var(--led-amber)' },
+  save:       { label: 'RÄDD',    bg: 'rgba(102,255,51,0.12)',  color: 'var(--led-green)' },
+  shot:       { label: 'SKOTT',   bg: 'rgba(255,255,255,0.05)', color: 'rgba(245,241,235,0.4)' },
+  pass:       { label: 'PASS',    bg: 'rgba(255,255,255,0.05)', color: 'rgba(245,241,235,0.4)' },
+  sub:        { label: 'BYTE',    bg: 'rgba(255,255,255,0.05)', color: 'rgba(245,241,235,0.4)' },
+  break:      { label: 'SLUTET', bg: 'rgba(255,170,0,0.15)',   color: 'var(--led-amber)' },
 }
 
 function Tag({ type }: { type: TagType }) {
@@ -72,40 +69,41 @@ export function CommentaryFeedStalvallen({ rows, autoScroll = true }: Commentary
 
   return (
     <div ref={containerRef} className="commentary-feed">
+      {/* Feed head */}
+      <div className="commentary-feed-head">
+        <span className="live">COMMENTARY</span>
+        <span style={{ color: 'rgba(245,241,235,0.45)', letterSpacing: '1.5px' }}>
+          SCROLL ↑
+        </span>
+      </div>
+
       {rows.map((row, i) => {
         if (row.kind === 'atmosphere') {
           return (
             <div key={i} className="commentary-row-atmosphere">
+              <span className="commentary-row-atmosphere-min">—</span>
               <span className="commentary-row-atmosphere-text">{row.text}</span>
             </div>
           )
         }
 
-        const tagStyle = TAG_STYLES[row.tag]
         const isGoalRow = row.tag === 'goal' || row.tag === 'penalty'
         return (
           <div
             key={i}
-            className="commentary-row-event"
-            style={{ background: tagStyle.rowBg ?? 'transparent' }}
+            className={`commentary-row-event${isGoalRow ? ' goal' : ''}`}
           >
-            <div className="commentary-event-header">
-              <span className="commentary-event-minute">{row.minute}&apos;</span>
-              <Tag type={row.tag} />
-              {row.meta && (
-                <span className="commentary-event-meta">{row.meta}</span>
-              )}
-            </div>
+            <span className="commentary-event-minute">{row.minute}&apos;</span>
             <div className="commentary-event-body">
-              <span
-                className="commentary-event-text"
-                style={{
-                  color: isGoalRow ? 'rgba(245,241,235,0.9)' : 'rgba(245,241,235,0.65)',
-                  fontWeight: row.tag === 'goal' ? 500 : 400,
-                }}
-              >
+              <div className="commentary-event-header">
+                <Tag type={row.tag} />
+                {row.meta && (
+                  <span className="commentary-event-meta">{row.meta}</span>
+                )}
+              </div>
+              <div className="commentary-event-text">
                 {row.text}
-              </span>
+              </div>
             </div>
           </div>
         )

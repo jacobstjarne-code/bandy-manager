@@ -1,9 +1,7 @@
 /**
  * ScoreboardStalvallen.tsx — Stålvallen scoreboard
  *
- * BATCH A-01. Standalone scoreboard module.
- * Shared between MatchLiveScreen (live) and MatchReportView (FT).
- *
+ * 5-modul board-system: bezel → main → pen → text → line
  * copper = managed club  |  steel = opponent
  */
 import { useEffect, useRef, useState } from 'react'
@@ -42,22 +40,6 @@ export interface ScoreboardStalvallenProps {
 
 function pad2(n: number): string {
   return n < 10 ? `0${n}` : `${n}`
-}
-
-function PenSlot({ entry }: { entry: PenaltyEntry | null }) {
-  if (!entry) {
-    return <div className="pen-slot empty" />
-  }
-  const mm = Math.floor(entry.secondsLeft / 60)
-  const ss = entry.secondsLeft % 60
-  return (
-    <div className="pen-slot">
-      <span className="pen-slot-arrow">▲</span>
-      <span className="pen-slot-num">#{entry.num}</span>
-      <span className="pen-slot-name">{entry.name}</span>
-      <span className="pen-slot-timer">{pad2(mm)}:{pad2(ss)}</span>
-    </div>
-  )
 }
 
 export function ScoreboardStalvallen({
@@ -99,20 +81,6 @@ export function ScoreboardStalvallen({
     }
   }, [homeScore, awayScore])
 
-  // Ticker animation
-  const [tickerOffset, setTickerOffset] = useState(0)
-  const tickerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  useEffect(() => {
-    const isFT = period === 'FT' || period === 'FT · ETT'
-    if (isFT) return
-    tickerRef.current = setInterval(() => {
-      setTickerOffset(prev => prev - 1)
-    }, 80)
-    return () => {
-      if (tickerRef.current) clearInterval(tickerRef.current)
-    }
-  }, [period])
-
   const homeColor = managedSide === 'home' ? 'var(--copper)' : 'var(--steel)'
   const awayColor = managedSide === 'away' ? 'var(--copper)' : 'var(--steel)'
 
@@ -124,15 +92,9 @@ export function ScoreboardStalvallen({
   const isOT = period === 'OT'
   const maxMinutes = isOT ? 105 : 90
 
-  // Ticker text — join and repeat for scroll
-  const tickerFull = ticker.join('  ·  ')
-
   return (
     <div className="scoreboard-root">
-      {/* Scanline texture */}
-      <div className="scoreboard-scanlines" />
-
-      {/* SM-FINAL band */}
+      {/* SM-FINAL / playoff band */}
       {isPlayoffFinal && (
         <div className="scoreboard-final-band">
           <span className="scoreboard-final-band-label">SM-FINAL</span>
@@ -142,154 +104,155 @@ export function ScoreboardStalvallen({
         </div>
       )}
 
-      {/* Main score module */}
-      <div className={`module-main${flashSide ? ` score-flash-${flashSide}` : ''}`}>
-        {/* Home */}
-        <div className="scoreboard-team-home">
-          <span className="scoreboard-team-code" style={{ color: homeColor }}>{homeCode}</span>
-          <div className={flashSide === 'home' ? 'score-flash-active' : ''}>
-            <SevenSegText
-              text={String(homeScore)}
-              size="lg"
-              color={homeColor}
-              glowColor={flashSide === 'home' ? 'rgba(255,170,0,0.7)' : undefined}
-            />
-          </div>
-        </div>
+      {/* Bezel wrap — 5 modules inside */}
+      <div className="board-system">
 
-        {/* Center — period + time */}
-        <div className="scoreboard-center">
-          <div>
-            <span className="scoreboard-period-dot">·</span>
-          </div>
-          <div className="scoreboard-clock-row">
-            <SevenSegText text={pad2(minute)} size="md" color="var(--led-amber)" />
-            <SevenSegColon size="md" color="var(--led-amber)" />
-            <SevenSegText text={pad2(second)} size="md" color="var(--led-amber)" />
-          </div>
-          <span className={`scoreboard-period-tag ${isFT ? 'scoreboard-period-tag-ft' : 'scoreboard-period-tag-live'}`}>
-            {period}
-          </span>
-        </div>
+        {/* Module 1: Main score */}
+        <div className={`module-main${flashSide ? ` score-flash-${flashSide}` : ''}`}>
+          <div className="main-row">
+            {/* Home */}
+            <div className="team-col home">
+              <span className="team-code" style={{ color: homeColor }}>{homeCode}</span>
+              <span className="team-score-mount">
+                <SevenSegText
+                  text={String(homeScore)}
+                  size="lg"
+                  color={homeColor}
+                  glowColor={flashSide === 'home' ? 'rgba(255,170,0,0.7)' : undefined}
+                />
+              </span>
+            </div>
 
-        {/* Away */}
-        <div className="scoreboard-team-away">
-          <span className="scoreboard-team-code" style={{ color: awayColor }}>{awayCode}</span>
-          <div className={flashSide === 'away' ? 'score-flash-active' : ''}>
-            <SevenSegText
-              text={String(awayScore)}
-              size="lg"
-              color={awayColor}
-              glowColor={flashSide === 'away' ? 'rgba(255,170,0,0.7)' : undefined}
-            />
+            {/* Separator dot */}
+            <div className="sep-col">
+              <span className="sep-dot" />
+            </div>
+
+            {/* Away */}
+            <div className="team-col away">
+              <span className="team-code" style={{ color: awayColor }}>{awayCode}</span>
+              <span className="team-score-mount">
+                <SevenSegText
+                  text={String(awayScore)}
+                  size="lg"
+                  color={awayColor}
+                  glowColor={flashSide === 'away' ? 'rgba(255,170,0,0.7)' : undefined}
+                />
+              </span>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Penalty strip */}
-      {hasPenalties && (
-        <div className="pen-strip">
-          <PenSlot entry={homePens[0] ?? null} />
-          <PenSlot entry={awayPens[0] ?? null} />
-        </div>
-      )}
-
-      {/* Ticker text */}
-      <div className="scoreboard-ticker-wrap">
-        <div
-          className="scoreboard-ticker-inner"
-          style={{
-            transform: isFT ? 'none' : `translateX(${tickerOffset % (tickerFull.length * 7.5)}px)`,
-          }}
-        >
-          {[tickerFull, tickerFull].map((t, ri) => (
-            <span key={ri} className="scoreboard-ticker-text">
-              {t.split('·').map((seg, i) => (
-                <span key={i} className={i % 2 === 0 ? 'scoreboard-ticker-seg-primary' : 'scoreboard-ticker-seg-secondary'}>
-                  {seg.trim()}{i < t.split('·').length - 1 ? ' · ' : ''}
-                </span>
-              ))}
+          {/* Time row */}
+          <div className="time-row">
+            <span className="period-mark">{period}</span>
+            <span className="time-mount">
+              <SevenSegText text={pad2(minute)} size="md" color="var(--led-red)" />
+              <SevenSegColon size="md" color="var(--led-red)" />
+              <SevenSegText text={pad2(second)} size="md" color="var(--led-red)" />
             </span>
-          ))}
+          </div>
         </div>
-      </div>
 
-      {/* Timeline */}
-      <div className="scoreboard-timeline">
-        {/* Tick marks */}
-        {[15, 30, 60, 75].map(tick => {
-          const pct = (tick / maxMinutes) * 100
-          return (
-            <div key={tick} className="scoreboard-tick" style={{ left: `${pct}%` }}>
-              <span className="scoreboard-tick-label">{tick}</span>
-            </div>
-          )
-        })}
+        {/* Module 2: Penalty strip — animates in/out */}
+        <div className={`module-pen${hasPenalties ? ' active' : ''}`}>
+          <div className={`pen-slot home${homePens[0] ? '' : ' empty'}`}>
+            {homePens[0] && (
+              <>
+                <span className="pen-mark">▲</span>
+                <span className="pen-num">#{homePens[0].num}</span>
+                <span className="pen-name">{homePens[0].name}</span>
+                <span className="pen-time">
+                  {pad2(Math.floor(homePens[0].secondsLeft / 60))}:{pad2(homePens[0].secondsLeft % 60)}
+                </span>
+              </>
+            )}
+          </div>
+          <div className="pen-divider" />
+          <div className={`pen-slot away${awayPens[0] ? '' : ' empty'}`}>
+            {awayPens[0] && (
+              <>
+                <span className="pen-mark">▲</span>
+                <span className="pen-num">#{awayPens[0].num}</span>
+                <span className="pen-name">{awayPens[0].name}</span>
+                <span className="pen-time">
+                  {pad2(Math.floor(awayPens[0].secondsLeft / 60))}:{pad2(awayPens[0].secondsLeft % 60)}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
 
-        {/* Halftime line */}
-        <div className="scoreboard-halftime-line" />
+        {/* Module 3: Rolling LED text — CSS animation, no JS interval */}
+        <div className="module-text">
+          <div className="module-text-track">
+            {ticker.map((segment, i) => (
+              <span key={i} className={i % 2 === 1 ? 'dim' : ''}>
+                {segment}
+              </span>
+            ))}
+          </div>
+        </div>
 
-        {/* Penalty bands — dynamic positioning stays inline */}
-        {penalties.map((p, i) => {
-          const startPct = (Math.max(0, minute - p.secondsLeft / 60) / maxMinutes) * 100
-          const endPct = (minute / maxMinutes) * 100
-          return (
-            <div key={i} style={{
-              position: 'absolute',
-              left: `${startPct}%`,
-              width: `${Math.max(1, endPct - startPct)}%`,
-              top: p.team === 'home' ? 0 : '50%',
-              height: '50%',
-              background: 'repeating-linear-gradient(45deg, rgba(255,170,0,0.12) 0px, rgba(255,170,0,0.12) 1px, transparent 1px, transparent 3px)',
-            }} />
-          )
-        })}
+        {/* Module 4: Timeline */}
+        <div className="module-line">
+          <div className="line-head">
+            <span className="line-title">MATCHEN</span>
+            <span className="line-now">{minute}′ — NU</span>
+          </div>
+          <div className="timeline">
+            <span className="tl-half" />
 
-        {/* Goal marks — dynamic positioning stays inline */}
-        {events.map((ev, i) => {
-          const pct = (ev.minute / maxMinutes) * 100
-          const isHome = ev.team === 'home'
-          const color = isHome ? 'var(--home-mark)' : 'var(--away-mark)'
-          return (
-            <div key={i} style={{
-              position: 'absolute', left: `${pct}%`,
-              top: isHome ? -5 : undefined,
-              bottom: isHome ? undefined : -5,
-              transform: 'translateX(-50%)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-            }}>
-              <div style={{
-                width: 6, height: 6, borderRadius: '50%',
-                background: color,
-                boxShadow: `0 0 4px ${color}`,
-                flexShrink: 0,
-              }} />
-              <div style={{
-                width: 1, height: '100%',
-                background: color, opacity: 0.5, flexShrink: 0,
-                position: 'absolute', top: isHome ? 6 : undefined, bottom: isHome ? undefined : 6,
-                left: '50%', transform: 'translateX(-50%)',
-              }} />
-            </div>
-          )
-        })}
+            {/* Tick marks at 15, 30, 60 */}
+            {[15, 30, 60].map(tick => {
+              const pct = (tick / maxMinutes) * 100
+              return (
+                <span key={tick}>
+                  <span className="tl-tick" style={{ left: `${pct}%` }} />
+                  <span className="tl-tick-label" style={{ left: `${pct}%` }}>{tick}</span>
+                </span>
+              )
+            })}
 
-        {/* Now marker — dynamic positioning stays inline */}
-        {showNowMarker && !isFT && (() => {
-          const pct = (minute / maxMinutes) * 100
-          return (
-            <div style={{
-              position: 'absolute',
-              left: `${Math.min(pct, 98)}%`,
-              top: -4, bottom: -4,
-              width: 2,
-              background: 'var(--now-mark)',
-              boxShadow: '0 0 6px var(--now-mark)',
-              borderRadius: 1,
-            }} />
-          )
-        })()}
-      </div>
+            {/* Penalty bands */}
+            {penalties.map((p, i) => {
+              const startPct = (Math.max(0, minute - p.secondsLeft / 60) / maxMinutes) * 100
+              const endPct = (minute / maxMinutes) * 100
+              return (
+                <span
+                  key={`pen-${i}`}
+                  className="tl-pen"
+                  style={{ left: `${startPct}%`, width: `${Math.max(1, endPct - startPct)}%` }}
+                />
+              )
+            })}
+
+            {/* Goal marks */}
+            {events.map((ev, i) => {
+              const pct = (ev.minute / maxMinutes) * 100
+              return (
+                <span key={`g-${i}`}>
+                  <span className={`tl-goal ${ev.team}`} style={{ left: `${pct}%` }} />
+                  <span className={`tl-goal-cap ${ev.team}`} style={{ left: `${pct}%` }} />
+                </span>
+              )
+            })}
+
+            {/* Now marker */}
+            {showNowMarker && !isFT && (
+              <span
+                className="tl-now"
+                style={{ left: `${Math.min((minute / maxMinutes) * 100, 98)}%` }}
+              />
+            )}
+          </div>
+          <div className="line-feet">
+            <span className="home-pill">{homeCode}</span>
+            <span className="meta">{homeScore} mål · {homePens.length} utv</span>
+            <span className="away-pill">{awayCode}</span>
+          </div>
+        </div>
+
+      </div>{/* end .board-system */}
     </div>
   )
 }
