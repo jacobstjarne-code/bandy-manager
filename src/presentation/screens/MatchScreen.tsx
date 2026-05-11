@@ -109,6 +109,20 @@ export function MatchScreen() {
     })
     if (startingIds.length < 11 || hasInvalid) {
       handleAutoFill()
+      return
+    }
+    // 11 valid starters but no slot assignments (e.g. savedLineup without lineupSlots) — auto-assign slots without changing starters
+    const hasSlots = Object.values(tacticState.lineupSlots ?? {}).some(v => v)
+    if (!hasSlots) {
+      const starters = startingIds
+        .map(id => squadPlayers.find(p => p.id === id))
+        .filter((p): p is Player => !!p)
+      const formation = tacticState.formation ?? '5-3-2'
+      const template = FORMATIONS[formation]
+      const newLineupSlots = autoAssignFormation(template, starters)
+      const newTactic = { ...tacticState, lineupSlots: newLineupSlots }
+      setTacticState(newTactic)
+      updateTactic(newTactic)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
