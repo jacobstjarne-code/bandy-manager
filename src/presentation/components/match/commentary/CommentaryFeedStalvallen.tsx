@@ -69,9 +69,9 @@ export function CommentaryFeedStalvallen({ rows, autoScroll = true }: Commentary
 
   return (
     <div ref={containerRef} className="commentary-feed">
-      {/* Feed head */}
+      {/* Feed head — FIX-38D: COMMENTARY → MATCHFLÖDE */}
       <div className="commentary-feed-head">
-        <span className="live">COMMENTARY</span>
+        <span className="live">MATCHFLÖDE</span>
         <span style={{ color: 'rgba(245,241,235,0.45)', letterSpacing: '1.5px' }}>
           SCROLL ↑
         </span>
@@ -82,7 +82,8 @@ export function CommentaryFeedStalvallen({ rows, autoScroll = true }: Commentary
           return (
             <div key={i} className="commentary-row-atmosphere">
               <span className="commentary-row-atmosphere-min">—</span>
-              <span className="commentary-row-atmosphere-text">{row.text}</span>
+              {/* FIX-38B: #E6DDD0 for regular row text, FIX-38C: font-body (sans-serif) */}
+              <span className="commentary-row-atmosphere-text" style={{ color: '#E6DDD0', fontFamily: 'var(--font-body)' }}>{row.text}</span>
             </div>
           )
         }
@@ -101,7 +102,8 @@ export function CommentaryFeedStalvallen({ rows, autoScroll = true }: Commentary
                   <span className="commentary-event-meta">{row.meta}</span>
                 )}
               </div>
-              <div className="commentary-event-text">
+              {/* FIX-38B: #E6DDD0 for regular row text, FIX-38C: font-body (sans-serif) */}
+              <div className="commentary-event-text" style={{ color: '#E6DDD0', fontFamily: 'var(--font-body)' }}>
                 {row.text}
               </div>
             </div>

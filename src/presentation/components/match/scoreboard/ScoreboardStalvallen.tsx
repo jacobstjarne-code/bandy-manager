@@ -244,10 +244,6 @@ export function ScoreboardStalvallen({
               />
             )}
           </div>
-          <div className="line-feet">
-            <span className="home-pill">{homeCode}</span>
-            <span className="away-pill">{awayCode}</span>
-          </div>
         </div>
 
       </div>{/* end .board-system */}
