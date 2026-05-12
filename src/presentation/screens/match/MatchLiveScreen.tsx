@@ -47,6 +47,7 @@ import { FreeKickInteraction } from '../../components/match/FreeKickInteraction'
 import type { PressChoice } from '../../../domain/services/lastMinutePressService'
 import { LastMinutePress } from '../../components/match/LastMinutePress'
 import { TacticChangeModal } from '../../components/match/TacticChangeModal'
+import { MatchReportView } from '../../components/match/MatchReportView'
 import { mulberry32 } from '../../../domain/utils/random'
 import { FirstVisitHint } from '../../components/FirstVisitHint'
 import { simulateMatchStepByStep } from '../../../domain/services/matchSimulator'
@@ -134,6 +135,7 @@ export function MatchLiveScreen() {
   const [showSubModal, setShowSubModal] = useState(false)
   const [ceremonySlide, setCeremonySlide] = useState(0)
   const [finalIntroSlide, setFinalIntroSlide] = useState(() => isSmFinal ? 1 : 0)
+  const [hintVisible, setHintVisible] = useState(() => !(game?.dismissedHints ?? []).includes('matchLive'))
   const prevHomeScore = useRef(0)
   const prevAwayScore = useRef(0)
 
@@ -264,7 +266,7 @@ export function MatchLiveScreen() {
     }
   }, [currentStep, steps]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Tick displayed minute +1 every 1500ms, capped at next step's minute - 1
+  // Tick displayed minute +1 every 1000ms toward next step's minute (FIX-34)
   useEffect(() => {
     if (isPaused || isFastForward || matchDone) return
     if (activeCorner || activePenalty || activeCounter || activeFreeKick || activeLastMinutePress) return
@@ -273,9 +275,9 @@ export function MatchLiveScreen() {
       setDisplayedMinute(m => {
         const nextStep = steps[currentStep + 1]
         if (!nextStep) return m + 1
-        return Math.min(m + 1, Math.max(nextStep.minute - 1, m))
+        return Math.min(m + 1, nextStep.minute)
       })
-    }, 1500)
+    }, 1000)
     return () => clearInterval(interval)
   }, [currentStep, steps, isPaused, isFastForward, matchDone, activeCorner, activePenalty, activeCounter, activeFreeKick, activeLastMinutePress, showHalftime, showOvertimeOverlay, showPenaltiesOverlay])
 
@@ -354,6 +356,13 @@ export function MatchLiveScreen() {
   }, [matchDone]) // eslint-disable-line react-hooks/exhaustive-deps
 
 
+
+  // FIX-37: auto-dismiss hint after 12s with CSS fade
+  useEffect(() => {
+    if (!hintVisible) return
+    const t = setTimeout(() => setHintVisible(false), 12000)
+    return () => clearTimeout(t)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Halvtids-guard — explicit trigger för halvtidsmodal (steg 5)
   // Säkerställer att modalen visas även om timer-effekten av någon orsak hoppar förbi step 30
@@ -676,10 +685,12 @@ export function MatchLiveScreen() {
       playSound('goalHit')
     }
 
-    // Steg 5: inga handler-timeouts — clear active state, timer-effekten driver steget framåt
-    setActiveCorner(null)
-    setCornerOutcome(null)
-    setCurrentStep(prev => prev + 1)
+    // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
+    setTimeout(() => {
+      setActiveCorner(null)
+      setCornerOutcome(null)
+      setCurrentStep(prev => prev + 1)
+    }, isFastForward ? 0 : 1500)
   }
 
   function handlePenaltyChoice(dir: PenaltyDirection, height: PenaltyHeight, inlineData?: import('../../../domain/services/penaltyInteractionService').PenaltyInteractionData) {
@@ -741,10 +752,12 @@ export function MatchLiveScreen() {
       playSound('goalHit')
     }
 
-    // Steg 5: inga handler-timeouts
-    setActivePenalty(null)
-    setPenaltyOutcome(null)
-    setCurrentStep(prev => prev + 1)
+    // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
+    setTimeout(() => {
+      setActivePenalty(null)
+      setPenaltyOutcome(null)
+      setCurrentStep(prev => prev + 1)
+    }, isFastForward ? 0 : 1500)
   }
 
   function handleCounterChoice(choice: CounterChoice, inlineData?: import('../../../domain/services/counterAttackInteractionService').CounterInteractionData) {
@@ -808,10 +821,12 @@ export function MatchLiveScreen() {
       playSound('goalHit')
     }
 
-    // Steg 5: inga handler-timeouts
-    setActiveCounter(null)
-    setCounterOutcome(null)
-    setCurrentStep(prev => prev + 1)
+    // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
+    setTimeout(() => {
+      setActiveCounter(null)
+      setCounterOutcome(null)
+      setCurrentStep(prev => prev + 1)
+    }, isFastForward ? 0 : 1500)
   }
 
   function handleFreeKickChoice(choice: FreeKickChoice, inlineData?: import('../../../domain/services/freeKickInteractionService').FreeKickInteractionData) {
@@ -874,16 +889,21 @@ export function MatchLiveScreen() {
       playSound('goalHit')
     }
 
-    // Steg 5: inga handler-timeouts
-    setActiveFreeKick(null)
-    setFreeKickOutcome(null)
-    setCurrentStep(prev => prev + 1)
+    // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
+    setTimeout(() => {
+      setActiveFreeKick(null)
+      setFreeKickOutcome(null)
+      setCurrentStep(prev => prev + 1)
+    }, isFastForward ? 0 : 1500)
   }
 
   function handleLastMinutePressChoice(_choice: PressChoice) {
     lastMinutePressResolved.current = true
-    setActiveLastMinutePress(null)
-    setCurrentStep(prev => prev + 1)
+    // delay 1500ms so revealed outcome stays visible before next step (FIX-35)
+    setTimeout(() => {
+      setActiveLastMinutePress(null)
+      setCurrentStep(prev => prev + 1)
+    }, isFastForward ? 0 : 1500)
   }
 
   function handleApplyTactic() {
@@ -1198,6 +1218,53 @@ export function MatchLiveScreen() {
       return { kind: 'atmosphere' as const, text: s.commentary ?? '' }
     }).reverse()
 
+  // FIX-36: atmospheric ticker — weather, attendance, recent events, other results
+  const atmosphericTicker: string[] = (() => {
+    const parts: string[] = []
+    const w = matchWeather?.weather
+    if (w) {
+      const condLabel: Record<string, string> = {
+        clear: 'KLART', overcast: 'MULET', lightSnow: 'SNÖFALL',
+        heavySnow: 'SNÖOVÄDER', fog: 'DIMMA', thaw: 'TÖVÄDER',
+      }
+      const cond = condLabel[w.condition] ?? ''
+      const wind = w.windStrength >= 3 ? ` · VIND ${w.windStrength}M/S` : ''
+      parts.push(`${w.temperature > 0 ? '+' : ''}${w.temperature}° · ${cond}${wind}`)
+    }
+    if (fixture.attendance) {
+      parts.push(`PUBLIK ${fixture.attendance.toLocaleString('sv-SE')}`)
+    }
+    const recentGoals = displayedSteps
+      .flatMap(s => s.events
+        .filter(e => e.type === MatchEventType.Goal)
+        .map(e => {
+          const clubShort = e.clubId === fixture.homeClubId ? homeShort : awayShort
+          const scorerLast = e.playerId
+            ? (game?.players.find(p => p.id === e.playerId)?.lastName ?? '')
+            : ''
+          return `${s.minute}' ${scorerLast ? scorerLast.toUpperCase() + ' ' : ''}MÅL ${clubShort}`
+        })
+      )
+      .slice(-3)
+    for (const g of recentGoals) parts.push(g)
+    const otherResults = (game?.fixtures ?? [])
+      .filter(f =>
+        f.id !== fixture.id &&
+        !f.isCup &&
+        f.roundNumber === fixture.roundNumber &&
+        f.homeScore !== undefined && f.awayScore !== undefined &&
+        f.status === 'completed'
+      )
+      .slice(0, 3)
+      .map(f => {
+        const h = game?.clubs.find(c => c.id === f.homeClubId)?.shortName ?? '?'
+        const a = game?.clubs.find(c => c.id === f.awayClubId)?.shortName ?? '?'
+        return `${h} ${f.homeScore}–${f.awayScore} ${a}`
+      })
+    for (const r of otherResults) parts.push(r)
+    return parts.length > 0 ? parts : [`${homeShort} ${homeScore} – ${awayScore} ${awayShort}`]
+  })()
+
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', height: '100%',
@@ -1222,7 +1289,7 @@ export function MatchLiveScreen() {
         minute={displayedMinute}
         second={clockSecond}
         penalties={[]}
-        ticker={[`${homeShort} ${homeScore} – ${awayScore} ${awayShort}`]}
+        ticker={atmosphericTicker}
         events={scoreboardEvents}
         isPlayoffFinal={matchPhase === 'final'}
         finalTier={finalTier}
@@ -1251,12 +1318,14 @@ export function MatchLiveScreen() {
         />
       )}
 
-      {game && !(game.dismissedHints ?? []).includes('matchLive') && (
-        <FirstVisitHint
-          screenId="matchLive"
-          text="Matchen rullar automatiskt. Vid hörnor får du välja — titta efter hörn-kortet i feeden."
-          onDismiss={() => dismissHint('matchLive')}
-        />
+      {game && hintVisible && (
+        <div style={{ opacity: hintVisible ? 1 : 0, transition: 'opacity 0.6s ease', pointerEvents: hintVisible ? 'auto' : 'none' }}>
+          <FirstVisitHint
+            screenId="matchLive"
+            text="Matchen rullar automatiskt. Vid hörnor får du välja — titta efter hörn-kortet i feeden."
+            onDismiss={() => { setHintVisible(false); dismissHint('matchLive') }}
+          />
+        </div>
       )}
 
       {(() => {
@@ -1322,18 +1391,19 @@ export function MatchLiveScreen() {
         autoScroll={true}
       />
 
-      {/* Match done — navigate to review */}
-      {matchDone && !isSmFinal && !isCupFinal && (
-        <div style={{ padding: '12px 12px 16px', flexShrink: 0 }}>
-          <button
-            onClick={() => navigate('/game/review', { replace: true })}
-            className="btn btn-primary"
-            style={{ width: '100%' }}
-          >
-            Se sammanfattning →
-          </button>
-        </div>
-      )}
+      {/* Match done — full report overlay (FIX-33) */}
+      {matchDone && !isSmFinal && !isCupFinal && game && fixture && (() => {
+        const savedFixture = game.fixtures.find(f => f.id === fixture.id) ?? fixture
+        return savedFixture.report ? (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 10, overflowY: 'auto', background: 'var(--bg-leather, #2a2824)' }}>
+            <MatchReportView
+              fixture={savedFixture}
+              game={game}
+              onClose={() => navigate('/game/review', { replace: true })}
+            />
+          </div>
+        ) : null
+      })()}
 
       {showHalftime && !matchDone && (
         <HalftimeModal

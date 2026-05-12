@@ -112,6 +112,9 @@ export function shouldTriggerCoffeeRoom(game: SaveGame): boolean {
   const lastShown = game.lastCoffeeSceneRound ?? -COFFEE_ROOM_COOLDOWN_ROUNDS
   const sinceLast = currentMatchday - lastShown
 
+  // Aldrig retrigga samma matchday — gäller även override (annars loop)
+  if (sinceLast < 1) return false
+
   if (sinceLast >= COFFEE_ROOM_COOLDOWN_ROUNDS) return true
   // Override-triggers: streak ≥3, derby win, scandal — låt cooldown vara kortare
   if (hasOverrideTrigger(game)) return true
