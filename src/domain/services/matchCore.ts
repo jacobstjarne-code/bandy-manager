@@ -1354,7 +1354,7 @@ function* simulateMatchCore(
           if (tc) commentaryText = tc
         }
       } else if (cornerOccurred && !goalScored) {
-        commentaryText = fillTemplate(pickCommentary(commentary.corner, rand), templateVars)
+        commentaryText = fillTemplate(pickCommentary(commentary.corner_miss, rand), templateVars)
       } else if ((homeActiveSuspensions > 0 || awayActiveSuspensions > 0) && (seqType === 'attack' || seqType === 'transition')) {
         const ppTeam     = awayActiveSuspensions > 0 ? homeTeamRef : awayTeamRef
         const ppOpponent = awayActiveSuspensions > 0 ? awayTeamRef : homeTeamRef

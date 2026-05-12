@@ -160,6 +160,14 @@ export const commentary = {
   ],
 
   corner: [
+    "Hörna till {team}.",
+    "Hörna för {team}.",
+    "{team} får hörna.",
+    "Ny hörna till {team}. Försöker hitta ett läge.",
+    "Hörna {team}. Klacken stiger upp.",
+  ],
+
+  corner_miss: [
     "Hörna till {team}. Slås in alldeles för löst. Rensas av försvaret.",
     "Hörna för {team}. Skott på mål, men enkelt undan.",
     "Hörna till {team}. En variant! Kort spel med skott i dödvinkel. Långt utanför!",
