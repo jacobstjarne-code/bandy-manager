@@ -65,7 +65,7 @@ export const CUP_ANSLAG: Record<CupAnslagKey, AnslagText> = {
     chapter: '⬩ Cupfinalen ⬩',
     variants: [
       {
-        body: `Cupfinal.<br><br>Två lag kvar. Ingen omspelning. {vsLabel} {motståndare}.<br><br>Det här är inget träningstillfälle. En match. Sen är det över.`,
+        body: `Cupfinal.<br><br>Två lag kvar. Inget omspel. {vsLabel} {motståndare}.<br><br>Det här är inget träningstillfälle. En match. Sen är det över.`,
       },
     ],
   },
@@ -79,7 +79,7 @@ export const CUP_ANSLAG: Record<CupAnslagKey, AnslagText> = {
         body: `Vår cup är slut. Tre matcher om vi var med långt, en om det inte gick.<br><br>Det är så cupen är. Den prövar lag innan ligan tar vid. Vad lärde vi oss? Mer än vi tror, mindre än vi ville.<br><br>Ligan väntar. Det är där det avgörs.`,
       },
       {
-        body: `Cupen är gjort. Spelarna kommer tillbaka till tisdagsträningarna. Magnus jobbar med dem som behöver formjustering. Resten är som vanligt.<br><br>Pokalen är någon annans. Det blev vad det blev.<br><br>Nu ligan. Då har vi 22 omgångar att visa vad vi gör med en hel säsong.`,
+        body: `Cupen är avgjord. Spelarna kommer tillbaka till tisdagsträningarna. Magnus jobbar med dem som behöver formjustering. Resten är som vanligt.<br><br>Pokalen är någon annans. Det blev vad det blev.<br><br>Nu ligan. Då har vi 22 omgångar att visa vad vi gör med en hel säsong.`,
       },
     ],
   },

@@ -116,6 +116,8 @@ export function MatchLiveScreen() {
   const [matchDone, setMatchDone] = useState(false)
   const [showOvertimeOverlay, setShowOvertimeOverlay] = useState(false)
   const [showPenaltiesOverlay, setShowPenaltiesOverlay] = useState(false)
+  const [clockSecond, setClockSecond] = useState(0)
+  const [displayedMinute, setDisplayedMinute] = useState(0)
   const prevPhase = useRef<string | undefined>(undefined)
 
   const [muted, setMuted] = useState(isMuted)
@@ -237,6 +239,45 @@ export function MatchLiveScreen() {
       currentStep,
     })
   }, [steps, currentStep])
+
+  // Klock-tick — sekunder rullar 0-59 inom varje match-minute, reset vid nytt step
+  useEffect(() => {
+    setClockSecond(0)
+  }, [currentStep])
+
+  useEffect(() => {
+    if (isPaused || isFastForward || matchDone) return
+    if (activeCorner || activePenalty || activeCounter || activeFreeKick || activeLastMinutePress) return
+    if (showHalftime || showOvertimeOverlay || showPenaltiesOverlay) return
+    const interval = setInterval(() => {
+      setClockSecond(s => (s + 1) % 60)
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [isPaused, isFastForward, matchDone, activeCorner, activePenalty, activeCounter, activeFreeKick, activeLastMinutePress, showHalftime, showOvertimeOverlay, showPenaltiesOverlay])
+
+  // Displayed minute — rullar jämnt mellan steg-minuter istället för att hoppa
+  // Snap upp till currentStep.minute när stegen ligger före displayed
+  useEffect(() => {
+    const stepMinute = steps[currentStep]?.minute ?? 0
+    if (stepMinute > displayedMinute) {
+      setDisplayedMinute(stepMinute)
+    }
+  }, [currentStep, steps]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Tick displayed minute +1 every 1500ms, capped at next step's minute - 1
+  useEffect(() => {
+    if (isPaused || isFastForward || matchDone) return
+    if (activeCorner || activePenalty || activeCounter || activeFreeKick || activeLastMinutePress) return
+    if (showHalftime || showOvertimeOverlay || showPenaltiesOverlay) return
+    const interval = setInterval(() => {
+      setDisplayedMinute(m => {
+        const nextStep = steps[currentStep + 1]
+        if (!nextStep) return m + 1
+        return Math.min(m + 1, Math.max(nextStep.minute - 1, m))
+      })
+    }, 1500)
+    return () => clearInterval(interval)
+  }, [currentStep, steps, isPaused, isFastForward, matchDone, activeCorner, activePenalty, activeCounter, activeFreeKick, activeLastMinutePress, showHalftime, showOvertimeOverlay, showPenaltiesOverlay])
 
   useEffect(() => {
     if (ceremonySlide !== 1) return
@@ -935,6 +976,7 @@ export function MatchLiveScreen() {
     })
     setTacticChanged(true)
     setShowHalftime(false)
+    setIsPaused(false)
     setCurrentStep(31)
   }
 
@@ -1058,7 +1100,6 @@ export function MatchLiveScreen() {
 
   const currentMatchStep = currentStep >= 0 && currentStep < steps.length ? steps[currentStep] : null
   const displayedSteps = currentStep >= 0 ? steps.slice(0, currentStep + 1) : []
-  const currentMinute = currentMatchStep?.minute ?? 0
   // Score läses från reducer-state — EN sanning (steg 4)
   const homeScore = matchState.homeScore
   const awayScore = matchState.awayScore
@@ -1155,7 +1196,7 @@ export function MatchLiveScreen() {
         }
       }
       return { kind: 'atmosphere' as const, text: s.commentary ?? '' }
-    })
+    }).reverse()
 
   return (
     <div style={{
@@ -1178,8 +1219,8 @@ export function MatchLiveScreen() {
         awayScore={awayScore}
         managedSide={managedSide}
         period={period}
-        minute={currentMinute}
-        second={0}
+        minute={displayedMinute}
+        second={clockSecond}
         penalties={[]}
         ticker={[`${homeShort} ${homeScore} – ${awayScore} ${awayShort}`]}
         events={scoreboardEvents}

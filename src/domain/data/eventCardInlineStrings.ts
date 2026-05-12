@@ -3,7 +3,7 @@ export const STAR_PERFORMANCE_VARIANTS: readonly string[] = [
   `Materialaren bad {NAME} om hjälp att bära ut näten. Han var en av få som var kvar i hallen. Rating: {RATING}.`,
   `{NAME} var med på allt som hade betydelse. Det är inte vanligt. Rating: {RATING}.`,
   `Sture klappade {NAME} på axeln på väg in i omklädningsrummet. Mer blev det inte sagt. Rating: {RATING}.`,
-  `{NAME} gick i baracker tre, tog en kaffe, satte sig vid fönstret. Ingen störde. Rating: {RATING}.`,
+  `{NAME} satt kvar i omklädningsrummet ett tag. Ingen frågade vad han tänkte på. Rating: {RATING}.`,
   `{NAME} satte sig sist på bussen. Det blev tyst där bak — på det bra sättet. Rating: {RATING}.`,
 ]
 

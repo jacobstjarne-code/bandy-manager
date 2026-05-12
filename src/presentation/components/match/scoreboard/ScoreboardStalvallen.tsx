@@ -197,7 +197,6 @@ export function ScoreboardStalvallen({
         <div className="module-line">
           <div className="line-head">
             <span className="line-title">MATCHEN</span>
-            <span className="line-now">{minute}′ — NU</span>
           </div>
           <div className="timeline">
             <span className="tl-half" />
@@ -247,7 +246,6 @@ export function ScoreboardStalvallen({
           </div>
           <div className="line-feet">
             <span className="home-pill">{homeCode}</span>
-            <span className="meta">{homeScore} mål · {homePens.length} utv</span>
             <span className="away-pill">{awayCode}</span>
           </div>
         </div>

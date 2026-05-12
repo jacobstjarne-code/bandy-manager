@@ -153,7 +153,9 @@ export function generatePostAdvanceEvents(
   // 4. Star performance (8.5+ rating, auto-resolve with morale boost — add as resolved=false with single choice)
   const lastFixture = recentFixtures[0]
   if (lastFixture?.report?.playerRatings && rand() > 0.5) {
-    for (const [pid, rating] of Object.entries(lastFixture.report.playerRatings)) {
+    const sortedRatings = Object.entries(lastFixture.report.playerRatings)
+      .sort(([, a], [, b]) => b - a)
+    for (const [pid, rating] of sortedRatings) {
       if (events.length >= 2) break
       if (rating < 8.5) continue
 

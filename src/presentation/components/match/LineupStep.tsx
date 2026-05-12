@@ -186,7 +186,7 @@ export function LineupStep({
           }}
         >
           {SPARKLE_SVG}
-          Auto-fyll
+          Fyll bästa elvan
         </button>
       </div>
 

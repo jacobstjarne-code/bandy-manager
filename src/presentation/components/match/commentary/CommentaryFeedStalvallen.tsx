@@ -62,7 +62,7 @@ export function CommentaryFeedStalvallen({ rows, autoScroll = true }: Commentary
   useEffect(() => {
     if (!autoScroll) return
     if (rows.length !== prevLength.current && containerRef.current) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight
+      containerRef.current.scrollTop = 0
     }
     prevLength.current = rows.length
   }, [rows.length, autoScroll])

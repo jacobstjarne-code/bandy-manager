@@ -85,29 +85,29 @@ export function HalftimeModal({
   const oppGoals = managedIsHome ? htAwayGoals : htHomeGoals
   const diff = managedGoals - oppGoals
   const HT_WIN_BIG = [
-    'Vi vann inte för att vi var bäst. Vi vann för att vi ville mest.',
-    'Dominant. Men match är match tills domaren blåser av.',
-    'Bra. Men vi har sett lag slösa bort tre mål på 30 minuter. Det gör inte vi.',
+    'Ledningen hade vi i en match förra året på samma plan, och vi tappade den.',
+    'De har inte gett upp en match hela hösten, så vi spelar likadant i andra halvlek.',
+    'Vi släpper inte upp dem.',
   ]
   const HT_WIN_ONE = [
-    'Ledningen är skör. En utvisning, ett dåligt frislag — och det är jämnt.',
-    'Ett mål är ingenting. Vi fortsätter pressa, vi fortsätter jobba.',
-    'Exakt så här vi vill ha det. Nu håller vi det.',
+    'Ett mål skiljer, en utvisning kan vända allt, vi har fyrtiofem minuter kvar att jobba.',
+    'Det här slutar någonstans — och det är alldeles för tidigt att veta var.',
+    'Halva matchen kvar. Vi vet hur de spelar nu.',
   ]
   const HT_DRAW = [
-    'Jämnt — allt avgörs i andra halvlek. Det är bra. Det är vår halvlek.',
-    'Ingenting är avgjort. Det gillar jag.',
-    'Ingen vinner på halvtid. Men vi vinner på slutsignal.',
+    'Det är jämnt på papperet, och det är där det ska vara just nu.',
+    'Inte vår fördel. Inte deras heller.',
+    'Det avgörs efter pausen.',
   ]
   const HT_DOWN_ONE = [
-    'Hänger med. Ett mål är ingenting — det vet ni.',
-    'Nära men inte nog. Andra halvlek börjar vi om från noll.',
-    'Ibland lär man sig mer av en förlust än tio vinster. Men vi förlorar inte än.',
+    'Ett mål skiljer — och vi har spelat sämre matcher där vi vunnit.',
+    'De har inte spelat över sin förmåga, vi inte under, fyrtiofem minuter kvar.',
+    'Ett mål är inte mycket. Det räcker med en hörna och ett dåligt frislag.',
   ]
   const HT_DOWN_BIG = [
-    'Tufft läge. Ingen räddare kommer — vi är räddarna. Nu.',
-    'Om ni vill ge upp kan ni stanna i omklädningsrummet. Annars åker vi ut och jobbar.',
-    'Det enda jag inte accepterar är att ge upp.',
+    'Det blev värre än vi räknat med, och vi har en halvlek till att spela.',
+    'Bussen hem är lång om vi inte gör något i andra halvlek.',
+    'Det blir andra halvlek hur som helst.',
   ]
   const pool = diff >= 2 ? HT_WIN_BIG : diff === 1 ? HT_WIN_ONE : diff === 0 ? HT_DRAW : diff === -1 ? HT_DOWN_ONE : HT_DOWN_BIG
   const analysis = pool[Math.floor(Math.random() * pool.length)]

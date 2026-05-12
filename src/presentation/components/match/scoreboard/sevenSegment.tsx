@@ -41,8 +41,8 @@ export function SevenSegDigit({ char, size, color = 'var(--led-red)', glowColor 
 
   // Size presets: width × height
   const dims: Record<SegSize, { w: number; h: number; sw: number }> = {
-    lg: { w: 28, h: 52, sw: 4 },
-    md: { w: 18, h: 34, sw: 3 },
+    lg: { w: 22, h: 40, sw: 5 },
+    md: { w: 11, h: 21, sw: 3 },
     sm: { w: 12, h: 22, sw: 2 },
   }
   const { w, h, sw } = dims[size]
@@ -115,7 +115,7 @@ export function SevenSegColon({ size, color = 'var(--led-amber)' }: { size: SegS
   const dotSize: Record<SegSize, number> = { lg: 5, md: 4, sm: 3 }
   const d = dotSize[size]
   return (
-    <span style={{ display: 'inline-flex', flexDirection: 'column', justifyContent: 'space-around', height: size === 'lg' ? 52 : size === 'md' ? 34 : 22, paddingBottom: 4 }}>
+    <span style={{ display: 'inline-flex', flexDirection: 'column', justifyContent: 'space-around', height: size === 'lg' ? 45 : size === 'md' ? 24 : 22, paddingBottom: 4 }}>
       <span style={{ width: d, height: d, borderRadius: '50%', background: color, boxShadow: `0 0 4px ${color}` }} />
       <span style={{ width: d, height: d, borderRadius: '50%', background: color, boxShadow: `0 0 4px ${color}` }} />
     </span>

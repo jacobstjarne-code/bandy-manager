@@ -1,0 +1,44 @@
+[
+  {
+    "id": "quote_success_streak_5_001",
+    "type": "quote",
+    "tags": ["success_streak_5"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Det är svårt att spela mot oss just nu."
+  },
+  {
+    "id": "quote_success_streak_5_002",
+    "type": "quote",
+    "tags": ["success_streak_5"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Killarna har hittat en rytm som inte fanns sista söndagen i oktober."
+  },
+  {
+    "id": "quote_success_streak_5_003",
+    "type": "quote",
+    "tags": ["success_streak_5"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Fem raka."
+  },
+  {
+    "id": "quote_success_streak_5_004",
+    "type": "quote",
+    "tags": ["success_streak_5"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Saker rullar på."
+  },
+  {
+    "id": "quote_success_streak_5_005",
+    "type": "quote",
+    "tags": ["success_streak_5"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Backarna kommer hem från jobbet och vill träna."
+  },
+  {
+    "id": "quote_success_streak_5_006",
+    "type": "quote",
+    "tags": ["success_streak_5"],
+    "attribution": { "name": "{coachName}", "role": "Coach" },
+    "body": "Det är inte längre överraskande att vi vinner."
+  }
+]
