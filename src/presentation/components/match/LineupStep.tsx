@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Club, Tactic } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Player } from '../../../domain/entities/Player'
@@ -82,6 +82,18 @@ export function LineupStep({
   onNext,
 }: LineupStepProps) {
   const [viewMode, setViewMode] = useState<'list' | 'pitch'>('list')
+
+  // Auto-fill when switching to pitch view with empty lineupSlots (defensive fallback)
+  useEffect(() => {
+    if (viewMode !== 'pitch') return
+    const slotsEmpty =
+      !tacticState.lineupSlots ||
+      Object.keys(tacticState.lineupSlots).length === 0 ||
+      Object.values(tacticState.lineupSlots).every(v => v == null)
+    if (slotsEmpty && startingIds.length === 11) {
+      onAutoFill()
+    }
+  }, [viewMode]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Context-combined data
   const weather = nextFixture ? game.matchWeathers?.find(mw => mw.fixtureId === nextFixture.id)?.weather : null
