@@ -12,8 +12,8 @@ export function PortalSecondarySection({ cards, game }: PortalSecondarySectionPr
 
   return (
     <div style={{
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
+      display: 'flex',
+      flexDirection: 'column',
       gap: 6,
       marginBottom: 12,
     }}>

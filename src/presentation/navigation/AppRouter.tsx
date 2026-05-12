@@ -40,6 +40,7 @@ import { SimSummaryScreen } from '../screens/SimSummaryScreen'
 import { useGameStore } from '../store/gameStore'
 import { PendingScreen } from '../../domain/enums'
 import { getCurrentAttention } from '../../domain/services/attentionRouter'
+import { CoffeeRoomScene } from '../screens/scenes/CoffeeRoomScene'
 
 const PENDING_SCREEN_ROUTES: Partial<Record<PendingScreen, string>> = {
   [PendingScreen.HalfTimeSummary]: '/game/half-time-summary',
@@ -50,6 +51,7 @@ const PENDING_SCREEN_ROUTES: Partial<Record<PendingScreen, string>> = {
 
 function DashboardOrPortal() {
   const game = useGameStore(s => s.game)
+  const completeScene = useGameStore(s => s.completeScene)
   const navigate = useNavigate()
   const redirected = useRef(false)
 
@@ -70,6 +72,28 @@ function DashboardOrPortal() {
   }, [game, pendingScreen, navigate])
 
   if (!game) return <PortalScreen />
+
+  // coffee_room renders as modal over dashboard — other scenes are full-screen (FIX-41)
+  if (attention.kind === 'scene' && game.pendingScene?.sceneId === 'coffee_room') {
+    return (
+      <div style={{ position: 'relative', height: '100%' }}>
+        <PortalScreen />
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 300,
+          background: 'rgba(10,9,8,0.72)',
+          display: 'flex', alignItems: 'flex-end',
+        }}>
+          <div style={{
+            width: '100%', maxHeight: '90vh', overflowY: 'auto',
+            borderRadius: '14px 14px 0 0',
+            background: 'var(--bg-scene)',
+          }}>
+            <CoffeeRoomScene game={game} onComplete={() => completeScene('coffee_room')} />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (attention.kind === 'scene') return <SceneScreen />
   return <PortalScreen />

@@ -46,7 +46,8 @@ export function GameShell() {
   if (!game) return <Navigate to="/" replace />
 
   const attention = getCurrentAttention(game)
-  const sceneActive = attention.kind === 'scene'
+  // coffee_room is a modal over dashboard — BottomNav stays visible (FIX-41)
+  const sceneActive = attention.kind === 'scene' && game.pendingScene?.sceneId !== 'coffee_room'
 
   // EventOverlay visas INTE när en scen väntar — scenen har prioritet
   // EventOverlay visas INTE under live-match, match-setup, resultat eller granskning
