@@ -166,6 +166,16 @@ export function MatchLiveScreen() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    // DEBUG steg 1 — verifiera att simulation-effekten triggas
+    console.log('[MatchLiveScreen] simulation useEffect trigger', {
+      fixtureId: fixture?.id,
+      hasHomeLineup: !!homeLineup,
+      hasAwayLineup: !!awayLineup,
+      homeStarterCount: homeLineup?.startingPlayerIds?.length ?? 0,
+      awayStarterCount: awayLineup?.startingPlayerIds?.length ?? 0,
+      hasGame: !!game,
+      alreadySimulated: hasSimulated.current,
+    })
     if (hasSimulated.current) return
     if (!fixture || !homeLineup || !awayLineup || !game) return
     hasSimulated.current = true
@@ -207,11 +217,26 @@ export function MatchLiveScreen() {
     })
     const allSteps: MatchStep[] = []
     for (const step of gen) allSteps.push(step)
+    // DEBUG steg 2 — verifiera simulator-resultat
+    console.log('[MatchLiveScreen] simulator result', {
+      stepCount: allSteps.length,
+      isSmFinal,
+      isCupFinal,
+      willSetCurrentStep: !isSmFinal && !isCupFinal,
+    })
     setSteps(allSteps)
     if (!isSmFinal && !isCupFinal) {
       setCurrentStep(0)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // DEBUG steg 3 — verifiera att steps-uppdatering triggar re-render
+  useEffect(() => {
+    console.log('[MatchLiveScreen] steps/currentStep updated', {
+      stepsLength: steps.length,
+      currentStep,
+    })
+  }, [steps, currentStep])
 
   useEffect(() => {
     if (ceremonySlide !== 1) return
@@ -342,6 +367,14 @@ export function MatchLiveScreen() {
   }, [currentStep, steps])
 
   useEffect(() => {
+    // DEBUG steg 4 — verifiera att timer-effekten ser rätt steps/currentStep
+    console.log('[MatchTimer] effect run', {
+      currentStep,
+      stepsLength: steps.length,
+      isPaused,
+      isFastForward,
+      willReturn: currentStep < 0 || currentStep >= steps.length || (isPaused && !isFastForward),
+    })
     if (currentStep < 0 || currentStep >= steps.length) return
     if (isPaused && !isFastForward) return
 

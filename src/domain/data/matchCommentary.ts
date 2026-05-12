@@ -129,7 +129,7 @@ export const commentary = {
     "Igenspikat! {goalkeeper} får sträcka på sig. Strålande räddning!",
     "NEJ! {goalkeeper} står i vägen!",
     "{goalkeeper} styr ut bollen nere vid stolproten. Det är inte möjligt!",
-    "Räddning! {goalkeeper} väljer rätt håll. Den där läste han i gårdagens.",
+    "Räddning! {goalkeeper} väljer rätt håll. Den där hade han räknat med.",
     "Alla lösa går om, skrockar {goalkeeper} och kastar ut bollen igen.",
     "Strålande insats av {goalkeeper}. Han höll {team} kvar i matchen där!",
     "JÄTTERÄDDNING! {goalkeeper} stoppar friläge. Publikens favorit i dag.",
