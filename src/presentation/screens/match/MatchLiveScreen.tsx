@@ -654,7 +654,7 @@ export function MatchLiveScreen() {
       setActiveCorner(null)
       setCornerOutcome(null)
       setCurrentStep(prev => prev + 1)
-    }, isFastForward ? 0 : 1500)
+    }, isFastForward ? 0 : 2500)
   }
 
   function handlePenaltyChoice(dir: PenaltyDirection, height: PenaltyHeight, inlineData?: import('../../../domain/services/penaltyInteractionService').PenaltyInteractionData) {
@@ -721,7 +721,7 @@ export function MatchLiveScreen() {
       setActivePenalty(null)
       setPenaltyOutcome(null)
       setCurrentStep(prev => prev + 1)
-    }, isFastForward ? 0 : 1500)
+    }, isFastForward ? 0 : 2500)
   }
 
   function handleCounterChoice(choice: CounterChoice, inlineData?: import('../../../domain/services/counterAttackInteractionService').CounterInteractionData) {
@@ -790,7 +790,7 @@ export function MatchLiveScreen() {
       setActiveCounter(null)
       setCounterOutcome(null)
       setCurrentStep(prev => prev + 1)
-    }, isFastForward ? 0 : 1500)
+    }, isFastForward ? 0 : 2500)
   }
 
   function handleFreeKickChoice(choice: FreeKickChoice, inlineData?: import('../../../domain/services/freeKickInteractionService').FreeKickInteractionData) {
@@ -858,7 +858,7 @@ export function MatchLiveScreen() {
       setActiveFreeKick(null)
       setFreeKickOutcome(null)
       setCurrentStep(prev => prev + 1)
-    }, isFastForward ? 0 : 1500)
+    }, isFastForward ? 0 : 2500)
   }
 
   function handleLastMinutePressChoice(_choice: PressChoice) {
@@ -867,7 +867,7 @@ export function MatchLiveScreen() {
     setTimeout(() => {
       setActiveLastMinutePress(null)
       setCurrentStep(prev => prev + 1)
-    }, isFastForward ? 0 : 1500)
+    }, isFastForward ? 0 : 2500)
   }
 
   function handleApplyTactic() {
