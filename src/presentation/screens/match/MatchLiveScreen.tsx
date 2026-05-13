@@ -117,7 +117,6 @@ export function MatchLiveScreen() {
   const [matchDone, setMatchDone] = useState(false)
   const [showOvertimeOverlay, setShowOvertimeOverlay] = useState(false)
   const [showPenaltiesOverlay, setShowPenaltiesOverlay] = useState(false)
-  const [clockSecond, setClockSecond] = useState(0)
   const [displayedMinute, setDisplayedMinute] = useState(0)
   const prevPhase = useRef<string | undefined>(undefined)
 
@@ -221,41 +220,11 @@ export function MatchLiveScreen() {
     })
     const allSteps: MatchStep[] = []
     for (const step of gen) allSteps.push(step)
-    // DEBUG steg 2 — verifiera simulator-resultat
-    console.log('[MatchLiveScreen] simulator result', {
-      stepCount: allSteps.length,
-      isSmFinal,
-      isCupFinal,
-      willSetCurrentStep: !isSmFinal && !isCupFinal,
-    })
     setSteps(allSteps)
     if (!isSmFinal && !isCupFinal) {
       setCurrentStep(0)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // DEBUG steg 3 — verifiera att steps-uppdatering triggar re-render
-  useEffect(() => {
-    console.log('[MatchLiveScreen] steps/currentStep updated', {
-      stepsLength: steps.length,
-      currentStep,
-    })
-  }, [steps, currentStep])
-
-  // Klock-tick — sekunder rullar 0-59 inom varje match-minute, reset vid nytt step
-  useEffect(() => {
-    setClockSecond(0)
-  }, [currentStep])
-
-  useEffect(() => {
-    if (isPaused || isFastForward || matchDone) return
-    if (activeCorner || activePenalty || activeCounter || activeFreeKick || activeLastMinutePress) return
-    if (showHalftime || showOvertimeOverlay || showPenaltiesOverlay) return
-    const interval = setInterval(() => {
-      setClockSecond(s => (s + 1) % 60)
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [isPaused, isFastForward, matchDone, activeCorner, activePenalty, activeCounter, activeFreeKick, activeLastMinutePress, showHalftime, showOvertimeOverlay, showPenaltiesOverlay])
 
   // Displayed minute — rullar jämnt mellan steg-minuter istället för att hoppa
   // Snap upp till currentStep.minute när stegen ligger före displayed
@@ -417,14 +386,6 @@ export function MatchLiveScreen() {
   }, [currentStep, steps])
 
   useEffect(() => {
-    // DEBUG steg 4 — verifiera att timer-effekten ser rätt steps/currentStep
-    console.log('[MatchTimer] effect run', {
-      currentStep,
-      stepsLength: steps.length,
-      isPaused,
-      isFastForward,
-      willReturn: currentStep < 0 || currentStep >= steps.length || (isPaused && !isFastForward),
-    })
     if (currentStep < 0 || currentStep >= steps.length) return
     if (isPaused && !isFastForward) return
 
@@ -436,6 +397,9 @@ export function MatchLiveScreen() {
         setIsFastForward(false)
         setShowHalftime(true)
         return
+      }
+      if (isFastForward) {
+        setIsFastForward(false)
       }
     }
 
@@ -1134,6 +1098,24 @@ export function MatchLiveScreen() {
     setIsPaused(false)
   }
 
+  function handleToggleFastForward() {
+    const newFF = !isFastForward
+    setIsFastForward(newFF)
+    if (newFF && (activeCorner || activePenalty || activeCounter || activeFreeKick || activeLastMinutePress)) {
+      setActiveCorner(null)
+      setCornerOutcome(null)
+      setActivePenalty(null)
+      setPenaltyOutcome(null)
+      setActiveCounter(null)
+      setCounterOutcome(null)
+      setActiveFreeKick(null)
+      setFreeKickOutcome(null)
+      setActiveLastMinutePress(null)
+      lastMinutePressResolved.current = true
+      setCurrentStep(prev => prev + 1)
+    }
+  }
+
   const managedIsHomeForSubs = fixture ? fixture.homeClubId === game?.managedClubId : false
   const managedLineup = managedIsHomeForSubs ? homeLineup : awayLineup
   const managedStarterPlayers = managedLineup
@@ -1287,7 +1269,7 @@ export function MatchLiveScreen() {
         managedSide={managedSide}
         period={period}
         minute={displayedMinute}
-        second={clockSecond}
+        second={0}
         penalties={[]}
         ticker={atmosphericTicker}
         events={scoreboardEvents}
@@ -1303,7 +1285,7 @@ export function MatchLiveScreen() {
         muted={muted}
         currentMatchStep={currentMatchStep}
         onTogglePause={() => setIsPaused(prev => !prev)}
-        onToggleFastForward={() => setIsFastForward(prev => !prev)}
+        onToggleFastForward={handleToggleFastForward}
         onOpenSubModal={() => { setIsPaused(true); setShowSubModal(true) }}
         onToggleMute={() => { toggleMute(); setMuted(isMuted()) }}
         onOpenTacticQuick={() => { setIsFastForward(false); setIsPaused(true); setShowTacticQuick(true) }}
