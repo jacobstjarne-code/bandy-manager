@@ -235,12 +235,12 @@
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 3px;
-  color: var(--led-red);
-  text-shadow: 0 0 5px var(--led-red-glow);
+  color: var(--led-amber);
+  text-shadow: 0 0 5px rgba(255, 170, 0, 0.55);
   padding-right: 60px;
 }
 .module-text-track > span.dim {
-  color: rgba(255, 100, 80, 0.55);
+  color: rgba(255, 200, 100, 0.55);
   text-shadow: none;
 }
 @keyframes scrollText {
