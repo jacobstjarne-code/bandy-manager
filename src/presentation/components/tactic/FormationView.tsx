@@ -4,6 +4,7 @@ import type { Player } from '../../../domain/entities/Player'
 import type { FormationType } from '../../../domain/entities/Formation'
 import { FORMATIONS, autoAssignFormation, getRecommendedFormation, FORMATION_META } from '../../../domain/entities/Formation'
 import type { Tactic } from '../../../domain/entities/Club'
+import { PlayerPosition } from '../../../domain/enums'
 import { PlayerDot } from './PlayerDot'
 
 interface FormationViewProps {
@@ -53,6 +54,26 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
   // Starters: players currently in slots
   const starterIds = new Set(Object.values(lineupSlots).filter(Boolean) as string[])
   const benchPlayers = players.filter(p => !starterIds.has(p.id) && !p.isInjured && p.suspensionGamesRemaining === 0)
+
+  function handleAutoFill() {
+    const available = players.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)
+    const sorted = [...available].sort((a, b) => b.currentAbility - a.currentAbility)
+    const gkPool = sorted.filter(p => p.position === PlayerPosition.Goalkeeper)
+    const outfieldPool = sorted.filter(p => p.position !== PlayerPosition.Goalkeeper)
+    const starters: Player[] = gkPool.length > 0 ? [gkPool[0]] : []
+    for (const p of outfieldPool) {
+      if (starters.length >= 11) break
+      starters.push(p)
+    }
+    for (const p of gkPool.slice(1)) {
+      if (starters.length >= 11) break
+      starters.push(p)
+    }
+    const newTemplate = FORMATIONS[formation]
+    const newLineupSlots = autoAssignFormation(newTemplate, starters)
+    onChange({ ...tactic, lineupSlots: newLineupSlots })
+    setSelectedSlotId(null)
+  }
 
   function changeFormation(f: FormationType) {
     const newTemplate = FORMATIONS[f]
@@ -123,6 +144,25 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
           }}
         >
           ändras i lineup
+        </button>
+      </div>
+
+      {/* Auto-fill button */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+        <button
+          onClick={handleAutoFill}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            padding: '5px 10px',
+            background: 'transparent',
+            border: '1.5px solid var(--accent)',
+            color: 'var(--accent-dark)',
+            fontSize: 11, fontWeight: 600,
+            borderRadius: 8,
+            cursor: 'pointer',
+          }}
+        >
+          ✦ Fyll bästa elvan
         </button>
       </div>
 
