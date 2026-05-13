@@ -145,12 +145,11 @@ export function PitchLineupView({
                     left: `${leftPct}%`,
                     top: `${topPct}%`,
                     transform: 'translate(-50%, -50%)',
-                    width: 38,
-                    height: 38,
+                    width: 44,
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    justifyContent: 'center',
+                    gap: 2,
                     cursor: 'pointer',
                     pointerEvents: 'auto',
                     animation: isEmpty && selection !== null
@@ -158,10 +157,10 @@ export function PitchLineupView({
                       : 'none',
                   }}
                 >
-                  {/* Circle — position code within, no label above */}
+                  {/* Circle with shirt number or position label */}
                   <div style={{
-                    width: 38,
-                    height: 38,
+                    width: 34,
+                    height: 34,
                     borderRadius: '50%',
                     background: isEmpty
                       ? 'transparent'
@@ -176,20 +175,38 @@ export function PitchLineupView({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: isEmpty ? 9 : 13,
-                    fontWeight: isEmpty ? 700 : 800,
+                    fontSize: isEmpty ? 9 : 12,
+                    fontWeight: 800,
                     color: isEmpty ? 'var(--text-secondary)' : 'var(--bg)',
                     transition: 'background 120ms, border-color 120ms, transform 120ms',
                     transform: isSelected ? 'scale(1.18)' : isTarget ? 'scale(1.05)' : 'scale(1)',
                     boxShadow: isSelected ? '0 0 8px rgba(196,122,58,0.5)' : 'none',
                     fontFamily: 'system-ui, sans-serif',
+                    flexShrink: 0,
                   }}>
                     {player
                       ? (player.shirtNumber != null ? String(player.shirtNumber) : '?')
                       : slot.label.slice(0, 2).toUpperCase()}
                   </div>
 
-                  {/* Names removed — shown in legend below pitch */}
+                  {/* Player name below circle */}
+                  {player && (
+                    <span style={{
+                      fontSize: 8,
+                      fontWeight: 700,
+                      color: 'var(--ink, var(--text-primary))',
+                      textAlign: 'center',
+                      maxWidth: 44,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      pointerEvents: 'none',
+                      lineHeight: 1,
+                      textShadow: '0 0 3px rgba(255,255,255,0.8)',
+                    }}>
+                      {player.lastName.slice(0, 7)}
+                    </span>
+                  )}
                 </div>
               )
             })}

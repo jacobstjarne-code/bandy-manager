@@ -111,7 +111,11 @@ export function MatchScreen() {
       !tacticState.lineupSlots ||
       Object.keys(tacticState.lineupSlots).length === 0 ||
       Object.values(tacticState.lineupSlots).every(v => v == null)
-    if (startingIds.length < 11 || hasInvalid || lineupSlotsEmpty) {
+    const slotPlayerIds = new Set(
+      Object.values(tacticState.lineupSlots ?? {}).filter((v): v is string => v !== null)
+    )
+    const isInconsistent = startingIds.some(id => !slotPlayerIds.has(id))
+    if (startingIds.length < 11 || hasInvalid || lineupSlotsEmpty || isInconsistent) {
       handleAutoFill()
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
