@@ -199,13 +199,6 @@ export function MatchScreen() {
     const formation = tacticState.formation ?? '5-3-2'
     const template = FORMATIONS[formation]
     const newLineupSlots = autoAssignFormation(template, starters)
-    // DEBUG — remove after verification
-    console.log('[handleAutoFill]', {
-      formation,
-      starterCount: starters.length,
-      slotCount: Object.keys(newLineupSlots).length,
-      nonNullSlots: Object.values(newLineupSlots).filter(v => v).length,
-    })
     const newTactic = { ...tacticState, lineupSlots: newLineupSlots }
     setTacticState(newTactic)
     updateTactic(newTactic)

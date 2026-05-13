@@ -82,6 +82,7 @@ export function LineupStep({
   onNext,
 }: LineupStepProps) {
   const [viewMode, setViewMode] = useState<'list' | 'pitch'>('list')
+  const [justFilled, setJustFilled] = useState(false)
 
   // Auto-fill when switching to pitch view with empty lineupSlots (defensive fallback)
   useEffect(() => {
@@ -185,20 +186,25 @@ export function LineupStep({
           {startingIds.length} av 11 placerade
         </span>
         <button
-          onClick={onAutoFill}
+          onClick={() => {
+            onAutoFill()
+            setJustFilled(true)
+            setTimeout(() => setJustFilled(false), 1500)
+          }}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 5,
             padding: '5px 10px',
-            background: 'transparent',
-            border: '1.5px solid var(--accent)',
-            color: 'var(--accent-dark)',
+            background: justFilled ? 'var(--success)' : 'transparent',
+            border: `1.5px solid ${justFilled ? 'var(--success)' : 'var(--accent)'}`,
+            color: justFilled ? 'var(--text-light)' : 'var(--accent-dark)',
             fontSize: 11, fontWeight: 600,
             borderRadius: 8,
             cursor: 'pointer',
+            transition: 'background 0.15s, border-color 0.15s, color 0.15s',
           }}
         >
-          {SPARKLE_SVG}
-          Fyll bästa elvan
+          {justFilled ? '✓' : SPARKLE_SVG}
+          {justFilled ? 'Uppdaterad' : 'Fyll bästa elvan'}
         </button>
       </div>
 
