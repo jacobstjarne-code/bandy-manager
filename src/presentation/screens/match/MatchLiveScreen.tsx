@@ -633,7 +633,7 @@ export function MatchLiveScreen() {
         const capAllows = outcome.type !== 'goal' || interactiveCanScore(s.homeScore, s.awayScore, managedIsHome)
         const newHomeScore = capAllows && outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
         const newAwayScore = capAllows && outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
-        return { ...s, homeScore: newHomeScore, awayScore: newAwayScore,
+        return { ...s, cornerInteractionData: undefined, homeScore: newHomeScore, awayScore: newAwayScore,
           events: [...s.events, event as MatchStep['events'][0]],
           commentary: outcome.description, commentaryType: (capAllows && outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
       })
@@ -650,10 +650,11 @@ export function MatchLiveScreen() {
     }
 
     // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
+    // Commentary mode: timer effect handles advancement after setSteps re-triggers it; skip setCurrentStep here
     setTimeout(() => {
       setActiveCorner(null)
       setCornerOutcome(null)
-      setCurrentStep(prev => prev + 1)
+      if (!isCommentaryMode) setCurrentStep(prev => prev + 1)
     }, isFastForward ? 0 : 2500)
   }
 
@@ -700,7 +701,7 @@ export function MatchLiveScreen() {
         const capAllows = outcome.type !== 'goal' || interactiveCanScore(s.homeScore, s.awayScore, managedIsHome)
         const newHomeScore = capAllows && outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
         const newAwayScore = capAllows && outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
-        return { ...s, homeScore: newHomeScore, awayScore: newAwayScore,
+        return { ...s, penaltyInteractionData: undefined, homeScore: newHomeScore, awayScore: newAwayScore,
           events: [...s.events, event as MatchStep['events'][0]],
           commentary: event.description, commentaryType: (capAllows && outcome.type === 'goal' ? 'goal' : 'critical') as MatchStep['commentaryType'] }
       })
@@ -717,10 +718,11 @@ export function MatchLiveScreen() {
     }
 
     // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
+    // Commentary mode: timer effect handles advancement after setSteps re-triggers it; skip setCurrentStep here
     setTimeout(() => {
       setActivePenalty(null)
       setPenaltyOutcome(null)
-      setCurrentStep(prev => prev + 1)
+      if (!isCommentaryMode) setCurrentStep(prev => prev + 1)
     }, isFastForward ? 0 : 2500)
   }
 
@@ -769,7 +771,7 @@ export function MatchLiveScreen() {
         const capAllows = outcome.type !== 'goal' || interactiveCanScore(s.homeScore, s.awayScore, managedIsHome)
         const newHomeScore = capAllows && outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
         const newAwayScore = capAllows && outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
-        return { ...s, homeScore: newHomeScore, awayScore: newAwayScore,
+        return { ...s, counterInteractionData: undefined, homeScore: newHomeScore, awayScore: newAwayScore,
           events: [...s.events, event as MatchStep['events'][0]],
           commentary: outcome.description, commentaryType: (capAllows && outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
       })
@@ -786,10 +788,11 @@ export function MatchLiveScreen() {
     }
 
     // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
+    // Commentary mode: timer effect handles advancement after setSteps re-triggers it; skip setCurrentStep here
     setTimeout(() => {
       setActiveCounter(null)
       setCounterOutcome(null)
-      setCurrentStep(prev => prev + 1)
+      if (!isCommentaryMode) setCurrentStep(prev => prev + 1)
     }, isFastForward ? 0 : 2500)
   }
 
@@ -837,7 +840,7 @@ export function MatchLiveScreen() {
         const capAllows = outcome.type !== 'goal' || interactiveCanScore(s.homeScore, s.awayScore, managedIsHome)
         const newHomeScore = capAllows && outcome.type === 'goal' && managedIsHome ? s.homeScore + 1 : s.homeScore
         const newAwayScore = capAllows && outcome.type === 'goal' && !managedIsHome ? s.awayScore + 1 : s.awayScore
-        return { ...s, homeScore: newHomeScore, awayScore: newAwayScore,
+        return { ...s, freeKickInteractionData: undefined, homeScore: newHomeScore, awayScore: newAwayScore,
           events: [...s.events, event as MatchStep['events'][0]],
           commentary: outcome.description, commentaryType: (capAllows && outcome.type === 'goal' ? 'goal' : 'situation') as MatchStep['commentaryType'] }
       })
@@ -854,10 +857,11 @@ export function MatchLiveScreen() {
     }
 
     // Steg 5: delay 1500ms so revealed outcome stays visible before next step (FIX-35)
+    // Commentary mode: timer effect handles advancement after setSteps re-triggers it; skip setCurrentStep here
     setTimeout(() => {
       setActiveFreeKick(null)
       setFreeKickOutcome(null)
-      setCurrentStep(prev => prev + 1)
+      if (!isCommentaryMode) setCurrentStep(prev => prev + 1)
     }, isFastForward ? 0 : 2500)
   }
 
