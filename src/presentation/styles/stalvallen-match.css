@@ -85,7 +85,7 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   position: relative;
 }
 .team-col { text-align: center; }
@@ -100,40 +100,25 @@
   margin-bottom: 6px;
   text-shadow: 0 0 4px rgba(255, 80, 60, 0.2);
 }
-.sep-col {
+.clock-block {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 5px;
+  padding: 0 6px;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
 }
-.sep-dot {
-  display: block;
-  width: 6px;
-  height: 6px;
-  background: var(--led-red);
-  border-radius: 50%;
-  box-shadow: 0 0 6px var(--led-red-glow);
-  opacity: 0.55;
-}
-.time-row {
-  display: flex;
-  justify-content: center;
-  align-items: baseline;
-  gap: 10px;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 42, 24, 0.08);
-  position: relative;
+.period-mark {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  color: rgba(255, 200, 180, 0.55);
+  text-shadow: 0 0 4px rgba(255, 80, 60, 0.25);
 }
 .time-mount {
   display: inline-flex;
   align-items: center;
-}
-.period-mark {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 2.5px;
-  color: rgba(255, 200, 180, 0.5);
-  text-shadow: 0 0 4px rgba(255, 80, 60, 0.2);
 }
 
 /* Module 2: Penalty strip */

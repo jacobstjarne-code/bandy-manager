@@ -107,7 +107,7 @@ export function ScoreboardStalvallen({
       {/* Bezel wrap — 5 modules inside */}
       <div className="board-system">
 
-        {/* Module 1: Main score */}
+        {/* Module 1: Main score — V1 layout: klocka mitten */}
         <div className={`module-main${flashSide ? ` score-flash-${flashSide}` : ''}`}>
           <div className="main-row">
             {/* Home */}
@@ -123,9 +123,14 @@ export function ScoreboardStalvallen({
               </span>
             </div>
 
-            {/* Separator dot */}
-            <div className="sep-col">
-              <span className="sep-dot" />
+            {/* Clock block — mitten */}
+            <div className="clock-block">
+              <span className="period-mark">{period}</span>
+              <span className="time-mount">
+                <SevenSegText text={pad2(minute)} size="md" color="var(--led-red)" />
+                <SevenSegColon size="md" color="var(--led-red)" />
+                <SevenSegText text={pad2(second)} size="md" color="var(--led-red)" />
+              </span>
             </div>
 
             {/* Away */}
@@ -140,16 +145,6 @@ export function ScoreboardStalvallen({
                 />
               </span>
             </div>
-          </div>
-
-          {/* Time row */}
-          <div className="time-row">
-            <span className="period-mark">{period}</span>
-            <span className="time-mount">
-              <SevenSegText text={pad2(minute)} size="md" color="var(--led-red)" />
-              <SevenSegColon size="md" color="var(--led-red)" />
-              <SevenSegText text={pad2(second)} size="md" color="var(--led-red)" />
-            </span>
           </div>
         </div>
 
