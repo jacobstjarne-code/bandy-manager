@@ -1232,3 +1232,46 @@
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(196, 122, 58, 0.3);
 }
+
+/* FIX-48 — Feed end row */
+.feed-end-row {
+  padding: 16px;
+  background: linear-gradient(180deg, var(--paper-warm), var(--paper-cream, #FBF7F0));
+  border-bottom: 2px solid var(--copper-deep);
+  color: var(--ink);
+}
+.feed-end-row .end-head {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px;
+}
+.feed-end-row .ft-pill {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px;
+  padding: 2px 7px;
+  background: var(--bg-dark, #0E0D0B); color: var(--paper-warm);
+  border-radius: 2px;
+}
+.feed-end-row .end-meta {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.5px;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+}
+.feed-end-row .end-score {
+  font-family: var(--font-display); font-size: 17px; line-height: 1.3;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.feed-end-row .end-score strong { font-weight: 600; }
+.feed-end-row .end-summary {
+  font-family: var(--font-display); font-size: 13.5px; line-height: 1.6;
+  color: var(--ink-soft);
+  margin-bottom: 12px;
+}
+.feed-end-row .end-cta {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--font-body); font-size: 12px; font-weight: 600;
+  padding: 7px 12px;
+  background: var(--copper); color: var(--paper-warm);
+  border-radius: 4px; border: none; cursor: pointer;
+  letter-spacing: 0.3px;
+}
+.feed-end-row .end-cta:hover { background: var(--copper-deep); }

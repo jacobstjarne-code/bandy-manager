@@ -23,6 +23,35 @@ export type FeedRow =
 interface CommentaryFeedStalvallenProps {
   rows: FeedRow[]
   autoScroll?: boolean
+  // FIX-48
+  matchDone?: boolean
+  endResult?: string       // "Forsbacka 9 — 8 Skutskär"
+  endSummary?: string      // 1-2 meningar
+  endArenaMeta?: string    // "SCHAKTVALLEN · OMG. 2"
+  onSeeSummary?: () => void
+}
+
+interface FeedEndRowProps {
+  result: string
+  summary: string
+  arenaMeta: string
+  onSeeSummary: () => void
+}
+
+function FeedEndRow({ result, summary, arenaMeta, onSeeSummary }: FeedEndRowProps) {
+  return (
+    <div className="feed-end-row">
+      <div className="end-head">
+        <span className="ft-pill">SLUT</span>
+        <span className="end-meta">{arenaMeta}</span>
+      </div>
+      <div className="end-score"><strong>{result}</strong></div>
+      <div className="end-summary">{summary}</div>
+      <button className="end-cta" onClick={onSeeSummary}>
+        Se sammanfattning →
+      </button>
+    </div>
+  )
 }
 
 interface TagStyle {
@@ -55,7 +84,7 @@ function Tag({ type }: { type: TagType }) {
   )
 }
 
-export function CommentaryFeedStalvallen({ rows, autoScroll = true }: CommentaryFeedStalvallenProps) {
+export function CommentaryFeedStalvallen({ rows, autoScroll = true, matchDone, endResult, endSummary, endArenaMeta, onSeeSummary }: CommentaryFeedStalvallenProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const prevLength = useRef(rows.length)
 
@@ -76,6 +105,16 @@ export function CommentaryFeedStalvallen({ rows, autoScroll = true }: Commentary
           SCROLL ↑
         </span>
       </div>
+
+      {/* FIX-48: Slut-rad — FÖRSTA i feeden */}
+      {matchDone && endResult && onSeeSummary && (
+        <FeedEndRow
+          result={endResult}
+          summary={endSummary ?? 'Matchen är slut.'}
+          arenaMeta={endArenaMeta ?? ''}
+          onSeeSummary={onSeeSummary}
+        />
+      )}
 
       {rows.map((row, i) => {
         if (row.kind === 'atmosphere') {

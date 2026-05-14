@@ -47,11 +47,12 @@ import { FreeKickInteraction } from '../../components/match/FreeKickInteraction'
 import type { PressChoice } from '../../../domain/services/lastMinutePressService'
 import { LastMinutePress } from '../../components/match/LastMinutePress'
 import { TacticChangeModal } from '../../components/match/TacticChangeModal'
-import { MatchReportView } from '../../components/match/MatchReportView'
 import { mulberry32 } from '../../../domain/utils/random'
 import { FirstVisitHint } from '../../components/FirstVisitHint'
 import { simulateMatchStepByStep } from '../../../domain/services/matchSimulator'
 import { matchReducer, initialMatchState } from './matchReducer'
+import { generateMatchStory } from '../../../domain/utils/matchStory'
+import { formatArenaName } from '../../../domain/utils/arenaName'
 
 interface LocationState {
   fixture: Fixture
@@ -1251,6 +1252,25 @@ export function MatchLiveScreen() {
     return parts.length > 0 ? parts : [`${homeShort} ${homeScore} – ${awayScore} ${awayShort}`]
   })()
 
+  // FIX-48: FeedEndRow data
+  const savedFixture = (matchDone && game && fixture)
+    ? game.fixtures.find(f => f.id === fixture.id) ?? fixture
+    : null
+  const endResult = savedFixture
+    ? `${homeClubName} ${savedFixture.homeScore} — ${savedFixture.awayScore} ${awayClubName}`
+    : ''
+  const endSummary = (savedFixture && game)
+    ? generateMatchStory(savedFixture, game)
+    : 'Matchen är slut.'
+  const endArenaMeta = (() => {
+    if (!savedFixture) return ''
+    const homeClubForArena = game?.clubs.find(c => c.id === savedFixture.homeClubId)
+    const arenaRaw = homeClubForArena?.arenaName ?? ''
+    const arena = arenaRaw ? formatArenaName(arenaRaw).toUpperCase() : ''
+    const omg = savedFixture.roundNumber <= 22 ? ` · OMG. ${savedFixture.roundNumber}` : ''
+    return `${arena}${omg}`
+  })()
+
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', height: '100%',
@@ -1375,21 +1395,12 @@ export function MatchLiveScreen() {
       <CommentaryFeedStalvallen
         rows={feedRows}
         autoScroll={true}
+        matchDone={matchDone && !isSmFinal && !isCupFinal}
+        endResult={endResult}
+        endSummary={endSummary}
+        endArenaMeta={endArenaMeta}
+        onSeeSummary={() => navigate('/game/review', { replace: true })}
       />
-
-      {/* Match done — full report overlay (FIX-33) */}
-      {matchDone && !isSmFinal && !isCupFinal && game && fixture && (() => {
-        const savedFixture = game.fixtures.find(f => f.id === fixture.id) ?? fixture
-        return savedFixture.report ? (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 10, overflowY: 'auto', background: 'var(--bg-leather, #2a2824)' }}>
-            <MatchReportView
-              fixture={savedFixture}
-              game={game}
-              onClose={() => navigate('/game/review', { replace: true })}
-            />
-          </div>
-        ) : null
-      })()}
 
       {showHalftime && !matchDone && (
         <HalftimeModal
