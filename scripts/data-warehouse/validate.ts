@@ -261,7 +261,11 @@ function main() {
   const homeWinRow = db.prepare(`
     SELECT AVG(CASE WHEN result_outcome = 'home_win' THEN 1.0 ELSE 0.0 END) as rate FROM matches
   `).get() as { rate: number }
-  results.push(numCheck('Hemmavinst-rate', (homeWinRow.rate ?? 0) * 100, 50.2, 10.0, '%'))
+  const homeWinRate = homeWinRow.rate ?? 0
+  results.push(numCheck('Hemmavinst-rate', homeWinRate * 100, 50.2, 10.0, '%'))
+  if (Math.abs(homeWinRate - 0.502) > 0.05) {
+    console.warn(`  ⚠  Hemmavinst-rate drift > 5pp: ${(homeWinRate * 100).toFixed(1)}% (target 50.2%)`)
+  }
 
   // 9. Avg corners per match (bandy range: typically 15-25 total)
   const avgCornersRow = db.prepare('SELECT AVG(home_corners + away_corners) as avg FROM matches').get() as { avg: number }
@@ -270,6 +274,67 @@ function main() {
     'Hörnor per match (rimligt band)',
     avgCorners >= 5 && avgCorners <= 40,
     `${avgCorners.toFixed(1)} hörnor/match (förväntat: 5-40)`,
+  ))
+
+  // 11. VMR — variance-to-mean ratio (Fynd 4-skydd, band 1.20–1.45)
+  const goalsArr = (db.prepare('SELECT home_goals + away_goals as total FROM matches WHERE sampling_bucket = \'realistic\'').all() as Array<{ total: number }>).map(r => r.total)
+  const goalsMean = goalsArr.reduce((a, b) => a + b, 0) / goalsArr.length
+  const goalsVar  = goalsArr.reduce((a, b) => a + (b - goalsMean) ** 2, 0) / goalsArr.length
+  const vmr = goalsVar / goalsMean
+  results.push(check(
+    'VMR (realistisk bucket)',
+    vmr >= 1.20 && vmr <= 1.45,
+    `VMR=${vmr.toFixed(3)} (band 1.20–1.45)`,
+  ))
+
+  // 12. −2-bucket AW% (Fynd 3-skydd, band 83–95%)
+  // HT-diff rekonstrueras från match_periods (period=1)
+  const minus2Row = db.prepare(`
+    SELECT
+      COUNT(*) as n,
+      SUM(CASE WHEN m.result_outcome = 'away_win' THEN 1 ELSE 0 END) as aw
+    FROM matches m
+    JOIN match_periods p ON p.match_id = m.match_id AND p.period = 1
+    WHERE m.sampling_bucket = 'realistic'
+      AND (p.away_goals - p.home_goals) = 2
+  `).get() as { n: number; aw: number } | undefined
+  if (minus2Row && minus2Row.n >= 10) {
+    const awRate = minus2Row.aw / minus2Row.n
+    results.push(check(
+      '−2 HT-bucket AW%',
+      awRate >= 0.83 && awRate <= 0.95,
+      `${(awRate * 100).toFixed(1)}% (n=${minus2Row.n}, band 83–95%)`,
+    ))
+  } else {
+    results.push(check('−2 HT-bucket AW%', true, `n=${minus2Row?.n ?? 0} — för få matcher, kontroll hoppad`))
+  }
+
+  // 13. CornerStrategy-spridning via match_events (Fynd 1/Fix B-regression)
+  // corner_goals = goal-events med is_corner_goal=1, corners = alla corner-event (inkl mål)
+  const cornerStratRows = db.prepare(`
+    SELECT
+      CASE WHEN e.team = 'home' THEN m.home_corner_strategy ELSE m.away_corner_strategy END AS strategy,
+      SUM(CASE WHEN e.event_type = 'goal' AND e.is_corner_goal = 1 THEN 1 ELSE 0 END) AS goals,
+      SUM(CASE WHEN e.event_type = 'corner' THEN 1 ELSE 0 END) AS corners
+    FROM match_events e
+    JOIN matches m ON m.match_id = e.match_id
+    WHERE m.sampling_bucket IN ('realistic', 'varied')
+    GROUP BY strategy
+  `).all() as Array<{ strategy: string; goals: number; corners: number }>
+
+  const stratMap: Record<string, { goals: number; corners: number }> = {}
+  for (const r of cornerStratRows) {
+    if (!stratMap[r.strategy]) stratMap[r.strategy] = { goals: 0, corners: 0 }
+    stratMap[r.strategy].goals   += r.goals
+    stratMap[r.strategy].corners += r.corners
+  }
+  const aggConv  = stratMap['aggressive'] ? stratMap['aggressive'].goals  / stratMap['aggressive'].corners  : 0
+  const safeConv = stratMap['safe']       ? stratMap['safe'].goals        / stratMap['safe'].corners        : 0
+  const spread   = aggConv - safeConv
+  results.push(check(
+    'CornerStrategy spridning (agg−safe)',
+    spread >= 0.02,
+    `${(spread * 100).toFixed(2)} pp (agg ${(aggConv * 100).toFixed(2)}%, safe ${(safeConv * 100).toFixed(2)}%, krav ≥ 2 pp)`,
   ))
 
   // 10. Reproducibility: pick 5 matches and re-simulate

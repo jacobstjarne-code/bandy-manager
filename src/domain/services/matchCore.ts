@@ -55,7 +55,7 @@ export function getGoalScorerWeight(
 // Bumpa vid varje förändring som påverkar simuleringsutfall.
 // Schema-kompatibla ändringar (utan utfallspåverkan) bumpar patch.
 // Mekaniska förändringar bumpar minor. Kalibreringsförändringar bumpar major.
-export const ENGINE_VERSION = '1.1.0'
+export const ENGINE_VERSION = '1.2.0'
 // PENALTY_CAUSE_COMMENTARY — shown as step commentary when interactive penalty is triggered
 const PENALTY_CAUSE_COMMENTARY: Array<(attacker: string) => string> = [
   (a) => `Straff! ${a} fälls i straffområdet — domaren tvekar inte.`,
@@ -137,9 +137,10 @@ export function pickMatchProfileFromSeed(
     largeCaDiff?: boolean     // CA difference >= 15
   } = {},
 ): MatchProfile {
-  // Cheap hash — keeps the rand sequence unaffected
+  // Cheap hash — keeps the rand sequence unaffected. Uses all 32 bits for uniformity
+  // (lower 16 bits had mild bias with evenly-spaced warehouse seeds, Fynd 4-fix).
   const h = (((seed ^ (seed >>> 16)) * 0x45d9f3b) ^ ((seed * 0x9e3779b9) >>> 0)) >>> 0
-  const r = (h & 0xffff) / 65535
+  const r = h / 4294967295
 
   let wDefensive = 20
   let wStandard  = 55
@@ -710,17 +711,21 @@ function* simulateMatchCore(
     let awayModeAttackMult = 1.0
     let homeModeFoulMult   = 1.0
     let awayModeFoulMult   = 1.0
+    let homeModeCornerMult = 1.0
+    let awayModeCornerMult = 1.0
 
     if (step >= 30) {
       const homeMode = getSecondHalfMode(homeScore, awayScore, step, matchPhase)
       const awayMode = getSecondHalfMode(awayScore, homeScore, step, matchPhase)
 
-      const applyMode = (mode: SecondHalfMode, td: number): { attack: number; foul: number } => {
-        if (mode === 'chasing')     return { attack: 1.22, foul: 1.25 }
-        if (mode === 'controlling') return { attack: 0.88, foul: 1.0 + (1.0 - td) * 0.25 }
-        if (mode === 'even_battle') return { attack: step >= 50 ? 1.04 : 1.0, foul: 1.10 }
-        // cruise
-        return { attack: 0.92, foul: 1.0 }
+      const applyMode = (mode: SecondHalfMode, td: number): { attack: number; foul: number; corner: number } => {
+        if (mode === 'chasing')     return { attack: 1.22, foul: 1.25, corner: 1.0 }
+        if (mode === 'controlling') return { attack: 0.88, foul: 1.0 + (1.0 - td) * 0.25, corner: 1.0 }
+        if (mode === 'even_battle') return { attack: step >= 50 ? 1.04 : 1.0, foul: 1.10, corner: 1.0 }
+        // cruise — 0.92→0.86 (Fynd 3-fix, bästa av 3 iter), corner 0.90 (Fynd 3 B)
+        // AW% i −2 HT-bucket: 78.6% (target 83–95%) — partiellt löst.
+        // Rotorsak kvarstår i 'controlling'-mode och SECOND_HALF_BOOST, inte cruise.
+        return { attack: 0.86, foul: 1.0, corner: 0.90 }
       }
 
       const homeModeFx = applyMode(homeMode, homeTacticalDiscipline)
@@ -730,6 +735,8 @@ function* simulateMatchCore(
       awayModeAttackMult = awayModeFx.attack
       homeModeFoulMult   = homeModeFx.foul
       awayModeFoulMult   = awayModeFx.foul
+      homeModeCornerMult = homeModeFx.corner
+      awayModeCornerMult = awayModeFx.corner
     }
 
     // Global second-half boost — only in second half (emitFullTime = true), not overtime
@@ -1002,11 +1009,12 @@ function* simulateMatchCore(
         const cornerConversionMod = attackingCornerStrategy === CornerStrategy.Aggressive ? 1.15
           : attackingCornerStrategy === CornerStrategy.Safe ? 0.88
           : 1.0
+        const modeCornerMult = isHomeAttacking ? homeModeCornerMult : awayModeCornerMult
         const goalThreshold = clamp(
           (cornerChance - defenseResist) * 0.30 * stepGoalMod * cornerStateMod + cornerBase,
           cornerClampMin,
           cornerClampMax,
-        ) * GOAL_RATE_MOD * cornerConversionMod
+        ) * GOAL_RATE_MOD * cornerConversionMod * modeCornerMult
 
         const r = rand()
         if (r < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {
