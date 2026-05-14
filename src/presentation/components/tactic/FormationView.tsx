@@ -4,7 +4,6 @@ import type { Player } from '../../../domain/entities/Player'
 import type { FormationType } from '../../../domain/entities/Formation'
 import { FORMATIONS, autoAssignFormation, getRecommendedFormation, FORMATION_META } from '../../../domain/entities/Formation'
 import type { Tactic } from '../../../domain/entities/Club'
-import { PlayerPosition } from '../../../domain/enums'
 import { PlayerDot } from './PlayerDot'
 
 interface FormationViewProps {
@@ -48,7 +47,17 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
 
   const formation = tactic.formation ?? '5-3-2'
   const template = FORMATIONS[formation]
-  const lineupSlots = tactic.lineupSlots ?? autoAssignFormation(template, players)
+  const rawLineupSlots = tactic.lineupSlots ?? autoAssignFormation(template, players)
+  // Null out slots for unavailable players (injured / suspended)
+  const lineupSlots: Record<string, string | null> = {}
+  for (const [slotId, playerId] of Object.entries(rawLineupSlots)) {
+    if (!playerId) { lineupSlots[slotId] = null; continue }
+    const player = players.find(p => p.id === playerId)
+    if (!player || player.isInjured || player.suspensionGamesRemaining > 0) {
+      lineupSlots[slotId] = null; continue
+    }
+    lineupSlots[slotId] = playerId
+  }
   const recommended = getRecommendedFormation(players)
 
   // Starters: players currently in slots
@@ -57,20 +66,29 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
 
   function handleAutoFill() {
     const available = players.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)
-    const sorted = [...available].sort((a, b) => b.currentAbility - a.currentAbility)
-    const gkPool = sorted.filter(p => p.position === PlayerPosition.Goalkeeper)
-    const outfieldPool = sorted.filter(p => p.position !== PlayerPosition.Goalkeeper)
-    const starters: Player[] = gkPool.length > 0 ? [gkPool[0]] : []
-    for (const p of outfieldPool) {
-      if (starters.length >= 11) break
-      starters.push(p)
+    const placedIds = new Set(Object.values(lineupSlots).filter(Boolean) as string[])
+    const sorted = [...available]
+      .filter(p => !placedIds.has(p.id))
+      .sort((a, b) => b.currentAbility - a.currentAbility)
+
+    const newLineupSlots = { ...lineupSlots }
+    const emptySlots = template.slots.filter(s => !newLineupSlots[s.id])
+
+    // Try to fill empty slots with position-matched players first
+    for (const slot of emptySlots) {
+      const matchIdx = sorted.findIndex(p => p.position === slot.position)
+      if (matchIdx >= 0) {
+        newLineupSlots[slot.id] = sorted[matchIdx].id
+        sorted.splice(matchIdx, 1)
+        continue
+      }
+      // Fallback: any available player
+      if (sorted.length > 0) {
+        newLineupSlots[slot.id] = sorted[0].id
+        sorted.shift()
+      }
     }
-    for (const p of gkPool.slice(1)) {
-      if (starters.length >= 11) break
-      starters.push(p)
-    }
-    const newTemplate = FORMATIONS[formation]
-    const newLineupSlots = autoAssignFormation(newTemplate, starters)
+
     onChange({ ...tactic, lineupSlots: newLineupSlots })
     setSelectedSlotId(null)
   }

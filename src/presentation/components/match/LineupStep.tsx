@@ -84,13 +84,15 @@ export function LineupStep({
   const [viewMode, setViewMode] = useState<'list' | 'pitch'>('list')
   const [justFilled, setJustFilled] = useState(false)
 
-  // Auto-fill when switching to pitch view with empty lineupSlots (defensive fallback)
+  // Auto-fill when switching to pitch view with no lineupSlots at all (defensive fallback).
+  // IMPORTANT: Only triggers when lineupSlots is undefined or has zero keys.
+  // If keys exist but values are null (FIX-50: injured players cleared), do NOT auto-fill —
+  // those nulls are intentional empty slots waiting for the user to fill.
   useEffect(() => {
     if (viewMode !== 'pitch') return
     const slotsEmpty =
       !tacticState.lineupSlots ||
-      Object.keys(tacticState.lineupSlots).length === 0 ||
-      Object.values(tacticState.lineupSlots).every(v => v == null)
+      Object.keys(tacticState.lineupSlots).length === 0
     if (slotsEmpty && startingIds.length === 11) {
       onAutoFill()
     }

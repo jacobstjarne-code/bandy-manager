@@ -152,7 +152,7 @@ export function PitchLineupView({
                     gap: 2,
                     cursor: 'pointer',
                     pointerEvents: 'auto',
-                    animation: isEmpty && selection !== null
+                    animation: isEmpty
                       ? 'pitchSlotPulse 1.2s ease-in-out infinite'
                       : 'none',
                   }}

@@ -227,7 +227,7 @@ export function generateAbsurdityArticles(
       id: `media_absurdity_cr_${scandal.id}`,
       date: game.currentDate,
       type: InboxItemType.Scandal,
-      title: 'Kafferummet',
+      title: 'Kafeterian',
       body: cafeBody,
       isRead: false,
     })

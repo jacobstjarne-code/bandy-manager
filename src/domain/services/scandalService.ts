@@ -472,7 +472,7 @@ export function applyScandalEffect(
       id: `${scandal.id}_cr`,
       date: game.currentDate,
       type: InboxItemType.Scandal,
-      title: 'Kafferummet',
+      title: 'Kafeterian',
       body: quote,
       isRead: false,
       relatedClubId: scandal.affectedClubId,
