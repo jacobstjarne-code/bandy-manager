@@ -1,7 +1,28 @@
 # BANDY MANAGER — KVAR
 
-**Datum:** 2026-05-08
+**Datum:** 2026-05-14
 **Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DECISIONS.md/DESIGN_SYSTEM.md är lästa.
+
+---
+
+## AKTUELLT LÄGE (2026-05-14) — VÄNTAR PLAYTEST
+
+**Playtest-fixar + FIX-47/48/49/50:** 🔄 KOD KLAR — väntar browser-playtest av Jacob.
+
+| Fix | Innehåll | Commit | Status |
+|-----|----------|--------|--------|
+| Commentary kaskad | interactionData rensas i setSteps, skippar setCurrentStep i commentary-mode | `37f7e8f` | 🔄 |
+| FIX-47 | Scoreboard V1 — klocka mitten (1fr auto 1fr grid) | `f78eaad` | 🔄 |
+| FIX-48 | Slutskärm inline — revert FIX-33 overlay, FeedEndRow i feed | `7d6b9d4` | 🔄 |
+| Scoreboard minuter | Bara minuter visas (ej MM:SS) | `fad3c17` | 🔄 |
+| FIX-49 + kontrast | Timers +2s, 8 CSS-kontrast-höjningar, PitchLineupView cirklar synliga | `ab5df7e` | 🔄 |
+| Kafeterian | "Kafferummet" → "Kafeterian" i 4 filer | `ab5df7e` | 🔄 |
+| FIX-50 | Lineup default = förra matchens elva, fyll bara tomma slots | `aee4aa4` | 🔄 |
+
+**Kvarstår:**
+- Browser-playtest av ovanstående
+- Granska-vyn: events-lista, spelarbetyg, POTM, hörn-band (FIX-48 noterar att det hör dit)
+- BATCH E (press/media-separation) — parkerad, väntar beslut om integration-yta
 
 ---
 

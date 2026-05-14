@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Scoreboard v2 — klocka bredvid mål</title>
+<style>
+  :root {
+    --bg-leather:    #2a2824;
+    --bg-leather-dk: #1d1b18;
+    --paper-warm:    #F5F1EB;
+    --copper:        #C47A3A;
+    --copper-deep:   #A25828;
+    --steel:         #6B7F8E;
+    --ink:           #1A1A18;
+    --ink-mute:      #8A857A;
+    --panel:         #0A0908;
+    --panel-edge:    #050402;
+    --bezel-top:     #3a3632;
+    --bezel-mid:     #2a2622;
+    --bezel-bot:     #15130f;
+    --led-red:       #FF2A18;
+    --led-red-dim:   rgba(255, 42, 24, 0.07);
+    --led-red-glow:  rgba(255, 42, 24, 0.55);
+    --led-amber:     #FFAA00;
+    --led-amber-glow:rgba(255, 170, 0, 0.55);
+    --font-display: Georgia, 'Times New Roman', serif;
+    --font-mono:    ui-monospace, 'Courier New', monospace;
+    --font-body:    -apple-system, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-family: var(--font-body); color: var(--paper-warm); }
+  body { background: var(--bg-leather); padding: 32px 16px 80px; min-height: 100vh; }
+
+  .page-head { max-width: 1280px; margin: 0 auto 32px; }
+  .page-head h1 { font-family: var(--font-display); font-size: 24px; margin-bottom: 8px; }
+  .page-head p { font-size: 13px; color: rgba(245, 241, 235, 0.7); line-height: 1.6; max-width: 760px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 32px;
+    max-width: 1680px; margin: 0 auto;
+    align-items: start;
+  }
+
+  .col { width: 100%; max-width: 420px; justify-self: center; }
+  .col-head {
+    padding: 12px 16px;
+    background: var(--bg-leather-dk);
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-family: var(--font-display);
+    font-size: 14px;
+  }
+  .col-head .num {
+    display: inline-block;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px;
+    color: var(--copper);
+    background: rgba(196,122,58,0.1);
+    padding: 2px 6px; border-radius: 2px;
+    margin-right: 8px; vertical-align: 2px;
+  }
+  .col-head .sub {
+    display: block; font-family: var(--font-body); font-size: 11px;
+    color: rgba(245,241,235,0.6); margin-top: 4px; line-height: 1.5;
+  }
+
+  .stage { background: var(--bg-leather-dk); padding: 16px; border-radius: 0 0 8px 8px; }
+
+  .board-system {
+    background: linear-gradient(180deg, var(--bezel-top), var(--bezel-mid) 60%, var(--bezel-bot));
+    border-radius: 4px; padding: 1px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset, 0 -1px 0 rgba(0,0,0,0.6) inset, 0 4px 12px rgba(0,0,0,0.5);
+  }
+
+  .module-main { background: var(--panel); padding: 14px 16px; position: relative; box-shadow: inset 0 0 0 1px var(--panel-edge); }
+  .module-main::before { content: ''; position: absolute; inset: 0; pointer-events: none; background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.018) 0 1px, transparent 1px 3px); }
+
+  /* V1 — Klocka MITTEN */
+  .v1 .main-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; position: relative; }
+  .v1 .team-col { text-align: center; }
+  .v1 .team-col.home { text-align: right; }
+  .v1 .team-col.away { text-align: left; }
+  .v1 .team-code { display: block; font-family: var(--font-mono); font-size: 9px; letter-spacing: 3px; color: rgba(255, 200, 180, 0.45); margin-bottom: 6px; text-shadow: 0 0 4px rgba(255, 80, 60, 0.2); }
+  .v1 .clock-block { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 0 6px; border-left: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); }
+  .v1 .period-mark { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2.5px; color: rgba(255, 200, 180, 0.55); text-shadow: 0 0 4px rgba(255, 80, 60, 0.25); }
+  .v1 .time-mount { display: inline-flex; }
+
+  /* V2 — Score VÄNSTER, klocka HÖGER */
+  .v2 .main-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; }
+  .v2 .score-block { display: flex; align-items: center; gap: 8px; }
+  .v2 .team-mini { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .v2 .team-code { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2.5px; color: rgba(255, 200, 180, 0.45); }
+  .v2 .sep-dot { width: 5px; height: 5px; background: var(--led-red); border-radius: 50%; box-shadow: 0 0 5px var(--led-red-glow); opacity: 0.6; }
+  .v2 .center-gap { border-top: 1px dashed rgba(255,255,255,0.06); }
+  .v2 .clock-block { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .v2 .period-mark { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2.5px; color: rgba(255, 200, 180, 0.55); text-shadow: 0 0 4px rgba(255, 80, 60, 0.25); }
+  .v2 .time-mount { display: inline-flex; }
+
+  /* V3 — Sammanflätat */
+  .v3 .main-row { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: nowrap; }
+  .v3 .period-mark { font-family: var(--font-mono); font-size: 11px; letter-spacing: 2.5px; color: rgba(255, 200, 180, 0.65); text-shadow: 0 0 4px rgba(255, 80, 60, 0.3); padding: 4px 7px; background: rgba(255, 42, 24, 0.05); border: 1px solid rgba(255, 42, 24, 0.15); border-radius: 2px; }
+  .v3 .score-strip { display: flex; align-items: center; gap: 9px; }
+  .v3 .team-code { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2.5px; color: rgba(255, 200, 180, 0.5); }
+  .v3 .sep-dot { width: 5px; height: 5px; background: var(--led-red); border-radius: 50%; box-shadow: 0 0 5px var(--led-red-glow); opacity: 0.6; }
+  .v3 .time-block { display: flex; align-items: center; gap: 5px; padding-left: 12px; border-left: 1px solid rgba(255,255,255,0.08); }
+  .v3 .minute-mount { display: inline-flex; }
+  .v3 .min-suffix { font-family: var(--font-mono); font-size: 11px; color: rgba(255, 170, 0, 0.55); margin-left: 1px; }
+
+  /* 7-segment */
+  .seg { --w: 18px; --h: 30px; --t: 4px; --gap: 1px; --on: var(--led-red); --on-glow: var(--led-red-glow); --off: var(--led-red-dim); display: inline-block; position: relative; width: var(--w); height: var(--h); margin: 0 1px; }
+  .seg.lg { --w: 27px; --h: 45px; --t: 5.4px; }
+  .seg.md { --w: 18px; --h: 30px; --t: 4px; }
+  .seg.sm { --w: 14px; --h: 24px; --t: 3.2px; }
+  .seg.amber { --on: var(--led-amber); --on-glow: var(--led-amber-glow); }
+  .seg .s { position: absolute; background: var(--off); transition: background 0.4s, box-shadow 0.4s; }
+  .seg .s.on { background: var(--on); box-shadow: 0 0 calc(var(--t) * 1.5) var(--on-glow); }
+  .seg .s.a, .seg .s.g, .seg .s.d { height: var(--t); left: var(--gap); right: var(--gap); clip-path: polygon(var(--t) 0, calc(100% - var(--t)) 0, 100% 50%, calc(100% - var(--t)) 100%, var(--t) 100%, 0 50%); }
+  .seg .s.a { top: 0; }
+  .seg .s.g { top: calc(50% - var(--t) / 2); }
+  .seg .s.d { bottom: 0; }
+  .seg .s.b, .seg .s.c, .seg .s.e, .seg .s.f { width: var(--t); top: var(--gap); bottom: var(--gap); clip-path: polygon(0 var(--t), 50% 0, 100% var(--t), 100% calc(100% - var(--t)), 50% 100%, 0 calc(100% - var(--t))); }
+  .seg .s.b { right: 0; bottom: 50%; top: var(--gap); }
+  .seg .s.c { right: 0; top: 50%; bottom: var(--gap); }
+  .seg .s.e { left: 0; top: 50%; bottom: var(--gap); }
+  .seg .s.f { left: 0; bottom: 50%; top: var(--gap); }
+  .seg.colon { --w: 8px; background: transparent; }
+  .seg.colon::before, .seg.colon::after { content: ''; position: absolute; left: 50%; transform: translateX(-50%); width: var(--t); height: var(--t); background: var(--on); border-radius: 50%; box-shadow: 0 0 calc(var(--t) * 1.5) var(--on-glow); }
+  .seg.colon::before { top: 30%; }
+  .seg.colon::after { bottom: 30%; }
+
+  .height-tag { display: inline-block; margin-top: 12px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px; color: var(--copper); background: rgba(196,122,58,0.08); padding: 4px 8px; border-radius: 2px; }
+
+  .notes { max-width: 1280px; margin: 40px auto 0; padding: 24px; background: rgba(245,241,235,0.04); border-radius: 8px; color: rgba(245,241,235,0.85); line-height: 1.65; font-size: 13px; }
+  .notes h3 { font-family: var(--font-display); font-size: 16px; margin-bottom: 12px; color: var(--paper-warm); }
+  .notes p { margin-bottom: 10px; }
+  .notes p strong { color: var(--copper); font-weight: 600; }
+  .notes ul { margin: 8px 0 12px 18px; }
+  .notes li { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Scoreboard v2 — klocka och mål bredvid varandra</h1>
+  <p>Tre layout-alternativ för module-main. Idag är klocka stackad UNDER score — vertikal höjd ~110px för score-row + time-row. Genom att lägga dem bredvid varandra sparas ~30-55px höjd.</p>
+  <p>Stålvallen-vokabulär bibehållen: läder-bezel, LED 7-segment, monospace period-mark, koppar-kant. Bara module-main:s interna layout ändras.</p>
+</div>
+
+<div class="grid">
+
+  <div class="col">
+    <div class="col-head">
+      <span class="num">V1</span>KLOCKA MITTEN
+      <span class="sub">Klassisk scoreboard-stil. Hemmalag vänster, klocka i mitten (period-mark över, klocka under), bortalag höger.</span>
+    </div>
+    <div class="stage">
+      <div class="board-system">
+        <div class="module-main v1">
+          <div class="main-row">
+            <div class="team-col home">
+              <span class="team-code">FOR</span>
+              <span class="team-score-mount" data-score="2" data-size="lg"></span>
+            </div>
+            <div class="clock-block">
+              <span class="period-mark">HL2</span>
+              <span class="time-mount" data-time="47" data-size="md"></span>
+            </div>
+            <div class="team-col away">
+              <span class="team-code">SÖD</span>
+              <span class="team-score-mount" data-score="0" data-size="lg"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <span class="height-tag">Höjd ~75px · besparing ~35px</span>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="col-head">
+      <span class="num">V2</span>SCORE VÄNSTER, KLOCKA HÖGER
+      <span class="sub">Score samlat till vänster (FOR 2 · 0 SÖD), klockan separerad till höger. Info-modul-känsla, mindre symmetrisk.</span>
+    </div>
+    <div class="stage">
+      <div class="board-system">
+        <div class="module-main v2">
+          <div class="main-row">
+            <div class="score-block">
+              <div class="team-mini">
+                <span class="team-code">FOR</span>
+                <span class="team-score-mount" data-score="2" data-size="lg"></span>
+              </div>
+              <span class="sep-dot"></span>
+              <div class="team-mini">
+                <span class="team-code">SÖD</span>
+                <span class="team-score-mount" data-score="0" data-size="lg"></span>
+              </div>
+            </div>
+            <div class="center-gap"></div>
+            <div class="clock-block">
+              <span class="period-mark">HL2</span>
+              <span class="time-mount" data-time="47" data-size="md"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <span class="height-tag">Höjd ~70px · besparing ~40px</span>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="col-head">
+      <span class="num">V3</span>SAMMANFLÄTAT
+      <span class="sub">Allt på en rad: period-tag · FOR 2 · SÖD 0 · klocka. Klocka i amber LED för läsbarhet. Mest kompakt.</span>
+    </div>
+    <div class="stage">
+      <div class="board-system">
+        <div class="module-main v3">
+          <div class="main-row">
+            <span class="period-mark">HL2</span>
+            <div class="score-strip">
+              <span class="team-code">FOR</span>
+              <span class="team-score-mount" data-score="2" data-size="md"></span>
+              <span class="sep-dot"></span>
+              <span class="team-score-mount" data-score="0" data-size="md"></span>
+              <span class="team-code">SÖD</span>
+            </div>
+            <div class="time-block">
+              <span class="minute-mount amber" data-time="47" data-size="md"></span>
+              <span class="min-suffix">'</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <span class="height-tag">Höjd ~55px · besparing ~55px</span>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="col-head">
+      <span class="num">V0</span>NUVARANDE (REFERENS)
+      <span class="sub">Score stort på toppen, klocka under på separat rad. ~110px höjd. Mest symmetrisk men höjder adderas.</span>
+    </div>
+    <div class="stage">
+      <div class="board-system">
+        <div class="module-main">
+          <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14px;">
+            <div style="text-align: right;">
+              <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 3px; color: rgba(255,200,180,0.45); display: block; margin-bottom: 6px;">FOR</span>
+              <span class="team-score-mount" data-score="2" data-size="lg"></span>
+            </div>
+            <div style="display: flex; align-items: center;">
+              <span style="width: 6px; height: 6px; background: var(--led-red); border-radius: 50%; box-shadow: 0 0 6px var(--led-red-glow); opacity: 0.55;"></span>
+            </div>
+            <div style="text-align: left;">
+              <span style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 3px; color: rgba(255,200,180,0.45); display: block; margin-bottom: 6px;">SÖD</span>
+              <span class="team-score-mount" data-score="0" data-size="lg"></span>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: center; align-items: baseline; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255, 42, 24, 0.08);">
+            <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 2.5px; color: rgba(255,200,180,0.5);">HL2</span>
+            <span class="time-mount" data-time="47" data-size="md"></span>
+          </div>
+        </div>
+      </div>
+      <span class="height-tag" style="color: var(--ink-mute); background: rgba(255,255,255,0.04);">Höjd ~110px · referens</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>Trade-offs</h3>
+  <p><strong>V1 (klocka mitten)</strong> är den layout man känner igen från fysiska scoreboards. Klocka i centrum signalerar matchtid som huvudobjekt. Lagens scores är symmetriska på sidorna, klockan markerar mitten med vertikala border-pinnar. Mest "scoreboard" av varianterna.</p>
+  <p><strong>V2 (score vänster, klocka höger)</strong> är mer info-modul-orienterad. Score blockas samman till vänster, klockan separeras med en vertikal border till höger. Sparar mest höjd om kompakt-density är prioritet, men tappar symmetri.</p>
+  <p><strong>V3 (sammanflätat)</strong> komprimerar allt till en horisontal rad. Period blir en tag/badge till vänster, score är medel-storlek (md, inte lg), klockan är amber LED till höger. Mest kompakt, bäst på små skärmar — men score:s visuella tyngd minskar.</p>
+  <h3>Min rekommendation</h3>
+  <p><strong>V1.</strong> Klassisk scoreboard-känsla matchar Stålvallen-vokabulären bäst — bandy-känslan kommer från symmetri och centrum-tid. Sparar ~35px utan att tappa hierarki. V2 om kompakt-density är viktigare. V3 om vi vill packa in mer info i samma kort.</p>
+  <h3>Vad som inte ändras</h3>
+  <ul>
+    <li>Module-text (ticker), module-line (tidslinje), module-pen (utvisningar) är OFÖRÄNDRADE under module-main</li>
+    <li>LED-paletten (röd för score, amber för klocka i V3, copper för period-mark) bibehållen</li>
+    <li>7-segment-rendering (lg/md/sm) oförändrad — bara size-class ändras per variant</li>
+    <li>Scanlines, läder-bezel, koppar-kant intakta</li>
+  </ul>
+</div>
+
+<script>
+const SEG_MAP = {
+  '0': 'abcdef', '1': 'bc', '2': 'abged', '3': 'abgcd', '4': 'fgbc',
+  '5': 'afgcd', '6': 'afgcde', '7': 'abc', '8': 'abcdefg', '9': 'abcdfg',
+};
+function renderDigit(char, sizeClass = '') {
+  if (char === ':') {
+    const c = document.createElement('span');
+    c.className = `seg colon ${sizeClass}`.trim();
+    return c;
+  }
+  const segs = SEG_MAP[char] || '';
+  const wrap = document.createElement('span');
+  wrap.className = `seg ${sizeClass}`.trim();
+  for (const id of 'abcdefg') {
+    const s = document.createElement('span');
+    s.className = `s ${id}` + (segs.includes(id) ? ' on' : '');
+    wrap.appendChild(s);
+  }
+  return wrap;
+}
+function renderText(text, sizeClass = '') {
+  const frag = document.createDocumentFragment();
+  for (const ch of String(text)) frag.appendChild(renderDigit(ch, sizeClass));
+  return frag;
+}
+document.querySelectorAll('[data-score]').forEach(el => {
+  const size = el.dataset.size || 'lg';
+  el.appendChild(renderText(el.dataset.score, size));
+});
+document.querySelectorAll('[data-time]').forEach(el => {
+  const size = el.dataset.size || 'md';
+  const classes = el.className.includes('amber') ? `${size} amber` : size;
+  el.appendChild(renderText(el.dataset.time, classes));
+});
+</script>
+
+</body>
+</html>
