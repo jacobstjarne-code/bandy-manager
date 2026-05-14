@@ -2,7 +2,7 @@
  * PenaltyInteraction.tsx — Stålvallen redesign
  *
  * BATCH D-03. Uses InteractionShell with:
- * - timer.style = 'tag' (2s amber)
+ * - timer.style = 'tag' (4s amber)
  * - SVG pitch: goal front-view, LED zones (6 zones V/M/H × HÖGT/LÅGT),
  *   steel-blue GK, amber shooter dot, red shot lane
  * - Monospace LED sub-choice buttons (LÅGT / HÖGT)
@@ -182,7 +182,7 @@ export function PenaltyInteraction({ data, outcome, onChoose, coach }: PenaltyIn
       icon="🎯"
       title="STRAFF"
       minute={data.minute}
-      timer={{ seconds: 2, style: 'tag' }}
+      timer={{ seconds: 4, style: 'tag' }}
       pitch={
         <PenaltyPitchSVG
           dir={dir}

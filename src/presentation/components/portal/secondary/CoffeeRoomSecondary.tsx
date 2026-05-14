@@ -39,7 +39,7 @@ export function CoffeeRoomSecondary({ game }: CardRenderProps) {
           marginBottom: 4,
         }}
       >
-        ☕ Kafferummet
+        ☕ Kafeterian
       </div>
       <div
         style={{

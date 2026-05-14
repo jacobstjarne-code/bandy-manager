@@ -2,7 +2,7 @@
  * FreeKickInteraction.tsx — Stålvallen redesign
  *
  * BATCH D-02. Uses InteractionShell with:
- * - timer.style = 'tag' (4s amber)
+ * - timer.style = 'tag' (6s amber)
  * - SVG pitch: LED palette (amber kicker, red wall, steel-blue GK)
  * - Monospace LED sub-choice buttons (SKJUT / CHIP / KORT)
  * - cta.variant = 'copper'
@@ -180,7 +180,7 @@ export function FreeKickInteraction({ data, outcome, onChoose, coach }: FreeKick
       icon="🏒"
       title="FRISLAG"
       minute={data.minute ?? 0}
-      timer={{ seconds: 4, style: 'tag' }}
+      timer={{ seconds: 6, style: 'tag' }}
       pitch={
         <FreeKickPitchSVG
           data={data}

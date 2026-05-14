@@ -458,7 +458,7 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
   return {
     exchanges,
     meta: {
-      title: 'Kafferummet',
+      title: 'Kafeterian',
       subtitle: 'Tisdag förmiddag · några stannade kvar efter mötet',
     },
   }

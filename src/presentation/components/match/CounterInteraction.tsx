@@ -2,7 +2,7 @@
  * CounterInteraction.tsx — Stålvallen redesign
  *
  * BATCH D-04. Uses InteractionShell with:
- * - timer.style = 'tag' (3s amber)
+ * - timer.style = 'tag' (5s amber)
  * - SVG pitch: LED palette (amber runner + support, red defenders + GK steel-blue)
  * - Monospace LED sub-choice buttons (BRYT / SPELA AV / BYGG)
  * - cta.variant = 'copper'
@@ -151,7 +151,7 @@ export function CounterInteraction({ data, outcome, onChoose, coach }: CounterIn
       icon="⚡"
       title="KONTRING"
       minute={data.minute}
-      timer={{ seconds: 3, style: 'tag' }}
+      timer={{ seconds: 5, style: 'tag' }}
       pitch={
         <CounterPitchSVG
           data={data}
