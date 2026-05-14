@@ -55,7 +55,7 @@ export function getGoalScorerWeight(
 // Bumpa vid varje förändring som påverkar simuleringsutfall.
 // Schema-kompatibla ändringar (utan utfallspåverkan) bumpar patch.
 // Mekaniska förändringar bumpar minor. Kalibreringsförändringar bumpar major.
-export const ENGINE_VERSION = '1.0.0'
+export const ENGINE_VERSION = '1.1.0'
 // PENALTY_CAUSE_COMMENTARY — shown as step commentary when interactive penalty is triggered
 const PENALTY_CAUSE_COMMENTARY: Array<(attacker: string) => string> = [
   (a) => `Straff! ${a} fälls i straffområdet — domaren tvekar inte.`,
@@ -82,7 +82,7 @@ const PENALTY_CAUSE_COMMENTARY: Array<(attacker: string) => string> = [
 
 import type { Player } from '../entities/Player'
 import type { MatchEvent } from '../entities/Fixture'
-import { MatchEventType, PlayerPosition, PlayerArchetype, WeatherCondition } from '../enums'
+import { MatchEventType, PlayerPosition, PlayerArchetype, WeatherCondition, CornerStrategy } from '../enums'
 import { evaluateSquad } from './squadEvaluator'
 import { getTacticModifiers } from './tacticModifiers'
 import { mulberry32, fixtureSeed } from '../utils/random'
@@ -998,11 +998,15 @@ function* simulateMatchCore(
         const cornerBase     = emitFullTime ? 0.105 * SECOND_HALF_BOOST * phaseGoalMod * phaseCornerMod : 0.105 * phaseGoalMod * phaseCornerMod
         const cornerClampMax = emitFullTime ? 0.30 * SECOND_HALF_BOOST : 0.30
         const cornerClampMin = emitFullTime ? 0.07 * SECOND_HALF_BOOST * phaseGoalMod * phaseCornerMod : 0.07 * phaseGoalMod * phaseCornerMod
+        const attackingCornerStrategy = isHomeAttacking ? homeLineup.tactic.cornerStrategy : awayLineup.tactic.cornerStrategy
+        const cornerConversionMod = attackingCornerStrategy === CornerStrategy.Aggressive ? 1.15
+          : attackingCornerStrategy === CornerStrategy.Safe ? 0.88
+          : 1.0
         const goalThreshold = clamp(
           (cornerChance - defenseResist) * 0.30 * stepGoalMod * cornerStateMod + cornerBase,
           cornerClampMin,
           cornerClampMax,
-        ) * GOAL_RATE_MOD
+        ) * GOAL_RATE_MOD * cornerConversionMod
 
         const r = rand()
         if (r < goalThreshold && canScore(isHomeAttacking, homeScore, awayScore)) {

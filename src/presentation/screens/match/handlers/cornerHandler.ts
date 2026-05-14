@@ -9,6 +9,7 @@ import type { MatchStep } from '../../../../domain/services/matchSimulator'
 import { MatchEventType } from '../../../../domain/enums'
 import { PlayerPosition } from '../../../../domain/enums'
 import { resolveCorner } from '../../../../domain/services/cornerInteractionService'
+import { CornerStrategy } from '../../../../domain/enums'
 import type {
   CornerZone,
   CornerDelivery,
@@ -72,6 +73,8 @@ export function handleCornerChoice(
 
   const rand = mulberry32(Date.now())
   const sgMood = game.supporterGroup?.mood ?? 50
+  const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+  const cornerStrategy = managedClub?.activeTactic.cornerStrategy ?? CornerStrategy.Standard
   const outcome = resolveCorner(
     { zone, delivery },
     cornerTaker,
@@ -82,6 +85,7 @@ export function handleCornerChoice(
     cornerData.isHome,
     sgMood,
     rand,
+    cornerStrategy,
   )
 
   setCornerOutcome(outcome)

@@ -1,5 +1,5 @@
 import type { Player } from '../entities/Player'
-import { PlayerPosition, PlayerArchetype } from '../enums'
+import { PlayerPosition, PlayerArchetype, CornerStrategy } from '../enums'
 
 export type CornerZone = 'near' | 'center' | 'far'
 export type CornerDelivery = 'hard' | 'low' | 'short'
@@ -37,6 +37,8 @@ export function resolveCorner(
   isHome: boolean,
   supporterBoost: number,
   rand: () => number,
+  // TODO: aggressive corners should also raise counter-attack/expulsion risk (separate batch)
+  cornerStrategy: CornerStrategy = CornerStrategy.Standard,
 ): CornerOutcome {
   const deliveryQuality =
     (cornerTaker.attributes.cornerSkill * 0.5 +
@@ -82,7 +84,10 @@ export function resolveCorner(
     ? (goalkeeper.attributes.goalkeeping * 0.6 + goalkeeper.attributes.positioning * 0.4) / 100
     : 0.3
 
-  const attackScore = deliveryQuality * deliveryMod[setup.delivery] * (bestRusher.score / 100)
+  const cornerStrategyMod = cornerStrategy === CornerStrategy.Aggressive ? 1.15
+    : cornerStrategy === CornerStrategy.Safe ? 0.88
+    : 1.0
+  const attackScore = deliveryQuality * deliveryMod[setup.delivery] * (bestRusher.score / 100) * cornerStrategyMod
   const homeBonus = isHome ? 0.03 : 0
   const supporterMod = supporterBoost * 0.005
 

@@ -792,6 +792,12 @@ function main() {
     let runningHomeScore = 0
     let runningAwayScore = 0
 
+    // Jitter RNG — deterministic per match, separate from engine RNG.
+    // Hides 3-minute step quantization (minute = round(step*1.5)) so that
+    // time-distribution analyses see plausible continuous-looking timestamps.
+    // Jitter is applied to match_events.minute only; engine internals are unchanged.
+    const jitterRng = mulberry32(config.seed ^ 0xFACE7777)
+
     for (const ev of allEvents) {
       const period = ev.minute < 45 ? 1 : 2
       const team = ev.clubId === homeId ? 'home' : 'away'
@@ -810,6 +816,12 @@ function main() {
         else periods[period].awayExp++
       }
 
+      // Apply per-event jitter uniform in [-1, +1], clamped to period bounds
+      const periodStart = ev.minute < 45 ? 0 : 45
+      const periodEnd   = ev.minute < 45 ? 44 : 90
+      const jitter = jitterRng() * 2 - 1
+      const jitteredMinute = Math.round(Math.max(periodStart, Math.min(periodEnd, ev.minute + jitter)))
+
       // Insert event row — for goals track running score
       let scoreHomeAtEvent = runningHomeScore
       let scoreAwayAtEvent = runningAwayScore
@@ -817,7 +829,7 @@ function main() {
       insertEvent.run(
         matchId,
         ev.type,
-        ev.minute,
+        jitteredMinute,
         ev.clubId === homeId ? 'home' : 'away',
         ev.playerId ?? null,
         ev.isCornerGoal ? 1 : 0,
