@@ -5,7 +5,7 @@
  * copper = managed club  |  steel = opponent
  */
 import { useEffect, useRef, useState } from 'react'
-import { SevenSegText, SevenSegColon } from './sevenSegment'
+import { SevenSegText } from './sevenSegment'
 
 export interface ScoreboardEvent {
   minute: number
@@ -50,7 +50,7 @@ export function ScoreboardStalvallen({
   managedSide,
   period,
   minute,
-  second,
+  second: _second,
   penalties,
   ticker,
   events,
@@ -128,8 +128,6 @@ export function ScoreboardStalvallen({
               <span className="period-mark">{period}</span>
               <span className="time-mount">
                 <SevenSegText text={pad2(minute)} size="md" color="var(--led-red)" />
-                <SevenSegColon size="md" color="var(--led-red)" />
-                <SevenSegText text={pad2(second)} size="md" color="var(--led-red)" />
               </span>
             </div>
 
