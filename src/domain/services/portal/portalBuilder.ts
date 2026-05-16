@@ -1,6 +1,9 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { DashboardCard } from './dashboardCardBag'
 import { CARD_BAG } from './dashboardCardBag'
+import { getSeasonPhase, isManagedClubInPlayoff } from '../../data/seasonPhases'
+import { applyPhaseBias } from './seasonPhaseBias'
+import { FixtureStatus } from '../../enums'
 
 export interface PortalLayout {
   primary: DashboardCard           // alltid exakt 1
@@ -19,15 +22,26 @@ export interface PortalLayout {
  *   5. Plocka ut topp N från varje tier
  */
 export function buildPortal(game: SaveGame, seed: number): PortalLayout {
-  // Steg 1: Filtrera bagen — bara kort vars triggers alla returnerar true
-  const eligible = CARD_BAG.filter(card =>
-    card.triggers.every(trigger => trigger(game))
-  )
+  // Beräkna aktuell säsongsfas — samma logik som dailyBriefingService
+  const currentLigaRound = game.fixtures
+    .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
+    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+  const isPlayoff = isManagedClubInPlayoff(game)
+  const phase = getSeasonPhase(currentLigaRound, isPlayoff)
 
-  // Steg 2: Gruppera per tier, sortera per weight (högst först)
+  // Steg 1: Filtrera bagen — suppress-kort för current phase + triggers
+  const eligible = CARD_BAG
+    .filter(card => !card.suppressIn?.includes(phase))
+    .filter(card => card.triggers.every(trigger => trigger(game)))
+    .map(card => ({
+      ...card,
+      effectiveWeight: applyPhaseBias(card.weight, card.tier, phase),
+    }))
+
+  // Steg 2: Gruppera per tier, sortera per effectiveWeight (högst först)
   // Vid tie i weight: seedad deterministisk ordning via card.id
-  const sortByWeight = (a: DashboardCard, b: DashboardCard): number => {
-    if (b.weight !== a.weight) return b.weight - a.weight
+  const sortByWeight = (a: DashboardCard & { effectiveWeight: number }, b: DashboardCard & { effectiveWeight: number }): number => {
+    if (b.effectiveWeight !== a.effectiveWeight) return b.effectiveWeight - a.effectiveWeight
     // Tie-breaking: seedad pseudo-slump baserat på id + seed
     const hashA = simpleHash(a.id + seed)
     const hashB = simpleHash(b.id + seed)

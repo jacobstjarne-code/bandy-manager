@@ -1201,6 +1201,8 @@ function* simulateMatchCore(
         }
         if (fixture.isFinaldag) {
           commentaryText = pickSpecialDateCommentary('finaldag', sdCtx, fixture.season, fixture.matchday)
+        } else if (input.isCupFinalhelgen && fixture.isCup && fixture.roundNumber === 4) {
+          commentaryText = fillTemplate(pickCommentary(commentary.cup_final_kickoff, rand), templateVars)
         } else if (input.isCupFinalhelgen && fixture.isCup) {
           commentaryText = pickSpecialDateCommentary('cupfinal', sdCtx, fixture.season, fixture.matchday)
         } else if (input.isAnnandagen) {
@@ -1271,6 +1273,8 @@ function* simulateMatchCore(
           if (assisterPlayer?.isClubLegend) {
             commentaryText = pickLegendCommentary(assisterPlayer, 'assist', minute, rand)
           }
+        } else if (fixture.isCup && input.isCupFinalhelgen && fixture.roundNumber === 4 && rand() < 0.60) {
+          commentaryText = fillTemplate(pickCommentary(commentary.cup_final_goal, rand), templateVars)
         } else if (fixture.isCup && !input.isCupFinalhelgen && rand() < 0.60) {
           const isFirstGoalInMatch = homeScore + awayScore === 1
           const cupGoalPool = isFirstGoalInMatch ? commentary.cup_goalOpener : commentary.cup_goal
@@ -1619,6 +1623,10 @@ function* simulateMatchCore(
     fullTimeText = scoreStrFT
   } else if (rivalry) {
     fullTimeText = fillTemplate(pickCommentary(commentary.derby_fullTime, rand), { ...ftVars, rivalry: rivalry.name })
+  } else if (fixture.isCup && input.isCupFinalhelgen && fixture.roundNumber === 4) {
+    const homeWon = homeScore > awayScore
+    const cupFinalFtPool = homeWon ? commentary.cup_final_fullTime_win : commentary.cup_final_fullTime_loss
+    fullTimeText = fillTemplate(pickCommentary(cupFinalFtPool, rand), ftVars)
   } else if (fixture.isCup && !input.isCupFinalhelgen && rand() < 0.60) {
     const homeWon = homeScore > awayScore
     const cupFtPool = homeWon ? commentary.cup_fullTime_win : commentary.cup_fullTime_loss

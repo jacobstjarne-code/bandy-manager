@@ -10,6 +10,7 @@ import { createNewGame } from '../../application/useCases/createNewGame'
 import { detectSceneTrigger } from '../../domain/services/sceneTriggerService'
 import { buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
 import { resolveEvent as resolveEventFn } from '../../domain/services/eventService'
+import { promoteFromQueue } from '../../domain/services/decisionBudgetService'
 import { type AdvanceResult } from '../../application/useCases/advanceToNextEvent'
 import { setLineup } from '../../application/useCases/setLineup'
 import { generateDetailedAnalysis } from '../../domain/services/opponentAnalysisService'
@@ -94,6 +95,7 @@ interface GameState {
   completeScene: (sceneId: import('../../domain/entities/Scene').SceneId, choiceId?: string) => void
   triggerCoffeeRoomScene: () => void
   triggerJournalistScene: () => void
+  markPhaseAcknowledged: (phase: import('../../domain/data/seasonPhases').SeasonPhase) => void
 }
 
 const indexedDBStorage = {
@@ -188,6 +190,7 @@ export const useGameStore = create<GameState>()(
 
         const migrated = {
           ...loaded,
+          phaseMarksSeen: loaded.phaseMarksSeen ?? [],
           clubs: loaded.clubs.map((c: any) => {
             const tactic = c.activeTactic ?? {}
             // Migrate positionAssignments (playerId → FormationSlot) → lineupSlots (slotId → playerId)
@@ -287,7 +290,11 @@ export const useGameStore = create<GameState>()(
       resolveEvent: (eventId, choiceId) => {
         const { game } = get()
         if (!game) return
-        set({ game: resolveEventFn(game, eventId, choiceId) })
+        const afterResolve = resolveEventFn(game, eventId, choiceId)
+        const afterPromote = (afterResolve.deferredDecisions ?? []).length > 0
+          ? promoteFromQueue(afterResolve)
+          : afterResolve
+        set({ game: afterPromote })
       },
 
       requestDetailedAnalysis: (opponentClubId, fixtureId) => {
@@ -718,6 +725,20 @@ export const useGameStore = create<GameState>()(
         }
 
         return { success: false, message: 'Okänd handling.' }
+      },
+
+      markPhaseAcknowledged: (phase) => {
+        set(state => {
+          if (!state.game) return state
+          const seen = state.game.phaseMarksSeen ?? []
+          if (seen.includes(phase)) return state
+          return {
+            game: {
+              ...state.game,
+              phaseMarksSeen: [...seen, phase],
+            },
+          }
+        })
       },
 
       // Action slices — override inline implementations above

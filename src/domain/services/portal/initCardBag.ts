@@ -169,6 +169,7 @@ const PORTAL_CARDS: DashboardCard[] = [
     id: 'coffee_room_card',
     tier: 'secondary',
     weight: 60,
+    suppressIn: ['playoff'],
     triggers: [(game) => getCoffeeRoomScene(game) !== null],
     Component: CoffeeRoomSecondary,
   },
@@ -176,6 +177,7 @@ const PORTAL_CARDS: DashboardCard[] = [
     id: 'journalist_card',
     tier: 'secondary',
     weight: 65,
+    suppressIn: ['playoff'],
     triggers: [shouldShowJournalistCard],
     Component: JournalistSecondary,
   },
@@ -183,6 +185,7 @@ const PORTAL_CARDS: DashboardCard[] = [
     id: 'season_signature_card',
     tier: 'secondary',
     weight: 40,
+    suppressIn: ['playoff'],
     triggers: [(game) => {
       const sig = game.currentSeasonSignature
       return !!sig && sig.id !== 'calm_season'

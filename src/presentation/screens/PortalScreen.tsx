@@ -8,6 +8,7 @@ import { PortalSecondarySection } from '../components/portal/PortalSecondarySect
 import { PortalMinimalBar } from '../components/portal/PortalMinimalBar'
 import { SituationCard } from '../components/portal/SituationCard'
 import { PortalBeat } from '../components/portal/PortalBeat'
+import { PortalPhaseMark } from '../components/portal/PortalPhaseMark'
 import { PortalEventSlot } from '../components/portal/PortalEventSlot'
 import { PortalActiveBudget } from '../components/portal/PortalActiveBudget'
 import { PortalQueueRail } from '../components/portal/PortalQueueRail'
@@ -166,6 +167,7 @@ export function PortalScreen() {
         }}
       >
         <SituationCard game={game} />
+        <PortalPhaseMark game={game} />
         <PortalBeat game={game} />
         {!isSeason1Round1 && <PortalActiveBudget game={game} />}
         {isSeason1Round1 && activeCount > 0 && (

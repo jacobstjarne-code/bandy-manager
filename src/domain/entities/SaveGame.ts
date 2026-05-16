@@ -1,4 +1,5 @@
 import type { PendingScreen } from '../enums'
+import type { SeasonPhase } from '../data/seasonPhases'
 import type { SeasonSignature } from './SeasonSignature'
 import type { Club } from './Club'
 import type { Player } from './Player'
@@ -68,6 +69,9 @@ export interface SaveGame {
 
   // Portal-beats (lättviktiga engångsmoment)
   shownBeats?: string[]                // Beat-nycklar som visats (format: beatId eller beatId_season)
+
+  // Portal fas-markeringar (visas en gång per fas per säsong)
+  phaseMarksSeen: SeasonPhase[]        // default []
 
   // Fas-anslag (säsongskapitel-overlay)
   seenAnslag?: import('../services/anslagService').AnslagKey[]
@@ -224,7 +228,7 @@ export interface SaveGame {
 
   // Beslutsekonomi — throttling (decisionBudgetService)
   pendingDecisions?: unknown[]       // reserved for future use (deferred display)
-  deferredDecisions?: unknown[]      // reserved for future use (deferred display)
+  deferredDecisions: GameEvent[]     // queue for decisions blocked by budget cap (max 10)
   lastRumorRound?: number            // round when last transfer rumor was generated (cooldown: 3)
   lastEventQueueRound?: number       // round when last community event was generated (cooldown: 2)
 

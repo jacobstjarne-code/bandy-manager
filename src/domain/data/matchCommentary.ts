@@ -383,6 +383,34 @@ export const commentary = {
     "Domaren blåser. {opponent} vidare. För {team} blev det vad det blev.",
   ],
 
+  cup_final_kickoff: [
+    "Domaren blåser. {team} mot {opponent}. Cupfinalen.",
+    "Avslag. Bollnäs. En match. Inget omspel.",
+    "Om 90 minuter har pokalen hittat hem.",
+    "Cupfinal. Två lag. En match. Vinnaren tar allt.",
+  ],
+
+  cup_final_goal: [
+    "MÅL! {player} med {score}. {team} är ett steg närmare.",
+    "Den sitter. {player} hittar nätet. {score}. Cupfinalmål.",
+    "{player}! {score}. Första steget mot pokalen är taget.",
+    "MÅL för {team}. {player}. {score}. Det är cupen som står på spel.",
+  ],
+
+  cup_final_fullTime_win: [
+    "Slutsignal. {team} tar hem pokalen. {score}.",
+    "Det är klart. {team} vinner cupen. Inte den främsta pokalen — men den första vi vunnit på länge.",
+    "Domaren blåser. {team} är cupmästare. {score}.",
+    "Slutspelat. Pokalen är vår. Lite blank. Lite lätt.",
+  ],
+
+  cup_final_fullTime_loss: [
+    "Slutsignal. {opponent} tar hem pokalen. För {team} stannar det vid finalförlust. {score}.",
+    "Det är över. Pokalen blev någon annans. {score}.",
+    "Slut. {team} kom så långt. Men det räckte inte hela vägen.",
+    "Domaren blåser. {opponent} är cupmästare. {team} reser hem.",
+  ],
+
   playoff_general: [
     "Slutspelstempot är något helt annat. Varje duell är på liv och död.",
     "Playoffbandy. Hårdare dueller, mer intensitet, högre insatser.",

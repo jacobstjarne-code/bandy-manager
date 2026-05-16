@@ -60,7 +60,7 @@ function ArrivalSceneInner({ clubId, clubName, objectives, onComplete }: Arrival
     <div className="arrival-scene">
       <div className="arrival-lamp-overlay" />
 
-      <button className="scene-skip" onClick={onComplete}>Hoppa över ↘</button>
+      <button className="scene-skip" aria-label="Hoppa över introduktionen" onClick={onComplete}>Hoppa över ↘</button>
 
       {/* Header */}
       <div style={{ position: 'relative', zIndex: 2, padding: '32px 24px 0', textAlign: 'center' }}>
@@ -118,16 +118,9 @@ function ArrivalSceneInner({ clubId, clubName, objectives, onComplete }: Arrival
           'arrival-board-objectives',
           phaseGte(phase, 'objectives') && 'in',
         ].filter(Boolean).join(' ')}>
-          <div className="arrival-board-card">
-            <div style={{
-              fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase',
-              color: 'var(--accent)', fontWeight: 600, opacity: 0.85,
-              marginBottom: 12,
-              display: 'flex', alignItems: 'center', gap: 6,
-            }}>
-              <span style={{ fontSize: 12 }}>🎯</span>
-              <span>Styrelsens krav</span>
-            </div>
+          <div className="portal-secondary-card arrival-board-objectives-card">
+            <div className="portal-card-stripe portal-card-stripe-copper" />
+            <div className="portal-card-eyebrow">🎯 Styrelsens krav</div>
             <BoardObjectivesList objectives={objectives} max={3} />
           </div>
         </div>

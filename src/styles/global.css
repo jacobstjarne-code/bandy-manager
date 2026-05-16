@@ -981,6 +981,7 @@ a {
   height: 2px;
   border-radius: 1px;
   background: rgba(196, 122, 58, 0.3);
+  transition: background 0.4s ease;
 }
 .beat-progress .dot.active {
   background: var(--accent);
@@ -1116,21 +1117,7 @@ a {
 }
 .arrival-board-objectives.in { opacity: 1; transform: translateY(0); }
 
-.arrival-board-card {
-  position: relative;
-  background: var(--bg-portal-surface);
-  border: 1px solid rgba(196, 122, 58, 0.15);
-  border-radius: 8px;
-  padding: 14px 16px 14px 18px;
-  overflow: hidden;
-}
-.arrival-board-card::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 2px;
-  background: var(--accent);
-}
+/* .arrival-board-card removed — uses .portal-secondary-card + .portal-card-stripe-copper (A2) */
 
 /* CTA area — fixed bottom, fades in at cta phase (ARRIVAL-02) */
 .scene-cta-area {

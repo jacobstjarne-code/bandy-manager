@@ -4,7 +4,7 @@ import { getRivalry } from '../data/rivalries'
 import { getTransferWindowStatus } from './transferWindowService'
 import { FixtureStatus } from '../enums'
 import { getCurrentAct } from './seasonActService'
-import { getSeasonPhase, type SeasonPhase } from '../data/seasonPhases'
+import { getSeasonPhase, isManagedClubInPlayoff, type SeasonPhase } from '../data/seasonPhases'
 import { buildSeasonCalendar } from './scheduleGenerator'
 import {
   annandagsbandyBriefing,
@@ -16,7 +16,7 @@ import {
 } from './specialDateService'
 import type { SpecialDateContext } from '../data/specialDateStrings'
 
-const SEASON_MOOD: Record<SeasonPhase, string[]> = {
+export const SEASON_MOOD: Record<SeasonPhase, string[]> = {
   pre_season: ['Ny säsong. Nya möjligheter.'],
   early: [
     'Oktober. Första frosten. Truppen samlas.',
@@ -337,7 +337,7 @@ export function generateBriefing(game: SaveGame): Briefing | null {
   }
 
   // 8. Säsongsfas-stämning (30% chans)
-  const isPlayoff = game.fixtures.some(f => f.matchday > 26 && f.status === FixtureStatus.Scheduled)
+  const isPlayoff = isManagedClubInPlayoff(game)
   const phase = getSeasonPhase(currentLigaRound, isPlayoff)
   const phaseSeed = currentLigaRound * 17 + game.currentSeason * 11
   if (phaseSeed % 3 === 0) {

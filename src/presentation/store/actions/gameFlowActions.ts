@@ -1,8 +1,10 @@
 import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
 import type { AnslagKey } from '../../../domain/services/anslagService'
-import { PendingScreen } from '../../../domain/enums'
+import { PendingScreen, FixtureStatus } from '../../../domain/enums'
+import { getSeasonPhase, isManagedClubInPlayoff, type SeasonPhase } from '../../../domain/data/seasonPhases'
 import { clamp } from '../../../domain/utils/clamp'
 import { resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
+import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
 import { detectSceneTrigger } from '../../../domain/services/sceneTriggerService'
@@ -168,6 +170,19 @@ export function gameFlowActions(get: Get, set: Set) {
       set({ game: gameToSave, lastAdvanceResult: result, roundSummary: summary })
       void persistAutosave(gameToSave, 'advance')
 
+      // Märk fas som sedd när spelaren lämnar Portal (trigger i advance)
+      const PHASEMARK_PHASES = new Set<SeasonPhase>(['endgame', 'playoff'])
+      const advLigaRound = gameToSave.fixtures
+        .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
+        .reduce((max: number, f) => Math.max(max, f.roundNumber), 0)
+      const advIsPlayoff = isManagedClubInPlayoff(gameToSave)
+      const advPhase = getSeasonPhase(advLigaRound, advIsPlayoff)
+      const advSeen = gameToSave.phaseMarksSeen ?? []
+      if (PHASEMARK_PHASES.has(advPhase) && !advSeen.includes(advPhase)) {
+        const markedGame = { ...gameToSave, phaseMarksSeen: [...advSeen, advPhase] }
+        set({ game: markedGame })
+      }
+
       const managerFired = result.game.managerFired
       if (managerFired) {
         navigateTo('/game/game-over', { replace: true })
@@ -328,8 +343,11 @@ export function gameFlowActions(get: Get, set: Set) {
         }
       }
 
-      set({ game: updatedGame })
-      void persistAutosave(updatedGame, 'resolveWeeklyDecision')
+      const afterPromote = (updatedGame.deferredDecisions ?? []).length > 0
+        ? promoteFromQueue(updatedGame)
+        : updatedGame
+      set({ game: afterPromote })
+      void persistAutosave(afterPromote, 'resolveWeeklyDecision')
     },
 
     resolveAwayTrip: (decision: 'stay_home' | 'book_nice' | 'ask_foundation') => {

@@ -1,5 +1,6 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { ComponentType } from 'react'
+import type { SeasonPhase } from '../../data/seasonPhases'
 
 export type CardTier = 'primary' | 'secondary' | 'minimal'
 
@@ -18,6 +19,12 @@ export interface DashboardCard {
 
   /** Prioritet inom tier. Högre vinner. 0-100. */
   weight: number
+
+  /**
+   * Faser då kortet inte ska visas alls (hård suppression).
+   * Används för kort som inte hör hemma i slutspel (kafferum, journalist, etc).
+   */
+  suppressIn?: SeasonPhase[]
 
   /**
    * Alla triggers måste returnera true för att kortet ska vara eligible.

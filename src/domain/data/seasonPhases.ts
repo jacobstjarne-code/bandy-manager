@@ -1,3 +1,5 @@
+import { FixtureStatus } from '../enums'
+
 // ── Functionary-system (Swedish phase names, used by functionaries.ts) ───────
 
 export type FunctionaryPhase =
@@ -30,4 +32,29 @@ export function getSeasonPhase(leagueRound: number, isPlayoff: boolean): SeasonP
   if (leagueRound <= 3) return 'early'
   if (leagueRound <= 11) return 'mid'
   return 'endgame'
+}
+
+/**
+ * Returnerar true om managed club fortfarande är aktiv i slutspelet
+ * (inte eliminerad och har kvarvarande scheduled fixtures i sin serie).
+ *
+ * Används som `isPlayoff`-parameter till getSeasonPhase för korrekt fas:
+ * eliminerade spelare hamnar i 'endgame', inte 'playoff'.
+ */
+export function isManagedClubInPlayoff(game: import('../entities/SaveGame').SaveGame): boolean {
+  if (!game.playoffBracket) return false
+  const allSeries = [
+    ...game.playoffBracket.quarterFinals,
+    ...game.playoffBracket.semiFinals,
+    ...(game.playoffBracket.final ? [game.playoffBracket.final] : []),
+  ]
+  return allSeries.some(s => {
+    const isInSeries = s.homeClubId === game.managedClubId || s.awayClubId === game.managedClubId
+    if (!isInSeries) return false
+    if (s.loserId === game.managedClubId) return false
+    return s.fixtures.some((fid: string) => {
+      const f = game.fixtures.find(ff => ff.id === fid)
+      return f?.status === FixtureStatus.Scheduled
+    })
+  })
 }
