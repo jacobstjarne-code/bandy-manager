@@ -61,6 +61,7 @@ import {
 } from '../../domain/data/specialDateStrings'
 import { generatePostMatchEvents } from '../../domain/services/postMatchEventService'
 import { canAddDecision } from '../../domain/services/decisionBudgetService'
+import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
 
 export type { AdvanceResult }
 
@@ -1153,6 +1154,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     // Beslutsekonomi cooldown tracking
     lastEventQueueRound: eventResult.lastEventQueueRound,
     lastRumorRound: mediaResult.lastRumorRound,
+    // F1 Stage 2 — per-source cooldown decrement
+    sourceCooldowns: decrementCooldowns(game.sourceCooldowns ?? {}),
   }
 
   // Append market value change notifications to inbox

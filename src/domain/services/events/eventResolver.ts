@@ -4,6 +4,8 @@ import { InboxItemType } from '../../enums'
 import { executeTransfer } from '../transferService'
 import { applyFinanceChange } from '../economyService'
 import { recordInteraction, recordPressRefusal, generateCriticalArticle } from '../journalistService'
+import { EVENT_SOURCE_MAP, startCooldown } from '../sourceCooldownService'
+import type { SourceKey } from '../sourceCooldownService'
 
 // ── resolveEvent ───────────────────────────────────────────────────────────
 export function resolveEvent(
@@ -1221,6 +1223,16 @@ export function resolveEvent(
           : arc
       ),
     }
+  }
+
+  // ── Start source cooldown when a source-specific event resolves ────────────
+  const eventSource = EVENT_SOURCE_MAP[event.type]
+  if (eventSource) {
+    const newCooldowns = startCooldown(
+      updatedGame.sourceCooldowns ?? {},
+      eventSource as SourceKey,
+    )
+    updatedGame = { ...updatedGame, sourceCooldowns: newCooldowns }
   }
 
   return updatedGame

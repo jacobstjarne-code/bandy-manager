@@ -360,4 +360,7 @@ export interface SaveGame {
   }
   riskySponsorOfferSentThisSeason?: number  // season when last offer was generated
   patronWithdrawnSeason?: number       // managed club mecenat locked until this season + 2
+
+  // F1 Stage 2 — per-source cooldowns (shown on SourceSecondaryCard)
+  sourceCooldowns?: Partial<Record<string, { roundsLeft: number; totalRounds: number }>>
 }

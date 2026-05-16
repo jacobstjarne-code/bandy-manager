@@ -191,6 +191,7 @@ export const useGameStore = create<GameState>()(
         const migrated = {
           ...loaded,
           phaseMarksSeen: loaded.phaseMarksSeen ?? [],
+          sourceCooldowns: loaded.sourceCooldowns ?? {},
           clubs: loaded.clubs.map((c: any) => {
             const tactic = c.activeTactic ?? {}
             // Migrate positionAssignments (playerId → FormationSlot) → lineupSlots (slotId → playerId)

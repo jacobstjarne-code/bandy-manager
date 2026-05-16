@@ -5,6 +5,7 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import { InboxItemType } from '../../../domain/enums'
 import { generatePostAdvanceEvents, generateEvents } from '../../../domain/services/eventService'
 import { canAddDecision } from '../../../domain/services/decisionBudgetService'
+import { isInCooldown } from '../../../domain/services/sourceCooldownService'
 import { createEconomicStressEvent } from '../../../domain/services/events/eventFactories'
 import { generateSocialEvent, generateSilentShoutEvent, generateMecenat, generateMecenatIntroEvent } from '../../../domain/services/mecenatService'
 import { generateBandyLetterEvent } from '../../../domain/services/bandyLetterService'
@@ -191,8 +192,8 @@ export function processGameEvents(
   const schoolEvent = generateSchoolAssignmentEvent(game, nextMatchday)
   if (schoolEvent) gameEvents.push(schoolEvent)
 
-  // DREAM-017: Mecenatens middag (omgång 20) — budget gate
-  if (nextMatchday === 20 && canAddDecision(game, nextMatchday)) {
+  // DREAM-017: Mecenatens middag (omgång 20) — budget gate + source cooldown
+  if (nextMatchday === 20 && canAddDecision(game, nextMatchday) && !isInCooldown(game.sourceCooldowns ?? {}, 'mecenat')) {
     const dinnerEvent = generateDinnerEvent(game, nextMatchday)
     if (dinnerEvent) gameEvents.push(dinnerEvent)
   }

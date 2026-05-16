@@ -35,6 +35,8 @@ import { PatronDemandPrimary } from '../../../presentation/components/portal/pri
 import { EventPrimary } from '../../../presentation/components/portal/primary/EventPrimary'
 
 // Secondary components
+import { SourceSecondaryCard } from '../../../presentation/components/portal/secondary/SourceSecondaryCard'
+import React from 'react'
 import { TabellSecondary } from '../../../presentation/components/portal/secondary/TabellSecondary'
 import { EkonomiSecondary } from '../../../presentation/components/portal/secondary/EkonomiSecondary'
 import { InjuryStatusSecondary } from '../../../presentation/components/portal/secondary/InjuryStatusSecondary'
@@ -47,6 +49,7 @@ import { SeasonSignatureSecondary } from '../../../presentation/components/porta
 import { WeeklyDecisionSecondary } from '../../../presentation/components/portal/secondary/WeeklyDecisionSecondary'
 import { ActiveArcsSecondary } from '../../../presentation/components/portal/secondary/ActiveArcsSecondary'
 import { BoardObjectivesSecondary } from '../../../presentation/components/portal/secondary/BoardObjectivesSecondary'
+import type { CardRenderProps } from '../../../presentation/components/portal/portalTypes'
 import { getCoffeeRoomScene } from '../coffeeRoomService'
 import { shouldShowJournalistCard } from '../journalistVisibilityService'
 
@@ -55,6 +58,12 @@ import { SquadStatusMinimal } from '../../../presentation/components/portal/mini
 import { FormStatusMinimal } from '../../../presentation/components/portal/minimal/FormStatusMinimal'
 import { KlackenMoodMinimal } from '../../../presentation/components/portal/minimal/KlackenMoodMinimal'
 import { EconomyMinimal } from '../../../presentation/components/portal/minimal/EconomyMinimal'
+
+function makeSourceCard(source: 'kommunen' | 'mecenat' | 'lokaltidningen') {
+  return function SourceCard({ game }: CardRenderProps) {
+    return React.createElement(SourceSecondaryCard, { source, game })
+  }
+}
 
 const PORTAL_CARDS: DashboardCard[] = [
   // ── PRIMARY TIER ──────────────────────────────────────────────
@@ -115,6 +124,27 @@ const PORTAL_CARDS: DashboardCard[] = [
     weight: 85,
     triggers: [(game) => !!game.pendingWeeklyDecision],
     Component: WeeklyDecisionSecondary,
+  },
+  {
+    id: 'source_kommunen_cooldown',
+    tier: 'secondary',
+    weight: 84,
+    triggers: [(game) => (game.sourceCooldowns?.['kommunen']?.roundsLeft ?? 0) > 0],
+    Component: makeSourceCard('kommunen'),
+  },
+  {
+    id: 'source_mecenat_cooldown',
+    tier: 'secondary',
+    weight: 83,
+    triggers: [(game) => (game.sourceCooldowns?.['mecenat']?.roundsLeft ?? 0) > 0],
+    Component: makeSourceCard('mecenat'),
+  },
+  {
+    id: 'source_lokaltidningen_cooldown',
+    tier: 'secondary',
+    weight: 82,
+    triggers: [(game) => (game.sourceCooldowns?.['lokaltidningen']?.roundsLeft ?? 0) > 0],
+    Component: makeSourceCard('lokaltidningen'),
   },
   {
     id: 'active_arcs',

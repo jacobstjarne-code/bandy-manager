@@ -399,6 +399,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     currentSeasonSignature: createSeasonSignature({ clubs: clubsFixed, scandalHistory: [], currentSeason: season } as unknown as import('../../domain/entities/SaveGame').SaveGame, mulberry32((input.seed ?? 42) + season * 1337 + 99)),
     pastSeasonSignatures: [],
     phaseMarksSeen: [],
+    sourceCooldowns: {},
   }
 
   const playersWithAvailability = updatePlayerAvailability(game)

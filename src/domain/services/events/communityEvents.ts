@@ -7,6 +7,7 @@ import { generatePoliticianEvents } from './politicianEvents'
 import { generateSponsorEvents } from './sponsorEvents'
 import { generateSupporterEvents } from './supporterEvents'
 import { generateHallDebateEvent } from './hallDebateService'
+import { isInCooldown } from '../sourceCooldownService'
 // ── generateEvents ─────────────────────────────────────────────────────────
 export function generateEvents(
   game: SaveGame,
@@ -18,7 +19,9 @@ export function generateEvents(
     ...(game.resolvedEventIds ?? []),
   ])
 
-  const hallEvent = generateHallDebateEvent(game, currentRound, alreadyQueued)
+  const hallEvent = !isInCooldown(game.sourceCooldowns ?? {}, 'kommunen')
+    ? generateHallDebateEvent(game, currentRound, alreadyQueued)
+    : null
 
   return [
     ...generateCommunityActivitiesEvents(game, currentRound, alreadyQueued, rand),
