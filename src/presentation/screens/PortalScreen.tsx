@@ -18,6 +18,8 @@ import { computeNextAnslag } from '../../domain/services/anslagService'
 import { getActiveDecisionCount } from '../../domain/services/decisionBudgetService'
 import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
 import { playSound } from '../audio/soundEffects'
+import { PortalRoundMark } from '../components/portal/PortalRoundMark'
+import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
 
 // Initialisera bag-of-cards en gång vid modulimport
 initCardBag()
@@ -146,6 +148,7 @@ export function PortalScreen() {
   const Primary = layout.primary.Component
 
   const isSeason1Round1 = game.currentSeason === 1 && game.currentMatchday === 1
+  const isSmFinal = getPlayoffSeriesContext(game)?.round === PlayoffRound.Final
   const activeCount = getActiveDecisionCount(game)
 
   return (
@@ -169,6 +172,7 @@ export function PortalScreen() {
         <SituationCard game={game} />
         <PortalPhaseMark game={game} />
         <PortalBeat game={game} />
+        <PortalRoundMark game={game} />
         {!isSeason1Round1 && <PortalActiveBudget game={game} />}
         {isSeason1Round1 && activeCount > 0 && (
           <div className="portal-tutorial-frame">
@@ -196,7 +200,7 @@ export function PortalScreen() {
           data-coach-id="cta-button"
           onClick={handleAdvance}
           disabled={!canClickAdvance}
-          className={`btn btn-primary btn-cta${canClickAdvance ? ' btn-pulse' : ''}`}
+          className={`btn btn-primary btn-cta${canClickAdvance ? ' btn-pulse' : ''}${isSmFinal ? ' btn-gold' : ''}`}
         >
           {advanceButtonText}
         </button>

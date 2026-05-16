@@ -24,13 +24,18 @@ function SeriesBoxes({
   wins,
   losses,
   total = 5,
-}: { wins: number; losses: number; total?: number }) {
+  nextStyle,
+}: { wins: number; losses: number; total?: number; nextStyle?: 'decisive' | 'gold' }) {
   const boxes: Array<'W' | 'L' | 'empty'> = []
   let w = wins, l = losses
+  let firstEmptyIdx = -1
   for (let i = 0; i < total; i++) {
     if (w > 0) { boxes.push('W'); w-- }
     else if (l > 0) { boxes.push('L'); l-- }
-    else boxes.push('empty')
+    else {
+      if (firstEmptyIdx === -1) firstEmptyIdx = i
+      boxes.push('empty')
+    }
   }
 
   return (
@@ -39,27 +44,31 @@ function SeriesBoxes({
         Serie (bäst av {total})
       </span>
       <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-        {boxes.map((b, i) => (
-          <div
-            key={i}
-            style={{
-              width: 13,
-              height: 13,
-              borderRadius: 3,
-              background: b === 'W' ? 'var(--success)' : b === 'L' ? 'var(--danger)' : 'transparent',
-              border: b === 'empty' ? '1.5px solid var(--border-dark)' : 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {b !== 'empty' && (
-              <span style={{ fontSize: 7, color: 'var(--text-light)', fontWeight: 700, fontFamily: 'var(--font-body)' }}>
-                {b === 'W' ? 'V' : 'F'}
-              </span>
-            )}
-          </div>
-        ))}
+        {boxes.map((b, i) => {
+          const isNextBox = !!(nextStyle && i === firstEmptyIdx)
+          return (
+            <div
+              key={i}
+              className={isNextBox ? `series-game next ${nextStyle}` : undefined}
+              style={{
+                width: isNextBox ? undefined : 13,
+                height: isNextBox ? undefined : 13,
+                borderRadius: 3,
+                background: b === 'W' ? 'var(--success)' : b === 'L' ? 'var(--danger)' : isNextBox ? undefined : 'transparent',
+                border: b === 'empty' && !isNextBox ? '1.5px solid var(--border-dark)' : b === 'empty' && isNextBox ? undefined : 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {b !== 'empty' && (
+                <span style={{ fontSize: 7, color: 'var(--text-light)', fontWeight: 700, fontFamily: 'var(--font-body)' }}>
+                  {b === 'W' ? 'V' : 'F'}
+                </span>
+              )}
+            </div>
+          )
+        })}
         <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent-dark)', marginLeft: 6, fontFamily: 'var(--font-display)' }}>
           {wins}–{losses}
         </span>
@@ -81,6 +90,9 @@ interface NextMatchCardProps {
   matchWeather: MatchWeather | undefined
   hasPendingLineup: boolean
   lineupConfirmedThisRound?: boolean
+  seriesWeight?: 1 | 2 | 3
+  critTagLabel?: string
+  seriesNextStyle?: 'decisive' | 'gold'
 }
 
 export function NextMatchCard({
@@ -96,6 +108,9 @@ export function NextMatchCard({
   matchWeather,
   hasPendingLineup,
   lineupConfirmedThisRound,
+  seriesWeight,
+  critTagLabel,
+  seriesNextStyle,
 }: NextMatchCardProps) {
   const rivalry = getRivalry(nextFixture.homeClubId, nextFixture.awayClubId)
   const annandagenDate = !nextFixture.isCup ? getRoundDate(nextFixture.season, nextFixture.roundNumber) : ''
@@ -116,7 +131,11 @@ export function NextMatchCard({
   const cardStyle: React.CSSProperties = isFinal
     ? { border: '2px solid rgba(196,168,76,0.5)', background: 'rgba(196,168,76,0.06)', boxShadow: '0 0 20px rgba(196,168,76,0.10)' }
     : isPlayoff
-    ? { border: '1.5px solid rgba(196,168,76,0.35)', background: 'rgba(196,168,76,0.04)' }
+    ? seriesWeight === 3
+      ? { border: '1.5px solid rgba(232,185,92,0.55)', background: 'linear-gradient(180deg, rgba(232,185,92,0.10) 0%, var(--bg-portal-elevated) 42%)', boxShadow: '0 0 0 1px rgba(232,185,92,0.18), 0 6px 18px rgba(232,185,92,0.10)' }
+      : seriesWeight === 2
+      ? { border: '1.5px solid rgba(196,122,58,0.55)', background: 'linear-gradient(180deg, rgba(196,122,58,0.08) 0%, var(--bg-portal-elevated) 38%)', boxShadow: '0 0 0 1px rgba(196,122,58,0.10)' }
+      : { border: '1px solid rgba(196,122,58,0.32)', background: 'rgba(196,168,76,0.04)' }
     : derbyIntense
     ? { border: '1.5px solid rgba(196,80,50,0.30)', background: 'rgba(196,80,50,0.03)' }
     : isDerby
@@ -244,6 +263,9 @@ export function NextMatchCard({
           <span style={{ color: headerLabelColor, fontSize: derbyIntense || isFinal ? 10 : 8, letterSpacing: '1px', textTransform: 'uppercase', fontFamily: 'var(--font-body)', fontWeight: 700 }}>
             {headerLabel}
           </span>
+          {critTagLabel && (
+            <span className="primary-crit-tag">{critTagLabel}</span>
+          )}
         </div>
         <span className="tag" style={headerTagStyle}>{headerTagText}</span>
       </div>
@@ -333,7 +355,7 @@ export function NextMatchCard({
 
         {/* Playoff: series score boxes */}
         {isPlayoff && !isFinal && playoffSeries && (
-          <SeriesBoxes wins={dynamicHomeWins} losses={dynamicAwayWins} />
+          <SeriesBoxes wins={dynamicHomeWins} losses={dynamicAwayWins} nextStyle={seriesNextStyle} />
         )}
 
         {/* Normal/home: round info + arena */}

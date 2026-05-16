@@ -1,16 +1,12 @@
 import type React from 'react'
 import type { CardRenderProps } from '../portalTypes'
 import { NextMatchCard } from '../../dashboard/NextMatchCard'
+import { getPlayoffSeriesContext } from '../../../../domain/services/portal/playoffSeriesContext'
+import { PlayoffRound } from '../../../../domain/enums'
 
-/**
- * Primary-kort för rutin-matchdag.
- * Wrappar NextMatchCard med samma logik som DashboardScreen.
- * Mock-referens: "Routine"-tillståndet i portal_bag_mockup.html.
- */
 export function NextMatchPrimary({ game }: CardRenderProps) {
   const managedId = game.managedClubId
 
-  // Kolla om laget är eliminerat
   const bracket = game.playoffBracket
   let eliminated = false
   if (bracket) {
@@ -64,6 +60,18 @@ export function NextMatchPrimary({ game }: CardRenderProps) {
   )
   const hasPendingLineup = !!(game.managedClubPendingLineup) && hasPreviousMatch
 
+  // R3+ — series context for weight-based styling
+  const ctx = isPlayoffFixture ? getPlayoffSeriesContext(game) : null
+  const seriesWeight = ctx?.weight
+  const critTagLabel = ctx && ctx.criticality !== 'open'
+    ? (ctx.criticality === 'decisive' ? 'Avgörande' : 'Matchpuck')
+    : undefined
+  const seriesNextStyle: 'decisive' | 'gold' | undefined = ctx
+    ? (ctx.round === PlayoffRound.Final && ctx.criticality !== 'open' ? 'gold'
+      : ctx.criticality === 'decisive' ? 'decisive'
+      : undefined)
+    : undefined
+
   // Override light-theme tokens — NextMatchCard was built for Dashboard (light bg, dark text).
   // Portal uses a dark background. Text overrides use direct hex values (not var() references)
   // to avoid var-in-var resolution issues in inline styles across React renders.
@@ -91,6 +99,9 @@ export function NextMatchPrimary({ game }: CardRenderProps) {
         matchWeather={matchWeather}
         hasPendingLineup={hasPendingLineup}
         lineupConfirmedThisRound={game.lineupConfirmedThisRound}
+        seriesWeight={seriesWeight}
+        critTagLabel={critTagLabel}
+        seriesNextStyle={seriesNextStyle}
       />
     </div>
   )

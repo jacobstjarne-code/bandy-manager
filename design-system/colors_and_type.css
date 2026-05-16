@@ -29,6 +29,8 @@
   --warm: #8c6e3a;  /* varm guld — injury_curve, warm severity */
   --warm-light: #c8a058;  /* ljusare warm — text/tag inom severity-domän */
   --gold: #E8B95C;  /* cup-vinnare / specialanslag */
+  --gold-deep: #B88838;
+  --shadow-gold: 0 3px 12px rgba(232, 185, 92, 0.32);
 
   /* ── Seasonal skies (dashboard) ──────────────────── */
   --bg-october:  linear-gradient(180deg, #E8E4DC 0%, #EDE8DF 100%);

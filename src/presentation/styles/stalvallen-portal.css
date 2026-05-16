@@ -420,3 +420,99 @@
   opacity: 0.75;
   line-height: 1.4;
 }
+
+/* ── PortalRoundMark ─────────────────────────────────────────── */
+
+.portal-roundmark {
+  margin: 2px 14px 12px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0.85;
+  line-height: 1.2;
+}
+.portal-roundmark::before,
+.portal-roundmark::after {
+  content: '⬩';
+  display: inline-block;
+  margin: 0 8px;
+  opacity: 0.7;
+}
+.portal-roundmark .crit {
+  color: var(--warm-light);
+  margin-left: 6px;
+  font-weight: 700;
+}
+.portal-roundmark.gold        { color: var(--gold); opacity: 1; }
+.portal-roundmark.gold .crit  { color: var(--gold); }
+
+/* ── Primary-card weight variants ───────────────────────────── */
+
+.primary-card.primary-weight-1 {
+  border-color: rgba(196, 122, 58, 0.32);
+}
+.primary-card.primary-weight-2 {
+  border-color: rgba(196, 122, 58, 0.55);
+  background: linear-gradient(180deg,
+    rgba(196, 122, 58, 0.08) 0%,
+    var(--bg-portal-elevated) 38%);
+  box-shadow: 0 0 0 1px rgba(196, 122, 58, 0.10), var(--shadow-card);
+}
+.primary-card.primary-weight-3 {
+  border-color: rgba(232, 185, 92, 0.55);
+  background: linear-gradient(180deg,
+    rgba(232, 185, 92, 0.10) 0%,
+    var(--bg-portal-elevated) 42%);
+  box-shadow: 0 0 0 1px rgba(232, 185, 92, 0.18), 0 6px 18px rgba(232, 185, 92, 0.10);
+}
+.primary-card.primary-weight-2 .primary-eyebrow { color: var(--warm-light); }
+.primary-card.primary-weight-3 .primary-eyebrow { color: var(--gold); }
+.primary-card.primary-weight-3 .primary-title   { font-size: 22px; }
+
+.primary-crit-tag {
+  margin-left: 6px;
+  font-family: var(--font-body);
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  padding: 1px 5px;
+  border-radius: 2px;
+  background: rgba(140, 110, 58, 0.18);
+  border: 1px solid rgba(140, 110, 58, 0.45);
+  color: var(--warm-light);
+}
+.primary-card.primary-weight-3 .primary-crit-tag {
+  background: rgba(232, 185, 92, 0.16);
+  border-color: rgba(232, 185, 92, 0.55);
+  color: var(--gold);
+}
+
+/* ── Series-game next-dot states ─────────────────────────────── */
+
+.series-game.next.decisive {
+  width: 22px;
+  height: 22px;
+  background: rgba(140, 110, 58, 0.20);
+  border-color: var(--warm);
+  color: var(--warm-light);
+  box-shadow: 0 0 6px rgba(140, 110, 58, 0.3);
+}
+.series-game.next.gold {
+  width: 22px;
+  height: 22px;
+  background: rgba(232, 185, 92, 0.22);
+  border-color: var(--gold);
+  color: var(--gold);
+  box-shadow: 0 0 8px rgba(232, 185, 92, 0.35);
+}
+
+/* ── Gold CTA ─────────────────────────────────────────────────── */
+
+.btn.btn-primary.btn-cta.btn-gold {
+  background: linear-gradient(180deg, var(--gold) 0%, var(--gold-deep, #B88838) 100%);
+  color: var(--bg-portal);
+  box-shadow: var(--shadow-gold, 0 3px 12px rgba(232, 185, 92, 0.32));
+}

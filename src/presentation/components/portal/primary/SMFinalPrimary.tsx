@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
 import { getWeatherEmoji } from '../../../../domain/services/weatherService'
 import { getRoundDate } from '../../../../domain/services/scheduleGenerator'
+import { getPlayoffSeriesContext } from '../../../../domain/services/portal/playoffSeriesContext'
 
 /**
  * Primary-kort för SM-finaldagen.
@@ -17,6 +18,11 @@ import { getRoundDate } from '../../../../domain/services/scheduleGenerator'
 export function SMFinalPrimary({ game }: CardRenderProps) {
   const navigate = useNavigate()
   const managedId = game.managedClubId
+
+  const ctx = getPlayoffSeriesContext(game)
+  const critTagLabel = ctx && ctx.criticality !== 'open'
+    ? (ctx.criticality === 'decisive' ? 'Avgörande' : 'Matchpuck')
+    : undefined
 
   const nextFixture = game.fixtures
     .filter(f => f.status === 'scheduled' && (f.homeClubId === managedId || f.awayClubId === managedId))
@@ -73,6 +79,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
         color: 'var(--match-gold)',
       }}>
         🏆 SM-FINAL · IMORGON
+        {critTagLabel && <span className="primary-crit-tag" style={{ marginLeft: 8 }}>{critTagLabel}</span>}
       </div>
       <div style={{
         fontFamily: 'var(--font-display)',
