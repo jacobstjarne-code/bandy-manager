@@ -167,7 +167,7 @@ export function PortalScreen() {
       >
         <SituationCard game={game} />
         <PortalBeat game={game} />
-        <PortalActiveBudget game={game} />
+        {!isSeason1Round1 && <PortalActiveBudget game={game} />}
         {isSeason1Round1 && activeCount > 0 && (
           <div className="portal-tutorial-frame">
             <strong>Lugnare första veckan</strong>

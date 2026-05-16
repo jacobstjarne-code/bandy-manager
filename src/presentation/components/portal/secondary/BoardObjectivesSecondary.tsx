@@ -13,7 +13,7 @@ export function BoardObjectivesSecondary({ game }: CardRenderProps) {
       className="portal-secondary-card"
       onClick={() => navigate('/game/club', { state: { tab: 'orten', scrollTo: 'board-objectives' } })}
     >
-      <div className="portal-card-stripe portal-card-stripe-copper" />
+      <div className="portal-card-stripe portal-card-stripe-copper-dim" />
       <span className="portal-card-chevron">›</span>
       <div className="portal-card-eyebrow">Styrelsen</div>
       <BoardObjectivesList objectives={objectives} max={2} />

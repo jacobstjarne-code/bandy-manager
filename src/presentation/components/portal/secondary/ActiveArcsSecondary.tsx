@@ -18,8 +18,8 @@ function getPhaseDots(phase: ActiveArc['phase']): number {
 
 const ARC_GLYPHS = ['A', 'B', 'C', 'D', 'E']
 
-function getGlyphVariant(arc: ActiveArc): 'warm' | 'muted' | 'default' {
-  if (arc.type === 'derby_echo') return 'warm'
+function getGlyphVariant(arc: ActiveArc, isUrgent: boolean): 'warm' | 'muted' | 'default' {
+  if (isUrgent) return 'warm'
   if (arc.phase === 'building') return 'muted'
   return 'default'
 }
@@ -37,7 +37,7 @@ function ArcRow({ arc, glyph, currentMatchday, onClick, isLast }: ArcRowProps) {
   const roundsLeft = arc.expiresMatchday - currentMatchday
   const isUrgent = roundsLeft <= 1
   const filledDots = getPhaseDots(arc.phase)
-  const variant = getGlyphVariant(arc)
+  const variant = getGlyphVariant(arc, isUrgent)
 
   const glyphColor = variant === 'warm'
     ? 'var(--warm)'
@@ -129,9 +129,9 @@ export function ActiveArcsSecondary({ game }: CardRenderProps) {
 
   return (
     <div className="portal-secondary-card">
-      <div className="portal-card-stripe portal-card-stripe-copper" />
+      <div className="portal-card-stripe portal-card-stripe-copper-dim" />
       <span className="portal-card-chevron">›</span>
-      <div className="portal-card-eyebrow">Arcs</div>
+      <div className="portal-card-eyebrow">I blickfånget</div>
       {arcs.map((arc, index) => (
         <ArcRow
           key={arc.id}

@@ -10,9 +10,9 @@ export const STATUS_ICON: Record<BoardObjective['status'], string> = {
 
 export const STATUS_COLOR: Record<BoardObjective['status'], string> = {
   active:  'var(--text-light-secondary)',
-  at_risk: '#E8A090',
-  failed:  '#E8A090',
-  met:     '#A0C890',
+  at_risk: 'var(--match-warn)',
+  failed:  'var(--match-warn)',
+  met:     'var(--match-positive)',
 }
 
 export const SORT_ORDER: Record<BoardObjective['status'], number> = { failed: 0, at_risk: 1, active: 2, met: 3 }
@@ -39,50 +39,33 @@ function ObjRow({ obj, onNavigate }: ObjRowProps) {
   const isBalance = obj.measureFn === 'balanceBudget'
   const progressPct = obj.targetValue > 0 ? Math.min(100, Math.round((obj.currentValue / obj.targetValue) * 100)) : 0
 
+  const progressFillColor = obj.status === 'at_risk' || obj.status === 'failed'
+    ? 'var(--match-warn)'
+    : obj.status === 'met'
+    ? 'var(--match-positive)'
+    : 'var(--accent)'
+
+  const balanceColor = obj.currentValue >= 0 ? 'var(--match-positive)' : 'var(--match-warn)'
+
   return (
     <div
       onClick={onNavigate}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{
-        padding: '9px 6px',
-        cursor: onNavigate ? 'pointer' : 'default',
-        borderRadius: 4,
-        background: hovered && onNavigate ? 'rgba(196,122,58,0.04)' : 'transparent',
-      }}
+      className={`obj-row${onNavigate ? ' obj-row-clickable' : ''}${hovered && onNavigate ? ' obj-row-hovered' : ''}`}
     >
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: 8,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-          <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>{STATUS_ICON[obj.status]}</span>
-          <span style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: 13, fontWeight: 600,
-            color: 'var(--text-light)', lineHeight: 1.3,
-            minWidth: 0,
-          }}>
-            {obj.label}
-          </span>
+      <div className="obj-row-header">
+        <div className="obj-row-title-group">
+          <span className="obj-row-icon">{STATUS_ICON[obj.status]}</span>
+          <span className="obj-row-label">{obj.label}</span>
         </div>
-        <span style={{
-          fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase',
-          flexShrink: 0,
-          color: STATUS_COLOR[obj.status],
-        }}>
+        <span className="obj-row-owner" style={{ color: STATUS_COLOR[obj.status] }}>
           {formatOwnerInitial(obj.ownerId)}
         </span>
       </div>
 
       {isBalance ? (
-        <div style={{
-          marginTop: 6,
-          fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 12,
-          color: obj.currentValue >= 0 ? '#A0C890' : '#E8A090',
-        }}>
+        <div className="obj-row-balance" style={{ color: balanceColor }}>
           {obj.currentValue >= 0 ? '+' : '−'}{formatMoney(Math.abs(obj.currentValue))}
           {obj.targetValue !== 0 && (
             <span style={{ color: 'var(--text-muted)' }}>
@@ -91,30 +74,15 @@ function ObjRow({ obj, onNavigate }: ObjRowProps) {
           )}
         </div>
       ) : obj.targetValue > 0 ? (
-        <div style={{ marginTop: 8 }}>
-          <div style={{
-            display: 'flex', justifyContent: 'space-between',
-            fontSize: 10, color: 'var(--text-light-secondary)',
-            marginBottom: 3, letterSpacing: '0.3px',
-          }}>
+        <>
+          <div className="obj-progress-header">
             <span>Framsteg</span>
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--text-light)' }}>
-              {obj.currentValue} / {obj.targetValue}
-            </span>
+            <span className="obj-progress-value">{obj.currentValue} / {obj.targetValue}</span>
           </div>
-          <div style={{
-            height: 3, background: 'rgba(196,122,58,0.15)', borderRadius: 2, overflow: 'hidden',
-          }}>
-            <div style={{
-              height: '100%', borderRadius: 2,
-              width: `${progressPct}%`,
-              background: obj.status === 'at_risk' || obj.status === 'failed' ? '#E8A090'
-                : obj.status === 'met' ? '#A0C890'
-                : 'var(--accent)',
-              transition: 'width 0.4s ease',
-            }} />
+          <div className="obj-progress-track">
+            <div className="obj-progress-fill" style={{ width: `${progressPct}%`, background: progressFillColor }} />
           </div>
-        </div>
+        </>
       ) : null}
     </div>
   )
@@ -137,10 +105,7 @@ export function BoardObjectivesList({ objectives, max = 2, onNavigate }: BoardOb
   return (
     <>
       {items.map((obj, i) => (
-        <div
-          key={obj.id}
-          style={i > 0 ? { borderTop: '0.5px solid rgba(196,122,58,0.15)' } : undefined}
-        >
+        <div key={obj.id} className={i > 0 ? 'obj-row-separator' : undefined}>
           <ObjRow obj={obj} onNavigate={onNavigate} />
         </div>
       ))}

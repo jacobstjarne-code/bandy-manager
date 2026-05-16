@@ -57,72 +57,14 @@ export function MecenatDinnerEvent({ event, onFinish }: Props) {
 
   const settingEmoji = scene.setting === 'jakt' ? '🦌' : scene.setting === 'whisky' ? '🥃' : '🧖'
 
-  const cardStyle: React.CSSProperties = {
-    padding: '24px 20px',
-    minWidth: 280,
-    maxWidth: 360,
-    width: '90%',
-    background: 'var(--bg)',
-    borderRadius: 16,
-    boxShadow: '0 8px 40px rgba(0,0,0,0.4)',
-    marginBottom: 20,
-  }
-
-  const labelStyle: React.CSSProperties = {
-    fontSize: 9,
-    fontWeight: 600,
-    letterSpacing: '2.5px',
-    textTransform: 'uppercase',
-    color: 'var(--text-muted)',
-    marginBottom: 6,
-  }
-
-  const titleStyle: React.CSSProperties = {
-    fontSize: 18,
-    fontWeight: 800,
-    color: 'var(--text-primary)',
-    marginBottom: 10,
-    lineHeight: 1.3,
-  }
-
-  const bodyStyle: React.CSSProperties = {
-    fontSize: 14,
-    color: 'var(--text-secondary)',
-    lineHeight: 1.6,
-    marginBottom: 20,
-    whiteSpace: 'pre-line',
-  }
-
-  const btnStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '14px 16px',
-    borderRadius: 10,
-    background: 'var(--bg-elevated)',
-    color: 'var(--text-primary)',
-    border: '1px solid var(--border)',
-    textAlign: 'left',
-    cursor: 'pointer',
-    fontSize: 14,
-    lineHeight: 1.4,
-    marginBottom: 8,
-  }
-
-  const wrapStyle: React.CSSProperties = {
-    position: 'fixed', inset: 0,
-    background: 'rgba(0,0,0,0.6)',
-    display: 'flex', flexDirection: 'column',
-    alignItems: 'center', justifyContent: 'flex-start',
-    paddingTop: '60px', zIndex: 'var(--z-modal)' as unknown as number, overflowY: 'auto',
-  }
-
   if (step.kind === 'intro') {
     return (
-      <div style={wrapStyle}>
-        <div style={cardStyle}>
-          <p style={labelStyle}>{settingEmoji} Mecenatens middag</p>
-          <h2 style={titleStyle}>{event.title}</h2>
-          <p style={bodyStyle}>{scene.settingDescription}</p>
-          <button style={btnStyle} onClick={() => setStep({ kind: 'question', qIndex: 0 })}>
+      <div className="mecenat-overlay">
+        <div className="mecenat-card">
+          <p className="mecenat-label">{settingEmoji} Mecenatens middag</p>
+          <h2 className="mecenat-title">{event.title}</h2>
+          <p className="mecenat-body">{scene.settingDescription}</p>
+          <button className="btn btn-primary mecenat-primary-btn" onClick={() => setStep({ kind: 'question', qIndex: 0 })}>
             Sätt dig ner
           </button>
         </div>
@@ -134,15 +76,15 @@ export function MecenatDinnerEvent({ event, onFinish }: Props) {
     const q = scene.questions[step.qIndex]
     const progress = `${step.qIndex + 1} / ${scene.questions.length}`
     return (
-      <div style={wrapStyle}>
-        <div style={cardStyle}>
-          <p style={labelStyle}>{settingEmoji} Fråga {progress}</p>
-          <h2 style={titleStyle}>{event.title}</h2>
-          <p style={bodyStyle}>{q.text}</p>
+      <div className="mecenat-overlay">
+        <div className="mecenat-card">
+          <p className="mecenat-label">{settingEmoji} Fråga {progress}</p>
+          <h2 className="mecenat-title">{event.title}</h2>
+          <p className="mecenat-body">{q.text}</p>
           {q.options.map(opt => (
             <button
               key={opt.id}
-              style={btnStyle}
+              className="btn btn-outline mecenat-option-btn"
               onClick={() => handleOptionPick(step.qIndex, opt)}
             >
               {opt.label}
@@ -155,12 +97,12 @@ export function MecenatDinnerEvent({ event, onFinish }: Props) {
 
   if (step.kind === 'reaction') {
     return (
-      <div style={wrapStyle}>
-        <div style={cardStyle}>
-          <p style={labelStyle}>{settingEmoji} Mecenatens svar</p>
-          <h2 style={titleStyle}>{event.title}</h2>
-          <p style={bodyStyle}>{step.option.followUp}</p>
-          <button style={btnStyle} onClick={() => handleReactionContinue(step.qIndex)}>
+      <div className="mecenat-overlay">
+        <div className="mecenat-card">
+          <p className="mecenat-label">{settingEmoji} Mecenatens svar</p>
+          <h2 className="mecenat-title">{event.title}</h2>
+          <p className="mecenat-body">{step.option.followUp}</p>
+          <button className="btn btn-primary mecenat-primary-btn" onClick={() => handleReactionContinue(step.qIndex)}>
             Fortsätt
           </button>
         </div>
@@ -178,17 +120,14 @@ export function MecenatDinnerEvent({ event, onFinish }: Props) {
       : ''
 
   return (
-    <div style={wrapStyle}>
-      <div style={cardStyle}>
-        <p style={labelStyle}>{settingEmoji} Middagen är slut</p>
-        <h2 style={titleStyle}>{event.title}</h2>
-        <p style={bodyStyle}>
+    <div className="mecenat-overlay">
+      <div className="mecenat-card">
+        <p className="mecenat-label">{settingEmoji} Middagen är slut</p>
+        <h2 className="mecenat-title">{event.title}</h2>
+        <p className="mecenat-body">
           {`${scene.mecenatName} verkar ${mood}. ${moodEmoji}\n\n${csText}`}
         </p>
-        <button
-          style={{ ...btnStyle, background: 'var(--accent)', color: 'var(--text-light)', border: 'none', fontWeight: 700 }}
-          onClick={handleOutroFinish}
-        >
+        <button className="btn btn-primary mecenat-primary-btn" onClick={handleOutroFinish}>
           Avsluta kvällen
         </button>
       </div>

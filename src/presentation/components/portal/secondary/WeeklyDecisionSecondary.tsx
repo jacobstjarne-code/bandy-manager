@@ -15,10 +15,12 @@ export function WeeklyDecisionSecondary({ game }: CardRenderProps) {
   const [resolvedInfo, setResolvedInfo] = useState<{ label: string; effect: string } | null>(null)
   const [hoveredBtn, setHoveredBtn] = useState<'A' | 'B' | null>(null)
   const capturedDecision = useRef<WeeklyDecision | null>(game.pendingWeeklyDecision ?? null)
+  const resolvedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (game.pendingWeeklyDecision) {
       capturedDecision.current = game.pendingWeeklyDecision
+      if (resolvedTimeoutRef.current) clearTimeout(resolvedTimeoutRef.current)
       setResolvedInfo(null)
     }
   }, [game.pendingWeeklyDecision])
@@ -35,7 +37,8 @@ export function WeeklyDecisionSecondary({ game }: CardRenderProps) {
     const option = choice === 'A' ? decision!.optionA : decision!.optionB
     setResolvedInfo({ label: option.label, effect: option.effect })
     resolveWeeklyDecision(choice)
-    setTimeout(() => setResolvedInfo(null), 1500)
+    if (resolvedTimeoutRef.current) clearTimeout(resolvedTimeoutRef.current)
+    resolvedTimeoutRef.current = setTimeout(() => setResolvedInfo(null), 2600)
   }
 
   const isResolved = !!resolvedInfo
@@ -43,7 +46,7 @@ export function WeeklyDecisionSecondary({ game }: CardRenderProps) {
   return (
     <div className="portal-secondary-card">
       {/* Left stripe */}
-      <div className={`portal-card-stripe ${isSupporter ? 'portal-card-stripe-warm' : 'portal-card-stripe-copper'}`} />
+      <div className={`portal-card-stripe ${isSupporter ? 'portal-card-stripe-warm' : 'portal-card-stripe-copper-wide'}`} />
 
       {/* Chevron affordance */}
       <span className="portal-card-chevron">›</span>

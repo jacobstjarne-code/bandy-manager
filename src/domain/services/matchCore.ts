@@ -1207,6 +1207,8 @@ function* simulateMatchCore(
           commentaryText = pickSpecialDateCommentary('annandagen', sdCtx, fixture.season, fixture.matchday)
         } else if (input.isNyarsbandy) {
           commentaryText = pickSpecialDateCommentary('nyarsbandy', sdCtx, fixture.season, fixture.matchday)
+        } else if (fixture.isCup && !input.isCupFinalhelgen && rand() < 0.60) {
+          commentaryText = fillTemplate(pickCommentary(commentary.cup_kickoff, rand), templateVars)
         } else if (rivalry) {
           commentaryText = fillTemplate(pickCommentary(commentary.derby_kickoff, rand), { ...templateVars, rivalry: rivalry.name })
           isDerbyStep = true
@@ -1269,6 +1271,10 @@ function* simulateMatchCore(
           if (assisterPlayer?.isClubLegend) {
             commentaryText = pickLegendCommentary(assisterPlayer, 'assist', minute, rand)
           }
+        } else if (fixture.isCup && !input.isCupFinalhelgen && rand() < 0.60) {
+          const isFirstGoalInMatch = homeScore + awayScore === 1
+          const cupGoalPool = isFirstGoalInMatch ? commentary.cup_goalOpener : commentary.cup_goal
+          commentaryText = fillTemplate(pickCommentary(cupGoalPool, rand), templateVars)
         } else if (matchPhase === 'final' && rand() < 0.60) {
           commentaryText = fillTemplate(pickCommentary(commentary.final_goal, rand), templateVars)
         } else if (matchPhase === 'semifinal' && rand() < 0.50) {
@@ -1608,10 +1614,18 @@ function* simulateMatchCore(
     minute: '90', player: '', goalkeeper: '', rivalry: rivalry?.name ?? '',
     result: homeScore > awayScore ? 'en seger' : homeScore < awayScore ? 'ingenting' : 'en poäng',
   }
-  const fullTimeText = isFast ? scoreStrFT
-    : rivalry
-      ? fillTemplate(pickCommentary(commentary.derby_fullTime, rand), { ...ftVars, rivalry: rivalry.name })
-      : fillTemplate(pickCommentary(commentary.fullTime, rand), ftVars)
+  let fullTimeText: string
+  if (isFast) {
+    fullTimeText = scoreStrFT
+  } else if (rivalry) {
+    fullTimeText = fillTemplate(pickCommentary(commentary.derby_fullTime, rand), { ...ftVars, rivalry: rivalry.name })
+  } else if (fixture.isCup && !input.isCupFinalhelgen && rand() < 0.60) {
+    const homeWon = homeScore > awayScore
+    const cupFtPool = homeWon ? commentary.cup_fullTime_win : commentary.cup_fullTime_loss
+    fullTimeText = fillTemplate(pickCommentary(cupFtPool, rand), ftVars)
+  } else {
+    fullTimeText = fillTemplate(pickCommentary(commentary.fullTime, rand), ftVars)
+  }
 
   yield {
     step: 60, minute: 90, events: [], homeScore, awayScore,

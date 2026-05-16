@@ -1464,7 +1464,7 @@ a {
 
 /* Inbox counter row */
 .portal-inbox-row {
-  margin: 10px 0 0;
+  margin: 14px 0 0;
   padding: 8px 12px;
   border-top: 1px dashed rgba(196,122,58,0.18);
   text-align: center;

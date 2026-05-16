@@ -350,6 +350,39 @@ export const commentary = {
     "Det räckte inte hela vägen. {opponent} är svenska mästare. {score}.",
   ],
 
+  cup_kickoff: [
+    "Domaren blåser. {team} mot {opponent}. Det är cupen.",
+    "Avslag. Oktober. Bandyåret börjar nu.",
+    "Och så drar det igång. Cupens första riktiga avläsning.",
+    "{team} tar emot. Spelarna är inte i form, isen inte stabil. Just därför finns det här.",
+    "Domaren blåser. Frosten är borta från mornan men kvar i bollen.",
+  ],
+
+  cup_goalOpener: [
+    "Det första målet i cupen kommer ofta överraskande tidigt. {player}. {score}.",
+  ],
+
+  cup_goal: [
+    "Den sitter. {player} med {score}. Cupen har inga omspel — den här räknas.",
+    "{player}! Bollen ligger där. {score}. Något att ta med till tisdagsträningen.",
+    "MÅL för {team}. {player} hittar nätet. {score}. Det räcker långt — om det räcker hela vägen.",
+    "{player} sätter dit den. {score}. Inget omspel om det går fel sen.",
+  ],
+
+  cup_fullTime_win: [
+    "Slutsignal. {team} går vidare. Kvarten väntar.",
+    "Det är slut. {score}. {team} har en match till i cupen.",
+    "Domaren blåser. {team} klarar sig. Nu vet vi att vi kan spela bandy igen.",
+    "Slutspelad. {team} vidare, {opponent} hem. Det blev sista cupmatchen för dem i år.",
+  ],
+
+  cup_fullTime_loss: [
+    "Slutsignal. Cupen är slut för {team}. {score}.",
+    "Det är över. {team} åker ur. Söndagar fria fram till ligan.",
+    "Slut. {team} kunde inte den här gången. Bara en match — och den är klar.",
+    "Domaren blåser. {opponent} vidare. För {team} blev det vad det blev.",
+  ],
+
   playoff_general: [
     "Slutspelstempot är något helt annat. Varje duell är på liv och död.",
     "Playoffbandy. Hårdare dueller, mer intensitet, högre insatser.",

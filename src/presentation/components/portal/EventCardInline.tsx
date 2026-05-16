@@ -80,30 +80,11 @@ export function EventCardInline({ event }: Props) {
         padding: '14px 16px 14px 18px',
       }}
     >
-      {/* Vänster-stripe — Stålvallen-anatomi */}
-      <div style={{
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        bottom: 0,
-        width: 2,
-        background: 'var(--copper)',
-        borderRadius: 'var(--radius-md) 0 0 var(--radius-md)',
-      }} />
+      {/* Vänster-stripe — action card, 3 px */}
+      <div className="portal-card-stripe portal-card-stripe-copper-wide" />
 
-      {/* Typ-label — monospace eyebrow, konsekvent copper */}
-      <p style={{
-        fontFamily: 'var(--font-mono)',
-        fontSize: 9,
-        fontWeight: 600,
-        letterSpacing: '2px',
-        textTransform: 'uppercase',
-        color: 'var(--copper)',
-        opacity: 0.85,
-        marginBottom: 10,
-      }}>
-        {typeLabel}
-      </p>
+      {/* Typ-label — eyebrow, klassbaserad */}
+      <p className="portal-card-eyebrow">{typeLabel}</p>
 
       {/* Titel — visas för hallDebate-events */}
       {event.type === 'hallDebate' && event.title && (
