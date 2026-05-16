@@ -9,8 +9,12 @@ import { PortalMinimalBar } from '../components/portal/PortalMinimalBar'
 import { SituationCard } from '../components/portal/SituationCard'
 import { PortalBeat } from '../components/portal/PortalBeat'
 import { PortalEventSlot } from '../components/portal/PortalEventSlot'
+import { PortalActiveBudget } from '../components/portal/PortalActiveBudget'
+import { PortalQueueRail } from '../components/portal/PortalQueueRail'
+import { PortalInboxCounter } from '../components/portal/PortalInboxCounter'
 import { AnslagOverlay } from '../components/anslag/AnslagOverlay'
 import { computeNextAnslag } from '../../domain/services/anslagService'
+import { getActiveDecisionCount } from '../../domain/services/decisionBudgetService'
 import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
 import { playSound } from '../audio/soundEffects'
 
@@ -140,6 +144,9 @@ export function PortalScreen() {
 
   const Primary = layout.primary.Component
 
+  const isSeason1Round1 = game.currentSeason === 1 && game.currentMatchday === 1
+  const activeCount = getActiveDecisionCount(game)
+
   return (
     <>
       {nextAnslag && (
@@ -160,10 +167,19 @@ export function PortalScreen() {
       >
         <SituationCard game={game} />
         <PortalBeat game={game} />
+        <PortalActiveBudget game={game} />
+        {isSeason1Round1 && activeCount > 0 && (
+          <div className="portal-tutorial-frame">
+            <strong>Lugnare första veckan</strong>
+            En fråga åt gången. Resten ligger och väntar tills du hittat rytmen.
+          </div>
+        )}
         <PortalEventSlot game={game} />
         <Primary game={game} />
+        <PortalQueueRail game={game} />
         <PortalSecondarySection cards={layout.secondary} game={game} />
         <PortalMinimalBar cards={layout.minimal} game={game} />
+        <PortalInboxCounter game={game} />
       </div>
 
       {/* STICKY CTA — alltid synlig ovanför BottomNav */}

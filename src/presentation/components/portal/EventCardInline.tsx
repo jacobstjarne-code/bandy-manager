@@ -7,17 +7,15 @@
  * - Prio-signal i typ-label-färg: high/normal = accent, low = muted
  * - Body-text: Georgia 13px italic
  * - Knapprad med actions från getActionsForEvent — använder .btn .btn-primary / .btn .btn-outline
- * - Räknarrad om remainingCount > 0
+ * - Räknarrad hanteras av PortalInboxCounter (i botten av PortalScreen)
  */
 
-import { useNavigate } from 'react-router-dom'
 import { useGameStore } from '../../store/gameStore'
 import { getActionsForEvent } from '../../../domain/services/eventActions'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 
 interface Props {
   event: GameEvent
-  remainingCount: number
 }
 
 function getEventTypeLabel(event: GameEvent): string {
@@ -61,9 +59,8 @@ function getEventTypeLabel(event: GameEvent): string {
   }
 }
 
-export function EventCardInline({ event, remainingCount }: Props) {
+export function EventCardInline({ event }: Props) {
   const resolveEvent = useGameStore(s => s.resolveEvent)
-  const navigate = useNavigate()
   const actions = getActionsForEvent(event)
   const typeLabel = getEventTypeLabel(event)
 
@@ -140,21 +137,6 @@ export function EventCardInline({ event, remainingCount }: Props) {
         ))}
       </div>
 
-      {/* Räknarrad */}
-      {remainingCount > 0 && (
-        <p
-          onClick={() => navigate('/game/inbox')}
-          style={{
-            marginTop: 10,
-            fontSize: 12,
-            color: 'var(--text-muted)',
-            cursor: 'pointer',
-            textDecoration: 'underline',
-          }}
-        >
-          {remainingCount} notis{remainingCount === 1 ? '' : 'er'} i inboxen
-        </p>
-      )}
     </div>
   )
 }

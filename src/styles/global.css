@@ -1289,6 +1289,194 @@ a {
   animation: fade-in-static 0.7s ease-out forwards;
 }
 
+/* ── F1 Beslutsekonomi — Portal decision economy components ────────── */
+
+/* Active section header */
+.portal-active-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 10px;
+  padding: 0 2px;
+}
+.portal-active-eyebrow {
+  font-family: var(--font-body);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.portal-active-budget {
+  display: inline-flex;
+  gap: 4px;
+}
+.portal-budget-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid rgba(196,122,58,0.45);
+  box-sizing: border-box;
+}
+.portal-budget-dot-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 4px rgba(196,122,58,0.4);
+}
+.portal-budget-dot-off {
+  background: transparent;
+}
+.portal-budget-dot-locked {
+  opacity: 0.25;
+  background: transparent;
+  border-color: rgba(196,122,58,0.35);
+}
+
+/* Tutorial band (Säsong 1 Omg 1) */
+.portal-tutorial-frame {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(196,122,58,0.10), rgba(196,122,58,0.04));
+  border-radius: 6px;
+  border: 1px solid rgba(196,122,58,0.25);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-light-secondary);
+}
+.portal-tutorial-frame strong {
+  font-style: normal;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Queue-rail */
+.portal-queue-rail {
+  margin: 6px 0 12px;
+  padding: 9px 12px 11px;
+  background: rgba(196,122,58,0.04);
+  border: 1px solid rgba(196,122,58,0.18);
+  border-radius: 6px;
+}
+.portal-queue-rail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+.portal-queue-rail-eyebrow {
+  font-family: var(--font-body);
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.portal-queue-rail-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--text-light-secondary);
+  opacity: 0.85;
+}
+.portal-queue-rail-count strong {
+  color: var(--accent);
+  font-weight: 700;
+}
+.portal-queue-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.portal-queue-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  background: var(--bg-portal-surface);
+  border: 1px solid rgba(196,122,58,0.2);
+  border-radius: 99px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 1px;
+  color: var(--text-light-secondary);
+  text-transform: uppercase;
+}
+.portal-queue-chip-icon { font-size: 10px; }
+.portal-queue-chip-warm {
+  border-color: rgba(140,110,58,0.4);
+  color: var(--warm-light);
+}
+
+/* Cooldown row */
+.portal-cooldown-row {
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px dashed rgba(196,122,58,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.portal-cooldown-label {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 1.2px;
+  color: var(--text-light-secondary);
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.portal-cooldown-icon {
+  opacity: 0.7;
+  font-size: 11px;
+  line-height: 1;
+}
+.portal-cooldown-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+.portal-cooldown-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1px solid rgba(196,122,58,0.35);
+  box-sizing: border-box;
+  background: transparent;
+  border-color: rgba(196,122,58,0.2);
+}
+.portal-cooldown-dot-left {
+  background: var(--warm);
+  border-color: var(--warm);
+  box-shadow: 0 0 4px rgba(140,110,58,0.5);
+}
+
+/* Inbox counter row */
+.portal-inbox-row {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-top: 1px dashed rgba(196,122,58,0.18);
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text-light-secondary);
+  cursor: pointer;
+  letter-spacing: 0.3px;
+}
+.portal-inbox-row strong { color: var(--accent); font-weight: 700; }
+.portal-inbox-row .portal-inbox-sep { opacity: 0.4; margin: 0 6px; }
+
 /* Scene-system — kafferummets subtila bakgrundstextur */
 .coffee-room-bg::before {
   content: '';
