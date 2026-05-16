@@ -1,7 +1,56 @@
 # BANDY MANAGER — KVAR
 
-**Datum:** 2026-05-14
+**Datum:** 2026-05-16
 **Syfte:** Allt som är parkerat, spec:at-men-ej-implementerat, eller behöver beslut. Läs vid sessionsstart efter att CLAUDE.md/LESSONS.md/DECISIONS.md/DESIGN_SYSTEM.md är lästa.
+
+---
+
+## STRATEGISK PRIO (etablerad 2026-05-16)
+
+Full motivering: `docs/GENOMGANG_SPEL_LOOP_2026-05-16.md`. Ordningen är **2 → 1 → 3** med 3 parallellt med 1.
+
+### Riktning 2 (NU) — Verifiera dolda system
+- Playtest-session: 10 inlåsta system (alla 🟠 enligt INLASTA_SYSTEM.md) + FIX 47-50 + F1 Beslutsekonomi när Code rapporterat klart.
+- Ingen ny kod byggs förrän verifiering är gjord.
+
+### Riktning 1 (NÄSTA) — Klubbutvecklingspaketet
+- Spec finns: `docs/SPEC_KLUBBUTVECKLING.md`.
+- Facility-träd med dependencies, säsongsplanering vid PreSeason, löneeskalering, kontextuella sponsorer, halvårsrapport, annandagsplanering, halldebatten som flersäsongsprocess.
+- Stor sprint, ~2-3 veckor.
+
+### Riktning 3 (PARALLELL MED 1) — Cup-ton + korsreferens-rester
+- Cup-anslag och cup-commentary får egen tonal identitet (Opus-skrivarbete direkt).
+- THE_BOMB-rester: 1.1 (CS-villkorad pressfråga), 2.1 (klack-reaktion nästa omgång), 3.3 (pensionsval-event).
+
+### Verktygsfördelning just nu
+
+| Verktyg | Spår | Konkret första uppdrag |
+|---|---|---|
+| **Jacob** | Riktning 2 | Playtest 10 inlåsta system + FIX 47-50 + F1 (när Code rapporterat) |
+| **Opus** | Riktning 3 | Cup-tonen — börja med tonal-analys + skrivuppdrag på cup-anslag och cup-commentary |
+| **Code** | F1 Beslutsekonomi | Redan i kö per `HANDOFF-BESLUTSEKONOMI-F1.md`. När klart: standby för playtest-fynd från Jacob |
+| **Claude Design** | OPEN THREADS i `design-system/CLAUDE.md` | Pixel-audit i kontext för 10 inlåsta system + ArrivalScene rev2 visuell audit. INTE påbörja Riktning 1 förrän Jacob säger ok efter Riktning 2-verifiering. |
+
+---
+
+## AKTUELLT LÄGE (2026-05-17) — F1 BESLUTSEKONOMI KOD KLAR
+
+**F1 Beslutsekonomi UI:** ✅ KOD KLAR — commit `253b544`.
+
+| Komponent | Innehåll | Status |
+|-----------|----------|--------|
+| PortalActiveBudget | Eyebrow + budget-prickar (on/off/locked), visas när activeCount > 0 | ✅ |
+| Tutorial-frame | Säsong 1 Omg 1: copper-band "Lugnare första veckan" | ✅ |
+| PortalQueueRail | Kö-rail med ⏳ + räknare + käll-chip; renderar när deferredDecisions.length > 0 | ✅ |
+| CooldownRow | Amber-prickar (left/spent), roundsLeft/totalRounds; redo att kopplas till source-secondary-cards | ✅ |
+| PortalInboxCounter | aktiva · i kö · notiser i inboxen — döljer 0-kategorier | ✅ |
+| EventCardInline cleanup | remainingCount-blocket borttaget, hanteras nu av PortalInboxCounter | ✅ |
+
+**Pixel-audit att göra (Jacob + Design):**
+- Verifiera hierarki i kontext med 4+ sekundärer aktiva
+- Tutorial-band synligt Säsong 1 Omg 1, borta Omg 2
+- Queue-rail visas när deferredDecisions > 0 (backend-wiring ej klar än — queue alltid tom just nu)
+- CooldownRow saknar integration i source-secondary-cards (hallDebate/rumorService) — backend + nya kort krävs
 
 ---
 
