@@ -17,9 +17,12 @@ Om tids-sidan inte svarar — fråga Jacob.
 1. **`docs/LESSONS.md`** — återkommande buggmönster. Känn igen innan du fixar. Om en ny bugg matchar ett mönster där, använd lärdomen först.
 2. **`docs/DECISIONS.md`** — arkitekturbeslut. Öppna den vid varje session — nya designprinciper introduceras där före de räknas som etablerade.
 3. **`design-system/CODE-OPUS-INSTRUCTION.md`** — auktoritativt designsystem. Läs den först innan UI-arbete. `docs/DESIGN_SYSTEM.md` är arkiverad — använd inte.
-4. **`docs/KVAR.md`** — aktuell karta över aktiva jobb, parkerat och nästa steg.
-5. **Senaste `docs/HANDOVER_YYYY-MM-DD.md`** — dagsläge från föregående session.
-6. **Aktuell sprintfil** i `docs/sprints/`.
+4. **`docs/BACKLOG.md`** — **ENDA SANNING för "specat men ej byggt" + "idéer som ska bli spec".** Etablerad 2026-05-17. När något parkeras (Opus säger "framtid" eller "senare") skrivs det in här SAMMA session, inte vid tillfälle. Vid stor sprint-start scannas BACKLOG för relaterade idéer som kan packas samman.
+5. **`docs/KVAR.md`** — historisk logg av leveranser (kronologisk). KVAR är vad SOM HÄNT, BACKLOG är vad som ska göras. Inte samma sak.
+6. **Senaste `docs/HANDOVER_YYYY-MM-DD.md`** — dagsläge från föregående session.
+7. **Aktuell sprintfil** i `docs/sprints/`.
+
+**Vid skrivuppgift** (svensk text, brev, CV, citat, ansökningar, redaktionellt): läs OCKSÅ `docs/WRITING_GUIDELINES_BANDY_MANAGER.md` + `docs/SPEC_CUP_ANSLAG_2026-05-08.md` SYSTEMATISKT innan ett enda citat skrivs. Max 10 citat per generations-block (Lärdom #7). Inte plocka strängar — läs helhet.
 
 **Vid arbete med THE_BOMB-frågor:** läs `docs/THE_BOMB.md` (vision) och `docs/THE_BOMB_STATUS_2026-04-26.md` (kod-verifierad status per subprojekt).
 
