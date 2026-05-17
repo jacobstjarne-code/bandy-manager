@@ -47,6 +47,11 @@ export function gameFlowActions(get: Get, set: Set) {
       const communityStandingBefore = game.communityStanding ?? 50
       const inboxCountBefore = game.inbox.length
 
+      // Snapshot pendingEvents before any advance — used after auto-loops to prevent
+      // intermediate cup-round events from stacking (each auto-iteration adds events,
+      // resulting in 7+ decisions piled up at the first managed-fixture round).
+      const pendingEventsBeforeAdvance = game.pendingEvents ?? []
+
       let result = advanceToNextEvent(game)
 
       // Auto-advance through matchdays where managed club has no fixture (e.g. cup rounds
@@ -65,6 +70,22 @@ export function gameFlowActions(get: Get, set: Set) {
         if (managedAtNextMd) break
         result = advanceToNextEvent(g)
         autoLoops++
+      }
+
+      // If we auto-looped, restore pendingEvents to original (unresolved) + only last iteration's
+      // new events. Prevents intermediate cup-round event generation from stacking.
+      if (autoLoops > 0) {
+        const lastIterationNewEvents = result.pendingEvents ?? []
+        result = {
+          ...result,
+          game: {
+            ...result.game,
+            pendingEvents: [
+              ...pendingEventsBeforeAdvance.filter(e => !e.resolved),
+              ...lastIterationNewEvents,
+            ],
+          },
+        }
       }
 
       const resultGame = result.game
