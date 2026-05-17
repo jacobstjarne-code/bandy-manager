@@ -1,7 +1,5 @@
-import { useGameStore } from '../../store/gameStore'
-import { getSeasonPhase, isManagedClubInPlayoff, type SeasonPhase } from '../../../domain/data/seasonPhases'
+import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, type SeasonPhase } from '../../../domain/data/seasonPhases'
 import { SEASON_MOOD } from '../../../domain/services/dailyBriefingService'
-import { FixtureStatus } from '../../../domain/enums'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 
 interface Props { game: SaveGame }
@@ -18,12 +16,7 @@ const PHASEMARK_LABELS: Partial<Record<SeasonPhase, { eyebrow: string; helper?: 
 }
 
 export function PortalPhaseMark({ game }: Props) {
-  const markPhaseAcknowledged = useGameStore(s => s.markPhaseAcknowledged)
-
-  // Beräkna fas — samma logik som dailyBriefingService och portalBuilder
-  const currentLigaRound = game.fixtures
-    .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
-    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+  const currentLigaRound = getCurrentLeagueRound(game)
   const isPlayoff = isManagedClubInPlayoff(game)
   const phase = getSeasonPhase(currentLigaRound, isPlayoff)
 
@@ -35,7 +28,7 @@ export function PortalPhaseMark({ game }: Props) {
   if (!quote) return null
 
   return (
-    <div className="portal-phasemark" onClick={() => markPhaseAcknowledged(phase)}>
+    <div className="portal-phasemark">
       <div className="portal-phasemark-eyebrow">{labels.eyebrow}</div>
       <div className="portal-phasemark-quote">"{quote}"</div>
       {labels.helper && <div className="portal-phasemark-helper">{labels.helper}</div>}

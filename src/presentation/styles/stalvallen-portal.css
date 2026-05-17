@@ -450,7 +450,13 @@
 .portal-roundmark.gold        { color: var(--gold); opacity: 1; }
 .portal-roundmark.gold .crit  { color: var(--gold); }
 
-/* ── Primary-card weight variants ───────────────────────────── */
+/* ── Primary-card base + weight variants ─────────────────────── */
+
+.primary-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+}
 
 .primary-card.primary-weight-1 {
   border-color: rgba(196, 122, 58, 0.32);
@@ -508,6 +514,22 @@
   color: var(--gold);
   box-shadow: 0 0 8px rgba(232, 185, 92, 0.35);
 }
+
+/* ── Series box variants ──────────────────────────────────────── */
+
+.series-box-win,
+.series-box-loss,
+.series-box-empty {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.series-box-win   { background: var(--success); }
+.series-box-loss  { background: var(--danger); }
+.series-box-empty { background: transparent; border: 1.5px solid var(--border-dark); }
 
 /* ── Gold CTA ─────────────────────────────────────────────────── */
 

@@ -27,6 +27,12 @@ export function getFunctionaryPhase(roundNumber: number, tablePosition: number, 
 
 export type SeasonPhase = 'pre_season' | 'early' | 'mid' | 'endgame' | 'playoff'
 
+export function getCurrentLeagueRound(game: import('../entities/SaveGame').SaveGame): number {
+  return game.fixtures
+    .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
+    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+}
+
 export function getSeasonPhase(leagueRound: number, isPlayoff: boolean): SeasonPhase {
   if (isPlayoff) return 'playoff'
   if (leagueRound <= 3) return 'early'

@@ -46,21 +46,11 @@ function SeriesBoxes({
       <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
         {boxes.map((b, i) => {
           const isNextBox = !!(nextStyle && i === firstEmptyIdx)
+          const boxClass = isNextBox
+            ? `series-game next ${nextStyle}`
+            : b === 'W' ? 'series-box-win' : b === 'L' ? 'series-box-loss' : 'series-box-empty'
           return (
-            <div
-              key={i}
-              className={isNextBox ? `series-game next ${nextStyle}` : undefined}
-              style={{
-                width: isNextBox ? undefined : 13,
-                height: isNextBox ? undefined : 13,
-                borderRadius: 3,
-                background: b === 'W' ? 'var(--success)' : b === 'L' ? 'var(--danger)' : isNextBox ? undefined : 'transparent',
-                border: b === 'empty' && !isNextBox ? '1.5px solid var(--border-dark)' : b === 'empty' && isNextBox ? undefined : 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
+            <div key={i} className={boxClass}>
               {b !== 'empty' && (
                 <span style={{ fontSize: 7, color: 'var(--text-light)', fontWeight: 700, fontFamily: 'var(--font-body)' }}>
                   {b === 'W' ? 'V' : 'F'}
@@ -127,15 +117,11 @@ export function NextMatchCard({
     ? { boxShadow: `0 0 ${act === 4 ? 12 : 6}px rgba(196,122,58,${act === 4 ? 0.15 : 0.08})` }
     : {}
 
-  // ── Card border & tint per variant ──
+  // ── Card border & tint per variant (playoff uses primary-card CSS class) ──
   const cardStyle: React.CSSProperties = isFinal
     ? { border: '2px solid rgba(196,168,76,0.5)', background: 'rgba(196,168,76,0.06)', boxShadow: '0 0 20px rgba(196,168,76,0.10)' }
     : isPlayoff
-    ? seriesWeight === 3
-      ? { border: '1.5px solid rgba(232,185,92,0.55)', background: 'linear-gradient(180deg, rgba(232,185,92,0.10) 0%, var(--bg-portal-elevated) 42%)', boxShadow: '0 0 0 1px rgba(232,185,92,0.18), 0 6px 18px rgba(232,185,92,0.10)' }
-      : seriesWeight === 2
-      ? { border: '1.5px solid rgba(196,122,58,0.55)', background: 'linear-gradient(180deg, rgba(196,122,58,0.08) 0%, var(--bg-portal-elevated) 38%)', boxShadow: '0 0 0 1px rgba(196,122,58,0.10)' }
-      : { border: '1px solid rgba(196,122,58,0.32)', background: 'rgba(196,168,76,0.04)' }
+    ? {}
     : derbyIntense
     ? { border: '1.5px solid rgba(196,80,50,0.30)', background: 'rgba(196,80,50,0.03)' }
     : isDerby
@@ -242,7 +228,7 @@ export function NextMatchCard({
 
   return (
     <div
-      className="card-stagger-1"
+      className={`card-stagger-1${isPlayoff ? ` primary-card primary-weight-${seriesWeight ?? 1}` : ''}`}
       style={{ ...cardStyle, ...actGlow, borderRadius: 14, overflow: 'hidden' }}
     >
       {/* Leather header bar */}

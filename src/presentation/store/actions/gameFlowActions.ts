@@ -1,7 +1,7 @@
 import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
 import type { AnslagKey } from '../../../domain/services/anslagService'
-import { PendingScreen, FixtureStatus } from '../../../domain/enums'
-import { getSeasonPhase, isManagedClubInPlayoff, type SeasonPhase } from '../../../domain/data/seasonPhases'
+import { PendingScreen } from '../../../domain/enums'
+import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, type SeasonPhase } from '../../../domain/data/seasonPhases'
 import { clamp } from '../../../domain/utils/clamp'
 import { resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
 import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
@@ -172,9 +172,7 @@ export function gameFlowActions(get: Get, set: Set) {
 
       // Märk fas som sedd när spelaren lämnar Portal (trigger i advance)
       const PHASEMARK_PHASES = new Set<SeasonPhase>(['endgame', 'playoff'])
-      const advLigaRound = gameToSave.fixtures
-        .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
-        .reduce((max: number, f) => Math.max(max, f.roundNumber), 0)
+      const advLigaRound = getCurrentLeagueRound(gameToSave)
       const advIsPlayoff = isManagedClubInPlayoff(gameToSave)
       const advPhase = getSeasonPhase(advLigaRound, advIsPlayoff)
       const advSeen = gameToSave.phaseMarksSeen ?? []

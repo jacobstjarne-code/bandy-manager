@@ -4,7 +4,7 @@ import { getRivalry } from '../data/rivalries'
 import { getTransferWindowStatus } from './transferWindowService'
 import { FixtureStatus } from '../enums'
 import { getCurrentAct } from './seasonActService'
-import { getSeasonPhase, isManagedClubInPlayoff, type SeasonPhase } from '../data/seasonPhases'
+import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, type SeasonPhase } from '../data/seasonPhases'
 import { buildSeasonCalendar } from './scheduleGenerator'
 import {
   annandagsbandyBriefing,
@@ -315,9 +315,7 @@ export function generateBriefing(game: SaveGame): Briefing | null {
   }
 
   // 7. Generationsväxling — 8b: Tomma omklädningsrummet (omgång 1)
-  const currentLigaRound = game.fixtures
-    .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
-    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+  const currentLigaRound = getCurrentLeagueRound(game)
   if (currentLigaRound === 0) {
     const legends = (game.clubLegends ?? []).filter(l => l.retiredSeason === game.currentSeason - 1)
     if (legends.length > 0) {

@@ -1,9 +1,8 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { DashboardCard } from './dashboardCardBag'
 import { CARD_BAG } from './dashboardCardBag'
-import { getSeasonPhase, isManagedClubInPlayoff } from '../../data/seasonPhases'
+import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff } from '../../data/seasonPhases'
 import { applyPhaseBias } from './seasonPhaseBias'
-import { FixtureStatus } from '../../enums'
 
 export interface PortalLayout {
   primary: DashboardCard           // alltid exakt 1
@@ -22,10 +21,7 @@ export interface PortalLayout {
  *   5. Plocka ut topp N från varje tier
  */
 export function buildPortal(game: SaveGame, seed: number): PortalLayout {
-  // Beräkna aktuell säsongsfas — samma logik som dailyBriefingService
-  const currentLigaRound = game.fixtures
-    .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
-    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+  const currentLigaRound = getCurrentLeagueRound(game)
   const isPlayoff = isManagedClubInPlayoff(game)
   const phase = getSeasonPhase(currentLigaRound, isPlayoff)
 

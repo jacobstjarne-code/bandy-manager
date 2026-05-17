@@ -61,25 +61,10 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
   const posStr = standing ? `${standing.position}:a · ${standing.points} p` : ''
 
   return (
-    <div style={{
-      background: 'linear-gradient(135deg, var(--bg-portal-elevated) 0%, rgba(212,164,96,0.20) 100%)',
-      border: '1px solid var(--match-gold)',
-      borderRadius: 8,
-      padding: '14px 16px',
-      marginBottom: 14,
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      <div style={{
-        fontSize: 9,
-        letterSpacing: '2px',
-        textTransform: 'uppercase',
-        fontWeight: 700,
-        marginBottom: 8,
-        color: 'var(--match-gold)',
-      }}>
+    <div className="primary-card primary-weight-3" style={{ borderRadius: 8, padding: '14px 16px', marginBottom: 14 }}>
+      <div className="primary-eyebrow">
         🏆 SM-FINAL · IMORGON
-        {critTagLabel && <span className="primary-crit-tag" style={{ marginLeft: 8 }}>{critTagLabel}</span>}
+        {critTagLabel && <span className="primary-crit-tag">{critTagLabel}</span>}
       </div>
       <div style={{
         fontFamily: 'var(--font-display)',
