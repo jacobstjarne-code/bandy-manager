@@ -26,14 +26,89 @@ Full motivering: `docs/GENOMGANG_SPEL_LOOP_2026-05-16.md`. Ordningen är **2 →
 
 | Verktyg | Spår | Konkret första uppdrag |
 |---|---|---|
-| **Jacob** | Riktning 2 | Playtest 10 inlåsta system + FIX 47-50 + F1 (när Code rapporterat) |
-| **Opus** | Riktning 3 | Cup-tonen — börja med tonal-analys + skrivuppdrag på cup-anslag och cup-commentary |
-| **Code** | F1 Beslutsekonomi | Redan i kö per `HANDOFF-BESLUTSEKONOMI-F1.md`. När klart: standby för playtest-fynd från Jacob |
-| **Claude Design** | OPEN THREADS i `design-system/CLAUDE.md` | Pixel-audit i kontext för 10 inlåsta system + ArrivalScene rev2 visuell audit. INTE påbörja Riktning 1 förrän Jacob säger ok efter Riktning 2-verifiering. |
+| **Jacob** | Riktning 2 | Playtest 10 inlåsta system + FIX 47-50 + F1-tutorial/budget (queue och cooldown blockerat tills backend-wiring klar) |
+| **Opus** | Riktning 3 | Cup-tonen — direktiv klart i `CUP_TONEN_DIREKTIV_2026-05-16.md`. Väntar Jacobs beslut på alternativ A/B/C |
+| **Code** | F1 backend-wiring + Riktning 1 prep | F1 UI klart 2026-05-16. Nästa: `game.deferredDecisions[]`-population i roundProcessor + CooldownRow-integration i source-secondary-kort. Spec skickas separat. |
+| **Claude Design** | Pixel-audit + ArrivalScene rev2 | F1-pixel-audit kan börja på implementerade delar (tutorial-band, budget-prickar, inbox-counter). Queue/cooldown auditas senare. Plus 10 inlåsta system + ArrivalScene rev2 per OPEN THREADS. |
 
 ---
 
-## AKTUELLT LÄGE (2026-05-17) — F1 BESLUTSEKONOMI KOD KLAR
+## AKTUELLT LÄGE (2026-05-18) — Audit-fixar R3 + R3+ klara, 804 tester gröna
+
+**Pushat av Code 2026-05-18 (commit `c01b79a`):**
+- ✅ **Audit-fixar R3 + R3+ — alla 7 åtgärder** — se `docs/HANDOVER_2026-05-18.md` för full tabell
+  - 2 🟥 BLOCK: `--gold-deep`/`--shadow-gold` tokens + SMFinalPrimary → `primary-card primary-weight-3`
+  - 3 🟧 WARN: NextMatchCard playoff CSS-klasser, SeriesBoxes `.series-box-*`-klasser, `.primary-card` bas
+  - 4 🟨 OBSERV: PortalPhaseMark onClick borttagen, `getCurrentLeagueRound()` helper extraherad (4 sites → 1), `PortalPhaseMark.test.tsx` (5 fall)
+
+**Nästa:**
+- Jacob playtest per `docs/PLAYTEST_CHECKLIST_2026-05-17.md` (allt testbart)
+- Design pixel-audit R3 + R3+ mot `docs/mockups/2026-05-16_design_endgame_klimax.html`
+- Beslut: Riktning 1 (Klubbutvecklingspaket) eller playtest-fynd-sprint
+
+---
+
+## AKTUELLT LÄGE (2026-05-17 senare kväll) — F1 KOMPLETT, R3, R3+, Cup Nivå 1+2 PUSHADE
+
+**Pushat av Code 2026-05-17 senare kväll:**
+- ✅ **Package 1** — Stage 1A (deferredDecisions typed + wired + promoteFromQueue) + Stage 1B (ArrivalScene A2-A5)
+- ✅ **Package 2** — R3 Endgame Portal
+- ✅ **Package 3** — R3+ Klimax-eskalering (commit `c83a5b2`)
+- ✅ **Package 4** — Cup-tonen Nivå 2
+- ✅ **Stage 2** — SourceSecondaryCard + CooldownRow-integration (commit `9f6a5d9`)
+- ✅ **R3 + R3+ pixel-audit-fixar** (7/7 audit-fynd) — `--gold-deep` + `--shadow-gold` tokens, SMFinalPrimary → `primary-card primary-weight-3`, NextMatchCard playoff-gren CSS-klasser, SeriesBoxes `.series-box-*`-klasser, PhaseMark onClick borttagen, `getCurrentLeagueRound()`-helper extraherad, PortalPhaseMark.test.tsx (5 fall)
+
+**Tidigare:**
+  - `sourceCooldownService.ts` (SourceKey, startCooldown, decrementCooldowns, isInCooldown)
+  - Cooldown-längder: kommunen 8, mecenat 4, lokaltidningen 3 omgångar
+  - `SourceSecondaryCard.tsx` med dormant kort + `CooldownRow` i botten (Alt B — generisk komponent med source-prop)
+  - Wiring i tre lager: `eventResolver` startar cooldown → `roundProcessor` decrementerar → `eventProcessor`+`communityEvents` gates ny spawn
+  - `initCardBag` med tre nya entries (kommunen/mecenat/lokaltidningen, weight 84-82) via `makeSourceCard`-factory
+
+**Hela F1-paketet är nu KOMPLETT.** Flödet: källa resolvar → cooldown sätts → sekundärkort dyker upp med prickar → tickar ner en per omgång → försvinner → källan kan spawna igen.
+
+**Testbart nu — allt:**
+- ✅ F1 i sin helhet: tutorial S1Omg1, ActiveBudget, QueueRail, CooldownRow, InboxCounter
+- ✅ R3: PortalPhaseMark, kafferum/journalist/signatur borta i playoff
+- ✅ R3+: PortalRoundMark, weight-progression, gold-CTA i SM-Final, decisive/gold-dot SeriesBoxes
+- ✅ Cup-tonen Nivå 1 (cup-rundor 1-2) + Nivå 2 (cup-final)
+- ✅ ArrivalScene A2-A5
+
+**Nästa:**
+- Jacob playtest enligt `docs/PLAYTEST_CHECKLIST_2026-05-17.md` (DEL C nu fullt testbar inklusive cooldown-prickar)
+- Design pixel-audit — brief skickad till claude.ai/design för R3, R3+, F1
+- Opus standby
+
+---
+
+## AKTUELLT LÄGE (2026-05-17 kväll) — Audit-fixar + cup-tonen Nivå 1 KLARA (historiskt: Stage 1A/1B/2 var EJ gjort vid det tillfället, levererades senare samma kväll)
+
+**Pushat av Code 2026-05-17 kväll (commit `c55987f`):**
+- ✅ Alla audit-fynd: 2 🟥 BLOCK + 7 🟧 WARN + 1 🟨 klara
+- ✅ Cup-tonen Nivå 1: 5 pools wirade i matchCore.ts (60% sampling, `cup_goalOpener` matchens första mål, Alt B)
+
+**Bekräftat EJ gjort (Code rapporterat 2026-05-17):**
+- ☐ **Stage 1A** — `game.deferredDecisions[]`-population i roundProcessor. SaveGame-typen har fältet som `unknown[]` med kommentar "reserved for future use". `PortalQueueRail` läser men kommer aldrig rendera.
+- ☐ **Stage 1B** — ArrivalScene A2-A5 (refaktor + transition + aria-label + eyebrow-klass)
+- ☐ **Stage 2** — source-specific kort + CooldownRow-integration. CooldownRow finns men ingen parent importerar den. **Väntar Alt A/B-beslut från Jacob.**
+
+**Vad som faktiskt är testbart i nuvarande build:**
+- ✅ PortalActiveBudget, PortalInboxCounter (F1 UI-delar)
+- ✅ Audit-fixar i kontext (stripes-hierarki, MecenatDinnerEvent, etc.)
+- ✅ Cup-tonen Nivå 1 (kräver cup-match)
+- ❌ PortalQueueRail (kommer aldrig rendera — backend saknas)
+- ❌ CooldownRow (monteras aldrig — ingen parent)
+- ❌ ArrivalScene A2-A5 (samma som förut, inga visuella ut-fixar gjorda än)
+
+**Nästa:**
+- Jacob playtest: per `docs/PLAYTEST_CHECKLIST_2026-05-17.md`. Hoppa DEL C "Queue-rail" och "CooldownRow".
+- Stage 1A + 1B + Stage 2: paketeras för Code (Stage 2 väntar Alt A/B — Opus pushar för B)
+- Cup-tonen Nivå 2 (cup-final-separation): klar på disk, väntar Code-integration
+- Cup-tonen Nivå 3 (cup_atmosphere + cup_finalweekend): skrivs näst
+
+---
+
+## AKTUELLT LÄGE (2026-05-14) — VÄNTAR PLAYTEST
 
 **F1 Beslutsekonomi UI:** ✅ KOD KLAR — commit `253b544`.
 
