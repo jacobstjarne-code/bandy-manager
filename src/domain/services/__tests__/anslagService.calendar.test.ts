@@ -46,12 +46,15 @@ function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
 }
 
 function makeLeagueFixture(roundNumber: number, managedClubId = 'managed'): Fixture {
+  const matchday = roundNumber + 4
+  // Round 8 → matchday 12 = Annandagen in test calendar
+  const isAnnandagen = matchday === 12 ? true : undefined
   return {
     id: `league-r${roundNumber}`,
     leagueId: 'L',
     season: 1,
     roundNumber,
-    matchday: roundNumber + 4,
+    matchday,
     homeClubId: managedClubId,
     awayClubId: 'other',
     status: FixtureStatus.Completed,
@@ -60,6 +63,7 @@ function makeLeagueFixture(roundNumber: number, managedClubId = 'managed'): Fixt
     events: [],
     isCup: false,
     isKnockout: false,
+    isAnnandagen,
   } as Fixture
 }
 

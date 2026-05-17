@@ -166,13 +166,13 @@ describe('computeNextAnslag — prioritet', () => {
     expect(computeNextAnslag(game)).toBe('cup_done')
   })
 
-  it('league_midwinter triggers after Annandagen (matchday 12) is played', () => {
+  it('league_midwinter triggers after Annandagen (isAnnandagen=true) is played', () => {
     const fixtures = [
       ...Array.from({ length: 7 }, (_, i) =>
         makeFixture({ id: `f${i}`, roundNumber: i + 1, matchday: i + 5 })
       ),
-      // Annandagen — matchday 12 completed
-      makeFixture({ id: 'f-annandagen', roundNumber: 8, matchday: 12 }),
+      // Annandagen fixture with explicit flag
+      makeFixture({ id: 'f-annandagen', roundNumber: 8, matchday: 12, isAnnandagen: true }),
     ]
     const game = makeGame({
       cupBracket: makeMinimalBracket({ completed: true }),
@@ -182,13 +182,13 @@ describe('computeNextAnslag — prioritet', () => {
     expect(computeNextAnslag(game)).toBe('league_midwinter')
   })
 
-  it('league_midwinter does not trigger at round 6', () => {
+  it('league_midwinter does not trigger when Annandagen is scheduled (not completed)', () => {
     const fixtures = [
       ...Array.from({ length: 6 }, (_, i) =>
         makeFixture({ id: `f${i}`, roundNumber: i + 1, matchday: i + 5 })
       ),
-      // scheduled fixture prevents season_done trigger
-      makeFixture({ id: 'f-sched', roundNumber: 7, matchday: 12, status: FixtureStatus.Scheduled }),
+      // Annandagen scheduled — prevents trigger
+      makeFixture({ id: 'f-annandagen', roundNumber: 7, matchday: 12, isAnnandagen: true, status: FixtureStatus.Scheduled }),
     ]
     const game = makeGame({
       cupBracket: makeMinimalBracket({ completed: true }),
@@ -196,6 +196,22 @@ describe('computeNextAnslag — prioritet', () => {
       seenAnslag: ['cup_start', 'cup_done', 'league_start'],
     })
     expect(computeNextAnslag(game)).toBeNull()
+  })
+
+  it('league_midwinter does not trigger without isAnnandagen flag (matchday 12 alone not enough)', () => {
+    const fixtures = [
+      ...Array.from({ length: 7 }, (_, i) =>
+        makeFixture({ id: `f${i}`, roundNumber: i + 1, matchday: i + 5 })
+      ),
+      // matchday 12 but no isAnnandagen flag — simulates old save without migration
+      makeFixture({ id: 'f-no-flag', roundNumber: 8, matchday: 12 }),
+    ]
+    const game = makeGame({
+      cupBracket: makeMinimalBracket({ completed: true }),
+      fixtures,
+      seenAnslag: ['cup_start', 'cup_done', 'league_start'],
+    })
+    expect(computeNextAnslag(game)).not.toBe('league_midwinter')
   })
 
   it('playoff_qualification triggers at round 19', () => {

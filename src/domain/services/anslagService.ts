@@ -269,8 +269,10 @@ export function computeNextAnslag(game: SaveGame): AnslagKey | null {
       return 'league_halfway'
     }
 
-    // Midwinter — after Annandagen (matchday 12) has been played
-    const annandagenPlayed = game.fixtures.some(f => f.matchday === 12 && f.status === FixtureStatus.Completed)
+    // Midwinter — after Annandagen (Dec 26) has been played
+    const annandagenPlayed = game.fixtures.some(
+      f => f.isAnnandagen === true && f.status === FixtureStatus.Completed
+    )
     if (annandagenPlayed && !seen.includes('league_midwinter')) {
       return 'league_midwinter'
     }

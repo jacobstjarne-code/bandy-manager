@@ -3,6 +3,7 @@ import type { BoardMember, BoardPersonality, BoardRole } from '../../domain/enti
 import { PendingScreen } from '../../domain/enums'
 import { generateAssistantCoach } from '../../domain/services/assistantCoachService'
 import { CLUB_TEMPLATES } from '../../domain/services/worldGenerator'
+import { buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
 
 function strHash(s: string): number {
   let h = 0
@@ -240,6 +241,23 @@ export function migrateSaveGame(raw: unknown): SaveGame {
         }
       }
       return c
+    })
+  }
+
+  // ── Backfill isAnnandagen / isNyarsbandy on league fixtures ─────────────
+  // These flags were introduced 2026-05-18. Existing saves lack them on fixtures.
+  if (Array.isArray(data.fixtures)) {
+    const calendarCache = new Map<number, ReturnType<typeof buildSeasonCalendar>>()
+    data.fixtures = (data.fixtures as Record<string, unknown>[]).map(f => {
+      if (f.isCup || f.isAnnandagen !== undefined || f.isNyarsbandy !== undefined) return f
+      const season = typeof f.season === 'number' ? f.season : 0
+      if (!calendarCache.has(season)) calendarCache.set(season, buildSeasonCalendar(season))
+      const cal = calendarCache.get(season)!
+      const matchday = typeof f.matchday === 'number' ? f.matchday : -1
+      const slot = cal.find(s => s.matchday === matchday && s.type === 'league')
+      if (slot?.isAnnandagen) f.isAnnandagen = true
+      if (slot?.isNyarsbandy) f.isNyarsbandy = true
+      return f
     })
   }
 

@@ -172,26 +172,28 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   const scheduleFixtures = generateSchedule(clubs.map(c => c.id), season)
   const calendar = buildSeasonCalendar(season)
 
-  const fixtures: Fixture[] = scheduleFixtures.map(sf => ({
-    id: `fixture_${season}_r${sf.roundNumber}_${sf.homeClubId}_vs_${sf.awayClubId}`,
-    leagueId: `league_${season}`,
-    season,
-    roundNumber: sf.roundNumber,
-    matchday: (() => {
-      const slot = calendar.find(s => s.type === 'league' && s.leagueRound === sf.roundNumber)
-      if (!slot) console.error(`[SCHEDULE] No calendar slot for league round ${sf.roundNumber}`)
-      return slot?.matchday ?? sf.roundNumber
-    })(),
-    homeClubId: sf.homeClubId,
-    awayClubId: sf.awayClubId,
-    status: FixtureStatus.Scheduled,
-    homeScore: 0,
-    awayScore: 0,
-    events: [],
-    report: undefined,
-    homeLineup: undefined,
-    awayLineup: undefined,
-  }))
+  const fixtures: Fixture[] = scheduleFixtures.map(sf => {
+    const slot = calendar.find(s => s.type === 'league' && s.leagueRound === sf.roundNumber)
+    if (!slot) console.error(`[SCHEDULE] No calendar slot for league round ${sf.roundNumber}`)
+    return {
+      id: `fixture_${season}_r${sf.roundNumber}_${sf.homeClubId}_vs_${sf.awayClubId}`,
+      leagueId: `league_${season}`,
+      season,
+      roundNumber: sf.roundNumber,
+      matchday: slot?.matchday ?? sf.roundNumber,
+      homeClubId: sf.homeClubId,
+      awayClubId: sf.awayClubId,
+      status: FixtureStatus.Scheduled,
+      homeScore: 0,
+      awayScore: 0,
+      events: [],
+      report: undefined,
+      homeLineup: undefined,
+      awayLineup: undefined,
+      ...(slot?.isAnnandagen ? { isAnnandagen: true } : {}),
+      ...(slot?.isNyarsbandy ? { isNyarsbandy: true } : {}),
+    }
+  })
 
   const league: League = {
     id: `league_${season}`,
