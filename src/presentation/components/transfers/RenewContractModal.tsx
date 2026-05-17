@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { X } from 'lucide-react'
 import type { Player } from '../../../domain/entities/Player'
 import { formatCurrency } from '../../utils/formatters'
 
@@ -16,39 +17,14 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
   const [years, setYears] = useState(2)
 
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 300,
-        background: 'rgba(0,0,0,0.6)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        maxWidth: 430,
-        margin: '0 auto',
-        padding: '20px',
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: 'var(--bg)',
-          borderRadius: 12,
-          border: '1px solid var(--border)',
-          padding: '20px 18px 24px',
-          width: '100%',
-          maxHeight: '85vh',
-          overflowY: 'auto',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
-        }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+    <div onClick={onClose} className="transfers-modal-overlay">
+      <div onClick={e => e.stopPropagation()} className="transfers-modal-box" style={{ border: '1px solid var(--border)' }}>
+        <div className="transfers-modal-header">
           <div>
             <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, fontFamily: 'var(--font-display)' }}>Förläng kontrakt</h3>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{player.firstName} {player.lastName}</p>
           </div>
-          <button onClick={onClose} className="btn btn-ghost" style={{ width: 32, height: 32, fontSize: 16, padding: 0 }}>✕</button>
+          <button onClick={onClose} className="btn btn-ghost" style={{ width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={16} /></button>
         </div>
         <div style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', marginBottom: 20, border: '1px solid var(--border)' }}>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
@@ -64,7 +40,7 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
             type="number"
             value={newSalary}
             onChange={e => setNewSalary(Number(e.target.value))}
-            style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', fontSize: 15 }}
+            className="transfers-input"
           />
         </div>
         <div style={{ marginBottom: 24 }}>

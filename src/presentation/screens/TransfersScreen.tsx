@@ -14,6 +14,7 @@ import { TransferPlayerCard } from '../components/transfers/TransferPlayerCard'
 import { ActiveBidsList } from '../components/transfers/ActiveBidsList'
 import { FreeAgentList } from '../components/transfers/FreeAgentList'
 import { WageOverrunWarning } from '../components/transfers/WageOverrunWarning'
+import '../styles/transfers.css'
 
 function formatValue(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
@@ -132,7 +133,7 @@ export function TransfersScreen() {
       }
       setRenewingPlayerId(null)
       setRenewError(null)
-      setRenewConfirmText(`✅ Kontrakt förlängt till ${game.currentSeason + years}`)
+      setRenewConfirmText(`Kontrakt förlängt till ${game.currentSeason + years}`)
       setTimeout(() => setRenewConfirmText(null), 2000)
     }
 
@@ -219,7 +220,7 @@ export function TransfersScreen() {
       )}
 
       {scoutMessage && (
-        <div className="card-sharp" style={{ background: 'rgba(196,122,58,0.04)', border: '1px solid rgba(196,122,58,0.15)', padding: '10px 14px', marginBottom: 12, fontSize: 13, color: 'var(--accent)' }}>
+        <div className="card-sharp transfers-state-copper-dim" style={{ padding: '10px 14px', marginBottom: 12, fontSize: 13, color: 'var(--accent)' }}>
           {scoutMessage}
         </div>
       )}
@@ -228,20 +229,20 @@ export function TransfersScreen() {
         const target = game.players.find(p => p.id === activeAssignment.targetPlayerId)
         const targetClub = game.clubs.find(c => c.id === activeAssignment.targetClubId)
         return (
-          <div className="card-sharp" style={{ background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.25)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
-            🔍 Scouting pågår: <strong>{target?.firstName} {target?.lastName}</strong> ({targetClub?.name ?? '?'}) · {activeAssignment.roundsRemaining} omgång{activeAssignment.roundsRemaining !== 1 ? 'ar' : ''} kvar
+          <div className="card-sharp transfers-state-copper" style={{ padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
+            Scouting pågår: <strong>{target?.firstName} {target?.lastName}</strong> ({targetClub?.name ?? '?'}) · {activeAssignment.roundsRemaining} omgång{activeAssignment.roundsRemaining !== 1 ? 'ar' : ''} kvar
           </div>
         )
       })()}
 
       {game.activeTalentSearch && !activeAssignment && (
-        <div className="card-sharp" style={{ background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.25)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
-          🔎 Scouten är ute på talangspaning. Klar om {game.activeTalentSearch.roundsRemaining} omgång{game.activeTalentSearch.roundsRemaining !== 1 ? 'ar' : ''}.
+        <div className="card-sharp transfers-state-copper" style={{ padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
+          Scouten är ute på talangspaning. Klar om {game.activeTalentSearch.roundsRemaining} omgång{game.activeTalentSearch.roundsRemaining !== 1 ? 'ar' : ''}.
         </div>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, padding: '4px 0' }}>
-        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>🔍 Scoutbudget:</span>
+      <div className="transfers-scout-budget">
+        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>Scoutbudget:</span>
         <span style={{ fontSize: 12, letterSpacing: 1 }}>
           {Array.from({ length: 10 }, (_, i) => (
             <span key={i} style={{ color: i < scoutBudget ? 'var(--accent)' : 'var(--border)' }}>●</span>
@@ -262,8 +263,8 @@ export function TransfersScreen() {
           { key: 'sell' as const, label: 'Sälj', dot: null },
         ]
         return (
-          <div style={{ position: 'relative', marginBottom: 10 }}>
-            <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border)', paddingBottom: 6, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' } as React.CSSProperties}>
+          <div className="transfers-tab-bar">
+            <div className="transfers-tab-scroll">
               {tabs.map(tab => (
                 <button
                   key={tab.key}
@@ -282,13 +283,7 @@ export function TransfersScreen() {
                 </button>
               ))}
             </div>
-            {/* Fade gradient signals more content to the right */}
-            <div style={{
-              position: 'absolute', top: 0, right: 0,
-              width: 20, height: 'calc(100% - 7px)',
-              background: 'linear-gradient(to left, var(--bg), transparent)',
-              pointerEvents: 'none',
-            }} />
+            <div className="transfers-tab-fade" />
           </div>
         )
       })()}
@@ -300,7 +295,7 @@ export function TransfersScreen() {
         freeagents: 'Kontraktslösa spelare. Ingen transfersumma.',
         sell: 'Sälj spelare från din trupp.',
       } as Record<string, string>)[activeTab] && (
-        <p style={{ padding: '6px 16px 10px', fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body)', borderBottom: '1px solid var(--border)', marginBottom: 10 }}>
+        <p className="transfers-section-desc">
           {({
             marknad: 'Spelare som är tillgängliga för transfer just nu.',
             scouting: 'Utvärdera spelare eller sök nya talanger.',
@@ -311,14 +306,10 @@ export function TransfersScreen() {
         </p>
       )}
 
-      <div className="card-sharp" style={{
-        background: windowInfo.status === 'open' ? 'rgba(34,197,94,0.08)' : windowInfo.status === 'winter' ? 'rgba(196,122,58,0.08)' : 'rgba(239,68,68,0.06)',
-        border: `1px solid ${windowInfo.status === 'open' ? 'rgba(34,197,94,0.3)' : windowInfo.status === 'winter' ? 'rgba(196,122,58,0.25)' : 'rgba(239,68,68,0.2)'}`,
-        padding: '8px 12px',
-        marginBottom: 10,
-      }}>
+      <div className={`card-sharp ${windowInfo.status === 'open' ? 'transfers-window-open' : windowInfo.status === 'winter' ? 'transfers-window-winter' : 'transfers-window-closed'}`} style={{ padding: '8px 12px', marginBottom: 10 }}>
         <p style={{ fontSize: 12, fontWeight: 700, color: windowInfo.status === 'open' ? 'var(--success)' : windowInfo.status === 'winter' ? 'var(--accent)' : 'var(--danger)' }}>
-          {windowInfo.status === 'open' ? '🟢' : windowInfo.status === 'winter' ? '🟡' : '🔴'} {windowInfo.label} · <span style={{ fontWeight: 400, color: 'var(--text-secondary)' }}>{windowInfo.description}</span>
+          <span className={`transfers-dot ${windowInfo.status === 'open' ? 'transfers-dot-green' : windowInfo.status === 'winter' ? 'transfers-dot-yellow' : 'transfers-dot-red'}`} />
+          {windowInfo.label} · <span style={{ fontWeight: 400, color: 'var(--text-secondary)' }}>{windowInfo.description}</span>
         </p>
       </div>
 
@@ -339,7 +330,14 @@ export function TransfersScreen() {
                       <p style={{ fontSize: 13, fontWeight: 600 }}>{player ? `${player.firstName} ${player.lastName}` : '?'}</p>
                       <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{club?.name ?? '?'} · Bud: {formatValue(bid.offerAmount)}</p>
                     </div>
-                    <span style={{ fontSize: 11, color: 'var(--warning)', fontWeight: 600 }}>Väntar på svar</span>
+                    {(() => {
+                      const roundsLeft = (bid.expiresRound ?? 0) - currentRound
+                      return (
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>
+                          {roundsLeft > 0 ? `Svar om ${roundsLeft} omg.` : 'Svar väntat'}
+                        </span>
+                      )
+                    })()}
                   </div>
                 )
               })}
@@ -421,12 +419,12 @@ export function TransfersScreen() {
       {activeTab === 'contracts' && (
         <div className="card-stagger-2" style={{ marginBottom: 24 }}>
           {renewConfirmText && (
-            <div style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 12 }}>
+            <div className="transfers-state-success-strong" style={{ borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 12 }}>
               <p style={{ fontSize: 13, color: 'var(--success)', fontWeight: 600 }}>{renewConfirmText}</p>
             </div>
           )}
           {wageWarning && (
-            <div style={{ background: 'rgba(196,122,58,0.12)', border: '1px solid rgba(196,122,58,0.4)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <div className="transfers-state-copper-strong" style={{ borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
               <p style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 600 }}>⚠️ {wageWarning}</p>
               <button onClick={() => setWageWarning(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 16, cursor: 'pointer', flexShrink: 0 }}>✕</button>
             </div>

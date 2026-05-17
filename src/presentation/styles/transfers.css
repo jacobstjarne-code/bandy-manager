@@ -1,0 +1,222 @@
+/* transfers.css */
+
+/* ── Del A: Token-compliant state backgrounds ── */
+
+.transfers-state-success {
+  background: color-mix(in srgb, var(--success) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 25%, transparent);
+}
+
+.transfers-state-success-strong {
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
+}
+
+.transfers-state-danger {
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 25%, transparent);
+}
+
+.transfers-state-copper {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.transfers-state-copper-strong {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.transfers-state-copper-dim {
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.transfers-state-scouted-bg {
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+/* ── Transfer window status ── */
+
+.transfers-window-open {
+  background: color-mix(in srgb, var(--success) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
+}
+
+.transfers-window-winter {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.transfers-window-closed {
+  background: color-mix(in srgb, var(--danger) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 20%, transparent);
+}
+
+/* ── Del B: Modal overlays ── */
+
+.transfers-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.transfers-modal-overlay-high {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.transfers-modal-box {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 20px 18px 24px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Player card ── */
+
+.transfers-player-card {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  gap: 10px;
+  border-left: 2px solid transparent;
+}
+
+.transfers-player-card-scouted {
+  border-left: 2px solid var(--accent);
+}
+
+/* ── Form controls ── */
+
+.transfers-select {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.transfers-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+/* ── Tab bar ── */
+
+.transfers-tab-bar {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.transfers-tab-scroll {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.transfers-tab-fade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: calc(100% - 7px);
+  background: linear-gradient(to left, var(--bg), transparent);
+  pointer-events: none;
+}
+
+/* ── Section description ── */
+
+.transfers-section-desc {
+  padding: 6px 16px 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+
+/* ── Scout budget row ── */
+
+.transfers-scout-budget {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 4px 0;
+}
+
+/* ── Modal header ── */
+
+.transfers-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.transfers-modal-header-sm {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+/* ── Attribute bars ── */
+
+.transfers-attr-bar-bg {
+  background: var(--border);
+  border-radius: 4px;
+  height: 4px;
+}
+
+.transfers-attr-bar-fill {
+  background: var(--accent);
+  border-radius: 4px;
+  height: 4px;
+}
+
+/* ── Del C: Status dots (replaces 🟢🟡🔴) ── */
+
+.transfers-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.transfers-dot-green { background: var(--success); }
+.transfers-dot-yellow { background: var(--warning); }
+.transfers-dot-red { background: var(--danger); }

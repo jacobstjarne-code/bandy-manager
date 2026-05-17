@@ -35,31 +35,11 @@ export function WageOverrunWarning({ overrunPct, seasonSeed, onCancel, onConfirm
   const confirmLabel = variant === 'light' ? 'Bekräfta köp' : 'Bekräfta köp ändå'
 
   return (
-    <div
-      onClick={onCancel}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 400,
-        background: 'rgba(0,0,0,0.7)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        maxWidth: 430,
-        margin: '0 auto',
-        padding: '20px',
-      }}
-    >
+    <div onClick={onCancel} className="transfers-modal-overlay-high">
       <div
         onClick={e => e.stopPropagation()}
-        style={{
-          background: 'var(--bg)',
-          borderRadius: 12,
-          border: `1px solid ${variant === 'severe' ? 'var(--danger)' : 'var(--warning)'}`,
-          padding: '20px 18px 24px',
-          width: '100%',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.4)',
-        }}
+        className="transfers-modal-box"
+        style={{ border: `1px solid ${variant === 'severe' ? 'var(--danger)' : 'var(--warning)'}` }}
       >
         <p style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, fontFamily: 'var(--font-display)' }}>
           {title}

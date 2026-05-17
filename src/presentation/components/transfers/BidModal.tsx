@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { X } from 'lucide-react'
 import type { Player } from '../../../domain/entities/Player'
 
 function formatValue(v: number): string {
@@ -22,29 +23,14 @@ export function BidModal({ player, managedClub, onClose, onConfirm }: BidModalPr
   const canAfford = managedClub.transferBudget >= offerAmount && managedClub.finances - offerAmount >= -100000
 
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.6)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        maxWidth: 430, margin: '0 auto', padding: '20px',
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: 'var(--bg)', borderRadius: 12,
-          border: '1px solid var(--border)',
-          padding: '20px 16px 24px', width: '100%',
-          maxHeight: '85vh', overflowY: 'auto',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
-        }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+    <div onClick={onClose} className="transfers-modal-overlay">
+      <div onClick={e => e.stopPropagation()} className="transfers-modal-box" style={{ border: '1px solid var(--border)', padding: '20px 16px 24px' }}>
+        <div className="transfers-modal-header-sm">
           <div>
             <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, fontFamily: 'var(--font-display)' }}>Lägg bud</h3>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{player.firstName} {player.lastName}</p>
           </div>
-          <button onClick={onClose} className="btn btn-ghost" style={{ width: 32, height: 32, fontSize: 16, padding: 0 }}>✕</button>
+          <button onClick={onClose} className="btn btn-ghost" style={{ width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={16} /></button>
         </div>
         <div style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', marginBottom: 16, border: '1px solid var(--border)', fontSize: 13, color: 'var(--text-secondary)' }}>
           Marknadsvärde: {formatValue(player.marketValue ?? 0)} · Transferbudget: {formatValue(managedClub.transferBudget)}
@@ -52,12 +38,12 @@ export function BidModal({ player, managedClub, onClose, onConfirm }: BidModalPr
         <div style={{ marginBottom: 14 }}>
           <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Budsumma (kr)</label>
           <input type="number" value={offerAmount} onChange={e => setOfferAmount(Number(e.target.value))} step={5000}
-            style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', fontSize: 15 }} />
+            className="transfers-input" />
         </div>
         <div style={{ marginBottom: 14 }}>
           <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Erbjuden lön (kr/mån)</label>
           <input type="number" value={offeredSalary} onChange={e => setOfferedSalary(Number(e.target.value))} step={1000}
-            style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', fontSize: 15 }} />
+            className="transfers-input" />
         </div>
         <div style={{ marginBottom: 20 }}>
           <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>Kontraktslängd</label>

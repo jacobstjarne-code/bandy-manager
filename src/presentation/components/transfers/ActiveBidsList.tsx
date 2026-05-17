@@ -79,6 +79,7 @@ export function ActiveBidsList({
             return (
               <div
                 key={player.id}
+                className={isScounted ? 'transfers-state-scouted-bg' : undefined}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -86,13 +87,11 @@ export function ActiveBidsList({
                   borderBottom: index < Math.min(scoutablePlayers.length, 30) - 1 ? '1px solid var(--border)' : 'none',
                   gap: 10,
                   opacity: isScounted ? 0.8 : 1,
-                  background: isScounted ? 'rgba(196,122,58,0.04)' : undefined,
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {player.firstName} {player.lastName}
-                    {isScounted && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--accent)' }}>🔍</span>}
                     {isStale && <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--danger)', fontWeight: 400 }}>Föråldrad</span>}
                     {reportAge === 'aging' && !isStale && (
                       <span className="tag tag-outline" style={{ marginLeft: 6, color: 'var(--warning)' }}>1 säsong sedan</span>
@@ -115,7 +114,7 @@ export function ActiveBidsList({
                     className="btn btn-outline"
                     style={{ flexShrink: 0, padding: '5px 10px', fontSize: 12, fontWeight: 600, marginLeft: 4 }}
                   >
-                    💰 Bud
+                    Bud
                   </button>
                 )}
                 {!isScounted && (
@@ -125,7 +124,7 @@ export function ActiveBidsList({
                     className={`btn ${canScout ? 'btn-outline' : 'btn-ghost'}`}
                     style={{ flexShrink: 0, padding: '5px 10px', fontSize: 12, fontWeight: 600, cursor: canScout ? 'pointer' : 'not-allowed', opacity: canScout ? 1 : 0.5 }}
                   >
-                    {activeAssignment ? '⏳ Scout upptagen' : scoutBudget <= 0 ? '❌ Ingen budget' : '🔍 Utvärdera'}
+                    {activeAssignment ? 'Scout upptagen' : scoutBudget <= 0 ? 'Ingen budget' : 'Utvärdera'}
                   </button>
                 )}
               </div>
@@ -219,19 +218,19 @@ export function ActiveBidsList({
       <div className="card-stagger-2" style={{ marginBottom: 24 }}>
         <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 12 }}>
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-            🔎 <strong style={{ color: 'var(--text-primary)' }}>Spaning</strong> skickar ut din scout för att hitta okända spelare som matchar dina kriterier. Tar 2 omgångar. Skiljer sig från <em>Scouting</em> som utvärderar kända spelare.
+            <strong style={{ color: 'var(--text-primary)' }}>Spaning</strong> skickar ut din scout för att hitta okända spelare som matchar dina kriterier. Tar 2 omgångar. Skiljer sig från <em>Scouting</em> som utvärderar kända spelare.
           </p>
         </div>
 
         {game.activeScoutAssignment && (
-          <div className="card-sharp" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', padding: '10px 14px', marginBottom: 16, fontSize: 13, color: 'var(--danger)' }}>
+          <div className="card-sharp transfers-state-danger" style={{ padding: '10px 14px', marginBottom: 16, fontSize: 13, color: 'var(--danger)' }}>
             Scouten är upptagen med en utvärdering. Klar om {game.activeScoutAssignment.roundsRemaining} omgång{game.activeScoutAssignment.roundsRemaining !== 1 ? 'ar' : ''}.
           </div>
         )}
 
         {game.activeTalentSearch && (
-          <div className="card-sharp" style={{ background: 'rgba(196,122,58,0.08)', border: '1px solid rgba(196,122,58,0.25)', padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
-            🔍 Scout ute och letar... {game.activeTalentSearch.roundsRemaining} omgång{game.activeTalentSearch.roundsRemaining !== 1 ? 'ar' : ''} kvar
+          <div className="card-sharp transfers-state-copper" style={{ padding: '10px 14px', marginBottom: 16, fontSize: 13 }}>
+            Scout ute och letar... {game.activeTalentSearch.roundsRemaining} omgång{game.activeTalentSearch.roundsRemaining !== 1 ? 'ar' : ''} kvar
           </div>
         )}
 
@@ -243,7 +242,7 @@ export function ActiveBidsList({
               <select
                 value={spaningPosition}
                 onChange={e => onSetSpanningPosition(e.target.value)}
-                style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', fontSize: 14 }}
+                className="transfers-select"
               >
                 <option value="any">Alla positioner</option>
                 <option value="forward">Anfallare</option>
@@ -258,7 +257,7 @@ export function ActiveBidsList({
               <select
                 value={spaningMaxAge}
                 onChange={e => onSetSpanningMaxAge(Number(e.target.value))}
-                style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', fontSize: 14 }}
+                className="transfers-select"
               >
                 <option value={21}>21 år</option>
                 <option value={25}>25 år</option>
@@ -271,7 +270,7 @@ export function ActiveBidsList({
               <select
                 value={spaningMaxSalary}
                 onChange={e => onSetSpanningMaxSalary(Number(e.target.value))}
-                style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--text-primary)', fontSize: 14 }}
+                className="transfers-select"
               >
                 <option value={8000}>8 000 kr</option>
                 <option value={12000}>12 000 kr</option>
@@ -331,7 +330,7 @@ export function ActiveBidsList({
                             className={`btn ${(!activeAssignment && scoutBudget > 0) ? 'btn-outline' : 'btn-ghost'}`}
                             style={{ padding: '5px 10px', fontSize: 12, fontWeight: 600, cursor: (!activeAssignment && scoutBudget > 0) ? 'pointer' : 'not-allowed', opacity: (!activeAssignment && scoutBudget > 0) ? 1 : 0.5 }}
                           >
-                            {activeAssignment ? '⏳ Scout upptagen' : scoutBudget <= 0 ? '❌ Ingen budget' : '🔍 Utvärdera'}
+                            {activeAssignment ? 'Scout upptagen' : scoutBudget <= 0 ? 'Ingen budget' : 'Utvärdera'}
                           </button>
                         )}
                         {windowOpen && player && managedClub && (
