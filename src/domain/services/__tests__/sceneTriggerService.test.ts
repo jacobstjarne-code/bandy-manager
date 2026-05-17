@@ -3,6 +3,7 @@ import {
   detectSceneTrigger,
   shouldTriggerSundayTraining,
   shouldTriggerSMFinalVictory,
+  shouldTriggerCupFinalVictory,
 } from '../sceneTriggerService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { Fixture } from '../../entities/Fixture'
@@ -202,5 +203,99 @@ describe('sceneTriggerService — SM-finalseger', () => {
       shownScenes: [],
     })
     expect(shouldTriggerSMFinalVictory(g)).toBe(false)
+  })
+})
+
+describe('sceneTriggerService — cup-finalseger', () => {
+  it('triggar cup_final_victory vid cup-final-vinst (isCup=true, roundNumber>=4)', () => {
+    const g = makeGame({
+      fixtures: [
+        makeFixture({
+          isCup: true,
+          roundNumber: 4,
+          matchday: 14,
+          homeClubId: 'managed',
+          awayClubId: 'sandviken',
+          homeScore: 4,
+          awayScore: 3,
+        }),
+      ],
+      shownScenes: [],
+    })
+    expect(shouldTriggerCupFinalVictory(g)).toBe(true)
+    expect(detectSceneTrigger(g)).toBe('cup_final_victory')
+  })
+
+  it('triggar INTE cup_final_victory vid cup-final-förlust', () => {
+    const g = makeGame({
+      fixtures: [
+        makeFixture({
+          isCup: true,
+          roundNumber: 4,
+          matchday: 14,
+          homeClubId: 'managed',
+          awayClubId: 'sandviken',
+          homeScore: 2,
+          awayScore: 3,
+        }),
+      ],
+      shownScenes: [],
+    })
+    expect(shouldTriggerCupFinalVictory(g)).toBe(false)
+  })
+
+  it('shownScenes blockerar re-trigger av cup_final_victory', () => {
+    const g = makeGame({
+      fixtures: [
+        makeFixture({
+          isCup: true,
+          roundNumber: 4,
+          matchday: 14,
+          homeClubId: 'managed',
+          awayClubId: 'sandviken',
+          homeScore: 4,
+          awayScore: 3,
+        }),
+      ],
+      shownScenes: ['cup_final_victory'],
+    })
+    expect(shouldTriggerCupFinalVictory(g)).toBe(false)
+  })
+
+  it('cup-final-vinst triggar INTE sm_final_victory', () => {
+    const g = makeGame({
+      fixtures: [
+        makeFixture({
+          isCup: true,
+          roundNumber: 4,
+          matchday: 14,
+          homeClubId: 'managed',
+          awayClubId: 'sandviken',
+          homeScore: 4,
+          awayScore: 3,
+        }),
+      ],
+      shownScenes: [],
+    })
+    expect(shouldTriggerSMFinalVictory(g)).toBe(false)
+  })
+
+  it('SM-final-vinst triggar INTE cup_final_victory', () => {
+    const g = makeGame({
+      fixtures: [
+        makeFixture({
+          isFinaldag: true,
+          roundNumber: 22,
+          matchday: 37,
+          homeClubId: 'managed',
+          awayClubId: 'opp',
+          homeScore: 3,
+          awayScore: 2,
+        }),
+      ],
+      shownScenes: [],
+    })
+    expect(shouldTriggerCupFinalVictory(g)).toBe(false)
+    expect(shouldTriggerSMFinalVictory(g)).toBe(true)
   })
 })

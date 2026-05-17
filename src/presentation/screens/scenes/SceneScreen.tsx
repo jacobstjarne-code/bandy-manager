@@ -16,6 +16,7 @@ import { SeasonSignatureRevealScene } from './SeasonSignatureRevealScene'
 import { BoardMeetingScene } from './BoardMeetingScene'
 import { CupIntroScene } from './CupIntroScene'
 import { CupFinalIntroScene } from './CupFinalIntroScene'
+import { CupFinalVictoryScene } from './CupFinalVictoryScene'
 
 export function SceneScreen() {
   const game = useGameStore(s => s.game)
@@ -46,6 +47,8 @@ export function SceneScreen() {
       return <CupIntroScene game={game} onComplete={() => handleComplete()} />
     case 'cup_final_intro':
       return <CupFinalIntroScene game={game} onComplete={() => handleComplete()} />
+    case 'cup_final_victory':
+      return <CupFinalVictoryScene game={game} onComplete={() => handleComplete()} />
     default:
       return <Navigate to="/game/dashboard" replace />
   }

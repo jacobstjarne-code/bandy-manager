@@ -18,14 +18,16 @@ const COFFEE_ROOM_COOLDOWN_ROUNDS = 3
  * Returnerar scenId att visa, eller null om ingen scen ska triggas.
  *
  * Prioritetsordning (högst först):
- *   1. SM-finalseger (one-shot, narrativt tungt)
- *   2. Styrelsemötet (one-shot, allra först i nytt spel)
- *   3. Söndagsträningen (one-shot, etablerar truppen)
- *   4. Cup-intro (en gång per säsong, innan första cupmatch)
- *   5. Säsongssignatur-reveal (en gång per säsong)
- *   6. Kafferummet (recurring, cooldown-styrt)
+ *   1. Cup-finalseger (one-shot, mid-säsong)
+ *   2. SM-finalseger (one-shot, narrativt tungt)
+ *   3. Styrelsemötet (one-shot, allra först i nytt spel)
+ *   4. Söndagsträningen (one-shot, etablerar truppen)
+ *   5. Cup-intro (en gång per säsong, innan första cupmatch)
+ *   6. Säsongssignatur-reveal (en gång per säsong)
+ *   7. Kafferummet (recurring, cooldown-styrt)
  */
 export function detectSceneTrigger(game: SaveGame): SceneId | null {
+  if (shouldTriggerCupFinalVictory(game)) return 'cup_final_victory'
   if (shouldTriggerSMFinalVictory(game)) return 'sm_final_victory'
   if (shouldTriggerBoardMeeting()) return 'board_meeting'
   if (shouldTriggerSundayTraining(game)) return 'sunday_training'
@@ -101,6 +103,35 @@ export function shouldTriggerSMFinalVictory(game: SaveGame): boolean {
     return myPen > theirPen
   }
   return myScore > theirScore
+}
+
+/**
+ * Triggas EXKLUSIVT vid managed clubs vinst i cup-finalen (isCup + roundNumber >= 4).
+ * SM-finalseger hanteras av shouldTriggerSMFinalVictory (isFinaldag + !isCup).
+ */
+export function shouldTriggerCupFinalVictory(game: SaveGame): boolean {
+  if ((game.shownScenes ?? []).includes('cup_final_victory')) return false
+
+  const managedFixtures = game.fixtures.filter(
+    f =>
+      f.status === FixtureStatus.Completed &&
+      (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId),
+  )
+  if (managedFixtures.length === 0) return false
+
+  const lastManaged = managedFixtures.sort((a, b) => b.matchday - a.matchday)[0]
+  const isCupFinal = lastManaged.isCup === true && lastManaged.roundNumber >= 4
+  if (!isCupFinal) return false
+
+  const isHome = lastManaged.homeClubId === game.managedClubId
+  const myScore = isHome ? lastManaged.homeScore : lastManaged.awayScore
+  const theirScore = isHome ? lastManaged.awayScore : lastManaged.homeScore
+  if (lastManaged.penaltyResult) {
+    const myPen = isHome ? lastManaged.penaltyResult.home : lastManaged.penaltyResult.away
+    const theirPen = isHome ? lastManaged.penaltyResult.away : lastManaged.penaltyResult.home
+    return myPen > theirPen
+  }
+  return (myScore ?? 0) > (theirScore ?? 0)
 }
 
 export function shouldTriggerCoffeeRoom(game: SaveGame): boolean {

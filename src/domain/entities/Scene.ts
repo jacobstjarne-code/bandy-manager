@@ -13,6 +13,7 @@ export type SceneId =
   | 'board_meeting'
   | 'cup_intro'
   | 'cup_final_intro'
+  | 'cup_final_victory'
 
 export type SceneTrigger =
   | { kind: 'first_round_of_season' }
