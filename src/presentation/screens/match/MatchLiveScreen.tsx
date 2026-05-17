@@ -244,7 +244,7 @@ export function MatchLiveScreen() {
     const interval = setInterval(() => {
       setDisplayedMinute(m => {
         const nextStep = steps[currentStep + 1]
-        if (!nextStep) return m + 1
+        if (!nextStep) return m  // at last step — don't increment past it
         return Math.min(m + 1, nextStep.minute)
       })
     }, 1000)
