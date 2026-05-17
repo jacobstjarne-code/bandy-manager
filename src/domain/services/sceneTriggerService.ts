@@ -73,8 +73,9 @@ export function shouldTriggerSundayTraining(game: SaveGame): boolean {
 }
 
 /**
- * Triggas vid managed clubs vinst i ANY final — både cup-final och SM-final.
- * Funktionsnamnet är felnamngivet av historiska skäl.
+ * Triggas EXKLUSIVT vid managed clubs vinst i SM-finalen (isFinaldag === true).
+ * Cup-final-vinst hanteras via POKALEN-anslag (cup_done_winner i
+ * anslagService.ts), inte via denna scen.
  */
 export function shouldTriggerSMFinalVictory(game: SaveGame): boolean {
   if ((game.shownScenes ?? []).includes('sm_final_victory')) return false
@@ -87,10 +88,8 @@ export function shouldTriggerSMFinalVictory(game: SaveGame): boolean {
   if (managedFixtures.length === 0) return false
 
   const lastManaged = managedFixtures.sort((a, b) => b.matchday - a.matchday)[0]
-  // Cup-final = isCup OR (cup-final i fixture-strukturen är roundNumber 4)
-  const isFinal = lastManaged.isFinaldag === true ||
-    (lastManaged.isCup === true && lastManaged.roundNumber >= 4)
-  if (!isFinal) return false
+  const isSMFinal = lastManaged.isFinaldag === true && !lastManaged.isCup
+  if (!isSMFinal) return false
 
   const isHome = lastManaged.homeClubId === game.managedClubId
   const myScore = isHome ? lastManaged.homeScore : lastManaged.awayScore

@@ -85,13 +85,12 @@ describe('sceneTriggerService — söndagsträningen', () => {
 })
 
 describe('sceneTriggerService — SM-finalseger', () => {
-  it('triggar när senaste managed-fixture är cup-final och vunnen', () => {
+  it('triggar när senaste managed-fixture är SM-finalen (isFinaldag=true, ej cup) och vunnen', () => {
     const finalFixture = makeFixture({
       id: 'final',
       matchday: 30,
-      isCup: true,
       isFinaldag: true,
-      roundNumber: 4,
+      roundNumber: 22,
       homeClubId: 'managed',
       awayClubId: 'opp',
       homeScore: 3,
@@ -102,13 +101,12 @@ describe('sceneTriggerService — SM-finalseger', () => {
     expect(detectSceneTrigger(g)).toBe('sm_final_victory')
   })
 
-  it('triggar inte när finalen förlorades', () => {
+  it('triggar inte när SM-finalen förlorades', () => {
     const finalFixture = makeFixture({
       id: 'final',
       matchday: 30,
-      isCup: true,
       isFinaldag: true,
-      roundNumber: 4,
+      roundNumber: 22,
       homeClubId: 'managed',
       awayClubId: 'opp',
       homeScore: 1,
@@ -130,13 +128,12 @@ describe('sceneTriggerService — SM-finalseger', () => {
     expect(shouldTriggerSMFinalVictory(g)).toBe(false)
   })
 
-  it('shownScenes blockerar re-trigger även när final vunnits', () => {
+  it('shownScenes blockerar re-trigger även när SM-final vunnits', () => {
     const finalFixture = makeFixture({
       id: 'final',
       matchday: 30,
-      isCup: true,
       isFinaldag: true,
-      roundNumber: 4,
+      roundNumber: 22,
       homeClubId: 'managed',
       awayClubId: 'opp',
       homeScore: 3,
@@ -153,9 +150,8 @@ describe('sceneTriggerService — SM-finalseger', () => {
     const finalFixture = makeFixture({
       id: 'final',
       matchday: 30,
-      isCup: true,
       isFinaldag: true,
-      roundNumber: 4,
+      roundNumber: 22,
       homeClubId: 'managed',
       awayClubId: 'opp',
       homeScore: 3,
@@ -170,7 +166,7 @@ describe('sceneTriggerService — SM-finalseger', () => {
     expect(detectSceneTrigger(g)).toBe('sm_final_victory')
   })
 
-  it('triggas vid cup-final-vinst (isCup=true, roundNumber=4, utan isFinaldag)', () => {
+  it('triggas INTE vid cup-final-vinst — cup hanteras via POKALEN-anslag', () => {
     const g = makeGame({
       managedClubId: 'managed',
       fixtures: [
@@ -186,7 +182,7 @@ describe('sceneTriggerService — SM-finalseger', () => {
       ],
       shownScenes: [],
     })
-    expect(shouldTriggerSMFinalVictory(g)).toBe(true)
+    expect(shouldTriggerSMFinalVictory(g)).toBe(false)
   })
 
   it('triggas INTE vid cup-final-förlust', () => {
