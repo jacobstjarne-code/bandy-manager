@@ -38,6 +38,7 @@ import { CornerInteraction } from '../../components/match/CornerInteraction'
 import { resolvePenalty, resolveAIPenaltyKeeperDive } from '../../../domain/services/penaltyInteractionService'
 import type { PenaltyDirection, PenaltyHeight } from '../../../domain/services/penaltyInteractionService'
 import { PenaltyInteraction } from '../../components/match/PenaltyInteraction'
+import { deriveEventText } from './deriveEventText'
 import { resolveCounter } from '../../../domain/services/counterAttackInteractionService'
 import type { CounterChoice } from '../../../domain/services/counterAttackInteractionService'
 import { CounterInteraction } from '../../components/match/CounterInteraction'
@@ -1180,6 +1181,7 @@ export function MatchLiveScreen() {
   })()
 
   // ── Feed rows for CommentaryFeedStalvallen ───────────────────────────────
+  const feedPlayers = game?.players ?? []
   const feedRows: FeedRow[] = displayedSteps
     .filter(s =>
       s.commentary?.trim() ||
@@ -1198,7 +1200,7 @@ export function MatchLiveScreen() {
           tag: (goalEvent.isPenaltyGoal ? 'penalty' : 'goal') as 'penalty' | 'goal',
           minute: s.minute,
           team,
-          text: s.commentary ?? '',
+          text: deriveEventText(s.commentary, goalEvent, 'Mål', feedPlayers),
         }
       }
       const suspEvent = s.events.find(e => e.type === MatchEventType.RedCard)
@@ -1209,7 +1211,7 @@ export function MatchLiveScreen() {
           tag: 'suspension' as const,
           minute: s.minute,
           team,
-          text: s.commentary ?? '',
+          text: deriveEventText(s.commentary, suspEvent, 'Utvisning', feedPlayers),
         }
       }
       const saveEvent = s.events.find(e => e.type === MatchEventType.Save)
@@ -1220,7 +1222,7 @@ export function MatchLiveScreen() {
           tag: 'save' as const,
           minute: s.minute,
           team,
-          text: s.commentary ?? '',
+          text: deriveEventText(s.commentary, saveEvent, 'Räddning', feedPlayers),
         }
       }
       return { kind: 'atmosphere' as const, text: s.commentary ?? '' }
