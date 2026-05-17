@@ -495,10 +495,19 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
                    (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
       .map(f => f.id)
   )
+  // For live matches: the managed fixture is already completed before advance() is called
+  // (saveLiveMatchResult sets it to Completed), so it's absent from simulatedFixtures.
+  // Fall back to allFixtures to find it — restricted to the current matchday so we
+  // don't accidentally pick up older completed managed fixtures.
   const justCompletedManagedFixture = simulatedFixtures.find(
     f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
          f.status === FixtureStatus.Completed &&
          scheduledManagedAtStart.has(f.id)
+  ) ?? allFixtures.find(
+    f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
+         f.status === FixtureStatus.Completed &&
+         f.matchday === nextMatchday &&
+         !scheduledManagedAtStart.has(f.id)
   )
 
   // DREAM-003: derby win ripple — big margin win in a derby gives cross-system boosts

@@ -372,7 +372,7 @@ export const commentary = {
   cup_fullTime_win: [
     "Slutsignal. {team} går vidare. Kvarten väntar.",
     "Det är slut. {score}. {team} har en match till i cupen.",
-    "Domaren blåser. {team} klarar sig. Nu vet vi att vi kan spela bandy igen.",
+    "Domaren blåser. {team} klarar sig.",
     "Slutspelad. {team} vidare, {opponent} hem. Det blev sista cupmatchen för dem i år.",
   ],
 

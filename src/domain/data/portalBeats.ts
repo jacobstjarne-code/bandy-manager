@@ -46,8 +46,13 @@ export const PORTAL_BEATS: PortalBeat[] = [
     text: 'Ispremiär. Wienerbröd på morgonen, isen är stenhård. Det är säsong nu.',
     trigger: (g) => {
       if (completedLeagueCount(g) !== 0) return false
-      const next = nextManagedLeagueFixture(g)
-      return next !== null
+      // Don't show during a cup week — the immediate next fixture must be a league match
+      const nextAny = g.fixtures
+        .filter(f => f.status === 'scheduled' &&
+          (f.homeClubId === g.managedClubId || f.awayClubId === g.managedClubId))
+        .sort((a, b) => a.matchday - b.matchday)[0] ?? null
+      if (!nextAny || nextAny.isCup) return false
+      return true
     },
     oncePerSeason: true,
   },

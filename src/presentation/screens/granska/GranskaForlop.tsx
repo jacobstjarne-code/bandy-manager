@@ -94,15 +94,29 @@ export function GranskaForlop({ game, fixture, isHome, rs, standing, standingBef
                 : e.type === MatchEventType.Penalty ? '🎯'
                 : '🟥'
               const p = e.playerId ? game.players.find(pl => pl.id === e.playerId) : null
-              const name = p ? `${p.firstName[0]}. ${p.lastName}` : ''
+              const name = p ? `${p.firstName[0]}. ${p.lastName}` : (e.description ?? '')
               return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0' }}>
-                  <span style={{ fontSize: 9, color: 'var(--text-muted)', width: 22, textAlign: 'right', flexShrink: 0 }}>{e.minute}'</span>
-                  <span style={{ fontSize: 11 }}>{icon}</span>
-                  <span style={{ fontSize: 11, flex: 1, color: isManagedEvent ? 'var(--text-primary)' : 'var(--text-muted)' }}>
-                    {name || e.description}
-                  </span>
-                  {!isManagedEvent && <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>mot</span>}
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', padding: '2px 0', borderBottom: i < allEvents.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                  {/* Mina händelser — vänster */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {isManagedEvent && (
+                      <>
+                        <span style={{ fontSize: 9, color: 'var(--text-muted)', flexShrink: 0, minWidth: 18 }}>{e.minute}'</span>
+                        <span style={{ fontSize: 11 }}>{icon}</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-primary)' }}>{name}</span>
+                      </>
+                    )}
+                  </div>
+                  {/* Deras händelser — höger */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
+                    {!isManagedEvent && (
+                      <>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{name}</span>
+                        <span style={{ fontSize: 11 }}>{icon}</span>
+                        <span style={{ fontSize: 9, color: 'var(--text-muted)', flexShrink: 0, minWidth: 18, textAlign: 'right' }}>{e.minute}'</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               )
             })}
