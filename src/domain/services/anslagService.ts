@@ -269,8 +269,9 @@ export function computeNextAnslag(game: SaveGame): AnslagKey | null {
       return 'league_halfway'
     }
 
-    // Midwinter — round 7-9
-    if (round >= 7 && round <= 9 && !seen.includes('league_midwinter')) {
+    // Midwinter — after Annandagen (matchday 12) has been played
+    const annandagenPlayed = game.fixtures.some(f => f.matchday === 12 && f.status === FixtureStatus.Completed)
+    if (annandagenPlayed && !seen.includes('league_midwinter')) {
       return 'league_midwinter'
     }
 

@@ -477,15 +477,19 @@ export function TabellScreen() {
         const managedWon = managedPlayed.filter(m => m.winnerId === managedId)
         const managedLost = managedPlayed.find(m => m.winnerId && m.winnerId !== managedId)
         const cupWinner = bracket.completed && bracket.winnerId === managedId
+        const cupCompletedByOther = bracket.completed && !!bracket.winnerId && bracket.winnerId !== managedId
         const hasBye = managedMatches.length > 0 && managedMatches[0].round > 1 && managedPlayed.length === 0
 
         const statusText = cupWinner ? '🏆 Cupvinnare!'
-          : managedLost ? `Utslagen i ${['', 'förstarundan', 'kvartsfinalen', 'semifinalen', 'finalen'][managedLost.round] ?? 'cupen'}` 
+          : managedLost && cupCompletedByOther
+            ? `Utslagen i ${['', 'förstarundan', 'kvartsfinalen', 'semifinalen', 'finalen'][managedLost.round] ?? 'cupen'} · 🏆 ${clubName(bracket.winnerId!)} tog hem cupen`
+          : managedLost ? `Utslagen i ${['', 'förstarundan', 'kvartsfinalen', 'semifinalen', 'finalen'][managedLost.round] ?? 'cupen'}`
+          : cupCompletedByOther ? `🏆 ${clubName(bracket.winnerId!)} tog hem cupen`
           : hasBye ? `Kvar i cupen · Fri lott till ${['', '', 'kvartsfinal', 'semifinal', 'final'][managedMatches[0]?.round] ?? 'nästa runda'}`
           : managedWon.length > 0 ? `Kvar i cupen · ${managedWon.length} ${managedWon.length === 1 ? 'match vunnen' : 'matcher vunna'}`
           : 'Kvar i cupen'
 
-        const statusColor = cupWinner ? 'var(--accent)' : managedLost ? 'var(--danger)' : 'var(--success)'
+        const statusColor = cupWinner ? 'var(--accent)' : managedLost ? 'var(--danger)' : cupCompletedByOther ? 'var(--text-secondary)' : 'var(--success)'
 
         // Rounds
         const roundNames: Record<number, string> = { 1: 'FÖRSTARUNDA', 2: 'KVARTSFINAL', 3: 'SEMIFINAL', 4: 'FINAL' }
@@ -569,34 +573,45 @@ export function TabellScreen() {
                       const home = clubName(m.homeClubId)
                       const away = clubName(m.awayClubId)
                       const played = isMatchPlayed(m)
-                      const fix = played ? game.fixtures.find(f => f.id === m.fixtureId) : null
+                      const fix = game.fixtures.find(f => f.id === m.fixtureId) ?? null
                       const homeWon = played && m.winnerId === m.homeClubId
                       const awayWon = played && m.winnerId === m.awayClubId
                       const homeManaged = isManaged(m.homeClubId)
                       const awayManaged = isManaged(m.awayClubId)
+                      const isFinal = round === 4
+                      const showTrophy = isFinal && played && bracket.completed
+                      const showMatchday = isFinal && !played && fix
                       return (
                         <div key={m.fixtureId ?? i} style={{
-                          display: 'flex', alignItems: 'center', padding: '8px 12px',
                           borderBottom: i < matches.length - 1 ? '1px solid var(--border)' : 'none',
                           background: (homeManaged || awayManaged) ? 'rgba(196,122,58,0.04)' : undefined,
                         }}>
-                          <span style={{
-                            flex: 1, fontSize: 12,
-                            fontWeight: homeWon ? 700 : played ? 400 : 500,
-                            color: homeWon ? 'var(--text-primary)' : played ? 'var(--text-muted)' : 'var(--text-primary)',
-                          }}>
-                            {homeManaged ? '★ ' : ''}{home}
-                          </span>
-                          <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', minWidth: 40, textAlign: 'center' }}>
-                            {played && fix ? `${fix.homeScore}–${fix.awayScore}` : 'vs'}
-                          </span>
-                          <span style={{
-                            flex: 1, fontSize: 12, textAlign: 'right',
-                            fontWeight: awayWon ? 700 : played ? 400 : 500,
-                            color: awayWon ? 'var(--text-primary)' : played ? 'var(--text-muted)' : 'var(--text-primary)',
-                          }}>
-                            {away}{awayManaged ? ' ★' : ''}
-                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px' }}>
+                            <span style={{
+                              flex: 1, fontSize: 12,
+                              fontWeight: homeWon ? 700 : played ? 400 : 500,
+                              color: homeWon ? 'var(--text-primary)' : played ? 'var(--text-muted)' : 'var(--text-primary)',
+                            }}>
+                              {homeManaged ? '★ ' : ''}{home}
+                              {showTrophy && homeWon && <span style={{ marginLeft: 4 }}>🏆</span>}
+                            </span>
+                            <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', minWidth: 40, textAlign: 'center' }}>
+                              {played && fix ? `${fix.homeScore}–${fix.awayScore}` : 'vs'}
+                            </span>
+                            <span style={{
+                              flex: 1, fontSize: 12, textAlign: 'right',
+                              fontWeight: awayWon ? 700 : played ? 400 : 500,
+                              color: awayWon ? 'var(--text-primary)' : played ? 'var(--text-muted)' : 'var(--text-primary)',
+                            }}>
+                              {away}{awayManaged ? ' ★' : ''}
+                              {showTrophy && awayWon && <span style={{ marginLeft: 4 }}>🏆</span>}
+                            </span>
+                          </div>
+                          {showMatchday && (
+                            <p style={{ fontSize: 11, color: 'var(--text-muted)', padding: '0 12px 8px', textAlign: 'center' }}>
+                              Spelas matchdag {fix.matchday}
+                            </p>
+                          )}
                         </div>
                       )
                     })}

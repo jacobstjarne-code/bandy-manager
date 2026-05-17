@@ -166,10 +166,14 @@ describe('computeNextAnslag — prioritet', () => {
     expect(computeNextAnslag(game)).toBe('cup_done')
   })
 
-  it('league_midwinter triggers at round 7', () => {
-    const fixtures = Array.from({ length: 7 }, (_, i) =>
-      makeFixture({ id: `f${i}`, roundNumber: i + 1, matchday: i + 5 })
-    )
+  it('league_midwinter triggers after Annandagen (matchday 12) is played', () => {
+    const fixtures = [
+      ...Array.from({ length: 7 }, (_, i) =>
+        makeFixture({ id: `f${i}`, roundNumber: i + 1, matchday: i + 5 })
+      ),
+      // Annandagen — matchday 12 completed
+      makeFixture({ id: 'f-annandagen', roundNumber: 8, matchday: 12 }),
+    ]
     const game = makeGame({
       cupBracket: makeMinimalBracket({ completed: true }),
       fixtures,

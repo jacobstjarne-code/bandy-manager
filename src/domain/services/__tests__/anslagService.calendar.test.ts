@@ -84,14 +84,14 @@ describe('currentLeagueRound', () => {
 })
 
 describe('Round-baserad trigging är konsistent', () => {
-  it('league_midwinter triggas exakt en gång trots att round 7-9 alla är i spannet', () => {
+  it('league_midwinter triggas exakt en gång — efter Annandagen (matchday 12)', () => {
     const cupDoneBracket = { season: 1, matches: [], byeTeamIds: [], completed: true }
     const seenBase = ['cup_start', 'cup_done', 'league_start']
 
-    // Round 7 — triggers
+    // Round 8 (matchday 12 = Annandagen, roundNumber+4=12 → roundNumber=8) — triggers
     const g7 = makeGame({
       cupBracket: cupDoneBracket,
-      fixtures: Array.from({ length: 7 }, (_, i) => makeLeagueFixture(i + 1)),
+      fixtures: Array.from({ length: 8 }, (_, i) => makeLeagueFixture(i + 1)),
       seenAnslag: [...seenBase],
     })
     expect(computeNextAnslag(g7)).toBe('league_midwinter')

@@ -41,6 +41,11 @@ export function NextMatchPrimary({ game }: CardRenderProps) {
   const isHome = nextFixture.homeClubId === managedId
   const matchWeather = (game.matchWeathers ?? []).find(mw => mw.fixtureId === nextFixture.id)
 
+  const specialDateLabel = nextFixture.isFinaldag ? 'SM-FINALEN'
+    : nextFixture.isCupFinalhelgen ? 'CUPFINALHELGEN'
+    : nextFixture.matchday === 12 ? 'ANNANDAGEN'
+    : null
+
   const isPlayoffFixture = !!(nextFixture.roundNumber > 22)
   const playoffSeries = isPlayoffFixture && bracket ? (() => {
     const allSeries = [
@@ -86,6 +91,11 @@ export function NextMatchPrimary({ game }: CardRenderProps) {
       '--text-muted':    'rgba(196,186,168,0.55)',
       '--match-home-bg': 'var(--bg-portal-elevated)',
     } as React.CSSProperties}>
+      {specialDateLabel && (
+        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
+          {specialDateLabel}
+        </p>
+      )}
       <NextMatchCard
         nextFixture={nextFixture}
         opponent={opponent}
