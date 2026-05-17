@@ -2,7 +2,7 @@ import type { Fixture } from '../../../domain/entities/Fixture'
 import type { Tactic } from '../../../domain/entities/Club'
 import type { MatchWeather } from '../../../domain/entities/Weather'
 import { WeatherCondition, TacticMentality, TacticTempo } from '../../../domain/enums'
-import { getWeatherEmoji, getIceQualityLabel } from '../../../domain/services/weatherService'
+import { getWeatherEmoji, getIceQualityLabel, getConditionLabel } from '../../../domain/services/weatherService'
 import { getMatchAtmosphere, getCardTint } from '../../utils/matchAtmosphere'
 
 interface MatchHeaderProps {
@@ -75,7 +75,13 @@ export function MatchHeader({ fixture, roundLabel, opponentName, isHome, weather
       {weather && (
         <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: (step === 'tactic' || step === 'start') ? 4 : 0 }}>
           {getWeatherEmoji(weather.weather.condition)}{' '}
-          {weather.weather.temperature > 0 ? '+' : ''}{weather.weather.temperature}°C · {getIceQualityLabel(weather.weather.iceQuality)}
+          {weather.weather.temperature > 0 ? '+' : ''}{weather.weather.temperature}°C · {
+            (weather.weather.condition === WeatherCondition.Fog ||
+             weather.weather.condition === WeatherCondition.HeavySnow ||
+             weather.weather.condition === WeatherCondition.Thaw)
+              ? getConditionLabel(weather.weather.condition)
+              : getIceQualityLabel(weather.weather.iceQuality)
+          }
         </p>
       )}
 

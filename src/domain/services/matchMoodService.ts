@@ -39,9 +39,15 @@ export function getMatchMood(
     return `🥶 ${temp}°. Vaktmästaren har varit ute sedan fem. Isen är hård som betong.`
   }
 
-  // Snow
+  // Significant weather conditions — checked before temperature fallback
   if (weather?.weather.condition === 'heavySnow') {
     return '❄️ Snöfall. Linjerna syns knappt. Det blir en viljornas kamp.'
+  }
+  if (weather?.weather.condition === 'fog') {
+    return '🌫 Dimman ligger tät. Svårt att se bortre målet.'
+  }
+  if (weather?.weather.condition === 'thaw') {
+    return '💧 Töväder. Isen är blöt — det kräver ett annat spel.'
   }
 
   // Top of table clash

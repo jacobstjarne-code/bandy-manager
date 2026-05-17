@@ -114,10 +114,10 @@ export function LineupStep({
       )
     : null
 
-  const oppFormation = opponent?.activeTactic?.formation ?? '—'
+  const oppFormation = opponent?.activeTactic?.formation
   const oppFormText = oppAnalysis
-    ? `${oppAnalysis.recentForm} · ${oppFormation}`
-    : oppFormation
+    ? (oppFormation ? `${oppAnalysis.recentForm} · ${oppFormation}` : oppAnalysis.recentForm)
+    : (oppFormation ?? '—')
 
   function handlePlayerClick(player: Player) {
     if (player.isInjured || player.suspensionGamesRemaining > 0) return

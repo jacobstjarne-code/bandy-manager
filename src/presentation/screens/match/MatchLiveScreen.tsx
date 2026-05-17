@@ -28,7 +28,7 @@ import { CeremonyCupFinal } from '../../components/match/CeremonyCupFinal'
 import { CeremonySmFinal } from '../../components/match/CeremonySmFinal'
 import { SubstitutionModal } from '../../components/match/SubstitutionModal'
 import { ScoreboardStalvallen } from '../../components/match/scoreboard/ScoreboardStalvallen'
-import type { ScoreboardEvent } from '../../components/match/scoreboard/ScoreboardStalvallen'
+import type { ScoreboardEvent, PenaltyEntry } from '../../components/match/scoreboard/ScoreboardStalvallen'
 import { MatchControls } from '../../components/match/MatchControls'
 import { CommentaryFeedStalvallen } from '../../components/match/commentary/CommentaryFeedStalvallen'
 import type { FeedRow } from '../../components/match/commentary/CommentaryFeedStalvallen'
@@ -1158,6 +1158,27 @@ export function MatchLiveScreen() {
       }))
   )
 
+  const scoreboardPenalties: PenaltyEntry[] = (() => {
+    if (!currentMatchStep || !game) return []
+    const currentMin = currentMatchStep.minute
+    const allEventsSoFar = displayedSteps.flatMap(s => s.events)
+    const playerById = new Map(game.players.map(p => [p.id, p]))
+    return allEventsSoFar
+      .filter(e => e.type === MatchEventType.RedCard && currentMin - (e.minute ?? 0) < 10)
+      .map(e => {
+        const p = e.playerId ? playerById.get(e.playerId) : null
+        const elapsed = currentMin - (e.minute ?? 0)
+        const remaining = Math.max(0, 10 - elapsed)
+        return {
+          team: (e.clubId === fixture.homeClubId ? 'home' : 'away') as 'home' | 'away',
+          num: p?.shirtNumber ?? 0,
+          name: p ? `${p.firstName[0]}. ${p.lastName}` : '?',
+          secondsLeft: remaining * 60,
+        }
+      })
+      .filter(pe => pe.secondsLeft > 0)
+  })()
+
   // ── Feed rows for CommentaryFeedStalvallen ───────────────────────────────
   const feedRows: FeedRow[] = displayedSteps
     .filter(s =>
@@ -1294,7 +1315,7 @@ export function MatchLiveScreen() {
         period={period}
         minute={displayedMinute}
         second={0}
-        penalties={[]}
+        penalties={scoreboardPenalties}
         ticker={atmosphericTicker}
         events={scoreboardEvents}
         isPlayoffFinal={matchPhase === 'final'}
