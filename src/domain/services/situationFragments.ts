@@ -49,6 +49,12 @@ function ordinalSv(n: number): string {
 export function getOpponentStandingFragment(game: SaveGame): string | null {
   const next = nextManagedFixture(game)
   if (!next || next.isCup) return null
+  const managedId = game.managedClubId
+  const completedLeague = game.fixtures.filter(
+    f => f.status === 'completed' && !f.isCup &&
+      (f.homeClubId === managedId || f.awayClubId === managedId)
+  ).length
+  if (completedLeague < 5) return null
   const oppId = opponentId(game, next)
   if (!oppId) return null
   const oppStanding = game.standings.find(s => s.clubId === oppId)

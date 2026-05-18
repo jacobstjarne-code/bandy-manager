@@ -340,3 +340,85 @@ describe('computeNextAnslag — cup_first_match', () => {
     expect(computeNextAnslag(game)).not.toBe('cup_first_match')
   })
 })
+
+describe('computeNextAnslag — cup_start trigger-guard', () => {
+  it('cup_start triggas INTE efter att en cupmatchen är completed', () => {
+    const completedCupFixture = makeFixture({
+      id: 'cup-r1-m0',
+      isCup: true,
+      roundNumber: 1,
+      season: 1,
+      status: FixtureStatus.Completed,
+      homeClubId: 'managed',
+      awayClubId: 'other',
+      matchday: 3,
+    })
+    const game = makeGame({
+      currentSeason: 1,
+      currentMatchday: 3,
+      cupBracket: makeMinimalBracket(),
+      fixtures: [completedCupFixture],
+      seenAnslag: [],
+    })
+    expect(computeNextAnslag(game)).not.toBe('cup_start')
+  })
+
+  it('cup_start triggas när cupBracket finns men inga cupmatchen spelats', () => {
+    const game = makeGame({
+      currentSeason: 1,
+      currentMatchday: 1,
+      cupBracket: makeMinimalBracket(),
+      fixtures: [],
+      seenAnslag: [],
+    })
+    expect(computeNextAnslag(game)).toBe('cup_start')
+  })
+})
+
+describe('computeNextAnslag — cup_done vs cup_between isolering', () => {
+  function makeCupMatch(round: number, winnerId: string): CupMatch {
+    return {
+      id: `cup-r${round}-m0`,
+      round,
+      fixtureId: `cup-r${round}-m0`,
+      homeClubId: 'managed',
+      awayClubId: 'other',
+      winnerId,
+    }
+  }
+
+  it('runda 1-utslag triggar cup_done, inte cup_between', () => {
+    // Round 1 complete, managed eliminated in round 1
+    const bracket = makeMinimalBracket({
+      matches: [makeCupMatch(1, 'other')],
+    })
+    const game = makeGame({
+      currentSeason: 1,
+      currentMatchday: 3,
+      cupBracket: bracket,
+      seenAnslag: ['cup_start'],
+    })
+    const result = computeNextAnslag(game)
+    expect(result).toBe('cup_done')
+    expect(result).not.toBe('cup_between')
+  })
+
+  it('runda 2-utslag triggar cup_between, inte cup_done', () => {
+    // Round 1 won, round 2 lost — eliminated in round 2
+    const bracket = makeMinimalBracket({
+      matches: [
+        makeCupMatch(1, 'managed'),
+        makeCupMatch(2, 'other'),
+      ],
+    })
+    const game = makeGame({
+      currentSeason: 1,
+      currentMatchday: 8,
+      cupBracket: bracket,
+      seenAnslag: ['cup_start'],
+    })
+    const result = computeNextAnslag(game)
+    expect(result).toBe('cup_between')
+    expect(result).not.toBe('cup_done')
+  })
+})

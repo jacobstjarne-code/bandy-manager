@@ -186,8 +186,11 @@ export function computeNextAnslag(game: SaveGame): AnslagKey | null {
 
   // ── Cup priority ──────────────────────────────────────────────
   if (bracket) {
-    // Anslaget — before first cup match
-    if (game.currentMatchday >= 1 && !seen.includes('cup_start')) {
+    // Anslaget — before first cup match has been played
+    const noCupPlayed = !game.fixtures.some(
+      f => f.isCup && f.status === FixtureStatus.Completed && f.season === game.currentSeason
+    )
+    if (game.currentMatchday >= 1 && noCupPlayed && !seen.includes('cup_start')) {
       return 'cup_start'
     }
 
@@ -210,8 +213,8 @@ export function computeNextAnslag(game: SaveGame): AnslagKey | null {
     if (allRoundComplete(bracket, 2)) {
       const status = getManagedClubCupStatus(bracket, club)
 
-      // Pokalen for eliminated in round 1 or 2 — takes precedence
-      if (status.eliminated && (status.eliminatedInRound ?? 0) <= 2
+      // Pokalen — eliminated i runda 1 (tidig utslag)
+      if (status.eliminated && status.eliminatedInRound === 1
           && !seen.includes('cup_done') && !seen.includes('cup_done_winner')) {
         return 'cup_done'
       }
