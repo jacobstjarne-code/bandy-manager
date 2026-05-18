@@ -363,4 +363,9 @@ export interface SaveGame {
 
   // F1 Stage 2 — per-source cooldowns (shown on SourceSecondaryCard)
   sourceCooldowns?: Partial<Record<string, { roundsLeft: number; totalRounds: number }>>
+
+  // C-P1 — Stale-bias per portal-kort
+  // firstShownAt: matchday when card first entered layout (resets after a gap round)
+  // lastShownAt: most recent matchday when card was in layout (used to detect gaps)
+  cardStaleTracking?: Record<string, { firstShownAt: number; lastShownAt: number }>
 }

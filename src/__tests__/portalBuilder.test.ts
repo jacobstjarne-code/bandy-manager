@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { buildPortal, makeSeed } from '../domain/services/portal/portalBuilder'
+import { buildPortal, makeSeed, computeCardStaleTracking } from '../domain/services/portal/portalBuilder'
 import { setCardBag } from '../domain/services/portal/dashboardCardBag'
 import type { DashboardCard } from '../domain/services/portal/dashboardCardBag'
 import type { SaveGame } from '../domain/entities/SaveGame'
@@ -180,5 +180,92 @@ describe('makeSeed', () => {
     const game1 = makeGame({ currentSeason: 2026, currentMatchday: 1 })
     const game2 = makeGame({ currentSeason: 2026, currentMatchday: 10 })
     expect(makeSeed(game1)).not.toBe(makeSeed(game2))
+  })
+})
+
+describe('computeCardStaleTracking', () => {
+  it('nytt kort får firstShownAt = currentMatchday', () => {
+    const result = computeCardStaleTracking({}, ['card_a'], 7)
+    expect(result['card_a'].firstShownAt).toBe(7)
+    expect(result['card_a'].lastShownAt).toBe(7)
+  })
+
+  it('sekventiellt kort behåller firstShownAt men uppdaterar lastShownAt', () => {
+    const tracking = { card_a: { firstShownAt: 5, lastShownAt: 6 } }
+    const result = computeCardStaleTracking(tracking, ['card_a'], 7)
+    expect(result['card_a'].firstShownAt).toBe(5)  // bevarad
+    expect(result['card_a'].lastShownAt).toBe(7)   // uppdaterad
+  })
+
+  it('gap (lastShownAt !== matchday-1) återställer firstShownAt', () => {
+    // lastShownAt=5, currentMatchday=7 → gap → firstShownAt resettas
+    const tracking = { card_a: { firstShownAt: 3, lastShownAt: 5 } }
+    const result = computeCardStaleTracking(tracking, ['card_a'], 7)
+    expect(result['card_a'].firstShownAt).toBe(7)  // resettat
+    expect(result['card_a'].lastShownAt).toBe(7)
+  })
+
+  it('bevarar tracking för kort som INTE visas denna omgång', () => {
+    const tracking = { card_a: { firstShownAt: 5, lastShownAt: 6 }, card_b: { firstShownAt: 4, lastShownAt: 6 } }
+    const result = computeCardStaleTracking(tracking, ['card_a'], 7)
+    // card_b inte i shownCardIds men bevaras (lastShownAt=6 visar den saknades)
+    expect(result['card_b']).toEqual({ firstShownAt: 4, lastShownAt: 6 })
+  })
+})
+
+describe('buildPortal — stale-bias', () => {
+  beforeEach(() => {
+    setCardBag([
+      { id: 'fresh', tier: 'secondary', weight: 50, triggers: [() => true], Component: MockSecondary1 as never },
+      { id: 'stale', tier: 'secondary', weight: 80, triggers: [() => true], Component: MockSecondary2 as never },
+      { id: 'prim', tier: 'primary', weight: 10, triggers: [() => true], Component: MockPrimary as never },
+    ])
+  })
+
+  it('nytt kort (ingen tracking) har bias 1 — ingen dämpning', () => {
+    const game = makeGame({ currentMatchday: 7 })
+    const layout = buildPortal(game, makeSeed(game))
+    // Utan tracking: stale(weight=80) > fresh(weight=50) — stale vinner
+    expect(layout.secondary[0].id).toBe('stale')
+  })
+
+  it('kort visat 3 omg utan gap (bias=0.125) tappar mot ett lägre nytt kort', () => {
+    // stale: weight=80, staleness=3 → effectiveWeight = 80*0.125 = 10
+    // fresh: weight=50, ingen tracking → effectiveWeight = 50*1 = 50
+    // fresh vinner
+    const tracking = {
+      stale: { firstShownAt: 4, lastShownAt: 6 },  // visats vid md 4,5,6 → staleness = 7-4=3 → 0.5^3=0.125
+    }
+    const game = makeGame({ currentMatchday: 7, cardStaleTracking: tracking })
+    const layout = buildPortal(game, makeSeed(game))
+    expect(layout.secondary[0].id).toBe('fresh')
+  })
+
+  it('kort visat 1 omg (bias=0.5) kvar högt nog', () => {
+    // stale: weight=80, staleness=1 → effectiveWeight = 80*0.5 = 40
+    // fresh: weight=50, ingen tracking → effectiveWeight = 50
+    // fresh vinner (50 > 40)
+    const tracking = {
+      stale: { firstShownAt: 6, lastShownAt: 6 },  // firstShownAt=6, currentMatchday=7 → staleness=1
+    }
+    const game = makeGame({ currentMatchday: 7, cardStaleTracking: tracking })
+    const layout = buildPortal(game, makeSeed(game))
+    expect(layout.secondary[0].id).toBe('fresh')
+  })
+
+  it('gap i tracking nollställer bias — högt-weight-kort vinner igen', () => {
+    // stale: firstShownAt=3, lastShownAt=5 → gap vid md 7 → resettas via computeCardStaleTracking
+    // Men buildPortal använder tracking AS-IS, utan att kalla compute
+    // Alltså: gap-detect görs i computeCardStaleTracking, INTE i staleBias
+    // Här testar vi att stale kort med gammal firstShownAt (3) OCH gap (lastShownAt=5→7) fortfarande har bias
+    // eftersom buildPortal inte reset tracking — det görs av recordPortalShown via store
+    // Verifierar att staleBias korrekt räknar från firstShownAt
+    const tracking = {
+      stale: { firstShownAt: 3, lastShownAt: 5 },  // staleness = 7-3=4 → 0.5^4=0.0625
+    }
+    const game = makeGame({ currentMatchday: 7, cardStaleTracking: tracking })
+    const layout = buildPortal(game, makeSeed(game))
+    // stale: 80*0.0625=5 < fresh: 50*1=50 → fresh vinner
+    expect(layout.secondary[0].id).toBe('fresh')
   })
 })

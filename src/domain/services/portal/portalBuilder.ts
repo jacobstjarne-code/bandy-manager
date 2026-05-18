@@ -4,6 +4,42 @@ import { CARD_BAG } from './dashboardCardBag'
 import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff } from '../../data/seasonPhases'
 import { applyPhaseBias } from './seasonPhaseBias'
 
+type StaleEntry = { firstShownAt: number; lastShownAt: number }
+type StaleTracking = Record<string, StaleEntry>
+
+/**
+ * Räknar ut stale-bias för ett kort.
+ * N = antal omgångar sedan kortet KONTINUERLIGT visats (utan gap).
+ * bias = 0.5^N  →  ny=1, 1 omg=0.5, 2 omg=0.25, 3 omg=0.125
+ */
+function staleBias(cardId: string, tracking: StaleTracking | undefined, currentMatchday: number): number {
+  const t = tracking?.[cardId]
+  if (!t) return 1
+  return Math.pow(0.5, Math.max(0, currentMatchday - t.firstShownAt))
+}
+
+/**
+ * Beräknar uppdaterad stale-tracking efter en portal-rendering.
+ * - Kort i shownCardIds registreras med firstShownAt (ny eller befintlig om sekventiell).
+ * - Gap (kortet saknades förra omgången) återställer firstShownAt.
+ */
+export function computeCardStaleTracking(
+  currentTracking: StaleTracking,
+  shownCardIds: string[],
+  currentMatchday: number,
+): StaleTracking {
+  const next: StaleTracking = { ...currentTracking }
+  for (const id of shownCardIds) {
+    const existing = next[id]
+    const isSequential = existing?.lastShownAt === currentMatchday - 1
+    next[id] = {
+      firstShownAt: isSequential ? existing.firstShownAt : currentMatchday,
+      lastShownAt: currentMatchday,
+    }
+  }
+  return next
+}
+
 export interface PortalLayout {
   primary: DashboardCard           // alltid exakt 1
   secondary: DashboardCard[]       // 0-3
@@ -26,12 +62,15 @@ export function buildPortal(game: SaveGame, seed: number): PortalLayout {
   const phase = getSeasonPhase(currentLigaRound, isPlayoff)
 
   // Steg 1: Filtrera bagen — suppress-kort för current phase + triggers
+  const staleTracking = game.cardStaleTracking
   const eligible = CARD_BAG
     .filter(card => !card.suppressIn?.includes(phase))
     .filter(card => card.triggers.every(trigger => trigger(game)))
     .map(card => ({
       ...card,
-      effectiveWeight: applyPhaseBias(card.weight, card.tier, phase),
+      effectiveWeight:
+        applyPhaseBias(card.weight, card.tier, phase) *
+        staleBias(card.id, staleTracking, game.currentMatchday),
     }))
 
   // Steg 2: Gruppera per tier, sortera per effectiveWeight (högst först)

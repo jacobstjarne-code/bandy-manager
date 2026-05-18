@@ -24,6 +24,7 @@ import { trainingActions } from './actions/trainingActions'
 import { transferActions } from './actions/transferActions'
 import { academyActions } from './actions/academyActions'
 import { gameFlowActions } from './actions/gameFlowActions'
+import { computeCardStaleTracking } from '../../domain/services/portal/portalBuilder'
 
 type SaveActionResult = { success: boolean; error?: string }
 
@@ -96,6 +97,7 @@ interface GameState {
   triggerCoffeeRoomScene: () => void
   triggerJournalistScene: () => void
   markPhaseAcknowledged: (phase: import('../../domain/data/seasonPhases').SeasonPhase) => void
+  recordPortalShown: (cardIds: string[]) => void
 }
 
 const indexedDBStorage = {
@@ -739,6 +741,21 @@ export const useGameStore = create<GameState>()(
               phaseMarksSeen: [...seen, phase],
             },
           }
+        })
+      },
+
+      recordPortalShown: (cardIds) => {
+        set(state => {
+          if (!state.game) return state
+          const current = state.game.cardStaleTracking ?? {}
+          const next = computeCardStaleTracking(current, cardIds, state.game.currentMatchday)
+          // Skip update if nothing changed
+          if (cardIds.every(id => {
+            const e = current[id]
+            const n = next[id]
+            return e?.firstShownAt === n?.firstShownAt && e?.lastShownAt === n?.lastShownAt
+          }) && cardIds.length > 0) return state
+          return { game: { ...state.game, cardStaleTracking: next } }
         })
       },
 

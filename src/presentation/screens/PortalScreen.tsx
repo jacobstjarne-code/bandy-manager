@@ -25,7 +25,7 @@ import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSer
 initCardBag()
 
 export function PortalScreen() {
-  const { game, advance, markAnslagSeen } = useGameStore()
+  const { game, advance, markAnslagSeen, recordPortalShown } = useGameStore()
   const canAdvance = useCanAdvance()
   const navigate = useNavigate()
 
@@ -59,6 +59,18 @@ export function PortalScreen() {
   const seed = makeSeed(game)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const layout = useMemo(() => buildPortal(game, seed), [game, seed])
+
+  // Registrera visade kort för stale-bias-beräkning nästa omgång
+  useEffect(() => {
+    const shownIds = [
+      layout.primary.id,
+      ...layout.secondary.map(c => c.id),
+      ...layout.minimal.map(c => c.id),
+    ]
+    recordPortalShown(shownIds)
+  // Bara layout-objektet är relevant — seed och game refereras indirekt
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [layout])
 
   const nextAnslag = computeNextAnslag(game)
 

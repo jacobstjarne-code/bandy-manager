@@ -261,6 +261,9 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     })
   }
 
+  // ── C-P1 — cardStaleTracking ─────────────────────────────────────────────
+  if (data.cardStaleTracking === undefined) data.cardStaleTracking = {}
+
   // ── version stamp ────────────────────────────────────────────────────────
   data.version = CURRENT_SAVE_VERSION
 
