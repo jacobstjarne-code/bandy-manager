@@ -43,7 +43,7 @@ export const PATRON_STYLE_COMPLAINTS = [
   '"Förr körde vi alltid offensivt. Då kom folk till planen."',
   '"Jag har inget emot förlust — men vi ska åtminstone underhålla."',
   '"Min fru somnade vid förra matchen. Det säger allt."',
-  '"Tre nollor i rad? Det är inte bandyn jag växte upp med."',
+  '"Vi spelar för defensivt. Det är inte bandyn jag växte upp med."',
 ]
 
 export const PATRON_HAPPY_QUOTES = [
