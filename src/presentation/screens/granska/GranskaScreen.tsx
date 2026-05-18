@@ -8,7 +8,7 @@ import { getCriticalEventsForGranska } from '../../../domain/services/granskaEve
 import { GranskaOversikt } from './GranskaOversikt'
 import { GranskaSpelare } from './GranskaSpelare'
 import { GranskaShotmap } from './GranskaShotmap'
-import { GranskaForlop } from './GranskaForlop'
+import { GranskaForlopp } from './GranskaForlopp'
 import { GranskaAnalys } from './GranskaAnalys'
 
 type GranskaStep = 'oversikt' | 'spelare' | 'shotmap' | 'forlop' | 'analys'
@@ -203,7 +203,7 @@ export function GranskaScreen() {
           />
         )}
         {step === 'forlop' && (
-          <GranskaForlop
+          <GranskaForlopp
             game={game}
             fixture={fixture}
             isHome={isHome}

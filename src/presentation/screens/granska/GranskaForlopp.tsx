@@ -7,7 +7,7 @@ import { getRivalry } from '../../../domain/data/rivalries'
 import { SectionLabel } from '../../components/SectionLabel'
 import { getCurrentLeaguePosition } from '../../../domain/services/standingsService'
 
-interface GranskaForlopProps {
+interface GranskaForloppProps {
   game: SaveGame
   fixture: Fixture | undefined
   isHome: boolean
@@ -20,7 +20,7 @@ interface GranskaForlopProps {
   otherResults: Fixture[]
 }
 
-export function GranskaForlop({ game, fixture, isHome, rs, standing, standingBefore, financesDelta, csDelta, cs, otherResults }: GranskaForlopProps) {
+export function GranskaForlopp({ game, fixture, isHome, rs, standing, standingBefore, financesDelta, csDelta, cs, otherResults }: GranskaForloppProps) {
   const navigate = useNavigate()
   const leaguePosition = getCurrentLeaguePosition(game.managedClubId, game)
 
@@ -88,30 +88,32 @@ export function GranskaForlop({ game, fixture, isHome, rs, standing, standingBef
           <SectionLabel style={{ marginBottom: 8 }}>HÄNDELSETIDSLINJE</SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {allEvents.map((e, i) => {
-              const isManagedEvent = isHome ? e.clubId === fixture?.homeClubId : e.clubId === fixture?.awayClubId
+              const isHomeEvent = e.clubId === fixture?.homeClubId
+              const isManagedEvent = isHome ? isHomeEvent : !isHomeEvent
               const icon = e.type === MatchEventType.Goal ? (e.isCornerGoal ? '📐' : '🏒')
                 : e.type === MatchEventType.Corner ? '🔄'
                 : e.type === MatchEventType.Penalty ? '🎯'
                 : '🟥'
               const p = e.playerId ? game.players.find(pl => pl.id === e.playerId) : null
               const name = p ? `${p.firstName[0]}. ${p.lastName}` : (e.description ?? '')
+              const textColor = isManagedEvent ? 'var(--text-primary)' : 'var(--text-muted)'
               return (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', padding: '2px 0', borderBottom: i < allEvents.length - 1 ? '1px solid var(--border)' : 'none' }}>
-                  {/* Mina händelser — vänster */}
+                  {/* Hemmalag — vänster */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    {isManagedEvent && (
+                    {isHomeEvent && (
                       <>
                         <span style={{ fontSize: 9, color: 'var(--text-muted)', flexShrink: 0, minWidth: 18 }}>{e.minute}'</span>
                         <span style={{ fontSize: 11 }}>{icon}</span>
-                        <span style={{ fontSize: 11, color: 'var(--text-primary)' }}>{name}</span>
+                        <span style={{ fontSize: 11, color: textColor }}>{name}</span>
                       </>
                     )}
                   </div>
-                  {/* Deras händelser — höger */}
+                  {/* Bortalag — höger */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
-                    {!isManagedEvent && (
+                    {!isHomeEvent && (
                       <>
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{name}</span>
+                        <span style={{ fontSize: 11, color: textColor }}>{name}</span>
                         <span style={{ fontSize: 11 }}>{icon}</span>
                         <span style={{ fontSize: 9, color: 'var(--text-muted)', flexShrink: 0, minWidth: 18, textAlign: 'right' }}>{e.minute}'</span>
                       </>

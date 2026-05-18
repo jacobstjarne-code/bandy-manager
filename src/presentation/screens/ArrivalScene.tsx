@@ -128,7 +128,7 @@ function ArrivalSceneInner({ clubId, clubName, objectives, onComplete }: Arrival
 
       {/* CTA — absolute bottom, fades in at cta phase */}
       <div className={['scene-cta-area', phase === 'cta' && 'in'].filter(Boolean).join(' ')}>
-        <button className="btn-scene-cta" onClick={onComplete}>Då börjar vi</button>
+        <button className="btn btn-primary btn-cta" onClick={onComplete}>Sätt igång →</button>
       </div>
     </div>
   )
