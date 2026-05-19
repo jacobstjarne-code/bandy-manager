@@ -2,6 +2,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { ScandalType } from './scandalService'
 import { InboxItemType } from '../enums'
 import { getCharacterName } from './supporterService'
+import { KLACK_ECHO } from '../data/klackEchoText'
 
 interface CoffeeQuote {
   speaker?: string
@@ -268,6 +269,15 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
         return { speaker: sub(ex[0]), text: `"${sub(ex[1])}" — ${sub(ex[2])}: "${sub(ex[3])}"` }
       }
       return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
+    }
+  }
+
+  // C-B2: klack echo in kafferum — 33% chance when weight > 0.15
+  if (game.klackEcho && game.klackEcho.currentWeight > 0.15 && seed % 3 === 0) {
+    const echoPool = KLACK_ECHO[game.klackEcho.type]?.kafferum
+    if (echoPool?.length) {
+      const t = echoPool[Math.abs(seed) % echoPool.length]
+      return { text: t }
     }
   }
 

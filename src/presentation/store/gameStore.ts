@@ -98,6 +98,7 @@ interface GameState {
   triggerJournalistScene: () => void
   markPhaseAcknowledged: (phase: import('../../domain/data/seasonPhases').SeasonPhase) => void
   recordPortalShown: (cardIds: string[]) => void
+  resolveRetirementDecision: (playerId: string, choice: 'thank' | 'respect' | 'invite') => { retired: boolean; response: string }
 }
 
 const indexedDBStorage = {

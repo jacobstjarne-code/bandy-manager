@@ -85,6 +85,11 @@ export function useMatchGenerator(setup: GeneratorSetup) {
       isAnnandagen: !!liveSlot?.isAnnandagen,
       isNyarsbandy: !!liveSlot?.isNyarsbandy,
       isCupFinalhelgen: !!liveSlot?.isCupFinalhelgen,
+      klackEcho: game.klackEcho ? {
+        type: game.klackEcho.type,
+        currentWeight: game.klackEcho.currentWeight,
+        decayPerRound: game.klackEcho.decayPerRound,
+      } : undefined,
     })
 
     const allSteps: MatchStep[] = []

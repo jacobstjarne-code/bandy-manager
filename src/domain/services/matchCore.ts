@@ -87,6 +87,7 @@ import { evaluateSquad } from './squadEvaluator'
 import { getTacticModifiers } from './tacticModifiers'
 import { mulberry32, fixtureSeed } from '../utils/random'
 import { commentary, fillTemplate, pickCommentary, getTraitCommentary } from '../data/matchCommentary'
+import { KLACK_ECHO } from '../data/klackEchoText'
 import { pickSpecialDateCommentary } from './specialDateService'
 import type { SpecialDateContext } from '../data/specialDateStrings'
 import { getConditionLabel, getIceQualityLabel } from './weatherService'
@@ -1226,6 +1227,16 @@ function* simulateMatchCore(
         } else if (input.ownScandalThisSeason && supporterCtx && rand() < 0.20) {
           const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
           commentaryText = fillTemplate(pickCommentary(commentary.supporter_scandal_recent, rand), sv)
+        } else if (input.klackEcho && supporterCtx && rand() < input.klackEcho.currentWeight * 0.5) {
+          // C-B2: klack echo overrides normal pool with probability = currentWeight * 0.5
+          const echoPool = KLACK_ECHO[input.klackEcho.type]?.klack
+          if (echoPool?.length) {
+            const echoText = echoPool[Math.floor(rand() * echoPool.length)]
+            commentaryText = echoText
+          } else {
+            const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
+            commentaryText = fillTemplate(pickCommentary(commentary.supporter_kickoff, rand), sv)
+          }
         } else if (supporterCtx && rand() < 0.30) {
           const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
           commentaryText = fillTemplate(pickCommentary(commentary.supporter_kickoff, rand), sv)

@@ -76,4 +76,5 @@ export interface Fixture {
   attendance?: number
   matchStartedAt?: number  // timestamp set when live simulation begins, cleared on completion
   refereeId?: string
+  farewellMatchForPlayerId?: string  // C-B3: set for farewell matches
 }

@@ -13,7 +13,13 @@ function tacticLabel(key: keyof Tactic, value: string): string {
   return opt?.label ?? value
 }
 
-function getPreMatchAtmosphere(
+/**
+ * Pep-talk-pool: INTERN röst (coach/spelare till laget).
+ * Använder oss/vi/ni-pronomen, inte extern observation.
+ * Atmosphere (läktare, orten, publik, strålkastare) hör hemma i
+ * atmosphere-blocket ovanför — INTE här.
+ */
+function getPreMatchPepTalk(
   fixture: Fixture,
   weather: MatchWeather | undefined,
   isHome: boolean,
@@ -21,36 +27,36 @@ function getPreMatchAtmosphere(
 ): string {
   const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
   if (rivalry) {
-    const t = ['Derbystämning. Du hör bortaläktaren redan från omklädningsrummet.',
-      'Derby. Tre poäng räcker inte — det här handlar om stolthet.',
-      `${rivalry.name}. Hela orten pratar om den här matchen.`]
+    const t = ['Det här är matchen vi alla väntat på. Nu kör vi.',
+      'Inget att förklara idag. Bara spela bandy.',
+      `${rivalry.name}. Ni vet vad ni ska göra.`]
     return t[Math.floor(Math.random() * t.length)]
   }
   if (fixture.isKnockout) {
-    const t = ['Allt har lett fram till det här. Förloraren åker hem.',
-      'Slutspel. Inga andra chanser. Allt eller inget.']
+    const t = ['Det avgörs idag. Inget mer att spara på.',
+      'En match. Allt eller hem. Ni vet vad det betyder.']
     return t[Math.floor(Math.random() * t.length)]
   }
-  if (fixture.isCup) return 'Cupmatch. En chans. Vinn eller åk hem.'
+  if (fixture.isCup) return 'Cupmatch. En chans. Vi tar den.'
   if (weather?.weather.condition === WeatherCondition.HeavySnow)
-    return 'Snön vräker ner. Det här blir en fight, inte en uppvisning.'
+    return 'Snön gör matchen för oss. Enkelt spel, hårda kroppar.'
   if (weather?.weather.condition === WeatherCondition.Fog)
-    return 'Dimma över planen. Strålkastarna kämpar mot mörkret.'
+    return 'Ni ser inte långt idag. Spela det ni känner.'
   if (weather?.weather.condition === WeatherCondition.Thaw)
-    return 'Plusgrader och blöt is. Inte en dag för fint spel.'
+    return 'Isen är tung. Vi är tyngre.'
   if (isHome && fanMood > 65) {
-    const t = ['Strålkastarna lyser upp planen. Publiken strömmar in.',
-      'Hemmamatch. Planen är preparerad. Laget är redo.']
+    const t = ['Vår is. Vår klack. Ingen ursäkt idag.',
+      'Hemma idag. Våra egna är på plats. Visa dem.']
     return t[Math.floor(Math.random() * t.length)]
   }
   if (isHome && fanMood < 35)
-    return 'Glest på läktarna. De som kommit väntar på att bli övertygade.'
+    return 'Få som tror just nu. De som är här tror ändå. Bevisa det.'
   if (!isHome) {
-    const t = ['Bortaplan. Lång bussresa bakom er. Dags att visa varför ni kom.',
-      'Borta. Liten klick supportrar har följt med. Gör det värt resan.']
+    const t = ['Borta. Vi har inget att förlora och allt att vinna.',
+      'De räknar med att vinna. Det är deras misstag.']
     return t[Math.floor(Math.random() * t.length)]
   }
-  return 'Omklädningsrummet är tyst. Alla vet vad som gäller.'
+  return 'Omklädningsrummet är tyst. Ni vet vad ni har att göra.'
 }
 
 type MatchMode = 'full' | 'commentary' | 'quicksim' | 'silent'
@@ -70,16 +76,24 @@ interface StartStepProps {
   expectedAttendance?: number
   arenaName?: string
   ritualText?: string
+  farewellPlayerName?: string  // C-B3: set for farewell matches
 }
 
-export function StartStep({ startingIds, tacticState, matchWeatherData, matchMode, lineupError, onSetMatchMode, onBack, onPlay, fixture, isHome, fanMood, expectedAttendance, arenaName, ritualText }: StartStepProps) {
+export function StartStep({ startingIds, tacticState, matchWeatherData, matchMode, lineupError, onSetMatchMode, onBack, onPlay, fixture, isHome, fanMood, expectedAttendance, arenaName, ritualText, farewellPlayerName }: StartStepProps) {
   const atmosphere = useMemo(
-    () => fixture ? getPreMatchAtmosphere(fixture, matchWeatherData, isHome ?? true, fanMood ?? 50) : '',
+    () => fixture ? getPreMatchPepTalk(fixture, matchWeatherData, isHome ?? true, fanMood ?? 50) : '',
     [fixture?.id]
   )
 
   return (
     <div style={{ padding: '0 12px 24px' }}>
+      {/* C-B3: Farewell match banner */}
+      {farewellPlayerName && (
+        <div className="portal-card-eyebrow" style={{ textAlign: 'center', marginBottom: 8 }}>
+          🎗️ AVSKEDSMATCH — {farewellPlayerName}
+        </div>
+      )}
+
       {/* Atmosphere */}
       {fixture && (
         <div className="card-round" style={{

@@ -62,6 +62,7 @@ import {
 import { generatePostMatchEvents } from '../../domain/services/postMatchEventService'
 import { canAddDecision } from '../../domain/services/decisionBudgetService'
 import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
+import { detectNotableResult, decayKlackEcho } from '../../domain/services/klackEchoService'
 
 export type { AdvanceResult }
 
@@ -516,6 +517,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
           subjectClubId: rivalClub?.id,
         })
       }
+    }
+  }
+
+  // C-B2: detect notable result for klack echo (after match completes)
+  let updatedKlackEcho = game.klackEcho ? decayKlackEcho(game.klackEcho) : undefined
+  if (justCompletedManagedFixture) {
+    const echo = detectNotableResult(justCompletedManagedFixture, { ...game, fixtures: simulatedFixtures })
+    if (echo) {
+      updatedKlackEcho = { ...echo, currentWeight: echo.initialWeight }
     }
   }
 
@@ -1151,6 +1161,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     lastRumorRound: mediaResult.lastRumorRound,
     // F1 Stage 2 — per-source cooldown decrement
     sourceCooldowns: decrementCooldowns(game.sourceCooldowns ?? {}),
+    // C-B2 — klack echo
+    klackEcho: updatedKlackEcho,
   }
 
   // Append market value change notifications to inbox

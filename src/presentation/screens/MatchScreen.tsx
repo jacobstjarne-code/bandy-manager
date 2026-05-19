@@ -670,6 +670,11 @@ export function MatchScreen() {
             return homeClub?.arenaName ? formatArenaName(homeClub.arenaName) : undefined
           })()}
           ritualText={getRitualText(game, 'kickoff') ?? undefined}
+          farewellPlayerName={(() => {
+            if (!nextFixture?.farewellMatchForPlayerId) return undefined
+            const fp = game.players.find(p => p.id === nextFixture.farewellMatchForPlayerId)
+            return fp ? `${fp.firstName} ${fp.lastName}` : undefined
+          })()}
         />
       )}
     </div>

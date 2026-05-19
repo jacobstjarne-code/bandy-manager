@@ -4,6 +4,7 @@ import { PendingScreen } from '../../../domain/enums'
 import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, type SeasonPhase } from '../../../domain/data/seasonPhases'
 import { clamp } from '../../../domain/utils/clamp'
 import { resolveWeeklyDecision as resolveWeeklyDecisionFn } from '../../../domain/services/weeklyDecisionService'
+import { RETIREMENT_RESPONSES } from '../../../domain/data/retirementText'
 import { promoteFromQueue } from '../../../domain/services/decisionBudgetService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
@@ -23,6 +24,7 @@ interface GetState {
   completeScene: (sceneId: import('../../../domain/entities/Scene').SceneId, choiceId?: string) => void
   triggerCoffeeRoomScene: () => void
   triggerJournalistScene: () => void
+  resolveRetirementDecision: (playerId: string, choice: 'thank' | 'respect' | 'invite') => { retired: boolean; response: string }
 }
 
 type Get = () => GetState
@@ -519,6 +521,57 @@ export function gameFlowActions(get: Get, set: Set) {
       }
       set({ game: updatedGame })
       void persistAutosave(updatedGame, 'triggerJournalistScene')
+    },
+
+    resolveRetirementDecision: (playerId: string, choice: 'thank' | 'respect' | 'invite'): { retired: boolean; response: string } => {
+      const { game } = get()
+      if (!game) return { retired: false, response: '' }
+
+      const rand = Math.random()
+      let retired: boolean
+      if (choice === 'thank') retired = rand < 0.9
+      else if (choice === 'respect') retired = rand < 0.5
+      else retired = rand > 0.7  // 'invite': 30% retire, 70% continue
+
+      const responseKey = `${choice}_${retired ? 'retired' : 'continued'}`
+      const pool = RETIREMENT_RESPONSES[responseKey] ?? []
+      const response = pool[Math.floor(rand * pool.length)] ?? ''
+
+      // Remove the player from the roster if they retired, or keep them as-is
+      const updatedPlayers = retired
+        ? game.players.filter(p => p.id !== playerId)
+        : game.players
+
+      // Increment retirementCeremonyCounter when a player retires
+      const counter = (game.retirementCeremonyCounter ?? 0) + (retired ? 1 : 0)
+
+      // Farewell match: mark next home fixture every 5th retirement
+      let updatedFixtures = game.fixtures
+      if (retired && counter > 0 && counter % 5 === 0) {
+        const nextHome = game.fixtures.find(f =>
+          f.status !== 'completed' &&
+          f.homeClubId === game.managedClubId &&
+          !f.farewellMatchForPlayerId
+        )
+        if (nextHome) {
+          updatedFixtures = game.fixtures.map(f =>
+            f.id === nextHome.id ? { ...f, farewellMatchForPlayerId: playerId } : f
+          )
+        }
+      }
+
+      const updatedGame: SaveGame = {
+        ...game,
+        players: updatedPlayers,
+        fixtures: updatedFixtures,
+        pendingRetirementDecision: undefined,
+        retirementCeremonyCounter: counter,
+      }
+
+      set({ game: updatedGame })
+      void persistAutosave(updatedGame, 'resolveRetirementDecision')
+
+      return { retired, response }
     },
   }
 }

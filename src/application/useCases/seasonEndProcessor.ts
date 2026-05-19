@@ -31,6 +31,7 @@ import { updateSilentShout, ageMecenater, checkMecenatRetirement } from '../../d
 import { checkLicenseStatus, buildLicenseInboxItem } from '../../domain/services/licenseService'
 import type { LicenseReview } from '../../domain/entities/SaveGame'
 import type { AdvanceResult } from './advanceTypes'
+import { getRetirementCandidate, getRetirementQuote } from '../../domain/services/retirementDecisionService'
 
 // ── Position-aware replenishment helpers ──────────────────────────────────────
 const POSITION_MINIMUMS: Record<PlayerPosition, number> = {
@@ -541,6 +542,19 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       } as GameEvent)
     }
   }
+
+  // ── C-B3: Pensionsval — kandidat för nästa säsongs portal-kort ───────────
+  const retirementCandidate = getRetirementCandidate(game)
+  const pendingRetirementDecision = retirementCandidate
+    ? {
+        playerId: retirementCandidate.id,
+        quote: getRetirementQuote(retirementCandidate),
+      }
+    : game.pendingRetirementDecision  // keep existing if no new candidate
+
+  const lastRetirementSeason = retirementCandidate
+    ? game.currentSeason
+    : game.lastRetirementSeason
 
   // ── 28-A: Pension-impact på morale + kapten-vakuum ───────────────────────
   for (const pid of retiredPlayerIds) {
@@ -1260,6 +1274,9 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     wageBudgetOverrunRounds: 0,
     wageBudgetWarningSent: false,
     riskySponsorOfferSentThisSeason: undefined,
+    // C-B3 — Pensionsval
+    pendingRetirementDecision,
+    lastRetirementSeason,
   }
 
   return { game: { ...updatedGame, allTimeRecords: updateAllTimeRecords(updatedGame, seasonSummary) }, roundPlayed: null, seasonEnded: true }

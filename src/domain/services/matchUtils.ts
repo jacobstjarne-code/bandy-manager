@@ -308,6 +308,7 @@ export interface StepByStepInput {
     isFirstRound?: boolean     // säsongspremiär
   }
   ownScandalThisSeason?: boolean  // for supporter_scandal_recent commentary
+  klackEcho?: { type: import('../data/klackEchoText').NotableEventType; currentWeight: number; decayPerRound: number } // C-B2
   refStyle?: 'strict' | 'lenient' | 'inconsistent'
   refereeName?: string  // for opening commentary display
   arenaName?: string

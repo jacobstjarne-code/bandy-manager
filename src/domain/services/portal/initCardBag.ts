@@ -47,6 +47,7 @@ import { CoffeeRoomSecondary } from '../../../presentation/components/portal/sec
 import { JournalistSecondary } from '../../../presentation/components/portal/secondary/JournalistSecondary'
 import { SeasonSignatureSecondary } from '../../../presentation/components/portal/secondary/SeasonSignatureSecondary'
 import { WeeklyDecisionSecondary } from '../../../presentation/components/portal/secondary/WeeklyDecisionSecondary'
+import { RetirementDecisionSecondary } from '../../../presentation/components/portal/secondary/RetirementDecisionSecondary'
 import { ActiveArcsSecondary } from '../../../presentation/components/portal/secondary/ActiveArcsSecondary'
 import { BoardObjectivesSecondary } from '../../../presentation/components/portal/secondary/BoardObjectivesSecondary'
 import type { CardRenderProps } from '../../../presentation/components/portal/portalTypes'
@@ -124,6 +125,13 @@ const PORTAL_CARDS: DashboardCard[] = [
     weight: 85,
     triggers: [(game) => !!game.pendingWeeklyDecision],
     Component: WeeklyDecisionSecondary,
+  },
+  {
+    id: 'retirement_decision',
+    tier: 'secondary',
+    weight: 90,  // high priority when active
+    triggers: [(game) => !!game.pendingRetirementDecision],
+    Component: RetirementDecisionSecondary,
   },
   {
     id: 'source_kommunen_cooldown',

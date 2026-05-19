@@ -1,4 +1,5 @@
 import type { PendingScreen } from '../enums'
+import type { NotableEventType } from '../data/klackEchoText'
 import type { SeasonPhase } from '../data/seasonPhases'
 import type { SeasonSignature } from './SeasonSignature'
 import type { Club } from './Club'
@@ -368,4 +369,21 @@ export interface SaveGame {
   // firstShownAt: matchday when card first entered layout (resets after a gap round)
   // lastShownAt: most recent matchday when card was in layout (used to detect gaps)
   cardStaleTracking?: Record<string, { firstShownAt: number; lastShownAt: number }>
+
+  // C-B2 — Klack-echo (notable result memory)
+  klackEcho?: {
+    type: NotableEventType
+    resultMatchday: number
+    initialWeight: number
+    currentWeight: number
+    decayPerRound: number
+  }
+
+  // C-B3 — Pensionsval
+  pendingRetirementDecision?: {
+    playerId: string
+    quote: string  // player quote shown on card
+  }
+  lastRetirementSeason?: number       // season when last retirement decision was triggered
+  retirementCeremonyCounter?: number  // increments each time a player retires via portal card
 }
