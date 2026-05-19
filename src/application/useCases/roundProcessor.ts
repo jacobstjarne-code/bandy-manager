@@ -63,6 +63,7 @@ import { generatePostMatchEvents } from '../../domain/services/postMatchEventSer
 import { canAddDecision } from '../../domain/services/decisionBudgetService'
 import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
 import { detectNotableResult, decayKlackEcho } from '../../domain/services/klackEchoService'
+import { DEADLINE_AI_BID_TEXT } from '../../domain/data/windowDeadlineText'
 
 export type { AdvanceResult }
 
@@ -597,9 +598,10 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // Special-date day-before inbox: annandagen, nyårsbandy, finaldag, cup-finalhelgen
   const remainingScheduled2 = finalAllFixtures.filter(f => f.status === FixtureStatus.Scheduled)
+  let upcomingManagedFix: typeof remainingScheduled2[0] | undefined = undefined
   if (remainingScheduled2.length > 0) {
     const upcomingMatchday2 = Math.min(...remainingScheduled2.map(f => f.matchday))
-    const upcomingManagedFix = remainingScheduled2.find(
+    upcomingManagedFix = remainingScheduled2.find(
       f => f.matchday === upcomingMatchday2 &&
       (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
     )
@@ -614,6 +616,43 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       // Managed club not playing — check for SM-final spectator inbox
       for (const item of generateSpecialDateInboxSpectator(game)) {
         newInboxItems.push(item)
+      }
+    }
+  }
+
+  // C-T2: deadline-dag — AI-bud om nästa match är transferfönstrets deadline-dag
+  if (upcomingManagedFix?.isWindowDeadlineDay && localRand() < 0.35) {
+    const deadlineBidId = `deadline_window_bid_${game.currentSeason}_${nextMatchday}`
+    const alreadySent = game.inbox.some(i => i.id === deadlineBidId)
+    if (!alreadySent) {
+      const favPlayerId = game.supporterGroup?.favoritePlayerId
+      const bestPlayer = game.players
+        .filter(p =>
+          p.clubId === game.managedClubId &&
+          !p.isInjured &&
+          p.id !== favPlayerId
+        )
+        .sort((a, b) => b.currentAbility - a.currentAbility)[0]
+      const aiClubs = game.clubs.filter(c => c.id !== game.managedClubId)
+      const randomAIClub = aiClubs.length > 0
+        ? aiClubs[Math.floor(localRand() * aiClubs.length)]
+        : null
+      if (bestPlayer && randomAIClub) {
+        const template = DEADLINE_AI_BID_TEXT[Math.floor(localRand() * DEADLINE_AI_BID_TEXT.length)]
+        const playerName = `${bestPlayer.firstName} ${bestPlayer.lastName}`
+        const body = template
+          .replace('{club}', randomAIClub.name)
+          .replace('{player}', playerName)
+        newInboxItems.push({
+          id: deadlineBidId,
+          date: game.currentDate,
+          type: InboxItemType.TransferDeadline,
+          title: `Sent bud på deadline-dagen`,
+          body,
+          relatedPlayerId: bestPlayer.id,
+          relatedClubId: randomAIClub.id,
+          isRead: false,
+        })
       }
     }
   }

@@ -192,6 +192,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
       awayLineup: undefined,
       ...(slot?.isAnnandagen ? { isAnnandagen: true } : {}),
       ...(slot?.isNyarsbandy ? { isNyarsbandy: true } : {}),
+      ...(slot?.isWindowDeadlineDay ? { isWindowDeadlineDay: true } : {}),
     }
   })
 

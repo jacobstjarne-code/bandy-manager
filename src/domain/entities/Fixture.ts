@@ -58,6 +58,7 @@ export interface Fixture {
   isCupFinalhelgen?: boolean // true for cup semi + final weekend fixtures
   isAnnandagen?: boolean     // true for the Boxing Day (Dec 26) match
   isNyarsbandy?: boolean     // true for the New Year's Day (Jan 1) match
+  isWindowDeadlineDay?: boolean  // true for the transfer window deadline day (Jan 31)
 
   // Set after the match if it went to overtime/penalties
   wentToOvertime?: boolean

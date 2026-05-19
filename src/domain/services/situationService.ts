@@ -8,6 +8,7 @@ import {
   getCupStakeFragment,
   getInjuryImpactFragment,
   getSeasonPhaseFragment,
+  getDeadlineDayFragment,
 } from './situationFragments'
 
 export interface Situation {
@@ -71,6 +72,16 @@ export function getSituation(game: SaveGame): Situation {
       label: 'SM-FINAL',
       body: 'Allt ni gjort har lett hit. En match. Det finns inget bortom.',
     }
+  }
+
+  // ── Transferfönstrets deadline-dag ────────────────────────────────
+  const deadlineFrag = getDeadlineDayFragment(game)
+  if (deadlineFrag) {
+    const body = joinFragments([
+      deadlineFrag,
+      getPlayoffContextFragment(game),
+    ])
+    return { label: 'TRANSFERDEADLINE', body: body || deadlineFrag }
   }
 
   // ── Slutspel pågår ────────────────────────────────────────────────

@@ -10,6 +10,8 @@
 
 import type { SaveGame } from '../entities/SaveGame'
 import { getRivalry } from '../data/rivalries'
+import { DEADLINE_PORTAL_TEXT } from '../data/windowDeadlineText'
+import { getSeasonContext } from './seasonContextService'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -220,4 +222,31 @@ export function getSeasonPhaseFragment(game: SaveGame): string | null {
   if (roundsLeft === 1) return `Sista omgången. Allt eller ingenting.`
   if (roundsLeft <= 3 && roundsLeft >= 2) return `${roundsLeft} omgångar kvar. Mätningens tid.`
   return null
+}
+
+// ── Fragment: transferfönstrets deadline-dag (jan 31) ────────────────────────
+
+export function getDeadlineDayFragment(game: SaveGame): string | null {
+  const managedId = game.managedClubId
+  const bracket = game.playoffBracket
+  const eliminated = bracket
+    ? [...(bracket.quarterFinals ?? []), ...(bracket.semiFinals ?? []), ...(bracket.final ? [bracket.final] : [])]
+        .some(s => s.loserId === managedId)
+    : false
+
+  const nextFixture = game.fixtures
+    .filter(f => {
+      if (f.status !== 'scheduled') return false
+      if (f.homeClubId !== managedId && f.awayClubId !== managedId) return false
+      if (eliminated && f.matchday > 26 && !f.isCup) return false
+      return true
+    })
+    .sort((a, b) => a.matchday - b.matchday)[0] ?? null
+
+  if (!nextFixture?.isWindowDeadlineDay) return null
+
+  const context = getSeasonContext(game)
+  const pool = DEADLINE_PORTAL_TEXT[context]
+  const idx = Math.floor((game.currentMatchday * 7 + game.currentSeason * 3) % pool.length)
+  return pool[idx]
 }

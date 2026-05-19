@@ -257,6 +257,7 @@ export function migrateSaveGame(raw: unknown): SaveGame {
       const slot = cal.find(s => s.matchday === matchday && s.type === 'league')
       if (slot?.isAnnandagen) f.isAnnandagen = true
       if (slot?.isNyarsbandy) f.isNyarsbandy = true
+      if (slot?.isWindowDeadlineDay) f.isWindowDeadlineDay = true
       return f
     })
   }

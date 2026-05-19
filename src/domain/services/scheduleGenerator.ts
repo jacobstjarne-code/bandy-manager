@@ -75,6 +75,7 @@ export interface MatchdaySlot {
   isFinaldag?: boolean
   isNyarsbandy?: boolean
   isCupFinalhelgen?: boolean
+  isWindowDeadlineDay?: boolean
 }
 
 // Cup played as pre-season tournament in August–October, before liga starts.
@@ -288,6 +289,7 @@ export function buildSeasonCalendar(season: number): MatchdaySlot[] {
       return opts[Math.floor(rand() * opts.length)]
     })()
 
+    const isWindowDeadlineDay = dateStr.endsWith('-01-31') ? true : undefined
     calendar.push({
       matchday: day,
       type: 'league',
@@ -296,6 +298,7 @@ export function buildSeasonCalendar(season: number): MatchdaySlot[] {
       weekday: pickedDay,
       tipoffHour,
       isNyarsbandy: dateStr === `${season}-12-31` ? true : undefined,
+      isWindowDeadlineDay,
     })
 
     // Sequential floor: next round must start at least 2 days after this one

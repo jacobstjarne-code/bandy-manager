@@ -365,6 +365,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       awayLineup: undefined,
       ...(slot?.isAnnandagen ? { isAnnandagen: true } : {}),
       ...(slot?.isNyarsbandy ? { isNyarsbandy: true } : {}),
+      ...(slot?.isWindowDeadlineDay ? { isWindowDeadlineDay: true } : {}),
     }
   })
 
