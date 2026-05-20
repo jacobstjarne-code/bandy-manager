@@ -10,6 +10,7 @@ import { SituationCard } from '../components/portal/SituationCard'
 import { PortalBeat } from '../components/portal/PortalBeat'
 import { PortalPhaseMark } from '../components/portal/PortalPhaseMark'
 import { PortalSpectatorMark } from '../components/portal/PortalSpectatorMark'
+import { PortalAnniversaryMark } from '../components/portal/PortalAnniversaryMark'
 import { PortalEventSlot } from '../components/portal/PortalEventSlot'
 import { PortalQueueRail } from '../components/portal/PortalQueueRail'
 import { PortalInboxCounter } from '../components/portal/PortalInboxCounter'
@@ -203,6 +204,7 @@ export function PortalScreen() {
         <SituationCard game={game} />
         <PortalPhaseMark game={game} />
         <PortalSpectatorMark game={game} />
+        <PortalAnniversaryMark game={game} />
         <PortalBeat game={game} />
         <PortalRoundMark game={game} />
         {/* PortalActiveBudget (pills) removed — Variant B: en fråga åt gången, ingen paginering */}

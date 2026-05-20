@@ -585,3 +585,43 @@
 .watch-others-gold {
   border-left: 2px solid var(--gold, var(--accent));
 }
+
+/* ── PortalAnniversaryMark — eko av historisk händelse ─────────── */
+
+.portal-anniversarymark {
+  margin: 0 14px 14px;
+  padding: 14px 14px;
+  border-top: 1px solid;
+  border-bottom: 1px solid;
+  cursor: pointer;
+}
+
+.portal-anniversarymark-eyebrow {
+  font-family: var(--font-body);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+
+.portal-anniversarymark-quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14.5px;
+  color: var(--text-light);
+  text-align: center;
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+.portal-anniversarymark-helper {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  color: var(--text-light-secondary);
+  text-align: center;
+  opacity: 0.75;
+  line-height: 1.4;
+}
