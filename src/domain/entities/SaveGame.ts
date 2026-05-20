@@ -262,6 +262,7 @@ export interface SaveGame {
     squadSize: number
     supporterMembers: number
     academyPromotions: number
+    era?: ClubEra | 'unknown'   // Klubbminne B6 — era vid säsongsstarten (migration: 'unknown')
   }
 
   // V1.4 — Nemesis tracker (opponent player who keeps scoring against us)
@@ -381,6 +382,10 @@ export interface SaveGame {
     currentWeight: number
     decayPerRound: number
   }
+
+  // B6 — Klubbminne anniversary-system
+  activeAnniversaries?: import('../services/clubMemoryService').ActiveAnniversary[]
+  anniversariesSeen?: string[]       // eventIds som dismissats
 
   // C-B3 — Pensionsval
   pendingRetirementDecision?: {

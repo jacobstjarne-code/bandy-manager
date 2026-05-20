@@ -1126,6 +1126,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         squadSize: game.players.filter(p => p.clubId === game.managedClubId).length,
         supporterMembers: game.supporterGroup?.members ?? 0,
         academyPromotions: academyPromoCount,
+        era: game.currentEra ?? 'unknown',
       }
     })(),
     managerFired: managerFired ? true : undefined,
