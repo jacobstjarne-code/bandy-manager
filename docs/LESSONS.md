@@ -7,6 +7,57 @@ Format per lärdom: Mönster (symptom), Rotorsak (varför), Fix, Känn igen (sig
 
 ---
 
+## INNEHÅLL — 33 LÄRDOMAR i 6 kategorier
+
+Använd Ctrl-F på numret för att hoppa.
+
+**React / UI:**
+- 1. SVG width/height skriver över container
+- 3. useEffect-deps inline funktioner ger loop
+- 7. useEffect-dep på muterat state
+- 8. Zustand-selektor objekt-literal
+- 9. Sticky-element ovanpå modal-innehåll
+- 24. Hook-kedja — pool definierad ≠ pool nåbar
+- 25. Pixel-jämförelse i integrations-vy
+- 27. Portal-event dubbelrendering
+- 31. Polish-tillägg utöver spec
+
+**Scroll / layout:**
+- 2. Flex-child scrollar inte utan minHeight: 0
+
+**Process / spec / leverans:**
+- 4. "Klart" utan UI-verifiering
+- 5. Symptomfix istället för rotorsak
+- 6. Spec-dupliceringar bygger på varandra
+- 13. Fix-villkor missar edge-case
+- 29. "Levererad spec" ≠ fungerar i playtest
+- 32. Diagnostik-uppdrag — Code, inte spelaren
+- 33. Opus utan PRE-SPEC CROSS-CHECK — missar befintlig kod
+
+**Matchmotor / fysik / events:**
+- 14. Asymmetriska state-transitions liga/cup
+- 15. Managed-gated kodblock i stress-test
+- 16. Missledande enum-namn (RedCard = utvisning)
+- 19. continue i generator hoppar över yield
+- 20. roundProcessor strippar event-typer
+- 26. Multiplikativa modifiers + cap-hål = explosion
+- 28. Generator-closure vs React state
+- 30. Asymmetrisk halvleks-state
+
+**Kalibrering / mätning:**
+- 17. Fördelning utan normalisering ljuger
+- 18. Mellanstegs-procent vs absolutfrekvens
+- 21. Felnamngivet kalibreringsmål — analysera target först
+- 22. Kalibreringsskript vs motor-defaults
+- 23. cornerTrailingMod fel hävstång
+
+**TypeScript / data / safety:**
+- 10. as-cast bypassar TypeScript
+- 11. PLAYOFF tom completedThisRound (låg prio)
+- 12. Auto-play scenarios behöver safety net
+
+---
+
 ## 1. SVG width/height-attribut skriver över container
 
 **Mönster:** Porträtt eller ikoner klipps av i cirkel-wrappers — bara en del syns.
@@ -725,3 +776,29 @@ När diagnostik behöver mer info än vad spelarens skum-rapport kan ge:
 **Känn igen:** Code-instruktion som innehåller "öppna webbläsaren", "öppna DevTools", "klistra in loggarna". Eller Opus-meddelande som vidarebefordrar sådan instruktion till spelaren. Bägge är symptom på fel uppdragsfördelning.
 
 **Historik:** ArrivalScene CTA-bug 2026-05-08. Code la in `console.log('[ArrivalScene] stage-advance:', ...)` och bad Jacob köra testrunda. Opus skickade vidare instruktionen istället för att korrigera. Jacob: "jag orkar inte hålla på med det där. det har jag sagt 1000 gånger." Korrekt approach: Code kör dev-server och läser loggar själv, eller Opus läser koden via MCP och hittar bugg via kod-analys istället för runtime-data.
+
+---
+
+## 33. Opus skriver spec utan PRE-SPEC CROSS-CHECK — missar befintlig kod
+
+**Mönster:** Opus levererar spec som innehåller parallell-implementation av kod som redan finns. Spec föreslår ny modell/datastruktur (`Player.transferPersonality`, fem-bucket-regioner, `fixedRivalryList`, journalist-pool) trots att motsvarande redan är implementerat i kodbasen (`rivalries.ts`, `worldGenerator.region`, `game.journalist`-enhet). Specen riskerar antingen dubbelarbete eller dum-och-felaktig integration som ignorerar befintlig data.
+
+**Rotorsak:** Opus skriver spec från minnet och kategori-tänkande ("transfers behöver rivalitet → jag bygger en lista"), inte från kodbasens faktiska tillstånd. Princip 2 i CLAUDE.md ("PRE-SPEC CROSS-CHECK") anger att 30-60 sekunders grep ska göras innan spec, men det är systematiskt skippat när Opus känner sig säker på domänen. Känslan av säkerhet är exakt när grep behövs mest — då antas det att vad som finns i minnet motsvarar vad som finns i koden.
+
+**Fix:**
+1. Före VARJE Code-brief eller spec som innehåller nya domain-entiteter, services eller datastrukturer — obligatorisk grep enligt CLAUDE.md sessionsstart kategori B:
+   ```bash
+   grep -rn "huvudkoncept\|relaterat_koncept" src/domain/services \
+     src/domain/data src/domain/entities --include="*.ts" | head -20
+   ```
+2. Träff på grep → läs den filen helt innan spec fortskrider. Återanvänd eller medvetet ersätt med dokumenterad anledning.
+3. Ingen träff → grep bredare på synonymer/relaterade termer innan första meningen skrivs. Ingen träff är endast trovärdigt efter 2-3 olika sniff-queries.
+4. Spec som nämner namngivna entiteter (rivalry-par, journalister, klubbar) ska aldrig nämna real-world-namn när spelet använder fake-värld — verifiera i `worldGenerator.ts`/motsv vilka namn som faktiskt finns.
+
+**Känn igen:** Spec som nämner specifika klubbnamn, journalist-namn, eller datatyper utan att först ha grepat efter dem. Spec som föreslår ny enum/typ utan att lista befintliga på samma nivå. Design-Claude eller Jacob påpekar "den filen finns redan" eller "den datan finns redan som X".
+
+**Historik:**
+- 2026-04: Strukturanalys missade att THE_BOMB 1.3 (kontextuell match-commentary för akademi/kapten/klackfavorit/dayJob) var fullt implementerad i `matchCore.ts`. En 30-sekunders grep på "promotedFromAcademy" hade visat det. Dokumenterat i CLAUDE.md Princip 2.
+- 2026-05-20 (samma session, två missar): Opus skrev spec för C-T1 + C-T9 (transfer-personality + geografi) som föreslog `fixedRivalryList` med real-world bandy-klubbar (Bollnäs↔Edsbyn, Sandviken↔Hammarby) trots att `rivalries.ts` redan innehöll 9 par för fake-klubbarna (Upplandsderbyt, Bruksderbyt, Daladerbyt etc.). Plus fem-bucket-region-modell trots att klubbar redan har `region: string` som landskap. Design-Claude fläckade det — verifierade mot koden och rapporterade i `SPEC-SVAR-TRANSFER-RESPONSE-2026-05-20.md`.
+- 2026-05-20 (samma session): Opus skrev spec för C-B1 (CS-press) som föreslog "Helena Wikström från befintlig pool om finns, annars random" trots att `game.journalist` är EN namngiven entitet per save med `relationship`-state och `memory[]`. Design-Claude fläckade det i `SPEC-SVAR-CS-PRESSFRAGA-2026-05-20.md`.
+- Plus: Jacob påpekade vid samma session att CLAUDE.md inte upprättats vid sessionsstart — obligatorisk läsning var överhoppad. Fölt direkt sjukt: utan CLAUDE.md är Princip 2-disciplinen inte etablerad i sessions-kontexten. Fix: ny "SESSIONSSTART — MINIMUM-LÄSNING"-sektion överst i CLAUDE.md som kategoriserar läsning per uppgiftstyp och flagar PRE-SPEC CROSS-CHECK som obligatorisk för kategori B.

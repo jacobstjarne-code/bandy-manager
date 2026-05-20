@@ -1,32 +1,60 @@
 # Bandy Manager — Project Instructions for Claude Code
 
-## TIMESTAMP + WORKSPACE-CHECK FÖRST — OBLIGATORISKT
+## SESSIONSSTART — MINIMUM-LÄSNING (≤2 min) — OBLIGATORISKT
 
-**Första handling i varje ny session (innan något annat):**
+Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessionsstart-läsning. Vid sessionsstart läser du minimum nedan, sedan vidare beroende på uppgiftstyp.
 
-1. **Tid:** `web_search "current time Stockholm"` följt av `web_fetch` på en sida i resultaten där datum/tid renderas i HTML (time.io, timeanddate.com fungerar). Försök inte gissa API-URL:er — `web_fetch` accepterar bara URL:er som dykt upp i sökresultat eller angetts av Jacob. Skriv överst: `2026-04-22, onsdag morgon (09:41 CEST)`.
+### Varje session, alltid (2 steg):
+
+1. **Tid:** `web_search "current time Stockholm"` följt av `web_fetch` på en sida i resultaten där datum/tid renderas i HTML (time.io, timeanddate.com fungerar). Försök inte gissa API-URL:er — `web_fetch` accepterar bara URL:er som dykt upp i sökresultat eller angetts av Jacob. Skriv överst: `2026-04-22, onsdag morgon (09:41 CEST)`. Om tids-sidan inte svarar — fråga Jacob. Förhåll dig till timestampen när du refererar till tid.
 
 2. **Workspace-check:** kör `tool_search` för att se vilka filsystem-verktyg som är tillgängliga i sessionen (read/write/edit/list). Olika sessioner har olika åtkomst — verifiera, anta inte.
 
-Förhåll dig till timestampen när du refererar till tid. "Idag", "igår", "förra veckan" räknas från den, inte från antaganden.
+### Innan du börjar arbeta — välj uppgiftstyp:
 
-Om tids-sidan inte svarar — fråga Jacob.
+**A. PLAYTEST-PATCH (bugg från användarrapport):**
+- `docs/LESSONS.md` — sök på keyword från buggen. Om mönster finns, använd lärdomen först
+- Direkt till koden, grep på relevanta termer
 
-## LÄS VID SESSIONSTART — OBLIGATORISKT
+**B. SPEC-SKRIVANDE (ny feature) — OBLIGATORISKT:**
+- **PRE-SPEC CROSS-CHECK (Princip 2 nedan):** grep efter befintlig implementation INNAN du skriver:
+  ```bash
+  grep -rn "huvudkoncept\|relaterat_koncept" src/domain/services \
+    src/domain/data src/domain/entities --include="*.ts" | head -20
+  ```
+  - Träff → läs existerande implementation FÖRST, återanvänd eller medvetet ersätt
+  - Ingen träff → grep bredare innan du börjar skriva
+- `docs/DECISIONS.md` — arkitekturbeslut relevanta för featuren
+- Läs Princip 1–4 i "DESIGNPRINCIPER — LÄS FÖRE SPEC"-sektionen längre ned
 
-1. **`docs/LESSONS.md`** — återkommande buggmönster. Känn igen innan du fixar. Om en ny bugg matchar ett mönster där, använd lärdomen först.
-2. **`docs/DECISIONS.md`** — arkitekturbeslut. Öppna den vid varje session — nya designprinciper introduceras där före de räknas som etablerade.
-3. **`design-system/CODE-OPUS-INSTRUCTION.md`** — auktoritativt designsystem. Läs den först innan UI-arbete. `docs/DESIGN_SYSTEM.md` är arkiverad — använd inte.
-4. **`docs/BACKLOG.md`** — **ENDA SANNING för "specat men ej byggt" + "idéer som ska bli spec".** Etablerad 2026-05-17. När något parkeras (Opus säger "framtid" eller "senare") skrivs det in här SAMMA session, inte vid tillfälle. Vid stor sprint-start scannas BACKLOG för relaterade idéer som kan packas samman.
-5. **`docs/KVAR.md`** — historisk logg av leveranser (kronologisk). KVAR är vad SOM HÄNT, BACKLOG är vad som ska göras. Inte samma sak.
-6. **Senaste `docs/HANDOVER_YYYY-MM-DD.md`** — dagsläge från föregående session.
-7. **Aktuell sprintfil** i `docs/sprints/`.
+**C. SKRIVUPPGIFT (svensk text, textpool, brev, citat, ansökningar):**
+- `docs/WRITING_GUIDELINES_BANDY_MANAGER.md` — tonregler, max 10 citat per block (Lärdom #7)
+- `docs/STRINGS_POOL_INVENTORY.md` — vilka pools finns redan, återanvänd struktur
+- `docs/SPEC_CUP_ANSLAG_2026-05-08.md` om cup-relaterat
+- Två-tre befintliga textpool-filer för mönsterläsning
+- Inte plocka strängar — läs helhet
 
-**Vid skrivuppgift** (svensk text, brev, CV, citat, ansökningar, redaktionellt): läs OCKSÅ `docs/WRITING_GUIDELINES_BANDY_MANAGER.md` + `docs/SPEC_CUP_ANSLAG_2026-05-08.md` SYSTEMATISKT innan ett enda citat skrivs. Max 10 citat per generations-block (Lärdom #7). Inte plocka strängar — läs helhet.
+**D. UI-ARBETE:**
+- `design-system/CODE-OPUS-INSTRUCTION.md` (auktoritativ, `docs/DESIGN_SYSTEM.md` är arkiverad)
+- Senaste mock om finns i `docs/mockups/`
 
-**Vid arbete med THE_BOMB-frågor:** läs `docs/THE_BOMB.md` (vision) och `docs/THE_BOMB_STATUS_2026-04-26.md` (kod-verifierad status per subprojekt).
+**E. THE_BOMB-FRÅGOR:**
+- `docs/THE_BOMB.md` (vision)
+- `docs/THE_BOMB_STATUS_2026-04-26.md` (kod-verifierad status per subprojekt)
 
-**Vid spec-skrivande:** läs "DESIGNPRINCIPER — LÄS FÖRE SPEC" längre ner i denna fil. Fyra principer som förhindrar att ny funktionalitet byggs isolerat, dubbelt eller med visuell drift från målbilden.
+**F. ARKITEKTUR / KEY FILES / BANDY-REGLER (slå-upp-vid-behov):**
+- `CLAUDE_REFERENCE.md` — läsbar referensfil med arkitektur-overview, bandy-specifika regler, key files, kalibreringsdata, Bandy-Brain-kunskapsbasen. För dessa: läs `CLAUDE_REFERENCE.md` istället för att grep:a `CLAUDE.md`.
+
+### Backlog & historik — orientering:
+
+- `docs/BACKLOG.md` — ENDA SANNING för "specat men ej byggt" + "idéer som ska bli spec" (etablerad 2026-05-17). När något parkeras (Opus säger "framtid" eller "senare") skrivs det in här SAMMA session, inte vid tillfälle. Vid stor sprint-start scannas BACKLOG för relaterade idéer som kan packas samman.
+- `docs/KVAR.md` — historisk logg av leveranser (kronologisk). KVAR är vad SOM HÄNT, BACKLOG är vad som ska göras. Inte samma sak.
+- Senaste `docs/HANDOVER_YYYY-MM-DD.md` — dagsläge från föregående session.
+- Aktuell sprintfil i `docs/sprints/`.
+
+### Vid första missen i sessionen — STANNA OCH LÄS
+
+Om Design-Claude eller Jacob påpekar att en befintlig fil/system missades: STOPPA. Läs Princip 1–4 (DESIGNPRINCIPER nedan) + de avsnitt i LESSONS.md som matchar uppgiften, innan du fortsätter. En miss = signal att disciplin brutits. Två missar i samma session = signal att hela sessionens approach är fel — gör om sessionsstart-läsningen istället för att fortsätta producera.
 
 ---
 
@@ -710,82 +738,8 @@ grep -rn "C9A84C\|c9a84c\|201,168,76\|#22c55e\|#f59e0b\|#ef4444\|#0a1520\|#0D1B2
 ```
 Must return 0 results.
 
-## Tech Stack
-- React + TypeScript + Vite
-- PWA deployed on Render (auto-deploy from git push)
-- CSS in `src/styles/global.css` — all design tokens defined there
-- No CSS modules, no Tailwind — inline styles + global CSS classes
-- Server: Express (server.js) med Bandydoktorn-proxy till Anthropic API
+<!-- Tech Stack, mapp-struktur, Key Files och Active Documentation flyttat till `CLAUDE_REFERENCE.md`. Slå upp där. -->
 
-## Architecture
-- `src/domain/` — game logic, entities, services (pure TypeScript, no React)
-- `src/domain/data/` — statisk data (matchCommentary, rivalries, playerNames, politicianData)
-- `src/domain/services/` — spellogik (matchSimulator, economyService, cupService, playoffService, etc)
-- `src/domain/services/events/` — event-generering (politicianEvents, communityEvents, etc)
-- `src/application/useCases/` — orkestrering (roundProcessor, seasonEndProcessor, playoffTransition)
-- `src/presentation/` — React components, screens, navigation
-- `src/presentation/screens/` — one file per screen
-- `src/presentation/components/` — delade komponenter
-- `src/presentation/components/dashboard/` — NextMatchCard, LastResultCard, etc
-- `src/presentation/components/match/` — LineupStep, LineupFormationView, MatchDoneOverlay, etc
-- `src/presentation/navigation/BottomNav.tsx` — bottom navigation
-
-## Key Files
-- `roundProcessor.ts` — HJÄRTAT: advance-logiken, ekonomi, scouting, transfers, allt per matchdag
-- `economyService.ts` — intäkts/kostnadsberäkning (calcRoundIncome)
-- `scheduleGenerator.ts` — buildSeasonCalendar, generateSchedule, getRoundDate
-- `cupService.ts` — cup-bracket, generateNextCupRound
-- `playoffService.ts` — slutspelsserier, advancePlayoffRound
-- `matchEngine.ts` — snabbsim för AI-matcher (kalibrerad mot Bandygrytan-data)
-- `matchStepByStep.ts` — live-matcher (steg för steg, med yield för hörn- och straffinteraktion)
-- `matchUtils.ts` — TIMING_WEIGHTS, simulatePenalties, computeWeatherEffects
-- `transferService.ts` — bud, signering, executeTransfer
-- `scoutingService.ts` — scoutrapporter, ARCHETYPE_STRENGTHS
-- `matchCommentary.ts` — alla matchkommentarer (i src/domain/data/)
-- `cornerInteractionService.ts` — hörninteraktion (zon + leverans + utfall)
-- `penaltyInteractionService.ts` — straffinteraktion (placering + höjd + målvaktsval)
-- `worldGenerator.ts` — CLUB_TEMPLATES med alla 12 klubbar (arenaName, supporterGroupName)
-- `trainerArcService.ts` — tränarens arc (newcomer → legendary), mood-texter
-- `supporterService.ts` — klackgenerering, favoritspelare, stämning
-- `matchMoodService.ts` — matchstämning + slutsammanfattning (getFinalWhistleSummary)
-- `facilityService.ts` — utbyggnadsprojekt (omklädningsrum → inomhushall)
-- `pressConferenceService.ts` — presskonferenser (kontext-triggers + journalist-relation)
-
-## Active Documentation
-
-### Projektguides (läs alltid)
-- `CLAUDE.md` — denna fil, kodregler och arbetsfördelning
-- `docs/LESSONS.md` — 18 återkommande buggmönster
-- `docs/DECISIONS.md` — arkitekturbeslut kronologiskt
-- `design-system/` — auktoritativt designsystem. Ingång: `CODE-OPUS-INSTRUCTION.md`, sedan `README.md` + `DESIGN-DECISIONS.md`. `docs/DESIGN_SYSTEM.md` är arkiverad.
-- `docs/KVAR.md` — aktuell karta
-- `docs/STATUS.md` — enda sanning om vad som är byggt
-- Senaste `docs/HANDOVER_YYYY-MM-DD.md`
-
-### Visionsdokument (långsiktig roadmap)
-- `docs/THE_BOMB.md` — narrativ vision: korsreferenser mellan system, milestone-moments, atmosfär, share-images
-- `docs/SPEC_KLUBBUTVECKLING.md` — ekonomisk progression: utbyggnadsträd, sponsortillväxt, löneeskalering, inomhushallen
-
-### Kalibreringsdata
-- `docs/data/bandygrytan_detailed.json` — 1242 elitseriematcher (2019-26, inkl slutspel)
-- `docs/data/SCORELINE_REFERENCE.md` — utvisningar/straff per spelläge, period, fas — normaliserat
-- `docs/data/ANALYS_MATCHMONSTER.md` — hela matchen (comeback, utvisningstid, hemmafördel)
-- `docs/data/ANALYS_SLUTSPEL.md` — grundserie vs KVF/SF/Final
-- `docs/data/SCHEMA_DETAILED.md` — schema för detaljerad per-match-data
-
-### Kalibreringsskript
-- `scripts/calibrate.ts` — kör 200 matcher med varierad lagstyrka, jämför mot targets
-- `scripts/calibrate_v2.ts` — 7-sektionsanalys av bandygrytan + motorsimulering + scoreline-extraktion
-- `scripts/stress-test.ts` — 10×5 säsonger headless, loggar `stress/season_stats.json`
-- `scripts/analyze-stress.ts` — jämför stress-logg mot bandygrytan-targets (sektion A-G)
-
-### Aktuella sprintdokument
-Lever kort, arkiveras efter audit.
-- `docs/sprints/SPRINT_25B_1_PENALTY_SEPARATION.md` — aktiv spec
-- `docs/sprints/SPRINT_25A_2_AUDIT.md` — senast godkänd audit
-- `docs/sprints/SPRINT_24_2_AUDIT.md` — senast godkänd audit
-
-Alla äldre sprintdokument och fixspecar ligger i `docs/archive/`.
 
 ## Commit Convention
 ```
@@ -797,68 +751,5 @@ refactor: [short description]
 
 ---
 
-## BANDY-BRAIN — Kunskapsbasen
+<!-- BANDY-BRAIN-kunskapsbasen flyttad till `CLAUDE_REFERENCE.md`. Slå upp där. -->
 
-Bandy-Brain är ett biprojekt som lagrar atomära facts om bandy — regler, statistiska
-parametrar, designval och världskanon. Det lever i `docs/findings/facts/` och
-`docs/findings/hypotheses/`. Schemat finns i `docs/findings/SCHEMA.md`.
-
-### Namnrymd
-
-| Prefix | Mapp | Innehåll |
-|--------|------|----------|
-| R001– | `facts/rules/` | Bandyregler (SBF/FIB) |
-| S001– | `facts/stats/` | Bandygrytan-data |
-| D001– | `facts/design_principles/` | Spelets designval |
-| W001– | `facts/world_canon/` | Fiktiv värld |
-| H001– | `hypotheses/` | Öppna frågor |
-
-### Regler för att skriva ett fact
-
-1. **Rotorsak före fact.** Formulera i en mening varifrån värdet
-   kommer och varför du tror det. Vet du inte — slå upp källan.
-
-2. **Verifiera mot källa, inte mot minne.** Innan `verified_at`
-   uppdateras: räkna ut värdet ur rådata eller läs koden.
-   Att ett värde "ser rimligt ut" räcker inte.
-
-3. **Invarianter ska vara sanna vid skrivtillfället.**
-   Skriv inte ett invariant du inte kan verifiera nu.
-   Typ 3 (code-cross-reference) är undantag — märk dem tydligt.
-
-4. **Revision vid meningsfull ändring.** Vardagliga `verified_at`-
-   uppdateringar kräver ingen revision. Värdeändringar,
-   omtolkningar eller metodbyten kräver det.
-
-5. **deprecated, aldrig raderat.** Om ett fact är fel — sätt
-   `status: deprecated` och skapa nytt ID. Gamla ID:n återanvänds
-   inte.
-
-### Regler för att konsultera ett fact
-
-- Slå upp fact-ID:t i rätt mapp (`facts/{kategori}/{id}_*.yaml`)
-- Kontrollera `status: active` — deprecated-facts gäller inte längre
-- Kolla `verified_at` — är det mer än 6 månader sedan? Verifiera
-  på nytt om beslutet är viktig för pågående arbete
-- Cross-fact-invarianter (`value >= S002.value`) är *dokumentation*,
-  inte automatiskt verifierade — kontrollera manuellt
-
-### Pass-struktur
-
-- **Pass 1** — schema + mappstruktur (klar 2026-04-25)
-- **Pass 2** — migrering av befintliga kalibreringskonstanter (klar 2026-04-25)
-- **Pass 3** — validator-skript (YAML-validering + numeriska invarianter)
-- **Pass 4** — Eriks UI (framtida, beslutas separat)
-
-### Verifieringsprotokoll vid pass-slut
-
-Ingen pass får markeras klar utan att dessa steg gjorts:
-
-```
-□ Alla nya facts har status: active (inte draft)
-□ Alla numeriska invarianter är manuellt verifierade mot källan
-□ Cross-fact-invarianter är kontrollerade (S002 + S004 + S005 = 100?)
-□ Inga ID:n dubblerade (grep -r "fact_id:" docs/findings/facts/)
-□ SCHEMA.md pass-checklista uppdaterad
-□ commit: "facts: pass X — [kort beskrivning]"
-```
