@@ -99,6 +99,7 @@ interface GameState {
   markPhaseAcknowledged: (phase: import('../../domain/data/seasonPhases').SeasonPhase) => void
   recordPortalShown: (cardIds: string[]) => void
   resolveRetirementDecision: (playerId: string, choice: 'thank' | 'respect' | 'invite') => { retired: boolean; response: string }
+  markAnniversaryAcknowledged: (eventId: string) => void
 }
 
 const indexedDBStorage = {

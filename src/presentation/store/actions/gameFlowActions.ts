@@ -1,5 +1,6 @@
 import type { SaveGame, RoundSummaryData } from '../../../domain/entities/SaveGame'
 import type { AnslagKey } from '../../../domain/services/anslagService'
+import { findActiveAnniversaries } from '../../../domain/services/clubMemoryService'
 import { PendingScreen } from '../../../domain/enums'
 import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, type SeasonPhase } from '../../../domain/data/seasonPhases'
 import { clamp } from '../../../domain/utils/clamp'
@@ -25,6 +26,7 @@ interface GetState {
   triggerCoffeeRoomScene: () => void
   triggerJournalistScene: () => void
   resolveRetirementDecision: (playerId: string, choice: 'thank' | 'respect' | 'invite') => { retired: boolean; response: string }
+  markAnniversaryAcknowledged: (eventId: string) => void
 }
 
 type Get = () => GetState
@@ -189,7 +191,15 @@ export function gameFlowActions(get: Get, set: Set) {
         youthMatchResult,
       }
 
-      const gameToSave = { ...result.game, lastSavedAt: new Date().toISOString() }
+      // B6 — Populera aktiva anniversaries
+      const anniversaries = findActiveAnniversaries(result.game)
+      const previouslySeen = result.game.anniversariesSeen ?? []
+      const freshAnniversaries = anniversaries.filter(a => !previouslySeen.includes(a.eventId))
+      const gameWithAnniversaries = freshAnniversaries.length > 0 || (result.game.activeAnniversaries?.length ?? 0) > 0
+        ? { ...result.game, activeAnniversaries: freshAnniversaries }
+        : result.game
+
+      const gameToSave = { ...gameWithAnniversaries, lastSavedAt: new Date().toISOString() }
       set({ game: gameToSave, lastAdvanceResult: result, roundSummary: summary })
       void persistAutosave(gameToSave, 'advance')
 
@@ -440,6 +450,20 @@ export function gameFlowActions(get: Get, set: Set) {
       if (!seen.includes(key)) {
         set({ game: { ...game, seenAnslag: [...seen, key] } })
       }
+    },
+
+    markAnniversaryAcknowledged: (eventId: string) => {
+      const { game } = get()
+      if (!game) return
+      const seen = game.anniversariesSeen ?? []
+      if (seen.includes(eventId)) return
+      const updatedGame: SaveGame = {
+        ...game,
+        anniversariesSeen: [...seen, eventId],
+        activeAnniversaries: (game.activeAnniversaries ?? []).filter(a => a.eventId !== eventId),
+      }
+      set({ game: updatedGame })
+      void persistAutosave(updatedGame, 'markAnniversaryAcknowledged')
     },
 
     simulateRemainingStep: (): AdvanceResult | null => {
