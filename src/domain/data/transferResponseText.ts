@@ -1,116 +1,148 @@
-// C-T1 — Transfer response text pools
-// All strings used by the player acceptance system.
+/**
+ * Transfer-response — spelarens egen reaktion på bud, samt rivalry- och
+ * dream_club-specialcases.
+ *
+ * Tonregister: bandysvensk understatement. Bruksort-narrativ. Inga utropstecken,
+ * inga "AJAJ"-reaktioner, ingen Hollywood. Konkret bild med specifika detaljer
+ * (sex år på bruket, pojken som spelar pojkar 11, Sture som granne).
+ *
+ * Plockas av transferService.playerAcceptsTransfer och relaterade UI.
+ */
 
-export const PERSONALITY_REFUSAL: Record<string, string[]> = {
+export type PersonalityType = 'homebound' | 'ambitious' | 'family' | 'dream_club' | 'default'
+export type RivalryIntensity = 1 | 2 | 3
+
+/**
+ * Vägran-strängar per personlighetstyp. Visas i TransferBidResult inbox-item
+ * när spelaren tackat nej efter klubb-accept.
+ */
+export const PERSONALITY_REFUSAL: Record<PersonalityType, string[]> = {
   homebound: [
-    'Han vill inte flytta från orten. Familjen är kvar här och det räcker.',
-    'Spelaren tackar nej. Han har byggt ett liv här och ser ingen anledning att flytta.',
-    'Han är uppvuxen häromkring. Den banden bryter man inte för ett transferbud.',
-    'Nej tack. Han trivs. Det är svaret.',
-    'Han har barn i skolan här. Det var skäl nog.',
+    'Han trivs där han är. Hemma.',
+    'Birgitta vill inte flytta. Inte han heller.',
+    'Han har Sture som granne sen barndomen. Det räknas.',
   ],
   ambitious: [
-    'Han tycker budet inte räcker för att motivera ett skifte just nu.',
-    'Erbjudandet lockade inte. Han söker en större utmaning.',
-    'Han avvaktar. Det här var inte rätt tillfälle.',
-    'Spelaren vill se vad marknaden erbjuder till sommaren.',
+    'Han väntar på något större. Det är inte här.',
+    'Klubben var bra. Men inte den bra.',
+    'Han vill klättra, inte sidleds.',
   ],
   family: [
-    'Familjen sätter stopp. Partnern jobbar här och barnen är etablerade.',
-    'Han tackade nej på grund av familjesituationen. Inget mer att säga.',
-    'Det är inte läge för en flytt. Familjeskäl, enkelt och tydligt.',
-    'Han kom hem, pratade med familjen och ringde och tackade nej.',
+    'Han har jobbat sex år på bruket. Det går inte att packa ihop.',
+    'Pojken börjar gymnasiet till hösten. Det blir inte nu.',
+    'Han växte upp femhundra meter från klubbhuset. Hans pappa spelade här.',
+    'Hans dotter har precis börjat skolan. Inte i år.',
+    'Han har just byggt klart altanen. Det säger han själv.',
   ],
   dream_club: [
-    'Han väntar på rätt klubb. Det är tydligt att det inte är ni.',
-    'Spelaren verkar ha ett mål med sin karriär och det leder inte hit.',
-    'Tackar nej. Verkar söka något specifikt som han inte hittat ännu.',
-    'Han är inte lockad. Han väntar på något annat.',
+    'Han väntar på en annan klubb. Han säger inte vilken.',
+    'Det är inte fel klubb. Det är fel klubb för honom.',
+    'Han har bestämt sig sen länge. Det här var inte den.',
   ],
   default: [
-    'Spelaren tackade nej. Ibland är det så.',
-    'Han var inte intresserad av att flytta just nu.',
-    'Tackar nej. Ingen vidare förklaring.',
-    'Han valde att stanna.',
+    'Han kände sig inte redo.',
+    'Det blev inte rätt nu.',
+    'Han avböjde utan att ge skäl.',
   ],
 }
 
-export const PERSONALITY_ACCEPTANCE: Record<string, string[]> = {
+/**
+ * Godkänn-strängar per personlighetstyp. Visas i TransferBidResult inbox-item
+ * när spelaren accepterat. Tonen varierar — homebound är reluktant, ambitious
+ * är entusiastisk, default är neutralt.
+ */
+export const PERSONALITY_ACCEPTANCE: Record<PersonalityType, string[]> = {
   homebound: [
-    'Han tvekade länge men sa ja. Ni kan tacka lönebudet.',
-    'Inte enkelt för honom att lämna, men han bestämde sig. Välkommen.',
-    'Tog tid men han kom fram till att det var rätt steg nu.',
+    'Det är inte vad han ville. Men formen har vänt nedåt och han vet det.',
+    'Han skrev på i tystnad. Birgitta körde honom till stationen.',
+    'Sista träningen var i tisdags. Han hängde lite kvar i omklädningsrummet.',
   ],
   ambitious: [
-    'Snabbt svar. Han såg möjligheten och grep den.',
-    'Spelaren var redo. Det här var rätt tidpunkt för honom.',
-    'Han sa ja omedelbart. Motiverad och redo för nästa steg.',
-    'Det var precis vad han letade efter.',
+    'Han skrev på direkt. Sa "äntligen" till sin agent.',
+    'Det här är vad han väntat på. Han åker imorgon.',
+    'Han packade samma kväll. Det märks att han redan flyttat i huvudet.',
   ],
   family: [
-    'Han pratade med familjen och de backade upp beslutet.',
-    'Familjen är med på noterna. Välkommen till klubben.',
-    'Tog ett par dagar men familjen är positiva. Han är er.',
+    'Han skrev på. Det kommer kosta honom mer än lönen.',
+    'Han åker. Familjen stannar tills sommaren. Det blir tunga månader.',
+    'Han sa ja efter två dagars samtal. Med Birgitta, inte agenten.',
   ],
   dream_club: [
-    'Han tackade ja utan att blinka. Verkar ha velat hit länge.',
-    'Snabbt svar och glad röst i telefon. Bra sign.',
-    'Han accepterade direkt. Ni verkar vara vad han sökte.',
+    'Inte rätt klubb, men rätt summa. Han tackade ja motvilligt.',
+    'Han skrev på. Drömklubben kom inte. Den här gjorde.',
+    'Det var pengarna som avgjorde. Han säger det rakt ut.',
   ],
   default: [
-    'Spelaren är er. Välkommen.',
-    'Han accepterade budet. Klokt beslut av alla parter.',
-    'Affären är klar. Han ansluter när pappren är i ordning.',
-    'Ja. Det var hans svar.',
+    'Han skrev på. Inga särskilda ord.',
+    'Bud accepterat. Spelare accepterat. Klart.',
+    'Han åker nästa vecka. Han packade i lugn och ro.',
   ],
 }
 
+/**
+ * Dream_club specialcase — när buyer === player.dreamClubId.
+ * Magisk ton. Ett ögonblick av "drömmen kommer på riktigt".
+ */
 export const DREAM_CLUB_MAGIC: string[] = [
-  'Han har drömt om det här. Det märks på rösten när han tackar ja.',
-  'Det var det här han väntade på. Nu är det klart.',
-  'Äntligen, sa han. Sedan lade han på.',
-  'Han ringde tillbaka inom tio minuter. "Ja" var allt han sa.',
-  'Spelaren har pratat om er i omklädningsrummet. Nu är det hans tur.',
+  'Han väntat på det här samtalet. Det märks i tystnaden innan han svarar.',
+  'Han säger "tack" tre gånger på två minuter. Det är inte tränaren han tackar.',
+  'Han packade redan när nyheten kom. Han hade ridit på det.',
 ]
 
-export const RIVALRY_WARNING_PER_INTENSITY: Record<1 | 2 | 3, string[]> = {
+/**
+ * Rivalry-warning i BidModal — visas innan spelaren skickar bud till en
+ * rivaliserande klubb. Intensity styr ton-styrkan.
+ *
+ * Plockas via getRivalry().intensity (1-3).
+ */
+export const RIVALRY_WARNING_PER_INTENSITY: Record<RivalryIntensity, string[]> = {
   1: [
-    'Det är lite känsligt att handla av dem. Klacken märker.',
-    'Ingen dramatik, men folk kommer att ha åsikter.',
-    'Svagt rivalitet. Ingen katastrof, men håll koll på stämningen.',
+    'Klacken hörs på avstånd. De vet redan.',
+    'Det blir prat i kafferummet. Inget värre.',
+    'Vi har spelat dem flera gånger. Det här blir noterat.',
   ],
   2: [
-    'Den här affären väcker reaktioner. Klacken tar notis.',
-    'Att hämta spelare från dem är inte okomplicerat.',
-    'Fansen gillar det inte. Se till att spelaren levererar direkt.',
+    'Klacken kommer inte att gilla det här.',
+    'Det är en rivalitet. Spelare som går dit minns det länge.',
+    'Det stannar inte vid klubben. Hela bygden får veta.',
   ],
   3: [
-    'Det här är ett derby-köp. Klacken glömmer inte.',
-    'Varning: det här är fiendeklubben. En spelare därifrån väcker starka känslor.',
-    'Spelaren kommer buga från fel håll i fansens ögon. Det tar tid att vinna dem.',
+    'Det är den klubben. Klacken kommer inte att glömma.',
+    'Banderoller blir måleri i veckan. Han blir ihågkommen.',
+    'Det stannar i klubben i tio år. Sture pratar fortfarande om Lindgren-affären 02.',
   ],
 }
 
+/**
+ * Player-reaktioner vid rival-sälj — visas i TransferBidResult inbox-item
+ * när spelare faktiskt såldes till rival. Annorlunda ton än vanliga acceptans.
+ */
 export const PLAYER_REACTION_RIVAL_SALE: string[] = [
-  'Han sa hej och lämnade omklädningsrummet. Ingen pratade länge efteråt.',
-  'Spelaren valde att gå. Till dem. Det sitter.',
-  'Affären är klar. Men det är inte glömt.',
-  '"Pengarna är pengarna", sa kassören. Ingen höll med högt.',
-  'Han gick. Och klacken vet vart.',
+  'Han bytte tröja men inte stad. Det blir avstånd ändå.',
+  'Han säger att det inte spelar någon roll. Klacken vet annorlunda.',
+  'Han åkte med sista bussen. Ingen vinkade från läktaren.',
 ]
 
-export const RIVAL_SALE_KAFFERUM: Array<[string, string, string, string]> = [
-  ['Kioskvakten', 'Jag säljer inte korv till honom längre om han spelar för dem.', 'Vaktmästaren', 'Du säljer korv till alla." Kioskvakten: "Det är en principsak.'],
-  ['Materialaren', 'Hans tröja hänger fortfarande i korridoren.', 'Kassören', 'Ta ner den." Materialaren: "Inte ännu.'],
-  ['Vaktmästaren', 'Folk pratar om det. Även de som inte bryr sig om fotboll.', 'Kioskvakten', 'Bandy." Vaktmästaren: "De vet vad jag menar.'],
-  ['Kassören', 'Affären gick igenom. Vi fick pengar. Jag förstår det.', 'Ordföranden', 'Men?" Kassören: "Det finns ett men.'],
-  ['Ordföranden', 'Det är business.', 'Kioskvakten', 'Det är rivalerna." Ordföranden: "Business." Kioskvakten: "Ja.'],
+/**
+ * Kafferum-pool när rival-sälj sker — gubbarnas röst, befintliga klacken-/
+ * kafferumssystemet plockar från denna pool nästa omgång.
+ */
+export const RIVAL_SALE_KAFFERUM: string[] = [
+  '"Hörde du om Henriksson?" "Hörde det." Sen drack de kaffe.',
+  'Birger sa inget. Han stod bara och rörde i koppen i tio minuter.',
+  'Magnus sa "det är affärer". Ingen trodde honom.',
+  'Tre gubbar gick hem tidigare än vanligt. Det är väl vad det är.',
+  'Han nämndes inte vid namn. Inte en gång. Det säger något.',
 ]
 
+/**
+ * Klack-pool när rival-sälj sker — Birger-röst, plockas i klack-pool nästa
+ * omgång(ar) tills decay räcker.
+ */
 export const RIVAL_SALE_KLACK: string[] = [
-  'Han springer nu för fel lag.',
-  'Affären är klar. Det är svårt att säga mer än det.',
-  'Kassan plus, stämning minus.',
-  '"Business." Det räcker inte som svar.',
-  'Vi glömmer inte det här på ett tag.',
+  'Han säljs till dem. Vi pratar inte om det. Vi minns det.',
+  'Klacken målade banderoller. Vi tog inte med dem till matchen.',
+  'Det är en spelare mindre att sjunga för. Vi sjunger ändå.',
+  'Han kommer att möta oss två gånger om året. Vi vet vart vi sitter.',
+  'Hans tröja hänger inte längre i klubbhuset. Det räcker.',
 ]
