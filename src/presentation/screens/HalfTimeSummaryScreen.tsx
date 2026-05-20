@@ -46,8 +46,8 @@ export function HalfTimeSummaryScreen() {
   const club = game.clubs.find(c => c.id === game.managedClubId)
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)', position: 'relative' }}>
-      <div className="texture-wood card-stack" style={{ flex: 1, overflowY: 'auto', padding: '24px 0 160px' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+      <div className="texture-wood card-stack" style={{ flex: 1, overflowY: 'auto', padding: '24px 0 0' }}>
 
         {/* ── RUBRIK ── */}
         <div style={{ textAlign: 'center', padding: '0 20px 16px' }}>
@@ -130,11 +130,10 @@ export function HalfTimeSummaryScreen() {
 
       {/* ── VAL INFÖR VÅREN ── */}
       <div style={{
-        position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 430, padding: '12px 20px',
-        paddingBottom: 'calc(12px + var(--bottom-nav-height) + var(--safe-bottom, 0px))',
-        background: 'linear-gradient(to top, var(--bg) 70%, transparent)',
-        zIndex: 110,
+        flexShrink: 0, padding: '12px 20px',
+        paddingBottom: 'calc(12px + var(--safe-bottom, 0px))',
+        background: 'var(--bg)',
+        borderTop: '1px solid var(--border)',
       }}>
         <p className="h-label" style={{ marginBottom: 8, textAlign: 'center' }}>🎯 INRIKTNING VÅRSÄSONGEN</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>

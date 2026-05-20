@@ -42,13 +42,31 @@ export function pickSeasonSignature(game: SaveGame, rand: () => number): SeasonS
 /**
  * Bygger en ny SeasonSignature för aktuell säsong.
  */
+const SIGNATURE_INITIAL_FACT: Record<SeasonSignatureId, (game: SaveGame) => string> = {
+  calm_season: () => 'Ingenting sticker ut i år — ännu.',
+  cold_winter: (g) => {
+    const club = g.clubs.find(c => c.id === g.managedClubId)
+    const region = club?.region ?? 'regionen'
+    return `Väderprognoserna för ${region} pekar mot en riktigt kall vinter.`
+  },
+  scandal_season: (g) => {
+    const recent = (g.scandalHistory ?? []).filter(s => s.season >= g.currentSeason - 2)
+    return recent.length > 0
+      ? `${recent.length} skandaler i ligan de senaste säsongerna — mer förväntas.`
+      : 'Rykten och skandaler verkar följa ligan i år.'
+  },
+  hot_transfer_market: () => 'Transferrykterna är ovanligt många inför säsongen.',
+  injury_curve: () => 'Säsongsförberedelserna har gett fler skador än vanligt.',
+  dream_round: () => 'Underlag och form pekar mot en ovanligt öppen serie i år.',
+}
+
 export function createSeasonSignature(game: SaveGame, rand: () => number): SeasonSignature {
   const id = pickSeasonSignature(game, rand)
   return {
     id,
     modifiers: SEASON_SIGNATURE_DEFS[id],
     startedSeason: game.currentSeason,
-    observedFacts: [],
+    observedFacts: [SIGNATURE_INITIAL_FACT[id](game)],
   }
 }
 

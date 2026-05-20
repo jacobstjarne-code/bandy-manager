@@ -6,70 +6,78 @@ interface SpectatorFocusVariant {
   cta: string
 }
 
+/**
+ * Pools per kontextuell fokus (inte cyklisk). Picker väljer fokus
+ * baserat på vilket som är viktigast just nu — kontrakt som löper ut,
+ * akademitalanger redo, eller default trupp-arbete.
+ *
+ * Tonregel (spec 0.5): koppla till varför det spelar roll NU.
+ * "Tre kontrakt löper ut" — inte bara "Kontrakt".
+ */
 export const SPECTATOR_PRIMARY_TEXT: Record<SpectatorFocusType, SpectatorFocusVariant[]> = {
   kontrakt: [
     {
-      headline: 'Kontrakt att förnya',
-      body: '{count} spelare har kontrakt som löper ut i vår. Det är nu det avgörs om de stannar.',
+      headline: 'Kontrakt går ut i vår',
+      body: '{count} spelare har kontrakt som löper ut i april. Det är nu samtalen kan tas — innan andra ringer.',
       cta: 'Trupp →',
     },
     {
-      headline: 'Kontraktsläget',
-      body: '{count} spelare med utgående kontrakt. Passa på nu när det är lugnt.',
+      headline: 'Spelarna väntar',
+      body: '{count} kontrakt på bordet. De vet att vi har tid nu när slutspelet rullar utan oss.',
       cta: 'Trupp →',
     },
     {
-      headline: 'Säkra truppen',
-      body: '{count} kontrakt går ut. Börja samtalen medan säsongen fortfarande är färsk.',
+      headline: 'Innan transferfönstret',
+      body: '{count} utgående kontrakt. Bättre prata medan tystnaden är vår än när januari kommer.',
       cta: 'Trupp →',
     },
     {
-      headline: 'Löpsedeln nästa år börjar skrivas nu',
-      body: '{count} spelare utan kontrakt nästa säsong om inget görs.',
+      headline: 'Tid att förhandla',
+      body: '{count} kontrakt att förlänga eller släppa. Slutspelet ger oss veckor som annars inte fanns.',
       cta: 'Trupp →',
     },
   ],
   akademi: [
     {
       headline: 'Akademin är redo',
-      body: '{count} ungt talent{plural} väntar på beskedet. Promotion eller inte?',
+      body: '{count} ungdomar närmar sig A-truppen. Nu hinns det granska dem ordentligt.',
       cta: 'Akademi →',
     },
     {
-      headline: 'Nästa generation',
-      body: '{count} spelare i akademin är redo att ta steget upp. Välj med omsorg.',
+      headline: 'Talangerna stiger',
+      body: '{count} i P19 står på tröskeln. Inte alla ska upp — det är vårt val.',
       cta: 'Akademi →',
     },
     {
-      headline: 'Akademitalanger',
-      body: '{count} unga är redo för A-laget. Det är en möjlighet och ett ansvar.',
+      headline: 'Akademibesök',
+      body: '{count} talanger börjar bli mogna. Bra läge att gå dit och titta själv.',
       cta: 'Akademi →',
     },
     {
-      headline: 'Framtidens trupp',
-      body: '{count} talang{plural} nära promotion. Säsongen är ett bra tillfälle att titta.',
+      headline: 'Magnus vill ha besked',
+      body: '{count} unga som kan kliva upp till nästa säsong. Beslutet kommer ändå.',
       cta: 'Akademi →',
     },
   ],
   trupp: [
     {
-      headline: 'Truppen',
-      body: 'Ingen akut brandsläckning just nu. Titta igenom laget — vad behöver vi egentligen?',
+      headline: 'Truppen finns kvar',
+      body: 'Inga skador, ingen kris. Bra läge att gå genom laget. Vad är vi om ett år?',
       cta: 'Trupp →',
     },
     {
-      headline: 'Dags att utvärdera',
-      body: 'Slutspelet pågår utan oss. Bra läge att titta på truppen med friska ögon.',
+      headline: 'Utvecklingssamtal',
+      body: 'Andra spelar slutspel. Vi sätter oss ner med spelarna. Det görs sällan i januari.',
+      cta: 'Trupp →',
+    },
+    {
+      headline: 'Tid att tänka',
+      body: 'Slutspelet rullar utan oss. Det är då de bättre besluten brukar tas — när bruset är borta.',
       cta: 'Trupp →',
     },
     {
       headline: 'Truppen inför nästa år',
-      body: 'Andra spelar slutspel. Vi planerar. Vad ska vara annorlunda nästa säsong?',
-      cta: 'Trupp →',
-    },
-    {
-      headline: 'Vilande men inte stilla',
-      body: 'Inga matcher på schemat, men truppen behöver din uppmärksamhet ändå.',
+      body: 'Vad ska den här truppen vara nästa säsong? Den frågan har inte ställts ordentligt på ett tag.',
       cta: 'Trupp →',
     },
   ],

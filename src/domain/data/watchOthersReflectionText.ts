@@ -5,47 +5,55 @@ interface WatchOthersReflection {
   reflection: string
 }
 
+/**
+ * Reflektion-rad som visas i WatchOthersSecondary när SM-finalen
+ * närmar sig (inom 7 dagar). Tre kontexter beroende på vad managed
+ * gjorde i slutspelet.
+ *
+ * Tonregel (spec 0.5): nämn rivalkontexten konkret — inte bara
+ * "andra spelar". Hela poängen är att eko av tidigare beslut syns.
+ */
 export const WATCH_OTHERS_TEXT: Record<WatchOthersContext, WatchOthersReflection[]> = {
   lost_to_finalist: [
     {
-      label: 'De vi förlorade mot',
-      reflection: 'Laget som slog ut oss är fortfarande med. Kvar att se om de går hela vägen.',
+      label: 'De som slog ut oss',
+      reflection: '{motståndare} står kvar. Det vi förlorade mot är inte vilket lag som helst.',
     },
     {
-      label: 'Slutspelet pågår',
-      reflection: 'Vi slog mot laget som nu kan gå till final. Det gör ont och ger hopp på samma gång.',
+      label: 'Finalvägen',
+      reflection: '{motståndare} är två matcher från pokalen. Och de gick förbi oss för att komma dit.',
     },
     {
-      label: 'Fortsatt slutspel',
-      reflection: 'Laget vi föll mot spelar vidare. Hur långt de går säger något om säsongen.',
+      label: 'De som vann mot oss',
+      reflection: 'Klubben som slog ut oss spelar vidare. Det är inte en mindre sak just nu.',
     },
   ],
   lost_to_other: [
     {
-      label: 'Slutspelet rullar',
-      reflection: 'Laget som slog ut oss är borta nu också. Kvar är de starkaste — det var de inte mot oss.',
+      label: 'Final mellan andra',
+      reflection: 'Två lag i finalen. Inget av dem var de som slog oss. Klent tröst, men ändå tröst.',
     },
     {
-      label: 'Slutspelet',
-      reflection: 'Vi är ute. Slutspelet avgörs utan oss. Intressant ändå att följa.',
+      label: 'Slutspelets egen logik',
+      reflection: 'Det är inte de som slog oss som står i finalen. Slutspel går så ibland.',
     },
     {
       label: 'Andras kamp',
-      reflection: 'Matcher kvar att spela. Vi tittar på som alla andra nu.',
+      reflection: 'SM-finalen står utan oss. Vi tittar som alla andra som åkt ut tidigt.',
     },
   ],
   never_in_playoff: [
     {
-      label: 'Slutspelet',
-      reflection: 'Vi var inte med i år. Bra tillfälle att studera vad de bättre lagen gör.',
+      label: 'Slutspelet utan oss',
+      reflection: 'Åtta lag spelade slutspel. Vi var inte ett av dem. Det förändras till hösten.',
     },
     {
       label: 'Titta och lära',
-      reflection: 'Slutspelet är igång utan oss. Nästa år ska det se annorlunda ut.',
+      reflection: 'Vi följer slutspelet från soffan i år. Det är platsen att lära från.',
     },
     {
-      label: 'Playoff pågår',
-      reflection: 'Åtta lag kvar i vår värld — vi är inte ett av dem. Det förändras.',
+      label: 'Bandy är bandy',
+      reflection: 'Slutspelet pågår. Vi var långt ifrån. Nästa höst börjar nu, även om ingen säger det än.',
     },
   ],
 }

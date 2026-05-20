@@ -85,7 +85,7 @@ describe('createSeasonSignature', () => {
     const rand = seededRand(42)
     const sig = createSeasonSignature(game, rand)
     expect(sig.startedSeason).toBe(2027)
-    expect(sig.observedFacts).toEqual([])
+    expect(sig.observedFacts).toHaveLength(1)
     expect(sig.modifiers).toBeDefined()
   })
 })

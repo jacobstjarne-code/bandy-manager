@@ -403,8 +403,9 @@ describe('computeNextAnslag — cup_done vs cup_between isolering', () => {
     expect(result).not.toBe('cup_between')
   })
 
-  it('runda 2-utslag triggar cup_between, inte cup_done', () => {
+  it('runda 2-utslag triggar cup_done, inte cup_between (TIER 2.1 fix)', () => {
     // Round 1 won, round 2 lost — eliminated in round 2
+    // cup_between suppressas när managed är ute — cup_done hanterar det
     const bracket = makeMinimalBracket({
       matches: [
         makeCupMatch(1, 'managed'),
@@ -418,7 +419,7 @@ describe('computeNextAnslag — cup_done vs cup_between isolering', () => {
       seenAnslag: ['cup_start'],
     })
     const result = computeNextAnslag(game)
-    expect(result).toBe('cup_between')
-    expect(result).not.toBe('cup_done')
+    expect(result).toBe('cup_done')
+    expect(result).not.toBe('cup_between')
   })
 })

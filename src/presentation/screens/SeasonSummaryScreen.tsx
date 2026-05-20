@@ -88,6 +88,15 @@ export function SeasonSummaryScreen() {
     }
   }
 
+  function smWinnerSentence(r: SeasonSummary['playoffResult']): string {
+    if (r === 'champion') return ''
+    const champId = game?.playoffBracket?.champion
+    if (!champId) return ''
+    const champ = game?.clubs.find(c => c.id === champId)
+    if (!champ) return ''
+    return `${champ.shortName ?? champ.name} blev svenska mästare.`
+  }
+
   function verdictIcon(v: SeasonSummary['expectationVerdict']): string {
     if (v === 'exceeded') return '✅'
     if (v === 'met') return '✅'
@@ -240,10 +249,19 @@ export function SeasonSummaryScreen() {
             <p style={{
               fontSize: 12,
               color: 'var(--text-muted)',
-              marginBottom: 8,
+              marginBottom: 4,
               fontStyle: 'italic',
             }}>
               {playoffEliminationSentence(summary.playoffResult)}
+            </p>
+          )}
+          {summary.playoffResult && smWinnerSentence(summary.playoffResult) && (
+            <p style={{
+              fontSize: 12,
+              color: 'var(--text-muted)',
+              marginBottom: 8,
+            }}>
+              {smWinnerSentence(summary.playoffResult)}
             </p>
           )}
 

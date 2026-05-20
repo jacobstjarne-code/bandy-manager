@@ -11,7 +11,6 @@ import { PortalBeat } from '../components/portal/PortalBeat'
 import { PortalPhaseMark } from '../components/portal/PortalPhaseMark'
 import { PortalSpectatorMark } from '../components/portal/PortalSpectatorMark'
 import { PortalEventSlot } from '../components/portal/PortalEventSlot'
-import { PortalActiveBudget } from '../components/portal/PortalActiveBudget'
 import { PortalQueueRail } from '../components/portal/PortalQueueRail'
 import { PortalInboxCounter } from '../components/portal/PortalInboxCounter'
 import { AnslagOverlay } from '../components/anslag/AnslagOverlay'
@@ -206,7 +205,7 @@ export function PortalScreen() {
         <PortalSpectatorMark game={game} />
         <PortalBeat game={game} />
         <PortalRoundMark game={game} />
-        {!isSeason1Round1 && <PortalActiveBudget game={game} />}
+        {/* PortalActiveBudget (pills) removed — Variant B: en fråga åt gången, ingen paginering */}
         {isSeason1Round1 && activeCount > 0 && (
           <div className="portal-tutorial-frame">
             <strong>Lugnare första veckan</strong>

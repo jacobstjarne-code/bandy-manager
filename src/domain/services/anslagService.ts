@@ -11,7 +11,7 @@ import type { BoardAnslagKey } from '../data/anslag/boardAnslag'
 import { BOARD_ANSLAG } from '../data/anslag/boardAnslag'
 import type { PlayoffAnslagKey } from '../data/anslag/playoffAnslag'
 import { PLAYOFF_ANSLAG } from '../data/anslag/playoffAnslag'
-import { FixtureStatus, PlayoffRound } from '../enums'
+import { FixtureStatus, PlayoffRound, PlayoffStatus } from '../enums'
 
 export type AnslagKey = CupAnslagKey | LeagueAnslagKey | BoardAnslagKey | PlayoffAnslagKey
 
@@ -166,7 +166,13 @@ function managedClubLastSeasonMatchCompleted(game: SaveGame): boolean {
   const hasAnyScheduled = game.fixtures.some(
     f => f.status === 'scheduled' && (f.homeClubId === id || f.awayClubId === id)
   )
-  return hasAnyCompleted && !hasAnyScheduled
+  if (!hasAnyCompleted || hasAnyScheduled) return false
+  // vänta tills slutspelet är klart för alla — annars triggas season_done
+  // medan spectator-perioden fortfarande pågår
+  if (game.playoffBracket && game.playoffBracket.status !== PlayoffStatus.Completed) {
+    return false
+  }
+  return true
 }
 
 // ── Main service ──────────────────────────────────────────────────
@@ -230,8 +236,13 @@ export function computeNextAnslag(game: SaveGame): AnslagKey | null {
         return 'cup_finalweekend_pre'
       }
 
-      // Snålvinden — not eliminated in round 1, but eliminated in round 2
-      if (status.eliminated && status.eliminatedInRound === 2 && !seen.includes('cup_between')) {
+      // Snålvinden — cupen pågår och vi väntar på nästa runda
+      // Triggas INTE när managed är eliminerad (cup_done hanterar det)
+      // Triggas INTE när managed gått vidare till semi/final (cup_finalweekend_pre hanterar det)
+      const hasAdvancedToSemiOrLater = bracket.matches.some(
+        m => m.round >= 3 && (m.homeClubId === club || m.awayClubId === club)
+      )
+      if (!status.eliminated && !hasAdvancedToSemiOrLater && !seen.includes('cup_between')) {
         return 'cup_between'
       }
     }

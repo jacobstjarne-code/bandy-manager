@@ -241,6 +241,17 @@ export function getSituation(game: SaveGame): Situation {
     return { label: 'TUFFT LÄGE', body: body || `Position ${position} av 12. Det är inte avgjort.` }
   }
 
+  // ── Spectator / säsongen slut ─────────────────────────────────────
+  if (!nextFixture && leagueRoundsPlayed >= 22) {
+    const body = joinFragments([
+      getPlayoffContextFragment(game),
+    ])
+    return {
+      label: 'SÄSONGEN KLAR',
+      body: body || `Säsongen spelad. Position ${position} med ${points} poäng.`,
+    }
+  }
+
   // ── Standard: byggt från fragment ────────────────────────────────
   const nextRound = nextFixture?.roundNumber ?? leagueRoundsPlayed + 1
   const body = joinFragments([

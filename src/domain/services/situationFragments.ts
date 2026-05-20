@@ -68,7 +68,9 @@ export function getOpponentStandingFragment(game: SaveGame): string | null {
   const name = oppClub.shortName ?? oppClub.name.split(' ')[0]
 
   if (oppPos <= 3) return `${name} ligger ${ordinalSv(oppPos)}. Ett av seriens bättre lag.`
-  if (oppPos >= 10) return `${name} ligger ${ordinalSv(oppPos)}. Sånt är inte gratis.`
+  // "Sånt är inte gratis" är relevant bara när vi själva är i bottenstriden
+  if (oppPos >= 10 && myPos >= 9) return `${name} ligger ${ordinalSv(oppPos)}. Bottenstriden avgörs inte av sig själv.`
+  if (oppPos >= 10) return null
   if (Math.abs(oppPos - myPos) <= 1) return `${name} och ni delar tabellgrannar — ${ordinalSv(oppPos)} mot ${ordinalSv(myPos)}.`
   const posDiff = Math.abs(myPos - oppPos)
   if (oppPos < myPos) return posDiff <= 2 ? `${name} ligger ${ordinalSv(oppPos)} — över er.` : null

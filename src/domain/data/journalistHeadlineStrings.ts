@@ -23,7 +23,7 @@ const BIG_WIN_HEADLINES: Record<Persona, SimplePool> = {
     'Klar seger när allt klaffade',
     '{opp} fick stryka på foten',
     'Sex mål — hela truppen bidrog',
-    'Solid afton från första nedsläpp',
+    'Solid afton från första avslag',
   ],
   sensationalist: [
     'Målfest mot {opp}',

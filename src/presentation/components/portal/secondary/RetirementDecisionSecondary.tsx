@@ -31,7 +31,8 @@ export function RetirementDecisionSecondary({ game }: CardRenderProps) {
   return (
     <div className="portal-secondary-card" style={{ padding: '12px 14px' }}>
       <div className="portal-card-stripe portal-card-stripe-copper" />
-      <div className="portal-card-eyebrow">💬 {name}</div>
+      <div className="portal-card-eyebrow">🏁 PENSIONSVAL</div>
+      <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2, marginBottom: 4 }}>{name}</div>
       <p style={{ fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic', margin: '6px 0 10px' }}>
         {decision.quote}
       </p>
