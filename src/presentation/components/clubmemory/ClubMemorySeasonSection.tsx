@@ -1,18 +1,20 @@
 import type { SeasonMemory } from '../../../domain/services/clubMemoryService'
+import type { ActiveAnniversary } from '../../../domain/services/clubMemoryService'
 import { ClubMemoryEventRow } from './ClubMemoryEventRow'
 
 interface Props {
   seasonMemory: SeasonMemory
+  activeAnniversaries?: ActiveAnniversary[]
 }
 
 const ERA_LABELS: Record<string, string> = {
-  survival: 'Överlevnad',
-  fotfaste: 'Fotfäste',
-  establishment: 'Etablering',
-  legacy: 'Arv',
+  survival: 'ÖVERLEVNADSÅRET',
+  fotfaste: 'FOTFÄSTET',
+  establishment: 'ETABLERINGSÅRET',
+  legacy: 'ARVET',
 }
 
-export function ClubMemorySeasonSection({ seasonMemory }: Props) {
+export function ClubMemorySeasonSection({ seasonMemory, activeAnniversaries = [] }: Props) {
   const { season, isOngoing, finishPosition, events, eraName } = seasonMemory
 
   const positionText = finishPosition
@@ -22,43 +24,30 @@ export function ClubMemorySeasonSection({ seasonMemory }: Props) {
     : `${finishPosition}:e plats`
     : null
 
-  const eraLabel = eraName ? ERA_LABELS[eraName] ?? eraName : null
-
   const metaParts: string[] = []
   if (positionText) metaParts.push(positionText)
-  if (eraLabel) metaParts.push(`Era: ${eraLabel.toUpperCase()}`)
+
+  // Era band label — only when era is known
+  const eraLabel = eraName && eraName !== 'unknown'
+    ? (ERA_LABELS[eraName] ?? eraName.toUpperCase())
+    : null
 
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div className="club-memory-season">
+      {/* Era-band — visas ovanför säsongsrubriken när era är känd */}
+      {eraLabel && (
+        <div className="club-memory-era-band">
+          {eraLabel}
+        </div>
+      )}
+
       {/* Season header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '10px 0 6px',
-        borderBottom: '1px solid var(--border-dark)',
-        marginBottom: 8,
-      }}>
-        <span style={{
-          fontFamily: 'Georgia, serif',
-          fontSize: 16,
-          fontWeight: 700,
-          color: 'var(--text-light)',
-        }}>
+      <div className="club-memory-season-header">
+        <span className="club-memory-season-title">
           Säsong {season}
         </span>
         {isOngoing && (
-          <span style={{
-            fontSize: 8,
-            fontWeight: 700,
-            textTransform: 'uppercase' as const,
-            letterSpacing: '1.5px',
-            color: 'var(--accent)',
-            background: 'rgba(184, 136, 76, 0.12)',
-            border: '1px solid rgba(184, 136, 76, 0.3)',
-            padding: '2px 6px',
-            borderRadius: 3,
-          }}>
+          <span className="club-memory-season-ongoing-badge">
             Pågående
           </span>
         )}
@@ -66,26 +55,23 @@ export function ClubMemorySeasonSection({ seasonMemory }: Props) {
 
       {/* Season meta */}
       {metaParts.length > 0 && (
-        <p style={{
-          fontSize: 10,
-          fontStyle: 'italic',
-          color: 'var(--text-muted)',
-          lineHeight: 1.4,
-          marginBottom: 10,
-          margin: '0 0 10px',
-        }}>
+        <p className="club-memory-season-meta">
           {metaParts.join(' · ')}
         </p>
       )}
 
       {/* Events */}
       {events.length === 0 ? (
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+        <p className="club-memory-season-empty">
           Inga minnesvärda händelser ännu.
         </p>
       ) : (
         events.map((event, i) => (
-          <ClubMemoryEventRow key={`${event.type}-${event.matchday}-${i}`} event={event} />
+          <ClubMemoryEventRow
+            key={`${event.type}-${event.matchday}-${i}`}
+            event={event}
+            activeAnniversaries={activeAnniversaries}
+          />
         ))
       )}
     </div>

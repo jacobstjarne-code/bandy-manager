@@ -20,6 +20,7 @@ export interface MemoryEvent {
   text: string
   emoji: string
   significance: number
+  outcome?: 'won' | 'lost' | 'neutral'
   subjectPlayerId?: string
   subjectClubId?: string
 }
@@ -29,7 +30,7 @@ export interface SeasonMemory {
   isOngoing: boolean
   finishPosition?: number
   events: MemoryEvent[]
-  eraName?: string
+  eraName?: string | 'unknown'
 }
 
 export interface ClubMemoryView {
@@ -141,6 +142,69 @@ function collectSeasonEvents(game: SaveGame, season: number, managedClubId: stri
   return events.filter(e => e.significance >= SIGNIFICANCE_THRESHOLD).sort((a, b) => a.matchday - b.matchday)
 }
 
+// ── Anniversary system ───────────────────────────────────────────────────────
+
+export interface ActiveAnniversary {
+  eventId: string                    // unique ID på den minnesvärda eventen
+  originalSeason: number             // när det hände
+  yearsAgo: number                   // 1, 2, 3... (max 5 för MAX_SEASONS)
+  matchday: number                   // matchday i ursprungsåret (matchas mot nuvarande)
+  type: MemoryEventType
+  outcome: 'won' | 'lost' | 'neutral'
+  significance: number               // 0-100
+  echoSize: 'small' | 'medium' | 'big'
+  subjectPlayerId?: string
+  subjectClubId?: string
+  originalEventText: string          // för referens (visas inte direkt — Opus skriver eko)
+}
+
+/** Konstruerar ett unikt eventId för matchning */
+export function buildEventId(event: MemoryEvent): string {
+  return `${event.season}-${event.matchday}-${event.type}-${event.subjectPlayerId ?? event.subjectClubId ?? 'x'}`
+}
+
+/**
+ * Returnerar alla aktiva anniversaries för nuvarande matchday.
+ * - 1 år: significance >= 30
+ * - 2-5 år: significance >= 95 (SM-guld, SM-final-förlust etc)
+ */
+export function findActiveAnniversaries(game: SaveGame): ActiveAnniversary[] {
+  const currentMatchday = game.currentMatchday
+  const allEvents = getClubMemory(game).seasons.flatMap(s => s.events)
+
+  return allEvents
+    .filter(e => {
+      // Måste matcha matchday inom +/- 1 (slacka pga schemavariation)
+      if (Math.abs(e.matchday - currentMatchday) > 1) return false
+
+      // 1 år — significance >= 30
+      const yearsAgo = game.currentSeason - e.season
+      if (yearsAgo < 1) return false
+      if (yearsAgo === 1) return e.significance >= 30
+
+      // 2+ år bakåt — endast för significance >= 95 (SM-guld, SM-final-förlust, etc)
+      if (e.significance >= 95) return yearsAgo <= MAX_SEASONS
+      return false
+    })
+    .map(e => ({
+      eventId: buildEventId(e),
+      originalSeason: e.season,
+      yearsAgo: game.currentSeason - e.season,
+      matchday: e.matchday,
+      type: e.type,
+      outcome: e.outcome ?? 'neutral',
+      significance: e.significance,
+      echoSize: (
+        e.significance >= 90 ? 'big' :
+        e.significance >= 60 ? 'medium' :
+        'small'
+      ) as 'small' | 'medium' | 'big',
+      subjectPlayerId: e.subjectPlayerId,
+      subjectClubId: e.subjectClubId,
+      originalEventText: e.text,
+    }))
+}
+
 // ── Main aggregator ──────────────────────────────────────────────────────────
 
 export function getClubMemory(game: SaveGame): ClubMemoryView {
@@ -158,9 +222,18 @@ export function getClubMemory(game: SaveGame): ClubMemoryView {
       events.unshift(seasonFinishEvent(season, position))
       events.sort((a, b) => a.matchday - b.matchday)
     }
+    // Era: for ongoing season use currentEra; for previous season use snapshot; older = unknown
+    let eraName: string | undefined
+    if (isOngoing) {
+      eraName = game.currentEra ?? undefined
+    } else if (season === game.currentSeason - 1 && game.seasonStartSnapshot) {
+      const snapshotEra = game.seasonStartSnapshot.era
+      eraName = snapshotEra && snapshotEra !== 'unknown' ? snapshotEra : undefined
+    }
+
     seasons.push({
       season, isOngoing, finishPosition: position, events,
-      eraName: isOngoing ? (game.currentEra ?? undefined) : undefined,
+      eraName,
     })
   }
 

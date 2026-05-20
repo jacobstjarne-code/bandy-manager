@@ -24,6 +24,8 @@ export function buildEventFromFixture(
   const won = margin > 0
   const lost = margin < 0
 
+  const outcome: 'won' | 'lost' | 'neutral' = won ? 'won' : lost ? 'lost' : 'neutral'
+
   // SM-final
   if (fixture.isFinaldag) {
     const type: MemoryEventType = 'sm_final'
@@ -34,6 +36,7 @@ export function buildEventFromFixture(
     return {
       type, season: fixture.season, matchday: fixture.matchday,
       text, emoji: won ? '🥇' : '🥈', significance,
+      outcome,
       subjectClubId: opponentId,
     }
   }
@@ -48,6 +51,7 @@ export function buildEventFromFixture(
     return {
       type, season: fixture.season, matchday: fixture.matchday,
       text, emoji: won ? '🏆' : '🥈', significance,
+      outcome,
       subjectClubId: opponentId,
     }
   }
@@ -60,6 +64,7 @@ export function buildEventFromFixture(
         type: 'derby_result', season: fixture.season, matchday: fixture.matchday,
         text: `Derby vunnet med ${margin} mål (${myScore}–${theirScore}) mot ${rivalry.name.split(' ')[0]}.`,
         emoji: '⚔️', significance: 55,
+        outcome,
         subjectClubId: opponentId,
       }
     }
@@ -68,6 +73,7 @@ export function buildEventFromFixture(
         type: 'derby_result', season: fixture.season, matchday: fixture.matchday,
         text: `Derby förlust ${myScore}–${theirScore}.`,
         emoji: '⚔️', significance: 35,
+        outcome,
         subjectClubId: opponentId,
       }
     }
@@ -81,6 +87,7 @@ export function buildEventFromFixture(
       type: 'big_win', season: fixture.season, matchday: fixture.matchday,
       text: `Storseger ${myScore}–${theirScore}.`,
       emoji: '💥', significance: sig,
+      outcome,
       subjectClubId: opponentId,
     }
   }
@@ -90,6 +97,7 @@ export function buildEventFromFixture(
       type: 'big_loss', season: fixture.season, matchday: fixture.matchday,
       text: `Storseger ${theirScore}–${myScore} mot oss.`,
       emoji: '📉', significance: sig,
+      outcome,
       subjectClubId: opponentId,
     }
   }

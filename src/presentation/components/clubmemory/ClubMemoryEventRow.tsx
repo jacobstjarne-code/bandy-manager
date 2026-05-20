@@ -1,57 +1,75 @@
 import type { MemoryEvent } from '../../../domain/services/clubMemoryService'
+import type { ActiveAnniversary } from '../../../domain/services/clubMemoryService'
+import { pickAnniversaryMemoryRowLabel } from '../../../domain/data/anniversaryMemoryRowText'
 
 interface Props {
   event: MemoryEvent
+  activeAnniversaries?: ActiveAnniversary[]
 }
 
-export function ClubMemoryEventRow({ event }: Props) {
-  const isBig = event.significance >= 70
+function getSeverityClass(event: MemoryEvent): string {
+  const { type, outcome } = event
 
-  const rowStyle: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: 10,
-    padding: '8px 0',
-    lineHeight: 1.4,
-    ...(isBig ? {
-      background: 'rgba(184, 136, 76, 0.04)',
-      borderLeft: '2px solid var(--accent)',
-      paddingLeft: 10,
-      paddingTop: 8,
-      paddingBottom: 8,
-      margin: '6px -10px 6px -2px',
-      borderRadius: '0 4px 4px 0',
-    } : {}),
+  // Cup/SM-final
+  if (type === 'cup_final' || type === 'sm_final') {
+    if (outcome === 'won') return 'legendary'
+    if (outcome === 'lost') return 'scar'
   }
 
+  // Derby
+  if (type === 'derby_result') return 'derby'
+
+  // Retirement is always legendary
+  if (type === 'retirement') return 'legendary'
+
+  // Scandal is always scar
+  if (type === 'scandal') return 'scar'
+
+  // Big loss treated as scar
+  if (type === 'big_loss') return 'scar'
+
+  return ''
+}
+
+function buildEventId(event: MemoryEvent): string {
+  return `${event.season}-${event.matchday}-${event.type}-${event.subjectPlayerId ?? event.subjectClubId ?? 'x'}`
+}
+
+export function ClubMemoryEventRow({ event, activeAnniversaries = [] }: Props) {
+  const severityClass = getSeverityClass(event)
+  const isFeatured = event.significance >= 90
+
+  const eventId = buildEventId(event)
+  const matchingEcho = activeAnniversaries.find(a => a.eventId === eventId)
+  const isEchoing = !!matchingEcho
+
+  const rowClasses = [
+    'memory-row',
+    severityClass,
+    isFeatured ? 'memory-row-featured' : '',
+    isEchoing ? 'memory-row-echoing' : '',
+  ].filter(Boolean).join(' ')
+
+  const echoLabel = isEchoing
+    ? pickAnniversaryMemoryRowLabel(matchingEcho)
+    : null
+
   return (
-    <div style={rowStyle}>
-      <span style={{
-        fontSize: 14,
-        width: 18,
-        textAlign: 'center',
-        marginTop: 1,
-        flexShrink: 0,
-      }}>
+    <div className={rowClasses}>
+      <span className="memory-row-emoji">
         {event.emoji}
       </span>
-      <span style={{
-        fontSize: 10,
-        color: 'var(--text-muted)',
-        minWidth: 60,
-        marginTop: 2,
-        flexShrink: 0,
-      }}>
+      <span className="memory-row-matchday">
         Omg {event.matchday}
       </span>
-      <span style={{
-        flex: 1,
-        fontFamily: 'Georgia, serif',
-        fontSize: 12.5,
-        color: 'var(--text-light)',
-      }}>
-        {event.text}
-      </span>
+      <div className="memory-row-body">
+        <span className="memory-row-text">
+          {event.text}
+        </span>
+        {echoLabel && (
+          <div className="memory-row-echo-label">{echoLabel}</div>
+        )}
+      </div>
     </div>
   )
 }
