@@ -50,9 +50,13 @@ import { WeeklyDecisionSecondary } from '../../../presentation/components/portal
 import { RetirementDecisionSecondary } from '../../../presentation/components/portal/secondary/RetirementDecisionSecondary'
 import { ActiveArcsSecondary } from '../../../presentation/components/portal/secondary/ActiveArcsSecondary'
 import { BoardObjectivesSecondary } from '../../../presentation/components/portal/secondary/BoardObjectivesSecondary'
+import { WatchOthersSecondary } from '../../../presentation/components/portal/secondary/WatchOthersSecondary'
+import { SpectatorPrimary } from '../../../presentation/components/portal/primary/SpectatorPrimary'
 import type { CardRenderProps } from '../../../presentation/components/portal/portalTypes'
 import { getCoffeeRoomScene } from '../coffeeRoomService'
 import { shouldShowJournalistCard } from '../journalistVisibilityService'
+import { isManagedClubSpectator } from '../../data/seasonPhases'
+import { FixtureStatus } from '../../enums'
 
 // Minimal components
 import { SquadStatusMinimal } from '../../../presentation/components/portal/minimal/SquadStatusMinimal'
@@ -102,6 +106,19 @@ const PORTAL_CARDS: DashboardCard[] = [
     weight: 70,
     triggers: [patronDemandUnmetOver3Rounds],
     Component: PatronDemandPrimary,
+  },
+  {
+    id: 'spectator_primary',
+    tier: 'primary',
+    weight: 50,
+    triggers: [
+      (game) => isManagedClubSpectator(game),
+      (game) => !game.fixtures.some(f =>
+        f.status === FixtureStatus.Scheduled &&
+        (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
+      ),
+    ],
+    Component: SpectatorPrimary,
   },
   {
     id: 'next_match',
@@ -229,6 +246,13 @@ const PORTAL_CARDS: DashboardCard[] = [
       return !!sig && sig.id !== 'calm_season'
     }],
     Component: SeasonSignatureSecondary,
+  },
+  {
+    id: 'watch_others',
+    tier: 'secondary',
+    weight: 75,
+    triggers: [(game) => isManagedClubSpectator(game)],
+    Component: WatchOthersSecondary,
   },
 
   // ── MINIMAL TIER ──────────────────────────────────────────────

@@ -25,7 +25,7 @@ export function getFunctionaryPhase(roundNumber: number, tablePosition: number, 
 
 // ── Dashboard / SEASON_MOOD phase ─────────────────────────────────────────────
 
-export type SeasonPhase = 'pre_season' | 'early' | 'mid' | 'endgame' | 'playoff'
+export type SeasonPhase = 'pre_season' | 'early' | 'mid' | 'endgame' | 'playoff' | 'spectator'
 
 export function getCurrentLeagueRound(game: import('../entities/SaveGame').SaveGame): number {
   return game.fixtures
@@ -33,7 +33,8 @@ export function getCurrentLeagueRound(game: import('../entities/SaveGame').SaveG
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
 }
 
-export function getSeasonPhase(leagueRound: number, isPlayoff: boolean): SeasonPhase {
+export function getSeasonPhase(leagueRound: number, isPlayoff: boolean, isSpectator: boolean = false): SeasonPhase {
+  if (isSpectator) return 'spectator'
   if (isPlayoff) return 'playoff'
   if (leagueRound <= 3) return 'early'
   if (leagueRound <= 11) return 'mid'
@@ -63,4 +64,40 @@ export function isManagedClubInPlayoff(game: import('../entities/SaveGame').Save
       return f?.status === FixtureStatus.Scheduled
     })
   })
+}
+
+/**
+ * Returnerar true när managed klubb inte längre har egna playoff-matcher
+ * men andras playoff fortfarande pågår (åskådarläge).
+ *
+ * Täcker två fall:
+ * 1. Managed eliminerades i en serie (loserId === managedClubId)
+ * 2. Managed kom aldrig till playoff (8:e plats eller sämre) men bracket har startats
+ */
+export function isManagedClubSpectator(game: import('../entities/SaveGame').SaveGame): boolean {
+  if (!game.playoffBracket) return false
+
+  const allSeries = [
+    ...game.playoffBracket.quarterFinals,
+    ...game.playoffBracket.semiFinals,
+    ...(game.playoffBracket.final ? [game.playoffBracket.final] : []),
+  ]
+
+  const otherPlayoffMatchesRemaining = allSeries.some(s => {
+    const managedInSeries = s.homeClubId === game.managedClubId || s.awayClubId === game.managedClubId
+    if (managedInSeries) return false
+    return s.fixtures.some((fid: string) => {
+      const f = game.fixtures.find(ff => ff.id === fid)
+      return f?.status === FixtureStatus.Scheduled
+    })
+  })
+
+  if (!otherPlayoffMatchesRemaining) return false
+
+  const managedEliminated = allSeries.some(s => s.loserId === game.managedClubId)
+  const managedInBracket = allSeries.some(s =>
+    s.homeClubId === game.managedClubId || s.awayClubId === game.managedClubId
+  )
+
+  return managedEliminated || !managedInBracket
 }

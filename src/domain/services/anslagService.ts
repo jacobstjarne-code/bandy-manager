@@ -9,9 +9,11 @@ import type { LeagueAnslagKey } from '../data/anslag/leagueAnslag'
 import { LEAGUE_ANSLAG } from '../data/anslag/leagueAnslag'
 import type { BoardAnslagKey } from '../data/anslag/boardAnslag'
 import { BOARD_ANSLAG } from '../data/anslag/boardAnslag'
-import { FixtureStatus } from '../enums'
+import type { PlayoffAnslagKey } from '../data/anslag/playoffAnslag'
+import { PLAYOFF_ANSLAG } from '../data/anslag/playoffAnslag'
+import { FixtureStatus, PlayoffRound } from '../enums'
 
-export type AnslagKey = CupAnslagKey | LeagueAnslagKey | BoardAnslagKey
+export type AnslagKey = CupAnslagKey | LeagueAnslagKey | BoardAnslagKey | PlayoffAnslagKey
 
 // ── Variant picker ────────────────────────────────────────────────
 
@@ -50,6 +52,7 @@ export function getAnslagData(key: AnslagKey): AnslagText {
   if (key in CUP_ANSLAG) return CUP_ANSLAG[key as CupAnslagKey]
   if (key in LEAGUE_ANSLAG) return LEAGUE_ANSLAG[key as LeagueAnslagKey]
   if (key in BOARD_ANSLAG) return BOARD_ANSLAG[key as BoardAnslagKey]
+  if (key in PLAYOFF_ANSLAG) return PLAYOFF_ANSLAG[key as PlayoffAnslagKey]
   throw new Error(`Unknown anslag key: ${key}`)
 }
 
@@ -289,6 +292,25 @@ export function computeNextAnslag(game: SaveGame): AnslagKey | null {
   // Slutspelet — managed club in playoffs, first match upcoming
   if (managedClubInPlayoffs(game) && firstPlayoffMatchUpcoming(game) && !seen.includes('playoff_start')) {
     return 'playoff_start'
+  }
+
+  // Playoff-eliminationsanslag — managed eliminerades, visa direkt efter seriebeslutet
+  if (game.playoffBracket) {
+    const allSeries = [
+      ...game.playoffBracket.quarterFinals,
+      ...game.playoffBracket.semiFinals,
+      ...(game.playoffBracket.final ? [game.playoffBracket.final] : []),
+    ]
+    const eliminatingSeries = allSeries.find(s =>
+      s.loserId === game.managedClubId && s.winnerId !== null
+    )
+    if (eliminatingSeries) {
+      const key: PlayoffAnslagKey =
+        eliminatingSeries.round === PlayoffRound.QuarterFinal ? 'playoff_eliminated_kf' :
+        eliminatingSeries.round === PlayoffRound.SemiFinal ? 'playoff_eliminated_sf' :
+        'playoff_eliminated_smf'
+      if (!seen.includes(key)) return key
+    }
   }
 
   // Sommaren kommer — last match played, nothing left

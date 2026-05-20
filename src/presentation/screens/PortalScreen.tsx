@@ -9,6 +9,7 @@ import { PortalMinimalBar } from '../components/portal/PortalMinimalBar'
 import { SituationCard } from '../components/portal/SituationCard'
 import { PortalBeat } from '../components/portal/PortalBeat'
 import { PortalPhaseMark } from '../components/portal/PortalPhaseMark'
+import { PortalSpectatorMark } from '../components/portal/PortalSpectatorMark'
 import { PortalEventSlot } from '../components/portal/PortalEventSlot'
 import { PortalActiveBudget } from '../components/portal/PortalActiveBudget'
 import { PortalQueueRail } from '../components/portal/PortalQueueRail'
@@ -20,6 +21,8 @@ import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
 import { playSound } from '../audio/soundEffects'
 import { PortalRoundMark } from '../components/portal/PortalRoundMark'
 import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
+import { isManagedClubSpectator } from '../../domain/data/seasonPhases'
+import { getRoundDate } from '../../domain/services/scheduleGenerator'
 
 // Initialisera bag-of-cards en gång vid modulimport
 initCardBag()
@@ -100,6 +103,8 @@ export function PortalScreen() {
   const hasScheduledFixtures = game.fixtures.some(f => f.status === 'scheduled')
   const canClickAdvance = canAdvance || hasScheduledFixtures
 
+  const isSpectator = isManagedClubSpectator(game)
+
   const advanceButtonText = (() => {
     const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
     if (scheduled.length === 0) {
@@ -108,8 +113,23 @@ export function PortalScreen() {
         return s && s.position <= 8 ? 'Starta slutspel →' : 'Avsluta grundserien →'
       }
       if (game.playoffBracket.status === PlayoffStatus.Completed) return 'Avsluta säsongen →'
+      if (isSpectator) return 'Säsong klar →'
       return 'Fortsätt slutspel →'
     }
+
+    if (isSpectator) {
+      const nextPlayoffMatch = scheduled
+        .filter(f => !f.isCup && f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId)
+        .sort((a, b) => a.matchday - b.matchday)[0]
+      if (nextPlayoffMatch) {
+        const dateStr = getRoundDate(game.currentSeason, nextPlayoffMatch.roundNumber)
+        const d = new Date(dateStr)
+        const days = ['sön', 'mån', 'tis', 'ons', 'tor', 'fre', 'lör']
+        return `Fortsätt — ${days[d.getDay()]} →`
+      }
+      return 'Fortsätt →'
+    }
+
     const nextManaged = scheduled.filter(f => {
       if (f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId) return false
       if (eliminated && f.matchday > 26 && !f.isCup) return false
@@ -183,6 +203,7 @@ export function PortalScreen() {
       >
         <SituationCard game={game} />
         <PortalPhaseMark game={game} />
+        <PortalSpectatorMark game={game} />
         <PortalBeat game={game} />
         <PortalRoundMark game={game} />
         {!isSeason1Round1 && <PortalActiveBudget game={game} />}

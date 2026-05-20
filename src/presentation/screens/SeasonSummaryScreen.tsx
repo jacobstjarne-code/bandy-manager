@@ -78,6 +78,16 @@ export function SeasonSummaryScreen() {
     }
   }
 
+  function playoffEliminationSentence(r: SeasonSummary['playoffResult']): string {
+    switch (r) {
+      case 'quarterfinal': return 'Säsongen tog slut i kvartsfinalen.'
+      case 'semifinal': return 'Säsongen tog slut i semifinalen.'
+      case 'finalist': return 'Säsongen nådde SM-finalen — men inte hela vägen.'
+      case 'didNotQualify': return 'Laget kvalade inte till slutspelet.'
+      default: return ''
+    }
+  }
+
   function verdictIcon(v: SeasonSummary['expectationVerdict']): string {
     if (v === 'exceeded') return '✅'
     if (v === 'met') return '✅'
@@ -221,9 +231,19 @@ export function SeasonSummaryScreen() {
               fontSize: 13,
               fontWeight: 700,
               color: isChampion ? 'var(--accent)' : 'var(--text-secondary)',
-              marginBottom: 8,
+              marginBottom: 4,
             }}>
               {playoffResultLabel(summary.playoffResult)}
+            </p>
+          )}
+          {summary.playoffResult && playoffEliminationSentence(summary.playoffResult) && (
+            <p style={{
+              fontSize: 12,
+              color: 'var(--text-muted)',
+              marginBottom: 8,
+              fontStyle: 'italic',
+            }}>
+              {playoffEliminationSentence(summary.playoffResult)}
             </p>
           )}
 

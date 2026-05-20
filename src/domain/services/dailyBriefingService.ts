@@ -35,6 +35,10 @@ export const SEASON_MOOD: Record<SeasonPhase, string[]> = {
     'Slutspel. Inga andra chanser.',
     'Bäst av fem. Varje match kan vara den sista.',
   ],
+  spectator: [
+    'Slutspelet pågår. Vi tittar på.',
+    'Andras kamp nu. Vår tid kommer.',
+  ],
 }
 
 export interface Briefing {

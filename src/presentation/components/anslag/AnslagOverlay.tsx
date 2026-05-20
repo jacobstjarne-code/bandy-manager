@@ -78,6 +78,33 @@ export function AnslagOverlay({ game, anslagKey, onDismiss }: AnslagOverlayProps
       : ''
   )
 
+  // Template-variable resolution for playoff elimination anslag
+  if (anslagKey.startsWith('playoff_eliminated_')) {
+    const allSeries = [
+      ...(game.playoffBracket?.quarterFinals ?? []),
+      ...(game.playoffBracket?.semiFinals ?? []),
+      ...(game.playoffBracket?.final ? [game.playoffBracket.final] : []),
+    ]
+    const eliminatingSeries = allSeries.find(s =>
+      s.loserId === game.managedClubId && s.winnerId !== null
+    )
+    if (eliminatingSeries) {
+      const opponent = game.clubs.find(c => c.id === eliminatingSeries.winnerId)
+      const seriesFixtures = eliminatingSeries.fixtures
+        .map((fid: string) => game.fixtures.find(f => f.id === fid))
+        .filter((f): f is NonNullable<typeof f> => !!f && f.status === 'completed')
+      const lastFixture = seriesFixtures.sort((a, b) => b.matchday - a.matchday)[0]
+      const getRoundLabel = (round: string) =>
+        round === 'quarterFinal' ? 'kvartsfinalen' :
+        round === 'semiFinal' ? 'semifinalen' :
+        'SM-finalen'
+      variantBody = variantBody
+        .replace(/{motståndare}/g, opponent?.shortName ?? opponent?.name ?? 'motståndaren')
+        .replace(/{rond}/g, getRoundLabel(eliminatingSeries.round))
+        .replace(/{resultat}/g, lastFixture ? `${lastFixture.homeScore}–${lastFixture.awayScore}` : '')
+    }
+  }
+
   const isWinner = anslagKey === 'cup_done_winner'
 
   return (

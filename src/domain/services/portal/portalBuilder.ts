@@ -1,7 +1,7 @@
 import type { SaveGame } from '../../entities/SaveGame'
 import type { DashboardCard } from './dashboardCardBag'
 import { CARD_BAG } from './dashboardCardBag'
-import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff } from '../../data/seasonPhases'
+import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, isManagedClubSpectator } from '../../data/seasonPhases'
 import { applyPhaseBias } from './seasonPhaseBias'
 
 type StaleEntry = { firstShownAt: number; lastShownAt: number }
@@ -59,7 +59,8 @@ export interface PortalLayout {
 export function buildPortal(game: SaveGame, seed: number): PortalLayout {
   const currentLigaRound = getCurrentLeagueRound(game)
   const isPlayoff = isManagedClubInPlayoff(game)
-  const phase = getSeasonPhase(currentLigaRound, isPlayoff)
+  const isSpectator = isManagedClubSpectator(game)
+  const phase = getSeasonPhase(currentLigaRound, isPlayoff, isSpectator)
 
   // Steg 1: Filtrera bagen — suppress-kort för current phase + triggers
   const staleTracking = game.cardStaleTracking
