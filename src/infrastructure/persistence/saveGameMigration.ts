@@ -56,6 +56,9 @@ export function migrateSaveGame(raw: unknown): SaveGame {
   if (data.scoutBudget === undefined) data.scoutBudget = 3
   if (data.communityStanding === undefined) data.communityStanding = 50
   if (data.journalistRelationship === undefined) data.journalistRelationship = 50
+  // C-B1: CS press event tracking
+  if (data.lastCSPressMatchday === undefined) data.lastCSPressMatchday = 0
+  // pendingCSPress defaults to undefined — no migration needed
   if (data.playoffBracket === undefined) data.playoffBracket = null
   if (data.cupBracket === undefined) data.cupBracket = null
   // ARCH-003: migrate old show* booleans to pendingScreen enum

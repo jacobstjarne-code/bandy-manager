@@ -163,6 +163,8 @@ export interface SaveGame {
   lastHallDebateRound?: number
   lastEconomicStressRound?: number
   pendingPressConference?: import('../entities/GameEvent').GameEvent
+  pendingCSPress?: import('../entities/GameEvent').GameEvent
+  lastCSPressMatchday?: number  // for C-B1 cooldown tracking
   budgetPriority?: 'squad' | 'balanced' | 'youth'
   resolvedEventIds?: string[]  // event IDs that have been resolved — prevents re-triggering
 

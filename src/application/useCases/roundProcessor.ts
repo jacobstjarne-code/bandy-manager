@@ -64,6 +64,7 @@ import { canAddDecision } from '../../domain/services/decisionBudgetService'
 import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
 import { detectNotableResult, decayKlackEcho } from '../../domain/services/klackEchoService'
 import { DEADLINE_AI_BID_TEXT } from '../../domain/data/windowDeadlineText'
+import { computeCSStreak, shouldTriggerCSPress, pickCSPressPlayer, buildCSPressEvent } from '../../domain/services/csPressEventService'
 
 export type { AdvanceResult }
 
@@ -1435,6 +1436,31 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         isRead: false,
       }],
       journalist: { ...updatedGame.journalist, lastTriggeredRelationship: updatedGame.journalist.relationship },
+    }
+  }
+
+  // C-B1 — CS-villkorad pressfråga
+  if (justCompletedManagedFixture && !justCompletedManagedFixture.isCup &&
+      justCompletedManagedFixture.homeClubId === updatedGame.managedClubId) {
+    // Build a synthetic game view with completed fixture included so computeCSStreak can see it
+    const gameWithFixture: SaveGame = {
+      ...updatedGame,
+      fixtures: [
+        ...updatedGame.fixtures.filter(f => f.id !== justCompletedManagedFixture.id),
+        justCompletedManagedFixture,
+      ],
+    }
+    const csStreak = computeCSStreak(gameWithFixture, justCompletedManagedFixture)
+    if (csStreak > 0 && shouldTriggerCSPress(gameWithFixture, justCompletedManagedFixture, csStreak, localRand)) {
+      const csPressPlayer = pickCSPressPlayer(gameWithFixture, justCompletedManagedFixture, localRand)
+      if (csPressPlayer) {
+        const csPressEvent = buildCSPressEvent(gameWithFixture, justCompletedManagedFixture, csPressPlayer)
+        updatedGame = {
+          ...updatedGame,
+          pendingCSPress: csPressEvent,
+          lastCSPressMatchday: nextMatchday,
+        }
+      }
     }
   }
 

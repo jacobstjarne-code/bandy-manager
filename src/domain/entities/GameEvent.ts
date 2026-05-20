@@ -42,6 +42,7 @@ export type GameEventType =
   | 'mediaReaction'
   | 'fanLetter'
   | 'opponentQuote'
+  | 'csPress'
 
 export interface EventChoice {
   id: string

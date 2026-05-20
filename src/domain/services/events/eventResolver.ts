@@ -4,6 +4,8 @@ import { InboxItemType } from '../../enums'
 import { executeTransfer } from '../transferService'
 import { applyFinanceChange } from '../economyService'
 import { recordInteraction, recordPressRefusal, generateCriticalArticle } from '../journalistService'
+import { pickCSPressPublishedQuote, buildCSPressMemoryEntry } from '../../data/csPressEventText'
+import type { PressChoice } from '../../data/csPressEventText'
 import { EVENT_SOURCE_MAP, startCooldown } from '../sourceCooldownService'
 import type { SourceKey } from '../sourceCooldownService'
 
@@ -17,6 +19,7 @@ export function resolveEvent(
   const event = (game.pendingEvents ?? []).find(e => e.id === eventId)
     ?? (game.pendingPressConference?.id === eventId ? game.pendingPressConference : undefined)
     ?? (game.pendingRefereeMeeting?.id === eventId ? game.pendingRefereeMeeting : undefined)
+    ?? (game.pendingCSPress?.id === eventId ? game.pendingCSPress : undefined)
   if (!event) return game
 
   // Events with no choices (e.g. atmospheric auto-resolved events) — just remove from queue
@@ -1070,6 +1073,102 @@ export function resolveEvent(
     if (updatedGame.pendingRefereeMeeting?.id === eventId) {
       updatedGame = { ...updatedGame, pendingRefereeMeeting: undefined }
     }
+  }
+
+  // C-B1: csPress — CS-villkorad pressfråga
+  if (event.type === 'csPress') {
+    const choiceType = choiceId as PressChoice
+    const playerId = event.relatedPlayerId
+    const fixtureId = event.relatedFixtureId
+
+    const player = playerId ? updatedGame.players.find(p => p.id === playerId) : undefined
+    const fixture = fixtureId ? updatedGame.fixtures.find(f => f.id === fixtureId) : undefined
+    const opponent = fixture
+      ? updatedGame.clubs.find(c => c.id === (
+          fixture.homeClubId === updatedGame.managedClubId ? fixture.awayClubId : fixture.homeClubId
+        ))
+      : undefined
+    const journalist = updatedGame.journalist
+
+    // Player morale effect
+    if (player) {
+      const moraleDelta = choiceType === 'individual' ? 5 : choiceType === 'system' ? -2 : 0
+      if (moraleDelta !== 0) {
+        updatedGame = {
+          ...updatedGame,
+          players: updatedGame.players.map(p =>
+            p.id === playerId
+              ? { ...p, morale: Math.min(100, Math.max(0, (p.morale ?? 50) + moraleDelta)) }
+              : p
+          ),
+        }
+      }
+    }
+
+    // Journalist relationship + memory
+    if (journalist) {
+      const relDelta = choiceType === 'individual' ? 3 : choiceType === 'system' ? 3 : choiceType === 'silent' ? -2 : 0
+      const newRelationship = Math.min(100, Math.max(0, journalist.relationship + relDelta))
+      let newStyle = journalist.style
+      if (choiceType === 'silent' && newRelationship < 30 && journalist.style !== 'provocative') {
+        newStyle = 'provocative' as const
+      }
+
+      const memoryText = player && opponent
+        ? buildCSPressMemoryEntry(choiceType, player, opponent)
+        : `Coach valde ${choiceType} vid CS-pressrunda`
+      const newMemory = [
+        ...journalist.memory.slice(-9),
+        {
+          season: updatedGame.currentSeason,
+          matchday: updatedGame.currentMatchday,
+          event: `cs_press_${choiceType}`,
+          sentiment: relDelta,
+        },
+      ]
+
+      updatedGame = {
+        ...updatedGame,
+        journalist: { ...journalist, relationship: newRelationship, style: newStyle, memory: newMemory },
+        journalistRelationship: newRelationship,
+      }
+      // suppress unused warning on memoryText
+      void memoryText
+    }
+
+    // Published quote — inbox notification
+    if (player && journalist) {
+      const managerLastName = (updatedGame.managerName ?? 'Tränaren').split(' ').pop() ?? 'Tränaren'
+      // Split journalist.name into firstName + lastName for the quote function
+      const nameParts = journalist.name.split(' ')
+      const journalistForQuote = {
+        firstName: nameParts.slice(0, -1).join(' ') || journalist.name,
+        lastName: nameParts[nameParts.length - 1] ?? journalist.name,
+        outlet: journalist.outlet,
+      }
+      const quote = pickCSPressPublishedQuote(
+        choiceType,
+        { lastName: managerLastName },
+        player,
+        journalistForQuote,
+        fixtureId ?? event.id,
+      )
+      const quoteInbox = {
+        id: `cs_press_quote_${event.id}`,
+        date: updatedGame.currentDate,
+        type: InboxItemType.Media,
+        title: `📰 ${journalist.outlet}`,
+        body: quote,
+        isRead: false,
+      }
+      updatedGame = {
+        ...updatedGame,
+        inbox: [...updatedGame.inbox, quoteInbox],
+      }
+    }
+
+    // Clear pendingCSPress
+    updatedGame = { ...updatedGame, pendingCSPress: undefined }
   }
 
   // Mark event resolved and remove from pendingEvents

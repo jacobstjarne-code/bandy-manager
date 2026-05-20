@@ -237,6 +237,50 @@ export function GranskaOversikt({
         )
       })()}
 
+      {/* C-B1: CS-pressfråga */}
+      {(() => {
+        const cp = game.pendingCSPress
+        if (!cp) return null
+        const cpResolved = resolvedEventIds.has(cp.id)
+        const cpChosenLabel = chosenLabels[cp.id]
+        const journalist = game.journalist
+        return (
+          <div className="card-sharp" style={{
+            margin: '0 0 6px',
+            borderLeft: '3px solid var(--warm)',
+            borderRadius: '0 8px 8px 0',
+            ...fadeIn(4),
+          }}>
+            <div style={{ padding: '10px 12px' }}>
+              <SectionLabel style={{ marginBottom: cpResolved ? 4 : 6 }}>📰 PRESSFRÅGA</SectionLabel>
+              {cpResolved ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 11, color: 'var(--success)' }}>✓</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>{cpChosenLabel}</span>
+                </div>
+              ) : (
+                <>
+                  {journalist && (
+                    <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>
+                      {journalist.name} · {journalist.outlet}
+                    </p>
+                  )}
+                  <p style={{ fontSize: 13, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, fontStyle: 'italic' }}>{cp.body}</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    {cp.choices.map((choice: EventChoice) => (
+                      <button key={choice.id} onClick={() => onChoice(cp.id, choice.id, choice.label)}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, textAlign: 'left', cursor: 'pointer', ...choiceStyle(choice.id) }}>
+                        {choice.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )
+      })()}
+
       {/* Domarmöte */}
       {(() => {
         const rm = game.pendingRefereeMeeting
