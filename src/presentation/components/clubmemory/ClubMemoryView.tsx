@@ -14,18 +14,19 @@ export function ClubMemoryView({ game }: Props) {
 
   if (clubMemory.totalEventsAcrossSeasons < 3) {
     return (
-      <div style={{ padding: 14 }}>
+      <div className="club-memory-container">
         <ClubMemoryEmpty />
       </div>
     )
   }
 
   return (
-    <div style={{ padding: 14 }}>
+    <div className="club-memory-container">
       {clubMemory.seasons.map(seasonMemory => (
         <ClubMemorySeasonSection
           key={seasonMemory.season}
           seasonMemory={seasonMemory}
+          activeAnniversaries={game.activeAnniversaries ?? []}
         />
       ))}
 

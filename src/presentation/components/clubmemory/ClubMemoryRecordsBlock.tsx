@@ -79,57 +79,22 @@ export function ClubMemoryRecordsBlock({ records }: Props) {
   if (cards.length === 0) return null
 
   return (
-    <div style={{
-      marginTop: 28,
-      paddingTop: 16,
-      borderTop: '2px solid var(--border-dark)',
-    }}>
-      <div style={{
-        fontSize: 9,
-        fontWeight: 700,
-        textTransform: 'uppercase' as const,
-        letterSpacing: '2px',
-        color: 'var(--text-muted)',
-        marginBottom: 12,
-      }}>
+    <div className="club-memory-records">
+      <div className="club-memory-records-header">
         📊 Klubbens rekord
       </div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 8,
-      }}>
+      <div className="club-memory-records-grid">
         {cards.map((card, i) => (
-          <div
-            key={i}
-            style={{
-              padding: '10px 12px',
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-dark)',
-              borderRadius: 6,
-            }}
-          >
-            <div style={{
-              fontSize: 8,
-              fontWeight: 700,
-              textTransform: 'uppercase' as const,
-              letterSpacing: '1.5px',
-              color: 'var(--text-muted)',
-              marginBottom: 4,
-            }}>
+          <div key={i} className="club-memory-record-card">
+            <div className="club-memory-record-label">
               {card.label}
             </div>
-            <div style={{
-              fontFamily: 'Georgia, serif',
-              fontSize: 13,
-              color: 'var(--text-light)',
-              lineHeight: 1.3,
-            }}>
+            <div className="club-memory-record-value">
               {card.value}
             </div>
             {card.sub && (
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+              <div className="club-memory-record-sub">
                 {card.sub}
               </div>
             )}

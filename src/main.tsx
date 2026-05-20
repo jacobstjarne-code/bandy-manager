@@ -4,6 +4,7 @@ import App from './App'
 import './styles/global.css'
 import './presentation/styles/stalvallen-match.css'
 import './presentation/styles/stalvallen-portal.css'
+import './presentation/styles/club-memory.css'
 
 if (import.meta.env.DEV || import.meta.env.VITE_AUDIT_ENABLED === 'true') {
   import('./debug/designAudit').then(m => {
