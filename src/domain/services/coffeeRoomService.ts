@@ -3,6 +3,7 @@ import type { ScandalType } from './scandalService'
 import { InboxItemType } from '../enums'
 import { getCharacterName } from './supporterService'
 import { KLACK_ECHO } from '../data/klackEchoText'
+import { RIVAL_SALE_KAFFERUM } from '../data/transferResponseText'
 
 interface CoffeeQuote {
   speaker?: string
@@ -270,6 +271,18 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
       }
       return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
     }
+  }
+
+  // C-T9: rival sale kafferum — show within 3 matchdays of sale
+  if (
+    game.lastRivalSaleMatchday !== undefined &&
+    round - (game.lastRivalSaleMatchday ?? 0) <= 3 &&
+    round - (game.lastRivalSaleMatchday ?? 0) >= 0 &&
+    seed % 2 === 0
+  ) {
+    const idx = Math.abs(seed * 19) % RIVAL_SALE_KAFFERUM.length
+    const ex = RIVAL_SALE_KAFFERUM[idx]
+    return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
   }
 
   // C-B2: klack echo in kafferum — 33% chance when weight > 0.15

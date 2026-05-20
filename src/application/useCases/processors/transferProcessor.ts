@@ -5,9 +5,11 @@ import type { TransferBid } from '../../../domain/entities/GameEvent'
 import type { LoanDeal } from '../../../domain/entities/Academy'
 import type { Moment } from '../../../domain/entities/Moment'
 import { InboxItemType } from '../../../domain/enums'
-import { resolveOutgoingBid, generateIncomingBids, getCounterOfferAmount, executeTransfer } from '../../../domain/services/transferService'
+import { resolveOutgoingBid, generateIncomingBids, getCounterOfferAmount, executeTransfer, playerAcceptsTransfer } from '../../../domain/services/transferService'
 import { getTransferWindowStatus } from '../../../domain/services/transferWindowService'
 import { applyFinanceChange } from '../../../domain/services/economyService'
+import { getRivalry } from '../../../domain/data/rivalries'
+import { PERSONALITY_REFUSAL, PERSONALITY_ACCEPTANCE, DREAM_CLUB_MAGIC, PLAYER_REACTION_RIVAL_SALE } from '../../../domain/data/transferResponseText'
 
 export interface TransferProcessorResult {
   resolvedBids: TransferBid[]
@@ -58,6 +60,18 @@ export function processTransferBids(
       if (outcome === 'counter') {
         // Counter-offer: keep bid pending but mark counter received, extend expiry by 2
         return { ...b, status: 'pending' as const, counterCount: (b.counterCount ?? 0) + 1, expiresRound: b.expiresRound + 2 }
+      }
+      if (outcome === 'accepted') {
+        // C-T1: check if player also agrees after club accepts
+        const target = game.players.find(p => p.id === b.playerId)
+        const buyerClub = game.clubs.find(c => c.id === b.buyingClubId)
+        const sellerClub = game.clubs.find(c => c.id === b.sellingClubId)
+        if (target && buyerClub && sellerClub) {
+          const playerSays = playerAcceptsTransfer(target, buyerClub, sellerClub, localRand)
+          if (!playerSays) {
+            return { ...b, status: 'rejected' as const, bidRejectedByPlayer: true }
+          }
+        }
       }
       return { ...b, status: outcome }
     }
@@ -154,23 +168,52 @@ export function processTransferBids(
     }
 
     if (bid.status === 'accepted' && target) {
+      const isDreamClub = !!(target.dreamClubId && bid.buyingClubId === target.dreamClubId)
+      const sellerC = preEventGame.clubs.find(c => c.id === bid.sellingClubId)
+      const buyerC = preEventGame.clubs.find(c => c.id === bid.buyingClubId)
+      const rivalry = sellerC && buyerC ? getRivalry(sellerC.id, buyerC.id) : null
+      let acceptText: string
+      if (isDreamClub) {
+        acceptText = DREAM_CLUB_MAGIC[Math.floor(localRand() * DREAM_CLUB_MAGIC.length)]
+      } else {
+        const personality = target.transferPersonality ?? 'default'
+        const acceptStrings = PERSONALITY_ACCEPTANCE[personality as keyof typeof PERSONALITY_ACCEPTANCE] ?? PERSONALITY_ACCEPTANCE.default
+        acceptText = acceptStrings[Math.floor(localRand() * acceptStrings.length)]
+      }
       inboxItems.push({
         id: `inbox_bid_accepted_${bid.id}`,
         date: newDate,
         type: InboxItemType.TransferBidResult,
-        title: `Bud accepterat — ${target.firstName} ${target.lastName}`,
-        body: `${sellingClub?.name ?? 'Klubben'} accepterar ditt bud på ${target.firstName} ${target.lastName}! Spelaren ansluter till truppen.`,
+        title: isDreamClub ? `${target.firstName} ${target.lastName} — drömklubben ringer` : `Bud accepterat — ${target.firstName} ${target.lastName}`,
+        body: `${sellerC?.name ?? 'Klubben'} accepterar ditt bud. ${acceptText}${rivalry ? ` (${rivalry.name})` : ''}`,
         isRead: false,
       })
     } else if (bid.status === 'rejected' && target) {
-      inboxItems.push({
-        id: `inbox_bid_rejected_${bid.id}`,
-        date: newDate,
-        type: InboxItemType.TransferBidResult,
-        title: `Bud avslaget — ${target.firstName} ${target.lastName}`,
-        body: `${sellingClub?.name ?? 'Klubben'} avslår ditt bud på ${target.firstName} ${target.lastName}.`,
-        isRead: false,
-      })
+      const resolvedBid = resolvedBids.find(rb => rb.id === bid.id) as (TransferBid & { bidRejectedByPlayer?: boolean }) | undefined
+      const wasPlayerRejection = resolvedBid?.bidRejectedByPlayer === true
+      if (wasPlayerRejection) {
+        const personality = target.transferPersonality ?? 'default'
+        const refusalStrings = PERSONALITY_REFUSAL[personality as keyof typeof PERSONALITY_REFUSAL] ?? PERSONALITY_REFUSAL.default
+        const refusalText = refusalStrings[Math.floor(localRand() * refusalStrings.length)]
+        inboxItems.push({
+          id: `inbox_bid_rejected_${bid.id}`,
+          date: newDate,
+          type: InboxItemType.TransferBidResult,
+          title: `Spelaren tackar nej — ${target.firstName} ${target.lastName}`,
+          body: `${sellingClub?.name ?? 'Klubben'} accepterade budet, men ${target.firstName} ${target.lastName} ville inte flytta. ${refusalText}`,
+          isRead: false,
+          bidRejectedByPlayer: true,
+        })
+      } else {
+        inboxItems.push({
+          id: `inbox_bid_rejected_${bid.id}`,
+          date: newDate,
+          type: InboxItemType.TransferBidResult,
+          title: `Bud avslaget — ${target.firstName} ${target.lastName}`,
+          body: `${sellingClub?.name ?? 'Klubben'} avslår ditt bud på ${target.firstName} ${target.lastName}.`,
+          isRead: false,
+        })
+      }
     } else if (bid.counterCount && bid.counterCount > (existingBids.find(b => b.id === bid.id)?.counterCount ?? 0) && target) {
       // Counter-offer notification
       const counter = getCounterOfferAmount(bid, preEventGame)
@@ -390,6 +433,27 @@ export function executeAcceptedTransfers(input: TransferExecutionInput): Transfe
           title: 'Sponsornätverket reagerar positivt',
           body: `Huvudsponsorn nöjd med värvningen av ${transferPlayer.firstName} ${transferPlayer.lastName}.`,
           subjectPlayerId: bid.playerId,
+        })
+      }
+    }
+
+    // C-T9 — rival sale moment
+    if (bid.direction === 'outgoing' && bid.status === 'accepted') {
+      const sellerC = game.clubs.find(c => c.id === bid.sellingClubId)
+      const buyerC = game.clubs.find(c => c.id === bid.buyingClubId)
+      const rivalry = sellerC && buyerC ? getRivalry(sellerC.id, buyerC.id) : null
+      if (rivalry) {
+        const rivalText = PLAYER_REACTION_RIVAL_SALE[Math.floor(Math.random() * PLAYER_REACTION_RIVAL_SALE.length)]
+        const tp = players.find(p => p.id === bid.playerId)
+        moments.push({
+          id: `moment_rival_sale_${bid.playerId}_${nextMatchday}`,
+          source: 'rival_sale',
+          matchday: nextMatchday,
+          season: game.currentSeason,
+          title: `${tp ? `${tp.firstName} ${tp.lastName}` : 'Spelaren'} till fiendelaget`,
+          body: rivalText,
+          subjectPlayerId: bid.playerId,
+          subjectClubId: bid.buyingClubId,
         })
       }
     }

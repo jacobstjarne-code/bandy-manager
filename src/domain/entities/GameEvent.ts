@@ -191,4 +191,5 @@ export interface TransferBid {
   createdRound: number
   expiresRound: number
   counterCount?: number
+  bidRejectedByPlayer?: boolean  // C-T1: player refused after club accepted
 }

@@ -309,6 +309,8 @@ export interface StepByStepInput {
   }
   ownScandalThisSeason?: boolean  // for supporter_scandal_recent commentary
   klackEcho?: { type: import('../data/klackEchoText').NotableEventType; currentWeight: number; decayPerRound: number } // C-B2
+  lastRivalSaleMatchday?: number  // C-T9 — recent rival sale for klack commentary
+  currentMatchday?: number        // C-T9 — needed to check if sale is recent
   refStyle?: 'strict' | 'lenient' | 'inconsistent'
   refereeName?: string  // for opening commentary display
   arenaName?: string

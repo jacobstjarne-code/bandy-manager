@@ -1,9 +1,13 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { TransferBid, FollowUp } from '../entities/GameEvent'
+import type { Player } from '../entities/Player'
+import type { Club } from '../entities/Club'
 import { getTransferWindowStatus } from './transferWindowService'
 import { InboxItemType } from '../enums'
 import { applyFinanceChange, appendFinanceLog } from './economyService'
 import type { FinanceEntry } from './economyService'
+import { getRegionDistance } from '../data/regionGeography'
+import { getRivalry } from '../data/rivalries'
 
 function bidId(round: number, playerId: string, buyingClubId: string): string {
   return `bid_${round}_${playerId}_${buyingClubId}`
@@ -374,4 +378,44 @@ export function executeTransfer(
     })(),
     fanMood: fanMoodPenalty !== 0 ? Math.max(0, (game.fanMood ?? 50) + fanMoodPenalty) : game.fanMood,
   }
+}
+
+// C-T1 — Returns true if the player agrees to the transfer (after club accepts)
+export function playerAcceptsTransfer(
+  player: Player,
+  buyerClub: Club,
+  sellerClub: Club,
+  rand: () => number,
+): boolean {
+  const personality = player.transferPersonality ?? 'default'
+
+  // dream_club check — 100% accept if buyer matches dreamClubId
+  if (personality === 'dream_club' && player.dreamClubId === buyerClub.id) return true
+
+  // Base accept rates per personality
+  const baseRates: Record<string, number> = {
+    homebound: 0.35,
+    default: 0.70,
+    ambitious: 0.85,
+    family: 0.45,
+    dream_club: 0.25,  // waiting for dream club — reluctant
+  }
+  let acceptChance = baseRates[personality] ?? 0.70
+
+  // Geographic bias — uses seller club's region vs buyer club's region
+  const dist = getRegionDistance(sellerClub.region, buyerClub.region)
+  // homebound/family get extra penalty for distance
+  if (dist >= 3) acceptChance *= (personality === 'homebound' || personality === 'family') ? 0.30 : 0.70
+  else if (dist >= 2) acceptChance *= (personality === 'homebound' || personality === 'family') ? 0.45 : 0.85
+  else if (dist >= 1) acceptChance *= (personality === 'homebound' || personality === 'family') ? 0.60 : 0.93
+
+  // Rivalry bias
+  const rivalry = getRivalry(sellerClub.id, buyerClub.id)
+  if (rivalry) {
+    const rivalPenalty: Record<number, number> = { 1: -0.10, 2: -0.20, 3: -0.30 }
+    acceptChance += rivalPenalty[rivalry.intensity] ?? 0
+  }
+
+  acceptChance = Math.max(0.05, Math.min(0.95, acceptChance))
+  return rand() < acceptChance
 }

@@ -88,6 +88,7 @@ import { getTacticModifiers } from './tacticModifiers'
 import { mulberry32, fixtureSeed } from '../utils/random'
 import { commentary, fillTemplate, pickCommentary, getTraitCommentary } from '../data/matchCommentary'
 import { KLACK_ECHO } from '../data/klackEchoText'
+import { RIVAL_SALE_KLACK } from '../data/transferResponseText'
 import { pickSpecialDateCommentary } from './specialDateService'
 import type { SpecialDateContext } from '../data/specialDateStrings'
 import { getConditionLabel, getIceQualityLabel } from './weatherService'
@@ -1227,6 +1228,15 @@ function* simulateMatchCore(
         } else if (input.ownScandalThisSeason && supporterCtx && rand() < 0.20) {
           const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
           commentaryText = fillTemplate(pickCommentary(commentary.supporter_scandal_recent, rand), sv)
+        } else if (
+          input.lastRivalSaleMatchday !== undefined &&
+          input.currentMatchday !== undefined &&
+          input.currentMatchday - input.lastRivalSaleMatchday <= 3 &&
+          input.currentMatchday - input.lastRivalSaleMatchday >= 0 &&
+          supporterCtx && rand() < 0.40
+        ) {
+          // C-T9: rival sale klack commentary
+          commentaryText = RIVAL_SALE_KLACK[Math.floor(rand() * RIVAL_SALE_KLACK.length)]
         } else if (input.klackEcho && supporterCtx && rand() < input.klackEcho.currentWeight * 0.5) {
           // C-B2: klack echo overrides normal pool with probability = currentWeight * 0.5
           const echoPool = KLACK_ECHO[input.klackEcho.type]?.klack

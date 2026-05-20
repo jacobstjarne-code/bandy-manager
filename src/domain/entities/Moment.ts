@@ -10,6 +10,7 @@ export type MomentSource =
   | 'transfer_story'     // historisk spelare såld
   | 'season_highlight'   // M12 — Årets match (end-of-season insert)
   | 'era_shift'          // M14 — klubbens era förändrades
+  | 'rival_sale'         // C-T9 — sålt spelare till rivalklubben
 
 export interface Moment {
   id: string

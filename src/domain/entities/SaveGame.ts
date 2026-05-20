@@ -117,6 +117,7 @@ export interface SaveGame {
 
   sponsors: Sponsor[]
   fanMood?: number  // 0-100, starts 50
+  lastRivalSaleMatchday?: number  // C-T9 — matchday of most recent rival sale
 
   boardPatience?: number         // 0–100, starts 70
   consecutiveFailures?: number   // seasons ended in bottom half without improvement

@@ -111,6 +111,18 @@ export function migrateSaveGame(raw: unknown): SaveGame {
       if (p.promotedFromAcademy === undefined) p.promotedFromAcademy = false
       if (p.careerMilestones === undefined) p.careerMilestones = []
       if (p.startSeasonCA === undefined) p.startSeasonCA = p.currentAbility
+      // C-T1 — backfill transferPersonality for existing saves
+      if (p.transferPersonality === undefined) {
+        const seed = strHash(p.id as string)
+        const v = seed % 100
+        p.transferPersonality = v < 35 ? 'homebound'
+          : v < 65 ? 'default'
+          : v < 80 ? 'ambitious'
+          : v < 92 ? 'family'
+          : 'dream_club'
+        // dreamClubId is not backfilled here (clubs may not be available in migration)
+        // dream_club players act as reluctant sellers until a new game is started
+      }
       if (!p.seasonStats || typeof p.seasonStats !== 'object') {
         p.seasonStats = { gamesPlayed: 0, goals: 0, assists: 0, cornerGoals: 0, penaltyGoals: 0, yellowCards: 0, redCards: 0, suspensions: 0, averageRating: 0, minutesPlayed: 0 }
       } else {

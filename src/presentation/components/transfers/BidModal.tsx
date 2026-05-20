@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import type { Player } from '../../../domain/entities/Player'
+import { RIVALRY_WARNING_PER_INTENSITY } from '../../../domain/data/transferResponseText'
 
 function formatValue(v: number): string {
   if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)} mkr`
@@ -13,9 +14,10 @@ interface BidModalProps {
   managedClub: { transferBudget: number; finances: number }
   onClose: () => void
   onConfirm: (playerId: string, offerAmount: number, offeredSalary: number, contractYears: number) => void
+  rivalry?: { name: string; intensity: number } | null
 }
 
-export function BidModal({ player, managedClub, onClose, onConfirm }: BidModalProps) {
+export function BidModal({ player, managedClub, onClose, onConfirm, rivalry }: BidModalProps) {
   const suggestedBid = Math.round((player.marketValue || 50000) / 5000) * 5000
   const [offerAmount, setOfferAmount] = useState(suggestedBid)
   const [offeredSalary, setOfferedSalary] = useState(Math.round(player.salary / 500) * 500)
@@ -60,6 +62,22 @@ export function BidModal({ player, managedClub, onClose, onConfirm }: BidModalPr
             ))}
           </div>
         </div>
+        {rivalry && (
+          <div style={{
+            background: 'color-mix(in srgb, var(--warning) 12%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--warning) 30%, transparent)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '10px 12px',
+            marginBottom: 12,
+            fontSize: 12,
+            color: 'var(--text-secondary)',
+          }}>
+            {(() => {
+              const pool = RIVALRY_WARNING_PER_INTENSITY[rivalry.intensity as 1 | 2 | 3]
+              return pool ? pool[0] : null
+            })()}
+          </div>
+        )}
         {managedClub.transferBudget < offerAmount && <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 8 }}>Otillräcklig transferbudget</p>}
         {managedClub.transferBudget >= offerAmount && managedClub.finances - offerAmount < -100000 && <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 8 }}>Budet skulle föra kassan under −100 000 kr</p>}
         <button

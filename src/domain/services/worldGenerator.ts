@@ -673,6 +673,22 @@ function tierFromReputation(reputation: number): 'top' | 'mid' | 'under' {
   return 'under'
 }
 
+// C-T1 — deterministic personality from player id hash
+function strHashInt(s: string): number {
+  let h = 0
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) >>> 0
+  return h
+}
+
+function getPersonalityFromSeed(seed: number): 'homebound' | 'ambitious' | 'family' | 'dream_club' | 'default' {
+  const v = seed % 100
+  if (v < 35) return 'homebound'
+  if (v < 65) return 'default'
+  if (v < 80) return 'ambitious'
+  if (v < 92) return 'family'
+  return 'dream_club'
+}
+
 function generatePlayer(
   rng: ReturnType<typeof makeRng>,
   clubId: string,
@@ -779,6 +795,7 @@ function generatePlayer(
     isFullTimePro,
     dayJob,
     shirtNumber: index + 1,
+    transferPersonality: getPersonalityFromSeed(strHashInt(`player_${clubId}_${index}`)),
   }
 }
 
@@ -838,6 +855,23 @@ export function generateWorld(season: number, seed: number = 42): GeneratedWorld
     club.squadPlayerIds = clubPlayers.map((p) => p.id)
     allPlayers.push(...clubPlayers)
   }
+
+  // C-T1 — Post-process dream_club players: assign dreamClubId to a richer club
+  for (let i = 0; i < allPlayers.length; i++) {
+    const p = allPlayers[i]
+    if (p.transferPersonality !== 'dream_club') continue
+    const sellerClub = clubs.find(c => c.id === p.clubId)
+    if (!sellerClub) continue
+    const richerClubs = clubs.filter(c => c.id !== p.clubId && c.reputation > sellerClub.reputation)
+    if (richerClubs.length === 0) {
+      // fallback: no richer club, revert to default
+      allPlayers[i] = { ...p, transferPersonality: 'default', dreamClubId: undefined }
+      continue
+    }
+    const pickedClub = richerClubs[strHashInt(p.id) % richerClubs.length]
+    allPlayers[i] = { ...p, dreamClubId: pickedClub.id }
+  }
+  // Sync squadPlayerIds after potential player mutations (they're the same objects, ids unchanged)
 
   // Easter egg: Erik Ström — alltid back i Forsbacka
   const erikClub = clubs.find(c => c.id === 'club_forsbacka') ?? clubs[0]

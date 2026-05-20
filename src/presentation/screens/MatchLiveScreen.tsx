@@ -192,6 +192,8 @@ export function MatchLiveScreen() {
       isAnnandagen: !!liveSlot?.isAnnandagen,
       isNyarsbandy: !!liveSlot?.isNyarsbandy,
       isCupFinalhelgen: !!liveSlot?.isCupFinalhelgen,
+      lastRivalSaleMatchday: game.lastRivalSaleMatchday,
+      currentMatchday: game.currentMatchday,
     })
     const allSteps: MatchStep[] = []
     for (const step of gen) allSteps.push(step)

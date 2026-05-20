@@ -538,7 +538,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     newDate,
     localRand,
   )
-  const newFanMood = narrativeResult.fanMood
+  let newFanMood = narrativeResult.fanMood
   const updatedSupporterGroup = narrativeResult.supporterGroup
   const pendingVictoryEcho = narrativeResult.pendingVictoryEcho
   const victoryEchoExpires = narrativeResult.victoryEchoExpires
@@ -933,6 +933,29 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   let sponsorNetworkMoodDelta = transferExecResult.sponsorNetworkMoodDelta
   newMoments.push(...transferExecResult.moments)
 
+  // C-T1/T9 — Transfer consequence fan mood deltas
+  let lastRivalSaleMatchday = game.lastRivalSaleMatchday
+  // Player rejection: morale +5 for player, fanMood -5
+  for (const item of transferResult.inboxItems) {
+    if ((item as InboxItem & { bidRejectedByPlayer?: boolean }).bidRejectedByPlayer) {
+      newFanMood = Math.max(0, Math.min(100, newFanMood - 5))
+      // Find the bid for this inbox item to get the player
+      const bidId = item.id.replace('inbox_bid_rejected_', '')
+      const bid = resolvedBids.find(b => b.id === bidId)
+      if (bid) {
+        postTransferPlayers = postTransferPlayers.map(p =>
+          p.id === bid.playerId ? { ...p, morale: Math.min(100, (p.morale ?? 60) + 5) } : p
+        )
+      }
+    }
+  }
+  // Rival sale: fanMood -20, set lastRivalSaleMatchday
+  const hasRivalSaleMoment = transferExecResult.moments.some(m => m.source === 'rival_sale')
+  if (hasRivalSaleMoment) {
+    newFanMood = Math.max(0, Math.min(100, newFanMood - 20))
+    lastRivalSaleMatchday = nextMatchday
+  }
+
   // ── Community standing, politician/mecenat inbox, facility projects ────────
   const communityResult = processCommunity(
     game,
@@ -1089,6 +1112,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     cupBracket: updatedCupBracket,
     scoutReports: { ...updatedScoutReports, ...rumorScoutReports },
     activeScoutAssignment: updatedScoutAssignment,
+    lastRivalSaleMatchday,
     scoutBudget: game.scoutBudget ?? 10,
     transferBids: trimmedBids,
     pendingEvents: [

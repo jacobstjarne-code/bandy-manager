@@ -14,4 +14,6 @@ export interface InboxItem {
   tone?: 'coach'
   fromRole?: string
   coachInitials?: string
+  // C-T1 — player refused transfer after club accepted
+  bidRejectedByPlayer?: boolean
 }

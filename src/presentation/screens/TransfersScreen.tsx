@@ -10,6 +10,7 @@ import { FirstVisitHint } from '../components/FirstVisitHint'
 
 import { RenewContractModal } from '../components/transfers/RenewContractModal'
 import { BidModal } from '../components/transfers/BidModal'
+import { getRivalry } from '../../domain/data/rivalries'
 import { TransferPlayerCard } from '../components/transfers/TransferPlayerCard'
 import { ActiveBidsList } from '../components/transfers/ActiveBidsList'
 import { FreeAgentList } from '../components/transfers/FreeAgentList'
@@ -525,12 +526,14 @@ export function TransfersScreen() {
       {biddingPlayerId && managedClub && (() => {
         const biddingPlayer = game.players.find(p => p.id === biddingPlayerId)
         if (!biddingPlayer) return null
+        const bidRivalry = getRivalry(game.managedClubId, biddingPlayer.clubId)
         return (
           <BidModal
             player={biddingPlayer}
             managedClub={managedClub}
             onClose={() => setBiddingPlayerId(null)}
             onConfirm={handleBid}
+            rivalry={bidRivalry}
           />
         )
       })()}

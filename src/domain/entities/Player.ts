@@ -130,6 +130,10 @@ export interface Player {
   // DREAM-011 — Club legend (one per club, homegrown, never sold)
   isClubLegend?: boolean
   legendBackstory?: string
+
+  // C-T1 — Transfer personality (set once at generation, stable)
+  transferPersonality?: 'homebound' | 'ambitious' | 'family' | 'dream_club' | 'default'
+  dreamClubId?: string  // only set if transferPersonality === 'dream_club'
 }
 
 export type PlayerAvailability =
