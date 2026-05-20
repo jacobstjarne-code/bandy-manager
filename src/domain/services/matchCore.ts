@@ -89,6 +89,7 @@ import { mulberry32, fixtureSeed } from '../utils/random'
 import { commentary, fillTemplate, pickCommentary, getTraitCommentary } from '../data/matchCommentary'
 import { KLACK_ECHO } from '../data/klackEchoText'
 import { RIVAL_SALE_KLACK } from '../data/transferResponseText'
+import { ANNIVERSARY_KLACK } from '../data/anniversaryKlackText'
 import { pickSpecialDateCommentary } from './specialDateService'
 import type { SpecialDateContext } from '../data/specialDateStrings'
 import { getConditionLabel, getIceQualityLabel } from './weatherService'
@@ -1237,6 +1238,9 @@ function* simulateMatchCore(
         ) {
           // C-T9: rival sale klack commentary
           commentaryText = RIVAL_SALE_KLACK[Math.floor(rand() * RIVAL_SALE_KLACK.length)]
+        } else if (input.anniversaryBigEko && supporterCtx && ANNIVERSARY_KLACK.length > 0 && rand() < 0.45) {
+          // B6: anniversary klack-banderol vid big eko
+          commentaryText = ANNIVERSARY_KLACK[Math.floor(rand() * ANNIVERSARY_KLACK.length)]
         } else if (input.klackEcho && supporterCtx && rand() < input.klackEcho.currentWeight * 0.5) {
           // C-B2: klack echo overrides normal pool with probability = currentWeight * 0.5
           const echoPool = KLACK_ECHO[input.klackEcho.type]?.klack

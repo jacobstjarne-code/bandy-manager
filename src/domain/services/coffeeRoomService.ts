@@ -4,6 +4,7 @@ import { InboxItemType } from '../enums'
 import { getCharacterName } from './supporterService'
 import { KLACK_ECHO } from '../data/klackEchoText'
 import { RIVAL_SALE_KAFFERUM } from '../data/transferResponseText'
+import { ANNIVERSARY_KAFFERUM } from '../data/anniversaryKafferumText'
 
 interface CoffeeQuote {
   speaker?: string
@@ -282,6 +283,16 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
   ) {
     const idx = Math.abs(seed * 19) % RIVAL_SALE_KAFFERUM.length
     const ex = RIVAL_SALE_KAFFERUM[idx]
+    return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
+  }
+
+  // B6: anniversary kafferum — 33% chance when medium-or-bigger unseen eko exists
+  const hasAnniversaryEko = (game.activeAnniversaries ?? []).some(
+    a => a.echoSize !== 'small'
+  )
+  if (hasAnniversaryEko && ANNIVERSARY_KAFFERUM.length > 0 && seed % 3 === 0) {
+    const idx = Math.abs(seed * 23) % ANNIVERSARY_KAFFERUM.length
+    const ex = ANNIVERSARY_KAFFERUM[idx]
     return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
   }
 

@@ -90,6 +90,7 @@ export function useMatchGenerator(setup: GeneratorSetup) {
         currentWeight: game.klackEcho.currentWeight,
         decayPerRound: game.klackEcho.decayPerRound,
       } : undefined,
+      anniversaryBigEko: (game.activeAnniversaries ?? []).some(a => a.echoSize === 'big'),
     })
 
     const allSteps: MatchStep[] = []
