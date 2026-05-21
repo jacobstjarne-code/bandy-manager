@@ -53,6 +53,10 @@ export interface Fixture {
   season: number
   roundNumber: number
   matchday: number  // global play order — sort by this, set once at fixture creation
+  /** ISO date string (YYYY-MM-DD) stamped at fixture creation from seasonCalendar. */
+  date?: string
+  /** Hour of tipoff (13-19) stamped at fixture creation from seasonCalendar. */
+  tipoffHour?: number
 
   homeClubId: string
   awayClubId: string

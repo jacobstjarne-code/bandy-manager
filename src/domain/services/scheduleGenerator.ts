@@ -76,35 +76,38 @@ export interface MatchdaySlot {
   isNyarsbandy?: boolean
   isCupFinalhelgen?: boolean
   isWindowDeadlineDay?: boolean
+  /** True for the slot immediately after R6 — marks the landslagsuppehåll anchor.
+   *  Player-selection mechanic (truppfrånvaro) is a future feature; this flag is the calendar hook. */
+  isLandslagsuppehall?: boolean
 }
 
-// Cup played as pre-season tournament in August–October, before liga starts.
+// Cup played as concentrated October tournament, before liga starts November 1.
+// All 4 rounds in October: R1 second weekend, R2 third weekend, R3+R4 last weekend (finalhelgen).
 // Returns date + metadata for each cup round (matchday 1-4).
 function getCupRoundDate(season: number, cupRound: number): { date: string; weekday: number; tipoffHour: number; isCupFinalhelgen?: boolean } {
-  const aug1 = new Date(Date.UTC(season, 7, 1, 12))
-  const aug1Dow = aug1.getUTCDay()
-  const firstSatAug = new Date(aug1.getTime() + ((6 - aug1Dow + 7) % 7) * 86400000)
+  const oct1 = new Date(Date.UTC(season, 9, 1, 12))
+  const oct1Dow = oct1.getUTCDay()
+  // First Saturday of October
+  const firstSatOct = new Date(oct1.getTime() + ((6 - oct1Dow + 7) % 7) * 86400000)
 
   if (cupRound === 1) {
-    // 3rd Saturday of August (~Aug 15-21)
-    const d = new Date(firstSatAug.getTime() + 14 * 86400000)
+    // Second Saturday of October (~Oct 8-14)
+    const d = new Date(firstSatOct.getTime() + 7 * 86400000)
     return { date: d.toISOString().slice(0, 10), weekday: 6, tipoffHour: 14 }
   }
   if (cupRound === 2) {
-    // 5th Saturday of August / last weekend of August (~Aug 29 - Sep 4)
-    const d = new Date(firstSatAug.getTime() + 28 * 86400000)
+    // Third Saturday of October (~Oct 15-21)
+    const d = new Date(firstSatOct.getTime() + 14 * 86400000)
     return { date: d.toISOString().slice(0, 10), weekday: 6, tipoffHour: 14 }
   }
-  // Cup finalhelgen — first Saturday/Sunday of October (before liga R1 Oct 8+)
-  const oct1 = new Date(Date.UTC(season, 9, 1, 12))
-  const oct1Dow = oct1.getUTCDay()
-  const daysToFirstSat = (6 - oct1Dow + 7) % 7
+  // Cup finalhelgen — last weekend of October (fourth weekend)
   if (cupRound === 3) {
-    const d = new Date(oct1.getTime() + daysToFirstSat * 86400000)
+    // Last Saturday of October (semifinal)
+    const d = new Date(firstSatOct.getTime() + 21 * 86400000)
     return { date: d.toISOString().slice(0, 10), weekday: 6, tipoffHour: 14, isCupFinalhelgen: true }
   }
-  // cupRound === 4: final — day after semifinal
-  const d = new Date(oct1.getTime() + (daysToFirstSat + 1) * 86400000)
+  // cupRound === 4: final — Sunday after semifinal (last Sunday of October)
+  const d = new Date(firstSatOct.getTime() + 22 * 86400000)
   return { date: d.toISOString().slice(0, 10), weekday: 0, tipoffHour: 14, isCupFinalhelgen: true }
 }
 
@@ -178,33 +181,36 @@ function nextWeekdayOnOrAfter(minDate: Date, weekday: number): Date {
 
 
 /**
- * Date windows per round: [minOffset, maxOffset] days from Oct 8 of the season year.
- * Ensures the season stays within a realistic calendar window (Oct–Feb).
- * Oct 8 = offset 0, Dec 26 = offset 79, Feb 28 ≈ offset 143.
+ * Date windows per round: [minOffset, maxOffset] days from Nov 1 of the season year.
+ * Ensures the season stays within a realistic calendar window (Nov–Feb).
+ * Nov 1 = offset 0, Dec 26 = offset 55, Feb 28 ≈ offset 119.
+ * Liga starts first bandy-day in November. Cup runs Aug–Oct before liga.
+ * Landslagsuppehåll: pause ~10 days between R6 (offset ~34-42) and R7 (offset ~48-56),
+ * roughly Dec 5-20 pause window.
  */
 const ROUND_WINDOWS: Record<number, [number, number]> = {
-  1:  [0,   6  ], // Oct 8-14
-  2:  [5,   13 ], // Oct 13-21
-  3:  [11,  19 ], // Oct 19-27
-  4:  [18,  26 ], // Oct 26 - Nov 3
-  5:  [25,  33 ], // Nov 2-10
-  6:  [32,  40 ], // Nov 9-17
-  7:  [47,  55 ], // Nov 24 - Dec 2 (after landslag pause)
-  8:  [54,  62 ], // Dec 1-9
-  9:  [68,  77 ], // Dec 15-24 (before Annandagen)
-  // R10 fixed Dec 26 = offset 79
-  11: [81,  88 ], // Dec 28 - Jan 4
-  12: [86,  94 ], // Jan 3-11
-  13: [92,  100], // Jan 9-17
-  14: [97,  105], // Jan 14-22
-  15: [102, 110], // Jan 19-27
-  16: [107, 115], // Jan 24 - Feb 1
-  17: [112, 120], // Jan 29 - Feb 6
-  18: [117, 125], // Feb 3-11
-  19: [122, 130], // Feb 8-16
-  20: [127, 135], // Feb 13-21
-  21: [131, 139], // Feb 17-25
-  22: [136, 143], // Feb 22 - Mar 1 (hard cap for season end)
+  1:  [0,   7  ], // Nov 1-8
+  2:  [5,   13 ], // Nov 6-14
+  3:  [10,  18 ], // Nov 11-19
+  4:  [15,  23 ], // Nov 16-24
+  5:  [20,  28 ], // Nov 21-29
+  6:  [26,  34 ], // Nov 27 - Dec 5
+  7:  [38,  46 ], // Dec 9-17 (after landslagsuppehåll ~10 days)
+  8:  [43,  51 ], // Dec 14-22
+  9:  [48,  54 ], // Dec 19-25 (last round before Annandagen Dec 26)
+  // R10 fixed Dec 26 = offset 55
+  11: [57,  64 ], // Dec 28 - Jan 4
+  12: [62,  70 ], // Jan 3-11
+  13: [68,  76 ], // Jan 9-17
+  14: [73,  81 ], // Jan 14-22
+  15: [78,  86 ], // Jan 19-27
+  16: [83,  91 ], // Jan 24 - Feb 1
+  17: [88,  96 ], // Jan 29 - Feb 6
+  18: [93,  101], // Feb 3-11
+  19: [98,  106], // Feb 8-16
+  20: [103, 111], // Feb 13-21
+  21: [107, 115], // Feb 17-25
+  22: [112, 119], // Feb 22 - Mar 1 (hard cap for season end)
 }
 
 /**
@@ -219,12 +225,12 @@ function pickRoundDate(
   floor: Date,
   rand: () => number,
 ): Date {
-  const oct8 = new Date(Date.UTC(season, 9, 8, 12))
+  const nov1 = new Date(Date.UTC(season, 10, 1, 12))  // Nov 1 = liga season base
   const [minOff, maxOff] = ROUND_WINDOWS[round] ?? [0, 200]
-  const windowStart = new Date(oct8.getTime() + minOff * 86400000)
+  const windowStart = new Date(nov1.getTime() + minOff * 86400000)
   const effectiveMin = floor > windowStart ? floor : windowStart
   // Collect all valid dates in [effectiveMin, windowEnd]
-  const windowEnd = new Date(oct8.getTime() + maxOff * 86400000)
+  const windowEnd = new Date(nov1.getTime() + maxOff * 86400000)
   const candidates: Date[] = []
   for (let d = new Date(effectiveMin); d <= windowEnd; d = new Date(d.getTime() + 86400000)) {
     if (allowed.includes(d.getUTCDay())) candidates.push(new Date(d))
@@ -254,8 +260,8 @@ export function buildSeasonCalendar(season: number): MatchdaySlot[] {
     calendar.push({ matchday: day, type: 'cup', cupRound, date, weekday, tipoffHour, isCupFinalhelgen })
   }
 
-  // LIGA-MATCHDAGAR (matchday 5-26, october–february)
-  let seqFloor = new Date(Date.UTC(season, 9, 8, 12)) // Sequential floor starts Oct 8
+  // LIGA-MATCHDAGAR (matchday 5-26, november–february)
+  let seqFloor = new Date(Date.UTC(season, 10, 1, 12)) // Sequential floor starts Nov 1
 
   for (let round = 1; round <= 22; round++) {
     day++
@@ -290,6 +296,8 @@ export function buildSeasonCalendar(season: number): MatchdaySlot[] {
     })()
 
     const isWindowDeadlineDay = dateStr.endsWith('-01-31') ? true : undefined
+    // R7 is the first round after the landslagsuppehåll (pause between R6 and R7)
+    const isLandslagsuppehall = round === 7 ? true : undefined
     calendar.push({
       matchday: day,
       type: 'league',
@@ -299,6 +307,7 @@ export function buildSeasonCalendar(season: number): MatchdaySlot[] {
       tipoffHour,
       isNyarsbandy: dateStr === `${season}-12-31` ? true : undefined,
       isWindowDeadlineDay,
+      isLandslagsuppehall,
     })
 
     // Sequential floor: next round must start at least 2 days after this one
