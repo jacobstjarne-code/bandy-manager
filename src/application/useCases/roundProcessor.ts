@@ -19,7 +19,7 @@ import { updateAllMarketValues } from '../../domain/services/marketValueService'
 import { generateWeeklyDecision } from '../../domain/services/weeklyDecisionService'
 import { evaluateBoard, generateBoardMessage } from '../../domain/services/boardService'
 import { mulberry32 } from '../../domain/utils/random'
-import { getRoundDate, buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
+import { getRoundDate } from '../../domain/services/scheduleGenerator'
 import type { AdvanceResult } from './advanceTypes'
 import { derivePreRoundContext } from './processors/preRoundContextProcessor'
 import { applyPostRoundFlags } from './processors/postRoundFlagsProcessor'
@@ -121,10 +121,11 @@ function generateSpecialDateInbox(
     return items
   }
 
-  const seasonCal = buildSeasonCalendar(game.currentSeason)
-  const slot = seasonCal.find(s => s.matchday === matchday)
+  // Use stored seasonCalendar as single source of truth
+  const storedCal = game.seasonCalendar ?? []
+  const slot = storedCal.find(s => s.matchday === matchday)
 
-  if (slot?.isAnnandagen) {
+  if (slot?.isAnnandagen || fixture.isAnnandagen) {
     const { subject, body } = annandagsbandyInbox(ctx)
     items.push({
       id: `inbox_annandagen_match_${game.currentSeason}`,
@@ -484,10 +485,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const updatedTalentSearch = scoutResult.updatedTalentSearch
   const updatedTalentResults = scoutResult.updatedTalentResults
 
-  // Date from season calendar — look up by matchday so cup rounds get correct dates
-  const calendar = buildSeasonCalendar(game.currentSeason)
-  const calendarSlot = calendar.find(s => s.matchday === nextMatchday)
-  const newDate = calendarSlot?.date ?? getRoundDate(game.currentSeason, nextMatchday)
+  // Date from stored seasonCalendar — single source of truth, no on-demand recalculation
+  const storedCalendar = game.seasonCalendar ?? []
+  const calendarSlot = storedCalendar.find(s => s.matchday === nextMatchday)
+  // Fallback: look for the date on the next fixture itself (stamped at creation)
+  const nextFixtureForDate = roundFixtures[0]
+  const newDate = calendarSlot?.date ?? nextFixtureForDate?.date ?? getRoundDate(game.currentSeason, nextMatchday)
 
   // Both snabbsim and live fixtures land in simulatedFixtures:
   //   snabbsim — added by simulateMatch at line 403 of matchSimProcessor

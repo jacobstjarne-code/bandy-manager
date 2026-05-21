@@ -10,28 +10,29 @@ interface Keyframe {
   tone: SeasonalTone
 }
 
-// 5 keyframes — säsongen räknas från 1 september (dayOfSeason = 0)
+// 5 keyframes — säsongen räknas från 1 november (dayOfSeason = 0)
+// Anchors: Nov 1 = 0, Annandagen Dec 26 ≈ 55, djup vinter Jan ≈ 90, mars slutspel ≈ 130
 const SEASON_KEYFRAMES: Keyframe[] = [
   {
     dayOfSeason: 0,
     tone: {
-      bgPrimary:  '#1a1612',  // varm höst
+      bgPrimary:  '#1a1612',  // november-uppstart, varm och mörk
       bgSurface:  '#221d18',
       bgElevated: '#2a241e',
       accentTone: '#b8884c',
     },
   },
   {
-    dayOfSeason: 60,
+    dayOfSeason: 55,
     tone: {
-      bgPrimary:  '#161411',  // kyligare november
+      bgPrimary:  '#161411',  // annandagen dec 26, kyligare
       bgSurface:  '#1d1813',
       bgElevated: '#251f19',
       accentTone: '#a87c42',
     },
   },
   {
-    dayOfSeason: 120,
+    dayOfSeason: 90,
     tone: {
       bgPrimary:  '#13110f',  // djup vinter januari
       bgSurface:  '#191613',
@@ -40,7 +41,7 @@ const SEASON_KEYFRAMES: Keyframe[] = [
     },
   },
   {
-    dayOfSeason: 180,
+    dayOfSeason: 130,
     tone: {
       bgPrimary:  '#161210',  // slutspelsskärpa mars
       bgSurface:  '#1e1915',
@@ -49,9 +50,9 @@ const SEASON_KEYFRAMES: Keyframe[] = [
     },
   },
   {
-    dayOfSeason: 240,
+    dayOfSeason: 180,
     tone: {
-      bgPrimary:  '#1a1612',  // sista resterna maj — mjuk igen
+      bgPrimary:  '#1a1612',  // sommarpaus, mjuk igen
       bgSurface:  '#221d18',
       bgElevated: '#2a241e',
       accentTone: '#b0804a',
@@ -61,7 +62,8 @@ const SEASON_KEYFRAMES: Keyframe[] = [
 
 /**
  * Returnerar interpolerade CSS-färgvärden baserat på dag i säsongen.
- * Säsongen räknas från 1 september (dayOfSeason = 0).
+ * Säsongen räknas från 1 november (dayOfSeason = 0) — samma bas som seasonCalendar.
+ * Nov 1 = 0, Dec 26 ≈ 55, Feb 28 ≈ 119, tredje lör mars ≈ ~135.
  */
 export function getSeasonalTone(date: string): SeasonalTone {
   const day = dayOfSeason(date)
@@ -86,15 +88,17 @@ export function getSeasonalTone(date: string): SeasonalTone {
   return SEASON_KEYFRAMES[SEASON_KEYFRAMES.length - 1].tone
 }
 
-/** Beräkna dagar sedan 1 september aktuell/föregående säsong. */
+/** Beräkna dagar sedan 1 november aktuell/föregående säsong.
+ *  Nov 1 = 0, Dec 26 ≈ 55, Jan 1 ≈ 61, tredje lör mars ≈ ~132.
+ *  Säsongsstart = 1 november föregående år om vi är jan-mars (liga-säsong), annars aktuellt år. */
 function dayOfSeason(date: string): number {
   const d = new Date(date)
   const month = d.getMonth() + 1  // 1-12
   const year = d.getFullYear()
 
-  // Säsongsstart = 1 september föregående år om vi är jan-aug, annars aktuellt år
-  const seasonStartYear = month >= 9 ? year : year - 1
-  const seasonStart = new Date(`${seasonStartYear}-09-01`)
+  // Säsongsstart = 1 november föregående år om vi är jan-okt, annars aktuellt år (nov-dec)
+  const seasonStartYear = month >= 11 ? year : year - 1
+  const seasonStart = new Date(`${seasonStartYear}-11-01`)
 
   const diff = Math.round((d.getTime() - seasonStart.getTime()) / (1000 * 60 * 60 * 24))
   return Math.max(0, diff)

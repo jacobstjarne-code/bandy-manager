@@ -1,4 +1,5 @@
 import type { PendingScreen } from '../enums'
+import type { MatchdaySlot } from '../services/scheduleGenerator'
 import type { NotableEventType } from '../data/klackEchoText'
 import type { SeasonPhase } from '../data/seasonPhases'
 import type { SeasonSignature } from './SeasonSignature'
@@ -77,6 +78,9 @@ export interface SaveGame {
 
   // Fas-anslag (säsongskapitel-overlay)
   seenAnslag?: import('../services/anslagService').AnslagKey[]
+
+  /** Season calendar built once at season creation. Single source of truth for all date lookups. */
+  seasonCalendar?: MatchdaySlot[]
 
   clubs: Club[]
   players: Player[]

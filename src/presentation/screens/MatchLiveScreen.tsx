@@ -9,7 +9,7 @@ import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
 import { MatchEventType, TacticMentality, TacticTempo, TacticPress, PlayerPosition } from '../../domain/enums'
 import { getRivalry } from '../../domain/data/rivalries'
-import { buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
+// buildSeasonCalendar no longer needed — using fixture.date / game.seasonCalendar (T3 refactor)
 import { computePlayerRatings } from '../utils/matchRatings'
 import { playSound, isMuted, toggleMute } from '../audio/soundEffects'
 import { PhaseOverlay } from '../components/match/PhaseOverlay'
@@ -162,8 +162,9 @@ export function MatchLiveScreen() {
     const homePlayers = game.players.filter(p => p.clubId === fixture.homeClubId)
     const awayPlayers = game.players.filter(p => p.clubId === fixture.awayClubId)
     const homeClubObj = game.clubs.find(c => c.id === fixture.homeClubId)
-    const seasonCal = buildSeasonCalendar(fixture.season)
-    const liveSlot = seasonCal.find(s => s.matchday === fixture.matchday)
+    // Use stored seasonCalendar — single source of truth
+    const storedCal = game.seasonCalendar ?? []
+    const liveSlot = storedCal.find(s => s.matchday === fixture.matchday)
     const gen = simulateMatchStepByStep({
       fixture, homeLineup, awayLineup, homePlayers, awayPlayers,
       homeAdvantage: fixture.isNeutralVenue ? 0 : undefined,

@@ -22,7 +22,7 @@ function defaultBoardPersonalities(clubId: string): BoardMember[] {
   }))
 }
 
-export const CURRENT_SAVE_VERSION = '0.2.0'
+export const CURRENT_SAVE_VERSION = '0.3.0'
 
 export function migrateSaveGame(raw: unknown): SaveGame {
   const data = raw as Record<string, unknown>
@@ -259,20 +259,42 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     })
   }
 
-  // ── Backfill isAnnandagen / isNyarsbandy on league fixtures ─────────────
-  // These flags were introduced 2026-05-18. Existing saves lack them on fixtures.
+  // ── B11 T6 — Build seasonCalendar if missing (single source of truth) ────
+  // Old saves lack seasonCalendar — build once from currentSeason.
+  if (data.seasonCalendar === undefined && typeof data.currentSeason === 'number') {
+    data.seasonCalendar = buildSeasonCalendar(data.currentSeason as number)
+  }
+
+  // ── Backfill isAnnandagen / isNyarsbandy + date + tipoffHour on fixtures ──
+  // These flags were introduced 2026-05-18. date/tipoffHour introduced B11.
+  // Completed fixtures: preserve date/tipoffHour if already set, else stamp from calendar.
+  // Scheduled fixtures: always stamp from calendar (may be missing).
   if (Array.isArray(data.fixtures)) {
     const calendarCache = new Map<number, ReturnType<typeof buildSeasonCalendar>>()
     data.fixtures = (data.fixtures as Record<string, unknown>[]).map(f => {
-      if (f.isCup || f.isAnnandagen !== undefined || f.isNyarsbandy !== undefined) return f
       const season = typeof f.season === 'number' ? f.season : 0
       if (!calendarCache.has(season)) calendarCache.set(season, buildSeasonCalendar(season))
       const cal = calendarCache.get(season)!
       const matchday = typeof f.matchday === 'number' ? f.matchday : -1
-      const slot = cal.find(s => s.matchday === matchday && s.type === 'league')
-      if (slot?.isAnnandagen) f.isAnnandagen = true
-      if (slot?.isNyarsbandy) f.isNyarsbandy = true
-      if (slot?.isWindowDeadlineDay) f.isWindowDeadlineDay = true
+
+      if (!f.isCup) {
+        const slot = cal.find(s => s.matchday === matchday && s.type === 'league')
+        if (slot) {
+          if (f.isAnnandagen === undefined && slot.isAnnandagen) f.isAnnandagen = true
+          if (f.isNyarsbandy === undefined && slot.isNyarsbandy) f.isNyarsbandy = true
+          if (f.isWindowDeadlineDay === undefined && slot.isWindowDeadlineDay) f.isWindowDeadlineDay = true
+          // Stamp date + tipoffHour if missing (only on Scheduled fixtures, preserve Completed)
+          if (f.date === undefined && slot.date) f.date = slot.date
+          if (f.tipoffHour === undefined && slot.tipoffHour !== undefined) f.tipoffHour = slot.tipoffHour
+        }
+      } else {
+        // Cup fixtures: stamp from cup-type slots
+        const cupSlot = cal.find(s => s.matchday === matchday && s.type === 'cup')
+        if (cupSlot) {
+          if (f.date === undefined && cupSlot.date) f.date = cupSlot.date
+          if (f.tipoffHour === undefined && cupSlot.tipoffHour !== undefined) f.tipoffHour = cupSlot.tipoffHour
+        }
+      }
       return f
     })
   }
