@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useGameStore, useLastCompletedFixture } from '../store/gameStore'
+import { spelklarhet, buildNudgeLineup } from '../utils/lineupNudge'
 import {
   PlayerPosition,
   FixtureStatus,
@@ -69,15 +70,36 @@ export function MatchScreen() {
   }, [squadPlayers])
 
   const savedLineup = game?.managedClubPendingLineup
+
+  // ── Nudge-lineup: förfyll PREFILL_COUNT, lämna EMPTY_SLOTS tomma (B10 T2) ──
+  // Beräknas bara när ingen savedLineup finns. Seedat på nästa fixtures ID.
+  const nudgeData = useMemo<{ starterIds: string[]; lineupSlots: Record<string, string | null> } | null>(() => {
+    if (savedLineup) return null
+    if (!game) return null
+    // Hitta nästa schemalagda match (samma logik som nextFixture nedan)
+    const pendingFixture = game.fixtures
+      .filter(f =>
+        f.status === FixtureStatus.Scheduled &&
+        (f.homeClubId === managedClubId || f.awayClubId === managedClubId)
+      )
+      .sort((a, b) => a.matchday - b.matchday || (b.isCup ? 1 : 0) - (a.isCup ? 1 : 0))[0]
+    if (!pendingFixture) return null
+    const available = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)
+    const formationName = (managedClub?.activeTactic?.formation ?? '5-3-2') as import('../../domain/entities/Formation').FormationType
+    const template = FORMATIONS[formationName]
+    return buildNudgeLineup(available, template, pendingFixture.id)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Avsiktligt tom dep-array — beräknas EN gång vid mount
+
   const [startingIds, setStartingIds] = useState<string[]>(() =>
-    savedLineup?.startingPlayerIds ?? defaultStarting
+    savedLineup?.startingPlayerIds ?? nudgeData?.starterIds ?? defaultStarting
   )
   const [benchIds, setBenchIds] = useState<string[]>(() =>
     savedLineup?.benchPlayerIds ??
     squadPlayers.filter(p => !defaultStarting.includes(p.id)).slice(0, 5).map(p => p.id)
   )
   const [captainId, setCaptainId] = useState<string | undefined>(() =>
-    savedLineup?.captainPlayerId ?? defaultStarting[0]
+    savedLineup?.captainPlayerId ?? (savedLineup ? defaultStarting[0] : nudgeData?.starterIds[0] ?? defaultStarting[0])
   )
   const [lineupError, setLineupError] = useState<string | null>(null)
   const [tacticState, setTacticState] = useState<Tactic>(() => {
@@ -91,7 +113,12 @@ export function MatchScreen() {
       cornerStrategy: CornerStrategy.Standard,
       penaltyKillStyle: PenaltyKillStyle.Active,
     }
-    return { ...base, formation: base.formation ?? '5-3-2' }
+    const baseWithFormation = { ...base, formation: base.formation ?? '5-3-2' }
+    // Injicera nudge-slots om ingen savedLineup finns (B10 T2)
+    if (!savedLineup && nudgeData?.lineupSlots) {
+      return { ...baseWithFormation, lineupSlots: nudgeData.lineupSlots }
+    }
+    return baseWithFormation
   })
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
 
@@ -103,19 +130,22 @@ export function MatchScreen() {
   }, [])
 
   useEffect(() => {
+    // Tvångsfyll bara vid verkligt trasigt state — skadade/avstängda i startelvan,
+    // eller fullständig inkonsistens (slots pekar på spelare som inte är i startarnas lista).
+    // Avsiktligt tomma nudge-slots (< 11 men ingen savedLineup) triggar INTE auto-fill.
     const hasInvalid = startingIds.some(id => {
       const p = squadPlayers.find(pl => pl.id === id)
       return !p || p.isInjured || p.suspensionGamesRemaining > 0
     })
-    const lineupSlotsEmpty =
-      !tacticState.lineupSlots ||
-      Object.keys(tacticState.lineupSlots).length === 0 ||
-      Object.values(tacticState.lineupSlots).every(v => v == null)
     const slotPlayerIds = new Set(
       Object.values(tacticState.lineupSlots ?? {}).filter((v): v is string => v !== null)
     )
-    const isInconsistent = startingIds.some(id => !slotPlayerIds.has(id))
-    if (startingIds.length < 11 || hasInvalid || lineupSlotsEmpty || isInconsistent) {
+    // Inkonsistent = spelare i startarnas lista saknar en slot-plats
+    const isInconsistent = startingIds.length > 0 && startingIds.some(id => !slotPlayerIds.has(id))
+
+    // Bara om verkligen trasigt (inte om ofullständigt av design = nudge-läge)
+    const isTrulyBroken = hasInvalid || (savedLineup && isInconsistent)
+    if (isTrulyBroken) {
       handleAutoFill()
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -184,8 +214,10 @@ export function MatchScreen() {
   }
 
   function handleAutoFill() {
+    // Fyll bästa elvan — sorterar på spelklarhet (ability*0.7 + form*0.2 + fitness*0.1).
+    // Ger meningsfull "Fyll bästa elvan"-knapp för nudge-läge (B10 T2).
     const available = squadPlayers.filter(p => !p.isInjured && p.suspensionGamesRemaining <= 0)
-    const sorted = [...available].sort((a, b) => b.currentAbility - a.currentAbility)
+    const sorted = [...available].sort((a, b) => spelklarhet(b) - spelklarhet(a))
     const gkPool = sorted.filter(p => p.position === PlayerPosition.Goalkeeper)
     const outfieldPool = sorted.filter(p => p.position !== PlayerPosition.Goalkeeper)
     const starters: Player[] = gkPool.length > 0 ? [gkPool[0]] : []
