@@ -132,7 +132,7 @@ describe('recordSignatureFact', () => {
 describe('summarizeSignature', () => {
   it('returns correct Swedish text for cold_winter', () => {
     const sig: SeasonSignature = { id: 'cold_winter', modifiers: {}, startedSeason: 2027, observedFacts: [] }
-    expect(summarizeSignature(sig)).toContain('köldvintern 2027')
+    expect(summarizeSignature(sig)).toContain('Köldvintern 2027')
   })
 
   it('returns correct Swedish text for scandal_season', () => {

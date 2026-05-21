@@ -1,23 +1,26 @@
-/**
- * anniversaryMemoryRowText.ts — Eko-label för ClubMemoryEventRow
- *
- * Opus levererar ~10 korta strängar.
- * Visas som liten label under event-texten: "Eko · S3 omg 8"
- * Bandysvensk understatement — subtil markering, inte utropstecken.
- */
-
 import type { ActiveAnniversary } from '../services/clubMemoryService'
 
-// Opus levererar
-const ANNIVERSARY_ROW_LABELS: string[] = [
-  // Opus levererar
-]
+/**
+ * Eko-label för ClubMemoryEventRow.
+ * Tonregel: minimal. Meta-raden bär datum. Detta är bara markören.
+ */
 
-const FALLBACK_LABEL = (anniversary: ActiveAnniversary): string =>
-  `Eko · S${anniversary.originalSeason} omg ${anniversary.matchday}`
+export function anniversaryRowLabel(echo: ActiveAnniversary): string {
+  if (echo.yearsAgo === 1) return 'Eko · i år igen'
+  return `Eko · ${echo.yearsAgo} år sedan`
+}
 
+const ECHO_DETAIL: Record<'won' | 'lost' | 'neutral', string> = {
+  won: 'Samma vecka som detta hände — ett ljust minne som återkommer.',
+  lost: 'Samma vecka som detta hände — det skaver fortfarande.',
+  neutral: 'Samma vecka som detta hände — värt att minnas.',
+}
+
+export function anniversaryRowDetail(echo: ActiveAnniversary): string {
+  return ECHO_DETAIL[echo.outcome]
+}
+
+// pickAnniversaryMemoryRowLabel — används av ClubMemoryEventRow.tsx
 export function pickAnniversaryMemoryRowLabel(anniversary: ActiveAnniversary): string {
-  if (ANNIVERSARY_ROW_LABELS.length === 0) return FALLBACK_LABEL(anniversary)
-  const seed = anniversary.eventId.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0)
-  return ANNIVERSARY_ROW_LABELS[Math.abs(seed) % ANNIVERSARY_ROW_LABELS.length]
+  return anniversaryRowLabel(anniversary)
 }
