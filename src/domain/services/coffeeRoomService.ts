@@ -13,6 +13,8 @@ interface CoffeeQuote {
 
 export interface CoffeeScene {
   exchanges: Array<[string, string, string, string]>
+  /** B9 T1B — index i pool som valdes; sparas i SaveGame.lastCoffeeSceneIndices */
+  pickedIndices: number[]
   meta: {
     title: string
     subtitle?: string
@@ -473,24 +475,36 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
 
   // Deterministiskt antal 1-3 baserat på matchday
   const count = Math.min(pool.length, (matchday % 3) + 1)
-  const seed = round * 11 + game.currentSeason * 31
+  // B9 T1A: seed på matchday (inte ligarunda) — ändras varje matchdag, inte bara per ligarunda
+  const seed = matchday * 11 + game.currentSeason * 31
+
+  // B9 T1B: anti-upprepning — undvik index som visades senast om poolen är stor nog
+  const lastIndices = new Set(game.lastCoffeeSceneIndices ?? [])
 
   // Plocka `count` distinkta index
+  // TODO: GENERIC_EXCHANGES bör utökas — sju utbyten är för få för ett återkommande inslag (Opus levererar fler om önskat)
   const used = new Set<number>()
+  const pickedIndices: number[] = []
   const exchanges: Array<[string, string, string, string]> = []
   for (let i = 0; i < count; i++) {
     let idx = Math.abs(seed * (i + 7)) % pool.length
     let guard = 0
-    while (used.has(idx) && guard < pool.length) {
+    // Hoppa över index som redan valts ELLER som visades senast, om poolen tillåter det
+    while (
+      (used.has(idx) || (lastIndices.has(idx) && pool.length > count + lastIndices.size)) &&
+      guard < pool.length
+    ) {
       idx = (idx + 1) % pool.length
       guard++
     }
     used.add(idx)
+    pickedIndices.push(idx)
     exchanges.push(pool[idx])
   }
 
   return {
     exchanges,
+    pickedIndices,
     meta: {
       title: 'Kafeterian',
       subtitle: 'Tisdag förmiddag · några stannade kvar efter mötet',

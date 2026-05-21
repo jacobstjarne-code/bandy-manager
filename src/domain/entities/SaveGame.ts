@@ -67,6 +67,7 @@ export interface SaveGame {
   shownScenes?: SceneId[]              // Permanent historik (gäller ej recurring coffee_room)
   sceneChoices?: Record<string, string> // Spelarens val per sceneId
   lastCoffeeSceneRound?: number        // Round när senaste coffee_room visades
+  lastCoffeeSceneIndices?: number[]    // B9 T1 — index i GENERIC_EXCHANGES som visades senast (undviks i nästa scen)
 
   // Portal-beats (lättviktiga engångsmoment)
   shownBeats?: string[]                // Beat-nycklar som visats (format: beatId eller beatId_season)
@@ -373,9 +374,10 @@ export interface SaveGame {
   sourceCooldowns?: Partial<Record<string, { roundsLeft: number; totalRounds: number }>>
 
   // C-P1 — Stale-bias per portal-kort
-  // firstShownAt: matchday when card first entered layout (resets after a gap round)
+  // firstShownAt: matchday when card first entered layout (B9 T2B: gap halverar, ej nollställer)
   // lastShownAt: most recent matchday when card was in layout (used to detect gaps)
-  cardStaleTracking?: Record<string, { firstShownAt: number; lastShownAt: number }>
+  // shownCount: B9 T2 — total visningsfrekvens (frekvensgolv för maxvikt)
+  cardStaleTracking?: Record<string, { firstShownAt: number; lastShownAt: number; shownCount?: number }>
 
   // C-B2 — Klack-echo (notable result memory)
   klackEcho?: {

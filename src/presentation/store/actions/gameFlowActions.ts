@@ -10,6 +10,7 @@ import { promoteFromQueue } from '../../../domain/services/decisionBudgetService
 import { applyFinanceChange } from '../../../domain/services/economyService'
 import { advanceToNextEvent, type AdvanceResult } from '../../../application/useCases/advanceToNextEvent'
 import { detectSceneTrigger } from '../../../domain/services/sceneTriggerService'
+import { getCoffeeRoomScene } from '../../../domain/services/coffeeRoomService'
 import { navigateTo } from '../../navigation/globalNavigate'
 import { saveSaveGame } from '../../../infrastructure/persistence/saveGameStorage'
 
@@ -500,6 +501,11 @@ export function gameFlowActions(get: Get, set: Set) {
       updatedGame.pendingScene = undefined
       if (sceneId === 'coffee_room') {
         updatedGame.lastCoffeeSceneRound = updatedGame.currentMatchday
+        // B9 T1B — spara visade index så nästa scen kan undvika dem
+        const coffeeScene = getCoffeeRoomScene(updatedGame)
+        if (coffeeScene) {
+          updatedGame.lastCoffeeSceneIndices = coffeeScene.pickedIndices
+        }
       } else if (sceneId === 'season_signature_reveal') {
         // Track per-season with dedicated field (not SceneId[] — needs season number)
         updatedGame.shownSeasonSignatureRevealSeason = updatedGame.currentSeason
