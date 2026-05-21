@@ -121,11 +121,15 @@ export function processCupRound(
         }
       } else {
         // Generate next cup round fixtures (generateNextCupRound is idempotent — safe to call again)
-        const { updatedBracket, newFixtures } = generateNextCupRound(
+        const { updatedBracket, newFixtures: rawNewFixtures } = generateNextCupRound(
           result.updatedCupBracket,
           maxRound,
           game.currentSeason,
         )
+        const newFixtures = rawNewFixtures.map(f => {
+          const slot = game.seasonCalendar?.find(s => s.matchday === f.matchday)
+          return slot ? { ...f, date: slot.date, tipoffHour: slot.tipoffHour } : f
+        })
         result.updatedCupBracket = updatedBracket
         result.cupNewFixtures = newFixtures
       }
