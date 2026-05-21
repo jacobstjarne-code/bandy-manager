@@ -45,7 +45,27 @@ export function PortalAnniversaryMark({ game }: Props) {
     a.significance > best.significance ? a : best
   )
 
-  const copy = pickAnniversaryMarkCopy(bigEcho, game)
+  const rawCopy = pickAnniversaryMarkCopy(bigEcho, game)
+
+  // Resolva {subject} → spelarnamn eller klubbnamn
+  const subject = (() => {
+    if (bigEcho.subjectPlayerId) {
+      const p = game.players.find(pl => pl.id === bigEcho.subjectPlayerId)
+      return p ? p.lastName : ''
+    }
+    if (bigEcho.subjectClubId) {
+      const c = game.clubs.find(cl => cl.id === bigEcho.subjectClubId)
+      return c ? (c.shortName ?? c.name.split(' ')[0]) : ''
+    }
+    return ''
+  })()
+  const resolve = (s: string) => subject ? s.replace(/\{subject\}/g, subject) : s
+
+  const copy = {
+    eyebrow: rawCopy.eyebrow,
+    quote: resolve(rawCopy.quote),
+    helper: resolve(rawCopy.helper),
+  }
 
   // Om ingen copy finns (Opus inte levererat ännu) — visa ingenting
   if (!copy.quote) return null

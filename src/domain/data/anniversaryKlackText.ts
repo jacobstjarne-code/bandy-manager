@@ -32,11 +32,10 @@ export function pickAnniversaryKlack(echo: ActiveAnniversary): string {
   return pool[seed % pool.length]
 }
 
-// Bakåtkompatibel export för matchCore.ts som importerar ANNIVERSARY_KLACK som array
-// matchCore plockar direkt från arrayen med rand() — vi delegerar till won/lost/neutral-pooler
-// för enkel konsumtion. Merge alla tre pooler.
+// matchCore plockar direkt med rand() — inga template-vars kan resolvas där.
+// NEUTRAL_KLACK innehåller {subject} och exkluderas; de visas bara via pickAnniversaryKlack()
+// som anropas med eko-kontext där subject är tillgänglig.
 export const ANNIVERSARY_KLACK: string[] = [
   ...WON_KLACK,
   ...LOST_KLACK,
-  ...NEUTRAL_KLACK,
 ]
