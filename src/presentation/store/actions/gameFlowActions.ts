@@ -280,7 +280,8 @@ export function gameFlowActions(get: Get, set: Set) {
         // 'prata'
         return { ...p, morale: clamp(p.morale + 12) }
       })
-      set({ game: { ...game, players: updatedPlayers, pendingScreen: null } })
+      // T3 — store halftime decision for managerChoiceLog in saveLiveMatchResult
+      set({ game: { ...game, players: updatedPlayers, pendingScreen: null, lastHalftimeDecision: decision } })
     },
 
     clearPlayoffIntro: () => {

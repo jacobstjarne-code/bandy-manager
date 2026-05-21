@@ -253,6 +253,9 @@ export interface SaveGame {
   // Kapten
   captainPlayerId?: string
 
+  // T3 — Halvtidsbeslut (temporärt fält, rensas i saveLiveMatchResult)
+  lastHalftimeDecision?: 'lugna' | 'pressa' | 'prata'
+
   // THE_BOMB 3.1 — State of the Club (visas i PreSeasonScreen säsong 2+)
   seasonStartSnapshot?: {
     season: number

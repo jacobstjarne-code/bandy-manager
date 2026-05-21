@@ -19,6 +19,14 @@ export interface MatchEvent {
   isPenaltyGoal?: boolean
 }
 
+export interface ManagerChoiceEntry {
+  type: 'halftime_tactic' | 'started_tired' | 'pep_talk' | 'captain' | 'bench_fit'
+  playerId?: string
+  /** Structured, not player text — e.g. 'lowered_tempo' or 'condition_38' */
+  detail: string
+  minute?: number
+}
+
 export interface MatchReport {
   playerRatings: Record<string, number>
   shotsHome: number
@@ -35,6 +43,8 @@ export interface MatchReport {
   possessionAway: number
   playerOfTheMatchId?: string
   matchProfile?: string
+  /** Manager choices logged during the match — raw data for after-match receipt (Ticket #4). */
+  managerChoiceLog?: ManagerChoiceEntry[]
 }
 
 export interface Fixture {

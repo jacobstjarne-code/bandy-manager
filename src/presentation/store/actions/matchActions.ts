@@ -1,5 +1,5 @@
 import type { SaveGame, InboxItem } from '../../../domain/entities/SaveGame'
-import type { MatchEvent, TeamSelection, MatchReport } from '../../../domain/entities/Fixture'
+import type { MatchEvent, TeamSelection, MatchReport, ManagerChoiceEntry } from '../../../domain/entities/Fixture'
 import { FixtureStatus, PlayoffStatus, InboxItemType } from '../../../domain/enums'
 import { calculateStandings } from '../../../domain/services/standingsService'
 import { updateCupBracketAfterRound } from '../../../domain/services/cupService'
@@ -28,10 +28,67 @@ export function matchActions(get: Get, set: Set) {
     ) => {
       const { game } = get()
       if (!game) return
+
+      // ── T3: managerChoiceLog ────────────────────────────────────────────────
+      // Build log from lineup + stored halftime decision. Raw data only — no
+      // player text, no rendering. After-match receipt (Ticket #4) will consume.
+      const managedClubId = game.managedClubId
+      const isHome = game.fixtures.find(f => f.id === fixtureId)?.homeClubId === managedClubId
+      const myLineup = isHome ? homeLineup : awayLineup
+      const choiceLog: ManagerChoiceEntry[] = []
+
+      // captain
+      if (myLineup?.captainPlayerId) {
+        choiceLog.push({ type: 'captain', playerId: myLineup.captainPlayerId, detail: myLineup.captainPlayerId })
+      }
+
+      // started_tired: starters with condition < 40
+      for (const pid of (myLineup?.startingPlayerIds ?? [])) {
+        const player = game.players.find(p => p.id === pid)
+        if (player && (player.fitness ?? 100) < 40) {
+          choiceLog.push({
+            type: 'started_tired',
+            playerId: pid,
+            detail: `condition_${Math.round(player.fitness ?? 0)}`,
+          })
+        }
+      }
+
+      // bench_fit: bench players with condition > 80
+      for (const pid of (myLineup?.benchPlayerIds ?? [])) {
+        const player = game.players.find(p => p.id === pid)
+        if (player && (player.fitness ?? 100) > 80) {
+          choiceLog.push({
+            type: 'bench_fit',
+            playerId: pid,
+            detail: `condition_${Math.round(player.fitness ?? 0)}`,
+          })
+        }
+      }
+
+      // halftime_tactic: stored by applyHalftimeDecision
+      if (game.lastHalftimeDecision) {
+        const detailMap = {
+          lugna: 'lowered_tempo',
+          pressa: 'increased_pressure',
+          prata: 'player_talk',
+        } as const
+        choiceLog.push({
+          type: 'halftime_tactic',
+          detail: detailMap[game.lastHalftimeDecision],
+        })
+      }
+
+      const enrichedReport: MatchReport = {
+        ...report,
+        managerChoiceLog: choiceLog.length > 0 ? choiceLog : undefined,
+      }
+      // ── end T3 ──────────────────────────────────────────────────────────────
+
       const updatedFixtures = game.fixtures.map(f =>
         f.id === fixtureId
           ? {
-              ...f, homeScore, awayScore, events, report, homeLineup, awayLineup,
+              ...f, homeScore, awayScore, events, report: enrichedReport, homeLineup, awayLineup,
               attendance: attendance ?? f.attendance,
               status: FixtureStatus.Completed,
               wentToOvertime: (overtimeResult !== undefined || penaltyResult !== undefined) || undefined,
@@ -99,7 +156,7 @@ export function matchActions(get: Get, set: Set) {
         }
       }
 
-      set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings, cupBracket: updatedCupBracket, playoffBracket: updatedPlayoffBracket, managedClubPendingLineup: undefined } })
+      set({ game: { ...game, fixtures: updatedFixtures, lastCompletedFixtureId: fixtureId, standings, cupBracket: updatedCupBracket, playoffBracket: updatedPlayoffBracket, managedClubPendingLineup: undefined, lastHalftimeDecision: undefined } })
     },
 
     simulateAbandonedMatch: (fixtureId: string) => {
