@@ -30,6 +30,19 @@ const GENERIC_EXCHANGES: Array<[string, string, string, string]> = [
   ['Kassören', 'Sponsoravtalet med ICA går ut.', 'Ordföranden', 'Ring dom. Bjud på kaffe. Och korv.'],
   // Placeholder — byts ut mot dynamisk ungdomsspelare i getCoffeeRoomQuote
   ['Ungdomstränaren', '{youthName} i P19 börjar likna något.', 'Materialaren', 'Ge honom inte för stora tröjor.'],
+  // Fler vardagsutbyten (Opus 2026-05-21) — bruksklubbs-vardag, Sture-ton
+  ['Vaktmästaren', 'Kaffekokaren gav upp i halvtid igår.', 'Kioskvakten', 'Den höll längre än backlinjen.'],
+  ['Kassören', 'Tre medlemmar har inte betalat.', 'Ordföranden', 'Jag vet vilka. Jag tar det på Konsum.'],
+  ['Materialaren', 'Slipmaskinen låter inte som den ska.', 'Vaktmästaren', 'Den har låtit så i sex år. Den slipar ändå.'],
+  ['Webbredaktören', 'Klippet från träningen fick tusen visningar.', 'Materialaren', 'Var det det med när du ramlade?'],
+  ['Vaktmästaren', 'Värmen i klubbhuset är trasig igen.', 'Ordföranden', 'Sätt på dig något. Vi lagar den till våren.'],
+  ['Ungdomstränaren', 'Två P19-killar kom för sent igen.', 'Vaktmästaren', 'Jag öppnar inte tidigare för det.'],
+  ['Materialaren', 'Vi behöver nya bollar till våren.', 'Kassören', 'Skriv upp det. Listan är redan lång.'],
+  ['Ordföranden', 'Bussbolaget höjde priset för bortamatcherna.', 'Kassören', 'Då sjunger laget hela vägen. Billigt nöje.'],
+  ['Vaktmästaren', 'Isen bar inte i morse. För milt.', 'Materialaren', 'Det vänder. Det gör det alltid.'],
+  ['Webbredaktören', 'Lokaltidningen vill ha en intervju med dig.', 'Ordföranden', 'Säg att jag är på isen. Det är jag ofta nog.'],
+  ['Kassören', 'Kaffet i kafferummet är slut.', 'Kioskvakten', 'Köp på Konsum. Inte det dyra.'],
+  ['Materialaren', 'Ungdomarna växer ur skridskorna fortare än vi hinner köpa.', 'Ungdomstränaren', 'Låt dem ärva. Vi gjorde det.'],
 ]
 
 // Transfer-triggered exchanges — shown after a sale/buy
