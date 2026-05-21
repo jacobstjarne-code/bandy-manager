@@ -4,24 +4,32 @@ import { CARD_BAG } from './dashboardCardBag'
 import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, isManagedClubSpectator } from '../../data/seasonPhases'
 import { applyPhaseBias } from './seasonPhaseBias'
 
-type StaleEntry = { firstShownAt: number; lastShownAt: number }
+// B9 T2: shownCount tillagt för frekvensgolv (optional för migration-säkerhet)
+type StaleEntry = { firstShownAt: number; lastShownAt: number; shownCount?: number }
 type StaleTracking = Record<string, StaleEntry>
 
 /**
  * Räknar ut stale-bias för ett kort.
- * N = antal omgångar sedan kortet KONTINUERLIGT visats (utan gap).
- * bias = 0.5^N  →  ny=1, 1 omg=0.5, 2 omg=0.25, 3 omg=0.125
+ * B9 T2: Två faktorer:
+ *   1. consecutive-dämpning: 0.5^(currentMatchday - firstShownAt)
+ *   2. frekvensgolv: kort med högt shownCount får reducerad maxvikt
+ * Returnerar min 0.1 (kort försvinner aldrig helt).
  */
 function staleBias(cardId: string, tracking: StaleTracking | undefined, currentMatchday: number): number {
   const t = tracking?.[cardId]
   if (!t) return 1
-  return Math.pow(0.5, Math.max(0, currentMatchday - t.firstShownAt))
+  const consecutive = Math.max(0, currentMatchday - t.firstShownAt)
+  // Frekvensgolv: ett kort som visats många gånger totalt återfår inte full vikt
+  const frequencyPenalty = Math.min(0.5, (t.shownCount ?? 0) * 0.08)
+  return Math.max(0.1, Math.pow(0.5, consecutive) * (1 - frequencyPenalty))
 }
 
 /**
  * Beräknar uppdaterad stale-tracking efter en portal-rendering.
  * - Kort i shownCardIds registreras med firstShownAt (ny eller befintlig om sekventiell).
- * - Gap (kortet saknades förra omgången) återställer firstShownAt.
+ * - B9 T2B: Gap halverar firstShownAt istället för att nollställa — dämpning läker inte
+ *   helt av ett enda missat omgång.
+ * - shownCount inkrementeras varje gång kortet visas.
  */
 export function computeCardStaleTracking(
   currentTracking: StaleTracking,
@@ -32,9 +40,15 @@ export function computeCardStaleTracking(
   for (const id of shownCardIds) {
     const existing = next[id]
     const isSequential = existing?.lastShownAt === currentMatchday - 1
+    const firstShownAt = !existing
+      ? currentMatchday
+      : isSequential
+        ? existing.firstShownAt
+        : Math.floor((existing.firstShownAt + currentMatchday) / 2)  // halvvägs, ej nollställ
     next[id] = {
-      firstShownAt: isSequential ? existing.firstShownAt : currentMatchday,
+      firstShownAt,
       lastShownAt: currentMatchday,
+      shownCount: (existing?.shownCount ?? 0) + 1,
     }
   }
   return next

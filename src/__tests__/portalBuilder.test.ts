@@ -197,11 +197,12 @@ describe('computeCardStaleTracking', () => {
     expect(result['card_a'].lastShownAt).toBe(7)   // uppdaterad
   })
 
-  it('gap (lastShownAt !== matchday-1) återställer firstShownAt', () => {
-    // lastShownAt=5, currentMatchday=7 → gap → firstShownAt resettas
+  it('gap (lastShownAt !== matchday-1) halverar firstShownAt (B9 T2B)', () => {
+    // lastShownAt=5, currentMatchday=7 → gap → firstShownAt halveras halvvägs (ej nollställs)
+    // Math.floor((3 + 7) / 2) = 5
     const tracking = { card_a: { firstShownAt: 3, lastShownAt: 5 } }
     const result = computeCardStaleTracking(tracking, ['card_a'], 7)
-    expect(result['card_a'].firstShownAt).toBe(7)  // resettat
+    expect(result['card_a'].firstShownAt).toBe(5)  // halvvägs, ej nollställt
     expect(result['card_a'].lastShownAt).toBe(7)
   })
 
@@ -253,13 +254,10 @@ describe('buildPortal — stale-bias', () => {
     expect(layout.secondary[0].id).toBe('fresh')
   })
 
-  it('gap i tracking nollställer bias — högt-weight-kort vinner igen', () => {
-    // stale: firstShownAt=3, lastShownAt=5 → gap vid md 7 → resettas via computeCardStaleTracking
-    // Men buildPortal använder tracking AS-IS, utan att kalla compute
-    // Alltså: gap-detect görs i computeCardStaleTracking, INTE i staleBias
-    // Här testar vi att stale kort med gammal firstShownAt (3) OCH gap (lastShownAt=5→7) fortfarande har bias
-    // eftersom buildPortal inte reset tracking — det görs av recordPortalShown via store
-    // Verifierar att staleBias korrekt räknar från firstShownAt
+  it('staleBias räknar från firstShownAt — högt-weight-kort med gammal firstShownAt förlorar', () => {
+    // stale: firstShownAt=3, lastShownAt=5 → gap (b9 halverar, men tracking AS-IS i buildPortal)
+    // staleBias räknar på firstShownAt=3, currentMatchday=7 → consecutive=4 → 0.5^4=0.0625
+    // frequencyPenalty=0 (shownCount saknas → 0)
     const tracking = {
       stale: { firstShownAt: 3, lastShownAt: 5 },  // staleness = 7-3=4 → 0.5^4=0.0625
     }
