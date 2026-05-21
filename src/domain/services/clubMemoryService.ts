@@ -6,6 +6,7 @@ import {
   buildEventFromStoryline,
   buildEventFromRetirement,
 } from './clubMemoryEventBuilders'
+import type { MomentSource } from '../entities/Moment'
 
 export type MemoryEventType =
   | 'season_finish' | 'cup_final' | 'sm_final' | 'derby_result'
@@ -243,4 +244,233 @@ export function getClubMemory(game: SaveGame): ClubMemoryView {
     records: game.allTimeRecords ?? null,
     totalEventsAcrossSeasons: seasons.reduce((sum, s) => sum + s.events.length, 0),
   }
+}
+
+// ── Active Memory Aggregator ─────────────────────────────────────────────────
+// Normalises all active narrative memories into a single weighted stream.
+// No picker, no prioritization beyond raw weight — Design decides display.
+
+export type ActiveMemorySource =
+  | 'moment' | 'klack' | 'journalist' | 'nemesis' | 'rival_sale'
+  | 'follow_up' | 'letter' | 'board_history' | 'economic_crisis'
+
+export type ActiveMemoryKind = 'triumph' | 'scar' | 'tension' | 'neutral'
+
+export interface ActiveMemory {
+  source: ActiveMemorySource
+  matchday: number
+  season: number
+  weight: number        // raw: recency × sourceBaseWeight. No prioritization.
+  kind: ActiveMemoryKind
+  title: string
+  body: string
+  subjectPlayerId?: string
+  subjectClubId?: string
+}
+
+const SOURCE_BASE_WEIGHTS: Record<ActiveMemorySource, number> = {
+  moment: 70,
+  klack: 60,
+  nemesis: 55,
+  rival_sale: 65,
+  journalist: 50,
+  board_history: 55,
+  economic_crisis: 60,
+  letter: 45,
+  follow_up: 40,
+}
+
+function calcWeight(source: ActiveMemorySource, memoryMatchday: number, currentMatchday: number): number {
+  const recencyFactor = Math.max(0.2, 1 - (currentMatchday - memoryMatchday) / 10)
+  return SOURCE_BASE_WEIGHTS[source] * recencyFactor
+}
+
+function momentKind(source: MomentSource): ActiveMemoryKind {
+  switch (source) {
+    case 'derby_win':
+    case 'sponsor_positive':
+    case 'era_shift':
+    case 'season_highlight':
+      return 'triumph'
+    case 'star_injury':
+    case 'mecenat_left':
+    case 'rival_sale':
+    case 'captain_crisis':
+    case 'sponsor_negative':
+    case 'transfer_story':
+      return 'scar'
+    case 'nemesis_signed':
+      return 'tension'
+    default:
+      return 'neutral'
+  }
+}
+
+/**
+ * Aggregates all active narrative memories from 9 sources into one stream.
+ * Sorted by weight desc. Returns all — Design decides how many to show.
+ */
+export function collectActiveMemories(game: SaveGame): ActiveMemory[] {
+  const memories: ActiveMemory[] = []
+  const currentMatchday = game.currentMatchday
+  const currentSeason = game.currentSeason
+
+  // 1. recentMoments[]
+  for (const m of (game.recentMoments ?? [])) {
+    const weight = calcWeight('moment', m.matchday, currentMatchday)
+    memories.push({
+      source: 'moment',
+      matchday: m.matchday,
+      season: m.season,
+      weight,
+      kind: momentKind(m.source),
+      title: m.title,
+      body: m.body,
+      subjectPlayerId: m.subjectPlayerId,
+      subjectClubId: m.subjectClubId,
+    })
+  }
+
+  // 2. klackEcho — one memory if currentWeight > 0
+  const klack = game.klackEcho
+  if (klack && klack.currentWeight > 0) {
+    const weight = calcWeight('klack', klack.resultMatchday, currentMatchday)
+    // Map NotableEventType → kind
+    const klackKind: ActiveMemoryKind =
+      klack.type === 'derby_win' || klack.type === 'top_team_win' ? 'triumph'
+      : klack.type === 'derby_loss' || klack.type === 'heavy_home_loss' || klack.type === 'storstad_loss' ? 'scar'
+      : klack.type === 'derby_draw' ? 'neutral'
+      : 'neutral'
+    memories.push({
+      source: 'klack',
+      matchday: klack.resultMatchday,
+      season: currentSeason,
+      weight,
+      kind: klackKind,
+      title: klack.type,
+      body: `klackEcho weight=${klack.currentWeight}`,
+    })
+  }
+
+  // 3. journalist.memory[] — last 1-2 entries
+  const journalist = game.journalist
+  if (journalist && journalist.memory.length > 0) {
+    const entries = journalist.memory.slice(-2)
+    for (const entry of entries) {
+      const weight = calcWeight('journalist', entry.matchday, currentMatchday)
+      const sentimentText = entry.sentiment >= 5 ? 'positive'
+        : entry.sentiment <= -5 ? 'negative'
+        : 'neutral'
+      memories.push({
+        source: 'journalist',
+        matchday: entry.matchday,
+        season: entry.season,
+        weight,
+        kind: entry.sentiment >= 3 ? 'triumph' : entry.sentiment <= -3 ? 'scar' : 'neutral',
+        title: entry.event,
+        body: `journalist sentiment=${sentimentText} (${entry.sentiment})`,
+      })
+    }
+  }
+
+  // 4. nemesisTracker — one memory per player with goalsAgainstUs >= 3
+  for (const entry of Object.values(game.nemesisTracker ?? {})) {
+    if (entry.goalsAgainstUs >= 3) {
+      // Use currentMatchday as proxy (nemesis has no dedicated matchday field)
+      const weight = SOURCE_BASE_WEIGHTS['nemesis'] * 0.8
+      memories.push({
+        source: 'nemesis',
+        matchday: currentMatchday,
+        season: currentSeason,
+        weight,
+        kind: 'tension',
+        title: entry.name,
+        body: `goalsAgainstUs=${entry.goalsAgainstUs}`,
+        subjectPlayerId: entry.playerId,
+        subjectClubId: entry.clubId,
+      })
+    }
+  }
+
+  // 5. lastRivalSaleMatchday — one memory if within 5 rounds
+  if (
+    game.lastRivalSaleMatchday !== undefined &&
+    (currentMatchday - game.lastRivalSaleMatchday) <= 5
+  ) {
+    const weight = calcWeight('rival_sale', game.lastRivalSaleMatchday, currentMatchday)
+    memories.push({
+      source: 'rival_sale',
+      matchday: game.lastRivalSaleMatchday,
+      season: currentSeason,
+      weight,
+      kind: 'scar',
+      title: 'rival_sale',
+      body: `matchday=${game.lastRivalSaleMatchday}`,
+    })
+  }
+
+  // 6. pendingFollowUps[] — one memory per pending
+  for (const fu of (game.pendingFollowUps ?? [])) {
+    const fuMatchday = fu.createdMatchday
+    const weight = calcWeight('follow_up', fuMatchday, currentMatchday)
+    memories.push({
+      source: 'follow_up',
+      matchday: fuMatchday,
+      season: currentSeason,
+      weight,
+      kind: 'neutral',
+      title: fu.type,
+      body: `followUp id=${fu.id}`,
+    })
+  }
+
+  // 7. bandyLetters[] — latest unseen
+  const unseenLetters = (game.bandyLetters ?? []).filter(l => !l.savedInArchive)
+  if (unseenLetters.length > 0) {
+    const latest = unseenLetters[unseenLetters.length - 1]
+    const weight = calcWeight('letter', currentMatchday, currentMatchday)
+    memories.push({
+      source: 'letter',
+      matchday: currentMatchday,
+      season: currentSeason,
+      weight,
+      kind: 'triumph',
+      title: latest.senderName,
+      body: latest.text.slice(0, 80),
+    })
+  }
+
+  // 8. boardObjectiveHistory[] — last season's met/failed entries
+  const boardHistory = (game.boardObjectiveHistory ?? []).filter(
+    h => h.season === currentSeason - 1 || h.season === currentSeason,
+  )
+  for (const entry of boardHistory) {
+    const weight = calcWeight('board_history', currentMatchday, currentMatchday)
+    memories.push({
+      source: 'board_history',
+      matchday: currentMatchday,
+      season: entry.season,
+      weight,
+      kind: entry.result === 'met' ? 'triumph' : 'scar',
+      title: entry.objectiveId,
+      body: `result=${entry.result}`,
+    })
+  }
+
+  // 9. economicCrisisState — one memory if phase != 'resolved'
+  const crisis = game.economicCrisisState
+  if (crisis && crisis.phase !== 'resolved') {
+    const weight = calcWeight('economic_crisis', crisis.startedMatchday, currentMatchday)
+    memories.push({
+      source: 'economic_crisis',
+      matchday: crisis.startedMatchday,
+      season: crisis.startedSeason,
+      weight,
+      kind: 'scar',
+      title: `economic_crisis`,
+      body: `phase=${crisis.phase}`,
+    })
+  }
+
+  return memories.sort((a, b) => b.weight - a.weight)
 }
