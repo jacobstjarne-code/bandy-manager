@@ -16,7 +16,7 @@ import { mulberry32 } from '../../../domain/utils/random'
 import { pickRefereeForMatch, shouldTriggerRefereeMeeting, updateRefereeRelation, REFEREE_MEETING_QUOTES, getRefereeDisplayName, generateReferees } from '../../../domain/services/refereeService'
 import type { Referee } from '../../../domain/entities/Referee'
 import { checkForMatchInjury } from '../../../domain/services/matchInjuryService'
-import { buildSeasonCalendar } from '../../../domain/services/scheduleGenerator'
+// buildSeasonCalendar no longer needed — using game.seasonCalendar (T3 refactor)
 
 const AI_FORMATIONS: Record<ClubStyle, FormationType> = {
   [ClubStyle.Defensive]: '4-3-3',
@@ -156,8 +156,9 @@ export function simulateRound(
   // Initialize referees if not yet generated
   const allRefs: Referee[] = game.referees?.length ? game.referees : generateReferees()
 
-  const seasonCalendar = buildSeasonCalendar(game.currentSeason)
-  const currentCalendarSlot = seasonCalendar.find(s => s.matchday === nextMatchday)
+  // Use stored seasonCalendar — single source of truth
+  const storedCalendar = game.seasonCalendar ?? []
+  const currentCalendarSlot = storedCalendar.find(s => s.matchday === nextMatchday)
 
   // True when the managed club has a scheduled cup fixture on this matchday.
   // Used to prevent the liga fixture from being simulated while the cup match is still pending.

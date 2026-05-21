@@ -5,7 +5,7 @@ import { getTransferWindowStatus } from './transferWindowService'
 import { FixtureStatus } from '../enums'
 import { getCurrentAct } from './seasonActService'
 import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, type SeasonPhase } from '../data/seasonPhases'
-import { buildSeasonCalendar } from './scheduleGenerator'
+// buildSeasonCalendar no longer needed here — using game.seasonCalendar (T3 refactor)
 import {
   annandagsbandyBriefing,
   nyarsbandyBriefing,
@@ -173,8 +173,8 @@ export function generateBriefing(game: SaveGame): Briefing | null {
     const awayClub = game.clubs.find(c => c.id === nextFixture.awayClubId)
     const isHome = nextFixture.homeClubId === game.managedClubId
     const rivalry = getRivalry(nextFixture.homeClubId, nextFixture.awayClubId)
-    const seasonCal = buildSeasonCalendar(game.currentSeason)
-    const nextSlot = seasonCal.find(s => s.matchday === nextFixture.matchday)
+    const storedCal = game.seasonCalendar ?? []
+    const nextSlot = storedCal.find(s => s.matchday === nextFixture.matchday)
 
     if (nextFixture.isFinaldag) {
       // Check if we're playing (fixture exists for managed club) or spectating

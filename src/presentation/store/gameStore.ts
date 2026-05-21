@@ -162,7 +162,9 @@ export const useGameStore = create<GameState>()(
         if (!loaded) return false
         // Migrate old club names — strip suffixes like BK, IF, GoIF, IK, FK
         // Migrate Midfielder position → Half (merged positions)
-        // Migrate matchday field — fixtures created before this field was added
+        // Legacy matchday migration — fixtures from before matchday field was added (pre-B11)
+        // NOTE: buildSeasonCalendar here is a ONE-TIME legacy migration, not on-demand use (B11 T3).
+        // After B11, game.seasonCalendar is the single source of truth for all date lookups.
         if (loaded.fixtures.some((f: any) => f.matchday === undefined)) {
           const CUP_MATCHDAYS: Record<number, number> = { 1: 3, 2: 8, 3: 13, 4: 19 }
           const calendar = buildSeasonCalendar(loaded.currentSeason)
