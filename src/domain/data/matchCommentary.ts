@@ -411,6 +411,26 @@ export const commentary = {
     "Domaren blåser. {opponent} är cupmästare. {team} reser hem.",
   ],
 
+  cup_atmosphere: [
+    "Första riktiga isen sedan i mars. Benen minns inte riktigt hur man gör.",
+    "Glest på läktaren. De som kommer i oktober kommer alltid.",
+    "Frost på rutorna i morse, första gången för året.",
+    "Ny is. Lite lös ännu. Spelarna prövar med skären innan avslag.",
+    "Strålkastarna tänds före avslag. Mörkret kommer tidigare nu.",
+    "Ingen tabell att snegla på än. Bara den här matchen, och sen får man se.",
+    "Den som förlorar i dag är klar med cupen. Det skärper blicken.",
+    "Färre på läktaren än i januari. Det är fortfarande höst.",
+  ],
+
+  cup_finalweekend_atmosphere: [
+    "Sävstaås är fullt en timme före avslag. Det händer inte i oktober annars.",
+    "Glöggen tar slut vid tian. Ingen är förvånad.",
+    "Fyra lags färger på samma läktare. Bandysverige på ett ställe, för första gången i år.",
+    "Lokalradion sänder från läktaren. TV-bussen står på parkeringen.",
+    "Långresta lag i går kväll. Bussar på torget, fulla pensionat.",
+    "Sex omklädningsrum i bruk. Fyra lag, två domarpar, en helg.",
+  ],
+
   playoff_general: [
     "Slutspelstempot är något helt annat. Varje duell är på liv och död.",
     "Playoffbandy. Hårdare dueller, mer intensitet, högre insatser.",

@@ -47,17 +47,17 @@ const SIGNATURE_INITIAL_FACT: Record<SeasonSignatureId, (game: SaveGame) => stri
   cold_winter: (g) => {
     const club = g.clubs.find(c => c.id === g.managedClubId)
     const region = club?.region ?? 'regionen'
-    return `Väderprognoserna för ${region} pekar mot en riktigt kall vinter.`
+    return `Långtidsprognosen för ${region} lovar en kall vinter. Isen lär bli stenhård.`
   },
   scandal_season: (g) => {
     const recent = (g.scandalHistory ?? []).filter(s => s.season >= g.currentSeason - 2)
     return recent.length > 0
-      ? `${recent.length} skandaler i ligan de senaste säsongerna — mer förväntas.`
-      : 'Rykten och skandaler verkar följa ligan i år.'
+      ? `${recent.length} skandaler i ligan de senaste åren. Pressen luktar redan på nästa.`
+      : 'Rubrikerna ligger nära i år. Det märks redan.'
   },
-  hot_transfer_market: () => 'Transferrykterna är ovanligt många inför säsongen.',
-  injury_curve: () => 'Säsongsförberedelserna har gett fler skador än vanligt.',
-  dream_round: () => 'Underlag och form pekar mot en ovanligt öppen serie i år.',
+  hot_transfer_market: () => 'Transfertelefonen går varm innan säsongen ens börjat.',
+  injury_curve: () => 'Fler på skadebänken än vanligt redan i försäsongen.',
+  dream_round: () => 'Ingen klar favorit i år. Serien känns öppen på ett sätt den sällan är.',
 }
 
 export function createSeasonSignature(game: SaveGame, rand: () => number): SeasonSignature {
@@ -97,15 +97,15 @@ export function summarizeSignature(signature: SeasonSignature): string | null {
 
   switch (signature.id) {
     case 'cold_winter':
-      return `Detta blev köldvintern ${season} — ${facts[0] || 'is och minusgrader dominerade'}`
+      return `Köldvintern ${season}. ${facts[0] || 'Is och minusgrader satte tonen.'}`
     case 'scandal_season':
-      return `Skandalsäsongen ${season} — ${facts[0] || 'rykten och rubriker drog bort fokus'}`
+      return `Skandalsäsongen ${season}. ${facts[0] || 'Rubrikerna drog blicken från spelet.'}`
     case 'hot_transfer_market':
-      return `Den heta transfersommaren ${season} — ${facts[0] || 'telefonen ringde, fönstret stängde med dramatik'}`
+      return `Den heta transfersommaren ${season}. ${facts[0] || 'Telefonen gick varm, fönstret stängde med drama.'}`
     case 'injury_curve':
-      return `Skadekurvan ${season} — ${facts[0] || 'mellansäsongen kostade hårt på truppen'}`
+      return `Skadekurvan ${season}. ${facts[0] || 'Mellansäsongen kostade hårt på truppen.'}`
     case 'dream_round':
-      return `Drömrundan ${season} — ${facts[0] || 'underdog-energin gav ligan ett nytt ansikte'}`
+      return `Drömrundan ${season}. ${facts[0] || 'En öppen serie gav ligan ett nytt ansikte.'}`
     case 'calm_season':
     default:
       return null

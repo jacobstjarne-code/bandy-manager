@@ -148,9 +148,14 @@ export const RIVAL_SALE_KLACK: string[] = [
 ]
 
 /**
- * C-O2 — Kafferum-pool när en AI-klubb lägger bud på MANAGERNS spelaren.
- * Opus levererar replikerna separat. Placeholder tills dess.
+ * C-O2 — Kafferum-pool när en AI-klubb lagt bud på MANAGERNS spelare.
+ * Inkommande, obekräftat bud — ingen har lämnat än. Ton: grabbarna har hört
+ * att någon snusar på vår spelare. Oro under ytan, ingen erkänner den.
  */
 export const INCOMING_BID_KAFFERUM: string[] = [
-  '[Opus]',
+  '"Någon har hört av sig om Lundberg." "Jag vet." Sen blev det tyst en stund.',
+  'Birger sa att det bara är prat. Han sa det två gånger.',
+  'Ingen vet hur mycket de bjudit. Alla har en siffra ändå.',
+  '"De får inte honom." "Det bestämmer inte vi." Kaffet kallnade.',
+  'Det pratas tystare än vanligt. Som när man inte vill väcka otur.',
 ]
