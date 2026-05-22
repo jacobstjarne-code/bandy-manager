@@ -28,6 +28,7 @@ interface GetState {
   triggerJournalistScene: () => void
   resolveRetirementDecision: (playerId: string, choice: 'thank' | 'respect' | 'invite') => { retired: boolean; response: string }
   markAnniversaryAcknowledged: (eventId: string) => void
+  resolveAnnandagsVal: (val: 'A' | 'B' | 'C' | 'D') => void
 }
 
 type Get = () => GetState
@@ -603,6 +604,70 @@ export function gameFlowActions(get: Get, set: Set) {
       void persistAutosave(updatedGame, 'resolveRetirementDecision')
 
       return { retired, response }
+    },
+
+    resolveAnnandagsVal: (val: 'A' | 'B' | 'C' | 'D') => {
+      const game = get().game
+      if (!game) return
+
+      const managedClub = game.clubs.find(c => c.id === game.managedClubId)
+      if (!managedClub) return
+
+      // ── Ekonomiska effekter ───────────────────────────────────────────────
+      let updatedClubs = game.clubs
+      let updatedMecenater = game.mecenater ?? []
+      let pendingAnnandagsGratisentreVal = game.pendingAnnandagsGratisentreVal ?? false
+
+      if (val === 'B') {
+        // Julmarknad: dra 15 000 kr från managed clubs cashOnHand (finances)
+        const cost = 15000
+        updatedClubs = game.clubs.map(c =>
+          c.id === game.managedClubId
+            ? { ...c, finances: c.finances - cost }
+            : c
+        )
+      }
+
+      if (val === 'C') {
+        // Gratisentré: plantera pending-flagga för matchdagen
+        pendingAnnandagsGratisentreVal = true
+      }
+
+      if (val === 'D') {
+        // Mecenat-värd: +20 happiness på aktiv mecenat
+        updatedMecenater = (game.mecenater ?? []).map(m =>
+          m.isActive ? { ...m, happiness: Math.min(100, m.happiness + 20) } : m
+        )
+      }
+
+      // ── CS (communityStanding) effekter ──────────────────────────────────
+      const csDelta = val === 'B' ? 10 : val === 'C' ? 25 : val === 'D' ? 15 : 0
+      const newCS = csDelta > 0
+        ? Math.min(100, (game.communityStanding ?? 50) + csDelta)
+        : game.communityStanding ?? 50
+
+      // ── Konsekvenskedjor: plantera pending events ─────────────────────────
+      const pendingAnnandagsMediaRubrik: SaveGame['pendingAnnandagsMediaRubrik'] = val !== 'A'
+        ? { val, triggerRound: (game.currentMatchday ?? 0) + 1 }
+        : undefined
+      const pendingAnnandagsKlack: SaveGame['pendingAnnandagsKlack'] = val !== 'A'
+        ? { val, triggerRound: (game.currentMatchday ?? 0) + 2 }
+        : undefined
+
+      const updatedGame: SaveGame = {
+        ...game,
+        clubs: updatedClubs,
+        mecenater: updatedMecenater,
+        communityStanding: newCS,
+        annandagsValGjort: val,
+        pendingAnnandagsVal: false,
+        pendingAnnandagsGratisentreVal,
+        pendingAnnandagsMediaRubrik,
+        pendingAnnandagsKlack,
+      }
+
+      set({ game: updatedGame })
+      void persistAutosave(updatedGame, 'resolveAnnandagsVal')
     },
   }
 }

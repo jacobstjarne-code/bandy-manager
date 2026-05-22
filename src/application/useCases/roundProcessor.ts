@@ -600,6 +600,18 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   // Derby notification: if next matchday has a derby for managed club
   newInboxItems.push(...processUpcomingDerbyNotification(finalAllFixtures, game))
 
+  // P1 — Annandagen val-trigger: 2 omgångar innan hemmamatch på annandagen
+  let pendingAnnandagsVal = game.pendingAnnandagsVal ?? false
+  const annandagenHomeFix = finalAllFixtures.find(
+    f => f.isAnnandagen && f.homeClubId === game.managedClubId && f.status === FixtureStatus.Scheduled
+  )
+  if (annandagenHomeFix) {
+    const roundsUntil = annandagenHomeFix.matchday - nextMatchday
+    if (roundsUntil === 2 && !game.annandagsValGjort && !game.pendingAnnandagsVal) {
+      pendingAnnandagsVal = true
+    }
+  }
+
   // Special-date day-before inbox: annandagen, nyårsbandy, finaldag, cup-finalhelgen
   const remainingScheduled2 = finalAllFixtures.filter(f => f.status === FixtureStatus.Scheduled)
   let upcomingManagedFix: typeof remainingScheduled2[0] | undefined = undefined
@@ -726,7 +738,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     localRand,
     { skipSideEffects: isSecondPassForManagedMatch },
   )
-  const { roundFinanceLog, updatedClubs: socialMediaBoostedClubs } = economyResult
+  const { roundFinanceLog, updatedClubs: socialMediaBoostedClubs, clearAnnandagsGratisentreVal } = economyResult
 
   // ── Transfer bids ────────────────────────────────────────────────────────
   const transferResult = processTransferBids(game, availabilityUpdatedPlayers, nextMatchday, newDate, localRand)
@@ -1223,6 +1235,9 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     wageBudgetWarningSent: eventResult.wageBudgetWarningSent,
     riskySponsorOfferSentThisSeason: eventResult.riskySponsorOfferSentThisSeason,
     patronWithdrawnSeason: eventResult.patronWithdrawnSeason,
+    // P1 — Annandagen val-state
+    pendingAnnandagsVal,
+    pendingAnnandagsGratisentreVal: clearAnnandagsGratisentreVal ? false : (game.pendingAnnandagsGratisentreVal ?? false),
     // Beslutsekonomi cooldown tracking
     lastEventQueueRound: eventResult.lastEventQueueRound,
     lastRumorRound: mediaResult.lastRumorRound,
@@ -1348,6 +1363,62 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       }
     } else {
       updatedGame = { ...updatedGame, pendingFollowUps: remaining }
+    }
+  }
+
+  // P1 — Annandagen media-rubrik konsekvens (val B/C/D triggar omg+1 mediarubrik → inbox)
+  if (updatedGame.pendingAnnandagsMediaRubrik && nextMatchday >= updatedGame.pendingAnnandagsMediaRubrik.triggerRound) {
+    const { val } = updatedGame.pendingAnnandagsMediaRubrik
+    const clubName = updatedGame.clubs.find(c => c.id === updatedGame.managedClubId)?.name ?? 'Klubben'
+    const mediaRubrikTexts: Record<string, { title: string; body: string }> = {
+      B: {
+        title: `${clubName} gör annandagen till en folkfest`,
+        body: '[Opus]',
+      },
+      C: {
+        title: `${clubName} öppnar portarna på annandagen`,
+        body: '[Opus]',
+      },
+      D: {
+        title: `${clubName} och mecenat firar annandag tillsammans`,
+        body: '[Opus]',
+      },
+    }
+    const rubrik = mediaRubrikTexts[val]
+    if (rubrik) {
+      const rubrikId = `inbox_annandagen_media_${updatedGame.currentSeason}`
+      if (!updatedGame.inbox.some(i => i.id === rubrikId)) {
+        updatedGame = {
+          ...updatedGame,
+          inbox: [{
+            id: rubrikId,
+            date: updatedGame.currentDate,
+            type: InboxItemType.Community,
+            title: rubrik.title,
+            body: rubrik.body,
+            isRead: false,
+          }, ...updatedGame.inbox],
+          pendingAnnandagsMediaRubrik: undefined,
+        }
+      }
+    }
+  }
+
+  // P1 — Annandagen klack-reaktion konsekvens (val B/C/D triggar omg+2 → supporterGroup.mood boost)
+  if (updatedGame.pendingAnnandagsKlack && nextMatchday >= updatedGame.pendingAnnandagsKlack.triggerRound) {
+    const { val } = updatedGame.pendingAnnandagsKlack
+    const moodBoost = val === 'C' ? 8 : val === 'B' ? 5 : val === 'D' ? 6 : 0
+    if (moodBoost > 0 && updatedGame.supporterGroup) {
+      updatedGame = {
+        ...updatedGame,
+        supporterGroup: {
+          ...updatedGame.supporterGroup,
+          mood: Math.min(100, updatedGame.supporterGroup.mood + moodBoost),
+        },
+        pendingAnnandagsKlack: undefined,
+      }
+    } else {
+      updatedGame = { ...updatedGame, pendingAnnandagsKlack: undefined }
     }
   }
 

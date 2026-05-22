@@ -15,6 +15,7 @@ import { getRivalry } from '../../../domain/data/rivalries'
 export interface EconomyProcessorResult {
   updatedClubs: Club[]
   roundFinanceLog: FinanceEntry[]
+  clearAnnandagsGratisentreVal?: boolean  // P1: true when gratisentré income was applied
 }
 
 /**
@@ -106,7 +107,24 @@ export function processEconomy(
     roundFinanceLog.push({ round: nextMatchday, amount: -managedIncome.weeklyLegendCost, reason: 'wages', label: 'Legendlöner' })
   }
 
-  let updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, managedIncome.netPerRound)
+  // P1 — Annandagen val C (gratisentré): nollsätt biljettintäkt och justera net
+  let netForManagedClub = managedIncome.netPerRound
+  let clearAnnandagsGratisentreVal = false
+  if (game.pendingAnnandagsGratisentreVal && managedHomeMatch?.isAnnandagen && isHomeMatch) {
+    netForManagedClub -= managedIncome.matchRevenue
+    clearAnnandagsGratisentreVal = true
+    if (managedIncome.matchRevenue !== 0) {
+      // Replace matchRevenue entry in finance log with 0
+      let idx = -1
+      for (let i = roundFinanceLog.length - 1; i >= 0; i--) {
+        if (roundFinanceLog[i].reason === 'match_revenue') { idx = i; break }
+      }
+      if (idx >= 0) roundFinanceLog.splice(idx, 1)
+      roundFinanceLog.push({ round: nextMatchday, amount: 0, reason: 'match_revenue', label: 'Matchintäkt (gratisentré — annandagen)' })
+    }
+  }
+
+  let updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, netForManagedClub)
 
   // AI clubs: simplified flat estimate
   for (const c of game.clubs) {
@@ -140,5 +158,5 @@ export function processEconomy(
     )
   }
 
-  return { updatedClubs, roundFinanceLog }
+  return { updatedClubs, roundFinanceLog, clearAnnandagsGratisentreVal }
 }

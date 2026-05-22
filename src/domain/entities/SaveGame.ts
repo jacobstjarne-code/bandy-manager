@@ -403,4 +403,17 @@ export interface SaveGame {
   }
   lastRetirementSeason?: number       // season when last retirement decision was triggered
   retirementCeremonyCounter?: number  // increments each time a player retires via portal card
+
+  // P1 — Annandagsplanering val-mekanik
+  annandagsValGjort?: 'A' | 'B' | 'C' | 'D' | null  // val gjort denna säsong
+  pendingAnnandagsVal?: boolean                        // trigger: 2 omgångar innan hemmamatch
+  pendingAnnandagsGratisentreVal?: boolean             // val C: nollsätt biljettintäkt på matchdagen
+  pendingAnnandagsMediaRubrik?: {                      // konsekvensledja: mediarubrik omg+1
+    val: 'A' | 'B' | 'C' | 'D'
+    triggerRound: number
+  }
+  pendingAnnandagsKlack?: {                            // konsekvensledja: klack-reaktion omg+2
+    val: string
+    triggerRound: number
+  }
 }

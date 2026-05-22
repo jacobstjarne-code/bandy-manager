@@ -100,6 +100,7 @@ interface GameState {
   recordPortalShown: (cardIds: string[]) => void
   resolveRetirementDecision: (playerId: string, choice: 'thank' | 'respect' | 'invite') => { retired: boolean; response: string }
   markAnniversaryAcknowledged: (eventId: string) => void
+  resolveAnnandagsVal: (val: 'A' | 'B' | 'C' | 'D') => void
 }
 
 const indexedDBStorage = {
