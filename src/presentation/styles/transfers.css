@@ -258,7 +258,7 @@
   margin-bottom: 14px;
 }
 
-.transfers-form-group-lg {
+.transfers-form-group.transfers-form-group--lg {
   margin-bottom: 20px;
 }
 
@@ -269,11 +269,19 @@
   margin-bottom: 6px;
 }
 
-.transfers-label-lg {
-  font-size: 13px;
-  color: var(--text-secondary);
-  display: block;
+.transfers-label.transfers-label--lg {
   margin-bottom: 8px;
+}
+
+.transfers-legend-lock-badge {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: default;
+  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .transfers-year-btns {

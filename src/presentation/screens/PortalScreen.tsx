@@ -123,7 +123,7 @@ export function PortalScreen() {
         .filter(f => !f.isCup && f.homeClubId !== game.managedClubId && f.awayClubId !== game.managedClubId)
         .sort((a, b) => a.matchday - b.matchday)[0]
       if (nextPlayoffMatch) {
-        const dateStr = getRoundDate(game.currentSeason, nextPlayoffMatch.roundNumber)
+        const dateStr = nextPlayoffMatch.date || getRoundDate(game.currentSeason, nextPlayoffMatch.roundNumber)
         const d = new Date(dateStr)
         const days = ['sön', 'mån', 'tis', 'ons', 'tor', 'fre', 'lör']
         return `Fortsätt — ${days[d.getDay()]} →`

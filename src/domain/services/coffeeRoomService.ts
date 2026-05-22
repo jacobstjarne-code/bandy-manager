@@ -301,12 +301,10 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
   }
 
   // C-O2: incoming bid kafferum — show within 2 matchdays when AI bids on managed player
+  const incomingBidAge = round - (game.lastIncomingBidMatchday ?? -99)
   if (
-    INCOMING_BID_KAFFERUM.length > 0 &&
-    INCOMING_BID_KAFFERUM[0] !== '[Opus]' &&
     game.lastIncomingBidMatchday !== undefined &&
-    round - (game.lastIncomingBidMatchday ?? 0) <= 2 &&
-    round - (game.lastIncomingBidMatchday ?? 0) >= 0 &&
+    incomingBidAge >= 0 && incomingBidAge <= 2 &&
     seed % 3 !== 0
   ) {
     const idx = Math.abs(seed * 31) % INCOMING_BID_KAFFERUM.length

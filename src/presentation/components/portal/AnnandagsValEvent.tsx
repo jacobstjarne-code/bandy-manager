@@ -109,7 +109,7 @@ export function AnnandagsValEvent({ game }: Props) {
 
       {/* Body */}
       <p style={{
-        fontFamily: 'Georgia, serif',
+        fontFamily: 'var(--font-display)',
         fontSize: 13,
         fontStyle: 'italic',
         color: 'var(--text-light)',

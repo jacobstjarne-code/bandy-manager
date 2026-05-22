@@ -1,3 +1,4 @@
+import type { Fixture } from '../entities/Fixture'
 import { RIVALRIES } from '../data/rivalries'
 import { mulberry32 } from '../utils/random'
 
@@ -349,6 +350,17 @@ export function getRoundDate(season: number, roundNumber: number): string {
     if (slot) return slot.date
   }
   return playoffRoundDate(season, roundNumber)
+}
+
+/**
+ * Stamps a fixture array with date + tipoffHour from a calendar slot lookup.
+ * Used at generation time in createNewGame, seasonEndProcessor, and cupProcessor.
+ */
+export function stampFixturesFromCalendar(fixtures: Fixture[], calendar: MatchdaySlot[]): Fixture[] {
+  return fixtures.map(f => {
+    const slot = calendar.find(s => s.matchday === f.matchday)
+    return slot ? { ...f, date: slot.date, tipoffHour: slot.tipoffHour } : f
+  })
 }
 
 /**

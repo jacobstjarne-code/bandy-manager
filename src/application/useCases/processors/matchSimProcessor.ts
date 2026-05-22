@@ -16,7 +16,6 @@ import { mulberry32 } from '../../../domain/utils/random'
 import { pickRefereeForMatch, shouldTriggerRefereeMeeting, updateRefereeRelation, REFEREE_MEETING_QUOTES, getRefereeDisplayName, generateReferees } from '../../../domain/services/refereeService'
 import type { Referee } from '../../../domain/entities/Referee'
 import { checkForMatchInjury } from '../../../domain/services/matchInjuryService'
-// buildSeasonCalendar no longer needed — using game.seasonCalendar (T3 refactor)
 
 const AI_FORMATIONS: Record<ClubStyle, FormationType> = {
   [ClubStyle.Defensive]: '4-3-3',

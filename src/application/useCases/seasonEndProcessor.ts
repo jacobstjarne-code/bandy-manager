@@ -7,7 +7,7 @@ import { FixtureStatus, InboxItemType, PendingScreen, PlayerPosition, PlayerArch
 import { PLAYER_FIRST_NAMES, PLAYER_LAST_NAMES } from '../../domain/data/playerNames'
 import { calculateStandings } from '../../domain/services/standingsService'
 import { generateYouthIntake } from '../../domain/services/youthIntakeService'
-import { generateSchedule, buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
+import { generateSchedule, buildSeasonCalendar, stampFixturesFromCalendar } from '../../domain/services/scheduleGenerator'
 import {
   generateCupFixtures,
 } from '../../domain/services/cupService'
@@ -380,10 +380,7 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     nextSeason,
     cupSeasonRand,
   )
-  const newCupFixtures = rawNewCupFixtures.map(f => {
-    const slot = nextSeasonCalendar.find(s => s.matchday === f.matchday)
-    return slot ? { ...f, date: slot.date, tipoffHour: slot.tipoffHour } : f
-  })
+  const newCupFixtures = stampFixturesFromCalendar(rawNewCupFixtures, nextSeasonCalendar)
   const newFixtures = [...leagueFixtures, ...newCupFixtures]
 
 

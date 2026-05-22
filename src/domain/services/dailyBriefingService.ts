@@ -5,7 +5,6 @@ import { getTransferWindowStatus } from './transferWindowService'
 import { FixtureStatus } from '../enums'
 import { getCurrentAct } from './seasonActService'
 import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, type SeasonPhase } from '../data/seasonPhases'
-// buildSeasonCalendar no longer needed here — using game.seasonCalendar (T3 refactor)
 import {
   annandagsbandyBriefing,
   nyarsbandyBriefing,

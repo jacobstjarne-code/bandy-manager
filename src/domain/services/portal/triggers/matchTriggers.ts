@@ -2,7 +2,6 @@ import type { SaveGame } from '../../../entities/SaveGame'
 import type { Fixture } from '../../../entities/Fixture'
 import { getRivalry } from '../../../data/rivalries'
 import { PlayoffRound } from '../../../enums'
-import { getRoundDate } from '../../scheduleGenerator'
 
 /** Returnerar nästa schemalagda fixture för managed club. */
 function getNextManagedFixture(game: SaveGame): Fixture | null {
@@ -76,7 +75,7 @@ export function daysUntilNextMatch(game: SaveGame): number {
   const next = getNextManagedFixture(game)
   if (!next) return -1
   const today = new Date(game.currentDate)
-  const dateStr = next.isCup ? '' : getRoundDate(next.season, next.roundNumber)
+  const dateStr = next.date ?? ''
   if (!dateStr) return -1
   const matchDate = new Date(dateStr)
   const diff = Math.round((matchDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))

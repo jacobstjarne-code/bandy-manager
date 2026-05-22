@@ -47,8 +47,8 @@ export function BidModal({ player, managedClub, onClose, onConfirm, rivalry }: B
           <input type="number" value={offeredSalary} onChange={e => setOfferedSalary(Number(e.target.value))} step={1000}
             className="transfers-input" />
         </div>
-        <div className="transfers-form-group-lg">
-          <label className="transfers-label-lg">Kontraktslängd</label>
+        <div className="transfers-form-group transfers-form-group--lg">
+          <label className="transfers-label transfers-label--lg">Kontraktslängd</label>
           <div className="transfers-year-btns">
             {[1, 2, 3].map(y => (
               <button

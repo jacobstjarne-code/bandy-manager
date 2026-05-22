@@ -414,7 +414,7 @@ export interface SaveGame {
     triggerRound: number
   }
   pendingAnnandagsKlack?: {                            // konsekvensledja: klack-reaktion omg+2
-    val: string
+    val: 'A' | 'B' | 'C' | 'D'
     triggerRound: number
   }
 }

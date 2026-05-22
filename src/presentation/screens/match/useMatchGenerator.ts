@@ -13,7 +13,6 @@
 import { useRef } from 'react'
 import { simulateMatchStepByStep, simulateFromMidMatch } from '../../../domain/services/matchSimulator'
 import type { MatchStep } from '../../../domain/services/matchSimulator'
-// buildSeasonCalendar no longer needed — using game.seasonCalendar (T3 refactor)
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture, TeamSelection } from '../../../domain/entities/Fixture'
 import type { MatchWeather } from '../../../domain/entities/Weather'

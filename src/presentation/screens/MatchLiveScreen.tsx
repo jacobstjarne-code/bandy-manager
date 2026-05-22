@@ -9,7 +9,6 @@ import type { Fixture, TeamSelection } from '../../domain/entities/Fixture'
 import type { MatchWeather } from '../../domain/entities/Weather'
 import { MatchEventType, TacticMentality, TacticTempo, TacticPress, PlayerPosition } from '../../domain/enums'
 import { getRivalry } from '../../domain/data/rivalries'
-// buildSeasonCalendar no longer needed — using fixture.date / game.seasonCalendar (T3 refactor)
 import { computePlayerRatings } from '../utils/matchRatings'
 import { playSound, isMuted, toggleMute } from '../audio/soundEffects'
 import { PhaseOverlay } from '../components/match/PhaseOverlay'

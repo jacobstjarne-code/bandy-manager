@@ -489,7 +489,7 @@ export function TransfersScreen() {
                   </p>
                 </div>
                 {player.isClubLegend ? (
-                  <span className="btn btn-ghost" style={{ flexShrink: 0, padding: '6px 10px', fontSize: 12, cursor: 'default', opacity: 0.5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span className="btn btn-ghost transfers-legend-lock-badge">
                     <Lock size={11} /> Legend
                   </span>
                 ) : (

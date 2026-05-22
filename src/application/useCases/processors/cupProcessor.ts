@@ -7,6 +7,7 @@ import {
   generateNextCupRound,
   getCupRoundName,
 } from '../../../domain/services/cupService'
+import { stampFixturesFromCalendar } from '../../../domain/services/scheduleGenerator'
 
 export interface CupProcessorResult {
   updatedCupBracket: CupBracket | null
@@ -126,10 +127,7 @@ export function processCupRound(
           maxRound,
           game.currentSeason,
         )
-        const newFixtures = rawNewFixtures.map(f => {
-          const slot = game.seasonCalendar?.find(s => s.matchday === f.matchday)
-          return slot ? { ...f, date: slot.date, tipoffHour: slot.tipoffHour } : f
-        })
+        const newFixtures = stampFixturesFromCalendar(rawNewFixtures, game.seasonCalendar ?? [])
         result.updatedCupBracket = updatedBracket
         result.cupNewFixtures = newFixtures
       }

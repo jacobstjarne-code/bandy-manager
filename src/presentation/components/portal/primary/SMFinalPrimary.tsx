@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
 import { getWeatherEmoji } from '../../../../domain/services/weatherService'
-import { getRoundDate } from '../../../../domain/services/scheduleGenerator'
 import { getPlayoffSeriesContext } from '../../../../domain/services/portal/playoffSeriesContext'
 
 /**
@@ -43,7 +42,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
   const venueCity = nextFixture.venueCity
     ?? (isHome ? (club?.region ?? '') : (opponent.region ?? ''))
 
-  const roundDateStr = nextFixture.isCup ? '' : getRoundDate(nextFixture.season, nextFixture.roundNumber)
+  const roundDateStr = nextFixture.date ?? ''
   const matchDate = roundDateStr ? new Date(roundDateStr) : null
   const MONTHS = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december']
   const DAYS = ['sön','mån','tis','ons','tor','fre','lör']

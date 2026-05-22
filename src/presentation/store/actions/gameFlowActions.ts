@@ -68,7 +68,7 @@ export function gameFlowActions(get: Get, set: Set) {
         const g = result.game
         const scheduledAll = g.fixtures.filter(f => f.status === 'scheduled')
         if (scheduledAll.length === 0) break
-        const nextMd = Math.min(...scheduledAll.map(f => f.matchday))
+        const nextMd = scheduledAll.reduce((min, f) => f.matchday < min ? f.matchday : min, Infinity)
         const managedAtNextMd = scheduledAll.some(
           f => f.matchday === nextMd &&
                (f.homeClubId === g.managedClubId || f.awayClubId === g.managedClubId)
@@ -620,12 +620,7 @@ export function gameFlowActions(get: Get, set: Set) {
 
       if (val === 'B') {
         // Julmarknad: dra 15 000 kr från managed clubs cashOnHand (finances)
-        const cost = 15000
-        updatedClubs = game.clubs.map(c =>
-          c.id === game.managedClubId
-            ? { ...c, finances: c.finances - cost }
-            : c
-        )
+        updatedClubs = applyFinanceChange(game.clubs, game.managedClubId, -15000)
       }
 
       if (val === 'C') {

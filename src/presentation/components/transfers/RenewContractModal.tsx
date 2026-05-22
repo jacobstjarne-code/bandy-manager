@@ -44,7 +44,7 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
           />
         </div>
         <div style={{ marginBottom: 24 }}>
-          <label className="transfers-label-lg">Antal år</label>
+          <label className="transfers-label transfers-label--lg">Antal år</label>
           <div className="transfers-year-btns">
             {[1, 2, 3].map(y => (
               <button

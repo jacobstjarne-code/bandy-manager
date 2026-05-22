@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
 import { getRivalry } from '../../../../domain/data/rivalries'
-import { getRoundDate } from '../../../../domain/services/scheduleGenerator'
 
 /**
  * Primary-kort för derbymatchdag.
@@ -40,7 +39,7 @@ export function DerbyPrimary({ game }: CardRenderProps) {
   const sg = game.supporterGroup
   const klackInfo = sg ? `${sg.name} · mood ${sg.mood}` : null
 
-  const roundDateStr = nextFixture.isCup ? '' : getRoundDate(nextFixture.season, nextFixture.roundNumber)
+  const roundDateStr = nextFixture.date ?? ''
   const matchDate = roundDateStr ? new Date(roundDateStr) : null
   const MONTHS = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec']
   const DAYS = ['Sön','Mån','Tis','Ons','Tor','Fre','Lör']

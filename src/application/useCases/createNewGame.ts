@@ -5,7 +5,7 @@ import type { Player } from '../../domain/entities/Player'
 import { FixtureStatus, TrainingType, TrainingIntensity, PlayerPosition, ClubStyle } from '../../domain/enums'
 import { generateWorld, CLUB_TEMPLATES } from '../../domain/services/worldGenerator'
 import { generateYouthTeam } from '../../domain/services/academyService'
-import { generateSchedule, buildSeasonCalendar } from '../../domain/services/scheduleGenerator'
+import { generateSchedule, buildSeasonCalendar, stampFixturesFromCalendar } from '../../domain/services/scheduleGenerator'
 import { calculateStandings } from '../../domain/services/standingsService'
 import { generateMatchWeather } from '../../domain/services/weatherService'
 import type { MatchWeather } from '../../domain/entities/Weather'
@@ -239,10 +239,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
   const cupRand = mulberry32(cupSeed)
   const clubsSortedByRep = [...clubs].sort((a, b) => (b.reputation ?? 50) - (a.reputation ?? 50))
   const { bracket: cupBracket, fixtures: rawCupFixtures } = generateCupFixtures(clubsSortedByRep.map(c => c.id), season, cupRand)
-  const cupFixtures = rawCupFixtures.map(f => {
-    const slot = calendar.find(s => s.matchday === f.matchday)
-    return slot ? { ...f, date: slot.date, tipoffHour: slot.tipoffHour } : f
-  })
+  const cupFixtures = stampFixturesFromCalendar(rawCupFixtures, calendar)
 
   // Pre-generate weather for round 1 so it's visible before first match
   const round1Fixtures = fixtures.filter(f => f.roundNumber === 1)

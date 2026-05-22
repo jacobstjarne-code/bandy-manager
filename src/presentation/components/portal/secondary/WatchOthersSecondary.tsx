@@ -1,13 +1,12 @@
 import type { CardRenderProps } from '../portalTypes'
 import type { WatchOthersContext } from '../../../../domain/data/watchOthersReflectionText'
 import { WATCH_OTHERS_TEXT } from '../../../../domain/data/watchOthersReflectionText'
-import { getRoundDate } from '../../../../domain/services/scheduleGenerator'
 import { FixtureStatus, PlayoffRound } from '../../../../domain/enums'
 import type { Fixture } from '../../../../domain/entities/Fixture'
 import type { SaveGame } from '../../../../domain/entities/SaveGame'
 
 function daysUntilFixture(game: SaveGame, fixture: Fixture): number {
-  const fixtureDate = getRoundDate(game.currentSeason, fixture.roundNumber)
+  const fixtureDate = fixture.date ?? ''
   const current = new Date(game.currentDate)
   const target = new Date(fixtureDate)
   const diffMs = target.getTime() - current.getTime()
@@ -115,7 +114,7 @@ export function WatchOthersSecondary({ game }: CardRenderProps) {
         {upcomingPlayoff.slice(0, 3).map(f => {
           const home = game.clubs.find(c => c.id === f.homeClubId)
           const away = game.clubs.find(c => c.id === f.awayClubId)
-          const dateStr = getRoundDate(game.currentSeason, f.roundNumber)
+          const dateStr = f.date ?? ''
           return (
             <div key={f.id} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',

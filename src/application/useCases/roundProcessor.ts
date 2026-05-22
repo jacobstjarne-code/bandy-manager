@@ -65,6 +65,7 @@ import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
 import { detectNotableResult, decayKlackEcho } from '../../domain/services/klackEchoService'
 import { DEADLINE_AI_BID_TEXT } from '../../domain/data/windowDeadlineText'
 import { computeCSStreak, shouldTriggerCSPress, pickCSPressPlayer, buildCSPressEvent } from '../../domain/services/csPressEventService'
+import { adjustSupporterMood } from '../../domain/services/supporterService'
 
 export type { AdvanceResult }
 
@@ -602,14 +603,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // P1 — Annandagen val-trigger: 2 omgångar innan hemmamatch på annandagen
   let pendingAnnandagsVal = game.pendingAnnandagsVal ?? false
-  const annandagenHomeFix = finalAllFixtures.find(
-    f => f.isAnnandagen && f.homeClubId === game.managedClubId && f.status === FixtureStatus.Scheduled
-  )
-  if (annandagenHomeFix) {
-    const roundsUntil = annandagenHomeFix.matchday - nextMatchday
-    if (roundsUntil === 2 && !game.annandagsValGjort && !game.pendingAnnandagsVal) {
-      pendingAnnandagsVal = true
-    }
+  const annandagenHomeFix = (!game.annandagsValGjort && !game.pendingAnnandagsVal)
+    ? finalAllFixtures.find(f => f.isAnnandagen && f.homeClubId === game.managedClubId && f.status === FixtureStatus.Scheduled)
+    : undefined
+  if (annandagenHomeFix && annandagenHomeFix.matchday - nextMatchday === 2) {
+    pendingAnnandagsVal = true
   }
 
   // Special-date day-before inbox: annandagen, nyårsbandy, finaldag, cup-finalhelgen
@@ -683,9 +681,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const updatedArc = updateTrainerArc({ ...game, players: availabilityUpdatedPlayers, fixtures: finalAllFixtures, standings })
 
   // ── Board objectives check-in (round 7, 14, 22) ──────────────────────
-  const leagueRound = finalAllFixtures
-    .filter(f => f.status === FixtureStatus.Completed && !f.isCup)
-    .reduce((max, f) => Math.max(max, f.roundNumber), 0)
+  const leagueRound = currentLeagueRound ?? 0
   let updatedBoardObjectives = game.boardObjectives ?? []
   if ([7, 14, 22].includes(leagueRound) && updatedBoardObjectives.length > 0) {
     const gameForEval = { ...game, players: availabilityUpdatedPlayers, fixtures: finalAllFixtures, standings }
@@ -1101,6 +1097,8 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
+  const newClubEra = calculateClubEra(game)
+
   // M15: merge ripple-derived field changes via centralized function
   const rippleMerged = mergeRippleDeltas(game, gameAfterRipples, {
     fanMoodBase: newFanMood,
@@ -1210,7 +1208,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     victoryEchoExpires,
     recentMoments: (() => {
       // M14: check for era shift and push era_shift Moment
-      const newEra = calculateClubEra(game)
+      const newEra = newClubEra
       const prevEra = game.currentEra
       const eraShiftMoments: Moment[] = []
       if (prevEra && prevEra !== newEra) {
@@ -1231,7 +1229,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         .sort((a, b) => (b.season - a.season) || (b.matchday - a.matchday))
         .slice(0, 5)
     })(),
-    currentEra: calculateClubEra(game),
+    currentEra: newClubEra,
     activeScandals: scandalResult.updatedScandals,
     scandalHistory: scandalResult.updatedScandalHistory,
     pointDeductions: scandalResult.pointDeductions,
@@ -1417,10 +1415,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     if (moodBoost > 0 && updatedGame.supporterGroup) {
       updatedGame = {
         ...updatedGame,
-        supporterGroup: {
-          ...updatedGame.supporterGroup,
-          mood: Math.min(100, updatedGame.supporterGroup.mood + moodBoost),
-        },
+        supporterGroup: adjustSupporterMood(updatedGame.supporterGroup, moodBoost),
         pendingAnnandagsKlack: undefined,
       }
     } else {
