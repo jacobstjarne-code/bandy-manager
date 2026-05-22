@@ -1282,6 +1282,12 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     // C-B3 — Pensionsval
     pendingRetirementDecision,
     lastRetirementSeason,
+    // P1 — Annandagen val: nollställ per säsong
+    annandagsValGjort: null,
+    pendingAnnandagsVal: false,
+    pendingAnnandagsGratisentreVal: false,
+    pendingAnnandagsMediaRubrik: undefined,
+    pendingAnnandagsKlack: undefined,
   }
 
   return { game: { ...updatedGame, allTimeRecords: updateAllTimeRecords(updatedGame, seasonSummary) }, roundPlayed: null, seasonEnded: true }

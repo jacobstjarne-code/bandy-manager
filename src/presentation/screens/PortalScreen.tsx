@@ -20,6 +20,7 @@ import { getActiveDecisionCount } from '../../domain/services/decisionBudgetServ
 import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
 import { playSound } from '../audio/soundEffects'
 import { PortalRoundMark } from '../components/portal/PortalRoundMark'
+import { AnnandagsValEvent } from '../components/portal/AnnandagsValEvent'
 import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
 import { isManagedClubSpectator } from '../../domain/data/seasonPhases'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
@@ -213,6 +214,9 @@ export function PortalScreen() {
             <strong>Lugnare första veckan</strong>
             En fråga åt gången. Resten ligger och väntar tills du hittat rytmen.
           </div>
+        )}
+        {game.pendingAnnandagsVal && (
+          <AnnandagsValEvent game={game} />
         )}
         <PortalEventSlot game={game} />
         <Primary game={game} />
