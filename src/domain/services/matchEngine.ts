@@ -115,7 +115,7 @@ export function simulateMatch(input: SimulateMatchInput): SimulateMatchResult {
   for (const ev of allEvents) {
     if (ev.type === MatchEventType.Goal    && ev.playerId) playerGoals[ev.playerId]    = (playerGoals[ev.playerId]    ?? 0) + 1
     if (ev.type === MatchEventType.Assist  && ev.playerId) playerAssists[ev.playerId]  = (playerAssists[ev.playerId]  ?? 0) + 1
-    if (ev.type === MatchEventType.RedCard && ev.playerId) playerRedCards[ev.playerId] = (playerRedCards[ev.playerId] ?? 0) + 1
+    if (ev.type === MatchEventType.Suspension && ev.playerId) playerRedCards[ev.playerId] = (playerRedCards[ev.playerId] ?? 0) + 1
     if (ev.type === MatchEventType.Save    && ev.playerId) playerSaves[ev.playerId]    = (playerSaves[ev.playerId]    ?? 0) + 1
   }
 

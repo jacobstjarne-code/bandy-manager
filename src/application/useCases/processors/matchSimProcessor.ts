@@ -321,7 +321,7 @@ export function simulateRound(
     const isManaged2 = fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId
     if (isManaged2) {
       const suspCount = result.fixture.events.filter(
-        e => e.type === MatchEventType.RedCard && e.clubId === game.managedClubId
+        e => e.type === MatchEventType.Suspension && e.clubId === game.managedClubId
       ).length
       const penCount = result.fixture.events.filter(e => e.isPenaltyGoal).length
       const meetingRand = mulberry32(baseSeed + i + 7777)
@@ -348,7 +348,7 @@ export function simulateRound(
       // Update referee relation for managed fixture
       const existingRelation = (game.refereeRelations ?? []).find(r => r.refereeId === referee.id)
       const suspCount2 = result.fixture.events.filter(
-        e => e.type === MatchEventType.RedCard && e.clubId === game.managedClubId
+        e => e.type === MatchEventType.Suspension && e.clubId === game.managedClubId
       ).length
       const penCount2 = result.fixture.events.filter(e => e.isPenaltyGoal).length
       updateRefereeRelation(

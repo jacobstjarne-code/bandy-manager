@@ -363,7 +363,7 @@ export function GranskaOversikt({
                 <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: isHomeEvent ? 'flex-start' : 'flex-end', gap: 5 }}>
                   {isHomeEvent && <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 24, textAlign: 'right', flexShrink: 0 }}>{e.minute}'</span>}
                   {isHomeEvent && <span style={{ fontSize: 11 }}>{icon}</span>}
-                  <span style={{ fontSize: 11, color: e.type === MatchEventType.RedCard ? 'var(--danger)' : 'var(--text-secondary)' }}>{scorerName}</span>
+                  <span style={{ fontSize: 11, color: e.type === MatchEventType.Suspension ? 'var(--danger)' : 'var(--text-secondary)' }}>{scorerName}</span>
                   {!isHomeEvent && <span style={{ fontSize: 11 }}>{icon}</span>}
                   {!isHomeEvent && <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 24, textAlign: 'left', flexShrink: 0 }}>{e.minute}'</span>}
                 </div>

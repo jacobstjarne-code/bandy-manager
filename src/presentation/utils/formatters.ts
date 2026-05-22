@@ -58,7 +58,7 @@ export function csColor(cs: number): string {
 
 export function eventIcon(type: MatchEventType): string {
   if (type === MatchEventType.Goal) return '🏒'
-  if (type === MatchEventType.RedCard) return '🚫'
+  if (type === MatchEventType.Suspension) return '🚫'
   if (type === MatchEventType.Save) return '🧤'
   if (type === MatchEventType.Corner) return '📐'
   return ''

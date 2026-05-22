@@ -101,7 +101,7 @@ export function GranskaScreen() {
   const potmRating = potmId ? fixture?.report?.playerRatings[potmId] : null
 
   const keyMoments = fixture?.events
-    .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard)
+    .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.Suspension)
     .sort((a, b) => a.minute - b.minute) ?? []
 
   const rs = roundSummary

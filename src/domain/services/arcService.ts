@@ -2,7 +2,7 @@ import type { SaveGame } from '../entities/SaveGame'
 import type { Fixture } from '../entities/Fixture'
 import type { ActiveArc, ArcType, StorylineEntry } from '../entities/Narrative'
 import type { GameEvent } from '../entities/GameEvent'
-import { InboxItemType } from '../enums'
+import { InboxItemType, MatchEventType } from '../enums'
 import { getRivalry } from '../data/rivalries'
 import { mulberry32 } from '../utils/random'
 
@@ -88,7 +88,7 @@ export function detectArcTriggers(game: SaveGame, justCompletedFixture?: Fixture
     )
     for (const p of jokerPlayers) {
       const events = justCompletedFixture.events ?? []
-      const hadSuspension = events.some(e => e.type === 'suspension' && e.playerId === p.id)
+      const hadSuspension = events.some(e => e.type === MatchEventType.Suspension && e.playerId === p.id)
       if (hadSuspension) {
         newArcs.push({
           id: genId('arc', currentMatchday, `joker_${p.id}`),

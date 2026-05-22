@@ -166,14 +166,14 @@ export function Scoreboard({
         const currentMin = currentMatchStep.minute
         const hasSusp = currentMatchStep.activeSuspensions.homeCount > 0 || currentMatchStep.activeSuspensions.awayCount > 0
         const homeSusp = allEventsSoFar
-          .filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.homeClubId && currentMin - e.minute < 10)
+          .filter(e => e.type === MatchEventType.Suspension && e.clubId === fixture.homeClubId && currentMin - e.minute < 10)
           .map(e => {
             const p = e.playerId ? playerById.get(e.playerId) : null
             const remaining = 10 - (currentMin - e.minute)
             return p?.shirtNumber != null ? `#${p.shirtNumber} (${remaining}\u2032)` : '?'
           })
         const awaySusp = allEventsSoFar
-          .filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.awayClubId && currentMin - e.minute < 10)
+          .filter(e => e.type === MatchEventType.Suspension && e.clubId === fixture.awayClubId && currentMin - e.minute < 10)
           .map(e => {
             const p = e.playerId ? playerById.get(e.playerId) : null
             const remaining = 10 - (currentMin - e.minute)

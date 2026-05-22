@@ -25,7 +25,7 @@ export function GranskaForlopp({ game, fixture, isHome, rs, standing, standingBe
   const leaguePosition = getCurrentLeaguePosition(game.managedClubId, game)
 
   const allEvents = fixture?.events
-    .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard || e.type === MatchEventType.Corner || e.type === MatchEventType.Penalty)
+    .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.Suspension || e.type === MatchEventType.Corner || e.type === MatchEventType.Penalty)
     .sort((a, b) => a.minute - b.minute) ?? []
 
   const getClubShort = (id: string) => game.clubs.find(c => c.id === id)?.shortName ?? game.clubs.find(c => c.id === id)?.name ?? '?'

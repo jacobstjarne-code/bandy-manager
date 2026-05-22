@@ -64,11 +64,10 @@ export enum MatchEventType {
   Corner = 'corner',
   Penalty = 'penalty',
   YellowCard = 'yellowCard', // never emitted
-  RedCard = 'redCard',
+  Suspension = 'redCard',   // bandy tidsutvisning (4.5–9 min); string-värdet 'redCard' bevaras för save-kompatibilitet
   Injury = 'injury', // never emitted
   Save = 'save',
   Substitution = 'substitution',
-  Suspension = 'suspension', // never emitted — use RedCard for suspensions
   FullTime = 'fullTime', // never emitted
 }
 

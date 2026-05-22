@@ -367,7 +367,7 @@ export function MatchLiveScreen() {
     }
 
     if (step.homeScore === prevHomeScore.current && step.awayScore === prevAwayScore.current) {
-      const hasRedCard = step.events.some(e => e.type === MatchEventType.RedCard)
+      const hasRedCard = step.events.some(e => e.type === MatchEventType.Suspension)
       const hasSave = step.events.some(e => e.type === MatchEventType.Save)
       const hasCorner = step.events.some(e => e.type === MatchEventType.Corner)
       if (hasRedCard) playSound('card')
@@ -474,7 +474,7 @@ export function MatchLiveScreen() {
 
     const hasGoal = step.events.some(e => e.type === MatchEventType.Goal)
     const hasSave = step.events.some(e => e.type === MatchEventType.Save)
-    const hasSuspension = step.events.some(e => e.type === MatchEventType.RedCard)
+    const hasSuspension = step.events.some(e => e.type === MatchEventType.Suspension)
     const isLate = step.step >= 55
     const isTight = step.step >= 50 && step.homeScore === step.awayScore
     const baseDelay = isFastForward
@@ -1167,7 +1167,7 @@ export function MatchLiveScreen() {
     const allEventsSoFar = displayedSteps.flatMap(s => s.events)
     const playerById = new Map(game.players.map(p => [p.id, p]))
     return allEventsSoFar
-      .filter(e => e.type === MatchEventType.RedCard && currentMin - (e.minute ?? 0) < 10)
+      .filter(e => e.type === MatchEventType.Suspension && currentMin - (e.minute ?? 0) < 10)
       .map(e => {
         const p = e.playerId ? playerById.get(e.playerId) : null
         const elapsed = currentMin - (e.minute ?? 0)
@@ -1189,7 +1189,7 @@ export function MatchLiveScreen() {
       s.commentary?.trim() ||
       s.events.some(e =>
         e.type === MatchEventType.Goal ||
-        e.type === MatchEventType.RedCard ||
+        e.type === MatchEventType.Suspension ||
         e.type === MatchEventType.Save
       )
     )
@@ -1205,7 +1205,7 @@ export function MatchLiveScreen() {
           text: deriveEventText(s.commentary, goalEvent, 'Mål', feedPlayers),
         }
       }
-      const suspEvent = s.events.find(e => e.type === MatchEventType.RedCard)
+      const suspEvent = s.events.find(e => e.type === MatchEventType.Suspension)
       if (suspEvent) {
         const team = suspEvent.clubId === fixture.homeClubId ? 'home' as const : 'away' as const
         return {

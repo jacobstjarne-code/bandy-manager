@@ -47,7 +47,7 @@ export function updatePlayerMatchStats(
         e => e.type === MatchEventType.Goal && e.playerId === id && e.isCornerGoal
       ).length
       const reds = fixture.events.filter(
-        e => e.type === MatchEventType.RedCard && e.playerId === id
+        e => e.type === MatchEventType.Suspension && e.playerId === id
       ).length
 
       // Check if player was substituted out — use actual minutes played

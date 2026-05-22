@@ -213,14 +213,14 @@ export function CommentaryFeed({
         // genererat ett step utan innehåll.
         const hasMeaningfulEvent = s.events.some(e =>
           e.type === MatchEventType.Goal ||
-          e.type === MatchEventType.RedCard ||
+          e.type === MatchEventType.Suspension ||
           e.type === MatchEventType.Substitution ||
           e.type === MatchEventType.Corner
         )
         if (!s.commentary?.trim() && !hasMeaningfulEvent) return []
 
         const hasGoal = s.events.some(e => e.type === MatchEventType.Goal)
-        const hasSuspension = s.events.some(e => e.type === MatchEventType.RedCard)
+        const hasSuspension = s.events.some(e => e.type === MatchEventType.Suspension)
         const hasCorner = s.events.some(e => e.type === MatchEventType.Corner) && !hasGoal
         const isDerby = s.isDerbyComment || s.commentary.toLowerCase().includes('derby')
         const hasCornerGoal = s.events.some(e => e.type === MatchEventType.Goal && e.isCornerGoal)
@@ -280,14 +280,14 @@ export function CommentaryFeed({
         }
 
         const primaryEvent = s.events.find(e =>
-          e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard ||
+          e.type === MatchEventType.Goal || e.type === MatchEventType.Suspension ||
           e.type === MatchEventType.Save || e.type === MatchEventType.Corner
         )
         const icon = primaryEvent ? eventIcon(primaryEvent.type)
           : ct === 'player_duel' ? '⚔️' : ''
 
         const sidedEvent = s.events.find(e =>
-          (e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard) && e.clubId
+          (e.type === MatchEventType.Goal || e.type === MatchEventType.Suspension) && e.clubId
         )
         const isAwayEvent = sidedEvent ? getEventAlignment(sidedEvent.clubId, fixture.homeClubId) === 'away' : false
 

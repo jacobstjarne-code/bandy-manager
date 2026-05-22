@@ -71,8 +71,8 @@ export function HalftimeModal({
   const htEvents = htSteps.flatMap(s => s.events)
   const htHomeGoals = halftimeStep?.homeScore ?? 0
   const htAwayGoals = halftimeStep?.awayScore ?? 0
-  const htHomeSuspensions = htEvents.filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.homeClubId).length
-  const htAwaySuspensions = htEvents.filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.awayClubId).length
+  const htHomeSuspensions = htEvents.filter(e => e.type === MatchEventType.Suspension && e.clubId === fixture.homeClubId).length
+  const htAwaySuspensions = htEvents.filter(e => e.type === MatchEventType.Suspension && e.clubId === fixture.awayClubId).length
 
   const htStarters = [...(homeLineup.startingPlayerIds ?? []), ...(awayLineup.startingPlayerIds ?? [])]
   const htRatings = computePlayerRatings(htStarters, htEvents)

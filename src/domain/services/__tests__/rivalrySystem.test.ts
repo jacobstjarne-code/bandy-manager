@@ -195,7 +195,7 @@ describe('Rivalry match simulation', () => {
         seed: i + 1000,
         rivalry: derbyRivalry,
       })
-      derbyRedCards += derbyResult.fixture.events.filter(e => e.type === MatchEventType.RedCard).length
+      derbyRedCards += derbyResult.fixture.events.filter(e => e.type === MatchEventType.Suspension).length
 
       const normalResult = simulateMatch({
         fixture: makeFixture({ id: `normal_${i}`, homeClubId: 'club_soderfors', awayClubId: 'club_skutskar' }),
@@ -206,7 +206,7 @@ describe('Rivalry match simulation', () => {
         seed: i + 1000,
         // no rivalry
       })
-      normalRedCards += normalResult.fixture.events.filter(e => e.type === MatchEventType.RedCard).length
+      normalRedCards += normalResult.fixture.events.filter(e => e.type === MatchEventType.Suspension).length
     }
 
     const avgDerby = derbyRedCards / N

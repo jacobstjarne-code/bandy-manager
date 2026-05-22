@@ -1153,7 +1153,7 @@ function* simulateMatchCore(
             homeSuspensionTimers.push(duration)
           }
           trackRed(suspPlayer.id)
-          const ev: MatchEvent = { minute, type: MatchEventType.RedCard, clubId: defendingClubId, playerId: suspPlayer.id, description: `Utvisning av ${suspPlayer.firstName} ${suspPlayer.lastName}` }
+          const ev: MatchEvent = { minute, type: MatchEventType.Suspension, clubId: defendingClubId, playerId: suspPlayer.id, description: `Utvisning av ${suspPlayer.firstName} ${suspPlayer.lastName}` }
           stepEvents.push(ev); allEvents.push(ev)
         }
       }

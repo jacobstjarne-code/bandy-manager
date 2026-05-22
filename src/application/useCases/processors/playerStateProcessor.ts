@@ -133,7 +133,7 @@ export function applyPlayerStateUpdates(
 
   for (const fixture of simulatedFixtures) {
     for (const event of fixture.events) {
-      if (event.type === MatchEventType.RedCard && event.playerId) {
+      if (event.type === MatchEventType.Suspension && event.playerId) {
         // ~2% sannolikhet för matchstraff (grovt foul) → 1 match avstängd
         const isMatchPenalty = Math.random() < 0.02
         if (isMatchPenalty) {

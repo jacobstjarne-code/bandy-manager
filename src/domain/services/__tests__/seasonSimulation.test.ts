@@ -146,7 +146,7 @@ function simulateSeason(seed: number): SeasonStats {
         if (ev.type === MatchEventType.Goal && ev.isCornerGoal === true) {
           cornerGoals++
         }
-        if (ev.type === MatchEventType.RedCard) totalRedCards++
+        if (ev.type === MatchEventType.Suspension) totalRedCards++
       }
 
       // Accumulate player goals

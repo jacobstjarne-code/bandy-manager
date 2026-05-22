@@ -319,7 +319,7 @@ export function MatchLiveScreen() {
     }
 
     if (step.homeScore === prevHomeScore.current && step.awayScore === prevAwayScore.current) {
-      const hasRedCard = step.events.some(e => e.type === MatchEventType.RedCard)
+      const hasRedCard = step.events.some(e => e.type === MatchEventType.Suspension)
       const hasSave = step.events.some(e => e.type === MatchEventType.Save)
       const hasCorner = step.events.some(e => e.type === MatchEventType.Corner)
       if (hasRedCard) playSound('card')
@@ -432,7 +432,7 @@ export function MatchLiveScreen() {
     // Sprint C pacing: goal = long pause, save = medium, late game = faster
     const hasGoal = step.events.some(e => e.type === MatchEventType.Goal)
     const hasSave = step.events.some(e => e.type === MatchEventType.Save)
-    const hasSuspension = step.events.some(e => e.type === MatchEventType.RedCard)
+    const hasSuspension = step.events.some(e => e.type === MatchEventType.Suspension)
     const isLate = step.step >= 55
     const isTight = step.step >= 50 && step.homeScore === step.awayScore
     const baseDelay = isFastForward

@@ -224,7 +224,7 @@ describe('simulateMatch', () => {
         seed: i * 13 + 300,
       })
       const hasCard = result.fixture.events.some(
-        e => e.type === MatchEventType.RedCard || e.type === MatchEventType.YellowCard
+        e => e.type === MatchEventType.Suspension || e.type === MatchEventType.YellowCard
       )
       if (hasCard) matchesWithCard++
     }

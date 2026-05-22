@@ -84,7 +84,7 @@ export function MatchResultScreen() {
 
   // B2: Key moments (goals + red cards)
   const keyMoments = fixture.events
-    .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.RedCard)
+    .filter(e => e.type === MatchEventType.Goal || e.type === MatchEventType.Suspension)
     .sort((a, b) => a.minute - b.minute)
 
   return (
@@ -215,7 +215,7 @@ export function MatchResultScreen() {
                   }}>
                     {isHome && <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 24, textAlign: 'right', flexShrink: 0 }}>{e.minute}'</span>}
                     {isHome && <span style={{ fontSize: 11 }}>{icon}</span>}
-                    <span style={{ fontSize: 11, color: e.type === MatchEventType.RedCard ? 'var(--danger)' : 'var(--text-secondary)' }}>
+                    <span style={{ fontSize: 11, color: e.type === MatchEventType.Suspension ? 'var(--danger)' : 'var(--text-secondary)' }}>
                       {scorerName}
                     </span>
                     {!isHome && <span style={{ fontSize: 11 }}>{icon}</span>}
@@ -282,8 +282,8 @@ export function MatchResultScreen() {
                 <span>Skott {fixture.report.shotsHome}–{fixture.report.shotsAway}</span>
               )}
               {(() => {
-                const homeReds = fixture.events.filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.homeClubId).length
-                const awayReds = fixture.events.filter(e => e.type === MatchEventType.RedCard && e.clubId === fixture.awayClubId).length
+                const homeReds = fixture.events.filter(e => e.type === MatchEventType.Suspension && e.clubId === fixture.homeClubId).length
+                const awayReds = fixture.events.filter(e => e.type === MatchEventType.Suspension && e.clubId === fixture.awayClubId).length
                 return (homeReds > 0 || awayReds > 0) ? <span>Utvisningar {homeReds}–{awayReds}</span> : null
               })()}
             </div>

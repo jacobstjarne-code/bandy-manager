@@ -153,7 +153,7 @@ export function useMatchTimer(deps: MatchTimerDeps) {
 
     const hasGoal = step.events.some(e => e.type === MatchEventType.Goal)
     const hasSave = step.events.some(e => e.type === MatchEventType.Save)
-    const hasSuspension = step.events.some(e => e.type === MatchEventType.RedCard)
+    const hasSuspension = step.events.some(e => e.type === MatchEventType.Suspension)
     const isLate = step.step >= 55
     const isTight = step.step >= 50 && step.homeScore === step.awayScore
     const baseDelay = isFastForward
