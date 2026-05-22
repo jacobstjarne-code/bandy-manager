@@ -58,7 +58,7 @@
 .transfers-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 300;
+  z-index: var(--z-modal);
   background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
@@ -71,7 +71,7 @@
 .transfers-modal-overlay-high {
   position: fixed;
   inset: 0;
-  z-index: 400;
+  z-index: var(--z-overlay);
   background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
@@ -83,7 +83,7 @@
 
 .transfers-modal-box {
   background: var(--bg);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 20px 18px 24px;
   width: 100%;
   max-height: 85vh;

@@ -68,7 +68,7 @@ export function ActiveBidsList({
             Scoutbudget: {scoutBudget} kvar
           </span>
         }>Scouting — andra lag</SectionLabel>
-        <div className="card-round" style={{ overflow: 'hidden' }}>
+        <div className="card-sharp" style={{ overflow: 'hidden' }}>
           {scoutablePlayers.slice(0, 30).map((player, index) => {
             const report = scoutReports[player.id]
             const reportAge = report ? getScoutReportAge(report, game.currentSeason, report.scoutedSeason) : null
@@ -139,7 +139,7 @@ export function ActiveBidsList({
         return (
           <div className="card-stagger-3" style={{ marginBottom: 24 }}>
             <SectionLabel>Scoutrapporter ({reportEntries.length})</SectionLabel>
-            <div className="card-round" style={{ overflow: 'hidden' }}>
+            <div className="card-sharp" style={{ overflow: 'hidden' }}>
               {reportEntries.map((report, index) => {
                 const reportPlayer = game.players.find(p => p.id === report.playerId)
                 const reportClub = game.clubs.find(c => c.id === report.clubId)
@@ -235,7 +235,7 @@ export function ActiveBidsList({
         )}
 
         {!game.activeTalentSearch && (
-          <div className="card-round" style={{ padding: '16px', marginBottom: 16 }}>
+          <div className="card-sharp" style={{ padding: '16px', marginBottom: 16 }}>
             <SectionLabel>Ny talangspaning</SectionLabel>
             <div style={{ marginBottom: 12 }}>
               <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Position</label>
@@ -304,7 +304,7 @@ export function ActiveBidsList({
           return (
             <div>
               <SectionLabel>Senaste spaningsrapport</SectionLabel>
-              <div className="card-round" style={{ overflow: 'hidden' }}>
+              <div className="card-sharp" style={{ overflow: 'hidden' }}>
                 {latestResult.players.map((suggestion, index) => {
                   const player = game.players.find(p => p.id === suggestion.playerId)
                   const club = player ? game.clubs.find(c => c.id === player.clubId) : null
