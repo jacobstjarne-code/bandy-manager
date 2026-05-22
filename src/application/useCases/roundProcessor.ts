@@ -19,7 +19,7 @@ import { updateAllMarketValues } from '../../domain/services/marketValueService'
 import { generateWeeklyDecision } from '../../domain/services/weeklyDecisionService'
 import { evaluateBoard, generateBoardMessage } from '../../domain/services/boardService'
 import { mulberry32 } from '../../domain/utils/random'
-import { getRoundDate } from '../../domain/services/scheduleGenerator'
+
 import type { AdvanceResult } from './advanceTypes'
 import { derivePreRoundContext } from './processors/preRoundContextProcessor'
 import { applyPostRoundFlags } from './processors/postRoundFlagsProcessor'
@@ -490,7 +490,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
   const calendarSlot = storedCalendar.find(s => s.matchday === nextMatchday)
   // Fallback: look for the date on the next fixture itself (stamped at creation)
   const nextFixtureForDate = roundFixtures[0]
-  const newDate = calendarSlot?.date ?? nextFixtureForDate?.date ?? getRoundDate(game.currentSeason, nextMatchday)
+  const newDate = calendarSlot?.date ?? nextFixtureForDate?.date ?? game.currentDate
 
   // Both snabbsim and live fixtures land in simulatedFixtures:
   //   snabbsim — added by simulateMatch at line 403 of matchSimProcessor
@@ -1440,6 +1440,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         f.id,
         baseSeed + 50000 + i * 7919,
         game.currentSeasonSignature,
+        f.date,
       )
       nextWeathers.push(weather)
     }

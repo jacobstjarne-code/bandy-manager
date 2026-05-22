@@ -217,6 +217,8 @@ export function simulateRound(
       homeClub,
       fixture.id,
       baseSeed + i * 7919,
+      undefined,
+      fixture.date,
     )
     roundMatchWeathers.push(matchWeather)
 

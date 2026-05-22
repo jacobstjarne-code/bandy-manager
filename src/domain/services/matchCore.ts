@@ -1416,7 +1416,16 @@ function* simulateMatchCore(
         const dv   = { ...templateVars, player: dp ? findPlayerName(dp.id) : attackingTeam }
         commentaryText = fillTemplate(pickCommentary(commentary.player_duel, rand), dv)
       } else if (seqType === 'atmosphere') {
-        commentaryText = fillTemplate(pickCommentary(commentary.atmosphere, rand), templateVars)
+        if (fixture.isCup && input.isCupFinalhelgen) {
+          const r = rand()
+          if (r < 0.50) commentaryText = pickCommentary(commentary.cup_finalweekend_atmosphere, rand)
+          else if (r < 0.80) commentaryText = fillTemplate(pickCommentary(commentary.cup_atmosphere, rand), templateVars)
+          else commentaryText = fillTemplate(pickCommentary(commentary.atmosphere, rand), templateVars)
+        } else if (fixture.isCup && rand() < 0.40) {
+          commentaryText = pickCommentary(commentary.cup_atmosphere, rand)
+        } else {
+          commentaryText = fillTemplate(pickCommentary(commentary.atmosphere, rand), templateVars)
+        }
       } else if (seqType === 'offside_call') {
         const op   = getGoalScorer(attackingStarters)
         const ov   = { ...templateVars, player: op ? findPlayerName(op.id) : attackingTeam }

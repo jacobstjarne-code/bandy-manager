@@ -21,10 +21,11 @@ export function generateMatchWeather(
   fixtureId: string,
   seed: number,
   signature?: SeasonSignature,
+  fixtureDate?: string,
 ): MatchWeather {
   void season
   const rand = mulberry32(seed)
-  const month = roundToMonth(roundNumber)
+  const month = fixtureDate ? new Date(fixtureDate).getMonth() + 1 : roundToMonth(roundNumber)
   const climate = getClimateForRegionAndMonth(homeClub.region, month)
 
   // Temperature — cold_winter signature shifts temperature generation colder
