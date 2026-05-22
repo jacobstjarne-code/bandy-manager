@@ -18,15 +18,15 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
 
   return (
     <div onClick={onClose} className="transfers-modal-overlay">
-      <div onClick={e => e.stopPropagation()} className="transfers-modal-box" style={{ border: '1px solid var(--border)' }}>
+      <div onClick={e => e.stopPropagation()} className="transfers-modal-box">
         <div className="transfers-modal-header">
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4, fontFamily: 'var(--font-display)' }}>Förläng kontrakt</h3>
-            <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{player.firstName} {player.lastName}</p>
+            <h3 className="transfers-modal-title">Förläng kontrakt</h3>
+            <p className="transfers-modal-player-name">{player.firstName} {player.lastName}</p>
           </div>
-          <button onClick={onClose} className="btn btn-ghost" style={{ width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={16} /></button>
+          <button onClick={onClose} className="btn btn-ghost transfers-close-btn"><X size={16} /></button>
         </div>
-        <div style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', marginBottom: 20, border: '1px solid var(--border)' }}>
+        <div className="transfers-info-box" style={{ marginBottom: 20 }}>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
             Nuvarande: {formatCurrency(player.salary)}/mån · kontrakt t.o.m. säsong {player.contractUntilSeason}
           </p>
@@ -35,7 +35,7 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
           </p>
         </div>
         <div style={{ marginBottom: 16 }}>
-          <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Ny lön (kr/mån)</label>
+          <label className="transfers-label">Ny lön (kr/mån)</label>
           <input
             type="number"
             value={newSalary}
@@ -44,14 +44,13 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
           />
         </div>
         <div style={{ marginBottom: 24 }}>
-          <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>Antal år</label>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <label className="transfers-label-lg">Antal år</label>
+          <div className="transfers-year-btns">
             {[1, 2, 3].map(y => (
               <button
                 key={y}
                 onClick={() => setYears(y)}
-                className={`btn ${years === y ? 'btn-copper' : 'btn-outline'}`}
-                style={{ flex: 1, padding: '10px', fontSize: 15, fontWeight: 600 }}
+                className={`btn ${years === y ? 'btn-copper' : 'btn-outline'} transfers-year-btn`}
               >
                 {y} år
               </button>
@@ -62,8 +61,7 @@ export function RenewContractModal({ player, currentSeason, minSalary, error, on
         {error && <p style={{ fontSize: 13, color: 'var(--danger)', marginBottom: 12 }}>{error}</p>}
         <button
           onClick={() => onConfirm(player.id, newSalary, years)}
-          className="btn btn-copper"
-          style={{ width: '100%', padding: '14px', fontSize: 15, fontWeight: 600 }}
+          className="btn btn-copper transfers-cta-btn"
         >
           Förläng kontrakt
         </button>

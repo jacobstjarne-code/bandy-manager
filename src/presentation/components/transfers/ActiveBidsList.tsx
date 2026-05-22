@@ -79,18 +79,14 @@ export function ActiveBidsList({
             return (
               <div
                 key={player.id}
-                className={isScounted ? 'transfers-state-scouted-bg' : undefined}
+                className={`transfers-list-row-lg${isScounted ? ' transfers-state-scouted-bg' : ''}`}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '10px 14px',
                   borderBottom: index < Math.min(scoutablePlayers.length, 30) - 1 ? '1px solid var(--border)' : 'none',
-                  gap: 10,
                   opacity: isScounted ? 0.8 : 1,
                 }}
               >
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div className="transfers-list-content">
+                  <p className="transfers-list-name-lg">
                     {player.firstName} {player.lastName}
                     {isStale && <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--danger)', fontWeight: 400 }}>Föråldrad</span>}
                     {reportAge === 'aging' && !isStale && (
@@ -105,7 +101,7 @@ export function ActiveBidsList({
                     }
                   </p>
                   {isScounted && (
-                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }}>{report!.notes}</p>
+                    <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, fontStyle: 'italic' }} >{report!.notes}</p>
                   )}
                 </div>
                 {isScounted && windowOpen && (
@@ -150,31 +146,26 @@ export function ActiveBidsList({
                 return (
                   <div
                     key={report.playerId}
-                    style={{
-                      padding: '10px 14px',
-                      borderBottom: index < reportEntries.length - 1 ? '1px solid var(--border)' : 'none',
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: 10,
-                    }}
+                    className="transfers-report-row"
+                    style={{ borderBottom: index < reportEntries.length - 1 ? '1px solid var(--border)' : 'none' }}
                   >
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                        <p style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div className="transfers-list-content">
+                      <div className="transfers-report-header">
+                        <p className="transfers-report-name">
                           {reportPlayer ? `${reportPlayer.firstName} ${reportPlayer.lastName}` : report.playerId}
                         </p>
                         <span style={{ fontSize: 11, fontWeight: 600, color: freshnessColor, flexShrink: 0 }}>
                           {freshnessLabel}
                         </span>
                       </div>
-                      <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2 }}>
+                      <p className="transfers-report-meta">
                         {reportPlayer ? positionShort(reportPlayer.position) + ' · ' : ''}{reportClub?.name ?? '?'} · Säsong {report.scoutedSeason}
                       </p>
-                      <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2 }}>
+                      <p className="transfers-report-meta">
                         Styrka ~{report.estimatedCA} ± {caRange} · Potential ~{report.estimatedPA}
                       </p>
                       {report.notes && (
-                        <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>{report.notes}</p>
+                        <p className="transfers-report-notes">{report.notes}</p>
                       )}
                       {report.attributeProfile && (
                         <div style={{ marginTop: 8 }}>
@@ -184,13 +175,13 @@ export function ActiveBidsList({
                             { label: 'Fysisk', value: report.attributeProfile.physical },
                             { label: 'Mental', value: report.attributeProfile.mental },
                           ] as const).map(({ label, value }) => (
-                            <div key={label} style={{ marginBottom: 6 }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</span>
-                                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{value}</span>
+                            <div key={label} className="transfers-attr-row">
+                              <div className="transfers-attr-label-row">
+                                <span className="transfers-attr-label">{label}</span>
+                                <span className="transfers-attr-value">{value}</span>
                               </div>
-                              <div style={{ background: 'var(--border)', borderRadius: 4, height: 4 }}>
-                                <div style={{ background: 'var(--accent)', borderRadius: 4, height: 4, width: `${value}%` }} />
+                              <div className="transfers-attr-bar-bg">
+                                <div className="transfers-attr-bar-fill" style={{ width: `${value}%` }} />
                               </div>
                             </div>
                           ))}
@@ -217,7 +208,7 @@ export function ActiveBidsList({
       {/* Talent search (Spaning) */}
       <div className="card-stagger-2" style={{ marginBottom: 24 }}>
         <div className="card-sharp" style={{ padding: '10px 14px', marginBottom: 12 }}>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+          <p className="transfers-spaning-info">
             <strong style={{ color: 'var(--text-primary)' }}>Spaning</strong> skickar ut din scout för att hitta okända spelare som matchar dina kriterier. Tar 2 omgångar. Skiljer sig från <em>Scouting</em> som utvärderar kända spelare.
           </p>
         </div>
@@ -238,7 +229,7 @@ export function ActiveBidsList({
           <div className="card-sharp" style={{ padding: '16px', marginBottom: 16 }}>
             <SectionLabel>Ny talangspaning</SectionLabel>
             <div style={{ marginBottom: 12 }}>
-              <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Position</label>
+              <label className="transfers-label">Position</label>
               <select
                 value={spaningPosition}
                 onChange={e => onSetSpanningPosition(e.target.value)}
@@ -253,7 +244,7 @@ export function ActiveBidsList({
               </select>
             </div>
             <div style={{ marginBottom: 12 }}>
-              <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Max ålder</label>
+              <label className="transfers-label">Max ålder</label>
               <select
                 value={spaningMaxAge}
                 onChange={e => onSetSpanningMaxAge(Number(e.target.value))}
@@ -266,7 +257,7 @@ export function ActiveBidsList({
               </select>
             </div>
             <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Max lön (kr/mån)</label>
+              <label className="transfers-label">Max lön (kr/mån)</label>
               <select
                 value={spaningMaxSalary}
                 onChange={e => onSetSpanningMaxSalary(Number(e.target.value))}
@@ -278,7 +269,7 @@ export function ActiveBidsList({
                 <option value={25000}>25 000 kr</option>
               </select>
             </div>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>Kostar 2 scoutbudget · kvar: {scoutBudget}</p>
+            <p className="transfers-spaning-footer">Kostar 2 scoutbudget · kvar: {scoutBudget}</p>
             <button
               onClick={() => {
                 const result = onStartTalentSearch(spaningPosition, spaningMaxAge, spaningMaxSalary, currentRound)
@@ -291,8 +282,8 @@ export function ActiveBidsList({
                 }
               }}
               disabled={scoutBudget < 2}
-              className={`btn ${scoutBudget >= 2 ? 'btn-copper' : 'btn-ghost'}`}
-              style={{ width: '100%', padding: '12px', fontSize: 14, fontWeight: 600, cursor: scoutBudget >= 2 ? 'pointer' : 'not-allowed', opacity: scoutBudget >= 2 ? 1 : 0.5 }}
+              className={`btn ${scoutBudget >= 2 ? 'btn-copper' : 'btn-ghost'} transfers-spaning-cta`}
+              style={{ cursor: scoutBudget >= 2 ? 'pointer' : 'not-allowed', opacity: scoutBudget >= 2 ? 1 : 0.5 }}
             >
               Starta spaning
             </button>
@@ -311,17 +302,17 @@ export function ActiveBidsList({
                   const report = player ? (game.scoutReports ?? {})[player.id] : null
                   const isAlreadyScouted = !!report
                   return (
-                    <div key={suggestion.playerId} style={{ padding: '10px 14px', borderBottom: index < latestResult.players.length - 1 ? '1px solid var(--border)' : 'none', display: 'flex', alignItems: 'flex-start', gap: 10, borderLeft: isAlreadyScouted ? '3px solid var(--accent)' : '3px solid transparent' }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', marginBottom: 2 }}>
+                    <div key={suggestion.playerId} className="transfers-talent-row" style={{ borderBottom: index < latestResult.players.length - 1 ? '1px solid var(--border)' : 'none', borderLeft: isAlreadyScouted ? '3px solid var(--accent)' : '3px solid transparent' }}>
+                      <div className="transfers-list-content">
+                        <p className="transfers-talent-name">
                           {player ? `${player.firstName} ${player.lastName}` : suggestion.playerId}
                         </p>
-                        <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 2 }}>
+                        <p className="transfers-talent-meta">
                           {player ? positionShort(player.position) + ' · ' : ''}{club?.name ?? '?'} · {player ? `${player.age} år` : ''} · Styrka ~{suggestion.estimatedCA}
                         </p>
-                        <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>{suggestion.scoutNotes}</p>
+                        <p className="transfers-talent-notes">{suggestion.scoutNotes}</p>
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0, alignItems: 'flex-end' }}>
+                      <div className="transfers-talent-actions">
                         {isAlreadyScouted && <span className="tag tag-copper">Scoutad</span>}
                         {player && !isAlreadyScouted && (
                           <button

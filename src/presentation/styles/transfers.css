@@ -84,11 +84,12 @@
 .transfers-modal-box {
   background: var(--bg);
   border-radius: var(--radius-md);
-  padding: 20px 18px 24px;
+  padding: 20px 16px 24px;
   width: 100%;
   max-height: 85vh;
   overflow-y: auto;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
 }
 
 /* ── Player card ── */
@@ -220,3 +221,377 @@
 .transfers-dot-green { background: var(--success); }
 .transfers-dot-yellow { background: var(--warning); }
 .transfers-dot-red { background: var(--danger); }
+
+/* ── Modal content ── */
+.transfers-modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  font-family: var(--font-display);
+}
+
+.transfers-modal-player-name {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.transfers-close-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.transfers-info-box {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.transfers-form-group {
+  margin-bottom: 14px;
+}
+
+.transfers-form-group-lg {
+  margin-bottom: 20px;
+}
+
+.transfers-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.transfers-label-lg {
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.transfers-year-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.transfers-year-btn {
+  flex: 1;
+  padding: 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.transfers-rivalry-warning {
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.transfers-error-text {
+  font-size: 12px;
+  color: var(--danger);
+  margin-bottom: 8px;
+}
+
+.transfers-cta-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ── Screen root ── */
+.transfers-screen {
+  padding: 0 12px;
+  padding-top: 8px;
+  overflow-y: auto;
+  height: 100%;
+  background: var(--bg);
+}
+
+/* ── Tab button ── */
+.transfers-tab-btn {
+  padding: 6px 10px;
+  white-space: nowrap;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.transfers-tab-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* ── Window status bar ── */
+.transfers-window-bar {
+  padding: 8px 12px;
+  margin-bottom: 10px;
+}
+
+.transfers-window-status {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.transfers-window-desc {
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+/* ── Market group description ── */
+.transfers-group-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  padding: 0 2px;
+}
+
+/* ── List rows ── */
+.transfers-list-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 8px;
+}
+
+.transfers-list-row-lg {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  gap: 10px;
+}
+
+.transfers-list-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.transfers-list-name {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.transfers-list-name-lg {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.transfers-list-meta {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 1px;
+}
+
+.transfers-list-meta-sm {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+/* ── Wage warning banner ── */
+.transfers-wage-warning {
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.transfers-wage-warning-text {
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.transfers-wage-warning-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Empty state ── */
+.transfers-empty-state {
+  padding: 20px 16px;
+}
+
+.transfers-empty-text {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ── Scout budget label ── */
+.transfers-scout-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* ── Spaning section ── */
+.transfers-spaning-info {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.transfers-spaning-footer {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.transfers-spaning-cta {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ── Modal info box subtext ── */
+.transfers-info-subtext {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── Renew contract confirm ── */
+.transfers-renew-confirm {
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+
+.transfers-renew-confirm-text {
+  font-size: 13px;
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* ── Modal border variant ── */
+.transfers-modal-box-bordered {
+  border: 1px solid var(--border);
+}
+
+/* ── Sell tab interest badge ── */
+.transfers-interest-badge {
+  color: var(--accent);
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+/* ── Report section ── */
+.transfers-report-row {
+  padding: 10px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.transfers-report-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.transfers-report-name {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.transfers-report-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.transfers-report-notes {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.transfers-attr-row {
+  margin-bottom: 6px;
+}
+
+.transfers-attr-label-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.transfers-attr-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.transfers-attr-value {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* ── Talent search result row ── */
+.transfers-talent-row {
+  padding: 10px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.transfers-talent-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+  align-items: flex-end;
+}
+
+.transfers-talent-name {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  margin-bottom: 2px;
+}
+
+.transfers-talent-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.transfers-talent-notes {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}

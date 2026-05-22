@@ -41,7 +41,7 @@ export function TransferPlayerCard({
       className={`transfers-player-card ${isScouted ? 'transfers-player-card-scouted' : ''}`}
       style={{ borderBottom: isLast ? 'none' : '1px solid var(--border)' }}
     >
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div className="transfers-list-content">
         <p style={{ fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-display)' }}>
           {player.firstName} {player.lastName}
           {isBargain && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--success)', fontWeight: 700 }}>⭐ Fynd</span>}

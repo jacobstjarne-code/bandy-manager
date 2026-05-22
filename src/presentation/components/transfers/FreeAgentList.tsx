@@ -12,7 +12,7 @@ interface FreeAgentListProps {
 export function FreeAgentList({ freeAgents, windowOpen, scoutReports, onSign }: FreeAgentListProps) {
   if (freeAgents.length === 0) {
     return (
-      <div className="card-sharp" style={{ padding: '20px 16px' }}>
+      <div className="card-sharp transfers-empty-state">
         <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>Inga fria agenter tillgängliga just nu. Fria agenter dyker upp vid säsongsslut.</p>
       </div>
     )
@@ -21,9 +21,9 @@ export function FreeAgentList({ freeAgents, windowOpen, scoutReports, onSign }: 
   return (
     <div className="card-sharp" style={{ overflow: 'hidden' }}>
       {freeAgents.map((agent, index) => (
-        <div key={agent.id} style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', borderBottom: index < freeAgents.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div key={agent.id} className="transfers-list-row-lg" style={{ borderBottom: index < freeAgents.length - 1 ? '1px solid var(--border)' : 'none' }}>
+          <div className="transfers-list-content">
+            <p className="transfers-list-name-lg">
               {agent.firstName} {agent.lastName}
             </p>
             <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
