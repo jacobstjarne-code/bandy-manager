@@ -12,14 +12,14 @@ interface FreeAgentListProps {
 export function FreeAgentList({ freeAgents, windowOpen, scoutReports, onSign }: FreeAgentListProps) {
   if (freeAgents.length === 0) {
     return (
-      <div className="card-round" style={{ padding: '20px 16px' }}>
+      <div className="card-sharp" style={{ padding: '20px 16px' }}>
         <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>Inga fria agenter tillgängliga just nu. Fria agenter dyker upp vid säsongsslut.</p>
       </div>
     )
   }
 
   return (
-    <div className="card-round" style={{ overflow: 'hidden' }}>
+    <div className="card-sharp" style={{ overflow: 'hidden' }}>
       {freeAgents.map((agent, index) => (
         <div key={agent.id} style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', borderBottom: index < freeAgents.length - 1 ? '1px solid var(--border)' : 'none', gap: 10 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
