@@ -146,3 +146,11 @@ export const RIVAL_SALE_KLACK: string[] = [
   'Han kommer att möta oss två gånger om året. Vi vet vart vi sitter.',
   'Hans tröja hänger inte längre i klubbhuset. Det räcker.',
 ]
+
+/**
+ * C-O2 — Kafferum-pool när en AI-klubb lägger bud på MANAGERNS spelaren.
+ * Opus levererar replikerna separat. Placeholder tills dess.
+ */
+export const INCOMING_BID_KAFFERUM: string[] = [
+  '[Opus]',
+]

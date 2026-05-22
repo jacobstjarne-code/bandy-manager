@@ -951,6 +951,11 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
 
   // C-T1/T9 — Transfer consequence fan mood deltas
   let lastRivalSaleMatchday = game.lastRivalSaleMatchday
+  // C-O2 — incoming bid on managed player
+  const hasNewIncomingBidForManagedPlayer = newBids.some(
+    b => b.direction === 'incoming' && game.players.find(p => p.id === b.playerId)?.clubId === game.managedClubId,
+  )
+  let lastIncomingBidMatchday = hasNewIncomingBidForManagedPlayer ? nextMatchday : game.lastIncomingBidMatchday
   // Player rejection: morale +5 for player, fanMood -5
   for (const item of transferResult.inboxItems) {
     if ((item as InboxItem & { bidRejectedByPlayer?: boolean }).bidRejectedByPlayer) {
@@ -1129,6 +1134,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     scoutReports: { ...updatedScoutReports, ...rumorScoutReports },
     activeScoutAssignment: updatedScoutAssignment,
     lastRivalSaleMatchday,
+    lastIncomingBidMatchday,
     scoutBudget: game.scoutBudget ?? 10,
     transferBids: trimmedBids,
     pendingEvents: [

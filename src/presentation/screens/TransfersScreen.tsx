@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X } from 'lucide-react'
+import { X, Lock } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 
 import { useGameStore } from '../store/gameStore'
@@ -488,14 +488,20 @@ export function TransfersScreen() {
                     })()}
                   </p>
                 </div>
-                <button
-                  onClick={() => windowOpen && handleListForSale(player.id)}
-                  disabled={!windowOpen}
-                  className={`btn ${windowOpen ? 'btn-outline' : 'btn-ghost'}`}
-                  style={{ flexShrink: 0, padding: '6px 10px', fontSize: 12, fontWeight: 600, cursor: windowOpen ? 'pointer' : 'not-allowed', opacity: windowOpen ? 1 : 0.6 }}
-                >
-                  Till salu
-                </button>
+                {player.isClubLegend ? (
+                  <span className="btn btn-ghost" style={{ flexShrink: 0, padding: '6px 10px', fontSize: 12, cursor: 'default', opacity: 0.5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Lock size={11} /> Legend
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => windowOpen && handleListForSale(player.id)}
+                    disabled={!windowOpen}
+                    className={`btn ${windowOpen ? 'btn-outline' : 'btn-ghost'}`}
+                    style={{ flexShrink: 0, padding: '6px 10px', fontSize: 12, fontWeight: 600, cursor: windowOpen ? 'pointer' : 'not-allowed', opacity: windowOpen ? 1 : 0.6 }}
+                  >
+                    Till salu
+                  </button>
+                )}
               </div>
             ))}
           </div>

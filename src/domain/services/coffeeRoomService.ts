@@ -3,7 +3,7 @@ import type { ScandalType } from './scandalService'
 import { InboxItemType } from '../enums'
 import { getCharacterName } from './supporterService'
 import { KLACK_ECHO } from '../data/klackEchoText'
-import { RIVAL_SALE_KAFFERUM } from '../data/transferResponseText'
+import { RIVAL_SALE_KAFFERUM, INCOMING_BID_KAFFERUM } from '../data/transferResponseText'
 import { ANNIVERSARY_KAFFERUM } from '../data/anniversaryKafferumText'
 
 interface CoffeeQuote {
@@ -297,8 +297,20 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
     seed % 2 === 0
   ) {
     const idx = Math.abs(seed * 19) % RIVAL_SALE_KAFFERUM.length
-    const ex = RIVAL_SALE_KAFFERUM[idx]
-    return { speaker: ex[0], text: `"${ex[1]}" — ${ex[2]}: "${ex[3]}"` }
+    return { text: RIVAL_SALE_KAFFERUM[idx] }
+  }
+
+  // C-O2: incoming bid kafferum — show within 2 matchdays when AI bids on managed player
+  if (
+    INCOMING_BID_KAFFERUM.length > 0 &&
+    INCOMING_BID_KAFFERUM[0] !== '[Opus]' &&
+    game.lastIncomingBidMatchday !== undefined &&
+    round - (game.lastIncomingBidMatchday ?? 0) <= 2 &&
+    round - (game.lastIncomingBidMatchday ?? 0) >= 0 &&
+    seed % 3 !== 0
+  ) {
+    const idx = Math.abs(seed * 31) % INCOMING_BID_KAFFERUM.length
+    return { text: INCOMING_BID_KAFFERUM[idx] }
   }
 
   // B6: anniversary kafferum — 33% chance when medium-or-bigger unseen eko exists
