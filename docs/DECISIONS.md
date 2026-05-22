@@ -378,3 +378,27 @@ Mellan varje delsprint: mät via analyze-stress, läs rapporten, avgör om näst
 **Alternativ övervägt:** Sprintat direkt på hypotes (a) eller (b). Avvisat — verifiering av target är billig (en skript-körning) och bör alltid ske före motorändring.
 
 **Konsekvens:** Ny regel i LESSONS.md #21: innan motorsprint planeras för ett specifikt target, räkna om det måttet från rådata och jämför mot stored target. Om diff >2pp — fix JSON-filen. Target-audit dokumenterad i `docs/findings/REVISION_2026-04-25_calibration_targets.md` (13 av 14 targets korrekta). `homeHtLeadFraction: 46.6` tillagt som eget fält. Sprint 25b/25e/25f behövde inte rullas tillbaka — de fixade korrekta motorproblem mot korrekta targets.
+
+---
+
+## 2026-05-21 — Quicksim och live delar motor; resultatskillnaden är halvtidsjusteringar (avsedd)
+
+**Problem:** Playtest-känsla att man "förlorar oftare" när man snabbsimmar en match i stället för att spela live. Misstanke: lägena divergerar — kanske får managed club AI-genererad uppställning i quicksim.
+
+**Beslut:** Verifiera med paritetstest före antagande. N=1000 matcher genom `simulateMatch` (quicksim) vs `simulateMatchStepByStep` (live) utan interaktiva justeringar → statistiskt likvärdiga snitt. Quicksim använder `managedClubPendingLineup` korrekt. Den upplevda skillnaden är att live-läget tillåter halvtidsbeslut/byten/taktikjustering som ger en reell fördel. AVSETT — live belönar närvaro.
+
+**Alternativ övervägt:** Sprinta på "quicksim-bug" direkt. Avvisat — paritetstest är billigt och visade att motorn var oskyldig (samma mönster som calibration-target-fyndet 2026-04-25).
+
+**Konsekvens:** Ingen motorfix behövd. "Sim förlorar oftare" ska INTE återupptäckas som bug — det är designvalet att halvtidsinteraktion är värd något. Att hålla öga på: fördelens STORLEK. Om quicksim känns som en straffknapp snarare än ett tidssparande val är balansen fel — men det är då en justering av halvtidseffekternas styrka, inte ett motorfel. Parity-test ligger i `matchEngineParity`-testet (B10 T1).
+
+---
+
+## 2026-05-22 — "Simulera resterande säsong"-knappen återställd till PortalScreen (C-SD3)
+
+**Problem:** `⏩ Simulera resterande säsong` försvann 3 maj 2026 när `DashboardScreen.tsx` (1208 rader) raderades som dead code (commit 4a41789). Handlern `simulateRemainingStep` levde kvar i storen; bara UI-ytan föll bort. Funktionen hade funnits sedan spelet lanserades i januari. Upptäckt av Jacob 2026-05-22.
+
+**Beslut:** Knappen återställd till `PortalScreen.tsx` som ghost-knapp ovanför spela-CTA, villkorad av `canSimulateRemaining` (≥12 ligarundor spelade, inget slutspel, nästa managed ej cup, ingen HalfTimeSummary). Den hör hemma i entry-point-skärmen, inte i en separat dashboard. Villkoret verifierades mot originalimplementationen i git-historiken och är identiskt (inklusive sekundärsortering som prioriterar ligarundor vid matchday-kollision med cup).
+
+**Alternativ övervägt:** Skapa ny dedikerad vy. Avvisat — PortalScreen är nu permanent entry point; en separat vy skulle ge samma dead-code-risk igen.
+
+**Konsekvens:** När en skärm raderas som dead code ska dess unika CTA:er och handlerfunktioner inventeras mot den nya entry pointen INNAN radering. En funktion kan dö tyst även när dess handler lever kvar i storen. Lärdom tillagd i LESSONS.md.

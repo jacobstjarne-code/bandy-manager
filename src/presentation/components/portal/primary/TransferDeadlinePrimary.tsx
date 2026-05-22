@@ -98,13 +98,15 @@ export function TransferDeadlinePrimary({ game }: CardRenderProps) {
           <strong style={{ color: 'var(--text-light-secondary)', fontWeight: 600 }}>Spelare:</strong> {squadPlayers.length}
         </span>
       </div>
-      <button
-        onClick={() => navigate('/game/transfers')}
-        className="btn btn-primary"
-        style={{ width: '100%', marginTop: 12 }}
-      >
-        Hantera bud →
-      </button>
+      {openBids.length > 0 && (
+        <button
+          onClick={() => navigate('/game/transfers')}
+          className="btn btn-primary"
+          style={{ width: '100%', marginTop: 12 }}
+        >
+          Hantera bud →
+        </button>
+      )}
     </div>
   )
 }

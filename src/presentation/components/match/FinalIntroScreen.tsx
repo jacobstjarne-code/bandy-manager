@@ -4,7 +4,7 @@ import type { PlayoffBracket } from '../../../domain/entities/Playoff'
 import type { Club } from '../../../domain/entities/Club'
 import type { StandingRow } from '../../../domain/entities/SaveGame'
 import type { Player } from '../../../domain/entities/Player'
-import { getWeatherEmoji } from '../../../domain/services/weatherService'
+import { getWeatherEmoji, getConditionLabel } from '../../../domain/services/weatherService'
 import { truncate } from '../../utils/formatters'
 import { getFinalJourney } from '../../utils/finalJourneys'
 import { GoldConfetti } from './GoldConfetti'
@@ -121,7 +121,7 @@ export function FinalIntroScreen({
           )}
           {weatherEmoji && (
             <p style={{ fontSize: 13, color: 'rgba(245,241,235,0.35)', marginBottom: variant === 'sm' ? 32 : 28 }}>
-              {weatherEmoji} {matchWeather?.weather.condition}
+              {weatherEmoji} {matchWeather ? getConditionLabel(matchWeather.weather.condition) : ''}
             </p>
           )}
           {!weatherEmoji && <div style={{ marginBottom: variant === 'sm' ? 32 : 28 }} />}

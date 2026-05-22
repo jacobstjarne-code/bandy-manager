@@ -905,10 +905,12 @@ export const usePlayoffInfo = () => {
 }
 
 const NAV_LOCK_REASONS: Record<string, string> = {
-  'season-summary':    'Slutför säsongssammanfattning',
-  'half-time-summary': 'Slutför halvtidssammanfattning',
-  'playoff-intro':     'Starta slutspelet',
-  'qf-summary':        'Slutför kvartsfinalssammanfattning',
+  'season_summary':    'Slutför säsongssammanfattning',
+  'board_meeting':     'Slutför styrelsemötet',
+  'pre_season':        'Slutför försäsongen',
+  'half_time_summary': 'Halvtidssammanfattning väntar',
+  'playoff_intro':     'Starta slutspelet',
+  'qf_summary':        'Kvartsfinalsammanfattning väntar',
 }
 
 export const useNavigationLock = (): { locked: boolean; reason: string | null } => {

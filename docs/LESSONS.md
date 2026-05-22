@@ -56,6 +56,9 @@ Använd Ctrl-F på numret för att hoppa.
 - 11. PLAYOFF tom completedThisRound (låg prio)
 - 12. Auto-play scenarios behöver safety net
 
+**Arkitektur / screen lifecycle:**
+- 34. Dead code-radering dödar tyst levande funktioner
+
 ---
 
 ## 1. SVG width/height-attribut skriver över container
@@ -802,3 +805,17 @@ När diagnostik behöver mer info än vad spelarens skum-rapport kan ge:
 - 2026-05-20 (samma session, två missar): Opus skrev spec för C-T1 + C-T9 (transfer-personality + geografi) som föreslog `fixedRivalryList` med real-world bandy-klubbar (Bollnäs↔Edsbyn, Sandviken↔Hammarby) trots att `rivalries.ts` redan innehöll 9 par för fake-klubbarna (Upplandsderbyt, Bruksderbyt, Daladerbyt etc.). Plus fem-bucket-region-modell trots att klubbar redan har `region: string` som landskap. Design-Claude fläckade det — verifierade mot koden och rapporterade i `SPEC-SVAR-TRANSFER-RESPONSE-2026-05-20.md`.
 - 2026-05-20 (samma session): Opus skrev spec för C-B1 (CS-press) som föreslog "Helena Wikström från befintlig pool om finns, annars random" trots att `game.journalist` är EN namngiven entitet per save med `relationship`-state och `memory[]`. Design-Claude fläckade det i `SPEC-SVAR-CS-PRESSFRAGA-2026-05-20.md`.
 - Plus: Jacob påpekade vid samma session att CLAUDE.md inte upprättats vid sessionsstart — obligatorisk läsning var överhoppad. Fölt direkt sjukt: utan CLAUDE.md är Princip 2-disciplinen inte etablerad i sessions-kontexten. Fix: ny "SESSIONSSTART — MINIMUM-LÄSNING"-sektion överst i CLAUDE.md som kategoriserar läsning per uppgiftstyp och flagar PRE-SPEC CROSS-CHECK som obligatorisk för kategori B.
+
+---
+
+## 34. Dead code-radering dödar tyst levande funktioner
+
+**Mönster:** En skärm raderas som "dead code". En funktion eller CTA som fanns på den skärmen försvinner för spelaren — men handlern i storen lever kvar. Felet syns inte i build, syns inte i tester, syns inte förrän spelaren saknar funktionen.
+
+**Rotorsak:** Radering av en skärm inventerar inte vad skärmen ensamt exponerade mot spelaren. Handler lever → ingen TypeScript-varning. Store-funktion anropas aldrig → inget runtime-fel. Tyst förlust.
+
+**Fix:** Innan en skärm raderas som dead code: lista alla CTA:er och unika store-anrop i filen. Kontrollera att varje en antingen (a) finns exponerad via annan vy, eller (b) medvetet avvecklas och handlern tas bort ur storen.
+
+**Känn igen:** Store-action som inte anropas från någon vy men fortfarande exporteras. Funktion som Jacob rapporterar som "försvunnen" fast koden finns kvar.
+
+**Historik:** `simulateRemainingStep` i `gameFlowActions.ts` levde kvar när `DashboardScreen.tsx` (1208 rader) raderades 2026-05-03 (commit 4a41789). Jacob märkte funktionen saknats i "spelet tre första månader" och rapporterade det 2026-05-22. Återställd till `PortalScreen.tsx` efter ~3 veckors tyst förlust. Beslut loggat i DECISIONS.md 2026-05-22.

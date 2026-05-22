@@ -17,7 +17,7 @@ import { PortalInboxCounter } from '../components/portal/PortalInboxCounter'
 import { AnslagOverlay } from '../components/anslag/AnslagOverlay'
 import { computeNextAnslag } from '../../domain/services/anslagService'
 import { getActiveDecisionCount } from '../../domain/services/decisionBudgetService'
-import { PlayoffRound, PlayoffStatus } from '../../domain/enums'
+import { PlayoffRound, PlayoffStatus, PendingScreen } from '../../domain/enums'
 import { playSound } from '../audio/soundEffects'
 import { PortalRoundMark } from '../components/portal/PortalRoundMark'
 import { AnnandagsValEvent } from '../components/portal/AnnandagsValEvent'
@@ -29,7 +29,7 @@ import { getRoundDate } from '../../domain/services/scheduleGenerator'
 initCardBag()
 
 export function PortalScreen() {
-  const { game, advance, markAnslagSeen, recordPortalShown } = useGameStore()
+  const { game, advance, simulateRemainingStep, markAnslagSeen, recordPortalShown } = useGameStore()
   const canAdvance = useCanAdvance()
   const navigate = useNavigate()
 
@@ -175,7 +175,48 @@ export function PortalScreen() {
       f => f.matchday === nextSimEff && (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId)
     )
     if (managedMatchInNextRound) { navigate('/game/match'); return }
+    // Safety: never call advance() if an upcoming managed match has no lineup —
+    // matchSimProcessor would silently skip it, leaving the fixture stuck as Scheduled.
+    const hasPendingManagedWithoutLineup = !game.managedClubPendingLineup && scheduledFixtures.some(
+      f => f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId
+    )
+    if (hasPendingManagedWithoutLineup) { navigate('/game/match'); return }
     try { advance() } catch (err) { console.error('advance() failed:', err) }
+  }
+
+  const playedLeagueRounds = game.fixtures.filter(
+    f => f.status === 'completed' &&
+         (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
+         !f.isCup
+  ).length
+  const nextManagedScheduled = game.fixtures
+    .filter(f => f.status === 'scheduled' &&
+                 (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+    .sort((a, b) => a.matchday - b.matchday || (b.isCup ? 1 : 0) - (a.isCup ? 1 : 0))[0]
+  const canSimulateRemaining =
+    hasScheduledFixtures &&
+    playedLeagueRounds >= 12 &&
+    !game.playoffBracket &&
+    !nextManagedScheduled?.isCup &&
+    game.pendingScreen !== PendingScreen.HalfTimeSummary
+
+  const handleSimulateRemaining = () => {
+    if (!canSimulateRemaining) return
+    playSound('click')
+    const HALT_SCREENS: (PendingScreen | null | undefined)[] = [
+      PendingScreen.HalfTimeSummary,
+      PendingScreen.PlayoffIntro,
+      PendingScreen.QFSummary,
+    ]
+    for (let step = 0; step < 120; step++) {
+      const result = simulateRemainingStep()
+      if (!result) break
+      if (result.seasonEnded) { navigate('/game/sim-summary'); return }
+      if (result.playoffStarted) break
+      const currentGame = result.game
+      if (HALT_SCREENS.includes(currentGame?.pendingScreen)) break
+      if (!currentGame?.fixtures.some(f => f.status === 'scheduled')) break
+    }
   }
 
   const Primary = layout.primary.Component
@@ -233,7 +274,19 @@ export function PortalScreen() {
         left: 14,
         right: 14,
         zIndex: 200,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
       }}>
+        {canSimulateRemaining && (
+          <button
+            onClick={handleSimulateRemaining}
+            className="btn btn-ghost"
+            style={{ fontSize: 12 }}
+          >
+            ⏩ Simulera resterande säsong
+          </button>
+        )}
         <button
           data-coach-id="cta-button"
           onClick={handleAdvance}

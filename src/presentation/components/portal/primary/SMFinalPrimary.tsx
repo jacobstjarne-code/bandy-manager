@@ -81,8 +81,7 @@ export function SMFinalPrimary({ game }: CardRenderProps) {
         lineHeight: 1.5,
         marginBottom: 14,
       }}>
-        {opponent.name} · {dateStr}
-        {venueCity && ` · ${venueCity}`}
+        {opponent.name}{dateStr && ` · ${dateStr}`}{venueCity && ` · ${venueCity}`}
       </div>
 
       {weatherStr && (
