@@ -259,4 +259,34 @@ Mockernas alternativ-förslag (bakgrunds-tint på oläst, zone-dividers i tabell
 
 ---
 
-*Senast uppdaterad: 2026-05-06 — stripes och klammer omdefinierade som genomgående visuellt språk (Mock 1+2-besluten konsoliderade)*
+### Score-primitiver — tre register för score-data (ScoreBlock + Sparkline)
+**Datum:** 2026-05-23
+**Var:** `src/presentation/components/primitives/ScoreBlock.tsx`, `Sparkline.tsx`, `src/presentation/styles/score-primitives.css`. Mock: `docs/mockups/2026-05-20_design_score_system.html`.
+
+**Beslut:** Tre specialiserade register — ingen konfliktar med de andra:
+- **LED-numerals** (`.scoreboard-*`, `--led-*`): live, just nu, under match
+- **ScoreBlock** (`.score-block`): retrospekt, avgjord match
+- **Sparkline** (`<svg>`): trend över tid (min 5 datapunkter)
+
+**ScoreBlock som FEMTE form-primitiv:** `.card-sharp` (8px) · `.card-round` (14px) · `.tag` (pill) · `.btn` (interaktiv) + `.score-block` (2px). Radius 2px är **medvetet vassare** än allt annat — score är hårdast fakta. Får **inte** harmoniseras mot `.card-sharp`.
+
+**Gold-regel:** `variant="gold"` reserveras uteslutande för SM-final och Cup-final. Inga andra kontexter. Tvingas vid anropssidan, inte av komponenten.
+
+**Label-regel:** Label > 11 tecken utelämnas helt — aldrig trunkeras.
+
+**Sparkline-regler:**
+- Minimum 5 datapunkter — färre renderar tomt-tillstånd
+- `vector-effect="non-scaling-stroke"` på polyline — förhindrar ojämn stroke vid viewBox-distorsion
+- Normalisering: kurvan täcker alltid höjd oavsett indata-range ([1..12] och [100..1200] ger identisk kurvform)
+- `yInverted=true` för tabellplacering (1 = bäst = högst upp på skärmen)
+- Stroke-token per kontext: `--accent` (default), `--cold` (relation), `--success` (positiv trend)
+
+**Mörk vs ljus variant:**
+- Mörk variant (nuvarande, portalkort): `background: var(--bg-portal-elevated)`, text `var(--text-light)`
+- Ljus variant: inte byggd ännu — kräver designbeslut (steg 6 i migreringsplanen) och Jacobs godkännande mot mock
+
+**Konsekvens:** RoundSummary kan inte migreras förrän ljus variant är godkänd. Befintlig textrad i RoundSummary är korrekt för ljus bakgrund tills vidare.
+
+---
+
+*Senast uppdaterad: 2026-05-23 — score-primitiver (ScoreBlock/Sparkline) etablerade som designsystem-element*

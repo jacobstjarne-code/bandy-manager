@@ -1,0 +1,76 @@
+/* ── Score Primitives — ScoreBlock + Sparkline ─────────────────────────────
+   Mörk yta (portal-ytor): var(--bg-portal-elevated) som bas.
+   Ljus variant (.score-block.light) definieras i nästa pass (steg 6).
+   Radius 2px är medvetet — vassare än .card-sharp (8px). Se DESIGN-DECISIONS.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* ── ScoreBlock ─────────────────────────────────────────────────────────── */
+
+.score-block {
+  display: inline-block;
+  background: var(--bg-portal-elevated);
+  border: 1px solid rgba(196, 122, 58, 0.25);
+  border-left: 3px solid var(--accent);
+  border-radius: 2px;
+  padding: 8px 10px 6px;
+  text-align: center;
+  line-height: 1;
+  min-width: 64px;
+}
+
+/* gold reserveras för SM-final/Cup-final — se designsystem regel 4 */
+.score-block.win    { border-left-color: var(--success); }
+.score-block.loss   { border-left-color: var(--danger); }
+.score-block.draw   { border-left-color: var(--text-muted); }
+.score-block.derby  { border-left-color: var(--warm); }
+.score-block.gold   { border-left-color: var(--gold); background: rgba(232, 185, 92, 0.06); }
+.score-block.subtle { border-left-color: var(--text-muted); background: transparent; }
+
+.score-block-num {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-light);
+}
+
+.score-block.win  .score-block-num { color: var(--success); }
+.score-block.loss .score-block-num { color: var(--danger); }
+.score-block.gold .score-block-num { color: var(--gold); }
+
+.score-block-label {
+  font-family: var(--font-body);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.score-block.win   .score-block-label { color: var(--success); }
+.score-block.loss  .score-block-label { color: var(--danger); }
+.score-block.gold  .score-block-label { color: var(--gold); }
+.score-block.derby .score-block-label { color: var(--warm-light); }
+
+.score-block.compact { min-width: 44px; padding: 5px 7px 4px; }
+.score-block.compact .score-block-num   { font-size: 12px; }
+.score-block.compact .score-block-label { font-size: 6.5px; margin-top: 2px; }
+
+/* ── Sparkline ──────────────────────────────────────────────────────────── */
+
+.sparkline-svg {
+  display: block;
+  overflow: visible;
+}
+
+.sparkline-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.5;
+}

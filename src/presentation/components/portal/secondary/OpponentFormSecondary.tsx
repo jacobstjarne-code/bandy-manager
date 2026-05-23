@@ -1,6 +1,16 @@
 import type { CardRenderProps } from '../portalTypes'
 import { getFormResults } from '../../../utils/formUtils'
 import { getCurrentLeaguePosition } from '../../../../domain/services/standingsService'
+import { getRivalry } from '../../../../domain/data/rivalries'
+import { ScoreBlock } from '../../primitives/ScoreBlock'
+import type { ScoreBlockVariant } from '../../primitives/ScoreBlock'
+
+function resultToVariant(result: 'V' | 'O' | 'F', opponentId: string, managedId: string): ScoreBlockVariant {
+  if (getRivalry(managedId, opponentId)) return 'derby'
+  if (result === 'V') return 'win'
+  if (result === 'F') return 'loss'
+  return 'draw'
+}
 
 /** Secondary-kort: motståndarens senaste 5 matcher. */
 export function OpponentFormSecondary({ game }: CardRenderProps) {
@@ -20,7 +30,7 @@ export function OpponentFormSecondary({ game }: CardRenderProps) {
   const recentForm = getFormResults(opponentId, game.fixtures, game.clubs)
   if (recentForm.length === 0) return null
 
-  const formStr = recentForm.slice(-5).map(r => r.result).join(' ')
+  const last5 = recentForm.slice(0, 5)
 
   return (
     <div style={{
@@ -35,20 +45,23 @@ export function OpponentFormSecondary({ game }: CardRenderProps) {
         textTransform: 'uppercase',
         color: 'var(--text-muted)',
         fontWeight: 600,
-        marginBottom: 4,
+        marginBottom: 6,
       }}>
         🆚 {opponent.name.split(' ')[0].toUpperCase()} FORM
       </div>
-      <div style={{
-        fontSize: 13,
-        color: 'var(--text-light)',
-        lineHeight: 1.3,
-        fontWeight: 500,
-      }}>
-        {formStr || '—'}
+      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+        {last5.map((r, i) => (
+          <ScoreBlock
+            key={i}
+            score={r.score}
+            label={r.opponent}
+            variant={resultToVariant(r.result, r.opponentId ?? '', managedId)}
+            compact
+          />
+        ))}
       </div>
       {opponentLeaguePosition !== null && (
-        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>
+        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 6 }}>
           {opponentLeaguePosition}:a · {game.standings.find(s => s.clubId === opponentId)?.points ?? 0}p
         </div>
       )}
