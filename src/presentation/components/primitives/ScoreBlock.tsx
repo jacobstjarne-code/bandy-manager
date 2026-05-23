@@ -6,15 +6,17 @@ interface ScoreBlockProps {
   label?: string
   variant?: ScoreBlockVariant
   compact?: boolean
+  light?: boolean
 }
 
 export const MAX_LABEL_LENGTH = 11
 
-export function ScoreBlock({ score, label, variant, compact }: ScoreBlockProps) {
+export function ScoreBlock({ score, label, variant, compact, light }: ScoreBlockProps) {
   const cls = [
     'score-block',
     variant ?? '',
     compact ? 'compact' : '',
+    light ? 'light' : '',
   ].filter(Boolean).join(' ')
 
   // Labels över 11 tecken utelämnas per designsystem regel 3

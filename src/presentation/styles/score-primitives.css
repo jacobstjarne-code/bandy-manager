@@ -1,6 +1,6 @@
 /* ── Score Primitives — ScoreBlock + Sparkline ─────────────────────────────
    Mörk yta (portal-ytor): var(--bg-portal-elevated) som bas.
-   Ljus variant (.score-block.light) definieras i nästa pass (steg 6).
+   Ljus variant (.score-block.light): dämpade stripes, mörk num-text.
    Radius 2px är medvetet — vassare än .card-sharp (8px). Se DESIGN-DECISIONS.
    ───────────────────────────────────────────────────────────────────────── */
 
@@ -55,6 +55,23 @@
 .score-block.compact { min-width: 44px; padding: 5px 7px 4px; }
 .score-block.compact .score-block-num   { font-size: 12px; }
 .score-block.compact .score-block-label { font-size: 6.5px; margin-top: 2px; }
+
+/* ── Light variant (ljusa ytor: RoundSummary, GranskaForlopp) ─────────── */
+.score-block.light {
+  background: var(--bg-surface);
+  border-color: rgba(196, 122, 58, 0.18);
+}
+.score-block.light .score-block-num   { color: var(--text-primary); }
+.score-block.light .score-block-label { color: var(--text-secondary); }
+
+/* Dämpade stripes — mot #FAF8F4 sitter fulla success/danger för hårt */
+.score-block.light.win   { border-left-color: var(--success-muted, rgba(74, 124, 89, 0.7)); }
+.score-block.light.loss  { border-left-color: var(--danger-muted, rgba(168, 74, 74, 0.7)); }
+.score-block.light.draw  { border-left-color: rgba(120, 110, 96, 0.6); }
+.score-block.light.derby { border-left-color: var(--warm); }
+.score-block.light.gold  { border-left-color: var(--gold); background: rgba(232, 185, 92, 0.10); }
+/* gold-siffra bevaras på ljus yta — ceremoniell SM-final */
+.score-block.light.gold .score-block-num { color: var(--gold); }
 
 /* ── Sparkline ──────────────────────────────────────────────────────────── */
 

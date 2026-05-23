@@ -281,12 +281,15 @@ Mockernas alternativ-förslag (bakgrunds-tint på oläst, zone-dividers i tabell
 - `yInverted=true` för tabellplacering (1 = bäst = högst upp på skärmen)
 - Stroke-token per kontext: `--accent` (default), `--cold` (relation), `--success` (positiv trend)
 
-**Mörk vs ljus variant:**
-- Mörk variant (nuvarande, portalkort): `background: var(--bg-portal-elevated)`, text `var(--text-light)`
-- Ljus variant: inte byggd ännu — kräver designbeslut (steg 6 i migreringsplanen) och Jacobs godkännande mot mock
+**Mörk vs ljus variant (mellanvägen — beslutad 2026-05-23):**
+- Mörk variant (portalkort): `background: var(--bg-portal-elevated)`, stripe = `--success`/`--danger`/`--warm` rakt av, num-text färgad per variant (grön/röd)
+- Ljus variant (`.score-block.light`, pappersytor): `background: var(--bg-surface)`, stripe = dämpade tokens (`--success-muted`/`--danger-muted`), num-text = `var(--text-primary)` (mörk, ej färgad)
+- **Regel:** stripe bär alltid resultatsignalen på båda ytor (samma primitiv). Num-färg skiftar med yta. Undantag: `gold` på ljus yta behåller gold-siffra (ceremoniell SM-final).
+- **Dämpade tokens:** `--success-muted: rgba(74,124,89,0.7)`, `--danger-muted: rgba(168,74,74,0.7)` — definierade i `design-system/colors_and_type.css`
+- Sparkline stroke-token `danger` (var(--danger)) tillagd 2026-05-23 — för fatigue-tryckindikator (R1)
 
-**Konsekvens:** RoundSummary kan inte migreras förrän ljus variant är godkänd. Befintlig textrad i RoundSummary är korrekt för ljus bakgrund tills vidare.
+**Konsekvens:** RoundSummary "andra matcher" migrerad till `<ScoreBlock light compact>` (2026-05-23). Nästa: GranskaForlopp, SimSummary (separat utrullning — se BACKLOG).
 
 ---
 
-*Senast uppdaterad: 2026-05-23 — score-primitiver (ScoreBlock/Sparkline) etablerade som designsystem-element*
+*Senast uppdaterad: 2026-05-23 — ljus variant (mellanvägen) byggd + RoundSummary migrerad*

@@ -63,10 +63,12 @@
   /* ── Semantic ────────────────────────────────────── */
   --success:       #5A9A4A;
   --success-light: #4A6A3A;
+  --success-muted: rgba(74, 124, 89, 0.7);   /* dämpad — ljus yta score-block stripe */
   --warning:       #C47A3A;
   --danger:        #B05040;
   --danger-dark:   #8B3E30;
   --danger-text:   #8B3E30;
+  --danger-muted:  rgba(168, 74, 74, 0.7);   /* dämpad — ljus yta score-block stripe */
   --ice:           #7EB3D4;  /* away, weather, cool info */
   --ice-dark:      #5A7A8A;
 

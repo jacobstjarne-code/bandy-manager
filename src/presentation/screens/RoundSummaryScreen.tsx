@@ -8,6 +8,8 @@ import { getFormResults } from '../utils/formUtils'
 import { FixtureStatus, InboxItemType } from '../../domain/enums'
 import { getRivalry } from '../../domain/data/rivalries'
 import { getCurrentLeaguePosition } from '../../domain/services/standingsService'
+import { ScoreBlock } from '../components/primitives/ScoreBlock'
+import type { ScoreBlockVariant } from '../components/primitives/ScoreBlock'
 
 export function RoundSummaryScreen() {
   const navigate = useNavigate()
@@ -131,6 +133,19 @@ export function RoundSummaryScreen() {
     const awayPos = game.standings.find(s => s.clubId === f.awayClubId)?.position ?? 99
     const isNearby = Math.abs(homePos - myPosition) <= 2 || Math.abs(awayPos - myPosition) <= 2
     return isRival || isNearby
+  }
+
+  // Derive variant for "andra matcher" ScoreBlock — managed-perspective if relevant
+  const getFixtureVariant = (f: typeof otherResults[0], relevant: boolean): ScoreBlockVariant => {
+    if (!relevant) return 'subtle'
+    const managedIsHome = f.homeClubId === game.managedClubId
+    const managedIsAway = f.awayClubId === game.managedClubId
+    if (!managedIsHome && !managedIsAway) return 'subtle'
+    const myGoals = managedIsHome ? f.homeScore : f.awayScore
+    const theirGoals = managedIsHome ? f.awayScore : f.homeScore
+    if (myGoals > theirGoals) return 'win'
+    if (myGoals < theirGoals) return 'loss'
+    return 'draw'
   }
 
   // ── PRESS CLIPS from inbox ──
@@ -393,34 +408,33 @@ export function RoundSummaryScreen() {
         {otherResults.length > 0 && (
           <div className="card-sharp" style={{ margin: '0 0 8px', padding: '10px 14px', ...fadeIn(7) }}>
             {/* TODO(FAS 1): byt mot piktogram · sport · se ICON-BRIEF.md */}
-            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>
+            <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 8 }}>
               🏒 ANDRA MATCHER
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {otherResults.map(f => {
                 const relevant = isRelevantFixture(f)
+                const variant = getFixtureVariant(f, relevant)
                 return (
-                  <div key={f.id} style={{
-                    display: 'flex', alignItems: 'center',
-                    padding: '3px 0',
-                    borderLeft: relevant ? '2px solid var(--accent)' : '2px solid transparent',
-                    paddingLeft: 6,
-                  }}>
+                  <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{
-                      flex: 1, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      color: relevant ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: relevant ? 600 : 400,
+                      flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      color: relevant ? 'var(--text-primary)' : 'var(--text-secondary)',
+                      fontWeight: relevant ? 600 : 400,
+                      textAlign: 'right',
                     }}>
                       {getClubShort(f.homeClubId)}
                     </span>
+                    <ScoreBlock
+                      score={`${f.homeScore}–${f.awayScore}`}
+                      variant={variant}
+                      light
+                      compact
+                    />
                     <span style={{
-                      fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)',
-                      width: 40, textAlign: 'center', flexShrink: 0,
-                    }}>
-                      {f.homeScore}–{f.awayScore}
-                    </span>
-                    <span style={{
-                      flex: 1, fontSize: 12, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      color: relevant ? 'var(--text-primary)' : 'var(--text-secondary)', fontWeight: relevant ? 600 : 400,
+                      flex: 1, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      color: relevant ? 'var(--text-primary)' : 'var(--text-secondary)',
+                      fontWeight: relevant ? 600 : 400,
                     }}>
                       {getClubShort(f.awayClubId)}
                     </span>
