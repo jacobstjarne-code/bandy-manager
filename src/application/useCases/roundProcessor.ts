@@ -61,6 +61,7 @@ import {
 } from '../../domain/data/specialDateStrings'
 import { generatePostMatchEvents } from '../../domain/services/postMatchEventService'
 import { canAddDecision } from '../../domain/services/decisionBudgetService'
+import { getFatigueState } from '../../domain/services/decisionFatigueService'
 import { decrementCooldowns } from '../../domain/services/sourceCooldownService'
 import { detectNotableResult, decayKlackEcho } from '../../domain/services/klackEchoService'
 import { DEADLINE_AI_BID_TEXT } from '../../domain/data/windowDeadlineText'
@@ -1538,6 +1539,37 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
         }
       }
     }
+  }
+
+  // Score steg 5 — snapshot-pipeline (liga-omgångar, senaste 22)
+  if (!isCupRound && !isPlayoffRound && currentLeagueRound !== null && !isSecondPassForManagedMatch) {
+    const managedId = updatedGame.managedClubId
+    const pos = updatedGame.standings.find(s => s.clubId === managedId)?.position ?? null
+    const jRel = updatedGame.journalist?.relationship ?? null
+    const forms = updatedGame.players
+      .filter(p => p.clubId === managedId)
+      .map(p => p.form)
+    const avgForm = forms.length > 0
+      ? Math.round(forms.reduce((a, b) => a + b, 0) / forms.length)
+      : null
+    const prev = updatedGame.scoreSnapshots ?? { standingsPosition: [], journalistRelation: [], playerForm: [] }
+    updatedGame = {
+      ...updatedGame,
+      scoreSnapshots: {
+        standingsPosition: pos !== null ? [...prev.standingsPosition, pos].slice(-22) : prev.standingsPosition,
+        journalistRelation: jRel !== null ? [...prev.journalistRelation, jRel].slice(-22) : prev.journalistRelation,
+        playerForm: avgForm !== null ? [...prev.playerForm, avgForm].slice(-22) : prev.playerForm,
+      },
+    }
+  }
+
+  // R1 — fatigueHistory + fatigueHotStreak (alla rundtyper, ej andra passet)
+  if (!isSecondPassForManagedMatch) {
+    const { meter, pressure } = getFatigueState(updatedGame)
+    const newHistory = [...(updatedGame.fatigueHistory ?? []), meter].slice(-7)
+    const prevStreak = updatedGame.fatigueHotStreak ?? 0
+    const newStreak = pressure === 'hot' ? prevStreak + 1 : 0
+    updatedGame = { ...updatedGame, fatigueHistory: newHistory, fatigueHotStreak: newStreak }
   }
 
   return { game: updatedGame, roundPlayed: nextMatchday, seasonEnded: false, pendingEvents: allNewEvents, hasManagedCupMatch: hasManagedCupPending }

@@ -409,6 +409,17 @@ export interface SaveGame {
   seasonDoneAck?: boolean    // sätts när spelaren bekräftar SEASON_DONE, övergår till SUMMER
   inSummerScene?: boolean    // true efter spelaren klickat "Avsluta säsongen"
 
+  // Score steg 5 — snapshot-pipeline (rullande ligaomgångar, senaste 22)
+  scoreSnapshots?: {
+    standingsPosition: number[]   // managed klubbs tabellplacering per liga-omgång
+    journalistRelation: number[]  // journalist.relationship per liga-omgång
+    playerForm: number[]          // managed klubbs avg form per liga-omgång
+  }
+
+  // R1 — Decision-fatigue (kö-åldring + tryckindikator)
+  fatigueHistory?: number[]   // rullande 7 omgångars meter-värde (matar Sparkline)
+  fatigueHotStreak?: number   // consecutive hot-pressure-omgångar (driver fatigue-scen)
+
   // P1 — Annandagsplanering val-mekanik
   annandagsValGjort?: 'A' | 'B' | 'C' | 'D' | null  // val gjort denna säsong
   pendingAnnandagsVal?: boolean                        // trigger: 2 omgångar innan hemmamatch

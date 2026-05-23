@@ -47,7 +47,7 @@ export function tryQueueDecision(game: SaveGame, event: GameEvent): SaveGame {
   if (canAddDecision(game, game.currentMatchday ?? 1)) {
     return { ...game, pendingEvents: [...(game.pendingEvents ?? []), event] }
   }
-  const newDeferred = [...(game.deferredDecisions ?? []), event]
+  const newDeferred = [...(game.deferredDecisions ?? []), { ...event, deferredAt: game.currentMatchday ?? 1 }]
   const capped = newDeferred.length > MAX_DEFERRED_DECISIONS
     ? newDeferred.slice(newDeferred.length - MAX_DEFERRED_DECISIONS)
     : newDeferred

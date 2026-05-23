@@ -31,6 +31,6 @@ export function PortalEventSlot({ game }: Props) {
   if (priority === 'critical') return null
 
   return (
-    <EventCardInline event={event} />
+    <EventCardInline event={event} currentMatchday={game.currentMatchday} />
   )
 }

@@ -12,10 +12,12 @@
 
 import { useGameStore } from '../../store/gameStore'
 import { getActionsForEvent } from '../../../domain/services/eventActions'
+import { getItemAge } from '../../../domain/services/decisionFatigueService'
 import type { GameEvent } from '../../../domain/entities/GameEvent'
 
 interface Props {
   event: GameEvent
+  currentMatchday?: number
 }
 
 function getEventTypeLabel(event: GameEvent): string {
@@ -59,10 +61,13 @@ function getEventTypeLabel(event: GameEvent): string {
   }
 }
 
-export function EventCardInline({ event }: Props) {
+export function EventCardInline({ event, currentMatchday }: Props) {
   const resolveEvent = useGameStore(s => s.resolveEvent)
   const actions = getActionsForEvent(event)
   const typeLabel = getEventTypeLabel(event)
+
+  const age = currentMatchday != null ? getItemAge(event, currentMatchday) : 0
+  const agedClass = age >= 5 ? 'aged-2' : age >= 4 ? 'aged-1' : ''
 
   function handleAction(choiceId: string) {
     resolveEvent(event.id, choiceId)
@@ -70,7 +75,7 @@ export function EventCardInline({ event }: Props) {
 
   return (
     <div
-      className="event-card-inline"
+      className={`event-card-inline${agedClass ? ` ${agedClass}` : ''}`}
       style={{
         position: 'relative',
         margin: '0 0 8px 0',
@@ -84,7 +89,12 @@ export function EventCardInline({ event }: Props) {
       <div className="portal-card-stripe portal-card-stripe-copper-wide" />
 
       {/* Typ-label — eyebrow, klassbaserad */}
-      <p className="portal-card-eyebrow">{typeLabel}</p>
+      <p className="portal-card-eyebrow" style={{ display: 'flex', alignItems: 'center' }}>
+        <span>{typeLabel}</span>
+        {agedClass && age > 0 && (
+          <span className="event-card-age-tag">{age} omg gammal</span>
+        )}
+      </p>
 
       {/* Titel — visas för hallDebate-events */}
       {event.type === 'hallDebate' && event.title && (

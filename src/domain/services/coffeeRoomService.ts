@@ -5,6 +5,7 @@ import { getCharacterName } from './supporterService'
 import { KLACK_ECHO } from '../data/klackEchoText'
 import { RIVAL_SALE_KAFFERUM, INCOMING_BID_KAFFERUM } from '../data/transferResponseText'
 import { ANNIVERSARY_KAFFERUM } from '../data/anniversaryKafferumText'
+import { getFatigueState } from './decisionFatigueService'
 
 interface CoffeeQuote {
   speaker?: string
@@ -443,6 +444,21 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
   return { speaker: speakerName, text }
 }
 
+// R1 — fatigue kafferum-scener. Opus levererar dessa texter.
+const FATIGUE_WARM_EXCHANGES: Array<[string, string, string, string]> = [
+  ['Magnus', '[Opus]', 'Sture', '[Opus]'],
+  ['Magnus', '[Opus]', 'Sture', '[Opus]'],
+  ['Sture', '[Opus]', 'Magnus', '[Opus]'],
+  ['Sture', '[Opus]', 'Magnus', '[Opus]'],
+]
+
+const FATIGUE_HOT_EXCHANGES: Array<[string, string, string, string]> = [
+  ['Magnus', '[Opus]', 'Sture', '[Opus]'],
+  ['Magnus', '[Opus]', 'Sture', '[Opus]'],
+  ['Sture', '[Opus]', 'Magnus', '[Opus]'],
+  ['Sture', '[Opus]', 'Magnus', '[Opus]'],
+]
+
 /**
  * getCoffeeRoomScene — returnerar 1-3 exchanges för Kafferummet-scenen.
  * Returnerar null om ingen omgång spelats (säsongsstart) eller data saknas.
@@ -456,6 +472,21 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
     .filter(f => f.status === 'completed' && !f.isCup)
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
   if (round === 0) return null
+
+  // R1 — fatigue-scen (tonal, ingen moral-träff) vid fatigueHotStreak >= 2
+  const hotStreak = game.fatigueHotStreak ?? 0
+  const { pressure } = getFatigueState(game)
+  if (hotStreak >= 2) {
+    const pool = pressure === 'hot' ? FATIGUE_HOT_EXCHANGES : FATIGUE_WARM_EXCHANGES
+    const matchday = game.currentMatchday ?? 1
+    const seed = matchday * 17 + game.currentSeason * 29
+    const idx = Math.abs(seed) % pool.length
+    return {
+      exchanges: [pool[idx]],
+      pickedIndices: [idx],
+      meta: { title: 'Kafeterian', subtitle: 'Tisdag förmiddag · lite tyngre i lokalen' },
+    }
+  }
 
   const matchday = game.currentMatchday ?? 0
   if (matchday === 0) return null

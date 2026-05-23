@@ -6,6 +6,7 @@ const STROKE_TOKENS: Record<string, string> = {
   cold:    'var(--cold)',
   success: 'var(--success)',
   warm:    'var(--warm)',
+  danger:  'var(--danger)',
 }
 
 interface SparklineMarker {
@@ -18,7 +19,7 @@ interface SparklineMarker {
 interface SparklineProps {
   points: number[]
   markers?: SparklineMarker[]
-  stroke?: 'accent' | 'cold' | 'success' | 'warm'
+  stroke?: 'accent' | 'cold' | 'success' | 'warm' | 'danger'
   height?: number
   yInverted?: boolean
   label?: string

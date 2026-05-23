@@ -105,7 +105,7 @@ describe('tryQueueDecision', () => {
     const event = makeEvent('evt3')
     const result = tryQueueDecision(game, event)
     expect(result.pendingEvents).toHaveLength(2)
-    expect(result.deferredDecisions).toContainEqual(event)
+    expect(result.deferredDecisions).toContainEqual({ ...event, deferredAt: game.currentMatchday ?? 1 })
   })
 
   it('lägger event i deferredDecisions i säsong 1 omg 1 om 1 aktiv', () => {
@@ -118,7 +118,7 @@ describe('tryQueueDecision', () => {
     const event = makeEvent('evt4')
     const result = tryQueueDecision(game, event)
     expect(result.pendingEvents).toHaveLength(1)
-    expect(result.deferredDecisions).toContainEqual(event)
+    expect(result.deferredDecisions).toContainEqual({ ...event, deferredAt: 1 })
   })
 })
 

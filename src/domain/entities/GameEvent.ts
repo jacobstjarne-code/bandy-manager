@@ -166,6 +166,7 @@ export interface GameEvent {
   resolved: boolean
   followUpText?: string      // Simple follow-up inbox text (3-5 matchdays later)
   priority?: EventPriority   // defaults to getEventPriority(type) if not set
+  deferredAt?: number        // matchday när eventet hamnade i kön (R1 age tracking)
 }
 
 // ── Follow-up system ──────────────────────────────────────────────────────

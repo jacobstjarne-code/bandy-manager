@@ -1,20 +1,38 @@
+import { getFatigueState, getItemAge } from '../../../domain/services/decisionFatigueService'
+import { Sparkline } from '../primitives/Sparkline'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 
 interface Props {
   game: SaveGame
 }
 
-// Source labels and icons for deferred decision chips.
-// Extend as new sources are added to deferredDecisions.
-const SOURCE_META: Record<string, { icon: string; label: string; warm?: boolean }> = {
-  communityEvent:    { icon: '🏘️', label: 'Orten' },
-  hallDebate:        { icon: '🏛️', label: 'Kommunen' },
-  journalistExclusive: { icon: '📰', label: 'Lokaltidningen', warm: true },
-  playerMediaComment: { icon: '📰', label: 'Lokaltidningen', warm: true },
-  sponsorOffer:      { icon: '💼', label: 'Sponsor', warm: true },
-  academyEvent:      { icon: '🎓', label: 'Akademin' },
-  supporterEvent:    { icon: '📣', label: 'Klacken' },
-  weeklyDecision:    { icon: '🏒', label: 'Veckans beslut' },
+const SOURCE_META: Record<string, { icon: string; label: string }> = {
+  communityEvent:     { icon: '🏘️', label: 'Orten' },
+  hallDebate:         { icon: '🏛️', label: 'Kommunen' },
+  journalistExclusive:{ icon: '📰', label: 'Lokaltidningen' },
+  playerMediaComment: { icon: '📰', label: 'Lokaltidningen' },
+  sponsorOffer:       { icon: '💼', label: 'Sponsor' },
+  academyEvent:       { icon: '🎓', label: 'Akademin' },
+  supporterEvent:     { icon: '📣', label: 'Klacken' },
+  weeklyDecision:     { icon: '🏒', label: 'Veckans beslut' },
+}
+
+function getAgedClass(age: number): string {
+  if (age >= 5) return 'aged-2'
+  if (age >= 3) return 'aged-1'
+  return ''
+}
+
+function pressureLabel(pressure: 'calm' | 'warm' | 'hot'): string {
+  if (pressure === 'hot') return 'Hög'
+  if (pressure === 'warm') return 'Märkbart'
+  return 'Lugn'
+}
+
+function pressureStroke(pressure: 'calm' | 'warm' | 'hot'): 'accent' | 'warm' | 'danger' {
+  if (pressure === 'hot') return 'danger'
+  if (pressure === 'warm') return 'warm'
+  return 'accent'
 }
 
 function uniqueBySource<T extends { type?: string; source?: string }>(items: T[]): T[] {
@@ -31,20 +49,26 @@ export function PortalQueueRail({ game }: Props) {
   const deferred = game.deferredDecisions ?? []
   if (deferred.length === 0) return null
 
-  const items = deferred as Array<{ type?: string; source?: string }>
-  const uniqueItems = uniqueBySource(items).slice(0, 4)
-  const hasMore = uniqueItems.length < items.length
-    ? items.length - uniqueItems.length
-    : 0
+  const { pressure } = getFatigueState(game)
+  const matchday = game.currentMatchday ?? 1
+  const fatigueHistory = game.fatigueHistory ?? []
 
-  const countText = `${deferred.length} nästa veckan`
+  const items = deferred as Array<{ type?: string; source?: string; deferredAt?: number }>
+  const uniqueItems = uniqueBySource(items).slice(0, 5)
+  const hasMore = items.length - uniqueItems.length
+
+  const railClass = pressure === 'hot'
+    ? 'portal-queue-rail hot-pressure'
+    : pressure === 'warm'
+    ? 'portal-queue-rail warm-pressure'
+    : 'portal-queue-rail'
 
   return (
-    <div className="portal-queue-rail">
+    <div className={railClass}>
       <div className="portal-queue-rail-head">
-        <span className="portal-queue-rail-eyebrow">⏳ I kö</span>
+        <span className="portal-queue-rail-eyebrow">I kö</span>
         <span className="portal-queue-rail-count">
-          <strong>{deferred.length}</strong> {countText.slice(String(deferred.length).length + 1)}
+          <strong>{deferred.length}</strong> nästa veckan
         </span>
       </div>
       <div className="portal-queue-chips">
@@ -53,20 +77,36 @@ export function PortalQueueRail({ game }: Props) {
           const meta = SOURCE_META[sourceKey]
           const icon = meta?.icon ?? '📋'
           const label = meta?.label ?? sourceKey
-          const isWarm = meta?.warm ?? false
+          const age = getItemAge(item, matchday)
+          const agedClass = getAgedClass(age)
           return (
             <span
               key={idx}
-              className={`portal-queue-chip${isWarm ? ' portal-queue-chip-warm' : ''}`}
+              className={`portal-queue-chip${agedClass ? ` ${agedClass}` : ''}`}
             >
               <span className="portal-queue-chip-icon">{icon}</span>
               <span>{label}</span>
+              {age > 0 && (
+                <span className="portal-queue-chip-age">{age} omg</span>
+              )}
             </span>
           )
         })}
         {hasMore > 0 && (
           <span className="portal-queue-chip">+{hasMore} fler</span>
         )}
+      </div>
+      <div className="portal-fatigue-bar">
+        <div className="portal-fatigue-bar-head">
+          <span className="portal-fatigue-label">Tryck</span>
+          <span>{pressureLabel(pressure)}</span>
+        </div>
+        <Sparkline
+          points={fatigueHistory}
+          stroke={pressureStroke(pressure)}
+          height={22}
+          label={`Beslutsbörda: ${pressureLabel(pressure)}`}
+        />
       </div>
     </div>
   )
