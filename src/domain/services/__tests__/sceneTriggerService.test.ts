@@ -7,7 +7,7 @@ import {
 } from '../sceneTriggerService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { Fixture } from '../../entities/Fixture'
-import { FixtureStatus } from '../../enums'
+import { FixtureStatus, PlayoffStatus } from '../../enums'
 
 function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   return {
@@ -97,7 +97,8 @@ describe('sceneTriggerService — SM-finalseger', () => {
       homeScore: 3,
       awayScore: 2,
     })
-    const g = makeGame({ fixtures: [finalFixture], shownScenes: [] })
+    const completedBracket = { season: 1, status: PlayoffStatus.Completed, quarterFinals: [], semiFinals: [], final: null, champion: 'managed' }
+    const g = makeGame({ fixtures: [finalFixture], shownScenes: [], playoffBracket: completedBracket })
     expect(shouldTriggerSMFinalVictory(g)).toBe(true)
     expect(detectSceneTrigger(g)).toBe('sm_final_victory')
   })
@@ -158,11 +159,13 @@ describe('sceneTriggerService — SM-finalseger', () => {
       homeScore: 3,
       awayScore: 2,
     })
+    const completedBracket = { season: 1, status: PlayoffStatus.Completed, quarterFinals: [], semiFinals: [], final: null, champion: 'managed' }
     const g = makeGame({
       currentSeason: 1,
       currentMatchday: 1,
       fixtures: [finalFixture],
       shownScenes: [],
+      playoffBracket: completedBracket,
     })
     expect(detectSceneTrigger(g)).toBe('sm_final_victory')
   })
@@ -281,6 +284,7 @@ describe('sceneTriggerService — cup-finalseger', () => {
   })
 
   it('SM-final-vinst triggar INTE cup_final_victory', () => {
+    const completedBracket = { season: 1, status: PlayoffStatus.Completed, quarterFinals: [], semiFinals: [], final: null, champion: 'managed' }
     const g = makeGame({
       fixtures: [
         makeFixture({
@@ -294,6 +298,7 @@ describe('sceneTriggerService — cup-finalseger', () => {
         }),
       ],
       shownScenes: [],
+      playoffBracket: completedBracket,
     })
     expect(shouldTriggerCupFinalVictory(g)).toBe(false)
     expect(shouldTriggerSMFinalVictory(g)).toBe(true)

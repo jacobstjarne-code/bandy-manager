@@ -1,6 +1,6 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import type { Fixture } from '../../../domain/entities/Fixture'
-import { PendingScreen, InboxItemType } from '../../../domain/enums'
+import { InboxItemType } from '../../../domain/enums'
 import { evaluateFinanceStatus } from '../../../domain/services/economyService'
 import { getRecommendedFormation } from '../../../domain/entities/Formation'
 
@@ -20,15 +20,7 @@ export function applyPostRoundFlags(
   const { justCompletedManagedFixture, nextMatchday } = input
   let updatedGame = input.game
 
-  // Halvtidssummering — trigger efter liga-omgång 11
-  if (
-    justCompletedManagedFixture &&
-    !justCompletedManagedFixture.isCup &&
-    justCompletedManagedFixture.roundNumber === 11 &&
-    updatedGame.pendingScreen !== PendingScreen.HalfTimeSummary
-  ) {
-    updatedGame = { ...updatedGame, pendingScreen: PendingScreen.HalfTimeSummary }
-  }
+  // Halvtidssummering — borttagen C-SD1: halvvägs-dubblering med league_halfway-anslaget
 
   // Onboarding step progression (advances after first 3 managed matches)
   const currentOnboarding = updatedGame.onboardingStep ?? 0

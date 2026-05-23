@@ -8,6 +8,7 @@ import {
   generatePlayoffFixtures,
 } from '../../domain/services/playoffService'
 import type { AdvanceResult } from './advanceTypes'
+import { getSeasonEndPhase } from '../../domain/data/seasonEndPhase'
 
 function advanceDate(dateStr: string, days: number): string {
   const date = new Date(dateStr)
@@ -89,7 +90,7 @@ export function handlePlayoffStart(game: SaveGame, _seed?: number): AdvanceResul
     inbox: [...game.inbox, ...newInboxItems],
     pendingEvents: [...(game.pendingEvents ?? []), ...newPendingEvents],
     currentDate: newDate,
-    pendingScreen: PendingScreen.PlayoffIntro,
+    ...(getSeasonEndPhase(game) === 'regular_done' && { pendingScreen: PendingScreen.PlayoffIntro }),
   }
 
   // If managed club didn't make playoffs, we have scheduled fixtures for other teams

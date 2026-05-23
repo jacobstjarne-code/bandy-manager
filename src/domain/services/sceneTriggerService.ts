@@ -10,6 +10,7 @@ import type { SceneId } from '../entities/Scene'
 import { FixtureStatus } from '../enums'
 import { getCoffeeRoomScene } from './coffeeRoomService'
 import { shouldTriggerCupFinalIntro } from '../data/scenes/cupFinalIntroScene'
+import { getSeasonEndPhase } from '../data/seasonEndPhase'
 
 const COFFEE_ROOM_COOLDOWN_ROUNDS = 3
 
@@ -80,6 +81,7 @@ export function shouldTriggerSundayTraining(game: SaveGame): boolean {
  * anslagService.ts), inte via denna scen.
  */
 export function shouldTriggerSMFinalVictory(game: SaveGame): boolean {
+  if (getSeasonEndPhase(game) !== 'season_done') return false
   if ((game.shownScenes ?? []).includes('sm_final_victory')) return false
 
   const managedFixtures = game.fixtures.filter(

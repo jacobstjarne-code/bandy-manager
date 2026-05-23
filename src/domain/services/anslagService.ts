@@ -11,7 +11,8 @@ import type { BoardAnslagKey } from '../data/anslag/boardAnslag'
 import { BOARD_ANSLAG } from '../data/anslag/boardAnslag'
 import type { PlayoffAnslagKey } from '../data/anslag/playoffAnslag'
 import { PLAYOFF_ANSLAG } from '../data/anslag/playoffAnslag'
-import { FixtureStatus, PlayoffRound, PlayoffStatus } from '../enums'
+import { FixtureStatus, PlayoffRound } from '../enums'
+import { getSeasonEndPhase } from '../data/seasonEndPhase'
 
 export type AnslagKey = CupAnslagKey | LeagueAnslagKey | BoardAnslagKey | PlayoffAnslagKey
 
@@ -158,23 +159,6 @@ function firstPlayoffMatchUpcoming(game: SaveGame): boolean {
   )
 }
 
-function managedClubLastSeasonMatchCompleted(game: SaveGame): boolean {
-  const id = game.managedClubId
-  const hasAnyCompleted = game.fixtures.some(
-    f => f.status === 'completed' && (f.homeClubId === id || f.awayClubId === id)
-  )
-  const hasAnyScheduled = game.fixtures.some(
-    f => f.status === 'scheduled' && (f.homeClubId === id || f.awayClubId === id)
-  )
-  if (!hasAnyCompleted || hasAnyScheduled) return false
-  // vänta tills slutspelet är klart för alla — annars triggas season_done
-  // medan spectator-perioden fortfarande pågår
-  if (game.playoffBracket && game.playoffBracket.status !== PlayoffStatus.Completed) {
-    return false
-  }
-  return true
-}
-
 // ── Main service ──────────────────────────────────────────────────
 
 export function computeNextAnslag(game: SaveGame): AnslagKey | null {
@@ -282,7 +266,7 @@ export function computeNextAnslag(game: SaveGame): AnslagKey | null {
     const round = currentLeagueRound(game)
 
     // Halvvägs — exact round 11 (more specific than midwinter spann, takes priority)
-    if (round === 11 && !seen.includes('league_halfway')) {
+    if (round === 11 && !seen.includes('league_halfway') && getSeasonEndPhase(game) === 'regular_active') {
       return 'league_halfway'
     }
 
@@ -324,8 +308,8 @@ export function computeNextAnslag(game: SaveGame): AnslagKey | null {
     }
   }
 
-  // Sommaren kommer — last match played, nothing left
-  if (managedClubLastSeasonMatchCompleted(game) && !seen.includes('season_done')) {
+  // Sommaren kommer — bracket complete, hela säsongen spelad
+  if (getSeasonEndPhase(game) === 'season_done' && !seen.includes('season_done')) {
     return 'season_done'
   }
 

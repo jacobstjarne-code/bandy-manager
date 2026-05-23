@@ -17,12 +17,13 @@ import { PortalInboxCounter } from '../components/portal/PortalInboxCounter'
 import { AnslagOverlay } from '../components/anslag/AnslagOverlay'
 import { computeNextAnslag } from '../../domain/services/anslagService'
 import { getActiveDecisionCount } from '../../domain/services/decisionBudgetService'
-import { PlayoffRound, PlayoffStatus, PendingScreen } from '../../domain/enums'
+import { PlayoffRound, PendingScreen } from '../../domain/enums'
 import { playSound } from '../audio/soundEffects'
 import { PortalRoundMark } from '../components/portal/PortalRoundMark'
 import { AnnandagsValEvent } from '../components/portal/AnnandagsValEvent'
 import { getPlayoffSeriesContext } from '../../domain/services/portal/playoffSeriesContext'
 import { isManagedClubSpectator } from '../../domain/data/seasonPhases'
+import { getSeasonEndPhase } from '../../domain/data/seasonEndPhase'
 import { getRoundDate } from '../../domain/services/scheduleGenerator'
 
 // Initialisera bag-of-cards en gång vid modulimport
@@ -106,15 +107,16 @@ export function PortalScreen() {
 
   const isSpectator = isManagedClubSpectator(game)
 
+  const phase = getSeasonEndPhase(game)
   const advanceButtonText = (() => {
     const scheduled = game.fixtures.filter(f => f.status === 'scheduled')
     if (scheduled.length === 0) {
-      if (!game.playoffBracket) {
+      if (phase === 'season_done') return 'Avsluta säsongen →'
+      if (phase === 'playoff_spectator') return 'Säsong klar →'
+      if (phase === 'regular_done') {
         const s = game.standings.find(s => s.clubId === game.managedClubId)
         return s && s.position <= 8 ? 'Starta slutspel →' : 'Avsluta grundserien →'
       }
-      if (game.playoffBracket.status === PlayoffStatus.Completed) return 'Avsluta säsongen →'
-      if (isSpectator) return 'Säsong klar →'
       return 'Fortsätt slutspel →'
     }
 

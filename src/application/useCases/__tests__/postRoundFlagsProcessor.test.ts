@@ -34,11 +34,11 @@ function makeFixture(overrides: Partial<Fixture>): Fixture {
 }
 
 describe('applyPostRoundFlags', () => {
-  it('triggers halvtidssummering at liga-omgång 11', () => {
+  it('halvtidssummering-pendingScreen sätts INTE längre vid liga-omgång 11 (C-SD1: league_halfway-anslaget tar över)', () => {
     const game = makeGame({ pendingScreen: undefined })
     const fixture = makeFixture({ roundNumber: 11, isCup: false })
     const { updatedGame } = applyPostRoundFlags({ game, justCompletedManagedFixture: fixture, nextMatchday: 11 })
-    expect(updatedGame.pendingScreen).toBe(PendingScreen.HalfTimeSummary)
+    expect(updatedGame.pendingScreen).toBeUndefined()
   })
 
   it('does not trigger halvtidssummering for cup fixture at round 11', () => {

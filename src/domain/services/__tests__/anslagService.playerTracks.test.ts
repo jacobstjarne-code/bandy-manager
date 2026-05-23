@@ -3,7 +3,7 @@ import { computeNextAnslag } from '../anslagService'
 import type { SaveGame } from '../../entities/SaveGame'
 import type { CupBracket, CupMatch } from '../../entities/Cup'
 import type { Fixture } from '../../entities/Fixture'
-import { FixtureStatus } from '../../enums'
+import { FixtureStatus, PlayoffStatus } from '../../enums'
 
 function makeGame(overrides: Partial<SaveGame> = {}): SaveGame {
   return {
@@ -156,11 +156,12 @@ describe('Spår: direktkvalad → cupvinnare', () => {
 })
 
 describe('Liga-anslag: season_done', () => {
-  it('triggas när alla fixtures är spelade och inga är scheduled', () => {
+  it('triggas när alla fixtures är spelade och playoff-bracket är completed', () => {
     const completedFixtures = Array.from({ length: 22 }, (_, i) => makeLeagueFixture(i + 1))
     const game = makeGame({
       cupBracket: { season: 1, matches: [], byeTeamIds: [], completed: true },
       fixtures: completedFixtures,
+      playoffBracket: { season: 1, status: PlayoffStatus.Completed, quarterFinals: [], semiFinals: [], final: null, champion: 'other_club' },
       seenAnslag: ['cup_start', 'cup_done', 'league_start', 'league_midwinter', 'league_halfway', 'playoff_qualification'],
     })
     expect(computeNextAnslag(game)).toBe('season_done')

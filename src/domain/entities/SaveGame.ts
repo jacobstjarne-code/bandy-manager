@@ -405,6 +405,10 @@ export interface SaveGame {
   lastRetirementSeason?: number       // season when last retirement decision was triggered
   retirementCeremonyCounter?: number  // increments each time a player retires via portal card
 
+  // C-SD1 — Säsongsslutets koreografi
+  seasonDoneAck?: boolean    // sätts när spelaren bekräftar SEASON_DONE, övergår till SUMMER
+  inSummerScene?: boolean    // true efter spelaren klickat "Avsluta säsongen"
+
   // P1 — Annandagsplanering val-mekanik
   annandagsValGjort?: 'A' | 'B' | 'C' | 'D' | null  // val gjort denna säsong
   pendingAnnandagsVal?: boolean                        // trigger: 2 omgångar innan hemmamatch
