@@ -53,7 +53,7 @@ function getCategory(item: InboxItem, game: SaveGame): InboxCategory {
       return 'important'
     case InboxItemType.TransferOffer:
     case InboxItemType.TransferBidReceived: {
-      const hasOpenBid = (game.transferBids ?? []).some(
+      const hasOpenBid = game.transferBids.some(
         b => b.playerId === item.relatedPlayerId &&
              b.direction === 'incoming' &&
              b.status === 'pending',
