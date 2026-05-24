@@ -4,7 +4,8 @@ import { useManagedPlayers, useHasPendingLineup, useManagedClub, useGameStore } 
 import { PlayerPosition, PlayerArchetype } from '../../domain/enums'
 import type { Player } from '../../domain/entities/Player'
 import type { LoanDeal } from '../../domain/entities/Academy'
-import type { Tactic } from '../../domain/entities/Club'
+import type { Tactic, Club } from '../../domain/entities/Club'
+import type { Fixture } from '../../domain/entities/Fixture'
 import { StatBar } from '../components/StatBar'
 import { PlayerCard } from '../components/PlayerCard'
 import { getRecentMatchRatings } from '../components/playerCardUtils'
@@ -68,41 +69,117 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 interface PlayerRowProps {
   player: Player
   onClick: () => void
+  fixtures: Fixture[]
+  clubs: Club[]
+  managedClubId: string
+  currentSeason: number
 }
 
 interface PlayerRowAnimatedProps {
   player: Player
   index: number
   onClick: () => void
+  fixtures: Fixture[]
+  clubs: Club[]
+  managedClubId: string
+  currentSeason: number
 }
 
-function PlayerRowAnimated({ player, index, onClick }: PlayerRowAnimatedProps) {
+function PlayerRowAnimated({ player, index, onClick, fixtures, clubs, managedClubId, currentSeason }: PlayerRowAnimatedProps) {
   return (
     <div style={{
       animation: index < 8 ? `fadeInUp 250ms ease-out ${index * 40}ms both` : 'none',
     }}>
-      <PlayerRow player={player} onClick={onClick} />
+      <PlayerRow player={player} onClick={onClick} fixtures={fixtures} clubs={clubs} managedClubId={managedClubId} currentSeason={currentSeason} />
     </div>
   )
 }
 
-function PlayerRow({ player, onClick }: PlayerRowProps) {
+function stripeColor(player: Player, currentSeason: number): string {
+  if (player.isInjured || player.suspensionGamesRemaining > 0) return 'var(--danger)'
+  if (player.morale < 45 || player.availability === 'unhappy' || player.availability === 'want_to_leave') return 'var(--warm)'
+  if (player.contractUntilSeason <= currentSeason) return 'var(--gold)'
+  if (player.age < 24) return 'var(--cold)'
+  if (player.age <= 30) return 'var(--success)'
+  return 'var(--text-muted)'
+}
+
+function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSeason }: PlayerRowProps) {
   const captainPlayerId = useGameStore(s => s.game?.captainPlayerId)
   const isCaptain = player.id === captainPlayerId
-  let statusPill: React.ReactNode = null
-  if (player.isInjured) {
-    statusPill = (
-      <span className="tag tag-red" style={{ flexShrink: 0 }}>
-        🩹 Skadad
-      </span>
+
+  // Fas 1: stripe color
+  const stripe = stripeColor(player, currentSeason)
+
+  // Fas 1: sparkline from recent match ratings
+  const recentMatchRatings = getRecentMatchRatings(fixtures, clubs, player.id, managedClubId, 5)
+  const recentRatings = recentMatchRatings.map(r => r.rating)
+  let sparkline: React.ReactNode = null
+  if (recentRatings.length >= 2) {
+    const minR = 5, maxR = 10
+    const pts = recentRatings.map((r, i) => {
+      const x = (i / (recentRatings.length - 1)) * 60 + 2
+      const y = 14 - ((r - minR) / (maxR - minR)) * 12
+      return `${x},${y}`
+    }).join(' ')
+    const last = recentRatings[recentRatings.length - 1]
+    const first = recentRatings[0]
+    const sparkColor = last > first + 0.3 ? 'var(--success)' : last < first - 0.3 ? 'var(--danger)' : 'var(--text-muted)'
+    sparkline = (
+      <svg width={64} height={16} style={{ display: 'block', overflow: 'visible' }}>
+        <polyline points={pts} fill="none" stroke={sparkColor} strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />
+      </svg>
     )
-  } else if (player.suspensionGamesRemaining > 0) {
-    statusPill = (
-      <span className="tag tag-red" style={{ flexShrink: 0 }}>
-        🚫 Avstängd
-      </span>
-    )
+  } else {
+    sparkline = <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>—</span>
   }
+
+  // Fas 1: chip-rad (max 3, cascade priority)
+  const chipStyle = (color: string, bg: string): React.CSSProperties => ({
+    fontSize: 10, fontWeight: 600, borderRadius: 4, padding: '2px 5px',
+    maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+    color, background: bg, flexShrink: 0,
+  })
+  const allChips: React.ReactNode[] = []
+  if (player.isInjured) {
+    allChips.push(<span key="injury" style={chipStyle('var(--danger-text)', 'rgba(176,80,64,0.1)')}>🩹 {getInjuryText(player.injuryDaysRemaining, player.id)}</span>)
+  }
+  if (player.suspensionGamesRemaining > 0) {
+    allChips.push(<span key="suspension" style={chipStyle('var(--danger-text)', 'rgba(176,80,64,0.1)')}>🚫 {getSuspensionText(player.suspensionGamesRemaining, player.id)}</span>)
+  }
+  if (player.morale < 45) {
+    allChips.push(<span key="morale" style={chipStyle('var(--warm-light)', 'rgba(140,110,58,0.1)')}>😟 {getMoraleText(player.morale, player.lowMoraleDays, player.id)}</span>)
+  } else if (player.availability === 'unhappy') {
+    allChips.push(<span key="unhappy" style={chipStyle('var(--warm-light)', 'rgba(140,110,58,0.1)')}>😤 Missnöjd</span>)
+  } else if (player.availability === 'want_to_leave') {
+    allChips.push(<span key="want_to_leave" style={chipStyle('var(--warm-light)', 'rgba(140,110,58,0.1)')}>🚪 Vill lämna</span>)
+  }
+  if (player.contractUntilSeason <= currentSeason) {
+    allChips.push(<span key="contract" style={chipStyle('var(--gold)', 'rgba(232,185,92,0.1)')}>📄 {getContractText(player.contractUntilSeason, currentSeason, player.id)}</span>)
+  }
+  if (player.trait && TRAIT_META[player.trait]) {
+    const meta = TRAIT_META[player.trait]
+    allChips.push(<span key="trait" style={chipStyle(meta.color, `${meta.color}14`)}>{meta.emoji} {meta.label}</span>)
+  }
+  if (player.archetype === PlayerArchetype.CornerSpecialist) {
+    allChips.push(<span key="corner" style={chipStyle('var(--accent)', 'rgba(196,122,58,0.08)')}>📐 Hörnspec.</span>)
+  }
+  if (player.promotedFromAcademy) {
+    allChips.push(<span key="academy" style={chipStyle('var(--ice)', 'rgba(126,179,212,0.08)')}>◆ Akademi</span>)
+  }
+  if (player.isFullTimePro) {
+    allChips.push(<span key="pro" style={chipStyle('var(--accent)', 'rgba(196,122,58,0.08)')}>⭐ Proffs</span>)
+  } else if (player.dayJob) {
+    allChips.push(<span key="dayjob" style={chipStyle('var(--text-secondary)', 'rgba(196,122,58,0.05)')}>👷 {player.dayJob.title}</span>)
+  }
+  const chips = allChips.slice(0, 3)
+
+  // Fas 2: veteran seasons at this club
+  const clubSeasons = player.seasonHistory?.filter(s => s.clubId === player.clubId).length ?? 0
+  const showVeteranBand = clubSeasons >= 5 && !isCaptain
+
+  // Fas 2: last storyline
+  const lastStoryline = player.narrativeLog?.filter(e => e.type === 'storyline').slice(-1)[0]
 
   return (
     <div
@@ -116,16 +193,42 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
         flexDirection: 'column',
         gap: 5,
         overflow: 'hidden',
+        borderLeft: `3px solid ${stripe}`,
+        borderRadius: '0 8px 8px 0',
       }}
     >
       {/* Top row: badge + name + CA */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {/* Player portrait */}
+        {/* Player portrait with captain band / veteran band / legend ring */}
         {/* TODO(FAS 5): byt mot riktig karaktärsillustration · se CHARACTER-BRIEF.md */}
-        <div
-          style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--border)', flexShrink: 0, background: 'var(--bg-surface)' }}
-          dangerouslySetInnerHTML={{ __html: getPortraitSvg(player.id, player.age, player.position) }}
-        />
+        <div style={{ position: 'relative', flexShrink: 0, width: 36, height: 36 }}>
+          {/* Fas 2: Legend ring */}
+          {player.isClubLegend && (
+            <div style={{ position: 'absolute', inset: -2, borderRadius: '50%', border: '2px solid var(--gold)', zIndex: 1 }} />
+          )}
+          <div
+            style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--border)', background: 'var(--bg-surface)' }}
+            dangerouslySetInnerHTML={{ __html: getPortraitSvg(player.id, player.age, player.position) }}
+          />
+          {/* Fas 1: Captain band */}
+          {isCaptain && (
+            <div style={{
+              position: 'absolute', bottom: -7, left: '50%', transform: 'translateX(-50%)',
+              fontSize: 8, color: 'var(--accent)', border: '1px solid var(--accent)',
+              borderRadius: 3, padding: '0 3px', lineHeight: '14px', background: 'var(--bg-surface)',
+              zIndex: 2,
+            }}>K</div>
+          )}
+          {/* Fas 2: Veteran band */}
+          {showVeteranBand && (
+            <div style={{
+              position: 'absolute', bottom: -7, left: '50%', transform: 'translateX(-50%)',
+              fontSize: 8, color: 'var(--text-muted)', border: '1px solid var(--text-muted)',
+              borderRadius: 3, padding: '0 3px', lineHeight: '14px', background: 'var(--bg-surface)',
+              zIndex: 2, whiteSpace: 'nowrap',
+            }}>{clubSeasons}år</div>
+          )}
+        </div>
 
         {/* Name */}
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -140,9 +243,6 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
           }}>
             {player.shirtNumber != null && (
               <span style={{ fontSize: 12, color: 'var(--text-muted)', marginRight: 4 }}>#{player.shirtNumber}</span>
-            )}
-            {isCaptain && (
-              <span style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700, marginRight: 4 }}>©</span>
             )}
             {player.firstName} {player.lastName}
           </p>
@@ -201,35 +301,19 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
         }}>›</button>
       </div>
 
-      {/* Bottom row: form + fitness bars + status pill */}
+      {/* Bottom row: sparkline + fitness bar + chips */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 46 }}>
-        <div style={{ width: 50, flexShrink: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
           <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 3 }}>Form</p>
-          <StatBar value={player.form} color={barColor(player.form)} height={5} />
+          <div style={{ height: 16, display: 'flex', alignItems: 'center' }}>{sparkline}</div>
         </div>
         <div style={{ width: 50, flexShrink: 0 }}>
           <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 3 }}>Kond</p>
           <StatBar value={player.fitness} color={barColor(player.fitness)} height={5} />
         </div>
-        {statusPill}
-        {player.archetype === PlayerArchetype.CornerSpecialist && (
-          <span className="tag tag-copper" style={{ flexShrink: 0 }}>
-            📐 Hörnspec.
-          </span>
-        )}
-        {(player.isFullTimePro ?? false) && (
-          <span className="tag tag-fill" style={{ flexShrink: 0 }}>
-            ⭐ Proffs
-          </span>
-        )}
-        {!(player.isFullTimePro ?? false) && player.dayJob && (
-          <span
-            className="tag tag-outline"
-            style={{ flexShrink: 0, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-          >
-            👷 {player.dayJob.title}
-          </span>
-        )}
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+          {chips}
+        </div>
       </div>
 
       {/* Stat row */}
@@ -248,6 +332,19 @@ function PlayerRow({ player, onClick }: PlayerRowProps) {
           )}
         </div>
       )}
+
+      {/* Fas 2: Storyline row */}
+      {lastStoryline && (
+        <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--text-secondary)', paddingLeft: 46 }}>
+          {lastStoryline.text}
+        </div>
+      )}
+
+      {/* VÄNTAR PÅ C-K1: Landslags-chip */}
+      {/* VÄNTAR PÅ ny datamodell: Manager-anteckning (player.managerNote) */}
+      {/* VÄNTAR PÅ R5: Anniversary-eko */}
+      {/* VÄNTAR PÅ Manager v1 + R1: Full lobby-kategorisering med motiv */}
+      {/* VÄNTAR PÅ narrativeLog-mappning: Klacken-favorit-chip */}
     </div>
   )
 }
@@ -620,6 +717,10 @@ export function SquadScreen() {
               player={player}
               index={index}
               onClick={() => setSelectedPlayerId(player.id)}
+              fixtures={game?.fixtures ?? []}
+              clubs={game?.clubs ?? []}
+              managedClubId={game?.managedClubId ?? ''}
+              currentSeason={game?.currentSeason ?? 0}
             />
           ))}
           {(game?.managedClubPendingLineup ? lineupFiltered : sorted).length === 0 && (
