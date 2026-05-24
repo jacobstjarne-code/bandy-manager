@@ -4,6 +4,7 @@ import { CARD_BAG } from './dashboardCardBag'
 import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, isManagedClubSpectator } from '../../data/seasonPhases'
 import { applyPhaseBias } from './seasonPhaseBias'
 import { inboxItemToCardCandidate, FREKVENTA, SALLSYNTA } from './inboxToPortal'
+import type { InboxKind } from './inboxToPortal'
 import { getRoundCharacter } from '../../data/roundCharacter'
 import type { RoundCharacter } from '../../data/roundCharacter'
 
@@ -141,16 +142,31 @@ export function buildPortal(game: SaveGame, seed: number): PortalLayout {
 
   // Steg 4: Story-slot — välj EN vinnare från inbox-kandidater
   const nowMs = game.currentDate ? new Date(game.currentDate).getTime() : 0
+  // Inboxen är sorterad nyast-först (roundProcessor: b.date.localeCompare(a.date)),
+  // så slice(0, 20) ger de SENASTE posterna — inte slice(-N) som ger de äldsta.
+  const lastWasFrekventa = !!game.lastStorySlotType && FREKVENTA.has(game.lastStorySlotType as InboxKind)
   const inboxCandidates = (game.inbox ?? [])
-    .slice(-15)
+    .slice(0, 20)
     .map(item => ({ item, card: inboxItemToCardCandidate(item, game) }))
     .filter((x): x is { item: typeof x.item; card: NonNullable<typeof x.card> } => x.card !== null)
-    .filter(x => x.item.date && roundsAgo(x.item.date, nowMs) <= 2)
+    .filter(x => {
+      if (!x.item.date) return false
+      const ra = roundsAgo(x.item.date, nowMs)
+      // Tysta sällsynta kort (milstolpe/nemesis/mecenat) får längre fönster —
+      // de förnyas inte varje vecka, så ett 2-omgångars-fönster låser ute dem helt.
+      return SALLSYNTA.has(x.card.kind) ? ra <= 6 : ra <= 2
+    })
 
   const scored = inboxCandidates.map(({ item, card }) => {
     let w = card.weight + (item.date ? recencyBonus(item.date, nowMs) : 0)
-    if (FREKVENTA.has(card.kind) && card.kind === game.lastStorySlotType) w *= 0.5
     if (SALLSYNTA.has(card.kind)) w += 25
+    // Rotation: exakt samma typ igen straffas hårt; annan frekvent typ efter en
+    // frekvent straffas mjukare — så Media→Resultat→Derby inte känns enahanda.
+    if (card.kind === game.lastStorySlotType) {
+      w *= 0.4
+    } else if (lastWasFrekventa && FREKVENTA.has(card.kind)) {
+      w *= 0.7
+    }
     return { card, w }
   })
   const storySlot = scored.reduce<typeof scored[0] | undefined>(
