@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useManagedPlayers, useHasPendingLineup, useManagedClub, useGameStore } from '../store/gameStore'
 import { PlayerPosition, PlayerArchetype } from '../../domain/enums'
@@ -9,6 +9,7 @@ import type { Fixture } from '../../domain/entities/Fixture'
 import { StatBar } from '../components/StatBar'
 import { PlayerCard } from '../components/PlayerCard'
 import { getRecentMatchRatings } from '../components/playerCardUtils'
+import { Sparkline } from '../components/primitives/Sparkline'
 import { positionShort, POSITION_ORDER } from '../utils/formatters'
 import { TRAIT_META } from '../../domain/data/playerTraits'
 import { SectionCard } from '../components/SectionCard'
@@ -73,6 +74,7 @@ interface PlayerRowProps {
   clubs: Club[]
   managedClubId: string
   currentSeason: number
+  captainPlayerId: string | undefined
 }
 
 interface PlayerRowAnimatedProps {
@@ -83,14 +85,15 @@ interface PlayerRowAnimatedProps {
   clubs: Club[]
   managedClubId: string
   currentSeason: number
+  captainPlayerId: string | undefined
 }
 
-function PlayerRowAnimated({ player, index, onClick, fixtures, clubs, managedClubId, currentSeason }: PlayerRowAnimatedProps) {
+function PlayerRowAnimated({ player, index, onClick, fixtures, clubs, managedClubId, currentSeason, captainPlayerId }: PlayerRowAnimatedProps) {
   return (
     <div style={{
       animation: index < 8 ? `fadeInUp 250ms ease-out ${index * 40}ms both` : 'none',
     }}>
-      <PlayerRow player={player} onClick={onClick} fixtures={fixtures} clubs={clubs} managedClubId={managedClubId} currentSeason={currentSeason} />
+      <PlayerRow player={player} onClick={onClick} fixtures={fixtures} clubs={clubs} managedClubId={managedClubId} currentSeason={currentSeason} captainPlayerId={captainPlayerId} />
     </div>
   )
 }
@@ -104,81 +107,64 @@ function stripeColor(player: Player, currentSeason: number): string {
   return 'var(--text-muted)'
 }
 
-function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSeason }: PlayerRowProps) {
-  const captainPlayerId = useGameStore(s => s.game?.captainPlayerId)
+function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSeason, captainPlayerId }: PlayerRowProps) {
   const isCaptain = player.id === captainPlayerId
 
-  // Fas 1: stripe color
   const stripe = stripeColor(player, currentSeason)
 
-  // Fas 1: sparkline from recent match ratings
-  const recentMatchRatings = getRecentMatchRatings(fixtures, clubs, player.id, managedClubId, 5)
-  const recentRatings = recentMatchRatings.map(r => r.rating)
-  let sparkline: React.ReactNode = null
-  if (recentRatings.length >= 2) {
-    const minR = 5, maxR = 10
-    const pts = recentRatings.map((r, i) => {
-      const x = (i / (recentRatings.length - 1)) * 60 + 2
-      const y = 14 - ((r - minR) / (maxR - minR)) * 12
-      return `${x},${y}`
-    }).join(' ')
-    const last = recentRatings[recentRatings.length - 1]
-    const first = recentRatings[0]
-    const sparkColor = last > first + 0.3 ? 'var(--success)' : last < first - 0.3 ? 'var(--danger)' : 'var(--text-muted)'
-    sparkline = (
-      <svg width={64} height={16} style={{ display: 'block', overflow: 'visible' }}>
-        <polyline points={pts} fill="none" stroke={sparkColor} strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />
-      </svg>
-    )
-  } else {
-    sparkline = <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>—</span>
-  }
+  const recentRatings = useMemo(
+    () => getRecentMatchRatings(fixtures, clubs, player.id, managedClubId, 5).map(r => r.rating),
+    [fixtures, clubs, player.id, managedClubId],
+  )
+  const sparkStroke: 'success' | 'danger' | 'cold' = recentRatings.length >= 2
+    ? (recentRatings[recentRatings.length - 1] > recentRatings[0] + 0.3 ? 'success'
+      : recentRatings[recentRatings.length - 1] < recentRatings[0] - 0.3 ? 'danger'
+      : 'cold')
+    : 'cold'
 
-  // Fas 1: chip-rad (max 3, cascade priority)
-  const chipStyle = (color: string, bg: string): React.CSSProperties => ({
-    fontSize: 10, fontWeight: 600, borderRadius: 4, padding: '2px 5px',
-    maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-    color, background: bg, flexShrink: 0,
+  const chipStyle = (color: string, bg: string, borderColor: string): React.CSSProperties => ({
+    display: 'inline-flex', alignItems: 'center', gap: 3,
+    fontSize: 10, fontWeight: 600, borderRadius: 99, padding: '2px 7px',
+    maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+    color, background: bg, border: `1px solid ${borderColor}`, lineHeight: 1.3, flexShrink: 0,
   })
   const allChips: React.ReactNode[] = []
   if (player.isInjured) {
-    allChips.push(<span key="injury" style={chipStyle('var(--danger-text)', 'rgba(176,80,64,0.1)')}>🩹 {getInjuryText(player.injuryDaysRemaining, player.id)}</span>)
+    allChips.push(<span key="injury" style={chipStyle('var(--danger-text)', 'rgba(176,80,64,0.05)', 'rgba(176,80,64,0.3)')}>🩹 {getInjuryText(player.injuryDaysRemaining, player.id)}</span>)
   }
   if (player.suspensionGamesRemaining > 0) {
-    allChips.push(<span key="suspension" style={chipStyle('var(--danger-text)', 'rgba(176,80,64,0.1)')}>🚫 {getSuspensionText(player.suspensionGamesRemaining, player.id)}</span>)
+    allChips.push(<span key="suspension" style={chipStyle('var(--danger-text)', 'rgba(176,80,64,0.05)', 'rgba(176,80,64,0.3)')}>🚫 {getSuspensionText(player.suspensionGamesRemaining, player.id)}</span>)
   }
   if (player.morale < 45) {
-    allChips.push(<span key="morale" style={chipStyle('var(--warm-light)', 'rgba(140,110,58,0.1)')}>😟 {getMoraleText(player.morale, player.lowMoraleDays, player.id)}</span>)
+    allChips.push(<span key="morale" style={chipStyle('var(--warm-light)', 'rgba(140,110,58,0.06)', 'rgba(140,110,58,0.4)')}>😟 {getMoraleText(player.morale, player.lowMoraleDays, player.id)}</span>)
   } else if (player.availability === 'unhappy') {
-    allChips.push(<span key="unhappy" style={chipStyle('var(--warm-light)', 'rgba(140,110,58,0.1)')}>😤 Missnöjd</span>)
+    allChips.push(<span key="unhappy" style={chipStyle('var(--warm-light)', 'rgba(140,110,58,0.08)', 'rgba(140,110,58,0.5)')}>😤 Missnöjd</span>)
   } else if (player.availability === 'want_to_leave') {
-    allChips.push(<span key="want_to_leave" style={chipStyle('var(--warm-light)', 'rgba(140,110,58,0.1)')}>🚪 Vill lämna</span>)
+    allChips.push(<span key="want_to_leave" style={chipStyle('var(--warm-light)', 'rgba(140,110,58,0.08)', 'rgba(140,110,58,0.5)')}>🚪 Vill lämna</span>)
   }
   if (player.contractUntilSeason <= currentSeason) {
-    allChips.push(<span key="contract" style={chipStyle('var(--gold)', 'rgba(232,185,92,0.1)')}>📄 {getContractText(player.contractUntilSeason, currentSeason, player.id)}</span>)
+    allChips.push(<span key="contract" style={chipStyle('var(--warm-light)', 'rgba(140,110,58,0.06)', 'rgba(140,110,58,0.4)')}>📄 {getContractText(player.contractUntilSeason, currentSeason, player.id)}</span>)
   }
   if (player.trait && TRAIT_META[player.trait]) {
     const meta = TRAIT_META[player.trait]
-    allChips.push(<span key="trait" style={chipStyle(meta.color, `${meta.color}14`)}>{meta.emoji} {meta.label}</span>)
+    allChips.push(<span key="trait" style={chipStyle(meta.color, 'rgba(196,122,58,0.05)', 'rgba(196,122,58,0.3)')}>{meta.emoji} {meta.label}</span>)
   }
   if (player.archetype === PlayerArchetype.CornerSpecialist) {
-    allChips.push(<span key="corner" style={chipStyle('var(--accent)', 'rgba(196,122,58,0.08)')}>📐 Hörnspec.</span>)
+    allChips.push(<span key="corner" style={chipStyle('var(--accent)', 'rgba(196,122,58,0.05)', 'rgba(196,122,58,0.3)')}>📐 Hörnspec.</span>)
   }
   if (player.promotedFromAcademy) {
-    allChips.push(<span key="academy" style={chipStyle('var(--ice)', 'rgba(126,179,212,0.08)')}>◆ Akademi</span>)
+    allChips.push(<span key="academy" style={chipStyle('var(--cold-light)', 'rgba(126,179,212,0.05)', 'rgba(126,179,212,0.3)')}>◆ Akademi</span>)
   }
   if (player.isFullTimePro) {
-    allChips.push(<span key="pro" style={chipStyle('var(--accent)', 'rgba(196,122,58,0.08)')}>⭐ Proffs</span>)
+    allChips.push(<span key="pro" style={chipStyle('var(--bg)', 'var(--accent)', 'var(--accent)')}>⭐ Proffs</span>)
   } else if (player.dayJob) {
-    allChips.push(<span key="dayjob" style={chipStyle('var(--text-secondary)', 'rgba(196,122,58,0.05)')}>👷 {player.dayJob.title}</span>)
+    allChips.push(<span key="dayjob" style={chipStyle('var(--text-secondary)', 'transparent', 'var(--border-dark)')}>👷 {player.dayJob.title}</span>)
   }
   const chips = allChips.slice(0, 3)
 
-  // Fas 2: veteran seasons at this club
   const clubSeasons = player.seasonHistory?.filter(s => s.clubId === player.clubId).length ?? 0
   const showVeteranBand = clubSeasons >= 5 && !isCaptain
 
-  // Fas 2: last storyline
   const lastStoryline = player.narrativeLog?.filter(e => e.type === 'storyline').slice(-1)[0]
 
   return (
@@ -201,16 +187,14 @@ function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSea
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         {/* Player portrait with captain band / veteran band / legend ring */}
         {/* TODO(FAS 5): byt mot riktig karaktärsillustration · se CHARACTER-BRIEF.md */}
-        <div style={{ position: 'relative', flexShrink: 0, width: 36, height: 36 }}>
-          {/* Fas 2: Legend ring */}
+        <div style={{ position: 'relative', flexShrink: 0, width: 40, height: 40 }}>
           {player.isClubLegend && (
             <div style={{ position: 'absolute', inset: -2, borderRadius: '50%', border: '2px solid var(--gold)', zIndex: 1 }} />
           )}
           <div
-            style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--border)', background: 'var(--bg-surface)' }}
+            style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--border)', background: 'var(--bg-surface)' }}
             dangerouslySetInnerHTML={{ __html: getPortraitSvg(player.id, player.age, player.position) }}
           />
-          {/* Fas 1: Captain band */}
           {isCaptain && (
             <div style={{
               position: 'absolute', bottom: -7, left: '50%', transform: 'translateX(-50%)',
@@ -219,7 +203,6 @@ function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSea
               zIndex: 2,
             }}>K</div>
           )}
-          {/* Fas 2: Veteran band */}
           {showVeteranBand && (
             <div style={{
               position: 'absolute', bottom: -7, left: '50%', transform: 'translateX(-50%)',
@@ -302,23 +285,23 @@ function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSea
       </div>
 
       {/* Bottom row: sparkline + fitness bar + chips */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 46 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 50 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0, width: 60 }}>
           <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 3 }}>Form</p>
-          <div style={{ height: 16, display: 'flex', alignItems: 'center' }}>{sparkline}</div>
+          <Sparkline points={recentRatings} stroke={sparkStroke} height={12} />
         </div>
         <div style={{ width: 50, flexShrink: 0 }}>
           <p style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 3 }}>Kond</p>
           <StatBar value={player.fitness} color={barColor(player.fitness)} height={5} />
         </div>
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'nowrap', alignItems: 'center', overflow: 'hidden' }}>
           {chips}
         </div>
       </div>
 
       {/* Stat row */}
       {player.seasonStats.gamesPlayed > 0 && (
-        <div style={{ display: 'flex', gap: 12, paddingLeft: 46, fontSize: 11, color: 'var(--text-muted)' }}>
+        <div style={{ display: 'flex', gap: 12, paddingLeft: 50, fontSize: 11, color: 'var(--text-muted)' }}>
           <span>{player.seasonStats.gamesPlayed}M</span>
           <span style={{ color: player.seasonStats.goals > 0 ? 'var(--text-primary)' : undefined }}>
             {player.seasonStats.goals}G
@@ -335,7 +318,7 @@ function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSea
 
       {/* Fas 2: Storyline row */}
       {lastStoryline && (
-        <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--text-secondary)', paddingLeft: 46 }}>
+        <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--text-secondary)', paddingLeft: 50 }}>
           {lastStoryline.text}
         </div>
       )}
@@ -721,6 +704,7 @@ export function SquadScreen() {
               clubs={game?.clubs ?? []}
               managedClubId={game?.managedClubId ?? ''}
               currentSeason={game?.currentSeason ?? 0}
+              captainPlayerId={game?.captainPlayerId}
             />
           ))}
           {(game?.managedClubPendingLineup ? lineupFiltered : sorted).length === 0 && (
