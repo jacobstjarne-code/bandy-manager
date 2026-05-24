@@ -1,5 +1,5 @@
 import { getFatigueState, getItemAge } from '../../../domain/services/decisionFatigueService'
-import { Sparkline } from '../primitives/Sparkline'
+import { Sparkline, MIN_POINTS } from '../primitives/Sparkline'
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 
 interface Props {
@@ -35,6 +35,12 @@ function pressureStroke(pressure: 'calm' | 'warm' | 'hot'): 'accent' | 'warm' | 
   return 'accent'
 }
 
+const STROKE_COLOR: Record<'accent' | 'warm' | 'danger', string> = {
+  accent: 'var(--accent)',
+  warm:   'var(--warm)',
+  danger: 'var(--danger)',
+}
+
 function uniqueBySource<T extends { type?: string; source?: string }>(items: T[]): T[] {
   const seen = new Set<string>()
   return items.filter(item => {
@@ -66,7 +72,7 @@ export function PortalQueueRail({ game }: Props) {
   return (
     <div className={railClass}>
       <div className="portal-queue-rail-head">
-        <span className="portal-queue-rail-eyebrow">I kö</span>
+        <span className="portal-queue-rail-eyebrow">⏳ I kö</span>
         <span className="portal-queue-rail-count">
           <strong>{deferred.length}</strong> nästa veckan
         </span>
@@ -106,6 +112,11 @@ export function PortalQueueRail({ game }: Props) {
           stroke={pressureStroke(pressure)}
           height={22}
           label={`Beslutsbörda: ${pressureLabel(pressure)}`}
+          markers={fatigueHistory.length >= MIN_POINTS ? [{
+            index: fatigueHistory.length - 1,
+            color: STROKE_COLOR[pressureStroke(pressure)],
+            size: 2.5,
+          }] : undefined}
         />
       </div>
     </div>
