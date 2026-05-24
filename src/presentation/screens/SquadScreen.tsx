@@ -19,6 +19,8 @@ import { LockerRoomCard } from '../components/club/LockerRoomCard'
 import { TacticBoardCard } from '../components/tactic/TacticBoardCard'
 import { getRecommendedFormation, FORMATION_META } from '../../domain/entities/Formation'
 import { getInjuryText, getSuspensionText, getMoraleText, getContractText } from '../../domain/data/squadNuStrings'
+import { findActiveAnniversaries } from '../../domain/services/clubMemoryService'
+import type { ActiveAnniversary } from '../../domain/services/clubMemoryService'
 
 type SortKey = 'position' | 'ca' | 'form' | 'age'
 type FilterKey = 'all' | 'mv' | 'def' | 'half' | 'mid' | 'fwd'
@@ -75,6 +77,7 @@ interface PlayerRowProps {
   managedClubId: string
   currentSeason: number
   captainPlayerId: string | undefined
+  anniversaries: ActiveAnniversary[]
 }
 
 interface PlayerRowAnimatedProps {
@@ -86,14 +89,26 @@ interface PlayerRowAnimatedProps {
   managedClubId: string
   currentSeason: number
   captainPlayerId: string | undefined
+  anniversaries: ActiveAnniversary[]
 }
 
-function PlayerRowAnimated({ player, index, onClick, fixtures, clubs, managedClubId, currentSeason, captainPlayerId }: PlayerRowAnimatedProps) {
+function anniversaryEkoText(ann: ActiveAnniversary): string {
+  const y = ann.yearsAgo
+  switch (ann.type) {
+    case 'academy_promotion': return `${y} år sedan han kom upp från P19. Orten minns.`
+    case 'retirement':        return `Samma omgång, ${y} år tillbaka. Klubben minns.`
+    case 'player_milestone':  return `Just denna omgång för ${y} år sedan — hans 100:e match.`
+    case 'storyline_resolution': return `Samma omgång, ${y} år tillbaka. Klubben minns.`
+    default:                  return `Samma omgång, ${y} år tillbaka. Klubben minns.`
+  }
+}
+
+function PlayerRowAnimated({ player, index, onClick, fixtures, clubs, managedClubId, currentSeason, captainPlayerId, anniversaries }: PlayerRowAnimatedProps) {
   return (
     <div style={{
       animation: index < 8 ? `fadeInUp 250ms ease-out ${index * 40}ms both` : 'none',
     }}>
-      <PlayerRow player={player} onClick={onClick} fixtures={fixtures} clubs={clubs} managedClubId={managedClubId} currentSeason={currentSeason} captainPlayerId={captainPlayerId} />
+      <PlayerRow player={player} onClick={onClick} fixtures={fixtures} clubs={clubs} managedClubId={managedClubId} currentSeason={currentSeason} captainPlayerId={captainPlayerId} anniversaries={anniversaries} />
     </div>
   )
 }
@@ -107,8 +122,12 @@ function stripeColor(player: Player, currentSeason: number): string {
   return 'var(--text-muted)'
 }
 
-function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSeason, captainPlayerId }: PlayerRowProps) {
+function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSeason, captainPlayerId, anniversaries }: PlayerRowProps) {
   const isCaptain = player.id === captainPlayerId
+
+  const playerAnniversary = anniversaries
+    .filter(a => a.subjectPlayerId === player.id)
+    .sort((a, b) => b.significance - a.significance)[0] ?? null
 
   const stripe = stripeColor(player, currentSeason)
 
@@ -330,7 +349,11 @@ function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSea
       )}
 
       {/* VÄNTAR PÅ C-K1: Landslags-chip */}
-      {/* VÄNTAR PÅ R5: Anniversary-eko */}
+      {playerAnniversary && (
+        <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--gold)', paddingLeft: 50 }}>
+          ✦ {anniversaryEkoText(playerAnniversary)}
+        </div>
+      )}
       {/* VÄNTAR PÅ Manager v1 + R1: Full lobby-kategorisering med motiv */}
       {/* VÄNTAR PÅ narrativeLog-mappning: Klacken-favorit-chip */}
     </div>
@@ -360,6 +383,12 @@ export function SquadScreen() {
   const currentRound = game
     ? (game.fixtures.filter(f => f.status === 'completed').sort((a, b) => b.matchday - a.matchday)[0]?.matchday ?? 0)
     : 0
+
+  const activeAnniversaries = useMemo(
+    () => game ? findActiveAnniversaries(game) : [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [game?.currentMatchday, game?.currentSeason],
+  )
 
   function handleTalk(playerId: string, choice: 'encourage' | 'demand' | 'future') {
     const result = talkToPlayer(playerId, choice, currentRound)
@@ -710,6 +739,7 @@ export function SquadScreen() {
               managedClubId={game?.managedClubId ?? ''}
               currentSeason={game?.currentSeason ?? 0}
               captainPlayerId={game?.captainPlayerId}
+              anniversaries={activeAnniversaries}
             />
           ))}
           {(game?.managedClubPendingLineup ? lineupFiltered : sorted).length === 0 && (

@@ -420,6 +420,14 @@ export interface SaveGame {
   fatigueHistory?: number[]   // rullande 7 omgångars meter-värde (matar Sparkline)
   fatigueHotStreak?: number   // consecutive hot-pressure-omgångar (driver fatigue-scen)
 
+  // Squad-pulse (Tier 2C) — rullande 10 omgångars trupp-hälsa
+  teamFitnessHistory?: Array<{
+    matchday: number
+    avgFitness: number
+    avgMorale: number
+    injuryCount: number
+  }>
+
   // Portal-kurering — story-slot rotation
   lastStorySlotType?: string     // kind från FÖREGÅENDE matchdag — läses av buildPortal, fryst under matchdagen
   currentStorySlotType?: string  // kind visad UNDER pågående matchdag — skrivs vid render, promotas vid omgångsövergång

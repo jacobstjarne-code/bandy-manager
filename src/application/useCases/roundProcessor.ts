@@ -1571,6 +1571,16 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const prevStreak = updatedGame.fatigueHotStreak ?? 0
     const newStreak = pressure === 'hot' ? prevStreak + 1 : 0
     updatedGame = { ...updatedGame, fatigueHistory: newHistory, fatigueHotStreak: newStreak }
+
+    // Squad-pulse sampling — samlas på samma ställe som fatigueHistory
+    const squadPlayers = updatedGame.players.filter(p => p.clubId === updatedGame.managedClubId)
+    if (squadPlayers.length > 0) {
+      const avgFitness = Math.round(squadPlayers.reduce((s, p) => s + p.fitness, 0) / squadPlayers.length)
+      const avgMorale = Math.round(squadPlayers.reduce((s, p) => s + p.morale, 0) / squadPlayers.length)
+      const injuryCount = squadPlayers.filter(p => p.isInjured).length
+      const newTFH = [...(updatedGame.teamFitnessHistory ?? []), { matchday: nextMatchday, avgFitness, avgMorale, injuryCount }].slice(-10)
+      updatedGame = { ...updatedGame, teamFitnessHistory: newTFH }
+    }
   }
 
   return { game: updatedGame, roundPlayed: nextMatchday, seasonEnded: false, pendingEvents: allNewEvents, hasManagedCupMatch: hasManagedCupPending }
