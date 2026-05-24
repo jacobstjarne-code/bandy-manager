@@ -3,7 +3,7 @@ import type { InboxItem } from '../../entities/Inbox'
 import type { SaveGame } from '../../entities/SaveGame'
 import { InboxItemType } from '../../enums'
 import type { DashboardCard } from './dashboardCardBag'
-import type { CardRenderProps } from '../../../presentation/components/portal/portalTypes'
+import type { CardRenderProps } from './dashboardCardBag'
 import { isRivalryMatch } from '../../data/rivalries'
 
 export type InboxKind =

@@ -7,7 +7,7 @@ Format per lärdom: Mönster (symptom), Rotorsak (varför), Fix, Känn igen (sig
 
 ---
 
-## INNEHÅLL — 33 LÄRDOMAR i 6 kategorier
+## INNEHÅLL — 36 LÄRDOMAR i 6 kategorier
 
 Använd Ctrl-F på numret för att hoppa.
 
@@ -58,6 +58,7 @@ Använd Ctrl-F på numret för att hoppa.
 
 **Arkitektur / screen lifecycle:**
 - 34. Dead code-radering dödar tyst levande funktioner
+- 36. State-mutation under render-loopen — läs- och skrivfält måste separeras
 
 ---
 
@@ -819,3 +820,81 @@ När diagnostik behöver mer info än vad spelarens skum-rapport kan ge:
 **Känn igen:** Store-action som inte anropas från någon vy men fortfarande exporteras. Funktion som Jacob rapporterar som "försvunnen" fast koden finns kvar.
 
 **Historik:** `simulateRemainingStep` i `gameFlowActions.ts` levde kvar när `DashboardScreen.tsx` (1208 rader) raderades 2026-05-03 (commit 4a41789). Jacob märkte funktionen saknats i "spelet tre första månader" och rapporterade det 2026-05-22. Återställd till `PortalScreen.tsx` efter ~3 veckors tyst förlust. Beslut loggat i DECISIONS.md 2026-05-22.
+
+---
+
+## 36. State-mutation under render-loopen — läs- och skrivfält måste separeras
+
+**Mönster:** Portal fryser intermittent med "Maximum update depth exceeded" efter omgångar
+med stor inbox-aktivitet (derby + skandal, final + media). Crashen är icke-deterministisk
+och repros bara när viss kombination av inbox-items finns.
+
+**Rotorsak:** `buildPortal` läste `game.lastStorySlotType` för rotationsregeln (FREKVENTA
+×0.5). `recordPortalShown` (useEffect på `[layout]`) *wrote* `lastStorySlotType`. Varje
+skrivning gav ny `game`-ref → ny `layout` via useMemo → effekten triggades igen. Med två
+FREKVENTA-kandidater flippade ×0.5 vinnaren varje varv — oändlig loop.
+
+Mönstret i korthet: **samma fält läses av renderberäkning och skrivs av render-effekt → loop**.
+
+**Fix:** Separera läs- och skrivfälten.
+- Nytt `currentStorySlotType` — skrivs av `recordPortalShown` (render-sida).
+- Befintliga `lastStorySlotType` — läses av `buildPortal`, muteras aldrig under matchdagen.
+- `roundProcessor` promotar `current → last` vid matchdagsövergång — enda platsen som
+  känner matchday-gränsen säkert.
+
+**Känn igen:** Zustand-guard `if (same value) return state` fångar inte fallet om värdet
+*varierar* varje varv (som rotation gör). Guard måste skydda mot oscillation, inte bara
+identitet. Signal: crash är intermittent och beror på antal kandidater av samma klass —
+det är aldrig ett "random" crash, det är alltid en oscillations-trigger.
+
+**Historik:** `portalBuilder` + `recordPortalShown` + `PortalScreen.tsx`, 2026-05-24.
+Fix i commit `ae90f13`.
+
+---
+
+## 35. Statuspåståenden om koden är värdelösa utan kodläsning — oavsett källa
+
+**Mönster:** Ett dokument, en summering eller ett minne påstår något om kodens
+tillstånd — "de tre spåren är byggda", "typerna finns", "den mätningen behöver
+byggas", "trupp är tre lager levererade". Varje gång påståendet faktiskt
+verifieras mot källkoden visar det sig vara fel eller ofullständigt. Åtgärd på
+ett overifierat påstående leder till bygge mot något som inte finns, eller
+dubbelarbete för att bygga något som redan finns.
+
+**Rotorsak:** Tre olika parter (Opus, Code, Design) producerar status-text, och
+alla tre tenderar att skriva från kategori-tänkande eller från förra summeringen
+istället från koden. En statusline eller handoff KÄNNS som sanning men är en
+andrahandskälla. Detta är #33 sett bredare: inte bara "grep innan du specar nytt"
+utan "läs källan innan du agerar på NÅGOT statuspåstående", inklusive påståenden
+om att något är färdigt, saknas, eller måste byggas.
+
+**Fix:** Korsläsning slår självaudit. Innan ett spår förklaras klart, ett uppdrag
+skrivs, eller ett system sägs saknas — låt en part som inte producerade påståendet
+läsa den faktiska koden. Opus läser via workspace-MCP. Konkreta steg: (1) en
+Code-summering "klart/pushat" verifieras genom att läsa garden/funktionen, inte
+genom att lita på raden. (2) Ett "saknas"-påstående verifieras genom grep innan
+det leder till nybygge — datan kan finnas under annat namn. (3) Ett "måste byggas"
+verifieras mot `scripts/` och befintliga services — verktyget kan redan finnas.
+
+**Känn igen:** Vilket påstående som helst om kodens tillstånd som inte följs av
+ett verb som "jag läste". "Det finns nog ingen...", "Code rapporterar klart",
+"de sju typerna", "hela X är levererat". Ju säkrare påståendet låter, desto mer
+värd är en läsning — säkerheten är ofta minne, inte kunskap.
+
+**Historik (alla 2026-05-23, en session):**
+- Portal kändes statisk → läsning av `portalBuilder` visade att den TVÄRTOM har
+  full dynamisk prioritering; problemet var tom korg, inte trasig algoritm.
+- Designs sju inbox-typnamn → läsning av `enums/index.ts` visade att 6 av 7 inte
+  fanns som enum-värden. Hade Code byggt mot dem hade inget lyfts.
+- `playerMilestone`/`nemesis` påstods "saknas" → läsning av narrativeService +
+  Codes grep visade att båda finns som `BoardFeedback` med titel-prefix. Golv-regeln
+  vilade på riktig data.
+- Målmotor-mätning: Opus skrev uppdrag att BYGGA en batch-mätning → `scripts/`
+  visade att `analyze-stress.ts` + 7666-match `season_stats.json` redan gör exakt
+  det. Uppdraget omframades från "bygg" till "kör befintligt".
+- Tre Code-spår påstods byggda i summering → läsning av roundProcessor bekräftade
+  snapshot-gard (4 villkor) + fatigueHistory korrekt. Den gången stämde det —
+  men det visste vi först efter läsningen, inte före.
+- Trupp "tre lager levererade" → list_directory visade att KORT-filen saknades
+  initialt (Design hade inte listat den). Endast efter att alla sex filer fanns
+  på disk var påståendet sant.

@@ -52,7 +52,7 @@ import { ActiveArcsSecondary } from '../../../presentation/components/portal/sec
 import { BoardObjectivesSecondary } from '../../../presentation/components/portal/secondary/BoardObjectivesSecondary'
 import { WatchOthersSecondary } from '../../../presentation/components/portal/secondary/WatchOthersSecondary'
 import { SpectatorPrimary } from '../../../presentation/components/portal/primary/SpectatorPrimary'
-import type { CardRenderProps } from '../../../presentation/components/portal/portalTypes'
+import type { CardRenderProps } from './dashboardCardBag'
 import { getCoffeeRoomScene } from '../coffeeRoomService'
 import { shouldShowJournalistCard } from '../journalistVisibilityService'
 import { isManagedClubSpectator } from '../../data/seasonPhases'

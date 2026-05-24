@@ -33,6 +33,26 @@ Full motivering: `docs/GENOMGANG_SPEL_LOOP_2026-05-16.md`. Ordningen är **2 →
 
 ---
 
+## AKTUELLT LÄGE (2026-05-24) — Portal-kurering DEL 1–4 KLAR, render-loop fix, Opus-text
+
+**Pushat av Code 2026-05-24 (commits `1e1e05b` → `eaaa0ff`):**
+- ✅ **Portal-kurering DEL 1–4** — `inboxToPortal.ts` (7 inbox-kinds), story-slot i `portalBuilder.ts` (FREKVENTA ×0.5 rotation, SALLSYNTA +25 golv, recencyBonus), `roundCharacter.ts` (7 karaktärer, CHARACTER_BIAS-tabell), vikt-sänkningar (board_objectives 65, tabell 20, ekonomi 18)
+- ✅ **Render-loop fix** — `currentStorySlotType`/`lastStorySlotType` separerade; `recordPortalShown` skriver current, `roundProcessor` promotar current→last vid matchdagsövergång. Loop omöjlig.
+- ✅ **Pixel-audit** — 19 story-slot CSS-avvikelser mot mockup åtgärdade (border-left på card-elementet, per-stripe gradient, label-färger, typografi px-för-px)
+- ✅ **Layer-fix** — `initCardBag.ts` + `inboxToPortal.ts` importerar `CardRenderProps` från domain-lagret (`dashboardCardBag.ts`) istf presentation-lagret
+- ✅ **Opus-text** — annandagen (3 mediarubriker + 4 val-beskrivningar + intro), kafferum (+26 generiska utbyten, +4 FATIGUE_WARM, +4 FATIGUE_HOT)
+
+**Verifiering:**
+- Build ren, 0 TypeScript-fel
+- Render-loop: contract verifierad av arkitektur-audit (airtight)
+- Inga `[Opus]`-platshållare kvar i src/
+
+**Nästa:**
+- Jacob playtest — story-slot, round-character i kontext, verifiera roteringslogik (omg N journalist → N+1 bigResult vinner)
+- P5 i BACKLOG: rotorsak tomma commentary-events (CODE_SAMLAT-sista paketet)
+
+---
+
 ## AKTUELLT LÄGE (2026-05-18) — Audit-fixar R3 + R3+ klara, 804 tester gröna
 
 **Pushat av Code 2026-05-18 (commit `c01b79a`):**
@@ -45,6 +65,22 @@ Full motivering: `docs/GENOMGANG_SPEL_LOOP_2026-05-16.md`. Ordningen är **2 →
 - Jacob playtest per `docs/PLAYTEST_CHECKLIST_2026-05-17.md` (allt testbart)
 - Design pixel-audit R3 + R3+ mot `docs/mockups/2026-05-16_design_endgame_klimax.html`
 - Beslut: Riktning 1 (Klubbutvecklingspaket) eller playtest-fynd-sprint
+
+---
+
+## AKTUELLT LÄGE (2026-05-17 sen kväll) — Playtest-fynd KLARA
+
+**Pushat av Code 2026-05-17 sen kväll (commit `cf7a3f0`):**
+- ✅ 🟥 Rating-bug live/commentary-match — rotorsak: `justCompletedManagedFixture` i `roundProcessor.ts` hittade inte live-matchens fixture (redan Completed när `advance()` körs). Fallback mot `allFixtures` filtrerat på `matchday === nextMatchday`.
+- ✅ 🟧 cup_fullTime_win #3 — sista meningen borttagen, nu "Domaren blåser. {team} klarar sig."
+- ✅ 🟧 season_opener beat i cup-kontext — beat-trigger checkar nu `if (!nextAny || nextAny.isCup) return false`.
+- ✅ 🟧 Händelsetidslinje vänster/höger — tvåkolumns-grid i `GranskaForlop.tsx`. Mina händelser vänster, deras höger, ingen "mot".
+
+804 tester gröna, build ren.
+
+**Nästa:**
+- Jacob playtest — verifiera 4 fixar i kontext
+- Code: Transfers Sprint 1 (A2 i BACKLOG.md)
 
 ---
 
