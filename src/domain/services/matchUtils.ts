@@ -187,6 +187,7 @@ export function pickGoalCommentary(
   scoringTeamScore: number,
   otherTeamScore: number,
   rand: () => number,
+  history: Map<string[], string[]>,
   minute = 0,
 ): string {
   const isFirstGoal = scoringTeamScore === 1 && otherTeamScore === 0
@@ -197,7 +198,7 @@ export function pickGoalCommentary(
 
   // Late-goal variant with 35% probability when after minute 75
   if (isLate && rand() < 0.35) {
-    return pickCommentary(commentary.goalLate, rand)
+    return pickCommentary(commentary.goalLate, rand, history)
   }
 
   let pool: string[]
@@ -208,11 +209,11 @@ export function pickGoalCommentary(
   else pool = commentary.goalExtend
 
   return rand() > 0.5
-    ? pickCommentary(pool, rand)
-    : pickCommentary(commentary.goal, rand)
+    ? pickCommentary(pool, rand, history)
+    : pickCommentary(commentary.goal, rand, history)
 }
 
-export function pickWeatherCommentary(weather: Weather | undefined, rand: () => number): string | null {
+export function pickWeatherCommentary(weather: Weather | undefined, rand: () => number, history: Map<string[], string[]>): string | null {
   if (!weather) return null
   let pool: string[]
   if (weather.condition === WeatherCondition.HeavySnow || weather.condition === WeatherCondition.LightSnow) {
@@ -226,7 +227,7 @@ export function pickWeatherCommentary(weather: Weather | undefined, rand: () => 
   } else {
     pool = commentary.weatherGood
   }
-  return pickCommentary(pool, rand)
+  return pickCommentary(pool, rand, history)
 }
 
 export interface PenaltyRound {

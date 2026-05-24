@@ -1,22 +1,17 @@
 import type { SaveGame, InboxItem } from '../entities/SaveGame'
 import type { Fixture } from '../entities/Fixture'
 import { FixtureStatus, InboxItemType } from '../enums'
-import { getHeadlinePrefix } from './journalistService'
 import { SMALL_ABSURDITIES } from '../data/smallAbsurditiesData'
 
 function mediaItem(title: string, date: string, id: string, game?: SaveGame, suppressJournalistName?: boolean): InboxItem {
-  let prefix = ''
-  if (game?.journalist && !suppressJournalistName) {
-    prefix = getHeadlinePrefix(game.journalist, !title.includes('KOLLAPS') && !title.includes('Kris'))
-  } else if (game?.journalist && suppressJournalistName) {
-    // Press conference already shows this journalist — use outlet-only byline
-    prefix = `${game.journalist.outlet}: `
-  }
+  const byline = game?.journalist
+    ? ` — ${suppressJournalistName ? game.journalist.outlet : `${game.journalist.name}, ${game.journalist.outlet}`}`
+    : ''
   return {
     id,
     date,
     type: InboxItemType.Media,
-    title: prefix ? prefix + title : title,
+    title: title + byline,
     body: '',
     isRead: false,
   }
@@ -209,12 +204,12 @@ export function generateAbsurdityArticles(
     const absurdity = SMALL_ABSURDITIES[seedNum % SMALL_ABSURDITIES.length]
 
     // Tidningsrubrik (en mediaheadline-inbox-item).
-    const headlinePrefix = game.journalist ? getHeadlinePrefix(game.journalist, false) : ''
+    const byline = game.journalist ? ` — ${game.journalist.name}, ${game.journalist.outlet}` : ''
     articles.push({
       id: `media_absurdity_${scandal.id}`,
       date: game.currentDate,
       type: InboxItemType.Media,
-      title: headlinePrefix ? headlinePrefix + absurdity.newspaperHeadline : absurdity.newspaperHeadline,
+      title: absurdity.newspaperHeadline + byline,
       body: '',
       isRead: false,
     })

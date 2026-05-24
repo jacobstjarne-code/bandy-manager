@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useGameStore } from '../store/gameStore'
 import { InboxItemType } from '../../domain/enums'
-import type { InboxItem } from '../../domain/entities/SaveGame'
+import type { InboxItem, SaveGame } from '../../domain/entities/SaveGame'
 import { Check } from 'lucide-react'
 import { PlayerLink } from '../components/PlayerLink'
 
@@ -43,16 +43,23 @@ function inboxTypeColor(type: InboxItemType): string {
 
 type InboxCategory = 'important' | 'news' | 'reports'
 
-function getCategory(item: InboxItem): InboxCategory {
+function getCategory(item: InboxItem, game: SaveGame): InboxCategory {
   switch (item.type) {
     case InboxItemType.BoardFeedback:
     case InboxItemType.LicenseReview:
-    case InboxItemType.TransferOffer:
-    case InboxItemType.TransferBidReceived:
     case InboxItemType.ContractExpiring:
     case InboxItemType.Injury:
     case InboxItemType.Suspension:
       return 'important'
+    case InboxItemType.TransferOffer:
+    case InboxItemType.TransferBidReceived: {
+      const hasOpenBid = (game.transferBids ?? []).some(
+        b => b.playerId === item.relatedPlayerId &&
+             b.direction === 'incoming' &&
+             b.status === 'pending',
+      )
+      return hasOpenBid ? 'important' : 'news'
+    }
     case InboxItemType.MatchResult:
     case InboxItemType.Playoff:
     case InboxItemType.Derby:
@@ -247,7 +254,7 @@ export function InboxScreen() {
   // Group by category
   const grouped: Record<InboxCategory, InboxItem[]> = { important: [], news: [], reports: [] }
   for (const item of sorted) {
-    grouped[getCategory(item)].push(item)
+    grouped[getCategory(item, game)].push(item)
   }
 
   const categoryOrder: InboxCategory[] = ['important', 'news', 'reports']

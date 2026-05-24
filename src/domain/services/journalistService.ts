@@ -172,7 +172,7 @@ export function generatePostMatchHeadline(
     id: `inbox_headline_md${fixture.matchday}_${season}`,
     date: currentDate,
     type: InboxItemType.MediaEvent,
-    title: `${journalist.name} · ${journalist.outlet}`,
+    title: `${headline} — ${journalist.name}, ${journalist.outlet}`,
     body: headline,
     isRead: false,
   } as InboxItem

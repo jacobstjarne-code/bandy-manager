@@ -870,9 +870,24 @@ export function fillTemplate(template: string, vars: Record<string, string>): st
   return template.replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? `{${key}}`)
 }
 
-// Pick a random item from an array deterministically
-export function pickCommentary(arr: CommentaryTemplate[], rng: () => number): CommentaryTemplate {
-  return arr[Math.floor(rng() * arr.length)]
+// Pick a random item from an array deterministically, avoiding recent repeats per pool.
+// history tracks the last N picks per pool reference; N = min(arr.length - 1, 3).
+export function pickCommentary(
+  arr: CommentaryTemplate[],
+  rng: () => number,
+  history: Map<CommentaryTemplate[], CommentaryTemplate[]>,
+): CommentaryTemplate {
+  const N = Math.min(arr.length - 1, 3)
+  const seen = history.get(arr) ?? []
+  let pick: CommentaryTemplate
+  let attempts = 0
+  do {
+    pick = arr[Math.floor(rng() * arr.length)]
+    attempts++
+  } while (N > 0 && seen.slice(-N).includes(pick) && attempts < arr.length)
+  const next = [...seen, pick]
+  history.set(arr, next.slice(-N - 1))
+  return pick
 }
 
 export function getTraitCommentary(

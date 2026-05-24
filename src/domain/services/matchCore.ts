@@ -311,6 +311,7 @@ function* simulateMatchCore(
   const iceHardnessMod     = getIceHardnessMod(input.fixtureMonth ?? 1)
 
   const rand = mulberry32(seed ?? fixtureSeed(fixture.id))
+  const commentaryHistory = new Map<string[], string[]>()
 
   // Match profile — same result for both halves sharing the same seed
   const hasRivalry     = !!rivalry
@@ -1205,7 +1206,7 @@ function* simulateMatchCore(
         if (fixture.isFinaldag) {
           commentaryText = pickSpecialDateCommentary('finaldag', sdCtx, fixture.season, fixture.matchday)
         } else if (input.isCupFinalhelgen && fixture.isCup && fixture.roundNumber === 4) {
-          commentaryText = fillTemplate(pickCommentary(commentary.cup_final_kickoff, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.cup_final_kickoff, rand, commentaryHistory), templateVars)
         } else if (input.isCupFinalhelgen && fixture.isCup) {
           commentaryText = pickSpecialDateCommentary('cupfinal', sdCtx, fixture.season, fixture.matchday)
         } else if (input.isAnnandagen) {
@@ -1213,22 +1214,22 @@ function* simulateMatchCore(
         } else if (input.isNyarsbandy) {
           commentaryText = pickSpecialDateCommentary('nyarsbandy', sdCtx, fixture.season, fixture.matchday)
         } else if (fixture.isCup && !input.isCupFinalhelgen && rand() < 0.60) {
-          commentaryText = fillTemplate(pickCommentary(commentary.cup_kickoff, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.cup_kickoff, rand, commentaryHistory), templateVars)
         } else if (rivalry) {
-          commentaryText = fillTemplate(pickCommentary(commentary.derby_kickoff, rand), { ...templateVars, rivalry: rivalry.name })
+          commentaryText = fillTemplate(pickCommentary(commentary.derby_kickoff, rand, commentaryHistory), { ...templateVars, rivalry: rivalry.name })
           isDerbyStep = true
         } else if (matchPhase === 'final') {
-          commentaryText = fillTemplate(pickCommentary(commentary.final_kickoff, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.final_kickoff, rand, commentaryHistory), templateVars)
         } else if (matchPhase === 'semifinal') {
-          commentaryText = fillTemplate(pickCommentary(commentary.semifinal_kickoff, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.semifinal_kickoff, rand, commentaryHistory), templateVars)
         } else if (matchPhase === 'quarterfinal') {
-          commentaryText = fillTemplate(pickCommentary(commentary.quarterfinal_kickoff, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.quarterfinal_kickoff, rand, commentaryHistory), templateVars)
         } else if (supporterCtx && supporterCtx.members <= 30 && rand() < 0.50) {
           const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
-          commentaryText = fillTemplate(pickCommentary(commentary.supporter_attendance_low, rand), sv)
+          commentaryText = fillTemplate(pickCommentary(commentary.supporter_attendance_low, rand, commentaryHistory), sv)
         } else if (input.ownScandalThisSeason && supporterCtx && rand() < 0.20) {
           const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
-          commentaryText = fillTemplate(pickCommentary(commentary.supporter_scandal_recent, rand), sv)
+          commentaryText = fillTemplate(pickCommentary(commentary.supporter_scandal_recent, rand, commentaryHistory), sv)
         } else if (
           input.lastRivalSaleMatchday !== undefined &&
           input.currentMatchday !== undefined &&
@@ -1249,36 +1250,36 @@ function* simulateMatchCore(
             commentaryText = echoText
           } else {
             const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
-            commentaryText = fillTemplate(pickCommentary(commentary.supporter_kickoff, rand), sv)
+            commentaryText = fillTemplate(pickCommentary(commentary.supporter_kickoff, rand, commentaryHistory), sv)
           }
         } else if (supporterCtx && rand() < 0.30) {
           const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
-          commentaryText = fillTemplate(pickCommentary(commentary.supporter_kickoff, rand), sv)
+          commentaryText = fillTemplate(pickCommentary(commentary.supporter_kickoff, rand, commentaryHistory), sv)
         } else {
-          commentaryText = fillTemplate(pickCommentary(commentary.kickoff, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.kickoff, rand, commentaryHistory), templateVars)
         }
       } else if (step === 30) {
         if (input.ownScandalThisSeason && supporterCtx && rand() < 0.20) {
           const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
-          commentaryText = fillTemplate(pickCommentary(commentary.supporter_scandal_recent, rand), sv)
+          commentaryText = fillTemplate(pickCommentary(commentary.supporter_scandal_recent, rand, commentaryHistory), sv)
         } else if (supporterCtx && rand() < 0.25) {
           const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
-          commentaryText = fillTemplate(pickCommentary(commentary.supporter_halfTime, rand), sv)
+          commentaryText = fillTemplate(pickCommentary(commentary.supporter_halfTime, rand, commentaryHistory), sv)
         } else {
-          commentaryText = fillTemplate(pickCommentary(commentary.halfTime, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.halfTime, rand, commentaryHistory), templateVars)
         }
       } else if (cornerGoalScored && scorerPlayerId) {
         templateVars = { ...templateVars, player: findPlayerName(scorerPlayerId) }
-        const cornerIntro = fillTemplate(pickCommentary(commentary.corner, rand), templateVars)
+        const cornerIntro = fillTemplate(pickCommentary(commentary.corner, rand, commentaryHistory), templateVars)
         let goalText: string
         if (weather?.condition === WeatherCondition.HeavySnow && rand() < 0.20) {
-          goalText = fillTemplate(pickCommentary(commentary.weather_goal_heavySnow, rand), templateVars)
+          goalText = fillTemplate(pickCommentary(commentary.weather_goal_heavySnow, rand, commentaryHistory), templateVars)
         } else if (weather?.condition === WeatherCondition.Thaw && rand() < 0.20) {
-          goalText = fillTemplate(pickCommentary(commentary.weather_goal_thaw, rand), templateVars)
+          goalText = fillTemplate(pickCommentary(commentary.weather_goal_thaw, rand, commentaryHistory), templateVars)
         } else if (rand() < 0.30) {
-          goalText = fillTemplate(pickCommentary(commentary.cornerVariant, rand), templateVars)
+          goalText = fillTemplate(pickCommentary(commentary.cornerVariant, rand, commentaryHistory), templateVars)
         } else {
-          goalText = fillTemplate(pickCommentary(commentary.cornerGoal, rand), templateVars)
+          goalText = fillTemplate(pickCommentary(commentary.cornerGoal, rand, commentaryHistory), templateVars)
         }
         commentaryText = cornerIntro + ' ' + goalText
       } else if (goalScored && scorerPlayerId) {
@@ -1299,17 +1300,17 @@ function* simulateMatchCore(
             commentaryText = pickLegendCommentary(assisterPlayer, 'assist', minute, rand)
           }
         } else if (fixture.isCup && input.isCupFinalhelgen && fixture.roundNumber === 4 && rand() < 0.60) {
-          commentaryText = fillTemplate(pickCommentary(commentary.cup_final_goal, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.cup_final_goal, rand, commentaryHistory), templateVars)
         } else if (fixture.isCup && !input.isCupFinalhelgen && rand() < 0.60) {
           const isFirstGoalInMatch = homeScore + awayScore === 1
           const cupGoalPool = isFirstGoalInMatch ? commentary.cup_goalOpener : commentary.cup_goal
-          commentaryText = fillTemplate(pickCommentary(cupGoalPool, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(cupGoalPool, rand, commentaryHistory), templateVars)
         } else if (matchPhase === 'final' && rand() < 0.60) {
-          commentaryText = fillTemplate(pickCommentary(commentary.final_goal, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.final_goal, rand, commentaryHistory), templateVars)
         } else if (matchPhase === 'semifinal' && rand() < 0.50) {
-          commentaryText = fillTemplate(pickCommentary(commentary.semifinal_goal, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.semifinal_goal, rand, commentaryHistory), templateVars)
         } else if (rivalry && rand() < 0.40) {
-          commentaryText = fillTemplate(pickCommentary(commentary.derby_goal, rand), { ...templateVars, rivalry: rivalry.name })
+          commentaryText = fillTemplate(pickCommentary(commentary.derby_goal, rand, commentaryHistory), { ...templateVars, rivalry: rivalry.name })
           isDerbyStep = true
         } else if (input.storylines && rand() < 0.30) {
           const scorerStories = input.storylines.filter(s => s.playerId === scorerPlayerId)
@@ -1325,7 +1326,7 @@ function* simulateMatchCore(
           if (matchedStory) {
             commentaryText = storylineMap[matchedStory.type]
           } else {
-            commentaryText = fillTemplate(pickGoalCommentary(isHomeAttacking ? homeScore : awayScore, isHomeAttacking ? awayScore : homeScore, rand, minute), templateVars)
+            commentaryText = fillTemplate(pickGoalCommentary(isHomeAttacking ? homeScore : awayScore, isHomeAttacking ? awayScore : homeScore, rand, commentaryHistory, minute), templateVars)
           }
         } else if (rand() < 0.40) {
           // Contextual commentary (THE BOMB 1.3)
@@ -1345,15 +1346,16 @@ function* simulateMatchCore(
             contextual = fillTemplate(pickCommentary(
               weather.condition === WeatherCondition.HeavySnow ? commentary.weather_goal_heavySnow : commentary.weather_goal_thaw,
               rand,
+              commentaryHistory,
             ), templateVars)
           }
-          commentaryText = contextual ?? fillTemplate(pickGoalCommentary(isHomeAttacking ? homeScore : awayScore, isHomeAttacking ? awayScore : homeScore, rand, minute), templateVars)
+          commentaryText = contextual ?? fillTemplate(pickGoalCommentary(isHomeAttacking ? homeScore : awayScore, isHomeAttacking ? awayScore : homeScore, rand, commentaryHistory, minute), templateVars)
         } else if (weather?.condition === WeatherCondition.HeavySnow && rand() < 0.20) {
-          commentaryText = fillTemplate(pickCommentary(commentary.weather_goal_heavySnow, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.weather_goal_heavySnow, rand, commentaryHistory), templateVars)
         } else if (weather?.condition === WeatherCondition.Thaw && rand() < 0.20) {
-          commentaryText = fillTemplate(pickCommentary(commentary.weather_goal_thaw, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.weather_goal_thaw, rand, commentaryHistory), templateVars)
         } else {
-          commentaryText = fillTemplate(pickGoalCommentary(isHomeAttacking ? homeScore : awayScore, isHomeAttacking ? awayScore : homeScore, rand, minute), templateVars)
+          commentaryText = fillTemplate(pickGoalCommentary(isHomeAttacking ? homeScore : awayScore, isHomeAttacking ? awayScore : homeScore, rand, commentaryHistory, minute), templateVars)
         }
 
         // Supporter goal reaction
@@ -1361,9 +1363,9 @@ function* simulateMatchCore(
           const managedScored = managedIsHome === isHomeAttacking
           const sv = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
           if (managedScored && rand() < 0.35) {
-            commentaryText += ' ' + fillTemplate(pickCommentary(commentary.supporter_goal_home, rand), sv)
+            commentaryText += ' ' + fillTemplate(pickCommentary(commentary.supporter_goal_home, rand, commentaryHistory), sv)
           } else if (!managedScored && rand() < 0.25) {
-            commentaryText += ' ' + fillTemplate(pickCommentary(commentary.supporter_goal_conceded, rand), sv)
+            commentaryText += ' ' + fillTemplate(pickCommentary(commentary.supporter_goal_conceded, rand, commentaryHistory), sv)
           }
         }
         // Late supporter commentary
@@ -1371,7 +1373,7 @@ function* simulateMatchCore(
           const isManaged = managedIsHome ? homeScore >= awayScore : awayScore >= homeScore
           const supArr    = isManaged ? commentary.supporter_late_home : commentary.supporter_late_silent
           const sv        = { ...templateVars, leader: supporterCtx.leaderName, members: String(supporterCtx.members) }
-          if (rand() < 0.15) commentaryText += ' ' + fillTemplate(pickCommentary(supArr, rand), sv)
+          if (rand() < 0.15) commentaryText += ' ' + fillTemplate(pickCommentary(supArr, rand, commentaryHistory), sv)
         }
         // Trait override (50%)
         if (scorerPlayerId && rand() < 0.5) {
@@ -1386,76 +1388,76 @@ function* simulateMatchCore(
         if (gkIsManaged && gkPlayer?.isClubLegend && rand() < 0.70) {
           commentaryText = pickLegendCommentary(gkPlayer, 'gk_save', minute, rand)
         } else {
-          commentaryText = fillTemplate(pickCommentary(commentary.save, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.save, rand, commentaryHistory), templateVars)
         }
       } else if (suspensionOccurred && suspendedPlayerId) {
         templateVars = { ...templateVars, player: findPlayerName(suspendedPlayerId) }
         if (rivalry && rand() < 0.50) {
-          commentaryText = fillTemplate(pickCommentary(commentary.derby_suspension, rand), { ...templateVars, rivalry: rivalry.name })
+          commentaryText = fillTemplate(pickCommentary(commentary.derby_suspension, rand, commentaryHistory), { ...templateVars, rivalry: rivalry.name })
           isDerbyStep = true
         } else {
-          commentaryText = fillTemplate(pickCommentary(commentary.suspension, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.suspension, rand, commentaryHistory), templateVars)
         }
         if (rand() < 0.5) {
           const tc = getTraitCommentary(suspendedPlayerId, 'suspension', allPlayers)
           if (tc) commentaryText = tc
         }
       } else if (cornerOccurred && !goalScored) {
-        commentaryText = fillTemplate(pickCommentary(commentary.corner_miss, rand), templateVars)
+        commentaryText = fillTemplate(pickCommentary(commentary.corner_miss, rand, commentaryHistory), templateVars)
       } else if ((homeActiveSuspensions > 0 || awayActiveSuspensions > 0) && (seqType === 'attack' || seqType === 'transition')) {
         const ppTeam     = awayActiveSuspensions > 0 ? homeTeamRef : awayTeamRef
         const ppOpponent = awayActiveSuspensions > 0 ? awayTeamRef : homeTeamRef
         templateVars = { ...templateVars, team: ppTeam, opponent: ppOpponent }
-        commentaryText = fillTemplate(pickCommentary(commentary.powerPlayGood, rand), templateVars)
+        commentaryText = fillTemplate(pickCommentary(commentary.powerPlayGood, rand, commentaryHistory), templateVars)
       } else if (weather && (step === 15 || step === 30 || step === 45)) {
-        commentaryText = pickWeatherCommentary(weather, rand) ?? fillTemplate(pickCommentary(commentary.neutral, rand), templateVars)
+        commentaryText = pickWeatherCommentary(weather, rand, commentaryHistory) ?? fillTemplate(pickCommentary(commentary.neutral, rand, commentaryHistory), templateVars)
       } else if (seqType === 'tactical_shift') {
-        commentaryText = fillTemplate(pickCommentary(commentary.tactical_shift, rand), templateVars)
+        commentaryText = fillTemplate(pickCommentary(commentary.tactical_shift, rand, commentaryHistory), templateVars)
       } else if (seqType === 'player_duel') {
         const dp   = getGoalScorer(attackingStarters)
         const dv   = { ...templateVars, player: dp ? findPlayerName(dp.id) : attackingTeam }
-        commentaryText = fillTemplate(pickCommentary(commentary.player_duel, rand), dv)
+        commentaryText = fillTemplate(pickCommentary(commentary.player_duel, rand, commentaryHistory), dv)
       } else if (seqType === 'atmosphere') {
         if (fixture.isCup && input.isCupFinalhelgen) {
           const r = rand()
-          if (r < 0.50) commentaryText = pickCommentary(commentary.cup_finalweekend_atmosphere, rand)
-          else if (r < 0.80) commentaryText = fillTemplate(pickCommentary(commentary.cup_atmosphere, rand), templateVars)
-          else commentaryText = fillTemplate(pickCommentary(commentary.atmosphere, rand), templateVars)
+          if (r < 0.50) commentaryText = pickCommentary(commentary.cup_finalweekend_atmosphere, rand, commentaryHistory)
+          else if (r < 0.80) commentaryText = fillTemplate(pickCommentary(commentary.cup_atmosphere, rand, commentaryHistory), templateVars)
+          else commentaryText = fillTemplate(pickCommentary(commentary.atmosphere, rand, commentaryHistory), templateVars)
         } else if (fixture.isCup && rand() < 0.40) {
-          commentaryText = pickCommentary(commentary.cup_atmosphere, rand)
+          commentaryText = pickCommentary(commentary.cup_atmosphere, rand, commentaryHistory)
         } else {
-          commentaryText = fillTemplate(pickCommentary(commentary.atmosphere, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.atmosphere, rand, commentaryHistory), templateVars)
         }
       } else if (seqType === 'offside_call') {
         const op   = getGoalScorer(attackingStarters)
         const ov   = { ...templateVars, player: op ? findPlayerName(op.id) : attackingTeam }
-        commentaryText = fillTemplate(pickCommentary(commentary.offside_call, rand), ov)
+        commentaryText = fillTemplate(pickCommentary(commentary.offside_call, rand, commentaryHistory), ov)
       } else if (seqType === 'freekick_danger') {
         const fp   = getGoalScorer(attackingStarters)
         const fv   = { ...templateVars, player: fp ? findPlayerName(fp.id) : attackingTeam }
-        commentaryText = fillTemplate(pickCommentary(commentary.freekick_danger, rand), fv)
+        commentaryText = fillTemplate(pickCommentary(commentary.freekick_danger, rand, commentaryHistory), fv)
       } else {
         if (rivalry && step % 10 === 0 && !goalScored && !saveOccurred && !suspensionOccurred && !cornerOccurred && rand() < 0.30) {
-          commentaryText = fillTemplate(pickCommentary(commentary.derby_neutral, rand), { ...templateVars, rivalry: rivalry.name })
+          commentaryText = fillTemplate(pickCommentary(commentary.derby_neutral, rand, commentaryHistory), { ...templateVars, rivalry: rivalry.name })
           isDerbyStep = true
         } else if (weather && !goalScored && !saveOccurred && !cornerOccurred && rand() < 0.30) {
           if (weather.condition === WeatherCondition.HeavySnow) {
-            commentaryText = pickCommentary(commentary.weather_miss_heavySnow, rand)
+            commentaryText = pickCommentary(commentary.weather_miss_heavySnow, rand, commentaryHistory)
           } else if (weather.condition === WeatherCondition.Thaw) {
-            commentaryText = pickCommentary(commentary.weather_miss_thaw, rand)
+            commentaryText = pickCommentary(commentary.weather_miss_thaw, rand, commentaryHistory)
           } else if (weather.condition === WeatherCondition.Fog) {
-            commentaryText = pickCommentary(commentary.weather_miss_fog, rand)
+            commentaryText = pickCommentary(commentary.weather_miss_fog, rand, commentaryHistory)
           } else {
-            commentaryText = fillTemplate(pickCommentary(commentary.neutral, rand), templateVars)
+            commentaryText = fillTemplate(pickCommentary(commentary.neutral, rand, commentaryHistory), templateVars)
           }
         } else if (step === 31 && weather && !goalScored && !saveOccurred && !cornerOccurred && (weather.condition === WeatherCondition.HeavySnow || weather.condition === WeatherCondition.Thaw)) {
           commentaryText = weather.condition === WeatherCondition.HeavySnow
-            ? pickCommentary(commentary.iceDeterioration_snow, rand)
-            : pickCommentary(commentary.iceDeterioration_thaw, rand)
+            ? pickCommentary(commentary.iceDeterioration_snow, rand, commentaryHistory)
+            : pickCommentary(commentary.iceDeterioration_thaw, rand, commentaryHistory)
         } else if (step === 31 && !goalScored && !saveOccurred && !cornerOccurred) {
-          commentaryText = fillTemplate(pickCommentary(commentary.secondHalf, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.secondHalf, rand, commentaryHistory), templateVars)
         } else {
-          commentaryText = fillTemplate(pickCommentary(commentary.neutral, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.neutral, rand, commentaryHistory), templateVars)
         }
       }
 
@@ -1475,13 +1477,13 @@ function* simulateMatchCore(
           const mPos      = ctx?.managedPosition
           let ctxLine: string | null = null
           if (ctx?.isFirstRound) {
-            ctxLine = fillTemplate(pickCommentary(commentary.context_season_opener, rand), templateVars)
+            ctxLine = fillTemplate(pickCommentary(commentary.context_season_opener, rand, commentaryHistory), templateVars)
           } else if (fixture.isCup && rand() < 0.7) {
-            ctxLine = fillTemplate(pickCommentary(commentary.context_cup_final, rand), templateVars)
+            ctxLine = fillTemplate(pickCommentary(commentary.context_cup_final, rand, commentaryHistory), templateVars)
           } else if (mPos && mPos <= 3 && round >= 16) {
-            ctxLine = fillTemplate(pickCommentary(commentary.context_title_race, rand), templateVars)
+            ctxLine = fillTemplate(pickCommentary(commentary.context_title_race, rand, commentaryHistory), templateVars)
           } else if (mPos && mPos >= 10 && round >= 18) {
-            ctxLine = fillTemplate(pickCommentary(commentary.context_relegation, rand), templateVars)
+            ctxLine = fillTemplate(pickCommentary(commentary.context_relegation, rand, commentaryHistory), templateVars)
           }
           if (ctxLine) commentaryText = ctxLine
         }
@@ -1491,13 +1493,13 @@ function* simulateMatchCore(
           situationalInterval = randRange(rand, 8, 12) | 0
           let sitLine: string | null = null
           if (situation === 'dominating_home') {
-            sitLine = fillTemplate(pickCommentary(commentary.situational_dominating, rand), { ...templateVars, team: homeTeamRef, opponent: awayTeamRef })
+            sitLine = fillTemplate(pickCommentary(commentary.situational_dominating, rand, commentaryHistory), { ...templateVars, team: homeTeamRef, opponent: awayTeamRef })
           } else if (situation === 'dominating_away') {
-            sitLine = fillTemplate(pickCommentary(commentary.situational_dominating, rand), { ...templateVars, team: awayTeamRef, opponent: homeTeamRef })
+            sitLine = fillTemplate(pickCommentary(commentary.situational_dominating, rand, commentaryHistory), { ...templateVars, team: awayTeamRef, opponent: homeTeamRef })
           } else if (situation === 'tight') {
-            sitLine = fillTemplate(pickCommentary(commentary.situational_tight, rand), templateVars)
+            sitLine = fillTemplate(pickCommentary(commentary.situational_tight, rand, commentaryHistory), templateVars)
           } else if (situation === 'opened_up') {
-            sitLine = fillTemplate(pickCommentary(commentary.situational_opened_up, rand), templateVars)
+            sitLine = fillTemplate(pickCommentary(commentary.situational_opened_up, rand, commentaryHistory), templateVars)
           }
           if (sitLine && rand() < 0.70) { commentaryText = sitLine; wasSituationalStep = true }
         }
@@ -1509,12 +1511,12 @@ function* simulateMatchCore(
           const swingVars = homeHasMomentum
             ? { ...templateVars, team: homeTeamRef, opponent: awayTeamRef }
             : { ...templateVars, team: awayTeamRef, opponent: homeTeamRef }
-          commentaryText = fillTemplate(pickCommentary(swingPool, rand), swingVars)
+          commentaryText = fillTemplate(pickCommentary(swingPool, rand, commentaryHistory), swingVars)
         }
         prevMomentumDiff = momentumDiff
 
         if (matchPhase !== 'regular' && step > 5 && step % 8 === 0 && rand() < 0.45) {
-          commentaryText = fillTemplate(pickCommentary(commentary.playoff_general, rand), templateVars)
+          commentaryText = fillTemplate(pickCommentary(commentary.playoff_general, rand, commentaryHistory), templateVars)
         }
 
         if (step >= 45 && managedIsHome !== undefined && rand() < 0.20) {
@@ -1522,9 +1524,9 @@ function* simulateMatchCore(
           const os   = managedIsHome ? awayScore : homeScore
           const mode = getSecondHalfMode(ms, os, step, matchPhase)
           if (mode === 'controlling') {
-            commentaryText = fillTemplate(pickCommentary(commentary.context_protecting_lead, rand), { ...templateVars, team: managedIsHome ? homeTeamRef : awayTeamRef })
+            commentaryText = fillTemplate(pickCommentary(commentary.context_protecting_lead, rand, commentaryHistory), { ...templateVars, team: managedIsHome ? homeTeamRef : awayTeamRef })
           } else if (mode === 'chasing') {
-            commentaryText = fillTemplate(pickCommentary(commentary.context_comeback_chasing, rand), { ...templateVars, team: managedIsHome ? homeTeamRef : awayTeamRef })
+            commentaryText = fillTemplate(pickCommentary(commentary.context_comeback_chasing, rand, commentaryHistory), { ...templateVars, team: managedIsHome ? homeTeamRef : awayTeamRef })
           }
         }
       }
@@ -1535,9 +1537,9 @@ function* simulateMatchCore(
         const scoreDiff = managedIsHome ? (homeScore - awayScore) : (awayScore - homeScore)
         const suspName  = findPlayerName(suspendedPlayerId)
         if (managedIsDefending && scoreDiff < 0) {
-          commentaryText = fillTemplate(pickCommentary(commentary.context_suspension_frustration, rand), { ...templateVars, player: suspName, score: scoreStr })
+          commentaryText = fillTemplate(pickCommentary(commentary.context_suspension_frustration, rand, commentaryHistory), { ...templateVars, player: suspName, score: scoreStr })
         } else if (managedIsDefending && scoreDiff > 0) {
-          commentaryText = fillTemplate(pickCommentary(commentary.context_suspension_tactical, rand), { ...templateVars, player: suspName })
+          commentaryText = fillTemplate(pickCommentary(commentary.context_suspension_tactical, rand, commentaryHistory), { ...templateVars, player: suspName })
         }
       }
 
@@ -1547,7 +1549,7 @@ function* simulateMatchCore(
         const refPool  = refStyle === 'strict' ? commentary.referee_strict
                        : refStyle === 'lenient' ? commentary.referee_lenient
                        : commentary.referee_inconsistent
-        commentaryText = fillTemplate(pickCommentary(refPool, rand), templateVars)
+        commentaryText = fillTemplate(pickCommentary(refPool, rand, commentaryHistory), templateVars)
         isRefCommentary = true
       }
 
@@ -1656,17 +1658,17 @@ function* simulateMatchCore(
   if (isFast) {
     fullTimeText = scoreStrFT
   } else if (rivalry) {
-    fullTimeText = fillTemplate(pickCommentary(commentary.derby_fullTime, rand), { ...ftVars, rivalry: rivalry.name })
+    fullTimeText = fillTemplate(pickCommentary(commentary.derby_fullTime, rand, commentaryHistory), { ...ftVars, rivalry: rivalry.name })
   } else if (fixture.isCup && input.isCupFinalhelgen && fixture.roundNumber === 4) {
     const homeWon = homeScore > awayScore
     const cupFinalFtPool = homeWon ? commentary.cup_final_fullTime_win : commentary.cup_final_fullTime_loss
-    fullTimeText = fillTemplate(pickCommentary(cupFinalFtPool, rand), ftVars)
+    fullTimeText = fillTemplate(pickCommentary(cupFinalFtPool, rand, commentaryHistory), ftVars)
   } else if (fixture.isCup && !input.isCupFinalhelgen && rand() < 0.60) {
     const homeWon = homeScore > awayScore
     const cupFtPool = homeWon ? commentary.cup_fullTime_win : commentary.cup_fullTime_loss
-    fullTimeText = fillTemplate(pickCommentary(cupFtPool, rand), ftVars)
+    fullTimeText = fillTemplate(pickCommentary(cupFtPool, rand, commentaryHistory), ftVars)
   } else {
-    fullTimeText = fillTemplate(pickCommentary(commentary.fullTime, rand), ftVars)
+    fullTimeText = fillTemplate(pickCommentary(commentary.fullTime, rand, commentaryHistory), ftVars)
   }
 
   yield {
@@ -1681,7 +1683,7 @@ function* simulateMatchCore(
   // Overtime announcement
   yield {
     step: 61, minute: 90, events: [], homeScore, awayScore,
-    commentary: isFast ? 'Förlängning' : pickCommentary(commentary.overtimeStart, rand),
+    commentary: isFast ? 'Förlängning' : pickCommentary(commentary.overtimeStart, rand, commentaryHistory),
     intensity: 'high',
     activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
     shotsHome, shotsAway, onTargetHome, onTargetAway, cornersHome, cornersAway, phase: 'overtime',
@@ -1738,11 +1740,11 @@ function* simulateMatchCore(
     if (isFast) {
       otCommentary = otGoalScored ? otScoreStr : ''
     } else if (otGoalScored && otScorerPlayerId) {
-      otCommentary = fillTemplate(pickCommentary(commentary.overtimeGoal, rand), { player: findPlayerName(otScorerPlayerId), score: otScoreStr, team: attackTeam, opponent: '', minute: String(minute), goalkeeper: '', rivalry: '', result: '' })
+      otCommentary = fillTemplate(pickCommentary(commentary.overtimeGoal, rand, commentaryHistory), { player: findPlayerName(otScorerPlayerId), score: otScoreStr, team: attackTeam, opponent: '', minute: String(minute), goalkeeper: '', rivalry: '', result: '' })
     } else if (step === 81) {
-      otCommentary = fillTemplate(pickCommentary(commentary.overtimeEnd, rand), { score: otScoreStr, team: '', opponent: '', minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
+      otCommentary = fillTemplate(pickCommentary(commentary.overtimeEnd, rand, commentaryHistory), { score: otScoreStr, team: '', opponent: '', minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
     } else {
-      otCommentary = fillTemplate(pickCommentary(commentary.overtimeNoGoal, rand), { team: attackTeam, opponent: '', score: otScoreStr, minute: String(minute), player: '', goalkeeper: '', rivalry: '', result: '' })
+      otCommentary = fillTemplate(pickCommentary(commentary.overtimeNoGoal, rand, commentaryHistory), { team: attackTeam, opponent: '', score: otScoreStr, minute: String(minute), player: '', goalkeeper: '', rivalry: '', result: '' })
     }
 
     yield {
@@ -1776,7 +1778,7 @@ function* simulateMatchCore(
 
   yield {
     step: 83, minute: 120, events: [], homeScore, awayScore,
-    commentary: isFast ? 'Straffar' : pickCommentary(commentary.penaltyStart, rand),
+    commentary: isFast ? 'Straffar' : pickCommentary(commentary.penaltyStart, rand, commentaryHistory),
     intensity: 'high',
     activeSuspensions: { homeCount: homeActiveSuspensions, awayCount: awayActiveSuspensions },
     shotsHome, shotsAway, onTargetHome, onTargetAway, cornersHome, cornersAway, phase: 'penalties',
@@ -1792,8 +1794,8 @@ function* simulateMatchCore(
       ? `${runningHome}-${runningAway}`
       : isLastRound
         ? (runningHome > runningAway
-          ? fillTemplate(pickCommentary(commentary.penaltyWinHome, rand), { team: homeTeamRef, penHome: String(runningHome), penAway: String(runningAway), score: `${homeScore}–${awayScore}`, opponent: awayTeamRef, minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
-          : fillTemplate(pickCommentary(commentary.penaltyWinAway, rand), { team: awayTeamRef, penHome: String(runningHome), penAway: String(runningAway), score: `${homeScore}–${awayScore}`, opponent: homeTeamRef, minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
+          ? fillTemplate(pickCommentary(commentary.penaltyWinHome, rand, commentaryHistory), { team: homeTeamRef, penHome: String(runningHome), penAway: String(runningAway), score: `${homeScore}–${awayScore}`, opponent: awayTeamRef, minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
+          : fillTemplate(pickCommentary(commentary.penaltyWinAway, rand, commentaryHistory), { team: awayTeamRef, penHome: String(runningHome), penAway: String(runningAway), score: `${homeScore}–${awayScore}`, opponent: homeTeamRef, minute: '120', player: '', goalkeeper: '', rivalry: '', result: '' })
         )
         : `Omgång ${penRound.round}: ${penRound.homeShooterName} ${penRound.homeScored ? '✅' : '❌'} · ${penRound.awayShooterName} ${penRound.awayScored ? '✅' : '❌'} — Straffar: ${runningHome}-${runningAway}`
 
