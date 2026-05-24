@@ -4,7 +4,7 @@ import { getRivalry } from '../../../data/rivalries'
 import { PlayoffRound } from '../../../enums'
 
 /** Returnerar nästa schemalagda fixture för managed club. */
-function getNextManagedFixture(game: SaveGame): Fixture | null {
+export function getNextManagedFixture(game: SaveGame): Fixture | null {
   const managedId = game.managedClubId
 
   // Kolla om laget är eliminerat i slutspelet

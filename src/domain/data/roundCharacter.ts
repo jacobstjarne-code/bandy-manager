@@ -1,5 +1,7 @@
 import type { SaveGame } from '../entities/SaveGame'
+import type { Fixture } from '../entities/Fixture'
 import { isRivalryMatch } from './rivalries'
+import { getNextManagedFixture } from '../services/portal/triggers/matchTriggers'
 
 export type RoundCharacter =
   | 'standard'
@@ -10,14 +12,16 @@ export type RoundCharacter =
   | 'winning_streak'
   | 'losing_streak'
 
+function outcome(f: Fixture, managedId: string): 'win' | 'loss' | 'draw' {
+  const isHome = f.homeClubId === managedId
+  const us = isHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
+  const them = isHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
+  return us > them ? 'win' : us < them ? 'loss' : 'draw'
+}
+
 export function getRoundCharacter(game: SaveGame): RoundCharacter {
   const managedId = game.managedClubId
-
-  // Next scheduled managed fixture
-  const nextManaged = game.fixtures
-    .filter(f => f.status === 'scheduled' &&
-      (f.homeClubId === managedId || f.awayClubId === managedId))
-    .sort((a, b) => a.matchday - b.matchday)[0]
+  const nextManaged = getNextManagedFixture(game)
 
   if (nextManaged?.isCup) return 'cup_day'
 
@@ -27,7 +31,6 @@ export function getRoundCharacter(game: SaveGame): RoundCharacter {
     if (isRivalryMatch(managedId, opponentId)) return 'pre_derby'
   }
 
-  // Recent completed managed fixtures (newest first)
   const recent = game.fixtures
     .filter(f => f.status === 'completed' &&
       (f.homeClubId === managedId || f.awayClubId === managedId))
@@ -35,28 +38,14 @@ export function getRoundCharacter(game: SaveGame): RoundCharacter {
 
   if (recent.length === 0) return 'premiere'
 
-  function wasWin(f: typeof recent[number]): boolean {
-    const isHome = f.homeClubId === managedId
-    const us = isHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
-    const them = isHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
-    return us > them
-  }
-
-  function wasLoss(f: typeof recent[number]): boolean {
-    const isHome = f.homeClubId === managedId
-    const us = isHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
-    const them = isHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
-    return us < them
-  }
-
-  // Count consecutive wins/losses from most recent
   let winStreak = 0
   let lossStreak = 0
   for (const f of recent) {
-    if (wasWin(f)) {
+    const r = outcome(f, managedId)
+    if (r === 'win') {
       if (lossStreak > 0) break
       winStreak++
-    } else if (wasLoss(f)) {
+    } else if (r === 'loss') {
       if (winStreak > 0) break
       lossStreak++
     } else {
@@ -66,7 +55,7 @@ export function getRoundCharacter(game: SaveGame): RoundCharacter {
 
   if (lossStreak >= 3) return 'losing_streak'
   if (winStreak >= 3) return 'winning_streak'
-  if (wasLoss(recent[0])) return 'post_loss'
+  if (outcome(recent[0], managedId) === 'loss') return 'post_loss'
 
   return 'standard'
 }

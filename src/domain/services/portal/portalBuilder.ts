@@ -1,5 +1,4 @@
 import type { SaveGame } from '../../entities/SaveGame'
-import type { InboxItem } from '../../entities/Inbox'
 import type { DashboardCard } from './dashboardCardBag'
 import { CARD_BAG } from './dashboardCardBag'
 import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, isManagedClubSpectator } from '../../data/seasonPhases'
@@ -40,19 +39,16 @@ const CHARACTER_BIAS: Record<RoundCharacter, Record<string, number>> = {
 }
 
 // Recency bonus för inbox-kandidater: +10 om skapad denna omgång, +5 om förra
-function recencyBonus(item: InboxItem, game: SaveGame): number {
-  if (!item.date || !game.currentDate) return 0
-  const daysDiff = (new Date(game.currentDate).getTime() - new Date(item.date).getTime()) / 86_400_000
+function recencyBonus(itemDate: string, nowMs: number): number {
+  const daysDiff = (nowMs - new Date(itemDate).getTime()) / 86_400_000
   if (daysDiff < 7) return 10
   if (daysDiff < 14) return 5
   return 0
 }
 
 // Hur många omgångar sedan ett inbox-item skapades (1 omgång ≈ 7 dagar i speltid)
-function roundsAgo(item: InboxItem, game: SaveGame): number {
-  if (!item.date || !game.currentDate) return 0
-  const daysDiff = (new Date(game.currentDate).getTime() - new Date(item.date).getTime()) / 86_400_000
-  return Math.floor(daysDiff / 7)
+function roundsAgo(itemDate: string, nowMs: number): number {
+  return Math.floor((nowMs - new Date(itemDate).getTime()) / 86_400_000 / 7)
 }
 
 /**
@@ -144,19 +140,23 @@ export function buildPortal(game: SaveGame, seed: number): PortalLayout {
   }
 
   // Steg 4: Story-slot — välj EN vinnare från inbox-kandidater
+  const nowMs = game.currentDate ? new Date(game.currentDate).getTime() : 0
   const inboxCandidates = (game.inbox ?? [])
     .slice(-15)
     .map(item => ({ item, card: inboxItemToCardCandidate(item, game) }))
     .filter((x): x is { item: typeof x.item; card: NonNullable<typeof x.card> } => x.card !== null)
-    .filter(x => roundsAgo(x.item, game) <= 2)
+    .filter(x => x.item.date && roundsAgo(x.item.date, nowMs) <= 2)
 
   const scored = inboxCandidates.map(({ item, card }) => {
-    let w = card.weight + recencyBonus(item, game)
+    let w = card.weight + (item.date ? recencyBonus(item.date, nowMs) : 0)
     if (FREKVENTA.has(card.kind) && card.kind === game.lastStorySlotType) w *= 0.5
     if (SALLSYNTA.has(card.kind)) w += 25
     return { card, w }
   })
-  const storySlot = scored.sort((a, b) => b.w - a.w)[0]?.card ?? null
+  const storySlot = scored.reduce<typeof scored[0] | undefined>(
+    (best, cur) => (best === undefined || cur.w > best.w ? cur : best),
+    undefined,
+  )?.card ?? null
 
   return {
     primary: primaryCard,

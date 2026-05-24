@@ -28,68 +28,83 @@ const KIND_LABEL: Record<InboxKind, string> = {
   mecenat: '💼 MECENAT',
 }
 
-const STRIPE_CSS: Record<string, string> = {
-  gold: 'var(--gold)',
+// Stripe → border-left color (matches mockup CSS variables)
+const STRIPE_BORDER: Record<string, string> = {
+  gold:   'var(--gold)',
   danger: 'var(--danger)',
-  warm: 'var(--warm)',
-  cold: 'var(--cold)',
+  warm:   'var(--warm)',
+  cold:   'var(--cold)',
+  accent: 'var(--accent)',
+}
+
+// Stripe → tinted gradient background (from mockup .story-slot variants)
+const STRIPE_GRADIENT: Record<string, string> = {
+  gold:   'linear-gradient(180deg, rgba(232,185,92,0.06) 0%, var(--bg-portal-surface) 80%)',
+  danger: 'linear-gradient(180deg, rgba(176,80,64,0.08) 0%, var(--bg-portal-surface) 80%)',
+  warm:   'linear-gradient(180deg, rgba(140,110,58,0.08) 0%, var(--bg-portal-surface) 80%)',
+  cold:   'linear-gradient(180deg, rgba(74,102,128,0.08) 0%, var(--bg-portal-surface) 80%)',
+  accent: 'linear-gradient(180deg, rgba(196,122,58,0.06) 0%, var(--bg-portal-surface) 80%)',
+}
+
+// Stripe → label text color (lighter variant for readability on dark card)
+const STRIPE_LABEL_COLOR: Record<string, string> = {
+  gold:   'var(--gold)',
+  danger: '#E8A090',
+  warm:   'var(--warm-light)',
+  cold:   'var(--cold-light)',
   accent: 'var(--accent)',
 }
 
 function makeInboxStoryComponent(item: InboxItem, kind: InboxKind, stripe: string) {
   const label = KIND_LABEL[kind]
-  const stripeColor = STRIPE_CSS[stripe] ?? 'var(--accent)'
+  const borderColor = STRIPE_BORDER[stripe] ?? 'var(--accent)'
+  const gradient = STRIPE_GRADIENT[stripe] ?? STRIPE_GRADIENT.accent
+  const labelColor = STRIPE_LABEL_COLOR[stripe] ?? 'var(--accent)'
   return function InboxStoryCard(_props: CardRenderProps) {
     return React.createElement(
       'div',
       {
         style: {
+          margin: '0 0 12px 0',
+          padding: '12px 14px',
+          background: gradient,
+          borderRadius: 8,
+          borderLeft: `3px solid ${borderColor}`,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           position: 'relative' as const,
-          padding: '14px 16px 14px 18px',
-          marginBottom: 14,
-          background: 'var(--bg-portal-surface)',
-          border: '1px solid rgba(196,122,58,0.15)',
-          borderRadius: 'var(--radius-md)',
         },
       },
       React.createElement('div', {
         style: {
-          position: 'absolute' as const,
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: 3,
-          borderRadius: '8px 0 0 8px',
-          background: stripeColor,
-        },
-      }),
-      React.createElement('div', {
-        style: {
-          fontSize: 9,
+          fontSize: 8,
           letterSpacing: '2px',
           textTransform: 'uppercase' as const,
           fontWeight: 700,
-          marginBottom: 8,
-          color: stripeColor,
+          marginBottom: 6,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          color: labelColor,
         },
       }, label),
       React.createElement('div', {
         style: {
           fontFamily: 'var(--font-display)',
-          fontSize: 16,
+          fontSize: 14.5,
           fontWeight: 700,
-          lineHeight: 1.2,
+          lineHeight: 1.3,
           color: 'var(--text-light)',
-          marginBottom: 6,
+          marginBottom: 4,
         },
       }, item.title),
       React.createElement('div', {
         style: {
-          fontFamily: 'Georgia, serif',
-          fontSize: 13,
+          fontFamily: 'var(--font-display)',
+          fontSize: 11.5,
           fontStyle: 'italic' as const,
           color: 'var(--text-light)',
           lineHeight: 1.5,
+          opacity: 0.92,
         },
       }, item.body),
     )
@@ -155,7 +170,7 @@ export function inboxItemToCardCandidate(
     const isFinal =
       !!fixture.isFinaldag || !!(fixture.isCupFinalhelgen && fixture.isCup)
 
-    if (!isFinal && margin < 4 && !isRival) return null  // not story-worthy
+    if (!isFinal && margin < 4 && !isRival) return null
 
     kind = 'bigResult'
     if (isFinal) {
