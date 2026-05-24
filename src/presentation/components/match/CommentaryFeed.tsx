@@ -208,16 +208,15 @@ export function CommentaryFeed({
       })()}
       {cornerNode}
       {[...displayedSteps].reverse().flatMap((s, idx) => {
-        // Filtrera ut tomma steg — om varken commentary eller meningsfullt event
-        // har något att visa, hoppa över. Detta fångar buggar där matchengine
-        // genererat ett step utan innehåll.
+        // Substitution har en dedikerad renderrad nedan — räknas inte hit.
+        // Corner/Goal/Suspension motiverar en rad även utan commentary (ikon + styling).
         const hasMeaningfulEvent = s.events.some(e =>
           e.type === MatchEventType.Goal ||
           e.type === MatchEventType.Suspension ||
-          e.type === MatchEventType.Substitution ||
           e.type === MatchEventType.Corner
         )
-        if (!s.commentary?.trim() && !hasMeaningfulEvent) return []
+        const hasSubs = s.events.some(e => e.type === MatchEventType.Substitution)
+        if (!s.commentary?.trim() && !hasMeaningfulEvent && !hasSubs) return []
 
         const hasGoal = s.events.some(e => e.type === MatchEventType.Goal)
         const hasSuspension = s.events.some(e => e.type === MatchEventType.Suspension)
@@ -291,7 +290,8 @@ export function CommentaryFeed({
         )
         const isAwayEvent = sidedEvent ? getEventAlignment(sidedEvent.clubId, fixture.homeClubId) === 'away' : false
 
-        const rows: React.ReactNode[] = [
+        const rows: React.ReactNode[] = []
+        if (s.commentary?.trim() || hasMeaningfulEvent) rows.push(
           <div
             key={`${s.step}-${s.events.length}-${(s.commentary ?? '').length}`}
             style={{
@@ -314,7 +314,7 @@ export function CommentaryFeed({
               {hasCornerGoal ? `📐 HÖRNMÅL! ${s.commentary}` : s.commentary}
             </span>
           </div>
-        ]
+        )
 
         if (s.step === 0 && managedIsHome && game) {
           const welcomeSong = getWelcomeSong(game)
