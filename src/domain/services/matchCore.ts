@@ -100,6 +100,7 @@ import {
   GOAL_TIMING_BY_PERIOD, SUSP_TIMING_BY_PERIOD, PHASE_CONSTANTS, getTimingPeriod,
 } from './matchUtils'
 import type { MatchStep, StepByStepInput, SecondHalfInput } from './matchUtils'
+import type { PairChemistry } from './chemistryService'
 import { shouldBeInteractive, buildCornerInteractionData } from './cornerInteractionService'
 import type { CornerInteractionData } from './cornerInteractionService'
 import { resolveAIPenaltyKeeperDive, resolvePenalty } from './penaltyInteractionService'
@@ -107,6 +108,14 @@ import type { PenaltyInteractionData } from './penaltyInteractionService'
 import type { CounterInteractionData } from './counterAttackInteractionService'
 import type { FreeKickInteractionData } from './freeKickInteractionService'
 import type { LastMinutePressData } from './lastMinutePressService'
+
+const CHEM_K = 0.12  // tie-breaker weight; ±6% at extreme chemistry, ~1-2% at normal spread
+
+function chemMultiplier(pairs: PairChemistry[] | undefined): number {
+  if (!pairs || pairs.length === 0) return 1.0
+  const avg = pairs.reduce((s, p) => s + p.strength, 0) / pairs.length
+  return clamp(1 + avg * CHEM_K, 0.94, 1.06)
+}
 
 // ── Match profile ─────────────────────────────────────────────────────────────
 // Rolled once per match from seed — creates natural goal distribution across a
@@ -351,7 +360,7 @@ function* simulateMatchCore(
 
   // Composite scores (0-1 scale)
   let homeAttack = (homeEval.offenseScore * homeMods.offenseModifier) / 100
-  const homeDefense = (homeEval.defenseScore * homeMods.defenseModifier) / 100
+  let homeDefense = (homeEval.defenseScore * homeMods.defenseModifier) / 100
   const homeCorner  = (homeEval.cornerScore  * homeMods.cornerModifier)  / 100
   const homeGK      = homeEval.goalkeeperScore / 100
   const homeDisciplineRisk = (homeEval.disciplineRisk * homeMods.disciplineModifier) / 100
@@ -359,7 +368,7 @@ function* simulateMatchCore(
   const homeCornerRecovery     = homeEval.cornerRecoveryScore / 100
 
   let awayAttack = (awayEval.offenseScore * awayMods.offenseModifier) / 100
-  const awayDefense = (awayEval.defenseScore * awayMods.defenseModifier) / 100
+  let awayDefense = (awayEval.defenseScore * awayMods.defenseModifier) / 100
 
   // dream_round signature: boost the weaker team's attack
   const underdogBoost = (input as import('./matchUtils').StepByStepInput).underdogBoost
@@ -367,6 +376,16 @@ function* simulateMatchCore(
     if (homeEval.offenseScore < awayEval.offenseScore) homeAttack *= (1 + underdogBoost)
     else if (awayEval.offenseScore < homeEval.offenseScore) awayAttack *= (1 + underdogBoost)
   }
+
+  // Chemistry modifier — managed-team-only (AI gets undefined → ×1.0). Centrerad
+  // vid 0 så neutral kemi inte rör kalibreringen.
+  const homeChem = chemMultiplier(input.homeChemistry)
+  const awayChem = chemMultiplier(input.awayChemistry)
+  homeAttack  *= homeChem
+  homeDefense *= homeChem
+  awayAttack  *= awayChem
+  awayDefense *= awayChem
+
   const awayCorner  = (awayEval.cornerScore  * awayMods.cornerModifier)  / 100
   const awayGK      = awayEval.goalkeeperScore / 100
   const awayDisciplineRisk = (awayEval.disciplineRisk * awayMods.disciplineModifier) / 100

@@ -16,6 +16,7 @@ import { mulberry32 } from '../../../domain/utils/random'
 import { pickRefereeForMatch, shouldTriggerRefereeMeeting, updateRefereeRelation, REFEREE_MEETING_QUOTES, getRefereeDisplayName, generateReferees } from '../../../domain/services/refereeService'
 import type { Referee } from '../../../domain/entities/Referee'
 import { checkForMatchInjury } from '../../../domain/services/matchInjuryService'
+import { calculateLineupChemistry } from '../../../domain/services/chemistryService'
 
 const AI_FORMATIONS: Record<ClubStyle, FormationType> = {
   [ClubStyle.Defensive]: '4-3-3',
@@ -296,6 +297,16 @@ export function simulateRound(
     // Pick referee for this fixture
     const referee = pickRefereeForMatch(allRefs, game.refereeRelations ?? [], nextMatchday, mulberry32(baseSeed + i + 9999))
 
+    const isThisManaged = fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId
+    const managedChem = isThisManaged
+      ? calculateLineupChemistry(
+          (isManagedHome ? homeLineup : awayLineup).startingPlayerIds
+            .map(id => matchPlayers.find(p => p.id === id))
+            .filter((p): p is Player => p !== undefined),
+          game.chemistryStats ?? {}
+        )
+      : undefined
+
     const result = simulateMatch({
       fixture,
       homeLineup,
@@ -315,6 +326,8 @@ export function simulateRound(
       refStyle: referee.style,
       refereeName: getRefereeDisplayName(referee),
       underdogBoost: game.currentSeasonSignature?.modifiers.underdogBoost,
+      homeChemistry: isManagedHome ? managedChem : undefined,
+      awayChemistry: !isManagedHome ? managedChem : undefined,
     })
 
     // Post-match: referee meeting check (managed fixture only)

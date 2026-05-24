@@ -85,6 +85,8 @@ export interface SimulateMatchInput {
   refStyle?: 'strict' | 'lenient' | 'inconsistent'
   refereeName?: string  // for opening commentary display
   underdogBoost?: number  // dream_round signature: boosts weaker team's attack
+  homeChemistry?: import('./chemistryService').PairChemistry[]
+  awayChemistry?: import('./chemistryService').PairChemistry[]
 }
 
 export function computeWeatherEffects(w: Weather) {
@@ -317,6 +319,8 @@ export interface StepByStepInput {
   refereeName?: string  // for opening commentary display
   arenaName?: string
   underdogBoost?: number  // dream_round signature: boosts weaker team's attack
+  homeChemistry?: import('./chemistryService').PairChemistry[]
+  awayChemistry?: import('./chemistryService').PairChemistry[]
   isAnnandagen?: boolean
   isNyarsbandy?: boolean
   isCupFinalhelgen?: boolean
