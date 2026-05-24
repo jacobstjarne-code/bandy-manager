@@ -162,8 +162,10 @@ function pickPool<T>(pool: T[], matchday: number): T {
   return pool[((matchday % pool.length) + pool.length) % pool.length]
 }
 
-function getPulseAutoRad(entry: PulseEntry, delta: number, hasData: boolean): string {
-  if (!hasData) return 'Pulse-data byggs upp.'
+function getPulseAutoRad(entry: PulseEntry, delta: number, hasTrend: boolean): string {
+  // Komponent-rader funkar från omgång 1 — fitness/moral/skador är kända direkt.
+  // Bara trend-raderna kräver historik. "Pulse-data byggs upp" hör hemma i noll-data-
+  // fallbacken (ingen omgång spelad), inte här — vi har alltid komponenter om latest finns.
   const { avgFitness, avgMorale, injuryCount, matchday } = entry
   const n = injuryCount
   if (n >= 2) return pickPool([
@@ -181,8 +183,8 @@ function getPulseAutoRad(entry: PulseEntry, delta: number, hasData: boolean): st
     'Moralen ligger lågt just nu.',
     'Det gnisslar något i omklädningsrummet.',
   ], matchday)
-  if (delta <= -8) return pickPool(['Pulsen pekar nedåt.', 'Något tappar fart i truppen.'], matchday)
-  if (delta >= 8)  return pickPool(['Det vänder uppåt.', 'Truppen repar sig.'], matchday)
+  if (hasTrend && delta <= -8) return pickPool(['Pulsen pekar nedåt.', 'Något tappar fart i truppen.'], matchday)
+  if (hasTrend && delta >= 8)  return pickPool(['Det vänder uppåt.', 'Truppen repar sig.'], matchday)
   return pickPool(['Truppen är frisk.', 'Inga självklara bekymmer just nu.', 'Stadigt över hela linjen.'], matchday)
 }
 
@@ -208,9 +210,10 @@ function SquadPulseHero({ history }: { history: PulseEntry[] }) {
   const delta = prevPulse !== null ? currentPulse - prevPulse : 0
   const stroke = pulseStroke(currentPulse)
   const strokeColor = PULSE_COLOR[stroke]
-  const hasData = win.length >= MIN_POINTS
-  const isCrisis = pulsePoints.slice(-2).length >= 2 && pulsePoints.slice(-2).every(v => v < 40)
-  const autoRad = getPulseAutoRad(latest, delta, hasData)
+  const hasTrend = win.length >= 2
+  const hasChart = win.length >= MIN_POINTS
+  const isCrisis = pulsePoints.slice(-2).every(v => v < 40)
+  const autoRad = getPulseAutoRad(latest, delta, hasTrend)
 
   const endMarker: SparklineMarker = {
     index: win.length - 1,
@@ -245,7 +248,7 @@ function SquadPulseHero({ history }: { history: PulseEntry[] }) {
         </div>
       </div>
 
-      {hasData ? (
+      {hasChart ? (
         <Sparkline points={pulsePoints} stroke={stroke} height={40} markers={[endMarker]} areaFill />
       ) : (
         <div style={{ height: 20 }} />
@@ -255,7 +258,7 @@ function SquadPulseHero({ history }: { history: PulseEntry[] }) {
         {autoRad}
       </div>
 
-      {expanded && hasData && (
+      {expanded && hasChart && (
         <div style={{ marginTop: 10, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
           {([
             { label: 'Kondition', pts: win.map(e => e.avgFitness),  stroke: 'accent' as const, val: latest.avgFitness   },
@@ -272,9 +275,6 @@ function SquadPulseHero({ history }: { history: PulseEntry[] }) {
               </span>
             </div>
           ))}
-          <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: 4 }}>
-            {currentPulse} = {latest.avgFitness}×.5 + {latest.avgMorale}×.4 − {latest.injuryCount}×5
-          </div>
         </div>
       )}
     </div>

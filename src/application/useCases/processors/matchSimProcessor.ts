@@ -281,8 +281,7 @@ export function simulateRound(
     const rivalry = getRivalry(fixture.homeClubId, fixture.awayClubId)
     const isManagedHome = fixture.homeClubId === game.managedClubId
     const baseAdv = homeClub?.hasIndoorArena ? 0.19 * 0.85 : 0.19
-    const isManaged = fixture.homeClubId === game.managedClubId
-    const communityBonus = isManaged
+    const communityBonus = isManagedHome
       ? ((game.communityStanding ?? 50) - 50) / 50 * 0.02
       : 0
     const homeAdv = Math.max(0, baseAdv + communityBonus)
@@ -331,8 +330,7 @@ export function simulateRound(
     })
 
     // Post-match: referee meeting check (managed fixture only)
-    const isManaged2 = fixture.homeClubId === game.managedClubId || fixture.awayClubId === game.managedClubId
-    if (isManaged2) {
+    if (isThisManaged) {
       const suspCount = result.fixture.events.filter(
         e => e.type === MatchEventType.Suspension && e.clubId === game.managedClubId
       ).length

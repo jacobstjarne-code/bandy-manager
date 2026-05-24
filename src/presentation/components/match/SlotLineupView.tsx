@@ -1,5 +1,11 @@
 import { useState } from 'react'
 import type { Player } from '../../../domain/entities/Player'
+import type { Tactic } from '../../../domain/entities/Club'
+import type { FormationSlot, FormationType } from '../../../domain/entities/Formation'
+import { FORMATIONS } from '../../../domain/entities/Formation'
+import { PlayerPosition } from '../../../domain/enums'
+import { positionShort } from '../../utils/formatters'
+import { PlayerPickerSheet } from './PlayerPickerSheet'
 
 function FitnessBar({ fitness }: { fitness: number }) {
   const filled = Math.round(fitness / 10)
@@ -12,12 +18,6 @@ function FitnessBar({ fitness }: { fitness: number }) {
     </div>
   )
 }
-import type { Tactic } from '../../../domain/entities/Club'
-import type { FormationSlot, FormationType } from '../../../domain/entities/Formation'
-import { FORMATIONS } from '../../../domain/entities/Formation'
-import { PlayerPosition } from '../../../domain/enums'
-import { positionShort } from '../../utils/formatters'
-import { PlayerPickerSheet } from './PlayerPickerSheet'
 
 interface SlotLineupViewProps {
   tacticState: Tactic
