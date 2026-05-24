@@ -31,9 +31,9 @@
 |---|---|---|---|
 | P2 | **B4 transfers design-system-cleanup** | `design-system/AUDIT-TRANSFERS-2026-05-17.md` | **LEVERERAD** `113f0af` (1001 gröna). |
 | P3 | **B4 feature-rester** (C-O2 inkommande-bud + C-T10 lås-ikon) | chatten + ClubLegend-typ | **LEVERERAD** `9bb18ac` + Opus-text `c55b9bf`. |
-| P5 | **A1.5++ Rotorsak tomma commentary-events** — utred matchSimulator/matchEngine, fixa vid källan om mönster finns. | — | **REDO.** Utredning. Enda kvarvarande CODE_SAMLAT-paketet. |
+| P5 | **A1.5++ Rotorsak tomma commentary-events** | — | **LEVERERAD** `e77cf6e`. Rot: Substitution i hasMeaningfulEvent-filtret → tom rad. Guard på main-div, sub-steps renderar bara 🔄-raden. |
 
-*(P1 annandagen levererad, P4 cup-stamping levererad + verifierad i granskning, P2 + P3 levererade. Endast P5 kvar av CODE_SAMLAT.)*
+*(Alla CODE_SAMLAT-paket P1–P5 levererade.)*
 
 ---
 
@@ -65,7 +65,7 @@ Motordiagnosen (`docs/MOTORDIAGNOS_RESULTAT_2026-05-22.md`) avgjorde: alla tre f
 |---|---|---|---|
 | C-SD1 | **Säsongsslutets koreografi — scener i fel ordning/dubblerade.** Halvvägs-portal + halvvägs-scen säger samma sak i rad. Sommaren-scenen kommer efter match 22 MEN före slutspelet (sekvens-bugg: "i oktober är det igång igen" medan kvartsfinal återstår). Grundserien-avklarad + säsongen-klar + sommaren = tre avsluts-skärmar i konstig ordning. Ingen scen äger SEKVENSEN. Sommaren måste gated på slutspel klart. **Släkt med C-SP1** (samma "övergång vet inte tillståndet"-klass). | scen-triggers / SeasonPhase-flöde | Medel. Kräver Design: vilken scen äger vad, i vilken ordning, med vilka guards. Störst av playtest-fynden. |
 | C-SD2 | **Portal före slutspel är vanilla — ingen upptakt-känsla. + final-portalen ska ärvas nedåt.** Går från grundserie rakt in i "STARTA SLUTSPEL" utan spänningsbygge. OCH: final-portalen (bild 2, slutspels-playtest) är klart vassare än semi/kvart — det utseendet ska ärvas ned till semi/kvart fast "lugnare", så slutspelet eskalerar visuellt. Synlighetsprincipen på säsongs-skala. | Portal pre-playoff + finalhelg-portal | Medel. Design. Överlappar C-SY1. |
-| C-SD3 | **"Simulera resterande säsong"-knappen ÅTERSTÄLLD — kvar: logg + en-rads-sortering.** Knappen försvann 3 maj 2026 när `DashboardScreen.tsx` raderades som dead code (PortalScreen hade tagit över entry point). `simulateRemainingStep` levde kvar i storen — bara UI-ytan föll bort. Återställd i PortalScreen som ghost ovanför spela-CTA, 1001 gröna, 30/30 sim-seeds. **Villkors-verifiering gav utdelning:** gamla knappens `nextManagedScheduled` hade sekundärsortering `\|\| (b.isCup?1:0)-(a.isCup?1:0)` (liga före cup vid samma matchday); nya saknade den → vid md 3/8/13/19 kunde cup-matchen plockas → knappen döljas felaktigt. KVAR: (1) lägg tillbaka sekundärsorteringen exakt. (2) Code bekräftar att resten av villkoret är identiskt med originalet (HalfTimeSummary-check finns kvar — Code:s engelska tankeström påstod fel att den tagits bort). (3) logga i DECISIONS.md + LESSONS.md (dead-code-radering: inventera unika CTA:er mot ny entry point först). | PortalScreen CTA-block (handler i store) | En-rads-sortering + logg. Nästan klar. |
+| C-SD3 | ~~Simulera-knappens sekundärsortering~~ | — | **LEVERERAD** `a70a2b2`. Sortering + HalfTimeSummary-check verifierad av agent 2026-05-25. |
 
 ### Match 2-känslan — live→sim AVFÖRD, trötthets-axeln ÖPPEN (playtest 2026-05-22)
 
@@ -90,7 +90,7 @@ Mest konkreta buggar Code kan ta direkt (ej Design). Opus hann EJ lokalisera all
 |---|---|---|---|
 | C-SP1 | **"SLUTFÖR PÅGÅENDE FLÖDE"-CTA efter vunnen serie (BUGG).** Vann KvF match 3 → semi, men granska-vyn visar "slutför pågående flöde" som om matchen ej var klar, leder sedan till semi-portal. Borde vara serie-avgjord-övergång. Samma klass som C-SD1 (övergång vet ej tillståndet). | granska/review-CTA + playoffTransition | EJ lokaliserad. Liten-medel. |
 | C-SP2 | **Final-portalens opponent-fält visar fel (BUGG).** "Västanfors · · Uppsala" (dubbel-punkt = tomt template-segment) — men managed (Karlsborg) MÖTER Västanfors. Fel lag som motståndare ELLER hemma/borta/plats-blandning. NextMatchPrimary + PlayoffBanner verifierade RENA — buggen i finalhelg-specifika portal/scen-varianten. | finalhelg-portal (`isFinaldag`-gren, "Sätt lineup för finalen") | EJ lokaliserad. Konkret datafel. |
-| C-SP3 | **`heavySnow` råsträng i SM-final-uppspel (BUGG).** Bild 3: `❄ heavySnow` visas som rå enum istället för "Snöväder". Väder-label körs ej genom getConditionLabel. Samma klass som nedsläpp→avslag-fixarna. | final/intro-scen väder-rendering | Lokaliserbar. Liten. |
+| C-SP3 | ~~heavySnow råsträng~~ | — | **LEVERERAD** `a70a2b2`. FinalIntroScreen: `getConditionLabel()` appliceras nu. |
 | C-SP4 | **Förlängnings-overlay fel utseende (BUGG).** Bild 5: FÖRLÄNGNING-overlay ligger över matchpanelen, text krockar bakom. Matchar ej resten av behandlingen. | overtime-overlay i MatchLiveScreen | EJ lokaliserad. Liten-medel CSS/layout. |
 | C-SP5 | **SM-final-uppspelets skarv (DESIGN/CSS).** Bild 3: svart panel på grå bakgrund = hårt skarvband (dash-4-svart ovanför grått). Inramnings/bakgrunds-mismatch. Skärmen hör dit (föregår lagpresentation) men inramningen är trasig. | final-uppspel bakgrund/CSS | Design/CSS. Liten. |
 | C-SP6 | **Interrupt-spik inför andra semin (MÄT, ej fix än).** 6 dash-händelser mot normalt 1–3. Kan vara legit anhopning eller dubbel-trigger. Kör B8:s `countPendingInterrupts` mot sparfil i det läget för att avgöra. | countPendingInterrupts (B8) | Mät först, fixa bara om dubbel-trigger. |
@@ -124,8 +124,8 @@ Mest konkreta buggar Code kan ta direkt (ej Design). Opus hann EJ lokalisera all
 | # | Idé | Status | Estimat |
 |---|---|---|---|
 | C-TR1 | **Klack-favorit-chip (Tier 1B).** Klack-systemet skriver INTE till `narrativeLog` — eget tillstånd i `game.klackEcho`. Chip kräver ny `'klack'`-typ i narrativeLog + ändring i `klackPresenter.ts`. Två vägar: (i) narrativeLog `'klack'`-typ (Opus lutar åt detta — konsekvent med övriga chips); (ii) explicit `isKlackFavorite?: boolean`. Tas när Klack-narrativ prioriteras, inte isolerat. | Väntar Klack-narrativ-prioritering | Medel (system + Klack-ändring) |
-| C-TR2 | **Anniversary-eko-chip (Tier 2B).** `activeAnniversaries` finns på SaveGame, `subjectPlayerId` är ren render-data mot `game.players.find`. Chip kräver bara att `activeAnniversaries` skickas till trupp-vyn och renderas. Ren mekanik, ingen ny datamodell. | REDO att bygga (litet pass) | ~30 min |
-| C-TR3 | **Squad-pulse-sparkline (Tier 2C) — Jacob väljer scope.** `fatigueHistory` är platt `number[]` (bara kondition). (i) Enkel: kondition-sparkline på befintlig data (~30 min) — lovar mer än den håller; (ii) Full: ny `teamFitnessHistory: { avgFitness, avgMorale, injuryCount }[]` (~2-3h) — visar verklig lag-hälsa. Opus rekommenderar (ii) eller vänta. **Väntar Jacob scope-val.** | Blockad på scope-beslut | ~30 min (i) / ~2-3h (ii) |
+| C-TR2 | ~~Anniversary-eko-chip~~ | **LEVERERAD** `aab96bf` + `3c6fac0`. Pool-varianter + hash-val på eventId. | — |
+| C-TR3 | ~~Squad-pulse (full scope ii)~~ | **LEVERERAD** `aab96bf` + `3c6fac0`. teamFitnessHistory + hero-render + inline-expand. | — |
 
 ### THE_BOMB-rester (sedan tidigare)
 
