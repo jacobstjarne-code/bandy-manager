@@ -52,3 +52,7 @@ Tvåvägsspegel mellan **designsystem** (detta projekt) och **codebasen** (`band
 - **Frågor om ton, språk, visuell riktning, spacing, färg, komponentregler** → designsystemet (detta projekt).
 - **Frågor om datamodell, state management, API, performance, build** → codebasen.
 - **Båda behövs** (ny feature) → ställ i design först, få mock, sedan implementera.
+
+## Sync-logg
+
+- **2026-05-16** — R3 Endgame Portal + R3+ Klimax-eskalering levererade från Claude.ai-design-projektet. Två mockar + två handoffs ska placeras enligt etiketterna i nedladdningsuppmaningarna.

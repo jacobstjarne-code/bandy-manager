@@ -1,8 +1,6 @@
-> **FÖRÅLDRAD — superseded 2026-05-22.** Måttstockarna i denna fil är fotbollsärvda och stämmer inte för bandy (t.ex. mål/match ~5.5, röda kort 0.1–0.5, hörnmål 8–18%). Inget skript genererar längre denna fil. Använd `npm run stress` + `npm run analyze-stress` för aktuell verifiering mot bandygrytan-kalibrering. Raderas inte — bevaras som historisk artefakt.
-
 # Säsongsanalys — Bandy Manager v0.1
 
-Genererad: 2026-05-22 12:11:31
+Genererad: 2026-05-24 21:38:32
 Simulerade säsonger: 5 (seeds: 42, 123, 456, 789, 1337)
 
 ## Före/efter-jämförelse (kalibreringsjusteringar 2026-03-22)

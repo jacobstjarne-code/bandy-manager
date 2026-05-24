@@ -60,6 +60,12 @@ När du levererar en mock som ska ligga i `docs/mockups/`, använd prefix:
 
 Senaste först. Format: `YYYY-MM-DD — kort beskrivning — commit-hash`.
 
+- **2026-05-17 (senare kväll)** — R3 + R3+ wired av Code (commits inkl. `c83a5b2`). R3: `seasonPhaseBias`, `suppressIn` på 3 kort, `PortalPhaseMark`, `isManagedClubInPlayoff`-helper ersätter `playoffOngoingInLeague`, `phaseMarksSeen`-state. R3+: `PortalRoundMark` (gold på SM-Final), `getPlayoffSeriesContext()` med criticality + weight 1-3, NextMatchCard weight-styling progression, SeriesBoxes decisive/gold-dot, `btn-gold` på SM-Final-CTA. Nya tokens `--gold-deep` + `--shadow-gold`. Plus deferredDecisions backend + ArrivalScene A2-A5 + Cup-tonen Nivå 2.
+- **2026-05-16** — R3 Endgame Portal-känsla levererad (design). Mock: `docs/mockups/2026-05-16_design_endgame_portal.html` + handoff `design-system/HANDOFF-ENDGAME-PORTAL-R3.md`. Svar på Opus fyra frågor: hård borttagning (inte fade), ny `PortalPhaseMark`-komponent med copy från `SEASON_MOOD[phase][0]`, inga styling-ändringar på kvarvarande sekundärer, kafferum/journalist/signatur helt borta i playoff (inte weight 0.2). Opus låste: PhaseMark-copy = SEASON_MOOD direkt; `isPlayoff` måste vara `managedClubInPlayoff` (kräver fix i `dailyBriefingService.ts:340` — nuvarande är `playoffOngoingInLeague`).
+- **2026-05-16** — R3+ Playoff-klimax-eskalering levererad (design, valbart tillägg). Mock: `docs/mockups/2026-05-16_design_endgame_klimax.html` + handoff `design-system/HANDOFF-ENDGAME-PORTAL-R3-PLUS-KLIMAX.md`. Tre tekniker: `PortalRoundMark` per playoff-runda, primary-vikt 1/2/3 baserat på round + criticality, gold-token (`--gold`) aktiverad på SM-Final primary + CTA. Jacob valde in tillägget.
+- **2026-05-17 (kväll)** — Audit-fixar + cup-tonen Nivå 1 integration pushad av Code. **2 🟥 BLOCK klara:** H.1 stripes-hierarki (ny `.portal-card-stripe-copper-dim`-klass 40% opacity för info-cards, 3px copper-wide för action-cards), 3.4 race condition bekräftat icke-existerande. **7 🟧 WARN klara:** 3.2 timeout 1500→2600ms, 10.5 urgent arc warm glyph, 1.2 BoardObjectives CSS-extraktion + tokens, H.3 InboxCounter margin, H.4 ActiveBudget gömt S1Omg1, 7.1-7.3 MecenatDinnerEvent refaktor, H.2 EventCardInline eyebrow. **1 🟨 klar:** 10.4 derby_echo dead code rensad. **Cup-tonen Nivå 1:** 5 pools wirade i matchCore.ts för cup-rundor 1-2, ~60% sampling, `cup_goalOpener` plockas bara matchens första mål (Alt B).
+- **2026-05-16 (eftermiddag)** — F1 Beslutsekonomi UI-implementation pushad. Fyra komponenter: `PortalActiveBudget`, `PortalQueueRail`, `CooldownRow`, `PortalInboxCounter`. Tutorial-band S1Omg1. 73/73 tester gröna.
+- **2026-05-17** — F1 Beslutsekonomi UI-mock + handover levererade. Mock: `docs/mockups/2026-05-17_design_beslutsekonomi.html`. Handoff: `design-system/HANDOFF-BESLUTSEKONOMI-F1.md`. Tre öppna frågor besvarade (queue-rail mellan Active/Secondary, cooldown-rad ankrad i källans sekundär, deferred vs cooldown som två separata visuella språk).
 - **2026-05-08** — Pool-utökningar (`FINALDAG_BRIEFING_SPECTATOR`, squad-vy-strängar, goal-kommentarer) — ej design-relevant, men noteras.
 - **2026-05-08** — `Scoreboard.tsx` `#A89878` → `var(--match-copper)`. Hex-skuld stängd. — `[hash]`
 - **2026-05-08** — `traitSuspensions` täcker nu alla 5 traits (kommentar-bugg fixad).
@@ -73,35 +79,31 @@ Senaste först. Format: `YYYY-MM-DD — kort beskrivning — commit-hash`.
 
 Vad du förväntas leverera nästa, prioriterat. Uppdateras vid varje session.
 
-### KRITISKT NU (blockar Code)
+### REDO FÖR PIXEL-AUDIT (Code rapporterat klart 2026-05-17)
 
-1. **F1 Beslutsekonomi UI-mönster.** Code implementerar nu `max 2 active decisions` + cooldowns per källa. Backend-mekaniken är på väg, UI-besluten är öppna:
-   - Hur ser kö-indikatorn ut när 2 beslut är aktiva och 3:e triggas?
-   - Hur kommuniceras "cooldown 3 omgångar kvar" på en källa?
-   - Hopas inkommande beslut i bakgrunden eller blockas helt? Visuell skillnad mellan dessa lägen?
-   
-   Spec finns i `docs/SPEC_BESLUTSEKONOMI*.md` (Steg 2/3/4) och `docs/mockups/2026-05-08_beslutsekonomi_spec.md`. **Leverera mock parallellt med Code's implementation, annars improviserar Code och Jacob får migration-jobb.**
+1. **F1 Beslutsekonomi UI + audit-fixar.** Pixel-audit-jobb i kontext:
+   - Stripes-hierarki: action cards (3px copper-wide) vs info cards (2px dim 40%) — håller hierarkin i 8-kort-stack?
+   - Tutorial-band S1Omg1, ActiveBudget gömd S1Omg1
+   - PortalInboxCounter margin/border mot sekundär ovanför
+   - MecenatDinnerEvent refaktorerad — mörkkontext, btn-klasser, modal-positionering
+   - WeeklyDecision 2600ms resolved-fade — läsbart nu?
+   - Urgent arc warm glyph
+   - **Begränsning kvar:** Queue-rail kan ej verifieras än om `deferredDecisions[]`-population (Stage 1) inte är klar. CooldownRow-integration (Stage 2) ej heller klar. Status oklar — Opus frågar.
 
-### KOMMANDE (väntar på Code)
+2. **10 inlåsta system pixel-audit redan levererad** 2026-05-17 (`docs/AUDIT-INLASTA-SYSTEM-PIXEL-2026-05-17.md`). Code adresserat fynden. Nästa: skärmdumpar i kontext för 🟢-uppgradering i `docs/INLASTA_SYSTEM.md` när Jacob playtestat.
 
-2. **R3 Endgame Portal-känsla.** Spec ligger i `docs/SPEC_SEASON_PHASE_BIAS.md` (skriven 2026-05-08). Card-bag-vikter dämpas i endgame/playoff. Designkrav:
-   - Försvinner kort hårt eller fade:as ut över 2 omgångar?
-   - Behövs briefing-text "Slutspel. Bara det viktiga nu." vid första playoff-Portal?
-   - Ska kvarvarande secondaries i playoff se annorlunda ut, eller sker hierarkin via vad som är borta?
-   - Kafferum-kortet har finkalibrerad pool — helt borta i playoff, eller weight 0.2?
+### REDO FÖR PIXEL-AUDIT (Code rapporterat klart)
+
+1. **F1 Beslutsekonomi UI + audit-fixar** (oklart om Queue-rail testbar när mockfilen saknas — se nedan).
+2. **R3 Endgame Portal** — wired av Code. Pixel-audit i kontext: PortalPhaseMark vid fas-byte, kafferum/journalist/signatur borta i playoff, ingen styling-ändring på kvarvarande sekundärer.
+3. **R3+ Playoff-klimax-eskalering** — wired av Code (commit `c83a5b2`). Pixel-audit: PortalRoundMark (`⬩ Kvartsfinal ⬩` / `⬩ SM-Final · Avgörande ⬩`), NextMatchCard weight-progression (1/2/3), SeriesBoxes decisive/gold-dot, `btn-gold` på SM-Final-CTA, `--gold-deep` + `--shadow-gold` tokens.
+   - **Saknad mockfil** — `2026-05-16_design_endgame_portal.html` + `2026-05-16_design_endgame_klimax.html` saknas i `docs/mockups/`. Audit kan ske "i kontext" mot levande app utan mock, men pixel-jämförelse behöver mocken.
 
 ### EKOSYSTEM-AUDIT (när F1 landat)
 
-3. **Pixel-audit i kontext för 10 inlåsta system.**
-   - `ActiveArcsSecondary` ("I BLICKFÅNGET")
-   - `BoardObjectivesSecondary` ("STYRELSENS KRAV")
-   - `WeeklyDecisionSecondary`
-   - `hallDebateService` event-rendering
-   - Fler i `docs/INLASTA_SYSTEM.md`
-   
-   Alla landade just men har inte verifierats *i kontext med andra cards när Portal har 8 kort samtidigt*. Hierarkin?
+4. **Pixel-audit i kontext för 10 inlåsta system** — oförändrat sedan 2026-05-17. Levererad audit-rapport i `docs/AUDIT-INLASTA-SYSTEM-PIXEL-2026-05-17.md` finns redan. Topp-fynd: stripes-inflation. Återstår: cross-check efter F1 + R3 landat.
 
-4. **ArrivalScene rev2 visuell audit.** Stegvis-ackumulativ är nu i kod (commit `8fab004`). Verifiera att den landar visuellt — föregående repliker dimmas via `.scene-dimmed`, CTA döljs under timing-fönstret, exit-overlay funkar.
+5. **ArrivalScene rev2 visuell audit — KLAR 2026-05-17.** Stegvis-ackumulativ verifierad i kod (commit `8fab004`). Tre OPEN THREADS-punkter funkar. **Notering:** dimning sker via `.in.dimmed`-modifier (inte legacy `.scene-dimmed`-klassen). Åtgärdslista A1–A5 i `design-system/AUDIT-ARRIVAL-SCENE-REV2-2026-05-17.md` — inga BLOCK, playtest kan påbörjas.
 
 ### FRAMTIDA (R-spår från fresh-eyes-analys, ej spec'ade)
 

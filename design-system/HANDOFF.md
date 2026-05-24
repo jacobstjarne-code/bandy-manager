@@ -2,7 +2,15 @@
 
 **Owner:** `/projects/<bandy-manager-design-system>` (this project)
 **Target:** `bandy-manager` codebase (React + TS PWA)
-**Last sync:** design review round 1 — 8 assets revised
+**Last sync:** 2026-05-17 — F1 Beslutsekonomi UI levererad
+
+---
+
+## Aktiva handover-paket (separata filer)
+
+Nyare leveranser ligger i egna `HANDOFF-*.md`-filer bredvid denna tracker. Lista underhålls här, detaljer i sub-filen.
+
+- **2026-05-17 — F1 Beslutsekonomi UI-mönster** — `HANDOFF-BESLUTSEKONOMI-F1.md`. Mock: `docs/mockups/2026-05-17_design_beslutsekonomi.html`. Status: **UI implementerat 2026-05-16** (`PortalActiveBudget`, `PortalQueueRail`, `CooldownRow`, `PortalInboxCounter`, tutorial-band). 73/73 tester gröna. **Backend-wiring saknas:** `deferredDecisions[]`-population (roundProcessor) + CooldownRow-integration i source-secondary-kort. Pixel-audit kan ske på implementerade delar redan nu.
 
 ---
 

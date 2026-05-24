@@ -33,23 +33,33 @@ Full motivering: `docs/GENOMGANG_SPEL_LOOP_2026-05-16.md`. Ordningen är **2 →
 
 ---
 
-## AKTUELLT LÄGE (2026-05-24) — Portal-kurering DEL 1–4 KLAR, render-loop fix, Opus-text
+## AKTUELLT LÄGE (2026-05-24) — Sprint 2026-05-24 + trupp-redesign Fas 1+2 + manager-anteckning
 
-**Pushat av Code 2026-05-24 (commits `1e1e05b` → `eaaa0ff`):**
+**Pushat av Code 2026-05-24 (commits `1e1e05b` → `da071ff`):**
 - ✅ **Portal-kurering DEL 1–4** — `inboxToPortal.ts` (7 inbox-kinds), story-slot i `portalBuilder.ts` (FREKVENTA ×0.5 rotation, SALLSYNTA +25 golv, recencyBonus), `roundCharacter.ts` (7 karaktärer, CHARACTER_BIAS-tabell), vikt-sänkningar (board_objectives 65, tabell 20, ekonomi 18)
 - ✅ **Render-loop fix** — `currentStorySlotType`/`lastStorySlotType` separerade; `recordPortalShown` skriver current, `roundProcessor` promotar current→last vid matchdagsövergång. Loop omöjlig.
 - ✅ **Pixel-audit** — 19 story-slot CSS-avvikelser mot mockup åtgärdade (border-left på card-elementet, per-stripe gradient, label-färger, typografi px-för-px)
 - ✅ **Layer-fix** — `initCardBag.ts` + `inboxToPortal.ts` importerar `CardRenderProps` från domain-lagret (`dashboardCardBag.ts`) istf presentation-lagret
 - ✅ **Opus-text** — annandagen (3 mediarubriker + 4 val-beskrivningar + intro), kafferum (+26 generiska utbyten, +4 FATIGUE_WARM, +4 FATIGUE_HOT)
+- ✅ **Trupp-redesign Fas 1+2** — stripe-klass per position, sparkline-primitiv (6 ratingsrader), chip-pills (skada/vila/C-band/kontraktsvarning), captain-band 16×16px, storyline-rad, captain hoist (commit `a001ac3` + `496ea7d`)
+- ✅ **Sprint 2026-05-24 — 1A inbox-titel med motståndare** — `createMatchResultItem` tar `clubs[]`, bygger `"Matchresultat: HomeShort–AwayShort score–score"`
+- ✅ **Sprint 2026-05-24 — 1B tränings-titel med omgång** — `` `Träning omg ${roundNumber}: ${typeLabel}` ``
+- ✅ **Sprint 2026-05-24 — 1C media-byline** — `buildByline` helper, journalist suffixad ` — Name, Outlet` på titel
+- ✅ **Sprint 2026-05-24 — 2 bud i VIKTIGT** — `getCategory` läser live `game.transferBids` vid render (approach a)
+- ✅ **Sprint 2026-05-24 — 3A cup_day-bias** — `event_critical: 0.5, patron_demand_unmet: 0.5` i `CHARACTER_BIAS.cup_day`
+- ✅ **Sprint 2026-05-24 — 4B kommentar-pooler** — supporter_goal_home 4→8, weather-pools utökade
+- ✅ **Sprint 2026-05-24 — 4A pickCommentary-minne** — avvisa-och-dra-igen N=min(poolSize−1,3), Map<pool,seen[]> skapad EN gång per matchsimulering, param-trådad genom ~82 anrop. Deterministisk.
+- ✅ **Manager-anteckning Tier 1A** — `managerNote?: string` på Player, `✎`-prefixad italic-rad i PlayerRow (commit `da071ff`)
 
 **Verifiering:**
-- Build ren, 0 TypeScript-fel
-- Render-loop: contract verifierad av arkitektur-audit (airtight)
-- Inga `[Opus]`-platshållare kvar i src/
+- Build ren, 0 TypeScript-fel per commit
+- pickCommentary: deterministisk (Map keyas på array-referens, reset per match)
+- Bud approach (a): ingen stale inbox-mutation — ett enda läs-ställe
 
 **Nästa:**
-- Jacob playtest — story-slot, round-character i kontext, verifiera roteringslogik (omg N journalist → N+1 bigResult vinner)
+- Jacob scope-val: squad-pulse enkel (fatigueHistory) vs full (ny teamFitnessHistory)
 - P5 i BACKLOG: rotorsak tomma commentary-events (CODE_SAMLAT-sista paketet)
+- Anniversary-eko — litet pass, ren mekanik, redo att aktivera
 
 ---
 

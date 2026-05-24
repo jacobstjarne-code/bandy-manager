@@ -24,8 +24,10 @@ Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessions
   ```
   - Träff → läs existerande implementation FÖRST, återanvänd eller medvetet ersätt
   - Ingen träff → grep bredare innan du börjar skriva
+- Om specen berör flera services eller domain-entiteter — slå upp `CLAUDE_REFERENCE.md` → Key Files-listan för att se vilka filer som är "huvudet" innan du grep:ar. Sparar onödiga sökrundor och ger mer informerad grep-query.
 - `docs/DECISIONS.md` — arkitekturbeslut relevanta för featuren
 - Läs Princip 1–4 i "DESIGNPRINCIPER — LÄS FÖRE SPEC"-sektionen längre ned
+- **Synlighetsregel:** första svaret i en spec-skrivande session börjar med en kort PRE-SPEC-rapport: "grep:ade på [X] i src/domain — fann [Y, Z]". Då ser Jacob om disciplinen följdes innan spec levererades.
 
 **C. SKRIVUPPGIFT (svensk text, textpool, brev, citat, ansökningar):**
 - `docs/WRITING_GUIDELINES_BANDY_MANAGER.md` — tonregler, max 10 citat per block (Lärdom #7)
@@ -55,6 +57,21 @@ Detta dokument är 3500+ rader. Det är NÄR-DU-BEHÖVER-läsning, inte sessions
 ### Vid första missen i sessionen — STANNA OCH LÄS
 
 Om Design-Claude eller Jacob påpekar att en befintlig fil/system missades: STOPPA. Läs Princip 1–4 (DESIGNPRINCIPER nedan) + de avsnitt i LESSONS.md som matchar uppgiften, innan du fortsätter. En miss = signal att disciplin brutits. Två missar i samma session = signal att hela sessionens approach är fel — gör om sessionsstart-läsningen istället för att fortsätta producera.
+
+---
+
+## SVENSK TEXT — CODE SKRIVER ALDRIG (HÅRD REGEL)
+
+All svensk spelartext (anslag, kafferum, klack, pressfrågor, signature-facts, eventtexter, brev, citat) skrivs av Opus direkt — ALDRIG av Code.
+
+**När ett textfält är markerat `// Opus levererar`:**
+- Lämna varianter-arrayen TOM. Skriv ALDRIG egen svensk prosa som placeholder, inte ens "temporär" eller "funktionell" text.
+- Om en komponent kraschar utan text — det är ACCEPTABELT. Hellre synlig krasch som Opus fyller inom 24h än felaktig ton som blir kvar i kodbasen.
+- Om du behöver en placeholder för att kompilera: använd `'[Opus]'` som enda sträng. Aldrig en hel mening.
+
+**Varför:** Code-skriven svensk text har genomgående fel ton (generisk AI-prosa istället för bandysvensk understatement). Varje sådan text kostar en Opus-omskrivningsrunda i efterhand. 2026-05-20 bröts detta tre gånger samma dag (PLAYOFF_ANSLAG, spectator-pools, SeasonSignature observedFacts) — alla tre krävde omskrivning. Att lämna tomt är billigare än att jaga placeholders.
+
+**Diskvalificerande exempel** (Code skrev, Opus fick skriva om): "Det gör ont precis lagom mycket för att något ska bli annorlunda." Bandysvensk understatement säger samma sak med konkret bild: "Pålsson avgjorde med fyra minuter kvar. Hallen tystnade."
 
 ---
 
