@@ -1379,15 +1379,15 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const mediaRubrikTexts: Record<string, { title: string; body: string }> = {
       B: {
         title: `${clubName} gör annandagen till en folkfest`,
-        body: '[Opus]',
+        body: 'Läktaren fylldes en timme före nedsläpp. Glögg, en klack som höll i hela matchen och fyrverkeri efter slutsignalen — annandagen blev dagen orten samlades kring laget. Lokaltidningen kallar det säsongens folkfest.',
       },
       C: {
         title: `${clubName} öppnar portarna på annandagen`,
-        body: '[Opus]',
+        body: 'Fri entré drog folk som annars stannar hemma. Många hade aldrig satt sin fot på arenan förr, och några lovade att komma tillbaka. En tom biljettkassa, men fullt på läktaren.',
       },
       D: {
         title: `${clubName} och mecenat firar annandag tillsammans`,
-        body: '[Opus]',
+        body: 'Mecenaten stod för glöggen och lät sig synas på läktaren för en gångs skull. Det pratades mer om stämningen än om vem som betalade, vilket nog var poängen. En annandag att ta efter, skriver tidningen.',
       },
     }
     const rubrik = mediaRubrikTexts[val]

@@ -37,7 +37,7 @@ function buildOptions(game: SaveGame): ValOption[] {
   options.push({
     id: 'A',
     label: 'Standard',
-    description: '[Opus]',
+    description: 'Annandagen blir som annandagen brukar bli. Det räcker långt.',
     meta: 'Inga extra kostnader',
   })
 
@@ -46,7 +46,7 @@ function buildOptions(game: SaveGame): ValOption[] {
     options.push({
       id: 'B',
       label: 'Julmarknad',
-      description: '[Opus]',
+      description: 'Stånd längs långsidan, glögg och korv. Familjer som annars inte kommer hittar hit.',
       meta: '−15 000 kr · ×2.5 publik · +10 CS · 30% risk',
     })
   }
@@ -55,7 +55,7 @@ function buildOptions(game: SaveGame): ValOption[] {
   options.push({
     id: 'C',
     label: 'Gratisentré',
-    description: '[Opus]',
+    description: 'Portarna står öppna. Ingen behöver fundera på om de har råd att se bandy idag.',
     meta: 'Ingen biljettintäkt · +25 CS',
   })
 
@@ -65,7 +65,7 @@ function buildOptions(game: SaveGame): ValOption[] {
     options.push({
       id: 'D',
       label: 'Mecenat-värd',
-      description: '[Opus]',
+      description: `${mecenat?.name ?? 'Mecenaten'} står för kalaset i år. Det kommer de att minnas att de gjorde.`,
       meta: `${mecenat?.name ?? 'Mecenaten'} betalar · +15 CS · +20 mecenat`,
     })
   }
@@ -116,7 +116,7 @@ export function AnnandagsValEvent({ game }: Props) {
         lineHeight: 1.6,
         marginBottom: 12,
       }}>
-        [Opus]
+        Annandagen är årets största dag på vallen. Folk som inte sett en match sedan förra annandagen kommer ändå. Hur vill ni ta emot dem?
       </p>
 
       {/* Val-knappar */}

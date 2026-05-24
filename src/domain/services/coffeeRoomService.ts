@@ -44,6 +44,34 @@ const GENERIC_EXCHANGES: Array<[string, string, string, string]> = [
   ['Webbredaktören', 'Lokaltidningen vill ha en intervju med dig.', 'Ordföranden', 'Säg att jag är på isen. Det är jag ofta nog.'],
   ['Kassören', 'Kaffet i kafferummet är slut.', 'Kioskvakten', 'Köp på Konsum. Inte det dyra.'],
   ['Materialaren', 'Ungdomarna växer ur skridskorna fortare än vi hinner köpa.', 'Ungdomstränaren', 'Låt dem ärva. Vi gjorde det.'],
+  // Utökning (Opus 2026-05-23) — brunnen var för grund, 19 rader för ett inslag som visas varje matchdag.
+  // Samma ton: konkret bild, ingen förklaring, ellipsis över utrop. Sture-Forsbacka.
+  ['Vaktmästaren', 'Spolade i går kväll. Det höll till morgonen.', 'Materialaren', 'Mer än man kan säga om förra veckan.'],
+  ['Kioskvakten', 'Termosarna tog slut redan i första.', 'Kassören', 'Folk stannar när det går bra. Köp fler.'],
+  ['Materialaren', 'Sargen på kortsidan sitter löst igen.', 'Vaktmästaren', 'Jag tar den på lördag. Den håller till dess.'],
+  ['Ordföranden', 'Kommunen ringde om hyran.', 'Kassören', 'Sa du något?'],
+  ['Kassören', 'Vi gick plus på lottringen.', 'Ordföranden', 'Då fryser vi inte i pausen i alla fall.'],
+  ['Vaktmästaren', 'Det snöade in genom taket på läktaren.', 'Materialaren', 'Samma hörn som alltid?'],
+  ['Kioskvakten', 'En av grabbarna glömde skridskorna hemma.', 'Ungdomstränaren', 'Han glömmer dem en gång. Sen aldrig mer.'],
+  ['Materialaren', 'Nya bollarna kom. Fel färg.', 'Vaktmästaren', 'De rullar likadant.'],
+  ['Webbredaktören', 'Någon klagade på matchreferatet.', 'Ordföranden', 'Då läste i alla fall någon det.'],
+  ['Kassören', 'Elräkningen kom. Den var hög.', 'Vaktmästaren', 'Isen kostar. Det har den alltid gjort.'],
+  ['Vaktmästaren', 'Plogbilen gick sönder mitt i.', 'Materialaren', 'Då skottar vi. Vi har gjort det förr.'],
+  ['Ungdomstränaren', 'P16 vann med åtta mål i går.', 'Kioskvakten', 'Säg inget till dem. De blir bara kaxiga.'],
+  ['Kioskvakten', 'Kaffet är slut igen.', 'Materialaren', 'Det är alltid slut. Det är liksom poängen med det.'],
+  ['Ordföranden', 'Styrelsemötet drog över en timme.', 'Kassören', 'Vi sa samma sak som förra gången.'],
+  ['Materialaren', 'Han glömde tröjorna i tvätten över helgen.', 'Vaktmästaren', 'De luktar. Men de håller.'],
+  ['Vaktmästaren', 'Det var fjorton grader kallt i morse.', 'Kioskvakten', 'Då säljer vi soppa. Inte glass.'],
+  ['Kassören', 'Bortalaget hörde av sig om bussen.', 'Ordföranden', 'De hittar hit. Alla gör det till slut.'],
+  ['Webbredaktören', 'Bilden från matchen blev suddig.', 'Materialaren', 'Den fångade stämningen i alla fall.'],
+  ['Ungdomstränaren', 'En förälder ville prata om speltid.', 'Vaktmästaren', 'Det vill de alltid. Lyssna och nicka.'],
+  ['Materialaren', 'Slipstenen är nästan slut.', 'Kassören', 'Skriv upp den. Under bollarna.'],
+  ['Kioskvakten', 'Det kom folk redan en timme före.', 'Ordföranden', 'Då är det något på gång.'],
+  ['Vaktmästaren', 'Belysningen flimrar på ena halvan.', 'Materialaren', 'Spela mot det hållet i andra. Då märks det inte.'],
+  ['Kassören', 'Vi fick en gåva från en gammal spelare.', 'Ordföranden', 'Skriv ett kort. Med handen.'],
+  ['Ungdomstränaren', 'Den lille backen vägrar lämna isen.', 'Materialaren', 'Låt honom vara kvar en stund till.'],
+  ['Vaktmästaren', 'Någon hade lämnat grinden öppen.', 'Kioskvakten', 'Räven igen, kanske.'],
+  ['Kassören', 'Medlemsavgifterna trillar in nu.', 'Ordföranden', 'Det gör de alltid när det vänder.'],
 ]
 
 // Transfer-triggered exchanges — shown after a sale/buy
@@ -453,6 +481,10 @@ const FATIGUE_WARM_EXCHANGES: Array<[string, string, string, string]> = [
   ['Sture', 'Han hann inte med en kaffe idag heller.', 'Magnus', 'Det är sån vecka. Det lättar.'],
   ['Magnus', 'Mycket att hålla reda på just nu, ser det ut som.', 'Sture', 'Det är alltid något. Han reder ut det.'],
   ['Sture', 'Tränaren satt kvar när jag släckte.', 'Magnus', 'Han tänker. Det är ingen fara med det.'],
+  ['Magnus', 'Telefonen ringde tre gånger under mötet.', 'Sture', 'Han svarade inte. Det säger väl något.'],
+  ['Sture', 'Han bad mig ta hand om en sak. Glömde säga vilken.', 'Magnus', 'Det löser sig. Det gör det oftast.'],
+  ['Magnus', 'Lappen på anslagstavlan har suttit en vecka nu.', 'Sture', 'Den får sitta. Han tar den när han hinner.'],
+  ['Sture', 'Han verkar ha mycket på en gång den här perioden.', 'Magnus', 'Det hör till. Vi har sett värre.'],
 ]
 
 const FATIGUE_HOT_EXCHANGES: Array<[string, string, string, string]> = [
@@ -460,6 +492,10 @@ const FATIGUE_HOT_EXCHANGES: Array<[string, string, string, string]> = [
   ['Sture', 'Han svarade inte när jag hälsade. Såg rakt fram.', 'Magnus', 'Han har mycket. Men det börjar synas.'],
   ['Magnus', 'Det är samma frågor som legat ett tag nu.', 'Sture', 'Någon gång måste man bara ta dem. Annars tar de en.'],
   ['Sture', 'Han ser trött ut. Inte av is. Av det andra.', 'Magnus', 'Ja. Det är inte benen på honom det.'],
+  ['Magnus', 'Tre saker har väntat på besked sedan i förrgår.', 'Sture', 'Han vet om det. Det är väl därför han ser ut så.'],
+  ['Sture', 'Han gick hem sist igen. Lämnade lampan på.', 'Magnus', 'Jag släckte den. Sa inget.'],
+  ['Magnus', 'Det hopar sig när man skjuter på det.', 'Sture', 'Jag vet. Jag har gjort samma misstag.'],
+  ['Sture', 'Han bad om en veckas andrum i morse.', 'Magnus', 'Det är inte veckan som är problemet. Det är högen.'],
 ]
 
 /**
