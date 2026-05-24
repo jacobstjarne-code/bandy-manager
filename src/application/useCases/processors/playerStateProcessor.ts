@@ -122,6 +122,11 @@ export function applyPlayerStateUpdates(
       updated.morale = Math.min(100, updated.morale + 1)
     }
 
+    // Moral → form-drift. Routar moral via form-kanalen (redan inkopplad i motorn).
+    // ±1/omg ackumulerar — de flesta spelare i 30-80-zonen → ingen drift (undviker brus).
+    if (updated.morale < 30)      updated.form = Math.max(0, updated.form - 1)
+    else if (updated.morale > 80) updated.form = Math.min(100, updated.form + 1)
+
     return updated
   })
 

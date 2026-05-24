@@ -38,7 +38,11 @@ function round1(value: number): number {
 }
 
 function playerModifier(player: Player): number {
-  return (player.form / 100) * 0.4 + (player.fitness / 100) * 0.6
+  const base = (player.form / 100) * 0.4 + (player.fitness / 100) * 0.6
+  // Rust-faktor: full sharpness (100) → ×1.0 (ingen gratis-boost), låg sharpness → liten straff.
+  // Normalt spelande startelva ligger nära 100 → kalibreringen påverkas minimalt.
+  const sharpnessFactor = 0.90 + 0.10 * (player.sharpness / 100)
+  return base * sharpnessFactor
 }
 
 function effectivePlayerModifier(player: Player, tactic: Tactic): number {
