@@ -134,6 +134,8 @@ export interface Player {
   // C-T1 — Transfer personality (set once at generation, stable)
   transferPersonality?: 'homebound' | 'ambitious' | 'family' | 'dream_club' | 'default'
   dreamClubId?: string  // only set if transferPersonality === 'dream_club'
+
+  managerNote?: string  // fri text, max 80 tecken, satt av spelaren
 }
 
 export type PlayerAvailability =

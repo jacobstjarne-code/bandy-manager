@@ -323,8 +323,13 @@ function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSea
         </div>
       )}
 
+      {player.managerNote && (
+        <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--text-secondary)', paddingLeft: 50 }}>
+          ✎ {player.managerNote}
+        </div>
+      )}
+
       {/* VÄNTAR PÅ C-K1: Landslags-chip */}
-      {/* VÄNTAR PÅ ny datamodell: Manager-anteckning (player.managerNote) */}
       {/* VÄNTAR PÅ R5: Anniversary-eko */}
       {/* VÄNTAR PÅ Manager v1 + R1: Full lobby-kategorisering med motiv */}
       {/* VÄNTAR PÅ narrativeLog-mappning: Klacken-favorit-chip */}
