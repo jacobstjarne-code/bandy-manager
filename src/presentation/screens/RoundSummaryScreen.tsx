@@ -9,7 +9,6 @@ import { FixtureStatus, InboxItemType } from '../../domain/enums'
 import { getRivalry } from '../../domain/data/rivalries'
 import { getCurrentLeaguePosition } from '../../domain/services/standingsService'
 import { ScoreBlock } from '../components/primitives/ScoreBlock'
-import type { ScoreBlockVariant } from '../components/primitives/ScoreBlock'
 
 export function RoundSummaryScreen() {
   const navigate = useNavigate()
@@ -133,19 +132,6 @@ export function RoundSummaryScreen() {
     const awayPos = game.standings.find(s => s.clubId === f.awayClubId)?.position ?? 99
     const isNearby = Math.abs(homePos - myPosition) <= 2 || Math.abs(awayPos - myPosition) <= 2
     return isRival || isNearby
-  }
-
-  // Derive variant for "andra matcher" ScoreBlock — managed-perspective if relevant
-  const getFixtureVariant = (f: typeof otherResults[0], relevant: boolean): ScoreBlockVariant => {
-    if (!relevant) return 'subtle'
-    const managedIsHome = f.homeClubId === game.managedClubId
-    const managedIsAway = f.awayClubId === game.managedClubId
-    if (!managedIsHome && !managedIsAway) return 'subtle'
-    const myGoals = managedIsHome ? f.homeScore : f.awayScore
-    const theirGoals = managedIsHome ? f.awayScore : f.homeScore
-    if (myGoals > theirGoals) return 'win'
-    if (myGoals < theirGoals) return 'loss'
-    return 'draw'
   }
 
   // ── PRESS CLIPS from inbox ──
@@ -414,7 +400,6 @@ export function RoundSummaryScreen() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {otherResults.map(f => {
                 const relevant = isRelevantFixture(f)
-                const variant = getFixtureVariant(f, relevant)
                 return (
                   <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{
@@ -427,7 +412,7 @@ export function RoundSummaryScreen() {
                     </span>
                     <ScoreBlock
                       score={`${f.homeScore}–${f.awayScore}`}
-                      variant={variant}
+                      variant="subtle"
                       light
                       compact
                     />

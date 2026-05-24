@@ -34,7 +34,7 @@ function makeFixture(overrides: Partial<Fixture>): Fixture {
 }
 
 describe('applyPostRoundFlags', () => {
-  it('halvtidssummering-pendingScreen sätts INTE längre vid liga-omgång 11 (C-SD1: league_halfway-anslaget tar över)', () => {
+  it('halvtidssummering-pendingScreen sätts INTE vid liga-omgång 11', () => {
     const game = makeGame({ pendingScreen: undefined })
     const fixture = makeFixture({ roundNumber: 11, isCup: false })
     const { updatedGame } = applyPostRoundFlags({ game, justCompletedManagedFixture: fixture, nextMatchday: 11 })

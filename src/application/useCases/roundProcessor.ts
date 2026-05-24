@@ -1541,7 +1541,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // Score steg 5 — snapshot-pipeline (liga-omgångar, senaste 22)
+  // Spara senaste 22 liga-omgångars tabellplats/journalistrelation/lagform för trendgrafer
   if (!isCupRound && !isPlayoffRound && currentLeagueRound !== null && !isSecondPassForManagedMatch) {
     const managedId = updatedGame.managedClubId
     const pos = updatedGame.standings.find(s => s.clubId === managedId)?.position ?? null
@@ -1563,7 +1563,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     }
   }
 
-  // R1 — fatigueHistory + fatigueHotStreak (alla rundtyper, ej andra passet)
+  // Uppdatera beslutsbörda varje omgång (ej dubbelkörning vid andra passet)
   if (!isSecondPassForManagedMatch) {
     const { meter, pressure } = getFatigueState(updatedGame)
     const newHistory = [...(updatedGame.fatigueHistory ?? []), meter].slice(-7)

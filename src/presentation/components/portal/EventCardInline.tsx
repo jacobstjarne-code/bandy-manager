@@ -67,7 +67,7 @@ export function EventCardInline({ event, currentMatchday }: Props) {
   const typeLabel = getEventTypeLabel(event)
 
   const age = currentMatchday != null ? getItemAge(event, currentMatchday) : 0
-  const agedClass = age >= 5 ? 'aged-2' : age >= 4 ? 'aged-1' : ''
+  const agedClass = age >= 5 ? 'aged-2' : age >= 3 ? 'aged-1' : ''
 
   function handleAction(choiceId: string) {
     resolveEvent(event.id, choiceId)

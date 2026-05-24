@@ -444,19 +444,22 @@ export function getCoffeeRoomQuote(game: SaveGame): CoffeeQuote | null {
   return { speaker: speakerName, text }
 }
 
-// R1 — fatigue kafferum-scener. Opus levererar dessa texter.
+// R1 — fatigue kafferum-scener (Opus 2026-05-23). Tonala, ingen moral-träff.
+// Warm: börjar synas att det ligger kvar. Hot: det har gått längre.
+// Bandy-Sverige, understatement — inget sägs rakt ut, allt mellan raderna.
+// Ingen tillrättavisning. Två gubbar vid kaffekokaren som ser, inte dömer.
 const FATIGUE_WARM_EXCHANGES: Array<[string, string, string, string]> = [
-  ['Magnus', '[Opus]', 'Sture', '[Opus]'],
-  ['Magnus', '[Opus]', 'Sture', '[Opus]'],
-  ['Sture', '[Opus]', 'Magnus', '[Opus]'],
-  ['Sture', '[Opus]', 'Magnus', '[Opus]'],
+  ['Magnus', 'Det låg kvar papper på tränarens bord i morse.', 'Sture', 'Det gör det ibland. Han kommer till det.'],
+  ['Sture', 'Han hann inte med en kaffe idag heller.', 'Magnus', 'Det är sån vecka. Det lättar.'],
+  ['Magnus', 'Mycket att hålla reda på just nu, ser det ut som.', 'Sture', 'Det är alltid något. Han reder ut det.'],
+  ['Sture', 'Tränaren satt kvar när jag släckte.', 'Magnus', 'Han tänker. Det är ingen fara med det.'],
 ]
 
 const FATIGUE_HOT_EXCHANGES: Array<[string, string, string, string]> = [
-  ['Magnus', '[Opus]', 'Sture', '[Opus]'],
-  ['Magnus', '[Opus]', 'Sture', '[Opus]'],
-  ['Sture', '[Opus]', 'Magnus', '[Opus]'],
-  ['Sture', '[Opus]', 'Magnus', '[Opus]'],
+  ['Magnus', 'Samma hög på bordet som förra veckan. Större nu.', 'Sture', 'Mm. Den där växer om man inte tar i den.'],
+  ['Sture', 'Han svarade inte när jag hälsade. Såg rakt fram.', 'Magnus', 'Han har mycket. Men det börjar synas.'],
+  ['Magnus', 'Det är samma frågor som legat ett tag nu.', 'Sture', 'Någon gång måste man bara ta dem. Annars tar de en.'],
+  ['Sture', 'Han ser trött ut. Inte av is. Av det andra.', 'Magnus', 'Ja. Det är inte benen på honom det.'],
 ]
 
 /**
@@ -473,10 +476,9 @@ export function getCoffeeRoomScene(game: SaveGame): CoffeeScene | null {
     .reduce((max, f) => Math.max(max, f.roundNumber), 0)
   if (round === 0) return null
 
-  // R1 — fatigue-scen (tonal, ingen moral-träff) vid fatigueHotStreak >= 2
   const hotStreak = game.fatigueHotStreak ?? 0
-  const { pressure } = getFatigueState(game)
   if (hotStreak >= 2) {
+    const { pressure } = getFatigueState(game)
     const pool = pressure === 'hot' ? FATIGUE_HOT_EXCHANGES : FATIGUE_WARM_EXCHANGES
     const matchday = game.currentMatchday ?? 1
     const seed = matchday * 17 + game.currentSeason * 29
