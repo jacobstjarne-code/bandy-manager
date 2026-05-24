@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import type { CardRenderProps } from '../portalTypes'
 import type { ActiveArc } from '../../../../domain/entities/Narrative'
 import { getArcHeadline } from '../../../../domain/data/activeArcStrings'
+import type { ArcPlayer } from '../../../../domain/data/activeArcStrings'
 
 function getCurrentMatchday(game: CardRenderProps['game']): number {
   const scheduled = game.fixtures.filter(f => f.status === 'scheduled').map(f => f.matchday)
@@ -28,11 +29,12 @@ interface ArcRowProps {
   arc: ActiveArc
   glyph: string
   currentMatchday: number
+  player?: ArcPlayer
   onClick?: () => void
   isLast: boolean
 }
 
-function ArcRow({ arc, glyph, currentMatchday, onClick, isLast }: ArcRowProps) {
+function ArcRow({ arc, glyph, currentMatchday, player, onClick, isLast }: ArcRowProps) {
   const [hovered, setHovered] = useState(false)
   const roundsLeft = arc.expiresMatchday - currentMatchday
   const isUrgent = roundsLeft <= 1
@@ -81,7 +83,7 @@ function ArcRow({ arc, glyph, currentMatchday, onClick, isLast }: ArcRowProps) {
       </span>
 
       <div className="arc-body">
-        <div className="arc-headline">{getArcHeadline(arc, undefined)}</div>
+        <div className="arc-headline">{getArcHeadline(arc, player)}</div>
         <div className="arc-meta">
           <span className="arc-phase-dots">
             {[1, 2, 3].map(dot => (
@@ -132,18 +134,24 @@ export function ActiveArcsSecondary({ game }: CardRenderProps) {
       <div className="portal-card-stripe portal-card-stripe-copper-dim" />
       <span className="portal-card-chevron">›</span>
       <div className="portal-card-eyebrow">I blickfånget</div>
-      {arcs.map((arc, index) => (
-        <ArcRow
-          key={arc.id}
-          arc={arc}
-          glyph={ARC_GLYPHS[index] ?? String(index + 1)}
-          currentMatchday={currentMatchday}
-          isLast={index === arcs.length - 1}
-          onClick={arc.playerId
-            ? () => navigate('/game/squad', { state: { highlightPlayer: arc.playerId } })
-            : undefined}
-        />
-      ))}
+      {arcs.map((arc, index) => {
+        const player = arc.playerId
+          ? game.players.find(p => p.id === arc.playerId)
+          : undefined
+        return (
+          <ArcRow
+            key={arc.id}
+            arc={arc}
+            glyph={ARC_GLYPHS[index] ?? String(index + 1)}
+            currentMatchday={currentMatchday}
+            player={player}
+            isLast={index === arcs.length - 1}
+            onClick={arc.playerId
+              ? () => navigate('/game/squad', { state: { highlightPlayer: arc.playerId } })
+              : undefined}
+          />
+        )
+      })}
     </div>
   )
 }
