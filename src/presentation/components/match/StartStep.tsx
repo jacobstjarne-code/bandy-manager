@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import type { Player } from '../../../domain/entities/Player'
 import type { Tactic } from '../../../domain/entities/Club'
 import type { Fixture } from '../../../domain/entities/Fixture'
 import type { MatchWeather } from '../../../domain/entities/Weather'
@@ -77,9 +78,18 @@ interface StartStepProps {
   arenaName?: string
   ritualText?: string
   farewellPlayerName?: string  // C-B3: set for farewell matches
+  squadPlayers?: Player[]
 }
 
-export function StartStep({ startingIds, tacticState, matchWeatherData, matchMode, lineupError, onSetMatchMode, onBack, onPlay, fixture, isHome, fanMood, expectedAttendance, arenaName, ritualText, farewellPlayerName }: StartStepProps) {
+export function StartStep({ startingIds, tacticState, matchWeatherData, matchMode, lineupError, onSetMatchMode, onBack, onPlay, fixture, isHome, fanMood, expectedAttendance, arenaName, ritualText, farewellPlayerName, squadPlayers }: StartStepProps) {
+  const tiredCount = useMemo(() => {
+    if (!squadPlayers) return 0
+    return startingIds.filter(id => {
+      const p = squadPlayers.find(pl => pl.id === id)
+      return p && p.fitness < 60
+    }).length
+  }, [startingIds, squadPlayers])
+
   const atmosphere = useMemo(
     () => fixture ? getPreMatchPepTalk(fixture, matchWeatherData, isHome ?? true, fanMood ?? 50) : '',
     [fixture?.id]
@@ -132,6 +142,21 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
               ~{expectedAttendance} åskådare
             </span>
           </div>
+        </div>
+      )}
+
+      {/* Trötthetsbanner */}
+      {tiredCount >= 3 && (
+        <div style={{
+          marginBottom: 8, padding: '10px 12px',
+          background: 'color-mix(in srgb, var(--warm) 8%, transparent)',
+          border: '1px solid color-mix(in srgb, var(--warm) 30%, transparent)',
+          borderRadius: 'var(--radius-sm)',
+        }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm)', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 4px' }}>⚠ TRUPPEN ÄR TRÖTT</p>
+          <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>
+            {tiredCount} spelare under 60% kondition i startelvan.
+          </p>
         </div>
       )}
 

@@ -1,5 +1,17 @@
 import { useState } from 'react'
 import type { Player } from '../../../domain/entities/Player'
+
+function FitnessBar({ fitness }: { fitness: number }) {
+  const filled = Math.round(fitness / 10)
+  const color = fitness >= 70 ? 'var(--success)' : fitness >= 40 ? 'var(--warm)' : 'var(--danger)'
+  return (
+    <div style={{ display: 'flex', gap: 1.5, alignItems: 'center', flexShrink: 0 }}>
+      {Array.from({ length: 10 }, (_, i) => (
+        <div key={i} style={{ width: 3, height: 8, borderRadius: 1, background: i < filled ? color : 'var(--border)' }} />
+      ))}
+    </div>
+  )
+}
 import type { Tactic } from '../../../domain/entities/Club'
 import type { FormationSlot, FormationType } from '../../../domain/entities/Formation'
 import { FORMATIONS } from '../../../domain/entities/Formation'
@@ -183,16 +195,24 @@ export function SlotLineupView({
                     onClick={() => handleSlotTap(slot)}
                     style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
                   >
-                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                      {player.shirtNumber != null && (
-                        <span style={{ fontSize: 10, color: 'var(--text-muted)', marginRight: 4 }}>#{player.shirtNumber}</span>
-                      )}
-                      {player.lastName}
-                    </p>
-                    <p style={{ fontSize: 10, color: player.position !== slot.position ? 'var(--warning)' : 'var(--text-muted)', marginTop: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                      <FitnessBar fitness={player.fitness} />
+                      <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                        {player.shirtNumber != null && (
+                          <span style={{ fontSize: 10, color: 'var(--text-muted)', marginRight: 4 }}>#{player.shirtNumber}</span>
+                        )}
+                        {player.lastName}
+                      </p>
+                    </div>
+                    <p style={{ fontSize: 10, color: player.position !== slot.position ? 'var(--warning)' : 'var(--text-muted)', marginTop: 0 }}>
                       {positionShort(player.position)} · {Math.round(player.currentAbility)} CA
                       {player.position !== slot.position && ' · felpos'}
                     </p>
+                    {player.fitness < 40 && (
+                      <p style={{ fontSize: 10, color: 'var(--danger)', marginTop: 2, fontStyle: 'italic' }}>
+                        Hård match · vila rekommenderas
+                      </p>
+                    )}
                   </div>
                 ) : (
                   <div

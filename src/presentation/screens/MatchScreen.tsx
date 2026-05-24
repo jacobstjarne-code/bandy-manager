@@ -706,6 +706,7 @@ export function MatchScreen() {
             const fp = game.players.find(p => p.id === nextFixture.farewellMatchForPlayerId)
             return fp ? `${fp.firstName} ${fp.lastName}` : undefined
           })()}
+          squadPlayers={squadPlayers}
         />
       )}
     </div>
