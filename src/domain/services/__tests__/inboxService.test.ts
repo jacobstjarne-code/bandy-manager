@@ -139,10 +139,15 @@ function makeStanding(overrides: Partial<StandingRow> = {}): StandingRow {
   }
 }
 
+const TEST_CLUBS = [
+  makeClub({ id: 'club_test', shortName: 'Test' }),
+  makeClub({ id: 'club_opponent', shortName: 'Motst' }),
+]
+
 describe('createMatchResultItem', () => {
   it('returns correct type and contains score in title/body', () => {
     const fixture = makeFixture({ homeScore: 3, awayScore: 1 })
-    const item = createMatchResultItem(fixture, 'club_test', TEST_DATE)
+    const item = createMatchResultItem(fixture, 'club_test', TEST_DATE, TEST_CLUBS)
 
     expect(item.type).toBe(InboxItemType.MatchResult)
     expect(item.title).toContain('3')
@@ -153,19 +158,19 @@ describe('createMatchResultItem', () => {
 
   it('describes a win correctly for home team', () => {
     const fixture = makeFixture({ homeClubId: 'club_test', homeScore: 3, awayScore: 0 })
-    const item = createMatchResultItem(fixture, 'club_test', TEST_DATE)
+    const item = createMatchResultItem(fixture, 'club_test', TEST_DATE, TEST_CLUBS)
     expect(item.body.toLowerCase()).toContain('vann')
   })
 
   it('describes a loss correctly', () => {
     const fixture = makeFixture({ homeClubId: 'club_opponent', awayClubId: 'club_test', homeScore: 2, awayScore: 0 })
-    const item = createMatchResultItem(fixture, 'club_test', TEST_DATE)
+    const item = createMatchResultItem(fixture, 'club_test', TEST_DATE, TEST_CLUBS)
     expect(item.body.toLowerCase()).toContain('förlorade')
   })
 
   it('describes a draw correctly', () => {
     const fixture = makeFixture({ homeScore: 2, awayScore: 2 })
-    const item = createMatchResultItem(fixture, 'club_test', TEST_DATE)
+    const item = createMatchResultItem(fixture, 'club_test', TEST_DATE, TEST_CLUBS)
     expect(item.body.toLowerCase()).toContain('oavgjort')
   })
 })
@@ -307,7 +312,7 @@ describe('general inbox item properties', () => {
     const standing = makeStanding()
 
     const items = [
-      createMatchResultItem(fixture, 'club_test', TEST_DATE),
+      createMatchResultItem(fixture, 'club_test', TEST_DATE, TEST_CLUBS),
       createInjuryItem(player, 7, TEST_DATE),
       createSuspensionItem(player, 1, TEST_DATE),
       createContractExpiringItem(player, 2027, TEST_DATE),

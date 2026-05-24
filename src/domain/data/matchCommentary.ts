@@ -289,18 +289,26 @@ export const commentary = {
     "Bollen fastnade i en vattenpöl — avslutet dog innan det nådde mål.",
     "Slushig is äter farten. Halvchansen rann ut i intet.",
     "Teknisk miss — men det är svårt att skylla spelaren på den här isen.",
+    "Bollen tappar fart i väten precis när det gick undan. Bortkastat läge.",
+    "Slasket tog avslutet. Det var ett mål på vanlig is.",
   ],
   weather_miss_fog: [
     "Skottet försvinner in i dimman — och passerar mål med god marginal.",
     "Såg spelaren ens målet? Svårt att avgöra i den här sikten.",
+    "Skytten såg nog inte stolpen — bollen gick där målet borde varit.",
+    "Inslaget försvann i grått. Ingen såg vart det tog vägen, minst av allt skytten.",
   ],
   weather_goal_heavySnow: [
     "MÅÅÅL TROTS SNÖSTORMEN! {player} hittar nätet ändå! {score}!",
     "I snökaoset hittar {player} en springa! {score}!",
+    "Ur snöyran kommer {player} och bollen ligger där. {score}!",
+    "Ingen såg passningen i snön — utom {player}. {score}!",
   ],
   weather_goal_thaw: [
     "PÅ DEN HÄR ISEN! {player} tvingar in den! {score}!",
     "Trots slushisen — {player} får in bollen! {score}!",
+    "Genom slasket! {player} trängde in den där en torr is hade gett en enklare boll. {score}!",
+    "Bollen kröp de sista metrarna — men över linjen. {player}! {score}!",
   ],
 
   playoff_kickoff: [
@@ -792,6 +800,10 @@ export const commentary = {
     '📯 Trumman ekar! Klacken exploderar!',
     '📣 {leader} kastar sig framåt! Klacken sjunger ut!',
     '🎵 Hör det! {members} i klacken ger allt de har!',
+    '🎵 Och där tar taket av sig! {leader} höjer rösten en oktav.',
+    '📣 Trumman kommer en halv sekund för sent — ingen bryr sig, alla skriker ändå.',
+    '🎵 {members} på plats och de låter som dubbelt så många just nu.',
+    '📣 {leader} hann inte ens dra ramsan färdigt innan bollen låg där.',
   ],
 
   supporter_goal_conceded: [

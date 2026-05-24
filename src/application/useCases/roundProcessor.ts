@@ -408,7 +408,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
       fixture.awayClubId === game.managedClubId
     ) {
       newInboxItems.push(
-        createMatchResultItem(fixture, game.managedClubId, game.currentDate),
+        createMatchResultItem(fixture, game.managedClubId, game.currentDate, game.clubs),
       )
     }
   }

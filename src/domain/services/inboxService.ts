@@ -16,29 +16,38 @@ export function createMatchResultItem(
   fixture: Fixture,
   managedClubId: string,
   currentDate: string,
+  clubs: Club[],
 ): InboxItem {
   const isHome = fixture.homeClubId === managedClubId
   const myScore = isHome ? fixture.homeScore : fixture.awayScore
   const opponentScore = isHome ? fixture.awayScore : fixture.homeScore
 
+  const homeClub = clubs.find(c => c.id === fixture.homeClubId)
+  const awayClub = clubs.find(c => c.id === fixture.awayClubId)
+  const homeShort = homeClub?.shortName ?? 'Hemma'
+  const awayShort = awayClub?.shortName ?? 'Borta'
+
+  const prefix = fixture.isCup ? 'Cupen' : 'Matchresultat'
+  const title = `${prefix}: ${homeShort}–${awayShort} ${fixture.homeScore}–${fixture.awayScore}`
+
   let result: string
   if (myScore > opponentScore) {
     result = isHome
-      ? `Ni vann ${myScore}-${opponentScore} hemma.`
-      : `Ni vann ${myScore}-${opponentScore} borta.`
+      ? `Ni vann ${myScore}–${opponentScore} hemma.`
+      : `Ni vann ${myScore}–${opponentScore} borta.`
   } else if (myScore < opponentScore) {
     result = isHome
-      ? `Ni förlorade ${myScore}-${opponentScore} hemma.`
-      : `Ni förlorade ${myScore}-${opponentScore} borta.`
+      ? `Ni förlorade ${myScore}–${opponentScore} hemma.`
+      : `Ni förlorade ${myScore}–${opponentScore} borta.`
   } else {
-    result = `Oavgjort ${myScore}-${opponentScore}.`
+    result = `Oavgjort ${myScore}–${opponentScore}.`
   }
 
   return {
     id: generateId(InboxItemType.MatchResult),
     date: currentDate,
     type: InboxItemType.MatchResult,
-    title: `Matchresultat: ${fixture.homeScore}-${fixture.awayScore}`,
+    title,
     body: result,
     relatedFixtureId: fixture.id,
     isRead: false,
@@ -275,7 +284,7 @@ export function createTrainingItem(
     id: generateId(InboxItemType.Training),
     date: currentDate,
     type: InboxItemType.Training,
-    title: `Träning: ${typeLabel}`,
+    title: `Träning omg ${roundNumber}: ${typeLabel}`,
     body,
     isRead: false,
   }
