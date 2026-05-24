@@ -9,7 +9,8 @@ import type { Fixture } from '../../domain/entities/Fixture'
 import { StatBar } from '../components/StatBar'
 import { PlayerCard } from '../components/PlayerCard'
 import { getRecentMatchRatings } from '../components/playerCardUtils'
-import { Sparkline } from '../components/primitives/Sparkline'
+import { Sparkline, MIN_POINTS } from '../components/primitives/Sparkline'
+import type { SparklineMarker } from '../components/primitives/Sparkline'
 import { positionShort, POSITION_ORDER } from '../utils/formatters'
 import { TRAIT_META } from '../../domain/data/playerTraits'
 import { SectionCard } from '../components/SectionCard'
@@ -92,15 +93,192 @@ interface PlayerRowAnimatedProps {
   anniversaries: ActiveAnniversary[]
 }
 
+// Eko-text per type med variation. Deterministiskt val på eventId så raden
+// inte hoppar vid omrender. Outcome är alltid neutral för player-typer (won/lost
+// finns bara på fixture-typer som bär subjectClubId, inte subjectPlayerId), så
+// vi diskriminerar bara på type + yearsAgo.
+const ANNIVERSARY_EKO: Record<string, ((y: number) => string)[]> = {
+  player_milestone: [
+    (y) => `På dagen ${y} år sedan — milstolpen. Han bär den fortfarande.`,
+    (y) => `${y} år sedan just denna omgång. Han skrev in sig då.`,
+    (y) => `Samma omgång för ${y} år sedan. Det är sådant orten minns.`,
+  ],
+  academy_promotion: [
+    (y) => `${y} år sedan han kom upp från P19. Nu är han vår.`,
+    (y) => `På dagen ${y} år sedan steget upp från juniorerna.`,
+    (y) => `${y} år i A-laget. Det började just den här omgången.`,
+  ],
+  storyline_resolution: [
+    (y) => `${y} år sedan berättelsen fick sitt slut. Den sitter kvar.`,
+    (y) => `På dagen ${y} år sedan. Den som var med minns.`,
+  ],
+  retirement: [
+    (y) => `${y} år sedan avskedet. Tröjan hänger kvar i hallen.`,
+    (y) => `Orten glömmer inte. ${y} år sedan, samma omgång.`,
+  ],
+}
+
+function hashEventId(eventId: string): number {
+  let h = 0
+  for (let i = 0; i < eventId.length; i++) {
+    h = (h * 31 + eventId.charCodeAt(i)) | 0
+  }
+  return Math.abs(h)
+}
+
 function anniversaryEkoText(ann: ActiveAnniversary): string {
   const y = ann.yearsAgo
-  switch (ann.type) {
-    case 'academy_promotion': return `${y} år sedan han kom upp från P19. Orten minns.`
-    case 'retirement':        return `Samma omgång, ${y} år tillbaka. Klubben minns.`
-    case 'player_milestone':  return `Just denna omgång för ${y} år sedan — hans 100:e match.`
-    case 'storyline_resolution': return `Samma omgång, ${y} år tillbaka. Klubben minns.`
-    default:                  return `Samma omgång, ${y} år tillbaka. Klubben minns.`
+  const pool = ANNIVERSARY_EKO[ann.type]
+  if (!pool || pool.length === 0) {
+    return `Samma omgång, ${y} år tillbaka. Klubben minns.`
   }
+  const idx = hashEventId(ann.eventId) % pool.length
+  return pool[idx](y)
+}
+
+// ── Squad-pulse ───────────────────────────────────────────────────────────────
+
+type PulseEntry = { matchday: number; avgFitness: number; avgMorale: number; injuryCount: number }
+
+function calcPulse(e: PulseEntry): number {
+  return Math.max(0, Math.min(100, Math.round(e.avgFitness * 0.5 + e.avgMorale * 0.4 - e.injuryCount * 5)))
+}
+
+function pulseStroke(v: number): 'success' | 'accent' | 'warm' | 'danger' {
+  if (v >= 80) return 'success'
+  if (v >= 60) return 'accent'
+  if (v >= 40) return 'warm'
+  return 'danger'
+}
+
+const PULSE_COLOR: Record<string, string> = {
+  success: 'var(--success)',
+  accent:  'var(--accent)',
+  warm:    'var(--warm)',
+  danger:  'var(--danger)',
+}
+
+function pickPool<T>(pool: T[], matchday: number): T {
+  return pool[((matchday % pool.length) + pool.length) % pool.length]
+}
+
+function getPulseAutoRad(entry: PulseEntry, delta: number, hasData: boolean): string {
+  if (!hasData) return 'Pulse-data byggs upp.'
+  const { avgFitness, avgMorale, injuryCount, matchday } = entry
+  const n = injuryCount
+  if (n >= 2) return pickPool([
+    `${n} skadade. Tunnare trupp än vanligt.`,
+    `${n} på skadelistan — det märks i bredden.`,
+    `Sjukstugan är full: ${n} borta.`,
+  ], matchday)
+  if (avgFitness < 60) return pickPool([
+    'Lägre kondition senaste omgångarna.',
+    'Benen är tunga i truppen.',
+    'Konditionen sviktar — träningsdosen syns.',
+  ], matchday)
+  if (avgMorale < 55) return pickPool([
+    'Stämningen är dämpad i laget.',
+    'Moralen ligger lågt just nu.',
+    'Det gnisslar något i omklädningsrummet.',
+  ], matchday)
+  if (delta <= -8) return pickPool(['Pulsen pekar nedåt.', 'Något tappar fart i truppen.'], matchday)
+  if (delta >= 8)  return pickPool(['Det vänder uppåt.', 'Truppen repar sig.'], matchday)
+  return pickPool(['Truppen är frisk.', 'Inga självklara bekymmer just nu.', 'Stadigt över hela linjen.'], matchday)
+}
+
+function SquadPulseHero({ history }: { history: PulseEntry[] }) {
+  const [expanded, setExpanded] = useState(false)
+  const win = history.slice(-7)
+  const latest = win[win.length - 1]
+
+  if (!latest) {
+    return (
+      <div className="card-sharp" style={{ padding: '12px 14px', marginBottom: 12, borderLeft: '3px solid var(--text-muted)' }}>
+        <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.5px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+          TRUPPENS PULS
+        </span>
+        <div style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-muted)', marginTop: 6 }}>Pulse-data byggs upp.</div>
+      </div>
+    )
+  }
+
+  const pulsePoints = win.map(calcPulse)
+  const currentPulse = pulsePoints[pulsePoints.length - 1]
+  const prevPulse = pulsePoints.length >= 2 ? pulsePoints[pulsePoints.length - 2] : null
+  const delta = prevPulse !== null ? currentPulse - prevPulse : 0
+  const stroke = pulseStroke(currentPulse)
+  const strokeColor = PULSE_COLOR[stroke]
+  const hasData = win.length >= MIN_POINTS
+  const isCrisis = pulsePoints.slice(-2).length >= 2 && pulsePoints.slice(-2).every(v => v < 40)
+  const autoRad = getPulseAutoRad(latest, delta, hasData)
+
+  const endMarker: SparklineMarker = {
+    index: win.length - 1,
+    color: strokeColor,
+    size: 2.5,
+    ringed: currentPulse >= 85,
+  }
+
+  return (
+    <div
+      className="card-sharp card-tap"
+      onClick={() => setExpanded(e => !e)}
+      style={{
+        padding: '12px 14px',
+        marginBottom: 12,
+        borderLeft: `3px solid ${strokeColor}`,
+        cursor: 'pointer',
+        ...(isCrisis ? { boxShadow: '0 0 8px rgba(176,80,64,0.25)' } : {}),
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+        <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.5px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+          TRUPPENS PULS · 7 omg
+        </span>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+          <span style={{ fontSize: 16, fontWeight: 700, color: strokeColor }}>{currentPulse}</span>
+          {prevPulse !== null && (
+            <span style={{ fontSize: 11, color: delta >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+              {delta >= 0 ? '↑' : '↓'}{Math.abs(delta)}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {hasData ? (
+        <Sparkline points={pulsePoints} stroke={stroke} height={40} markers={[endMarker]} areaFill />
+      ) : (
+        <div style={{ height: 20 }} />
+      )}
+
+      <div style={{ fontSize: 11, fontStyle: 'italic', color: 'var(--text-secondary)', marginTop: 6 }}>
+        {autoRad}
+      </div>
+
+      {expanded && hasData && (
+        <div style={{ marginTop: 10, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
+          {([
+            { label: 'Kondition', pts: win.map(e => e.avgFitness),  stroke: 'accent' as const, val: latest.avgFitness   },
+            { label: 'Moral',     pts: win.map(e => e.avgMorale),   stroke: 'warm'   as const, val: latest.avgMorale    },
+            { label: 'Skadade',   pts: win.map(e => e.injuryCount), stroke: 'danger' as const, val: latest.injuryCount  },
+          ]).map(sub => (
+            <div key={sub.label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 56, flexShrink: 0 }}>{sub.label}</span>
+              <div style={{ flex: 1 }}>
+                <Sparkline points={sub.pts} stroke={sub.stroke} height={20} />
+              </div>
+              <span style={{ fontSize: 11, color: 'var(--text-secondary)', width: 24, textAlign: 'right', flexShrink: 0 }}>
+                {sub.val}
+              </span>
+            </div>
+          ))}
+          <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: 4 }}>
+            {currentPulse} = {latest.avgFitness}×.5 + {latest.avgMorale}×.4 − {latest.injuryCount}×5
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
 
 function PlayerRowAnimated({ player, index, onClick, fixtures, clubs, managedClubId, currentSeason, captainPlayerId, anniversaries }: PlayerRowAnimatedProps) {
@@ -501,6 +679,9 @@ export function SquadScreen() {
         const recommended = getRecommendedFormation(players)
         const currentFormation = club?.activeTactic?.formation ?? '3-3-4'
         const allEmpty = injured.length === 0 && suspended.length === 0 && lowMorale.length === 0 && expiringContracts.length === 0
+        const latestPulse = (game.teamFitnessHistory ?? []).slice(-1)[0]
+        const injuryDanger = (latestPulse?.injuryCount ?? 0) >= 2
+        const moralDanger = (latestPulse?.avgMorale ?? 100) < 55
         const nuEmpty = { fontFamily: 'Georgia, serif', fontStyle: 'italic' as const, fontSize: 12, color: 'var(--text-muted)', padding: '8px 0', textAlign: 'center' as const }
         const playerRow = (p: typeof players[0], statusColor: string, statusText: string) => (
           <div
@@ -519,13 +700,14 @@ export function SquadScreen() {
         )
         return (
           <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px', paddingBottom: 'calc(var(--bottom-nav-height, 60px) + 16px)' }}>
+            <SquadPulseHero history={game.teamFitnessHistory ?? []} />
             {allEmpty ? (
               <div className="card-sharp" style={{ padding: '16px 14px', fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 13, color: 'var(--text-secondary)', textAlign: 'center', marginBottom: 12 }}>
                 Allt är lugnt — truppen är hel och stadig.
               </div>
             ) : (
               <>
-                <div style={{ marginBottom: 12 }}>
+                <div style={{ marginBottom: 12, ...(injuryDanger ? { borderLeft: '3px solid var(--danger)', paddingLeft: 10 } : {}) }}>
                   <div className="h-label" style={{ marginBottom: 8 }}>🚑 SKADADE</div>
                   {injured.length === 0
                     ? <div style={nuEmpty}>Inga skadade just nu.</div>
@@ -537,7 +719,7 @@ export function SquadScreen() {
                     ? <div style={nuEmpty}>Ingen avstängd.</div>
                     : suspended.map(p => playerRow(p, 'var(--danger)', getSuspensionText(p.suspensionGamesRemaining, p.id)))}
                 </div>
-                <div style={{ marginBottom: 12 }}>
+                <div style={{ marginBottom: 12, ...(moralDanger ? { borderLeft: '3px solid var(--danger)', paddingLeft: 10 } : {}) }}>
                   <div className="h-label" style={{ marginBottom: 8 }}>😟 LÅG MORAL</div>
                   {lowMorale.length === 0
                     ? <div style={nuEmpty}>Truppen är på topp.</div>

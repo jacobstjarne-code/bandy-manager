@@ -9,7 +9,7 @@ const STROKE_TOKENS: Record<string, string> = {
   danger:  'var(--danger)',
 }
 
-interface SparklineMarker {
+export interface SparklineMarker {
   index: number
   color: string
   size?: number
@@ -23,6 +23,7 @@ interface SparklineProps {
   height?: number
   yInverted?: boolean
   label?: string
+  areaFill?: boolean
 }
 
 export function normalize(points: number[], height: number, yInverted: boolean): [number, number][] {
@@ -46,7 +47,7 @@ export function normalize(points: number[], height: number, yInverted: boolean):
   })
 }
 
-export function Sparkline({ points, markers, stroke = 'accent', height = 28, yInverted = false, label }: SparklineProps) {
+export function Sparkline({ points, markers, stroke = 'accent', height = 28, yInverted = false, label, areaFill = false }: SparklineProps) {
   if (points.length < MIN_POINTS) {
     return (
       <div className="sparkline-empty" style={{ height }}>
@@ -67,6 +68,13 @@ export function Sparkline({ points, markers, stroke = 'accent', height = 28, yIn
       style={{ height, width: '100%' }}
       aria-label={label}
     >
+      {areaFill && (
+        <polygon
+          points={`0,${height} ${polyPoints} 100,${height}`}
+          fill={strokeColor}
+          fillOpacity={0.12}
+        />
+      )}
       {/* vector-effect="non-scaling-stroke" prevents stroke from scaling with viewBox distortion */}
       <polyline
         points={polyPoints}
