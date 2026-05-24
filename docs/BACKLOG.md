@@ -80,7 +80,7 @@ Jacobs känsla: "simulering av match 2 leder nästan alltid till förlust." Två
 | # | Idé | Plats | Estimat |
 |---|---|---|---|
 | C-FT1 | **TRÖTTHETSEFFEKTEN BEKRÄFTAD — +25,5pp vinst för utvilad trupp (mätt 2026-05-22, commit `a70a2b2`).** Sekvens-testet (Fråga B) avgjorde: match 2 med utvilad trupp vinner 25,5 procentenheter oftare än med trött. Det är en stor, utfallsavgörande effekt — inte finlir. Jacobs ursprungliga känsla var korrekt och underskattade snarare effekten. NU en verklig balansfråga, ej spekulation. Tre Design-delfrågor: (a) SYNLIGHET — spelaren ser INTE att truppen är trött; en 25,5pp-effekt utan signal känns som otur/riggad motor. Viktigast oavsett balans. (b) SYMMETRI — `generateAiLineup` ger AI bästa elva varje match oberöende av fitness; AI tröttnar aldrig. Asymmetrin gör 25,5pp värre än en symmetrisk trötthet vore. (c) BALANS — −15–25/match vs +8/runda: rätt kurva, eller för brant för en tunn trupp som inte kan rotera? | squadEvaluator (fitness=60% av styrka), playerStateProcessor (−15–25/+8), matchSimProcessor (AI-lineup), lineup-UI (synlighet) | Design lördag. Synlighet först, sedan symmetri/balans. Mätningen klar. |
-| C-FT2 | **UI-skip efter livematch (Code:s förklaring 2, sannolikt verklig förvirring).** Efter livematch är pendingLineup undefined → advance skippar managed match 2 om man inte går in i lineupen, man hamnar på fel matchdag. Ingen odds-nackdel men känns trasigt. Verifiera flödet, överväg att advance-CTA inte ska kunna hoppa över en schemalagd managed-match utan lineup. | PortalScreen advance-handler + matchSimProcessor skip-logik | Liten-medel. Lokaliserbar. |
+| C-FT2 | ~~UI-skip efter livematch~~ | — | **FIXAD** (verifierad 2026-05-25). Guard i PortalScreen rad 183–186: om `!pendingLineup && scheduled managed match` → redirect till `/game/match` innan advance körs. |
 
 ### Slutspels-buggar (playtest 2026-05-22, bild-set 2 — `docs/PLAYTEST_2026-05-22.md` §10)
 
@@ -88,10 +88,10 @@ Mest konkreta buggar Code kan ta direkt (ej Design). Opus hann EJ lokalisera all
 
 | # | Idé | Plats | Estimat |
 |---|---|---|---|
-| C-SP1 | **"SLUTFÖR PÅGÅENDE FLÖDE"-CTA efter vunnen serie (BUGG).** Vann KvF match 3 → semi, men granska-vyn visar "slutför pågående flöde" som om matchen ej var klar, leder sedan till semi-portal. Borde vara serie-avgjord-övergång. Samma klass som C-SD1 (övergång vet ej tillståndet). | granska/review-CTA + playoffTransition | EJ lokaliserad. Liten-medel. |
-| C-SP2 | **Final-portalens opponent-fält visar fel (BUGG).** "Västanfors · · Uppsala" (dubbel-punkt = tomt template-segment) — men managed (Karlsborg) MÖTER Västanfors. Fel lag som motståndare ELLER hemma/borta/plats-blandning. NextMatchPrimary + PlayoffBanner verifierade RENA — buggen i finalhelg-specifika portal/scen-varianten. | finalhelg-portal (`isFinaldag`-gren, "Sätt lineup för finalen") | EJ lokaliserad. Konkret datafel. |
+| C-SP1 | ~~"Slutför pågående flöde"-CTA fel~~ | — | **FIXAD** (verifierad 2026-05-25). `qf_summary` mappad i NAV_LOCK_REASONS → visar "Kvartsfinalsammanfattning väntar", inte fallback-texten. |
+| C-SP2 | ~~Final-portal dubbel-punkt~~ | — | **EJ REPRODUCERBAR** (verifierad 2026-05-25). `SMFinalPrimary` falsy-gatear `dateStr`/`venueCity` → `· ·` kan inte uppstå i nuvarande kod. |
 | C-SP3 | ~~heavySnow råsträng~~ | — | **LEVERERAD** `a70a2b2`. FinalIntroScreen: `getConditionLabel()` appliceras nu. |
-| C-SP4 | **Förlängnings-overlay fel utseende (BUGG).** Bild 5: FÖRLÄNGNING-overlay ligger över matchpanelen, text krockar bakom. Matchar ej resten av behandlingen. | overtime-overlay i MatchLiveScreen | EJ lokaliserad. Liten-medel CSS/layout. |
+| C-SP4 | ~~Förlängnings-overlay fel utseende~~ | — | **FIXAD** (verifierad 2026-05-25). `PhaseOverlay` har `position: fixed, inset: 0, zIndex: var(--z-modal)` — full-screen backdrop, ingen krock. |
 | C-SP5 | **SM-final-uppspelets skarv (DESIGN/CSS).** Bild 3: svart panel på grå bakgrund = hårt skarvband (dash-4-svart ovanför grått). Inramnings/bakgrunds-mismatch. Skärmen hör dit (föregår lagpresentation) men inramningen är trasig. | final-uppspel bakgrund/CSS | Design/CSS. Liten. |
 | C-SP6 | **Interrupt-spik inför andra semin (MÄT, ej fix än).** 6 dash-händelser mot normalt 1–3. Kan vara legit anhopning eller dubbel-trigger. Kör B8:s `countPendingInterrupts` mot sparfil i det läget för att avgöra. | countPendingInterrupts (B8) | Mät först, fixa bara om dubbel-trigger. |
 
