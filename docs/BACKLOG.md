@@ -93,7 +93,7 @@ Mest konkreta buggar Code kan ta direkt (ej Design). Opus hann EJ lokalisera all
 | C-SP3 | ~~heavySnow råsträng~~ | — | **LEVERERAD** `a70a2b2`. FinalIntroScreen: `getConditionLabel()` appliceras nu. |
 | C-SP4 | ~~Förlängnings-overlay fel utseende~~ | — | **FIXAD** (verifierad 2026-05-25). `PhaseOverlay` har `position: fixed, inset: 0, zIndex: var(--z-modal)` — full-screen backdrop, ingen krock. |
 | C-SP5 | **SM-final-uppspelets skarv (DESIGN/CSS).** Bild 3: svart panel på grå bakgrund = hårt skarvband (dash-4-svart ovanför grått). Inramnings/bakgrunds-mismatch. Skärmen hör dit (föregår lagpresentation) men inramningen är trasig. | final-uppspel bakgrund/CSS | Design/CSS. Liten. |
-| C-SP6 | **Interrupt-spik inför andra semin (MÄT, ej fix än).** 6 dash-händelser mot normalt 1–3. Kan vara legit anhopning eller dubbel-trigger. Kör B8:s `countPendingInterrupts` mot sparfil i det läget för att avgöra. | countPendingInterrupts (B8) | Mät först, fixa bara om dubbel-trigger. |
+| C-SP6 | ~~Interrupt-spik inför andra semin~~ | — | **MÄTT 2026-05-25, ej bugg.** 12/12 SF-seeds: exakt 6 `phase_mark:informational`, 0 actionable. Rotsak: `interruptClassifier` räknar alla 6 SeasonPhase-värden men `pre_season`/`early`/`mid` saknar `PHASEMARK_LABELS`-entry och kallas aldrig `markPhaseAcknowledged` → falsk positiv i mätaren, ej synliga dashkort. Ingen dubbel-trigger. |
 
 ### Portal-systemet (skissat 2026-05-17)
 
