@@ -132,7 +132,7 @@ const PORTAL_CARDS: DashboardCard[] = [
   {
     id: 'board_objectives',
     tier: 'secondary',
-    weight: 87,
+    weight: 65,
     triggers: [(game) => (game.boardObjectives ?? []).filter(o => o.status !== 'met').length > 0],
     Component: BoardObjectivesSecondary,
   },
@@ -209,14 +209,14 @@ const PORTAL_CARDS: DashboardCard[] = [
   {
     id: 'tabell',
     tier: 'secondary',
-    weight: 30,
+    weight: 20,
     triggers: [alwaysTrue],
     Component: TabellSecondary,
   },
   {
     id: 'ekonomi',
     tier: 'secondary',
-    weight: 25,
+    weight: 18,
     triggers: [alwaysTrue],
     Component: EkonomiSecondary,
   },

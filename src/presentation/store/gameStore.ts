@@ -97,7 +97,7 @@ interface GameState {
   triggerCoffeeRoomScene: () => void
   triggerJournalistScene: () => void
   markPhaseAcknowledged: (phase: import('../../domain/data/seasonPhases').SeasonPhase) => void
-  recordPortalShown: (cardIds: string[]) => void
+  recordPortalShown: (cardIds: string[], storySlotKind?: string) => void
   resolveRetirementDecision: (playerId: string, choice: 'thank' | 'respect' | 'invite') => { retired: boolean; response: string }
   markAnniversaryAcknowledged: (eventId: string) => void
   resolveAnnandagsVal: (val: 'A' | 'B' | 'C' | 'D') => void
@@ -749,18 +749,20 @@ export const useGameStore = create<GameState>()(
         })
       },
 
-      recordPortalShown: (cardIds) => {
+      recordPortalShown: (cardIds, storySlotKind) => {
         set(state => {
           if (!state.game) return state
           const current = state.game.cardStaleTracking ?? {}
           const next = computeCardStaleTracking(current, cardIds, state.game.currentMatchday)
-          // Skip update if nothing changed
-          if (cardIds.every(id => {
+          const staleUnchanged = cardIds.every(id => {
             const e = current[id]
             const n = next[id]
             return e?.firstShownAt === n?.firstShownAt && e?.lastShownAt === n?.lastShownAt
-          }) && cardIds.length > 0) return state
-          return { game: { ...state.game, cardStaleTracking: next } }
+          }) && cardIds.length > 0
+          const kindUnchanged = storySlotKind === undefined || storySlotKind === state.game.lastStorySlotType
+          if (staleUnchanged && kindUnchanged) return state
+          const lastStorySlotType = storySlotKind ?? state.game.lastStorySlotType
+          return { game: { ...state.game, cardStaleTracking: next, lastStorySlotType } }
         })
       },
 

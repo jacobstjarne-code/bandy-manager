@@ -1,8 +1,12 @@
 import type { SaveGame } from '../../entities/SaveGame'
+import type { InboxItem } from '../../entities/Inbox'
 import type { DashboardCard } from './dashboardCardBag'
 import { CARD_BAG } from './dashboardCardBag'
 import { getCurrentLeagueRound, getSeasonPhase, isManagedClubInPlayoff, isManagedClubSpectator } from '../../data/seasonPhases'
 import { applyPhaseBias } from './seasonPhaseBias'
+import { inboxItemToCardCandidate, FREKVENTA, SALLSYNTA } from './inboxToPortal'
+import { getRoundCharacter } from '../../data/roundCharacter'
+import type { RoundCharacter } from '../../data/roundCharacter'
 
 // B9 T2: shownCount tillagt för frekvensgolv (optional för migration-säkerhet)
 type StaleEntry = { firstShownAt: number; lastShownAt: number; shownCount?: number }
@@ -21,7 +25,34 @@ function staleBias(cardId: string, tracking: StaleTracking | undefined, currentM
   const consecutive = Math.max(0, currentMatchday - t.firstShownAt)
   // Frekvensgolv: ett kort som visats många gånger totalt återfår inte full vikt
   const frequencyPenalty = Math.min(0.5, (t.shownCount ?? 0) * 0.08)
-  return Math.max(0.1, Math.pow(0.5, consecutive) * (1 - frequencyPenalty))
+  return Math.max(0.05, Math.pow(0.5, consecutive) * (1 - frequencyPenalty))
+}
+
+// Character-bias: vikt-multiplikator per karaktär × kort-id
+const CHARACTER_BIAS: Record<RoundCharacter, Record<string, number>> = {
+  standard:       {},
+  post_loss:      { journalist_card: 1.5, coffee_room_card: 1.4, klacken: 1.3, board_objectives: 0.7, ekonomi: 0.7 },
+  pre_derby:      { klacken: 1.6, next_match_derby: 1.5, opponent_form: 1.4, season_signature_card: 0.5 },
+  cup_day:        { next_match: 1.5, board_objectives: 0.6 },
+  premiere:       { open_bids: 1.5, ekonomi: 1.2 },
+  winning_streak: { klacken: 1.4, journalist_card: 1.3, board_objectives: 0.5 },
+  losing_streak:  { coffee_room_card: 1.4, journalist_card: 1.4, board_objectives: 0.5 },
+}
+
+// Recency bonus för inbox-kandidater: +10 om skapad denna omgång, +5 om förra
+function recencyBonus(item: InboxItem, game: SaveGame): number {
+  if (!item.date || !game.currentDate) return 0
+  const daysDiff = (new Date(game.currentDate).getTime() - new Date(item.date).getTime()) / 86_400_000
+  if (daysDiff < 7) return 10
+  if (daysDiff < 14) return 5
+  return 0
+}
+
+// Hur många omgångar sedan ett inbox-item skapades (1 omgång ≈ 7 dagar i speltid)
+function roundsAgo(item: InboxItem, game: SaveGame): number {
+  if (!item.date || !game.currentDate) return 0
+  const daysDiff = (new Date(game.currentDate).getTime() - new Date(item.date).getTime()) / 86_400_000
+  return Math.floor(daysDiff / 7)
 }
 
 /**
@@ -56,6 +87,7 @@ export function computeCardStaleTracking(
 
 export interface PortalLayout {
   primary: DashboardCard           // alltid exakt 1
+  storySlot: DashboardCard | null  // inbox-story mellan primary och secondary
   secondary: DashboardCard[]       // 0-3
   minimal: DashboardCard[]         // 0-4
 }
@@ -75,6 +107,7 @@ export function buildPortal(game: SaveGame, seed: number): PortalLayout {
   const isPlayoff = isManagedClubInPlayoff(game)
   const isSpectator = isManagedClubSpectator(game)
   const phase = getSeasonPhase(currentLigaRound, isPlayoff, isSpectator)
+  const character = getRoundCharacter(game)
 
   // Steg 1: Filtrera bagen — suppress-kort för current phase + triggers
   const staleTracking = game.cardStaleTracking
@@ -85,6 +118,7 @@ export function buildPortal(game: SaveGame, seed: number): PortalLayout {
       ...card,
       effectiveWeight:
         applyPhaseBias(card.weight, card.tier, phase) *
+        (CHARACTER_BIAS[character][card.id] ?? 1) *
         staleBias(card.id, staleTracking, game.currentMatchday),
     }))
 
@@ -109,8 +143,24 @@ export function buildPortal(game: SaveGame, seed: number): PortalLayout {
     throw new Error('CARD_BAG saknar fallback primary-kort med alwaysTrue trigger')
   }
 
+  // Steg 4: Story-slot — välj EN vinnare från inbox-kandidater
+  const inboxCandidates = (game.inbox ?? [])
+    .slice(-15)
+    .map(item => ({ item, card: inboxItemToCardCandidate(item, game) }))
+    .filter((x): x is { item: typeof x.item; card: NonNullable<typeof x.card> } => x.card !== null)
+    .filter(x => roundsAgo(x.item, game) <= 2)
+
+  const scored = inboxCandidates.map(({ item, card }) => {
+    let w = card.weight + recencyBonus(item, game)
+    if (FREKVENTA.has(card.kind) && card.kind === game.lastStorySlotType) w *= 0.5
+    if (SALLSYNTA.has(card.kind)) w += 25
+    return { card, w }
+  })
+  const storySlot = scored.sort((a, b) => b.w - a.w)[0]?.card ?? null
+
   return {
     primary: primaryCard,
+    storySlot,
     secondary: secondary.slice(0, 3),
     minimal: minimal.slice(0, 4),
   }

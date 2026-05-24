@@ -37,6 +37,12 @@ export interface DashboardCard {
    * Komponenten får INTE känna till weight/triggers eller importera från denna fil.
    */
   Component: ComponentType<CardRenderProps>
+
+  /** Designs typnamn — sätts av inboxToPortal för story-slot golv/rotation. */
+  kind?: string
+
+  /** Stripe-token för story-slot-rendering. */
+  stripe?: string
 }
 
 // CARD_BAG fylls dynamiskt av fillCardBag() — kallas en gång vid appstart

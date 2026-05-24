@@ -420,6 +420,9 @@ export interface SaveGame {
   fatigueHistory?: number[]   // rullande 7 omgångars meter-värde (matar Sparkline)
   fatigueHotStreak?: number   // consecutive hot-pressure-omgångar (driver fatigue-scen)
 
+  // Portal-kurering — story-slot rotation
+  lastStorySlotType?: string  // kind som tog story-sloten förra matchdagen (rotation-minne)
+
   // P1 — Annandagsplanering val-mekanik
   annandagsValGjort?: 'A' | 'B' | 'C' | 'D' | null  // val gjort denna säsong
   pendingAnnandagsVal?: boolean                        // trigger: 2 omgångar innan hemmamatch

@@ -69,10 +69,11 @@ export function PortalScreen() {
   useEffect(() => {
     const shownIds = [
       layout.primary.id,
+      ...(layout.storySlot ? [layout.storySlot.id] : []),
       ...layout.secondary.map(c => c.id),
       ...layout.minimal.map(c => c.id),
     ]
-    recordPortalShown(shownIds)
+    recordPortalShown(shownIds, layout.storySlot?.kind)
   // Bara layout-objektet är relevant — seed och game refereras indirekt
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layout])
@@ -222,6 +223,7 @@ export function PortalScreen() {
   }
 
   const Primary = layout.primary.Component
+  const StorySlotComponent = layout.storySlot?.Component ?? null
 
   const isSeason1Round1 = game.currentSeason === 1 && game.currentMatchday === 1
   const isSmFinal = getPlayoffSeriesContext(game)?.round === PlayoffRound.Final
@@ -263,6 +265,7 @@ export function PortalScreen() {
         )}
         <PortalEventSlot game={game} />
         <Primary game={game} />
+        {StorySlotComponent && <StorySlotComponent game={game} />}
         <PortalQueueRail game={game} />
         <PortalSecondarySection cards={layout.secondary} game={game} />
         <PortalMinimalBar cards={layout.minimal} game={game} />
