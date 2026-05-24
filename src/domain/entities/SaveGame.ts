@@ -421,7 +421,8 @@ export interface SaveGame {
   fatigueHotStreak?: number   // consecutive hot-pressure-omgångar (driver fatigue-scen)
 
   // Portal-kurering — story-slot rotation
-  lastStorySlotType?: string  // kind som tog story-sloten förra matchdagen (rotation-minne)
+  lastStorySlotType?: string     // kind från FÖREGÅENDE matchdag — läses av buildPortal, fryst under matchdagen
+  currentStorySlotType?: string  // kind visad UNDER pågående matchdag — skrivs vid render, promotas vid omgångsövergång
 
   // P1 — Annandagsplanering val-mekanik
   annandagsValGjort?: 'A' | 'B' | 'C' | 'D' | null  // val gjort denna säsong

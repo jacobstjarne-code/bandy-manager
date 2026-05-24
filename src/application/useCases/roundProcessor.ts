@@ -1119,6 +1119,7 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     inbox: trimmedInbox,
     currentDate: newDate,
     currentMatchday: nextMatchday,
+    lastStorySlotType: game.currentStorySlotType ?? game.lastStorySlotType,
     managedClubPendingLineup: undefined,
     lineupConfirmedThisRound: false,
     visitedScreensThisRound: [],

@@ -759,10 +759,10 @@ export const useGameStore = create<GameState>()(
             const n = next[id]
             return e?.firstShownAt === n?.firstShownAt && e?.lastShownAt === n?.lastShownAt
           }) && cardIds.length > 0
-          const kindUnchanged = storySlotKind === undefined || storySlotKind === state.game.lastStorySlotType
-          if (staleUnchanged && kindUnchanged) return state
-          const lastStorySlotType = storySlotKind ?? state.game.lastStorySlotType
-          return { game: { ...state.game, cardStaleTracking: next, lastStorySlotType } }
+          const currentUnchanged = storySlotKind === undefined || storySlotKind === state.game.currentStorySlotType
+          if (staleUnchanged && currentUnchanged) return state
+          const currentStorySlotType = storySlotKind ?? state.game.currentStorySlotType
+          return { game: { ...state.game, cardStaleTracking: next, currentStorySlotType } }
         })
       },
 
