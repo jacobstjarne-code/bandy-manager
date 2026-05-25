@@ -10,6 +10,7 @@ export interface InboxItem {
   relatedPlayerId?: string
   relatedFixtureId?: string
   isRead: boolean
+  createdMatchday?: number  // For inbox cleanup: gallra read informative items after 2 rounds
   // Sprint 18 — coach tone
   tone?: 'coach'
   fromRole?: string

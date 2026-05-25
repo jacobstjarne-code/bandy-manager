@@ -987,9 +987,23 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     allNewEvents.push(...postMatchEvents)
   }
 
+  // Stamp new inbox items with creation matchday for cleanup
+  const stampedNewInboxItems = newInboxItems.map(i =>
+    i.createdMatchday === undefined ? { ...i, createdMatchday: nextMatchday } : i
+  )
+
+  // Gallring: lästa informativa notiser äldre än 2 omgångar arkiveras
+  // Olästa och items utan createdMatchday (gamla saves) bevaras alltid
+  const INBOX_GALLRING_ROUNDS = 2
+  const gallredOldInbox = game.inbox.filter(i =>
+    !i.isRead ||
+    i.createdMatchday === undefined ||
+    (nextMatchday - i.createdMatchday) < INBOX_GALLRING_ROUNDS
+  )
+
   // Trim accumulated data to prevent localStorage bloat
   const MAX_INBOX = 50
-  let trimmedInbox = [...game.inbox, ...newInboxItems]
+  let trimmedInbox = [...gallredOldInbox, ...stampedNewInboxItems]
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, MAX_INBOX)
 
