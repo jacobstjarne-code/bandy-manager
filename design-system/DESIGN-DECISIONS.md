@@ -290,6 +290,20 @@ Mockernas alternativ-förslag (bakgrunds-tint på oläst, zone-dividers i tabell
 
 **Konsekvens:** RoundSummary "andra matcher" migrerad till `<ScoreBlock light compact>` (2026-05-23). Nästa: GranskaForlopp, SimSummary (separat utrullning — se BACKLOG).
 
+## D-ST1 — Seasonala tone-tokens: runtime-mutation via PortalScreen (2026-05-25)
+
+**Problem:** `--bg-portal`, `--bg-portal-surface`, `--bg-portal-elevated`, `--accent-portal` ändras per säsongsfas (7 faser/år). Tokens behövde definieras som default-värden i CSS men saknade dokumentation om mutations-mekaniken.
+
+**Beslut:** Behåll runtime-mutation. Default-värden (höst/vinter) ligger i `design-system/colors_and_type.css` — synliga och auktoritativa. PortalScreen.tsx useEffect skriver över dem med `document.documentElement.style.setProperty` och rensar via `removeProperty` vid unmount.
+
+**Vilka tokens muteras:** `--bg-portal`, `--bg-portal-surface`, `--bg-portal-elevated`, `--accent-portal`
+
+**Vilken funktion muterar:** `getSeasonalTone(currentDate)` i `src/domain/services/portal/seasonalTone.ts`. Returnerar `{ bgPrimary, bgSurface, bgElevated, accentTone }`.
+
+**Faser och triggers:** 7 månadsbaserade faser (sep/okt/nov/dec/jan/feb/mar-aug). Varje fas har sina hex-värden i `seasonalTone.ts`.
+
+**Konsekvens:** Komponenter som använder `--bg-portal*` eller `--accent-portal` i portal-kontexten skiftar ton automatiskt utan komponent-ändringar. Använd aldrig hårdkodade hex på portal-ytor — token-referens garanterar att tonskiftet slår igenom.
+
 ---
 
-*Senast uppdaterad: 2026-05-23 — ljus variant (mellanvägen) byggd + RoundSummary migrerad*
+*Senast uppdaterad: 2026-05-25 — D-ST1 seasonal tone-tokens dokumenterat*

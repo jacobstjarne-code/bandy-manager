@@ -18,10 +18,12 @@
   --bg-leather:      #3D3A32;  /* header strips */
 
   /* ── Portal (mörka dashboard-tokens) ─────────────── */
-  /* Sätts på documentElement av PortalScreen, tonas per säsongsfas. */
+  /* Default-värden. PortalScreen.tsx useEffect skriver över dessa per månad via
+     document.documentElement.style.setProperty — se D-ST1 i DESIGN-DECISIONS.md. */
   --bg-portal:          #1a1612;
   --bg-portal-surface:  #221d18;
   --bg-portal-elevated: #2a241e;
+  --accent-portal:      #C47A3A;  /* = --accent (höst/vinter-default) */
 
   /* ── Severity (journalist-relation, signaturer) ──── */
   --cold: #4a6680;  /* kall blå — neg severity, cold_winter-signatur */

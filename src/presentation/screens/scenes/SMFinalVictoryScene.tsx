@@ -34,6 +34,7 @@ export function SMFinalVictoryScene({ game, onComplete }: Props) {
         minHeight: 720,
         position: 'relative',
         overflow: 'hidden',
+        animation: 'fadeIn 300ms ease both',
       }}
     >
       {/* Bakgrund */}
