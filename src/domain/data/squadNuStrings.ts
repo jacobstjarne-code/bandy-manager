@@ -2,6 +2,8 @@
 // Tidigare 3-4 varianter per branch. SquadScreen besöks varje matchday → repetition var
 // garanterad. Utökad till 7-8 varianter per branch.
 
+import { SUSPENSION_AVAILABILITY_LABELS } from './suspensionText'
+
 function pick<T>(arr: T[], seed: string): T {
   let h = 0
   for (let i = 0; i < seed.length; i++) {
@@ -34,8 +36,6 @@ export function getInjuryText(days: number, playerId: string): string {
     `Sjukgymnasten säger ${days} dagar till.`,
   ], playerId + `inj${days}`)
 }
-
-import { SUSPENSION_AVAILABILITY_LABELS } from './suspensionText'
 
 export function getSuspensionText(
   matches: number,

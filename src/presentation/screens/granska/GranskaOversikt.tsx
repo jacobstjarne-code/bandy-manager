@@ -358,30 +358,33 @@ export function GranskaOversikt({
         const kvittoDir: KvittoOutcomeDir = won ? 'good' : lost ? 'bad' : 'neutral'
         const seed = (fixture?.homeScore ?? 0) + (fixture?.awayScore ?? 0)
         const lines: { label: string; text: string }[] = []
+        const findPlayer = (id?: string) => id ? game.players.find(p => p.id === id) : undefined
 
         for (const entry of log) {
           if (lines.length >= 4) break
           if (entry.type === 'halftime_tactic') {
             const key = entry.detail === 'lowered_tempo' ? 'lugna'
               : entry.detail === 'increased_pressure' ? 'pressa'
-              : 'prata' as const
+              : entry.detail === 'player_talk' ? 'prata'
+              : null
+            if (!key) continue
             const pool = HALFTIME_OUTCOMES[key][kvittoDir]
             lines.push({ label: HALFTIME_LABELS[key], text: pool[seed % pool.length] })
           } else if (entry.type === 'captain' && entry.playerId) {
-            const player = game.players.find(p => p.id === entry.playerId)
+            const player = findPlayer(entry.playerId)
             if (!player) continue
             const pool = LEADERSHIP_OUTCOMES[kvittoDir]
             lines.push({ label: `Kapten: ${player.lastName}`, text: pool[seed % pool.length] })
           } else if (entry.type === 'started_tired' && entry.playerId) {
-            const player = game.players.find(p => p.id === entry.playerId)
+            const player = findPlayer(entry.playerId)
             if (!player) continue
             const rating = fixture?.report?.playerRatings[entry.playerId]
             const dir: KvittoOutcomeDir = rating !== undefined ? (rating >= 7 ? 'good' : rating <= 5 ? 'bad' : 'neutral') : kvittoDir
-            const cond = entry.detail.replace('condition_', '')
+            const cond = entry.detail.startsWith('condition_') ? entry.detail.slice(10) : entry.detail
             const pool = LINEUP_ROTATION_OUTCOMES[dir]
             lines.push({ label: `Startade trött: ${player.lastName} (${cond}%)`, text: pool[seed % pool.length].replace('{spelare}', player.lastName) })
           } else if (entry.type === 'bench_fit' && entry.playerId) {
-            const player = game.players.find(p => p.id === entry.playerId)
+            const player = findPlayer(entry.playerId)
             if (!player) continue
             const pool = LINEUP_ROTATION_OUTCOMES[kvittoDir]
             lines.push({ label: `Vilad: ${player.lastName}`, text: pool[seed % pool.length].replace('{spelare}', player.lastName) })

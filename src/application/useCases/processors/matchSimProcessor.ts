@@ -18,9 +18,9 @@ import type { Referee } from '../../../domain/entities/Referee'
 import { checkForMatchInjury } from '../../../domain/services/matchInjuryService'
 import { calculateLineupChemistry } from '../../../domain/services/chemistryService'
 
-const AI_FITNESS_FLOOR = 40            // starter below this triggers swap-check
-const AI_ROTATION_CA_TOLERANCE = 8    // bench replacement must be within this CA delta
-const AI_REPLACEMENT_MIN_FITNESS = 60  // bench replacement must have at least this fitness
+const AI_FITNESS_FLOOR = 40
+const AI_ROTATION_CA_TOLERANCE = 8
+const AI_REPLACEMENT_MIN_FITNESS = 60
 
 const AI_FORMATIONS: Record<ClubStyle, FormationType> = {
   [ClubStyle.Defensive]: '4-3-3',
@@ -90,16 +90,15 @@ export function generateAiLineup(club: Club, allPlayers: Player[], rand: () => n
     regenPlayers.push(regen)
   }
 
-  // Fitness floor: swap out starters below AI_FITNESS_FLOOR for a bench-eligible
-  // replacement on the same position with CA within tolerance and adequate fitness.
-  // Regen players are skipped (no real id match in sorted).
-  const regenIds = new Set(regenPlayers.map(p => p.id))
+  // Fitness floor: only swap out genuine exhaustion cases (< 40) — not proactive rotation.
+  // Regen players have no entry in sorted, so guard with regenIds before querying benchPool.
+  const regenIds = regenPlayers.length > 0 ? new Set(regenPlayers.map(p => p.id)) : null
   const starterIdsTemp = new Set(starters.map(p => p.id))
-  const benchPool = sorted.filter(p => !starterIdsTemp.has(p.id) && !regenIds.has(p.id))
+  const benchPool = sorted.filter(p => !starterIdsTemp.has(p.id))
 
   for (let i = 0; i < starters.length; i++) {
     const s = starters[i]
-    if (regenIds.has(s.id) || s.fitness >= AI_FITNESS_FLOOR) continue
+    if (regenIds?.has(s.id) || s.fitness >= AI_FITNESS_FLOOR) continue
     const replacement = benchPool.find(
       b =>
         b.position === s.position &&
@@ -109,7 +108,6 @@ export function generateAiLineup(club: Club, allPlayers: Player[], rand: () => n
     if (!replacement) continue
     starters[i] = replacement
     benchPool.splice(benchPool.indexOf(replacement), 1)
-    benchPool.push(s)
   }
 
   const starterIds = new Set(starters.map(p => p.id))
