@@ -83,6 +83,7 @@ export function CeremonyCupFinal({
       position: 'fixed', inset: 0, background: 'var(--bg-dark)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       zIndex: Z.modal, overflow: 'hidden',
+      paddingBottom: 'calc(var(--bottom-nav-height, 60px) + env(safe-area-inset-bottom, 0px))',
     }}>
       {managedWon && <GoldConfetti />}
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '0 24px' }}>
