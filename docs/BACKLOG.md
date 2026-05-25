@@ -126,7 +126,7 @@ Mest konkreta buggar Code kan ta direkt (ej Design). Opus hann EJ lokalisera all
 
 | # | Idé | Plats | Estimat |
 |---|---|---|---|
-| C-K1 | **Landslagsuttagningsmekanism.** Spelare tas ut till landslaget under det enda landslagsuppehållet (nu kalenderankare via B11) → truppfrånvaro att hantera. Jacobs "rolig mekanik". Designfrågor: vilka tas ut (bästa per position?), hur länge borta, effekt på matchen efter. | scheduleGenerator-ankaret finns; trupp/squad-service + matchgenerering | **HANDOFF FINNS** (`HANDOFF-C-K1-LANDSLAG-2026-05-23`) + **TEXT LEVERERAD 2026-05-25** (`landslagText.ts`). Designval låsta (Opus tog föreslag): +5 tkr/uttagen synligt, egna i Portal/övriga i Inbox; VM sent jan, 1×/säsong, lobby/tjat i v1. KVAR för Code (~6h): kalenderflytt `isLandslagsuppehall` R7→R14 (~7 dgr, serien skjuts EJ, verifiera R22 ≤ 1 mars); datrafält (`nationalTeamCallups`, `activeNationalTeamCamp`, `lastNationalSnub`); `selectNationalTeam`; 4 UI-moment + lobby-decision + first-callup MemoryEvent (sig 60). |
+| C-K1 | ~~Landslagsuttagningsmekanism~~ | — | **LEVERERAD `b4dbe8e` 2026-05-25.** R7→R14, nationalTeamService, roundProcessor-trigger, LandslagsFranvaroSecondary, Player/SaveGame-fält. Kvar v2: LobbyPress-decision + first-callup MemoryEvent (sig 60) — parkerat tills lobby-systemet prioriteras. |
 
 ### Transfers — speldesign-utvidgning (skissat 2026-05-17)
 
@@ -153,7 +153,7 @@ Tomt. Alla rester levererade. Vidare THE_BOMB-arbete väntar nya design-rundor.
 
 | # | Vad | Varför parkerat | Vad krävs för att starta |
 |---|---|---|---|
-| D1 | **Cup-tonen Nivå 3** (cup_atmosphere + cup_finalweekend_atmosphere) | **→ LEVERERAD 2026-05-21.** Opus skrev om från grunden efter systematisk läsning (guidelines + direktiv + SPEC_CUP_ANSLAG + atmosphere-poolen som ton-mall). 8 + 6 strängar in i `matchCommentary.ts` efter cup_final_fullTime_loss. Körda mot per-citat- + slop-test. **KVAR för Code:** sampling-logik (pickAtmosphereForCup) per CUP_TONEN_NIVA_3-dokumentet — cup_atmosphere ~40%, cup_finalweekend ~50%. | — |
+| D1 | ~~Cup-tonen Nivå 3~~ | — | **FULLSTÄNDIGT LEVERERAD.** Strängar in `matchCommentary.ts` (`c55b9bf`). Sampling-logik (40%/50%) i `matchCore.ts` runda 1446–1454, verifierad `GRANSKNING_2026-05-21 P5`. |
 | A1.5++ | **Rotorsak: varför genererar matchSimulator/matchEngine Goal/RedCard/Save-events med tomt `commentary`?** A1.5+ fixar UI-symptomet med fallback-pipeline. Permanent fix vid källan så fallback i `deriveEventText` blir död kod istället för kritisk grind. | Väntar på rotorsaksutredning av text-generatorn | **→ AKTIVERAD i CODE_SAMLAT P5 (2026-05-21).** Inte längre "vänta på playtest" — utreds nu. |
 | C-N1 | **NU-fliken konstruktivt innehåll vid stabilt läge.** Idag fallback "Allt är lugnt — truppen är hel och stadig" — negation av problem, inte status-fönster. Behöver tre konkreta rader även vid stiltje: form, skadebild, träningsobservation. Klubbens dagliga puls i bandysvenska ton. | Kräver design-runda innan spec — vad är NU egentligen och vad ska den visa när inget brinner? | Design-session med Jacob |
 | D-ST1 | **seasonalTone → design tokens.** B11 enade seasonalTone:s TIDSBAS med kalendern, men tonen har fortfarande egna hex-värden vid sidan av token-systemet. Ska tonen bli riktiga design tokens? Token-arkitekturfråga. | Token-systemets djup behöver bestämmas | Design-session lördag |
