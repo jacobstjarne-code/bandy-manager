@@ -1,10 +1,14 @@
 import type { SaveGame } from '../entities/SaveGame'
 import type { ManagerProfile } from '../entities/ManagerProfile'
+import type { CoachRivalry } from '../entities/ManagerProfile'
 import {
   COACH_FIRST_NAMES,
   COACH_LAST_NAMES,
   BIO_OPENERS,
   BIO_FAMILY_LINES,
+  CONTRACT_STATUS,
+  CONTRACT_OUTCOME,
+  type CoachPersonality,
 } from '../data/managerKaraktarText'
 
 const BURNOUT_HISTORY_MAX = 22
@@ -17,7 +21,7 @@ const BURNOUT_NATURAL_DECAY = 3      // drift toward 0 when neither winning nor 
 const BURNOUT_TRIGGER_THRESHOLD = 70
 const BURNOUT_TRIGGER_ROUNDS = 2     // consecutive rounds above threshold before BurnoutMark
 
-export function generateManagerProfile(seed: number): ManagerProfile {
+export function generateManagerProfile(seed: number, startSeason: number = 1): ManagerProfile {
   let s = seed
   const r = () => { s = ((s * 1664525 + 1013904223) | 0) >>> 0; return s / 0xffffffff }
   const pick = <T>(arr: T[]) => arr[Math.floor(r() * arr.length)]
@@ -33,6 +37,74 @@ export function generateManagerProfile(seed: number): ManagerProfile {
     careerDraws: 0,
     careerLosses: 0,
     seasonsAtClub: 1,
+    contractUntilSeason: startSeason + 3,
+    monthlySalary: 15 + Math.floor(r() * 26),  // 15–40 tkr/month
+    coachRivalries: [],
+  }
+}
+
+const PERSONALITIES: CoachPersonality[] = ['heders', 'kall', 'passiv_aggressiv', 'odmjuk']
+
+export function generateCoachRivalries(opponentClubIds: string[], seed: number): CoachRivalry[] {
+  let s = seed
+  const r = () => { s = ((s * 1664525 + 1013904223) | 0) >>> 0; return s / 0xffffffff }
+  return opponentClubIds.map(clubId => ({
+    clubId,
+    personality: PERSONALITIES[Math.floor(r() * PERSONALITIES.length)],
+    h2hWins: 0,
+    h2hDraws: 0,
+    h2hLosses: 0,
+  }))
+}
+
+export function updateH2HRecord(
+  profile: ManagerProfile,
+  opponentClubId: string,
+  managedScore: number,
+  opponentScore: number,
+): ManagerProfile {
+  const rivalries = profile.coachRivalries.map(r => {
+    if (r.clubId !== opponentClubId) return r
+    if (managedScore > opponentScore) return { ...r, h2hWins: r.h2hWins + 1 }
+    if (managedScore < opponentScore) return { ...r, h2hLosses: r.h2hLosses + 1 }
+    return { ...r, h2hDraws: r.h2hDraws + 1 }
+  })
+  return { ...profile, coachRivalries: rivalries }
+}
+
+export function getContractStatusText(profile: ManagerProfile, currentSeason: number): string {
+  const seasonsLeft = profile.contractUntilSeason - currentSeason
+  if (seasonsLeft <= 1) {
+    return CONTRACT_STATUS.expiring
+      .replace('{n}', String(Math.max(0, seasonsLeft)))
+      .replace('{lon}', String(profile.monthlySalary))
+  }
+  return CONTRACT_STATUS.secure
+    .replace('{n}', String(seasonsLeft))
+    .replace('{lon}', String(profile.monthlySalary))
+}
+
+export function resolveContractExtension(
+  profile: ManagerProfile,
+  currentSeason: number,
+  seed: number,
+): { profile: ManagerProfile; inboxText: string | null } {
+  const seasonsLeft = profile.contractUntilSeason - currentSeason
+  if (seasonsLeft > 1) return { profile, inboxText: null }
+
+  const managerName = `${profile.firstName} ${profile.lastName}`
+  const rand = ((seed * 1664525 + 1013904223) | 0) >>> 0
+  const extended = (rand % 10) < 7  // 70% extend
+
+  if (extended) {
+    return {
+      profile: { ...profile, contractUntilSeason: profile.contractUntilSeason + 2 },
+      inboxText: CONTRACT_OUTCOME.extended.replace('{manager}', managerName),
+    }
+  }
+  return {
+    profile,
+    inboxText: CONTRACT_OUTCOME.not_extended.replace('{manager}', managerName),
   }
 }
 

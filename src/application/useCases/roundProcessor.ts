@@ -72,7 +72,7 @@ import {
   CALLUP_NOTICE_LINES,
   SNUB_SCENE_LINES,
 } from '../../domain/data/landslagText'
-import { updateManagerBurnout } from '../../domain/services/managerProfileService'
+import { updateManagerBurnout, updateH2HRecord } from '../../domain/services/managerProfileService'
 
 export type { AdvanceResult }
 
@@ -1725,6 +1725,21 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const updatedManagerProfile = updateManagerBurnout(updatedGame)
     if (updatedManagerProfile) {
       updatedGame = { ...updatedGame, managerProfile: updatedManagerProfile }
+    }
+
+    // H2H rivalry update after managed match result
+    if (
+      justCompletedManagedFixture &&
+      justCompletedManagedFixture.homeScore !== undefined &&
+      justCompletedManagedFixture.awayScore !== undefined &&
+      updatedGame.managerProfile?.coachRivalries?.length
+    ) {
+      const isHome = justCompletedManagedFixture.homeClubId === updatedGame.managedClubId
+      const mScore = isHome ? justCompletedManagedFixture.homeScore : justCompletedManagedFixture.awayScore
+      const oScore = isHome ? justCompletedManagedFixture.awayScore : justCompletedManagedFixture.homeScore
+      const opponentClubId = isHome ? justCompletedManagedFixture.awayClubId : justCompletedManagedFixture.homeClubId
+      const profileWithH2H = updateH2HRecord(updatedGame.managerProfile, opponentClubId, mScore, oScore)
+      updatedGame = { ...updatedGame, managerProfile: profileWithH2H }
     }
 
     // Squad-pulse sampling — samlas på samma ställe som fatigueHistory

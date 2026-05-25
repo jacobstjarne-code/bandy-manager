@@ -1,3 +1,13 @@
+import type { CoachPersonality } from '../data/managerKaraktarText'
+
+export interface CoachRivalry {
+  clubId: string
+  personality: CoachPersonality
+  h2hWins: number
+  h2hDraws: number
+  h2hLosses: number
+}
+
 export interface ManagerProfile {
   firstName: string
   lastName: string
@@ -9,4 +19,7 @@ export interface ManagerProfile {
   careerDraws: number
   careerLosses: number
   seasonsAtClub: number
+  contractUntilSeason: number
+  monthlySalary: number      // tkr/month
+  coachRivalries: CoachRivalry[]
 }

@@ -1,4 +1,5 @@
 import type { SaveGame, InboxItem, AllTimeRecords } from '../../domain/entities/SaveGame'
+import { resolveContractExtension } from '../../domain/services/managerProfileService'
 
 import { selectMatchOfTheSeason } from '../../domain/services/matchHighlightService'
 import type { Player } from '../../domain/entities/Player'
@@ -1089,6 +1090,53 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     matchOfTheSeason: matchHighlight ?? undefined,
   }
 
+  // Manager profile — career record, contract extension, age/seasonsAtClub tick
+  let updatedManagerProfile = game.managerProfile
+    ? (() => {
+        const profile = game.managerProfile!
+        // Count this season's results for managed club
+        const managedFixtures = game.fixtures.filter(
+          f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
+               f.homeScore !== undefined && f.awayScore !== undefined,
+        )
+        let sWins = 0, sDraws = 0, sLosses = 0
+        for (const f of managedFixtures) {
+          const isHome = f.homeClubId === game.managedClubId
+          const ms = isHome ? (f.homeScore ?? 0) : (f.awayScore ?? 0)
+          const os = isHome ? (f.awayScore ?? 0) : (f.homeScore ?? 0)
+          if (ms > os) sWins++
+          else if (ms < os) sLosses++
+          else sDraws++
+        }
+        return {
+          ...profile,
+          age: profile.age + 1,
+          seasonsAtClub: profile.seasonsAtClub + 1,
+          careerWins: profile.careerWins + sWins,
+          careerDraws: profile.careerDraws + sDraws,
+          careerLosses: profile.careerLosses + sLosses,
+        }
+      })()
+    : undefined
+
+  const contractInboxItem: InboxItem | null = updatedManagerProfile
+    ? (() => {
+        const contractSeed = (game.currentSeason * 7919 + 88003) | 0
+        const { profile, inboxText } = resolveContractExtension(updatedManagerProfile, game.currentSeason, contractSeed)
+        updatedManagerProfile = profile
+        if (!inboxText) return null
+        return {
+          id: `contract_${game.currentSeason}`,
+          date: game.currentDate,
+          type: InboxItemType.BoardFeedback,
+          title: inboxText,
+          body: '',
+          isRead: false,
+          createdMatchday: game.currentMatchday,
+        } satisfies InboxItem
+      })()
+    : null
+
   const updatedGame: SaveGame = {
     ...game,
     captainPlayerId: nextCaptainPlayerId,
@@ -1100,7 +1148,8 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
     fixtures: newFixtures,
     league: newLeague,
     standings: calculateStandings(updatedClubs.map(c => c.id), []),
-    inbox: [...game.inbox, ...newInboxItems, ...retirementMessages, ...contractExpiryInbox].slice(-75),
+    inbox: [...game.inbox, ...newInboxItems, ...retirementMessages, ...contractExpiryInbox, ...(contractInboxItem ? [contractInboxItem] : [])].slice(-75),
+    managerProfile: updatedManagerProfile,
     transferState: {
       ...game.transferState,
       freeAgents: [

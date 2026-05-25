@@ -1,7 +1,12 @@
 import type { SaveGame } from '../../../domain/entities/SaveGame'
 import { Sparkline } from '../primitives'
-import { getManagerBio, getBurnoutZone, shouldShowBurnoutMark } from '../../../domain/services/managerProfileService'
-import { BURNOUT_ZONE_LABELS, BURNOUT_MARK } from '../../../domain/data/managerKaraktarText'
+import {
+  getManagerBio,
+  getBurnoutZone,
+  shouldShowBurnoutMark,
+  getContractStatusText,
+} from '../../../domain/services/managerProfileService'
+import { BURNOUT_ZONE_LABELS, BURNOUT_MARK, COACH_RIVALRY_QUOTES } from '../../../domain/data/managerKaraktarText'
 import { SectionLabel } from '../SectionLabel'
 
 interface Props {
@@ -32,6 +37,15 @@ export function TranareTab({ game }: Props) {
 
   const record = `${profile.careerWins}V ${profile.careerDraws}O ${profile.careerLosses}F`
   const burnoutQuote = BURNOUT_MARK.quotes[seed % BURNOUT_MARK.quotes.length]
+  const contractText = getContractStatusText(profile, game.currentSeason)
+  const seasonsLeft = profile.contractUntilSeason - game.currentSeason
+  const contractColor = seasonsLeft <= 1 ? 'var(--warm)' : 'var(--text-muted)'
+
+  // Top 3 rivalries by games played
+  const topRivalries = [...(profile.coachRivalries ?? [])]
+    .filter(r => r.h2hWins + r.h2hDraws + r.h2hLosses > 0)
+    .sort((a, b) => (b.h2hWins + b.h2hDraws + b.h2hLosses) - (a.h2hWins + a.h2hDraws + a.h2hLosses))
+    .slice(0, 3)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -67,6 +81,12 @@ export function TranareTab({ game }: Props) {
         )}
       </div>
 
+      {/* Tränaravtal */}
+      <div className="card-sharp" style={{ padding: '12px 14px' }}>
+        <SectionLabel style={{ marginBottom: 8 }}>📋 TRÄNARAVTAL</SectionLabel>
+        <p style={{ fontSize: 12, color: contractColor, margin: 0 }}>{contractText}</p>
+      </div>
+
       {/* Burnout-card */}
       <div className="card-sharp" style={{ padding: '12px 14px', borderLeft: `3px solid ${zoneColor}` }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
@@ -94,6 +114,45 @@ export function TranareTab({ game }: Props) {
           </div>
         )}
       </div>
+
+      {/* Coach-rivalries */}
+      {topRivalries.length > 0 && (
+        <div className="card-sharp" style={{ padding: '12px 14px' }}>
+          <SectionLabel style={{ marginBottom: 10 }}>⚔️ RIVALITET</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {topRivalries.map(rivalry => {
+              const aiCoach = game.aiCoaches?.[rivalry.clubId]
+              const club = game.clubs.find(c => c.id === rivalry.clubId)
+              if (!aiCoach || !club) return null
+              const quotes = COACH_RIVALRY_QUOTES[rivalry.personality]
+              const quoteSeed = game.currentSeason * 31 + rivalry.clubId.charCodeAt(0)
+              const quote = quotes[quoteSeed % quotes.length]
+                .replace('{manager}', profile.firstName)
+              return (
+                <div key={rivalry.clubId} style={{ borderTop: '1px solid var(--border)', paddingTop: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+                    <div>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{aiCoach.name}</span>
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 6 }}>{club.name}</span>
+                    </div>
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>
+                      {rivalry.h2hWins}V {rivalry.h2hDraws}O {rivalry.h2hLosses}F
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic', margin: 0 }}>
+                    "{quote}"
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+          {topRivalries.length === 0 && (
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>
+              Inga rivaliteter än. Spela fler matcher.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   )
 }
