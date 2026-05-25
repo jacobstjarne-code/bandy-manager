@@ -171,17 +171,6 @@ describe('getSeasonEndPhase', () => {
     expect(getSeasonEndPhase(game)).toBe('season_done')
   })
 
-  it('summer: inSummerScene satt', () => {
-    const game = makeGame({ inSummerScene: true })
-    expect(getSeasonEndPhase(game)).toBe('summer')
-  })
-
-  it('summer tar prioritet över bracket completed', () => {
-    const bracket = makePlayoffBracket({ status: PlayoffStatus.Completed })
-    const game = makeGame({ playoffBracket: bracket, inSummerScene: true })
-    expect(getSeasonEndPhase(game)).toBe('summer')
-  })
-
   it('playoff_spectator: managed aldrig i bracket (position 9+)', () => {
     const series1 = makePlayoffSeries('club_b', 'club_c', { fixtures: ['f1'] })
     const series2 = makePlayoffSeries('club_d', 'club_e', { fixtures: ['f2'] })

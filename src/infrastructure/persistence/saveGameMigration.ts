@@ -299,6 +299,10 @@ export function migrateSaveGame(raw: unknown): SaveGame {
     })
   }
 
+  // ── C-SD1 — remove dead summer fields (inSummerScene / seasonDoneAck) ─────
+  delete data.inSummerScene
+  delete data.seasonDoneAck
+
   // ── C-P1 — cardStaleTracking ─────────────────────────────────────────────
   if (data.cardStaleTracking === undefined) data.cardStaleTracking = {}
 

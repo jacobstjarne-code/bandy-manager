@@ -284,6 +284,11 @@ export function computeNextAnslag(game: SaveGame): AnslagKey | null {
     }
   }
 
+  // Grundserien klar — all 22 rounds done, playoff bracket not yet created
+  if (getSeasonEndPhase(game) === 'regular_done' && !seen.includes('regular_done')) {
+    return 'regular_done'
+  }
+
   // Slutspelet — managed club in playoffs, first match upcoming
   if (managedClubInPlayoffs(game) && firstPlayoffMatchUpcoming(game) && !seen.includes('playoff_start')) {
     return 'playoff_start'

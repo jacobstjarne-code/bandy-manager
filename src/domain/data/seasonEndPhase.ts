@@ -9,11 +9,8 @@ export type SeasonEndPhase =
   | 'playoff_active'
   | 'playoff_spectator'
   | 'season_done'
-  | 'summer'
 
 export function getSeasonEndPhase(game: SaveGame): SeasonEndPhase {
-  if (game.inSummerScene) return 'summer'
-
   if (game.playoffBracket) {
     if (game.playoffBracket.status === PlayoffStatus.Completed) return 'season_done'
     if (isManagedClubInPlayoff(game)) return 'playoff_active'
