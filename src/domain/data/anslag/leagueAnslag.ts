@@ -5,6 +5,7 @@ export type LeagueAnslagKey =
   | 'league_midwinter'
   | 'league_halfway'
   | 'playoff_qualification'
+  | 'regular_done'
   | 'playoff_start'
   | 'season_done'
 
@@ -62,6 +63,20 @@ export const LEAGUE_ANSLAG: Record<LeagueAnslagKey, AnslagText> = {
       },
       {
         body: `Vi vet vart vi är. De andra vet vart de är. Tabellen lämnar inget åt fantasin med tre omgångar kvar.<br><br>Antingen är vi nästan där eller också är vi nästan inte. Det är skillnad mellan en plats högre och en plats lägre. Det är skillnad mellan en god säsong och en mindre god.<br><br>Det avgörs inte i kvart. Det avgörs här.`,
+      },
+    ],
+  },
+  regular_done: {
+    chapter: '⬩ Grundserien klar ⬩',
+    variants: [
+      {
+        body: `Grundserien är spelad. 22 omgångar, och tabellen står som den står — den ändras inte mer.<br><br>Det är en egen sorts tystnad efter sista omgången. Ingen mer poängjakt, inga fler helger där allt kan flytta sig. Det som är gjort är gjort.<br><br>Sen ritas slutspelsträdet. Då börjar något annat.`,
+      },
+      {
+        body: `Sista omgången är spelad. Grundserien är avgjord.<br><br>Fyra månader ligger bakom oss. Novembermörkret, januari som ingen tyckte om, marginalerna på upploppet. Allt det blev en tabell, och tabellen är klar.<br><br>Nu väntar slutspelet, eller sommaren, beroende på var vi hamnade. Snart vet vi.`,
+      },
+      {
+        body: `Grundserien klar. Tabellen är inte längre rörlig — den är facit.<br><br>Det är nu man ser vad säsongen blev. Inte matcherna en och en, utan helheten: vart 22 omgångar förde oss.<br><br>Slutspelsträdet sätts härnäst. Sen är det noll igen för dem som tog sig dit.`,
       },
     ],
   },
