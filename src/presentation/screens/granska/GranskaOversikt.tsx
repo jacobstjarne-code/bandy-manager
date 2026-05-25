@@ -11,7 +11,7 @@ import { generateSilentMatchReport } from '../../../domain/services/silentMatchR
 import { generateQuickSummary, choiceStyle } from './helpers'
 import { getCriticalEventsForGranska, getPlayerEventsForGranska, classifyEventNature } from '../../../domain/services/granskaEventClassifier'
 import { ReaktionerKort } from '../../components/granska/ReaktionerKort'
-import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, LEADERSHIP_OUTCOMES } from '../../../domain/data/managerKvittoText'
+import { HALFTIME_LABELS, HALFTIME_OUTCOMES, LINEUP_ROTATION_OUTCOMES, LEADERSHIP_OUTCOMES, STARTED_TIRED_OUTCOMES } from '../../../domain/data/managerKvittoText'
 import type { KvittoOutcomeDir } from '../../../domain/data/managerKvittoText'
 
 interface GranskaOversiktProps {
@@ -381,7 +381,7 @@ export function GranskaOversikt({
             const rating = fixture?.report?.playerRatings[entry.playerId]
             const dir: KvittoOutcomeDir = rating !== undefined ? (rating >= 7 ? 'good' : rating <= 5 ? 'bad' : 'neutral') : kvittoDir
             const cond = entry.detail.startsWith('condition_') ? entry.detail.slice(10) : entry.detail
-            const pool = LINEUP_ROTATION_OUTCOMES[dir]
+            const pool = STARTED_TIRED_OUTCOMES[dir]
             lines.push({ label: `Startade trött: ${player.lastName} (${cond}%)`, text: pool[seed % pool.length].replace('{spelare}', player.lastName) })
           } else if (entry.type === 'bench_fit' && entry.playerId) {
             const player = findPlayer(entry.playerId)
