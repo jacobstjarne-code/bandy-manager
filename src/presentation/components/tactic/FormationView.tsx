@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Player } from '../../../domain/entities/Player'
 import type { FormationType } from '../../../domain/entities/Formation'
@@ -45,25 +45,37 @@ function PitchLines() {
 export function FormationView({ tactic, players, onChange }: FormationViewProps) {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [autoFillMsg, setAutoFillMsg] = useState<string | null>(null)
+  const autoFillTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const navigate = useNavigate()
+
+  useEffect(() => () => {
+    if (autoFillTimerRef.current) clearTimeout(autoFillTimerRef.current)
+  }, [])
 
   const formation = tactic.formation ?? '5-3-2'
   const template = FORMATIONS[formation]
   const rawLineupSlots = tactic.lineupSlots ?? autoAssignFormation(template, players)
-  // Null out slots for unavailable players (injured / suspended)
-  const lineupSlots: Record<string, string | null> = {}
-  for (const [slotId, playerId] of Object.entries(rawLineupSlots)) {
-    if (!playerId) { lineupSlots[slotId] = null; continue }
-    const player = players.find(p => p.id === playerId)
-    if (!player || player.isInjured || player.suspensionGamesRemaining > 0) {
-      lineupSlots[slotId] = null; continue
+
+  const lineupSlots = useMemo(() => {
+    const slots: Record<string, string | null> = {}
+    for (const [slotId, playerId] of Object.entries(rawLineupSlots)) {
+      if (!playerId) { slots[slotId] = null; continue }
+      const player = players.find(p => p.id === playerId)
+      if (!player || player.isInjured || player.suspensionGamesRemaining > 0) {
+        slots[slotId] = null; continue
+      }
+      slots[slotId] = playerId
     }
-    lineupSlots[slotId] = playerId
-  }
+    return slots
+  }, [rawLineupSlots, players])
+
   const recommended = getRecommendedFormation(players)
 
   // Starters: players currently in slots
-  const starterIds = new Set(Object.values(lineupSlots).filter(Boolean) as string[])
+  const starterIds = useMemo(
+    () => new Set(Object.values(lineupSlots).filter(Boolean) as string[]),
+    [lineupSlots],
+  )
   const benchPlayers = players.filter(p => !starterIds.has(p.id) && !p.isInjured && p.suspensionGamesRemaining === 0)
 
   function handleAutoFill() {
@@ -99,7 +111,8 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
         ? 'Elvan är redan komplett — tryck på en spelare för att byta.'
         : `Fyllde ${emptyCount} ${emptyCount === 1 ? 'plats' : 'platser'} med bästa tillgängliga.`,
     )
-    window.setTimeout(() => setAutoFillMsg(null), 3000)
+    if (autoFillTimerRef.current) clearTimeout(autoFillTimerRef.current)
+    autoFillTimerRef.current = window.setTimeout(() => setAutoFillMsg(null), 3000)
   }
 
   function changeFormation(f: FormationType) {
@@ -142,8 +155,10 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
 
   const meta = FORMATION_META[formation]
 
-  // C-FT1: ärlig trötthetsmagnitud, även på taktiktavlan (samma helper/motor som lineup-byggaren).
-  const styrka = computeLagstyrka(Array.from(starterIds), players, tactic)
+  const styrka = useMemo(
+    () => computeLagstyrka(Array.from(starterIds), players, tactic),
+    [starterIds, players, tactic],
+  )
 
   return (
     <>
