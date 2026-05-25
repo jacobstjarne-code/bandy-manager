@@ -90,7 +90,7 @@ export const CUP_ANSLAG: Record<CupAnslagKey, AnslagText> = {
         body: `<strong>Pokalen är vår.</strong><br><br>Den är inte den finaste pokalen i bandy. Men den är den första vi vunnit på länge — och det väger.<br><br>Ligan börjar nästa helg. Vi går in i den med pokalen i ena handen och en målbild i den andra.`,
       },
       {
-        body: `<strong>Vi vann cupen.</strong><br><br>Det är inte SM. Men det är det första laget i Sverige har sett i år, och det var oss som tog hem den. Förra säsongen kom vi inte till finalen. Året innan kom vi inte ens till semi.<br><br>Sen är det ligan. Den är något annat. Men idag är pokalen vår.`,
+        body: `<strong>Vi vann cupen.</strong><br><br>Det är inte SM. Men det är årets första pokal som delats ut i svensk bandy, och det var vi som tog den. Förra säsongen tog vi oss inte till finalen. Året innan inte ens till semin.<br><br>Sen är det ligan. Den är något annat. Men i dag är pokalen vår.`,
       },
       {
         body: `<strong>Pokalen är på byrån i klubbhuset nu.</strong> Lite blank. Lite lätt.<br><br>Det var inte säsongens viktigaste match. Men ingen sa något om det när Bengt höjde den.<br><br>Ligan börjar nästa helg. Det här minns vi.`,
