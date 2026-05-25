@@ -1,0 +1,28 @@
+fact_id: D025
+category: design_principles
+claim: "AI-lags rotationslogik styrs av tre trösklar: fitness-golv 40 (spelas ej under), ersättar-minimum 60 (bytesspelare), CA-tolerans 8 (max förmågediff vid byte)"
+value:
+  AI_FITNESS_FLOOR: 40
+  AI_REPLACEMENT_MIN_FITNESS: 60
+  AI_ROTATION_CA_TOLERANCE: 8
+unit: points
+source:
+  type: design_decision
+  doc: "src/application/useCases/processors/matchSimProcessor.ts:21-23"
+  decided_by: jacob
+verified_at: 2026-05-25
+verified_by: code
+status: active
+invariants:
+  - "value.AI_FITNESS_FLOOR >= 1"
+  - "value.AI_FITNESS_FLOOR < value.AI_REPLACEMENT_MIN_FITNESS"
+  - "value.AI_REPLACEMENT_MIN_FITNESS <= 100"
+  - "value.AI_ROTATION_CA_TOLERANCE >= 1"
+  - "value.AI_ROTATION_CA_TOLERANCE <= 30"
+notes: |
+  Infördes commit f688117 för att AI-lag inte ska spela totalt utmattade
+  spelare. Golvet 40 matchar ungefär "aktiv men påverkad" i fitness-modellen.
+  Bytesspelaren måste ha 60+ för att räknas som förbättring — annars
+  stannar utmattad spelare kvar om alternativet är sämre.
+  CA-toleransen 8 hindrar att AI bänkar sina bästa spelare till förmån
+  för friska men svaga alternativ.

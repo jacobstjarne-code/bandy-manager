@@ -88,8 +88,8 @@ export function SMFinalVictoryScene({ game, onComplete }: Props) {
         </div>
 
         <VictoryScore
-          myScore={data.myScore}
-          theirScore={data.theirScore}
+          homeScore={data.homeScore}
+          awayScore={data.awayScore}
           homeName={data.homeName}
           awayName={data.awayName}
           arenaCapacity={data.arenaCapacity}

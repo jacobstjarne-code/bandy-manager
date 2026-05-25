@@ -8,8 +8,8 @@ import type { SaveGame } from '../../../../domain/entities/SaveGame'
 import { CUP_FINAL_VICTORY_TEMPLATES } from '../../../../domain/data/scenes/cupFinalVictoryScene'
 
 export interface CupFinalData {
-  myScore: number
-  theirScore: number
+  homeScore: number
+  awayScore: number
   homeName: string
   awayName: string
   arenaCapacity: string
@@ -33,7 +33,6 @@ export function useCupFinalData(game: SaveGame): CupFinalData {
 
   const homeClub = finalFixture ? game.clubs.find(c => c.id === finalFixture.homeClubId) : null
   const awayClub = finalFixture ? game.clubs.find(c => c.id === finalFixture.awayClubId) : null
-  const isHome = finalFixture?.homeClubId === game.managedClubId
 
   const academyHero = useMemo(() => {
     if (!finalFixture?.report?.playerOfTheMatchId) return null
@@ -80,8 +79,8 @@ export function useCupFinalData(game: SaveGame): CupFinalData {
     : ''
 
   return {
-    myScore: finalFixture ? (isHome ? finalFixture.homeScore : finalFixture.awayScore) : 0,
-    theirScore: finalFixture ? (isHome ? finalFixture.awayScore : finalFixture.homeScore) : 0,
+    homeScore: finalFixture?.homeScore ?? 0,
+    awayScore: finalFixture?.awayScore ?? 0,
     homeName: homeClub?.name ?? 'Hemmaklubben',
     awayName: awayClub?.name ?? 'Bortaklubben',
     arenaCapacity,

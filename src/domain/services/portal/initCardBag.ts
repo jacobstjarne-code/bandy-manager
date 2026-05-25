@@ -53,6 +53,8 @@ import { BoardObjectivesSecondary } from '../../../presentation/components/porta
 import { WatchOthersSecondary } from '../../../presentation/components/portal/secondary/WatchOthersSecondary'
 import { LandslagsFranvaroSecondary } from '../../../presentation/components/portal/secondary/LandslagsFranvaroSecondary'
 import { BurnoutMark } from '../../../presentation/components/portal/BurnoutMark'
+import { EfterklangSecondary } from '../../../presentation/components/portal/secondary/EfterklangSecondary'
+import { pickEfterklang } from '../portal/pickEfterklang'
 import { shouldShowBurnoutMark } from '../managerProfileService'
 import { SpectatorPrimary } from '../../../presentation/components/portal/primary/SpectatorPrimary'
 import type { CardRenderProps } from './dashboardCardBag'
@@ -268,6 +270,15 @@ const PORTAL_CARDS: DashboardCard[] = [
     }],
     Component: BurnoutMark,
   },
+  // C-SY1#1 — Efterklang: memory-eko, max 2 minnen, --cold stripe
+  {
+    id: 'efterklang',
+    tier: 'secondary',
+    weight: 75,
+    triggers: [(game) => pickEfterklang(game, 1).length > 0],
+    Component: EfterklangSecondary,
+  },
+
   // C-K1 — Landslagsuttagning: visa under VM-uppehållet
   {
     id: 'landslag_franvaro',

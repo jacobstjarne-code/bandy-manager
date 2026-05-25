@@ -8,8 +8,8 @@ import type { SaveGame } from '../../../../domain/entities/SaveGame'
 import { SM_FINAL_VICTORY_TEMPLATES } from '../../../../domain/data/scenes/smFinalVictoryScene'
 
 export interface SMFinalData {
-  myScore: number
-  theirScore: number
+  homeScore: number
+  awayScore: number
   homeName: string
   awayName: string
   arenaCapacity: string
@@ -37,8 +37,6 @@ export function useSMFinalData(game: SaveGame): SMFinalData {
   const awayClub = finalFixture
     ? game.clubs.find(c => c.id === finalFixture.awayClubId)
     : null
-  const isHome = finalFixture?.homeClubId === game.managedClubId
-
   const academyHero = useMemo(() => {
     if (!finalFixture?.report?.playerOfTheMatchId) return null
     const player = game.players.find(
@@ -70,16 +68,8 @@ export function useSMFinalData(game: SaveGame): SMFinalData {
   }, [game.currentSeason, game.managedClubId])
 
   return {
-    myScore: finalFixture
-      ? isHome
-        ? finalFixture.homeScore
-        : finalFixture.awayScore
-      : 0,
-    theirScore: finalFixture
-      ? isHome
-        ? finalFixture.awayScore
-        : finalFixture.homeScore
-      : 0,
+    homeScore: finalFixture?.homeScore ?? 0,
+    awayScore: finalFixture?.awayScore ?? 0,
     homeName: homeClub?.name ?? 'Hemmaklubben',
     awayName: awayClub?.name ?? 'Bortaklubben',
     arenaCapacity: finalFixture?.attendance

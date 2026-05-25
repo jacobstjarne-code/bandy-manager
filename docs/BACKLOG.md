@@ -1,7 +1,7 @@
 # BANDY MANAGER — BACKLOG
 
 **Etablerad:** 2026-05-17
-**Senast rensad:** 2026-05-18
+**Senast rensad:** 2026-05-25
 **Syfte:** ENDA SANNING för "specat men ej byggt" + "idéer som ska bli spec". Uppdateras VARJE gång vi parkerar något — inte "vid tillfälle".
 
 **Förhållande till andra dokument:**
@@ -107,8 +107,7 @@ Mest konkreta buggar Code kan ta direkt (ej Design). Opus hann EJ lokalisera all
 
 | # | Idé | Plats | Estimat |
 |---|---|---|---|
-| C-MK1 | **Manager som karaktär** (#4 i 2026-05-23-batchen). Profil + burnout-mätare + tränaravtal + coach-rivalry. Handoff `HANDOFF-MANAGER-KARAKTAR-2026-05-23`, designval LÅSTA (statisk bio Fas 1, mjuk burnout utan GameOver, Opus-pool rivalry-citat, minimal åldrande). Spec-färdigt men OBYGGT. | ny `ManagerProfile`-entity + ClubScreen Tränare-tab + Portal BurnoutMark | **GREENLIGHT + TEXT LEVERERAD 2026-05-25** (`managerKaraktarText.ts`): bio-mallar, burnout-mark (zon-labels + quotes + helpers), coach-rivalry-citat × 4 personligheter, rival-namnpool, kontraktsstatus/utfall. KVAR för Code (~10,5h, 2 faser): `ManagerProfile`-entity, ClubScreen Tränare-tab, burnout-mekanik + sparkline, Portal BurnoutMark, tränaravtal + coach-rivalry-generering. Fas 1 = profil+burnout (5h), Fas 2 = avtal+rivalry (5,5h). |
-| C-SY1#4 | **Efter-match-kvitto** (manager-kvitto). 2–4 rader val→utfall på MatchReportScreen. `managerChoiceLog` finns redan (B8), så ~3h Code, inte 10–12. **TEXT LEVERERAD 2026-05-25** (`managerKvittoText.ts`). Oblockerat — till skillnad från C-SY1#1 Efterklang som väntar på score-primitiverna. | ManagerKvittoSection + buildManagerKvitto-picker | ~3h Code. Text klar. |
+*(C-MK1 LEVERERAD 2026-05-25: ManagerProfile-entity + CoachRivalry + burnout + tränaravtal + H2H-tracking. 6 filer. C-SY1#4 LEVERERAD 2026-05-25: managerKvittoText.ts + GranskaOversikt-integration.)*
 | — | **Resterande-tickets** = rena Code/CSS (`HANDOFF-RESTERANDE-TICKETS`): gold-tokens (5 min), SMFinalPrimary fel guld (1h), SimSummary tokens (15 min), C-SP5 crossfade (1h), D-ST1 tokens-doc (1h), klubbminne-CSS (3h), transfers-refaktor. Ingen Opus-text. Inkrementella, prioordning i handoffen. | — | ~10h Code spridda. |
 
 ### Portal-systemet (skissat 2026-05-17)
@@ -119,8 +118,8 @@ Mest konkreta buggar Code kan ta direkt (ej Design). Opus hann EJ lokalisera all
 
 | # | Idé | Plats | Estimat |
 |---|---|---|---|
-| C-SY1 | **Synlighetssprinten (GPT-baserad)** — fyra tickets: efterklang-secondary på Portal, orsakskrok på reaktiva texter, Portal-hierarki-justering, efter-match-kvitto. Konvergerar med Design-Claudes diagnos. Kräver designrunda per ticket före spec. | `docs/SKISS_SYNLIGHETSSPRINT_2026-05-20.md` | ~12–15h Code totalt + 3 designrundor. Prioritetsordning beror på 15-min-playtest-fynd. |
-| C-SY2 | **Score-system tre-vokabulär (LED / score-block / sparkline)** — etablerar tre visuella primärer som del av designsystemet. Score-block ersätter text-listor i RoundSummary, WatchOthers, MatchReport, OpponentForm, TabellSecondary. Sparkline ersätter numeriska summor i FormStatus, PlayerCard, Ekonomi, Academy, SeasonSummary, Journalist. **Pilot:** §G i Klubbminne-handoff (klubbminne-kontext). Inte i Klubbminne v1. | Design-Claudes skiss 2026-05-20 (oklistrad mock+spec) | ~3h Design-spec (lördag) + ~4h Code (komponenter) + ~2h per yta som migreras. Stort men inkrementellt. Väntar på komplett spec från Design över helgen. |
+| C-SY1 | **Synlighetssprinten** — 2 tickets kvar: orsakskrok på reaktiva texter, Portal-hierarki-justering. (Efterklang-secondary levererad 2026-05-25. Efter-match-kvitto levererad 2026-05-25.) Kräver designrunda per ticket före spec. | `docs/SKISS_SYNLIGHETSSPRINT_2026-05-20.md` | ~6–8h Code + 2 designrundor. |
+| C-SY2 | **Score-system tre-vokabulär (LED / score-block / sparkline)** — primitiver BYGGDA, Våg-1 KLAR (RoundSummary, SimSummary, GranskaForlopp). Kvar: Våg 2 (victory scenes), Våg 3 (trend-data: OpponentForm, TabellSecondary, FormStatus), Våg 4 (featured: Ekonomi, SeasonSummary, PlayerCard). | `AUDIT-SCORE-SYSTEM-COVERAGE-2026-05-23` | ~2h per yta som migreras. Inkrementellt. |
 
 ### Säsong och kalender (flaggat 2026-05-21, efter B11)
 
@@ -243,3 +242,4 @@ Tomt. Alla rester levererade. Vidare THE_BOMB-arbete väntar nya design-rundor.
 | 2026-05-25 | **Reconcile 2026-05-23-handoffs + C-SY1#4 text.** Manager som karaktär (C-MK1): designval låsta, spec-färdigt men obyggt (~10,5h, ~30 strängar på greenlight). C-SY1#4 manager-kvitto: text levererad (`managerKvittoText.ts`), oblockerat, ~3h Code (`managerChoiceLog` finns sedan B8). Resterande-tickets: rena Code/CSS-fixar, prioordning i handoffen. |
 | 2026-05-25 | **C-MK1 manager som karaktär — greenlight + text levererad.** `managerKaraktarText.ts` (bio-mallar, burnout-mark, coach-rivalry-citat ×4 personligheter + namnpool, kontraktsstatus/utfall). Designval låsta. Code bygger 2 faser (~10,5h): profil+burnout, sen avtal+rivalry. |
 | 2026-05-25 | **Score-systemet — greenlight + sekvensering.** Bygg primitiverna `ScoreBlock` + `Sparkline` FÖRST (per `HANDOFF-SCORE-SYSTEM-2026-05-20`) — de avblockerar C-SY1 Efterklang + hela synlighetssprinten. Sen 4-vågs-migrering per `AUDIT-SCORE-SYSTEM-COVERAGE-2026-05-23` (quick wins → victory scenes → trend-data → featured). Realistiskt ~20–25h spridda, inkrementellt. Designbeslut bekräftade: final-result = ScoreBlock gold; live→retrospekt = LED→Block utan in-view-övergång; mini-sparkline max 12/skärm, annars vid expansion (SquadScreen bara expanded rows, R.3 perf). De 4 ursprungliga besluten ur 2026-05-20-handoffen står kvar om inte Jacob omprövar. |
+| 2026-05-25 | **BACKLOG-RENSNING.** C-MK1 (Fas 1+2 manager-karaktär, entity+burnout+tränaravtal+H2H+TranareTab), C-SY1#1 Efterklang (pickEfterklang + EfterklangSecondary + initCardBag), C-SY1#4 manager-kvitto (GranskaOversikt-integration), C-U1 (suspensionCause + inkorg + trupp), score-primitiver + Våg-1 (ScoreBlock/Sparkline + RoundSummary/SimSummary/GranskaForlopp): alla raderade ur tabeller. C-SY1 uppdaterad (2 tickets kvar). C-SY2 uppdaterad (Våg 2–4 återstår). |

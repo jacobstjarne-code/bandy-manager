@@ -898,3 +898,11 @@ värd är en läsning — säkerheten är ofta minne, inte kunskap.
 - Trupp "tre lager levererade" → list_directory visade att KORT-filen saknades
   initialt (Design hade inte listat den). Endast efter att alla sex filer fanns
   på disk var påståendet sant.
+- 2026-05-25: Opus specade score-primitiver, OpponentForm-migration och C-FT1 plats-3
+  mot den staila 2026-05-23-score-auditen utan att läsa koden eller DESIGN-DECISIONS.md
+  först. Alla tre visade sig REDAN byggda — tre no-op-pass i rad. Pekade dessutom Code
+  mot `HANDOFF-SCORE-SYSTEM-2026-05-20.md` som inte existerar (specen bodde i mockens
+  notes-sektion). Jacob: "vi går igenom saker 2 eller 3 gånger för att du slararar med
+  det som står i claude.md." Fix-bekräftelse: läs kodläget + DESIGN-DECISIONS INNAN
+  spec. En audit daterad >2 dagar tillbaka är en andrahandskälla, inte sanning —
+  migreringar sker parallellt och hinner förbi auditen samma vecka.

@@ -4,16 +4,16 @@
  */
 
 interface Props {
-  myScore: number
-  theirScore: number
+  homeScore: number
+  awayScore: number
   homeName: string
   awayName: string
   arenaCapacity: string
 }
 
 export function VictoryScore({
-  myScore,
-  theirScore,
+  homeScore,
+  awayScore,
   homeName,
   awayName,
   arenaCapacity,
@@ -32,7 +32,7 @@ export function VictoryScore({
           textShadow: '0 2px 30px rgba(212,164,96,0.30)',
         }}
       >
-        {myScore}–{theirScore}
+        {homeScore}–{awayScore}
       </div>
 
       <div
