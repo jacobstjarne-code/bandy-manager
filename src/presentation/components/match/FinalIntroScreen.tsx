@@ -78,13 +78,14 @@ export function FinalIntroScreen({
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        height: '100%',
+        position: 'fixed',
+        inset: 0,
+        zIndex: 300,
         background: 'linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-dark) 60%, var(--bg-dark) 100%)',
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
         padding: '0 24px',
-        position: 'relative',
         overflow: 'hidden',
       }}>
         {variant === 'sm' && <GoldConfetti />}
@@ -147,7 +148,7 @@ export function FinalIntroScreen({
       const awayJourney = bracket ? getFinalJourney(bracket, fixture.awayClubId, clubs) : ''
       return (
         <div style={{
-          display: 'flex', flexDirection: 'column', height: '100%',
+          display: 'flex', flexDirection: 'column', position: 'fixed', inset: 0, zIndex: 300,
           background: 'var(--bg-dark)', padding: '24px 16px', overflowY: 'auto',
         }}>
           <p style={{
@@ -192,7 +193,7 @@ export function FinalIntroScreen({
     // Cup slide 2: lineups
     return (
       <div style={{
-        display: 'flex', flexDirection: 'column', height: '100%',
+        display: 'flex', flexDirection: 'column', position: 'fixed', inset: 0, zIndex: 300,
         background: 'var(--bg-dark)', padding: '24px 16px', overflowY: 'auto',
       }}>
         <p style={{
@@ -237,7 +238,7 @@ export function FinalIntroScreen({
 
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column', height: '100%',
+      display: 'flex', flexDirection: 'column', position: 'fixed', inset: 0, zIndex: 300,
       background: 'var(--bg-dark)', padding: '24px 16px', overflowY: 'auto',
     }}>
       <p style={{

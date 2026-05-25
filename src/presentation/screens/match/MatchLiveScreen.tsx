@@ -135,6 +135,7 @@ export function MatchLiveScreen() {
   const [showSubModal, setShowSubModal] = useState(false)
   const [ceremonySlide, setCeremonySlide] = useState(0)
   const [finalIntroSlide, setFinalIntroSlide] = useState(() => isSmFinal ? 1 : 0)
+  const [postIntroFade, setPostIntroFade] = useState(false)
   const [hintVisible, setHintVisible] = useState(() => !(game?.dismissedHints ?? []).includes('matchLive'))
   const prevHomeScore = useRef(0)
   const prevAwayScore = useRef(0)
@@ -1053,7 +1054,7 @@ export function MatchLiveScreen() {
         variant="sm"
         slide={finalIntroSlide}
         onNext={() => setFinalIntroSlide(prev => prev + 1)}
-        onStart={() => { setFinalIntroSlide(0); setCurrentStep(0) }}
+        onStart={() => { setPostIntroFade(true); setFinalIntroSlide(0); setCurrentStep(0) }}
         homeClubName={homeClubName}
         awayClubName={awayClubName}
         homeLineup={homeLineup}
@@ -1076,7 +1077,7 @@ export function MatchLiveScreen() {
         variant="cup"
         slide={finalIntroSlide}
         onNext={() => setFinalIntroSlide(prev => prev + 1)}
-        onStart={() => { setFinalIntroSlide(0); setCurrentStep(0) }}
+        onStart={() => { setPostIntroFade(true); setFinalIntroSlide(0); setCurrentStep(0) }}
         homeClubName={homeClubName}
         awayClubName={awayClubName}
         homeLineup={homeLineup}
@@ -1300,6 +1301,7 @@ export function MatchLiveScreen() {
     <div style={{
       display: 'flex', flexDirection: 'column', height: '100%',
       background: 'var(--bg)', overflow: 'hidden', position: 'relative',
+      animation: postIntroFade ? 'fadeIn 300ms ease-out both' : undefined,
     }}>
       {showSubModal && (
         <SubstitutionModal
