@@ -78,6 +78,12 @@ export const PORTAL_BEATS: PortalBeat[] = [
     trigger: (g) => {
       const next = nextManagedLeagueFixture(g)
       if (!next) return false
+      // Surfa bara när derbyt är NÄSTA match överhuvudtaget — inte medan en cupmatch ligger emellan.
+      const nextAny = g.fixtures
+        .filter(f => f.status === 'scheduled' &&
+          (f.homeClubId === g.managedClubId || f.awayClubId === g.managedClubId))
+        .sort((a, b) => a.matchday - b.matchday)[0] ?? null
+      if (!nextAny || nextAny.id !== next.id) return false
       const oppId = next.homeClubId === g.managedClubId ? next.awayClubId : next.homeClubId
       if (!getRivalry(g.managedClubId, oppId)) return false
       // Kolla att inget derby spelats den här säsongen

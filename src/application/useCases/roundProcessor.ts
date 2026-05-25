@@ -992,14 +992,28 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     i.createdMatchday === undefined ? { ...i, createdMatchday: nextMatchday } : i
   )
 
-  // Gallring: lästa informativa notiser äldre än 2 omgångar arkiveras
-  // Olästa och items utan createdMatchday (gamla saves) bevaras alltid
+  // Gallring: lästa informativa notiser äldre än 2 omgångar arkiveras.
+  // Olästa lågprio-items äldre än 4 omgångar förfaller också — skyddar besluts-
+  // krävande typer (TransferOffer, ContractExpiring, Retirement, TransferBidReceived,
+  // YouthIntake, ScoutReport, TransferDeadline) från auto-rensning.
   const INBOX_GALLRING_ROUNDS = 2
-  const gallredOldInbox = game.inbox.filter(i =>
-    !i.isRead ||
-    i.createdMatchday === undefined ||
-    (nextMatchday - i.createdMatchday) < INBOX_GALLRING_ROUNDS
-  )
+  const INBOX_UNREAD_EXPIRY_ROUNDS = 4
+  const INBOX_PROTECTED_TYPES = new Set<InboxItemType>([
+    InboxItemType.TransferOffer,
+    InboxItemType.ContractExpiring,
+    InboxItemType.Retirement,
+    InboxItemType.TransferBidReceived,
+    InboxItemType.YouthIntake,
+    InboxItemType.ScoutReport,
+    InboxItemType.TransferDeadline,
+  ])
+  const gallredOldInbox = game.inbox.filter(i => {
+    if (i.createdMatchday === undefined) return true
+    const age = nextMatchday - i.createdMatchday
+    if (i.isRead) return age < INBOX_GALLRING_ROUNDS
+    if (INBOX_PROTECTED_TYPES.has(i.type as InboxItemType)) return true
+    return age < INBOX_UNREAD_EXPIRY_ROUNDS
+  })
 
   // Trim accumulated data to prevent localStorage bloat
   const MAX_INBOX = 50

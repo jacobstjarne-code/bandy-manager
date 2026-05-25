@@ -411,7 +411,10 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     managerProfile: (() => {
       const base = generateManagerProfile((input.seed ?? 42) + 88001, season)
       const opponentIds = clubs.filter(c => c.id !== input.clubId).map(c => c.id)
-      return { ...base, coachRivalries: generateCoachRivalries(opponentIds, (input.seed ?? 42) + 88002) }
+      const nameParts = input.managerName.trim().split(/\s+/)
+      const firstName = nameParts[0] ?? base.firstName
+      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : base.lastName
+      return { ...base, firstName, lastName, coachRivalries: generateCoachRivalries(opponentIds, (input.seed ?? 42) + 88002) }
     })(),
   }
 

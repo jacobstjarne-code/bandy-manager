@@ -24,20 +24,22 @@ export function EfterklangSecondary({ game }: CardRenderProps) {
 
   return (
     <div
-      className="card-sharp"
       style={{
+        background: 'var(--bg-portal-surface)',
+        border: '1px solid var(--bg-leather)',
+        borderLeft: '2px solid var(--cold)',
+        borderRadius: 10,
         padding: '10px 14px',
-        borderLeft: '3px solid var(--cold, var(--text-muted))',
       }}
     >
       <SectionLabel style={{ marginBottom: 8 }}>{eyebrow}</SectionLabel>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {memories.map((mem, i) => (
-          <div key={mem.type} style={i > 0 ? { borderTop: '1px solid var(--border)', paddingTop: 10 } : {}}>
+          <div key={mem.type} style={i > 0 ? { borderTop: '1px solid var(--bg-leather)', paddingTop: 10 } : {}}>
             {/* Primary text — only for types that have meaningful primaryText */}
             {mem.primaryText && (
-              <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '0 0 4px' }}>
+              <p style={{ fontSize: 11, color: 'var(--text-light-secondary)', margin: '0 0 4px' }}>
                 {TYPE_ICON[mem.type]} {mem.primaryText}
               </p>
             )}
@@ -55,7 +57,7 @@ export function EfterklangSecondary({ game }: CardRenderProps) {
             )}
 
             {/* Echo row */}
-            <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>
+            <p style={{ fontSize: 11, color: 'var(--text-light-secondary)', fontStyle: 'italic', margin: 0 }}>
               ↻ {mem.echo}
             </p>
           </div>

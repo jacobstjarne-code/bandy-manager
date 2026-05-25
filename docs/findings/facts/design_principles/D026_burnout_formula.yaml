@@ -1,0 +1,40 @@
+fact_id: D026
+category: design_principles
+claim: "Manager-burnout-formeln: förlust +10, fatigue ×0.3, inbox ×0.3 (tak +6/omg), seger −5, naturlig decay −3. Burnout-mark visas vid ≥70 i 2+ omgångar."
+value:
+  BURNOUT_LOSS_PER_RECENT: 10
+  BURNOUT_FATIGUE_WEIGHT: 0.3
+  BURNOUT_INBOX_WEIGHT: 0.3
+  BURNOUT_INBOX_MAX_DELTA: 6
+  BURNOUT_WIN_RECOVERY: 5
+  BURNOUT_NATURAL_DECAY: 3
+  BURNOUT_TRIGGER_THRESHOLD: 70
+  BURNOUT_TRIGGER_ROUNDS: 2
+unit: points
+source:
+  type: design_decision
+  doc: "src/domain/services/managerProfileService.ts:15-23"
+  decided_by: jacob
+verified_at: 2026-05-25
+verified_by: code
+status: active
+revisions:
+  - date: 2026-05-25
+    change: "BURNOUT_INBOX_WEIGHT sänkt 2→0.3, BURNOUT_INBOX_MAX_DELTA=6 tillagd. Root: 40 olästa inkorgstitems gav +80/omgång → burnout permanent pinnad på 100. Inbox ska vara en svag signal, inte dominerande driver."
+invariants:
+  - "value.BURNOUT_LOSS_PER_RECENT >= 1"
+  - "value.BURNOUT_LOSS_PER_RECENT <= 30"
+  - "value.BURNOUT_INBOX_WEIGHT >= 0"
+  - "value.BURNOUT_INBOX_WEIGHT < 1"
+  - "value.BURNOUT_INBOX_MAX_DELTA >= 1"
+  - "value.BURNOUT_TRIGGER_THRESHOLD >= 50"
+  - "value.BURNOUT_TRIGGER_THRESHOLD <= 100"
+  - "value.BURNOUT_TRIGGER_ROUNDS >= 1"
+notes: |
+  Burnout ska drivas av match-resultat (förluster) + beslutsfatigue,
+  inte av oläst inbox. Med 40 olästa items och gammalt weight=2 gav
+  inbox +80/omgång — decay −3 och vinst −5 hann aldrig dränera.
+  Med weight=0.3 + tak 6: max inbox-bidrag är +6, loss-streak +30.
+  Naturlig trigger: 3 förluster i rad utan seger ≈ +30, decay −3×2 = −6,
+  netto ~+24. Burnout 100→70 tar ~10 omgångar, 100→0 ~34 omgångar utan
+  förluster — rimlig recovery-bana.

@@ -51,17 +51,22 @@ export function pickEfterklang(game: SaveGame, max = 2): EfterklangMemory[] {
     })
   }
 
-  // Journalist memory
-  if (game.journalist?.name && (game.journalist.relationship ?? 0) > 30) {
+  // Journalist memory — only surface when a real logged interaction exists
+  const journalistMemories = game.journalist?.memory ?? []
+  if (game.journalist?.name && journalistMemories.length > 0) {
     const name = game.journalist.name
     const echo = interpolate(pickEcho('journalist', seed + 2), { journalist: name })
     const hasSparkline = (game.scoreSnapshots?.journalistRelation?.length ?? 0) >= 5
+    // Score on recency + sentiment magnitude of most notable memory
+    const notable = journalistMemories.reduce((best, m) =>
+      Math.abs(m.sentiment) > Math.abs(best.sentiment) ? m : best
+    )
     candidates.push({
       type: 'journalist',
-      score: 50 + (game.journalist.relationship ?? 50),
+      score: 50 + Math.abs(notable.sentiment) * 3 + (game.journalist.relationship ?? 50) * 0.3,
       memory: {
         type: 'journalist',
-        primaryText: '',
+        primaryText: name,
         echo,
         journalistName: name,
         hasJournalistSparkline: hasSparkline,

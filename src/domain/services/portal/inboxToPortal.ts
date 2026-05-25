@@ -166,6 +166,16 @@ export function inboxItemToCardCandidate(
     if (!fixtureId) return null
     const fixture = game.fixtures.find(f => f.id === fixtureId)
     if (!fixture) return null
+    // Recency-gate: surfa bara senaste managed-matchdagens resultat, aldrig ett äldre
+    // (annars ligger ett gammalt derby-resultat kvar och motsäger form-prickarna).
+    const lastManagedMatchday = Math.max(
+      0,
+      ...game.fixtures
+        .filter(f => f.status === 'completed' &&
+          (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId))
+        .map(f => f.matchday),
+    )
+    if (fixture.matchday !== lastManagedMatchday) return null
     const home = fixture.homeScore ?? 0
     const away = fixture.awayScore ?? 0
     const margin = Math.abs(home - away)

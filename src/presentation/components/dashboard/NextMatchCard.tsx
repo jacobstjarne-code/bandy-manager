@@ -164,7 +164,7 @@ export function NextMatchCard({
     const roundLabel = cupMatch ? getCupRoundLabel(cupMatch.round) : 'Cup'
     headerIcon = '🏆'
     headerLabel = `Cupen · ${roundLabel}`
-    headerTagText = isHome ? 'HEMMA' : 'BORTA'
+    headerTagText = 'NEUTRAL PLAN'
     headerTagStyle = { background: 'rgba(196,122,58,0.15)', color: 'var(--match-copper)', fontSize: 8, padding: '2px 7px', border: '1px solid rgba(196,122,58,0.2)' }
   } else if (isDerby) {
     headerIcon = derbyIntense ? '🔥' : '⚔️'

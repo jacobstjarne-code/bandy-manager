@@ -93,3 +93,62 @@ OpponentForm-kortet kändes tomt/ihoppressat i tidigare playtest. Det har nu fem
 ## Ordning
 
 1 (synlig bugg) först. 2 + 4 är snabba (verifiera/städa). 3 är en läsning. 5 (Efterklang) är ett riktigt bygge. 6 + 8 är process-doc, kan göras sist. 7 väntar på playtest.
+
+---
+
+# PLAYTEST-FYND 2026-05-25 (kväll) — Skutskär-genomspelning
+
+Jacob playtestade Skutskär 2026/27 (cup + omg 1–4). Diagnoser kodlästa av Opus, inte gissade. Tre fynd hänger ihop: den olästa inboxen (40 items) är motorn bakom både A och C nedan.
+
+## A. Efterklang-vitblock — KLAR (Opus, direkt edit)
+
+`EfterklangSecondary.tsx` renderade `className="card-sharp"` (ljus default-bas) + ljus-kontext-text på den mörka portalen → vitt block. Bytt till syskonmönstret (`--bg-portal-surface`, `--bg-leather`-ram, 2px `--cold`-stripe, `--text-light-secondary`). Code: bygg + commit.
+
+## B. Efterklang journalist-eko ankarlöst
+
+**Symptom:** "Helena Wikström ringde efter den matchen. Hon minns bättre än du tror." — vilken match? Ingen referent.
+**Rot:** journalist-grenen i `pickEfterklang` gatar på `journalist.relationship > 30` (en journalist *finns* och ni är på okej fot), inte på en faktisk loggad händelse. `primaryText` är tom. Nemesis-grenen funkar (namnger rivalen) — journalist gör inte.
+**Åtgärd:** Gata journalist-Efterklang på en verklig `journalist.memory`-post om en konkret match/händelse, och låt ekot namnge den. Aldrig surfa på enbart relationsvärde.
+**Verifiering:** Journalist-ekot syns bara när det finns en loggad händelse och namnger vad hon skrev/ringde om.
+
+## C. RESULTAT-story-kortet visar för gammalt resultat — KLAR (Opus, direkt edit; Code: bygg + commit)
+
+**Symptom:** Omg 3-portal: "🏆 RESULTAT / Söderfors–Skutskär 2–3 / Ni vann 3–2 borta" — en seger två omgångar bort, medan form-prickarna och senaste matchen (Forsbacka 1–2) säger förlust.
+**Rot:** `inboxToPortal` kind `bigResult` surfar matchresultat bara om `isFinal || margin >= 4 || isRival`. Forsbacka-förlusten (marginal 1, ej rival) → `return null`, blir aldrig kandidat. Den gamla Söderfors-segern (rival) är enda kvalificerande och har ingen recency-gate → ligger kvar och surfar.
+**Åtgärd:** Recency-gata `bigResult` — surfa bara resultat från senaste managed-matchdagen (eller inom 1 omgång). Ett gammalt derby ska inte presenteras som "senaste resultat".
+**Verifiering:** Efter en förlust som inte kvalificerar surfar INGET RESULTAT-kort (hellre tomt än fel), aldrig ett äldre resultat som motsäger form-prickarna.
+
+## D. Tränaren har två namn (Ajdsaj vs Lasse Bergström)
+
+**Symptom:** Matchkorten visar managern som "Ajdsaj" (inmatat namn). `BurnoutMark` visar "Lasse Bergström är trött". Jacob läste det som en utbränd spelare han petat.
+**Rot:** `generateManagerProfile` slumpar `firstName/lastName` oberoende av namnet som matas in på NameInputScreen. `BurnoutMark` renderar profilnamnet; matchkorten visar det inmatade. Inte länkade.
+**Beslut (Jacob):** (a) — det inmatade namnet (NameInputScreen) populerar `managerProfile.firstName/lastName` vid spelskapande. Code: hitta `generateManagerProfile`-anropet i createNewGame och spegla in det inmatade namnet (dela på mellanslag, annars hela strängen som firstName).
+**Verifiering:** Managern har ETT namn i hela UI:t.
+
+## E. Manager-burnout pinnas av oläst inbox
+
+**Symptom:** "X är trött"-kortet skriker varje omgång, omg 1–4, oavsett resultat.
+**Rot:** `updateManagerBurnout` lägger `unread * BURNOUT_INBOX_WEIGHT` (=2) per omgång. 40 olästa = +80/omgång → burnout pinnad på 100. Förlust +10, seger −5, decay −3 dränks. `shouldShowBurnoutMark` (≥70 i 2 omgångar) är därför alltid sann.
+**Åtgärd:** Sänk inbox-bidraget drastiskt och/eller kapa det (t.ex. bara olästa VIKTIGT-items, eller tak på inbox-deltat per omgång). Burnout ska drivas av resultat + beslutsfatigue, inte av att inboxen inte töms.
+**Beslut (Jacob):** godkänd. Code: sänk `BURNOUT_INBOX_WEIGHT` kraftigt (förslag 0.3) OCH kapa inbox-bidraget per omgång (förslag: max +6, eller räkna bara olästa VIKTIGT-items). Behåll så att burnout fortfarande tänder efter en faktiskt tung period — verifiera över en säsong att kortet INTE är permanent och INTE helt försvinner. Magnitudändring → uppdatera/lägg D-fact + kör validate_brain.
+**Verifiering:** Burnout-kortet visas bara efter en faktiskt tung period (förluster + hög beslutsfatigue), inte enbart för att inboxen svämmar.
+
+## F. Derby-beat surfar under cupvecka — KLAR (Opus, direkt edit; Code: bygg + commit)
+
+**Rot:** `first_derby` i `portalBeats.ts` triggar på nästa *liga*-match, även när den imminenta matchen är en cupmatch → 🔥-bannern stod över cup-mot-Rögle-kortet.
+**Åtgärd:** Kräv att derbyt är *nästa fixture överhuvudtaget*, inte bara nästa ligamatch.
+**Verifiering:** Beatet syns först den omgång derbyt verkligen är imminent (bekräftat korrekt på omg 1-portalen när Söderfors var nästa).
+
+## G. Inbox-volym / oläst-policy
+
+Gallringen (P7) rensar bara *lästa* items ≥2 omgångar. 40 olästa ligger kvar — rimligt i sig, men hög volym och göder E.
+**Beslut (Jacob):** auto-förfall på olästa lågprio-/atmosfär-items efter N omgångar (förslag N=4). Code: utöka gallringen i roundProcessor så olästa items med låg prioritet (ej VIKTIGT) gallras vid advance när `createdMatchday` är ≥N omgångar gammalt. VIKTIGT/besluts-krävande items rörs ej.
+
+## H. BORTA + NEUTRAL PLAN-dubbeletikett (liten, från tidigare varv)
+
+Cup-matchkortet visar både "BORTA" och "NEUTRAL PLAN". Är planen neutral är matchen varken hemma eller borta. Kolla venue-logiken.
+
+## Öppet hos Opus (ej Code)
+
+- Player-fatigue-magnitud: läs `matchCore` match-drag + start-fitness + om utslagna cup-lag återhämtar under resterande cupveckor. Svarar på "är spelaren SÅ trött efter två cupmatcher rätt kalibrerat".
+

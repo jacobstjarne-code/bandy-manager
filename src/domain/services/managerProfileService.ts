@@ -16,7 +16,8 @@ const BURNOUT_HISTORY_MAX = 22
 
 const BURNOUT_LOSS_PER_RECENT = 10   // per loss in last 3 rounds
 const BURNOUT_FATIGUE_WEIGHT = 0.3
-const BURNOUT_INBOX_WEIGHT = 2
+const BURNOUT_INBOX_WEIGHT = 0.3
+const BURNOUT_INBOX_MAX_DELTA = 6   // cap so a large unread pile doesn't pin burnout
 const BURNOUT_WIN_RECOVERY = 5
 const BURNOUT_NATURAL_DECAY = 3      // drift toward 0 when neither winning nor losing
 const BURNOUT_TRIGGER_THRESHOLD = 70
@@ -146,7 +147,7 @@ export function updateManagerBurnout(game: SaveGame): ManagerProfile | undefined
 
   // Inbox pending items
   const unread = game.inbox.filter(i => !i.isRead).length
-  delta += unread * BURNOUT_INBOX_WEIGHT
+  delta += Math.min(unread * BURNOUT_INBOX_WEIGHT, BURNOUT_INBOX_MAX_DELTA)
 
   // Win recovery
   if (lastWon) delta -= BURNOUT_WIN_RECOVERY
