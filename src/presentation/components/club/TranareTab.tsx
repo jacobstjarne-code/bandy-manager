@@ -41,10 +41,11 @@ export function TranareTab({ game }: Props) {
   const seasonsLeft = profile.contractUntilSeason - game.currentSeason
   const contractColor = seasonsLeft <= 1 ? 'var(--warm)' : 'var(--text-muted)'
 
-  // Top 3 rivalries by games played
-  const topRivalries = [...(profile.coachRivalries ?? [])]
-    .filter(r => r.h2hWins + r.h2hDraws + r.h2hLosses > 0)
-    .sort((a, b) => (b.h2hWins + b.h2hDraws + b.h2hLosses) - (a.h2hWins + a.h2hDraws + a.h2hLosses))
+  const h2hTotal = (r: { h2hWins: number; h2hDraws: number; h2hLosses: number }) =>
+    r.h2hWins + r.h2hDraws + r.h2hLosses
+  const topRivalries = [...profile.coachRivalries]
+    .filter(r => h2hTotal(r) > 0)
+    .sort((a, b) => h2hTotal(b) - h2hTotal(a))
     .slice(0, 3)
 
   return (
@@ -146,11 +147,6 @@ export function TranareTab({ game }: Props) {
               )
             })}
           </div>
-          {topRivalries.length === 0 && (
-            <p style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>
-              Inga rivaliteter än. Spela fler matcher.
-            </p>
-          )}
         </div>
       )}
     </div>

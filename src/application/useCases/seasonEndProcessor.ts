@@ -1096,7 +1096,8 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
         const profile = game.managerProfile!
         // Count this season's results for managed club
         const managedFixtures = game.fixtures.filter(
-          f => (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
+          f => f.season === game.currentSeason &&
+               (f.homeClubId === game.managedClubId || f.awayClubId === game.managedClubId) &&
                f.homeScore !== undefined && f.awayScore !== undefined,
         )
         let sWins = 0, sDraws = 0, sLosses = 0
@@ -1119,23 +1120,23 @@ export function handleSeasonEnd(game: SaveGame, seed?: number): AdvanceResult {
       })()
     : undefined
 
-  const contractInboxItem: InboxItem | null = updatedManagerProfile
-    ? (() => {
-        const contractSeed = (game.currentSeason * 7919 + 88003) | 0
-        const { profile, inboxText } = resolveContractExtension(updatedManagerProfile, game.currentSeason, contractSeed)
-        updatedManagerProfile = profile
-        if (!inboxText) return null
-        return {
-          id: `contract_${game.currentSeason}`,
-          date: game.currentDate,
-          type: InboxItemType.BoardFeedback,
-          title: inboxText,
-          body: '',
-          isRead: false,
-          createdMatchday: game.currentMatchday,
-        } satisfies InboxItem
-      })()
-    : null
+  let contractInboxItem: InboxItem | null = null
+  if (updatedManagerProfile) {
+    const contractSeed = (game.currentSeason * 7919 + 88003) | 0
+    const { profile: contractedProfile, inboxText } = resolveContractExtension(updatedManagerProfile, game.currentSeason, contractSeed)
+    updatedManagerProfile = contractedProfile
+    if (inboxText) {
+      contractInboxItem = {
+        id: `contract_${game.currentSeason}`,
+        date: game.currentDate,
+        type: InboxItemType.BoardFeedback,
+        title: inboxText,
+        body: '',
+        isRead: false,
+        createdMatchday: game.currentMatchday,
+      }
+    }
+  }
 
   const updatedGame: SaveGame = {
     ...game,

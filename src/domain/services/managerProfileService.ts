@@ -1,15 +1,16 @@
 import type { SaveGame } from '../entities/SaveGame'
-import type { ManagerProfile } from '../entities/ManagerProfile'
-import type { CoachRivalry } from '../entities/ManagerProfile'
+import type { ManagerProfile, CoachRivalry } from '../entities/ManagerProfile'
 import {
   COACH_FIRST_NAMES,
   COACH_LAST_NAMES,
+  COACH_RIVALRY_QUOTES,
   BIO_OPENERS,
   BIO_FAMILY_LINES,
   CONTRACT_STATUS,
   CONTRACT_OUTCOME,
   type CoachPersonality,
 } from '../data/managerKaraktarText'
+import { mulberry32 } from '../utils/random'
 
 const BURNOUT_HISTORY_MAX = 22
 
@@ -22,8 +23,7 @@ const BURNOUT_TRIGGER_THRESHOLD = 70
 const BURNOUT_TRIGGER_ROUNDS = 2     // consecutive rounds above threshold before BurnoutMark
 
 export function generateManagerProfile(seed: number, startSeason: number = 1): ManagerProfile {
-  let s = seed
-  const r = () => { s = ((s * 1664525 + 1013904223) | 0) >>> 0; return s / 0xffffffff }
+  const r = mulberry32(seed)
   const pick = <T>(arr: T[]) => arr[Math.floor(r() * arr.length)]
 
   return {
@@ -43,11 +43,10 @@ export function generateManagerProfile(seed: number, startSeason: number = 1): M
   }
 }
 
-const PERSONALITIES: CoachPersonality[] = ['heders', 'kall', 'passiv_aggressiv', 'odmjuk']
+const PERSONALITIES = Object.keys(COACH_RIVALRY_QUOTES) as CoachPersonality[]
 
 export function generateCoachRivalries(opponentClubIds: string[], seed: number): CoachRivalry[] {
-  let s = seed
-  const r = () => { s = ((s * 1664525 + 1013904223) | 0) >>> 0; return s / 0xffffffff }
+  const r = mulberry32(seed)
   return opponentClubIds.map(clubId => ({
     clubId,
     personality: PERSONALITIES[Math.floor(r() * PERSONALITIES.length)],
@@ -93,8 +92,7 @@ export function resolveContractExtension(
   if (seasonsLeft > 1) return { profile, inboxText: null }
 
   const managerName = `${profile.firstName} ${profile.lastName}`
-  const rand = ((seed * 1664525 + 1013904223) | 0) >>> 0
-  const extended = (rand % 10) < 7  // 70% extend
+  const extended = Math.floor(mulberry32(seed)() * 10) < 7  // 70% extend
 
   if (extended) {
     return {
