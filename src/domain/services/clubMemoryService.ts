@@ -140,7 +140,17 @@ function collectSeasonEvents(game: SaveGame, season: number, managedClubId: stri
     if (legend.retiredSeason === season) events.push(buildEventFromRetirement(legend))
   }
 
-  return events.filter(e => e.significance >= SIGNIFICANCE_THRESHOLD).sort((a, b) => a.matchday - b.matchday)
+  const filtered = events.filter(e => e.significance >= SIGNIFICANCE_THRESHOLD)
+  // Dedup visuellt identiska rader: t.ex. när hela A-laget debuterar samma match får elva
+  // spelare var sin namnlösa "A-lagsdebut"-post → elva identiska rader. Klubbens debut är ETT minne.
+  const seen = new Set<string>()
+  const deduped = filtered.filter(e => {
+    const key = `${e.type}|${e.matchday}|${e.text}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+  return deduped.sort((a, b) => a.matchday - b.matchday)
 }
 
 // ── Anniversary system ───────────────────────────────────────────────────────
