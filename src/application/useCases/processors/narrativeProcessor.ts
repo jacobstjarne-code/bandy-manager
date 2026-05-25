@@ -230,7 +230,7 @@ export function processNarrative(
             date: newDate,
             type: InboxItemType.Derby,
             title: `Derby: ${rivalry.name} väntar`,
-            body: `${rival.name} är nästa motståndare.${historyStr} Stämningen är hög i stan — derbyt avgör mer än tre poäng.`,
+            body: `${rival.name} är nästa motståndare.${historyStr} Stämningen är hög i stan — derbyt avgör mer än två poäng.`,
             isRead: false,
           } as InboxItem)
         }

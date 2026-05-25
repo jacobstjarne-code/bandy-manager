@@ -3,7 +3,7 @@ import { getCurrentAct } from './seasonActService'
 
 const PEP_WIN = [
   'Vi vann inte för att vi var bäst. Vi vann för att vi ville mest.',
-  'Tre poäng. Inget snack. Nu fokuserar vi framåt.',
+  'Två poäng. Inget snack. Nu fokuserar vi framåt.',
   'Det fanns ett beslut i omklädningsrummet före avslag. Ni valde rätt.',
   'Jag ser spelare som tror på varandra. Det är farligare än talang.',
   'Bra matcher vinner man med fötterna. Stora matcher vinner man med huvudet.',
