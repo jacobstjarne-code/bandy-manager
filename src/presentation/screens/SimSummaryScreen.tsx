@@ -158,7 +158,7 @@ export function SimSummaryScreen() {
                 const isHome = f.homeClubId === managedClubId
                 const isDerby = !!getRivalry(f.homeClubId, f.awayClubId)
                 const pillColor = outcome === 'W' ? 'var(--success)' : outcome === 'L' ? 'var(--danger)' : 'var(--text-muted)'
-                const pillBg = outcome === 'W' ? 'rgba(34,197,94,0.12)' : outcome === 'L' ? 'rgba(239,68,68,0.12)' : 'var(--bg-elevated)'
+                const pillBg = outcome === 'W' ? 'color-mix(in srgb, var(--success) 12%, transparent)' : outcome === 'L' ? 'color-mix(in srgb, var(--danger) 12%, transparent)' : 'var(--bg-elevated)'
 
                 return (
                   <div key={f.id} style={{
