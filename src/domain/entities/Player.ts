@@ -99,6 +99,7 @@ export interface Player {
   isInjured: boolean
   injuryDaysRemaining: number
   suspensionGamesRemaining: number
+  suspensionCause?: { sinceMatchday: number; opponentName: string; matches: number }
 
   seasonStats: PlayerSeasonStats
   careerStats: PlayerCareerStats

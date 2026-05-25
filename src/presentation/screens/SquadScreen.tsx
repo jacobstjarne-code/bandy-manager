@@ -330,7 +330,7 @@ function PlayerRow({ player, onClick, fixtures, clubs, managedClubId, currentSea
     allChips.push(<span key="injury" style={chipStyle('var(--danger-text)', 'rgba(176,80,64,0.05)', 'rgba(176,80,64,0.3)')}>🩹 {getInjuryText(player.injuryDaysRemaining, player.id)}</span>)
   }
   if (player.suspensionGamesRemaining > 0) {
-    allChips.push(<span key="suspension" style={chipStyle('var(--danger-text)', 'rgba(176,80,64,0.05)', 'rgba(176,80,64,0.3)')}>🚫 {getSuspensionText(player.suspensionGamesRemaining, player.id)}</span>)
+    allChips.push(<span key="suspension" style={chipStyle('var(--danger-text)', 'rgba(176,80,64,0.05)', 'rgba(176,80,64,0.3)')}>🚫 {getSuspensionText(player.suspensionGamesRemaining, player.id, player.suspensionCause)}</span>)
   }
   if (player.morale < 45) {
     allChips.push(<span key="morale" style={chipStyle('var(--warm-light)', 'rgba(140,110,58,0.06)', 'rgba(140,110,58,0.4)')}>😟 {getMoraleText(player.morale, player.lowMoraleDays, player.id)}</span>)
@@ -717,7 +717,7 @@ export function SquadScreen() {
                   <div className="h-label" style={{ marginBottom: 8 }}>🟥 AVSTÄNGDA</div>
                   {suspended.length === 0
                     ? <div style={nuEmpty}>Ingen avstängd.</div>
-                    : suspended.map(p => playerRow(p, 'var(--danger)', getSuspensionText(p.suspensionGamesRemaining, p.id)))}
+                    : suspended.map(p => playerRow(p, 'var(--danger)', getSuspensionText(p.suspensionGamesRemaining, p.id, p.suspensionCause)))}
                 </div>
                 <div style={{ marginBottom: 12, ...(moralDanger ? { borderLeft: '3px solid var(--danger)', paddingLeft: 10 } : {}) }}>
                   <div className="h-label" style={{ marginBottom: 8 }}>😟 LÅG MORAL</div>

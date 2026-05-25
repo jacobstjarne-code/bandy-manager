@@ -35,7 +35,22 @@ export function getInjuryText(days: number, playerId: string): string {
   ], playerId + `inj${days}`)
 }
 
-export function getSuspensionText(matches: number, playerId: string): string {
+import { SUSPENSION_AVAILABILITY_LABELS } from './suspensionText'
+
+export function getSuspensionText(
+  matches: number,
+  playerId: string,
+  cause?: { sinceMatchday: number; opponentName: string; matches: number },
+): string {
+  if (cause) {
+    const template = matches > 1
+      ? SUSPENSION_AVAILABILITY_LABELS.multi
+      : SUSPENSION_AVAILABILITY_LABELS.single
+    return template
+      .replace('{motståndare}', cause.opponentName)
+      .replace('{omg}', String(cause.sinceMatchday))
+      .replace('{kvar}', String(matches))
+  }
   if (matches === 1) {
     return pick([
       'Sitter av sista matchen.',

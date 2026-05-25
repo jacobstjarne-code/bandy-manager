@@ -64,6 +64,9 @@ export function applyPlayerStateUpdates(
     // ── Suspension recovery (decrement every round for all suspended players) ──
     if (updated.suspensionGamesRemaining > 0) {
       updated.suspensionGamesRemaining = Math.max(0, updated.suspensionGamesRemaining - 1)
+      if (updated.suspensionGamesRemaining === 0) {
+        updated.suspensionCause = undefined
+      }
     }
 
     if (startersThisRound.has(player.id)) {
@@ -145,7 +148,16 @@ export function applyPlayerStateUpdates(
           const idx = updatedPlayers.findIndex(p => p.id === event.playerId)
           if (idx !== -1) {
             const prev = updatedPlayers[idx].suspensionGamesRemaining
-            updatedPlayers[idx] = { ...updatedPlayers[idx], suspensionGamesRemaining: 1 }
+            const suspendedPlayer = updatedPlayers[idx]
+            const opponentClubId = fixture.homeClubId === suspendedPlayer.clubId
+              ? fixture.awayClubId : fixture.homeClubId
+            const opponentClub = game.clubs.find(c => c.id === opponentClubId)
+            const opponentName = opponentClub?.shortName ?? opponentClub?.name ?? 'motståndet'
+            updatedPlayers[idx] = {
+              ...suspendedPlayer,
+              suspensionGamesRemaining: 1,
+              suspensionCause: { sinceMatchday: fixture.matchday, opponentName, matches: 1 },
+            }
             if (prev === 0) {
               newlySuspended.push({ player: updatedPlayers[idx] })
             }

@@ -45,7 +45,7 @@ function PitchLines() {
 export function FormationView({ tactic, players, onChange }: FormationViewProps) {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [autoFillMsg, setAutoFillMsg] = useState<string | null>(null)
-  const autoFillTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const autoFillTimerRef = useRef<number | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => () => {

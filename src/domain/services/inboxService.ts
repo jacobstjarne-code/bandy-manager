@@ -6,6 +6,7 @@ import type { YouthIntakeResult } from './youthIntakeService'
 import type { NotableDevelopment } from './playerDevelopmentService'
 import type { TrainingFocus } from '../entities/Training'
 import { InboxItemType, ClubExpectation } from '../enums'
+import { SUSPENSION_INCIDENT_LINES } from '../data/suspensionText'
 import { trainingTypeLabel, trainingIntensityLabel } from './trainingService'
 
 function generateId(type: InboxItemType): string {
@@ -75,12 +76,25 @@ export function createSuspensionItem(
   gamesOut: number,
   currentDate: string,
 ): InboxItem {
+  const cause = player.suspensionCause
+  const spelareStr = `${player.firstName} ${player.lastName}`
+  let body: string
+  if (cause) {
+    const template = SUSPENSION_INCIDENT_LINES[Math.abs(player.id.charCodeAt(0) + cause.sinceMatchday) % SUSPENSION_INCIDENT_LINES.length]
+    body = template
+      .replace('{spelare}', spelareStr)
+      .replace('{motståndare}', cause.opponentName)
+      .replace('{omg}', String(cause.sinceMatchday))
+      .replace('{kvar}', String(gamesOut))
+  } else {
+    body = `${spelareStr} är avstängd i ${gamesOut} match(er).`
+  }
   return {
     id: generateId(InboxItemType.Suspension),
     date: currentDate,
     type: InboxItemType.Suspension,
-    title: `Avstängning: ${player.firstName} ${player.lastName}`,
-    body: `${player.firstName} ${player.lastName} är avstängd i ${gamesOut} match(er).`,
+    title: `Avstängning: ${spelareStr}`,
+    body,
     relatedPlayerId: player.id,
     isRead: false,
   }
