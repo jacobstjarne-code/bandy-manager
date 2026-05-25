@@ -52,6 +52,8 @@ import { ActiveArcsSecondary } from '../../../presentation/components/portal/sec
 import { BoardObjectivesSecondary } from '../../../presentation/components/portal/secondary/BoardObjectivesSecondary'
 import { WatchOthersSecondary } from '../../../presentation/components/portal/secondary/WatchOthersSecondary'
 import { LandslagsFranvaroSecondary } from '../../../presentation/components/portal/secondary/LandslagsFranvaroSecondary'
+import { BurnoutMark } from '../../../presentation/components/portal/BurnoutMark'
+import { shouldShowBurnoutMark } from '../managerProfileService'
 import { SpectatorPrimary } from '../../../presentation/components/portal/primary/SpectatorPrimary'
 import type { CardRenderProps } from './dashboardCardBag'
 import { getCoffeeRoomScene } from '../coffeeRoomService'
@@ -254,6 +256,17 @@ const PORTAL_CARDS: DashboardCard[] = [
     weight: 75,
     triggers: [(game) => isManagedClubSpectator(game)],
     Component: WatchOthersSecondary,
+  },
+  // C-MK1 — BurnoutMark: danger-tonad, visas när tränaren är utbränd 2+ omgångar i rad
+  {
+    id: 'burnout_mark',
+    tier: 'secondary',
+    weight: 95,
+    triggers: [(game) => {
+      const profile = game.managerProfile
+      return !!profile && shouldShowBurnoutMark(profile)
+    }],
+    Component: BurnoutMark,
   },
   // C-K1 — Landslagsuttagning: visa under VM-uppehållet
   {

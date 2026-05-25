@@ -27,6 +27,7 @@ import { generateAssistantCoach } from '../../domain/services/assistantCoachServ
 import { updatePlayerAvailability } from '../../domain/services/playerAvailabilityService'
 import { generateReferees } from '../../domain/services/refereeService'
 import { createSeasonSignature } from '../../domain/services/seasonSignatureService'
+import { generateManagerProfile } from '../../domain/services/managerProfileService'
 
 function pickRandom<T>(arr: T[], rand: () => number): T {
   return arr[Math.floor(rand() * arr.length)]
@@ -407,6 +408,7 @@ export function createNewGame(input: CreateNewGameInput): SaveGame {
     pastSeasonSignatures: [],
     phaseMarksSeen: [],
     sourceCooldowns: {},
+    managerProfile: generateManagerProfile((input.seed ?? 42) + 88001),
   }
 
   const playersWithAvailability = updatePlayerAvailability(game)

@@ -444,4 +444,7 @@ export interface SaveGame {
     val: 'A' | 'B' | 'C' | 'D'
     triggerRound: number
   }
+
+  // C-MK1 — Manager som karaktär (Fas 1)
+  managerProfile?: import('./ManagerProfile').ManagerProfile
 }

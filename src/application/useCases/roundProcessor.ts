@@ -72,6 +72,7 @@ import {
   CALLUP_NOTICE_LINES,
   SNUB_SCENE_LINES,
 } from '../../domain/data/landslagText'
+import { updateManagerBurnout } from '../../domain/services/managerProfileService'
 
 export type { AdvanceResult }
 
@@ -1705,6 +1706,12 @@ export function advanceToNextEvent(game: SaveGame, seed?: number): AdvanceResult
     const prevStreak = updatedGame.fatigueHotStreak ?? 0
     const newStreak = pressure === 'hot' ? prevStreak + 1 : 0
     updatedGame = { ...updatedGame, fatigueHistory: newHistory, fatigueHotStreak: newStreak }
+
+    // Manager burnout sampling
+    const updatedManagerProfile = updateManagerBurnout(updatedGame)
+    if (updatedManagerProfile) {
+      updatedGame = { ...updatedGame, managerProfile: updatedManagerProfile }
+    }
 
     // Squad-pulse sampling — samlas på samma ställe som fatigueHistory
     const squadPlayers = updatedGame.players.filter(p => p.clubId === updatedGame.managedClubId)
