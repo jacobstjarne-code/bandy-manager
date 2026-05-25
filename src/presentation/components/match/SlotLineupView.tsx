@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { Player } from '../../../domain/entities/Player'
 import type { Tactic } from '../../../domain/entities/Club'
 import type { FormationSlot, FormationType } from '../../../domain/entities/Formation'
@@ -6,6 +6,7 @@ import { FORMATIONS } from '../../../domain/entities/Formation'
 import { PlayerPosition } from '../../../domain/enums'
 import { positionShort } from '../../utils/formatters'
 import { PlayerPickerSheet } from './PlayerPickerSheet'
+import { computeLagstyrka, STYRKA_GAP_VARNING } from '../../utils/lagstyrka'
 
 function FitnessBar({ fitness }: { fitness: number }) {
   const filled = Math.round(fitness / 10)
@@ -62,6 +63,12 @@ export function SlotLineupView({
 
   const availablePlayers = squadPlayers.filter(
     p => !p.isInjured && p.suspensionGamesRemaining <= 0
+  )
+
+  // Ärlig trötthetsmagnitud, uppdateras live medan elvan byggs (se utils/lagstyrka).
+  const styrka = useMemo(
+    () => computeLagstyrka(startingIds, squadPlayers, tacticState),
+    [startingIds, squadPlayers, tacticState],
   )
 
   // Group slots by position group
@@ -208,9 +215,9 @@ export function SlotLineupView({
                       {positionShort(player.position)} · {Math.round(player.currentAbility)} CA
                       {player.position !== slot.position && ' · felpos'}
                     </p>
-                    {player.fitness < 40 && (
-                      <p style={{ fontSize: 10, color: 'var(--danger)', marginTop: 2, fontStyle: 'italic' }}>
-                        Hård match · vila rekommenderas
+                    {player.fitness < 60 && (
+                      <p style={{ fontSize: 10, color: player.fitness < 40 ? 'var(--danger)' : 'var(--warm)', marginTop: 2, fontStyle: 'italic' }}>
+                        {player.fitness < 40 ? 'Tung i benen — märks på isen.' : 'Trött — under sitt bästa.'}
                       </p>
                     )}
                   </div>
@@ -243,6 +250,17 @@ export function SlotLineupView({
           })}
         </div>
       ))}
+
+      {/* Lagstyrka — ärlig magnitud, samma evaluateSquad som motorn, uppdateras live */}
+      {styrka.utvilat > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Lagstyrka</span>
+          <span style={{ fontSize: 12 }}>
+            <span style={{ fontWeight: 800, color: styrka.gap >= STYRKA_GAP_VARNING ? 'var(--warm)' : 'var(--text-primary)' }}>{styrka.idag}</span>
+            <span style={{ color: 'var(--text-muted)' }}> / {styrka.utvilat} utvilat</span>
+          </span>
+        </div>
+      )}
 
       {/* Auto-fill + count */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4, marginBottom: 16 }}>

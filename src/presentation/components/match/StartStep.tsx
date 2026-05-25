@@ -7,6 +7,7 @@ import { WeatherCondition } from '../../../domain/enums'
 // Weather display moved to MatchHeader
 import { getRivalry } from '../../../domain/data/rivalries'
 import { tacticRows } from '../../utils/tacticData'
+import { computeLagstyrka, STYRKA_GAP_VARNING } from '../../utils/lagstyrka'
 
 function tacticLabel(key: keyof Tactic, value: string): string {
   const row = tacticRows.find(r => r.key === key)
@@ -82,13 +83,11 @@ interface StartStepProps {
 }
 
 export function StartStep({ startingIds, tacticState, matchWeatherData, matchMode, lineupError, onSetMatchMode, onBack, onPlay, fixture, isHome, fanMood, expectedAttendance, arenaName, ritualText, farewellPlayerName, squadPlayers }: StartStepProps) {
-  const tiredCount = useMemo(() => {
-    if (!squadPlayers) return 0
-    return startingIds.filter(id => {
-      const p = squadPlayers.find(pl => pl.id === id)
-      return p && p.fitness < 60
-    }).length
-  }, [startingIds, squadPlayers])
+  // Ärlig trötthetsmagnitud (se utils/lagstyrka): idag vs utvilat, ur motorns egen evaluateSquad.
+  const { idag: styrkaIdag, utvilat: styrkaUtvilat, gap: styrkaGap } = useMemo(
+    () => computeLagstyrka(startingIds, squadPlayers, tacticState),
+    [startingIds, squadPlayers, tacticState],
+  )
 
   const atmosphere = useMemo(
     () => fixture ? getPreMatchPepTalk(fixture, matchWeatherData, isHome ?? true, fanMood ?? 50) : '',
@@ -145,17 +144,30 @@ export function StartStep({ startingIds, tacticState, matchWeatherData, matchMod
         </div>
       )}
 
-      {/* Trötthetsbanner */}
-      {tiredCount >= 3 && (
+      {/* Lagstyrka — ärlig magnitud, samma evaluateSquad som motorn */}
+      {styrkaUtvilat > 0 && (
+        <div className="card-sharp" style={{ marginBottom: 8, padding: '8px 12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <span style={{ fontSize: 8, fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Lagstyrka idag</span>
+            <span style={{ fontSize: 13 }}>
+              <span style={{ fontWeight: 800, color: styrkaGap >= STYRKA_GAP_VARNING ? 'var(--warm)' : 'var(--text-primary)' }}>{styrkaIdag}</span>
+              <span style={{ color: 'var(--text-muted)', fontSize: 12 }}> / {styrkaUtvilat} utvilat</span>
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Trött-trupp — konsekvens + magnitud + motbild */}
+      {styrkaGap >= STYRKA_GAP_VARNING && (
         <div style={{
           marginBottom: 8, padding: '10px 12px',
           background: 'color-mix(in srgb, var(--warm) 8%, transparent)',
           border: '1px solid color-mix(in srgb, var(--warm) 30%, transparent)',
           borderRadius: 'var(--radius-sm)',
         }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm)', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 4px' }}>⚠ TRUPPEN ÄR TRÖTT</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--warm)', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 4px' }}>⚠ TRÖTT TRUPP</p>
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>
-            {tiredCount} spelare under 60% kondition i startelvan.
+            Laget ligger {styrkaGap} styrkepoäng under utvilat. Det märks på isen — vill du rotera är det nu.
           </p>
         </div>
       )}

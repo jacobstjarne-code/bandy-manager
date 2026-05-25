@@ -721,6 +721,11 @@ export function SquadScreen() {
                 </div>
                 <div style={{ marginBottom: 12, ...(moralDanger ? { borderLeft: '3px solid var(--danger)', paddingLeft: 10 } : {}) }}>
                   <div className="h-label" style={{ marginBottom: 8 }}>😟 LÅG MORAL</div>
+                  {lowMorale.length > 0 && (
+                    <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 11, color: 'var(--text-secondary)', marginBottom: 8, lineHeight: 1.45 }}>
+                      Låg moral i längden tär på formen, och det är formen som märks på isen. Ett samtal i tid brukar räcka för att vända det.
+                    </div>
+                  )}
                   {lowMorale.length === 0
                     ? <div style={nuEmpty}>Truppen är på topp.</div>
                     : lowMorale.map(p => playerRow(p, 'var(--warning)', getMoraleText(p.morale, p.lowMoraleDays, p.id)))}

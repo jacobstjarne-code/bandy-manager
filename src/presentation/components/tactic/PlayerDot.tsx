@@ -23,6 +23,12 @@ export function PlayerDot({ slot, player, onClick, readOnly, isSelected }: Playe
       {isSelected && (
         <circle cx={cx} cy={cy} r={r + 4} fill="none" stroke="var(--accent)" strokeWidth="2" opacity="0.8" />
       )}
+      {/* C-FT1: trötthetsring — visas bara för trötta spelare (warm 40-69, danger <40) */}
+      {player && player.fitness < 70 && (
+        <circle cx={cx} cy={cy} r={r + 2.5} fill="none"
+          stroke={player.fitness < 40 ? 'var(--danger)' : 'var(--warm)'}
+          strokeWidth="2" opacity="0.9" />
+      )}
       {/* Main circle */}
       <circle
         cx={cx} cy={cy} r={r}

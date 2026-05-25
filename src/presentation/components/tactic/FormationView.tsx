@@ -5,6 +5,7 @@ import type { FormationType } from '../../../domain/entities/Formation'
 import { FORMATIONS, autoAssignFormation, getRecommendedFormation, FORMATION_META } from '../../../domain/entities/Formation'
 import type { Tactic } from '../../../domain/entities/Club'
 import { PlayerDot } from './PlayerDot'
+import { computeLagstyrka, STYRKA_GAP_VARNING } from '../../utils/lagstyrka'
 
 interface FormationViewProps {
   tactic: Tactic
@@ -43,6 +44,7 @@ function PitchLines() {
 
 export function FormationView({ tactic, players, onChange }: FormationViewProps) {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
+  const [autoFillMsg, setAutoFillMsg] = useState<string | null>(null)
   const navigate = useNavigate()
 
   const formation = tactic.formation ?? '5-3-2'
@@ -73,6 +75,7 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
 
     const newLineupSlots = { ...lineupSlots }
     const emptySlots = template.slots.filter(s => !newLineupSlots[s.id])
+    const emptyCount = emptySlots.length
 
     // Try to fill empty slots with position-matched players first
     for (const slot of emptySlots) {
@@ -91,6 +94,12 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
 
     onChange({ ...tactic, lineupSlots: newLineupSlots })
     setSelectedSlotId(null)
+    setAutoFillMsg(
+      emptyCount === 0
+        ? 'Elvan är redan komplett — tryck på en spelare för att byta.'
+        : `Fyllde ${emptyCount} ${emptyCount === 1 ? 'plats' : 'platser'} med bästa tillgängliga.`,
+    )
+    window.setTimeout(() => setAutoFillMsg(null), 3000)
   }
 
   function changeFormation(f: FormationType) {
@@ -133,6 +142,9 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
 
   const meta = FORMATION_META[formation]
 
+  // C-FT1: ärlig trötthetsmagnitud, även på taktiktavlan (samma helper/motor som lineup-byggaren).
+  const styrka = computeLagstyrka(Array.from(starterIds), players, tactic)
+
   return (
     <>
       {/* B3c: Tactic overview — read-only, links to lineup */}
@@ -166,7 +178,7 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
       </div>
 
       {/* Auto-fill button */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: autoFillMsg ? 4 : 8 }}>
         <button
           onClick={handleAutoFill}
           style={{
@@ -183,6 +195,11 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
           ✦ Fyll bästa elvan
         </button>
       </div>
+      {autoFillMsg && (
+        <p style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'right', marginBottom: 8, fontStyle: 'italic' }}>
+          {autoFillMsg}
+        </p>
+      )}
 
       {/* B1c: Formation selector with coach recommendation */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' }}>
@@ -248,6 +265,17 @@ export function FormationView({ tactic, players, onChange }: FormationViewProps)
           )
         })}
       </svg>
+
+      {/* C-FT1: Lagstyrka — ärlig magnitud, samma evaluateSquad som motorn */}
+      {styrka.utvilat > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8 }}>
+          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Lagstyrka</span>
+          <span style={{ fontSize: 12 }}>
+            <span style={{ fontWeight: 800, color: styrka.gap >= STYRKA_GAP_VARNING ? 'var(--warm)' : 'var(--text-primary)' }}>{styrka.idag}</span>
+            <span style={{ color: 'var(--text-muted)' }}> / {styrka.utvilat} utvilat</span>
+          </span>
+        </div>
+      )}
 
       {/* Bench */}
       <div style={{ marginTop: 10 }}>
