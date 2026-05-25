@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { Fixture } from '../../domain/entities/Fixture'
 import { getRivalry } from '../../domain/data/rivalries'
+import { ScoreBlock } from '../components/primitives'
 import { MatchEventType } from '../../domain/enums'
 
 interface SimSummaryState {
@@ -157,43 +158,25 @@ export function SimSummaryScreen() {
                 const opp = getOpponent(f)
                 const isHome = f.homeClubId === managedClubId
                 const isDerby = !!getRivalry(f.homeClubId, f.awayClubId)
-                const pillColor = outcome === 'W' ? 'var(--success)' : outcome === 'L' ? 'var(--danger)' : 'var(--text-muted)'
-                const pillBg = outcome === 'W' ? 'color-mix(in srgb, var(--success) 12%, transparent)' : outcome === 'L' ? 'color-mix(in srgb, var(--danger) 12%, transparent)' : 'var(--bg-elevated)'
+                const blockVariant = isDerby ? 'derby' : outcome === 'W' ? 'win' : outcome === 'L' ? 'loss' : 'draw'
 
                 return (
                   <div key={f.id} style={{
                     display: 'flex', alignItems: 'center', gap: 8,
-                    padding: '6px 8px', borderRadius: 4,
+                    padding: '4px 8px', borderRadius: 4,
                     background: 'var(--bg-elevated)',
                     fontSize: 12, fontFamily: 'var(--font-body)',
                   }}>
-                    {/* Round */}
                     <span style={{ color: 'var(--text-muted)', fontSize: 10, minWidth: 28, flexShrink: 0 }}>
                       {f.isCup ? 'Cup' : `R${f.roundNumber}`}
                     </span>
-
-                    {/* Opponent + home/away */}
                     <span style={{ flex: 1, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {opp?.shortName ?? opp?.name ?? '?'}
                       <span style={{ color: 'var(--text-muted)', fontSize: 10, marginLeft: 4 }}>
                         {isHome ? '(H)' : '(B)'}
                       </span>
-                      {isDerby && <span style={{ marginLeft: 4 }}>⚔️</span>}
                     </span>
-
-                    {/* Score */}
-                    <span style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: 13, minWidth: 36, textAlign: 'center' }}>
-                      {scoreFor}–{scoreAgainst}
-                    </span>
-
-                    {/* W/D/L pill */}
-                    <span style={{
-                      fontSize: 10, fontWeight: 700, color: pillColor,
-                      background: pillBg,
-                      padding: '2px 6px', borderRadius: 3, minWidth: 20, textAlign: 'center',
-                    }}>
-                      {outcome}
-                    </span>
+                    <ScoreBlock score={`${scoreFor}–${scoreAgainst}`} variant={blockVariant} compact />
                   </div>
                 )
               })}
