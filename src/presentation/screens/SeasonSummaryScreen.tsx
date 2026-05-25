@@ -10,6 +10,8 @@ import { shareSeasonImage } from '../utils/seasonShareImage'
 import { collectSeasonDecisions } from '../../domain/services/seasonDecisionsService'
 import { generateTeamPhotoSvg } from '../utils/teamPhotoGenerator'
 import { saveTeamPhoto, loadTeamPhoto } from '../../infrastructure/teamPhotoStorage'
+import { pickSeasonElimText } from '../../domain/data/seasonSummaryElimText'
+import type { SeasonEliminationContext } from '../../domain/data/seasonSummaryElimText'
 
 function getSignatureEmojiFromRubric(rubric: string): string {
   if (rubric.includes('köldvintern')) return '🌨'
@@ -79,13 +81,31 @@ export function SeasonSummaryScreen() {
   }
 
   function playoffEliminationSentence(r: SeasonSummary['playoffResult']): string {
-    switch (r) {
-      case 'quarterfinal': return 'Säsongen tog slut i kvartsfinalen.'
-      case 'semifinal': return 'Säsongen tog slut i semifinalen.'
-      case 'finalist': return 'Säsongen nådde SM-finalen — men inte hela vägen.'
-      case 'didNotQualify': return 'Laget kvalade inte till slutspelet.'
-      default: return ''
+    if (!r || r === 'champion') return ''
+    const contextMap: Record<string, SeasonEliminationContext> = {
+      quarterfinal: 'kf',
+      semifinal: 'sf',
+      finalist: 'smf',
+      didNotQualify: 'no_playoff',
     }
+    const context = contextMap[r]
+    if (!context) return ''
+
+    // Find the opponent who eliminated managed club
+    let opponentName = 'motståndet'
+    const bracket = game?.playoffBracket
+    if (bracket) {
+      const allSeries = [...bracket.quarterFinals, ...bracket.semiFinals, ...(bracket.final ? [bracket.final] : [])]
+      const elimSeries = allSeries.find(s => s.loserId === game?.managedClubId)
+      if (elimSeries?.winnerId) {
+        const oppClub = game?.clubs.find(c => c.id === elimSeries.winnerId)
+        if (oppClub) opponentName = oppClub.shortName ?? oppClub.name
+      }
+    }
+
+    return pickSeasonElimText(context, summary!.season, summary!.clubId)
+      .replace('{motståndare}', opponentName)
+      .replace('{season}', String(summary!.season))
   }
 
   function smWinnerSentence(r: SeasonSummary['playoffResult']): string {
